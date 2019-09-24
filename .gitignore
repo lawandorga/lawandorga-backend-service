@@ -46,3 +46,7 @@ staticfiles/
 # System Files
 .DS_Store
 Thumbs.db
+/static
+/staticfiles
+.vscode/
+.pytest_cache
