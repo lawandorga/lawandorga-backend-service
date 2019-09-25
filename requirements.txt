@@ -5,8 +5,10 @@ colorama==0.3.9
 dj-database-url==0.5.0
 Django==2.2.2
 django-appconf==1.0.2
+django-cors-headers==3.1.0
 django-heroku==0.3.1
 django-storages==1.7.1
+django-stubs==1.1.0
 djangorestframework==3.9.2
 djangorestframework-stubs==0.3.0
 docutils==0.14
