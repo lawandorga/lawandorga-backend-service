@@ -254,4 +254,11 @@ else:
 
 
 # CORS policy
-CORS_ORIGIN_ALLOW_ALL=True
+# CORS_ORIGIN_ALLOW_ALL=True
+CORS_ORIGIN_WHITELIST = [
+    "https://law-orga.de",
+    "http://law-orga.de",
+    "https://d1g37iqegvaqxr.cloudfront.net",
+    "http://127.0.0.1:3000",
+    "http://localhost:3000"
+]
