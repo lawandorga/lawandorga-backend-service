@@ -258,6 +258,8 @@ else:
 CORS_ORIGIN_WHITELIST = [
     "https://law-orga.de",
     "http://law-orga.de",
+    "http://www.law-orga.de",
+    "https://www.law-orga.de",
     "https://d1g37iqegvaqxr.cloudfront.net",
     "http://127.0.0.1:3000",
     "http://localhost:3000"
