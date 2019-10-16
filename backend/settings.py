@@ -65,7 +65,6 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'storages',
     'corsheaders'
-    #'compressor',
 ]
 
 MIDDLEWARE = [
@@ -112,6 +111,7 @@ if 'ON_HEROKU' in os.environ:
                     'django.template.context_processors.request',
                     'django.contrib.auth.context_processors.auth',
                     'django.contrib.messages.context_processors.messages',
+                    'backend.static.env_getter.export_vars',
                 ],
             },
         },
@@ -128,6 +128,7 @@ else:
                     'django.template.context_processors.request',
                     'django.contrib.auth.context_processors.auth',
                     'django.contrib.messages.context_processors.messages',
+                    'backend.static.env_getter.export_vars',
                 ],
             },
         },

@@ -27,3 +27,9 @@ def get_env_variable(variable_name):
     if variable_name not in os.environ:
         raise CustomError(ERROR__ENV__MISSING_VARIABLE)
     return os.environ[variable_name]
+
+
+def export_vars(request):
+    data = {}
+    data['URL'] = get_website_base_url()
+    return data

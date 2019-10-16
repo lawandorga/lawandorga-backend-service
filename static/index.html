@@ -6,7 +6,9 @@
     <base href="/">
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="Refresh" content="0; url=http://localhost:3000/">
+    {% if URL %}
+    <meta http-equiv="Refresh" content="0; url={{URL}}">
+    {% endif %}
 </head>
 <body>
 <noscript>
