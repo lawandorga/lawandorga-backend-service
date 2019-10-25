@@ -147,6 +147,11 @@ ERROR__API__REGISTER__NO_RLC_PROVIDED = {
     'error_code': 'api.register.no_rlc_provided'
 }
 
+ERROR__API__REGISTER__RLC_NOT_FOUND = {
+    'error_detail': 'rlc not found',
+    'error_code': 'api.register.rlc_not_found'
+}
+
 ERROR__API__USER__NOT_FOUND = {
     'error_detail': 'specified user not found',
     'error_code': 'api.user.user_nof_found'

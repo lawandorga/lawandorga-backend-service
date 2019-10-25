@@ -133,18 +133,24 @@ class UserProfileCreatorViewSet(viewsets.ModelViewSet):
             del data['rlc']
 
         # Check if email already in use
-        if UserProfile.objects.filter(email=request.data['email']).count() > 0:
+        if UserProfile.objects.filter(email=request.data['email'].lower()).count() > 0:
             raise CustomError(ERROR__API__EMAIL__ALREADY_IN_USE)
         data['email'] = data['email'].lower()
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
+
+        # check if rlc exists before saving
+        if 'rlc' not in request.data:
+            raise CustomError(ERROR__API__REGISTER__NO_RLC_PROVIDED)
+        try:
+            rlc = Rlc.objects.get(pk=request.data['rlc'])
+        except:
+            raise CustomError(ERROR__API__REGISTER__RLC_NOT_FOUND)
         self.perform_create(serializer)
 
         user = UserProfile.objects.get(email=request.data['email'].lower())
-        if 'rlc' not in request.data:
-            raise CustomError(ERROR__API__REGISTER__NO_RLC_PROVIDED)
-        user.rlc = Rlc.objects.get(pk=request.data['rlc'])
+        user.rlc = rlc
         if 'birthday' in request.data:
             user.birthday = request.data['birthday']
         user.is_active = False
