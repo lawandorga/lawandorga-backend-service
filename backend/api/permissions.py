@@ -1,4 +1,4 @@
-#  rlcapp - record and organization management software for refugee law clinics
+#  law&orga - record and organization management software for refugee law clinics
 #  Copyright (C) 2019  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 from rest_framework import permissions
 
 
-# TODO: what to do with this?? custom permissions? 
+# TODO: what to do with this?? custom permissions?
 class UpdateOwnProfile(permissions.BasePermission):
     """allow users to edit their own profile"""
 
