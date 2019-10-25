@@ -64,7 +64,7 @@ class ForgotPasswordUnauthenticatedViewSet(APIView):
         forgot_password_link = ForgotPasswordLinks(user=user, ip_address=ip)
         forgot_password_link.save()
 
-        url = get_website_base_url() + "api/reset-password/" + forgot_password_link.link
+        url = get_website_base_url() + "reset-password/" + forgot_password_link.link
         EmailSender.send_email_notification([user.email], "Password reset",
                                             "Your password was resetted click here: " + url)
 

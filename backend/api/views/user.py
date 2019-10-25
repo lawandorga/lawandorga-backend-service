@@ -27,6 +27,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
+from backend.static.error_codes import ERROR__API__USER__NOT_FOUND
 from backend.static import permissions
 from backend.static.date_utils import parse_date
 from backend.static.emails import EmailSender
