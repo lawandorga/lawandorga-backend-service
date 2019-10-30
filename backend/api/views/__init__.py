@@ -6,7 +6,7 @@ class ModelViewSet(mixins.CreateModelMixin,
                    mixins.ListModelMixin,
                    GenericViewSet)
 """
-#  rlcapp - record and organization management software for refugee law clinics
+#  law&orga - record and organization management software for refugee law clinics
 #  Copyright (C) 2019  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -21,6 +21,7 @@ class ModelViewSet(mixins.CreateModelMixin,
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+
 
 from .user import *
 from .group import *

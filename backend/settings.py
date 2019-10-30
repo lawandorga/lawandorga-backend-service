@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
-#  rlcapp - record and organization management software for refugee law clinics
+#  law&orga - record and organization management software for refugee law clinics
 #  Copyright (C) 2019  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -27,11 +27,9 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 import os
-import django_heroku
-from datetime import timedelta, timezone
-import boto
-from boto.s3.connection import OrdinaryCallingFormat, Location
+from datetime import timedelta
 
+import django_heroku
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -80,7 +78,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'backend.urls'
 
-
 # Default settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -96,7 +93,6 @@ if 'ON_HEROKU' in os.environ:
     TIMEOUT_TIMEDELTA = timedelta(minutes=10)
 else:
     TIMEOUT_TIMEDELTA = timedelta(weeks=10)
-
 
 # Templates
 if 'ON_HEROKU' in os.environ:
@@ -204,7 +200,6 @@ if 'ON_HEROKU' in os.environ or 'EMAIL_HOST' in os.environ:
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-
 # storage
 if 'ON_HEROKU' in os.environ and os.environ['ON_HEROKU']:
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
@@ -252,7 +247,6 @@ if 'ON_HEROKU' in os.environ and os.environ['ON_HEROKU']:
     COMPRESS_URL = STATIC_URL
 else:
     STATIC_URL = '/static/'
-
 
 # CORS policy
 # CORS_ORIGIN_ALLOW_ALL=True
