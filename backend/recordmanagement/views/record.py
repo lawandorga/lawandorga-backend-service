@@ -210,6 +210,7 @@ class RecordViewSet(APIView):
         client = record.client
 
         try:
+            record.record_token = record_data['token']
             record.note = record_data['note']
             record.contact = record_data['contact']
             record.last_contact_date = parse_date(record_data['last_contact_date'])
@@ -235,7 +236,7 @@ class RecordViewSet(APIView):
             client.birthday = parse_date(client_data['birthday'])
             client.origin_country = models.OriginCountry.objects.get(pk=client_data['origin_country'])
             client.phone_number = client_data['phone_number']
-        except:
+        except Exception as e:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__COULD_NOT_SAVE)
 
         record.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
