@@ -151,7 +151,8 @@ class UserProfileCreatorViewSet(viewsets.ModelViewSet):
 
         user = UserProfile.objects.get(email=request.data['email'].lower())
         user.rlc = rlc
-        if 'birthday' in request.data:
+        user.save()
+        if 'birthday' in request.data and request.data['birthday'] != 'Invalid date':
             user.birthday = request.data['birthday']
         user.is_active = False
         user.save()
