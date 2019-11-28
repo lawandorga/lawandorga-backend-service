@@ -41,9 +41,9 @@ class GetRlcsViewSet(APIView):
 
     def get(self, request):
         if 'ON_HEROKU' in os.environ:
-            rlcs = Rlc.objects.all().exclude(name='Dummy RLC')
+            rlcs = Rlc.objects.all().exclude(name='Dummy RLC').order_by('name')
         else:
-            rlcs = Rlc.objects.all()
+            rlcs = Rlc.objects.all().order_by('name')
         serialized = RlcOnlyNameSerializer(rlcs, many=True).data
         return Response(serialized)
 

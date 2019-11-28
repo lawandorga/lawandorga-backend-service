@@ -36,6 +36,7 @@ from backend.static.frontend_links import FrontendLinks
 from ..models import UserProfile, Permission, Rlc
 from ..serializers import UserProfileSerializer, UserProfileCreatorSerializer, UserProfileNameSerializer, RlcSerializer, \
     UserProfileForeignSerializer
+from backend.static.permissions import PERMISSION_ACCEPT_NEW_USERS_RLC
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
@@ -167,6 +168,7 @@ class UserProfileCreatorViewSet(viewsets.ModelViewSet):
         user_activation_link.save()
 
         EmailSender.send_user_activation_email(user, FrontendLinks.get_user_activation_link(user_activation_link))
+        UserProfile.objects.get_users_with_special_permission(PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=rlc.id)
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

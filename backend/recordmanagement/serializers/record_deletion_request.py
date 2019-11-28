@@ -14,13 +14,15 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from rest_framework import serializers
+from backend.recordmanagement import models
+from backend.api.serializers.user import UserProfileNameSerializer, UserProfileSerializer
 
-from .client import *
-from .origin_country import *
-from .record_tag import *
-from .record import *
-from .record_document_tag import *
-from .record_document import *
-from .record_message import *
-from .record_permission import *
-from .record_deletion_request import *
+
+class RecordDeletionRequestSerializer(serializers.ModelSerializer):
+    request_from = UserProfileNameSerializer(many=False, read_only=True)
+    request_processed = UserProfileNameSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = models.RecordDeletionRequest
+        fields = '__all__'

@@ -15,24 +15,21 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
-
 from backend.api.models import UserProfile
 
 
-class NewUserRequest(models.Model):
-    request_from = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
-    request_processed = models.ForeignKey(UserProfile, related_name="new_user_requests_processed",
+class RecordDeletionRequest(models.Model):
+    record = models.ForeignKey('Record', related_name="deletions_requested", on_delete=models.CASCADE, null=False)
+    request_from = models.OneToOneField(UserProfile, on_delete=models.SET_NULL, null=True)
+    request_processed = models.ForeignKey(UserProfile, related_name="record_deletion_request_processed",
                                           on_delete=models.SET_NULL, null=True)
-
+    explanation = models.CharField(max_length=4096)
     requested = models.DateTimeField(auto_now_add=True)
     processed_on = models.DateTimeField(null=True)
 
-    new_user_request_states_possible = (
+    record_deletion_request_states_possible = (
         ('re', 'requested'),
         ('gr', 'granted'),
         ('de', 'declined')
     )
-    state = models.CharField(max_length=2, choices=new_user_request_states_possible, default='re')
-
-    def __str__(self):
-        return 'new_user_request: ' + str(self.id) + ' ; from user: ' + str(self.request_from.name)
+    state = models.CharField(max_length=2, choices=record_deletion_request_states_possible, default='re')

@@ -276,3 +276,13 @@ ERROR__API__EMAIL__ALREADY_IN_USE = {
     'error_detail': 'email already in use',
     'error_code': 'api.email.already_in_use'
 }
+
+ERROR__RECORD__RECORD_DELETION__ALREADY_REQUESTED = {
+    'error_detail': 'deletion of record already requested',
+    'error_code': 'record.record_deletion.already_requested'
+}
+
+ERROR__RECORD__RECORD__ID_NOT_PROVIDED = {
+    'error_detail': 'record id not provided',
+    'error_code': 'record.record.id_not_provided'
+}

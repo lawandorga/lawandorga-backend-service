@@ -20,7 +20,7 @@ import pytz
 from django.conf import settings
 
 from backend.api.tests import *
-from backend.recordmanagement.models import RecordTag, Record, OriginCountry, Client, RecordDocumentTag
+from backend.recordmanagement.models import Client, OriginCountry, Record, RecordDocumentTag, RecordTag
 from backend.static.permissions import get_all_permissions
 
 
@@ -140,12 +140,13 @@ class Fixtures:
                 ('illegale Ausreise aus dem Bundesgebiet',), ('Untertauchen',), ('Kinder anerkennen',), ('Ausbildung',),
                 ('Geburt ',), ('Eines Kindes im Asylverfahren',), ('Duldung',), ('Ausbildungsduldung',), ('Visum',),
                 ('Anhörung',), ('Wechsel der Unterkunft',), ('Wohnsitzauflage',), ('Folgeantrag',), ('Zweitantrag',),
-                ('Unterbringung im Asylverfahren',), ('Widerruf der Asylberechtigung',), ('Rücknahme der Asyberechtigung',),
+                ('Unterbringung im Asylverfahren',), ('Widerruf der Asylberechtigung',),
+                ('Rücknahme der Asyberechtigung',),
                 ('Passbeschaffung',), ('Mitwirkungspflichten',), ('Nichtbetreiben des Verfahrens',),
                 ('Krankheit im Asylverfahren',), ('Familienasyl',), ('UmF',),
                 ('Familienzusammenführung nach Dublin III',), ('Negativbescheid',), ('Relocation',), ('Resettlement',),
                 ('Asylbewerberleistungsgesetz',), ('Kirchenasyl',), ('Asylantrag',), ('Abschiebung',),
-                ('Untätigkeitsklage',), ('Studium',), ('Strafverfolgung',), ('Sonstiges', ),]
+                ('Untätigkeitsklage',), ('Studium',), ('Strafverfolgung',), ('Sonstiges',), ]
         for tag in tags:
             AddMethods.add_record_tag(tag)
 
@@ -158,7 +159,10 @@ class Fixtures:
                 ('Widerspruch',), ('Antwortschreiben',), ('Erwiderung',), ('Sachstandsanfrage',), ('Klageschrift',),
                 ('Akteneinsicht',), ('Anfrage',), ('Terminvereinbarung',), ('Attest',), ('Verschwiegenheitserklärung',),
                 ('Datenschutzerklärung',), ('Erklärung',), ('Vertrag',), ('Antrag',), ('Zeugnis',),
-                ('Zertifikat',), ('Vollmacht',), ('Anhörungsvorbereitung',), ('Sonstiges', ),]
+                ('Zertifikat',), ('Vollmacht',), ('Anhörungsvorbereitung',), ('Haftbeschluss',), ('Anzeige',),
+                ('Strafanzeige',), ('Medizinischer Befund',), ('Haftantrag',), ('Haftaufhebung',), ('Haftbeschwerde',),
+                ('Antwort an',), ('Amtsgericht',), ('Anwältin/Anwalt',), ('Beratungsstelle',), ('Korrespondenz',),
+                ('Supervisor*in',), ('Dolmetscher*in',), ('Sonstiges',), ('Antwort von',),]
         for tag in tags:
             AddMethods.add_record_document_tag(tag)
 

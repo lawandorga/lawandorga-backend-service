@@ -40,5 +40,6 @@ urlpatterns = [
     url(r'documents/(?P<id>.+)/$', RecordDocumentTagByDocumentViewSet.as_view()),
     url(r'record_permission_requests', RecordPermissionAdmitViewSet.as_view()),
     url(r'documents_download/(?P<id>.+)/$', RecordDocumentDownloadAllViewSet.as_view()),
+    url(r'record_deletion_requests', RecordDeletionRequestViewSet.as_view()),
 
 ]

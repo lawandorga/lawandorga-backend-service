@@ -14,13 +14,17 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from backend.api.errors import CustomError
+from backend.static import error_codes
+from backend.static import permissions
+from backend.recordmanagement.models import Record
 
-from .client import *
-from .origin_country import *
-from .record_tag import *
-from .record import *
-from .record_document_tag import *
-from .record_document import *
-from .record_message import *
-from .record_permission import *
-from .record_deletion_request import *
+
+def get_record(user, record_id):
+    if not user.has_permission(permissions.PERMISSION_VIEW_RECORDS_RLC, for_rlc=user.rlc):
+        raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+    try:
+        record = Record.objects.get(pk=record_id)
+    except Exception as e:
+        raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
+    return record
