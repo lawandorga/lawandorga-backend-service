@@ -18,6 +18,7 @@
 from datetime import datetime
 
 import pytz
+from django.conf import settings
 from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -26,8 +27,7 @@ from rest_framework.views import APIView
 from backend.api.errors import CustomError
 from backend.api.models import UserProfile
 from backend.recordmanagement import models, serializers
-from backend.static import error_codes
-from backend.static import permissions
+from backend.static import error_codes, permissions
 from backend.static.date_utils import parse_date
 from backend.static.emails import EmailSender
 from backend.static.frontend_links import FrontendLinks
@@ -101,11 +101,11 @@ class RecordsListViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         # TODO: deprecated?
         try:
-            record = models.Record.objects.get(pk=pk)  # changed
+            record = models.Record.objects.get(pk=pk)
         except Exception as e:
             raise CustomError(error_codes.ERROR__RECORD__DOCUMENT__NOT_FOUND)
 
-        if request.user.rlc != record.from_rlc:
+        if request.user.rlc != record.from_rlc and not request.user.is_superuser:
             raise CustomError(error_codes.ERROR__RECORD__RETRIEVE_RECORD__WRONG_RLC)
         if record.user_has_permission(request.user):
             serializer = serializers.RecordFullDetailSerializer(record)
@@ -150,12 +150,13 @@ class RecordViewSet(APIView):
             record.working_on_record.add(UserProfile.objects.get(pk=user_id))
         record.save()
 
-        for user_id in data['consultants']:
-            actual_consultant = UserProfile.objects.get(pk=user_id)
-            url = FrontendLinks.get_record_link(record)
-            EmailSender.send_email_notification([actual_consultant.email], "New Record",
-                                                "RLC Intranet Notification - Your were assigned as a consultant for a new record. Look here:" +
-                                                url)
+        if not settings.DEBUG:
+            for user_id in data['consultants']:
+                actual_consultant = UserProfile.objects.get(pk=user_id)
+                url = FrontendLinks.get_record_link(record)
+                EmailSender.send_email_notification([actual_consultant.email], "New Record",
+                                                    "RLC Intranet Notification - Your were assigned as a consultant for a new record. Look here:" +
+                                                    url)
 
         return Response(serializers.RecordFullDetailSerializer(record).data)
 
@@ -258,5 +259,15 @@ class RecordViewSet(APIView):
         )
 
     def delete(self, request, id):
+        try:
+            record = models.Record.objects.get(pk=id)
+        except:
+            raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
+        user = request.user
+        if user.rlc != record.from_rlc and not user.is_superuser:
+            raise CustomError(error_codes.ERROR__RECORD__RETRIEVE_RECORD__WRONG_RLC)
 
-        pass
+        if user.has_permission(permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
+                               for_rlc=user.rlc) or user.is_superuser:
+            record.delete()
+        return Response()

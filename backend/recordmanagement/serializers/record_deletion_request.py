@@ -17,11 +17,13 @@
 from rest_framework import serializers
 from backend.recordmanagement import models
 from backend.api.serializers.user import UserProfileNameSerializer, UserProfileSerializer
+from backend.recordmanagement.serializers import RecordNoDetailSerializer
 
 
 class RecordDeletionRequestSerializer(serializers.ModelSerializer):
     request_from = UserProfileNameSerializer(many=False, read_only=True)
     request_processed = UserProfileNameSerializer(many=False, read_only=True)
+    record = RecordNoDetailSerializer(many=False, read_only=True, allow_null=True)
 
     class Meta:
         model = models.RecordDeletionRequest

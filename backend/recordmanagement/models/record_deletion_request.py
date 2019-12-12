@@ -19,8 +19,8 @@ from backend.api.models import UserProfile
 
 
 class RecordDeletionRequest(models.Model):
-    record = models.ForeignKey('Record', related_name="deletions_requested", on_delete=models.CASCADE, null=False)
-    request_from = models.OneToOneField(UserProfile, on_delete=models.SET_NULL, null=True)
+    record = models.ForeignKey('Record', related_name="deletions_requested", on_delete=models.SET_NULL, null=True)
+    request_from = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
     request_processed = models.ForeignKey(UserProfile, related_name="record_deletion_request_processed",
                                           on_delete=models.SET_NULL, null=True)
     explanation = models.CharField(max_length=4096)

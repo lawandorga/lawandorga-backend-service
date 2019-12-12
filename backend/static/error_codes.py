@@ -286,3 +286,13 @@ ERROR__RECORD__RECORD__ID_NOT_PROVIDED = {
     'error_detail': 'record id not provided',
     'error_code': 'record.record.id_not_provided'
 }
+
+ERROR__API__ID_NOT_PROVIDED = {
+    'error_detail': 'id not provided',
+    'error_code': 'api.id_not_provided'
+}
+
+ERROR__RECORD__DELETION_REQUEST__NOT_EXISTING = {
+    'error_detail': 'record deletion request with given id does not exist',
+    'error_code': 'record.deletion_request.not_existing'
+}

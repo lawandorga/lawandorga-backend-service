@@ -27,6 +27,8 @@ router.register('clients', ClientsViewSet)
 router.register('record_documents', RecordDocumentViewSet)
 router.register('record_document_tags', RecordDocumentTagViewSet)
 router.register('record_permissions', RecordPermissionViewSet)
+router.register('record_deletion_requests', RecordDeletionRequestViewSet)
+
 
 urlpatterns = [
     url(r'', include(router.urls)),
@@ -40,6 +42,5 @@ urlpatterns = [
     url(r'documents/(?P<id>.+)/$', RecordDocumentTagByDocumentViewSet.as_view()),
     url(r'record_permission_requests', RecordPermissionAdmitViewSet.as_view()),
     url(r'documents_download/(?P<id>.+)/$', RecordDocumentDownloadAllViewSet.as_view()),
-    url(r'record_deletion_requests', RecordDeletionRequestViewSet.as_view()),
-
+    url(r'process_record_deletion_request', RecordDeletionProcessViewSet.as_view()),
 ]

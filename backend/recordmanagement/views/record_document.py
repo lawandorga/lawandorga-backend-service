@@ -14,15 +14,10 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import os
-import zipfile
-from io import StringIO, BytesIO
-import base64
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from datetime import datetime
-from django.core.files import File
 
 from backend.recordmanagement import models, serializers
 from backend.shared import storage_generator
