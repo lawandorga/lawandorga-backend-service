@@ -49,3 +49,7 @@ Thumbs.db
 /staticfiles
 .vscode/
 .pytest_cache
+
+# test files
+backend/static/tests/test_files/
+backend/static/tests/test_file.png

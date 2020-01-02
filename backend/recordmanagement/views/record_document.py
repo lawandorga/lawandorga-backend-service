@@ -59,11 +59,11 @@ class RecordDocumentUploadEncryptViewSet(APIView):
             file.write(file_obj.read())
             file.close()
         iv = os.urandom(16)
-        self.encrypt_after_upload(file_path, 'asdasd', iv)
+        self.encrypt_and_send_to_s3(file_path, 'asdasd', iv)
         return Response(status=204)
 
     @start_new_thread
-    def encrypt_after_upload(self, filename, key, iv):
+    def encrypt_and_send_to_s3(self, filename, key, iv):
         AESEncryption.encrypt_file(filename, key, iv)
 
 
