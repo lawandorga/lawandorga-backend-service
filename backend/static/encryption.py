@@ -18,6 +18,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, padding, serialization
 from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from background_task import background
 from enum import Enum
 
 
@@ -74,6 +75,17 @@ class AESEncryption:
         if output_type == OutputType.STRING:
             return get_string_from_bytes_or_return_string(unpadded_bytes)
         return unpadded_bytes
+
+    # @staticmethod
+    # @background(schedule=5)
+    # def encrypt_file(file, key, iv):
+    #     print('i encrypt something')
+
+    @staticmethod
+    def encrypt_file(file, key, iv):
+        # TODO: check size, chunk-wise
+
+        print('i encrypt something 2')
 
 
 class RSAEncryption:

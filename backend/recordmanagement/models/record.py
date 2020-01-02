@@ -117,4 +117,3 @@ class Record(models.Model):
         for permission_request in list(RecordPermission.objects.filter(record=self, state='gr')):
             emails.append(permission_request.request_from.email)
         return emails
-

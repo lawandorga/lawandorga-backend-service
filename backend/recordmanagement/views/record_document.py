@@ -14,15 +14,27 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+import os
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.parsers import FileUploadParser
 from datetime import datetime
+from threading import Thread
 
 from backend.recordmanagement import models, serializers
 from backend.shared import storage_generator
 from backend.static import error_codes, storage_folders
 from backend.api.errors import CustomError
+from backend.static.encryption import AESEncryption
+
+
+def start_new_thread(function):
+    def decorator(*args, **kwargs):
+        t = Thread(target=function, args=args, kwargs=kwargs)
+        t.daemon = True
+        t.start()
+    return decorator
 
 
 class RecordDocumentViewSet(viewsets.ModelViewSet):
@@ -31,6 +43,28 @@ class RecordDocumentViewSet(viewsets.ModelViewSet):
 
     def post(self, request):
         pass
+
+
+class RecordDocumentUploadEncryptViewSet(APIView):
+    parser_classes = [FileUploadParser]
+
+    def put(self, request, filename, format=None):
+        file_obj = request.data['file']
+        file_path = os.path.join('temp', filename)
+        file = open(file_path, 'wb')
+        if file_obj.multiple_chunks():
+            for chunk in file_obj.chunks():
+                file.write(chunk)
+        else:
+            file.write(file_obj.read())
+            file.close()
+        iv = os.urandom(16)
+        self.encrypt_after_upload(file_path, 'asdasd', iv)
+        return Response(status=204)
+
+    @start_new_thread
+    def encrypt_after_upload(self, filename, key, iv):
+        AESEncryption.encrypt_file(filename, key, iv)
 
 
 class RecordDocumentUploadViewSet(APIView):

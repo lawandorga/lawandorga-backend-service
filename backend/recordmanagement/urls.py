@@ -43,4 +43,5 @@ urlpatterns = [
     url(r'record_permission_requests', RecordPermissionAdmitViewSet.as_view()),
     url(r'documents_download/(?P<id>.+)/$', RecordDocumentDownloadAllViewSet.as_view()),
     url(r'process_record_deletion_request', RecordDeletionProcessViewSet.as_view()),
+    url(r'^upload/(?P<filename>[^/]+)$', RecordDocumentUploadEncryptViewSet.as_view())
 ]
