@@ -27,6 +27,7 @@ from backend.shared import storage_generator
 from backend.static import error_codes, storage_folders
 from backend.api.errors import CustomError
 from backend.static.encryption import AESEncryption
+from backend.static.encrypted_storage import EncryptedStorage
 
 
 def start_new_thread(function):
@@ -59,12 +60,12 @@ class RecordDocumentUploadEncryptViewSet(APIView):
             file.write(file_obj.read())
             file.close()
         iv = os.urandom(16)
-        self.encrypt_and_send_to_s3(file_path, 'asdasd', iv)
+        self.encrypt_and_send_to_s3(file_path, 'asdasd', iv, 'tests')
         return Response(status=204)
 
     @start_new_thread
-    def encrypt_and_send_to_s3(self, filename, key, iv):
-        AESEncryption.encrypt_file(filename, key, iv)
+    def encrypt_and_send_to_s3(self, filename, key, iv, s3_folder):
+        EncryptedStorage.encrypt_file_and_upload_to_s3(filename, key, iv, s3_folder)
 
 
 class RecordDocumentUploadViewSet(APIView):
