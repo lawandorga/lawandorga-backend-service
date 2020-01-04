@@ -14,8 +14,9 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import os
 import filecmp
+import os
+
 from django.test import SimpleTestCase
 
 from backend.static.encryption import AESEncryption, OutputType, RSAEncryption
@@ -96,7 +97,7 @@ class EncryptionTests(SimpleTestCase):
         self.assertEqual(decrypted, msg)
 
     def test_rsa_en_decrypt_cryptodome(self):
-        msg = 'really secret message'
+        msg = 'kjsenf29349nfkse1-2{ad2k'
         private_key, public_key = RSAEncryption.generate_keys_cryptodome()
         encrypted = RSAEncryption.encrypt_cryptodome(msg, public_key)
         decrypted = RSAEncryption.decrypt_cryptodome(encrypted, private_key)
@@ -161,4 +162,25 @@ class EncryptionTests(SimpleTestCase):
         AESEncryption.encrypt_file('test_files/big_video.mp4', key, iv)
         AESEncryption.decrypt_file('test_files/big_video.mp4.enc', key, iv,
                                    'test_files/big_video_decrypted.mp4')
+        self.assertTrue(filecmp.cmp('test_files/big_video.mp4', 'test_files/big_video_decrypted.mp4'))
+
+    def test_aes_wo_iv_en_decrypt(self):
+        msg = 'secret message. encrypt and decrypt it!'
+        key = 'shhh! its a secret!asd'
+
+        encrypted = AESEncryption.encrypt_wo_iv(msg, key)
+        decrypted = AESEncryption.decrypt_wo_iv(encrypted, key)
+
+        self.assertEqual(decrypted, msg)
+
+    def test_aes__wo_iv_en_decrypt_file(self):
+        key = 'secret password'
+        AESEncryption.encrypt_file_wo_iv('test_files/test_file.png', key)
+        AESEncryption.decrypt_file_wo_iv('test_files/test_file.png.enc', key, 'test_files/test_file_decrypted.png')
+        self.assertTrue(filecmp.cmp('test_files/test_file.png', 'test_files/test_file_decrypted.png'))
+
+    def test_aes_wo_iv_en_decrypt_big_video(self):
+        key = 'secret password!sdifu923'
+        AESEncryption.encrypt_file_wo_iv('test_files/big_video.mp4', key)
+        AESEncryption.decrypt_file_wo_iv('test_files/big_video.mp4.enc', key, 'test_files/big_video_decrypted.mp4')
         self.assertTrue(filecmp.cmp('test_files/big_video.mp4', 'test_files/big_video_decrypted.mp4'))

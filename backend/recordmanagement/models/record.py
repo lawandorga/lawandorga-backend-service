@@ -31,9 +31,6 @@ class RecordQuerySet(models.QuerySet):
             id__in=permissions.values_list('record_id', flat=True)))
 
     def get_no_access_records(self, user):
-        # permissions = RecordPermission.objects.filter(request_from=user, state='gr')
-        # return self.exclude(Q(id__in=user.working_on_record.values_list('id', flat=True)) | Q(
-        #     id__in=permissions.values_list('record_id', flat=True)))
         has_perm = self.get_full_access_records(user)
         return self.exclude(id__in=has_perm.values_list('id', flat=True))
 

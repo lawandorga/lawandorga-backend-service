@@ -14,17 +14,17 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+import os
+import struct
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, padding, serialization
 from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from background_task import background
 from enum import Enum
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Util.Padding import pad, unpad
 from Crypto.PublicKey import RSA
 from hashlib import sha3_256
-import os, struct
 
 
 class OutputType(Enum):
@@ -95,7 +95,6 @@ class AESEncryption:
 
     @staticmethod
     def decrypt(encrypted, key, iv, output_type=OutputType.STRING):
-
         key = get_bytes_from_string_or_return_bytes(key)
         hashed_key_bytes = sha3_256(key).digest()
         cipher = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
@@ -104,10 +103,24 @@ class AESEncryption:
             return get_string_from_bytes_or_return_string(plaintext_bytes)
         return plaintext_bytes
 
-    # @staticmethod
-    # @background(schedule=5)
-    # def encrypt_file(file, key, iv):
-    #     print('i encrypt something')
+    @staticmethod
+    def encrypt_wo_iv(msg, key):
+        """
+        :param msg: bytes/string, message which shall be encrypted
+        :param key: bytes/string, key with which to encrypt
+        :return: bytes, encrypted message (with iv at the beginning
+        """
+        iv = AESEncryption.generate_iv()
+        cipher_bytes = AESEncryption.encrypt(msg, key, iv)
+        cipher_bytes = iv + cipher_bytes
+        return cipher_bytes
+
+    @staticmethod
+    def decrypt_wo_iv(encrypted, key, output_type=OutputType.STRING):
+        iv = encrypted[:16]
+        real_encrypted = encrypted[16:]
+        plain = AESEncryption.decrypt(real_encrypted, key, iv, output_type)
+        return plain
 
     @staticmethod
     def encrypt_file(file, key, iv):
@@ -143,6 +156,54 @@ class AESEncryption:
 
         with open(file, 'rb') as infile:
             org_size = struct.unpack('<Q', infile.read(struct.calcsize('Q')))[0]
+            decryptor = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
+
+            with open(output_file_name, 'wb') as outfile:
+                while True:
+                    chunk = infile.read(chunk_size)
+                    if len(chunk) == 0:
+                        break
+                    outfile.write(decryptor.decrypt(chunk))
+
+                outfile.truncate(org_size)
+
+    @staticmethod
+    def encrypt_file_wo_iv(file, key):
+        chunk_size = 64*1024
+        key = get_bytes_from_string_or_return_bytes(key)
+        hashed_key_bytes = sha3_256(key).digest()
+        file_index = file.rindex('/')
+        file_path = file[:file_index]
+        file_to_write = file[file_index + 1:] + '.enc'
+        file_size = os.path.getsize(file)
+        iv = AESEncryption.generate_iv()
+        encryptor = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
+
+        with open(file, 'rb') as infile:
+            with open(os.path.join(file_path, file_to_write), 'wb') as outfile:
+                outfile.write(struct.pack('<Q', file_size))
+                outfile.write(iv)
+
+                while True:
+                    chunk = infile.read(chunk_size)
+                    if len(chunk) == 0:
+                        break
+                    elif len(chunk) % 16 != 0:
+                        chunk += b' ' * (16 - len(chunk) % 16)
+                    outfile.write(encryptor.encrypt(chunk))
+
+    @staticmethod
+    def decrypt_file_wo_iv(file, key, output_file_name=None):
+        chunk_size = 64*1024
+        key = get_bytes_from_string_or_return_bytes(key)
+        hashed_key_bytes = sha3_256(key).digest()
+
+        if not output_file_name:
+            output_file_name = os.path.splitext(file)[0]
+
+        with open(file, 'rb') as infile:
+            org_size = struct.unpack('<Q', infile.read(struct.calcsize('Q')))[0]
+            iv = infile.read(16)
             decryptor = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
 
             with open(output_file_name, 'wb') as outfile:

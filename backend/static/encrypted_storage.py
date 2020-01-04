@@ -42,8 +42,8 @@ class EncryptedStorage:
         s3.upload_file(filename, s3_bucket, key)
 
     @staticmethod
-    def encrypt_file_and_upload_to_s3(file, key, iv, s3_folder):
-        AESEncryption.encrypt_file(file, key, iv)
+    def encrypt_file_and_upload_to_s3(file, key, s3_folder):
+        AESEncryption.encrypt_file_wo_iv(file, key)
         file = file + '.enc'  # encryption appends '.enc'
         s3_filename = s3_folder + file[file.rindex('/'):]
         EncryptedStorage.upload_file_to_s3(file, s3_filename)
@@ -58,9 +58,9 @@ class EncryptedStorage:
         s3.download_file(s3_bucket, s3_key, filename)
 
     @staticmethod
-    def download_from_s3_and_decrypt_file(s3_key, key, iv, local_folder, downloaded_file_name=None):
+    def download_from_s3_and_decrypt_file(s3_key, key, local_folder, downloaded_file_name=None):
         if not downloaded_file_name:
             filename = s3_key[s3_key.rindex('/') + 1:]
             downloaded_file_name = os.path.join(local_folder, filename)
         EncryptedStorage.download_file_from_s3(s3_key, downloaded_file_name)
-        AESEncryption.decrypt_file(downloaded_file_name, key, iv)
+        AESEncryption.decrypt_file_wo_iv(downloaded_file_name, key)

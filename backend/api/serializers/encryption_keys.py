@@ -1,13 +1,5 @@
-""" Definition of ModelViewSet
-class ModelViewSet(mixins.CreateModelMixin,
-                   mixins.RetrieveModelMixin,
-                   mixins.UpdateModelMixin,
-                   mixins.DestroyModelMixin,
-                   mixins.ListModelMixin,
-                   GenericViewSet)
-"""
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -22,16 +14,12 @@ class ModelViewSet(mixins.CreateModelMixin,
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from rest_framework import serializers
 
-from .user import *
-from .group import *
-from .permission import *
-from .has_permission import *
-from .rlc import *
-from .other import *
-from .storage import *
-from .forgot_password import *
-from .new_user_request import *
-from .user_activation_link import *
-from .language import *
-from .encryption_keys import *
+from backend.api.models import EncryptionKeys
+
+
+class EncryptionKeysSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EncryptionKeys
+        fields = '__all__'
