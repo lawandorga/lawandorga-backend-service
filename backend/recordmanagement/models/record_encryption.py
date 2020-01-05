@@ -1,5 +1,5 @@
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -14,15 +14,16 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from django.db import models
+from backend.api.models import UserProfile
+from backend.recordmanagement.models import Record
+from backend.static.encryption import RSAEncryption
 
-from .client import *
-from .origin_country import *
-from .record import *
-from .record_tag import *
-from .statics import *
-from .record_document import *
-from .record_document_tag import *
-from .record_message import *
-from .record_permission import *
-from .record_deletion_request import *
-from .record_encryption import *
+
+class RecordEncryption(models.Model):
+    user = models.ForeignKey(UserProfile, related_name="record_encryptions", on_delete=models.CASCADE, null=False)
+    record = models.ForeignKey(Record, related_name="encryptions", on_delete=models.CASCADE, null=False)
+    encrypted_key = models.BinaryField()
+
+    def decrypt(self, pem_private_key_of_user):
+        return RSAEncryption.decrypt(self.encrypted_key, pem_private_key_of_user)

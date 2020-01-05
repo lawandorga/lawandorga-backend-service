@@ -28,6 +28,7 @@ router.register('record_documents', RecordDocumentViewSet)
 router.register('record_document_tags', RecordDocumentTagViewSet)
 router.register('record_permissions', RecordPermissionViewSet)
 router.register('record_deletion_requests', RecordDeletionRequestViewSet)
+router.register('record_encryptions', RecordEncryptionViewSet)
 
 
 urlpatterns = [

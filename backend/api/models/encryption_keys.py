@@ -20,7 +20,7 @@ from backend.static.encryption import AESEncryption
 
 
 class EncryptionKeys(models.Model):
-    user = models.ForeignKey(UserProfile, related_name="encryption_keys", on_delete=models.CASCADE, null=False)
+    user = models.OneToOneField(UserProfile, related_name="encryption_keys", on_delete=models.CASCADE, null=False)
     private_key = models.BinaryField()
     private_key_encrypted = models.BooleanField(default=False)
     public_key = models.BinaryField()
@@ -33,5 +33,7 @@ class EncryptionKeys(models.Model):
             self.private_key = AESEncryption.encrypt_wo_iv(self.private_key, key_to_encrypt)
             self.private_key_encrypted = True
             self.save()
+            return priv_key
 
-
+    def __str__(self):
+        return 'EncryptionKeys: ' + self.user.id

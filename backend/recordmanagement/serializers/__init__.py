@@ -24,3 +24,4 @@ from .record_document import *
 from .record_message import *
 from .record_permission import *
 from .record_deletion_request import *
+from .record_encryption import *
