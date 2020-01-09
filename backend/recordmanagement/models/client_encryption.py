@@ -14,19 +14,21 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from .origin_country import *
-from .client import *
-from .record_tag import *
-from .record import *
-from .record_document import *
-from .record_document_tag import *
-from .record_message import *
-from .record_permission import *
-from .record_deletion_request import *
-from .encrypted_record import *
-from .record_encryption import *
-from .encrypted_client import *
-from .encrypted_record_document import *
-from .encrypted_record_message import *
-from .client_encryption import *
-from .encrypted_record_permission import *
+from django.db import models
+
+from backend.api.models import UserProfile
+from backend.recordmanagement.models import EncryptedClient
+from backend.static.encryption import RSAEncryption
+
+
+class ClientEncryption(models.Model):
+    user = models.ForeignKey(UserProfile, related_name="client_encryptions", on_delete=models.CASCADE, null=False)
+    client = models.ForeignKey(EncryptedClient, related_name="encryptions", on_delete=models.CASCADE, null=False)
+    encrypted_key = models.BinaryField()
+
+    def __str__(self):
+        return 'client_encryption: ' + str(self.id) + '; user: ' + str(self.user.id) + '; client: ' + str(
+            self.client.id)
+
+    def decrypt(self, pem_private_key_of_user):
+        return RSAEncryption.decrypt(self.encrypted_key, pem_private_key_of_user)

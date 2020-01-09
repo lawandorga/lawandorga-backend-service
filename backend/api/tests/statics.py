@@ -42,3 +42,17 @@ class StaticTestMethods:
         user = UserProfile.objects.get(email=user)
         client.force_authenticate(user=user)
         return client
+
+    @staticmethod
+    def generate_users(number_of_users, rlc):
+        base_name = 'test_user'
+        users = []
+        for i in range(number_of_users):
+            name = base_name + str(i)
+            email = name + '@web.de'
+            user = UserProfile(email=email, name=name)
+            if rlc:
+                user.rlc = rlc
+            user.save()
+            users.append(user)
+        return users

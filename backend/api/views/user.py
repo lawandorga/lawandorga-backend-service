@@ -27,13 +27,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
-from backend.static.error_codes import ERROR__API__USER__NOT_FOUND
 from backend.static import permissions
 from backend.static.date_utils import parse_date
-from backend.static.emails import EmailSender
+from backend.static.emails import EmailSender, FrontendLinks
+from backend.static.encryption import RSAEncryption
 from backend.static.error_codes import *
-from backend.static.frontend_links import FrontendLinks
-from ..models import UserProfile, Permission, Rlc
+from ..models import UserProfile, Permission, Rlc, UserEncryptionKeys
 from ..serializers import UserProfileSerializer, UserProfileCreatorSerializer, UserProfileNameSerializer, RlcSerializer, \
     UserProfileForeignSerializer
 from backend.static.permissions import PERMISSION_ACCEPT_NEW_USERS_RLC
@@ -190,22 +189,32 @@ class LoginViewSet(viewsets.ViewSet):
 
         Returns:
         token, information and permissions of user
+        private_key of user
         all possible permissions, country states, countries, clients, record states, consultants
         """
+        user_password = request.data['password']
         data = {
-            'password': request.data['password'],
+            'password': user_password,
             'username': request.data['username'].lower()
         }
         serializer = self.serializer_class(data=data)
         LoginViewSet.check_if_user_active(data['username'])
         if serializer.is_valid():
             token, created = Token.objects.get_or_create(user=serializer.validated_data['user'])
-            Token.objects.filter(user=token.user).exclude(key=token.key).delete()
+            Token.objects.filter(user=token.user).exclude(key=token.key).delete()  # delete old tokens, keep new
             if not created:
                 # update the created time of the token to keep it valid
                 token.created = datetime.utcnow().replace(tzinfo=pytz.utc)
                 token.save()
-            return Response(LoginViewSet.get_login_data(token.key))
+            # get encryption keys
+            encryption_keys = UserEncryptionKeys.objects.get(user=token.user)
+            if not encryption_keys:
+                private, public = RSAEncryption.generate_keys()
+                encryption_keys = UserEncryptionKeys(user=token.user, private_key=private, public_key=public)
+                encryption_keys.save()
+            # decrypt keys with users password (or: if not encrypted atm, encrypt them with users password)
+            private_key = encryption_keys.decrypt_private_key(user_password)
+            return Response(LoginViewSet.get_login_data(token.key, private_key))
         raise CustomError(ERROR__API__LOGIN__INVALID_CREDENTIALS)
 
     def get(self, request):
@@ -213,7 +222,7 @@ class LoginViewSet(viewsets.ViewSet):
         return Response(LoginViewSet.get_login_data(token))
 
     @staticmethod
-    def get_login_data(token):
+    def get_login_data(token, private_key=None):
         user = Token.objects.get(key=token).user
         serialized_user = UserProfileSerializer(user).data
         serialized_rlc = RlcSerializer(user.rlc).data
@@ -225,6 +234,9 @@ class LoginViewSet(viewsets.ViewSet):
             'rlc': serialized_rlc
         }
         return_object.update(statics)
+        if private_key:
+            return_object.update({'private_key': private_key})
+
         return return_object
 
     @staticmethod

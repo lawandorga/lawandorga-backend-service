@@ -296,3 +296,28 @@ ERROR__RECORD__DELETION_REQUEST__NOT_EXISTING = {
     'error_detail': 'record deletion request with given id does not exist',
     'error_code': 'record.deletion_request.not_existing'
 }
+
+ERROR__RECORD__CONSULTANT__NOT_EXISTING = {
+    'error_detail': 'record couldn\'t be created, consultant with id not existing',
+    'error_code': 'record.consultant.not_existing'
+}
+
+ERROR__API__USER__NO_PUBLIC_KEY_FOUND = {
+    'error_detail': 'no public key for user found',
+    'error_code': 'api.user.no_public_key_found'
+}
+
+ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED = {
+    'error_detail': 'no private key provided',
+    'error_code': 'api.user.no_private_key_provided'
+}
+
+ERROR__API__RLC__NO_PUBLIC_KEY_FOUND = {
+    'error_detail': 'no public key found',
+    'error_code': 'api.rlc.no_public_key_found'
+}
+
+ERROR__API__RLC__USERS_RLC_KEYS_NOT_FOUND = {
+    'error_detail': 'users rlc keys found',
+    'error_code': 'api.rlc.users_rlc_keys_not_found'
+}

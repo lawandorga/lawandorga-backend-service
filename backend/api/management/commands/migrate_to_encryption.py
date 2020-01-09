@@ -16,7 +16,9 @@
 
 from django.core.management.base import BaseCommand
 
-from backend.api.management.commands._generators import OneTimeGenerators
+from backend.api.management.commands._migrators import OneTimeGenerators, Migrators
+from backend.api.models import RlcEncryptionKeys
+from backend.recordmanagement.models import EncryptedClient, EncryptedRecord
 
 
 class Command(BaseCommand):
@@ -24,7 +26,13 @@ class Command(BaseCommand):
            'encrypts records with corresponding files'
 
     def handle(self, *args, **options):
+        EncryptedClient.objects.all().delete()
+        EncryptedRecord.objects.all().delete()
+        RlcEncryptionKeys.objects.all().delete()
         # self.stdout.write("test", ending='')
         # self.stdout.write(options['admin_password'], ending='')
         # self.stdout.write(options['rlc_name'], ending='')
+
         OneTimeGenerators.generate_encryption_keys_for_all_users()
+        OneTimeGenerators.generate_encryption_keys_for_rlc()
+        Migrators.encrypt_records()

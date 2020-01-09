@@ -14,9 +14,20 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+import string
+import secrets
 from django.utils.crypto import get_random_string
 
 
 def generate_random_string(length=32):
     unique_id = get_random_string(length)
     return unique_id
+
+
+def generate_secure_random_string(length=64):
+    """
+    Generate a secure random string of letters, digits and special characters
+    :param length: length of random string, 64 rsa encrypted results still in 256 bytes
+    """
+    password_characters = string.ascii_letters + string.digits + string.punctuation
+    return ''.join(secrets.choice(password_characters) for i in range(length))

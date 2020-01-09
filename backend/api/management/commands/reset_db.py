@@ -45,3 +45,4 @@ class Command(BaseCommand):
         Language.objects.all().delete()
         NewUserRequest.objects.all().delete()
         UserActivationLink.objects.all().delete()
+        # TODO: add all models here

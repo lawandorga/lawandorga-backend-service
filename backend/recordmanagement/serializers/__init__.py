@@ -25,3 +25,9 @@ from .record_message import *
 from .record_permission import *
 from .record_deletion_request import *
 from .record_encryption import *
+from .encrypted_record import *
+from .encrypted_client import *
+from .encrypted_record_message import *
+from .encrypted_record_document import *
+from .client_encryption import *
+from .encrypted_record_permission import *

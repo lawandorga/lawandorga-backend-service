@@ -26,6 +26,8 @@ from Crypto.Util.Padding import pad, unpad
 from Crypto.PublicKey import RSA
 from hashlib import sha3_256
 
+from backend.static.string_generator import generate_secure_random_string
+
 
 class OutputType(Enum):
     STRING = 1
@@ -48,6 +50,10 @@ class AESEncryption:
     @staticmethod
     def generate_iv():
         return os.urandom(16)
+
+    @staticmethod
+    def generate_secure_key():
+        return generate_secure_random_string(64)
 
     @staticmethod
     def encrypt_hazmat(msg, key, iv):
@@ -85,7 +91,7 @@ class AESEncryption:
         return unpadded_bytes
 
     @staticmethod
-    def encrypt(msg, key, iv):
+    def encrypt_with_iv(msg, key, iv):
         msg = get_bytes_from_string_or_return_bytes(msg)
         key = get_bytes_from_string_or_return_bytes(key)
         hashed_key_bytes = sha3_256(key).digest()
@@ -94,7 +100,11 @@ class AESEncryption:
         return cipher_bytes
 
     @staticmethod
-    def decrypt(encrypted, key, iv, output_type=OutputType.STRING):
+    def decrypt_with_iv(encrypted, key, iv, output_type=OutputType.STRING):
+        if encrypted.__len__() == 0:
+            if output_type == OutputType.STRING:
+                return ''
+            return encrypted
         key = get_bytes_from_string_or_return_bytes(key)
         hashed_key_bytes = sha3_256(key).digest()
         cipher = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
@@ -104,22 +114,22 @@ class AESEncryption:
         return plaintext_bytes
 
     @staticmethod
-    def encrypt_wo_iv(msg, key):
+    def encrypt(msg, key):
         """
         :param msg: bytes/string, message which shall be encrypted
         :param key: bytes/string, key with which to encrypt
         :return: bytes, encrypted message (with iv at the beginning
         """
         iv = AESEncryption.generate_iv()
-        cipher_bytes = AESEncryption.encrypt(msg, key, iv)
+        cipher_bytes = AESEncryption.encrypt_with_iv(msg, key, iv)
         cipher_bytes = iv + cipher_bytes
         return cipher_bytes
 
     @staticmethod
-    def decrypt_wo_iv(encrypted, key, output_type=OutputType.STRING):
+    def decrypt(encrypted, key, output_type=OutputType.STRING):
         iv = encrypted[:16]
         real_encrypted = encrypted[16:]
-        plain = AESEncryption.decrypt(real_encrypted, key, iv, output_type)
+        plain = AESEncryption.decrypt_with_iv(real_encrypted, key, iv, output_type)
         return plain
 
     @staticmethod

@@ -15,20 +15,26 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
-
-from backend.api.models import UserProfile
-from backend.recordmanagement.models import EncryptedRecord
+from backend.api.models import Rlc
 from backend.static.encryption import RSAEncryption
 
 
-class RecordEncryption(models.Model):
-    user = models.ForeignKey(UserProfile, related_name="record_encryptions", on_delete=models.CASCADE, null=False)
-    record = models.ForeignKey(EncryptedRecord, related_name="encryptions", on_delete=models.CASCADE, null=False)
-    encrypted_key = models.BinaryField()
+class EncryptedClient(models.Model):
+    from_rlc = models.ForeignKey(Rlc, related_name='e_client_from_rlc', on_delete=models.SET_NULL, null=True)
+    created_on = models.DateField(auto_now_add=True)
+    last_edited = models.DateTimeField(auto_now_add=True)
+
+    birthday = models.DateField(null=True, blank=True)
+    origin_country = models.ForeignKey('OriginCountry', related_name='e_clients', on_delete=models.SET_NULL, null=True)
+
+    # encrypted
+    name = models.BinaryField(null=True)
+    note = models.BinaryField(null=True)
+    phone_number = models.BinaryField(null=True)
+    encrypted_client_key = models.BinaryField(null=True)
 
     def __str__(self):
-        return 'record_encryption: ' + str(self.id) + '; user: ' + str(self.user.id) + '; e_record: ' + str(
-            self.record.id)
+        return 'e_client: ' + str(self.id)
 
-    def decrypt(self, pem_private_key_of_user):
-        return RSAEncryption.decrypt(self.encrypted_key, pem_private_key_of_user)
+    def get_password(self, rlcs_private_key):
+        return RSAEncryption.decrypt(self.encrypted_client_key, rlcs_private_key)

@@ -15,25 +15,28 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
-from backend.api.models import UserProfile
+
+from backend.api.models import Rlc
+from backend.static.error_codes import ERROR__API__RLC__NO_PUBLIC_KEY_FOUND
+from backend.api.errors import CustomError
 from backend.static.encryption import AESEncryption
 
 
-class EncryptionKeys(models.Model):
-    user = models.OneToOneField(UserProfile, related_name="encryption_keys", on_delete=models.CASCADE, null=False)
-    private_key = models.BinaryField()
-    private_key_encrypted = models.BooleanField(default=False)
+class RlcEncryptionKeysQuerySet(models.QuerySet):
+    def get_rlcs_public_key(self, rlc):
+        try:
+            keys = self.get(rlc=rlc)
+        except Exception:
+            raise CustomError(ERROR__API__RLC__NO_PUBLIC_KEY_FOUND)
+        return keys.public_key
+
+
+class RlcEncryptionKeys(models.Model):
+    rlc = models.OneToOneField(Rlc, related_name='encryption_keys', on_delete=models.CASCADE)
     public_key = models.BinaryField()
+    encrypted_private_key = models.BinaryField()
+
+    objects = RlcEncryptionKeysQuerySet.as_manager()
 
     def decrypt_private_key(self, key_to_encrypt):
-        if self.private_key_encrypted:
-            return AESEncryption.decrypt_wo_iv(self.private_key, key_to_encrypt)
-        else:
-            priv_key = self.private_key
-            self.private_key = AESEncryption.encrypt_wo_iv(self.private_key, key_to_encrypt)
-            self.private_key_encrypted = True
-            self.save()
-            return priv_key
-
-    def __str__(self):
-        return 'EncryptionKeys: ' + self.user.id
+        return AESEncryption.decrypt(self.encrypted_private_key, key_to_encrypt)

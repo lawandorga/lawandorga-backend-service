@@ -24,6 +24,10 @@ def get_storage_folder_record_document(rlc_id, record_id):
     return 'rlcs/' + str(rlc_id) + '/records/' + str(record_id) + '/'
 
 
+def get_storage_folder_encrypted_record_document(rlc_id, record_id):
+    return 'rlcs/' + str(rlc_id) + '/encrypted_records/' + str(record_id) + '/'
+
+
 def user_has_permission(file_dir, user):
     """
     checks if the user has permission for the given file_dir

@@ -1,5 +1,5 @@
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -14,14 +14,12 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-# from backend.static.date_utils import *
-# from backend.static.emails import *
-# from backend.static.encrypted_storage import *
-# from backend.static.encryption import *
-# from backend.static.env_getter import *
-# from backend.static.error_codes import *
-# from backend.static.frontend_links import *
-# from backend.static.permissions import *
-# from backend.static.regex_validators import *
-# from backend.static.storage_folders import *
-# from backend.static.string_generator import *
+from rest_framework.serializers import SerializerMethodField
+
+
+class EncryptedField(SerializerMethodField):
+    def get_attribute(self, instance):
+        return getattr(instance, self.field_name)
+
+    def to_representation(self, value):
+        return value

@@ -14,13 +14,12 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from backend.api.models.encryption_keys import EncryptionKeys
-from backend.api.serializers.encryption_keys import EncryptionKeysSerializer
+from backend.recordmanagement.models import ClientEncryption
+from backend.recordmanagement.serializers import ClientEncryptionSerializer
 
 
-class EncryptionKeysViewSet(ModelViewSet):
-    queryset = EncryptionKeys.objects.all()
-    serializer_class = EncryptionKeysSerializer
+class RecordEncryptionViewSet(ModelViewSet):
+    queryset = ClientEncryption.objects.all()
+    serializer_class = ClientEncryptionSerializer

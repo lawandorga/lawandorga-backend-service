@@ -14,15 +14,13 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from rest_framework.test import APIClient
 from django.test import TransactionTestCase
-from datetime import date, datetime
-
-from backend.api.models import UserProfile, Rlc
-from backend.recordmanagement.models import Record, Client, RecordPermission
+from datetime import date
+from backend.api.models import UserProfile
 from backend.api.tests.fixtures import CreateFixtures
 from backend.api.tests.statics import StaticTestMethods
-from backend.static.permissions import *
+from backend.static.permissions import PERMISSION_VIEW_RECORDS_RLC, PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from backend.recordmanagement.models import Record, RecordPermission
 
 
 class RecordTests(TransactionTestCase):
@@ -156,6 +154,7 @@ class RecordTests(TransactionTestCase):
         self.assertTrue(not record.user_has_permission(user3))
 
     def test_user_has_permission_record_permissions(self):
+        users = list(UserProfile.objects.all())
         user1 = UserProfile(email='abc1@web.de', name="abc1")
         user1.save()
         user2 = UserProfile(email='abc2@web.de', name="abc2")
@@ -171,6 +170,4 @@ class RecordTests(TransactionTestCase):
 
         self.assertTrue(record.user_has_permission(user1))
         self.assertTrue(record.user_has_permission(user2))
-
-
 

@@ -15,11 +15,16 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
+from backend.recordmanagement.models import EncryptedRecordPermission
+from backend.api.serializers.user import UserProfileNameSerializer, UserProfileSerializer
+from backend.recordmanagement.serializers import EncryptedRecordTokenSerializer
 
-from backend.api.models import EncryptionKeys
 
+class EncryptedRecordPermissionSerializer(serializers.ModelSerializer):
+    request_from = UserProfileNameSerializer(many=False, read_only=True)
+    request_processed = UserProfileNameSerializer(many=False, read_only=True)
+    record = EncryptedRecordTokenSerializer(many=False, read_only=True)
 
-class EncryptionKeysSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EncryptionKeys
+        model = EncryptedRecordPermission
         fields = '__all__'

@@ -1,5 +1,5 @@
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -14,14 +14,20 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-# from backend.static.date_utils import *
-# from backend.static.emails import *
-# from backend.static.encrypted_storage import *
-# from backend.static.encryption import *
-# from backend.static.env_getter import *
-# from backend.static.error_codes import *
-# from backend.static.frontend_links import *
-# from backend.static.permissions import *
-# from backend.static.regex_validators import *
-# from backend.static.storage_folders import *
-# from backend.static.string_generator import *
+from django.db import models
+
+from backend.api.models import UserProfile
+
+
+class EncryptedRecordMessage(models.Model):
+    sender = models.ForeignKey(UserProfile, related_name="e_record_messages_sent", on_delete=models.SET_NULL,
+                               null=True)
+    record = models.ForeignKey('EncryptedRecord', related_name="e_record_messages", on_delete=models.CASCADE,
+                               null=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    # encrypted
+    message = models.BinaryField(null=False)
+
+    def __str__(self):
+        return 'e_record_message: ' + str(self.id) + '; e_record: ' + str(self.record) + '; sender: ' + str(self.sender.id)

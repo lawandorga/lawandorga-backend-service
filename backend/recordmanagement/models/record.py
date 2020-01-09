@@ -17,7 +17,7 @@
 from django.db import models
 from django.db.models import Q
 
-from backend.api.models import UserProfile, Rlc
+from backend.api.models import Rlc, UserProfile
 from backend.recordmanagement.models import RecordTag
 from backend.static import permissions
 
@@ -105,6 +105,16 @@ class Record(models.Model):
         return self.working_on_record.filter(id=user.id).count() == 1 or \
                RecordPermission.objects.filter(record=self, request_from=user, state='gr') or \
                user.has_permission(permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc)
+
+    def get_users_with_permission(self):
+        from backend.api.models import UserProfile, Permission
+        working_on_users = self.working_on_record.all()
+        users_with_record_permission = UserProfile.objects.filter(record_permissions_requested__record=self,
+                                                                  record_permissions_requested__state='gr')
+        users_with_overall_permission = Permission.objects.get(
+            name=permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC).get_real_users_with_permission_for_rlc(
+            self.from_rlc)
+        return working_on_users.union(users_with_record_permission).union(users_with_overall_permission).distinct()
 
     def get_notification_emails(self):
         from backend.recordmanagement.models import RecordPermission

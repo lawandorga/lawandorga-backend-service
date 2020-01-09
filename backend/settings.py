@@ -62,8 +62,7 @@ INSTALLED_APPS = [
     'backend.recordmanagement',
     'rest_framework.authtoken',
     'storages',
-    'corsheaders',
-    'background_task'
+    'corsheaders'
 ]
 
 MIDDLEWARE = [

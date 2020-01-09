@@ -14,19 +14,14 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from backend.api.models import UserProfile, EncryptionKeys
-from backend.static.encryption import RSAEncryption
+from django.db import models
+from backend.api.models import UserProfile, Rlc
 
 
-class OneTimeGenerators:
-    @staticmethod
-    def generate_encryption_keys_for_all_users():
-        users = UserProfile.objects.all()
-        for user in users:
-            if EncryptionKeys.objects.filter(user=user):
-                continue
-            private, public = RSAEncryption.generate_keys()
-            user_keys = EncryptionKeys(user=user, private_key=private, public_key=public)
-            user_keys.save()
-        keys = EncryptionKeys.objects.all()
-        a = 10
+class UsersRlcKeys(models.Model):
+    user = models.ForeignKey(UserProfile, related_name='users_rlc_keys', on_delete=models.CASCADE, null=False)
+    rlc = models.ForeignKey(Rlc, related_name='encrypted_users_rlc_keys', on_delete=models.CASCADE, null=False)
+    encrypted_key = models.BinaryField()
+
+    def __str__(self):
+        return 'users_lrc_keys: ' + str(self.id) + '; user: ' + str(self.user.id) + '; rlc: ' + str(self.rlc.id)

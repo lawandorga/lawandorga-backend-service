@@ -20,6 +20,7 @@ import os
 from django.test import SimpleTestCase
 
 from backend.static.encryption import AESEncryption, OutputType, RSAEncryption
+from backend.static.string_generator import generate_secure_random_string
 
 
 class EncryptionTests(SimpleTestCase):
@@ -28,8 +29,8 @@ class EncryptionTests(SimpleTestCase):
         key = 'shhh! its a secret!asd'
         iv = AESEncryption.generate_iv()
 
-        encrypted = AESEncryption.encrypt(msg, key, iv)
-        decrypted = AESEncryption.decrypt(encrypted, key, iv)
+        encrypted = AESEncryption.encrypt_with_iv(msg, key, iv)
+        decrypted = AESEncryption.decrypt_with_iv(encrypted, key, iv)
 
         self.assertEqual(decrypted, msg)
 
@@ -40,8 +41,8 @@ class EncryptionTests(SimpleTestCase):
         key = 'shhh! its a secret!'
         iv = AESEncryption.generate_iv()
 
-        encrypted = AESEncryption.encrypt(msg, key, iv)
-        decrypted = AESEncryption.decrypt(encrypted, key, iv)
+        encrypted = AESEncryption.encrypt_with_iv(msg, key, iv)
+        decrypted = AESEncryption.decrypt_with_iv(encrypted, key, iv)
 
         self.assertEqual(decrypted, msg)
 
@@ -50,8 +51,8 @@ class EncryptionTests(SimpleTestCase):
         key = os.urandom(100)
         iv = AESEncryption.generate_iv()
 
-        encrypted = AESEncryption.encrypt(msg, key, iv)
-        decrypted = AESEncryption.decrypt(encrypted, key, iv, OutputType.BYTES)
+        encrypted = AESEncryption.encrypt_with_iv(msg, key, iv)
+        decrypted = AESEncryption.decrypt_with_iv(encrypted, key, iv, OutputType.BYTES)
 
         self.assertEqual(decrypted, msg)
 
@@ -61,8 +62,8 @@ class EncryptionTests(SimpleTestCase):
             key = os.urandom(100)
             iv = AESEncryption.generate_iv()
 
-            encrypted = AESEncryption.encrypt(msg, key, iv)
-            decrypted = AESEncryption.decrypt(encrypted, key, iv, OutputType.BYTES)
+            encrypted = AESEncryption.encrypt_with_iv(msg, key, iv)
+            decrypted = AESEncryption.decrypt_with_iv(encrypted, key, iv, OutputType.BYTES)
 
             self.assertEqual(decrypted, msg)
 
@@ -72,8 +73,8 @@ class EncryptionTests(SimpleTestCase):
             key = os.urandom(256)
             iv = AESEncryption.generate_iv()
 
-            encrypted = AESEncryption.encrypt(msg, key, iv)
-            decrypted = AESEncryption.decrypt(encrypted, key, iv, OutputType.BYTES)
+            encrypted = AESEncryption.encrypt_with_iv(msg, key, iv)
+            decrypted = AESEncryption.decrypt_with_iv(encrypted, key, iv, OutputType.BYTES)
 
             self.assertEqual(decrypted, msg)
 
@@ -90,6 +91,14 @@ class EncryptionTests(SimpleTestCase):
 
     def test_rsa_en_decrypt(self):
         msg = 'really secret message'
+        private_key, public_key = RSAEncryption.generate_keys()
+        encrypted = RSAEncryption.encrypt(msg, public_key)
+        decrypted = RSAEncryption.decrypt(encrypted, private_key)
+
+        self.assertEqual(decrypted, msg)
+
+    def test_rsa_en_decrypt_real_world(self):
+        msg = generate_secure_random_string(64)
         private_key, public_key = RSAEncryption.generate_keys()
         encrypted = RSAEncryption.encrypt(msg, public_key)
         decrypted = RSAEncryption.decrypt(encrypted, private_key)
@@ -168,8 +177,8 @@ class EncryptionTests(SimpleTestCase):
         msg = 'secret message. encrypt and decrypt it!'
         key = 'shhh! its a secret!asd'
 
-        encrypted = AESEncryption.encrypt_wo_iv(msg, key)
-        decrypted = AESEncryption.decrypt_wo_iv(encrypted, key)
+        encrypted = AESEncryption.encrypt(msg, key)
+        decrypted = AESEncryption.decrypt(encrypted, key)
 
         self.assertEqual(decrypted, msg)
 
