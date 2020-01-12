@@ -22,6 +22,18 @@ from backend.static.encryption import AESEncryption
 from backend.static.serializer_fields import EncryptedField
 
 
+class EncryptedRecordFullDetailListSerializer(serializers.ListSerializer):
+    def get_decrypted_data(self, user, users_private_key):
+        a = 10
+        data = []
+        for record in self.instance.all():
+            record_key = record.get_decryption_key(user, users_private_key)
+            data.append(EncryptedRecordFullDetailSerializer(record).get_decrypted_data(record_key))
+            c = 11
+        b = 11
+        return data
+
+
 class EncryptedRecordFullDetailSerializer(serializers.ModelSerializer):
     tagged = RecordTagNameSerializer(many=True, read_only=True)
     working_on_record = UserProfileNameSerializer(many=True, read_only=True)
@@ -40,6 +52,7 @@ class EncryptedRecordFullDetailSerializer(serializers.ModelSerializer):
     additional_facts = EncryptedField()
 
     class Meta:
+        list_serializer_class = EncryptedRecordFullDetailListSerializer
         model = EncryptedRecord
         fields = '__all__'
         extra_kwargs = {
@@ -48,20 +61,20 @@ class EncryptedRecordFullDetailSerializer(serializers.ModelSerializer):
             }
         }
 
-    def get_decrypted_data(self, key):
+    def get_decrypted_data(self, records_aes_key):
         data = self.data
-        data['note'] = AESEncryption.decrypt(data['note'], key)
-        data['consultant_team'] = AESEncryption.decrypt(data['consultant_team'], key)
-        data['lawyer'] = AESEncryption.decrypt(data['lawyer'], key)
-        data['related_persons'] = AESEncryption.decrypt(data['related_persons'], key)
-        data['contact'] = AESEncryption.decrypt(data['contact'], key)
-        data['bamf_token'] = AESEncryption.decrypt(data['bamf_token'], key)
-        data['foreign_token'] = AESEncryption.decrypt(data['foreign_token'], key)
-        data['first_correspondence'] = AESEncryption.decrypt(data['first_correspondence'], key)
-        data['circumstances'] = AESEncryption.decrypt(data['circumstances'], key)
-        data['next_steps'] = AESEncryption.decrypt(data['next_steps'], key)
-        data['status_described'] = AESEncryption.decrypt(data['status_described'], key)
-        data['additional_facts'] = AESEncryption.decrypt(data['additional_facts'], key)
+        AESEncryption.decrypt_field(data, data, 'note', records_aes_key)
+        AESEncryption.decrypt_field(data, data, 'consultant_team', records_aes_key)
+        AESEncryption.decrypt_field(data, data, 'lawyer', records_aes_key)
+        AESEncryption.decrypt_field(data, data, 'related_persons', records_aes_key)
+        AESEncryption.decrypt_field(data, data, 'contact', records_aes_key)
+        AESEncryption.decrypt_field(data, data, 'bamf_token', records_aes_key)
+        AESEncryption.decrypt_field(data, data, 'foreign_token', records_aes_key)
+        AESEncryption.decrypt_field(data, data, 'first_correspondence', records_aes_key)
+        AESEncryption.decrypt_field(data, data, 'circumstances', records_aes_key)
+        AESEncryption.decrypt_field(data, data, 'next_steps', records_aes_key)
+        AESEncryption.decrypt_field(data, data, 'status_described', records_aes_key)
+        AESEncryption.decrypt_field(data, data, 'additional_facts', records_aes_key)
         return data
 
 

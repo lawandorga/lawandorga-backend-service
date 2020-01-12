@@ -25,7 +25,7 @@ from backend.api.tests.statics import StaticTestMethods
 
 class OriginCountriesTests(TransactionTestCase):
     def setUp(self):
-        self.client = StaticTestMethods.force_authentication()
+        self.client = StaticTestMethods.force_authentication_superuser()
         self.base_url = '/api/records/origin_countries/'
 
     def test_create_originCountry_success(self):

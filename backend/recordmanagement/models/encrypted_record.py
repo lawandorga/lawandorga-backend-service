@@ -21,6 +21,8 @@ from backend.api.models import Rlc, UserProfile
 from backend.recordmanagement.models import RecordTag
 from backend.static.permissions import PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC, \
     PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from backend.api.errors import CustomError
+from backend.static.error_codes import ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND
 
 
 class EncryptedRecordQuerySet(models.QuerySet):
@@ -142,3 +144,11 @@ class EncryptedRecord(models.Model):
             self.from_rlc)
         return working_on_users.union(users_with_record_permission).union(users_with_overall_permission).union(
             users_with_granting_permission).distinct()
+
+    def get_decryption_key(self, user, users_private_key):
+        from backend.recordmanagement.models import RecordEncryption
+        try:
+            record_encryption = RecordEncryption.objects.get(user=user, record=self)
+        except:
+            raise CustomError(ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND)
+        return record_encryption.decrypt(users_private_key)

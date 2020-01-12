@@ -321,3 +321,8 @@ ERROR__API__RLC__USERS_RLC_KEYS_NOT_FOUND = {
     'error_detail': 'users rlc keys found',
     'error_code': 'api.rlc.users_rlc_keys_not_found'
 }
+
+ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND = {
+    'error_detail': 'record encryption keys for user not found',
+    'error_code': 'record.key.record_encryption_not_found'
+}

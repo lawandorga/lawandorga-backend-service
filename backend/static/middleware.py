@@ -14,6 +14,13 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from backend.static.encryption import get_bytes_from_string_or_return_bytes
+
 
 def get_private_key_from_request(request):
-    return request.META.get('HTTP_PRIVATEKEY')
+    # TODO: ! encryption: raise error if no private key? only call when really needed
+    private_key = request.META.get('HTTP_PRIVATEKEY')
+    private_key = private_key.replace('\\n', '\n')
+    if isinstance(private_key, str):
+        private_key = get_bytes_from_string_or_return_bytes(private_key)
+    return private_key

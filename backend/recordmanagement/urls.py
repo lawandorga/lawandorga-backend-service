@@ -28,13 +28,18 @@ router.register('record_documents', RecordDocumentViewSet)
 router.register('record_document_tags', RecordDocumentTagViewSet)
 router.register('record_permissions', RecordPermissionViewSet)
 router.register('record_deletion_requests', RecordDeletionRequestViewSet)
+# encryption
 router.register('record_encryptions', RecordEncryptionViewSet)
+router.register('e_records', EncryptedRecordsListViewSet, base_name='e_records')
 
 
 urlpatterns = [
     url(r'', include(router.urls)),
     url(r'statics', StaticViewSet.as_view()),
     url(r'clients_by_birthday', GetClientsFromBirthday.as_view()),
+    # encrypted
+    url(r'e_record/(?P<id>.+)/$', EncryptedRecordViewSet.as_view()),
+    url(r'e_record/$', EncryptedRecordViewSet.as_view()),
     url(r'record/(?P<id>.+)/$', RecordViewSet.as_view()),
     url(r'record/$', RecordViewSet.as_view()),
     url(r'record/(?P<id>.+)/documents$', RecordDocumentByRecordViewSet.as_view()),
@@ -44,5 +49,6 @@ urlpatterns = [
     url(r'record_permission_requests', RecordPermissionAdmitViewSet.as_view()),
     url(r'documents_download/(?P<id>.+)/$', RecordDocumentDownloadAllViewSet.as_view()),
     url(r'process_record_deletion_request', RecordDeletionProcessViewSet.as_view()),
-    url(r'^upload/(?P<filename>[^/]+)$', RecordDocumentUploadEncryptViewSet.as_view())
+    url(r'^upload/(?P<filename>[^/]+)$', RecordDocumentUploadEncryptViewSet.as_view()),
+
 ]

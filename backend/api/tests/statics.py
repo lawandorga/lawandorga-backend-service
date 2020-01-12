@@ -14,13 +14,14 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from ..models import UserProfile
 from rest_framework.test import APIClient
+from backend.api.models import UserProfile, UserEncryptionKeys
+from backend.static.encryption import RSAEncryption
 
 
 class StaticTestMethods:
     @staticmethod
-    def force_authentication():
+    def force_authentication_superuser():
         """
         creates a superuser with a static email and returns the forced authenticated apiClient
         :return: the forced APIClient
@@ -32,7 +33,7 @@ class StaticTestMethods:
         return client
 
     @staticmethod
-    def force_authentication_with_user(user):
+    def force_authentication_with_user_email(user):
         """
         authenticates a given user and returns the corresponding APIClient
         :param user: string, email address of the user which should be authenticated
@@ -40,6 +41,17 @@ class StaticTestMethods:
         """
         client = APIClient()
         user = UserProfile.objects.get(email=user)
+        client.force_authenticate(user=user)
+        return client
+
+    @staticmethod
+    def force_authentication_with_user(user):
+        """
+        authenticates a given user and returns the corresponding APIClient
+        :param user: string, email address of the user which should be authenticated
+        :return: corresponding apiClient
+        """
+        client = APIClient()
         client.force_authenticate(user=user)
         return client
 
@@ -56,3 +68,18 @@ class StaticTestMethods:
             user.save()
             users.append(user)
         return users
+
+    @staticmethod
+    def generate_test_user(rlc=None):
+        user = UserProfile(name='test_user_1', email='test_user@web.de')
+        if rlc:
+            user.rlc = rlc
+        user.save()
+        return user
+
+    @staticmethod
+    def generate_user_encryption_keys(user):
+        private, public = RSAEncryption.generate_keys()
+        keys = UserEncryptionKeys(user=user, private_key=private, public_key=public)
+        keys.save()
+        return keys

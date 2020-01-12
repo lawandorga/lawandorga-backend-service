@@ -24,7 +24,7 @@ from rest_framework.authtoken.models import Token
 
 class UsersTests(TransactionTestCase):
     def setUp(self):
-        self.client = StaticTestMethods.force_authentication()
+        self.client = StaticTestMethods.force_authentication_superuser()
         self.user = UserProfile.objects.get(email='test123@test.com')
         self.base_url_create = '/api/create_profile/'
         self.base_url_profile = '/api/profiles/'

@@ -31,6 +31,7 @@ from backend.static import error_codes, permissions
 from backend.static.date_utils import parse_date
 from backend.static.emails import EmailSender
 from backend.static.frontend_links import FrontendLinks
+from backend.static.middleware import get_private_key_from_request
 
 
 class RecordsListViewSet(viewsets.ViewSet):
@@ -170,6 +171,8 @@ class RecordViewSet(APIView):
             raise CustomError(error_codes.ERROR__RECORD__RETRIEVE_RECORD__WRONG_RLC)
 
         if record.user_has_permission(user):
+            users_private_key = get_private_key_from_request(request)
+
             record_serializer = serializers.RecordFullDetailSerializer(record)
             client_serializer = serializers.ClientSerializer(record.client)
             origin_country = serializers.OriginCountrySerializer(record.client.origin_country)

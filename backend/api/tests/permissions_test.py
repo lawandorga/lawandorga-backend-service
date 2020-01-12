@@ -21,7 +21,7 @@ from backend.api.tests.statics import StaticTestMethods
 
 class PermissionTests(TransactionTestCase):
     def setUp(self):
-        self.client = StaticTestMethods.force_authentication()
+        self.client = StaticTestMethods.force_authentication_superuser()
         self.user = UserProfile.objects.get(email='test123@test.com')
         self.base_url = '/api/permissions/'
 

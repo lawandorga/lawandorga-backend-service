@@ -108,7 +108,7 @@ class EncryptedRecordDocumentDownloadAllViewSet(APIView):
         docs = list(models.RecordDocument.objects.filter(record=record))
         filenames = []
         for doc in docs:
-            storage_generator.download_file(doc.get_filekey(), doc.name)
+            storage_generator.download_file(doc.get_file_key(), doc.name)
             filenames.append(doc.name)
 
         return storage_generator.zip_files_and_create_response(filenames, 'record.zip')

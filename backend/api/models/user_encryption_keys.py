@@ -16,7 +16,7 @@
 
 from django.db import models
 from backend.api.models import UserProfile
-from backend.static.encryption import AESEncryption
+from backend.static.encryption import AESEncryption, OutputType
 from backend.static.error_codes import ERROR__API__USER__NO_PUBLIC_KEY_FOUND
 from backend.api.errors import CustomError
 

@@ -133,7 +133,45 @@ class AESEncryption:
         return plain
 
     @staticmethod
-    def encrypt_file(file, key, iv):
+    def encrypt_field(source, destination, field_name, key):
+        """
+        reads field field_name from source, AES encrypts it with key and saves it with the same name to destination
+        does nothing if field_name in source is none
+        :param source:
+        :param destination:
+        :param field_name:
+        :param key:
+        :return:
+        """
+        if isinstance(source, dict):
+            pass
+        attr = getattr(source, field_name, None)
+        if attr:
+            setattr(destination, field_name, AESEncryption.encrypt(attr, key))
+
+    @staticmethod
+    def decrypt_field(source, destination, field_name, key):
+        """
+        reads field field_name from source, AES decrypts it with key and saves it with the same name to destination
+        does nothing if field_name not in source
+        :param source:
+        :param destination:
+        :param field_name:
+        :param key:
+        :return:
+        """
+        if isinstance(source ,dict):
+            if field_name in source:
+                destination[field_name] = AESEncryption.decrypt(source[field_name], key)
+        else:
+            attr = getattr(source, field_name, None)
+            if attr:
+                # destination[field_name] = AESEncryption.decrypt(source[field_name], key)
+                setattr(destination, field_name, AESEncryption.decrypt(attr, key))
+
+
+    @staticmethod
+    def encrypt_file_with_iv(file, key, iv):
         chunk_size = 64*1024
         key = get_bytes_from_string_or_return_bytes(key)
         hashed_key_bytes = sha3_256(key).digest()
@@ -156,7 +194,7 @@ class AESEncryption:
                     outfile.write(encryptor.encrypt(chunk))
 
     @staticmethod
-    def decrypt_file(file, key, iv, output_file_name=None):
+    def decrypt_file_with_iv(file, key, iv, output_file_name=None):
         chunk_size = 64*1024
         key = get_bytes_from_string_or_return_bytes(key)
         hashed_key_bytes = sha3_256(key).digest()
@@ -178,7 +216,7 @@ class AESEncryption:
                 outfile.truncate(org_size)
 
     @staticmethod
-    def encrypt_file_wo_iv(file, key):
+    def encrypt_file(file, key):
         chunk_size = 64*1024
         key = get_bytes_from_string_or_return_bytes(key)
         hashed_key_bytes = sha3_256(key).digest()
@@ -203,13 +241,13 @@ class AESEncryption:
                     outfile.write(encryptor.encrypt(chunk))
 
     @staticmethod
-    def decrypt_file_wo_iv(file, key, output_file_name=None):
+    def decrypt_file(file, key, output_file_name=None):
         chunk_size = 64*1024
         key = get_bytes_from_string_or_return_bytes(key)
         hashed_key_bytes = sha3_256(key).digest()
 
         if not output_file_name:
-            output_file_name = os.path.splitext(file)[0]
+            output_file_name = os.path.splitext(file)[0]  # removes .enc extension
 
         with open(file, 'rb') as infile:
             org_size = struct.unpack('<Q', infile.read(struct.calcsize('Q')))[0]
@@ -253,6 +291,7 @@ class RSAEncryption:
 
     @staticmethod
     def decrypt(ciphertext, pem_private_key, output_type=OutputType.STRING):
+        pem_private_key = get_bytes_from_string_or_return_bytes(pem_private_key)
         private_key = serialization.load_pem_private_key(pem_private_key, None, backend=default_backend())
         plaintext = private_key.decrypt(ciphertext, asymmetric_padding.OAEP(
                                             mgf=asymmetric_padding.MGF1(algorithm=hashes.SHA256()),

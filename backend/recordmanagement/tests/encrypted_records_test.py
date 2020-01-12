@@ -24,7 +24,7 @@ from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 
 class EncryptedRecordTests(TransactionTestCase):
     def setUp(self):
-        self.client = StaticTestMethods.force_authentication()
+        self.client = StaticTestMethods.force_authentication_superuser()
         self.base_list_url = '/api/records/records/'
         self.base_detail_url = '/api/records/record/'
         self.base_create_record_url = '/api/records/create_record/'

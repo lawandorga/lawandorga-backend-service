@@ -39,5 +39,10 @@ class EncryptedRecordDocument(models.Model):
         return 'e_record_document: ' + str(self.id) + ':' + self.name + '; creator: ' + str(
             self.creator.id) + '; record: ' + str(self.record.id)
 
-    def get_filekey(self):
-        return get_storage_folder_encrypted_record_document(self.record.from_rlc_id, self.record.id) + self.name
+    def get_file_key(self):
+        return get_storage_folder_encrypted_record_document(self.record.from_rlc_id,
+                                                            self.record.id) + self.name + '.enc'
+
+    def get_folder(self):
+        return get_storage_folder_encrypted_record_document(self.record.from_rlc_id,
+                                                            self.record.id)

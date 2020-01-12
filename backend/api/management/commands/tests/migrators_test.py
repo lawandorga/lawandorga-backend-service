@@ -14,21 +14,10 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.db import models
+from django.test import SimpleTestCase
+from backend.api.management.commands._migrators import Migrators
 
-from backend.api.models import UserProfile
 
-
-class EncryptedRecordMessage(models.Model):
-    sender = models.ForeignKey(UserProfile, related_name="e_record_messages_sent", on_delete=models.SET_NULL,
-                               null=True)
-    record = models.ForeignKey('EncryptedRecord', related_name="e_record_messages", on_delete=models.CASCADE,
-                               null=True)
-    created_on = models.DateTimeField(auto_now_add=True)
-
-    # encrypted
-    message = models.BinaryField(null=False)
-
-    def __str__(self):
-        return 'e_record_message: ' + str(self.id) + '; e_record: ' + str(self.record) + '; sender: ' + str(self.sender.id)
-
+class MigratorsTest(SimpleTestCase):
+    def test_test(self):
+        pass

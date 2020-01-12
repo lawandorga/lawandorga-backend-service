@@ -31,7 +31,7 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        rlc = apimodels.Rlc(name='Dummy RLC', note='this is a dummy rlc, just for showing how the system works')
+        rlc = apimodels.Rlc(name='Dummy RLC', note='this is a dummy rlc, just for showing how the system works', id=3033)
         rlc.save()
         users = self.get_and_create_users(rlc)
         main_user = self.get_and_create_dummy_user(rlc)
@@ -479,7 +479,7 @@ class Command(BaseCommand):
     def create_the_best_record_ever(self, main_user, clients, consultants, rlc):
         tags = list(models.RecordTag.objects.all())
         record = models.Record(from_rlc=rlc, creator=main_user, client=clients[0], record_token='AZ-001/18',
-                               official_note='best record ever', state='op')
+                               official_note='best record ever', state='op', id=7181)
 
         record.created_on = AddMethods.generate_date((2018, 1, 3))
         record.first_contact_date = AddMethods.generate_date((2018, 1, 3))
@@ -505,7 +505,7 @@ class Command(BaseCommand):
         record.tagged.add(tags[0], tags[1])
         record.save()
 
-        document1 = models.RecordDocument(name="7_1_19__pass.jpg", creator=main_user, record=record, file_size=123123)
+        document1 = models.RecordDocument(name="7_1_19__pass.jpg", creator=main_user, record=record, file_size=18839)
         document1.created_on = AddMethods.generate_date((2019, 1, 7))
         document1.save()
         document1.tagged.add(models.RecordDocumentTag.objects.get(name='Pass'))

@@ -25,7 +25,7 @@ from backend.recordmanagement.models import Record, RecordPermission
 
 class RecordTests(TransactionTestCase):
     def setUp(self):
-        self.client = StaticTestMethods.force_authentication()
+        self.client = StaticTestMethods.force_authentication_superuser()
         self.base_list_url = '/api/records/records/'
         self.base_detail_url = '/api/records/record/'
         self.base_create_record_url = '/api/records/create_record/'
@@ -53,7 +53,7 @@ class RecordTests(TransactionTestCase):
 
     def create_first_record(self):
         users, rlcs, client, tags = RecordTests.create_samples()
-        client = StaticTestMethods.force_authentication_with_user(users[0].email)
+        client = StaticTestMethods.force_authentication_with_user_email(users[0].email)
 
         to_post = {
             "client_birthday": date(2000, 3, 21),
@@ -75,7 +75,7 @@ class RecordTests(TransactionTestCase):
         :return:
         """
         users, rlcs, client, tags = RecordTests.create_samples()
-        client = StaticTestMethods.force_authentication_with_user(users[0].email)
+        client = StaticTestMethods.force_authentication_with_user_email(users[0].email)
 
         all_records_before = Record.objects.count()
         to_post = {
@@ -100,7 +100,7 @@ class RecordTests(TransactionTestCase):
         :return:
         """
         users, rlcs, record = self.create_first_record()
-        client = StaticTestMethods.force_authentication_with_user(users[0].email)
+        client = StaticTestMethods.force_authentication_with_user_email(users[0].email)
         record_from_other_rlc = Record(from_rlc=rlcs[1], record_token='213')
         record_from_other_rlc.save()
 
@@ -112,7 +112,7 @@ class RecordTests(TransactionTestCase):
 
     def test_list_no_record_from_other_rlc(self):
         users, rlcs, record = self.create_first_record()
-        client = StaticTestMethods.force_authentication_with_user(users[2].email)
+        client = StaticTestMethods.force_authentication_with_user_email(users[2].email)
 
         response = client.get(self.base_list_url)
         self.assertTrue(response.status_code == 200)
@@ -120,7 +120,7 @@ class RecordTests(TransactionTestCase):
 
     def test_retrieve_record_success(self):
         users, rlcs, record = self.create_first_record()
-        client = StaticTestMethods.force_authentication_with_user(users[1].email)
+        client = StaticTestMethods.force_authentication_with_user_email(users[1].email)
 
         response = client.get(self.base_detail_url + str(record['id']) + '/')
         self.assertTrue(response.status_code == 200)
@@ -132,7 +132,7 @@ class RecordTests(TransactionTestCase):
 
     def test_retrieve_record_wrong_rlc_error(self):
         users, rlcs, record = self.create_first_record()
-        client = StaticTestMethods.force_authentication_with_user(users[2].email)
+        client = StaticTestMethods.force_authentication_with_user_email(users[2].email)
 
         response = client.get(self.base_detail_url + str(record['id']) + '/')
         self.assertTrue(response.status_code == 400)

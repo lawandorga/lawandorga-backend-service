@@ -21,7 +21,7 @@ from backend.static.encryption import AESEncryption
 
 
 class EncryptedClientSerializer(serializers.ModelSerializer):
-    records = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    e_records = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     name = EncryptedField()
     note = EncryptedField()
     phone_number = EncryptedField()
@@ -32,9 +32,9 @@ class EncryptedClientSerializer(serializers.ModelSerializer):
 
     def get_decrypted_data(self, key):
         data = self.data
-        data['name'] = AESEncryption.decrypt(data['name'], key)
-        data['note'] = AESEncryption.decrypt(data['note'], key)
-        data['phone_number'] = AESEncryption.decrypt(data['phone_number'], key)
+        AESEncryption.decrypt_field(data, data, 'name', key)
+        AESEncryption.decrypt_field(data, data, 'note', key)
+        AESEncryption.decrypt_field(data, data, 'phone_number', key)
         return data
 
 

@@ -260,7 +260,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def get_rlcs_private_key(self, users_private_key):
         from backend.api.models import UsersRlcKeys, RlcEncryptionKeys
-        from backend.static.encryption import RSAEncryption, AESEncryption
+        from backend.static.encryption import RSAEncryption
         try:
             rlc_keys = RlcEncryptionKeys.objects.get(rlc=self.rlc)
         except:

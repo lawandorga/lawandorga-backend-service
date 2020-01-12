@@ -32,7 +32,6 @@ class EncryptedStorage:
         """
 
         :param filename: file which should get uploaded
-        :param bucket: the bucket to upload to
         :param key: the key of the uploaded file
         :return: -
         """
@@ -42,25 +41,29 @@ class EncryptedStorage:
         s3.upload_file(filename, s3_bucket, key)
 
     @staticmethod
-    def encrypt_file_and_upload_to_s3(file, key, s3_folder):
-        AESEncryption.encrypt_file_wo_iv(file, key)
+    def encrypt_file_and_upload_to_s3(file, key, s3_file_key):
+        AESEncryption.encrypt_file(file, key)
         file = file + '.enc'  # encryption appends '.enc'
-        s3_filename = s3_folder + file[file.rindex('/'):]
-        EncryptedStorage.upload_file_to_s3(file, s3_filename)
+        # file_name_index = file.rindex('/')
+        # if file_name_index != -1:
+        #     s3_filename = s3_file_key + file[file_name_index:]
+        # else:
+        #     s3_filename = s3_file_key + file
+        EncryptedStorage.upload_file_to_s3(file, s3_file_key)
 
     @staticmethod
     def download_file_from_s3(s3_key, filename=None):
         if not filename:
-            pass # TODO
+            filename = s3_key[s3_key.rindex('/') + 1:]
         s3_bucket = settings.AWS_S3_BUCKET_NAME
         session = boto3.session.Session(region_name=settings.AWS_S3_REGION_NAME)
         s3 = session.client('s3', config=Config(signature_version='s3v4'))
         s3.download_file(s3_bucket, s3_key, filename)
 
     @staticmethod
-    def download_from_s3_and_decrypt_file(s3_key, key, local_folder, downloaded_file_name=None):
+    def download_from_s3_and_decrypt_file(s3_key, encryption_key, local_folder, downloaded_file_name=None):
         if not downloaded_file_name:
             filename = s3_key[s3_key.rindex('/') + 1:]
             downloaded_file_name = os.path.join(local_folder, filename)
         EncryptedStorage.download_file_from_s3(s3_key, downloaded_file_name)
-        AESEncryption.decrypt_file_wo_iv(downloaded_file_name, key)
+        AESEncryption.decrypt_file(downloaded_file_name, encryption_key)
