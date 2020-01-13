@@ -15,12 +15,20 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from backend.static.encryption import get_bytes_from_string_or_return_bytes
+from backend.api.errors import CustomError
+from backend.static.error_codes import ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED
 
 
 def get_private_key_from_request(request):
     # TODO: ! encryption: raise error if no private key? only call when really needed
-    private_key = request.META.get('HTTP_PRIVATEKEY')
-    private_key = private_key.replace('\\n', '\n')
+    private_key = request.META.get('HTTP_PRIVATE_KEY')
+    if not private_key:
+        raise CustomError(ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED)
+    if '\\n' in private_key:
+        private_key = private_key.replace('\\n', '\n')
+    if '<linebreak>' in private_key:
+        private_key = private_key.replace('<linebreak>', '\n')
+
     if isinstance(private_key, str):
         private_key = get_bytes_from_string_or_return_bytes(private_key)
     return private_key

@@ -41,7 +41,6 @@ class EncryptedRecordsListViewSet(viewsets.ViewSet):
         :param request:
         :return:
         """
-        users_private_key = get_private_key_from_request(request)
         parts = request.query_params.get('search', '').split(' ')
         user = request.user
 
@@ -52,7 +51,7 @@ class EncryptedRecordsListViewSet(viewsets.ViewSet):
                 entries = entries.filter(
                     Q(tagged__name__icontains=part) | Q(note__icontains=part) | Q(
                         working_on_record__in=consultants) | Q(record_token__icontains=part)).distinct()
-            serializer = serializers.EncryptedRecordFullDetailSerializer(entries, many=True)
+            serializer = serializers.EncryptedRecordNoDetailSerializer(entries, many=True)
             return Response(serializer.data)
 
         if not user.has_permission(permissions.PERMISSION_VIEW_RECORDS_RLC,
@@ -66,57 +65,7 @@ class EncryptedRecordsListViewSet(viewsets.ViewSet):
             entries = entries.filter(
                 Q(tagged__name__icontains=part) | Q(note__icontains=part) | Q(
                     working_on_record__in=consultants) | Q(record_token__icontains=part)).distinct()
-
-        records = []
-        if user.has_permission(permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc):
-            queryset = entries
-            a = list(entries)
-            # serializer = serializers.EncryptedRecordFullDetailSerializer(queryset, many=True)
-            # records += serializer.data
-            records += serializers.EncryptedRecordFullDetailSerializer(queryset, many=True).get_decrypted_data(user,
-                                                                                                               users_private_key)
-        else:
-            # TODO: why?? if you click on one, the whole record gets loaded
-            queryset = entries.get_full_access_e_records(user).distinct()
-            # serializer = serializers.EncryptedRecordFullDetailSerializer(queryset, many=True).get_decrypted_data(users_private_key)
-            # records += serializer.data
-            records += serializers.EncryptedRecordFullDetailSerializer(queryset, many=True).get_decrypted_data(user,
-                                                                                                               users_private_key)
-
-            queryset = entries.get_no_access_e_records(user)
-            serializer = serializers.EncryptedRecordNoDetailSerializer(queryset, many=True)
-            records += serializer.data
-        return Response(records)
-
-    def create(self, request):
-        """outdated"""
-        pass
-        rlc = request.user.rlc
-        e_record = models.EncryptedRecord(client_id=request.data['client'],
-                                          first_contact_date=request.data['first_contact_date'],
-                                          last_contact_date=request.data['last_contact_date'],
-                                          record_token=request.data['record_token'],
-                                          creator_id=request.user.id,
-                                          from_rlc_id=rlc.id)
-        # e_record.save()
-        # TODO: remove?
-        record_key = AESEncryption.generate_secure_key()
-        e_record.note = AESEncryption.encrypt(request.data['note'], record_key)
-        e_record.save()
-
-        for tag_id in request.data['tagged']:
-            e_record.tagged.add(models.RecordTag.objects.get(pk=tag_id))
-        for user_id in request.data['working_on_record']:
-            try:
-                user = UserProfile.objects.get(pk=user_id)
-            except Exception:
-                raise CustomError(error_codes.ERROR__RECORD__CONSULTANT__NOT_EXISTING)
-            e_record.working_on_record.add(user)
-
-            encryption_keys = models.RecordEncryption
-        e_record.save()
-
-        return Response(serializers.RecordFullDetailSerializer(e_record).data)
+        return Response(serializers.EncryptedRecordNoDetailSerializer(entries, many=True).data)
 
 
 class EncryptedRecordViewSet(APIView):

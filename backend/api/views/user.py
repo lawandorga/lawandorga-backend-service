@@ -235,7 +235,7 @@ class LoginViewSet(viewsets.ViewSet):
         }
         return_object.update(statics)
         if private_key:
-            return_object.update({'private_key': private_key})
+            return_object.update({'users_private_key': private_key})
 
         return return_object
 
