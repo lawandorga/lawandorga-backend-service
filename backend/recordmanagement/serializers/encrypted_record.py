@@ -23,13 +23,13 @@ from backend.static.serializer_fields import EncryptedField
 
 
 class EncryptedRecordFullDetailListSerializer(serializers.ListSerializer):
-    def get_decrypted_data(self, user, users_private_key):
-        a = 10
+    def add_has_permission(self, user):
         data = []
         for record in self.instance.all():
-            record_key = record.get_decryption_key(user, users_private_key)
-            data.append(EncryptedRecordFullDetailSerializer(record).get_decrypted_data(record_key))
-            c = 11
+            has_permission = record.user_has_permission(user)
+            record_data = EncryptedRecordNoDetailSerializer(record).data
+            record_data.update({'has_permission': has_permission})
+            data.append(record_data)
         b = 11
         return data
 
@@ -78,12 +78,24 @@ class EncryptedRecordFullDetailSerializer(serializers.ModelSerializer):
         return data
 
 
+class EncryptedRecordNoDetailListSerializer(serializers.ListSerializer):
+    def add_has_permission(self, user):
+        data = []
+        for record in self.instance.all():
+            has_permission = record.user_has_permission(user)
+            record_data = EncryptedRecordNoDetailSerializer(record).data
+            record_data.update({'has_permission': has_permission})
+            data.append(record_data)
+        return data
+
+
 class EncryptedRecordNoDetailSerializer(serializers.ModelSerializer):
     tagged = RecordTagNameSerializer(many=True, read_only=True)
     working_on_record = UserProfileNameSerializer(many=True, read_only=True)
     state = serializers.CharField()
 
     class Meta:
+        list_serializer_class = EncryptedRecordNoDetailListSerializer
         model = EncryptedRecord
         fields = ('id', 'last_contact_date', 'state', 'official_note',
                   'record_token', 'working_on_record', 'tagged')

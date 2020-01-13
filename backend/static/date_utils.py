@@ -15,8 +15,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from datetime import datetime
+import pytz
+from django.utils.timezone import make_aware
 
 
 def parse_date(date_str):
     """Parse date from string by DATE_INPUT_FORMATS of current language"""
     return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%fZ").date()
+
+
+def parse_datetime(date_str):
+    return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%fZ").datetime()

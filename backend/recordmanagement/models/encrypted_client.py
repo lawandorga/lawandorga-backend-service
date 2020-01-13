@@ -31,6 +31,7 @@ class EncryptedClient(models.Model):
     name = models.BinaryField(null=True)
     note = models.BinaryField(null=True)
     phone_number = models.BinaryField(null=True)
+
     encrypted_client_key = models.BinaryField(null=True)
 
     def __str__(self):

@@ -36,13 +36,16 @@ router.register('e_records', EncryptedRecordsListViewSet, base_name='e_records')
 urlpatterns = [
     url(r'', include(router.urls)),
     url(r'statics', StaticViewSet.as_view()),
+    url(r'e_clients_by_birthday', GetEncryptedClientsFromBirthday.as_view()),
     url(r'clients_by_birthday', GetClientsFromBirthday.as_view()),
     # encrypted
     url(r'e_record/(?P<id>.+)/$', EncryptedRecordViewSet.as_view()),
     url(r'e_record/$', EncryptedRecordViewSet.as_view()),
     url(r'record/(?P<id>.+)/$', RecordViewSet.as_view()),
     url(r'record/$', RecordViewSet.as_view()),
+    url(r'e_record/(?P<id>.+)/documents$', EncryptedRecordDocumentByRecordViewSet.as_view()),
     url(r'record/(?P<id>.+)/documents$', RecordDocumentByRecordViewSet.as_view()),
+    url(r'e_record/(?P<id>.+)/messages$', EncryptedRecordMessageByRecordViewSet.as_view()),
     url(r'record/(?P<id>.+)/messages$', RecordMessageByRecordViewSet.as_view()),
     url(r'record/(?P<id>.+)/request_permission$', RecordPermissionRequestViewSet.as_view()),
     url(r'documents/(?P<id>.+)/$', RecordDocumentTagByDocumentViewSet.as_view()),

@@ -20,7 +20,6 @@ from backend.static.error_codes import ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED
 
 
 def get_private_key_from_request(request):
-    # TODO: ! encryption: raise error if no private key? only call when really needed
     private_key = request.META.get('HTTP_PRIVATE_KEY')
     if not private_key:
         raise CustomError(ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED)

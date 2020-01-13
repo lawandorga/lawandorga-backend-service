@@ -28,5 +28,4 @@ from .record_encryption import *
 from .encrypted_client import *
 from .encrypted_record_document import *
 from .encrypted_record_message import *
-from .client_encryption import *
 from .encrypted_record_permission import *

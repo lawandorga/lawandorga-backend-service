@@ -22,6 +22,8 @@ from backend.recordmanagement import models, serializers
 from backend.static import error_codes
 from backend.api.errors import CustomError
 from backend.static.emails import EmailSender
+from backend.static.middleware import get_private_key_from_request
+from backend.static.encryption import AESEncryption
 
 
 class EncryptedRecordMessageViewSet(viewsets.ModelViewSet):
@@ -33,20 +35,23 @@ class EncryptedRecordMessageByRecordViewSet(APIView):
     def post(self, request, id):
         if 'message' not in request.data or request.data['message'] == '':
             raise CustomError(error_codes.ERROR__RECORD__MESSAGE__NO_MESSAGE_PROVIDED)
-        message = request.data['message']
+        users_private_key = get_private_key_from_request(request)
 
         try:
-            record = models.EncryptedRecord.objects.get(pk=id)
+            e_record = models.EncryptedRecord.objects.get(pk=id)
         except Exception as e:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
-        if not record.user_has_permission(request.user):
+        if not e_record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
-        record_message = models.EncryptedRecordMessage(sender=request.user, message=message, record=record)
+        record_key = e_record.get_decryption_key(request.user, users_private_key)
+        message = AESEncryption.encrypt(request.data['message'], record_key)
+
+        record_message = models.EncryptedRecordMessage(sender=request.user, message=message, record=e_record)
         record_message.save()
 
-        EmailSender.send_record_new_message_notification_email(record)
-        return Response(serializers.RecordMessageSerializer(record_message).data)
+        EmailSender.send_record_new_message_notification_email(e_record)
+        return Response(serializers.EncryptedRecordMessageSerializer(record_message).get_decrypted_data(record_key))
 
     def get(self, request, id):
         pass
