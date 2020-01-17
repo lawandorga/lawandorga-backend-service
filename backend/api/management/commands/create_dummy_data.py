@@ -31,7 +31,8 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        rlc = apimodels.Rlc(name='Dummy RLC', note='this is a dummy rlc, just for showing how the system works', id=3033)
+        rlc = apimodels.Rlc(name='Dummy RLC', note='this is a dummy rlc, just for showing how the system works',
+                            id=3033)
         rlc.save()
         users = self.get_and_create_users(rlc)
         main_user = self.get_and_create_dummy_user(rlc)
@@ -428,6 +429,18 @@ class Command(BaseCommand):
                 (2018, 10, 2, 16, 3, 0, 0),
                 'AZ-132/18',
                 'Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert',
+                'op',
+                [consultants[5], consultants[4]],
+                [tags[3], tags[4]]
+            ), (
+                random.choice(consultants),
+                (2017, 9, 10),
+                (2018, 10, 2, 16, 3, 0, 0),
+                clients[0],
+                (2017, 9, 10),
+                (2018, 10, 2, 16, 3, 0, 0),
+                'AZ-139/18',
+                'zweite akte von client 0',
                 'op',
                 [consultants[5], consultants[4]],
                 [tags[3], tags[4]]

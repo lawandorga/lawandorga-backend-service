@@ -67,22 +67,27 @@ class Migrators:
         client_key = AESEncryption.generate_secure_key()
         client = record.client
         # TODO: ! encryption, potentially search for client (maybe 2nd record for him)
-        e_client = EncryptedClient(from_rlc=client.from_rlc, created_on=client.created_on,
-                                   last_edited=client.last_edited, birthday=client.birthday,
-                                   origin_country=client.origin_country)
-        e_client.name = AESEncryption.encrypt(client.name, client_key)
-        e_client.note = AESEncryption.encrypt(client.note, client_key)
-        e_client.phone_number = AESEncryption.encrypt(client.phone_number, client_key)
-        e_client.save()
+        all_clients = list(EncryptedClient.objects.all())
+        potential_e_client = EncryptedClient.objects.filter(from_rlc=client.from_rlc, created_on=client.created_on, birthday=client.birthday).first()
+        if not potential_e_client:
+            e_client = EncryptedClient(from_rlc=client.from_rlc, created_on=client.created_on,
+                                       last_edited=client.last_edited, birthday=client.birthday,
+                                       origin_country=client.origin_country)
+            e_client.name = AESEncryption.encrypt(client.name, client_key)
+            e_client.note = AESEncryption.encrypt(client.note, client_key)
+            e_client.phone_number = AESEncryption.encrypt(client.phone_number, client_key)
+            e_client.save()
 
-        # encrypt client_encryption_key with rlc's public key
-        if client.from_rlc:
-            rlc = client.from_rlc
-        elif record.from_rlc:
-            rlc = record.from_rlc
-        rlc_public_key = rlc.get_public_key()
-        e_client.encrypted_client_key = RSAEncryption.encrypt(client_key, rlc_public_key)
-        e_client.save()
+            # encrypt client_encryption_key with rlc's public key
+            if client.from_rlc:
+                rlc = client.from_rlc
+            elif record.from_rlc:
+                rlc = record.from_rlc
+            rlc_public_key = rlc.get_public_key()
+            e_client.encrypted_client_key = RSAEncryption.encrypt(client_key, rlc_public_key)
+            e_client.save()
+        else:
+            e_client = potential_e_client
 
         e_record = EncryptedRecord(creator=record.creator, from_rlc=record.from_rlc, created_on=record.created_on,
                                    last_edited=record.last_edited, client=e_client,
@@ -137,10 +142,6 @@ class Migrators:
                                                      processed_on=permission.processed_on,
                                                      can_edit=permission.can_edit, state=permission.state)
             e_permission.save()
-
-        # test data = EncryptedRecordFullDetailSerializer(e_record).get_decrypted_data(record_key)
-
-        # TODO: add encryption keys for all users
         users_with_permission = e_record.get_users_with_decryption_keys()
         for user in users_with_permission:
             users_public_key = user.get_public_key()
@@ -162,6 +163,7 @@ class Migrators:
         # download file
         local_path_to_file = 'temp/' + record_document.name
         try:
+            print('file to download:', record_document.get_file_key())
             EncryptedStorage.download_file_from_s3(record_document.get_file_key(), local_path_to_file)
         except Exception as e:
             # fakefile in dummy rlc
@@ -171,7 +173,7 @@ class Migrators:
             return
         # encrypt file and upload to s3
         EncryptedStorage.encrypt_file_and_upload_to_s3(local_path_to_file, e_record_key,
-                                                       e_record_document.get_file_key())
+                                                       e_record_document.get_folder())
         # delete old
         delete_file(local_path_to_file)
         delete_file(local_path_to_file + '.enc')

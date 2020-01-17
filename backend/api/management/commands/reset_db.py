@@ -45,4 +45,12 @@ class Command(BaseCommand):
         Language.objects.all().delete()
         NewUserRequest.objects.all().delete()
         UserActivationLink.objects.all().delete()
-        # TODO: add all models here
+        RecordDeletionRequest.objects.all().delete()
+        EncryptedRecord.objects.all().delete()
+        EncryptedRecordDocument.objects.all().delete()
+        EncryptedRecordMessage.objects.all().delete()
+        EncryptedRecordPermission.objects.all().delete()
+        RecordEncryption.objects.all().delete()
+        UserEncryptionKeys.objects.all().delete()
+        RlcEncryptionKeys.objects.all().delete()
+        EncryptedClient.objects.all().delete()
