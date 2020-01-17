@@ -20,6 +20,7 @@ from rest_framework.routers import DefaultRouter
 from .views import *
 
 router = DefaultRouter()
+# recheck all
 router.register('records', RecordsListViewSet, base_name='records')
 router.register('origin_countries', OriginCountriesViewSet)
 router.register('record_tags', RecordTagViewSet)
@@ -35,23 +36,24 @@ router.register('e_records', EncryptedRecordsListViewSet, base_name='e_records')
 
 urlpatterns = [
     url(r'', include(router.urls)),
+    url(r'e_record/(?P<id>.+)/documents/$', EncryptedRecordDocumentByRecordViewSet.as_view()),
+    url(r'e_record/documents/(?P<id>.+)/$', EncryptedRecordDocumentDownloadViewSet.as_view()),
     url(r'statics', StaticViewSet.as_view()),
     url(r'e_clients_by_birthday', GetEncryptedClientsFromBirthday.as_view()),
-    url(r'clients_by_birthday', GetClientsFromBirthday.as_view()),
-    # encrypted
+    url(r'clients_by_birthday', GetClientsFromBirthday.as_view()),                      # deprecated
     url(r'e_record/(?P<id>.+)/$', EncryptedRecordViewSet.as_view()),
     url(r'e_record/$', EncryptedRecordViewSet.as_view()),
-    url(r'record/(?P<id>.+)/$', RecordViewSet.as_view()),
-    url(r'record/$', RecordViewSet.as_view()),
-    url(r'e_record/(?P<id>.+)/documents$', EncryptedRecordDocumentByRecordViewSet.as_view()),
-    url(r'record/(?P<id>.+)/documents$', RecordDocumentByRecordViewSet.as_view()),
+    url(r'record/(?P<id>.+)/$', RecordViewSet.as_view()),       # deprecated
+    url(r'record/$', RecordViewSet.as_view()),                  # deprecated
+    url(r'record/(?P<id>.+)/documents$', RecordDocumentByRecordViewSet.as_view()),      # deprecated
     url(r'e_record/(?P<id>.+)/messages$', EncryptedRecordMessageByRecordViewSet.as_view()),
-    url(r'record/(?P<id>.+)/messages$', RecordMessageByRecordViewSet.as_view()),
+    url(r'record/(?P<id>.+)/messages$', RecordMessageByRecordViewSet.as_view()),            # deprecated
     url(r'record/(?P<id>.+)/request_permission$', RecordPermissionRequestViewSet.as_view()),
     url(r'documents/(?P<id>.+)/$', RecordDocumentTagByDocumentViewSet.as_view()),
     url(r'record_permission_requests', RecordPermissionAdmitViewSet.as_view()),
-    url(r'documents_download/(?P<id>.+)/$', RecordDocumentDownloadAllViewSet.as_view()),
+    url(r'documents_download/(?P<id>.+)/$', RecordDocumentDownloadAllViewSet.as_view()),# deprecated
     url(r'process_record_deletion_request', RecordDeletionProcessViewSet.as_view()),
-    url(r'^upload/(?P<filename>[^/]+)$', RecordDocumentUploadEncryptViewSet.as_view()),
+    url(r'^e_upload/$', EncryptedRecordDocumentsUploadViewSet.as_view()),               # deprecated
+    url(r'^upload/(?P<filename>[^/]+)$', RecordDocumentUploadEncryptViewSet.as_view()), # deprecated
 
 ]

@@ -26,9 +26,11 @@ from botocore.client import Config
 
 from backend.static.error_codes import *
 from backend.api.errors import CustomError
+from backend.static.storage_folders import get_temp_storage_path
 
 
 def generate_presigned_post(file_name, file_type, file_dir=''):
+    # TODO: deprecated delete
     """
     generates a presigned post for a given file so you can upload it directly
     :param file_name: string, the file name
@@ -63,6 +65,7 @@ def generate_presigned_post(file_name, file_type, file_dir=''):
 
 
 def generate_presigned_url(filekey):
+    # TODO: deprecated delete
     """
     generates a presigned url, with this you can download the specified file of filekey
     :param filekey: string, combination of dir and name of the file (absolute path)
@@ -88,6 +91,7 @@ def generate_presigned_url(filekey):
 
 
 def check_file_and_get_information(file_dir, filekey):
+    # TODO: deprecated delete
     s3_bucket = settings.AWS_S3_BUCKET_NAME
     if filekey == '':
         raise CustomError(ERROR__API__DOWNLOAD__NO_FILE_SPECIFIED)
@@ -125,20 +129,22 @@ def zip_files_and_create_response(file_names, zip_file_name):
     """
     bundles all files in file_names to zip and creates response
     deletes files and zip afterwards
+    TODO: maybe not delete files here?
     :param file_names: list of filenames which should be included in the zip file
     :param zip_file_name: name of the zip file
     :return:
     """
-    zip_file = zipfile.ZipFile(zip_file_name, "w")
+    zip_path = get_temp_storage_path(zip_file_name)
+    zip_file = zipfile.ZipFile(zip_path, "w")
     for file in file_names:
         zip_file.write(file)
     zip_file.close()
     for file in file_names:
         os.remove(file)
-    encoded_file = base64.b64encode(open(zip_file_name, 'rb').read())
+    encoded_file = base64.b64encode(open(zip_path, 'rb').read())
     res = Response(encoded_file, content_type='application/zip')
-    res['Content-Disposition'] = 'attachment; filename="' + zip_file_name + '"'
-    os.remove(zip_file_name)
+    res['Content-Disposition'] = 'attachment; filename="' + zip_path + '"'
+    os.remove(zip_path)
     return res
 
 

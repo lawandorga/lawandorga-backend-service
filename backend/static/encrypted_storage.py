@@ -15,15 +15,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 import os
-import zipfile
-import base64
+
 import boto3
-from django.conf import settings
-from django.core.files.storage import default_storage
-from rest_framework.response import Response
-from storages.backends.s3boto3 import S3Boto3Storage
 from botocore.client import Config
+from django.conf import settings
+
+from backend.api.errors import CustomError
+from backend.static import error_codes
 from backend.static.encryption import AESEncryption
+from backend.static.storage_folders import combine_s3_folder_with_filename
 
 
 class EncryptedStorage:
@@ -41,15 +41,11 @@ class EncryptedStorage:
         s3.upload_file(filename, s3_bucket, key)
 
     @staticmethod
-    def encrypt_file_and_upload_to_s3(file, key, s3_file_key):
-        AESEncryption.encrypt_file(file, key)
-        file = file + '.enc'  # encryption appends '.enc'
-        # file_name_index = file.rindex('/')
-        # if file_name_index != -1:
-        #     s3_filename = s3_file_key + file[file_name_index:]
-        # else:
-        #     s3_filename = s3_file_key + file
-        EncryptedStorage.upload_file_to_s3(file, s3_file_key)
+    def encrypt_file_and_upload_to_s3(filepath, aes_key, s3_folder):
+        encrypted_filepath, encrypted_filename = AESEncryption.encrypt_file(filepath, aes_key)
+        EncryptedStorage.upload_file_to_s3(encrypted_filepath,
+                                           combine_s3_folder_with_filename(s3_folder, encrypted_filename))
+        os.remove(encrypted_filepath)
 
     @staticmethod
     def download_file_from_s3(s3_key, filename=None):
@@ -58,7 +54,10 @@ class EncryptedStorage:
         s3_bucket = settings.AWS_S3_BUCKET_NAME
         session = boto3.session.Session(region_name=settings.AWS_S3_REGION_NAME)
         s3 = session.client('s3', config=Config(signature_version='s3v4'))
-        s3.download_file(s3_bucket, s3_key, filename)
+        try:
+            s3.download_file(s3_bucket, s3_key, filename)
+        except Exception as e:
+            raise CustomError(error_codes.ERROR__API__DOWNLOAD__NO_SUCH_KEY)
 
     @staticmethod
     def download_from_s3_and_decrypt_file(s3_key, encryption_key, local_folder, downloaded_file_name=None):
@@ -67,3 +66,4 @@ class EncryptedStorage:
             downloaded_file_name = os.path.join(local_folder, filename)
         EncryptedStorage.download_file_from_s3(s3_key, downloaded_file_name)
         AESEncryption.decrypt_file(downloaded_file_name, encryption_key)
+        os.remove(downloaded_file_name)

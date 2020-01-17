@@ -14,9 +14,11 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+import os
 from threading import Thread
 
 from backend.static.encrypted_storage import EncryptedStorage
+from backend.static.storage_folders import get_temp_storage_path, combine_s3_folder_with_filename, get_filename_from_full_path
 
 
 def start_new_thread(function):
@@ -30,5 +32,21 @@ def start_new_thread(function):
 class MultithreadedFileUploads:
     @staticmethod
     @start_new_thread
-    def encrypt_files_and_upload_to_s3(filename, key, s3_folder):
+    def encrypt_file_and_upload_to_s3(filename, key, s3_folder):
         EncryptedStorage.encrypt_file_and_upload_to_s3(filename, key, s3_folder)
+        os.remove(filename)
+
+
+    @staticmethod
+    @start_new_thread
+    def encrypt_files_and_upload_to_s3(files, aes_key, s3_folder):
+        """
+
+        :param files: local filepaths
+        :param aes_key: aes encryption key
+        :param s3_folder: folder in s3 storage
+        :return:
+        """
+        for local_file_path in files:
+            EncryptedStorage.encrypt_file_and_upload_to_s3(local_file_path, aes_key, s3_folder)
+            os.remove(local_file_path)

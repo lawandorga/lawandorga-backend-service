@@ -21,7 +21,7 @@ from backend.static.storage_folders import get_storage_folder_encrypted_record_d
 
 
 class EncryptedRecordDocument(models.Model):
-    name = models.CharField(max_length=200, unique=True)
+    name = models.CharField(max_length=200)
     creator = models.ForeignKey(
         UserProfile, related_name="e_record_documents_created", on_delete=models.SET_NULL, null=True
     )

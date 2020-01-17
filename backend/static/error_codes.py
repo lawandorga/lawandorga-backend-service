@@ -326,3 +326,8 @@ ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND = {
     'error_detail': 'record encryption keys for user not found',
     'error_code': 'record.key.record_encryption_not_found'
 }
+
+ERROR__FILES__NO_FILES_TO_UPLOAD = {
+    'error_detail': 'no files to upload found',
+    'error_code': 'files.no_files_to_upload'
+}

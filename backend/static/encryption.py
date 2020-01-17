@@ -217,6 +217,13 @@ class AESEncryption:
 
     @staticmethod
     def encrypt_file(file, key):
+        """
+
+        :param file:
+        :param key:
+        :return: filepath to encrypted file AND filename of encrypted file
+        """
+        # TODO: refactor this, especiialy all those file_... vars
         chunk_size = 64*1024
         key = get_bytes_from_string_or_return_bytes(key)
         hashed_key_bytes = sha3_256(key).digest()
@@ -239,6 +246,7 @@ class AESEncryption:
                     elif len(chunk) % 16 != 0:
                         chunk += b' ' * (16 - len(chunk) % 16)
                     outfile.write(encryptor.encrypt(chunk))
+        return file + '.enc', file_to_write
 
     @staticmethod
     def decrypt_file(file, key, output_file_name=None):
