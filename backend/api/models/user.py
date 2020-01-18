@@ -269,6 +269,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             users_rlc_keys = UsersRlcKeys.objects.get(user=self)
         except:
             raise CustomError(ERROR__API__RLC__USERS_RLC_KEYS_NOT_FOUND)
-        aes_rlc_key = RSAEncryption.decrypt(users_rlc_keys.encrypted_key, users_private_key)
+        rlc_encrypted_key_for_user = users_rlc_keys.encrypted_key
+        try:
+            rlc_encrypted_key_for_user = rlc_encrypted_key_for_user.tobytes()
+        except:
+            pass
+        aes_rlc_key = RSAEncryption.decrypt(rlc_encrypted_key_for_user, users_private_key)
         rlcs_private_key = rlc_keys.decrypt_private_key(aes_rlc_key)
         return rlcs_private_key
