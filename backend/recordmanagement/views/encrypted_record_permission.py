@@ -32,13 +32,13 @@ class RecordPermissionViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.RecordPermissionSerializer
 
 
-class RecordPermissionRequestViewSet(APIView):
+class EncryptedRecordPermissionRequestViewSet(APIView):
     def post(self, request, id):
         e_record = get_e_record(request.user, id)
         if e_record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ALREADY_WORKING_ON)
 
-        if models.RecordPermission.objects.filter(record=e_record, request_from=request.user, state='re').count() >= 1:
+        if models.EncryptedRecordPermission.objects.filter(record=e_record, request_from=request.user, state='re').count() >= 1:
             raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ALREADY_REQUESTED)
         can_edit = False
         if 'can_edit' in request.data:
@@ -49,7 +49,7 @@ class RecordPermissionRequestViewSet(APIView):
         return Response(serializers.RecordPermissionSerializer(e_permission).data)
 
 
-class RecordPermissionAdmitViewSet(APIView):
+class EncryptedRecordPermissionAdmitViewSet(APIView):
     def get(self, request):
         """
         used from admins to see which permission requests are for the own rlc in the system
@@ -91,5 +91,5 @@ class RecordPermissionAdmitViewSet(APIView):
         else:
             permission_request.state = 'de'
         permission_request.save()
-        return Response(serializers.RecordPermissionSerializer(permission_request).data)
+        return Response(serializers.EncryptedRecordPermissionSerializer(permission_request).data)
 
