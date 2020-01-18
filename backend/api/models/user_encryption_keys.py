@@ -49,11 +49,11 @@ class UserEncryptionKeys(models.Model):
         if self.private_key_encrypted:
             return AESEncryption.decrypt(self.private_key, key_to_encrypt)
         else:
-            priv_key = self.private_key
-            self.private_key = AESEncryption.encrypt(self.private_key, key_to_encrypt)
+            private_key = self.private_key
+            self.private_key = AESEncryption.encrypt(private_key, key_to_encrypt)
             self.private_key_encrypted = True
             self.save()
-            return priv_key
+            return private_key
 
     def __str__(self):
         return 'EncryptionKeys: ' + str(self.id) + '; for user: ' + str(self.user.id)
