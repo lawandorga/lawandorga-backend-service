@@ -73,3 +73,4 @@ class Command(BaseCommand):
         else:
             self.stdout.write("s3 secret access key not found!")
             return False
+        return True

@@ -56,4 +56,4 @@ class UserEncryptionKeys(models.Model):
             return priv_key
 
     def __str__(self):
-        return 'EncryptionKeys: ' + self.user.id
+        return 'EncryptionKeys: ' + str(self.id) + '; for user: ' + str(self.user.id)
