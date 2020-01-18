@@ -38,4 +38,9 @@ class EncryptedClient(models.Model):
         return 'e_client: ' + str(self.id)
 
     def get_password(self, rlcs_private_key):
-        return RSAEncryption.decrypt(self.encrypted_client_key, rlcs_private_key)
+        encrypted_client_key = self.encrypted_client_key
+        try:
+            encrypted_client_key = encrypted_client_key.tobytes()
+        except:
+            pass
+        return RSAEncryption.decrypt(encrypted_client_key, rlcs_private_key)
