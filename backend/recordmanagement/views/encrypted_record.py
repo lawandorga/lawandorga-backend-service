@@ -133,7 +133,7 @@ class EncryptedRecordViewSet(APIView):
             encrypted_record_key = RSAEncryption.encrypt(record_key, users_public_key)
             record_encryption = models.RecordEncryption(user=user, record=e_record, encrypted_key=encrypted_record_key)
             record_encryption.save()
-        e_record.save() # TODO: why?
+        e_record.save()  # TODO: why?
 
         if not settings.DEBUG:
             for user_id in data['consultants']:

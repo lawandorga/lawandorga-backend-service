@@ -31,4 +31,9 @@ class RecordEncryption(models.Model):
             self.record.id)
 
     def decrypt(self, pem_private_key_of_user):
-        return RSAEncryption.decrypt(self.encrypted_key, pem_private_key_of_user)
+        encrypted_key = self.encrypted_key
+        try:
+            encrypted_key = encrypted_key.tobytes()
+        except:
+            pass
+        return RSAEncryption.decrypt(encrypted_key, pem_private_key_of_user)

@@ -50,6 +50,10 @@ class UserEncryptionKeys(models.Model):
             return AESEncryption.decrypt(self.private_key, key_to_encrypt)
         else:
             private_key = self.private_key
+            try:
+                private_key = private_key.tobytes()
+            except:
+                pass
             self.private_key = AESEncryption.encrypt(private_key, key_to_encrypt)
             self.private_key_encrypted = True
             self.save()

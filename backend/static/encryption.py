@@ -121,10 +121,6 @@ class AESEncryption:
         :return: bytes, encrypted message (with iv at the beginning
         """
         iv = AESEncryption.generate_iv()
-        try:
-            msg = msg.tobytes()
-        except:
-            pass
         cipher_bytes = AESEncryption.encrypt_with_iv(msg, key, iv)
         cipher_bytes = iv + cipher_bytes
         return cipher_bytes

@@ -251,13 +251,17 @@ else:
 # CORS policy
 # CORS_ORIGIN_ALLOW_ALL=True
 CORS_ORIGIN_WHITELIST = [
+    # prod
     "https://law-orga.de",
     "http://law-orga.de",
     "http://www.law-orga.de",
     "https://www.law-orga.de",
     "https://d1g37iqegvaqxr.cloudfront.net",
+    # local
     "http://127.0.0.1:3000",
-    "http://localhost:3000"
+    "http://localhost:3000",
+    # dev
+    "https://d7pmzq2neb57w.cloudfront.net"
 ]
 
 CORS_ALLOW_HEADERS = [

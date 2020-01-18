@@ -109,7 +109,7 @@ class EncryptedRecord(models.Model):
         """
         from backend.recordmanagement.models import EncryptedRecordPermission
         return self.working_on_record.filter(id=user.id).count() == 1 or \
-               EncryptedRecordPermission.objects.filter(record=self, request_from=user, state='gr') or \
+               EncryptedRecordPermission.objects.filter(record=self, request_from=user, state='gr').count() == 1 or \
                user.has_permission(PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc)
 
     def get_notification_emails(self):

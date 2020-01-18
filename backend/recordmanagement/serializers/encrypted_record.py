@@ -22,18 +22,6 @@ from backend.static.encryption import AESEncryption
 from backend.static.serializer_fields import EncryptedField
 
 
-class EncryptedRecordFullDetailListSerializer(serializers.ListSerializer):
-    def add_has_permission(self, user):
-        data = []
-        for record in self.instance.all():
-            has_permission = record.user_has_permission(user)
-            record_data = EncryptedRecordNoDetailSerializer(record).data
-            record_data.update({'has_permission': has_permission})
-            data.append(record_data)
-        b = 11
-        return data
-
-
 class EncryptedRecordFullDetailSerializer(serializers.ModelSerializer):
     tagged = RecordTagNameSerializer(many=True, read_only=True)
     working_on_record = UserProfileNameSerializer(many=True, read_only=True)
@@ -52,7 +40,6 @@ class EncryptedRecordFullDetailSerializer(serializers.ModelSerializer):
     additional_facts = EncryptedField()
 
     class Meta:
-        list_serializer_class = EncryptedRecordFullDetailListSerializer
         model = EncryptedRecord
         fields = '__all__'
         extra_kwargs = {
