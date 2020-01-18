@@ -21,7 +21,7 @@ from backend.api.models import UserProfile
 
 class NewUserRequest(models.Model):
     request_from = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
-    request_processed = models.ForeignKey(UserProfile, related_name="new_user_permissions_processed",
+    request_processed = models.ForeignKey(UserProfile, related_name="new_user_requests_processed",
                                           on_delete=models.SET_NULL, null=True)
 
     requested = models.DateTimeField(auto_now_add=True)

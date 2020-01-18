@@ -37,5 +37,5 @@ class RecordDocument(models.Model):
     def __str__(self):
         return 'record_document: ' + str(self.id) + ':' + self.name
 
-    def get_filekey(self):
+    def get_file_key(self):
         return get_storage_folder_record_document(self.record.from_rlc_id, self.record.id) + self.name

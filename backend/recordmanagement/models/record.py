@@ -17,7 +17,7 @@
 from django.db import models
 from django.db.models import Q
 
-from backend.api.models import UserProfile, Rlc
+from backend.api.models import Rlc, UserProfile
 from backend.recordmanagement.models import RecordTag
 from backend.static import permissions
 
@@ -31,9 +31,6 @@ class RecordQuerySet(models.QuerySet):
             id__in=permissions.values_list('record_id', flat=True)))
 
     def get_no_access_records(self, user):
-        # permissions = RecordPermission.objects.filter(request_from=user, state='gr')
-        # return self.exclude(Q(id__in=user.working_on_record.values_list('id', flat=True)) | Q(
-        #     id__in=permissions.values_list('record_id', flat=True)))
         has_perm = self.get_full_access_records(user)
         return self.exclude(id__in=has_perm.values_list('id', flat=True))
 
@@ -109,6 +106,16 @@ class Record(models.Model):
                RecordPermission.objects.filter(record=self, request_from=user, state='gr') or \
                user.has_permission(permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc)
 
+    def get_users_with_permission(self):
+        from backend.api.models import UserProfile, Permission
+        working_on_users = self.working_on_record.all()
+        users_with_record_permission = UserProfile.objects.filter(record_permissions_requested__record=self,
+                                                                  record_permissions_requested__state='gr')
+        users_with_overall_permission = Permission.objects.get(
+            name=permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC).get_real_users_with_permission_for_rlc(
+            self.from_rlc)
+        return working_on_users.union(users_with_record_permission).union(users_with_overall_permission).distinct()
+
     def get_notification_emails(self):
         from backend.recordmanagement.models import RecordPermission
         emails = []
@@ -117,4 +124,3 @@ class Record(models.Model):
         for permission_request in list(RecordPermission.objects.filter(record=self, state='gr')):
             emails.append(permission_request.request_from.email)
         return emails
-

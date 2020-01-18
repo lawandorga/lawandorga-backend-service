@@ -20,6 +20,7 @@ from rest_framework.routers import DefaultRouter
 from .views import *
 
 router = DefaultRouter()
+# recheck all
 router.register('records', RecordsListViewSet, base_name='records')
 router.register('origin_countries', OriginCountriesViewSet)
 router.register('record_tags', RecordTagViewSet)
@@ -27,18 +28,37 @@ router.register('clients', ClientsViewSet)
 router.register('record_documents', RecordDocumentViewSet)
 router.register('record_document_tags', RecordDocumentTagViewSet)
 router.register('record_permissions', RecordPermissionViewSet)
+router.register('record_deletion_requests', EncryptedRecordDeletionRequestViewSet)
+# router.register('record_deletion_requests', RecordDeletionRequestViewSet) OLD
+# encryption
+router.register('record_encryptions', RecordEncryptionViewSet)
+router.register('e_records', EncryptedRecordsListViewSet, base_name='e_records')
+router.register('e_clients', EncryptedClientsViewSet, base_name='e_records')    # TODO: add all encrypted fields here
+
 
 urlpatterns = [
     url(r'', include(router.urls)),
+    url(r'e_record/(?P<id>.+)/documents/$', EncryptedRecordDocumentByRecordViewSet.as_view()),
+    url(r'e_record/documents/(?P<id>.+)/$', EncryptedRecordDocumentDownloadViewSet.as_view()),
     url(r'statics', StaticViewSet.as_view()),
-    url(r'clients_by_birthday', GetClientsFromBirthday.as_view()),
-    url(r'record/(?P<id>.+)/$', RecordViewSet.as_view()),
-    url(r'record/$', RecordViewSet.as_view()),
-    url(r'record/(?P<id>.+)/documents$', RecordDocumentByRecordViewSet.as_view()),
-    url(r'record/(?P<id>.+)/messages$', RecordMessageByRecordViewSet.as_view()),
-    url(r'record/(?P<id>.+)/request_permission$', RecordPermissionRequestViewSet.as_view()),
+    url(r'e_clients_by_birthday', GetEncryptedClientsFromBirthday.as_view()),
+    url(r'clients_by_birthday', GetClientsFromBirthday.as_view()),                      # deprecated
+    url(r'e_record/(?P<id>.+)/$', EncryptedRecordViewSet.as_view()),
+    url(r'e_record/$', EncryptedRecordViewSet.as_view()),
+    url(r'record/(?P<id>.+)/$', RecordViewSet.as_view()),       # deprecated
+    url(r'record/$', RecordViewSet.as_view()),                  # deprecated
+    url(r'record/(?P<id>.+)/documents$', RecordDocumentByRecordViewSet.as_view()),      # deprecated
+    url(r'e_record/(?P<id>.+)/messages$', EncryptedRecordMessageByRecordViewSet.as_view()),
+    url(r'record/(?P<id>.+)/messages$', RecordMessageByRecordViewSet.as_view()),            # deprecated
+    url(r'record/(?P<id>.+)/request_permission$', EncryptedRecordPermissionRequestViewSet.as_view()),
+    # url(r'record/(?P<id>.+)/request_permission$', RecordPermissionRequestViewSet.as_view()), OLD
     url(r'documents/(?P<id>.+)/$', RecordDocumentTagByDocumentViewSet.as_view()),
-    url(r'record_permission_requests', RecordPermissionAdmitViewSet.as_view()),
-    url(r'documents_download/(?P<id>.+)/$', RecordDocumentDownloadAllViewSet.as_view()),
+    url(r'e_record_permission_requests', EncryptedRecordPermissionAdmitViewSet.as_view()),
+    url(r'record_permission_requests', RecordPermissionAdmitViewSet.as_view()),         # deprecated
+    url(r'documents_download/(?P<id>.+)/$', RecordDocumentDownloadAllViewSet.as_view()),# deprecated
+    url(r'process_record_deletion_request', EncryptedRecordDeletionProcessViewSet.as_view()),    # OLD
+    # url(r'process_record_deletion_request', RecordDeletionProcessViewSet.as_view()),    # OLD
+    # url(r'^e_upload/$', EncryptedRecordDocumentsUploadViewSet.as_view()),               # deprecated
+    url(r'^upload/(?P<filename>[^/]+)$', RecordDocumentUploadEncryptViewSet.as_view()), # deprecated
 
 ]

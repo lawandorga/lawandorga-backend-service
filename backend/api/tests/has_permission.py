@@ -22,7 +22,7 @@ from .statics import StaticTestMethods
 
 class HasPermissionTests(TransactionTestCase):
     def setUp(self):
-        self.client = StaticTestMethods.force_authentication()
+        self.client = StaticTestMethods.force_authentication_superuser()
         self.base_url = '/api/has_permission/'
         CreateFixtures.create_sample_groups()
         CreateFixtures.create_sample_permissions()

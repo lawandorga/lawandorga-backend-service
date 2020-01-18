@@ -32,6 +32,7 @@ router.register('rlcs', views.RlcViewSet, base_name='rlcs')
 router.register('forgot_password_links', views.ForgotPasswordViewSet, base_name="forgot_password_links")
 router.register('new_user_request', views.NewUserRequestViewSet, base_name="new_user_request")
 router.register('user_activation_links', views.UserActivationBackendViewSet, base_name="user_activation_links")
+router.register('user_encryption_keys', views.UserEncryptionKeysViewSet, base_name="user_encryption_keys")
 
 urlpatterns = [
     url(r'', include(router.urls)),

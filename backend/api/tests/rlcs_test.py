@@ -24,7 +24,7 @@ from rest_framework.authtoken.models import Token
 
 class RlcsTest(TransactionTestCase):
     def setUp(self):
-        self.client = StaticTestMethods.force_authentication()
+        self.client = StaticTestMethods.force_authentication_superuser()
         self.base_url = '/api/rlcs/'
         self.base_list_url = '/api/get_rlcs/'
 

@@ -32,7 +32,7 @@ class RecordDocumentTagViewSet(viewsets.ModelViewSet):
 class RecordDocumentTagByDocumentViewSet(APIView):
     def post(self, request, id):
         try:
-            document = models.RecordDocument.objects.get(pk=id)
+            document = models.EncryptedRecordDocument.objects.get(pk=id)
         except Exception as e:
             raise CustomError(error_codes.ERROR__RECORD__DOCUMENT__NOT_FOUND)
         if not document.record:
@@ -55,5 +55,5 @@ class RecordDocumentTagByDocumentViewSet(APIView):
         for tag in tags:
             document.tagged.add(tag)
         document.save()
-        serializer = serializers.RecordDocumentSerializer(document)
+        serializer = serializers.EncryptedRecordDocumentSerializer(document)
         return Response(serializer.data)

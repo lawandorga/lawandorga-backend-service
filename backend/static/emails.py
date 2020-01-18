@@ -70,6 +70,10 @@ class EmailSender:
         EmailSender.send_html_email(emails, subject, html_message, alternative_text)
 
     @staticmethod
+    def send_new_user_request_notification_email():
+        pass
+
+    @staticmethod
     def test_send(email):
         html_message = loader.render_to_string(
             'email_templates/activate_account.html',

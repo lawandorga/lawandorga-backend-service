@@ -40,3 +40,10 @@ class Rlc(models.Model):
         :return:
         """
         return UserProfile.objects.get_users_with_special_permission(PERMISSION_CAN_CONSULT, for_rlc=self.id)
+
+    def get_users_from_rlc(self):
+        return UserProfile.objects.filter(rlc=self)
+
+    def get_public_key(self):
+        from backend.api.models import RlcEncryptionKeys
+        return RlcEncryptionKeys.objects.get_rlcs_public_key(self)

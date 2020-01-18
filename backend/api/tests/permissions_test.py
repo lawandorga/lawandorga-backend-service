@@ -15,13 +15,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.test import TransactionTestCase
-from ..models import UserProfile, Permission
-from .statics import StaticTestMethods
+from backend.api.models import UserProfile, Permission, HasPermission, Group, Rlc
+from backend.api.tests.statics import StaticTestMethods
 
 
 class PermissionTests(TransactionTestCase):
     def setUp(self):
-        self.client = StaticTestMethods.force_authentication()
+        self.client = StaticTestMethods.force_authentication_superuser()
         self.user = UserProfile.objects.get(email='test123@test.com')
         self.base_url = '/api/permissions/'
 
@@ -45,3 +45,54 @@ class PermissionTests(TransactionTestCase):
         self.assertTrue(response.status_code == 400)
         self.assertTrue(before+1 == after)
 
+    def test_get_real_users_with_permission_for_rlc_1(self):
+        rlc = Rlc(name='test rlc')
+        rlc.save()
+
+        permission = Permission(name='test_permission')
+        permission.save()
+
+        users = StaticTestMethods.generate_users(5, rlc)
+
+        group = Group(name='test_group', from_rlc=rlc, visible=False)
+        group.save()
+        group.group_members.add(users[0])
+        group.group_members.add(users[1])
+        group.save()
+
+        has_permission = HasPermission(group_has_permission=group, permission=permission, permission_for_rlc=rlc)
+        has_permission.save()
+
+        has_permission = HasPermission(user_has_permission=users[2], permission=permission, permission_for_rlc=rlc)
+        has_permission.save()
+        has_permission = HasPermission(user_has_permission=users[4], permission=permission, permission_for_rlc=rlc)
+        has_permission.save()
+
+        users_with_permissions = permission.get_real_users_with_permission_for_rlc(rlc)
+
+        self.assertTrue(users_with_permissions.__len__() == 4)
+        self.assertTrue(users[0] in users_with_permissions)
+        self.assertTrue(users[1] in users_with_permissions)
+        self.assertTrue(users[2] in users_with_permissions)
+        self.assertTrue(users[4] in users_with_permissions)
+
+    def test_get_real_users_with_permission_for_rlc_1(self):
+        rlc = Rlc(name='test rlc')
+        rlc.save()
+
+        permission = Permission(name='test_permission')
+        permission.save()
+
+        users = StaticTestMethods.generate_users(5, rlc)
+
+        has_permission = HasPermission(rlc_has_permission=rlc, permission=permission, permission_for_rlc=rlc)
+        has_permission.save()
+
+        users_with_permissions = permission.get_real_users_with_permission_for_rlc(rlc)
+
+        self.assertTrue(users_with_permissions.__len__() == 5)
+        self.assertTrue(users[0] in users_with_permissions)
+        self.assertTrue(users[1] in users_with_permissions)
+        self.assertTrue(users[2] in users_with_permissions)
+        self.assertTrue(users[3] in users_with_permissions)
+        self.assertTrue(users[4] in users_with_permissions)
