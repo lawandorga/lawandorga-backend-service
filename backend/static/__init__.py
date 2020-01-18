@@ -14,3 +14,14 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+# from backend.static.date_utils import *
+# from backend.static.emails import *
+# from backend.static.encrypted_storage import *
+# from backend.static.encryption import *
+# from backend.static.env_getter import *
+# from backend.static.error_codes import *
+# from backend.static.frontend_links import *
+# from backend.static.permissions import *
+# from backend.static.regex_validators import *
+# from backend.static.storage_folders import *
+# from backend.static.string_generator import *

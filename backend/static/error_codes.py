@@ -276,3 +276,58 @@ ERROR__API__EMAIL__ALREADY_IN_USE = {
     'error_detail': 'email already in use',
     'error_code': 'api.email.already_in_use'
 }
+
+ERROR__RECORD__RECORD_DELETION__ALREADY_REQUESTED = {
+    'error_detail': 'deletion of record already requested',
+    'error_code': 'record.record_deletion.already_requested'
+}
+
+ERROR__RECORD__RECORD__ID_NOT_PROVIDED = {
+    'error_detail': 'record id not provided',
+    'error_code': 'record.record.id_not_provided'
+}
+
+ERROR__API__ID_NOT_PROVIDED = {
+    'error_detail': 'id not provided',
+    'error_code': 'api.id_not_provided'
+}
+
+ERROR__RECORD__DELETION_REQUEST__NOT_EXISTING = {
+    'error_detail': 'record deletion request with given id does not exist',
+    'error_code': 'record.deletion_request.not_existing'
+}
+
+ERROR__RECORD__CONSULTANT__NOT_EXISTING = {
+    'error_detail': 'record couldn\'t be created, consultant with id not existing',
+    'error_code': 'record.consultant.not_existing'
+}
+
+ERROR__API__USER__NO_PUBLIC_KEY_FOUND = {
+    'error_detail': 'no public key for user found',
+    'error_code': 'api.user.no_public_key_found'
+}
+
+ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED = {
+    'error_detail': 'no private key provided',
+    'error_code': 'api.user.no_private_key_provided'
+}
+
+ERROR__API__RLC__NO_PUBLIC_KEY_FOUND = {
+    'error_detail': 'no public key found',
+    'error_code': 'api.rlc.no_public_key_found'
+}
+
+ERROR__API__RLC__USERS_RLC_KEYS_NOT_FOUND = {
+    'error_detail': 'users rlc keys found',
+    'error_code': 'api.rlc.users_rlc_keys_not_found'
+}
+
+ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND = {
+    'error_detail': 'record encryption keys for user not found',
+    'error_code': 'record.key.record_encryption_not_found'
+}
+
+ERROR__FILES__NO_FILES_TO_UPLOAD = {
+    'error_detail': 'no files to upload found',
+    'error_code': 'files.no_files_to_upload'
+}

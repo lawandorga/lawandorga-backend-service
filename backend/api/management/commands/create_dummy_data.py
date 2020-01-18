@@ -31,7 +31,8 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        rlc = apimodels.Rlc(name='Dummy RLC', note='this is a dummy rlc, just for showing how the system works')
+        rlc = apimodels.Rlc(name='Dummy RLC', note='this is a dummy rlc, just for showing how the system works',
+                            id=3033)
         rlc.save()
         users = self.get_and_create_users(rlc)
         main_user = self.get_and_create_dummy_user(rlc)
@@ -40,7 +41,9 @@ class Command(BaseCommand):
         consultant_group = apimodels.Group.objects.filter(name='Berater', from_rlc=rlc).first()
         consultants = list(consultant_group.group_members.all())
         self.get_and_create_records(clients, consultants, rlc)
-        self.create_the_best_record_ever(main_user, clients, consultants, rlc)
+        best_record = self.create_the_best_record_ever(main_user, clients, consultants, rlc)
+        self.create_record_deletion_request(main_user, best_record)
+        self.create_record_permission_request(users[4], best_record)
 
     def get_and_create_dummy_user(self, rlc):
         user = apimodels.UserProfile(name='Mr Dummy', email='dummy@rlcm.de', phone_number='01666666666',
@@ -431,6 +434,18 @@ class Command(BaseCommand):
                 'op',
                 [consultants[5], consultants[4]],
                 [tags[3], tags[4]]
+            ), (
+                random.choice(consultants),
+                (2017, 9, 10),
+                (2018, 10, 2, 16, 3, 0, 0),
+                clients[0],
+                (2017, 9, 10),
+                (2018, 10, 2, 16, 3, 0, 0),
+                'AZ-139/18',
+                'zweite akte von client 0',
+                'op',
+                [consultants[5], consultants[4]],
+                [tags[3], tags[4]]
             )
         ]
         records_in_db = []
@@ -479,7 +494,7 @@ class Command(BaseCommand):
     def create_the_best_record_ever(self, main_user, clients, consultants, rlc):
         tags = list(models.RecordTag.objects.all())
         record = models.Record(from_rlc=rlc, creator=main_user, client=clients[0], record_token='AZ-001/18',
-                               official_note='best record ever', state='op')
+                               official_note='best record ever', state='op', id=7181)
 
         record.created_on = AddMethods.generate_date((2018, 1, 3))
         record.first_contact_date = AddMethods.generate_date((2018, 1, 3))
@@ -505,7 +520,7 @@ class Command(BaseCommand):
         record.tagged.add(tags[0], tags[1])
         record.save()
 
-        document1 = models.RecordDocument(name="7_1_19__pass.jpg", creator=main_user, record=record, file_size=123123)
+        document1 = models.RecordDocument(name="7_1_19__pass.jpg", creator=main_user, record=record, file_size=18839)
         document1.created_on = AddMethods.generate_date((2019, 1, 7))
         document1.save()
         document1.tagged.add(models.RecordDocumentTag.objects.get(name='Pass'))
@@ -547,3 +562,12 @@ class Command(BaseCommand):
         message.save()
         message.created_on = AddMethods.generate_datetime((2019, 3, 13, 18, 7, 21, 0))
         message.save()
+        return record
+
+    def create_record_deletion_request(self, user, record):
+        request = models.RecordDeletionRequest(record=record, request_from=user, state='re')
+        request.save()
+
+    def create_record_permission_request(self, user, record):
+        request = models.RecordPermission(record=record, request_from=user, state='re')
+        request.save()

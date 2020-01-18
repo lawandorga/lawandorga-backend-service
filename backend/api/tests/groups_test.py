@@ -21,7 +21,7 @@ from .statics import StaticTestMethods
 
 class GroupsTests(TransactionTestCase):
     def setUp(self):
-        self.client = StaticTestMethods.force_authentication()
+        self.client = StaticTestMethods.force_authentication_superuser()
         self.user = UserProfile.objects.get(email='test123@test.com')
         self.base_url_create = '/api/groups/'
 

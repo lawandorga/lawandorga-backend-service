@@ -14,11 +14,12 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 
 from backend.api.errors import CustomError
-from backend.static.error_codes import ERROR__API__PERMISSION__NOT_FOUND
+from backend.static.error_codes import ERROR__API__PERMISSION__NOT_FOUND, ERROR__API__RLC__NO_PUBLIC_KEY_FOUND, \
+    ERROR__API__USER__NO_PUBLIC_KEY_FOUND, ERROR__API__RLC__USERS_RLC_KEYS_NOT_FOUND
 from backend.static.regex_validators import phone_regex
 from . import HasPermission, Permission
 
@@ -230,3 +231,49 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                self.__has_as_group_member_permission(permission, for_user, for_group, for_rlc) or \
                self.__has_as_rlc_member_permission(permission, for_user, for_group, for_rlc) or \
                self.is_superuser
+
+    def get_public_key(self):
+        """
+        gets the public key of the user from the database
+        :return: public key of user (PEM)
+        """
+        from backend.api.models import UserEncryptionKeys
+        return UserEncryptionKeys.objects.get_users_public_key(self)
+
+    def get_private_key(self, decryption_key):
+        """
+        gets the private key of the user
+        this key is saved encrypted in the database
+        therefore it has to be decrypted with the given decryption_key (users password)
+        :param decryption_key: decryption_key (users password)
+        :return: user's private key (PEM)
+        """
+        from backend.api.models import UserEncryptionKeys
+        try:
+            keys = UserEncryptionKeys.objects.get(user=self)
+        except Exception:
+            raise CustomError(ERROR__API__USER__NO_PUBLIC_KEY_FOUND)
+        keys.decrypt_private_key(decryption_key)
+
+    def get_rlcs_public_key(self):
+        return self.rlc.get_public_key()
+
+    def get_rlcs_private_key(self, users_private_key):
+        from backend.api.models import UsersRlcKeys, RlcEncryptionKeys
+        from backend.static.encryption import RSAEncryption
+        try:
+            rlc_keys = RlcEncryptionKeys.objects.get(rlc=self.rlc)
+        except:
+            raise CustomError(ERROR__API__RLC__NO_PUBLIC_KEY_FOUND)
+        try:
+            users_rlc_keys = UsersRlcKeys.objects.get(user=self)
+        except:
+            raise CustomError(ERROR__API__RLC__USERS_RLC_KEYS_NOT_FOUND)
+        rlc_encrypted_key_for_user = users_rlc_keys.encrypted_key
+        try:
+            rlc_encrypted_key_for_user = rlc_encrypted_key_for_user.tobytes()
+        except:
+            pass
+        aes_rlc_key = RSAEncryption.decrypt(rlc_encrypted_key_for_user, users_private_key)
+        rlcs_private_key = rlc_keys.decrypt_private_key(aes_rlc_key)
+        return rlcs_private_key

@@ -15,19 +15,27 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 import os
-import zipfile
-from io import StringIO, BytesIO
-import base64
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.parsers import FileUploadParser
 from datetime import datetime
-from django.core.files import File
+from threading import Thread
 
 from backend.recordmanagement import models, serializers
 from backend.shared import storage_generator
 from backend.static import error_codes, storage_folders
 from backend.api.errors import CustomError
+from backend.static.encryption import AESEncryption
+from backend.static.encrypted_storage import EncryptedStorage
+
+
+def start_new_thread(function):
+    def decorator(*args, **kwargs):
+        t = Thread(target=function, args=args, kwargs=kwargs)
+        t.daemon = True
+        t.start()
+    return decorator
 
 
 class RecordDocumentViewSet(viewsets.ModelViewSet):
@@ -36,6 +44,28 @@ class RecordDocumentViewSet(viewsets.ModelViewSet):
 
     def post(self, request):
         pass
+
+
+class RecordDocumentUploadEncryptViewSet(APIView):
+    parser_classes = [FileUploadParser]
+
+    def put(self, request, filename, format=None):
+        file_obj = request.data['file']
+        file_path = os.path.join('temp', filename)
+        file = open(file_path, 'wb')
+        if file_obj.multiple_chunks():
+            for chunk in file_obj.chunks():
+                file.write(chunk)
+        else:
+            file.write(file_obj.read())
+            file.close()
+        iv = os.urandom(16)
+        self.encrypt_and_send_to_s3(file_path, 'asdasd', iv, 'tests')
+        return Response(status=204)
+
+    @start_new_thread
+    def encrypt_and_send_to_s3(self, filename, key, iv, s3_folder):
+        EncryptedStorage.encrypt_file_and_upload_to_s3(filename, key, iv, s3_folder)
 
 
 class RecordDocumentUploadViewSet(APIView):
@@ -113,7 +143,7 @@ class RecordDocumentDownloadAllViewSet(APIView):
         docs = list(models.RecordDocument.objects.filter(record=record))
         filenames = []
         for doc in docs:
-            storage_generator.download_file(doc.get_filekey(), doc.name)
+            storage_generator.download_file(doc.get_file_key(), doc.name)
             filenames.append(doc.name)
 
         return storage_generator.zip_files_and_create_response(filenames, 'record.zip')

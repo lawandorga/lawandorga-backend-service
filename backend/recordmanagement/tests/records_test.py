@@ -14,20 +14,18 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from rest_framework.test import APIClient
 from django.test import TransactionTestCase
-from datetime import date, datetime
-
-from backend.api.models import UserProfile, Rlc
-from backend.recordmanagement.models import Record, Client, RecordPermission
+from datetime import date
+from backend.api.models import UserProfile
 from backend.api.tests.fixtures import CreateFixtures
 from backend.api.tests.statics import StaticTestMethods
-from backend.static.permissions import *
+from backend.static.permissions import PERMISSION_VIEW_RECORDS_RLC, PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from backend.recordmanagement.models import Record, RecordPermission
 
 
 class RecordTests(TransactionTestCase):
     def setUp(self):
-        self.client = StaticTestMethods.force_authentication()
+        self.client = StaticTestMethods.force_authentication_superuser()
         self.base_list_url = '/api/records/records/'
         self.base_detail_url = '/api/records/record/'
         self.base_create_record_url = '/api/records/create_record/'
@@ -55,7 +53,7 @@ class RecordTests(TransactionTestCase):
 
     def create_first_record(self):
         users, rlcs, client, tags = RecordTests.create_samples()
-        client = StaticTestMethods.force_authentication_with_user(users[0].email)
+        client = StaticTestMethods.force_authentication_with_user_email(users[0].email)
 
         to_post = {
             "client_birthday": date(2000, 3, 21),
@@ -77,7 +75,7 @@ class RecordTests(TransactionTestCase):
         :return:
         """
         users, rlcs, client, tags = RecordTests.create_samples()
-        client = StaticTestMethods.force_authentication_with_user(users[0].email)
+        client = StaticTestMethods.force_authentication_with_user_email(users[0].email)
 
         all_records_before = Record.objects.count()
         to_post = {
@@ -102,7 +100,7 @@ class RecordTests(TransactionTestCase):
         :return:
         """
         users, rlcs, record = self.create_first_record()
-        client = StaticTestMethods.force_authentication_with_user(users[0].email)
+        client = StaticTestMethods.force_authentication_with_user_email(users[0].email)
         record_from_other_rlc = Record(from_rlc=rlcs[1], record_token='213')
         record_from_other_rlc.save()
 
@@ -114,7 +112,7 @@ class RecordTests(TransactionTestCase):
 
     def test_list_no_record_from_other_rlc(self):
         users, rlcs, record = self.create_first_record()
-        client = StaticTestMethods.force_authentication_with_user(users[2].email)
+        client = StaticTestMethods.force_authentication_with_user_email(users[2].email)
 
         response = client.get(self.base_list_url)
         self.assertTrue(response.status_code == 200)
@@ -122,7 +120,7 @@ class RecordTests(TransactionTestCase):
 
     def test_retrieve_record_success(self):
         users, rlcs, record = self.create_first_record()
-        client = StaticTestMethods.force_authentication_with_user(users[1].email)
+        client = StaticTestMethods.force_authentication_with_user_email(users[1].email)
 
         response = client.get(self.base_detail_url + str(record['id']) + '/')
         self.assertTrue(response.status_code == 200)
@@ -134,7 +132,7 @@ class RecordTests(TransactionTestCase):
 
     def test_retrieve_record_wrong_rlc_error(self):
         users, rlcs, record = self.create_first_record()
-        client = StaticTestMethods.force_authentication_with_user(users[2].email)
+        client = StaticTestMethods.force_authentication_with_user_email(users[2].email)
 
         response = client.get(self.base_detail_url + str(record['id']) + '/')
         self.assertTrue(response.status_code == 400)
@@ -156,6 +154,7 @@ class RecordTests(TransactionTestCase):
         self.assertTrue(not record.user_has_permission(user3))
 
     def test_user_has_permission_record_permissions(self):
+        users = list(UserProfile.objects.all())
         user1 = UserProfile(email='abc1@web.de', name="abc1")
         user1.save()
         user2 = UserProfile(email='abc2@web.de', name="abc2")
@@ -171,6 +170,4 @@ class RecordTests(TransactionTestCase):
 
         self.assertTrue(record.user_has_permission(user1))
         self.assertTrue(record.user_has_permission(user2))
-
-
 

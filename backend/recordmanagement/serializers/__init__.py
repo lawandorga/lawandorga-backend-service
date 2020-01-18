@@ -23,3 +23,11 @@ from .record_document_tag import *
 from .record_document import *
 from .record_message import *
 from .record_permission import *
+from .record_deletion_request import *
+from .record_encryption import *
+from .encrypted_record import *
+from .encrypted_client import *
+from .encrypted_record_message import *
+from .encrypted_record_document import *
+from .encrypted_record_permission import *
+from .encrypted_record_deletion_request import *
