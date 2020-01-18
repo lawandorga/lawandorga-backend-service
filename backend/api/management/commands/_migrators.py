@@ -15,9 +15,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from backend.api.models import Rlc, RlcEncryptionKeys, UserEncryptionKeys, UserProfile, UsersRlcKeys
-from backend.recordmanagement.models import EncryptedClient, EncryptedRecord, EncryptedRecordDocument, \
-    EncryptedRecordMessage, EncryptedRecordPermission, Record, RecordDocument, RecordEncryption, RecordMessage, \
-    RecordPermission
+from backend.recordmanagement.models import EncryptedClient, EncryptedRecord, EncryptedRecordDeletionRequest, \
+    EncryptedRecordDocument, EncryptedRecordMessage, EncryptedRecordPermission, Record, RecordDeletionRequest, \
+    RecordDocument, RecordEncryption, RecordMessage, RecordPermission
 from backend.static.encrypted_storage import EncryptedStorage
 from backend.static.encryption import AESEncryption, RSAEncryption
 from backend.static.file_utils import delete_file
@@ -68,7 +68,8 @@ class Migrators:
         client = record.client
         # TODO: ! encryption, potentially search for client (maybe 2nd record for him)
         all_clients = list(EncryptedClient.objects.all())
-        potential_e_client = EncryptedClient.objects.filter(from_rlc=client.from_rlc, created_on=client.created_on, birthday=client.birthday).first()
+        potential_e_client = EncryptedClient.objects.filter(from_rlc=client.from_rlc, created_on=client.created_on,
+                                                            birthday=client.birthday).first()
         if not potential_e_client:
             e_client = EncryptedClient(from_rlc=client.from_rlc, created_on=client.created_on,
                                        last_edited=client.last_edited, birthday=client.birthday,
@@ -148,6 +149,18 @@ class Migrators:
             encrypted_record_key = RSAEncryption.encrypt(e_record_key, users_public_key)
             record_encryption = RecordEncryption(user=user, record=e_record, encrypted_key=encrypted_record_key)
             record_encryption.save()
+
+        # record deletions
+        deletion_requests = RecordDeletionRequest.objects.filter(record=record)
+        for deletion_request in deletion_requests:
+            e_deletion_request = EncryptedRecordDeletionRequest(request_from=deletion_request.request_from,
+                                                                request_processed=deletion_request.request_processed,
+                                                                record=e_record,
+                                                                explanation=deletion_request.explanation,
+                                                                requested=deletion_request.requested,
+                                                                processed_on=deletion_request.processed_on,
+                                                                state=deletion_request.state)
+            e_deletion_request.save()
 
     @staticmethod
     def decrypt_record_document(record_document, e_record, e_record_key):

@@ -28,10 +28,12 @@ router.register('clients', ClientsViewSet)
 router.register('record_documents', RecordDocumentViewSet)
 router.register('record_document_tags', RecordDocumentTagViewSet)
 router.register('record_permissions', RecordPermissionViewSet)
-router.register('record_deletion_requests', RecordDeletionRequestViewSet)
+router.register('record_deletion_requests', EncryptedRecordDeletionRequestViewSet)
+# router.register('record_deletion_requests', RecordDeletionRequestViewSet) OLD
 # encryption
 router.register('record_encryptions', RecordEncryptionViewSet)
 router.register('e_records', EncryptedRecordsListViewSet, base_name='e_records')
+router.register('e_clients', EncryptedClientsViewSet, base_name='e_records')    # TODO: add all encrypted fields here
 
 
 urlpatterns = [
@@ -54,7 +56,8 @@ urlpatterns = [
     url(r'e_record_permission_requests', EncryptedRecordPermissionAdmitViewSet.as_view()),
     url(r'record_permission_requests', RecordPermissionAdmitViewSet.as_view()),         # deprecated
     url(r'documents_download/(?P<id>.+)/$', RecordDocumentDownloadAllViewSet.as_view()),# deprecated
-    url(r'process_record_deletion_request', RecordDeletionProcessViewSet.as_view()),
+    url(r'process_record_deletion_request', EncryptedRecordDeletionProcessViewSet.as_view()),    # OLD
+    # url(r'process_record_deletion_request', RecordDeletionProcessViewSet.as_view()),    # OLD
     url(r'^e_upload/$', EncryptedRecordDocumentsUploadViewSet.as_view()),               # deprecated
     url(r'^upload/(?P<filename>[^/]+)$', RecordDocumentUploadEncryptViewSet.as_view()), # deprecated
 

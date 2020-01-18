@@ -41,7 +41,9 @@ class Command(BaseCommand):
         consultant_group = apimodels.Group.objects.filter(name='Berater', from_rlc=rlc).first()
         consultants = list(consultant_group.group_members.all())
         self.get_and_create_records(clients, consultants, rlc)
-        self.create_the_best_record_ever(main_user, clients, consultants, rlc)
+        best_record = self.create_the_best_record_ever(main_user, clients, consultants, rlc)
+        self.create_record_deletion_request(main_user, best_record)
+        self.create_record_permission_request(users[4], best_record)
 
     def get_and_create_dummy_user(self, rlc):
         user = apimodels.UserProfile(name='Mr Dummy', email='dummy@rlcm.de', phone_number='01666666666',
@@ -560,3 +562,12 @@ class Command(BaseCommand):
         message.save()
         message.created_on = AddMethods.generate_datetime((2019, 3, 13, 18, 7, 21, 0))
         message.save()
+        return record
+
+    def create_record_deletion_request(self, user, record):
+        request = models.RecordDeletionRequest(record=record, request_from=user, state='re')
+        request.save()
+
+    def create_record_permission_request(self, user, record):
+        request = models.RecordPermission(record=record, request_from=user, state='re')
+        request.save()
