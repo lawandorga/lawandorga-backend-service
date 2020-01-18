@@ -238,7 +238,7 @@ class Command(BaseCommand):
                 (2018, 3, 3, 14, 5, 0, 0),
                 'Ali Baba',
                 'fragt wie er seine deutsche Freundin heiraten kann',
-                '01345626534',
+                '',
                 (1985, 6, 27),
                 random.choice(origin_countries)
             ),
