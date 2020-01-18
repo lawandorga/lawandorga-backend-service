@@ -43,44 +43,6 @@ class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
         pass
 
 
-class EncryptedRecordDocumentUploadViewSet(APIView):
-    parser_classes = [FileUploadParser]
-
-    def put(self, request, filename):
-        # TODO remove
-        file_obj = request.data['file']
-        file_path = os.path.join('temp', filename)
-        file = open(file_path, 'wb')
-        if file_obj.multiple_chunks():
-            for chunk in file_obj.chunks():
-                file.write(chunk)
-        else:
-            file.write(file_obj.read())
-            file.close()
-        iv = os.urandom(16)
-        self.encrypt_and_send_to_s3(file_path, 'asdasd', iv, 'tests')  # TODO: ! encryption
-        return Response(status=204)
-
-
-class EncryptedRecordDocumentsUploadViewSet(APIView):
-    parser_classes = [FormParser, MultiPartParser]
-
-    def put(self, request):
-        # TODO: !!! encryption REMOVE
-        filepaths = LocalStorageManager.save_files_locally(request.FILES.getlist('files'))
-        MultithreadedFileUploads.encrypt_files_and_upload_to_s3(filepaths, 'test', 'tempfolder')
-        return Response({'finished': True})
-        # for file_information in request.FILES.getlist('files'):
-        #     print(file_information)
-        #     file = open(storage_folders.get_temp_storage_path(file_information.name), 'wb')
-        #     if file_information.multiple_chunks():
-        #         for chunk in file_information.chunks():
-        #             file.write(chunk)
-        #     else:
-        #         file.write(file_information.read())
-        #         file.close()
-
-
 class EncryptedRecordDocumentByRecordViewSet(APIView):
     parser_classes = [FormParser, MultiPartParser]
 
@@ -155,23 +117,3 @@ class EncryptedRecordDocumentDownloadViewSet(APIView):
         res = Response(file, content_type=mimetypes.guess_type(e_record_document.name))
         res['Content-Disposition'] = 'attachment; filename="' + e_record_document.name + '"'
         return res
-
-
-class EncryptedRecordDocumentDownloadAllViewSet(APIView):
-    def get(self, request, id):
-        # TODO: deprecated delete
-        try:
-            record = models.Record.objects.get(pk=id)
-        except Exception as e:
-            raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
-
-        if not record.user_has_permission(request.user):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-
-        docs = list(models.RecordDocument.objects.filter(record=record))
-        filenames = []
-        for doc in docs:
-            storage_generator.download_file(doc.get_file_key(), doc.name)
-            filenames.append(doc.name)
-
-        return storage_generator.zip_files_and_create_response(filenames, 'record.zip')

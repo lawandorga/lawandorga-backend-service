@@ -58,7 +58,7 @@ urlpatterns = [
     url(r'documents_download/(?P<id>.+)/$', RecordDocumentDownloadAllViewSet.as_view()),# deprecated
     url(r'process_record_deletion_request', EncryptedRecordDeletionProcessViewSet.as_view()),    # OLD
     # url(r'process_record_deletion_request', RecordDeletionProcessViewSet.as_view()),    # OLD
-    url(r'^e_upload/$', EncryptedRecordDocumentsUploadViewSet.as_view()),               # deprecated
+    # url(r'^e_upload/$', EncryptedRecordDocumentsUploadViewSet.as_view()),               # deprecated
     url(r'^upload/(?P<filename>[^/]+)$', RecordDocumentUploadEncryptViewSet.as_view()), # deprecated
 
 ]

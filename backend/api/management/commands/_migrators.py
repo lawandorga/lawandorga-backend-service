@@ -66,8 +66,6 @@ class Migrators:
         e_record_key = AESEncryption.generate_secure_key()
         client_key = AESEncryption.generate_secure_key()
         client = record.client
-        # TODO: ! encryption, potentially search for client (maybe 2nd record for him)
-        all_clients = list(EncryptedClient.objects.all())
         potential_e_client = EncryptedClient.objects.filter(from_rlc=client.from_rlc, created_on=client.created_on,
                                                             birthday=client.birthday).first()
         if not potential_e_client:

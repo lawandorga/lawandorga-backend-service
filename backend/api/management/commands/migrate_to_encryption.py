@@ -17,9 +17,10 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from backend.api.management.commands._migrators import OneTimeGenerators, Migrators
+from backend.api.management.commands._migrators import Migrators, OneTimeGenerators
 from backend.api.models import RlcEncryptionKeys, UserEncryptionKeys
-from backend.recordmanagement.models import EncryptedClient, EncryptedRecord, EncryptedRecordDocument, EncryptedRecordPermission, EncryptedRecordMessage, RecordEncryption
+from backend.recordmanagement.models import EncryptedClient, EncryptedRecord, EncryptedRecordDeletionRequest, \
+    EncryptedRecordDocument, EncryptedRecordMessage, EncryptedRecordPermission, RecordEncryption
 
 
 class Command(BaseCommand):
@@ -32,6 +33,7 @@ class Command(BaseCommand):
         EncryptedRecordPermission.objects.all().delete()
         EncryptedRecordMessage.objects.all().delete()
         EncryptedRecordDocument.objects.all().delete()
+        EncryptedRecordDeletionRequest.objects.all().delete()
 
         UserEncryptionKeys.objects.all().delete()
         RlcEncryptionKeys.objects.all().delete()

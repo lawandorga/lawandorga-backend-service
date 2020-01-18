@@ -54,3 +54,4 @@ class Command(BaseCommand):
         UserEncryptionKeys.objects.all().delete()
         RlcEncryptionKeys.objects.all().delete()
         EncryptedClient.objects.all().delete()
+        EncryptedRecordDeletionRequest.objects.all().delete()

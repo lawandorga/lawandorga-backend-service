@@ -52,7 +52,7 @@ class EncryptedClientSerializer(serializers.ModelSerializer):
 class EncryptedClientNameSerializer(serializers.ModelSerializer):
     name = EncryptedField()
 
-    # TODO: ! encryption when is this used??
+    # TODO: maybe use in all clients list view?
     class Meta:
         model = EncryptedClient
         fields = ('id', 'name', 'origin_country', )
