@@ -51,7 +51,7 @@ class UserEncryptionKeys(models.Model):
         else:
             private_key = self.private_key
             try:
-                msg = private_key.tobytes()
+                private_key = private_key.tobytes()
             except:
                 pass
             self.private_key = AESEncryption.encrypt(private_key, key_to_encrypt)
