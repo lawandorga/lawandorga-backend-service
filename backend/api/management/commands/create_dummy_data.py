@@ -229,7 +229,7 @@ class Command(BaseCommand):
                 (2017, 12, 24, 12, 2, 0, 0),
                 'Mustafa Kubi',
                 'möchte eine Ausbildung beginnen',
-                '01456378963',
+                None,
                 (1998, 12, 3),
                 random.choice(origin_countries)
             ),
