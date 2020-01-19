@@ -16,8 +16,8 @@
 from django.db import models
 from django.db.models import Q
 
-from . import UserProfile
 from backend.static import permissions
+from . import UserProfile
 
 
 class GroupQuerySet(models.QuerySet):
@@ -49,3 +49,20 @@ class Group(models.Model):
 
     def __str__(self):
         return 'group: ' + str(self.id) + ':' + self.name + '; from ' + str(self.from_rlc)
+
+    def has_group_permission(self, permission):
+        from backend.api.models import HasPermission, Permission
+        if isinstance(permission, str):
+            permission = Permission.objects.get(name=permission)
+        return HasPermission.objects.filter(group_has_permission=self, permission_for_rlc=self.from_rlc,
+                                            permission=permission).count() >= 1
+
+    def has_group_one_permission(self, permissions_to_check):
+        for permission in permissions_to_check:
+            if self.has_group_permission(permission):
+                return True
+        return False
+
+    def group_has_record_encryption_keys_permission(self):
+        record_encryption_keys_permissions = permissions.get_record_encryption_keys_permissions()
+        return self.has_group_one_permission(record_encryption_keys_permissions)

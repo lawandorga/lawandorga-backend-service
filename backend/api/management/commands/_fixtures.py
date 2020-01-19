@@ -21,7 +21,7 @@ from django.conf import settings
 
 from backend.api.tests import *
 from backend.recordmanagement.models import Client, OriginCountry, Record, RecordDocumentTag, RecordTag
-from backend.static.permissions import get_all_permissions
+from backend.static.permissions import get_all_permissions_strings
 
 
 class Fixtures:
@@ -104,7 +104,7 @@ class Fixtures:
     def create_example_permissions():
         permissions = [('add_records',), ('edit_records',), ('remove_records',), ('view_records',), ('view_users',),
                        ('view_records_full_detail',), ('can_consult',)]
-        real_perms = get_all_permissions()
+        real_perms = get_all_permissions_strings()
         for rperm in real_perms:
             if (rperm,) not in permissions:
                 permissions.append((rperm,))
@@ -122,13 +122,13 @@ class Fixtures:
 
     @staticmethod
     def create_real_permissions():
-        permissions = get_all_permissions()
+        permissions = get_all_permissions_strings()
         for permission in permissions:
             AddMethods.add_permission(permission)
 
     @staticmethod
     def create_real_permissions_no_duplicates():
-        permissions = get_all_permissions()
+        permissions = get_all_permissions_strings()
         for permission in permissions:
             if Permission.objects.filter(name=permission).count() == 0:
                 AddMethods.add_permission(permission)

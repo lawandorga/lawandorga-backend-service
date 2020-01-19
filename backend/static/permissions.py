@@ -14,6 +14,8 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from backend.api.models import Permission
+
 PERMISSION_CAN_CONSULT = 'can_consult'
 PERMISSION_VIEW_RECORDS_RLC = 'view_records_rlc'
 PERMISSION_CAN_ADD_RECORD_RLC = 'add_record_rlc'
@@ -31,7 +33,7 @@ PERMISSION_ACTIVATE_INACTIVE_USERS_RLC = 'activate_inactive_users_rlc'
 PERMISSION_PROCESS_RECORD_DELETION_REQUESTS = 'process_record_deletion_requests'
 
 
-def get_all_permissions():
+def get_all_permissions_strings():
     return [
         PERMISSION_CAN_CONSULT,
         PERMISSION_VIEW_RECORDS_RLC,
@@ -49,3 +51,19 @@ def get_all_permissions():
         PERMISSION_CAN_ADD_RECORD_RLC,
         PERMISSION_PROCESS_RECORD_DELETION_REQUESTS
     ]
+
+
+def get_record_encryption_keys_permissions_strings():
+    return [
+        PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC,
+        PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
+        PERMISSION_MANAGE_PERMISSIONS_RLC,
+        PERMISSION_MANAGE_GROUPS_RLC
+    ]
+
+
+def get_record_encryption_keys_permissions():
+    permissions = []
+    for permission_string in get_record_encryption_keys_permissions_strings():
+        permissions.append(Permission.objects.get(name=permission_string))
+    return permissions

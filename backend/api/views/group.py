@@ -22,6 +22,8 @@ from backend.api.errors import CustomError
 from backend.static import error_codes
 from backend.static import permissions
 from .. import models, serializers
+from backend.recordmanagement.helpers import add_record_encryption_keys_for_users
+from backend.static.middleware import get_private_key_from_request
 
 
 class GroupViewSet(viewsets.ModelViewSet):
@@ -86,6 +88,10 @@ class GroupMemberViewSet(APIView):
         if request.data['action'] == 'add':
             group.group_members.add(user)
             group.save()
+            if group.group_has_record_encryption_keys_permission():
+                granting_users_private_key = get_private_key_from_request(request)
+                add_record_encryption_keys_for_users(request.user, granting_users_private_key, [user])
+
             return Response(serializers.GroupSerializer(group).data)
         elif request.data['action'] == 'remove':
             group.group_members.remove(user)

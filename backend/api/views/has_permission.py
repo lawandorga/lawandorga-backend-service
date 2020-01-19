@@ -23,9 +23,11 @@ from django.forms.models import model_to_dict
 
 from backend.api.errors import CustomError
 from backend.static import error_codes
-from backend.static.permissions import PERMISSION_MANAGE_PERMISSIONS_RLC
-from ..models import HasPermission, Group, UserProfile
+from backend.static.permissions import PERMISSION_MANAGE_PERMISSIONS_RLC, get_record_encryption_keys_permissions
+from ..models import HasPermission, Group, UserProfile, Permission
 from ..serializers import HasPermissionSerializer, GroupNameSerializer, UserProfileNameSerializer
+from backend.recordmanagement.helpers import check_encryption_key_holders_and_grant
+from backend.static.middleware import get_private_key_from_request
 
 
 class HasPermissionViewSet(viewsets.ModelViewSet):
@@ -71,6 +73,17 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
+
+        permission = Permission.objects.get(id=request.data['permission'])
+        if permission in get_record_encryption_keys_permissions():
+            granting_users_private_key = get_private_key_from_request(request)
+            check_encryption_key_holders_and_grant(request.user, granting_users_private_key)
+        # check if permission in rec enc perms TODO: this would be mor performant
+        # get users private key
+        # if rlc -> add rec enc for all rlc users
+        # if group -> add for all group members
+        # if user -> add for user
+
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 

@@ -60,7 +60,9 @@ class UsersTests(TransactionTestCase):
                                         (1100, 'see'),
                                         (1110, 'show'),
                                         (1120, 'erase'),
-                                        (1130, 'can_consult')))
+                                        (1130, 'can_consult'),
+                                        (1140, 'has_decryption_keys'),
+                                        (1150, 'has_decryption_keys_2')))
 
         # user - user 103x
         # group - user 104x
@@ -89,6 +91,8 @@ class UsersTests(TransactionTestCase):
         CreateFixtures.add_has_permission(14, 1110, rlc_has=91, for_rlc=92)
         CreateFixtures.add_has_permission(15, 1130, user_has=64, for_rlc=91)
         CreateFixtures.add_has_permission(16, 1130, group_has=72, for_rlc=91)
+        CreateFixtures.add_has_permission(17, 1140, group_has=72, for_rlc=91)
+        CreateFixtures.add_has_permission(18, 1150, user_has=64, for_rlc=91)
 
     @staticmethod
     def checkArrays(testRef, real, toGet):
@@ -309,8 +313,16 @@ class UsersTests(TransactionTestCase):
         self.assertTrue(not user1.has_permission(1030, for_user=63))
         self.assertTrue(not user1.has_permission(1031, for_user=63))
 
-    def test_get_users_with_special_permissions(self):
+    def test_get_users_with_special_permission(self):
         self.fixtures_has_permissions()
 
         consultants = Rlc.objects.first().get_consultants()
         self.assertTrue(list(consultants).__len__() == 3)
+
+    def test_get_users_with_special_permissions(self):
+        self.fixtures_has_permissions()
+        permission_list = ['has_decryption_keys', 'has_decryption_keys_2']
+
+        users_with_permissions = UserProfile.objects.get_users_with_special_permissions(permission_list, for_rlc=91)
+        self.assertTrue(list(users_with_permissions).__len__() == 3)
+

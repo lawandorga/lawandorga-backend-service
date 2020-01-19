@@ -84,6 +84,17 @@ class UserProfileManager(BaseUserManager):
 
         return result
 
+    @staticmethod
+    def get_users_with_special_permissions(permissions, from_rlc=None, for_user=None, for_group=None, for_rlc=None):
+        users = None
+        for permission in permissions:
+            users_to_add = UserProfileManager.get_users_with_special_permission(permission, from_rlc,for_user, for_group, for_rlc)
+            if users is None:
+                users = users_to_add
+            else:
+                users = users.union(users_to_add).distinct()
+        return users
+
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     """ profile of users """

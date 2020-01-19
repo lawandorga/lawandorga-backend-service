@@ -15,9 +15,10 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from backend.api.errors import CustomError
-from backend.static import error_codes
-from backend.static import permissions
-from backend.recordmanagement.models import Record, EncryptedRecord
+from backend.recordmanagement.models import EncryptedRecord, Record, RecordEncryption
+from backend.api.models import UserEncryptionKeys
+from backend.static import error_codes, permissions
+from backend.static.encryption import RSAEncryption
 
 
 def get_record(user, record_id):
@@ -38,3 +39,33 @@ def get_e_record(user, e_record_id):
     except Exception as e:
         raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
     return e_record
+
+
+def add_record_encryption_keys_for_users(granting_user, granting_users_private_key, users_to_give):
+    records = EncryptedRecord.objects.filter(from_rlc=granting_user.rlc)
+    for record in records:
+        record_key = record.get_decryption_key(granting_user, granting_users_private_key)
+        for member in users_to_give:
+            try:
+                already_existing = RecordEncryption.objects.get(user=member, record=record)
+            except:
+                members_public_key = member.get_public_key()
+                encrypted_record_key = RSAEncryption.encrypt(record_key, members_public_key)
+                record_encryption = RecordEncryption(user=member,
+                                                     record=record, encrypted_key=encrypted_record_key)
+                record_encryption.save()
+
+
+def check_encryption_key_holders_and_grant(granting_user, granting_users_private_key):
+    records = EncryptedRecord.objects.filter(from_rlc=granting_user.rlc)
+    for record in records:
+        record_key = record.get_decryption_key(granting_user, granting_users_private_key)
+        users_with_keys = record.get_users_with_decryption_keys()
+        for user in users_with_keys:
+            try:
+                already_existing = RecordEncryption.objects.get(user=user, record=record)
+            except:
+                users_public_key = UserEncryptionKeys.objects.get_users_public_key(user)
+                encrypted_record_key = RSAEncryption.encrypt(record_key, users_public_key)
+                record_encryption = RecordEncryption(user=user, record=record, encrypted_key=encrypted_record_key)
+                record_encryption.save()

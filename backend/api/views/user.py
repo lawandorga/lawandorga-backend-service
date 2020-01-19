@@ -167,7 +167,7 @@ class UserProfileCreatorViewSet(viewsets.ModelViewSet):
         user_activation_link.save()
 
         EmailSender.send_user_activation_email(user, FrontendLinks.get_user_activation_link(user_activation_link))
-        UserProfile.objects.get_users_with_special_permission(PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=rlc.id)
+        UserProfile.objects.get_users_with_special_permission(PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=rlc.id)  # TODO ?
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

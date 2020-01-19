@@ -19,7 +19,7 @@ from ._factories import UserFactory, ClientFactory, RecordFactory, GroupFactory
 from backend.api.models import *
 from ._fixtures import Fixtures, AddMethods
 from backend.recordmanagement.models import *
-from backend.static.permissions import get_all_permissions
+from backend.static.permissions import get_all_permissions_strings
 
 
 class Command(BaseCommand):
