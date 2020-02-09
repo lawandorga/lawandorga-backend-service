@@ -270,12 +270,18 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return self.rlc.get_public_key()
 
     def get_rlcs_private_key(self, users_private_key):
-        from backend.api.models import UsersRlcKeys, RlcEncryptionKeys
-        from backend.static.encryption import RSAEncryption
+        from backend.api.models import RlcEncryptionKeys
         try:
             rlc_keys = RlcEncryptionKeys.objects.get(rlc=self.rlc)
         except:
             raise CustomError(ERROR__API__RLC__NO_PUBLIC_KEY_FOUND)
+        aes_rlc_key = self.get_rlcs_aes_key(users_private_key)
+        rlcs_private_key = rlc_keys.decrypt_private_key(aes_rlc_key)
+        return rlcs_private_key
+
+    def get_rlcs_aes_key(self, users_private_key):
+        from backend.api.models import UsersRlcKeys
+        from backend.static.encryption import RSAEncryption
         try:
             users_rlc_keys = UsersRlcKeys.objects.get(user=self)
         except:
@@ -285,6 +291,30 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             rlc_encrypted_key_for_user = rlc_encrypted_key_for_user.tobytes()
         except:
             pass
-        aes_rlc_key = RSAEncryption.decrypt(rlc_encrypted_key_for_user, users_private_key)
-        rlcs_private_key = rlc_keys.decrypt_private_key(aes_rlc_key)
-        return rlcs_private_key
+        return RSAEncryption.decrypt(rlc_encrypted_key_for_user, users_private_key)
+
+
+    def generate_encryption_keys(self):
+        from backend.api.models import UserEncryptionKeys
+        from backend.static.encryption import RSAEncryption
+        if UserEncryptionKeys.objects.filter(user=self):
+            return
+        private, public = RSAEncryption.generate_keys()
+        user_keys = UserEncryptionKeys(user=self, private_key=private, public_key=public)
+        user_keys.save()
+
+    def generate_rlc_keys_for_this_user(self, rlcs_private_key):
+        from backend.api.models import UsersRlcKeys
+        from backend.static.encryption import RSAEncryption
+        try:
+            # if already exists return
+            UsersRlcKeys.objects.get(user=self, rlc=self.rlc)
+        except:
+            own_public_key = self.get_public_key()
+            encrypted_key = RSAEncryption.encrypt(rlcs_private_key, own_public_key)
+            users_rlc_keys = UsersRlcKeys(user=self, rlc=self.rlc, encrypted_key=encrypted_key)
+            users_rlc_keys.save()
+
+    def rsa_encrypt(self, plain):
+        from backend.static.encryption import RSAEncryption
+        return RSAEncryption.encrypt(plain, self.get_public_key())
