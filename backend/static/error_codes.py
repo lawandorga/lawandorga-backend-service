@@ -18,6 +18,12 @@ ERROR__API__DOWNLOAD__NO_SUCH_KEY = {
     "error_code": "api.download.no_such_key",
     "error_detail": "no such filekey to download"
 }
+
+ERROR__API__STORAGE__DELETE__NO_SUCH_KEY = {
+    "error_code": "api.storage.delete.no_such_key",
+    "error_detail": "no such filekey on storage to delete"
+}
+
 ERROR__API__DOWNLOAD__NO_FILE_SPECIFIED = {
     'error_detail': 'no file specified',
     'error_code': 'api.download.no_file_specified'
