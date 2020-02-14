@@ -25,6 +25,7 @@ from backend.api.models import NewUserRequest, UserActivationLink
 from backend.api.serializers import NewUserRequestSerializer
 from backend.static import error_codes
 from backend.static.permissions import PERMISSION_ACCEPT_NEW_USERS_RLC
+from backend.static.middleware import get_private_key_from_request
 
 
 class NewUserRequestViewSet(viewsets.ModelViewSet):
@@ -40,6 +41,7 @@ class NewUserRequestViewSet(viewsets.ModelViewSet):
 
 class NewUserRequestAdmitViewSet(APIView):
     def post(self, request):
+        from backend.api.models import UsersRlcKeys
         if not request.user.has_permission(PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=request.user.rlc):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
@@ -57,6 +59,8 @@ class NewUserRequestAdmitViewSet(APIView):
         except:
             raise CustomError(error_codes.ERROR__API__NEW_USER_REQUEST__NO_USER_ACTIVATION_LINK)
 
+
+
         action = request.data['action']
         if action != 'accept' and action != 'decline':
             raise CustomError(error_codes.ERROR__API__ACTION_NOT_VALID)
@@ -65,6 +69,14 @@ class NewUserRequestAdmitViewSet(APIView):
         new_user_request.processed_on = datetime.utcnow().replace(tzinfo=pytz.utc)
         if action == 'accept':
             new_user_request.state = 'gr'
+
+            # create encryption key for new user
+            creators_private_key = get_private_key_from_request(request)
+            rlcs_aes_key = request.user.get_rlcs_aes_key(creators_private_key)
+            encrypted_rlcs_private_key = new_user_request.request_from.rsa_encrypt(rlcs_aes_key)
+            users_rlc_keys = UsersRlcKeys(user=new_user_request.request_from, rlc=request.user.rlc, encrypted_key=encrypted_rlcs_private_key)
+            users_rlc_keys.save()
+
             if user_activation_link.activated:
                 new_user_request.request_from.is_active = True
                 new_user_request.request_from.save()

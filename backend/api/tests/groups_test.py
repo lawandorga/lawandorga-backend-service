@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.test import TransactionTestCase
-from ..models import UserProfile, Group
+from ..models import UserProfile, Group, HasPermission, Permission, Rlc
 from .statics import StaticTestMethods
 
 
@@ -36,4 +36,48 @@ class GroupsTests(TransactionTestCase):
         self.assertTrue(response.status_code == 201)
         self.assertTrue(before+1 == after)
 
+    def test_has_group_permission(self):
+        perm1 = Permission(name='test_permission_1')
+        perm1.save()
+        perm2 = Permission(name='test_permission_2')
+        perm2.save()
+        rlc = Rlc(name='test rlc1')
+        rlc.save()
+        group = Group(from_rlc=rlc, name='test group 1', visible=True)
+        group.save()
 
+        hasperm1 = HasPermission(group_has_permission=group, permission=perm1, permission_for_rlc=rlc)
+        hasperm1.save()
+        group = Group.objects.first()
+        self.assertTrue(group.has_group_permission(perm1))
+        self.assertTrue(group.has_group_permission(perm1.name))
+
+    def test_has_group_one_permission(self):
+        perm1 = Permission(name='test_permission_1')
+        perm1.save()
+        perm2 = Permission(name='test_permission_2')
+        perm2.save()
+        rlc = Rlc(name='test rlc1')
+        rlc.save()
+        group = Group(from_rlc=rlc, name='test group 1', visible=True)
+        group.save()
+
+        hasperm1 = HasPermission(group_has_permission=group, permission=perm1, permission_for_rlc=rlc)
+        hasperm1.save()
+        group = Group.objects.first()
+        self.assertTrue(group.has_group_one_permission([perm1, perm2]))
+
+    def test_has_group_one_permission_2(self):
+        perm1 = Permission(name='test_permission_1')
+        perm1.save()
+        perm2 = Permission(name='test_permission_2')
+        perm2.save()
+        rlc = Rlc(name='test rlc1')
+        rlc.save()
+        group = Group(from_rlc=rlc, name='test group 1', visible=True)
+        group.save()
+
+        hasperm1 = HasPermission(group_has_permission=group, permission=perm1, permission_for_rlc=rlc)
+        hasperm1.save()
+        group = Group.objects.first()
+        self.assertTrue(not group.has_group_one_permission([perm2]))

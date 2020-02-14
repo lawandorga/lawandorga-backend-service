@@ -120,6 +120,8 @@ class AESEncryption:
         :param key: bytes/string, key with which to encrypt
         :return: bytes, encrypted message (with iv at the beginning
         """
+        if msg is None or msg.__len__() == 0:
+            return bytearray()
         iv = AESEncryption.generate_iv()
         cipher_bytes = AESEncryption.encrypt_with_iv(msg, key, iv)
         cipher_bytes = iv + cipher_bytes

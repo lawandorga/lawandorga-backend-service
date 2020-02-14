@@ -17,12 +17,12 @@
 from django.db import models
 from django.db.models import Q
 
+from backend.api.errors import CustomError
 from backend.api.models import Rlc, UserProfile
 from backend.recordmanagement.models import RecordTag
-from backend.static.permissions import PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC, \
-    PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
-from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND
+from backend.static.permissions import PERMISSION_MANAGE_GROUPS_RLC, PERMISSION_MANAGE_PERMISSIONS_RLC, \
+    PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC, PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 
 
 class EncryptedRecordQuerySet(models.QuerySet):
@@ -132,18 +132,30 @@ class EncryptedRecord(models.Model):
         return working_on_users.union(users_with_record_permission).union(users_with_overall_permission).distinct()
 
     def get_users_with_decryption_keys(self):
-        from backend.api.models import UserProfile, Permission
+        from backend.api.models import UserProfile
+        from backend.static.permissions import get_record_encryption_keys_permissions_strings
         working_on_users = self.working_on_record.all()
         users_with_record_permission = UserProfile.objects.filter(e_record_permissions_requested__record=self,
                                                                   e_record_permissions_requested__state='gr')
-        users_with_overall_permission = Permission.objects.get(
-            name=PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC).get_real_users_with_permission_for_rlc(
-            self.from_rlc)
-        users_with_granting_permission = Permission.objects.get(
-            name=PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC).get_real_users_with_permission_for_rlc(
-            self.from_rlc)
-        return working_on_users.union(users_with_record_permission).union(users_with_overall_permission).union(
-            users_with_granting_permission).distinct()
+
+        users_with_decryption_key_permissions = UserProfile.objects.get_users_with_special_permissions(
+            get_record_encryption_keys_permissions_strings(), for_rlc=self.from_rlc)
+        # users_with_overall_permission = Permission.objects.get(
+        #     name=PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC).get_real_users_with_permission_for_rlc(
+        #     self.from_rlc)
+        # users_with_granting_permission = Permission.objects.get(
+        #     name=PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC).get_real_users_with_permission_for_rlc(
+        #     self.from_rlc)
+        # users_with_manage_permissions = Permission.objects.get(
+        #     name=PERMISSION_MANAGE_PERMISSIONS_RLC).get_real_users_with_permission_for_rlc(
+        #     self.from_rlc)
+        # users_with_manage_groups = Permission.objects.get(
+        #     name=PERMISSION_MANAGE_GROUPS_RLC).get_real_users_with_permission_for_rlc(
+        #     self.from_rlc)
+        # return working_on_users.union(users_with_record_permission).union(users_with_overall_permission).union(
+        #     users_with_granting_permission).union(users_with_manage_permissions).union(
+        #     users_with_manage_groups).distinct()
+        return working_on_users.union(users_with_record_permission).union(users_with_decryption_key_permissions).distinct()
 
     def get_decryption_key(self, user, users_private_key):
         from backend.recordmanagement.models import RecordEncryption

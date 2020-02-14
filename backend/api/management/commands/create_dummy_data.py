@@ -36,6 +36,7 @@ class Command(BaseCommand):
         rlc.save()
         users = self.get_and_create_users(rlc)
         main_user = self.get_and_create_dummy_user(rlc)
+        self.create_inactive_user(rlc)
         self.create_groups(rlc, main_user, users)
         clients = self.get_and_create_clients(rlc)
         consultant_group = apimodels.Group.objects.filter(name='Berater', from_rlc=rlc).first()
@@ -45,6 +46,8 @@ class Command(BaseCommand):
         self.create_record_deletion_request(main_user, best_record)
         self.create_record_permission_request(users[4], best_record)
 
+        # TODO: generate inactive user, generate encryption stuff here, not old unencrypted
+
     def get_and_create_dummy_user(self, rlc):
         user = apimodels.UserProfile(name='Mr Dummy', email='dummy@rlcm.de', phone_number='01666666666',
                                      street='Dummyweg 12', city='Dummycity', postal_code='00000', rlc=rlc)
@@ -52,6 +55,13 @@ class Command(BaseCommand):
         user.set_password('qwe123')
         user.save()
         return user
+
+    def create_inactive_user(self, rlc):
+        user = apimodels.UserProfile(name='Im Not that active', email='inactive@rlcm.de', phone_number='1293283882', street='Inaktive Strasse', city='InAktiv', postal_code='29292', rlc=rlc)
+        user.birthday = AddMethods.generate_date((1950, 1, 1))
+        user.set_password('qwe123')
+        user.is_active = False
+        user.save()
 
     def get_and_create_users(self, rlc):
         users = [
@@ -229,7 +239,7 @@ class Command(BaseCommand):
                 (2017, 12, 24, 12, 2, 0, 0),
                 'Mustafa Kubi',
                 'möchte eine Ausbildung beginnen',
-                '01456378963',
+                None,
                 (1998, 12, 3),
                 random.choice(origin_countries)
             ),
@@ -238,7 +248,7 @@ class Command(BaseCommand):
                 (2018, 3, 3, 14, 5, 0, 0),
                 'Ali Baba',
                 'fragt wie er seine deutsche Freundin heiraten kann',
-                '01345626534',
+                '',
                 (1985, 6, 27),
                 random.choice(origin_countries)
             ),

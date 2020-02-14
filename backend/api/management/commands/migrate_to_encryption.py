@@ -18,7 +18,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from backend.api.management.commands._migrators import Migrators, OneTimeGenerators
-from backend.api.models import RlcEncryptionKeys, UserEncryptionKeys
+from backend.api.models import RlcEncryptionKeys, UserEncryptionKeys, UsersRlcKeys
 from backend.recordmanagement.models import EncryptedClient, EncryptedRecord, EncryptedRecordDeletionRequest, \
     EncryptedRecordDocument, EncryptedRecordMessage, EncryptedRecordPermission, RecordEncryption
 
@@ -38,6 +38,7 @@ class Command(BaseCommand):
         UserEncryptionKeys.objects.all().delete()
         RlcEncryptionKeys.objects.all().delete()
         RecordEncryption.objects.all().delete()
+        UsersRlcKeys.objects.all().delete()
 
         # self.stdout.write("test", ending='')
         # self.stdout.write(options['admin_password'], ending='')

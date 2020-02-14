@@ -36,6 +36,7 @@ from ..models import UserProfile, Permission, Rlc, UserEncryptionKeys
 from ..serializers import UserProfileSerializer, UserProfileCreatorSerializer, UserProfileNameSerializer, RlcSerializer, \
     UserProfileForeignSerializer
 from backend.static.permissions import PERMISSION_ACCEPT_NEW_USERS_RLC
+from backend.static.middleware import get_private_key_from_request
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
@@ -157,6 +158,8 @@ class UserProfileCreatorViewSet(viewsets.ModelViewSet):
         user.is_active = False
         user.save()
 
+        user.generate_encryption_keys()
+
         # new user request
         from backend.api.models import NewUserRequest
         new_user_request = NewUserRequest(request_from=user)
@@ -167,7 +170,7 @@ class UserProfileCreatorViewSet(viewsets.ModelViewSet):
         user_activation_link.save()
 
         EmailSender.send_user_activation_email(user, FrontendLinks.get_user_activation_link(user_activation_link))
-        UserProfile.objects.get_users_with_special_permission(PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=rlc.id)
+        UserProfile.objects.get_users_with_special_permission(PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=rlc.id)  # TODO ?
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -269,6 +272,7 @@ class LoginViewSet(viewsets.ViewSet):
 
 
 class LogoutViewSet(APIView):
+
     def post(self, request):
         Token.objects.filter(user=request.user).delete()
         return Response()
@@ -292,6 +296,11 @@ class InactiveUsersViewSet(APIView):
                 user = UserProfile.objects.get(pk=request.data['user_id'])
             except:
                 raise CustomError(ERROR__API__USER__NOT_FOUND)
+
+            granting_users_private_key = get_private_key_from_request(request)
+            rlcs_private_key = request.user.get_rlcs_private_key(granting_users_private_key)
+            user.generate_rlc_keys_for_this_user(rlcs_private_key)
+
             user.is_active = True
             user.save()
             return Response(UserProfileSerializer(user).data)

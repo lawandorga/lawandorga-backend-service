@@ -14,17 +14,20 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from rest_framework import viewsets
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from datetime import datetime
-import pytz
 
-from backend.recordmanagement import models, serializers
-from backend.static import error_codes
+import pytz
+from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from backend.api.errors import CustomError
-from backend.static import permissions
+from backend.api.models import UserEncryptionKeys
+from backend.recordmanagement import models, serializers
 from backend.recordmanagement.helpers import get_e_record
+from backend.static import error_codes, permissions
+from backend.static.encryption import RSAEncryption
+from backend.static.middleware import get_private_key_from_request
 
 
 class RecordPermissionViewSet(viewsets.ModelViewSet):
@@ -38,7 +41,8 @@ class EncryptedRecordPermissionRequestViewSet(APIView):
         if e_record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ALREADY_WORKING_ON)
 
-        if models.EncryptedRecordPermission.objects.filter(record=e_record, request_from=request.user, state='re').count() >= 1:
+        if models.EncryptedRecordPermission.objects.filter(record=e_record, request_from=request.user,
+                                                           state='re').count() >= 1:
             raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ALREADY_REQUESTED)
         can_edit = False
         if 'can_edit' in request.data:
@@ -88,8 +92,15 @@ class EncryptedRecordPermissionAdmitViewSet(APIView):
         permission_request.processed_on = datetime.utcnow().replace(tzinfo=pytz.utc)
         if action == 'accept':
             permission_request.state = 'gr'
+            users_private_key = get_private_key_from_request(request)
+            record_key = permission_request.record.get_decryption_key(user, users_private_key)
+            users_public_key = UserEncryptionKeys.objects.get_users_public_key(permission_request.request_from)
+            encrypted_record_key = RSAEncryption.encrypt(record_key, users_public_key)
+            record_encryption = models.RecordEncryption(user=permission_request.request_from,
+                                                        record=permission_request.record,
+                                                        encrypted_key=encrypted_record_key)
+            record_encryption.save()
         else:
             permission_request.state = 'de'
         permission_request.save()
         return Response(serializers.EncryptedRecordPermissionSerializer(permission_request).data)
-
