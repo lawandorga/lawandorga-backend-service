@@ -17,8 +17,12 @@
 from unittest.mock import MagicMock
 
 from django.test import TransactionTestCase
-from backend.files.models import Folder
+
 from backend.api.tests.fixtures_encryption import CreateFixtures
+from backend.api.models import Permission, HasPermission
+from backend.files.models import Folder, PermissionForFolder, FolderPermission
+from backend.files.static.folder_permissions import PERMISSION_READ_FOLDER, PERMISSION_WRITE_FOLDER
+from backend.static.permissions import PERMISSION_READ_ALL_FOLDERS_RLC, PERMISSION_WRITE_ALL_FOLDERS_RLC
 
 
 class FolderModelTests(TransactionTestCase):
@@ -96,3 +100,88 @@ class FolderModelTests(TransactionTestCase):
         self.assertEqual('rlcs/1/files/top folder/middle folder/',
                          middle_folder.get_file_key())
         self.assertEqual('rlcs/1/files/top folder/', top_folder.get_file_key())
+
+    def test_folder_tree(self):
+        top_folder = Folder(name='top folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+        top_folder.save()
+        self.assertEqual(0, top_folder.get_all_parents().__len__())
+
+        middle_folder = Folder(name='middle folder', creator=self.fixtures['users'][0]['user'],
+                               rlc=self.fixtures['rlc'], parent=top_folder)
+        middle_folder.save()
+        parents = middle_folder.get_all_parents()
+        self.assertEqual(1, parents.__len__())
+        self.assertEqual(0, parents.index(top_folder))
+
+        bottom_folder = Folder(name='bottom folder', creator=self.fixtures['users'][0]['user'],
+                               rlc=self.fixtures['rlc'], parent=middle_folder)
+        bottom_folder.save()
+        parents = bottom_folder.get_all_parents()
+        self.assertEqual(2, parents.__len__())
+        self.assertEqual(0, parents.index(top_folder))
+        self.assertEqual(1, parents.index(middle_folder))
+
+        most_bottom = Folder(name='most bottom folder', creator=self.fixtures['users'][0]['user'],
+                             rlc=self.fixtures['rlc'], parent=bottom_folder)
+        most_bottom.save()
+        parents = most_bottom.get_all_parents()
+        self.assertEqual(3, parents.__len__())
+        self.assertEqual(0, parents.index(top_folder))
+        self.assertEqual(1, parents.index(middle_folder))
+        self.assertEqual(2, parents.index(bottom_folder))
+
+        most_bottom2 = Folder(name='most bottom 2 folder', creator=self.fixtures['users'][0]['user'],
+                              rlc=self.fixtures['rlc'], parent=bottom_folder)
+        most_bottom2.save()
+        parents = most_bottom2.get_all_parents()
+        self.assertEqual(3, parents.__len__())
+        self.assertEqual(0, parents.index(top_folder))
+        self.assertEqual(1, parents.index(middle_folder))
+        self.assertEqual(2, parents.index(bottom_folder))
+
+    def test_folder_no_duplicated_names(self):
+        top_folder = Folder(name='top folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+        top_folder.save()
+
+        middle_folder = Folder(name='middle folder', creator=self.fixtures['users'][0]['user'],
+                               rlc=self.fixtures['rlc'], parent=top_folder)
+        middle_folder.save()
+
+        middle_folder2 = Folder(name='middle folder', creator=self.fixtures['users'][0]['user'],
+                               rlc=self.fixtures['rlc'], parent=top_folder)
+        with self.assertRaises(Exception, msg="saving should fail"):
+            middle_folder2.save()
+        self.assertEqual(2, Folder.objects.count())
+
+    def test_user_has_permission(self):
+        p_write = FolderPermission(name=PERMISSION_WRITE_FOLDER)
+        p_write.save()
+        p_read = FolderPermission(name=PERMISSION_READ_FOLDER)
+        p_read.save()
+        p_all_read = Permission(name=PERMISSION_READ_ALL_FOLDERS_RLC)
+        p_all_read.save()
+        p_all_write = Permission(name=PERMISSION_WRITE_ALL_FOLDERS_RLC)
+        p_all_write.save()
+        overall_read = HasPermission(permission=p_all_read, user_has_permission=self.fixtures['users'][3]['user'], permission_for_rlc=self.fixtures['rlc'])
+        overall_read.save()
+
+        top_folder = Folder(name='top folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+        top_folder.save()
+        self.assertTrue(top_folder.user_has_permission_read(self.fixtures['users'][0]['user']))
+        self.assertTrue(top_folder.user_has_permission_read(self.fixtures['users'][1]['user']))
+        self.assertTrue(top_folder.user_has_permission_read(self.fixtures['users'][3]['user']))
+        self.assertTrue(top_folder.user_has_permission_write(self.fixtures['users'][0]['user']))
+        self.assertTrue(top_folder.user_has_permission_write(self.fixtures['users'][1]['user']))
+
+        middle_folder = Folder(name='middle folder', creator=self.fixtures['users'][0]['user'],
+                               rlc=self.fixtures['rlc'], parent=top_folder)
+        middle_folder.save()
+        self.assertTrue(middle_folder.user_has_permission_read(self.fixtures['users'][0]['user']))
+
+        perm1 = PermissionForFolder(folder=middle_folder, permission=p_read, group_has_permission=self.fixtures['groups'][0])
+        perm1.save()
+        self.assertTrue(middle_folder.user_has_permission_read(self.fixtures['users'][0]['user']))
+        self.assertTrue(middle_folder.user_has_permission_read(self.fixtures['users'][3]['user']))
+        self.assertFalse(middle_folder.user_has_permission_write(self.fixtures['users'][3]['user']))
+        self.assertFalse(middle_folder.user_has_permission_read(self.fixtures['users'][2]['user']))
+

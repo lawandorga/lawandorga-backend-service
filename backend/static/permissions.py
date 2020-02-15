@@ -31,6 +31,8 @@ PERMISSION_MANAGE_PERMISSIONS_RLC = 'manage_permissions_rlc'
 PERMISSION_ACCEPT_NEW_USERS_RLC = 'accept_new_users_rlc'
 PERMISSION_ACTIVATE_INACTIVE_USERS_RLC = 'activate_inactive_users_rlc'
 PERMISSION_PROCESS_RECORD_DELETION_REQUESTS = 'process_record_deletion_requests'
+PERMISSION_READ_ALL_FOLDERS_RLC = 'read_all_folders_rlc'
+PERMISSION_WRITE_ALL_FOLDERS_RLC = 'write_all_folders_rlc'
 
 
 def get_all_permissions_strings():
@@ -49,7 +51,9 @@ def get_all_permissions_strings():
         PERMISSION_ACCEPT_NEW_USERS_RLC,
         PERMISSION_ACTIVATE_INACTIVE_USERS_RLC,
         PERMISSION_CAN_ADD_RECORD_RLC,
-        PERMISSION_PROCESS_RECORD_DELETION_REQUESTS
+        PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
+        PERMISSION_READ_ALL_FOLDERS_RLC,
+        PERMISSION_WRITE_ALL_FOLDERS_RLC
     ]
 
 

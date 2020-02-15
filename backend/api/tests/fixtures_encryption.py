@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework.test import APIClient
-from backend.api.models import UserEncryptionKeys, UserProfile, Rlc
+from backend.api.models import UserEncryptionKeys, UserProfile, Rlc, Group
 from backend.static.encryption import RSAEncryption
 
 
@@ -31,8 +31,15 @@ class CreateFixtures:
         users = []
         users.append(CreateFixtures.create_user(rlc, "user1"))
         users.append(CreateFixtures.create_user(rlc, "user2"))
-
+        users.append(CreateFixtures.create_user(rlc, "user3"))
+        users.append(CreateFixtures.create_user(rlc, "user4"))
         return_object.update({"users": users})
+
+        groups = []
+        groups.append(CreateFixtures.create_group(rlc, 'group1', [users[0]['user'], users[1]['user']]))
+        groups.append(CreateFixtures.create_group(rlc, 'group2', [users[1]['user'], users[2]['user']]))
+        return_object.update({'groups': groups})
+
         return return_object
 
     @staticmethod
@@ -50,3 +57,12 @@ class CreateFixtures:
             "private": private,
             "client": client
         }
+
+    @staticmethod
+    def create_group(rlc, name, members):
+        group = Group(name=name, from_rlc=rlc, visible=True)
+        group.save()
+
+        for member in members:
+            group.group_members.add(member)
+        return group

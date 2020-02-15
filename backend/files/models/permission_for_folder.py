@@ -15,6 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from django.db.models import Q
+
 from backend.api.models import Group
 from backend.files.models import Folder, FolderPermission
 
@@ -31,8 +33,20 @@ class PermissionForFolder(models.Model):
         if PermissionForFolder.objects.filter(permission=self.permission, folder=self.folder,
                                               group_has_permission=self.group_has_permission).count() > 0:
             if self.id:
-                self.delete()  # TODO: really?
+                self.delete()
             else:
                 return
             raise Exception("PermissionForFolder doubled, deleting")
+
+        parents = self.folder.get_all_parents()
+
+        # if PermissionForFolder.objects.filter(folder__in=parents).exclude(
+        #     group_has_permission=self.group_has_permission).count() > 0:
+        #     raise Exception("Permission group differs from parents")
+        permissions = PermissionForFolder.objects.filter(folder__in=parents).exclude(group_has_permission=self.group_has_permission)
+        for permission in permissions:
+            # a = PermissionForFolder.objects.filter(folder=permission.folder, permission=permission.permission, group_has_permission=self.group_has_permission)
+            if PermissionForFolder.objects.filter(folder=permission.folder, permission=permission.permission, group_has_permission=self.group_has_permission).count() == 0:
+                raise Exception("Permission differs")
+
         super().save(force_insert, force_update, using, update_fields)

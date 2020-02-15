@@ -15,9 +15,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
-from django.db.models.signals import pre_delete, post_save
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
-from backend.api.models import UserProfile, Rlc
+
+from backend.api.models import Rlc, UserProfile
+from backend.files.static.folder_permissions import PERMISSION_WRITE_FOLDER
+from backend.static.permissions import PERMISSION_READ_ALL_FOLDERS_RLC, PERMISSION_WRITE_ALL_FOLDERS_RLC
 from backend.static.storage_folders import get_storage_base_files_folder
 
 
@@ -61,3 +64,56 @@ class Folder(models.Model):
     def propagate_saving(sender, instance, **kwargs):
         if sender == Folder:
             instance.propagate_new_size_up(instance.size)
+
+    def get_all_parents(self):
+        if not self.parent:
+            return []
+        elif self.parent.parent:
+            return self.parent.get_all_parents() + [self.parent]
+        else:
+            return [self.parent]
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        if Folder.objects.filter(parent=self.parent, name=self.name, rlc=self.rlc).count() > 0:
+            raise Exception('duplicate folder')
+        super().save(force_insert, force_update, using, update_fields)
+
+    def user_has_permission_read(self, user):
+        from backend.files.models import PermissionForFolder
+        if user.has_permission(for_rlc=user.rlc, permission=PERMISSION_READ_ALL_FOLDERS_RLC) or \
+            user.has_permission(for_rlc=user.rlc, permission=PERMISSION_WRITE_ALL_FOLDERS_RLC):
+            return True
+
+        relevant_folders = self.get_all_parents() + [self]
+        relevant_permissions = PermissionForFolder.objects.filter(folder__in=relevant_folders)
+        if relevant_permissions.count() == 0:
+            return True
+
+        relevant_folders.reverse()
+        for folder in relevant_folders:
+            permissions_for_folder = PermissionForFolder.objects.filter(folder=folder)
+            if permissions_for_folder.count() > 0:
+                if permissions_for_folder.filter(
+                    group_has_permission_id__in=user.group_members.values_list('pk', flat=True)).count() == 0:
+                    return False
+        return True
+
+    def user_has_permission_write(self, user):
+        from backend.files.models import PermissionForFolder
+        if user.has_permission(for_rlc=user.rlc, permission=PERMISSION_WRITE_ALL_FOLDERS_RLC):
+            return True
+
+        relevant_folders = self.get_all_parents() + [self]
+        relevant_permissions = PermissionForFolder.objects.filter(folder__in=relevant_folders)
+        if relevant_permissions.count() == 0:
+            return True
+
+        relevant_folders.reverse()
+        for folder in relevant_folders:
+            permissions_for_folder = PermissionForFolder.objects.filter(folder=folder)
+            if permissions_for_folder.count() > 0:
+                if permissions_for_folder.filter(
+                    group_has_permission_id__in=user.group_members.values_list('pk', flat=True),
+                    permission__name=PERMISSION_WRITE_FOLDER).count() == 0:
+                    return False
+        return True
