@@ -15,13 +15,17 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework.test import APIClient
-from backend.api.models import UserEncryptionKeys, UserProfile, Rlc, Group
+from backend.api.models import UserEncryptionKeys, UserProfile, Rlc, Group, Permission
 from backend.static.encryption import RSAEncryption
+from backend.static.permissions import get_all_permissions_strings
+from backend.files.static.folder_permissions import get_all_folder_permissions_strings
+from backend.files.models import FolderPermission
 
 
 class CreateFixtures:
     @staticmethod
-    def create_fixtures():
+    def create_base_fixtures():
+        CreateFixtures.create_permissions()
         return_object = {}
 
         rlc = Rlc(name="testrlc", id=1)
@@ -66,3 +70,12 @@ class CreateFixtures:
         for member in members:
             group.group_members.add(member)
         return group
+
+    @staticmethod
+    def create_permissions():
+        perms = get_all_permissions_strings()
+        for perm in perms:
+            Permission.objects.create(name=perm)
+        perms = get_all_folder_permissions_strings()
+        for perm in perms:
+            FolderPermission.objects.create(name=perm)

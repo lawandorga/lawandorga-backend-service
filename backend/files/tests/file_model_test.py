@@ -22,7 +22,7 @@ from backend.api.tests.fixtures_encryption import CreateFixtures
 
 class FileModelTests(TransactionTestCase):
     def setUp(self):
-        self.fixtures = CreateFixtures.create_fixtures()
+        self.fixtures = CreateFixtures.create_base_fixtures()
 
     def test_delete_on_cloud(self):
         File.delete_on_cloud = MagicMock()

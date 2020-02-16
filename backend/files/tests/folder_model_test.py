@@ -27,7 +27,7 @@ from backend.static.permissions import PERMISSION_READ_ALL_FOLDERS_RLC, PERMISSI
 
 class FolderModelTests(TransactionTestCase):
     def setUp(self):
-        self.fixtures = CreateFixtures.create_fixtures()
+        self.fixtures = CreateFixtures.create_base_fixtures()
 
     def test_delete_on_cloud_called(self):
         folder = Folder(name='folder1', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
@@ -139,6 +139,19 @@ class FolderModelTests(TransactionTestCase):
         self.assertEqual(1, parents.index(middle_folder))
         self.assertEqual(2, parents.index(bottom_folder))
 
+    def test_get_folder_from_path(self):
+        top_folder = Folder(name='top folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+        top_folder.save()
+        middle_folder = Folder(name='middle folder', creator=self.fixtures['users'][0]['user'],
+                               rlc=self.fixtures['rlc'], parent=top_folder)
+        middle_folder.save()
+        bottom_folder = Folder(name='bottom folder', creator=self.fixtures['users'][0]['user'],
+                               rlc=self.fixtures['rlc'], parent=middle_folder)
+        bottom_folder.save()
+
+        self.assertEqual(bottom_folder, Folder.get_folder_from_path('top folder/middle folder/bottom folder/', self.fixtures['rlc']))
+        self.assertEqual(bottom_folder, Folder.get_folder_from_path('top folder/middle folder/bottom folder', self.fixtures['rlc']))
+
     def test_folder_no_duplicated_names(self):
         top_folder = Folder(name='top folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
         top_folder.save()
@@ -154,14 +167,8 @@ class FolderModelTests(TransactionTestCase):
         self.assertEqual(2, Folder.objects.count())
 
     def test_user_has_permission(self):
-        p_write = FolderPermission(name=PERMISSION_WRITE_FOLDER)
-        p_write.save()
-        p_read = FolderPermission(name=PERMISSION_READ_FOLDER)
-        p_read.save()
-        p_all_read = Permission(name=PERMISSION_READ_ALL_FOLDERS_RLC)
-        p_all_read.save()
-        p_all_write = Permission(name=PERMISSION_WRITE_ALL_FOLDERS_RLC)
-        p_all_write.save()
+        p_read = FolderPermission.objects.get(name=PERMISSION_READ_FOLDER)
+        p_all_read = Permission.objects.get(name=PERMISSION_READ_ALL_FOLDERS_RLC)
         overall_read = HasPermission(permission=p_all_read, user_has_permission=self.fixtures['users'][3]['user'], permission_for_rlc=self.fixtures['rlc'])
         overall_read.save()
 

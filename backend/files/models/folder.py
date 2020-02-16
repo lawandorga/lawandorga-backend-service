@@ -117,3 +117,15 @@ class Folder(models.Model):
                     permission__name=PERMISSION_WRITE_FOLDER).count() == 0:
                     return False
         return True
+
+    @staticmethod
+    def get_folder_from_path(path, rlc):
+        path_parts = path.split('/')
+        i = 0
+        folder = Folder.objects.filter(name=path_parts[i], parent=None, rlc=rlc).first()
+        while True:
+            i += 1
+            if i >= path_parts.__len__() or path_parts[i] == '':
+                break
+            folder = folder.child_folders.filter(name=path_parts[i]).first()
+        return folder

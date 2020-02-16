@@ -22,7 +22,7 @@ from backend.files.models import Folder, FolderPermission, PermissionForFolder
 
 class PermissionForFolderTest(TransactionTestCase):
     def setUp(self):
-        self.fixtures = CreateFixtures.create_fixtures()
+        self.fixtures = CreateFixtures.create_base_fixtures()
 
     def test_create_same_permission_twice(self):
         permission = FolderPermission(name='read')

@@ -23,7 +23,7 @@ from backend.files.models import Folder
 
 class CheckRuntimeTest(TransactionTestCase):
     def setUp(self):
-        self.fixtures = CreateFixtures.create_fixtures()
+        self.fixtures = CreateFixtures.create_base_fixtures()
 
     def test_runtime(self):
         time_sum = 0
