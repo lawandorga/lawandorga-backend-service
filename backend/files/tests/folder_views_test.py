@@ -15,12 +15,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.test import TransactionTestCase
+from unittest.mock import MagicMock
 
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.files.models import File, Folder, FolderPermission, PermissionForFolder
 from backend.files.static.folder_permissions import PERMISSION_READ_FOLDER
 from backend.api.models import Permission, HasPermission
 from backend.static.permissions import PERMISSION_ACCESS_TO_FILES_RLC
+from backend.static.encrypted_storage import EncryptedStorage
 
 
 class FolderViewsTest(TransactionTestCase):
@@ -38,6 +40,10 @@ class FolderViewsTest(TransactionTestCase):
         file.save()
 
     def test_get_folder_information(self):
+        access = Permission.objects.get(name=PERMISSION_ACCESS_TO_FILES_RLC)
+        has_permission = HasPermission(permission=access, group_has_permission=self.fixtures['groups'][0], permission_for_rlc=self.fixtures['rlc'])
+        has_permission.save()
+
         response = self.fixtures['users'][0]['client'].get('/api/files/folder')
         self.assertEqual(200, response.status_code)
         self.assertTrue('files' in response.data)
@@ -68,7 +74,8 @@ class FolderViewsTest(TransactionTestCase):
         has_permission = HasPermission(permission=access, group_has_permission=self.fixtures['groups'][0], permission_for_rlc=self.fixtures['rlc'])
         has_permission.save()
 
+        EncryptedStorage.download_from_s3_and_decrypt_file = MagicMock()
         response = self.fixtures['users'][0]['client'].get('/api/files/folder_download')
         self.assertEqual(200, response.status_code)
-
+        self.assertEqual(1, EncryptedStorage.download_from_s3_and_decrypt_file.call_count)
         a = 10

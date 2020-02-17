@@ -23,28 +23,38 @@ from backend.files.serializers import FileSerializer, FolderSerializer
 from backend.static.permissions import  PERMISSION_ACCESS_TO_FILES_RLC
 from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
+from backend.static.storage_management import LocalStorageManager
+from backend.static.storage_folders import get_temp_storage_folder, get_temp_storage_path
+
+
+class FolderBaseViewSet(viewsets.ModelViewSet):
+    queryset = Folder.objects.all()
+    serializer_class = FolderSerializer
 
 
 class FolderViewSet(APIView):
     def get(self, request):
+        user = request.user
+        if not user.has_permission(PERMISSION_ACCESS_TO_FILES_RLC, for_rlc=user.rlc):
+            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+
         path = 'files/' + request.query_params.get('path', '')
         folder = Folder.get_folder_from_path(path, request.user.rlc)
+        if not folder:
+            return Response({'folders': [], 'files': []})
 
-        children_rel = folder.child_folders.all()
-        childs = list(children_rel)
-        for child in childs:
+        all_children = folder.child_folders.all()
+        children_list = list(all_children)
+        for child in children_list:
             if not child.user_has_permission_read(request.user):
-                children_rel = children_rel.exclude(name=child.name)
-        data = FolderSerializer(children_rel, many=True).data
+                all_children = all_children.exclude(name=child.name)
+        return_obj = {'folders': FolderSerializer(all_children, many=True).data}
 
         files = File.objects.filter(folder=folder)
         files_data = FileSerializer(files, many=True).data
-        obj = {
-            'folders': data,
-            'files': files_data
-        }
+        return_obj.update({'files': files_data})
 
-        return Response(obj)
+        return Response(return_obj)
 
 
 class DownloadFolderViewSet(APIView):
@@ -55,5 +65,7 @@ class DownloadFolderViewSet(APIView):
 
         path = 'files/' + request.query_params.get('path', '')
         folder = Folder.get_folder_from_path(path, request.user.rlc)
-        a = 10
-        return Response({})
+        folder.download_folder()
+        path = get_temp_storage_path(folder.name)
+        LocalStorageManager.zip_folder_and_delete(path, path)
+        return LocalStorageManager.create_response_from_zip_file(path)

@@ -31,6 +31,9 @@ class File(models.Model):
     folder = models.ForeignKey(Folder, related_name="files_in_folder", on_delete=models.CASCADE, null=False)
     size = models.BigIntegerField(null=False)
 
+    def __str__(self):
+        return 'file: ' + self.get_file_key()
+
     def get_file_key(self):
         return self.folder.get_file_key() + self.name
 

@@ -20,10 +20,12 @@ from rest_framework.routers import DefaultRouter
 from backend.files.views import *
 
 router = DefaultRouter()
-# router.register('folder', FolderViewSet, base_name='folder')
+router.register('folder_base', FolderBaseViewSet, base_name='folder_base')
+router.register('file_base', FileBaseViewSet, base_name='file_base')
 
 urlpatterns = [
     url(r'', include(router.urls)),
     url(r'folder_download', DownloadFolderViewSet.as_view()),
     url(r'folder', FolderViewSet.as_view()),
+    url(r'upload', UploadViewSet.as_view()),
 ]

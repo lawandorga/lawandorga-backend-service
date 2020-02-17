@@ -14,18 +14,12 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from rest_framework import viewsets
-from rest_framework.views import APIView
 from rest_framework.response import Response
-
-from backend.files.models import File, Folder
-from backend.files.serializers import FileSerializer
+from rest_framework.views import APIView
 
 
-class FileBaseViewSet(viewsets.ModelViewSet):
-    queryset = File.objects.all()
-    serializer_class = FileSerializer
-
-
-class FileViewSet(APIView):
-    pass
+class UploadViewSet(APIView):
+    def post(self, request):
+        # create folders, check if already existing
+        # upload to s3
+        a = 10

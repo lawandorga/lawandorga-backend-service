@@ -21,7 +21,7 @@ from django.dispatch import receiver
 from backend.api.models import Rlc, UserProfile
 from backend.files.static.folder_permissions import PERMISSION_WRITE_FOLDER
 from backend.static.permissions import PERMISSION_READ_ALL_FOLDERS_RLC, PERMISSION_WRITE_ALL_FOLDERS_RLC
-from backend.static.storage_folders import get_storage_base_files_folder
+from backend.static.storage_folders import get_storage_base_files_folder, get_temp_storage_folder
 
 
 class Folder(models.Model):
@@ -118,11 +118,31 @@ class Folder(models.Model):
                     return False
         return True
 
+    def download_folder(self, local_path=''):
+        # create local folder
+        # download all files in this folder to local folder
+        # call download_folder of children
+        from backend.files.models import File
+        from backend.static.encrypted_storage import EncryptedStorage
+        import os
+
+        files_in_folder = File.objects.filter(folder=self)
+        try:
+            os.makedirs(os.path.join(get_temp_storage_folder(), local_path, self.name))
+        except:
+            pass
+        for file in files_in_folder:
+            EncryptedStorage.download_file_from_s3(file.get_file_key(), os.path.join(get_temp_storage_folder(), local_path, self.name, file.name))
+        for child in self.child_folders.all():
+            child.download_folder(local_path + self.name + '/')
+
     @staticmethod
     def get_folder_from_path(path, rlc):
         path_parts = path.split('/')
         i = 0
         folder = Folder.objects.filter(name=path_parts[i], parent=None, rlc=rlc).first()
+        if not folder:
+            return None
         while True:
             i += 1
             if i >= path_parts.__len__() or path_parts[i] == '':

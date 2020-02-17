@@ -20,7 +20,7 @@ from django.test import TransactionTestCase
 
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.api.models import Permission, HasPermission
-from backend.files.models import Folder, PermissionForFolder, FolderPermission
+from backend.files.models import Folder, PermissionForFolder, FolderPermission, File
 from backend.files.static.folder_permissions import PERMISSION_READ_FOLDER, PERMISSION_WRITE_FOLDER
 from backend.static.permissions import PERMISSION_READ_ALL_FOLDERS_RLC, PERMISSION_WRITE_ALL_FOLDERS_RLC
 
@@ -191,4 +191,29 @@ class FolderModelTests(TransactionTestCase):
         self.assertTrue(middle_folder.user_has_permission_read(self.fixtures['users'][3]['user']))
         self.assertFalse(middle_folder.user_has_permission_write(self.fixtures['users'][3]['user']))
         self.assertFalse(middle_folder.user_has_permission_read(self.fixtures['users'][2]['user']))
+
+    def test_download_folder(self):
+        top_folder = Folder(name='files', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+        top_folder.save()
+        middle_folder = Folder(name='middle folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'], parent=top_folder)
+        middle_folder.save()
+        file1 = File(name='')
+
+    def test_download_real(self):
+        top_folder = Folder(name='ressorts', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+        top_folder.save()
+        file = File(name='pf1.pdf', creator=self.fixtures['users'][0]['user'], size=93119, folder=top_folder)
+        file.save()
+        file2 = File(name='pf2.pdf', creator=self.fixtures['users'][0]['user'], size=83796, folder=top_folder)
+        file2.save()
+        middle_folder = Folder(name='beirat', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'], parent=top_folder)
+        middle_folder.save()
+        file3 = File(name='pinguin1.pdf', creator=self.fixtures['users'][0]['user'], size=83796, folder=middle_folder)
+        file3.save()
+
+        top_folder.download_folder()
+        self.assertTrue(True)
+
+        from backend.static.storage_management import LocalStorageManager
+        LocalStorageManager.zip_folder_and_delete('temp/ressorts', 'temp/ressorts')
 

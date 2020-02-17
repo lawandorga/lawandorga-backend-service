@@ -14,6 +14,11 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+import shutil
+import base64
+import os
+from rest_framework.response import Response
+
 from backend.static.storage_folders import get_temp_storage_path
 
 
@@ -47,3 +52,16 @@ class LocalStorageManager:
                 'local_file_path': local_file_path
             })
         return output_file_information
+
+    @staticmethod
+    def zip_folder_and_delete(zip_path, folder_path):
+        shutil.make_archive(zip_path, 'zip', folder_path)
+        shutil.rmtree(folder_path)
+
+    @staticmethod
+    def create_response_from_zip_file(zip_path):
+        encoded_file = base64.b64encode(open(zip_path, 'rb').read())
+        res = Response(encoded_file, content_type='application/zip')
+        res['Content-Disposition'] = 'attachment; filename="' + zip_path + '"'
+        os.remove(zip_path)
+        return res

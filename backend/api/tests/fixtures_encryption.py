@@ -28,7 +28,7 @@ class CreateFixtures:
         CreateFixtures.create_permissions()
         return_object = {}
 
-        rlc = Rlc(name="testrlc", id=1)
+        rlc = Rlc(name="testrlc", id=3001)
         rlc.save()
         return_object.update({"rlc": rlc})
 

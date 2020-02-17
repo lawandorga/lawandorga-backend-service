@@ -49,6 +49,7 @@ class EncryptedStorage:
 
     @staticmethod
     def download_file_from_s3(s3_key, filename=None):
+        a = 10
         if not filename:
             filename = s3_key[s3_key.rindex('/') + 1:]
         s3_bucket = settings.AWS_S3_BUCKET_NAME
