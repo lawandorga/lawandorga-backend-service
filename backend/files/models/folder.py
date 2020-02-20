@@ -149,3 +149,29 @@ class Folder(models.Model):
                 break
             folder = folder.child_folders.filter(name=path_parts[i]).first()
         return folder
+
+    @staticmethod
+    def create_folders_for_file_path(root_folder, path, user):
+        path_parts = path.split('/')
+        i = 0
+        folder = root_folder
+        while True:
+            if i - 1 >= path_parts.__len__() or path_parts[i] == '':
+                return
+            child = folder.child_folders.filter(name=path_parts[i]).first()
+            if child:
+                folder = child
+            else:
+                # create all following folders
+                new_child = Folder(name=path_parts[i], parent=folder, creator=user, rlc=user.rlc)
+                new_child.save()
+                i += 1
+                while True:
+                    if i + 1 >= path_parts.__len__() or path_parts[i] == '':
+                        return
+                    child_2 = Folder(name=path_parts[i], parent=new_child, creator=user, rlc=user.rlc)
+                    child_2.save()
+                    new_child = child_2
+                    i += 1
+            i += 1
+        # create rest
