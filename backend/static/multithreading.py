@@ -39,7 +39,7 @@ class MultithreadedFileUploads:
 
     @staticmethod
     @start_new_thread
-    def encrypt_files_and_upload_to_s3(files, aes_key, s3_folder):
+    def encrypt_files_and_upload_to_single_s3_folder(files, aes_key, s3_folder):
         """
 
         :param files: local filepaths
@@ -50,3 +50,11 @@ class MultithreadedFileUploads:
         for local_file_path in files:
             EncryptedStorage.encrypt_file_and_upload_to_s3(local_file_path, aes_key, s3_folder)
             os.remove(local_file_path)
+
+    @staticmethod
+    @start_new_thread
+    def encrypt_files_and_upload_to_s3(local_files, s3_folders, aes_key):
+        for i in range(local_files.__len__()):
+            print('upload: ' + local_files[i] + ' to ' + s3_folders[i])
+            EncryptedStorage.encrypt_file_and_upload_to_s3(local_files[i], aes_key, s3_folders[i])
+            os.remove(local_files[i])

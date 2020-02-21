@@ -14,12 +14,34 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+import json
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from backend.files.models import Folder, File
+from backend.static.storage_management import LocalStorageManager
+from backend.static.multithreading import MultithreadedFileUploads
 
 
 class UploadViewSet(APIView):
     def post(self, request):
         # create folders, check if already existing
         # upload to s3
-        a = 10
+        user = request.user
+        files = request.FILES.getlist('files')
+        file_information = LocalStorageManager.save_files_locally(files, json.loads(request.data['paths']))
+        root_folder = Folder.get_folder_from_path('files/' + request.data['path'], user.rlc)
+
+        s3_paths = []
+        for file_info in file_information:
+            # TODO: remove temp from local-file-paths at folder creation
+            folder = Folder.create_folders_for_file_path(root_folder, file_info['local_file_path'][5:], user)
+            new_file = File(name=file_info['file_name'], creator=user, size=file_info['file_size'], folder=folder)
+            new_file.save()
+            s3_paths.append(folder.get_file_key())
+
+        filepaths = [n['local_file_path'] for n in file_information]
+        MultithreadedFileUploads.encrypt_files_and_upload_to_s3(filepaths, s3_paths, 'aes_key')
+
+        return Response({})
+

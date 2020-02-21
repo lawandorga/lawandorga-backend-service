@@ -19,3 +19,5 @@ from .folder import *
 from .folder_permission import *
 from .permission_for_folder import *
 from .upload import *
+from .delete import *
+from .download import *

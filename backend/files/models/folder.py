@@ -53,6 +53,7 @@ class Folder(models.Model):
         if self.parent:
             self.parent.propagate_new_size_up(delta)
         self.size = self.size + delta
+        # self.save()
 
     @receiver(pre_delete)
     def propagate_deletion(sender, instance, **kwargs):
@@ -74,7 +75,7 @@ class Folder(models.Model):
             return [self.parent]
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if Folder.objects.filter(parent=self.parent, name=self.name, rlc=self.rlc).count() > 0:
+        if Folder.objects.filter(parent=self.parent, name=self.name, rlc=self.rlc).exclude(pk=self.id).count() > 0:
             raise Exception('duplicate folder')
         super().save(force_insert, force_update, using, update_fields)
 
@@ -123,7 +124,6 @@ class Folder(models.Model):
         # download all files in this folder to local folder
         # call download_folder of children
         from backend.files.models import File
-        from backend.static.encrypted_storage import EncryptedStorage
         import os
 
         files_in_folder = File.objects.filter(folder=self)
@@ -132,7 +132,7 @@ class Folder(models.Model):
         except:
             pass
         for file in files_in_folder:
-            EncryptedStorage.download_file_from_s3(file.get_file_key(), os.path.join(get_temp_storage_folder(), local_path, self.name, file.name))
+            file.download(os.path.join(local_path, self.name))
         for child in self.child_folders.all():
             child.download_folder(local_path + self.name + '/')
 
@@ -156,22 +156,23 @@ class Folder(models.Model):
         i = 0
         folder = root_folder
         while True:
-            if i - 1 >= path_parts.__len__() or path_parts[i] == '':
-                return
+            if i + 1 >= path_parts.__len__() or path_parts[i] == '':
+                return folder
             child = folder.child_folders.filter(name=path_parts[i]).first()
             if child:
                 folder = child
             else:
-                # create all following folders
-                new_child = Folder(name=path_parts[i], parent=folder, creator=user, rlc=user.rlc)
-                new_child.save()
-                i += 1
-                while True:
-                    if i + 1 >= path_parts.__len__() or path_parts[i] == '':
-                        return
-                    child_2 = Folder(name=path_parts[i], parent=new_child, creator=user, rlc=user.rlc)
-                    child_2.save()
-                    new_child = child_2
-                    i += 1
+                break
             i += 1
-        # create rest
+        # if needed, create new folders
+        new_child = Folder(name=path_parts[i], parent=folder, creator=user, rlc=user.rlc)
+        new_child.save()
+        folder = new_child
+        i += 1
+        while True:
+            if i + 1 >= path_parts.__len__() or path_parts[i] == '':
+                return folder
+            new_child = Folder(name=path_parts[i], parent=folder, creator=user, rlc=user.rlc)
+            new_child.save()
+            folder = new_child
+            i += 1

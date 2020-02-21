@@ -28,4 +28,6 @@ urlpatterns = [
     url(r'folder_download', DownloadFolderViewSet.as_view()),
     url(r'folder', FolderViewSet.as_view()),
     url(r'upload', UploadViewSet.as_view()),
+    url(r'delete', DeleteViewSet.as_view()),
+    url(r'download', DownloadViewSet.as_view())
 ]

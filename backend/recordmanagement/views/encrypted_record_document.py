@@ -77,7 +77,7 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
 
         directory = storage_folders.get_storage_folder_encrypted_record_document(e_record.from_rlc_id, e_record.id)
         record_key = e_record.get_decryption_key(request.user, users_private_key)
-        MultithreadedFileUploads.encrypt_files_and_upload_to_s3(filepaths, record_key, directory)
+        MultithreadedFileUploads.encrypt_files_and_upload_to_single_s3_folder(filepaths, record_key, directory)
 
         e_record_documents_handled = []
         for file_information in local_file_information:

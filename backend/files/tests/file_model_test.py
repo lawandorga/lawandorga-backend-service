@@ -63,6 +63,7 @@ class FileModelTests(TransactionTestCase):
         self.assertEqual(1000, folder.size)
         self.assertEqual(1, File.objects.count())
         self.assertEqual(1, Folder.objects.count())
+        self.assertEqual(1000, Folder.objects.first().size)
 
         file.delete()
         self.assertEqual(0, folder.size)

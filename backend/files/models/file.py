@@ -14,11 +14,13 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+import os
 from django.db import models
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 from backend.api.models import UserProfile
 from .folder import Folder
+from backend.static.encrypted_storage import EncryptedStorage
 
 
 class File(models.Model):
@@ -38,8 +40,7 @@ class File(models.Model):
         return self.folder.get_file_key() + self.name
 
     def delete_on_cloud(self):
-        # TODO: files!
-        pass
+        EncryptedStorage.delete_on_s3(self.get_file_key() + '.enc')
 
     @receiver(pre_delete)
     def pre_deletion(sender, instance, **kwargs):
@@ -51,3 +52,7 @@ class File(models.Model):
     def post_save(sender, instance, **kwargs):
         if sender == File:
             instance.folder.propagate_new_size_up(instance.size)
+
+    def download(self, local_destination_folder):
+        EncryptedStorage.download_from_s3_and_decrypt_file(self.get_file_key() + '.enc', 'aes_key', local_destination_folder)
+        # EncryptedStorage.download_file_from_s3(self.get_file_key(), os.path.join(local_destination_folder, self.name + '.enc'))

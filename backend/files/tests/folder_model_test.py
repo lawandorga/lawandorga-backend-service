@@ -151,6 +151,7 @@ class FolderModelTests(TransactionTestCase):
 
         self.assertEqual(bottom_folder, Folder.get_folder_from_path('top folder/middle folder/bottom folder/', self.fixtures['rlc']))
         self.assertEqual(bottom_folder, Folder.get_folder_from_path('top folder/middle folder/bottom folder', self.fixtures['rlc']))
+        self.assertEqual(bottom_folder, Folder.get_folder_from_path('top folder/middle folder/bottom folder/asd.pdf', self.fixtures['rlc']))
 
     def test_folder_no_duplicated_names(self):
         top_folder = Folder(name='top folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
@@ -216,4 +217,21 @@ class FolderModelTests(TransactionTestCase):
 
         from backend.static.storage_management import LocalStorageManager
         LocalStorageManager.zip_folder_and_delete('temp/ressorts', 'temp/ressorts')
+
+    def test_create_folders_for_file_path(self):
+        top_folder = Folder(name='ressorts', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+        top_folder.save()
+        self.assertEqual(1, Folder.objects.count())
+
+        path = 'mitglieder/ausbildung/asdsd.pdf'
+        Folder.create_folders_for_file_path(top_folder, path, self.fixtures['users'][0]['user'])
+        self.assertEqual(3, Folder.objects.count())
+
+        path = 'mitglieder/alumni/askdks.pdf'
+        Folder.create_folders_for_file_path(top_folder, path, self.fixtures['users'][0]['user'])
+        self.assertEqual(4, Folder.objects.count())
+
+        path = 'mitglieder/alumni/aakdks.pdf'
+        Folder.create_folders_for_file_path(top_folder, path, self.fixtures['users'][0]['user'])
+        self.assertEqual(4, Folder.objects.count())
 

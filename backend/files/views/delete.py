@@ -14,24 +14,24 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.test import TransactionTestCase
-from unittest.mock import MagicMock, patch
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from backend.static.storage_management import LocalStorageManager
-from backend.static.storage_folders import get_temp_storage_path
+from backend.files.models import Folder, File
 
 
-class LocalStorageManagerTests(TransactionTestCase):
-    def setUp(self) -> None:
-        pass
-
-    def test_save_locally(self):
-        f = open('given_test_files/localStorageSaveTest/7_1_19__pass.jpg', 'rb')
-        files = InMemoryUploadedFile(f, 'files', '7_1_19__pass.jpg', 'image/jpeg', 18839, None)
-        with patch(get_temp_storage_path) as temp_storage_path:
-            temp_storage_path.return_value = 'aaa/'
-            LocalStorageManager.save_files_locally(files)
-        f.close()
-
-
+class DeleteViewSet(APIView):
+    def post(self, request):
+        user = request.user
+        # TODO: rework this
+        root_folder = Folder.get_folder_from_path('files/' + request.data['path'], user.rlc)
+        entries = request.data['entries']
+        for entry in entries:
+            if entry['type'] == 1:
+                # file
+                file = File.objects.get(pk=entry['id'])
+                file.delete()
+            else:
+                folder = Folder.objects.get(pk=entry['id'])
+                folder.delete()
+            return Response({'success': True})
