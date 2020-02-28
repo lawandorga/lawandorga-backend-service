@@ -14,7 +14,8 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import os
+from datetime import datetime
+import pytz
 from django.db import models
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
@@ -56,3 +57,16 @@ class File(models.Model):
     def download(self, local_destination_folder):
         EncryptedStorage.download_from_s3_and_decrypt_file(self.get_file_key() + '.enc', 'aes_key', local_destination_folder)
         # EncryptedStorage.download_file_from_s3(self.get_file_key(), os.path.join(local_destination_folder, self.name + '.enc'))
+
+    @staticmethod
+    def create_or_update(file):
+        try:
+            existing = File.objects.get(folder=file.folder, name=file.name)
+            existing.creator = file.creator
+            existing.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
+            existing.size = file.size
+            existing.save()
+            return existing
+        except:
+            file.save()
+            return file

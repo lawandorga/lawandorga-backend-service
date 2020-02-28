@@ -74,4 +74,15 @@ class FileModelTests(TransactionTestCase):
         file = File(name='file1', creator=self.fixtures['users'][0]['user'], folder=folder, size=1000)
         file.save()
 
-        self.assertEqual('rlcs/1/files/root folder/file1', file.get_file_key())
+        self.assertEqual('rlcs/3001/root folder/file1', file.get_file_key())
+
+    def test_duplicate_file(self):
+        folder = Folder(name='root folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+        folder.save()
+        file = File(name='file1', creator=self.fixtures['users'][0]['user'], folder=folder, size=1000)
+        File.create_or_update(file)
+
+        file2 = File(name='file1', creator=self.fixtures['users'][0]['user'], folder=folder, size=1238)
+        File.create_or_update(file2)
+        self.assertEqual(1, File.objects.count())
+        self.assertEqual(1238, File.objects.get(name='file1', folder=folder).size)

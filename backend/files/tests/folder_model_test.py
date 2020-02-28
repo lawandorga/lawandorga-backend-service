@@ -61,11 +61,16 @@ class FolderModelTests(TransactionTestCase):
         middle_folder = Folder(name='middle folder', creator=self.fixtures['users'][0]['user'],
                                rlc=self.fixtures['rlc'], size=100, parent=top_folder)
         middle_folder.save()
+        middle_folder.update_folder_tree_sizes(middle_folder.size)
+        self.assertEqual(200, top_folder.size)
         bottom_folder = Folder(name='bottom folder', creator=self.fixtures['users'][0]['user'],
                                rlc=self.fixtures['rlc'], size=60, parent=middle_folder)
         bottom_folder.save()
-
+        bottom_folder.update_folder_tree_sizes(bottom_folder.size)
+        self.assertEqual(260, top_folder.size)
+        self.assertEqual(160, middle_folder.size)
         self.assertEqual(Folder.objects.count(), 3)
+
         middle_folder.delete()
         self.assertEqual(Folder.objects.count(), 1)
         self.assertEqual(top_folder.size, 100)
@@ -78,12 +83,27 @@ class FolderModelTests(TransactionTestCase):
         middle_folder = Folder(name='middle folder', creator=self.fixtures['users'][0]['user'],
                                rlc=self.fixtures['rlc'], size=100, parent=top_folder)
         middle_folder.save()
+        middle_folder.update_folder_tree_sizes(100)
         self.assertTrue(top_folder.size, 100)
 
         bottom_folder = Folder(name='bottom folder', creator=self.fixtures['users'][0]['user'],
                                rlc=self.fixtures['rlc'], size=60, parent=middle_folder)
         bottom_folder.save()
+        bottom_folder.propagate_new_size_up(60)
         self.assertEqual(top_folder.size, 160)
+        self.assertEqual(middle_folder.size, 160)
+        middle_folder.name = 'middle folder new'
+        middle_folder.save()
+        self.assertEqual(top_folder.size, 160)
+        self.assertEqual(Folder.objects.get(name='middle folder new').size, 160)
+        self.assertEqual(160, Folder.objects.get(name='top folder').size)
+        middle_folder.size = 200
+        middle_folder.update_folder_tree_sizes(40)
+        self.assertEqual(200, middle_folder.size)
+        self.assertEqual(200, top_folder.size)
+        self.assertEqual(200, Folder.objects.get(name='middle folder new').size)
+        self.assertEqual(200, Folder.objects.get(name='top folder').size)
+
 
     def test_folder_key(self):
         top_folder = Folder(name='top folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
@@ -95,11 +115,11 @@ class FolderModelTests(TransactionTestCase):
                                rlc=self.fixtures['rlc'], parent=middle_folder)
         bottom_folder.save()
 
-        self.assertEqual('rlcs/1/files/top folder/middle folder/bottom folder/',
+        self.assertEqual('rlcs/3001/top folder/middle folder/bottom folder/',
                          bottom_folder.get_file_key())
-        self.assertEqual('rlcs/1/files/top folder/middle folder/',
+        self.assertEqual('rlcs/3001/top folder/middle folder/',
                          middle_folder.get_file_key())
-        self.assertEqual('rlcs/1/files/top folder/', top_folder.get_file_key())
+        self.assertEqual('rlcs/3001/top folder/', top_folder.get_file_key())
 
     def test_folder_tree(self):
         top_folder = Folder(name='top folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
@@ -193,12 +213,22 @@ class FolderModelTests(TransactionTestCase):
         self.assertFalse(middle_folder.user_has_permission_write(self.fixtures['users'][3]['user']))
         self.assertFalse(middle_folder.user_has_permission_read(self.fixtures['users'][2]['user']))
 
+        bottom_folder = Folder(name='bottom_folder', creator=self.fixtures['users'][0]['user'],
+                               rlc=self.fixtures['rlc'], parent=top_folder)
+        bottom_folder.save()
+        perm2 = PermissionForFolder(folder=bottom_folder, permission=p_read, group_has_permission=self.fixtures['groups'][1])
+        perm2.save()
+        self.assertTrue(bottom_folder.user_has_permission_read(self.fixtures['users'][1]['user']))
+        self.assertTrue(bottom_folder.user_has_permission_read(self.fixtures['users'][2]['user']))
+        self.assertTrue(middle_folder.user_has_permission_read(self.fixtures['users'][2]['user']))
+
+
     def test_download_folder(self):
-        top_folder = Folder(name='files', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
-        top_folder.save()
-        middle_folder = Folder(name='middle folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'], parent=top_folder)
-        middle_folder.save()
-        file1 = File(name='')
+            top_folder = Folder(name='files', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+            top_folder.save()
+            middle_folder = Folder(name='middle folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'], parent=top_folder)
+            middle_folder.save()
+            file1 = File(name='')
 
     def test_download_real(self):
         top_folder = Folder(name='ressorts', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])

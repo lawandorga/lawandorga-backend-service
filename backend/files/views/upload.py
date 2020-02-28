@@ -25,8 +25,6 @@ from backend.static.multithreading import MultithreadedFileUploads
 
 class UploadViewSet(APIView):
     def post(self, request):
-        # create folders, check if already existing
-        # upload to s3
         user = request.user
         files = request.FILES.getlist('files')
         file_information = LocalStorageManager.save_files_locally(files, json.loads(request.data['paths']))
@@ -37,7 +35,7 @@ class UploadViewSet(APIView):
             # TODO: remove temp from local-file-paths at folder creation
             folder = Folder.create_folders_for_file_path(root_folder, file_info['local_file_path'][5:], user)
             new_file = File(name=file_info['file_name'], creator=user, size=file_info['file_size'], folder=folder)
-            new_file.save()
+            File.create_or_update(new_file)
             s3_paths.append(folder.get_file_key())
 
         filepaths = [n['local_file_path'] for n in file_information]

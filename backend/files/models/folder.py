@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
 from backend.api.models import Rlc, UserProfile
@@ -53,7 +53,7 @@ class Folder(models.Model):
         if self.parent:
             self.parent.propagate_new_size_up(delta)
         self.size = self.size + delta
-        # self.save()
+        self.save()
 
     @receiver(pre_delete)
     def propagate_deletion(sender, instance, **kwargs):
@@ -61,10 +61,9 @@ class Folder(models.Model):
             instance.propagate_new_size_up(-instance.size)
             instance.delete_on_cloud()
 
-    @receiver(post_save)
-    def propagate_saving(sender, instance, **kwargs):
-        if sender == Folder:
-            instance.propagate_new_size_up(instance.size)
+    def update_folder_tree_sizes(self, delta):
+        self.size = self.size - delta
+        self.propagate_new_size_up(delta)
 
     def get_all_parents(self):
         if not self.parent:
