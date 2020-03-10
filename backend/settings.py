@@ -263,6 +263,8 @@ CORS_ORIGIN_WHITELIST = [
     "http://localhost:3000",
     # dev
     "https://d7pmzq2neb57w.cloudfront.net"
+    # test
+    "https://d33cushiywgecu.cloudfront.net"
 ]
 
 CORS_ALLOW_HEADERS = [
