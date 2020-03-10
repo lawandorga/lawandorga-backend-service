@@ -1615,7 +1615,10 @@ class AddMethods:
             perm = Permission(id=permission[0], name=permission[1])
         else:
             raise AttributeError
-        perm.save()
+        try:
+            perm.save()
+        except:
+            pass
 
     @staticmethod
     def add_record_tag(tag):
@@ -1634,7 +1637,10 @@ class AddMethods:
             t = RecordTag(id=tag[0], name=tag[1])
         else:
             raise AttributeError
-        t.save()
+        try:
+            t.save()
+        except:
+            pass
 
     @staticmethod
     def add_record_document_tag(tag):
@@ -1644,7 +1650,10 @@ class AddMethods:
             t = RecordDocumentTag(id=tag[0], name=tag[1])
         else:
             raise AttributeError
-        t.save()
+        try:
+            t.save()
+        except:
+            pass
 
     @staticmethod
     def add_country(country):
@@ -1664,7 +1673,10 @@ class AddMethods:
             c = OriginCountry(id=country[0], name=country[1], state=country[2])
         else:
             raise AttributeError
-        c.save()
+        try:
+            c.save()
+        except:
+            pass
 
     @staticmethod
     def add_to_rlc(user_id, rlc_id):

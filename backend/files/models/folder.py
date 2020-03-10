@@ -141,6 +141,10 @@ class Folder(models.Model):
         i = 0
         folder = Folder.objects.filter(name=path_parts[i], parent=None, rlc=rlc).first()
         if not folder:
+            if path_parts[i] == 'files':
+                folder = Folder(rlc=rlc, name=path_parts[i])
+                folder.save()
+                return folder
             return None
         while True:
             i += 1
