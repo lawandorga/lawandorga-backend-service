@@ -18,13 +18,13 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from backend.files.models import File, Folder, PermissionForFolder
+from backend.files.models import File, Folder
 from backend.files.serializers import FileSerializer, FolderSerializer
-from backend.static.permissions import  PERMISSION_ACCESS_TO_FILES_RLC
+from backend.static.permissions import PERMISSION_ACCESS_TO_FILES_RLC
 from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 from backend.static.storage_management import LocalStorageManager
-from backend.static.storage_folders import get_temp_storage_folder, get_temp_storage_path
+from backend.static.storage_folders import get_temp_storage_path
 
 
 class FolderBaseViewSet(viewsets.ModelViewSet):
@@ -43,16 +43,24 @@ class FolderViewSet(APIView):
         if not folder:
             return Response({'folders': [], 'files': []})
 
-        all_children = folder.child_folders.all()
-        children_list = list(all_children)
-        for child in children_list:
-            if not child.user_has_permission_read(request.user):
-                all_children = all_children.exclude(name=child.name)
-        return_obj = {'folders': FolderSerializer(all_children, many=True).data}
+        # all_children = folder.child_folders.all()
+        # children_list = list(all_children)
+        # for child in children_list:
+        #     if not child.user_has_permission_read(request.user):
+        #         all_children = all_children.exclude(name=child.name)
 
-        files = File.objects.filter(folder=folder)
-        files_data = FileSerializer(files, many=True).data
-        return_obj.update({'files': files_data})
+        children_to_show = []
+        for child in folder.child_folders.all().order_by('name'):
+            if child.user_can_see_folder(user):
+                children_to_show.append(child)
+        return_obj = {'folders': FolderSerializer(children_to_show, many=True).data}
+
+        if folder.user_has_permission_read(user):
+            files = File.objects.filter(folder=folder)
+            files_data = FileSerializer(files, many=True).data
+            return_obj.update({'files': files_data})
+        else:
+            return_obj.update({'files': []})
 
         return Response(return_obj)
 

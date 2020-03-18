@@ -38,22 +38,22 @@ class PermissionForFolder(models.Model):
                 return
             raise Exception("PermissionForFolder doubled, deleting")
 
-        parents = self.folder.get_all_parents()
-
-        # if PermissionForFolder.objects.filter(folder__in=parents).exclude(
-        #     group_has_permission=self.group_has_permission).count() > 0:
-        #     raise Exception("Permission group differs from parents")
-        ps = PermissionForFolder.objects.filter(folder__in=parents)
-        perms = ps.distinct('folder')
-        # for permission in perms:
-        #     if
-
-        permissions = PermissionForFolder.objects.filter(folder__in=parents).exclude(group_has_permission=self.group_has_permission)
-        for permission in permissions:
-            # a = PermissionForFolder.objects.filter(folder=permission.folder, permission=permission.permission, group_has_permission=self.group_has_permission)
-
-            if PermissionForFolder.objects.filter(folder=permission.folder, permission=permission.permission, group_has_permission=self.group_has_permission).count() == 0:
-                raise Exception("Permission differs")
+        # parents = self.folder.get_all_parents()
+        #
+        # # if PermissionForFolder.objects.filter(folder__in=parents).exclude(
+        # #     group_has_permission=self.group_has_permission).count() > 0:
+        # #     raise Exception("Permission group differs from parents")
+        # ps = PermissionForFolder.objects.filter(folder__in=parents)
+        # perms = ps.distinct('folder')
+        # # for permission in perms:
+        # #     if
+        #
+        # permissions = PermissionForFolder.objects.filter(folder__in=parents).exclude(group_has_permission=self.group_has_permission)
+        # for permission in permissions:
+        #     # a = PermissionForFolder.objects.filter(folder=permission.folder, permission=permission.permission, group_has_permission=self.group_has_permission)
+        #
+        #     if PermissionForFolder.objects.filter(folder=permission.folder, permission=permission.permission, group_has_permission=self.group_has_permission).count() == 0:
+        #         raise Exception("Permission differs")
 
 
         super().save(force_insert, force_update, using, update_fields)

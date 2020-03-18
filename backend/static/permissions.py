@@ -34,6 +34,7 @@ PERMISSION_PROCESS_RECORD_DELETION_REQUESTS = 'process_record_deletion_requests'
 PERMISSION_READ_ALL_FOLDERS_RLC = 'read_all_folders_rlc'
 PERMISSION_WRITE_ALL_FOLDERS_RLC = 'write_all_folders_rlc'
 PERMISSION_ACCESS_TO_FILES_RLC = 'access_to_files_rlc'
+PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC = 'manage_folder_permissions_rlc'
 
 
 def get_all_permissions_strings():
@@ -55,7 +56,8 @@ def get_all_permissions_strings():
         PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
         PERMISSION_ACCESS_TO_FILES_RLC,
         PERMISSION_READ_ALL_FOLDERS_RLC,
-        PERMISSION_WRITE_ALL_FOLDERS_RLC
+        PERMISSION_WRITE_ALL_FOLDERS_RLC,
+        PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC
     ]
 
 

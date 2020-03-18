@@ -15,8 +15,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
-from backend.api.models import UserProfile
-from backend.files.models import Folder
 
 
 class FolderPermission(models.Model):

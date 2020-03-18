@@ -22,6 +22,8 @@ from django.conf import settings
 from backend.api.tests import *
 from backend.recordmanagement.models import Client, OriginCountry, Record, RecordDocumentTag, RecordTag
 from backend.static.permissions import get_all_permissions_strings
+from backend.files.models import FolderPermission
+from backend.files.static.folder_permissions import get_all_folder_permissions_strings
 
 
 class Fixtures:
@@ -132,6 +134,13 @@ class Fixtures:
         for permission in permissions:
             if Permission.objects.filter(name=permission).count() == 0:
                 AddMethods.add_permission(permission)
+
+    @staticmethod
+    def create_real_folder_permissions_no_duplicate():
+        folder_permissions = get_all_folder_permissions_strings()
+        for folder_permission in folder_permissions:
+            if FolderPermission.objects.filter(name=folder_permission).count() == 0:
+                AddMethods.add_folder_permission(folder_permission)
 
     @staticmethod
     def create_real_tags():
@@ -1619,6 +1628,12 @@ class AddMethods:
             perm.save()
         except:
             pass
+
+    @staticmethod
+    def add_folder_permission(permission):
+        if isinstance(permission, str):
+            perm = FolderPermission(name=permission)
+        perm.save()
 
     @staticmethod
     def add_record_tag(tag):
