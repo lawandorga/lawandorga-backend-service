@@ -41,7 +41,7 @@ class FolderViewSet(APIView):
         path = 'files/' + request.query_params.get('path', '')
         folder = Folder.get_folder_from_path(path, request.user.rlc)
         if not folder:
-            return Response({'folders': [], 'files': []})
+            return Response({'folders': [], 'files': [], 'current_folder': None})
 
         # all_children = folder.child_folders.all()
         # children_list = list(all_children)
@@ -61,6 +61,7 @@ class FolderViewSet(APIView):
             return_obj.update({'files': files_data})
         else:
             return_obj.update({'files': []})
+        return_obj.update({'current_folder': FolderSerializer(folder).data})
 
         return Response(return_obj)
 

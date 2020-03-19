@@ -14,3 +14,11 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from rest_framework import viewsets
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+
+class FolderViewSet(APIView):
+    def get(self, request):
+        pass
