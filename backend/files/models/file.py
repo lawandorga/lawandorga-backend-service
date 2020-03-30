@@ -15,20 +15,25 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from datetime import datetime
+
 import pytz
 from django.db import models
-from django.db.models.signals import pre_delete, post_save
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
+
 from backend.api.models import UserProfile
-from .folder import Folder
 from backend.static.encrypted_storage import EncryptedStorage
+from .folder import Folder
 
 
 class File(models.Model):
     name = models.CharField(max_length=255)
-    creator = models.ForeignKey(UserProfile, related_name="files_created", on_delete=models.SET_NULL, null=True)
 
+    creator = models.ForeignKey(UserProfile, related_name="files_created", on_delete=models.SET_NULL, null=True)
     created = models.DateTimeField(auto_now_add=True)
+
+    last_editor = models.ForeignKey(UserProfile, related_name="last_edited", on_delete=models.SET_NULL, null=True,
+                                    default=None)
     last_edited = models.DateTimeField(auto_now_add=True)
 
     folder = models.ForeignKey(Folder, related_name="files_in_folder", on_delete=models.CASCADE, null=False)
@@ -55,14 +60,15 @@ class File(models.Model):
             instance.folder.propagate_new_size_up(instance.size)
 
     def download(self, local_destination_folder):
-        EncryptedStorage.download_from_s3_and_decrypt_file(self.get_file_key() + '.enc', 'aes_key', local_destination_folder)
+        EncryptedStorage.download_from_s3_and_decrypt_file(self.get_file_key() + '.enc', 'aes_key',
+                                                           local_destination_folder)
         # EncryptedStorage.download_file_from_s3(self.get_file_key(), os.path.join(local_destination_folder, self.name + '.enc'))
 
     @staticmethod
     def create_or_update(file):
         try:
             existing = File.objects.get(folder=file.folder, name=file.name)
-            existing.creator = file.creator
+            existing.last_editor = file.last_editor
             existing.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
             existing.size = file.size
             existing.save()

@@ -29,11 +29,15 @@ from backend.files.models.folder_permission import FolderPermission
 
 class Folder(models.Model):
     name = models.CharField(max_length=255)
+
     creator = models.ForeignKey(UserProfile, related_name="folders_created", on_delete=models.SET_NULL, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    last_editor = models.ForeignKey(UserProfile, related_name="last_edited_folders", on_delete=models.SET_NULL, null=True)
+    last_edited = models.DateTimeField(auto_now_add=True)
+
     size = models.BigIntegerField(default=0)
     parent = models.ForeignKey('self', related_name="child_folders", null=True, on_delete=models.CASCADE)
-    created = models.DateTimeField(auto_now_add=True)
-    last_edited = models.DateTimeField(auto_now_add=True)
     number_of_files = models.BigIntegerField(default=0)
     rlc = models.ForeignKey(Rlc, related_name="folders", on_delete=models.CASCADE, null=False)
 
@@ -92,6 +96,8 @@ class Folder(models.Model):
 
     def user_has_permission_read(self, user):
         from backend.files.models import PermissionForFolder
+        if user.rlc != self.rlc:
+            return False
         if user.has_permission(for_rlc=user.rlc, permission=PERMISSION_READ_ALL_FOLDERS_RLC) or \
             user.has_permission(for_rlc=user.rlc, permission=PERMISSION_WRITE_ALL_FOLDERS_RLC) or \
             user.has_permission(for_rlc=user.rlc, permission=PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC):
@@ -111,32 +117,34 @@ class Folder(models.Model):
 
     def user_has_permission_write(self, user):
         from backend.files.models import PermissionForFolder
-        if user.has_permission(for_rlc=user.rlc, permission=PERMISSION_WRITE_ALL_FOLDERS_RLC):
+        if user.rlc != self.rlc:
+            return False
+
+        if user.has_permission(for_rlc=user.rlc, permission=PERMISSION_WRITE_ALL_FOLDERS_RLC) or \
+            user.has_permission(for_rlc=user.rlc, permission=PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC):
             return True
 
         relevant_folders = self.get_all_parents() + [self]
-        relevant_permissions = PermissionForFolder.objects.filter(folder__in=relevant_folders)
-        if relevant_permissions.count() == 0:
+        users_groups = user.group_members.all()
+        p_write = FolderPermission.objects.get(name=PERMISSION_WRITE_FOLDER)
+        relevant_permissions = PermissionForFolder.objects.filter(folder__in=relevant_folders,
+                                                                  group_has_permission__in=users_groups,
+                                                                  permission=p_write)
+        if relevant_permissions.count() >= 1:
             return True
 
-        relevant_folders.reverse()
-        for folder in relevant_folders:
-            permissions_for_folder = PermissionForFolder.objects.filter(folder=folder)
-            if permissions_for_folder.count() > 0:
-                if permissions_for_folder.filter(
-                    group_has_permission_id__in=user.group_members.values_list('pk', flat=True),
-                    permission__name=PERMISSION_WRITE_FOLDER).count() == 0:
-                    return False
-        return True
+        return False
 
     def user_can_see_folder(self, user):
         from backend.files.models import PermissionForFolder
-        if self.user_has_permission_read(user):
+        if user.rlc != self.rlc:
+            return False
+        if self.user_has_permission_read(user) or self.user_has_permission_write(user):
             return True
         children = self.get_all_children()
         users_groups = user.group_members.all()
         relevant_permissions = PermissionForFolder.objects.filter(folder__in=children,
-                                                                  group_has_permission__in=users_groups,)
+                                                                  group_has_permission__in=users_groups)
         if relevant_permissions.count() >= 1:
             return True
         return False
@@ -164,7 +172,7 @@ class Folder(models.Model):
         i = 0
         folder = Folder.objects.filter(name=path_parts[i], parent=None, rlc=rlc).first()
         if not folder:
-            if path_parts[i] == 'files':
+            if path_parts[0] == 'files':
                 folder = Folder(rlc=rlc, name=path_parts[i])
                 folder.save()
                 return folder
@@ -191,14 +199,14 @@ class Folder(models.Model):
                 break
             i += 1
         # if needed, create new folders
-        new_child = Folder(name=path_parts[i], parent=folder, creator=user, rlc=user.rlc)
+        new_child = Folder(name=path_parts[i], parent=folder, creator=user, rlc=user.rlc, last_editor=user)
         new_child.save()
         folder = new_child
         i += 1
         while True:
             if i + 1 >= path_parts.__len__() or path_parts[i] == '':
                 return folder
-            new_child = Folder(name=path_parts[i], parent=folder, creator=user, rlc=user.rlc)
+            new_child = Folder(name=path_parts[i], parent=folder, creator=user, rlc=user.rlc, last_editor=user)
             new_child.save()
             folder = new_child
             i += 1

@@ -15,12 +15,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 import json
+
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from backend.files.models import Folder, File
-from backend.static.storage_management import LocalStorageManager
+from backend.files.models import File, Folder
 from backend.static.multithreading import MultithreadedFileUploads
+from backend.static.storage_management import LocalStorageManager
 
 
 class UploadViewSet(APIView):
@@ -34,7 +35,8 @@ class UploadViewSet(APIView):
         for file_info in file_information:
             # TODO: remove temp from local-file-paths at folder creation
             folder = Folder.create_folders_for_file_path(root_folder, file_info['local_file_path'][5:], user)
-            new_file = File(name=file_info['file_name'], creator=user, size=file_info['file_size'], folder=folder)
+            new_file = File(name=file_info['file_name'], creator=user, size=file_info['file_size'], folder=folder,
+                            last_editor=user)
             File.create_or_update(new_file)
             s3_paths.append(folder.get_file_key())
 
@@ -42,4 +44,3 @@ class UploadViewSet(APIView):
         MultithreadedFileUploads.encrypt_files_and_upload_to_s3(filepaths, s3_paths, 'aes_key')
 
         return Response({})
-

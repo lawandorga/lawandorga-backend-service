@@ -337,3 +337,8 @@ ERROR__FILES__NO_FILES_TO_UPLOAD = {
     'error_detail': 'no files to upload found',
     'error_code': 'files.no_files_to_upload'
 }
+
+ERROR__API__WRONG_RLC = {
+    'error_detail': 'wrong rlc',
+    'error_code': 'api.wrong_rlc'
+}

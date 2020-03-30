@@ -195,44 +195,6 @@ class FolderModelTests(TransactionTestCase):
         overall_read = HasPermission(permission=p_all_read, user_has_permission=self.fixtures['users'][3]['user'],
                                      permission_for_rlc=self.fixtures['rlc'])
         overall_read.save()
-
-        top_folder = Folder(name='top folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
-        top_folder.save()
-        self.assertTrue(top_folder.user_has_permission_read(self.fixtures['users'][0]['user']))
-        self.assertTrue(top_folder.user_has_permission_read(self.fixtures['users'][1]['user']))
-        self.assertTrue(top_folder.user_has_permission_read(self.fixtures['users'][3]['user']))
-        self.assertTrue(top_folder.user_has_permission_write(self.fixtures['users'][0]['user']))
-        self.assertTrue(top_folder.user_has_permission_write(self.fixtures['users'][1]['user']))
-
-        middle_folder = Folder(name='middle folder', creator=self.fixtures['users'][0]['user'],
-                               rlc=self.fixtures['rlc'], parent=top_folder)
-        middle_folder.save()
-        self.assertTrue(middle_folder.user_has_permission_read(self.fixtures['users'][0]['user']))
-
-        perm1 = PermissionForFolder(folder=middle_folder, permission=p_read,
-                                    group_has_permission=self.fixtures['groups'][0])
-        perm1.save()
-        self.assertTrue(middle_folder.user_has_permission_read(self.fixtures['users'][0]['user']))
-        self.assertTrue(middle_folder.user_has_permission_read(self.fixtures['users'][3]['user']))
-        self.assertFalse(middle_folder.user_has_permission_write(self.fixtures['users'][3]['user']))
-        self.assertFalse(middle_folder.user_has_permission_read(self.fixtures['users'][2]['user']))
-
-        bottom_folder = Folder(name='bottom_folder', creator=self.fixtures['users'][0]['user'],
-                               rlc=self.fixtures['rlc'], parent=top_folder)
-        bottom_folder.save()
-        perm2 = PermissionForFolder(folder=bottom_folder, permission=p_read,
-                                    group_has_permission=self.fixtures['groups'][1])
-        perm2.save()
-        self.assertTrue(bottom_folder.user_has_permission_read(self.fixtures['users'][1]['user']))
-        self.assertTrue(bottom_folder.user_has_permission_read(self.fixtures['users'][2]['user']))
-        self.assertTrue(middle_folder.user_has_permission_read(self.fixtures['users'][2]['user']))
-
-    def test_user_has_permission_new(self):
-        p_read = FolderPermission.objects.get(name=PERMISSION_READ_FOLDER)
-        p_all_read = Permission.objects.get(name=PERMISSION_READ_ALL_FOLDERS_RLC)
-        overall_read = HasPermission(permission=p_all_read, user_has_permission=self.fixtures['users'][3]['user'],
-                                     permission_for_rlc=self.fixtures['rlc'])
-        overall_read.save()
         created_folders = self.create_many_test_folders()
 
         self.assertFalse(created_folders['ressorts'].user_has_permission_read(self.fixtures['users'][0]['user']))

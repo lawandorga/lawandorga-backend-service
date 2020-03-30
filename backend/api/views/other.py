@@ -40,7 +40,7 @@ class GetRlcsViewSet(APIView):
     permission_classes = ()
 
     def get(self, request):
-        if 'ON_HEROKU' in os.environ:
+        if 'ON_HEROKU' in os.environ and 'ON_DEPLOY' in os.environ:
             rlcs = Rlc.objects.all().exclude(name='Dummy RLC').order_by('name')
         else:
             rlcs = Rlc.objects.all().order_by('name')
