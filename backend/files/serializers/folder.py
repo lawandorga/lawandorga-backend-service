@@ -31,3 +31,17 @@ class FolderNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Folder
         fields = ('id', 'name', )
+
+
+class FolderNamePathSerializer(serializers.ModelSerializer):
+    path = serializers.SerializerMethodField()
+
+    def get_path(self, folder):
+        p = folder.get_file_key()
+        relevant = p[p.index('files') + 6:]
+
+        return relevant
+
+    class Meta:
+        model = Folder
+        fields = ('id', 'name', 'path', )

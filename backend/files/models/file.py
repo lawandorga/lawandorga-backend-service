@@ -80,3 +80,24 @@ class File(models.Model):
         except:
             file.save()
             return file
+
+    @staticmethod
+    def create_or_duplicate(file):
+        try:
+            File.objects.get(folder=file.folder, name=file.name)
+        except:
+            file.save()
+            return file
+        count = 1
+        extension_index = file.name.rindex('.')
+        base = file.name[:extension_index]
+        extension = file.name[extension_index:]
+        while True:
+            new_name = base + ' (' + str(count) + ')' + extension
+            try:
+                File.objects.get(folder=file.folder, name=new_name)
+                count += 1
+            except:
+                file.name = new_name
+                file.save()
+                return file

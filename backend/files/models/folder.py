@@ -192,7 +192,7 @@ class Folder(models.Model):
 
     def get_all_groups_permissions(self):
         from backend.api.models import Group
-        from backend.files.serializers import PermissionForFolderSerializer, PermissionForFolderNestedSerializer
+        from backend.files.serializers import PermissionForFolderNestedSerializer
         groups = list(Group.objects.filter(from_rlc=self.rlc))
 
         allGroupsPermissions = {
@@ -220,15 +220,19 @@ class Folder(models.Model):
     def get_all_groups_permissions_new(self):
         from backend.api.models import Group, HasPermission, Permission
         from backend.files.models import PermissionForFolder
-        from backend.static.permissions import PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC, PERMISSION_READ_ALL_FOLDERS_RLC, PERMISSION_WRITE_ALL_FOLDERS_RLC
+        from backend.static.permissions import PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC, \
+            PERMISSION_READ_ALL_FOLDERS_RLC, PERMISSION_WRITE_ALL_FOLDERS_RLC
         groups = list(Group.objects.filter(from_rlc=self.rlc))
 
         folder_permissions = []
         folder_visible = []
 
-        overall_permissions_strings = [PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC, PERMISSION_READ_ALL_FOLDERS_RLC, PERMISSION_WRITE_ALL_FOLDERS_RLC]
+        overall_permissions_strings = [PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC, PERMISSION_READ_ALL_FOLDERS_RLC,
+                                       PERMISSION_WRITE_ALL_FOLDERS_RLC]
         overall_permissions = Permission.objects.filter(name__in=overall_permissions_strings)
-        over_all_permissions = HasPermission.objects.filter(group_has_permission__in=groups, permission_for_rlc=self.rlc, permission__in=overall_permissions)
+        has_permissions_for_groups = HasPermission.objects.filter(group_has_permission__in=groups,
+                                                                  permission_for_rlc=self.rlc,
+                                                                  permission__in=overall_permissions)
 
         parents = self.get_all_parents() + [self]
         children = self.get_all_children()
@@ -238,8 +242,7 @@ class Folder(models.Model):
             from_children = list(PermissionForFolder.objects.filter(folder__in=children, group_has_permission=group))
             folder_visible.extend(from_children)
 
-        return folder_permissions, folder_visible, list(over_all_permissions)
-
+        return folder_permissions, folder_visible, list(has_permissions_for_groups)
 
     def download_folder(self, local_path=''):
         # create local folder

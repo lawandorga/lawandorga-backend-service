@@ -17,7 +17,7 @@
 from rest_framework import serializers
 from backend.api.serializers import GroupNameSerializer
 from backend.files.models import PermissionForFolder
-from backend.files.serializers import FolderPermissionSerializer
+from backend.files.serializers import FolderPermissionSerializer, FolderNamePathSerializer
 from backend.api.errors import EntryAlreadyExistingError
 
 
@@ -47,6 +47,7 @@ class PermissionForFolderSerializer(serializers.ModelSerializer):
 class PermissionForFolderNestedSerializer(serializers.ModelSerializer):
     group_has_permission = GroupNameSerializer(many=False, read_only=True)
     permission = FolderPermissionSerializer(many=False, read_only=True)
+    folder = FolderNamePathSerializer(many=False, read_only=True)
 
     class Meta:
         model = PermissionForFolder

@@ -37,7 +37,14 @@ class UploadViewSet(APIView):
             folder = Folder.create_folders_for_file_path(root_folder, file_info['local_file_path'][5:], user)
             new_file = File(name=file_info['file_name'], creator=user, size=file_info['file_size'], folder=folder,
                             last_editor=user)
-            File.create_or_update(new_file)
+            file = File.create_or_duplicate(new_file)
+            if file.name != file_info['file_name']:
+                import os
+                local_file_path = file_info['local_file_path']
+                local_folder_path = local_file_path[:local_file_path.rindex('/')]
+                new_local_path = local_folder_path + '/' + file.name
+                os.rename(local_file_path, new_local_path)
+                file_info['local_file_path'] = new_local_path
             s3_paths.append(folder.get_file_key())
 
         filepaths = [n['local_file_path'] for n in file_information]
