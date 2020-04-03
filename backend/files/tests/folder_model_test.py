@@ -220,8 +220,62 @@ class FolderModelTests(TransactionTestCase):
         self.assertTrue(created_folders['instagram'].user_has_permission_read(self.fixtures['users'][2]['user']))
         self.assertTrue(created_folders['posts'].user_has_permission_read(self.fixtures['users'][2]['user']))
 
+    def test_get_groups_permission(self):
+        p_read = FolderPermission.objects.get(name=PERMISSION_READ_FOLDER)
+        p_all_read = Permission.objects.get(name=PERMISSION_READ_ALL_FOLDERS_RLC)
 
-    # def test_download_folder(self):
+        created_folders = self.create_many_test_folders()
+
+        perm1 = PermissionForFolder(folder=created_folders['ressorts'], permission=p_read,
+                                    group_has_permission=self.fixtures['groups'][0])
+        perm1.save()
+
+        perm_string, perm = created_folders['ressorts'].get_groups_permission(self.fixtures['groups'][0])
+        self.assertEquals('READ', perm_string)
+        self.assertEquals(perm1, perm)
+        perm_string, perm = created_folders['ressorts'].get_groups_permission(self.fixtures['groups'][1])
+        self.assertEquals('', perm_string)
+
+        perm2 = PermissionForFolder(folder=created_folders['instagram'], permission=p_read,
+                                    group_has_permission=self.fixtures['groups'][1])
+        perm2.save()
+
+        perm_string, perm = created_folders['ressorts'].get_groups_permission(self.fixtures['groups'][1])
+        self.assertEquals('SEE', perm_string)
+        self.assertEquals(perm2, perm)
+        perm_string, perm = created_folders['instagram'].get_groups_permission(self.fixtures['groups'][1])
+        self.assertEquals('READ', perm_string)
+        self.assertEquals(perm2, perm)
+        perm_string, perm = created_folders['instagram'].get_groups_permission(self.fixtures['groups'][0])
+        self.assertEquals('READ', perm_string)
+
+    def test_get_all_groups_permissions(self):
+        p_read = FolderPermission.objects.get(name=PERMISSION_READ_FOLDER)
+        p_all_read = Permission.objects.get(name=PERMISSION_READ_ALL_FOLDERS_RLC)
+
+        created_folders = self.create_many_test_folders()
+
+        perm1 = PermissionForFolder(folder=created_folders['ressorts'], permission=p_read,
+                                    group_has_permission=self.fixtures['groups'][0])
+        perm1.save()
+
+        all_permissions = created_folders['ressorts'].get_all_groups_permissions()
+        self.assertEquals()
+
+    def test_get_all_groups_permissions_new(self):
+        p_read = FolderPermission.objects.get(name=PERMISSION_READ_FOLDER)
+        p_all_read = Permission.objects.get(name=PERMISSION_READ_ALL_FOLDERS_RLC)
+
+        created_folders = self.create_many_test_folders()
+
+        perm1 = PermissionForFolder(folder=created_folders['ressorts'], permission=p_read,
+                                    group_has_permission=self.fixtures['groups'][0])
+        perm1.save()
+
+        perms = created_folders['ressorts'].get_all_groups_permissions_new()
+
+
+# def test_download_folder(self):
     #   TODO: this?
     #
     #     top_folder = Folder(name='files', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])

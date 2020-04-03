@@ -19,12 +19,11 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
 from backend.api.models import Rlc, UserProfile
-from backend.files.static.folder_permissions import PERMISSION_WRITE_FOLDER
-from backend.static.permissions import PERMISSION_READ_ALL_FOLDERS_RLC, PERMISSION_WRITE_ALL_FOLDERS_RLC, \
-    PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC
-from backend.files.static.folder_permissions import PERMISSION_READ_FOLDER
-from backend.static.storage_folders import get_storage_base_files_folder, get_temp_storage_folder
 from backend.files.models.folder_permission import FolderPermission
+from backend.files.static.folder_permissions import PERMISSION_READ_FOLDER, PERMISSION_WRITE_FOLDER
+from backend.static.permissions import PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC, PERMISSION_READ_ALL_FOLDERS_RLC, \
+    PERMISSION_WRITE_ALL_FOLDERS_RLC
+from backend.static.storage_folders import get_storage_base_files_folder, get_temp_storage_folder
 
 
 class Folder(models.Model):
@@ -33,7 +32,8 @@ class Folder(models.Model):
     creator = models.ForeignKey(UserProfile, related_name="folders_created", on_delete=models.SET_NULL, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
-    last_editor = models.ForeignKey(UserProfile, related_name="last_edited_folders", on_delete=models.SET_NULL, null=True)
+    last_editor = models.ForeignKey(UserProfile, related_name="last_edited_folders", on_delete=models.SET_NULL,
+                                    null=True)
     last_edited = models.DateTimeField(auto_now_add=True)
 
     size = models.BigIntegerField(default=0)
@@ -120,6 +120,7 @@ class Folder(models.Model):
         if user.rlc != self.rlc:
             return False
 
+        # TODO: manage_folder_permissions here too? -> is for writing?
         if user.has_permission(for_rlc=user.rlc, permission=PERMISSION_WRITE_ALL_FOLDERS_RLC) or \
             user.has_permission(for_rlc=user.rlc, permission=PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC):
             return True
@@ -148,6 +149,97 @@ class Folder(models.Model):
         if relevant_permissions.count() >= 1:
             return True
         return False
+
+    def get_groups_permission(self, group):
+        from backend.files.models import PermissionForFolder
+        if group.has_group_permission(PERMISSION_WRITE_ALL_FOLDERS_RLC):
+            return 'WRITE', None
+        elif group.has_group_permission(PERMISSION_READ_ALL_FOLDERS_RLC) or group.has_group_permission(
+            PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC):
+            return 'READ', None
+
+        parent_folders = self.get_all_parents()
+        p_write = FolderPermission.objects.get(name=PERMISSION_WRITE_FOLDER)
+        relevant_permissions = PermissionForFolder.objects.filter(folder__in=parent_folders,
+                                                                  group_has_permission=group,
+                                                                  permission=p_write)
+        if relevant_permissions.count() >= 1:
+            return 'WRITE', relevant_permissions.first()
+        relevant_permissions = PermissionForFolder.objects.filter(folder=self,
+                                                                  group_has_permission=group,
+                                                                  permission=p_write)
+        if relevant_permissions.count() > 0:
+            return 'WRITE', relevant_permissions.first()
+
+        p_read = FolderPermission.objects.get(name=PERMISSION_READ_FOLDER)
+        relevant_permissions = PermissionForFolder.objects.filter(folder__in=parent_folders,
+                                                                  group_has_permission=group,
+                                                                  permission=p_read)
+        if relevant_permissions.count() >= 1:
+            return 'READ', relevant_permissions.first()
+        relevant_permissions = PermissionForFolder.objects.filter(folder=self,
+                                                                  group_has_permission=group,
+                                                                  permission=p_read)
+        if relevant_permissions.count() > 0:
+            return 'READ', relevant_permissions.first()
+
+        children = self.get_all_children()
+        relevant_permissions = PermissionForFolder.objects.filter(folder__in=children,
+                                                                  group_has_permission=group)
+        if relevant_permissions.count() >= 1:
+            return 'SEE', relevant_permissions.first()
+        return '', None
+
+    def get_all_groups_permissions(self):
+        from backend.api.models import Group
+        from backend.files.serializers import PermissionForFolderSerializer, PermissionForFolderNestedSerializer
+        groups = list(Group.objects.filter(from_rlc=self.rlc))
+
+        allGroupsPermissions = {
+            'SEE': [],
+            'WRITE': [],
+            'READ': []
+        }
+        for group in groups:
+            perm_string, perm = self.get_groups_permission(group)
+            if perm:
+                data = PermissionForFolderNestedSerializer(perm).data
+            else:
+                data = {'general': True}
+            if perm_string == '':
+                continue
+            elif perm_string == 'WRITE':
+                allGroupsPermissions['WRITE'].append(data)
+            elif perm_string == 'READ':
+                allGroupsPermissions['READ'].append(data)
+            elif perm_string == 'SEE':
+                allGroupsPermissions['SEE'].append(data)
+
+        return allGroupsPermissions
+
+    def get_all_groups_permissions_new(self):
+        from backend.api.models import Group, HasPermission, Permission
+        from backend.files.models import PermissionForFolder
+        from backend.static.permissions import PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC, PERMISSION_READ_ALL_FOLDERS_RLC, PERMISSION_WRITE_ALL_FOLDERS_RLC
+        groups = list(Group.objects.filter(from_rlc=self.rlc))
+
+        folder_permissions = []
+        folder_visible = []
+
+        overall_permissions_strings = [PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC, PERMISSION_READ_ALL_FOLDERS_RLC, PERMISSION_WRITE_ALL_FOLDERS_RLC]
+        overall_permissions = Permission.objects.filter(name__in=overall_permissions_strings)
+        over_all_permissions = HasPermission.objects.filter(group_has_permission__in=groups, permission_for_rlc=self.rlc, permission__in=overall_permissions)
+
+        parents = self.get_all_parents() + [self]
+        children = self.get_all_children()
+        for group in groups:
+            from_parents = list(PermissionForFolder.objects.filter(folder__in=parents, group_has_permission=group))
+            folder_permissions.extend(from_parents)
+            from_children = list(PermissionForFolder.objects.filter(folder__in=children, group_has_permission=group))
+            folder_visible.extend(from_children)
+
+        return folder_permissions, folder_visible, list(over_all_permissions)
+
 
     def download_folder(self, local_path=''):
         # create local folder

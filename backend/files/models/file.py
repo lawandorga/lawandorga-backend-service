@@ -53,11 +53,15 @@ class File(models.Model):
         if sender == File:
             instance.delete_on_cloud()
             instance.folder.propagate_new_size_up(-instance.size)
+            instance.folder.number_of_files -= 1
+            instance.folder.save()
 
     @receiver(post_save)
     def post_save(sender, instance, **kwargs):
         if sender == File:
             instance.folder.propagate_new_size_up(instance.size)
+            instance.folder.number_of_files += 1
+            instance.folder.save()
 
     def download(self, local_destination_folder):
         EncryptedStorage.download_from_s3_and_decrypt_file(self.get_file_key() + '.enc', 'aes_key',

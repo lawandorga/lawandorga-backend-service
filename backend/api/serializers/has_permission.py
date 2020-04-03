@@ -67,3 +67,11 @@ class HasPermissionOnlyHasPermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = HasPermission
         fields = ('id', 'permission', 'user_has_permission', 'group_has_permission',)
+
+
+class HasPermissionWithPermissionNameSerializer(serializers.ModelSerializer):
+    permission = PermissionNameSerializer()
+
+    class Meta:
+        model = HasPermission
+        fields = '__all__'
