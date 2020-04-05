@@ -57,6 +57,7 @@ class PoolRecordViewSet(viewsets.ModelViewSet):
 
             record.working_on_record.remove(user)
             record.working_on_record.add(new_consultant)
+            record.save()
 
             return Response({'action': 'matched'})
         else:

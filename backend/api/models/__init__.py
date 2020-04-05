@@ -26,3 +26,4 @@ from .user_activation_link import *
 from .user_encryption_keys import *
 from .rlc_encryption_keys import *
 from .users_rlc_keys import *
+from .rlc_settings import *

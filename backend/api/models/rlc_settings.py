@@ -1,11 +1,3 @@
-""" Definition of ModelViewSet
-class ModelViewSet(mixins.CreateModelMixin,
-                   mixins.RetrieveModelMixin,
-                   mixins.UpdateModelMixin,
-                   mixins.DestroyModelMixin,
-                   mixins.ListModelMixin,
-                   GenericViewSet)
-"""
 #  law&orga - record and organization management software for refugee law clinics
 #  Copyright (C) 2019  Dominik Walser
 #
@@ -22,19 +14,15 @@ class ModelViewSet(mixins.CreateModelMixin,
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from django.db import models
 
-from .user import *
-from .group import *
-from .permission import *
-from .has_permission import *
-from .rlc import *
-from .other import *
-from .storage import *
-from .forgot_password import *
-from .new_user_request import *
-from .user_activation_link import *
-from .language import *
-from .user_encryption_keys import *
-from .rlc_encryption_keys import *
-from .users_rlc_keys import *
-from .rlc_settings import *
+from backend.api.models import Rlc
+
+
+class RlcSettings(models.Model):
+    rlc = models.ForeignKey(Rlc, related_name='rlc_settings', on_delete=models.CASCADE, null=False)
+
+    user_record_pool = models.BooleanField(default=False, null=False)
+
+    def __str__(self):
+        return 'rlc settings for rlc: ' + str(self.rlc) + '; '

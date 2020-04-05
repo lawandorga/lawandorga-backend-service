@@ -42,6 +42,8 @@ class RecordPoolViewSet(APIView):
             data = PoolConsultantSerializer(queryset, many=True).data
             return_val = {'type': 'consultants'}
             return_val.update({'entries': data})
+            number_of_own_enlistings = PoolConsultant.objects.filter(consultant=user).count()
+            return_val.update({'number_of_own_enlistings': number_of_own_enlistings})
             return Response(return_val)
 
         return Response({'type': 'empty'})

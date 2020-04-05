@@ -40,6 +40,7 @@ class PoolConsultantViewSet(viewsets.ModelViewSet):
             record = entry.record
             record.working_on_record.remove(entry.yielder)
             record.working_on_record.add(user)
+            record.save()
 
             RecordEncryption.objects.filter(record=record, user=entry.yielder).delete()
             new_keys = RecordEncryption(user=user, record=record, encrypted_key=user.rsa_encrypt(entry.record_key))
@@ -51,8 +52,10 @@ class PoolConsultantViewSet(viewsets.ModelViewSet):
             pool_consultant = PoolConsultant(consultant=user)
             pool_consultant.save()
 
+            number_of_entries = PoolConsultant.objects.filter(consultant=user).count()
             return_val = PoolConsultantSerializer(pool_consultant).data
             return_val.update({
-                'action': 'created'
+                'action': 'created',
+                'number_of_enlistings': number_of_entries
             })
             return Response(return_val)
