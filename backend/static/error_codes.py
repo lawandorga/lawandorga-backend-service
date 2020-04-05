@@ -331,3 +331,13 @@ ERROR__FILES__NO_FILES_TO_UPLOAD = {
     'error_detail': 'no files to upload found',
     'error_code': 'files.no_files_to_upload'
 }
+
+ERROR__RECORD__PERMISSION__NOT_WORKING_ON = {
+    'error_detail': 'can\'t yield, already working on',
+    'error_code': 'record.permission.not_working_on'
+}
+
+ERROR__API__RLC_SETTINGS__WRONG_COUNT = {
+    'error_detail': 'wrong count of rlc settings',
+    'error_code': 'api.rlc_settings.wrong_count'
+}

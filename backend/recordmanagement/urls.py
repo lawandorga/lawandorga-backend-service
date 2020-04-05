@@ -34,6 +34,8 @@ router.register('record_deletion_requests', EncryptedRecordDeletionRequestViewSe
 router.register('record_encryptions', RecordEncryptionViewSet)
 router.register('e_records', EncryptedRecordsListViewSet, base_name='e_records')
 router.register('e_clients', EncryptedClientsViewSet, base_name='e_records')    # TODO: add all encrypted fields here
+router.register('pool_records', PoolRecordViewSet, base_name='pool_records')
+router.register('pool_consultants', PoolConsultantViewSet)
 
 
 urlpatterns = [
@@ -60,5 +62,5 @@ urlpatterns = [
     # url(r'process_record_deletion_request', RecordDeletionProcessViewSet.as_view()),    # OLD
     # url(r'^e_upload/$', EncryptedRecordDocumentsUploadViewSet.as_view()),               # deprecated
     url(r'^upload/(?P<filename>[^/]+)$', RecordDocumentUploadEncryptViewSet.as_view()), # deprecated
-
+    url(r'record_pool/$', RecordPoolViewSet.as_view()),
 ]
