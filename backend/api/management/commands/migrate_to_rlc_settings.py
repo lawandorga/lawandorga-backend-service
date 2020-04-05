@@ -1,5 +1,5 @@
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -14,25 +14,16 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from django.conf import settings
+from django.core.management.base import BaseCommand
 
-from .client import *
-from .origin_country import *
-from .record import *
-from .record_tag import *
-from .statics import *
-from .record_document import *
-from .record_document_tag import *
-from .record_message import *
-from .record_permission import *
-from .record_deletion_request import *
-from .record_encryption import *
-from .encrypted_record_permission import *
-from .encrypted_record import *
-from .encrypted_client import *
-from .encrypted_record_message import *
-from .encrypted_record_document import *
-from .encrypted_record_deletion_request import *
-from .pool_consultant import *
-from .pool_record import *
-from .record_pool import *
+from backend.api.models import RlcSettings
+from backend.api.management.commands._migrators import OneTimeGenerators
 
+
+class Command(BaseCommand):
+    help = 'add rlc settings for all rlcs with default values'
+
+    def handle(self, *args, **options):
+        RlcSettings.objects.all().delete()
+        OneTimeGenerators.generate_rlc_settings_for_rlc()

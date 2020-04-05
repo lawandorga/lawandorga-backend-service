@@ -14,25 +14,15 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from django.db import models
 
-from .client import *
-from .origin_country import *
-from .record import *
-from .record_tag import *
-from .statics import *
-from .record_document import *
-from .record_document_tag import *
-from .record_message import *
-from .record_permission import *
-from .record_deletion_request import *
-from .record_encryption import *
-from .encrypted_record_permission import *
-from .encrypted_record import *
-from .encrypted_client import *
-from .encrypted_record_message import *
-from .encrypted_record_document import *
-from .encrypted_record_deletion_request import *
-from .pool_consultant import *
-from .pool_record import *
-from .record_pool import *
+from backend.api.models import Rlc
 
+
+class RlcSettings(models.Model):
+    rlc = models.ForeignKey(Rlc, related_name='rlc_settings', on_delete=models.CASCADE, null=False)
+
+    user_record_pool = models.BooleanField(default=False, null=False)
+
+    def __str__(self):
+        return 'rlc settings for rlc: ' + str(self.rlc) + '; '
