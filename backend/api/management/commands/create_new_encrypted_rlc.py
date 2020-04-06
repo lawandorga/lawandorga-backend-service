@@ -16,7 +16,7 @@
 
 from django.core.management.base import BaseCommand
 
-from backend.api.models import Group, HasPermission, Permission, Rlc, UserProfile, RlcEncryptionKeys, UserEncryptionKeys, UsersRlcKeys
+from backend.api.models import Group, HasPermission, Permission, Rlc, UserProfile, RlcEncryptionKeys, UserEncryptionKeys, UsersRlcKeys, RlcSettings
 from backend.static.encryption import RSAEncryption, AESEncryption
 from backend.static.permissions import PERMISSION_MANAGE_GROUPS_RLC, PERMISSION_MANAGE_PERMISSIONS_RLC, \
     PERMISSION_VIEW_PERMISSIONS_RLC
@@ -48,6 +48,8 @@ class Command(BaseCommand):
 
         rlc = Rlc(name=options['rlc_name'])
         rlc.save()
+        settings = RlcSettings(rlc=rlc)
+        settings.save()
         admin_user = UserProfile(email=options['admin_email'], rlc=rlc, name=options['admin_name'])
         admin_user.set_password(options['admin_password'])
         admin_user.save()
