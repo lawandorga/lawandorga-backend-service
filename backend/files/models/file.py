@@ -63,8 +63,8 @@ class File(models.Model):
             instance.folder.number_of_files += 1
             instance.folder.save()
 
-    def download(self, local_destination_folder):
-        EncryptedStorage.download_from_s3_and_decrypt_file(self.get_file_key() + '.enc', 'aes_key',
+    def download(self, aes_key, local_destination_folder):
+        EncryptedStorage.download_from_s3_and_decrypt_file(self.get_file_key() + '.enc', aes_key,
                                                            local_destination_folder)
         # EncryptedStorage.download_file_from_s3(self.get_file_key(), os.path.join(local_destination_folder, self.name + '.enc'))
 

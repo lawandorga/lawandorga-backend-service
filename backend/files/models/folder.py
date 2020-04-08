@@ -244,7 +244,7 @@ class Folder(models.Model):
 
         return folder_permissions, folder_visible, list(has_permissions_for_groups)
 
-    def download_folder(self, local_path=''):
+    def download_folder(self, aes_key, local_path=''):
         # create local folder
         # download all files in this folder to local folder
         # call download_folder of children
@@ -257,9 +257,9 @@ class Folder(models.Model):
         except:
             pass
         for file in files_in_folder:
-            file.download(os.path.join(local_path, self.name))
+            file.download(aes_key, os.path.join(local_path, self.name))
         for child in self.child_folders.all():
-            child.download_folder(local_path + self.name + '/')
+            child.download_folder(aes_key, local_path + self.name + '/')
 
     @staticmethod
     def get_folder_from_path(path, rlc):

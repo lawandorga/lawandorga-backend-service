@@ -14,30 +14,32 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.files.models import Folder, File
 from backend.static.storage_folders import get_temp_storage_folder
 from backend.static.storage_management import LocalStorageManager
+from backend.static.middleware import get_private_key_from_request
 
 
 class DownloadViewSet(APIView):
     def post(self, request):
+        users_private_key = get_private_key_from_request(request)
+        aes_key = request.user.get_rlcs_aes_key(users_private_key)
+
         entries = request.data['entries']
         request_path = request.data['path']
         if request_path == '':
             request_path = 'root'
-
         root_folder_name = get_temp_storage_folder() + '/' + request_path
         for entry in entries:
             if entry['type'] == 1:
                 # file
                 file = File.objects.get(pk=entry['id'])
-                file.download(root_folder_name)
+                file.download(aes_key, root_folder_name)
             else:
                 folder = Folder.objects.get(pk=entry['id'])
-                folder.download_folder(root_folder_name)
+                folder.download_folder(aes_key, root_folder_name)
 
         LocalStorageManager.zip_folder_and_delete(root_folder_name, root_folder_name)
         return LocalStorageManager.create_response_from_zip_file(get_temp_storage_folder() + '/' + request_path + '.zip')
