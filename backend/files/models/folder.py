@@ -253,13 +253,15 @@ class Folder(models.Model):
 
         files_in_folder = File.objects.filter(folder=self)
         try:
-            os.makedirs(os.path.join(get_temp_storage_folder(), local_path, self.name))
+            if local_path == '':
+                local_path = get_temp_storage_folder()
+            os.makedirs(os.path.join(local_path, self.name))
         except:
             pass
         for file in files_in_folder:
             file.download(aes_key, os.path.join(local_path, self.name))
         for child in self.child_folders.all():
-            child.download_folder(aes_key, local_path + self.name + '/')
+            child.download_folder(aes_key, os.path.join(local_path, self.name))
 
     @staticmethod
     def get_folder_from_path(path, rlc):
