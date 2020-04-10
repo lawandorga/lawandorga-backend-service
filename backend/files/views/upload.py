@@ -23,17 +23,23 @@ from backend.files.models import File, Folder
 from backend.static.multithreading import MultithreadedFileUploads
 from backend.static.storage_management import LocalStorageManager
 from backend.static.middleware import get_private_key_from_request
+from backend.api.errors import CustomError
+from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 
 
 class UploadViewSet(APIView):
     def post(self, request):
         user = request.user
+
+        root_folder = Folder.get_folder_from_path('files/' + request.data['path'], user.rlc)
+        if not root_folder.user_has_permission_write(user):
+            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+
         users_private_key = get_private_key_from_request(request)
         aes_key = user.get_rlcs_aes_key(users_private_key)
 
         files = request.FILES.getlist('files')
         file_information = LocalStorageManager.save_files_locally(files, json.loads(request.data['paths']))
-        root_folder = Folder.get_folder_from_path('files/' + request.data['path'], user.rlc)
 
         s3_paths = []
         for file_info in file_information:

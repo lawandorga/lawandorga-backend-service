@@ -20,6 +20,8 @@ from backend.files.models import Folder, File
 from backend.static.storage_folders import get_temp_storage_folder
 from backend.static.storage_management import LocalStorageManager
 from backend.static.middleware import get_private_key_from_request
+from backend.api.errors import CustomError
+from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 
 
 class DownloadViewSet(APIView):
@@ -36,10 +38,12 @@ class DownloadViewSet(APIView):
             if entry['type'] == 1:
                 # file
                 file = File.objects.get(pk=entry['id'])
-                file.download(aes_key, root_folder_name)
+                if file.folder.user_has_permission_read(request.user):
+                    file.download(aes_key, root_folder_name)
             else:
                 folder = Folder.objects.get(pk=entry['id'])
-                folder.download_folder(aes_key, root_folder_name)
+                if folder.user_has_permission_read(request.user):
+                    folder.download_folder(aes_key, root_folder_name)
 
         LocalStorageManager.zip_folder_and_delete(root_folder_name, root_folder_name)
         return LocalStorageManager.create_response_from_zip_file(get_temp_storage_folder() + '/' + request_path + '.zip')
