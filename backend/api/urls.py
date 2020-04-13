@@ -34,6 +34,8 @@ router.register('forgot_password_links', views.ForgotPasswordViewSet, base_name=
 router.register('new_user_request', views.NewUserRequestViewSet, base_name="new_user_request")
 router.register('user_activation_links', views.UserActivationBackendViewSet, base_name="user_activation_links")
 router.register('user_encryption_keys', views.UserEncryptionKeysViewSet, base_name="user_encryption_keys")
+router.register('rlc_settings', views.RlcSettingsViewSet, base_name='rlc_settings')
+
 
 urlpatterns = [
     url(r'', include(router.urls)),
@@ -54,4 +56,5 @@ urlpatterns = [
     url(r'logout/', views.LogoutViewSet.as_view()),
     url(r'inactive_users/', views.InactiveUsersViewSet.as_view()),
     url(r'user_has_permissions/', views.UserHasPermissionsViewSet.as_view()),
+    url(r'my_rlc_settings/', views.RlcSettingsMineViewSet.as_view()),
 ]

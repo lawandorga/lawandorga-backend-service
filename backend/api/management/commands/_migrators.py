@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from backend.api.models import Rlc, RlcEncryptionKeys, UserEncryptionKeys, UserProfile, UsersRlcKeys
+from backend.api.models import Rlc, RlcEncryptionKeys, UserEncryptionKeys, UserProfile, UsersRlcKeys, RlcSettings
 from backend.recordmanagement.models import EncryptedClient, EncryptedRecord, EncryptedRecordDeletionRequest, \
     EncryptedRecordDocument, EncryptedRecordMessage, EncryptedRecordPermission, Record, RecordDeletionRequest, \
     RecordDocument, RecordEncryption, RecordMessage, RecordPermission
@@ -52,6 +52,13 @@ class OneTimeGenerators:
                 for_user_encrypted_rlc_aes_key = RSAEncryption.encrypt(aes_key, users_public)
                 user_rlc_keys = UsersRlcKeys(user=user, rlc=rlc, encrypted_key=for_user_encrypted_rlc_aes_key)
                 user_rlc_keys.save()
+
+    @staticmethod
+    def generate_rlc_settings_for_rlc():
+        rlcs = Rlc.objects.all()
+        for rlc in rlcs:
+            settings = RlcSettings(rlc=rlc)
+            settings.save()
 
 
 class Migrators:

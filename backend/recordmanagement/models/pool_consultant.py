@@ -1,5 +1,5 @@
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -14,25 +14,11 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from django.db import models
+from backend.api.models import UserProfile
 
-from .client import *
-from .origin_country import *
-from .record import *
-from .record_tag import *
-from .statics import *
-from .record_document import *
-from .record_document_tag import *
-from .record_message import *
-from .record_permission import *
-from .record_deletion_request import *
-from .record_encryption import *
-from .encrypted_record_permission import *
-from .encrypted_record import *
-from .encrypted_client import *
-from .encrypted_record_message import *
-from .encrypted_record_document import *
-from .encrypted_record_deletion_request import *
-from .pool_consultant import *
-from .pool_record import *
-from .record_pool import *
+
+class PoolConsultant(models.Model):
+    consultant = models.ForeignKey(UserProfile, related_name="enlisted_in_record_pool", on_delete=models.CASCADE, null=False)
+    enlisted = models.DateTimeField(auto_now_add=True)
 

@@ -342,3 +342,13 @@ ERROR__API__WRONG_RLC = {
     'error_detail': 'wrong rlc',
     'error_code': 'api.wrong_rlc'
 }
+
+ERROR__RECORD__PERMISSION__NOT_WORKING_ON = {
+    'error_detail': 'can\'t yield, already working on',
+    'error_code': 'record.permission.not_working_on'
+}
+
+ERROR__API__RLC_SETTINGS__WRONG_COUNT = {
+    'error_detail': 'wrong count of rlc settings',
+    'error_code': 'api.rlc_settings.wrong_count'
+}

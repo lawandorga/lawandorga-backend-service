@@ -65,17 +65,18 @@ class NewUserRequestAdmitViewSet(APIView):
         if action != 'accept' and action != 'decline':
             raise CustomError(error_codes.ERROR__API__ACTION_NOT_VALID)
 
-        # create encryption key for new user
-        creators_private_key = get_private_key_from_request(request)
-        rlcs_aes_key = request.user.get_rlcs_aes_key(creators_private_key)
-        encrypted_rlcs_private_key = new_user_request.request_from.rsa_encrypt(rlcs_aes_key)
-        users_rlc_keys = UsersRlcKeys(user=new_user_request.request_from, rlc=request.user.rlc, encrypted_key=encrypted_rlcs_private_key)
-        users_rlc_keys.save()
-
         new_user_request.request_processed = request.user
         new_user_request.processed_on = datetime.utcnow().replace(tzinfo=pytz.utc)
         if action == 'accept':
             new_user_request.state = 'gr'
+
+            # create encryption key for new user
+            creators_private_key = get_private_key_from_request(request)
+            rlcs_aes_key = request.user.get_rlcs_aes_key(creators_private_key)
+            encrypted_rlcs_private_key = new_user_request.request_from.rsa_encrypt(rlcs_aes_key)
+            users_rlc_keys = UsersRlcKeys(user=new_user_request.request_from, rlc=request.user.rlc, encrypted_key=encrypted_rlcs_private_key)
+            users_rlc_keys.save()
+
             if user_activation_link.activated:
                 new_user_request.request_from.is_active = True
                 new_user_request.request_from.save()
