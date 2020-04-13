@@ -55,6 +55,10 @@ class Folder(models.Model):
         if self.parent:
             self.parent.propagate_new_size_up(delta)
         self.size = self.size + delta
+        if delta > 0:
+            self.number_of_files = self.number_of_files + 1
+        else:
+            self.number_of_files = self.number_of_files - 1
         self.save()
 
     def update_folder_tree_sizes(self, delta):
