@@ -15,6 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 import os
+import shutil
 from threading import Thread
 
 from backend.static.encrypted_storage import EncryptedStorage
@@ -55,6 +56,6 @@ class MultithreadedFileUploads:
     @start_new_thread
     def encrypt_files_and_upload_to_s3(local_files, s3_folders, aes_key):
         for i in range(local_files.__len__()):
-            print('upload: ' + local_files[i] + ' to ' + s3_folders[i])
             EncryptedStorage.encrypt_file_and_upload_to_s3(local_files[i], aes_key, s3_folders[i])
-            os.remove(local_files[i])
+        temp_folder = local_files[i][:local_files[i].index('/', 5)]
+        shutil.rmtree(temp_folder)

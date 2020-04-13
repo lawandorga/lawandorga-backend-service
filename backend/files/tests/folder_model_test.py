@@ -104,6 +104,26 @@ class FolderModelTests(TransactionTestCase):
         self.assertEqual(200, Folder.objects.get(name='middle folder new').size)
         self.assertEqual(200, Folder.objects.get(name='top folder').size)
 
+    def test_size_updateing_with_files(self):
+        top_folder = Folder(name='top folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+        top_folder.save()
+
+        middle_folder = Folder(name='middle folder', creator=self.fixtures['users'][0]['user'],
+                               rlc=self.fixtures['rlc'], parent=top_folder)
+        middle_folder.save()
+        self.assertEqual(top_folder.size, 0)
+        self.assertEqual(middle_folder.size, 0)
+
+        file1 = File(name='file1', size=100, creator=self.fixtures['users'][0]['user'], folder=top_folder)
+        file1.save()
+        self.assertEqual(top_folder.size, 100)
+        self.assertEqual(middle_folder.size, 0)
+
+        file2 = File(name='file2', size=200, creator=self.fixtures['users'][0]['user'], folder=middle_folder)
+        file2.save()
+        self.assertEqual(top_folder.size, 300)
+        self.assertEqual(middle_folder.size, 200)
+
     def test_folder_key(self):
         top_folder = Folder(name='top folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
         top_folder.save()
