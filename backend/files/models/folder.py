@@ -51,22 +51,11 @@ class Folder(models.Model):
             key = get_storage_base_files_folder(self.rlc.id)
         return key + self.name + '/'
 
-    def delete_on_cloud(self):
-        # delete folder an subfolder on storage
-        # TODO: files!
-        pass
-
     def propagate_new_size_up(self, delta=-1):
         if self.parent:
             self.parent.propagate_new_size_up(delta)
         self.size = self.size + delta
         self.save()
-
-    @receiver(pre_delete)
-    def propagate_deletion(sender, instance, **kwargs):
-        if sender == Folder:
-            instance.propagate_new_size_up(-instance.size)
-            instance.delete_on_cloud()
 
     def update_folder_tree_sizes(self, delta):
         self.size = self.size - delta
