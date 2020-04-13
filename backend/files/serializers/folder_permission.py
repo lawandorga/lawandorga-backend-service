@@ -1,5 +1,5 @@
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -14,20 +14,11 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.core.management.base import BaseCommand
-from ._factories import UserFactory, ClientFactory, RecordFactory, GroupFactory
-from backend.api.models import *
-from ._fixtures import Fixtures, AddMethods
-from backend.recordmanagement.models import *
-from backend.static.permissions import get_all_permissions_strings
+from rest_framework import serializers
+from backend.files.models.folder_permission import FolderPermission
 
 
-class Command(BaseCommand):
-    help = 'adds all "new" permissions'
-
-    def add_arguments(self, parser):
-        pass
-
-    def handle(self, *args, **options):
-        Fixtures.create_real_permissions_no_duplicates()
-        Fixtures.create_real_folder_permissions_no_duplicate()
+class FolderPermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FolderPermission
+        fields = '__all__'

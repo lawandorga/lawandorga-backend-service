@@ -45,6 +45,7 @@ class Command(BaseCommand):
         best_record = self.create_the_best_record_ever(main_user, clients, consultants, rlc)
         self.create_record_deletion_request(main_user, best_record)
         self.create_record_permission_request(users[4], best_record)
+        self.create_additional_dummy_users(rlc)
 
         # TODO: generate inactive user, generate encryption stuff here, not old unencrypted
 
@@ -55,6 +56,15 @@ class Command(BaseCommand):
         user.set_password('qwe123')
         user.save()
         return user
+
+    def create_additional_dummy_users(self, rlc):
+        user = apimodels.UserProfile(name='Tester 1', email='tester1@law-orga.de', phone_number='123812382', rlc=rlc)
+        user.set_password('qwe123')
+        user.save()
+
+        user1 = apimodels.UserProfile(name='Tester 2', email='tester2@law-orga.de', phone_number='123812383', rlc=rlc)
+        user1.set_password('qwe123')
+        user1.save()
 
     def create_inactive_user(self, rlc):
         user = apimodels.UserProfile(name='Im Not that active', email='inactive@rlcm.de', phone_number='1293283882', street='Inaktive Strasse', city='InAktiv', postal_code='29292', rlc=rlc)

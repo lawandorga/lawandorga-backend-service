@@ -149,6 +149,7 @@ def zip_files_and_create_response(file_names, zip_file_name):
 
 
 class CachedS3Boto3Storage(S3Boto3Storage):
+    # TODO: deprecated
     def __init__(self, *args, **kwargs):
         super(CachedS3Boto3Storage, self).__init__(*args, **kwargs)
         self.local_storage = default_storage(

@@ -54,6 +54,11 @@ class EncryptedStorage:
         s3_bucket = settings.AWS_S3_BUCKET_NAME
         session = boto3.session.Session(region_name=settings.AWS_S3_REGION_NAME)
         s3 = session.client('s3', config=Config(signature_version='s3v4'))
+        import os
+        try:
+            os.makedirs(filename[:filename.rindex('/') + 1])
+        except:
+            pass
         try:
             s3.download_file(s3_bucket, s3_key, filename)
         except Exception as e:
@@ -64,6 +69,17 @@ class EncryptedStorage:
         if not downloaded_file_name:
             filename = s3_key[s3_key.rindex('/') + 1:]
             downloaded_file_name = os.path.join(local_folder, filename)
+        # TODO: what happens to local_Folder if downloaded file name is given???
         EncryptedStorage.download_file_from_s3(s3_key, downloaded_file_name)
         AESEncryption.decrypt_file(downloaded_file_name, encryption_key)
         os.remove(downloaded_file_name)
+
+    @staticmethod
+    def delete_on_s3(s3_key):
+        s3_bucket = settings.AWS_S3_BUCKET_NAME
+        session = boto3.session.Session(region_name=settings.AWS_S3_REGION_NAME)
+        s3 = session.client('s3', config=Config(signature_version='s3v4'))
+        try:
+            s3.delete_object(Bucket=s3_bucket, Key=s3_key)
+        except Exception as e:
+            raise CustomError(error_codes.ERROR__API__STORAGE__DELETE__NO_SUCH_KEY)

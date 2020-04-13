@@ -40,7 +40,7 @@ class Group(models.Model):
     from_rlc = models.ForeignKey('Rlc', related_name='group_from_rlc', on_delete=models.SET_NULL, null=True,
                                  default=None)
     name = models.CharField(max_length=200, null=False)
-    visible = models.BooleanField(null=False)
+    visible = models.BooleanField(null=False, default=True)
     group_members = models.ManyToManyField(UserProfile, related_name="group_members")
     description = models.TextField(blank=True, null=True)
     note = models.TextField(blank=True, null=True)

@@ -22,6 +22,8 @@ from django.conf import settings
 from backend.api.tests import *
 from backend.recordmanagement.models import Client, OriginCountry, Record, RecordDocumentTag, RecordTag
 from backend.static.permissions import get_all_permissions_strings
+from backend.files.models import FolderPermission
+from backend.files.static.folder_permissions import get_all_folder_permissions_strings
 
 
 class Fixtures:
@@ -132,6 +134,13 @@ class Fixtures:
         for permission in permissions:
             if Permission.objects.filter(name=permission).count() == 0:
                 AddMethods.add_permission(permission)
+
+    @staticmethod
+    def create_real_folder_permissions_no_duplicate():
+        folder_permissions = get_all_folder_permissions_strings()
+        for folder_permission in folder_permissions:
+            if FolderPermission.objects.filter(name=folder_permission).count() == 0:
+                AddMethods.add_folder_permission(folder_permission)
 
     @staticmethod
     def create_real_tags():
@@ -1615,6 +1624,15 @@ class AddMethods:
             perm = Permission(id=permission[0], name=permission[1])
         else:
             raise AttributeError
+        try:
+            perm.save()
+        except:
+            pass
+
+    @staticmethod
+    def add_folder_permission(permission):
+        if isinstance(permission, str):
+            perm = FolderPermission(name=permission)
         perm.save()
 
     @staticmethod
@@ -1634,7 +1652,10 @@ class AddMethods:
             t = RecordTag(id=tag[0], name=tag[1])
         else:
             raise AttributeError
-        t.save()
+        try:
+            t.save()
+        except:
+            pass
 
     @staticmethod
     def add_record_document_tag(tag):
@@ -1644,7 +1665,10 @@ class AddMethods:
             t = RecordDocumentTag(id=tag[0], name=tag[1])
         else:
             raise AttributeError
-        t.save()
+        try:
+            t.save()
+        except:
+            pass
 
     @staticmethod
     def add_country(country):
@@ -1664,7 +1688,10 @@ class AddMethods:
             c = OriginCountry(id=country[0], name=country[1], state=country[2])
         else:
             raise AttributeError
-        c.save()
+        try:
+            c.save()
+        except:
+            pass
 
     @staticmethod
     def add_to_rlc(user_id, rlc_id):

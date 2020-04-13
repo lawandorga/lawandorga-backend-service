@@ -1,5 +1,5 @@
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -14,20 +14,24 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.core.management.base import BaseCommand
-from ._factories import UserFactory, ClientFactory, RecordFactory, GroupFactory
-from backend.api.models import *
-from ._fixtures import Fixtures, AddMethods
-from backend.recordmanagement.models import *
-from backend.static.permissions import get_all_permissions_strings
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from backend.files.models import Folder, File
 
 
-class Command(BaseCommand):
-    help = 'adds all "new" permissions'
-
-    def add_arguments(self, parser):
-        pass
-
-    def handle(self, *args, **options):
-        Fixtures.create_real_permissions_no_duplicates()
-        Fixtures.create_real_folder_permissions_no_duplicate()
+class DeleteViewSet(APIView):
+    def post(self, request):
+        user = request.user
+        # TODO: rework this
+        root_folder = Folder.get_folder_from_path('files/' + request.data['path'], user.rlc)
+        entries = request.data['entries']
+        for entry in entries:
+            if entry['type'] == 1:
+                # file
+                file = File.objects.get(pk=entry['id'])
+                file.delete()
+            else:
+                folder = Folder.objects.get(pk=entry['id'])
+                folder.delete()
+            return Response({'success': True})
