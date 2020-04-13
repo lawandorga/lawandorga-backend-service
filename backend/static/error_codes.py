@@ -18,6 +18,12 @@ ERROR__API__DOWNLOAD__NO_SUCH_KEY = {
     "error_code": "api.download.no_such_key",
     "error_detail": "no such filekey to download"
 }
+
+ERROR__API__STORAGE__DELETE__NO_SUCH_KEY = {
+    "error_code": "api.storage.delete.no_such_key",
+    "error_detail": "no such filekey on storage to delete"
+}
+
 ERROR__API__DOWNLOAD__NO_FILE_SPECIFIED = {
     'error_detail': 'no file specified',
     'error_code': 'api.download.no_file_specified'
@@ -330,6 +336,11 @@ ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND = {
 ERROR__FILES__NO_FILES_TO_UPLOAD = {
     'error_detail': 'no files to upload found',
     'error_code': 'files.no_files_to_upload'
+}
+
+ERROR__API__WRONG_RLC = {
+    'error_detail': 'wrong rlc',
+    'error_code': 'api.wrong_rlc'
 }
 
 ERROR__RECORD__PERMISSION__NOT_WORKING_ON = {

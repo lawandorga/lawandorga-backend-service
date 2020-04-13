@@ -31,6 +31,10 @@ def get_storage_folder_encrypted_record_document(rlc_id, record_id):
     return 'rlcs/' + str(rlc_id) + '/encrypted_records/' + str(record_id) + '/'
 
 
+def get_storage_base_files_folder(rlc_id):
+    return 'rlcs/' + str(rlc_id) + '/'
+
+
 def get_temp_storage_path(filename):
     return os.path.join('temp', filename)
 

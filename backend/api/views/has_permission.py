@@ -78,7 +78,7 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
         if permission in get_record_encryption_keys_permissions():
             granting_users_private_key = get_private_key_from_request(request)
             check_encryption_key_holders_and_grant(request.user, granting_users_private_key)
-        # check if permission in rec enc perms TODO: this would be mor performant
+        # check if permission in rec enc perms TODO: this would be more performant
         # get users private key
         # if rlc -> add rec enc for all rlc users
         # if group -> add for all group members
