@@ -18,6 +18,7 @@ from django.core.management.base import BaseCommand
 
 from backend.api.models import *
 from backend.recordmanagement.models import *
+from backend.files.models import *
 
 
 class Command(BaseCommand):
@@ -55,3 +56,7 @@ class Command(BaseCommand):
         RlcEncryptionKeys.objects.all().delete()
         EncryptedClient.objects.all().delete()
         EncryptedRecordDeletionRequest.objects.all().delete()
+        File.objects.all().delete()
+        Folder.objects.all().delete()
+        FolderPermission.objects.all().delete()
+        PermissionForFolder.objects.all().delete()
