@@ -113,7 +113,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         if request.user.is_superuser and 'email' in data:
             user.email = data['email']
         if request.user.is_superuser and 'name' in data:
-            user.email = data['name']
+            user.name = data['name']
         if request.user.is_superuser and 'is_active' in data:
             user.is_active = data['is_active']
         user.save()
