@@ -14,22 +14,15 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from .origin_country import *
-from .client import *
-from .record_tag import *
-from .record import *
-from .record_document import *
-from .record_document_tag import *
-from .record_message import *
-from .record_permission import *
-from .record_deletion_request import *
-from .encrypted_record import *
-from .record_encryption import *
-from .encrypted_client import *
-from .encrypted_record_document import *
-from .encrypted_record_message import *
-from .encrypted_record_permission import *
-from .encrypted_record_deletion_request import *
-from .pool_consultant import *
-from .pool_record import *
-from .missing_record_key import *
+from django.db import models
+from backend.api.models import UserProfile
+from backend.recordmanagement.models import EncryptedRecord
+
+
+class MissingRecordKey(models.Model):
+    user = models.ForeignKey(UserProfile, related_name='missing_record_keys', on_delete=models.CASCADE)
+    record = models.ForeignKey(EncryptedRecord, related_name='missing_record_keys', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return 'missing records keys, user: ' + str(self.user) + '; record: ' + str(self.record)
+
