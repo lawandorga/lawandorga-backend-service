@@ -15,8 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework.test import APIClient
-from backend.api.models import UserEncryptionKeys, UserProfile, Rlc, Group, Permission
-from backend.static.encryption import RSAEncryption
+from backend.api.models import UserEncryptionKeys, UserProfile, Rlc, Group, Permission, RlcEncryptionKeys, UsersRlcKeys
+from backend.static.encryption import RSAEncryption, AESEncryption
 from backend.static.permissions import get_all_permissions_strings
 from backend.files.static.folder_permissions import get_all_folder_permissions_strings
 from backend.files.models import FolderPermission
@@ -30,13 +30,18 @@ class CreateFixtures:
 
         rlc = Rlc(name="testrlc", id=3001)
         rlc.save()
+        rlc_aes_key = 'SecureAesKey'
+        private, public = RSAEncryption.generate_keys()
+        encrypted_private = AESEncryption.encrypt(private, rlc_aes_key)
+        rlc_keys = RlcEncryptionKeys(rlc=rlc, encrypted_private_key=encrypted_private, public_key=public)
+        rlc_keys.save()
         return_object.update({"rlc": rlc})
 
         users = []
-        users.append(CreateFixtures.create_user(rlc, "user1"))
-        users.append(CreateFixtures.create_user(rlc, "user2"))
-        users.append(CreateFixtures.create_user(rlc, "user3"))
-        users.append(CreateFixtures.create_user(rlc, "user4"))
+        users.append(CreateFixtures.create_user(rlc, "user1", rlc_aes_key))
+        users.append(CreateFixtures.create_user(rlc, "user2", rlc_aes_key))
+        users.append(CreateFixtures.create_user(rlc, "user3", rlc_aes_key))
+        users.append(CreateFixtures.create_user(rlc, "user4", rlc_aes_key))
         return_object.update({"users": users})
 
         groups = []
@@ -48,13 +53,18 @@ class CreateFixtures:
         return return_object
 
     @staticmethod
-    def create_user(rlc, name):
+    def create_user(rlc, name, rlc_aes_key):
         user = UserProfile(name=name, email=name + "@law-orga.de", rlc=rlc)
         user.set_password("qwe123")
         user.save()
         private, public = RSAEncryption.generate_keys()
         keys = UserEncryptionKeys(user=user, private_key=private, public_key=public)
         keys.save()
+
+        encrypted_rlcs_key = RSAEncryption.encrypt(rlc_aes_key, public)
+        rlcs_keys = UsersRlcKeys(user=user, rlc=rlc, encrypted_key=encrypted_rlcs_key)
+        rlcs_keys.save()
+
         client = APIClient()
         client.force_authenticate(user=user)
         return {
@@ -80,3 +90,19 @@ class CreateFixtures:
         perms = get_all_folder_permissions_strings()
         for perm in perms:
             FolderPermission.objects.create(name=perm)
+
+    @staticmethod
+    def create_superuser():
+        superuser = UserProfile(name='superuser', email='superuser@test.de', is_superuser=True)
+        superuser.set_password('qwe123')
+        superuser.save()
+        private, public = RSAEncryption.generate_keys()
+        keys = UserEncryptionKeys(user=superuser, private_key=private, public_key=public)
+        keys.save()
+        client = APIClient()
+        client.force_authenticate(user=superuser)
+        return {
+            "user": superuser,
+            "private": private,
+            "client": client
+        }

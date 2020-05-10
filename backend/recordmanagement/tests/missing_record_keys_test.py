@@ -14,10 +14,12 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+import time
 from django.test import TransactionTestCase
 from rest_framework.test import APIClient
 
 from backend.api import models as api_models
+from backend.files import models as file_models
 from backend.api.errors import CustomError
 from backend.api.management.commands.commands import create_missing_key_entries
 from backend.api.tests.fixtures_encryption import CreateFixtures
@@ -30,10 +32,24 @@ from backend.static.permissions import PERMISSION_MANAGE_PERMISSIONS_RLC
 class MissingRecordKeysTests(TransactionTestCase):
     def setUp(self):
         self.base_fixtures = CreateFixtures.create_base_fixtures()
-        self.superuser = MissingRecordKeysTests.add_superuser()
+        self.superuser = CreateFixtures.create_superuser()
         self.local_fixtures = self.add_fixtures()
 
-    def test_add_fixtures(self):
+    def tearDown(self):
+        api_models.Permission.objects.all().delete()
+        api_models.UserProfile.objects.all().delete()
+        api_models.UserEncryptionKeys.objects.all().delete()
+        api_models.RlcEncryptionKeys.objects.all().delete()
+        api_models.Group.objects.all().delete()
+        api_models.HasPermission.objects.all().delete()
+        record_models.EncryptedRecord.objects.all().delete()
+        record_models.EncryptedRecordPermission.objects.all().delete()
+        record_models.RecordEncryption.objects.all().delete()
+        record_models.MissingRecordKey.objects.all().delete()
+        file_models.FolderPermission.objects.all().delete()
+        file_models.PermissionForFolder.objects.all().delete()
+
+    def test_missing_keys_flow(self):
         # test if command adds all missing key entries as supposed
 
         self.assertEqual(self.local_fixtures['records'][0]['record'].record_token, 'record1')
@@ -47,22 +63,44 @@ class MissingRecordKeysTests(TransactionTestCase):
                 self.base_fixtures['users'][1]['user'], self.base_fixtures['users'][1]['private'])
         self.assertEqual(record_models.MissingRecordKey.objects.count(), 0)
         create_missing_key_entries()
-        missing_list = list(record_models.MissingRecordKey.objects.all())
         self.assertEqual(record_models.MissingRecordKey.objects.count(), 4)
         client = APIClient()
-        #PATH_POOL_RECORDS = '/api/records/pool_records/'
-        b = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
-        a = 10
+
+        # start = time.time()
+        client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
+        # print('login took: ', time.time() - start)
+
+        self.assertEqual(record_models.MissingRecordKey.objects.count(), 0)
+        create_missing_key_entries()
+        self.assertEqual(record_models.MissingRecordKey.objects.count(), 0)
 
     def test_measure_login_timers(self):
-        import time
-        repetitions = 100
+        repetitions = 5
         client = APIClient()
         start = time.time()
         for i in range(repetitions):
             client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
         end = time.time()
-        print('test took:', (end - start)/repetitions)
+        print('average time:', (end - start) / repetitions)
+
+    def test_measure_login_with_missing_keys_timers(self):
+        repetitions = 5
+        missing_entry_users = 5
+        client = APIClient()
+        time_sum = 0
+        for i in range(repetitions):
+            self.tearDown()
+            # self.doCleanups()
+            self.setUp()
+            for j in range(missing_entry_users):
+                MissingRecordKeysTests.create_user_with_missing_key_entry('timeuser' + str(j), self.base_fixtures['rlc'],
+                                                                          [self.local_fixtures['records'][0]['record'], self.local_fixtures['records'][1]['record']])
+            self.assertEqual(record_models.MissingRecordKey.objects.count(), missing_entry_users*2)
+            starttime = time.time()
+            client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
+            time_sum += time.time() - starttime
+            self.assertEqual(record_models.MissingRecordKey.objects.count(), 0)
+        print('average time:', time_sum / repetitions)
 
     def test_login(self):
         # test if missing key entries get read, keys generated and missing keys deleted
@@ -150,17 +188,12 @@ class MissingRecordKeysTests(TransactionTestCase):
         record_encryption.save()
 
     @staticmethod
-    def add_superuser():
-        superuser = api_models.UserProfile(name='superuser', email='superuser@test.de', is_superuser=True)
-        superuser.set_password('qwe123')
-        superuser.save()
-        private, public = RSAEncryption.generate_keys()
-        keys = api_models.UserEncryptionKeys(user=superuser, private_key=private, public_key=public)
-        keys.save()
-        client = APIClient()
-        client.force_authenticate(user=superuser)
-        return {
-            "user": superuser,
-            "private": private,
-            "client": client
-        }
+    def create_user_with_missing_key_entry(name, rlc, records):
+        pot_users = api_models.UserProfile.objects.filter(name=name)
+        if pot_users.count() < 1:
+            user = CreateFixtures.create_user(rlc, name)['user']
+        else:
+            user = pot_users.first()
+        for record in records:
+            missing = record_models.MissingRecordKey(record=record, user=user)
+            missing.save()

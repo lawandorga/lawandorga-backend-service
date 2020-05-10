@@ -84,3 +84,15 @@ class EmailSender:
         alternative_text = "RLC Intranet - Activate your account here: " + 'asdasd'
         subject = "RLC Intranet registration"
         EmailSender.send_html_email([email], subject, html_message, alternative_text)
+
+    @staticmethod
+    def send_forgot_password(email, link):
+        html_message = loader.render_to_string(
+            'email_templates/forgot_password.html',
+            {
+                'link': link,
+            }
+        )
+        alternative_text = "RLC Intranet - Password Reset: " + link
+        subject = 'RLC Intranet - Password Reset'
+        EmailSender.send_html_email([email], subject, html_message, alternative_text)
