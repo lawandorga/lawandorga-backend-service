@@ -36,5 +36,5 @@ def resolve_missing_rlc_keys_entries(user, users_private_key):
         missing_rlc_key.user.generate_rlc_keys_for_this_user(rlcs_aes_key)
         missing_rlc_key.user.is_active = True
         missing_rlc_key.user.save()
-        EmailSender.se
+        EmailSender.send_reset_password_complete(missing_rlc_key.user.email)
         missing_rlc_key.delete()
