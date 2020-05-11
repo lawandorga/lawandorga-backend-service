@@ -15,11 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.core.management.base import BaseCommand
-from ._factories import UserFactory, ClientFactory, RecordFactory, GroupFactory
-from backend.api.models import *
-from ._fixtures import Fixtures, AddMethods
-from backend.recordmanagement.models import *
-from backend.static.permissions import get_all_permissions_strings
+from .commands import add_permissions
 
 
 class Command(BaseCommand):
@@ -29,5 +25,4 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        Fixtures.create_real_permissions_no_duplicates()
-        Fixtures.create_real_folder_permissions_no_duplicate()
+        add_permissions()

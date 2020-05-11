@@ -68,3 +68,6 @@ class EncryptedRecordTests(TransactionTestCase):
         self.assertTrue(users_with_permission.__len__() == 2)
         self.assertTrue(user1 in users_with_permission)
         self.assertTrue(user2 in users_with_permission)
+
+
+# TODO: KEYMANAGEMENT test get users with decryption keys

@@ -19,9 +19,12 @@ from django.db import models
 
 from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__API__PERMISSION__NOT_FOUND, ERROR__API__RLC__NO_PUBLIC_KEY_FOUND, \
-    ERROR__API__USER__NO_PUBLIC_KEY_FOUND, ERROR__API__RLC__USERS_RLC_KEYS_NOT_FOUND
+    ERROR__API__USER__NO_PUBLIC_KEY_FOUND, ERROR__API__RLC__USERS_RLC_KEYS_NOT_FOUND, ERROR__API__USER__ALREADY_FORGOT_PASSWORD
 from backend.static.regex_validators import phone_regex
-from . import HasPermission, Permission
+from backend.static.env_getter import get_website_base_url
+from backend.api.helpers import get_client_ip
+from backend.api.models import HasPermission, Permission
+from backend.static.emails import EmailSender
 
 
 class UserProfileManager(BaseUserManager):
@@ -293,7 +296,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             pass
         return RSAEncryption.decrypt(rlc_encrypted_key_for_user, users_private_key)
 
-
     def generate_encryption_keys(self):
         from backend.api.models import UserEncryptionKeys
         from backend.static.encryption import RSAEncryption
@@ -303,7 +305,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         user_keys = UserEncryptionKeys(user=self, private_key=private, public_key=public)
         user_keys.save()
 
-    def generate_rlc_keys_for_this_user(self, rlcs_private_key):
+    def generate_rlc_keys_for_this_user(self, rlcs_aes_key):
+        # TODO: is this wrong?
         from backend.api.models import UsersRlcKeys
         from backend.static.encryption import RSAEncryption
         try:
@@ -311,10 +314,23 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             UsersRlcKeys.objects.get(user=self, rlc=self.rlc)
         except:
             own_public_key = self.get_public_key()
-            encrypted_key = RSAEncryption.encrypt(rlcs_private_key, own_public_key)
+            encrypted_key = RSAEncryption.encrypt(rlcs_aes_key, own_public_key)
             users_rlc_keys = UsersRlcKeys(user=self, rlc=self.rlc, encrypted_key=encrypted_key)
             users_rlc_keys.save()
 
     def rsa_encrypt(self, plain):
         from backend.static.encryption import RSAEncryption
         return RSAEncryption.encrypt(plain, self.get_public_key())
+
+    def forgot_password(self, request, user):
+        from backend.api.models import ForgotPasswordLinks
+        ForgotPasswordLinks.objects.filter(user=user).delete()
+
+        # self.is_active = False
+        # self.save()
+        ip = get_client_ip(request)
+        forgot_password_link = ForgotPasswordLinks(user=user, ip_address=ip)
+        forgot_password_link.save()
+
+        url = get_website_base_url() + "reset-password/" + forgot_password_link.link
+        EmailSender.send_forgot_password([self.email], url)

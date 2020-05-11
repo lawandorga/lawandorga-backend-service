@@ -22,17 +22,12 @@ from backend.api.errors import CustomError
 from backend.static.emails import EmailSender
 from backend.static.env_getter import get_website_base_url
 from backend.static.error_codes import *
-from ..models import UserProfile, ForgotPasswordLinks
-from ..serializers import ForgotPasswordSerializer
+from backend.api.models import UserProfile, ForgotPasswordLinks, MissingRlcKey, UserEncryptionKeys, UsersRlcKeys
+from backend.static.encryption import RSAEncryption
+from backend.api.serializers import ForgotPasswordSerializer
+from backend.recordmanagement.models import RecordEncryption
+from backend.api.management.commands.commands import create_missing_key_entries
 
-
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[-1].strip()
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
 
 
 class ForgotPasswordViewSet(ModelViewSet):
@@ -54,19 +49,20 @@ class ForgotPasswordUnauthenticatedViewSet(APIView):
         except:
             raise CustomError(ERROR__API__EMAIL__NO_EMAIL_PROVIDED)
 
-        link_already = ForgotPasswordLinks.objects.filter(user=user).__len__()
-        if link_already >= 1:
-            raise CustomError(ERROR__API__USER__ALREADY_FORGOT_PASSWORD)
-
-        user.is_active = False
-        user.save()
-        ip = get_client_ip(request)
-        forgot_password_link = ForgotPasswordLinks(user=user, ip_address=ip)
-        forgot_password_link.save()
-
-        url = get_website_base_url() + "reset-password/" + forgot_password_link.link
-        EmailSender.send_email_notification([user.email], "Password reset",
-                                            "Your password was resetted click here: " + url)
+        user.forgot_password(request, user)
+        # link_already = ForgotPasswordLinks.objects.filter(user=user).__len__()
+        # if link_already >= 1:
+        #     raise CustomError(ERROR__API__USER__ALREADY_FORGOT_PASSWORD)
+        #
+        # user.is_active = False
+        # user.save()
+        # ip = get_client_ip(request)
+        # forgot_password_link = ForgotPasswordLinks(user=user, ip_address=ip)
+        # forgot_password_link.save()
+        #
+        # url = get_website_base_url() + "reset-password/" + forgot_password_link.link
+        # EmailSender.send_email_notification([user.email], "Password reset",
+        #                                     "Your password was resetted click here: " + url)
 
         return Response()
 
@@ -84,7 +80,24 @@ class ResetPasswordViewSet(APIView):
             raise CustomError(ERROR__API__USER__NEW_PASSWORD_NOT_PROVIDED)
         new_password = request.data['new_password']
         link.user.set_password(new_password)
-        link.user.is_active = True
+        link.user.is_active = False
         link.user.save()
+
+        missing = MissingRlcKey(user=link.user)
+        missing.save()
+
+        old_keys = UserEncryptionKeys.objects.get(user=link.user)
+        old_keys.delete()
+        old_rlc_keys = UsersRlcKeys.objects.get(user=link.user)
+        old_rlc_keys.delete()
+
+        # private, public = RSAEncryption.generate_keys()
+        # user_keys = UserEncryptionKeys(user=link.user, private_key=private, public_key=public)
+        # user_keys.save() # TODO: user.generate_encryption_keys?
+        link.user.generate_encryption_keys()
+
+        RecordEncryption.objects.filter(user=link.user).delete()
+        create_missing_key_entries()
+
         link.delete()
         return Response()

@@ -22,7 +22,7 @@ from backend.recordmanagement.models import *
 
 
 class Command(BaseCommand):
-    help = 'populates database'
+    help = 'populates database with all test data'
 
     def add_arguments(self, parser):
         parser.add_argument('--users',

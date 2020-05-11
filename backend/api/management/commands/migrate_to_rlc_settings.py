@@ -14,16 +14,13 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from backend.api.models import RlcSettings
-from backend.api.management.commands._migrators import OneTimeGenerators
+from .commands import migrate_to_rlc_settings
 
 
 class Command(BaseCommand):
     help = 'add rlc settings for all rlcs with default values'
 
     def handle(self, *args, **options):
-        RlcSettings.objects.all().delete()
-        OneTimeGenerators.generate_rlc_settings_for_rlc()
+        migrate_to_rlc_settings()

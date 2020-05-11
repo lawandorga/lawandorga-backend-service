@@ -16,8 +16,7 @@
 
 from django.core.management.base import BaseCommand
 
-from backend.api.models import *
-from backend.recordmanagement.models import *
+from .commands import reset_db
 
 
 class Command(BaseCommand):
@@ -27,31 +26,4 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        UserProfile.objects.exclude(is_superuser=True).delete()
-        # UserProfile.objects.all().delete()
-        Client.objects.all().delete()
-        OriginCountry.objects.all().delete()
-        RecordTag.objects.all().delete()
-        Record.objects.all().delete()
-        Group.objects.all().delete()
-        HasPermission.objects.all().delete()
-        Permission.objects.all().delete()
-        Rlc.objects.all().delete()
-        RecordMessage.objects.all().delete()
-        RecordDocument.objects.all().delete()
-        RecordDocumentTag.objects.all().delete()
-        RecordPermission.objects.all().delete()
-        ForgotPasswordLinks.objects.all().delete()
-        Language.objects.all().delete()
-        NewUserRequest.objects.all().delete()
-        UserActivationLink.objects.all().delete()
-        RecordDeletionRequest.objects.all().delete()
-        EncryptedRecord.objects.all().delete()
-        EncryptedRecordDocument.objects.all().delete()
-        EncryptedRecordMessage.objects.all().delete()
-        EncryptedRecordPermission.objects.all().delete()
-        RecordEncryption.objects.all().delete()
-        UserEncryptionKeys.objects.all().delete()
-        RlcEncryptionKeys.objects.all().delete()
-        EncryptedClient.objects.all().delete()
-        EncryptedRecordDeletionRequest.objects.all().delete()
+        reset_db()

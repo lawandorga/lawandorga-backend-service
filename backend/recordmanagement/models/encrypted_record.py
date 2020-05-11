@@ -140,27 +140,22 @@ class EncryptedRecord(models.Model):
 
         users_with_decryption_key_permissions = UserProfile.objects.get_users_with_special_permissions(
             get_record_encryption_keys_permissions_strings(), for_rlc=self.from_rlc)
-        # users_with_overall_permission = Permission.objects.get(
-        #     name=PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC).get_real_users_with_permission_for_rlc(
-        #     self.from_rlc)
-        # users_with_granting_permission = Permission.objects.get(
-        #     name=PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC).get_real_users_with_permission_for_rlc(
-        #     self.from_rlc)
-        # users_with_manage_permissions = Permission.objects.get(
-        #     name=PERMISSION_MANAGE_PERMISSIONS_RLC).get_real_users_with_permission_for_rlc(
-        #     self.from_rlc)
-        # users_with_manage_groups = Permission.objects.get(
-        #     name=PERMISSION_MANAGE_GROUPS_RLC).get_real_users_with_permission_for_rlc(
-        #     self.from_rlc)
-        # return working_on_users.union(users_with_record_permission).union(users_with_overall_permission).union(
-        #     users_with_granting_permission).union(users_with_manage_permissions).union(
-        #     users_with_manage_groups).distinct()
+
         return working_on_users.union(users_with_record_permission).union(users_with_decryption_key_permissions).distinct()
 
     def get_decryption_key(self, user, users_private_key):
         from backend.recordmanagement.models import RecordEncryption
-        try:
-            record_encryption = RecordEncryption.objects.get(user=user, record=self)
-        except:
+        record_encryptions = RecordEncryption.objects.filter(user=user, record=self)
+        result = None
+        for encryption in record_encryptions:
+            if result:
+                encryption.delete()
+                continue
+            try:
+                key = encryption.decrypt(users_private_key)
+                result = key
+            except:
+                encryption.delete()
+        if not result:
             raise CustomError(ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND)
-        return record_encryption.decrypt(users_private_key)
+        return result

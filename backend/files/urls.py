@@ -23,6 +23,7 @@ router = DefaultRouter()
 router.register('folder_base', FolderBaseViewSet, base_name='folder_base')
 router.register('file_base', FileBaseViewSet, base_name='file_base')
 router.register('permission_for_folder', PermissionForFolderViewSet, base_name='permission_for_folder')
+router.register('folder_permission', FolderPermissionViewSet, base_name='folder_permission')
 
 urlpatterns = [
     url(r'', include(router.urls)),
