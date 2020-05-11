@@ -91,13 +91,13 @@ class ResetPasswordViewSet(APIView):
         old_rlc_keys = UsersRlcKeys.objects.get(user=link.user)
         old_rlc_keys.delete()
 
-        private, public = RSAEncryption.generate_keys()
-        user_keys = UserEncryptionKeys(user=link.user, private_key=private, public_key=public)
-        user_keys.save() # TODO: user.generate_encryption_keys?
+        # private, public = RSAEncryption.generate_keys()
+        # user_keys = UserEncryptionKeys(user=link.user, private_key=private, public_key=public)
+        # user_keys.save() # TODO: user.generate_encryption_keys?
+        link.user.generate_encryption_keys()
 
         RecordEncryption.objects.filter(user=link.user).delete()
         create_missing_key_entries()
-
 
         link.delete()
         return Response()

@@ -14,6 +14,7 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from backend.static.emails import EmailSender
 
 
 def get_client_ip(request):
@@ -26,18 +27,14 @@ def get_client_ip(request):
 
 
 def resolve_missing_rlc_keys_entries(user, users_private_key):
-    from backend.api.models import MissingRlcKey, UsersRlcKeys
-    from backend.static.encryption import RSAEncryption
-    # a = list(MissingRlcKey.objects.filter(user=user))
-    # if MissingRlcKey.objects.filter(user=user).exists():
-    #     return
+    from backend.api.models import MissingRlcKey
 
     missing_rlc_keys = MissingRlcKey.objects.filter(user__rlc=user.rlc)
-    # rlcs_private_key = user.get_rlcs_private_key(users_private_key)
     rlcs_aes_key = user.get_rlcs_aes_key(users_private_key)
     for missing_rlc_key in missing_rlc_keys:
         # encrypt for user
         missing_rlc_key.user.generate_rlc_keys_for_this_user(rlcs_aes_key)
         missing_rlc_key.user.is_active = True
         missing_rlc_key.user.save()
+        EmailSender.se
         missing_rlc_key.delete()

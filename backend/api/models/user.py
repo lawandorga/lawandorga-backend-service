@@ -27,7 +27,6 @@ from backend.api.models import HasPermission, Permission
 from backend.static.emails import EmailSender
 
 
-
 class UserProfileManager(BaseUserManager):
     """"""
 
@@ -325,9 +324,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def forgot_password(self, request, user):
         from backend.api.models import ForgotPasswordLinks
-        link_already = ForgotPasswordLinks.objects.filter(user=user).count()
-        if link_already >= 1:
-            raise CustomError(ERROR__API__USER__ALREADY_FORGOT_PASSWORD)
+        ForgotPasswordLinks.objects.filter(user=user).delete()
 
         # self.is_active = False
         # self.save()

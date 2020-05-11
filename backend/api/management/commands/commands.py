@@ -167,3 +167,15 @@ def populate_deploy_db():
     Fixtures.create_real_document_tags()
     Fixtures.create_real_origin_countries()
     add_permissions()
+
+
+def delete_all_missing_record_key_entries():
+    MissingRecordKey.objects.all().delete()
+
+
+def delete_all_missing_rlc_key_entries():
+    MissingRlcKey.objects.all().delete()
+
+
+def delete_all_forgot_password_links():
+    ForgotPasswordLinks.objects.all().delete()
