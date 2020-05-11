@@ -160,3 +160,10 @@ def reset_db_encrypted():
     UsersRlcKeys.objects.all().delete()
     MissingRlcKey.objects.all().delete()
     MissingRecordKey.objects.all().delete()
+
+
+def populate_deploy_db():
+    Fixtures.create_real_tags()
+    Fixtures.create_real_document_tags()
+    Fixtures.create_real_origin_countries()
+    add_permissions()

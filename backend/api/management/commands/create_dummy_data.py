@@ -22,7 +22,7 @@ from backend.api import models as apimodels
 from backend.api.management.commands._fixtures import AddMethods
 from backend.recordmanagement import models
 from backend.static import permissions
-from .commands import reset_db, migrate_to_encryption, migrate_to_rlc_settings, add_permissions
+from .commands import reset_db, migrate_to_encryption, migrate_to_rlc_settings, populate_deploy_db
 
 
 class Command(BaseCommand):
@@ -33,7 +33,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         reset_db()
-        add_permissions()
+        populate_deploy_db()
 
         rlc = apimodels.Rlc(name='Dummy RLC', note='this is a dummy rlc, just for showing how the system works',
                             id=3033)
@@ -54,7 +54,6 @@ class Command(BaseCommand):
         # TODO: generate inactive user, generate encryption stuff here, not old unencrypted
         migrate_to_encryption()
         migrate_to_rlc_settings()
-
 
     def get_and_create_dummy_user(self, rlc):
         user = apimodels.UserProfile(name='Mr Dummy', email='dummy@rlcm.de', phone_number='01666666666',

@@ -14,12 +14,14 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from rest_framework.viewsets import ModelViewSet
 
-from backend.api.models import UsersRlcKeys
-from backend.api.serializers import UsersRlcKeysSerializer
+from django.core.management.base import BaseCommand
+
+from .commands import create_missing_key_entries
 
 
-class UsersRlcKeysViewSet(ModelViewSet):
-    queryset = UsersRlcKeys.objects.all()
-    serializer_class = UsersRlcKeysSerializer
+class Command(BaseCommand):
+    help = 'finds missing record key entries'
+
+    def handle(self, *args, **options):
+        create_missing_key_entries()

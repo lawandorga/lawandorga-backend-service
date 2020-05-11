@@ -145,8 +145,17 @@ class EncryptedRecord(models.Model):
 
     def get_decryption_key(self, user, users_private_key):
         from backend.recordmanagement.models import RecordEncryption
-        try:
-            record_encryption = RecordEncryption.objects.get(user=user, record=self)
-        except:
+        record_encryptions = RecordEncryption.objects.filter(user=user, record=self)
+        result = None
+        for encryption in record_encryptions:
+            if result:
+                encryption.delete()
+                continue
+            try:
+                key = encryption.decrypt(users_private_key)
+                result = key
+            except:
+                encryption.delete()
+        if not result:
             raise CustomError(ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND)
-        return record_encryption.decrypt(users_private_key)
+        return result
