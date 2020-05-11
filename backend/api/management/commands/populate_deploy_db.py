@@ -15,8 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.core.management.base import BaseCommand
-from ._fixtures import Fixtures
-
+from .commands import populate_deploy_db
 
 class Command(BaseCommand):
     help = 'populates database for deployment environment'
@@ -25,9 +24,6 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        Fixtures.create_real_tags()
-        Fixtures.create_real_document_tags()
-        Fixtures.create_real_origin_countries()
-        Fixtures.create_real_permissions()
+        populate_deploy_db()
         # rlcs = Fixtures.create_real_starting_rlcs()
         # Fixtures.create_real_groups(rlcs)

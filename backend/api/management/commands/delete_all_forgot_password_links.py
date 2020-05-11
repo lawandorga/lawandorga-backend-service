@@ -1,5 +1,5 @@
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -15,12 +15,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.core.management.base import BaseCommand
-from backend.recordmanagement.models import Record
+from .commands import delete_all_forgot_password_links
 
 
 class Command(BaseCommand):
-    help = 'encrypts a record'
+    help = 'deletes all forgot password links'
 
-    def add_argument(self, parser):
-        parser.add_argument('args', nargs='*')
-        parser.add_argument('--record', type=str)
+    def handle(self, *args, **options):
+        delete_all_forgot_password_links()

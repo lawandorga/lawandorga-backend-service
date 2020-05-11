@@ -36,6 +36,7 @@ router.register('e_records', EncryptedRecordsListViewSet, base_name='e_records')
 router.register('e_clients', EncryptedClientsViewSet, base_name='e_records')    # TODO: add all encrypted fields here
 router.register('pool_records', PoolRecordViewSet, base_name='pool_records')
 router.register('pool_consultants', PoolConsultantViewSet)
+router.register('missing_record_keys', MissingRecordKeyViewSet)
 
 
 urlpatterns = [

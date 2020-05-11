@@ -50,8 +50,8 @@ class EmailSender:
                 'url': link
             }
         )
-        alternative_text = "RLC Intranet - Activate your account here: " + link
-        subject = "RLC Intranet registration"
+        alternative_text = "Law & Orga - Activate your account here: " + link
+        subject = "Law & Orga registration"
         EmailSender.send_html_email([user.email], subject, html_message, alternative_text)
 
     @staticmethod
@@ -65,8 +65,8 @@ class EmailSender:
                 'record_token': record.record_token
             }
         )
-        alternative_text = "RLC Intranet - New message in record: " + link
-        subject = 'RLC Intranet - New Message'
+        alternative_text = "Law & Orga - New message in record: " + link
+        subject = 'Law & Orga - New Message'
         EmailSender.send_html_email(emails, subject, html_message, alternative_text)
 
     @staticmethod
@@ -81,6 +81,27 @@ class EmailSender:
                 'url': 'asdasd'
             }
         )
-        alternative_text = "RLC Intranet - Activate your account here: " + 'asdasd'
-        subject = "RLC Intranet registration"
+        alternative_text = "Law & Orga - Activate your account here: "
+        subject = "Law & Orga registration"
+        EmailSender.send_html_email([email], subject, html_message, alternative_text)
+
+    @staticmethod
+    def send_forgot_password(email, link):
+        html_message = loader.render_to_string(
+            'email_templates/forgot_password.html',
+            {
+                'link': link,
+            }
+        )
+        alternative_text = "Law & Orga - Password Reset: " + link
+        subject = 'Law & Orga - Password Reset'
+        EmailSender.send_html_email([email], subject, html_message, alternative_text)
+
+    @staticmethod
+    def send_reset_password_complete(email):
+        html_message = loader.render_to_string(
+            'email_templates/regenerating_rlc_keys_complete.html'
+        )
+        alternative_text = "Law & Orga - Reset password complete"
+        subject = 'Law & Orga - Reset password complete'
         EmailSender.send_html_email([email], subject, html_message, alternative_text)
