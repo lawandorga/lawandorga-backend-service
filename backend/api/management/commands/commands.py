@@ -14,9 +14,15 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from django.conf import settings
 from backend.api import models as api_models
 from backend.recordmanagement import models as record_models
+from backend.api.management.commands._migrators import Migrators, OneTimeGenerators
 from backend.static.permissions import get_record_encryption_keys_permissions_strings
+from backend.api.models import *
+from backend.recordmanagement.models import *
+from backend.api.management.commands._fixtures import Fixtures
+from backend.files.models import *
 
 
 def create_missing_key_entries():
@@ -51,3 +57,106 @@ def create_missing_key_entries():
                         # NO: add new missing key entry
                         missing_key = record_models.MissingRecordKey(record=record, user=user)
                         missing_key.save()
+
+
+# def create_missing_rlc_keys_entries():
+    # TODO?
+
+
+def migrate_to_encryption():
+    reset_db_encrypted()
+    # EncryptedClient.objects.all().delete()
+    # EncryptedRecord.objects.all().delete()
+    # EncryptedRecordPermission.objects.all().delete()
+    # EncryptedRecordMessage.objects.all().delete()
+    # EncryptedRecordDocument.objects.all().delete()
+    # EncryptedRecordDeletionRequest.objects.all().delete()
+    #
+    # UserEncryptionKeys.objects.all().delete()
+    # RlcEncryptionKeys.objects.all().delete()
+    # RecordEncryption.objects.all().delete()
+    # UsersRlcKeys.objects.all().delete()
+
+    OneTimeGenerators.generate_encryption_keys_for_all_users()
+    OneTimeGenerators.generate_encryption_keys_for_rlc()
+    Migrators.encrypt_all_records()
+
+
+def aws_environment_variables_viable(command):
+    if settings.AWS_S3_BUCKET_NAME:
+        command.stdout.write("s3bucket: " + settings.AWS_S3_BUCKET_NAME, ending='')
+    else:
+        command.stdout.write("s3 bucket not found!")
+        return False
+
+    if settings.AWS_S3_REGION_NAME:
+        command.stdout.write("s3 region name: " + settings.AWS_S3_REGION_NAME, ending='')
+    else:
+        command.stdout.write("s3 region not found!")
+        return False
+
+    if settings.AWS_ACCESS_KEY_ID:
+        command.stdout.write("s3 access key id: " + settings.AWS_ACCESS_KEY_ID, ending='')
+    else:
+        command.stdout.write("s3 access key not found!")
+        return False
+
+    if settings.AWS_SECRET_ACCESS_KEY:
+        command.stdout.write("s3 secret access key id: " + settings.AWS_SECRET_ACCESS_KEY, ending='')
+    else:
+        command.stdout.write("s3 secret access key not found!")
+        return False
+    return True
+
+
+def add_permissions():
+    Fixtures.create_real_permissions_no_duplicates()
+    Fixtures.create_real_folder_permissions_no_duplicate()
+
+
+def migrate_to_rlc_settings():
+    # RlcSettings.objects.all().delete()
+    OneTimeGenerators.generate_rlc_settings_for_rlc()
+
+
+def reset_db():
+    UserProfile.objects.exclude(is_superuser=True).delete()
+    # UserProfile.objects.all().delete()
+    Client.objects.all().delete()
+    OriginCountry.objects.all().delete()
+    RecordTag.objects.all().delete()
+    Record.objects.all().delete()
+    Group.objects.all().delete()
+    HasPermission.objects.all().delete()
+    Permission.objects.all().delete()
+    Rlc.objects.all().delete()
+    RecordMessage.objects.all().delete()
+    RecordDocument.objects.all().delete()
+    RecordDocumentTag.objects.all().delete()
+    RecordPermission.objects.all().delete()
+    ForgotPasswordLinks.objects.all().delete()
+    Language.objects.all().delete()
+    NewUserRequest.objects.all().delete()
+    UserActivationLink.objects.all().delete()
+    RecordDeletionRequest.objects.all().delete()
+    File.objects.all().delete()
+    Folder.objects.all().delete()
+    FolderPermission.objects.all().delete()
+    PermissionForFolder.objects.all().delete()
+    reset_db_encrypted()
+
+
+def reset_db_encrypted():
+    EncryptedClient.objects.all().delete()
+    EncryptedRecord.objects.all().delete()
+    EncryptedRecordPermission.objects.all().delete()
+    EncryptedRecordMessage.objects.all().delete()
+    EncryptedRecordDocument.objects.all().delete()
+    EncryptedRecordDeletionRequest.objects.all().delete()
+
+    UserEncryptionKeys.objects.all().delete()
+    RlcEncryptionKeys.objects.all().delete()
+    RecordEncryption.objects.all().delete()
+    UsersRlcKeys.objects.all().delete()
+    MissingRlcKey.objects.all().delete()
+    MissingRecordKey.objects.all().delete()
