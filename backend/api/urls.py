@@ -35,6 +35,7 @@ router.register('new_user_request', views.NewUserRequestViewSet, base_name="new_
 router.register('user_activation_links', views.UserActivationBackendViewSet, base_name="user_activation_links")
 router.register('user_encryption_keys', views.UserEncryptionKeysViewSet, base_name="user_encryption_keys")
 router.register('rlc_settings', views.RlcSettingsViewSet, base_name='rlc_settings')
+router.register('missing_rlc_keys', views.MissingRlcKeysViewSet, base_name='missing_rlc_keys')
 
 
 urlpatterns = [

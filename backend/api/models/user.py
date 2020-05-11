@@ -306,7 +306,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         user_keys = UserEncryptionKeys(user=self, private_key=private, public_key=public)
         user_keys.save()
 
-    def generate_rlc_keys_for_this_user(self, rlcs_private_key):
+    def generate_rlc_keys_for_this_user(self, rlcs_aes_key):
         # TODO: is this wrong?
         from backend.api.models import UsersRlcKeys
         from backend.static.encryption import RSAEncryption
@@ -315,7 +315,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             UsersRlcKeys.objects.get(user=self, rlc=self.rlc)
         except:
             own_public_key = self.get_public_key()
-            encrypted_key = RSAEncryption.encrypt(rlcs_private_key, own_public_key)
+            encrypted_key = RSAEncryption.encrypt(rlcs_aes_key, own_public_key)
             users_rlc_keys = UsersRlcKeys(user=self, rlc=self.rlc, encrypted_key=encrypted_key)
             users_rlc_keys.save()
 

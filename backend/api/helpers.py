@@ -37,12 +37,7 @@ def resolve_missing_rlc_keys_entries(user, users_private_key):
     rlcs_aes_key = user.get_rlcs_aes_key(users_private_key)
     for missing_rlc_key in missing_rlc_keys:
         # encrypt for user
-        # missing_rlc_key.user.generate_rlc_keys_for_this_user(rlcs_private_key)
-        users_public = missing_rlc_key.user.get_public_key()
-        for_user_encrypted = RSAEncryption.encrypt(rlcs_aes_key, users_public)
-        a = missing_rlc_key.user
-        new_keys = UsersRlcKeys(user=missing_rlc_key.user, rlc=user.rlc, encrypted_key=for_user_encrypted)
-        new_keys.save()
+        missing_rlc_key.user.generate_rlc_keys_for_this_user(rlcs_aes_key)
         missing_rlc_key.user.is_active = True
         missing_rlc_key.user.save()
         missing_rlc_key.delete()
