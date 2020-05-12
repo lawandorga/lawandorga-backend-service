@@ -160,7 +160,7 @@ class UserProfileCreatorViewSet(viewsets.ModelViewSet):
         user.is_active = False
         user.save()
 
-        user.generate_encryption_keys()
+        user.generate_new_user_encryption_keys()
 
         # new user request
         from backend.api.models import NewUserRequest

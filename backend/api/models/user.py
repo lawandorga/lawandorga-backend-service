@@ -296,11 +296,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             pass
         return RSAEncryption.decrypt(rlc_encrypted_key_for_user, users_private_key)
 
-    def generate_encryption_keys(self):
+    def generate_new_user_encryption_keys(self):
         from backend.api.models import UserEncryptionKeys
         from backend.static.encryption import RSAEncryption
-        if UserEncryptionKeys.objects.filter(user=self):
-            return
+        UserEncryptionKeys.objects.filter(user=self).delete()
         private, public = RSAEncryption.generate_keys()
         user_keys = UserEncryptionKeys(user=self, private_key=private, public_key=public)
         user_keys.save()
