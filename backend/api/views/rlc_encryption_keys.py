@@ -20,6 +20,6 @@ from backend.api.models import RlcEncryptionKeys
 from backend.api.serializers import RlcEncryptionKeysSerializer
 
 
-class UserEncryptionKeysViewSet(ModelViewSet):
+class RlcEncryptionKeysViewSet(ModelViewSet):
     queryset = RlcEncryptionKeys.objects.all()
     serializer_class = RlcEncryptionKeysSerializer
