@@ -16,10 +16,12 @@
 
 from rest_framework.viewsets import ModelViewSet
 
+from backend.api.permissions import OnlySuperuser
 from backend.api.models import RlcEncryptionKeys
 from backend.api.serializers import RlcEncryptionKeysSerializer
 
 
-class UserEncryptionKeysViewSet(ModelViewSet):
+class RlcEncryptionKeysViewSet(ModelViewSet):
     queryset = RlcEncryptionKeys.objects.all()
     serializer_class = RlcEncryptionKeysSerializer
+    permission_classes = (OnlySuperuser,)
