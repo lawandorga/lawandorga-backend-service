@@ -18,8 +18,10 @@ from rest_framework.viewsets import ModelViewSet
 
 from backend.api.models import UserEncryptionKeys
 from backend.api.serializers import UserEncryptionKeysSerializer
+from backend.api.permissions import OnlySuperuser
 
 
 class UserEncryptionKeysViewSet(ModelViewSet):
     queryset = UserEncryptionKeys.objects.all()
     serializer_class = UserEncryptionKeysSerializer
+    permission_classes = (OnlySuperuser, )
