@@ -19,9 +19,6 @@ from django.test import TransactionTestCase
 from rest_framework.test import APIClient
 
 from backend.api import models as api_models
-from backend.files import models as file_models
-from backend.api.errors import CustomError
-from backend.api.management.commands.commands import create_missing_key_entries
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.recordmanagement import models as record_models
 from backend.static.encryption import AESEncryption, RSAEncryption
@@ -86,9 +83,7 @@ class MissingRlcKeysTests(TransactionTestCase):
         return return_object
 
     def test_full_flow(self):
-
         create_missing_key_entries()
-
         client = APIClient()
         client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
 
@@ -132,3 +127,44 @@ class MissingRlcKeysTests(TransactionTestCase):
         response_from_login_after_reset = client.post('/api/login/', {'username': users_email, 'password': 'qwe1234'})
         self.assertEqual(200, response_from_login_after_reset.status_code)
         # TODO: superuser rlc encryption_key?
+
+    def test_full_flow_no_encryption_key_of_forgotten_user(self):
+        create_missing_key_entries()
+        client = APIClient()
+        client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
+
+        users_email = self.base_fixtures['users'][2]['user'].email
+        old_public_key = api_models.UserProfile.objects.get(email=users_email).get_public_key()
+
+        client.post('/api/forgot_password/', {'email': users_email})
+        self.assertEqual(1, api_models.ForgotPasswordLinks.objects.all().count())
+        link = api_models.ForgotPasswordLinks.objects.first()
+
+        response_from_reset = client.post('/api/reset_password/' + link.link + '/', {'new_password': 'qwe1234'})
+        self.assertEqual(200, response_from_reset.status_code)
+
+        user = api_models.UserProfile.objects.get(email=users_email)
+        self.assertFalse(user.is_active)
+
+        # missing rlc key entry added
+        self.assertEqual(api_models.UserProfile.objects.count() - 2, api_models.UsersRlcKeys.objects.count()) # -2 superuser and forgot password user
+        self.assertEqual(1, api_models.MissingRlcKey.objects.count())
+        self.assertEqual(user, api_models.MissingRlcKey.objects.first().user)
+
+        # new public, private keys
+        self.assertNotEqual(user.get_public_key(), old_public_key)
+
+        # create missing key entries for all records/ delete all current?
+        self.assertEqual(0, record_models.RecordEncryption.objects.filter(user=user).count())
+        self.assertEqual(2, record_models.MissingRecordKey.objects.all().count())
+
+        # mimic error? why is there no user encryption key for this user
+        api_models.UserEncryptionKeys.objects.filter(user=user).delete()
+
+        # login other user of rlc
+        response_from_other_user = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
+        self.assertEqual(200, response_from_other_user.status_code)
+
+        # check if user can login again with new password
+        response_from_login_after_reset = client.post('/api/login/', {'username': users_email, 'password': 'qwe1234'})
+        self.assertEqual(400, response_from_login_after_reset.status_code)

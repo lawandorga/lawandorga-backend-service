@@ -33,8 +33,12 @@ def resolve_missing_rlc_keys_entries(user, users_private_key):
     rlcs_aes_key = user.get_rlcs_aes_key(users_private_key)
     for missing_rlc_key in missing_rlc_keys:
         # encrypt for user
-        missing_rlc_key.user.generate_rlc_keys_for_this_user(rlcs_aes_key)
-        missing_rlc_key.user.is_active = True
-        missing_rlc_key.user.save()
-        EmailSender.send_reset_password_complete(missing_rlc_key.user.email)
-        missing_rlc_key.delete()
+        try:
+            missing_rlc_key.user.generate_rlc_keys_for_this_user(rlcs_aes_key)
+            missing_rlc_key.user.is_active = True
+            missing_rlc_key.user.save()
+            EmailSender.send_reset_password_complete(missing_rlc_key.user.email)
+            missing_rlc_key.delete()
+        except Exception as e:
+            a = 10
+            pass
