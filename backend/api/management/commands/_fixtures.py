@@ -89,7 +89,7 @@ class Fixtures:
                          'Senegal',), ('Serbien',), ('Seychellen',), ('Sierra Leone',), ('Simbabwe',), (
                          'Singapur',), ('Slowakei',), ('Slowenien',), ('Somalia',), ('Somaliland',), (
                          'Spanien',), ('Sri Lanka',), ('St. Kitts und Nevis',), ('St. Lucia',), (
-                         'St. Vincent und die Grenadinen',), ('Südafrika',), ('Sudan',), (
+                         'St. Vincent und die Grenadinen',), ('Südafrika',), ('Sudan ',), (
                          'Südossetien',), ('Südsudan',), ('Suriname',), ('Swasiland',), ('Syrien',), (
                          'Tadschikistan',), ('Tansania',), ('Thailand',), ('Togo',), ('Tonga',), (
                          'Transnistrien',), ('Trinidad und Tobago',), ('Tschad',), ('Tschechien',), (
@@ -98,7 +98,7 @@ class Fixtures:
                          'Vatikanstadt',), ('Venezuela',), ('Vereinigte Arabische Emirate',), (
                          'Vereinigte Staaten',), ('Vereinigtes Königreich',), ('Vietnam',), (
                          'Weißrussland',), ('Westsahara',), ('Zentral­afrikanische Republik',), (
-                         'Zypern',)]
+                         'Zypern',), ('unbekanntes Herkunftsland',)]
         for country in countries:
             AddMethods.add_country(country)
 

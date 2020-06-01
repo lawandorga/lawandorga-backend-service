@@ -94,7 +94,7 @@ class ResetPasswordViewSet(APIView):
         # user_keys = UserEncryptionKeys(user=link.user, private_key=private, public_key=public)
         # user_keys.save()
         link.user.generate_new_user_encryption_keys()
-        
+
         create_missing_key_entries()
         link.delete()
         return Response()

@@ -324,7 +324,7 @@ ERROR__API__RLC__NO_PUBLIC_KEY_FOUND = {
 }
 
 ERROR__API__RLC__USERS_RLC_KEYS_NOT_FOUND = {
-    'error_detail': 'users rlc keys found',
+    'error_detail': 'users rlc keys not found',
     'error_code': 'api.rlc.users_rlc_keys_not_found'
 }
 

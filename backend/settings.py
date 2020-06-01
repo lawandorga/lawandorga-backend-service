@@ -260,7 +260,9 @@ CORS_ORIGIN_WHITELIST = [
     "https://d1g37iqegvaqxr.cloudfront.net",
     # local
     "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
     "http://localhost:3000",
+    "http://localhost:3001",
     # dev
     "https://d7pmzq2neb57w.cloudfront.net",
     # test
