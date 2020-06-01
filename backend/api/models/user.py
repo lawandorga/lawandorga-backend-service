@@ -19,7 +19,7 @@ from django.db import models
 
 from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__API__PERMISSION__NOT_FOUND, ERROR__API__RLC__NO_PUBLIC_KEY_FOUND, \
-    ERROR__API__USER__NO_PUBLIC_KEY_FOUND, ERROR__API__RLC__USERS_RLC_KEYS_NOT_FOUND, ERROR__API__USER__ALREADY_FORGOT_PASSWORD
+    ERROR__API__USER__NO_PUBLIC_KEY_FOUND, ERROR__API__RLC__USERS_RLC_KEYS_NOT_FOUND, ERROR__API__USER__ALREADY_FORGOT_PASSWORD, ERROR__API__MISSING_KEY_WAIT
 from backend.static.regex_validators import phone_regex
 from backend.static.env_getter import get_website_base_url
 from backend.api.helpers import get_client_ip
@@ -283,12 +283,21 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return rlcs_private_key
 
     def get_rlcs_aes_key(self, users_private_key):
-        from backend.api.models import UsersRlcKeys
+        from backend.api.models import UsersRlcKeys, MissingRlcKey
         from backend.static.encryption import RSAEncryption
-        try:
-            users_rlc_keys = UsersRlcKeys.objects.get(user=self)
-        except:
+        # check if there is only one usersRlcKey
+        keys = UsersRlcKeys.objects.filter(user=self)
+        if keys.count() == 0:
             raise CustomError(ERROR__API__RLC__USERS_RLC_KEYS_NOT_FOUND)
+        if keys.count() > 1:
+            # delete if too many, cant check which is the right one
+            # create missingRlcKeyEntry to resolve missing key
+            missing = MissingRlcKey(user=self)
+            missing.save()
+            keys.delete()
+            raise CustomError(ERROR__API__MISSING_KEY_WAIT)
+
+        users_rlc_keys = keys.first()
         rlc_encrypted_key_for_user = users_rlc_keys.encrypted_key
         try:
             rlc_encrypted_key_for_user = rlc_encrypted_key_for_user.tobytes()

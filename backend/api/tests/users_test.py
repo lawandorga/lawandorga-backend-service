@@ -342,5 +342,10 @@ class UsersTests(TransactionTestCase):
         wrong_keys.save()
 
         response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
+        self.assertEqual(400, response_from_login.status_code)
+
+        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][1]['user'].email, 'password': 'qwe123'})
         self.assertEqual(200, response_from_login.status_code)
 
+        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
+        self.assertEqual(200, response_from_login.status_code)

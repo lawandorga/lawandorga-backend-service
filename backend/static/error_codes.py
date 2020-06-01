@@ -352,3 +352,8 @@ ERROR__API__RLC_SETTINGS__WRONG_COUNT = {
     'error_detail': 'wrong count of rlc settings',
     'error_code': 'api.rlc_settings.wrong_count'
 }
+
+ERROR__API__MISSING_KEY_WAIT = {
+    'error_detail': 'you are missing a key, wait for another user to login',
+    'error_code': 'api.missing_key.wait'
+}
