@@ -324,7 +324,7 @@ ERROR__API__RLC__NO_PUBLIC_KEY_FOUND = {
 }
 
 ERROR__API__RLC__USERS_RLC_KEYS_NOT_FOUND = {
-    'error_detail': 'users rlc keys found',
+    'error_detail': 'users rlc keys not found',
     'error_code': 'api.rlc.users_rlc_keys_not_found'
 }
 
@@ -351,4 +351,9 @@ ERROR__RECORD__PERMISSION__NOT_WORKING_ON = {
 ERROR__API__RLC_SETTINGS__WRONG_COUNT = {
     'error_detail': 'wrong count of rlc settings',
     'error_code': 'api.rlc_settings.wrong_count'
+}
+
+ERROR__API__MISSING_KEY_WAIT = {
+    'error_detail': 'you are missing a key, wait for another user to login',
+    'error_code': 'api.missing_key.wait'
 }

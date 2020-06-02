@@ -20,6 +20,7 @@ from ..models import UserProfile, Rlc
 from .fixtures import CreateFixtures
 from .statics import StaticTestMethods
 from rest_framework.authtoken.models import Token
+from backend.api.tests.fixtures_encryption import CreateFixtures as CreateFixturesEncryption
 
 
 class UsersTests(TransactionTestCase):
@@ -28,6 +29,7 @@ class UsersTests(TransactionTestCase):
         self.user = UserProfile.objects.get(email='test123@test.com')
         self.base_url_create = '/api/create_profile/'
         self.base_url_profile = '/api/profiles/'
+        self.base_fixtures = CreateFixturesEncryption.create_base_fixtures()
         # CreateFixtures.create_sample_countries()
 
     @staticmethod
@@ -326,3 +328,24 @@ class UsersTests(TransactionTestCase):
         users_with_permissions = UserProfile.objects.get_users_with_special_permissions(permission_list, for_rlc=91)
         self.assertTrue(list(users_with_permissions).__len__() == 3)
 
+    def test_double_rlc_key_resolve(self):
+        client = APIClient()
+        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
+        self.assertEqual(200, response_from_login.status_code)
+
+        # add wrong double rlc keys
+        from backend.api.models import UsersRlcKeys
+        from backend.static.encryption import RSAEncryption, AESEncryption
+        fake_aes = AESEncryption.generate_secure_key()
+        fake_encrypted_key = RSAEncryption.encrypt(fake_aes, self.base_fixtures['users'][0]['user'].get_public_key())
+        wrong_keys = UsersRlcKeys(user=self.base_fixtures['users'][0]['user'], rlc=self.base_fixtures['rlc'], encrypted_key=fake_encrypted_key)
+        wrong_keys.save()
+
+        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
+        self.assertEqual(400, response_from_login.status_code)
+
+        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][1]['user'].email, 'password': 'qwe123'})
+        self.assertEqual(200, response_from_login.status_code)
+
+        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
+        self.assertEqual(200, response_from_login.status_code)
