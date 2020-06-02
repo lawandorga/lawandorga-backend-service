@@ -19,7 +19,7 @@ from django.db import models
 
 from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__API__PERMISSION__NOT_FOUND, ERROR__API__RLC__NO_PUBLIC_KEY_FOUND, \
-    ERROR__API__USER__NO_PUBLIC_KEY_FOUND, ERROR__API__RLC__USERS_RLC_KEYS_NOT_FOUND, ERROR__API__USER__ALREADY_FORGOT_PASSWORD, ERROR__API__MISSING_KEY_WAIT
+    ERROR__API__USER__NO_PUBLIC_KEY_FOUND, ERROR__API__MISSING_KEY_WAIT
 from backend.static.regex_validators import phone_regex
 from backend.static.env_getter import get_website_base_url
 from backend.api.helpers import get_client_ip
