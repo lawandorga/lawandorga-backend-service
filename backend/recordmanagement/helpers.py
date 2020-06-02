@@ -78,10 +78,12 @@ def resolve_missing_record_key_entries(user, users_private_key):
     for missing_key in missing_keys:
         mine = RecordEncryption.objects.filter(record=missing_key.record, user=user).first()
         if mine:
-            record_key = mine.decrypt(users_private_key)
-            missing_key_users_public_key = UserEncryptionKeys.objects.get_users_public_key(missing_key.user)
-            encrypted_record_key = RSAEncryption.encrypt(record_key, missing_key_users_public_key)
-            new_key = RecordEncryption(user=missing_key.user, record=missing_key.record, encrypted_key=encrypted_record_key)
-            new_key.save()
-            missing_key.delete()
-
+            try:
+                missing_key_users_public_key = UserEncryptionKeys.objects.get_users_public_key(missing_key.user)
+                record_key = mine.decrypt(users_private_key)
+                encrypted_record_key = RSAEncryption.encrypt(record_key, missing_key_users_public_key)
+                new_key = RecordEncryption(user=missing_key.user, record=missing_key.record, encrypted_key=encrypted_record_key)
+                new_key.save()
+                missing_key.delete()
+            except Exception as e:
+                pass
