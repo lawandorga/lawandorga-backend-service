@@ -14,14 +14,22 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from enum import Enum
 from django.db import models
 
 from backend.api.models import UserProfile
 
 
-class MissingRlcKey(models.Model):
-    user = models.ForeignKey(UserProfile, related_name="missing_rlc_keys", on_delete=models.CASCADE)
+class NotificationTypes(Enum):
+    RECORD = 1
+    RECORD_MESSAGE = 2
 
-    def __str__(self):
-        return "missing rlc keys: " + str(self.user)
+
+class Notification(models.Model):
+    user = models.ForeignKey(UserProfile, related_name="notifications", on_delete=models.CASCADE)
+    message = models.CharField(max_length=2048)
+    source_user = models.ForeignKey(UserProfile, related_name="notification_caused", on_delete=models.SET_NULL, null=True)
+    type = models.CharField(max_length=1024)
+    ref_id = models.CharField(max_length=50)
+
 
