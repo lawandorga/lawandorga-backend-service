@@ -288,7 +288,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         # check if there is only one usersRlcKey
         keys = UsersRlcKeys.objects.filter(user=self)
         if keys.count() == 0:
-            raise CustomError(ERROR__API__RLC__USERS_RLC_KEYS_NOT_FOUND)
+            missing = MissingRlcKey(user=self)
+            missing.save()
+            raise CustomError(ERROR__API__MISSING_KEY_WAIT)
         if keys.count() > 1:
             # delete if too many, cant check which is the right one
             # create missingRlcKeyEntry to resolve missing key
