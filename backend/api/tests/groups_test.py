@@ -15,26 +15,30 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.test import TransactionTestCase
-from ..models import UserProfile, Group, HasPermission, Permission, Rlc
-from .statics import StaticTestMethods
 
+from backend.api.tests.fixtures_encryption import CreateFixtures
+from .statics import StaticTestMethods
+from backend.api.models import Group, HasPermission, Permission, Rlc, UserProfile
+from backend.static.permissions import PERMISSION_MANAGE_GROUPS_RLC
 
 class GroupsTests(TransactionTestCase):
     def setUp(self):
+        self.base_fixtures = CreateFixtures.create_base_fixtures()
+        self.superuser = CreateFixtures.create_superuser()
         self.client = StaticTestMethods.force_authentication_superuser()
         self.user = UserProfile.objects.get(email='test123@test.com')
         self.base_url_create = '/api/groups/'
 
     def test_create_group_success(self):
         before = Group.objects.count()
-        response = self.client.post(self.base_url_create, {
+        response = self.superuser['client'].post(self.base_url_create, {
             'name': 'The best group',
             'visible': True,
             'group_members': [1]
         })
         after = Group.objects.count()
-        self.assertTrue(response.status_code == 201)
-        self.assertTrue(before+1 == after)
+        self.assertTrue(response.status_code == 200)
+        self.assertTrue(before + 1 == after)
 
     def test_has_group_permission(self):
         perm1 = Permission(name='test_permission_1')
@@ -81,3 +85,25 @@ class GroupsTests(TransactionTestCase):
         hasperm1.save()
         group = Group.objects.first()
         self.assertTrue(not group.has_group_one_permission([perm2]))
+
+    def test_add_group_members(self):
+        # manage groups
+        CreateFixtures.add_permission_for_user(self.base_fixtures['users'][0]['user'], PERMISSION_MANAGE_GROUPS_RLC)
+        old_number_of_users = self.base_fixtures['groups'][0].group_members.count()
+
+        response = self.base_fixtures['users'][0]['client'].post('/api/group_members/', {
+            'action': 'add',
+            'group_id': self.base_fixtures['groups'][0].id,
+            'user_ids': [self.base_fixtures['users'][2]['user'].id, self.base_fixtures['users'][3]['user'].id]
+        }, format='json', **{'HTTP_PRIVATE_KEY': self.base_fixtures['users'][0]['private']})
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(old_number_of_users + 2, self.base_fixtures['groups'][0].group_members.count())
+
+        response = self.base_fixtures['users'][0]['client'].post('/api/group_members/', {
+            'action': 'remove',
+            'group_id': self.base_fixtures['groups'][0].id,
+            'user_ids': [self.base_fixtures['users'][2]['user'].id, self.base_fixtures['users'][3]['user'].id]
+        }, format='json')
+        self.assertTrue(200, response.status_code)
+        self.assertEqual(old_number_of_users, self.base_fixtures['groups'][0].group_members.count())

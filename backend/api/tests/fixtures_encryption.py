@@ -15,16 +15,28 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework.test import APIClient
-from backend.api.models import UserEncryptionKeys, UserProfile, Rlc, Group, Permission, RlcEncryptionKeys, UsersRlcKeys
+from backend.api.models import UserEncryptionKeys, UserProfile, Rlc, Group, Permission, RlcEncryptionKeys, UsersRlcKeys, HasPermission
 from backend.static.encryption import RSAEncryption, AESEncryption
 from backend.static.permissions import get_all_permissions_strings
 from backend.files.static.folder_permissions import get_all_folder_permissions_strings
 from backend.files.models import FolderPermission
+from backend.api.errors import CustomError
+from backend.static.error_codes import ERROR__API__HAS_PERMISSION__NOT_FOUND
 
 
 class CreateFixtures:
     @staticmethod
     def create_base_fixtures():
+        """
+
+        :return: Accessible:
+        User0: {return object}['users'][0]['user']
+        User0 private key: {return object}['users'][0]['private']
+        User0 client: {return object}['users'][0]['client']
+        Rlc0 of users: {return object}['rlc']
+        Group0: {return object}['groups'][0]
+        """
+
         CreateFixtures.create_permissions()
         return_object = {}
 
@@ -93,6 +105,13 @@ class CreateFixtures:
 
     @staticmethod
     def create_superuser():
+        """
+
+        :return: Accessible:
+        Superuser: {return object}['user']
+        Superusers private key: {return object}['[private']
+        Superusers client: {return object}['client']
+        """
         superuser = UserProfile(name='superuser', email='superuser@test.de', is_superuser=True)
         superuser.set_password('qwe123')
         superuser.save()
@@ -106,3 +125,20 @@ class CreateFixtures:
             "private": private,
             "client": client
         }
+
+    @staticmethod
+    def add_permission_for_user(user, permission):
+        """
+
+        :param user: User
+        :param permission: permissions string
+        :return:
+        """
+        try:
+            perm = Permission.objects.get(name=permission)
+        except:
+            raise CustomError(ERROR__API__HAS_PERMISSION__NOT_FOUND)
+
+        has_perm = HasPermission(user_has_permission=user, permission_for_rlc=user.rlc, permission=perm)
+        has_perm.save()
+

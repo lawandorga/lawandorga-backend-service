@@ -39,6 +39,8 @@ class FolderViewSet(APIView):
             raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 
         path = 'files/' + request.query_params.get('path', '')
+        if path.endswith('//'):
+            path = path[:-2]
         folder = Folder.get_folder_from_path(path, request.user.rlc)
         if not folder:
             return Response({'folders': [], 'files': [], 'current_folder': None})
