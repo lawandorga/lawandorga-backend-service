@@ -71,30 +71,34 @@ class GroupViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class GroupMemberViewSet(APIView):
+class GroupMembersViewSet(APIView):
     def post(self, request):
-        if 'action' not in request.data or 'group_id' not in request.data or 'user_id' not in request.data:
+        if 'action' not in request.data or 'group_id' not in request.data or 'user_ids' not in request.data:
             raise CustomError(error_codes.ERROR__API__MISSING_ARGUMENT)
         try:
             group = models.Group.objects.get(pk=request.data['group_id'])
         except:
             raise CustomError(error_codes.ERROR__API__GROUP__GROUP_NOT_FOUND)
 
-        try:
-            user = models.UserProfile.objects.get(pk=request.data['user_id'])
-        except:
-            raise CustomError(error_codes.ERROR__API__USER__NOT_FOUND)
+        users = []
+        for user_id in request.data['user_ids']:
+            try:
+                user = models.UserProfile.objects.get(pk=user_id)
+                users.append(user)
+            except:
+                raise CustomError(error_codes.ERROR__API__USER__NOT_FOUND)
 
         if request.data['action'] == 'add':
-            group.group_members.add(user)
-            group.save()
             if group.group_has_record_encryption_keys_permission():
                 granting_users_private_key = get_private_key_from_request(request)
-                add_record_encryption_keys_for_users(request.user, granting_users_private_key, [user])
-
+                add_record_encryption_keys_for_users(request.user, granting_users_private_key, users)
+            for user in users:
+                group.group_members.add(user)
+            group.save()
             return Response(serializers.GroupSerializer(group).data)
         elif request.data['action'] == 'remove':
-            group.group_members.remove(user)
+            for user in users:
+                group.group_members.remove(user)
             group.save()
             return Response(serializers.GroupSerializer(group).data)
 

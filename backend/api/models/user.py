@@ -252,7 +252,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         :return: public key of user (PEM)
         """
         from backend.api.models import UserEncryptionKeys
-        return UserEncryptionKeys.objects.get_users_public_key(self)
+        try:
+            public_key = UserEncryptionKeys.objects.get_users_public_key(self)
+        except Exception as e:
+            self.generate_new_user_encryption_keys()
+            public_key = UserEncryptionKeys.objects.get_users_public_key(self)
+        return public_key
 
     def get_private_key(self, decryption_key):
         """
@@ -318,14 +323,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def generate_rlc_keys_for_this_user(self, rlcs_aes_key):
         from backend.api.models import UsersRlcKeys
         from backend.static.encryption import RSAEncryption
-        try:
-            # if already exists return
-            UsersRlcKeys.objects.get(user=self, rlc=self.rlc)
-        except:
-            own_public_key = self.get_public_key()
-            encrypted_key = RSAEncryption.encrypt(rlcs_aes_key, own_public_key)
-            users_rlc_keys = UsersRlcKeys(user=self, rlc=self.rlc, encrypted_key=encrypted_key)
-            users_rlc_keys.save()
+        # delete (maybe) old existing rlc keys
+        UsersRlcKeys.objects.filter(user=self, rlc=self.rlc).delete()
+
+        own_public_key = self.get_public_key()
+        encrypted_key = RSAEncryption.encrypt(rlcs_aes_key, own_public_key)
+        users_rlc_keys = UsersRlcKeys(user=self, rlc=self.rlc, encrypted_key=encrypted_key)
+        users_rlc_keys.save()
 
     def rsa_encrypt(self, plain):
         from backend.static.encryption import RSAEncryption
