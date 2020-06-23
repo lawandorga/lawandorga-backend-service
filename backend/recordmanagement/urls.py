@@ -52,7 +52,7 @@ urlpatterns = [
     url(r'record/$', RecordViewSet.as_view()),                  # deprecated
     url(r'record/(?P<id>.+)/documents$', RecordDocumentByRecordViewSet.as_view()),      # deprecated
     url(r'e_record/(?P<id>.+)/messages$', EncryptedRecordMessageByRecordViewSet.as_view()),
-    url(r'record/(?P<id>.+)/messages$', RecordMessageByRecordViewSet.as_view()),            # deprecated
+    # url(r'record/(?P<id>.+)/messages$', RecordMessageByRecordViewSet.as_view()),            # deprecated
     url(r'record/(?P<id>.+)/request_permission$', EncryptedRecordPermissionRequestViewSet.as_view()),
     # url(r'record/(?P<id>.+)/request_permission$', RecordPermissionRequestViewSet.as_view()), OLD
     url(r'documents/(?P<id>.+)/$', RecordDocumentTagByDocumentViewSet.as_view()),

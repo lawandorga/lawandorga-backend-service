@@ -22,20 +22,20 @@ from backend.api.models import UserProfile
 
 
 class NotificationEventTypes(Enum):
-    RECORD = 1
-    RECORD_MESSAGE = 2
-    RECORD_DOCUMENT = 3
-    RECORD_PERMISSION_REQUEST = 4
-    GROUP = 5
-    FILE = 6
+    RECORD = "RECORD"
+    RECORD_MESSAGE = "RECORD_MESSAGE"
+    RECORD_DOCUMENT = "RECORD_DOCUMENT"
+    RECORD_PERMISSION_REQUEST = "RECORD_PERMISSION_REQUEST"
+    GROUP = "GROUP"
+    FILE = "FILE"
 
 
 class NotificationEvents(Enum):
-    CREATED = 1
-    DELETED = 2
-    MOVED = 3
-    UPDATED = 4
-    ADDED = 5
+    CREATED = "CREATED"
+    DELETED = "DELETED"
+    MOVED = "MOVED"
+    UPDATED = "UPDATED"
+    ADDED = "ADDED"
 
 
 class Notification(models.Model):

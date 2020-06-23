@@ -44,11 +44,18 @@ class EncryptedRecordMessageByRecordViewSet(APIView):
         if not e_record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
+        # to replace
         record_key = e_record.get_decryption_key(request.user, users_private_key)
         message = AESEncryption.encrypt(request.data['message'], record_key)
 
         record_message = models.EncryptedRecordMessage(sender=request.user, message=message, record=e_record)
         record_message.save()
+        # until here
+        # replace it with this
+        # models.EncryptedRecordMessage.objects.create_encrypted_record_message(sender=request.user, message=message,
+        #                                                                       record=e_record,
+        #                                                                       senders_private_key=users_private_key)
+        #
 
         EmailSender.send_record_new_message_notification_email(e_record)
         return Response(serializers.EncryptedRecordMessageSerializer(record_message).get_decrypted_data(record_key))

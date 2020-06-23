@@ -16,7 +16,23 @@
 
 from django.db import models
 
+from backend.static.encryption import AESEncryption
 from backend.api.models import UserProfile
+from backend.recordmanagement.models import EncryptedRecord
+
+
+class EncryptedRecordMessageManager(models.Manager):
+    """
+    Manager for Encrypted Record Messages
+    provides methods for whole query table and 'static' class methods
+    """
+
+    @staticmethod
+    def create_encrypted_record_message(sender: UserProfile, message: str, record: EncryptedRecord, senders_private_key: bytes):
+        record_key = record.get_decryption_key(sender, senders_private_key)
+        encrypted_message = AESEncryption.encrypt(message, record_key)
+        new_message = EncryptedRecordMessage(sender=sender, message=encrypted_message, record=record)
+        new_message.save()
 
 
 class EncryptedRecordMessage(models.Model):
@@ -28,6 +44,8 @@ class EncryptedRecordMessage(models.Model):
 
     # encrypted
     message = models.BinaryField(null=False)
+
+    objects = EncryptedRecordMessageManager()
 
     def __str__(self):
         return 'e_record_message: ' + str(self.id) + '; e_record: ' + str(self.record) + '; sender: ' + str(self.sender.id)
