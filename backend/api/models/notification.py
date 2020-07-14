@@ -46,6 +46,7 @@ class Notification(models.Model):
     event_subject = models.CharField(max_length=50, null=False)
     event = models.CharField(max_length=50, null=False)
     ref_id = models.CharField(max_length=50, null=False)
+    read = models.BooleanField(default=False, null=False)
 
     @staticmethod
     def add_notification(event, event_subject, ref_id, user, source_user):

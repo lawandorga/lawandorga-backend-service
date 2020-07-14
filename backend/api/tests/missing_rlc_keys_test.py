@@ -60,22 +60,22 @@ class MissingRlcKeysTests(TransactionTestCase):
         # create records
         records = []
         # 1
-        record1 = MissingRecordKeysTests.add_record(token='record1', rlc=self.base_fixtures['rlc'], client=e_client,
-                                                    creator=self.base_fixtures['users'][0]['user'],
-                                                    note='record1 note',
-                                                    working_on_record=[self.base_fixtures['users'][1]['user']],
-                                                    with_record_permission=[],
-                                                    with_encryption_keys=[self.base_fixtures['users'][0]['user'],
-                                                                          self.base_fixtures['users'][2]['user'],
-                                                                          self.superuser['user']])
+        record1 = CreateFixtures.add_record(record_token='record1', rlc=self.base_fixtures['rlc'], client=e_client,
+                                            creator=self.base_fixtures['users'][0]['user'],
+                                            note='record1 note',
+                                            working_on_record=[self.base_fixtures['users'][1]['user']],
+                                            with_record_permission=[],
+                                            with_encryption_keys=[self.base_fixtures['users'][0]['user'],
+                                                                  self.base_fixtures['users'][2]['user'],
+                                                                  self.superuser['user']])
         records.append(record1)
         # 2
-        record2 = MissingRecordKeysTests.add_record(token='record2', rlc=self.base_fixtures['rlc'], client=e_client,
-                                                    creator=self.base_fixtures['users'][0]['user'],
-                                                    note='record2 note',
-                                                    working_on_record=[self.base_fixtures['users'][0]['user']],
-                                                    with_record_permission=[self.base_fixtures['users'][1]['user']],
-                                                    with_encryption_keys=[self.base_fixtures['users'][0]['user']])
+        record2 = CreateFixtures.add_record(record_token='record2', rlc=self.base_fixtures['rlc'], client=e_client,
+                                            creator=self.base_fixtures['users'][0]['user'],
+                                            note='record2 note',
+                                            working_on_record=[self.base_fixtures['users'][0]['user']],
+                                            with_record_permission=[self.base_fixtures['users'][1]['user']],
+                                            with_encryption_keys=[self.base_fixtures['users'][0]['user']])
         records.append(record2)
 
         return_object.update({"records": records})

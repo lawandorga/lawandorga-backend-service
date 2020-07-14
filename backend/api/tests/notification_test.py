@@ -17,58 +17,39 @@
 from django.test import TransactionTestCase
 from rest_framework.test import APIClient
 
-from backend.recordmanagement import models as record_models
-from backend.static.encryption import AESEncryption
+from backend.api import models as api_models
 from backend.api.tests.fixtures_encryption import CreateFixtures
-from backend.recordmanagement.tests.missing_record_keys_test import MissingRecordKeysTests
+from backend.recordmanagement import models as record_models
 
 
 class NotificationTest(TransactionTestCase):
     def setUp(self):
         self.base_fixtures = CreateFixtures.create_base_fixtures()
+        users: [api_models.UserProfile] = [self.base_fixtures['users'][0]['user'],
+                                           self.base_fixtures['users'][1]['user'],
+                                           self.base_fixtures['users'][2]['user']]
+        self.record_fixtures = CreateFixtures.create_record_base_fixtures(rlc=self.base_fixtures['rlc'], users=users)
 
-    def create_record_fixture(self):
-        return_object = {}
+    def test_record_message_notification(self):
+        record: record_models.EncryptedRecord = self.record_fixtures['records'][0]['record']
+        before = api_models.Notification.objects.all().count()
 
-        # create client
-        aes_client_key = AESEncryption.generate_secure_key()
-        e_client = record_models.EncryptedClient(from_rlc=self.base_fixtures['rlc'])
-        e_client.name = AESEncryption.encrypt('MainClient', aes_client_key)
-        e_client.note = AESEncryption.encrypt('important MainClient note', aes_client_key)
-        e_client.save()
-        e_client = e_client
-        client_obj = {
-            "client": e_client,
-            "key": aes_client_key
-        }
-        return_object.update({"client": client_obj})
+        # from fixtures
+        private_key: bytes = self.base_fixtures['users'][0]['private']
+        client: APIClient = self.base_fixtures['users'][0]['client']
 
-        # create records
-        records = []
-        # 1
-        record1 = MissingRecordKeysTests.add_record(token='record1', rlc=self.base_fixtures['rlc'], client=e_client,
-                                                    creator=self.base_fixtures['users'][0]['user'],
-                                                    note='record1 note',
-                                                    working_on_record=[self.base_fixtures['users'][1]['user']],
-                                                    with_record_permission=[],
-                                                    with_encryption_keys=[self.base_fixtures['users'][0]['user'],
-                                                                          self.base_fixtures['users'][2]['user'],
-                                                                          self.superuser['user']])
-        records.append(record1)
-        # 2
-        record2 = MissingRecordKeysTests.add_record(token='record2', rlc=self.base_fixtures['rlc'], client=e_client,
-                                                    creator=self.base_fixtures['users'][0]['user'],
-                                                    note='record2 note',
-                                                    working_on_record=[self.base_fixtures['users'][0]['user']],
-                                                    with_record_permission=[self.base_fixtures['users'][1]['user']],
-                                                    with_encryption_keys=[self.base_fixtures['users'][0]['user']])
-        records.append(record2)
+        # post new record message
+        client.post('/api/records/e_record/' + str(record.id) + '/messages', {'message': 'secret message'},
+                    **{'HTTP_PRIVATE_KEY': private_key})
 
-        return_object.update({"records": records})
+        # 2 because record send notification to 2 other users (1 causes it)
+        self.assertEqual(before + 2, api_models.Notification.objects.all().count())
+        notification_for_user_1: api_models.Notification = api_models.Notification.objects.filter(
+            user=self.base_fixtures['users'][1]['user']).first()
+        self.assertTrue(notification_for_user_1 is not None)
+        self.assertEqual(notification_for_user_1.source_user, self.base_fixtures['users'][0]['user'])
+        self.assertEqual(notification_for_user_1.read, False)
+        self.assertEqual(notification_for_user_1.ref_id, str(record.id))
 
-        return return_object
-
-    def first_test(self):
-        record_fixtures = self.create_record_fixture()
-
-        record_models.EncryptedRecordMessage()
+    def test_record_creation_notification(self):
+        pass

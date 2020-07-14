@@ -352,3 +352,13 @@ ERROR__API__RLC_SETTINGS__WRONG_COUNT = {
     'error_detail': 'wrong count of rlc settings',
     'error_code': 'api.rlc_settings.wrong_count'
 }
+
+ERROR__FILES__FOLDER_NOT_EXISTING = {
+    'error_detail': 'folder does not exist',
+    'error_code': 'api.files.folder_not_existing'
+}
+
+ERROR__RECORD__CONSULTANT__NO_PERMISSION = {
+    'error_detail': 'selected user has no permission to consult',
+    'error_code': 'api.record.no_consult_permission'
+}

@@ -15,15 +15,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import viewsets
-from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
+from backend.api.errors import CustomError
 from backend.recordmanagement import models, serializers
 from backend.static import error_codes
-from backend.api.errors import CustomError
 from backend.static.emails import EmailSender
 from backend.static.middleware import get_private_key_from_request
-from backend.static.encryption import AESEncryption
 
 
 class EncryptedRecordMessageViewSet(viewsets.ModelViewSet):
@@ -44,20 +43,11 @@ class EncryptedRecordMessageByRecordViewSet(APIView):
         if not e_record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
-        # to replace
-        record_key = e_record.get_decryption_key(request.user, users_private_key)
-        message = AESEncryption.encrypt(request.data['message'], record_key)
+        record_message, record_key = models.EncryptedRecordMessage.objects.create_encrypted_record_message(
+            sender=request.user, message=request.data['message'],
+            record=e_record,
+            senders_private_key=users_private_key)
 
-        record_message = models.EncryptedRecordMessage(sender=request.user, message=message, record=e_record)
-        record_message.save()
-        # until here
-        # replace it with this
-        # models.EncryptedRecordMessage.objects.create_encrypted_record_message(sender=request.user, message=message,
-        #                                                                       record=e_record,
-        #                                                                       senders_private_key=users_private_key)
-        #
-
-        EmailSender.send_record_new_message_notification_email(e_record)
         return Response(serializers.EncryptedRecordMessageSerializer(record_message).get_decrypted_data(record_key))
 
     def get(self, request, id):

@@ -48,8 +48,6 @@ urlpatterns = [
     url(r'clients_by_birthday', GetClientsFromBirthday.as_view()),                      # deprecated
     url(r'e_record/(?P<id>.+)/$', EncryptedRecordViewSet.as_view()),
     url(r'e_record/$', EncryptedRecordViewSet.as_view()),
-    url(r'record/(?P<id>.+)/$', RecordViewSet.as_view()),       # deprecated
-    url(r'record/$', RecordViewSet.as_view()),                  # deprecated
     url(r'record/(?P<id>.+)/documents$', RecordDocumentByRecordViewSet.as_view()),      # deprecated
     url(r'e_record/(?P<id>.+)/messages$', EncryptedRecordMessageByRecordViewSet.as_view()),
     # url(r'record/(?P<id>.+)/messages$', RecordMessageByRecordViewSet.as_view()),            # deprecated

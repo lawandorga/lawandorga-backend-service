@@ -16,9 +16,9 @@
 
 from django.db import models
 
-from backend.static.encryption import AESEncryption
-from backend.api.models import UserProfile
+from backend.api.models import Notification, NotificationEventTypes, NotificationEvents, UserProfile
 from backend.recordmanagement.models import EncryptedRecord
+from backend.static.encryption import AESEncryption
 
 
 class EncryptedRecordMessageManager(models.Manager):
@@ -28,11 +28,34 @@ class EncryptedRecordMessageManager(models.Manager):
     """
 
     @staticmethod
-    def create_encrypted_record_message(sender: UserProfile, message: str, record: EncryptedRecord, senders_private_key: bytes):
+    def create_encrypted_record_message(sender: UserProfile, message: str, record: EncryptedRecord,
+                                        senders_private_key: bytes) -> ('EncryptedRecordMessage', str):
+        """
+        creates a new encrypted record message for given record
+        also creates corresponding notifications
+
+        :param sender: sender of message
+        :param message: unencrypted content of message
+        :param record: record where message belongs to
+        :param senders_private_key: private key of sender to encrypt message
+        :return:
+        """
+        # create message and saves
         record_key = record.get_decryption_key(sender, senders_private_key)
         encrypted_message = AESEncryption.encrypt(message, record_key)
         new_message = EncryptedRecordMessage(sender=sender, message=encrypted_message, record=record)
         new_message.save()
+
+        user_with_decryption_keys: [UserProfile] = record.get_notification_users()
+        for user in user_with_decryption_keys:
+            if user.id == sender.id:
+                continue
+            notification: Notification = Notification(user=user, source_user=sender,
+                                                      event_subject=NotificationEventTypes.RECORD_MESSAGE,
+                                                      event=NotificationEvents.CREATED, ref_id=str(record.id))
+            notification.save()
+
+        return new_message, record_key
 
 
 class EncryptedRecordMessage(models.Model):
@@ -48,5 +71,5 @@ class EncryptedRecordMessage(models.Model):
     objects = EncryptedRecordMessageManager()
 
     def __str__(self):
-        return 'e_record_message: ' + str(self.id) + '; e_record: ' + str(self.record) + '; sender: ' + str(self.sender.id)
-
+        return 'e_record_message: ' + str(self.id) + '; e_record: ' + str(self.record) + '; sender: ' + str(
+            self.sender.id)

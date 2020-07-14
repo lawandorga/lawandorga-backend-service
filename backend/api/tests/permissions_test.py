@@ -76,7 +76,7 @@ class PermissionTests(TransactionTestCase):
         self.assertTrue(users[2] in users_with_permissions)
         self.assertTrue(users[4] in users_with_permissions)
 
-    def test_get_real_users_with_permission_for_rlc_1(self):
+    def test_get_real_users_with_permission_for_rlc_2(self):
         rlc = Rlc(name='test rlc')
         rlc.save()
 

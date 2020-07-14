@@ -22,6 +22,7 @@ from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import status
 
 from backend.api.errors import CustomError
 from backend.api.models import UserEncryptionKeys, UserProfile
@@ -71,11 +72,22 @@ class EncryptedRecordsListViewSet(viewsets.ViewSet):
 
 class EncryptedRecordViewSet(APIView):
     def post(self, request):
-        if not request.user.has_permission(permissions.PERMISSION_CAN_ADD_RECORD_RLC, for_rlc=request.user.rlc):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
         data = request.data
         rlc = request.user.rlc
+        if not request.user.has_permission(permissions.PERMISSION_CAN_ADD_RECORD_RLC, for_rlc=rlc):
+            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+
         creators_private_key = get_private_key_from_request(request)
+
+        consultants: [UserProfile] = []
+        for user_id in data['consultants']:
+            try:
+                user: UserProfile = UserProfile.objects.get(pk=user_id)
+            except Exception:
+                raise CustomError(error_codes.ERROR__RECORD__CONSULTANT__NOT_EXISTING)
+            if not user.has_permission(permissions.PERMISSION_CAN_CONSULT, for_rlc=rlc):
+                raise CustomError(error_codes.ERROR__RECORD__CONSULTANT__NO_PERMISSION)
+            consultants.append(user)
 
         if 'client_id' in data:
             rlcs_private_key = request.user.get_rlcs_private_key(creators_private_key)
@@ -118,12 +130,8 @@ class EncryptedRecordViewSet(APIView):
 
         for tag_id in data['tags']:
             e_record.tagged.add(models.RecordTag.objects.get(pk=tag_id))
-        for user_id in data['consultants']:
-            try:
-                user = UserProfile.objects.get(pk=user_id)
-            except Exception:
-                raise CustomError(error_codes.ERROR__RECORD__CONSULTANT__NOT_EXISTING)
-            e_record.working_on_record.add(user)
+        for consultant in consultants:
+            e_record.working_on_record.add(consultant)
         e_record.save()
 
         users_with_keys = e_record.get_users_with_decryption_keys()
@@ -143,11 +151,11 @@ class EncryptedRecordViewSet(APIView):
                                                     "RLC Intranet Notification - Your were assigned as a consultant for a new record. Look here:" +
                                                     url)
 
-        return Response(serializers.EncryptedRecordFullDetailSerializer(e_record).get_decrypted_data(record_key))
+        return Response(serializers.EncryptedRecordFullDetailSerializer(e_record).get_decrypted_data(record_key), status=status.HTTP_201_CREATED)
 
     def get(self, request, id):
         try:
-            e_record = models.EncryptedRecord.objects.get(pk=id)
+            e_record: models.EncryptedRecord = models.EncryptedRecord.objects.get(pk=id)
         except:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
 

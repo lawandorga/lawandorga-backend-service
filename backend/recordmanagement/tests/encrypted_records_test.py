@@ -15,11 +15,17 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.test import TransactionTestCase
+from rest_framework.test import APIClient
 
-from backend.api.models import UserProfile, Permission
+from backend.api import models as api_models
+from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.api.tests.statics import StaticTestMethods
-from backend.recordmanagement.models import EncryptedRecord, EncryptedRecordPermission
-from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from backend.recordmanagement import models as record_models
+from backend.static.permissions import PERMISSION_CAN_ADD_RECORD_RLC, PERMISSION_CAN_CONSULT, \
+    PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+
+
+# TODO: KEYMANAGEMENT test get users with decryption keys
 
 
 class EncryptedRecordTests(TransactionTestCase):
@@ -29,18 +35,43 @@ class EncryptedRecordTests(TransactionTestCase):
         self.base_detail_url = '/api/records/record/'
         self.base_create_record_url = '/api/records/create_record/'
 
+        self.base_fixtures = CreateFixtures.create_base_fixtures()
+        users: [api_models.UserProfile] = [self.base_fixtures['users'][0]['user'],
+                                           self.base_fixtures['users'][1]['user'],
+                                           self.base_fixtures['users'][2]['user']]
+        self.record_fixtures = CreateFixtures.create_record_base_fixtures(rlc=self.base_fixtures['rlc'], users=users)
+
+        # user 0 can create records
+        add_record_permission = api_models.Permission.objects.get(name=PERMISSION_CAN_ADD_RECORD_RLC)
+        has_perm = api_models.HasPermission(permission=add_record_permission,
+                                            user_has_permission=self.base_fixtures['users'][0]['user'],
+                                            permission_for_rlc=self.base_fixtures['rlc'])
+        has_perm.save()
+
+        # user 0 and 1 can consult but not user 3
+        can_consult_permission = api_models.Permission.objects.get(name=PERMISSION_CAN_CONSULT)
+        has_perm = api_models.HasPermission(permission=can_consult_permission,
+                                            group_has_permission=self.base_fixtures['groups'][0],
+                                            permission_for_rlc=self.base_fixtures['rlc'])
+        has_perm.save()
+        # has_perm = api_models.HasPermission(permission=can_consult_permission,
+        #                                     user_has_permission=self.base_fixtures['users'][1]['user'],
+        #                                     permission_for_rlc=self.base_fixtures['rlc'])
+        # has_perm.save()
+
     def test_user_has_permission(self):
-        user1 = UserProfile(email='abc1@web.de', name="abc1")
+        user1 = api_models.UserProfile(email='abc1@web.de', name="abc1")
         user1.save()
-        user2 = UserProfile(email='abc2@web.de', name="abc2")
+        user2 = api_models.UserProfile(email='abc2@web.de', name="abc2")
         user2.save()
-        user3 = UserProfile(email='abc3@web.de', name="abc3")
+        user3 = api_models.UserProfile(email='abc3@web.de', name="abc3")
         user3.save()
-        record = EncryptedRecord(record_token='asd123')
+        record = record_models.EncryptedRecord(record_token='asd123')
         record.save()
         record.working_on_record.add(user1)
 
-        permission = EncryptedRecordPermission(request_from=user2, request_processed=user3, state='gr', record=record)
+        permission = record_models.EncryptedRecordPermission(request_from=user2, request_processed=user3, state='gr',
+                                                             record=record)
         permission.save()
 
         self.assertTrue(record.user_has_permission(user1))
@@ -48,20 +79,21 @@ class EncryptedRecordTests(TransactionTestCase):
 
     def test_get_users_with_permission(self):
         # get_users_with_permission needs permission in database
-        permission = Permission(name=PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC)
+        permission = api_models.Permission(name=PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC)
         permission.save()
 
-        user1 = UserProfile(email='abc1@web.de', name="abc1")
+        user1 = api_models.UserProfile(email='abc1@web.de', name="abc1")
         user1.save()
-        user2 = UserProfile(email='abc2@web.de', name="abc2")
+        user2 = api_models.UserProfile(email='abc2@web.de', name="abc2")
         user2.save()
-        user3 = UserProfile(email='abc3@web.de', name="abc3")
+        user3 = api_models.UserProfile(email='abc3@web.de', name="abc3")
         user3.save()
-        record = EncryptedRecord(record_token='asd123')
+        record = record_models.EncryptedRecord(record_token='asd123')
         record.save()
         record.working_on_record.add(user1)
 
-        permission = EncryptedRecordPermission(request_from=user2, request_processed=user3, state='gr', record=record)
+        permission = record_models.EncryptedRecordPermission(request_from=user2, request_processed=user3, state='gr',
+                                                             record=record)
         permission.save()
 
         users_with_permission = record.get_users_with_permission()
@@ -69,5 +101,63 @@ class EncryptedRecordTests(TransactionTestCase):
         self.assertTrue(user1 in users_with_permission)
         self.assertTrue(user2 in users_with_permission)
 
+    def test_create_encrypted_record(self):
+        number_of_records_before: int = record_models.EncryptedRecord.objects.count()
+        number_of_record_encryptions_before: int = record_models.RecordEncryption.objects.count()
+        private_key: bytes = self.base_fixtures['users'][0]['private']
+        client: APIClient = self.base_fixtures['users'][0]['client']
 
-# TODO: KEYMANAGEMENT test get users with decryption keys
+        record_note = 'important record note fpr record AZ 0011/123'
+        record_token = 'AZ 0011/123'
+        new_record_object = {
+            'client_birthday': '2000-06-12',
+            'client_name': 'Bruce Wayne',
+            'client_note': '',
+            'client_phone_number': '12312312',
+            'consultants': [self.base_fixtures['users'][0]['user'].id, self.base_fixtures['users'][1]['user'].id],
+            'first_contact_date': '2020-04-14',
+            'origin_country': record_models.OriginCountry.objects.first().id,
+            'record_note': record_note,
+            'record_token': record_token,
+            'tags': [record_models.RecordTag.objects.first().id],
+        }
+        response = client.post('/api/records/e_record/', new_record_object, format='json',
+                               **{'HTTP_PRIVATE_KEY': private_key})
+
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(number_of_records_before + 1, record_models.EncryptedRecord.objects.count())
+        self.assertEqual(number_of_record_encryptions_before + 2, record_models.RecordEncryption.objects.count())
+
+        self.assertIn('note', response.data)
+        self.assertEqual(record_note, response.data['note'])
+        self.assertIn('record_token', response.data)
+        self.assertEqual(record_token, response.data['record_token'])
+
+        new_record_from_db: record_models.EncryptedRecord = record_models.EncryptedRecord.objects.get(pk=response.data['id'])
+        self.assertIn(self.base_fixtures['users'][0]['user'], new_record_from_db.working_on_record.all())
+        self.assertIn(self.base_fixtures['users'][1]['user'], new_record_from_db.working_on_record.all())
+
+    def test_create_encrypted_record_cant_consult(self):
+        number_of_records_before: int = record_models.EncryptedRecord.objects.count()
+        private_key: bytes = self.base_fixtures['users'][0]['private']
+        client: APIClient = self.base_fixtures['users'][0]['client']
+
+        record_note = 'important record note fpr record AZ 0011/123'
+        record_token = 'AZ 0011/123'
+        new_record = {
+            'client_birthday': '2000-06-12',
+            'client_name': 'Bruce Wayne',
+            'client_note': '',
+            'client_phone_number': '12312312',
+            'consultants': [self.base_fixtures['users'][0]['user'].id, self.base_fixtures['users'][3]['user'].id],
+            'first_contact_date': '2020-04-14',
+            'origin_country': record_models.OriginCountry.objects.first().id,
+            'record_note': record_note,
+            'record_token': record_token,
+            'tags': [record_models.RecordTag.objects.first().id],
+        }
+        response = client.post('/api/records/e_record/', new_record, format='json',
+                               **{'HTTP_PRIVATE_KEY': private_key})
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(number_of_records_before, record_models.EncryptedRecord.objects.count())
