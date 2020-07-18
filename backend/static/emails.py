@@ -16,13 +16,14 @@
 
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
-from backend.static.frontend_links import FrontendLinks
+
 from backend.static.env_getter import get_env_variable
+from backend.static.frontend_links import FrontendLinks
 
 
 class EmailSender:
     @staticmethod
-    def send_email_notification(email_addresses, subject: str, text: str):
+    def send_email_notification(email_addresses, subject: str, text: str) -> None:
         """
         Sends emails to all email_addresses with subject and text
         :param email_addresses: array with email adresses
@@ -36,14 +37,14 @@ class EmailSender:
         # send_mail(subject, text, 'notification@rlcm.de', email_addresses, fail_silently=False)
 
     @staticmethod
-    def send_html_email(email_addresses, subject: str, html_content: str, text_alternative: str):
+    def send_html_email(email_addresses, subject: str, html_content: str, text_alternative: str) -> None:
         from_email = get_env_variable('EMAIL_ADDRESS')
         msg = EmailMultiAlternatives(subject, text_alternative, from_email, email_addresses)
         msg.attach_alternative(html_content, "text/html")
         msg.send()
 
     @staticmethod
-    def send_user_activation_email(user, link):
+    def send_user_activation_email(user, link) -> None:
         html_message = loader.render_to_string(
             'email_templates/activate_account.html',
             {
@@ -55,7 +56,7 @@ class EmailSender:
         EmailSender.send_html_email([user.email], subject, html_message, alternative_text)
 
     @staticmethod
-    def send_record_new_message_notification_email(record):
+    def send_record_new_message_notification_email(record) -> None:
         emails = record.get_notification_emails()
         link = FrontendLinks.get_record_link(record)
         html_message = loader.render_to_string(
@@ -70,11 +71,11 @@ class EmailSender:
         EmailSender.send_html_email(emails, subject, html_message, alternative_text)
 
     @staticmethod
-    def send_new_user_request_notification_email():
+    def send_new_user_request_notification_email() -> None:
         pass
 
     @staticmethod
-    def test_send(email):
+    def test_send(email) -> None:
         html_message = loader.render_to_string(
             'email_templates/activate_account.html',
             {
@@ -86,7 +87,7 @@ class EmailSender:
         EmailSender.send_html_email([email], subject, html_message, alternative_text)
 
     @staticmethod
-    def send_forgot_password(email, link):
+    def send_forgot_password(email, link) -> None:
         html_message = loader.render_to_string(
             'email_templates/forgot_password.html',
             {
@@ -98,10 +99,21 @@ class EmailSender:
         EmailSender.send_html_email([email], subject, html_message, alternative_text)
 
     @staticmethod
-    def send_reset_password_complete(email):
+    def send_reset_password_complete(email) -> None:
         html_message = loader.render_to_string(
             'email_templates/regenerating_rlc_keys_complete.html'
         )
         alternative_text = "Law & Orga - Reset password complete"
         subject = 'Law & Orga - Reset password complete'
         EmailSender.send_html_email([email], subject, html_message, alternative_text)
+
+    @staticmethod
+    def send_new_record(email_address: str, url: str) -> None:
+        """
+        sends email with notification of new record to given email address containing a link to the record
+        :param email_address: email address to send the email to
+        :param url: link to newly created record
+        :return:
+        """
+        text = "RLC Intranet Notification - Your were assigned as a consultant for a new record. Look here:" + url
+        EmailSender.send_email_notification([email_address], "New Record", text)

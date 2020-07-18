@@ -19,13 +19,12 @@ from datetime import datetime
 import pytz
 from django.conf import settings
 from django.db.models import Q
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
 
 from backend.api.errors import CustomError
-from backend.api.models import UserEncryptionKeys, UserProfile
+from backend.api.models import Notification, UserEncryptionKeys, UserProfile
 from backend.recordmanagement import models, serializers
 from backend.static import error_codes, permissions
 from backend.static.date_utils import parse_date
@@ -132,6 +131,7 @@ class EncryptedRecordViewSet(APIView):
             e_record.tagged.add(models.RecordTag.objects.get(pk=tag_id))
         for consultant in consultants:
             e_record.working_on_record.add(consultant)
+
         e_record.save()
 
         users_with_keys = e_record.get_users_with_decryption_keys()
@@ -143,15 +143,18 @@ class EncryptedRecordViewSet(APIView):
             record_encryption.save()
         e_record.save()  # TODO: why?
 
-        if not settings.DEBUG:
-            for user_id in data['consultants']:
-                actual_consultant = UserProfile.objects.get(pk=user_id)
-                url = FrontendLinks.get_record_link(e_record)
-                EmailSender.send_email_notification([actual_consultant.email], "New Record",
-                                                    "RLC Intranet Notification - Your were assigned as a consultant for a new record. Look here:" +
-                                                    url)
+        for user in consultants:
+            if user != request.user:
+                Notification.objects.create_notification_new_record(str(e_record.id), user, request.user,
+                                                                    e_record.record_token)
 
-        return Response(serializers.EncryptedRecordFullDetailSerializer(e_record).get_decrypted_data(record_key), status=status.HTTP_201_CREATED)
+        if not settings.DEBUG:
+            url = FrontendLinks.get_record_link(e_record)
+            for user in consultants:
+                EmailSender.send_new_record(user.email, url)
+
+        return Response(serializers.EncryptedRecordFullDetailSerializer(e_record).get_decrypted_data(record_key),
+                        status=status.HTTP_201_CREATED)
 
     def get(self, request, id):
         try:
@@ -261,7 +264,8 @@ class EncryptedRecordViewSet(APIView):
         client_from_db = models.EncryptedClient.objects.get(pk=client.id)
         return Response(
             {
-                'record': serializers.EncryptedRecordFullDetailSerializer(record_from_db).get_decrypted_data(record_key),
+                'record': serializers.EncryptedRecordFullDetailSerializer(record_from_db).get_decrypted_data(
+                    record_key),
                 'client': serializers.EncryptedClientSerializer(client_from_db).get_decrypted_data(client_key)
             }
         )

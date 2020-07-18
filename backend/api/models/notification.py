@@ -21,7 +21,11 @@ from django.db import models
 from backend.api.models import UserProfile
 
 
-class NotificationEventTypes(Enum):
+class NotificationEventObject(Enum):
+    """
+    Enum for notification event object
+    these regard the models which the notification is about
+    """
     RECORD = "RECORD"
     RECORD_MESSAGE = "RECORD_MESSAGE"
     RECORD_DOCUMENT = "RECORD_DOCUMENT"
@@ -30,7 +34,11 @@ class NotificationEventTypes(Enum):
     FILE = "FILE"
 
 
-class NotificationEvents(Enum):
+class NotificationEventType(Enum):
+    """
+    enum for notification events types
+    contains the action which was performed
+    """
     CREATED = "CREATED"
     DELETED = "DELETED"
     MOVED = "MOVED"
@@ -38,24 +46,46 @@ class NotificationEvents(Enum):
     ADDED = "ADDED"
 
 
+class NotificationManager(models.Manager):
+    """
+    Manager for Notifications
+    provides methods for whole query table and 'static' class methods
+    """
+
+    @staticmethod
+    def create_notification(event: NotificationEventType, event_subject: NotificationEventObject, ref_id: int,
+                            user: UserProfile, source_user: UserProfile, ref_text: str, read: bool):
+        notification = Notification(event=event, event_type=event_subject, ref_id=ref_id, user=user,
+                                    source_user=source_user, ref_text=ref_text, read=read)
+        notification.save()
+
+    @staticmethod
+    def create_notification_new_record_message(ref_id: str, user: UserProfile, source_user: UserProfile, ref_text: str):
+        notification = Notification(event_subject=NotificationEventObject.RECORD_MESSAGE,
+                                    event=NotificationEventType.CREATED, ref_id=ref_id, user=user,
+                                    source_user=source_user, ref_text=ref_text)
+        notification.save()
+
+    @staticmethod
+    def create_notification_new_record(ref_id: str, user: UserProfile, source_user: UserProfile, ref_text: str):
+        notification = Notification(event_subject=NotificationEventObject.RECORD,
+                                    event=NotificationEventType.CREATED, ref_id=ref_id, user=user,
+                                    source_user=source_user, ref_text=ref_text)
+        notification.save()
+
+
 class Notification(models.Model):
     user = models.ForeignKey(UserProfile, related_name="notifications", on_delete=models.CASCADE)
-    # message = models.CharField(max_length=2048)
     source_user = models.ForeignKey(UserProfile, related_name="notification_caused", on_delete=models.SET_NULL,
                                     null=True)
+
     event_subject = models.CharField(max_length=50, null=False)
     event = models.CharField(max_length=50, null=False)
     ref_id = models.CharField(max_length=50, null=False)
+    ref_text = models.CharField(max_length=100, null=True)
     read = models.BooleanField(default=False, null=False)
 
-    @staticmethod
-    def add_notification(event, event_subject, ref_id, user, source_user):
-        notification = Notification(event=event, event_type=event_subject, ref_id=ref_id, user=user,
-                                    source_user=source_user)
-        notification.save()
+    objects = NotificationManager()
 
-    @staticmethod
-    def add_notification_new_record_message(ref_id, user, source_user):
-        notification = Notification(event_subject=NotificationEventTypes.RECORD_MESSAGE,
-                                    event=NotificationEvents.CREATED, ref_id=ref_id, user=user, source_user=source_user)
-        notification.save()
+    def __str__(self):
+        return 'notification: ' + str(self.id)

@@ -48,16 +48,12 @@ class EncryptedRecordTests(TransactionTestCase):
                                             permission_for_rlc=self.base_fixtures['rlc'])
         has_perm.save()
 
-        # user 0 and 1 can consult but not user 3
+        # all users from group 0 can consult
         can_consult_permission = api_models.Permission.objects.get(name=PERMISSION_CAN_CONSULT)
         has_perm = api_models.HasPermission(permission=can_consult_permission,
                                             group_has_permission=self.base_fixtures['groups'][0],
                                             permission_for_rlc=self.base_fixtures['rlc'])
         has_perm.save()
-        # has_perm = api_models.HasPermission(permission=can_consult_permission,
-        #                                     user_has_permission=self.base_fixtures['users'][1]['user'],
-        #                                     permission_for_rlc=self.base_fixtures['rlc'])
-        # has_perm.save()
 
     def test_user_has_permission(self):
         user1 = api_models.UserProfile(email='abc1@web.de', name="abc1")
@@ -78,10 +74,6 @@ class EncryptedRecordTests(TransactionTestCase):
         self.assertTrue(record.user_has_permission(user2))
 
     def test_get_users_with_permission(self):
-        # get_users_with_permission needs permission in database
-        permission = api_models.Permission(name=PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC)
-        permission.save()
-
         user1 = api_models.UserProfile(email='abc1@web.de', name="abc1")
         user1.save()
         user2 = api_models.UserProfile(email='abc2@web.de', name="abc2")
@@ -104,6 +96,9 @@ class EncryptedRecordTests(TransactionTestCase):
     def test_create_encrypted_record(self):
         number_of_records_before: int = record_models.EncryptedRecord.objects.count()
         number_of_record_encryptions_before: int = record_models.RecordEncryption.objects.count()
+        number_of_notifications_before: int = api_models.Notification.objects.count()
+        notifications_before: [api_models.Notification] = list(api_models.Notification.objects.all())
+
         private_key: bytes = self.base_fixtures['users'][0]['private']
         client: APIClient = self.base_fixtures['users'][0]['client']
 
@@ -136,6 +131,16 @@ class EncryptedRecordTests(TransactionTestCase):
         new_record_from_db: record_models.EncryptedRecord = record_models.EncryptedRecord.objects.get(pk=response.data['id'])
         self.assertIn(self.base_fixtures['users'][0]['user'], new_record_from_db.working_on_record.all())
         self.assertIn(self.base_fixtures['users'][1]['user'], new_record_from_db.working_on_record.all())
+
+        # check for notifications too
+        self.assertEqual(number_of_notifications_before + 1, api_models.Notification.objects.count())
+        to_exclude: [int] = [o.id for o in notifications_before]
+        new_notifications: [api_models.Notification] = list(api_models.Notification.objects.all().exclude(id__in=to_exclude))
+        new_notification: api_models.Notification = new_notifications[0]
+        self.assertEqual(new_notification.source_user, self.base_fixtures['users'][0]['user'])
+        self.assertEqual(new_notification.user, self.base_fixtures['users'][1]['user'])
+        self.assertEqual(new_notification.ref_id, str(response.data['id']))
+        self.assertEqual(new_notification.ref_text, response.data['record_token'])
 
     def test_create_encrypted_record_cant_consult(self):
         number_of_records_before: int = record_models.EncryptedRecord.objects.count()

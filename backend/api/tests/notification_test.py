@@ -30,6 +30,21 @@ class NotificationTest(TransactionTestCase):
                                            self.base_fixtures['users'][2]['user']]
         self.record_fixtures = CreateFixtures.create_record_base_fixtures(rlc=self.base_fixtures['rlc'], users=users)
 
+        # record permissions
+        # user 0 can create records
+        # add_record_permission = api_models.Permission.objects.get(name=permissions.PERMISSION_CAN_ADD_RECORD_RLC)
+        # has_perm = api_models.HasPermission(permission=add_record_permission,
+        #                                     user_has_permission=self.base_fixtures['users'][0]['user'],
+        #                                     permission_for_rlc=self.base_fixtures['rlc'])
+        # has_perm.save()
+        #
+        # # all users from group 0 can consult
+        # can_consult_permission = api_models.Permission.objects.get(name=permissions.PERMISSION_CAN_CONSULT)
+        # has_perm = api_models.HasPermission(permission=can_consult_permission,
+        #                                     group_has_permission=self.base_fixtures['groups'][0],
+        #                                     permission_for_rlc=self.base_fixtures['rlc'])
+        # has_perm.save()
+
     def test_record_message_notification(self):
         record: record_models.EncryptedRecord = self.record_fixtures['records'][0]['record']
         before = api_models.Notification.objects.all().count()
@@ -50,6 +65,5 @@ class NotificationTest(TransactionTestCase):
         self.assertEqual(notification_for_user_1.source_user, self.base_fixtures['users'][0]['user'])
         self.assertEqual(notification_for_user_1.read, False)
         self.assertEqual(notification_for_user_1.ref_id, str(record.id))
+        self.assertEqual(notification_for_user_1.ref_text, str(record.record_token))
 
-    def test_record_creation_notification(self):
-        pass

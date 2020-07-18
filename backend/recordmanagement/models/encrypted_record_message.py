@@ -16,7 +16,7 @@
 
 from django.db import models
 
-from backend.api.models import Notification, NotificationEventTypes, NotificationEvents, UserProfile
+from backend.api.models import Notification, UserProfile
 from backend.recordmanagement.models import EncryptedRecord
 from backend.static.encryption import AESEncryption
 
@@ -48,13 +48,9 @@ class EncryptedRecordMessageManager(models.Manager):
 
         user_with_decryption_keys: [UserProfile] = record.get_notification_users()
         for user in user_with_decryption_keys:
-            if user.id == sender.id:
-                continue
-            notification: Notification = Notification(user=user, source_user=sender,
-                                                      event_subject=NotificationEventTypes.RECORD_MESSAGE,
-                                                      event=NotificationEvents.CREATED, ref_id=str(record.id))
-            notification.save()
-
+            if user.id != sender.id:
+                Notification.objects.create_notification_new_record_message(str(record.id), user, sender,
+                                                                            record.record_token)
         return new_message, record_key
 
 
