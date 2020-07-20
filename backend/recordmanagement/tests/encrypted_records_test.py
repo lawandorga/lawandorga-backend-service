@@ -21,8 +21,7 @@ from backend.api import models as api_models
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.api.tests.statics import StaticTestMethods
 from backend.recordmanagement import models as record_models
-from backend.static.permissions import PERMISSION_CAN_ADD_RECORD_RLC, PERMISSION_CAN_CONSULT, \
-    PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from backend.static.permissions import PERMISSION_CAN_ADD_RECORD_RLC, PERMISSION_CAN_CONSULT
 
 
 # TODO: KEYMANAGEMENT test get users with decryption keys
@@ -96,6 +95,7 @@ class EncryptedRecordTests(TransactionTestCase):
     def test_create_encrypted_record(self):
         number_of_records_before: int = record_models.EncryptedRecord.objects.count()
         number_of_record_encryptions_before: int = record_models.RecordEncryption.objects.count()
+        number_of_clients_before: int = record_models.EncryptedClient.objects.count()
         number_of_notifications_before: int = api_models.Notification.objects.count()
         notifications_before: [api_models.Notification] = list(api_models.Notification.objects.all())
 
@@ -104,6 +104,8 @@ class EncryptedRecordTests(TransactionTestCase):
 
         record_note = 'important record note fpr record AZ 0011/123'
         record_token = 'AZ 0011/123'
+        origin_country = record_models.OriginCountry.objects.first()
+        tag_ids = [record_models.RecordTag.objects.all()[0].id, record_models.RecordTag.objects.all()[1].id]
         new_record_object = {
             'client_birthday': '2000-06-12',
             'client_name': 'Bruce Wayne',
@@ -111,16 +113,17 @@ class EncryptedRecordTests(TransactionTestCase):
             'client_phone_number': '12312312',
             'consultants': [self.base_fixtures['users'][0]['user'].id, self.base_fixtures['users'][1]['user'].id],
             'first_contact_date': '2020-04-14',
-            'origin_country': record_models.OriginCountry.objects.first().id,
+            'origin_country': origin_country.id,
             'record_note': record_note,
             'record_token': record_token,
-            'tags': [record_models.RecordTag.objects.first().id],
+            'tags': tag_ids,
         }
         response = client.post('/api/records/e_record/', new_record_object, format='json',
                                **{'HTTP_PRIVATE_KEY': private_key})
 
         self.assertEqual(201, response.status_code)
         self.assertEqual(number_of_records_before + 1, record_models.EncryptedRecord.objects.count())
+        self.assertEqual(number_of_clients_before + 1, record_models.EncryptedClient.objects.count())
         self.assertEqual(number_of_record_encryptions_before + 2, record_models.RecordEncryption.objects.count())
 
         self.assertIn('note', response.data)
@@ -128,14 +131,19 @@ class EncryptedRecordTests(TransactionTestCase):
         self.assertIn('record_token', response.data)
         self.assertEqual(record_token, response.data['record_token'])
 
-        new_record_from_db: record_models.EncryptedRecord = record_models.EncryptedRecord.objects.get(pk=response.data['id'])
+        new_record_from_db: record_models.EncryptedRecord = record_models.EncryptedRecord.objects.get(
+            pk=response.data['id'])
         self.assertIn(self.base_fixtures['users'][0]['user'], new_record_from_db.working_on_record.all())
         self.assertIn(self.base_fixtures['users'][1]['user'], new_record_from_db.working_on_record.all())
+        self.assertEqual(origin_country, new_record_from_db.client.origin_country)
+        self.assertIn(record_models.RecordTag.objects.filter(pk=tag_ids[0]), new_record_from_db.tagged.all())
+        self.assertIn(record_models.RecordTag.objects.filter(pk=tag_ids[1]), new_record_from_db.tagged.all())
 
         # check for notifications too
         self.assertEqual(number_of_notifications_before + 1, api_models.Notification.objects.count())
         to_exclude: [int] = [o.id for o in notifications_before]
-        new_notifications: [api_models.Notification] = list(api_models.Notification.objects.all().exclude(id__in=to_exclude))
+        new_notifications: [api_models.Notification] = list(
+            api_models.Notification.objects.all().exclude(id__in=to_exclude))
         new_notification: api_models.Notification = new_notifications[0]
         self.assertEqual(new_notification.source_user, self.base_fixtures['users'][0]['user'])
         self.assertEqual(new_notification.user, self.base_fixtures['users'][1]['user'])

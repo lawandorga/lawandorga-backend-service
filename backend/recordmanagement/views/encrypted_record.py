@@ -151,7 +151,8 @@ class EncryptedRecordViewSet(APIView):
         if not settings.DEBUG:
             url = FrontendLinks.get_record_link(e_record)
             for user in consultants:
-                EmailSender.send_new_record(user.email, url)
+                if user != request.user:
+                    EmailSender.send_new_record(user.email, url)
 
         return Response(serializers.EncryptedRecordFullDetailSerializer(e_record).get_decrypted_data(record_key),
                         status=status.HTTP_201_CREATED)

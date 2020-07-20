@@ -15,8 +15,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
-from django.db.models.signals import pre_delete
-from django.dispatch import receiver
 
 from backend.api.models import Rlc, UserProfile
 from backend.files.models.folder_permission import FolderPermission
