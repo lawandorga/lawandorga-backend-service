@@ -19,7 +19,7 @@ from datetime import date, datetime
 import pytz
 from django.conf import settings
 
-from backend.api.tests import *
+from backend.api.models import *
 from backend.recordmanagement.models import Client, OriginCountry, Record, RecordDocumentTag, RecordTag
 from backend.static.permissions import get_all_permissions_strings
 from backend.files.models import FolderPermission

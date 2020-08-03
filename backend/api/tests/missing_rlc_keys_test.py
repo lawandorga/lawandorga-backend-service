@@ -14,7 +14,6 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import time
 from django.test import TransactionTestCase
 from rest_framework.test import APIClient
 
@@ -24,7 +23,6 @@ from backend.recordmanagement import models as record_models
 from backend.static.encryption import AESEncryption
 from backend.static.permissions import PERMISSION_MANAGE_PERMISSIONS_RLC
 from backend.api.management.commands.commands import create_missing_key_entries
-from backend.recordmanagement.tests.missing_record_keys_test import MissingRecordKeysTests
 
 
 class MissingRlcKeysTests(TransactionTestCase):

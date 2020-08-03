@@ -15,9 +15,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.test import TransactionTestCase
+from rest_framework.response import Response
 from rest_framework.test import APIClient
 
 from backend.api import models as api_models
+from backend.api.models.notification import NotificationEvent, NotificationEventSubject
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.recordmanagement import models as record_models
 
@@ -52,3 +54,98 @@ class NotificationTest(TransactionTestCase):
         self.assertEqual(notification_for_user_1.ref_id, str(record.id))
         self.assertEqual(notification_for_user_1.ref_text, str(record.record_token))
 
+    def test_login_notifications(self):
+        generated_notifications: [api_models.Notification] = NotificationTest.generate_notifications(
+            self.base_fixtures['users'][0]['user'],
+            self.base_fixtures['users'][1]['user'], 105)
+        login_response: Response = APIClient().post('/api/login/',
+                                                    {'username': 'user1@law-orga.de', 'password': 'qwe123'})
+        self.assertEqual(200, login_response.status_code)
+        self.assertIn('notifications', login_response.data)
+        notifications_from_login = login_response.data['notifications']
+        self.assertEqual(100, notifications_from_login.__len__())
+        self.assertEqual(generated_notifications[0].id, notifications_from_login[0]['id'])
+        self.assertEqual(generated_notifications[20].id, notifications_from_login[20]['id'])
+        self.assertEqual(generated_notifications[99].id, notifications_from_login[99]['id'])
+
+    def test_get_notifications(self):
+        generated_notifications: [api_models.Notification] = NotificationTest.generate_notifications(
+            self.base_fixtures['users'][0]['user'],
+            self.base_fixtures['users'][1]['user'], 105)
+        NotificationTest.generate_notifications(self.base_fixtures['users'][1]['user'],
+                                                self.base_fixtures['users'][0]['user'], 20)
+        client: APIClient = self.base_fixtures['users'][0]['client']
+        # response: Response = client.get('/api/my_notifications/')
+        response: Response = client.get('/api/notifications/')
+        self.assertIn('count', response.data)
+        self.assertEqual(105, response.data['count'])
+        self.assertIn('results', response.data)
+        notifications_from_response = response.data['results']
+        self.assertEqual(100, notifications_from_response.__len__())
+        self.assertEqual(generated_notifications[0].id, notifications_from_response[0]['id'])
+        self.assertEqual(generated_notifications[20].id, notifications_from_response[20]['id'])
+        self.assertEqual(generated_notifications[99].id, notifications_from_response[99]['id'])
+
+    def test_update_notification(self):
+        generated_notifications: [api_models.Notification] = NotificationTest.generate_notifications(
+            self.base_fixtures['users'][0]['user'],
+            self.base_fixtures['users'][1]['user'], 30)
+        client: APIClient = self.base_fixtures['users'][0]['client']
+
+        # read
+        response_read_true: Response = client.patch('/api/notifications/' + str(generated_notifications[0].id) + '/',
+                                                    {'read': True})
+        self.assertEqual(200, response_read_true.status_code)
+        self.assertTrue(api_models.Notification.objects.get(id=generated_notifications[0].id).read)
+
+        # unread
+        response_read_false: Response = client.patch('/api/notifications/' + str(generated_notifications[0].id) + '/',
+                                                     {'read': False})
+        self.assertEqual(200, response_read_false.status_code)
+        self.assertFalse(api_models.Notification.objects.get(id=generated_notifications[0].id).read)
+
+        # not read
+        response: Response = client.patch('/api/notifications/' + str(generated_notifications[0].id) + '/',
+                                          {'ref_id': "hello there"})
+        self.assertEqual(400, response.status_code)
+
+        response: Response = client.patch('/api/notifications/' + str(generated_notifications[0].id) + '/',
+                                          {'ref_id': "hello there", 'read': True})
+        self.assertEqual(400, response.status_code)
+
+        other_client: APIClient = self.base_fixtures['users'][1]['client']
+        response: Response = other_client.patch('/api/notifications/' + str(generated_notifications[0].id) + '/',
+                                                {'read': True})
+        self.assertEqual(403, response.status_code)
+
+        response: Response = client.patch('/api/notifications/' + str(generated_notifications[0].id) + '123/',
+                                          {'read': True})
+        self.assertEqual(400, response.status_code)
+
+    def test_delete_notification(self):
+        pass
+
+
+    @staticmethod
+    def generate_notifications(user: api_models.UserProfile, source_user: api_models.UserProfile,
+                               number_of_notifications: int):
+        """
+        generates notifications, each time the same
+        return few newest notifications
+        :param user:
+        :param source_user:
+        :param number_of_notifications:
+        :return: all generated notifications, newest first
+        """
+        import datetime
+        from django.utils import timezone
+        notifications = []
+        for i in range(number_of_notifications):
+            notification = api_models.Notification(user=user, source_user=source_user,
+                                                   event_subject=NotificationEventSubject.RECORD,
+                                                   event=NotificationEvent.CREATED, ref_id="123", ref_text="AZ 123/12")
+            notification.save()
+            notification.created = timezone.now() - datetime.timedelta(hours=i)
+            notification.save()
+            notifications.append(notification)
+        return notifications

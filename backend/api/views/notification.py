@@ -13,19 +13,46 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from typing import Any
 
+from django.db.models import QuerySet
 from rest_framework import viewsets
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.request import Request
+from rest_framework.response import Response
 
+from backend.api.errors import CustomError
 from backend.api.models import Notification
 from backend.api.serializers import NotificationSerializer
-
-
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from backend.api.errors import CustomError
-# from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT, ERROR__API__MISSING_ARGUMENT, ERROR__API__ID_NOT_FOUND
+from backend.static.error_codes import ERROR__API__ID_NOT_PROVIDED, ERROR__API__NOTIFICATION__UPDATE_INVALID, \
+    ERROR__API__USER__NO_OWNERSHIP, ERROR__API__ID_NOT_FOUND
 
 
 class NotificationViewSet(viewsets.ModelViewSet):
     queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
+    pagination_class = LimitOffsetPagination
+
+    def get_queryset(self) -> QuerySet:
+        if not self.request.user.is_superuser:
+            return Notification.objects.filter(user=self.request.user).order_by("-created")
+        return Notification.objects.order_by("-created")
+
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        if 'pk' not in kwargs:
+            raise CustomError(ERROR__API__ID_NOT_PROVIDED)
+        try:
+            notification: Notification = Notification.objects.get(pk=kwargs['pk'])
+        except Exception as e:
+            raise CustomError(ERROR__API__ID_NOT_FOUND)
+
+        if request.user != notification.user:
+            raise CustomError(ERROR__API__USER__NO_OWNERSHIP)
+
+        if 'read' not in request.data or request.data.__len__() > 1:
+            raise CustomError(ERROR__API__NOTIFICATION__UPDATE_INVALID)
+        notification.read = request.data['read']
+        notification.save()
+
+        return Response({'success': True})
+

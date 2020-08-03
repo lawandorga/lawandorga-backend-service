@@ -21,7 +21,7 @@ from django.db import models
 from backend.api.models import UserProfile
 
 
-class NotificationEventObject(Enum):
+class NotificationEventSubject(Enum):
     """
     Enum for notification event object
     these regard the models which the notification is about
@@ -34,7 +34,7 @@ class NotificationEventObject(Enum):
     FILE = "FILE"
 
 
-class NotificationEventType(Enum):
+class NotificationEvent(Enum):
     """
     enum for notification events types
     contains the action which was performed
@@ -53,7 +53,7 @@ class NotificationManager(models.Manager):
     """
 
     @staticmethod
-    def create_notification(event: NotificationEventType, event_subject: NotificationEventObject, ref_id: int,
+    def create_notification(event: NotificationEvent, event_subject: NotificationEventSubject, ref_id: int,
                             user: UserProfile, source_user: UserProfile, ref_text: str, read: bool):
         notification = Notification(event=event, event_type=event_subject, ref_id=ref_id, user=user,
                                     source_user=source_user, ref_text=ref_text, read=read)
@@ -61,15 +61,15 @@ class NotificationManager(models.Manager):
 
     @staticmethod
     def create_notification_new_record_message(ref_id: str, user: UserProfile, source_user: UserProfile, ref_text: str):
-        notification = Notification(event_subject=NotificationEventObject.RECORD_MESSAGE,
-                                    event=NotificationEventType.CREATED, ref_id=ref_id, user=user,
+        notification = Notification(event_subject=NotificationEventSubject.RECORD_MESSAGE,
+                                    event=NotificationEvent.CREATED, ref_id=ref_id, user=user,
                                     source_user=source_user, ref_text=ref_text)
         notification.save()
 
     @staticmethod
     def create_notification_new_record(ref_id: str, user: UserProfile, source_user: UserProfile, ref_text: str):
-        notification = Notification(event_subject=NotificationEventObject.RECORD,
-                                    event=NotificationEventType.CREATED, ref_id=ref_id, user=user,
+        notification = Notification(event_subject=NotificationEventSubject.RECORD,
+                                    event=NotificationEvent.CREATED, ref_id=ref_id, user=user,
                                     source_user=source_user, ref_text=ref_text)
         notification.save()
 
@@ -84,6 +84,8 @@ class Notification(models.Model):
     ref_id = models.CharField(max_length=50, null=False)
     ref_text = models.CharField(max_length=100, null=True)
     read = models.BooleanField(default=False, null=False)
+
+    created = models.DateTimeField(auto_now_add=True)
 
     objects = NotificationManager()
 

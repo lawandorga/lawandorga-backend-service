@@ -22,7 +22,7 @@ from backend.files.static.folder_permissions import get_all_folder_permissions_s
 from backend.recordmanagement import models as record_models
 from backend.static.encryption import AESEncryption, RSAEncryption
 from backend.static.permissions import get_all_permissions_strings
-from backend.api.management.commands._fixtures import Fixtures
+from backend.api.management.commands.fixtures import Fixtures as MainFixtures
 
 
 class CreateFixtures:
@@ -49,10 +49,10 @@ class CreateFixtures:
             - group 1,2,3: Group
 
         """
-        CreateFixtures.create_permissions()
-        Fixtures.create_real_tags()
-        Fixtures.create_real_document_tags()
-        Fixtures.create_real_origin_countries()
+        MainFixtures.create_real_permissions()
+        MainFixtures.create_real_tags()
+        MainFixtures.create_real_document_tags()
+        MainFixtures.create_real_origin_countries()
 
         return_object = {}
 

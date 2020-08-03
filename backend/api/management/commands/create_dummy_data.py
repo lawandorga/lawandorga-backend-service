@@ -19,7 +19,7 @@ import random
 from django.core.management.base import BaseCommand
 
 from backend.api import models as apimodels
-from backend.api.management.commands._fixtures import AddMethods
+from backend.api.management.commands.fixtures import AddMethods
 from backend.recordmanagement import models
 from backend.static import permissions
 from .commands import reset_db, migrate_to_encryption, migrate_to_rlc_settings, populate_deploy_db

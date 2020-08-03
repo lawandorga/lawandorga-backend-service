@@ -362,3 +362,19 @@ ERROR__RECORD__CONSULTANT__NO_PERMISSION = {
     'error_detail': 'selected user has no permission to consult',
     'error_code': 'api.record.no_consult_permission'
 }
+
+ERROR__API__USER__CAN_NOT_CREATE = {
+    'error_detail': 'can not create user',
+    'error_code': 'api.user.can_not_create'
+}
+
+ERROR__API__NOTIFICATION__UPDATE_INVALID = {
+    'error_detail': 'update for notification is invalid',
+    'error_code': 'api.notification.update_invalid'
+}
+
+ERROR__API__USER__NO_OWNERSHIP = {
+    'error_detail': 'user has no ownership of resource',
+    'error_code': 'api.user.no_ownership',
+    'error_status_code': 403
+}

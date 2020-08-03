@@ -16,9 +16,11 @@
 
 from rest_framework import serializers
 from backend.api.models import Notification
+from backend.api.serializers import UserProfileNameSerializer
 
 
 class NotificationSerializer(serializers.ModelSerializer):
+    source_user = UserProfileNameSerializer(many=False, read_only=True)
 
     class Meta:
         model = Notification

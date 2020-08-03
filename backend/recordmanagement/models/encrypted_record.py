@@ -24,6 +24,20 @@ from backend.static.error_codes import ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT
 from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 
 
+class EncryptedRecordManager(models.Manager):
+    def get_queryset(self):
+        return EncryptedRecordQuerySet(self.model, using=self._db)
+
+    def get_full_access_e_records(self, user):
+        return self.get_queryset().get_full_access_e_records(user)
+
+    def get_no_access_e_records(self, user):
+        return self.get_queryset().get_no_access_e_records(user)
+
+    def filter_by_rlc(self, rlc):
+        return self.get_queryset().filter_by_rlc(rlc)
+
+
 class EncryptedRecordQuerySet(models.QuerySet):
     def get_full_access_e_records(self, user):
         from backend.recordmanagement.models import EncryptedRecordPermission
@@ -95,7 +109,7 @@ class EncryptedRecord(models.Model):
     status_described = models.BinaryField()
     additional_facts = models.BinaryField()
 
-    objects = EncryptedRecordQuerySet.as_manager()
+    objects = EncryptedRecordManager()
 
     def __str__(self):
         return 'e_record: ' + str(self.id) + ':' + self.record_token

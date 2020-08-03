@@ -15,8 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
+
 from .. import models
-from .rlc import RlcOnlyNameSerializer
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -68,6 +68,7 @@ class UserProfileNameSerializer(serializers.ModelSerializer):
 
 class UserProfileCreatorSerializer(serializers.ModelSerializer):
     """serializer for user profile objects"""
+
     class Meta:
         model = models.UserProfile
         fields = ('id', 'password', 'email', 'name',
@@ -78,16 +79,16 @@ class UserProfileCreatorSerializer(serializers.ModelSerializer):
             }
         }
 
-    def create(self, validated_data):
+    def create(self, validated_data) -> models.UserProfile:
         """create and return a new user"""
         user = models.UserProfile(
             email=validated_data['email'],
-            name=validated_data['name']
+            name=validated_data['name'],
+            is_active=True,
+            is_superuser=False
         )
 
         user.set_password(validated_data['password'])
-        user.is_active = True
-        user.is_superuser = False
         if 'phone_number' in validated_data:
             user.phone_number = validated_data['phone_number']
         if 'street' in validated_data:
