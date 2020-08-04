@@ -55,30 +55,29 @@ class NotificationTest(TransactionTestCase):
         self.assertEqual(notification_for_user_1.ref_text, str(record.record_token))
 
     def test_login_notifications(self):
-        generated_notifications: [api_models.Notification] = NotificationTest.generate_notifications(
-            self.base_fixtures['users'][0]['user'],
-            self.base_fixtures['users'][1]['user'], 105)
+        NotificationTest.generate_notifications(self.base_fixtures['users'][0]['user'],
+                                                self.base_fixtures['users'][1]['user'], 104)
+        notification: api_models.Notification = api_models.Notification.objects.filter(user__email='user1@law-orga.de').first()
+        notification.read = True
+        notification.save()
+
         login_response: Response = APIClient().post('/api/login/',
                                                     {'username': 'user1@law-orga.de', 'password': 'qwe123'})
         self.assertEqual(200, login_response.status_code)
         self.assertIn('notifications', login_response.data)
-        notifications_from_login = login_response.data['notifications']
-        self.assertEqual(100, notifications_from_login.__len__())
-        self.assertEqual(generated_notifications[0].id, notifications_from_login[0]['id'])
-        self.assertEqual(generated_notifications[20].id, notifications_from_login[20]['id'])
-        self.assertEqual(generated_notifications[99].id, notifications_from_login[99]['id'])
+        self.assertEqual(103, login_response.data['notifications'])
 
     def test_get_notifications(self):
         generated_notifications: [api_models.Notification] = NotificationTest.generate_notifications(
             self.base_fixtures['users'][0]['user'],
-            self.base_fixtures['users'][1]['user'], 105)
+            self.base_fixtures['users'][1]['user'], 104)
         NotificationTest.generate_notifications(self.base_fixtures['users'][1]['user'],
                                                 self.base_fixtures['users'][0]['user'], 20)
         client: APIClient = self.base_fixtures['users'][0]['client']
         # response: Response = client.get('/api/my_notifications/')
         response: Response = client.get('/api/notifications/')
         self.assertIn('count', response.data)
-        self.assertEqual(105, response.data['count'])
+        self.assertEqual(104, response.data['count'])
         self.assertIn('results', response.data)
         notifications_from_response = response.data['results']
         self.assertEqual(100, notifications_from_response.__len__())
@@ -125,27 +124,40 @@ class NotificationTest(TransactionTestCase):
     def test_delete_notification(self):
         pass
 
+    @staticmethod
+    def get_created(notification):
+        return notification.created
 
     @staticmethod
     def generate_notifications(user: api_models.UserProfile, source_user: api_models.UserProfile,
                                number_of_notifications: int):
         """
         generates notifications, each time the same
-        return few newest notifications
+        only even numbers for number_of_notifications
+        return newest notifications
         :param user:
         :param source_user:
-        :param number_of_notifications:
+        :param number_of_notifications: number of created notification, even number because half 'new' half 'older' notification
         :return: all generated notifications, newest first
         """
         import datetime
         from django.utils import timezone
         notifications = []
-        for i in range(number_of_notifications):
+        for i in range(int(number_of_notifications / 2)):
             notification = api_models.Notification(user=user, source_user=source_user,
                                                    event_subject=NotificationEventSubject.RECORD,
-                                                   event=NotificationEvent.CREATED, ref_id="123", ref_text="AZ 123/12")
+                                                   event=NotificationEvent.UPDATED, ref_id="123", ref_text="AZ 123/12")
             notification.save()
             notification.created = timezone.now() - datetime.timedelta(hours=i)
             notification.save()
             notifications.append(notification)
+
+            notification2 = api_models.Notification(user=user, source_user=source_user,
+                                                    event_subject=NotificationEventSubject.RECORD,
+                                                    event=NotificationEvent.UPDATED, ref_id="123", ref_text="AZ 123/12")
+            notification2.save()
+            notification2.created = timezone.now() - datetime.timedelta(days=i)
+            notification2.save()
+            notifications.append(notification2)
+        notifications.sort(key=NotificationTest.get_created, reverse=True)
         return notifications

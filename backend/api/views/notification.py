@@ -35,8 +35,18 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self) -> QuerySet:
         if not self.request.user.is_superuser:
-            return Notification.objects.filter(user=self.request.user).order_by("-created")
-        return Notification.objects.order_by("-created")
+            queryset = Notification.objects.filter(user=self.request.user)
+        else:
+            queryset = Notification.objects.all()
+        request: Request = self.request
+        if 'sort' in request.query_params:
+            if 'sortdirection' in request.query_params and request.query_params['sortdirection'] == 'desc':
+                queryset = queryset.order_by('-' + request.query_params['sort'])
+            else:
+                queryset = queryset.order_by(request.query_params['sort'])
+        else:
+            queryset = queryset.order_by("-created")
+        return queryset
 
     def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         if 'pk' not in kwargs:

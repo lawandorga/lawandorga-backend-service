@@ -243,15 +243,14 @@ class LoginViewSet(viewsets.ViewSet):
         serialized_user = UserProfileSerializer(user).data
         serialized_rlc = RlcSerializer(user.rlc).data
 
-        notifications = Notification.objects.filter(user=user).order_by("-created")[:100]
-        serialized_notifications = NotificationSerializer(notifications, many=True).data
+        notifications = Notification.objects.filter(user=user, read=False).count()
 
         statics = LoginViewSet.get_statics(user)
         return_object = {
             'token': token,
             'user': serialized_user,
             'rlc': serialized_rlc,
-            'notifications': serialized_notifications
+            'notifications': notifications
         }
         return_object.update(statics)
         if private_key:

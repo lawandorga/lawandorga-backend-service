@@ -18,7 +18,7 @@ import random
 
 from django.core.management.base import BaseCommand
 
-from backend.api import models as apimodels
+from backend.api import models as api_models
 from backend.api.management.commands.fixtures import AddMethods
 from backend.recordmanagement import models
 from backend.static import permissions
@@ -35,45 +35,48 @@ class Command(BaseCommand):
         reset_db()
         populate_deploy_db()
 
-        rlc = apimodels.Rlc(name='Dummy RLC', note='this is a dummy rlc, just for showing how the system works',
-                            id=3033)
+        rlc = api_models.Rlc(name='Dummy RLC', note='this is a dummy rlc, just for showing how the system works',
+                             id=3033)
         rlc.save()
         users = self.get_and_create_users(rlc)
         main_user = self.get_and_create_dummy_user(rlc)
         self.create_inactive_user(rlc)
         self.create_groups(rlc, main_user, users)
         clients = self.get_and_create_clients(rlc)
-        consultant_group = apimodels.Group.objects.filter(name='Berater', from_rlc=rlc).first()
+        consultant_group = api_models.Group.objects.filter(name='Berater', from_rlc=rlc).first()
         consultants = list(consultant_group.group_members.all())
         self.get_and_create_records(clients, consultants, rlc)
         best_record = self.create_the_best_record_ever(main_user, clients, consultants, rlc)
         self.create_record_deletion_request(main_user, best_record)
         self.create_record_permission_request(users[4], best_record)
-        self.create_additional_dummy_users(rlc)
+        other_dummy_users = self.create_additional_dummy_users(rlc)
+        Command.create_notifications(main_user, other_dummy_users[0])
 
         # TODO: generate inactive user, generate encryption stuff here, not old unencrypted
         migrate_to_encryption()
         migrate_to_rlc_settings()
 
     def get_and_create_dummy_user(self, rlc):
-        user = apimodels.UserProfile(name='Mr Dummy', email='dummy@rlcm.de', phone_number='01666666666',
-                                     street='Dummyweg 12', city='Dummycity', postal_code='00000', rlc=rlc)
+        user = api_models.UserProfile(name='Mr Dummy', email='dummy@rlcm.de', phone_number='01666666666',
+                                      street='Dummyweg 12', city='Dummycity', postal_code='00000', rlc=rlc)
         user.birthday = AddMethods.generate_date((1995, 1, 1))
         user.set_password('qwe123')
         user.save()
         return user
 
     def create_additional_dummy_users(self, rlc):
-        user = apimodels.UserProfile(name='Tester 1', email='tester1@law-orga.de', phone_number='123812382', rlc=rlc)
+        user = api_models.UserProfile(name='Tester 1', email='tester1@law-orga.de', phone_number='123812382', rlc=rlc)
         user.set_password('qwe123')
         user.save()
 
-        user1 = apimodels.UserProfile(name='Tester 2', email='tester2@law-orga.de', phone_number='123812383', rlc=rlc)
+        user1 = api_models.UserProfile(name='Tester 2', email='tester2@law-orga.de', phone_number='123812383', rlc=rlc)
         user1.set_password('qwe123')
         user1.save()
 
+        return [user, user1]
+
     def create_inactive_user(self, rlc):
-        user = apimodels.UserProfile(name='Im Not that active', email='inactive@rlcm.de', phone_number='1293283882', street='Inaktive Strasse', city='InAktiv', postal_code='29292', rlc=rlc)
+        user = api_models.UserProfile(name='Im Not that active', email='inactive@rlcm.de', phone_number='1293283882', street='Inaktive Strasse', city='InAktiv', postal_code='29292', rlc=rlc)
         user.birthday = AddMethods.generate_date((1950, 1, 1))
         user.set_password('qwe123')
         user.is_active = False
@@ -184,16 +187,16 @@ class Command(BaseCommand):
 
         new_users = []
         for user in users:
-            new_user = apimodels.UserProfile(email=user[0], name=user[1], phone_number=user[3], street=user[4],
-                                             city=user[5], postal_code=user[6], rlc=rlc)
+            new_user = api_models.UserProfile(email=user[0], name=user[1], phone_number=user[3], street=user[4],
+                                              city=user[5], postal_code=user[6], rlc=rlc)
             new_user.birthday = AddMethods.generate_date(user[2])
             new_user.save()
             new_users.append(new_user)
         return new_users
 
     def create_groups(self, rlc, main_user, users):
-        consultants = apimodels.Group(creator=main_user, from_rlc=rlc, name='Berater', visible=False,
-                                      description='all consultants', note='only add consultants')
+        consultants = api_models.Group(creator=main_user, from_rlc=rlc, name='Berater', visible=False,
+                                       description='all consultants', note='only add consultants')
         consultants.save()
         consultants.group_members.add(users[0])
         consultants.group_members.add(users[1])
@@ -208,16 +211,16 @@ class Command(BaseCommand):
         self.add_permission_to_group(consultants, rlc, permissions.PERMISSION_CAN_CONSULT)
         self.add_permission_to_group(consultants, rlc, permissions.PERMISSION_VIEW_RECORDS_RLC)
 
-        ag1 = apimodels.Group(creator=users[0], from_rlc=rlc, name='AG Datenschutz', visible=True, description='DSGVO',
-                              note='bitte mithelfen')
+        ag1 = api_models.Group(creator=users[0], from_rlc=rlc, name='AG Datenschutz', visible=True, description='DSGVO',
+                               note='bitte mithelfen')
         ag1.save()
         ag1.group_members.add(users[1])
         ag1.group_members.add(users[2])
         ag1.group_members.add(users[3])
         ag1.save()
 
-        admins = apimodels.Group(creator=main_user, from_rlc=rlc, name='Administratoren', visible=False,
-                                 description='haben alle Berechtigungen', note='IT ressort')
+        admins = api_models.Group(creator=main_user, from_rlc=rlc, name='Administratoren', visible=False,
+                                  description='haben alle Berechtigungen', note='IT ressort')
         admins.save()
         admins.group_members.add(users[0])
         admins.group_members.add(main_user)
@@ -231,11 +234,11 @@ class Command(BaseCommand):
         self.add_permission_to_group(admins, rlc, permissions.PERMISSION_VIEW_RECORDS_RLC)
 
     def get_permission(self, permission):
-        return apimodels.Permission.objects.get(name=permission)
+        return api_models.Permission.objects.get(name=permission)
 
     def add_permission_to_group(self, group, rlc, permission_name):
-        has_permission = apimodels.HasPermission(group_has_permission=group, permission_for_rlc=rlc,
-                                                 permission=self.get_permission(permission_name))
+        has_permission = api_models.HasPermission(group_has_permission=group, permission_for_rlc=rlc,
+                                                  permission=self.get_permission(permission_name))
         has_permission.save()
 
     def get_and_create_clients(self, rlc):
@@ -594,6 +597,13 @@ class Command(BaseCommand):
         request = models.RecordDeletionRequest(record=record, request_from=user, state='re')
         request.save()
 
-    def create_record_permission_request(self, user, record):
+    def create_record_permission_request(self, user: api_models.UserProfile, record):
         request = models.RecordPermission(record=record, request_from=user, state='re')
         request.save()
+
+    @staticmethod
+    def create_notifications(user: api_models.UserProfile, source_user: api_models.UserProfile):
+        from backend.api.tests.notification_test import NotificationTest
+        NotificationTest.generate_notifications(user=user, source_user=source_user, number_of_notifications=230)
+        NotificationTest.generate_notifications(user=source_user, source_user=user, number_of_notifications=230)
+

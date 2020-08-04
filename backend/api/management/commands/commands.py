@@ -143,6 +143,7 @@ def reset_db():
     Folder.objects.all().delete()
     FolderPermission.objects.all().delete()
     PermissionForFolder.objects.all().delete()
+    Notification.objects.all().delete()
     reset_db_encrypted()
 
 
