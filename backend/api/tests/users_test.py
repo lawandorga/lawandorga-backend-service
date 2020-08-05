@@ -15,14 +15,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from unittest import mock
 
-from rest_framework.test import APIClient
-import unittest.mock
 from django.test import TransactionTestCase
-from backend.api.models import UserProfile, Rlc, UserActivationLink, NewUserRequest
+from rest_framework.authtoken.models import Token
+from rest_framework.test import APIClient
+
+from backend.api.models import NewUserRequest, Rlc, UserActivationLink, UserProfile
+from backend.api.tests.fixtures_encryption import CreateFixtures as EncCreateFixtures
 from .fixtures import CreateFixtures
 from .statics import StaticTestMethods
-from rest_framework.authtoken.models import Token
-from backend.api.tests.fixtures_encryption import CreateFixtures as EncCreateFixtures
 
 
 def mocked_f2(a, b):
@@ -358,7 +358,6 @@ class UsersTests(TransactionTestCase):
         just_link_id: str = user_activation_link[35:-1]
         self.assertIsNotNone(UserActivationLink.objects.filter(link=just_link_id).exists())
 
-
         # activate user from activation link
         activation_response = APIClient().post(user_activation_link, {})
         self.assertEqual(200, activation_response.status_code)
@@ -394,8 +393,10 @@ class UsersTests(TransactionTestCase):
         # TODO: check if private key correct
 
     def test_double_rlc_key_resolve(self):
+        self.base_fixtures = EncCreateFixtures.create_base_fixtures()
         client = APIClient()
-        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
+        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email,
+                                                          'password': 'qwe123'})
         self.assertEqual(200, response_from_login.status_code)
 
         # add wrong double rlc keys
@@ -403,14 +404,18 @@ class UsersTests(TransactionTestCase):
         from backend.static.encryption import RSAEncryption, AESEncryption
         fake_aes = AESEncryption.generate_secure_key()
         fake_encrypted_key = RSAEncryption.encrypt(fake_aes, self.base_fixtures['users'][0]['user'].get_public_key())
-        wrong_keys = UsersRlcKeys(user=self.base_fixtures['users'][0]['user'], rlc=self.base_fixtures['rlc'], encrypted_key=fake_encrypted_key)
+        wrong_keys = UsersRlcKeys(user=self.base_fixtures['users'][0]['user'], rlc=self.base_fixtures['rlc'],
+                                  encrypted_key=fake_encrypted_key)
         wrong_keys.save()
 
-        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
+        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email,
+                                                          'password': 'qwe123'})
         self.assertEqual(400, response_from_login.status_code)
 
-        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][1]['user'].email, 'password': 'qwe123'})
+        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][1]['user'].email,
+                                                          'password': 'qwe123'})
         self.assertEqual(200, response_from_login.status_code)
 
-        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
+        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email,
+                                                          'password': 'qwe123'})
         self.assertEqual(200, response_from_login.status_code)

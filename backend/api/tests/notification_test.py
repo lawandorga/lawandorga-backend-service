@@ -126,9 +126,10 @@ class NotificationTest(TransactionTestCase):
         group: api_models.Group = self.base_fixtures['groups'][0]
         user3: api_models.UserProfile = self.base_fixtures['users'][2]['user']
         user4: api_models.UserProfile = self.base_fixtures['users'][3]['user']
-        group_member_url = '/api/group_member/'
+        group_member_url = '/api/group_members/'
         client: APIClient = self.base_fixtures['users'][0]['client']
         private_key: bytes = self.base_fixtures['users'][0]['private']
+
         CreateFixtures.add_permission_for_user(self.base_fixtures['users'][0]['user'], PERMISSION_MANAGE_GROUPS_RLC)
 
         number_of_notifications_before: int = api_models.Notification.objects.count()

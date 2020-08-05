@@ -31,7 +31,6 @@ class GroupsTests(TransactionTestCase):
         self.user: UserProfile = self.base_fixtures['users'][0]['user']
         self.private_key: bytes = self.base_fixtures['users'][0]['private']
 
-
     def test_has_group_permission(self):
         perm1 = Permission(name='test_permission_1')
         perm1.save()
@@ -44,7 +43,6 @@ class GroupsTests(TransactionTestCase):
 
         hasperm1 = HasPermission(group_has_permission=group, permission=perm1, permission_for_rlc=rlc)
         hasperm1.save()
-        group = Group.objects.first()
         self.assertTrue(group.has_group_permission(perm1))
         self.assertTrue(group.has_group_permission(perm1.name))
 
@@ -60,7 +58,6 @@ class GroupsTests(TransactionTestCase):
 
         hasperm1 = HasPermission(group_has_permission=group, permission=perm1, permission_for_rlc=rlc)
         hasperm1.save()
-        group = Group.objects.first()
         self.assertTrue(group.has_group_one_permission([perm1, perm2]))
 
     def test_has_group_one_permission_2(self):
@@ -75,7 +72,6 @@ class GroupsTests(TransactionTestCase):
 
         hasperm1 = HasPermission(group_has_permission=group, permission=perm1, permission_for_rlc=rlc)
         hasperm1.save()
-        group = Group.objects.first()
         self.assertTrue(not group.has_group_one_permission([perm2]))
 
     def test_create_group_success(self):
@@ -138,7 +134,7 @@ class GroupsTests(TransactionTestCase):
         group: Group = self.base_fixtures['groups'][0]
         user3: UserProfile = self.base_fixtures['users'][2]['user']
         user4: UserProfile = self.base_fixtures['users'][3]['user']
-        group_member_url = '/api/group_member/'
+        group_member_url = '/api/group_members/'
 
         number_of_group_members: int = group.group_members.count()
 

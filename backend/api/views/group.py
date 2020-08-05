@@ -76,6 +76,10 @@ class GroupViewSet(viewsets.ModelViewSet):
 
 class GroupMembersViewSet(APIView):
     def post(self, request):
+        request_user: models.UserProfile = request.user
+        if not request_user.has_permission(permissions.PERMISSION_MANAGE_GROUPS_RLC, for_rlc=request_user.rlc):
+            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+
         if 'action' not in request.data or 'group_id' not in request.data or 'user_ids' not in request.data:
             raise CustomError(error_codes.ERROR__API__MISSING_ARGUMENT)
         try:
