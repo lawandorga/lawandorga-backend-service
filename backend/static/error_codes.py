@@ -359,6 +359,11 @@ ERROR__API__RLC_SETTINGS__WRONG_COUNT = {
     'error_code': 'api.rlc_settings.wrong_count'
 }
 
+ERROR__API__MISSING_KEY_WAIT = {
+    'error_detail': 'you are missing a key, wait for another user to login',
+    'error_code': 'api.missing_key.wait'
+}
+
 ERROR__FILES__FOLDER_NOT_EXISTING = {
     'error_detail': 'folder does not exist',
     'error_code': 'api.files.folder_not_existing'

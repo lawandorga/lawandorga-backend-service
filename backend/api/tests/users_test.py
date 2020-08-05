@@ -392,3 +392,25 @@ class UsersTests(TransactionTestCase):
         self.assertEqual(login_response.data['user']['id'], token_from_db.first().user.id)
 
         # TODO: check if private key correct
+
+    def test_double_rlc_key_resolve(self):
+        client = APIClient()
+        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
+        self.assertEqual(200, response_from_login.status_code)
+
+        # add wrong double rlc keys
+        from backend.api.models import UsersRlcKeys
+        from backend.static.encryption import RSAEncryption, AESEncryption
+        fake_aes = AESEncryption.generate_secure_key()
+        fake_encrypted_key = RSAEncryption.encrypt(fake_aes, self.base_fixtures['users'][0]['user'].get_public_key())
+        wrong_keys = UsersRlcKeys(user=self.base_fixtures['users'][0]['user'], rlc=self.base_fixtures['rlc'], encrypted_key=fake_encrypted_key)
+        wrong_keys.save()
+
+        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
+        self.assertEqual(400, response_from_login.status_code)
+
+        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][1]['user'].email, 'password': 'qwe123'})
+        self.assertEqual(200, response_from_login.status_code)
+
+        response_from_login = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
+        self.assertEqual(200, response_from_login.status_code)

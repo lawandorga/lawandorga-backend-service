@@ -50,7 +50,7 @@ urlpatterns = [
     url(r'storage_down/', views.StorageDownloadViewSet.as_view()),
     url(r'forgot_password/', views.ForgotPasswordUnauthenticatedViewSet.as_view()),
     url(r'reset_password/(?P<id>.+)/$', views.ResetPasswordViewSet.as_view()),
-    url(r'group_member/', views.GroupMembersViewSet.as_view()),
+    url(r'group_members/', views.GroupMembersViewSet.as_view()),
     url(r'permissions_for_group/(?P<pk>.+)/$', views.PermissionsForGroupViewSet.as_view()),
     url(r'has_permission_statics/', views.HasPermissionStaticsViewSet.as_view()),
     url(r'check_user_activation_link/(?P<id>.+)/$', views.CheckUserActivationLinkViewSet.as_view()),

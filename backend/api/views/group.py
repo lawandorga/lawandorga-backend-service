@@ -76,16 +76,6 @@ class GroupViewSet(viewsets.ModelViewSet):
 
 class GroupMembersViewSet(APIView):
     def post(self, request):
-        """
-        removes or adds users to group
-        :param request:
-        :return:
-        """
-        request_user: models.UserProfile = request.user
-
-        if not request_user.has_permission(permissions.PERMISSION_MANAGE_GROUPS_RLC, for_rlc=request_user.rlc) and not request_user.is_superuser:
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-
         if 'action' not in request.data or 'group_id' not in request.data or 'user_ids' not in request.data:
             raise CustomError(error_codes.ERROR__API__MISSING_ARGUMENT)
         try:
@@ -102,8 +92,8 @@ class GroupMembersViewSet(APIView):
                 raise CustomError(error_codes.ERROR__API__USER__NOT_FOUND)
 
         if request.data['action'] == 'add':
-            granting_users_private_key = get_private_key_from_request(request)
             if group.group_has_record_encryption_keys_permission():
+                granting_users_private_key = get_private_key_from_request(request)
                 add_record_encryption_keys_for_users(request.user, granting_users_private_key, users)
             for user in users:
                 group.group_members.add(user)

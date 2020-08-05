@@ -158,6 +158,11 @@ class MissingRlcKeysTests(TransactionTestCase):
 
         # mimic error? why is there no user encryption key for this user
         api_models.UserEncryptionKeys.objects.filter(user=user).delete()
+        # mimic error, double missing rlc keys entries
+        missing_rlc_key_1 = api_models.MissingRlcKey(user=user)
+        missing_rlc_key_1.save()
+        missing_rlc_key_2 = api_models.MissingRlcKey(user=user)
+        missing_rlc_key_2.save()
 
         # login other user of rlc
         response_from_other_user = client.post('/api/login/', {'username': self.base_fixtures['users'][0]['user'].email, 'password': 'qwe123'})
@@ -165,4 +170,7 @@ class MissingRlcKeysTests(TransactionTestCase):
 
         # check if user can login again with new password
         response_from_login_after_reset = client.post('/api/login/', {'username': users_email, 'password': 'qwe1234'})
-        self.assertEqual(400, response_from_login_after_reset.status_code)
+        self.assertEqual(200, response_from_login_after_reset.status_code)
+
+        # check no missing rlc keys
+        self.assertEqual(0, api_models.MissingRlcKey.objects.all().count())
