@@ -145,8 +145,7 @@ class EncryptedRecordViewSet(APIView):
 
         for user in consultants:
             if user != request.user:
-                Notification.objects.create_notification_new_record(str(e_record.id), user, request.user,
-                                                                    e_record.record_token)
+                Notification.objects.create_notification_new_record(user=user, source_user=request.user, record=e_record)
 
         if not settings.DEBUG:
             url = FrontendLinks.get_record_link(e_record)

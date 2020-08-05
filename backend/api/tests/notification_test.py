@@ -22,6 +22,7 @@ from backend.api import models as api_models
 from backend.api.models.notification import NotificationEvent, NotificationEventSubject
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.recordmanagement import models as record_models
+from backend.static.permissions import PERMISSION_MANAGE_GROUPS_RLC
 
 
 class NotificationTest(TransactionTestCase):
@@ -121,8 +122,37 @@ class NotificationTest(TransactionTestCase):
                                           {'read': True})
         self.assertEqual(400, response.status_code)
 
-    def test_delete_notification(self):
-        pass
+    def test_group_member_notification(self):
+        group: api_models.Group = self.base_fixtures['groups'][0]
+        user3: api_models.UserProfile = self.base_fixtures['users'][2]['user']
+        user4: api_models.UserProfile = self.base_fixtures['users'][3]['user']
+        group_member_url = '/api/group_member/'
+        client: APIClient = self.base_fixtures['users'][0]['client']
+        private_key: bytes = self.base_fixtures['users'][0]['private']
+        CreateFixtures.add_permission_for_user(self.base_fixtures['users'][0]['user'], PERMISSION_MANAGE_GROUPS_RLC)
+
+        number_of_notifications_before: int = api_models.Notification.objects.count()
+        number_of_group_members = group.group_members.count()
+
+        response: Response = client.post(group_member_url, {
+            'action': 'add',
+            'group_id': group.id,
+            'user_ids': [user3.id, user4.id]
+        }, format='json', **{'HTTP_PRIVATE_KEY': private_key})
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(number_of_group_members + 2, group.group_members.count())
+        self.assertEqual(number_of_notifications_before + 2, api_models.Notification.objects.count())
+
+        number_of_notifications_before: int = api_models.Notification.objects.count()
+        response: Response = client.post(group_member_url, {
+            'action': 'remove',
+            'group_id': group.id,
+            'user_ids': [user4.id]
+        }, format='json')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(number_of_group_members + 1, group.group_members.count())
+        self.assertEqual(number_of_notifications_before + 1, api_models.Notification.objects.count())
 
     @staticmethod
     def get_created(notification):
@@ -130,14 +160,17 @@ class NotificationTest(TransactionTestCase):
 
     @staticmethod
     def generate_notifications(user: api_models.UserProfile, source_user: api_models.UserProfile,
-                               number_of_notifications: int):
+                               number_of_notifications: int, ref_id: str = "123", ref_text="AZ 123/12"):
         """
         generates notifications, each time the same
         only even numbers for number_of_notifications
         return newest notifications
+
         :param user:
         :param source_user:
         :param number_of_notifications: number of created notification, even number because half 'new' half 'older' notification
+        :param ref_id:
+        :param ref_text:
         :return: all generated notifications, newest first
         """
         import datetime
@@ -146,7 +179,7 @@ class NotificationTest(TransactionTestCase):
         for i in range(int(number_of_notifications / 2)):
             notification = api_models.Notification(user=user, source_user=source_user,
                                                    event_subject=NotificationEventSubject.RECORD,
-                                                   event=NotificationEvent.UPDATED, ref_id="123", ref_text="AZ 123/12")
+                                                   event=NotificationEvent.UPDATED, ref_id=ref_id, ref_text=ref_text)
             notification.save()
             notification.created = timezone.now() - datetime.timedelta(hours=i)
             notification.save()
@@ -154,7 +187,7 @@ class NotificationTest(TransactionTestCase):
 
             notification2 = api_models.Notification(user=user, source_user=source_user,
                                                     event_subject=NotificationEventSubject.RECORD,
-                                                    event=NotificationEvent.UPDATED, ref_id="123", ref_text="AZ 123/12")
+                                                    event=NotificationEvent.UPDATED, ref_id=ref_id, ref_text=ref_text)
             notification2.save()
             notification2.created = timezone.now() - datetime.timedelta(days=i)
             notification2.save()

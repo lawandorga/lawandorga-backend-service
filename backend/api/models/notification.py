@@ -44,6 +44,7 @@ class NotificationEvent(Enum):
     MOVED = "MOVED"
     UPDATED = "UPDATED"
     ADDED = "ADDED"
+    REMOVED = "REMOVED"
 
 
 class NotificationManager(models.Manager):
@@ -60,17 +61,31 @@ class NotificationManager(models.Manager):
         notification.save()
 
     @staticmethod
-    def create_notification_new_record_message(ref_id: str, user: UserProfile, source_user: UserProfile, ref_text: str):
+    def create_notification_new_record_message(user: UserProfile, source_user: UserProfile, record: 'EncrypedRecord'):
         notification = Notification(event_subject=NotificationEventSubject.RECORD_MESSAGE,
-                                    event=NotificationEvent.CREATED, ref_id=ref_id, user=user,
-                                    source_user=source_user, ref_text=ref_text)
+                                    event=NotificationEvent.CREATED, ref_id=str(record.id), user=user,
+                                    source_user=source_user, ref_text=record.record_token)
         notification.save()
 
     @staticmethod
-    def create_notification_new_record(ref_id: str, user: UserProfile, source_user: UserProfile, ref_text: str):
+    def create_notification_new_record(user: UserProfile, source_user: UserProfile, record: 'EncryptedRecord'):
         notification = Notification(event_subject=NotificationEventSubject.RECORD,
-                                    event=NotificationEvent.CREATED, ref_id=ref_id, user=user,
-                                    source_user=source_user, ref_text=ref_text)
+                                    event=NotificationEvent.CREATED, ref_id=str(record.id), user=user,
+                                    source_user=source_user, ref_text=record.record_token)
+        notification.save()
+
+    @staticmethod
+    def create_notification_added_to_group(user: UserProfile, source_user: UserProfile, group: 'Group'):
+        notification = Notification(event_subject=NotificationEventSubject.GROUP,
+                                    event=NotificationEvent.ADDED, ref_id=str(group.id), user=user,
+                                    source_user=source_user, ref_text=group.name)
+        notification.save()
+
+    @staticmethod
+    def create_notification_removed_from_group(user: UserProfile, source_user: UserProfile, group: 'Group'):
+        notification = Notification(event_subject=NotificationEventSubject.GROUP,
+                                    event=NotificationEvent.REMOVED, ref_id=str(group.id), user=user,
+                                    source_user=source_user, ref_text=group.name)
         notification.save()
 
 

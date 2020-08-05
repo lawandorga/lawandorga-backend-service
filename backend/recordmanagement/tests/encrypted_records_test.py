@@ -136,8 +136,8 @@ class EncryptedRecordTests(TransactionTestCase):
         self.assertIn(self.base_fixtures['users'][0]['user'], new_record_from_db.working_on_record.all())
         self.assertIn(self.base_fixtures['users'][1]['user'], new_record_from_db.working_on_record.all())
         self.assertEqual(origin_country, new_record_from_db.client.origin_country)
-        self.assertIn(record_models.RecordTag.objects.filter(pk=tag_ids[0]), new_record_from_db.tagged.all())
-        self.assertIn(record_models.RecordTag.objects.filter(pk=tag_ids[1]), new_record_from_db.tagged.all())
+        self.assertIn(record_models.RecordTag.objects.get(pk=tag_ids[0]), new_record_from_db.tagged.all())
+        self.assertIn(record_models.RecordTag.objects.get(pk=tag_ids[1]), new_record_from_db.tagged.all())
 
         # check for notifications too
         self.assertEqual(number_of_notifications_before + 1, api_models.Notification.objects.count())

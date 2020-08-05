@@ -56,7 +56,7 @@ class StaticTestMethods:
         return client
 
     @staticmethod
-    def generate_users(number_of_users, rlc):
+    def generate_users(number_of_users, rlc) -> [UserProfile]:
         base_name = 'test_user'
         users = []
         for i in range(number_of_users):

@@ -18,11 +18,10 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from backend.api import models, serializers
 from backend.api.errors import CustomError
-from backend.static import error_codes
-from backend.static import permissions
-from .. import models, serializers
 from backend.recordmanagement.helpers import add_record_encryption_keys_for_users
+from backend.static import error_codes, permissions
 from backend.static.middleware import get_private_key_from_request
 
 
@@ -52,18 +51,22 @@ class GroupViewSet(viewsets.ModelViewSet):
         serializer.save(creator=creator)
 
     def create(self, request, *args, **kwargs):
-        if not request.user.has_permission(
-            permissions.PERMISSION_MANAGE_GROUPS_RLC, for_rlc=request.user.rlc) and not request.user.has_permission(
+        user: models.UserProfile = request.user
+        if not user.has_permission(permissions.PERMISSION_MANAGE_GROUPS_RLC,
+                                   for_rlc=request.user.rlc) and not user.has_permission(
             permissions.PERMISSION_ADD_GROUP_RLC, for_rlc=request.user.rlc):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
         if 'name' not in request.data or 'visible' not in request.data:
             raise CustomError(error_codes.ERROR__API__GROUP__CAN_NOT_CREATE)
 
-        group = models.Group(name=request.data['name'], visible=request.data['visible'], creator=request.user,
-                             from_rlc=request.user.rlc)
+        if models.Group.objects.filter(name=request.data['name'], from_rlc=user.rlc).exists():
+            raise CustomError(error_codes.ERROR__API__GROUP__ALREADY_EXISTING)
+
+        group = models.Group(name=request.data['name'], visible=request.data['visible'], creator=user,
+                             from_rlc=user.rlc)
         group.save()
-        return Response(serializers.GroupNameSerializer(group).data)
+        return Response(serializers.GroupNameSerializer(group).data, status=201)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -73,6 +76,16 @@ class GroupViewSet(viewsets.ModelViewSet):
 
 class GroupMembersViewSet(APIView):
     def post(self, request):
+        """
+        removes or adds users to group
+        :param request:
+        :return:
+        """
+        request_user: models.UserProfile = request.user
+
+        if not request_user.has_permission(permissions.PERMISSION_MANAGE_GROUPS_RLC, for_rlc=request_user.rlc) and not request_user.is_superuser:
+            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+
         if 'action' not in request.data or 'group_id' not in request.data or 'user_ids' not in request.data:
             raise CustomError(error_codes.ERROR__API__MISSING_ARGUMENT)
         try:
@@ -89,16 +102,18 @@ class GroupMembersViewSet(APIView):
                 raise CustomError(error_codes.ERROR__API__USER__NOT_FOUND)
 
         if request.data['action'] == 'add':
+            granting_users_private_key = get_private_key_from_request(request)
             if group.group_has_record_encryption_keys_permission():
-                granting_users_private_key = get_private_key_from_request(request)
                 add_record_encryption_keys_for_users(request.user, granting_users_private_key, users)
             for user in users:
                 group.group_members.add(user)
+                models.Notification.objects.create_notification_added_to_group(user, request_user, group)
             group.save()
             return Response(serializers.GroupSerializer(group).data)
         elif request.data['action'] == 'remove':
             for user in users:
                 group.group_members.remove(user)
+                models.Notification.objects.create_notification_removed_from_group(user, request_user, group)
             group.save()
             return Response(serializers.GroupSerializer(group).data)
 

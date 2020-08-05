@@ -90,6 +90,9 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'backend.api.exception_handler.custom_exception_handler',
     'PAGE_SIZE': 100
 }
+
+SILENCED_SYSTEM_CHECKS = ["rest_framework.W001"]
+
 # Authentication Timeout
 if 'ON_HEROKU' in os.environ:
     TIMEOUT_TIMEDELTA = timedelta(minutes=10)

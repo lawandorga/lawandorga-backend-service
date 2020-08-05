@@ -80,7 +80,8 @@ ERROR__RECORD__MESSAGE__NO_MESSAGE_PROVIDED = {
 
 ERROR__API__PERMISSION__INSUFFICIENT = {
     'error_detail': 'insufficient permission to perform action',
-    'error_code': 'api.permissions.insufficient'
+    'error_code': 'api.permissions.insufficient',
+    'error_status_code': 403
 }
 
 ERROR__RECORD__DOCUMENT__NOT_FOUND = {
@@ -250,7 +251,12 @@ ERROR__API__HAS_PERMISSION__ALREADY_EXISTING = {
 
 ERROR__API__GROUP__CAN_NOT_CREATE = {
     'error_detail': 'cant create group, not enough data',
-    'error_code': 'api.has_permission.can_not_create'
+    'error_code': 'api.group.can_not_create'
+}
+
+ERROR__API__GROUP__ALREADY_EXISTING = {
+    'error_detail': 'group already exists',
+    'error_code': 'api.group.already_existing'
 }
 
 ERROR__API__USER_ACTIVATION__LINK_NOT_FOUND = {

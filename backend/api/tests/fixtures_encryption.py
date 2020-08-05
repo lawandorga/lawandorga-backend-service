@@ -16,13 +16,14 @@
 
 from rest_framework.test import APIClient
 
-from backend.api.models import Group, Permission, Rlc, RlcEncryptionKeys, UserEncryptionKeys, UserProfile, UsersRlcKeys
+from backend.api.management.commands.fixtures import Fixtures as MainFixtures
+from backend.api.models import Group, HasPermission, Permission, Rlc, RlcEncryptionKeys, UserEncryptionKeys, \
+    UserProfile, UsersRlcKeys
 from backend.files import models as file_models
 from backend.files.static.folder_permissions import get_all_folder_permissions_strings
 from backend.recordmanagement import models as record_models
 from backend.static.encryption import AESEncryption, RSAEncryption
 from backend.static.permissions import get_all_permissions_strings
-from backend.api.management.commands.fixtures import Fixtures as MainFixtures
 
 
 class CreateFixtures:
@@ -276,3 +277,12 @@ class CreateFixtures:
         encrypted_key = RSAEncryption.encrypt(aes_key, pub)
         record_encryption = record_models.RecordEncryption(user=user, record=record, encrypted_key=encrypted_key)
         record_encryption.save()
+
+    @staticmethod
+    def add_permission_for_user(user: UserProfile, permission: Permission or str) -> HasPermission:
+        if isinstance(permission, str):
+            permission = Permission.objects.get(name=permission)
+        has_permission: HasPermission = HasPermission(permission=permission, user_has_permission=user,
+                                                      permission_for_rlc=user.rlc)
+        has_permission.save()
+        return has_permission
