@@ -80,7 +80,8 @@ ERROR__RECORD__MESSAGE__NO_MESSAGE_PROVIDED = {
 
 ERROR__API__PERMISSION__INSUFFICIENT = {
     'error_detail': 'insufficient permission to perform action',
-    'error_code': 'api.permissions.insufficient'
+    'error_code': 'api.permissions.insufficient',
+    'error_status_code': 403
 }
 
 ERROR__RECORD__DOCUMENT__NOT_FOUND = {
@@ -250,7 +251,12 @@ ERROR__API__HAS_PERMISSION__ALREADY_EXISTING = {
 
 ERROR__API__GROUP__CAN_NOT_CREATE = {
     'error_detail': 'cant create group, not enough data',
-    'error_code': 'api.has_permission.can_not_create'
+    'error_code': 'api.group.can_not_create'
+}
+
+ERROR__API__GROUP__ALREADY_EXISTING = {
+    'error_detail': 'group already exists',
+    'error_code': 'api.group.already_existing'
 }
 
 ERROR__API__USER_ACTIVATION__LINK_NOT_FOUND = {
@@ -356,4 +362,30 @@ ERROR__API__RLC_SETTINGS__WRONG_COUNT = {
 ERROR__API__MISSING_KEY_WAIT = {
     'error_detail': 'you are missing a key, wait for another user to login',
     'error_code': 'api.missing_key.wait'
+}
+
+ERROR__FILES__FOLDER_NOT_EXISTING = {
+    'error_detail': 'folder does not exist',
+    'error_code': 'api.files.folder_not_existing'
+}
+
+ERROR__RECORD__CONSULTANT__NO_PERMISSION = {
+    'error_detail': 'selected user has no permission to consult',
+    'error_code': 'api.record.no_consult_permission'
+}
+
+ERROR__API__USER__CAN_NOT_CREATE = {
+    'error_detail': 'can not create user',
+    'error_code': 'api.user.can_not_create'
+}
+
+ERROR__API__NOTIFICATION__UPDATE_INVALID = {
+    'error_detail': 'update for notification is invalid',
+    'error_code': 'api.notification.update_invalid'
+}
+
+ERROR__API__USER__NO_OWNERSHIP = {
+    'error_detail': 'user has no ownership of resource',
+    'error_code': 'api.user.no_ownership',
+    'error_status_code': 403
 }

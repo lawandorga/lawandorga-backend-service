@@ -15,30 +15,21 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.test import TransactionTestCase
+from rest_framework.test import APIClient
+from rest_framework.response import Response
 
+from backend.api.models import UserProfile, Group, HasPermission, Permission, Rlc
 from backend.api.tests.fixtures_encryption import CreateFixtures
-from .statics import StaticTestMethods
-from backend.api.models import Group, HasPermission, Permission, Rlc, UserProfile
-from backend.static.permissions import PERMISSION_MANAGE_GROUPS_RLC
+from backend.static.permissions import PERMISSION_ADD_GROUP_RLC, PERMISSION_MANAGE_GROUPS_RLC
+
 
 class GroupsTests(TransactionTestCase):
     def setUp(self):
         self.base_fixtures = CreateFixtures.create_base_fixtures()
-        self.superuser = CreateFixtures.create_superuser()
-        self.client = StaticTestMethods.force_authentication_superuser()
-        self.user = UserProfile.objects.get(email='test123@test.com')
-        self.base_url_create = '/api/groups/'
-
-    def test_create_group_success(self):
-        before = Group.objects.count()
-        response = self.superuser['client'].post(self.base_url_create, {
-            'name': 'The best group',
-            'visible': True,
-            'group_members': [1]
-        })
-        after = Group.objects.count()
-        self.assertTrue(response.status_code == 200)
-        self.assertTrue(before + 1 == after)
+        self.base_url: str = '/api/groups/'
+        self.client: APIClient = self.base_fixtures['users'][0]['client']
+        self.user: UserProfile = self.base_fixtures['users'][0]['user']
+        self.private_key: bytes = self.base_fixtures['users'][0]['private']
 
     def test_has_group_permission(self):
         perm1 = Permission(name='test_permission_1')
@@ -52,7 +43,6 @@ class GroupsTests(TransactionTestCase):
 
         hasperm1 = HasPermission(group_has_permission=group, permission=perm1, permission_for_rlc=rlc)
         hasperm1.save()
-        group = Group.objects.first()
         self.assertTrue(group.has_group_permission(perm1))
         self.assertTrue(group.has_group_permission(perm1.name))
 
@@ -68,7 +58,6 @@ class GroupsTests(TransactionTestCase):
 
         hasperm1 = HasPermission(group_has_permission=group, permission=perm1, permission_for_rlc=rlc)
         hasperm1.save()
-        group = Group.objects.first()
         self.assertTrue(group.has_group_one_permission([perm1, perm2]))
 
     def test_has_group_one_permission_2(self):
@@ -83,27 +72,109 @@ class GroupsTests(TransactionTestCase):
 
         hasperm1 = HasPermission(group_has_permission=group, permission=perm1, permission_for_rlc=rlc)
         hasperm1.save()
-        group = Group.objects.first()
         self.assertTrue(not group.has_group_one_permission([perm2]))
 
-    def test_add_group_members(self):
-        # manage groups
-        CreateFixtures.add_permission_for_user(self.base_fixtures['users'][0]['user'], PERMISSION_MANAGE_GROUPS_RLC)
-        old_number_of_users = self.base_fixtures['groups'][0].group_members.count()
+    def test_create_group_success(self):
+        has_permission = CreateFixtures.add_permission_for_user(user=self.user, permission=PERMISSION_ADD_GROUP_RLC)
 
-        response = self.base_fixtures['users'][0]['client'].post('/api/group_members/', {
-            'action': 'add',
-            'group_id': self.base_fixtures['groups'][0].id,
-            'user_ids': [self.base_fixtures['users'][2]['user'].id, self.base_fixtures['users'][3]['user'].id]
-        }, format='json', **{'HTTP_PRIVATE_KEY': self.base_fixtures['users'][0]['private']})
+        # with add group permission
+        number_of_groups_before = Group.objects.count()
+        response: Response = self.client.post(self.base_url, {
+            'name': 'the best new group',
+            'visible': True
+        })
+        self.assertEqual(201, response.status_code)
+        self.assertEquals(number_of_groups_before + 1, Group.objects.count())
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(old_number_of_users + 2, self.base_fixtures['groups'][0].group_members.count())
+        # without name
+        number_of_groups_before = Group.objects.count()
+        response: Response = self.client.post(self.base_url, {
+            'visible': True
+        })
+        self.assertEqual(400, response.status_code)
+        self.assertEquals(number_of_groups_before, Group.objects.count())
 
-        response = self.base_fixtures['users'][0]['client'].post('/api/group_members/', {
+        # without visible
+        response: Response = self.client.post(self.base_url, {
+            'name': 'the best new group'
+        })
+        self.assertEqual(400, response.status_code)
+        self.assertEquals(number_of_groups_before, Group.objects.count())
+
+        # without permissions
+        has_permission.delete()
+        response: Response = self.client.post(self.base_url, {
+            'name': 'the best new group',
+            'visible': True
+        })
+
+        self.assertEqual(403, response.status_code)
+        self.assertEquals(number_of_groups_before, Group.objects.count())
+
+        CreateFixtures.add_permission_for_user(self.user, PERMISSION_MANAGE_GROUPS_RLC)
+
+        # with manage groups permission
+        response: Response = self.client.post(self.base_url, {
+            'name': 'the second best new group',
+            'visible': True
+        })
+        self.assertEqual(201, response.status_code)
+        self.assertEquals(number_of_groups_before + 1, Group.objects.count())
+
+        # double name in rlc
+        number_of_groups_before = Group.objects.count()
+        response: Response = self.client.post(self.base_url, {
+            'name': 'the second best new group',
+            'visible': True
+        })
+        self.assertEqual(400, response.status_code)
+        self.assertEquals(number_of_groups_before, Group.objects.count())
+
+    def test_add_group_member(self):
+        group: Group = self.base_fixtures['groups'][0]
+        user3: UserProfile = self.base_fixtures['users'][2]['user']
+        user4: UserProfile = self.base_fixtures['users'][3]['user']
+        group_member_url = '/api/group_members/'
+
+        number_of_group_members: int = group.group_members.count()
+
+        response: Response = self.client.post(group_member_url, {
+            'action': 'remove'
+        }, **{'HTTP_PRIVATE_KEY': self.private_key})
+        self.assertEqual(403, response.status_code)
+
+        CreateFixtures.add_permission_for_user(self.user, PERMISSION_MANAGE_GROUPS_RLC)
+
+        response: Response = self.client.post(group_member_url, {
+            'action': 'remove'
+        }, **{'HTTP_PRIVATE_KEY': self.private_key})
+        self.assertEqual(400, response.status_code)
+
+        response: Response = self.client.post(group_member_url, {
             'action': 'remove',
-            'group_id': self.base_fixtures['groups'][0].id,
-            'user_ids': [self.base_fixtures['users'][2]['user'].id, self.base_fixtures['users'][3]['user'].id]
-        }, format='json')
-        self.assertTrue(200, response.status_code)
-        self.assertEqual(old_number_of_users, self.base_fixtures['groups'][0].group_members.count())
+            'group_id': group.id
+        }, **{'HTTP_PRIVATE_KEY': self.private_key})
+        self.assertEqual(400, response.status_code)
+
+        response: Response = self.client.post(group_member_url, {
+            'action': 'add',
+            'group_id': group.id,
+            'user_ids': [user3.id, user4.id]
+        }, format='json', **{'HTTP_PRIVATE_KEY': self.private_key})
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(number_of_group_members + 2, group.group_members.count())
+
+        response: Response = self.client.post(group_member_url, {
+            'action': 'remove',
+            'group_id': group.id,
+            'user_ids': [user3.id, user4.id]
+        }, format='json', **{'HTTP_PRIVATE_KEY': self.private_key})
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(number_of_group_members, group.group_members.count())
+
+        # TODO: doubled add
+
+        # if 'action' not in request.data or 'group_id' not in request.data or 'user_ids' not in request.data:
+
+
+

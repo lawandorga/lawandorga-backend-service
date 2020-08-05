@@ -18,13 +18,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.files.models import Folder, File
+from backend.api.errors import CustomError
+from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 
 
 class DeleteViewSet(APIView):
     def post(self, request):
         user = request.user
-        # TODO: rework this
         root_folder = Folder.get_folder_from_path('files/' + request.data['path'], user.rlc)
+        if not root_folder.user_has_permission_write(user):
+            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
         entries = request.data['entries']
         for entry in entries:
             if entry['type'] == 1:
@@ -34,4 +37,4 @@ class DeleteViewSet(APIView):
             else:
                 folder = Folder.objects.get(pk=entry['id'])
                 folder.delete()
-            return Response({'success': True})
+        return Response({'success': True})

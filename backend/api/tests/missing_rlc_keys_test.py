@@ -14,17 +14,15 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import time
 from django.test import TransactionTestCase
 from rest_framework.test import APIClient
 
 from backend.api import models as api_models
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.recordmanagement import models as record_models
-from backend.static.encryption import AESEncryption, RSAEncryption
+from backend.static.encryption import AESEncryption
 from backend.static.permissions import PERMISSION_MANAGE_PERMISSIONS_RLC
 from backend.api.management.commands.commands import create_missing_key_entries
-from backend.recordmanagement.tests.missing_record_keys_test import MissingRecordKeysTests
 
 
 class MissingRlcKeysTests(TransactionTestCase):
@@ -60,22 +58,22 @@ class MissingRlcKeysTests(TransactionTestCase):
         # create records
         records = []
         # 1
-        record1 = MissingRecordKeysTests.add_record(token='record1', rlc=self.base_fixtures['rlc'], client=e_client,
-                                                    creator=self.base_fixtures['users'][0]['user'],
-                                                    note='record1 note',
-                                                    working_on_record=[self.base_fixtures['users'][1]['user']],
-                                                    with_record_permission=[],
-                                                    with_encryption_keys=[self.base_fixtures['users'][0]['user'],
-                                                                          self.base_fixtures['users'][2]['user'],
-                                                                          self.superuser['user']])
+        record1 = CreateFixtures.add_record(record_token='record1', rlc=self.base_fixtures['rlc'], client=e_client,
+                                            creator=self.base_fixtures['users'][0]['user'],
+                                            note='record1 note',
+                                            working_on_record=[self.base_fixtures['users'][1]['user']],
+                                            with_record_permission=[],
+                                            with_encryption_keys=[self.base_fixtures['users'][0]['user'],
+                                                                  self.base_fixtures['users'][2]['user'],
+                                                                  self.superuser['user']])
         records.append(record1)
         # 2
-        record2 = MissingRecordKeysTests.add_record(token='record2', rlc=self.base_fixtures['rlc'], client=e_client,
-                                                    creator=self.base_fixtures['users'][0]['user'],
-                                                    note='record2 note',
-                                                    working_on_record=[self.base_fixtures['users'][0]['user']],
-                                                    with_record_permission=[self.base_fixtures['users'][1]['user']],
-                                                    with_encryption_keys=[self.base_fixtures['users'][0]['user']])
+        record2 = CreateFixtures.add_record(record_token='record2', rlc=self.base_fixtures['rlc'], client=e_client,
+                                            creator=self.base_fixtures['users'][0]['user'],
+                                            note='record2 note',
+                                            working_on_record=[self.base_fixtures['users'][0]['user']],
+                                            with_record_permission=[self.base_fixtures['users'][1]['user']],
+                                            with_encryption_keys=[self.base_fixtures['users'][0]['user']])
         records.append(record2)
 
         return_object.update({"records": records})

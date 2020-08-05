@@ -25,6 +25,7 @@ from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.request import Request
 
 from backend.api.errors import CustomError
 from backend.static import permissions
@@ -32,9 +33,9 @@ from backend.static.date_utils import parse_date
 from backend.static.emails import EmailSender, FrontendLinks
 from backend.static.encryption import RSAEncryption
 from backend.static.error_codes import *
-from ..models import UserProfile, Permission, Rlc, UserEncryptionKeys
-from ..serializers import UserProfileSerializer, UserProfileCreatorSerializer, UserProfileNameSerializer, RlcSerializer, \
-    UserProfileForeignSerializer
+from backend.api.models import UserProfile, Permission, Rlc, UserEncryptionKeys, Notification
+from backend.api.serializers import UserProfileSerializer, UserProfileCreatorSerializer, UserProfileNameSerializer, RlcSerializer, \
+    UserProfileForeignSerializer, NotificationSerializer
 from backend.static.permissions import PERMISSION_ACCEPT_NEW_USERS_RLC
 from backend.static.middleware import get_private_key_from_request
 
@@ -127,7 +128,7 @@ class UserProfileCreatorViewSet(viewsets.ModelViewSet):
     authentication_classes = ()
     permission_classes = ()
 
-    def create(self, request):
+    def create(self, request: Request):
         if type(request.data) is QueryDict:
             data = request.data.dict()
         else:
@@ -136,6 +137,8 @@ class UserProfileCreatorViewSet(viewsets.ModelViewSet):
             del data['rlc']
 
         # Check if email already in use
+        if not 'email' in request.data:
+            raise CustomError(ERROR__API__USER__CAN_NOT_CREATE)
         if UserProfile.objects.filter(email=request.data['email'].lower()).count() > 0:
             raise CustomError(ERROR__API__EMAIL__ALREADY_IN_USE)
         data['email'] = data['email'].lower()
@@ -240,11 +243,14 @@ class LoginViewSet(viewsets.ViewSet):
         serialized_user = UserProfileSerializer(user).data
         serialized_rlc = RlcSerializer(user.rlc).data
 
+        notifications = Notification.objects.filter(user=user, read=False).count()
+
         statics = LoginViewSet.get_statics(user)
         return_object = {
             'token': token,
             'user': serialized_user,
-            'rlc': serialized_rlc
+            'rlc': serialized_rlc,
+            'notifications': notifications
         }
         return_object.update(statics)
         if private_key:

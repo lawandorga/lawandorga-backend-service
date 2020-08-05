@@ -37,6 +37,7 @@ router.register('user_encryption_keys', views.UserEncryptionKeysViewSet, base_na
 router.register('users_rlc_keys', views.UsersRlcKeysViewSet, base_name="users_rlc_keys")
 router.register('rlc_settings', views.RlcSettingsViewSet, base_name='rlc_settings')
 router.register('missing_rlc_keys', views.MissingRlcKeysViewSet, base_name='missing_rlc_keys')
+router.register('notifications', views.NotificationViewSet, base_name='notifications')
 
 
 urlpatterns = [

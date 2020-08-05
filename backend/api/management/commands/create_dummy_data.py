@@ -18,11 +18,11 @@ import random
 
 from django.core.management.base import BaseCommand
 
-from backend.api import models as apimodels
-from backend.api.management.commands._fixtures import AddMethods
-from backend.recordmanagement import models
+from backend.api import models as api_models
+from backend.api.management.commands.fixtures import AddMethods
+from backend.recordmanagement import models as record_models
 from backend.static import permissions
-from .commands import reset_db, migrate_to_encryption, migrate_to_rlc_settings, populate_deploy_db
+from .commands import migrate_to_encryption, migrate_to_rlc_settings, populate_deploy_db, reset_db
 
 
 class Command(BaseCommand):
@@ -35,45 +35,52 @@ class Command(BaseCommand):
         reset_db()
         populate_deploy_db()
 
-        rlc = apimodels.Rlc(name='Dummy RLC', note='this is a dummy rlc, just for showing how the system works',
-                            id=3033)
+        rlc = api_models.Rlc(name='Dummy RLC', note='this is a dummy rlc, just for showing how the system works',
+                             id=3033)
         rlc.save()
         users = self.get_and_create_users(rlc)
         main_user = self.get_and_create_dummy_user(rlc)
         self.create_inactive_user(rlc)
         self.create_groups(rlc, main_user, users)
         clients = self.get_and_create_clients(rlc)
-        consultant_group = apimodels.Group.objects.filter(name='Berater', from_rlc=rlc).first()
+        consultant_group = api_models.Group.objects.filter(name='Berater', from_rlc=rlc).first()
         consultants = list(consultant_group.group_members.all())
         self.get_and_create_records(clients, consultants, rlc)
         best_record = self.create_the_best_record_ever(main_user, clients, consultants, rlc)
         self.create_record_deletion_request(main_user, best_record)
         self.create_record_permission_request(users[4], best_record)
-        self.create_additional_dummy_users(rlc)
+        other_dummy_users = self.create_additional_dummy_users(rlc)
 
         # TODO: generate inactive user, generate encryption stuff here, not old unencrypted
         migrate_to_encryption()
         migrate_to_rlc_settings()
 
+        best_encrypted_record: record_models.EncryptedRecord = record_models.EncryptedRecord.objects.filter(
+            record_token=best_record.record_token).first()
+        Command.create_notifications(main_user, other_dummy_users[0], best_encrypted_record)
+
     def get_and_create_dummy_user(self, rlc):
-        user = apimodels.UserProfile(name='Mr Dummy', email='dummy@rlcm.de', phone_number='01666666666',
-                                     street='Dummyweg 12', city='Dummycity', postal_code='00000', rlc=rlc)
+        user = api_models.UserProfile(name='Mr Dummy', email='dummy@rlcm.de', phone_number='01666666666',
+                                      street='Dummyweg 12', city='Dummycity', postal_code='00000', rlc=rlc)
         user.birthday = AddMethods.generate_date((1995, 1, 1))
         user.set_password('qwe123')
         user.save()
         return user
 
     def create_additional_dummy_users(self, rlc):
-        user = apimodels.UserProfile(name='Tester 1', email='tester1@law-orga.de', phone_number='123812382', rlc=rlc)
+        user = api_models.UserProfile(name='Tester 1', email='tester1@law-orga.de', phone_number='123812382', rlc=rlc)
         user.set_password('qwe123')
         user.save()
 
-        user1 = apimodels.UserProfile(name='Tester 2', email='tester2@law-orga.de', phone_number='123812383', rlc=rlc)
+        user1 = api_models.UserProfile(name='Tester 2', email='tester2@law-orga.de', phone_number='123812383', rlc=rlc)
         user1.set_password('qwe123')
         user1.save()
 
+        return [user, user1]
+
     def create_inactive_user(self, rlc):
-        user = apimodels.UserProfile(name='Im Not that active', email='inactive@rlcm.de', phone_number='1293283882', street='Inaktive Strasse', city='InAktiv', postal_code='29292', rlc=rlc)
+        user = api_models.UserProfile(name='Im Not that active', email='inactive@rlcm.de', phone_number='1293283882',
+                                      street='Inaktive Strasse', city='InAktiv', postal_code='29292', rlc=rlc)
         user.birthday = AddMethods.generate_date((1950, 1, 1))
         user.set_password('qwe123')
         user.is_active = False
@@ -184,16 +191,16 @@ class Command(BaseCommand):
 
         new_users = []
         for user in users:
-            new_user = apimodels.UserProfile(email=user[0], name=user[1], phone_number=user[3], street=user[4],
-                                             city=user[5], postal_code=user[6], rlc=rlc)
+            new_user = api_models.UserProfile(email=user[0], name=user[1], phone_number=user[3], street=user[4],
+                                              city=user[5], postal_code=user[6], rlc=rlc)
             new_user.birthday = AddMethods.generate_date(user[2])
             new_user.save()
             new_users.append(new_user)
         return new_users
 
     def create_groups(self, rlc, main_user, users):
-        consultants = apimodels.Group(creator=main_user, from_rlc=rlc, name='Berater', visible=False,
-                                      description='all consultants', note='only add consultants')
+        consultants = api_models.Group(creator=main_user, from_rlc=rlc, name='Berater', visible=False,
+                                       description='all consultants', note='only add consultants')
         consultants.save()
         consultants.group_members.add(users[0])
         consultants.group_members.add(users[1])
@@ -208,16 +215,16 @@ class Command(BaseCommand):
         self.add_permission_to_group(consultants, rlc, permissions.PERMISSION_CAN_CONSULT)
         self.add_permission_to_group(consultants, rlc, permissions.PERMISSION_VIEW_RECORDS_RLC)
 
-        ag1 = apimodels.Group(creator=users[0], from_rlc=rlc, name='AG Datenschutz', visible=True, description='DSGVO',
-                              note='bitte mithelfen')
+        ag1 = api_models.Group(creator=users[0], from_rlc=rlc, name='AG Datenschutz', visible=True, description='DSGVO',
+                               note='bitte mithelfen')
         ag1.save()
         ag1.group_members.add(users[1])
         ag1.group_members.add(users[2])
         ag1.group_members.add(users[3])
         ag1.save()
 
-        admins = apimodels.Group(creator=main_user, from_rlc=rlc, name='Administratoren', visible=False,
-                                 description='haben alle Berechtigungen', note='IT ressort')
+        admins = api_models.Group(creator=main_user, from_rlc=rlc, name='Administratoren', visible=False,
+                                  description='haben alle Berechtigungen', note='IT ressort')
         admins.save()
         admins.group_members.add(users[0])
         admins.group_members.add(main_user)
@@ -231,15 +238,15 @@ class Command(BaseCommand):
         self.add_permission_to_group(admins, rlc, permissions.PERMISSION_VIEW_RECORDS_RLC)
 
     def get_permission(self, permission):
-        return apimodels.Permission.objects.get(name=permission)
+        return api_models.Permission.objects.get(name=permission)
 
     def add_permission_to_group(self, group, rlc, permission_name):
-        has_permission = apimodels.HasPermission(group_has_permission=group, permission_for_rlc=rlc,
-                                                 permission=self.get_permission(permission_name))
+        has_permission = api_models.HasPermission(group_has_permission=group, permission_for_rlc=rlc,
+                                                  permission=self.get_permission(permission_name))
         has_permission.save()
 
     def get_and_create_clients(self, rlc):
-        origin_countries = list(models.OriginCountry.objects.all())
+        origin_countries = list(record_models.OriginCountry.objects.all())
         clients = [
             (
                 (2018, 7, 12),  # created_on
@@ -338,7 +345,7 @@ class Command(BaseCommand):
         return clients_in_db
 
     def get_and_create_records(self, clients, consultants, rlc):
-        tags = list(models.RecordTag.objects.all())
+        tags = list(record_models.RecordTag.objects.all())
         records = [
             (
                 random.choice(consultants),  # creator id
@@ -477,8 +484,8 @@ class Command(BaseCommand):
         records_in_db = []
         for rec in records:
             # records_in_db.append(self.get_and_create_record(rec, rlc))
-            record = models.Record(from_rlc=rlc, creator=rec[0], client=rec[3], record_token=rec[6],
-                                   official_note=rec[7], state=rec[8])
+            record = record_models.Record(from_rlc=rlc, creator=rec[0], client=rec[3], record_token=rec[6],
+                                          official_note=rec[7], state=rec[8])
             record.created_on = AddMethods.generate_date(rec[1])
             record.first_contact_date = AddMethods.generate_date(rec[4])
             record.last_edited = AddMethods.generate_datetime(rec[2])
@@ -493,7 +500,7 @@ class Command(BaseCommand):
         return records_in_db
 
     def get_and_create_client(self, client, rlc):
-        cl = models.Client(name=client[2], note=client[3], phone_number=client[4])
+        cl = record_models.Client(name=client[2], note=client[3], phone_number=client[4])
         cl.created_on = AddMethods.generate_date(client[0])
         cl.last_edited = AddMethods.generate_datetime(client[1])
         cl.birthday = AddMethods.generate_date(client[5])
@@ -518,9 +525,9 @@ class Command(BaseCommand):
     #     return record
 
     def create_the_best_record_ever(self, main_user, clients, consultants, rlc):
-        tags = list(models.RecordTag.objects.all())
-        record = models.Record(from_rlc=rlc, creator=main_user, client=clients[0], record_token='AZ-001/18',
-                               official_note='best record ever', state='op', id=7181)
+        tags = list(record_models.RecordTag.objects.all())
+        record = record_models.Record(from_rlc=rlc, creator=main_user, client=clients[0], record_token='AZ-001/18',
+                                      official_note='best record ever', state='op', id=7181)
 
         record.created_on = AddMethods.generate_date((2018, 1, 3))
         record.first_contact_date = AddMethods.generate_date((2018, 1, 3))
@@ -546,54 +553,65 @@ class Command(BaseCommand):
         record.tagged.add(tags[0], tags[1])
         record.save()
 
-        document1 = models.RecordDocument(name="7_1_19__pass.jpg", creator=main_user, record=record, file_size=18839)
+        document1 = record_models.RecordDocument(name="7_1_19__pass.jpg", creator=main_user, record=record,
+                                                 file_size=18839)
         document1.created_on = AddMethods.generate_date((2019, 1, 7))
         document1.save()
-        document1.tagged.add(models.RecordDocumentTag.objects.get(name='Pass'))
+        document1.tagged.add(record_models.RecordDocumentTag.objects.get(name='Pass'))
 
-        document2 = models.RecordDocument(name="3_10_18__geburtsurkunde.pdf", creator=main_user, record=record,
-                                          file_size=488383)
+        document2 = record_models.RecordDocument(name="3_10_18__geburtsurkunde.pdf", creator=main_user, record=record,
+                                                 file_size=488383)
         document2.created_on = AddMethods.generate_date((2018, 10, 3))
         document2.save()
-        document2.tagged.add(models.RecordDocumentTag.objects.get(name='Geburtsurkunde'))
+        document2.tagged.add(record_models.RecordDocumentTag.objects.get(name='Geburtsurkunde'))
 
-        document3 = models.RecordDocument(name="3_12_18__Ablehnungbescheid.pdf", creator=main_user, record=record,
-                                          file_size=343433)
+        document3 = record_models.RecordDocument(name="3_12_18__Ablehnungbescheid.pdf", creator=main_user,
+                                                 record=record,
+                                                 file_size=343433)
         document3.created_on = AddMethods.generate_date((2018, 12, 3))
         document3.save()
-        document3.tagged.add(models.RecordDocumentTag.objects.get(name='Bescheid (Ablehnung)'))
+        document3.tagged.add(record_models.RecordDocumentTag.objects.get(name='Bescheid (Ablehnung)'))
 
-        document4 = models.RecordDocument(name="1_1_19__Klageschrift.docx", creator=main_user, record=record,
-                                          file_size=444444)
+        document4 = record_models.RecordDocument(name="1_1_19__Klageschrift.docx", creator=main_user, record=record,
+                                                 file_size=444444)
         document4.save()
         document4.created_on = AddMethods.generate_date((2019, 1, 1))
 
-        message = models.RecordMessage(sender=main_user, record=record,
-                                       message='Bitte dringend die Kontaktdaten des Mandanten eintragen.')
+        message = record_models.RecordMessage(sender=main_user, record=record,
+                                              message='Bitte dringend die Kontaktdaten des Mandanten eintragen.')
         message.save()
         message.created_on = AddMethods.generate_datetime((2019, 3, 11, 10, 12, 21, 0))
         message.save()
-        message = models.RecordMessage(sender=consultants[0], record=record,
-                                       message='Ist erledigt! Koennen wir uns morgen treffen um das zu besprechen?')
+        message = record_models.RecordMessage(sender=consultants[0], record=record,
+                                              message='Ist erledigt! Koennen wir uns morgen treffen um das zu besprechen?')
         message.save()
         message.created_on = AddMethods.generate_datetime((2019, 3, 12, 9, 32, 21, 0))
         message.save()
-        message = models.RecordMessage(sender=main_user, record=record,
-                                       message='Klar, einfach direkt in der Mittagspause in der Mensa.')
+        message = record_models.RecordMessage(sender=main_user, record=record,
+                                              message='Klar, einfach direkt in der Mittagspause in der Mensa.')
         message.save()
         message.created_on = AddMethods.generate_datetime((2019, 3, 12, 14, 7, 21, 0))
         message.save()
-        message = models.RecordMessage(sender=consultants[0], record=record,
-                                       message='Gut, jetzt faellt mir aber auch nichts mehr ein.')
+        message = record_models.RecordMessage(sender=consultants[0], record=record,
+                                              message='Gut, jetzt faellt mir aber auch nichts mehr ein.')
         message.save()
         message.created_on = AddMethods.generate_datetime((2019, 3, 13, 18, 7, 21, 0))
         message.save()
         return record
 
     def create_record_deletion_request(self, user, record):
-        request = models.RecordDeletionRequest(record=record, request_from=user, state='re')
+        request = record_models.RecordDeletionRequest(record=record, request_from=user, state='re')
         request.save()
 
-    def create_record_permission_request(self, user, record):
-        request = models.RecordPermission(record=record, request_from=user, state='re')
+    def create_record_permission_request(self, user: api_models.UserProfile, record):
+        request = record_models.RecordPermission(record=record, request_from=user, state='re')
         request.save()
+
+    @staticmethod
+    def create_notifications(user: api_models.UserProfile, source_user: api_models.UserProfile,
+                             record: record_models.EncryptedRecord):
+        from backend.api.tests.notification_test import NotificationTest
+        NotificationTest.generate_notifications(user=user, source_user=source_user, number_of_notifications=230,
+                                                ref_id=str(record.id), ref_text=record.record_token)
+        NotificationTest.generate_notifications(user=source_user, source_user=user, number_of_notifications=230,
+                                                ref_id=str(record.id), ref_text=record.record_token)

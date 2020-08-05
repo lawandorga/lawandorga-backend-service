@@ -15,16 +15,17 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import viewsets
-from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
+from backend.api.errors import CustomError
 from backend.files.models import File, Folder
 from backend.files.serializers import FileSerializer, FolderSerializer
+from backend.static.error_codes import ERROR__API__ID_NOT_FOUND, ERROR__API__MISSING_ARGUMENT, \
+    ERROR__API__PERMISSION__INSUFFICIENT, ERROR__FILES__FOLDER_NOT_EXISTING
 from backend.static.permissions import PERMISSION_ACCESS_TO_FILES_RLC
-from backend.api.errors import CustomError
-from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT, ERROR__API__MISSING_ARGUMENT, ERROR__API__ID_NOT_FOUND
-from backend.static.storage_management import LocalStorageManager
 from backend.static.storage_folders import get_temp_storage_path
+from backend.static.storage_management import LocalStorageManager
 
 
 class FolderBaseViewSet(viewsets.ModelViewSet):
@@ -43,15 +44,11 @@ class FolderViewSet(APIView):
             path = path[:-2]
         folder = Folder.get_folder_from_path(path, request.user.rlc)
         if not folder:
-            return Response({'folders': [], 'files': [], 'current_folder': None})
-
-        # all_children = folder.child_folders.all()
-        # children_list = list(all_children)
-        # for child in children_list:
-        #     if not child.user_has_permission_read(request.user):
-        #         all_children = all_children.exclude(name=child.name)
+            raise CustomError(ERROR__FILES__FOLDER_NOT_EXISTING)
+            # return Response({'folders': [], 'files': [], 'current_folder': None})
 
         children_to_show = []
+
         for child in folder.child_folders.all().order_by('name'):
             if child.user_can_see_folder(user):
                 children_to_show.append(child)
@@ -65,6 +62,7 @@ class FolderViewSet(APIView):
             return_obj.update({'files': []})
         return_obj.update({'current_folder': FolderSerializer(folder).data})
 
+        return_obj.update({'write_permission': folder.user_has_permission_write(user)})
         return Response(return_obj)
 
     def post(self, request):
@@ -76,7 +74,8 @@ class FolderViewSet(APIView):
             parent_folder = Folder.objects.get(pk=data['parent_folder_id'])
         except:
             raise CustomError(ERROR__API__ID_NOT_FOUND)
-        if parent_folder.rlc != user.rlc and not user.is_superuser and not parent_folder.user_has_permission_write(user):
+        if parent_folder.rlc != user.rlc and not user.is_superuser and not parent_folder.user_has_permission_write(
+            user):
             raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 
         folder = Folder(name=data['name'], creator=user, parent=parent_folder, rlc=user.rlc)

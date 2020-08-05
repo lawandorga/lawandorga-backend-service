@@ -276,7 +276,12 @@ class AESEncryption:
 
 class RSAEncryption:
     @staticmethod
-    def generate_keys():
+    def generate_keys() -> (bytes, bytes):
+        """
+        generates private and public RSA key pair
+
+        :return: private bytes and public bytes
+        """
         private_key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=2048,

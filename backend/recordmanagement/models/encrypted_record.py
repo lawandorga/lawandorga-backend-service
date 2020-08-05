@@ -21,8 +21,21 @@ from backend.api.errors import CustomError
 from backend.api.models import Rlc, UserProfile
 from backend.recordmanagement.models import RecordTag
 from backend.static.error_codes import ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND
-from backend.static.permissions import PERMISSION_MANAGE_GROUPS_RLC, PERMISSION_MANAGE_PERMISSIONS_RLC, \
-    PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC, PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+
+
+class EncryptedRecordManager(models.Manager):
+    def get_queryset(self):
+        return EncryptedRecordQuerySet(self.model, using=self._db)
+
+    def get_full_access_e_records(self, user):
+        return self.get_queryset().get_full_access_e_records(user)
+
+    def get_no_access_e_records(self, user):
+        return self.get_queryset().get_no_access_e_records(user)
+
+    def filter_by_rlc(self, rlc):
+        return self.get_queryset().filter_by_rlc(rlc)
 
 
 class EncryptedRecordQuerySet(models.QuerySet):
@@ -96,7 +109,7 @@ class EncryptedRecord(models.Model):
     status_described = models.BinaryField()
     additional_facts = models.BinaryField()
 
-    objects = EncryptedRecordQuerySet.as_manager()
+    objects = EncryptedRecordManager()
 
     def __str__(self):
         return 'e_record: ' + str(self.id) + ':' + self.record_token
@@ -121,7 +134,16 @@ class EncryptedRecord(models.Model):
             emails.append(permission_request.request_from.email)
         return emails
 
-    def get_users_with_permission(self):
+    def get_notification_users(self) -> [UserProfile]:
+        from backend.recordmanagement.models import EncryptedRecordPermission
+        users = []
+        for user in list(self.working_on_record.all()):
+            users.append(user)
+        for permission_request in list(EncryptedRecordPermission.objects.filter(record=self, state='gr')):
+            users.append(permission_request.request_from)
+        return users
+
+    def get_users_with_permission(self) -> [UserProfile]:
         from backend.api.models import UserProfile, Permission
         working_on_users = self.working_on_record.all()
         users_with_record_permission = UserProfile.objects.filter(e_record_permissions_requested__record=self,
@@ -131,7 +153,7 @@ class EncryptedRecord(models.Model):
             self.from_rlc)
         return working_on_users.union(users_with_record_permission).union(users_with_overall_permission).distinct()
 
-    def get_users_with_decryption_keys(self):
+    def get_users_with_decryption_keys(self) -> [UserProfile]:
         from backend.api.models import UserProfile
         from backend.static.permissions import get_record_encryption_keys_permissions_strings
         working_on_users = self.working_on_record.all()
@@ -141,11 +163,12 @@ class EncryptedRecord(models.Model):
         users_with_decryption_key_permissions = UserProfile.objects.get_users_with_special_permissions(
             get_record_encryption_keys_permissions_strings(), for_rlc=self.from_rlc)
 
-        return working_on_users.union(users_with_record_permission).union(users_with_decryption_key_permissions).distinct()
+        return working_on_users.union(users_with_record_permission).union(
+            users_with_decryption_key_permissions).distinct()
 
-    def get_decryption_key(self, user, users_private_key):
+    def get_decryption_key(self, user: UserProfile, users_private_key: bytes) -> str:
         from backend.recordmanagement.models import RecordEncryption
-        record_encryptions = RecordEncryption.objects.filter(user=user, record=self)
+        record_encryptions: [RecordEncryption] = RecordEncryption.objects.filter(user=user, record=self)
         result = None
         for encryption in record_encryptions:
             if result:

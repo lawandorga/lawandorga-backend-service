@@ -21,7 +21,7 @@ from backend.api.management.commands._migrators import Migrators, OneTimeGenerat
 from backend.static.permissions import get_record_encryption_keys_permissions_strings
 from backend.api.models import *
 from backend.recordmanagement.models import *
-from backend.api.management.commands._fixtures import Fixtures
+from backend.api.management.commands.fixtures import Fixtures
 from backend.files.models import *
 
 
@@ -143,6 +143,7 @@ def reset_db():
     Folder.objects.all().delete()
     FolderPermission.objects.all().delete()
     PermissionForFolder.objects.all().delete()
+    Notification.objects.all().delete()
     reset_db_encrypted()
 
 

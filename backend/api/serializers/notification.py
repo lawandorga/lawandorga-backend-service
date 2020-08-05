@@ -14,14 +14,14 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.db import models
+from rest_framework import serializers
+from backend.api.models import Notification
+from backend.api.serializers import UserProfileNameSerializer
 
-from backend.api.models import UserProfile
 
+class NotificationSerializer(serializers.ModelSerializer):
+    source_user = UserProfileNameSerializer(many=False, read_only=True)
 
-class MissingRlcKey(models.Model):
-    user = models.ForeignKey(UserProfile, related_name="missing_rlc_keys", on_delete=models.CASCADE)
-
-    def __str__(self):
-        return "missing rlc keys: " + str(self.user)
-
+    class Meta:
+        model = Notification
+        fields = '__all__'

@@ -17,7 +17,7 @@
 from django.core.management.base import BaseCommand
 from ._factories import UserFactory, ClientFactory, RecordFactory, GroupFactory
 from backend.api.models import *
-from ._fixtures import Fixtures, AddMethods
+from .fixtures import Fixtures, AddMethods
 from backend.recordmanagement.models import *
 
 

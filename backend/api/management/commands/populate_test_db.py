@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.core.management.base import BaseCommand
-from ._fixtures import Fixtures
+from .fixtures import Fixtures
 from backend.api.models import UserProfile, Rlc
 
 
