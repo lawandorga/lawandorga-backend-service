@@ -17,6 +17,7 @@ from typing import Any
 
 from django.db.models import QuerySet
 from rest_framework import viewsets
+from rest_framework.views import APIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -65,4 +66,10 @@ class NotificationViewSet(viewsets.ModelViewSet):
         notification.save()
 
         return Response({'success': True})
+
+
+class UnreadNotificationsViewSet(APIView):
+    def get(self, response, *args, **kwargs) -> Response:
+        unread_notifications = Notification.objects.filter(user=response.user, read=False).count()
+        return Response({'unread_notifications': unread_notifications})
 

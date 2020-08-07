@@ -60,4 +60,5 @@ urlpatterns = [
     url(r'inactive_users/', views.InactiveUsersViewSet.as_view()),
     url(r'user_has_permissions/', views.UserHasPermissionsViewSet.as_view()),
     url(r'my_rlc_settings/', views.RlcSettingsMineViewSet.as_view()),
+    url(r'unread_notifications/', views.UnreadNotificationsViewSet.as_view()),
 ]

@@ -58,7 +58,8 @@ class NotificationTest(TransactionTestCase):
     def test_login_notifications(self):
         NotificationTest.generate_notifications(self.base_fixtures['users'][0]['user'],
                                                 self.base_fixtures['users'][1]['user'], 104)
-        notification: api_models.Notification = api_models.Notification.objects.filter(user__email='user1@law-orga.de').first()
+        notification: api_models.Notification = api_models.Notification.objects.filter(
+            user__email='user1@law-orga.de').first()
         notification.read = True
         notification.save()
 
@@ -154,6 +155,28 @@ class NotificationTest(TransactionTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(number_of_group_members + 1, group.group_members.count())
         self.assertEqual(number_of_notifications_before + 1, api_models.Notification.objects.count())
+
+    def test_unread_notifications(self):
+        generated_notifications: [api_models.Notification] = NotificationTest.generate_notifications(
+            self.base_fixtures['users'][0]['user'],
+            self.base_fixtures['users'][1]['user'], 30)
+        client: APIClient = self.base_fixtures['users'][0]['client']
+
+        response: Response = client.get('/api/unread_notifications/')
+        self.assertEqual(30, response.data['unread_notifications'])
+
+        generated_notifications[0].read = True
+        generated_notifications[0].save()
+
+        response: Response = client.get('/api/unread_notifications/')
+        self.assertEqual(29, response.data['unread_notifications'])
+
+        generated_notifications[1].read = True
+        generated_notifications[1].save()
+        generated_notifications[27].read = True
+        generated_notifications[27].save()
+        response: Response = client.get('/api/unread_notifications/')
+        self.assertEqual(27, response.data['unread_notifications'])
 
     @staticmethod
     def get_created(notification):
