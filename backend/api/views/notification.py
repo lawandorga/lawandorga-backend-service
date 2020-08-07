@@ -42,11 +42,17 @@ class NotificationViewSet(viewsets.ModelViewSet):
         request: Request = self.request
         if 'sort' in request.query_params:
             if 'sortdirection' in request.query_params and request.query_params['sortdirection'] == 'desc':
-                queryset = queryset.order_by('-' + request.query_params['sort'])
+                to_sort = '-' + request.query_params['sort']
             else:
-                queryset = queryset.order_by(request.query_params['sort'])
+                to_sort = request.query_params['sort']
         else:
-            queryset = queryset.order_by("-created")
+            to_sort = "-created"
+
+        if to_sort != "created" and to_sort != "-created":
+            queryset = queryset.order_by(to_sort, "-created")
+        else:
+            queryset = queryset.order_by(to_sort)
+
         return queryset
 
     def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:

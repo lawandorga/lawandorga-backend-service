@@ -611,7 +611,7 @@ class Command(BaseCommand):
     def create_notifications(user: api_models.UserProfile, source_user: api_models.UserProfile,
                              record: record_models.EncryptedRecord):
         from backend.api.tests.notification_test import NotificationTest
-        NotificationTest.generate_notifications(user=user, source_user=source_user, number_of_notifications=230,
+        NotificationTest.generate_notifications(user=user, source_user=source_user, number_of_notifications=40,
                                                 ref_id=str(record.id), ref_text=record.record_token)
-        NotificationTest.generate_notifications(user=source_user, source_user=user, number_of_notifications=230,
+        NotificationTest.generate_notifications(user=source_user, source_user=user, number_of_notifications=40,
                                                 ref_id=str(record.id), ref_text=record.record_token)
