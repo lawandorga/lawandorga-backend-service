@@ -40,3 +40,4 @@ from .users_rlc_keys import *
 from .rlc_settings import *
 from .missing_rlc_keys import *
 from .notification import *
+from .notification_group import *

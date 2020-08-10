@@ -19,7 +19,7 @@ from rest_framework.response import Response
 from rest_framework.test import APIClient
 
 from backend.api import models as api_models
-from backend.api.models.notification import NotificationEvent, NotificationEventSubject
+from backend.api.models.notification import NotificationEvent
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.recordmanagement import models as record_models
 from backend.static.permissions import PERMISSION_MANAGE_GROUPS_RLC
@@ -200,21 +200,21 @@ class NotificationTest(TransactionTestCase):
         import datetime
         from django.utils import timezone
         notifications = []
-        for i in range(int(number_of_notifications / 2)):
-            notification = api_models.Notification(user=user, source_user=source_user,
-                                                   event_subject=NotificationEventSubject.RECORD,
-                                                   event=NotificationEvent.UPDATED, ref_id=ref_id, ref_text=ref_text)
-            notification.save()
-            notification.created = timezone.now() - datetime.timedelta(hours=i)
-            notification.save()
-            notifications.append(notification)
-
-            notification2 = api_models.Notification(user=user, source_user=source_user,
-                                                    event_subject=NotificationEventSubject.RECORD,
-                                                    event=NotificationEvent.UPDATED, ref_id=ref_id, ref_text=ref_text)
-            notification2.save()
-            notification2.created = timezone.now() - datetime.timedelta(days=i)
-            notification2.save()
-            notifications.append(notification2)
-        notifications.sort(key=NotificationTest.get_created, reverse=True)
-        return notifications
+        # for i in range(int(number_of_notifications / 2)):
+        #     notification = api_models.Notification(user=user, source_user=source_user,
+        #                                            event_subject=NotificationEventSubject.RECORD,
+        #                                            event=NotificationEvent.UPDATED, ref_id=ref_id, ref_text=ref_text)
+        #     notification.save()
+        #     notification.created = timezone.now() - datetime.timedelta(hours=i)
+        #     notification.save()
+        #     notifications.append(notification)
+        #
+        #     notification2 = api_models.Notification(user=user, source_user=source_user,
+        #                                             event_subject=NotificationEventSubject.RECORD,
+        #                                             event=NotificationEvent.UPDATED, ref_id=ref_id, ref_text=ref_text)
+        #     notification2.save()
+        #     notification2.created = timezone.now() - datetime.timedelta(days=i)
+        #     notification2.save()
+        #     notifications.append(notification2)
+        # notifications.sort(key=NotificationTest.get_created, reverse=True)
+        # return notifications
