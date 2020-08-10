@@ -26,12 +26,12 @@ class NotificationEventSubject(Enum):
     Enum for notification event object
     these regard the models which the notification is about
     """
-    RECORD = "RECORD"
-    RECORD_MESSAGE = "RECORD_MESSAGE"
-    RECORD_DOCUMENT = "RECORD_DOCUMENT"
-    RECORD_PERMISSION_REQUEST = "RECORD_PERMISSION_REQUEST"
-    GROUP = "GROUP"
-    FILE = "FILE"
+    RECORD = "R"
+    RECORD_MESSAGE = "RM"
+    RECORD_DOCUMENT = "RD"
+    RECORD_PERMISSION_REQUEST = "RPR"
+    GROUP = "GR"
+    FILE = "FI"
 
 
 class NotificationEvent(Enum):
@@ -39,12 +39,12 @@ class NotificationEvent(Enum):
     enum for notification events types
     contains the action which was performed
     """
-    CREATED = "CREATED"
-    DELETED = "DELETED"
-    MOVED = "MOVED"
-    UPDATED = "UPDATED"
-    ADDED = "ADDED"
-    REMOVED = "REMOVED"
+    CREATED = "CR"
+    DELETED = "DE"
+    MOVED = "MO"
+    UPDATED = "UP"
+    ADDED = "AD"
+    REMOVED = "RE"
 
 
 class NotificationManager(models.Manager):

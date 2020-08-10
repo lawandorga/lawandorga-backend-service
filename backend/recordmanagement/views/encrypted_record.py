@@ -200,7 +200,10 @@ class EncryptedRecordViewSet(APIView):
             })
 
     def patch(self, request, id):
-        e_record = models.EncryptedRecord.objects.get(pk=id)
+        try:
+            e_record = models.EncryptedRecord.objects.get(pk=id)
+        except Exception as e:
+            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
         user = request.user
         if user.rlc != e_record.from_rlc and not user.is_superuser:
             raise CustomError(error_codes.ERROR__RECORD__RETRIEVE_RECORD__WRONG_RLC)
@@ -208,65 +211,79 @@ class EncryptedRecordViewSet(APIView):
         if not e_record.user_has_permission(user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
-        record_data = request.data['record']
-        client_data = request.data['client']
-        client = e_record.client
-
         users_private_key = get_private_key_from_request(request)
         record_key = e_record.get_decryption_key(user, users_private_key)
+        rlcs_private_key = user.get_rlcs_private_key(users_private_key)
+        client = e_record.client
+        client_key = client.get_password(rlcs_private_key)
 
-        try:
-            e_record.record_token = record_data['token']
-            e_record.last_contact_date = parse_date(record_data['last_contact_date'])
-            e_record.state = record_data['state']
-            e_record.official_note = record_data['official_note']
+        if 'record' in request.data:
+            record_data: dict = request.data['record']
 
-            e_record.note = AESEncryption.encrypt(record_data['note'], record_key)
-            e_record.consultant_team = AESEncryption.encrypt(record_data['consultant_team'], record_key)
-            e_record.lawyer = AESEncryption.encrypt(record_data['lawyer'], record_key)
-            e_record.related_persons = AESEncryption.encrypt(record_data['related_persons'], record_key)
-            e_record.contact = AESEncryption.encrypt(record_data['contact'], record_key)
-            e_record.bamf_token = AESEncryption.encrypt(record_data['bamf_token'], record_key)
-            e_record.foreign_token = AESEncryption.encrypt(record_data['foreign_token'], record_key)
-            e_record.first_correspondence = AESEncryption.encrypt(record_data['first_correspondence'], record_key)
-            e_record.circumstances = AESEncryption.encrypt(record_data['circumstances'], record_key)
-            e_record.next_steps = AESEncryption.encrypt(record_data['next_steps'], record_key)
-            e_record.status_described = AESEncryption.encrypt(record_data['status_described'], record_key)
-            e_record.additional_facts = AESEncryption.encrypt(record_data['additional_facts'], record_key)
+            unpatachable_fields = models.EncryptedRecord.ignore_fields()
+            unencrypted_changeable_fields = models.EncryptedRecord.unencrypted_changeable_fields()
+            changeable_datetime_fields = models.EncryptedRecord.changeable_datetime_fields()
 
-            e_record.tagged.clear()
-            for tag in record_data['tags']:
-                e_record.tagged.add(models.RecordTag.objects.get(pk=tag['id']))
+            for key, value in record_data.items():
+                if key not in models.EncryptedRecord.allowed_fields():
+                    raise CustomError(error_codes.ERROR__API__FIELD_NOT_ALLOWED)
+
+                if key in unpatachable_fields:
+                    continue
+                elif key == 'tagged':
+                    if record_data[key].__len__() == 0:
+                        raise CustomError(error_codes.ERROR__RECORD__TAG__AT_LEAST_ONE)
+                    e_record.tagged.clear()
+                    for tag_id in record_data[key]:
+                        try:
+                            tag: models.RecordTag = models.RecordTag.objects.get(pk=tag_id)
+                        except Exception as e:
+                            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
+                        e_record.tagged.add(tag)
+                elif key == 'working_on_record':
+                    pass
+                else:
+                    if key in unencrypted_changeable_fields:
+                        to_save = value
+                    elif key in changeable_datetime_fields:
+                        to_save = parse_date(value)
+                    else:
+                        to_save = AESEncryption.encrypt(value, record_key)
+                    setattr(e_record, key, to_save)
+
+            e_record.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
+            e_record.save()
+
+        if 'client' in request.data:
+            client_data = request.data['client']
+
             client.birthday = parse_date(client_data['birthday'])
             client.origin_country = models.OriginCountry.objects.get(pk=client_data['origin_country'])
-
-            rlcs_private_key = user.get_rlcs_private_key(users_private_key)
-            client_key = e_record.client.get_password(rlcs_private_key)
 
             client.note = AESEncryption.encrypt(client_data['note'], client_key)
             client.name = AESEncryption.encrypt(client_data['name'], client_key)
             client.phone_number = AESEncryption.encrypt(client_data['phone_number'], client_key)
-        except Exception as e:
-            raise CustomError(error_codes.ERROR__RECORD__RECORD__COULD_NOT_SAVE)
+            client.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
+            client.save()
 
-        e_record.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
-        e_record.save()
-        client.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
-        client.save()
-
+        # except Exception as e:
+        #     raise CustomError(error_codes.ERROR__RECORD__RECORD__COULD_NOT_SAVE)
         if not settings.DEBUG:
             record_url = FrontendLinks.get_record_link(e_record)
             for user in e_record.working_on_record.all():
                 EmailSender.send_email_notification([user.email], "Patched Record",
                                                     "RLC Intranet Notification - A record of yours was changed. Look here:" +
                                                     record_url)
+
         record_from_db = models.EncryptedRecord.objects.get(pk=e_record.id)
         client_from_db = models.EncryptedClient.objects.get(pk=client.id)
+        decrypted_record_data = serializers.EncryptedRecordFullDetailSerializer(record_from_db).get_decrypted_data(
+            record_key)
+        decrypted_client_data = serializers.EncryptedClientSerializer(client_from_db).get_decrypted_data(client_key)
         return Response(
             {
-                'record': serializers.EncryptedRecordFullDetailSerializer(record_from_db).get_decrypted_data(
-                    record_key),
-                'client': serializers.EncryptedClientSerializer(client_from_db).get_decrypted_data(client_key)
+                'record': decrypted_record_data,
+                'client': decrypted_client_data
             }
         )
 

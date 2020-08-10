@@ -389,3 +389,14 @@ ERROR__API__USER__NO_OWNERSHIP = {
     'error_code': 'api.user.no_ownership',
     'error_status_code': 403
 }
+
+
+ERROR__API__FIELD_NOT_ALLOWED = {
+    'error_detail': 'field is not allowed',
+    'error_code': 'api.field_not_allowed'
+}
+
+ERROR__RECORD__TAG__AT_LEAST_ONE = {
+    'error_detail': 'at least one tag is needed',
+    'error_code': 'record.tag.at_least_one'
+}

@@ -183,6 +183,8 @@ class CreateFixtures:
             - key: Bytes, Clients Aes Key
         records
             - record 1 2
+                - record
+                - key
         """
         return_object = {}
 
@@ -190,13 +192,19 @@ class CreateFixtures:
         e_client = record_models.EncryptedClient(from_rlc=rlc)
         e_client.name = AESEncryption.encrypt('MainClient', aes_client_key)
         e_client.note = AESEncryption.encrypt('important MainClient note', aes_client_key)
+        e_client.phone_number = AESEncryption.encrypt('1238222', aes_client_key)
+
+        rlcs_public_key = rlc.get_public_key()
+        e_client.encrypted_client_key = RSAEncryption.encrypt(aes_client_key, rlcs_public_key)
         e_client.save()
+
         e_client = e_client
         client_obj = {
             "client": e_client,
             "key": aes_client_key
         }
         return_object.update({"client": client_obj})
+
 
         # create records
         records = []

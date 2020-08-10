@@ -114,6 +114,34 @@ class EncryptedRecord(models.Model):
     def __str__(self):
         return 'e_record: ' + str(self.id) + ':' + self.record_token
 
+    @staticmethod
+    def unencrypted_changeable_fields():
+        return ['official_note', 'state', 'record_token']
+
+    @staticmethod
+    def encrypted_changeable_fields():
+        return ['note', 'consultant_team', 'lawyer', 'related_persons',
+                'contact', 'bamf_token', 'foreign_token', 'first_correspondence',
+                'circumstances', 'next_steps', 'status_described', 'additional_facts']
+
+    @staticmethod
+    def changeable_datetime_fields():
+        return ['last_contact_date', 'first_contact_date', 'first_consultation']
+
+    @staticmethod
+    def ignore_fields():
+        return ['id', 'client', 'from_rlc', 'created_on', 'last_edited']
+
+    @staticmethod
+    def specific_changed_fields():
+        return ['working_on_record', 'tagged']
+
+    @staticmethod
+    def allowed_fields():
+        return EncryptedRecord.changeable_datetime_fields() + EncryptedRecord.ignore_fields() + \
+               EncryptedRecord.unencrypted_changeable_fields() + EncryptedRecord.encrypted_changeable_fields() + \
+               EncryptedRecord.specific_changed_fields()
+
     def user_has_permission(self, user):
         """
         return if the user has permission edit and view the record in full detail
