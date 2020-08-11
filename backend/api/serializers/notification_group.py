@@ -16,9 +16,12 @@
 
 from rest_framework import serializers
 from backend.api.models import NotificationGroup
+from backend.api.serializers import NotificationSerializer
 
 
 class NotificationGroupSerializer(serializers.ModelSerializer):
+    notifications = NotificationSerializer(many=True, read_only=True)
+
     class Meta:
         model = NotificationGroup
-        fields = '__all__'
+        fields = "__all__"

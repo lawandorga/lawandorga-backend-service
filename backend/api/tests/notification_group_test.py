@@ -21,6 +21,7 @@ from rest_framework.response import Response
 from rest_framework.test import APIClient
 
 from backend.api import models as api_models
+from backend.api import serializers as api_serializers
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.recordmanagement import models as record_models
 from backend.static.notification_enums import NotificationType
@@ -29,96 +30,242 @@ from backend.static.notification_enums import NotificationType
 class NotificationGroupTest(TransactionTestCase):
     def setUp(self):
         self.base_fixtures = CreateFixtures.create_base_fixtures()
-        users: [api_models.UserProfile] = [self.base_fixtures['users'][0]['user'],
-                                           self.base_fixtures['users'][1]['user'],
-                                           self.base_fixtures['users'][2]['user']]
-        self.record_fixtures = CreateFixtures.create_record_base_fixtures(rlc=self.base_fixtures['rlc'], users=users)
+        users: [api_models.UserProfile] = [
+            self.base_fixtures["users"][0]["user"],
+            self.base_fixtures["users"][1]["user"],
+            self.base_fixtures["users"][2]["user"],
+        ]
+        self.record_fixtures = CreateFixtures.create_record_base_fixtures(
+            rlc=self.base_fixtures["rlc"], users=users
+        )
 
     def test_record_message_notification_group(self):
-        record: record_models.EncryptedRecord = self.record_fixtures['records'][0]['record']
+        record: record_models.EncryptedRecord = self.record_fixtures["records"][0][
+            "record"
+        ]
         notification_groups_start = api_models.NotificationGroup.objects.all().count()
         notifications_start = api_models.Notification.objects.all().count()
 
-        private_key: bytes = self.base_fixtures['users'][0]['private']
-        client: APIClient = self.base_fixtures['users'][0]['client']
+        private_key: bytes = self.base_fixtures["users"][0]["private"]
+        client: APIClient = self.base_fixtures["users"][0]["client"]
 
         # post new record message
-        response: Response = client.post('/api/records/e_record/' + str(record.id) + '/messages',
-                                         {'message': 'secret message'},
-                                         **{'HTTP_PRIVATE_KEY': private_key})
+        response: Response = client.post(
+            "/api/records/e_record/" + str(record.id) + "/messages",
+            {"message": "secret message"},
+            **{"HTTP_PRIVATE_KEY": private_key}
+        )
         self.assertEqual(200, response.status_code)
 
         # 2 because record send notification to 2 other users (1 and 2) (0 causes it)
-        self.assertEqual(notification_groups_start + 2, api_models.NotificationGroup.objects.all().count())
-        self.assertEqual(notifications_start + 2, api_models.Notification.objects.all().count())
+        self.assertEqual(
+            notification_groups_start + 2,
+            api_models.NotificationGroup.objects.all().count(),
+        )
+        self.assertEqual(
+            notifications_start + 2, api_models.Notification.objects.all().count()
+        )
 
-        self.assertEqual(1, api_models.NotificationGroup.objects.filter(
-            user=self.base_fixtures['users'][1]['user']).count())
-        self.assertEqual(1, api_models.NotificationGroup.objects.filter(
-            user=self.base_fixtures['users'][2]['user']).count())
-        self.assertEqual(1, api_models.Notification.objects.filter(
-            notification_group__user=self.base_fixtures['users'][1]['user']).count())
-        self.assertEqual(1, api_models.Notification.objects.filter(
-            notification_group__user=self.base_fixtures['users'][2]['user']).count())
+        self.assertEqual(
+            1,
+            api_models.NotificationGroup.objects.filter(
+                user=self.base_fixtures["users"][1]["user"]
+            ).count(),
+        )
+        self.assertEqual(
+            1,
+            api_models.NotificationGroup.objects.filter(
+                user=self.base_fixtures["users"][2]["user"]
+            ).count(),
+        )
+        self.assertEqual(
+            1,
+            api_models.Notification.objects.filter(
+                notification_group__user=self.base_fixtures["users"][1]["user"]
+            ).count(),
+        )
+        self.assertEqual(
+            1,
+            api_models.Notification.objects.filter(
+                notification_group__user=self.base_fixtures["users"][2]["user"]
+            ).count(),
+        )
 
         notification_group_from_db: api_models.NotificationGroup = api_models.NotificationGroup.objects.filter(
-            user=self.base_fixtures['users'][1]['user']).first()
+            user=self.base_fixtures["users"][1]["user"]
+        ).first()
         self.assertEqual(record.record_token, notification_group_from_db.ref_text)
         self.assertEqual(False, notification_group_from_db.read)
         self.assertEqual(1, notification_group_from_db.notifications.count())
         notification: api_models.Notification = notification_group_from_db.notifications.first()
-        self.assertEqual(self.base_fixtures['users'][0]['user'], notification.source_user)
-        self.assertEqual(NotificationType.RECORD__RECORD_MESSAGE_ADDED.value, notification.type)
+        self.assertEqual(
+            self.base_fixtures["users"][0]["user"], notification.source_user
+        )
+        self.assertEqual(
+            NotificationType.RECORD__RECORD_MESSAGE_ADDED.value, notification.type
+        )
 
         # new notification, but no new group
-        response: Response = client.post('/api/records/e_record/' + str(record.id) + '/messages',
-                                         {'message': 'secret message'},
-                                         **{'HTTP_PRIVATE_KEY': private_key})
+        response: Response = client.post(
+            "/api/records/e_record/" + str(record.id) + "/messages",
+            {"message": "secret message"},
+            **{"HTTP_PRIVATE_KEY": private_key}
+        )
         self.assertEqual(200, response.status_code)
 
-        self.assertEqual(notification_groups_start + 2, api_models.NotificationGroup.objects.all().count())
-        self.assertEqual(notifications_start + 4, api_models.Notification.objects.all().count())
+        self.assertEqual(
+            notification_groups_start + 2,
+            api_models.NotificationGroup.objects.all().count(),
+        )
+        self.assertEqual(
+            notifications_start + 4, api_models.Notification.objects.all().count()
+        )
 
         # group updated
         notification_group_from_db_later: api_models.NotificationGroup = api_models.NotificationGroup.objects.filter(
-            user=self.base_fixtures['users'][1]['user']).first()
-        self.assertFalse(notification_group_from_db_later.last_activity == notification_group_from_db.last_activity)
-        self.assertTrue(notification_group_from_db_later.last_activity > notification_group_from_db.last_activity)
+            user=self.base_fixtures["users"][1]["user"]
+        ).first()
+        self.assertFalse(
+            notification_group_from_db_later.last_activity
+            == notification_group_from_db.last_activity
+        )
+        self.assertTrue(
+            notification_group_from_db_later.last_activity
+            > notification_group_from_db.last_activity
+        )
 
         # single notification
         new_notification_from_db: api_models.Notification = notification_group_from_db.notifications.filter(
-            ~Q(id=notification.id)).first()
-        self.assertEqual(self.base_fixtures['users'][0]['user'], new_notification_from_db.source_user)
-        self.assertEqual(NotificationType.RECORD__RECORD_MESSAGE_ADDED.value, new_notification_from_db.type)
+            ~Q(id=notification.id)
+        ).first()
+        self.assertEqual(
+            self.base_fixtures["users"][0]["user"], new_notification_from_db.source_user
+        )
+        self.assertEqual(
+            NotificationType.RECORD__RECORD_MESSAGE_ADDED.value,
+            new_notification_from_db.type,
+        )
 
     def test_login_notification_groups(self):
-        # TODO: generate notification groups from fixtures
-        notification: api_models.Notification = api_models.Notification.objects.filter(
-            user__email='user1@law-orga.de').first()
-        notification.read = True
-        notification.save()
+        user: api_models.UserProfile = self.base_fixtures["users"][0]["user"]
+        CreateFixtures.add_notification_fixtures(
+            main_user=user,
+            source_user=self.base_fixtures["users"][1]["user"],
+            records=[
+                self.record_fixtures["records"][0]["record"],
+                self.record_fixtures["records"][1]["record"],
+            ],
+            groups=[self.base_fixtures["groups"][0], self.base_fixtures["groups"][1]],
+        )
 
-        login_response: Response = APIClient().post('/api/login/',
-                                                    {'username': 'user1@law-orga.de', 'password': 'qwe123'})
+        login_response: Response = APIClient().post(
+            "/api/login/", {"username": "user1@law-orga.de", "password": "qwe123"}
+        )
         self.assertEqual(200, login_response.status_code)
-        self.assertIn('notifications', login_response.data)
-        self.assertEqual(103, login_response.data['notifications'])
+        self.assertIn("notifications", login_response.data)
+        self.assertEqual(3, login_response.data["notifications"])
 
+    def test_get_notifications(self):
+        user: api_models.UserProfile = self.base_fixtures["users"][0]["user"]
+        client: APIClient = self.base_fixtures["users"][0]["client"]
+        notification_groups: [
+            api_models.NotificationGroup
+        ] = CreateFixtures.add_notification_fixtures(
+            main_user=user,
+            source_user=self.base_fixtures["users"][1]["user"],
+            records=[
+                self.record_fixtures["records"][0]["record"],
+                self.record_fixtures["records"][1]["record"],
+            ],
+            groups=[self.base_fixtures["groups"][0], self.base_fixtures["groups"][1]],
+        )
 
+        response: Response = client.get("/api/notification_groups/")
 
-        # TODO: check login afterwards
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(3, response.data.__len__())
+        self.assertIn(notification_groups[0], response.data)
+        # TODO: check more
 
-        # TODO: check if read works (all single notifications -> group too)
+    def test_read_notification_group(self):
+        user: api_models.UserProfile = self.base_fixtures["users"][0]["user"]
+        client: APIClient = self.base_fixtures["users"][0]["client"]
+        notification_groups: [
+            api_models.NotificationGroup
+        ] = CreateFixtures.add_notification_fixtures(
+            main_user=user,
+            source_user=self.base_fixtures["users"][1]["user"],
+            records=[
+                self.record_fixtures["records"][0]["record"],
+                self.record_fixtures["records"][1]["record"],
+            ],
+            groups=[self.base_fixtures["groups"][0], self.base_fixtures["groups"][1]],
+        )
 
-        # TODO: check get notifications
+        response: Response = client.patch(
+            "/api/notification_groups/" + str(notification_groups[0].id) + "/",
+            {"read": True},
+            format="json",
+        )
+        self.assertEqual(200, response.status_code)
+        notification_group_from_db: api_models.NotificationGroup = api_models.NotificationGroup.objects.get(
+            pk=notification_groups[0].id
+        )
+        self.assertTrue(notification_group_from_db.read)
+        for notification in notification_group_from_db.notifications.all():
+            self.assertTrue(notification.read)
 
-        # TODO: check read notification and read notification group
+        response: Response = client.patch(
+            "/api/notification_groups/" + str(notification_groups[0].id) + "/",
+            {"read": False},
+            format="json",
+        )
+        self.assertEqual(200, response.status_code)
+        notification_group_from_db: api_models.NotificationGroup = api_models.NotificationGroup.objects.get(
+            pk=notification_groups[0].id
+        )
+        self.assertFalse(notification_group_from_db.read)
+        for notification in notification_group_from_db.notifications.all():
+            self.assertTrue(notification.read)
 
-        # TODO: check other notifcation sources... A LOT
-            # check record updated
-            # check new record (consultants)
-            # check group member added /removed
-            # check group permission request
-            # check group deletion request
-            # check new user request
-            #
+        response: Response = client.patch(
+            "/api/notification_groups/12321312/", {"read": False}, format="json",
+        )
+        self.assertEqual(400, response.status_code)
+
+        other_client: APIClient = self.base_fixtures["users"][1]["client"]
+        response: Response = other_client.patch(
+            "/api/notification_groups/" + str(notification_groups[0].id) + "/",
+            {"read": True},
+            format="json",
+        )
+        self.assertEqual(403, response.status_code)
+        notification_group_from_db: api_models.NotificationGroup = api_models.NotificationGroup.objects.get(
+            pk=notification_groups[0].id
+        )
+        self.assertFalse(notification_group_from_db.read)
+
+        response: Response = client.patch(
+            "/api/notification_groups/" + str(notification_groups[0].id) + "/",
+            {"read": "test"},
+            format="json",
+        )
+        self.assertEqual(400, response.status_code)
+
+        response: Response = client.patch(
+            "/api/notification_groups/" + str(notification_groups[0].id) + "/",
+            {"read": True, "user": 123},
+            format="json",
+        )
+        self.assertEqual(400, response.status_code)
+
+    # TODO: check if read works (all single notifications -> group too)
+
+    # TODO: check other notification sources... A LOT
+    # check record updated
+    # check new record (consultants)
+    # check group member added /removed
+    # check group permission request
+    # check group deletion request
+    # check new user request
+    #

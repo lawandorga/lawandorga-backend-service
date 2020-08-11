@@ -33,9 +33,9 @@ from backend.static.date_utils import parse_date
 from backend.static.emails import EmailSender, FrontendLinks
 from backend.static.encryption import RSAEncryption
 from backend.static.error_codes import *
-from backend.api.models import UserProfile, Permission, Rlc, UserEncryptionKeys, Notification
+from backend.api.models import UserProfile, Permission, Rlc, UserEncryptionKeys, NotificationGroup
 from backend.api.serializers import UserProfileSerializer, UserProfileCreatorSerializer, UserProfileNameSerializer, RlcSerializer, \
-    UserProfileForeignSerializer, NotificationSerializer
+    UserProfileForeignSerializer
 from backend.static.permissions import PERMISSION_ACCEPT_NEW_USERS_RLC
 from backend.static.middleware import get_private_key_from_request
 
@@ -243,7 +243,7 @@ class LoginViewSet(viewsets.ViewSet):
         serialized_user = UserProfileSerializer(user).data
         serialized_rlc = RlcSerializer(user.rlc).data
 
-        notifications = Notification.objects.filter(user=user, read=False).count()
+        notifications = NotificationGroup.objects.filter(user=user, read=False).count()
 
         statics = LoginViewSet.get_statics(user)
         return_object = {

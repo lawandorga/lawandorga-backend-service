@@ -24,12 +24,58 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from backend.api.errors import CustomError
-from backend.api.models import  NotificationGroup
+from backend.api.models import NotificationGroup
 from backend.api.serializers import NotificationGroupSerializer
-from backend.static.error_codes import ERROR__API__ID_NOT_PROVIDED, ERROR__API__NOTIFICATION__UPDATE_INVALID, \
-    ERROR__API__USER__NO_OWNERSHIP, ERROR__API__ID_NOT_FOUND
+from backend.static.error_codes import (
+    ERROR__API__ID_NOT_PROVIDED,
+    ERROR__API__NOTIFICATION__UPDATE_INVALID,
+    ERROR__API__USER__NO_OWNERSHIP,
+    ERROR__API__ID_NOT_FOUND,
+    ERROR__API__PARAMS_NOT_VALID,
+)
 
 
 class NotificationGroupViewSet(viewsets.ModelViewSet):
     queryset = NotificationGroup.objects.all()
     serializer_class = NotificationGroupSerializer
+
+    def get_queryset(self) -> QuerySet:
+        if not self.request.user.is_superuser:
+            queryset = NotificationGroup.objects.filter(user=self.request.user)
+        else:
+            queryset = NotificationGroup.objects.all()
+
+        request: Request = self.request
+
+        return queryset
+
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        if "pk" not in kwargs:
+            raise CustomError(ERROR__API__ID_NOT_PROVIDED)
+
+        try:
+            notification_group: NotificationGroup = NotificationGroup.objects.get(
+                pk=kwargs["pk"]
+            )
+        except Exception as e:
+            raise CustomError(ERROR__API__ID_NOT_FOUND)
+
+        if not request.user.is_superuser and request.user != notification_group.user:
+            raise CustomError(ERROR__API__USER__NO_OWNERSHIP)
+
+        if (
+            "read" not in request.data
+            or (request.data["read"] is not True and request.data["read"] is not False)
+            or request.data.__len__() != 1
+        ):
+            raise CustomError(ERROR__API__PARAMS_NOT_VALID)
+
+        notification_group.read = request.data["read"]
+        notification_group.save()
+
+        if request.data["read"]:
+            for notification in notification_group.notifications.all():
+                notification.read = True
+                notification.save()
+
+        return Response({"success": True})
