@@ -17,7 +17,7 @@
 from django.db import models
 
 from backend.api.models import NotificationGroup, UserProfile
-from backend.static.notification_enums import NotificationEvent, NotificationGroupType, NotificationType
+from backend.static.notification_enums import NotificationGroupType, NotificationType
 
 
 class NotificationManager(models.Manager):
@@ -27,39 +27,29 @@ class NotificationManager(models.Manager):
     """
 
     @staticmethod
-    def create_notification(event: NotificationEvent, event_subject: NotificationType, ref_id: int,
-                            user: UserProfile, source_user: UserProfile, ref_text: str, read: bool):
-        pass
-        # notification = Notification(event=event, event_type=event_subject, ref_id=ref_id, user=user,
-        #                             source_user=source_user, ref_text=ref_text, read=read)
-        # notification.save()
+    def create_notification(user: UserProfile, source_user: UserProfile, ref_id: str, ref_text: str,
+                            notification_group_type: NotificationGroupType, notification_type: NotificationType):
+        try:
+            group = NotificationGroup.objects.get(user=user, type=notification_group_type.value, ref_id=str(ref_id))
+        except Exception as e:
+            group = NotificationGroup(user=user, type=notification_group_type.value, ref_id=str(ref_id),
+                                      ref_text=ref_text)
+            group.save()
+        notification = Notification(notification_group=group, source_user=source_user, type=notification_type.value)
+        notification.save()
 
     @staticmethod
     def create_notification_new_record_message(user: UserProfile, source_user: UserProfile, record: 'EncrypedRecord'):
-        try:
-            group = NotificationGroup.objects.get(user=user, type=NotificationGroupType.RECORD.value,
-                                                  ref_id=str(record.id))
-        except Exception as e:
-            group = NotificationGroup(user=user, type=NotificationGroupType.RECORD.value, ref_id=str(record.id),
-                                      ref_text=record.record_token)
-            group.save()
-        notification = Notification(notification_group=group, source_user=source_user,
-                                    event=NotificationEvent.CREATED.value,
-                                    sub_type=NotificationType.RECORD_MESSAGE.value)
-        notification.save()
-
-        # notification = Notification(event_subject=NotificationEventSubject.RECORD_MESSAGE,
-        #                             event=NotificationEvent.CREATED, ref_id=str(record.id), user=user,
-        #                             source_user=source_user, ref_text=record.record_token)
-        # notification.save()
+        Notification.objects.create_notification(user, source_user, str(record.id), record.record_token,
+                                                 NotificationGroupType.RECORD,
+                                                 NotificationType.RECORD__RECORD_MESSAGE_ADDED)
 
     @staticmethod
     def create_notification_new_record(user: UserProfile, source_user: UserProfile, record: 'EncryptedRecord'):
-        pass
-        # notification = Notification(event_subject=NotificationEventSubject.RECORD,
-        #                             event=NotificationEvent.CREATED, ref_id=str(record.id), user=user,
-        #                             source_user=source_user, ref_text=record.record_token)
-        # notification.save()
+        Notification.objects.create_notification(user=user, source_user=source_user, ref_id=str(record.id),
+                                                 ref_text=record.record_token,
+                                                 notification_group_type=NotificationGroupType.RECORD,
+                                                 notification_type=NotificationType.RECORD__CREATED)
 
     @staticmethod
     def create_notification_added_to_group(user: UserProfile, source_user: UserProfile, group: 'Group'):
@@ -85,8 +75,7 @@ class Notification(models.Model):
                                     null=True)
     created = models.DateTimeField(auto_now_add=True)
 
-    event = models.CharField(max_length=50, choices=NotificationEvent.choices(), null=False)
-    sub_type = models.CharField(max_length=50, choices=NotificationType.choices(), null=False, default="")
+    type = models.CharField(max_length=75, choices=NotificationType.choices(), null=False, default="")
     read = models.BooleanField(default=False, null=False)
 
     text = models.TextField(null=True)

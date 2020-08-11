@@ -15,6 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 
+from django.db.models import Q
 from django.test import TransactionTestCase
 from rest_framework.response import Response
 from rest_framework.test import APIClient
@@ -67,8 +68,9 @@ class NotificationGroupTest(TransactionTestCase):
         self.assertEqual(1, notification_group_from_db.notifications.count())
         notification: api_models.Notification = notification_group_from_db.notifications.first()
         self.assertEqual(self.base_fixtures['users'][0]['user'], notification.source_user)
-        self.assertEqual(NotificationType.RECORD_MESSAGE.value, notification.sub_type)
+        self.assertEqual(NotificationType.RECORD__RECORD_MESSAGE_ADDED.value, notification.type)
 
+        # new notification, but no new group
         response: Response = client.post('/api/records/e_record/' + str(record.id) + '/messages',
                                          {'message': 'secret message'},
                                          **{'HTTP_PRIVATE_KEY': private_key})
@@ -77,28 +79,46 @@ class NotificationGroupTest(TransactionTestCase):
         self.assertEqual(notification_groups_start + 2, api_models.NotificationGroup.objects.all().count())
         self.assertEqual(notifications_start + 4, api_models.Notification.objects.all().count())
 
+        # group updated
         notification_group_from_db_later: api_models.NotificationGroup = api_models.NotificationGroup.objects.filter(
             user=self.base_fixtures['users'][1]['user']).first()
         self.assertFalse(notification_group_from_db_later.last_activity == notification_group_from_db.last_activity)
         self.assertTrue(notification_group_from_db_later.last_activity > notification_group_from_db.last_activity)
 
-        # notification_for_user_1: api_models.Notification = api_models.Notification.objects.filter(
-        #     user=self.base_fixtures['users'][1]['user']).first()
-        # self.assertTrue(notification_for_user_1 is not None)
-        # self.assertEqual(notification_for_user_1.source_user, self.base_fixtures['users'][0]['user'])
-        # self.assertEqual(notification_for_user_1.read, False)
-        # self.assertEqual(notification_for_user_1.ref_id, str(record.id))
+        # single notification
+        new_notification_from_db: api_models.Notification = notification_group_from_db.notifications.filter(
+            ~Q(id=notification.id)).first()
+        self.assertEqual(self.base_fixtures['users'][0]['user'], new_notification_from_db.source_user)
+        self.assertEqual(NotificationType.RECORD__RECORD_MESSAGE_ADDED.value, new_notification_from_db.type)
 
-        # TODO: check if new single notifications gets added to group and gruop last activity gets updated
+    def test_login_notification_groups(self):
+        # TODO: generate notification groups from fixtures
+        notification: api_models.Notification = api_models.Notification.objects.filter(
+            user__email='user1@law-orga.de').first()
+        notification.read = True
+        notification.save()
+
+        login_response: Response = APIClient().post('/api/login/',
+                                                    {'username': 'user1@law-orga.de', 'password': 'qwe123'})
+        self.assertEqual(200, login_response.status_code)
+        self.assertIn('notifications', login_response.data)
+        self.assertEqual(103, login_response.data['notifications'])
 
 
-
-        # TODO: created notification group, created notifications, check group itself and check notifications itself (if correct)
 
         # TODO: check login afterwards
 
         # TODO: check if read works (all single notifications -> group too)
 
+        # TODO: check get notifications
+
+        # TODO: check read notification and read notification group
 
         # TODO: check other notifcation sources... A LOT
-        # TODO: check record updated
+            # check record updated
+            # check new record (consultants)
+            # check group member added /removed
+            # check group permission request
+            # check group deletion request
+            # check new user request
+            #

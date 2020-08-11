@@ -17,8 +17,7 @@
 from rest_framework.test import APIClient
 
 from backend.api.management.commands.fixtures import Fixtures as MainFixtures
-from backend.api.models import Group, HasPermission, Permission, Rlc, RlcEncryptionKeys, UserEncryptionKeys, \
-    UserProfile, UsersRlcKeys
+from backend.api.models import *
 from backend.files import models as file_models
 from backend.files.static.folder_permissions import get_all_folder_permissions_strings
 from backend.recordmanagement import models as record_models
@@ -205,7 +204,6 @@ class CreateFixtures:
         }
         return_object.update({"client": client_obj})
 
-
         # create records
         records = []
         # 1
@@ -294,3 +292,16 @@ class CreateFixtures:
                                                       permission_for_rlc=user.rlc)
         has_permission.save()
         return has_permission
+
+    @staticmethod
+    def add_notification_fixtures(main_user: UserProfile, source_user: UserProfile,
+                                  records: [record_models.EncryptedRecord], groups: [Group]):
+        if records.__len__() != 2:
+            raise RuntimeError("records wrong length")
+        if groups.__len__() != 2:
+            raise RuntimeError("groups wrong length")
+
+        Notification.objects.create_notification(user=main_user, source_user=source_user, ref_id=str(records[0].id),
+                                                 ref_text=records[0].record_token,
+                                                 notification_group_type=NotificationGroupType.RECORD,
+                                                 notification_type=NotificationType.RECORD__CREATED)

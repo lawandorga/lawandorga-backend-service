@@ -33,26 +33,16 @@ class NotificationGroupType(Enum):
         return [(key.value, key.name) for key in cls]
 
 
-class NotificationEvent(Enum):
-    """
-    enum for notification events types
-    contains the action which was performed
-    """
-    CREATED = "CREATED"
-    DELETED = "DELETED"
-    MOVED = "MOVED"
-    UPDATED = "UPDATED"
-    ADDED = "ADDED"
-    REMOVED = "REMOVED"
-
-    @classmethod
-    def choices(cls):
-        return [(key.value, key.name) for key in cls]
-
-
 class NotificationType(Enum):
-    RECORD_MESSAGE = "RECORD_MESSAGE"
-    RECORD_UPDATE = "RECORD_UPDATE"
+    RECORD__CREATED = "RECORD__CREATED"
+    RECORD__UPDATED = "RECORD__UPDATED"
+    RECORD__DELETED = "RECORD__DELETED"
+    RECORD__RECORD_MESSAGE_ADDED = "RECORD__RECORD_MESSAGE_ADDED"
+    RECORD__RECORD_DOCUMENT_ADDED = "RECORD__RECORD_DOCUMENT_ADDED"
+    RECORD__RECORD_DOCUMENT_MODIFIED = "RECORD__RECORD_DOCUMENT_MODIFIED"
+    RECORD__CLIENT_MODIFIED = "RECORD__CLIENT_MODIFIED"
+
+    # TODO: add more
 
     @classmethod
     def choices(cls):
