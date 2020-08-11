@@ -208,8 +208,6 @@ if "ON_HEROKU" in os.environ and os.environ["ON_HEROKU"]:
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
     STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
     COMPRESS_STORAGE = "backend.shared.storage_generator.CachedS3Boto3Storage"
-else:
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
