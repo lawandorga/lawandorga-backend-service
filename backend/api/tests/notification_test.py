@@ -15,6 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.test import TransactionTestCase
+from rest_framework.response import Response
+from rest_framework.test import APIClient
 
 from backend.api.models import *
 from backend.api.tests.fixtures_encryption import CreateFixtures
@@ -253,3 +255,32 @@ class NotificationTest(TransactionTestCase):
         self.assertEqual(
             NotificationType.GROUP__REMOVED_ME.value, second_notification_from_db.type
         )
+
+    def test_read_notification(self):
+        user: UserProfile = self.base_fixtures["users"][0]["user"]
+        client: APIClient = self.base_fixtures["users"][0]["client"]
+        notification_groups: [
+            NotificationGroup
+        ] = CreateFixtures.add_notification_fixtures(
+            main_user=user,
+            source_user=self.base_fixtures["users"][1]["user"],
+            records=[
+                self.base_record_fixtures["records"][0]["record"],
+                self.base_record_fixtures["records"][1]["record"],
+            ],
+            groups=[self.base_fixtures["groups"][0], self.base_fixtures["groups"][1]],
+        )
+
+        notifications: Notification = notification_groups[0].notifications.all()
+        response: Response = client.patch(
+            "/api/notifications/" + str(notifications[0].id) + "/",
+            {"read": True},
+            format="json",
+        )
+        self.assertEqual(200, response.status_code)
+        notification: Notification = Notification.objects.get(pk=notifications[0].id)
+        self.assertTrue(notification.read)
+        notification_group: NotificationGroup = NotificationGroup.objects.get(
+            pk=notification_groups[0].id
+        )
+        self.assertFalse(notification_group.read)

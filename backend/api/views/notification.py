@@ -70,7 +70,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
         except Exception as e:
             raise CustomError(ERROR__API__ID_NOT_FOUND)
 
-        if request.user != notification.user:
+        if request.user != notification.notification_group.user:
             raise CustomError(ERROR__API__USER__NO_OWNERSHIP)
 
         if "read" not in request.data or request.data.__len__() > 1:
