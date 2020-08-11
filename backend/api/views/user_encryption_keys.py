@@ -24,4 +24,4 @@ from backend.api.permissions import OnlySuperuser
 class UserEncryptionKeysViewSet(ModelViewSet):
     queryset = UserEncryptionKeys.objects.all()
     serializer_class = UserEncryptionKeysSerializer
-    permission_classes = (OnlySuperuser, )
+    permission_classes = (OnlySuperuser,)

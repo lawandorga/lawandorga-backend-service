@@ -8,25 +8,50 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0019_notification_created'),
+        ("api", "0019_notification_created"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='notification',
-            name='user',
-        ),
+        migrations.RemoveField(model_name="notification", name="user",),
         migrations.CreateModel(
-            name='NotificationGroup',
+            name="NotificationGroup",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('last_activity', models.DateTimeField(auto_now_add=True)),
-                ('created', models.DateTimeField(auto_now_add=True)),
-                ('type', models.CharField(choices=[('RECORD', 'RECORD'), ('RECORD_PERMISSION_REQUEST', 'RECORD_PERMISSION_REQUEST'), ('RECORD_DELETION_REQUEST', 'RECORD_DELETION_REQUEST'), ('USER_REQUEST', 'USER_REQUEST'), ('GROUP', 'GROUP'), ('FILE', 'FILE')], max_length=100)),
-                ('read', models.BooleanField(default=False)),
-                ('ref_id', models.CharField(max_length=50)),
-                ('ref_text', models.CharField(max_length=100, null=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='notification_groups', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("last_activity", models.DateTimeField(auto_now_add=True)),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("RECORD", "RECORD"),
+                            ("RECORD_PERMISSION_REQUEST", "RECORD_PERMISSION_REQUEST"),
+                            ("RECORD_DELETION_REQUEST", "RECORD_DELETION_REQUEST"),
+                            ("USER_REQUEST", "USER_REQUEST"),
+                            ("GROUP", "GROUP"),
+                            ("FILE", "FILE"),
+                        ],
+                        max_length=100,
+                    ),
+                ),
+                ("read", models.BooleanField(default=False)),
+                ("ref_id", models.CharField(max_length=50)),
+                ("ref_text", models.CharField(max_length=100, null=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="notification_groups",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

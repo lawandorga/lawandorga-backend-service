@@ -23,27 +23,45 @@ from backend.static.encryption import AESEncryption
 
 class EncryptedStorageTests(SimpleTestCase):
     def test_up_download_with_encryption(self):
-        key = 'secret password'
-        file = 'test_files/test_file.png'
-        s3_folder = 'tests'
+        key = "secret password"
+        file = "test_files/test_file.png"
+        s3_folder = "tests"
         EncryptedStorage.encrypt_file_and_upload_to_s3(file, key, s3_folder)
 
-        s3_key = 'tests/test_file.png.enc'
+        s3_key = "tests/test_file.png.enc"
 
-        EncryptedStorage.download_from_s3_and_decrypt_file(s3_key, key, 'test_files',
-                                                           'test_files/test_file_downloaded_decrypted.png.enc')
+        EncryptedStorage.download_from_s3_and_decrypt_file(
+            s3_key,
+            key,
+            "test_files",
+            "test_files/test_file_downloaded_decrypted.png.enc",
+        )
 
-        self.assertTrue(filecmp.cmp('test_files/test_file.png', 'test_files/test_file_downloaded_decrypted.png'))
+        self.assertTrue(
+            filecmp.cmp(
+                "test_files/test_file.png",
+                "test_files/test_file_downloaded_decrypted.png",
+            )
+        )
 
     def test_up_download_with_encryption_big_video(self):
-        key = 'secret password'
-        file = 'test_files/big_video.mp4'
-        s3_folder = 'tests'
+        key = "secret password"
+        file = "test_files/big_video.mp4"
+        s3_folder = "tests"
         EncryptedStorage.encrypt_file_and_upload_to_s3(file, key, s3_folder)
 
-        s3_key = 'tests/big_video.mp4.enc'
+        s3_key = "tests/big_video.mp4.enc"
 
-        EncryptedStorage.download_from_s3_and_decrypt_file(s3_key, key, 'test_files',
-                                                           'test_files/big_video_downloaded_decrypted.mp4.enc')
+        EncryptedStorage.download_from_s3_and_decrypt_file(
+            s3_key,
+            key,
+            "test_files",
+            "test_files/big_video_downloaded_decrypted.mp4.enc",
+        )
 
-        self.assertTrue(filecmp.cmp('test_files/big_video.mp4', 'test_files/big_video_downloaded_decrypted.mp4'))
+        self.assertTrue(
+            filecmp.cmp(
+                "test_files/big_video.mp4",
+                "test_files/big_video_downloaded_decrypted.mp4",
+            )
+        )

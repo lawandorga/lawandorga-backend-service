@@ -6,13 +6,11 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0012_auto_20200108_1533'),
+        ("api", "0012_auto_20200108_1533"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='group',
-            name='visible',
-            field=models.BooleanField(default=True),
+            model_name="group", name="visible", field=models.BooleanField(default=True),
         ),
     ]

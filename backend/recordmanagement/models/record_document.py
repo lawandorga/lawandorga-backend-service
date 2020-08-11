@@ -22,20 +22,34 @@ from backend.static.storage_folders import get_storage_folder_record_document
 class RecordDocument(models.Model):
     name = models.CharField(max_length=200, unique=True)
     creator = models.ForeignKey(
-        UserProfile, related_name="record_documents_created", on_delete=models.SET_NULL, null=True)
+        UserProfile,
+        related_name="record_documents_created",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
 
-    record = models.ForeignKey('Record', related_name="record_documents", on_delete=models.CASCADE,
-                               null=True, default=None)
+    record = models.ForeignKey(
+        "Record",
+        related_name="record_documents",
+        on_delete=models.CASCADE,
+        null=True,
+        default=None,
+    )
 
     created_on = models.DateTimeField(auto_now_add=True)
     last_edited = models.DateTimeField(auto_now_add=True)
 
     file_size = models.BigIntegerField()
 
-    tagged = models.ManyToManyField('RecordDocumentTag', related_name="tagged", blank=True)
+    tagged = models.ManyToManyField(
+        "RecordDocumentTag", related_name="tagged", blank=True
+    )
 
     def __str__(self):
-        return 'record_document: ' + str(self.id) + ':' + self.name
+        return "record_document: " + str(self.id) + ":" + self.name
 
     def get_file_key(self):
-        return get_storage_folder_record_document(self.record.from_rlc_id, self.record.id) + self.name
+        return (
+            get_storage_folder_record_document(self.record.from_rlc_id, self.record.id)
+            + self.name
+        )

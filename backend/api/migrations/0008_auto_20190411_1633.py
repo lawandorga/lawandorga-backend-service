@@ -22,18 +22,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0007_useractivationlink_activated'),
+        ("api", "0007_useractivationlink_activated"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='group',
-            name='description',
+            model_name="group",
+            name="description",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='group',
-            name='note',
+            model_name="group",
+            name="note",
             field=models.TextField(blank=True, null=True),
         ),
     ]

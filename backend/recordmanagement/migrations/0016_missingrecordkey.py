@@ -9,16 +9,38 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('recordmanagement', '0015_poolconsultant_poolrecord'),
+        ("recordmanagement", "0015_poolconsultant_poolrecord"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='MissingRecordKey',
+            name="MissingRecordKey",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('record', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='missing_record_keys', to='recordmanagement.EncryptedRecord')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='missing_record_keys', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "record",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="missing_record_keys",
+                        to="recordmanagement.EncryptedRecord",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="missing_record_keys",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

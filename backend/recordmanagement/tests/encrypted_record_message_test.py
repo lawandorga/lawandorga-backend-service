@@ -25,26 +25,42 @@ from backend.recordmanagement import models as record_models
 class EncryptedRecordMessageTest(TransactionTestCase):
     def setUp(self) -> None:
         self.base_fixtures = CreateFixtures.create_base_fixtures()
-        users: [api_models.UserProfile] = [self.base_fixtures['users'][0]['user'],
-                                           self.base_fixtures['users'][1]['user'],
-                                           self.base_fixtures['users'][2]['user']]
-        self.record_fixtures = CreateFixtures.create_record_base_fixtures(rlc=self.base_fixtures['rlc'], users=users)
+        users: [api_models.UserProfile] = [
+            self.base_fixtures["users"][0]["user"],
+            self.base_fixtures["users"][1]["user"],
+            self.base_fixtures["users"][2]["user"],
+        ]
+        self.record_fixtures = CreateFixtures.create_record_base_fixtures(
+            rlc=self.base_fixtures["rlc"], users=users
+        )
 
     def test_message_creation(self):
-        record: record_models.EncryptedRecord = self.record_fixtures['records'][0]['record']
+        record: record_models.EncryptedRecord = self.record_fixtures["records"][0][
+            "record"
+        ]
         overall_messages: int = record_models.EncryptedRecordMessage.objects.all().count()
-        record_messages: int = record_models.EncryptedRecordMessage.objects.filter(record=record).count()
+        record_messages: int = record_models.EncryptedRecordMessage.objects.filter(
+            record=record
+        ).count()
 
         # from fixtures
-        private_key: bytes = self.base_fixtures['users'][0]['private']
-        client: APIClient = self.base_fixtures['users'][0]['client']
+        private_key: bytes = self.base_fixtures["users"][0]["private"]
+        client: APIClient = self.base_fixtures["users"][0]["client"]
 
         # post new record message
-        response = client.post('/api/records/e_record/' + str(record.id) + '/messages', {'message': 'secret message'},
-                    **{'HTTP_PRIVATE_KEY': private_key})
+        response = client.post(
+            "/api/records/e_record/" + str(record.id) + "/messages",
+            {"message": "secret message"},
+            **{"HTTP_PRIVATE_KEY": private_key}
+        )
 
         # assert if message is created in db
-        self.assertEquals(overall_messages + 1, record_models.EncryptedRecordMessage.objects.all().count())
-        self.assertEquals(record_messages + 1,
-                          record_models.EncryptedRecordMessage.objects.filter(record=record).count())
-        self.assertEquals('secret message', response.data['message'])
+        self.assertEquals(
+            overall_messages + 1,
+            record_models.EncryptedRecordMessage.objects.all().count(),
+        )
+        self.assertEquals(
+            record_messages + 1,
+            record_models.EncryptedRecordMessage.objects.filter(record=record).count(),
+        )
+        self.assertEquals("secret message", response.data["message"])

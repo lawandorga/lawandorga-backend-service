@@ -24,17 +24,23 @@ from backend.static.notification_enums import NotificationGroupType
 
 
 class NotificationGroup(models.Model):
-    user = models.ForeignKey(UserProfile, related_name="notification_groups", on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        UserProfile, related_name="notification_groups", on_delete=models.CASCADE
+    )
     last_activity = models.DateTimeField(auto_now_add=True)
     created = models.DateTimeField(auto_now_add=True)
 
-    type = models.CharField(max_length=100, choices=NotificationGroupType.choices(), null=False)
+    type = models.CharField(
+        max_length=100, choices=NotificationGroupType.choices(), null=False
+    )
     read = models.BooleanField(default=False, null=False)
 
     ref_id = models.CharField(max_length=50, null=False)
     ref_text = models.CharField(max_length=100, null=True)
 
     def new_activity(self):
-        self.last_activity = datetime.utcnow().replace(tzinfo=pytz.timezone(settings.TIME_ZONE))
+        self.last_activity = datetime.utcnow().replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
         self.read = False
         self.save()

@@ -21,16 +21,22 @@ from backend.api.models import Rlc
 
 
 class Client(models.Model):
-    from_rlc = models.ForeignKey(Rlc, related_name='client_from_rlc', on_delete=models.SET_NULL, null=True)
+    from_rlc = models.ForeignKey(
+        Rlc, related_name="client_from_rlc", on_delete=models.SET_NULL, null=True
+    )
     created_on = models.DateField(auto_now_add=True)
     last_edited = models.DateTimeField(auto_now_add=True)
 
     name = models.CharField(max_length=200)
     note = models.TextField(max_length=4096, null=True)
-    phone_number = models.CharField(validators=[phone_regex], max_length=100, null=True, default=None)
+    phone_number = models.CharField(
+        validators=[phone_regex], max_length=100, null=True, default=None
+    )
 
     birthday = models.DateField(null=True, blank=True)
-    origin_country = models.ForeignKey('OriginCountry', related_name='clients', on_delete=models.SET_NULL, null=True)
+    origin_country = models.ForeignKey(
+        "OriginCountry", related_name="clients", on_delete=models.SET_NULL, null=True
+    )
 
     def __str__(self):
-        return 'client: ' + str(self.id) + ':' + self.name
+        return "client: " + str(self.id) + ":" + self.name

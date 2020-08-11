@@ -21,12 +21,13 @@ class NotificationGroupType(Enum):
     Enum for notification event object
     these regard the models which the notification is about
     """
+
     RECORD = "RECORD"
     RECORD_PERMISSION_REQUEST = "RECORD_PERMISSION_REQUEST"
     RECORD_DELETION_REQUEST = "RECORD_DELETION_REQUEST"
     USER_REQUEST = "USER_REQUEST"
     GROUP = "GROUP"
-    FILE = "FILE"   # ?
+    FILE = "FILE"  # ?
 
     @classmethod
     def choices(cls):

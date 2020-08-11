@@ -20,8 +20,10 @@ from .commands import aws_environment_variables_viable, migrate_to_encryption
 
 
 class Command(BaseCommand):
-    help = 'migrates all existing data to encrypted, adds encryption keys to users and ' \
-           'encrypts records with corresponding files'
+    help = (
+        "migrates all existing data to encrypted, adds encryption keys to users and "
+        "encrypts records with corresponding files"
+    )
 
     def handle(self, *args, **options):
         env_valid = aws_environment_variables_viable(self)

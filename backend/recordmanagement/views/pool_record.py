@@ -18,7 +18,12 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 
 from backend.api.errors import CustomError
-from backend.recordmanagement.models import EncryptedRecord, PoolConsultant, PoolRecord, RecordEncryption
+from backend.recordmanagement.models import (
+    EncryptedRecord,
+    PoolConsultant,
+    PoolRecord,
+    RecordEncryption,
+)
 from backend.recordmanagement.serializers import PoolRecordSerializer
 from backend.static import error_codes
 from backend.static.middleware import get_private_key_from_request
@@ -32,10 +37,10 @@ class PoolRecordViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         user = request.user
         private_key = get_private_key_from_request(request)
-        if 'record' not in request.data:
+        if "record" not in request.data:
             raise CustomError(error_codes.ERROR__API__ID_NOT_PROVIDED)
         try:
-            record = EncryptedRecord.objects.get(pk=request.data['record'])
+            record = EncryptedRecord.objects.get(pk=request.data["record"])
         except:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
 
@@ -46,12 +51,17 @@ class PoolRecordViewSet(viewsets.ModelViewSet):
         record_decryption_key = record.get_decryption_key(user, private_key)
 
         if PoolConsultant.objects.filter(consultant__rlc=user.rlc).count() >= 1:
-            entry = PoolConsultant.objects.filter(consultant__rlc=user.rlc).order_by('enlisted')[0]
+            entry = PoolConsultant.objects.filter(consultant__rlc=user.rlc).order_by(
+                "enlisted"
+            )[0]
             new_consultant = entry.consultant
             entry.delete()
 
-            new_keys = RecordEncryption(user=new_consultant, record=record,
-                                        encrypted_key=new_consultant.rsa_encrypt(record_decryption_key))
+            new_keys = RecordEncryption(
+                user=new_consultant,
+                record=record,
+                encrypted_key=new_consultant.rsa_encrypt(record_decryption_key),
+            )
             new_keys.save()
             RecordEncryption.objects.filter(record=record, user=user).delete()
 
@@ -59,14 +69,14 @@ class PoolRecordViewSet(viewsets.ModelViewSet):
             record.working_on_record.add(new_consultant)
             record.save()
 
-            return Response({'action': 'matched'})
+            return Response({"action": "matched"})
         else:
-            pool_record = PoolRecord(record=record, yielder=user, record_key=record_decryption_key)
+            pool_record = PoolRecord(
+                record=record, yielder=user, record_key=record_decryption_key
+            )
             pool_record.save()
             return_val = PoolRecordSerializer(pool_record).data
-            return_val.update({
-                'action': 'created'
-            })
+            return_val.update({"action": "created"})
             return Response(return_val)
 
     def list(self, request, *args, **kwargs):

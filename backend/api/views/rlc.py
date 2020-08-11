@@ -22,7 +22,7 @@ from ..serializers.rlc import RlcSerializer
 
 
 class RlcViewSet(viewsets.ModelViewSet):
-    queryset = Rlc.objects.exclude(name='Dummy RLC')
+    queryset = Rlc.objects.exclude(name="Dummy RLC")
     serializer_class = RlcSerializer
 
     def perform_create(self, serializer):

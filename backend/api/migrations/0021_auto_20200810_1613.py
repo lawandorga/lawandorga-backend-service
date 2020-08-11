@@ -7,40 +7,51 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0020_auto_20200810_1435'),
+        ("api", "0020_auto_20200810_1435"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='notification',
-            name='event_subject',
-        ),
-        migrations.RemoveField(
-            model_name='notification',
-            name='ref_id',
-        ),
-        migrations.RemoveField(
-            model_name='notification',
-            name='ref_text',
+        migrations.RemoveField(model_name="notification", name="event_subject",),
+        migrations.RemoveField(model_name="notification", name="ref_id",),
+        migrations.RemoveField(model_name="notification", name="ref_text",),
+        migrations.AddField(
+            model_name="notification",
+            name="notification_group",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="notifications",
+                to="api.NotificationGroup",
+            ),
         ),
         migrations.AddField(
-            model_name='notification',
-            name='notification_group',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='notifications', to='api.NotificationGroup'),
+            model_name="notification",
+            name="sub_type",
+            field=models.CharField(
+                choices=[
+                    ("RECORD_MESSAGE", "RECORD_MESSAGE"),
+                    ("RECORD_UPDATE", "RECORD_UPDATE"),
+                ],
+                default="",
+                max_length=50,
+            ),
         ),
         migrations.AddField(
-            model_name='notification',
-            name='sub_type',
-            field=models.CharField(choices=[('RECORD_MESSAGE', 'RECORD_MESSAGE'), ('RECORD_UPDATE', 'RECORD_UPDATE')], default='', max_length=50),
-        ),
-        migrations.AddField(
-            model_name='notification',
-            name='text',
-            field=models.TextField(null=True),
+            model_name="notification", name="text", field=models.TextField(null=True),
         ),
         migrations.AlterField(
-            model_name='notification',
-            name='event',
-            field=models.CharField(choices=[('CREATED', 'CREATED'), ('DELETED', 'DELETED'), ('MOVED', 'MOVED'), ('UPDATED', 'UPDATED'), ('ADDED', 'ADDED'), ('REMOVED', 'REMOVED')], max_length=50),
+            model_name="notification",
+            name="event",
+            field=models.CharField(
+                choices=[
+                    ("CREATED", "CREATED"),
+                    ("DELETED", "DELETED"),
+                    ("MOVED", "MOVED"),
+                    ("UPDATED", "UPDATED"),
+                    ("ADDED", "ADDED"),
+                    ("REMOVED", "REMOVED"),
+                ],
+                max_length=50,
+            ),
         ),
     ]

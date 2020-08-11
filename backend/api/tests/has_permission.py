@@ -23,69 +23,84 @@ from .statics import StaticTestMethods
 class HasPermissionTests(TransactionTestCase):
     def setUp(self):
         self.client = StaticTestMethods.force_authentication_superuser()
-        self.base_url = '/api/has_permission/'
+        self.base_url = "/api/has_permission/"
         CreateFixtures.create_sample_groups()
         CreateFixtures.create_sample_permissions()
-        self.user1 = UserProfile.objects.get(email='test123@test.com')
+        self.user1 = UserProfile.objects.get(email="test123@test.com")
         self.group1 = list(Group.objects.all())[0]
         self.permission = list(Permission.objects.all())[0]
 
     def test_create_hasPermission_success_user_user(self):
         before = HasPermission.objects.count()
-        response = self.client.post(self.base_url, {
-            'permission': self.permission.id,
-            'user_has_permission': self.user1.id,
-            'permission_for_user': self.user1.id
-        })
+        response = self.client.post(
+            self.base_url,
+            {
+                "permission": self.permission.id,
+                "user_has_permission": self.user1.id,
+                "permission_for_user": self.user1.id,
+            },
+        )
         after = HasPermission.objects.count()
 
-        self.assertTrue(before+1 == after)
+        self.assertTrue(before + 1 == after)
         self.assertTrue(response.status_code == 201)
 
     def test_create_hasPermission_success_user_group(self):
         before = HasPermission.objects.count()
-        response = self.client.post(self.base_url, {
-            'permission': self.permission.id,
-            'user_has_permission': self.user1.id,
-            'permission_for_group': self.group1.id
-        })
+        response = self.client.post(
+            self.base_url,
+            {
+                "permission": self.permission.id,
+                "user_has_permission": self.user1.id,
+                "permission_for_group": self.group1.id,
+            },
+        )
         after = HasPermission.objects.count()
 
-        self.assertTrue(before+1 == after)
+        self.assertTrue(before + 1 == after)
         self.assertTrue(response.status_code == 201)
 
     def test_create_hasPermission_success_group_user(self):
         before = HasPermission.objects.count()
-        response = self.client.post(self.base_url, {
-            'permission': self.permission.id,
-            'group_has_permission': self.group1.id,
-            'permission_for_user': self.user1.id
-        })
+        response = self.client.post(
+            self.base_url,
+            {
+                "permission": self.permission.id,
+                "group_has_permission": self.group1.id,
+                "permission_for_user": self.user1.id,
+            },
+        )
         after = HasPermission.objects.count()
 
-        self.assertTrue(before+1 == after)
+        self.assertTrue(before + 1 == after)
         self.assertTrue(response.status_code == 201)
 
     def test_create_hasPermission_success_group_group(self):
         before = HasPermission.objects.count()
-        response = self.client.post(self.base_url, {
-            'permission': self.permission.id,
-            'group_has_permission': self.group1.id,
-            'permission_for_group': self.group1.id
-        })
+        response = self.client.post(
+            self.base_url,
+            {
+                "permission": self.permission.id,
+                "group_has_permission": self.group1.id,
+                "permission_for_group": self.group1.id,
+            },
+        )
         after = HasPermission.objects.count()
 
-        self.assertTrue(before+1 == after)
+        self.assertTrue(before + 1 == after)
         self.assertTrue(response.status_code == 201)
 
     def test_create_hasPermission_error_double_has(self):
         before = HasPermission.objects.count()
-        response = self.client.post(self.base_url, {
-            'permission': self.permission.id,
-            'user_has_permission': self.user1.id,
-            'group_has_permission': self.group1.id,
-            'permission_for_group': self.group1.id
-        })
+        response = self.client.post(
+            self.base_url,
+            {
+                "permission": self.permission.id,
+                "user_has_permission": self.user1.id,
+                "group_has_permission": self.group1.id,
+                "permission_for_group": self.group1.id,
+            },
+        )
         after = HasPermission.objects.count()
 
         self.assertTrue(before == after)
@@ -93,12 +108,15 @@ class HasPermissionTests(TransactionTestCase):
 
     def test_create_hasPermission_error_double_for(self):
         before = HasPermission.objects.count()
-        response = self.client.post(self.base_url, {
-            'permission': self.permission.id,
-            'group_has_permission': self.group1.id,
-            'permission_for_user': self.user1.id,
-            'permission_for_group': self.group1.id
-        })
+        response = self.client.post(
+            self.base_url,
+            {
+                "permission": self.permission.id,
+                "group_has_permission": self.group1.id,
+                "permission_for_user": self.user1.id,
+                "permission_for_group": self.group1.id,
+            },
+        )
         after = HasPermission.objects.count()
 
         self.assertTrue(before == after)
@@ -107,9 +125,9 @@ class HasPermissionTests(TransactionTestCase):
     def test_create_hasPermission_error_doubled(self):
         before = HasPermission.objects.count()
         to_post = {
-            'permission': self.permission.id,
-            'group_has_permission': self.group1.id,
-            'permission_for_group': self.group1.id
+            "permission": self.permission.id,
+            "group_has_permission": self.group1.id,
+            "permission_for_group": self.group1.id,
         }
         response = self.client.post(self.base_url, to_post)
         response = self.client.post(self.base_url, to_post)

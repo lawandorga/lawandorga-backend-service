@@ -20,7 +20,7 @@ from .commands import migrate_to_rlc_settings
 
 
 class Command(BaseCommand):
-    help = 'add rlc settings for all rlcs with default values'
+    help = "add rlc settings for all rlcs with default values"
 
     def handle(self, *args, **options):
         migrate_to_rlc_settings()

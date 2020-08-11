@@ -25,15 +25,14 @@ from rest_framework.authtoken.models import Token
 class RlcsTest(TransactionTestCase):
     def setUp(self):
         self.client = StaticTestMethods.force_authentication_superuser()
-        self.base_url = '/api/rlcs/'
-        self.base_list_url = '/api/get_rlcs/'
+        self.base_url = "/api/rlcs/"
+        self.base_list_url = "/api/get_rlcs/"
 
     def test_list_rlcs_without_authentication(self):
-        CreateFixtures.add_rlc(1, 'muenchen', [], True, True, '')
-        CreateFixtures.add_rlc(2, 'hamburg', [], True, True, '')
+        CreateFixtures.add_rlc(1, "muenchen", [], True, True, "")
+        CreateFixtures.add_rlc(2, "hamburg", [], True, True, "")
 
         client = APIClient()
         response = client.get(self.base_list_url)
 
         self.assertTrue(response.data.__len__() == 2)
-

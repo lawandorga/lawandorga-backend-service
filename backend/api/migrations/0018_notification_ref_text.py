@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0017_notification_read'),
+        ("api", "0017_notification_read"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='notification',
-            name='ref_text',
+            model_name="notification",
+            name="ref_text",
             field=models.CharField(max_length=100, null=True),
         ),
     ]

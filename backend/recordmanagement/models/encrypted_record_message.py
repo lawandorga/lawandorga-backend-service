@@ -28,8 +28,12 @@ class EncryptedRecordMessageManager(models.Manager):
     """
 
     @staticmethod
-    def create_encrypted_record_message(sender: UserProfile, message: str, record: EncryptedRecord,
-                                        senders_private_key: bytes) -> ('EncryptedRecordMessage', str):
+    def create_encrypted_record_message(
+        sender: UserProfile,
+        message: str,
+        record: EncryptedRecord,
+        senders_private_key: bytes,
+    ) -> ("EncryptedRecordMessage", str):
         """
         creates a new encrypted record message for given record
         also creates corresponding notifications
@@ -43,22 +47,33 @@ class EncryptedRecordMessageManager(models.Manager):
         # create message and saves
         record_key = record.get_decryption_key(sender, senders_private_key)
         encrypted_message = AESEncryption.encrypt(message, record_key)
-        new_message = EncryptedRecordMessage(sender=sender, message=encrypted_message, record=record)
+        new_message = EncryptedRecordMessage(
+            sender=sender, message=encrypted_message, record=record
+        )
         new_message.save()
 
         user_with_decryption_keys: [UserProfile] = record.get_notification_users()
         for user in user_with_decryption_keys:
             if user.id != sender.id:
-                Notification.objects.create_notification_new_record_message(user=user, source_user=sender,
-                                                                            record=record)
+                Notification.objects.create_notification_new_record_message(
+                    user=user, source_user=sender, record=record
+                )
         return new_message, record_key
 
 
 class EncryptedRecordMessage(models.Model):
-    sender = models.ForeignKey(UserProfile, related_name="e_record_messages_sent", on_delete=models.SET_NULL,
-                               null=True)
-    record = models.ForeignKey('EncryptedRecord', related_name="e_record_messages", on_delete=models.CASCADE,
-                               null=True)
+    sender = models.ForeignKey(
+        UserProfile,
+        related_name="e_record_messages_sent",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    record = models.ForeignKey(
+        "EncryptedRecord",
+        related_name="e_record_messages",
+        on_delete=models.CASCADE,
+        null=True,
+    )
     created_on = models.DateTimeField(auto_now_add=True)
 
     # encrypted
@@ -67,5 +82,11 @@ class EncryptedRecordMessage(models.Model):
     objects = EncryptedRecordMessageManager()
 
     def __str__(self):
-        return 'e_record_message: ' + str(self.id) + '; e_record: ' + str(self.record) + '; sender: ' + str(
-            self.sender.id)
+        return (
+            "e_record_message: "
+            + str(self.id)
+            + "; e_record: "
+            + str(self.record)
+            + "; sender: "
+            + str(self.sender.id)
+        )

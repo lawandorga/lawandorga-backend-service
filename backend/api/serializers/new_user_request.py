@@ -16,7 +16,10 @@
 
 from rest_framework import serializers
 from backend.api import models
-from backend.api.serializers.user import UserProfileNameSerializer, UserProfileSerializer
+from backend.api.serializers.user import (
+    UserProfileNameSerializer,
+    UserProfileSerializer,
+)
 
 
 class NewUserRequestSerializer(serializers.ModelSerializer):
@@ -25,4 +28,4 @@ class NewUserRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.NewUserRequest
-        fields = '__all__'
+        fields = "__all__"

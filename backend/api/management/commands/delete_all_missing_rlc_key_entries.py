@@ -19,7 +19,7 @@ from .commands import delete_all_missing_rlc_key_entries
 
 
 class Command(BaseCommand):
-    help = 'deletes all missing rlc key entries'
+    help = "deletes all missing rlc key entries"
 
     def handle(self, *args, **options):
         delete_all_missing_rlc_key_entries()

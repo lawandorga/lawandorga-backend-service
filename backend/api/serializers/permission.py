@@ -19,15 +19,17 @@ from ..models import Permission
 
 
 class PermissionSerializer(serializers.ModelSerializer):
-    in_has_permission = serializers.PrimaryKeyRelatedField(
-        many=True, read_only=True)
+    in_has_permission = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Permission
-        fields = '__all__'
+        fields = "__all__"
 
 
 class PermissionNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
-        fields = ('id', 'name',)
+        fields = (
+            "id",
+            "name",
+        )

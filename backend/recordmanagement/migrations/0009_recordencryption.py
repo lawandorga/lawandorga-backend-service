@@ -9,17 +9,39 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('recordmanagement', '0008_auto_20191203_1259'),
+        ("recordmanagement", "0008_auto_20191203_1259"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='RecordEncryption',
+            name="RecordEncryption",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('encrypted_key', models.BinaryField()),
-                ('record', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='encryptions', to='recordmanagement.Record')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='record_encryptions', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("encrypted_key", models.BinaryField()),
+                (
+                    "record",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="encryptions",
+                        to="recordmanagement.Record",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="record_encryptions",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

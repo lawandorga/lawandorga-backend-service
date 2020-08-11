@@ -27,11 +27,11 @@ class LocalStorageManagerTests(TransactionTestCase):
         pass
 
     def test_save_locally(self):
-        f = open('given_test_files/localStorageSaveTest/7_1_19__pass.jpg', 'rb')
-        files = InMemoryUploadedFile(f, 'files', '7_1_19__pass.jpg', 'image/jpeg', 18839, None)
+        f = open("given_test_files/localStorageSaveTest/7_1_19__pass.jpg", "rb")
+        files = InMemoryUploadedFile(
+            f, "files", "7_1_19__pass.jpg", "image/jpeg", 18839, None
+        )
         with patch(get_temp_storage_path) as temp_storage_path:
-            temp_storage_path.return_value = 'aaa/'
+            temp_storage_path.return_value = "aaa/"
             LocalStorageManager.save_files_locally(files)
         f.close()
-
-

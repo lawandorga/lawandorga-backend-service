@@ -32,7 +32,9 @@ class RlcEncryptionKeysQuerySet(models.QuerySet):
 
 
 class RlcEncryptionKeys(models.Model):
-    rlc = models.OneToOneField(Rlc, related_name='encryption_keys', on_delete=models.CASCADE)
+    rlc = models.OneToOneField(
+        Rlc, related_name="encryption_keys", on_delete=models.CASCADE
+    )
     public_key = models.BinaryField()
     encrypted_private_key = models.BinaryField()
 

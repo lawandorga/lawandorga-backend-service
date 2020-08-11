@@ -32,7 +32,7 @@ class EncryptedRecordMessageViewSet(viewsets.ModelViewSet):
 
 class EncryptedRecordMessageByRecordViewSet(APIView):
     def post(self, request, id):
-        if 'message' not in request.data or request.data['message'] == '':
+        if "message" not in request.data or request.data["message"] == "":
             raise CustomError(error_codes.ERROR__RECORD__MESSAGE__NO_MESSAGE_PROVIDED)
         users_private_key = get_private_key_from_request(request)
 
@@ -43,12 +43,21 @@ class EncryptedRecordMessageByRecordViewSet(APIView):
         if not e_record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
-        record_message, record_key = models.EncryptedRecordMessage.objects.create_encrypted_record_message(
-            sender=request.user, message=request.data['message'],
+        (
+            record_message,
+            record_key,
+        ) = models.EncryptedRecordMessage.objects.create_encrypted_record_message(
+            sender=request.user,
+            message=request.data["message"],
             record=e_record,
-            senders_private_key=users_private_key)
+            senders_private_key=users_private_key,
+        )
 
-        return Response(serializers.EncryptedRecordMessageSerializer(record_message).get_decrypted_data(record_key))
+        return Response(
+            serializers.EncryptedRecordMessageSerializer(
+                record_message
+            ).get_decrypted_data(record_key)
+        )
 
     def get(self, request, id):
         pass

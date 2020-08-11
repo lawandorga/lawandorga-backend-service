@@ -20,12 +20,16 @@ from backend.static.encryption import RSAEncryption
 
 
 class EncryptedClient(models.Model):
-    from_rlc = models.ForeignKey(Rlc, related_name='e_client_from_rlc', on_delete=models.SET_NULL, null=True)
+    from_rlc = models.ForeignKey(
+        Rlc, related_name="e_client_from_rlc", on_delete=models.SET_NULL, null=True
+    )
     created_on = models.DateField(auto_now_add=True)
     last_edited = models.DateTimeField(auto_now_add=True)
 
     birthday = models.DateField(null=True, blank=True)
-    origin_country = models.ForeignKey('OriginCountry', related_name='e_clients', on_delete=models.SET_NULL, null=True)
+    origin_country = models.ForeignKey(
+        "OriginCountry", related_name="e_clients", on_delete=models.SET_NULL, null=True
+    )
 
     # encrypted
     name = models.BinaryField(null=True)
@@ -35,7 +39,7 @@ class EncryptedClient(models.Model):
     encrypted_client_key = models.BinaryField(null=True)
 
     def __str__(self):
-        return 'e_client: ' + str(self.id)
+        return "e_client: " + str(self.id)
 
     def get_password(self, rlcs_private_key):
         encrypted_client_key = self.encrypted_client_key

@@ -26,11 +26,15 @@ class ClientsViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ClientSerializer
 
     def perform_create(self, serializer):
-        country = models.OriginCountry.objects.get(id=self.request.data['origin_country'])
+        country = models.OriginCountry.objects.get(
+            id=self.request.data["origin_country"]
+        )
         serializer.save(origin_country=country)
 
 
 class GetClientsFromBirthday(APIView):
     def post(self, request):
-        clients = models.Client.objects.filter(birthday=request.data['birthday'], from_rlc=request.user.rlc)
+        clients = models.Client.objects.filter(
+            birthday=request.data["birthday"], from_rlc=request.user.rlc
+        )
         return Response(serializers.ClientSerializer(clients, many=True).data)

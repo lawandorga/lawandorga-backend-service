@@ -22,13 +22,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0006_auto_20190408_2005'),
+        ("api", "0006_auto_20190408_2005"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='useractivationlink',
-            name='activated',
+            model_name="useractivationlink",
+            name="activated",
             field=models.BooleanField(default=False),
         ),
     ]
