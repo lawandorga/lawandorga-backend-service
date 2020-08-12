@@ -358,30 +358,59 @@ class CreateFixtures:
 
         notification_groups: [NotificationGroup] = []
 
-        Notification.objects.create_notification_new_record(
+        # record
+        (group, notification) = Notification.objects.create_notification_new_record(
             user=main_user, source_user=source_user, record=records[0]
         )
-        Notification.objects.create_notification_updated_record(
+        notification.created = datetime(2020, 7, 23, 10, 26, 48)
+        notification.save()
+
+        (group, notification) = Notification.objects.create_notification_updated_record(
             user=main_user,
             source_user=source_user,
             record=records[0],
             text="circumstances,record_note",
         )
-        (group, _,) = Notification.objects.create_notification_new_record_message(
+        notification.created = datetime(2020, 7, 24, 17, 13, 0)
+        notification.save()
+
+        (
+            group,
+            notification,
+        ) = Notification.objects.create_notification_new_record_message(
             user=main_user, source_user=source_user, record=records[0]
         )
+        notification.created = datetime(2020, 7, 24, 17, 45, 0)
+        notification.save()
+        group.last_activity = datetime(2020, 7, 24, 17, 45, 0)
+        group.save()
         notification_groups.append(group)
 
-        (group, _) = Notification.objects.create_notification_added_to_group(
+        # group1
+        (group, notification) = Notification.objects.create_notification_added_to_group(
             user=main_user, source_user=source_user, group=groups[0]
         )
+        notification.created = datetime(2020, 7, 24, 9, 12, 0)
+        notification.save()
+        group.last_activity = datetime(2020, 7, 24, 9, 12, 0)
+        group.save()
         notification_groups.append(group)
 
-        Notification.objects.create_notification_added_to_group(
+        # group2
+        (group, notification) = Notification.objects.create_notification_added_to_group(
             user=main_user, source_user=source_user, group=groups[1]
         )
-        (group, _,) = Notification.objects.create_notification_removed_from_group(
+        notification.created = datetime(2020, 7, 21, 12, 1, 0)
+        notification.save()
+        (
+            group,
+            notification,
+        ) = Notification.objects.create_notification_removed_from_group(
             user=main_user, source_user=source_user, group=groups[1]
         )
+        notification.created = datetime(2020, 7, 25, 7, 12, 0)
+        notification.save()
+        group.last_activity = datetime(2020, 7, 25, 7, 12, 0)
+        group.save()
         notification_groups.append(group)
         return notification_groups

@@ -25,3 +25,28 @@ class NotificationGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotificationGroup
         fields = "__all__"
+
+
+class NotificationGroupOrderedSerializer(serializers.ModelSerializer):
+    notifications = serializers.SerializerMethodField()
+
+    class Meta:
+        model = NotificationGroup
+        fields = "__all__"
+
+    def get_notifications(self, obj: NotificationGroup):
+        return NotificationSerializer(
+            obj.notifications.all().order_by("-created"), many=True, read_only=True
+        ).data
+
+
+#
+# def get_files(self, obj):
+#     result = {'pdf': [], 'txt':[]}
+#     for file in obj.file_set.all():
+#         serializer = FileSerializer(file)
+#         if file.name.endswith('pdf'):
+#             result['pdf'].append(serializer.data)
+#         if file.name.endswith('txt'):
+#             result['txt'].append(serializer.data)
+#     return result
