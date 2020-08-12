@@ -284,6 +284,9 @@ class NotificationTest(TransactionTestCase):
             pk=notification_groups[0].id
         )
         self.assertFalse(notification_group.read)
+        self.assertTrue(
+            notification_groups[0].last_activity == notification_group.last_activity
+        )
 
         response: Response = client.patch(
             "/api/notifications/" + str(notifications[1].id) + "/",
@@ -295,6 +298,9 @@ class NotificationTest(TransactionTestCase):
         self.assertTrue(notification.read)
         notification_group: NotificationGroup = NotificationGroup.objects.get(
             pk=notification_groups[0].id
+        )
+        self.assertTrue(
+            notification_groups[0].last_activity == notification_group.last_activity
         )
         self.assertFalse(notification_group.read)
 
@@ -308,6 +314,9 @@ class NotificationTest(TransactionTestCase):
         self.assertTrue(notification.read)
         notification_group: NotificationGroup = NotificationGroup.objects.get(
             pk=notification_groups[0].id
+        )
+        self.assertTrue(
+            notification_groups[0].last_activity == notification_group.last_activity
         )
         self.assertTrue(notification_group.read)
 
