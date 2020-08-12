@@ -183,8 +183,18 @@ class NotificationGroupTest(TransactionTestCase):
         response: Response = client.get("/api/notification_groups/")
 
         self.assertEqual(200, response.status_code)
-        self.assertEqual(3, response.data.__len__())
-        self.assertIn(notification_groups[0], response.data)
+        self.assertEqual(3, response.data["results"].__len__())
+        # self.assertIn(notification_groups[2], response.data)
+
+        response: Response = client.get("/api/notification_groups/?filter=RECORD")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, response.data["results"].__len__())
+
+        response: Response = client.get(
+            "/api/notification_groups/?filter=RECORD___GROUP"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(3, response.data["results"].__len__())
         # TODO: check more
 
     def test_read_notification_group(self):

@@ -16,7 +16,7 @@
 
 from typing import Any
 
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Q
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.pagination import LimitOffsetPagination
@@ -41,6 +41,7 @@ from backend.static.error_codes import (
 class NotificationGroupViewSet(viewsets.ModelViewSet):
     queryset = NotificationGroup.objects.all()
     serializer_class = NotificationGroupOrderedSerializer
+    pagination_class = LimitOffsetPagination
 
     def get_queryset(self) -> QuerySet:
         if not self.request.user.is_superuser:
@@ -49,6 +50,10 @@ class NotificationGroupViewSet(viewsets.ModelViewSet):
             queryset = NotificationGroup.objects.all()
 
         request: Request = self.request
+        if "filter" in request.query_params and request.query_params["filter"] != "":
+            parts = request.query_params["filter"].split("___")
+            queryset = queryset.filter(type__in=parts)
+
         if "sort" in request.query_params:
             if (
                 "sortdirection" in request.query_params
