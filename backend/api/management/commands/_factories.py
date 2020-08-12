@@ -43,7 +43,7 @@ class ClientFactory(factory.django.DjangoModelFactory):
         model = Client
 
     name = factory.Faker("name")
-    note = factory.Faker("text")
+    note = factory.Faker("description_text")
     phone_number = factory.Faker("phone_number")
     birthday = factory.Faker("date_this_decade")
     origin_country = factory.Iterator(OriginCountry.objects.all())
@@ -63,7 +63,7 @@ class RecordFactory(factory.django.DjangoModelFactory):
     first_contact_date = factory.Faker("date_this_year")
     last_contact_date = factory.Faker("date_time_this_month")
     record_token = factory.Faker("isbn13")
-    note = factory.Faker("text")
+    note = factory.Faker("description_text")
     state = factory.Faker(
         "random_element", elements=[e[0] for e in Record.record_states_possible]
     )

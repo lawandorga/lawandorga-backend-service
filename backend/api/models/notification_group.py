@@ -44,3 +44,9 @@ class NotificationGroup(models.Model):
         )
         self.read = False
         self.save()
+
+    def all_notifications_read(self) -> bool:
+        return (
+            self.notifications.count() > 0
+            and self.notifications.filter(read=False).count() == 0
+        )

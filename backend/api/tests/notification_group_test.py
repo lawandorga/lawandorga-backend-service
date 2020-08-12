@@ -259,8 +259,6 @@ class NotificationGroupTest(TransactionTestCase):
         )
         self.assertEqual(400, response.status_code)
 
-    # TODO: check if read works (all single notifications -> group too)
-
     # TODO: check other notification sources... A LOT
     # check record updated
     # check new record (consultants)

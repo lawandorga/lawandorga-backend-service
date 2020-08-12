@@ -37,7 +37,9 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AddField(
-            model_name="notification", name="text", field=models.TextField(null=True),
+            model_name="notification",
+            name="description_text",
+            field=models.TextField(null=True),
         ),
         migrations.AlterField(
             model_name="notification",

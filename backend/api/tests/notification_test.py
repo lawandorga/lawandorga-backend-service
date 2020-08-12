@@ -284,3 +284,45 @@ class NotificationTest(TransactionTestCase):
             pk=notification_groups[0].id
         )
         self.assertFalse(notification_group.read)
+
+        response: Response = client.patch(
+            "/api/notifications/" + str(notifications[1].id) + "/",
+            {"read": True},
+            format="json",
+        )
+        self.assertEqual(200, response.status_code)
+        notification: Notification = Notification.objects.get(pk=notifications[1].id)
+        self.assertTrue(notification.read)
+        notification_group: NotificationGroup = NotificationGroup.objects.get(
+            pk=notification_groups[0].id
+        )
+        self.assertFalse(notification_group.read)
+
+        response: Response = client.patch(
+            "/api/notifications/" + str(notifications[2].id) + "/",
+            {"read": True},
+            format="json",
+        )
+        self.assertEqual(200, response.status_code)
+        notification: Notification = Notification.objects.get(pk=notifications[2].id)
+        self.assertTrue(notification.read)
+        notification_group: NotificationGroup = NotificationGroup.objects.get(
+            pk=notification_groups[0].id
+        )
+        self.assertTrue(notification_group.read)
+
+        response: Response = client.patch(
+            "/api/notifications/" + str(notifications[2].id) + "/",
+            {"read": False},
+            format="json",
+        )
+        self.assertEqual(200, response.status_code)
+        notification: Notification = Notification.objects.get(pk=notifications[2].id)
+        self.assertFalse(notification.read)
+        notification_group: NotificationGroup = NotificationGroup.objects.get(
+            pk=notification_groups[0].id
+        )
+        self.assertFalse(notification_group.read)
+        self.assertTrue(
+            notification_groups[0].last_activity == notification_group.last_activity
+        )

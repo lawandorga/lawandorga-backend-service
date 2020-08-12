@@ -155,6 +155,13 @@ class Notification(models.Model):
         return "notification: " + str(self.id)
 
     def save(self, *args, **kwargs):
-        super().save()
-        if not self.read:
+        if not self.read and self.id is None:
             self.notification_group.new_activity()
+        super().save()
+        all_in_group_read = self.notification_group.all_notifications_read()
+        if all_in_group_read and not self.notification_group.read:
+            self.notification_group.read = True
+            self.notification_group.save()
+        elif not all_in_group_read and self.notification_group.read:
+            self.notification_group.read = False
+            self.notification_group.save()

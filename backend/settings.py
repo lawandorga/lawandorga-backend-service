@@ -227,12 +227,12 @@ AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
 if "ON_HEROKU" in os.environ and os.environ["ON_HEROKU"]:
     AWS_IS_GZIPPED = True
     GZIP_CONTENT_TYPES = (
-        "text/css",
+        "description_text/css",
         "application/javascript",
         "application/x-javascript",
-        "text/javascript",
-        "text/jscript",
-        "text/ecmascript",
+        "description_text/javascript",
+        "description_text/jscript",
+        "description_text/ecmascript",
         "application/ecmascript",
     )
 
