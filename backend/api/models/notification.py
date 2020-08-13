@@ -15,6 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from django.utils import timezone
+
 
 from backend.api.models import NotificationGroup, UserProfile
 from backend.static.notification_enums import NotificationGroupType, NotificationType
@@ -142,7 +144,7 @@ class Notification(models.Model):
         on_delete=models.SET_NULL,
         null=True,
     )
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(default=timezone.now)
 
     type = models.CharField(
         max_length=75, choices=NotificationType.choices(), null=False, default=""

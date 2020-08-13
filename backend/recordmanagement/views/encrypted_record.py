@@ -272,19 +272,6 @@ class EncryptedRecordViewSet(APIView):
             client_patched = client.patch(
                 client_data=client_data, clients_aes_key=client_key
             )
-            #
-            # client.birthday = parse_date(client_data["birthday"])
-            # client.origin_country = models.OriginCountry.objects.get(
-            #     pk=client_data["origin_country"]
-            # )
-            #
-            # client.note = AESEncryption.encrypt(client_data["note"], client_key)
-            # client.name = AESEncryption.encrypt(client_data["name"], client_key)
-            # client.phone_number = AESEncryption.encrypt(
-            #     client_data["phone_number"], client_key
-            # )
-            # client.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
-            # client.save()
 
         notification_users: [UserProfile] = e_record.get_notification_users()
         notification_text = ",".join(record_patched + client_patched)
@@ -293,16 +280,6 @@ class EncryptedRecordViewSet(APIView):
                 Notification.objects.create_notification_updated_record(
                     current_user, user, e_record, notification_text
                 )
-
-        # if not settings.DEBUG:
-        #     record_url = FrontendLinks.get_record_link(e_record)
-        #     for user in e_record.working_on_record.all():
-        #         EmailSender.send_email_notification(
-        #             [user.email],
-        #             "Patched Record",
-        #             "RLC Intranet Notification - A record of yours was changed. Look here:"
-        #             + record_url,
-        #         )
 
         record_from_db = models.EncryptedRecord.objects.get(pk=e_record.id)
         client_from_db = models.EncryptedClient.objects.get(pk=client.id)
