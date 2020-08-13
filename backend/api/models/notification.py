@@ -126,6 +126,8 @@ class NotificationManager(models.Manager):
             notification_type=NotificationType.GROUP__REMOVED_ME,
         )
 
+    # TODO: add stuff here
+
 
 class Notification(models.Model):
     notification_group = models.ForeignKey(

@@ -25,6 +25,7 @@ from backend.api import serializers as api_serializers
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.recordmanagement import models as record_models
 from backend.static.notification_enums import NotificationType
+from backend.static.encryption import AESEncryption
 
 
 class NotificationGroupTest(TransactionTestCase):
@@ -268,6 +269,39 @@ class NotificationGroupTest(TransactionTestCase):
             format="json",
         )
         self.assertEqual(400, response.status_code)
+
+    def test_patch_record_notifications(self):
+        record: record_models.EncryptedRecord = self.record_fixtures["records"][0][
+            "record"
+        ]
+        notification_groups_before = api_models.NotificationGroup.objects.all().count()
+        notifications_before = api_models.Notification.objects.all().count()
+
+        private_key: bytes = self.base_fixtures["users"][0]["private"]
+        client: APIClient = self.base_fixtures["users"][0]["client"]
+        user: api_models.UserProfile = self.base_fixtures["users"][0]["user"]
+
+        # post new record message
+        new_note = "new note"
+        response: Response = client.patch(
+            "/api/records/e_record/" + str(record.id) + "/",
+            {"record": {"note": new_note, "circumstances": "nothing new to tell",}},
+            format="json",
+            **{"HTTP_PRIVATE_KEY": private_key}
+        )
+        self.assertEqual(200, response.status_code)
+
+        record_key = record.get_decryption_key(user, private_key)
+        record_from_db: record_models.EncryptedRecord = record_models.EncryptedRecord.objects.get(
+            pk=record.id
+        )
+        self.assertEqual(
+            new_note, AESEncryption.decrypt(record_from_db.note, record_key)
+        )
+
+        notification_groups_after = api_models.NotificationGroup.objects.all().count()
+        notifications_after = api_models.Notification.objects.all().count()
+        self.assertNotEqual(notifications_after, notifications_before)
 
     # TODO: check other notification sources... A LOT
     # check record updated
