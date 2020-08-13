@@ -196,7 +196,7 @@ class NotificationGroupTest(TransactionTestCase):
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual(3, response.data["results"].__len__())
-        # TODO: check more
+        # TODO: check more, especially single notifications
 
     def test_read_notification_group(self):
         user: api_models.UserProfile = self.base_fixtures["users"][0]["user"]
@@ -320,10 +320,9 @@ class NotificationGroupTest(TransactionTestCase):
         self.assertIn("note", text)
 
     # TODO: check other notification sources... A LOT
-    # check record updated
-    # check new record (consultants)
+    # check new record document
     # check group member added /removed
-    # check group permission request
-    # check group deletion request
+    # check record permission request
+    # check record deletion request
     # check new user request
     #

@@ -335,3 +335,84 @@ class NotificationTest(TransactionTestCase):
         self.assertTrue(
             notification_groups[0].last_activity == notification_group.last_activity
         )
+
+    def test_create_new_record_document_notification(self):
+        self.assertEqual(0, Notification.objects.count())
+        self.assertEqual(0, NotificationGroup.objects.count())
+
+        (
+            return_notification_group,
+            return_notification,
+        ) = Notification.objects.create_notification_record_document_added(
+            user=self.users[0], source_user=self.users[1], record=self.record
+        )
+
+        group_from_db: NotificationGroup = NotificationGroup.objects.first()
+        self.assertEqual(return_notification_group, group_from_db)
+        self.assertEqual(self.users[0], group_from_db.user)
+        self.assertEqual(1, group_from_db.notifications.count())
+        self.assertEqual(NotificationGroupType.RECORD.value, group_from_db.type)
+        self.assertEqual(str(self.record.id), group_from_db.ref_id)
+        self.assertEqual(self.record.record_token, group_from_db.ref_text)
+
+        notification_from_db: Notification = Notification.objects.first()
+        self.assertEqual(return_notification, notification_from_db)
+        self.assertEqual(group_from_db, notification_from_db.notification_group)
+        self.assertEqual(self.users[1], notification_from_db.source_user)
+        self.assertEqual(
+            NotificationType.RECORD__RECORD_DOCUMENT_ADDED.value,
+            notification_from_db.type,
+        )
+
+    def test_create_new_record_document_modified_notification(self):
+        self.assertEqual(0, Notification.objects.count())
+        self.assertEqual(0, NotificationGroup.objects.count())
+
+        (
+            return_notification_group,
+            return_notification,
+        ) = Notification.objects.create_notification_record_document_modified(
+            user=self.users[0], source_user=self.users[1], record=self.record
+        )
+
+        group_from_db: NotificationGroup = NotificationGroup.objects.first()
+        self.assertEqual(return_notification_group, group_from_db)
+        self.assertEqual(NotificationGroupType.RECORD.value, group_from_db.type)
+
+        notification_from_db: Notification = Notification.objects.first()
+        self.assertEqual(return_notification, notification_from_db)
+        self.assertEqual(
+            NotificationType.RECORD__RECORD_DOCUMENT_MODIFIED.value,
+            notification_from_db.type,
+        )
+
+    def test_create_record_permission_request_notification(self):
+        self.assertEqual(0, Notification.objects.count())
+        self.assertEqual(0, NotificationGroup.objects.count())
+
+        (
+            return_notification_group,
+            return_notification,
+        ) = Notification.objects.create_notification_record_permission_request_requested(
+            user=self.users[0], source_user=self.users[1], record=self.record
+        )
+
+        group_from_db: NotificationGroup = NotificationGroup.objects.first()
+        self.assertEqual(return_notification_group, group_from_db)
+        self.assertEqual(
+            NotificationGroupType.RECORD_PERMISSION_REQUEST.value, group_from_db.type
+        )
+
+        notification_from_db: Notification = Notification.objects.first()
+        self.assertEqual(return_notification, notification_from_db)
+        self.assertEqual(
+            NotificationType.RECORD_PERMISSION_REQUEST__REQUESTED.value,
+            notification_from_db.type,
+        )
+        # TODO: requested and processed (-> for requesting user and other admins)
+
+    def test_create_record_deletion_request_notification(self):
+        pass  # TODO: requested and processsed (-> for requesting user and other adminsa)
+
+    def test_create_new_user_request_notification(self):
+        pass  # TODO: just for ohter admins
