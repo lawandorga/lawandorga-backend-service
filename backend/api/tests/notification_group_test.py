@@ -303,6 +303,22 @@ class NotificationGroupTest(TransactionTestCase):
         notifications_after = api_models.Notification.objects.all().count()
         self.assertNotEqual(notifications_after, notifications_before)
 
+        self.assertEqual(
+            0,
+            api_models.NotificationGroup.objects.filter(
+                user=user, ref_id=str(record.id)
+            ).count(),
+        )
+
+        notification_group: api_models.NotificationGroup = api_models.NotificationGroup.objects.get(
+            user=self.base_fixtures["users"][1]["user"], ref_id=str(record.id)
+        )
+        self.assertEqual(1, notification_group.notifications.count())
+        notification: api_models.Notification = notification_group.notifications.first()
+        text: str = notification.text
+        self.assertIn("circumstances", text)
+        self.assertIn("note", text)
+
     # TODO: check other notification sources... A LOT
     # check record updated
     # check new record (consultants)

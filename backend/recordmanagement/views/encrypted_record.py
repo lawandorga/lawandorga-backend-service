@@ -262,46 +262,9 @@ class EncryptedRecordViewSet(APIView):
 
         if "record" in request.data:
             record_data: dict = request.data["record"]
-
-            unpatachable_fields = models.EncryptedRecord.ignore_fields()
-            unencrypted_changeable_fields = (
-                models.EncryptedRecord.unencrypted_changeable_fields()
+            record_patched = e_record.patch_record(
+                record_data=record_data, record_key=record_key
             )
-            changeable_datetime_fields = (
-                models.EncryptedRecord.changeable_datetime_fields()
-            )
-
-            for key, value in record_data.items():
-                if key not in models.EncryptedRecord.allowed_fields():
-                    raise CustomError(error_codes.ERROR__API__FIELD_NOT_ALLOWED)
-
-                if key in unpatachable_fields:
-                    continue
-                elif key == "tagged":
-                    if record_data[key].__len__() == 0:
-                        raise CustomError(error_codes.ERROR__RECORD__TAG__AT_LEAST_ONE)
-                    e_record.tagged.clear()
-                    for tag_id in record_data[key]:
-                        try:
-                            tag: models.RecordTag = models.RecordTag.objects.get(
-                                pk=tag_id
-                            )
-                        except Exception as e:
-                            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
-                        e_record.tagged.add(tag)
-                elif key == "working_on_record":
-                    pass
-                else:
-                    if key in unencrypted_changeable_fields:
-                        to_save = value
-                    elif key in changeable_datetime_fields:
-                        to_save = parse_date(value)
-                    else:
-                        to_save = AESEncryption.encrypt(value, record_key)
-                    setattr(e_record, key, to_save)
-
-            e_record.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
-            e_record.save()
 
         if "client" in request.data:
             client_data = request.data["client"]
@@ -319,17 +282,23 @@ class EncryptedRecordViewSet(APIView):
             client.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
             client.save()
 
-        # except Exception as e:
-        #     raise CustomError(error_codes.ERROR__RECORD__RECORD__COULD_NOT_SAVE)
-        if not settings.DEBUG:
-            record_url = FrontendLinks.get_record_link(e_record)
-            for user in e_record.working_on_record.all():
-                EmailSender.send_email_notification(
-                    [user.email],
-                    "Patched Record",
-                    "RLC Intranet Notification - A record of yours was changed. Look here:"
-                    + record_url,
+        notification_users: [UserProfile] = e_record.get_notification_users()
+        notification_text = ",".join(record_patched)
+        for current_user in notification_users:
+            if current_user != user:
+                Notification.objects.create_notification_updated_record(
+                    current_user, user, e_record, notification_text
                 )
+
+        # if not settings.DEBUG:
+        #     record_url = FrontendLinks.get_record_link(e_record)
+        #     for user in e_record.working_on_record.all():
+        #         EmailSender.send_email_notification(
+        #             [user.email],
+        #             "Patched Record",
+        #             "RLC Intranet Notification - A record of yours was changed. Look here:"
+        #             + record_url,
+        #         )
 
         record_from_db = models.EncryptedRecord.objects.get(pk=e_record.id)
         client_from_db = models.EncryptedClient.objects.get(pk=client.id)
@@ -339,6 +308,7 @@ class EncryptedRecordViewSet(APIView):
         decrypted_client_data = serializers.EncryptedClientSerializer(
             client_from_db
         ).get_decrypted_data(client_key)
+
         return Response(
             {"record": decrypted_record_data, "client": decrypted_client_data}
         )

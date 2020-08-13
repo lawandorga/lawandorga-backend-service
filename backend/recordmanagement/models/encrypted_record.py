@@ -16,12 +16,16 @@
 
 from django.db import models
 from django.db.models import Q
+from datetime import datetime
+import pytz
 
 from backend.api.errors import CustomError
 from backend.api.models import Rlc, UserProfile
 from backend.recordmanagement.models import RecordTag
-from backend.static.error_codes import ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND
+from backend.static import error_codes
 from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from backend.static.date_utils import parse_date
+from backend.static.encryption import AESEncryption
 
 
 class EncryptedRecordManager(models.Manager):
@@ -131,6 +135,56 @@ class EncryptedRecord(models.Model):
 
     def __str__(self):
         return "e_record: " + str(self.id) + ":" + self.record_token
+
+    def patch_record(self, record_data, record_key) -> [str]:
+        """
+        patches record from object, updating last_edited
+        :param record_data: object containing fields of record  with new values, only fields which will be patched are needed
+        :param record_key: record encryption key
+        :return: array containing names of fields which were patched
+        """
+        unpatachable_fields = self.ignore_fields()
+        unencrypted_changeable_fields = self.unencrypted_changeable_fields()
+        changeable_datetime_fields = self.changeable_datetime_fields()
+
+        new_tags = []
+        patched = []
+        for key, value in record_data.items():
+            if key not in self.allowed_fields():
+                raise CustomError(error_codes.ERROR__API__FIELD_NOT_ALLOWED)
+
+            if key in unpatachable_fields:
+                continue
+            elif key == "tagged":
+                if record_data[key].__len__() == 0:
+                    raise CustomError(error_codes.ERROR__RECORD__TAG__AT_LEAST_ONE)
+                for tag_id in record_data[key]:
+                    try:
+                        tag: RecordTag = RecordTag.objects.get(pk=tag_id)
+                    except Exception as e:
+                        raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
+                    new_tags.append(tag)
+            elif key == "working_on_record":
+                pass
+            else:
+                patched.append(key)
+                if key in unencrypted_changeable_fields:
+                    to_save = value
+                elif key in changeable_datetime_fields:
+                    to_save = parse_date(value)
+                else:
+                    to_save = AESEncryption.encrypt(value, record_key)
+                setattr(self, key, to_save)
+
+        if new_tags.__len__() > 0:
+            patched.append("tagged")
+            self.tagged.clear()
+            for tag in new_tags:
+                self.tagged.add(tag)
+
+        self.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
+        self.save()
+        return patched
 
     @staticmethod
     def unencrypted_changeable_fields():
@@ -274,5 +328,7 @@ class EncryptedRecord(models.Model):
             except:
                 encryption.delete()
         if not result:
-            raise CustomError(ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND)
+            raise CustomError(
+                error_codes.ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND
+            )
         return result
