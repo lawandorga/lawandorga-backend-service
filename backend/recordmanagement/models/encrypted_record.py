@@ -136,7 +136,7 @@ class EncryptedRecord(models.Model):
     def __str__(self):
         return "e_record: " + str(self.id) + ":" + self.record_token
 
-    def patch_record(self, record_data, record_key) -> [str]:
+    def patch(self, record_data, record_key: str) -> [str]:
         """
         patches record from object, updating last_edited
         :param record_data: object containing fields of record  with new values, only fields which will be patched are needed
@@ -213,7 +213,15 @@ class EncryptedRecord(models.Model):
 
     @staticmethod
     def ignore_fields():
-        return ["id", "client", "from_rlc", "created_on", "last_edited"]
+        return [
+            "id",
+            "client",
+            "from_rlc",
+            "created_on",
+            "last_edited",
+            "from_rlc",
+            "client",
+        ]
 
     @staticmethod
     def specific_changed_fields():

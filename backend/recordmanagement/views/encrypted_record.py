@@ -260,30 +260,34 @@ class EncryptedRecordViewSet(APIView):
         client = e_record.client
         client_key = client.get_password(rlcs_private_key)
 
+        record_patched = []
         if "record" in request.data:
             record_data: dict = request.data["record"]
-            record_patched = e_record.patch_record(
+            record_patched = e_record.patch(
                 record_data=record_data, record_key=record_key
             )
-
+        client_patched = []
         if "client" in request.data:
             client_data = request.data["client"]
-
-            client.birthday = parse_date(client_data["birthday"])
-            client.origin_country = models.OriginCountry.objects.get(
-                pk=client_data["origin_country"]
+            client_patched = client.patch(
+                client_data=client_data, clients_aes_key=client_key
             )
-
-            client.note = AESEncryption.encrypt(client_data["note"], client_key)
-            client.name = AESEncryption.encrypt(client_data["name"], client_key)
-            client.phone_number = AESEncryption.encrypt(
-                client_data["phone_number"], client_key
-            )
-            client.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
-            client.save()
+            #
+            # client.birthday = parse_date(client_data["birthday"])
+            # client.origin_country = models.OriginCountry.objects.get(
+            #     pk=client_data["origin_country"]
+            # )
+            #
+            # client.note = AESEncryption.encrypt(client_data["note"], client_key)
+            # client.name = AESEncryption.encrypt(client_data["name"], client_key)
+            # client.phone_number = AESEncryption.encrypt(
+            #     client_data["phone_number"], client_key
+            # )
+            # client.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
+            # client.save()
 
         notification_users: [UserProfile] = e_record.get_notification_users()
-        notification_text = ",".join(record_patched)
+        notification_text = ",".join(record_patched + client_patched)
         for current_user in notification_users:
             if current_user != user:
                 Notification.objects.create_notification_updated_record(

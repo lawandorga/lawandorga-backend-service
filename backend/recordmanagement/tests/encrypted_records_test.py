@@ -32,8 +32,7 @@ from backend.static.permissions import (
 class EncryptedRecordTests(TransactionTestCase):
     def setUp(self):
         self.client = StaticTestMethods.force_authentication_superuser()
-        self.base_list_url = "/api/records/records/"
-        self.base_detail_url = "/api/records/record/"
+        self.base_url = "/api/records/records/"
         self.base_create_record_url = "/api/records/create_record/"
 
         self.base_fixtures = CreateFixtures.create_base_fixtures()
@@ -373,3 +372,7 @@ class EncryptedRecordTests(TransactionTestCase):
             **{"HTTP_PRIVATE_KEY": private_key}
         )
         self.assertEqual(400, response.status_code)
+
+    def test_record_model_patching(self):
+        pass
+        # test record_model.patch
