@@ -16,6 +16,7 @@
 
 from django.db import models
 from backend.api.models import UserProfile
+from django.utils import timezone
 
 
 class EncryptedRecordDeletionRequest(models.Model):
@@ -32,8 +33,8 @@ class EncryptedRecordDeletionRequest(models.Model):
         on_delete=models.SET_NULL,
         null=True,
     )
-    explanation = models.CharField(max_length=4096)
-    requested = models.DateTimeField(auto_now_add=True)
+    explanation = models.CharField(max_length=4096, default="")
+    requested = models.DateTimeField(default=timezone.now)
     processed_on = models.DateTimeField(null=True)
 
     record_deletion_request_states_possible = (

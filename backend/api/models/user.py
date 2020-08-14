@@ -62,8 +62,22 @@ class UserProfileManager(BaseUserManager):
 
     @staticmethod
     def get_users_with_special_permission(
-        permission, from_rlc=None, for_user=None, for_group=None, for_rlc=None
+        permission,
+        from_rlc: "Rlc" = None,
+        for_user: "UserProfile" = None,
+        for_group: "Group" = None,
+        for_rlc: "Rlc" = None,
     ):
+        """
+        returns all users
+        :param permission:
+        :param from_rlc:
+        :param for_user:
+        :param for_group:
+        :param for_rlc:
+        :return:
+        """
+
         if isinstance(permission, str):
             permission = Permission.objects.get(name=permission).id
         if for_user is not None and for_group is not None and for_rlc is not None:
@@ -80,8 +94,11 @@ class UserProfileManager(BaseUserManager):
             .values("user_has_permission")
             .distinct()
         )
+
         user_ids = [has_permission["user_has_permission"] for has_permission in users]
         result = UserProfile.objects.filter(id__in=user_ids).distinct()
+        if from_rlc is not None:
+            result = result.filter(rlc=from_rlc)
 
         groups = HasPermission.objects.filter(
             permission=permission,
@@ -113,7 +130,11 @@ class UserProfileManager(BaseUserManager):
 
     @staticmethod
     def get_users_with_special_permissions(
-        permissions, from_rlc=None, for_user=None, for_group=None, for_rlc=None
+        permissions,
+        from_rlc: "Rlc" = None,
+        for_user: "UserProfile" = None,
+        for_group: "Group" = None,
+        for_rlc: "Rlc" = None,
     ):
         users = None
         for permission in permissions:

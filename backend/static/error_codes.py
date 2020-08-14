@@ -401,3 +401,8 @@ ERROR__API__PARAMS_NOT_VALID = {
     "error_detail": "parameters are not valid",
     "error_code": "api.params_not_valid",
 }
+
+ERROR__API__ALREADY_PROCESSED = {
+    "error_detail": "already processed item",
+    "error_code": "api.already_processed",
+}

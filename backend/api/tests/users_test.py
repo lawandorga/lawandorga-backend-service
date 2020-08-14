@@ -80,7 +80,7 @@ class UsersTests(TransactionTestCase):
                 (1100, "see"),
                 (1110, "show"),
                 (1120, "erase"),
-                (1130, "can_consult"),
+                (1130, "can_consult_1"),
                 (1140, "has_decryption_keys"),
                 (1150, "has_decryption_keys_2"),
             )

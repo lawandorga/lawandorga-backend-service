@@ -26,6 +26,7 @@ from backend.static import error_codes
 from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 from backend.static.date_utils import parse_date
 from backend.static.encryption import AESEncryption
+from backend.static import permissions
 
 
 class EncryptedRecordManager(models.Manager):
@@ -39,7 +40,26 @@ class EncryptedRecordManager(models.Manager):
         return self.get_queryset().get_no_access_e_records(user)
 
     def filter_by_rlc(self, rlc):
+        """
+        filters records by rlc
+        :param rlc:
+        :return:
+        """
         return self.get_queryset().filter_by_rlc(rlc)
+
+    def get_record(self, user: UserProfile, id) -> "EncryptedRecord":
+        if not user.has_permission(
+            permissions.PERMISSION_VIEW_RECORDS_RLC, for_rlc=user.rlc
+        ):
+            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+        try:
+            e_record: EncryptedRecord = EncryptedRecord.objects.get(pk=int(id))
+        except Exception as e:
+            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
+        if user.rlc != e_record.from_rlc:
+            raise CustomError(error_codes.ERROR__API__WRONG_RLC)
+
+        return e_record
 
 
 class EncryptedRecordQuerySet(models.QuerySet):
