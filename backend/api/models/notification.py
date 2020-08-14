@@ -130,7 +130,10 @@ class NotificationManager(models.Manager):
 
     @staticmethod
     def create_notification_record_document_added(
-        user: UserProfile, source_user: UserProfile, record: "EncryptedRecord"
+        user: UserProfile,
+        source_user: UserProfile,
+        record: "EncryptedRecord",
+        text: str,
     ) -> (NotificationGroup, "Notification"):
         return Notification.objects.create_notification(
             user=user,
@@ -139,11 +142,15 @@ class NotificationManager(models.Manager):
             ref_text=record.record_token,
             notification_group_type=NotificationGroupType.RECORD,
             notification_type=NotificationType.RECORD__RECORD_DOCUMENT_ADDED,
+            text=text,
         )
 
     @staticmethod
     def create_notification_record_document_modified(
-        user: UserProfile, source_user: UserProfile, record: "EncryptedRecord"
+        user: UserProfile,
+        source_user: UserProfile,
+        record: "EncryptedRecord",
+        text: str,
     ) -> (NotificationGroup, "Notification"):
         return Notification.objects.create_notification(
             user=user,
@@ -152,6 +159,7 @@ class NotificationManager(models.Manager):
             ref_text=record.record_token,
             notification_group_type=NotificationGroupType.RECORD,
             notification_type=NotificationType.RECORD__RECORD_DOCUMENT_MODIFIED,
+            text=text,
         )
 
     @staticmethod
