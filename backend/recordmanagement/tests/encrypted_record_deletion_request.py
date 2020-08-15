@@ -370,6 +370,8 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
             record_models.EncryptedRecordDeletionRequest
         ] = self.add_record_deletion_request_fixtures()
         number_of_records_before: int = record_models.EncryptedRecord.objects.count()
+        number_of_notifications_before: int = api_models.Notification.objects.count()
+        number_of_notification_groups_before: int = api_models.NotificationGroup.objects.count()
 
         response: Response = self.client.post(
             self.process_url,
@@ -403,6 +405,13 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
                 state="gr"
             ).count(),
         )
+        self.assertEqual(
+            number_of_notification_groups_before + 1,
+            api_models.NotificationGroup.objects.count(),
+        )
+        self.assertEqual(
+            number_of_notifications_before + 1, api_models.Notification.objects.count()
+        )
 
     def test_accept_doubled_deletion_request(self):
         self.add_process_record_deletion_requests_permission()
@@ -410,6 +419,8 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
             record_models.EncryptedRecordDeletionRequest
         ] = self.add_record_deletion_request_fixtures()
         number_of_records_before: int = record_models.EncryptedRecord.objects.count()
+        number_of_notifications_before: int = api_models.Notification.objects.count()
+        number_of_notification_groups_before: int = api_models.NotificationGroup.objects.count()
 
         response: Response = self.client.post(
             self.process_url,
@@ -443,6 +454,13 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
                 state="gr"
             ).count(),
         )
+        self.assertEqual(
+            number_of_notification_groups_before + 1,
+            api_models.NotificationGroup.objects.count(),
+        )
+        self.assertEqual(
+            number_of_notifications_before + 1, api_models.Notification.objects.count()
+        )
 
     def test_decline_deletion_request(self):
         self.add_process_record_deletion_requests_permission()
@@ -450,6 +468,8 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
             record_models.EncryptedRecordDeletionRequest
         ] = self.add_record_deletion_request_fixtures()
         number_of_records_before: int = record_models.EncryptedRecord.objects.count()
+        number_of_notifications_before: int = api_models.Notification.objects.count()
+        number_of_notification_groups_before: int = api_models.NotificationGroup.objects.count()
 
         response: Response = self.client.post(
             self.process_url,
@@ -483,6 +503,13 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
                 state="de"
             ).count(),
         )
+        self.assertEqual(
+            number_of_notification_groups_before + 1,
+            api_models.NotificationGroup.objects.count(),
+        )
+        self.assertEqual(
+            number_of_notifications_before + 1, api_models.Notification.objects.count()
+        )
 
     def test_double_process_request(self):
         self.add_process_record_deletion_requests_permission()
@@ -491,6 +518,8 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
         ] = self.add_record_deletion_request_fixtures()
         record_deletion_requests[0].state = "de"
         record_deletion_requests[0].save()
+        number_of_notifications_before: int = api_models.Notification.objects.count()
+        number_of_notification_groups_before: int = api_models.NotificationGroup.objects.count()
 
         response: Response = self.client.post(
             self.process_url,
@@ -500,6 +529,13 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
         self.assertEqual(
             error_codes.ERROR__API__ALREADY_PROCESSED["error_code"],
             response.data["error_code"],
+        )
+        self.assertEqual(
+            number_of_notification_groups_before,
+            api_models.NotificationGroup.objects.count(),
+        )
+        self.assertEqual(
+            number_of_notifications_before, api_models.Notification.objects.count()
         )
 
 

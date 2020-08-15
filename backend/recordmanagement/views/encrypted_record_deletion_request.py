@@ -132,10 +132,11 @@ class EncryptedRecordDeletionProcessViewSet(APIView):
             from_rlc=request.user.rlc,
             for_rlc=request.user.rlc,
         )
-        for user in users_with_permissions:
-            Notification.objects.create_notification_record_deletion_request_requested(
-                user, request.user, record_deletion_request.record
-            )
+        for current_user in users_with_permissions:
+            if current_user != user:
+                Notification.objects.create_notification_record_deletion_request_requested(
+                    current_user, request.user, record_deletion_request.record
+                )
 
         if action == "accept":
             # if record_deletion_request.state == "re":
