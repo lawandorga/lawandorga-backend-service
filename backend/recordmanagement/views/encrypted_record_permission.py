@@ -36,14 +36,15 @@ class RecordPermissionViewSet(viewsets.ModelViewSet):
 
 
 class EncryptedRecordPermissionRequestViewSet(APIView):
-    def post(self, request, id):
-        e_record = get_e_record(request.user, id)
-        if e_record.user_has_permission(request.user):
+    def post(self, request, id) -> Response:
+        record = get_e_record(request.user, id)
+
+        if record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ALREADY_WORKING_ON)
 
         if (
             models.EncryptedRecordPermission.objects.filter(
-                record=e_record, request_from=request.user, state="re"
+                record=record, request_from=request.user, state="re"
             ).count()
             >= 1
         ):
@@ -53,14 +54,14 @@ class EncryptedRecordPermissionRequestViewSet(APIView):
             can_edit = request.data["can_edit"]
 
         e_permission = models.EncryptedRecordPermission(
-            request_from=request.user, record=e_record, can_edit=can_edit
+            request_from=request.user, record=record, can_edit=can_edit
         )
         e_permission.save()
         return Response(serializers.RecordPermissionSerializer(e_permission).data)
 
 
-class EncryptedRecordPermissionAdmitViewSet(APIView):
-    def get(self, request):
+class EncryptedRecordPermissionProcessViewSet(APIView):
+    def get(self, request) -> Response:
         """
         used from admins to see which permission requests are for the own rlc in the system
         :param request:
@@ -79,7 +80,7 @@ class EncryptedRecordPermissionAdmitViewSet(APIView):
             serializers.EncryptedRecordPermissionSerializer(requests, many=True).data
         )
 
-    def post(self, request):
+    def post(self, request) -> Response:
         """
         used to admit or decline a given permission request
         :param request:

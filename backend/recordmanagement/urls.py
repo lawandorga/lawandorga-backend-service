@@ -71,7 +71,8 @@ urlpatterns = [
     # url(r'record/(?P<id>.+)/request_permission$', RecordPermissionRequestViewSet.as_view()), OLD
     url(r"documents/(?P<id>.+)/$", RecordDocumentTagByDocumentViewSet.as_view()),
     url(
-        r"e_record_permission_requests", EncryptedRecordPermissionAdmitViewSet.as_view()
+        r"e_record_permission_requests",
+        EncryptedRecordPermissionProcessViewSet.as_view(),
     ),
     url(
         r"record_permission_requests", RecordPermissionAdmitViewSet.as_view()

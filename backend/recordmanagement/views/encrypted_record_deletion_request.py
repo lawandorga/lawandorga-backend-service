@@ -111,6 +111,9 @@ class EncryptedRecordDeletionProcessViewSet(APIView):
             )
         except:
             raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
+        if record_deletion_request.record.from_rlc != user.rlc:
+            raise CustomError(error_codes.ERROR__API__WRONG_RLC)
+
         if record_deletion_request.state != "re":
             raise CustomError(error_codes.ERROR__API__ALREADY_PROCESSED)
 

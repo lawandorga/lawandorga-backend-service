@@ -98,6 +98,53 @@ class CreateFixtures:
         return return_object
 
     @staticmethod
+    def create_foreign_rlc_fixture() -> {
+        "rlc": Rlc,
+        "users": [{"user": UserProfile, "private": bytes, "client": APIClient}],
+        "groups": [Group],
+    }:
+        """
+        created another set of fixtures with another rlc
+        used for testing access rights from other rlcs
+        :return:
+        """
+        return_object = {}
+
+        rlc = Rlc(name="other testrlc", id=7001)
+        rlc.save()
+        rlc_aes_key = "SecureAesKeyOtherOne"
+        private, public = RSAEncryption.generate_keys()
+        encrypted_private = AESEncryption.encrypt(private, rlc_aes_key)
+        rlc_keys = RlcEncryptionKeys(
+            rlc=rlc, encrypted_private_key=encrypted_private, public_key=public
+        )
+        rlc_keys.save()
+        return_object.update({"rlc": rlc})
+
+        users = [
+            CreateFixtures.create_user(rlc, "other user1", rlc_aes_key),
+            CreateFixtures.create_user(rlc, "other user2", rlc_aes_key),
+            CreateFixtures.create_user(rlc, "otheruser3", rlc_aes_key),
+            CreateFixtures.create_user(rlc, "other user4", rlc_aes_key),
+        ]
+        return_object.update({"users": users})
+
+        groups = [
+            CreateFixtures._create_group(
+                rlc, "other group1", [users[0]["user"], users[1]["user"]]
+            ),
+            CreateFixtures._create_group(
+                rlc, "other group2", [users[1]["user"], users[2]["user"]]
+            ),
+            CreateFixtures._create_group(
+                rlc, "other group3", [users[2]["user"], users[3]["user"]]
+            ),
+        ]
+        return_object.update({"groups": groups})
+
+        return return_object
+
+    @staticmethod
     def create_user(
         rlc: Rlc, name: str, rlc_aes_key: str
     ) -> {"user": UserProfile, "private": bytes, "client": APIClient}:

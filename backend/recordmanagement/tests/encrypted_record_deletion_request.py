@@ -121,7 +121,28 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
             response.data["error_code"],
         )
 
-        # TODO: sent request from other rlc?
+    def test_record_deletion_request_foreign_rlc(self):
+        foreign_rlc_fixtures = CreateFixtures.create_foreign_rlc_fixture()
+        user = foreign_rlc_fixtures["users"][0]["user"]
+
+        permission: api_models.Permission = api_models.Permission.objects.get(
+            name=PERMISSION_VIEW_RECORDS_RLC
+        )
+        has_permission: api_models.HasPermission = api_models.HasPermission(
+            permission=permission,
+            permission_for_rlc=foreign_rlc_fixtures["rlc"],
+            user_has_permission=user,
+        )
+        has_permission.save()
+
+        response: Response = foreign_rlc_fixtures["users"][0]["client"].post(
+            self.base_url,
+            {"record_id": self.record_fixtures["records"][0]["record"].id},
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__API__WRONG_RLC["error_code"], response.data["error_code"]
+        )
 
     def test_record_deletion_request_no_record_permission(self):
         permission: api_models.Permission = api_models.Permission.objects.get(
@@ -538,8 +559,37 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
             number_of_notifications_before, api_models.Notification.objects.count()
         )
 
+    def test_process_record_deletion_foreign_rlc(self):
+        foreign_rlc_fixtures = CreateFixtures.create_foreign_rlc_fixture()
+        user = foreign_rlc_fixtures["users"][0]["user"]
+        record_deletion_requests: [
+            record_models.EncryptedRecordDeletionRequest
+        ] = self.add_record_deletion_request_fixtures()
 
-# process from wrong rlc
+        permission: api_models.Permission = api_models.Permission.objects.get(
+            name=PERMISSION_VIEW_RECORDS_RLC
+        )
+        has_permission: api_models.HasPermission = api_models.HasPermission(
+            permission=permission,
+            permission_for_rlc=foreign_rlc_fixtures["rlc"],
+            user_has_permission=user,
+        )
+        has_permission.save()
+        permission: api_models.Permission = api_models.Permission.objects.get(
+            name=PERMISSION_PROCESS_RECORD_DELETION_REQUESTS
+        )
+        has_permission: api_models.HasPermission = api_models.HasPermission(
+            permission=permission,
+            permission_for_rlc=foreign_rlc_fixtures["rlc"],
+            user_has_permission=user,
+        )
+        has_permission.save()
 
-# TODO: notifications!
-# send notifications (just to permission holder or requestors too?)
+        response: Response = foreign_rlc_fixtures["users"][0]["client"].post(
+            self.process_url,
+            {"request_id": record_deletion_requests[0].id, "action": "accept"},
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__API__WRONG_RLC["error_code"], response.data["error_code"]
+        )
