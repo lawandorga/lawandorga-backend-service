@@ -44,8 +44,8 @@ class EncryptedRecordRequestTest(TransactionTestCase):
         self.record_fixtures = CreateFixtures.create_record_base_fixtures(
             rlc=self.base_fixtures["rlc"], users=users
         )
-        self.client: APIClient = self.base_fixtures["users"][0]["client"]
-        self.user: api_models.UserProfile = self.base_fixtures["users"][0]["user"]
+        self.client: APIClient = self.base_fixtures["users"][3]["client"]
+        self.user: api_models.UserProfile = self.base_fixtures["users"][3]["user"]
 
         permission: api_models.Permission = api_models.Permission.objects.get(
             name=PERMISSION_VIEW_RECORDS_RLC
@@ -59,7 +59,7 @@ class EncryptedRecordRequestTest(TransactionTestCase):
         has_permission: api_models.HasPermission = api_models.HasPermission(
             permission=permission,
             permission_for_rlc=self.base_fixtures["rlc"],
-            group_has_permission=self.base_fixtures["groups"][1],
+            group_has_permission=self.base_fixtures["groups"][2],
         )
         has_permission.save()
 
@@ -117,8 +117,6 @@ class EncryptedRecordRequestTest(TransactionTestCase):
             response.data["error_code"],
         )
 
-    # TODO: from other rlc
-
     def test_request_record_permission_no_id(self):
         url = self.base_request_url + "a" + self.trailing_request_url
 
@@ -129,14 +127,151 @@ class EncryptedRecordRequestTest(TransactionTestCase):
             response.data["error_code"],
         )
 
-    # TODO
-    # send request
-    # success
-    # wrong rlc
-    # without access to records
-    # 1: already has access
-    # 1: second request same record/ doubled (other is still requested)
-    # 1: doubled (other is declined)
+    def test_request_record_permission_foreign_rlc(self):
+        foreign_rlc_fixtures = CreateFixtures.create_foreign_rlc_fixture()
+        user = foreign_rlc_fixtures["users"][0]["user"]
+        url = (
+            self.base_request_url
+            + str(self.record_fixtures["records"][0]["record"].id)
+            + self.trailing_request_url
+        )
+        permission: api_models.Permission = api_models.Permission.objects.get(
+            name=PERMISSION_VIEW_RECORDS_RLC
+        )
+        has_permission: api_models.HasPermission = api_models.HasPermission(
+            permission=permission,
+            permission_for_rlc=foreign_rlc_fixtures["rlc"],
+            user_has_permission=user,
+        )
+        has_permission.save()
+
+        record_permission_requests_before: int = record_models.EncryptedRecordPermission.objects.count()
+
+        response: Response = foreign_rlc_fixtures["users"][0]["client"].post(url,)
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__API__WRONG_RLC["error_code"], response.data["error_code"]
+        )
+        self.assertEqual(
+            record_permission_requests_before,
+            record_models.EncryptedRecordPermission.objects.count(),
+        )
+
+    def test_request_record_permission_without_record_access(self):
+        user: api_models.UserProfile = api_models.UserProfile(
+            name="temp user",
+            email="tempuser@law-orga.de",
+            rlc=self.base_fixtures["rlc"],
+        )
+        user.set_password("qwe123")
+        user.save()
+        client = APIClient()
+        client.force_authenticate(user=user)
+
+        url = (
+            self.base_request_url
+            + str(self.record_fixtures["records"][0]["record"].id)
+            + self.trailing_request_url
+        )
+        response: Response = client.post(url, {})
+        self.assertEqual(403, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__API__PERMISSION__INSUFFICIENT["error_code"],
+            response.data["error_code"],
+        )
+
+    def test_request_record_permission_success(self):
+        url = (
+            self.base_request_url
+            + str(self.record_fixtures["records"][0]["record"].id)
+            + self.trailing_request_url
+        )
+        record_permission_requests_before: int = record_models.EncryptedRecordPermission.objects.count()
+
+        response: Response = self.client.post(url, {})
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            record_permission_requests_before + 1,
+            record_models.EncryptedRecordPermission.objects.count(),
+        )
+        request_from_db: record_models.EncryptedRecordPermission = record_models.EncryptedRecordPermission.objects.get(
+            pk=response.data["id"]
+        )
+        self.assertEqual(
+            self.record_fixtures["records"][0]["record"], request_from_db.record
+        )
+        self.assertEqual("re", request_from_db.state)
+        self.assertEqual(self.user, request_from_db.request_from)
+
+    def test_request_record_permission_doubled_already_working_on(self):
+        url = (
+            self.base_request_url
+            + str(self.record_fixtures["records"][0]["record"].id)
+            + self.trailing_request_url
+        )
+
+        response: Response = self.base_fixtures["users"][2]["client"].post(url, {})
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__RECORD__PERMISSION__ALREADY_WORKING_ON["error_code"],
+            response.data["error_code"],
+        )
+
+        response: Response = self.base_fixtures["users"][0]["client"].post(url, {})
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__RECORD__PERMISSION__ALREADY_WORKING_ON["error_code"],
+            response.data["error_code"],
+        )
+
+    def test_request_record_permission_doubled_still_requested(self):
+        url = (
+            self.base_request_url
+            + str(self.record_fixtures["records"][0]["record"].id)
+            + self.trailing_request_url
+        )
+        permission: record_models.EncryptedRecordPermission = record_models.EncryptedRecordPermission(
+            request_from=self.user,
+            record=self.record_fixtures["records"][0]["record"],
+            state="re",
+        )
+        permission.save()
+
+        response: Response = self.client.post(url, {})
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__RECORD__PERMISSION__ALREADY_REQUESTED["error_code"],
+            response.data["error_code"],
+        )
+
+    def test_request_record_permission_doubled_declined_success(self):
+        url = (
+            self.base_request_url
+            + str(self.record_fixtures["records"][0]["record"].id)
+            + self.trailing_request_url
+        )
+        permission: record_models.EncryptedRecordPermission = record_models.EncryptedRecordPermission(
+            request_from=self.user,
+            record=self.record_fixtures["records"][0]["record"],
+            state="de",
+        )
+        permission.save()
+        record_permission_requests_before: int = record_models.EncryptedRecordPermission.objects.count()
+
+        response: Response = self.client.post(url, {})
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            record_permission_requests_before + 1,
+            record_models.EncryptedRecordPermission.objects.count(),
+        )
+        request_from_db: record_models.EncryptedRecordPermission = record_models.EncryptedRecordPermission.objects.get(
+            pk=response.data["id"]
+        )
+        self.assertEqual(
+            self.record_fixtures["records"][0]["record"], request_from_db.record
+        )
+        self.assertEqual("re", request_from_db.state)
+        self.assertEqual(self.user, request_from_db.request_from)
 
     # process request
     # success

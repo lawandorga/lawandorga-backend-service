@@ -37,7 +37,9 @@ class RecordPermissionViewSet(viewsets.ModelViewSet):
 
 class EncryptedRecordPermissionRequestViewSet(APIView):
     def post(self, request, id) -> Response:
-        record = get_e_record(request.user, id)
+        record: models.EncryptedRecord = get_e_record(request.user, id)
+        if record.from_rlc != request.user.rlc:
+            raise CustomError(error_codes.ERROR__API__WRONG_RLC)
 
         if record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ALREADY_WORKING_ON)
