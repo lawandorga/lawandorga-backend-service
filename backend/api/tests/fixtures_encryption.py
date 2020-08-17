@@ -75,10 +75,10 @@ class CreateFixtures:
         return_object.update({"rlc": rlc})
 
         users = [
+            CreateFixtures.create_user(rlc, "user0", rlc_aes_key),
             CreateFixtures.create_user(rlc, "user1", rlc_aes_key),
             CreateFixtures.create_user(rlc, "user2", rlc_aes_key),
             CreateFixtures.create_user(rlc, "user3", rlc_aes_key),
-            CreateFixtures.create_user(rlc, "user4", rlc_aes_key),
         ]
         return_object.update({"users": users})
 

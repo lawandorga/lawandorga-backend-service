@@ -21,6 +21,7 @@ from rest_framework.test import APIClient
 from backend.api.models import *
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.recordmanagement import models as record_models
+from backend.static.queryset_difference import QuerysetDifference
 
 
 class NotificationTest(TransactionTestCase):
@@ -416,3 +417,152 @@ class NotificationTest(TransactionTestCase):
 
     def test_create_new_user_request_notification(self):
         pass  # TODO: just for ohter admins
+
+    def test_accept_record_permission_notifications(self):
+        process_client: APIClient = self.base_fixtures["users"][0]["client"]
+        process_private: bytes = self.base_fixtures["users"][0]["private"]
+
+        request_user: UserProfile = self.base_fixtures["users"][3]["user"]
+
+        permission: Permission = Permission.objects.get(
+            name=permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC
+        )
+        has_permission: HasPermission = HasPermission(
+            permission=permission,
+            permission_for_rlc=self.base_fixtures["rlc"],
+            group_has_permission=self.base_fixtures["groups"][0],
+        )
+        has_permission.save()
+
+        record_permission: record_models.EncryptedRecordPermission = record_models.EncryptedRecordPermission(
+            request_from=request_user,
+            record=self.base_record_fixtures["records"][0]["record"],
+            state="re",
+        )
+        record_permission.save()
+
+        response: Response = process_client.post(
+            "/api/records/e_record_permission_requests/",
+            {"id": record_permission.id, "action": "accept"},
+            format="json",
+            **{"HTTP_PRIVATE_KEY": process_private},
+        )
+        self.assertEqual(200, response.status_code)
+
+        self.assertEqual(4, NotificationGroup.objects.count())
+        self.assertEqual(4, Notification.objects.count())
+
+        self.assertEqual(
+            1, NotificationGroup.objects.filter(user=request_user).count(),
+        )
+        group: NotificationGroup = NotificationGroup.objects.filter(
+            user=request_user
+        ).first()
+        self.assertEqual(1, group.notifications.count())
+        self.assertEqual(
+            NotificationGroupType.RECORD.value, group.type,
+        )
+        notification: Notification = group.notifications.first()
+        self.assertEqual(
+            NotificationType.RECORD__ACCESS_GRANTED.value, notification.type,
+        )
+
+        self.assertEqual(
+            1,
+            NotificationGroup.objects.filter(
+                user=self.base_fixtures["users"][2]["user"]
+            ).count(),
+        )
+        group: NotificationGroup = NotificationGroup.objects.filter(
+            user=self.base_fixtures["users"][2]["user"]
+        ).first()
+        self.assertEqual(1, group.notifications.count())
+        self.assertEqual(NotificationGroupType.RECORD.value, group.type)
+        notification: Notification = group.notifications.first()
+        self.assertEqual(
+            NotificationType.RECORD__NEW_RECORD_PERMISSION.value, notification.type
+        )
+
+        self.assertEqual(
+            1,
+            NotificationGroup.objects.filter(
+                user=self.base_fixtures["users"][1]["user"],
+                type=NotificationGroupType.RECORD.value,
+            ).count(),
+        )
+        self.assertEqual(
+            1,
+            NotificationGroup.objects.filter(
+                user=self.base_fixtures["users"][1]["user"],
+                type=NotificationGroupType.RECORD_PERMISSION_REQUEST.value,
+            ).count(),
+        )
+
+    def test_decline_record_permission_notifications(self):
+        process_client: APIClient = self.base_fixtures["users"][0]["client"]
+        process_private: bytes = self.base_fixtures["users"][0]["private"]
+
+        request_user: UserProfile = self.base_fixtures["users"][3]["user"]
+
+        permission: Permission = Permission.objects.get(
+            name=permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC
+        )
+        has_permission: HasPermission = HasPermission(
+            permission=permission,
+            permission_for_rlc=self.base_fixtures["rlc"],
+            group_has_permission=self.base_fixtures["groups"][0],
+        )
+        has_permission.save()
+
+        record_permission: record_models.EncryptedRecordPermission = record_models.EncryptedRecordPermission(
+            request_from=request_user,
+            record=self.base_record_fixtures["records"][0]["record"],
+            state="re",
+        )
+        record_permission.save()
+
+        response: Response = process_client.post(
+            "/api/records/e_record_permission_requests/",
+            {"id": record_permission.id, "action": "decline"},
+            format="json",
+            **{"HTTP_PRIVATE_KEY": process_private},
+        )
+        self.assertEqual(200, response.status_code)
+
+        self.assertEqual(2, NotificationGroup.objects.count())
+        self.assertEqual(2, Notification.objects.count())
+
+        self.assertEqual(
+            1,
+            NotificationGroup.objects.filter(
+                user=record_permission.request_from
+            ).count(),
+        )
+        group: NotificationGroup = NotificationGroup.objects.filter(
+            user=record_permission.request_from
+        ).first()
+        self.assertEqual(NotificationGroupType.RECORD.value, group.type)
+        self.assertEqual(1, group.notifications.count())
+        notification: Notification = group.notifications.first()
+        self.assertEqual(
+            NotificationType.RECORD__ACCESS_DENIED.value, notification.type
+        )
+
+        self.assertEqual(
+            1,
+            NotificationGroup.objects.filter(
+                user=self.base_fixtures["users"][1]["user"]
+            ).count(),
+        )
+        group: NotificationGroup = NotificationGroup.objects.filter(
+            user=self.base_fixtures["users"][1]["user"]
+        ).first()
+        self.assertEqual(
+            NotificationGroupType.RECORD_PERMISSION_REQUEST.value, group.type
+        )
+        self.assertEqual(1, group.notifications.count())
+        notification: Notification = group.notifications.first()
+        self.assertEqual(
+            NotificationType.RECORD_PERMISSION_REQUEST__DECLINED.value,
+            notification.type,
+        )

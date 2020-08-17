@@ -20,6 +20,7 @@ from django.utils import timezone
 
 from backend.api.models import NotificationGroup, UserProfile
 from backend.static.notification_enums import NotificationGroupType, NotificationType
+from backend.static import permissions
 
 
 class NotificationManager(models.Manager):
@@ -212,6 +213,82 @@ class NotificationManager(models.Manager):
             ref_text=record.record_token,
             notification_group_type=NotificationGroupType.RECORD_DELETION_REQUEST,
             notification_type=NotificationType.RECORD_DELETION_REQUEST__PROCESSED,
+        )
+
+    @staticmethod
+    def notify_record_permission_accepted(
+        source_user: UserProfile, record_permission: "EncryptedRecordPermission"
+    ):
+        notification_users: [
+            UserProfile
+        ] = record_permission.record.get_notification_users()
+        for user in notification_users:
+            if user != source_user and user != record_permission.request_from:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(record_permission.record.id),
+                    ref_text=record_permission.record.record_token,
+                    notification_group_type=NotificationGroupType.RECORD,
+                    notification_type=NotificationType.RECORD__NEW_RECORD_PERMISSION,
+                )
+
+        users_with_permissions: [
+            UserProfile
+        ] = UserProfile.objects.get_users_with_special_permissions(
+            permissions=[permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC],
+            from_rlc=source_user.rlc,
+            for_rlc=source_user.rlc,
+        )
+        for user in users_with_permissions:
+            if user != source_user:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(record_permission.record.id),
+                    ref_text=record_permission.record.record_token,
+                    notification_group_type=NotificationGroupType.RECORD_PERMISSION_REQUEST,
+                    notification_type=NotificationType.RECORD_PERMISSION_REQUEST__ACCEPTED,
+                )
+
+        Notification.objects.create_notification(
+            user=record_permission.request_from,
+            source_user=source_user,
+            ref_id=str(record_permission.record.id),
+            ref_text=record_permission.record.record_token,
+            notification_group_type=NotificationGroupType.RECORD,
+            notification_type=NotificationType.RECORD__ACCESS_GRANTED,
+        )
+
+    @staticmethod
+    def notify_record_permission_declined(
+        source_user: UserProfile, record_permission: "EncryptedRecordPermission"
+    ):
+        users_with_permissions: [
+            UserProfile
+        ] = UserProfile.objects.get_users_with_special_permissions(
+            permissions=[permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC],
+            from_rlc=source_user.rlc,
+            for_rlc=source_user.rlc,
+        )
+        for user in users_with_permissions:
+            if user != source_user:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(record_permission.record.id),
+                    ref_text=record_permission.record.record_token,
+                    notification_group_type=NotificationGroupType.RECORD_PERMISSION_REQUEST,
+                    notification_type=NotificationType.RECORD_PERMISSION_REQUEST__DECLINED,
+                )
+
+        Notification.objects.create_notification(
+            user=record_permission.request_from,
+            source_user=source_user,
+            ref_id=str(record_permission.record.id),
+            ref_text=record_permission.record.record_token,
+            notification_group_type=NotificationGroupType.RECORD,
+            notification_type=NotificationType.RECORD__ACCESS_DENIED,
         )
 
 

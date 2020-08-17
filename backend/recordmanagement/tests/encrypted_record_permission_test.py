@@ -27,6 +27,7 @@ from backend.static.permissions import (
 )
 from backend.static import error_codes
 from backend.static.queryset_difference import QuerysetDifference
+from backend.static.encryption import AESEncryption
 
 
 class EncryptedRecordRequestTest(TransactionTestCase):
@@ -307,6 +308,7 @@ class EncryptedRecordRequestTest(TransactionTestCase):
             format="json",
             **{"HTTP_PRIVATE_KEY": self.process_private},
         )
+
         self.assertEqual(200, response.status_code)
         request_from_db: (
             record_models.EncryptedRecordPermission
@@ -319,14 +321,21 @@ class EncryptedRecordRequestTest(TransactionTestCase):
         ] = record_encryption_difference.get_new_items(
             record_models.RecordEncryption.objects.all()
         )
-        self.assertEqual(1, len(new_record_encryptions))
+        self.assertEqual(1, new_record_encryptions.__len__())
         self.assertEqual(self.request_user, new_record_encryptions[0].user)
         self.assertEqual(requests[1].record, new_record_encryptions[0].record)
-        # self.assertEqual()
 
-        # TODO: assert more
-        # TODO: check encryption too!! -> user has keys added and can access record
-        # TODO: notifications
+        records_decryption_key: str = new_record_encryptions[
+            0
+        ].record.get_decryption_key(self.request_user, self.request_private)
+        self.assertEqual(
+            "record1 note",
+            AESEncryption.decrypt(
+                new_record_encryptions[0].record.note, records_decryption_key
+            ),
+        )
+        self.assertEqual(4, api_models.Notification.objects.count())
+        self.assertEqual(4, api_models.NotificationGroup.objects.count())
 
     def test_decline_record_permission(self):
         # TODO: do and assert
@@ -486,7 +495,7 @@ class EncryptedRecordRequestTest(TransactionTestCase):
         response: Response = self.process_client.get(self.list_and_process_url)
 
         self.assertEqual(200, response.status_code)
-        self.assertEqual(2, len(response.data))
+        self.assertEqual(2, response.data.__len__())
 
     def test_list_record_permissions_foreign_rlc(self):
         pass

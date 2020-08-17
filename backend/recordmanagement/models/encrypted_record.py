@@ -294,8 +294,8 @@ class EncryptedRecord(models.Model):
         users = []
         for user in list(self.working_on_record.all()):
             users.append(user)
-        for permission_request in list(
-            EncryptedRecordPermission.objects.filter(record=self, state="gr")
+        for permission_request in EncryptedRecordPermission.objects.filter(
+            record=self, state="gr"
         ):
             users.append(permission_request.request_from)
         return users
