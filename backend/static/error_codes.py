@@ -124,25 +124,11 @@ ERROR__RECORD__PERMISSION__ALREADY_REQUESTED = {
     "error_code": "record.permission.already_requested",
 }
 
-ERROR__RECORD__PERMISSION__ID_NOT_FOUND = {
-    "error_detail": "recordpermissionrequest with this id not found",
-    "error_code": "record.permission.id_not_found",
-}
-
-ERROR__RECORD__PERMISSION__ID_NOT_PROVIDED = {
-    "error_detail": "recordpermissionrequest not provided",
-    "error_code": "record.permission.id_not_provided",
-}
-
 ERROR__API__NO_ACTION_PROVIDED = {
     "error_detail": "no action in request.data provided",
     "error_code": "record.permission.no_action_provided",
 }
 
-ERROR__RECORD__PERMISSION__NO_VALID_ACTION_PROVIDED = {
-    "error_detail": "no action in request.data provided",
-    "error_code": "record.permission.no_action_provided",
-}
 
 ERROR__RECORD__PERMISSION__NO_REQUESTS_FOUND = {
     "error_detail": "no requests in database",

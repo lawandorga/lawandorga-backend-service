@@ -22,9 +22,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
-from backend.api.models import UserEncryptionKeys
+from backend.api.models import UserEncryptionKeys, UserProfile, Notification
 from backend.recordmanagement import models, serializers
-from backend.recordmanagement.helpers import get_e_record
 from backend.static import error_codes, permissions
 from backend.static.encryption import RSAEncryption
 from backend.static.middleware import get_private_key_from_request
@@ -32,12 +31,14 @@ from backend.static.middleware import get_private_key_from_request
 
 class RecordPermissionViewSet(viewsets.ModelViewSet):
     queryset = models.RecordPermission.objects.all()
-    serializer_class = serializers.RecordPermissionSerializer
+    serializer_class = serializers.EncryptedRecordPermissionSerializer
 
 
 class EncryptedRecordPermissionRequestViewSet(APIView):
     def post(self, request, id) -> Response:
-        record: models.EncryptedRecord = get_e_record(request.user, id)
+        record: models.EncryptedRecord = models.EncryptedRecord.objects.get_record(
+            request.user, id
+        )
         if record.from_rlc != request.user.rlc:
             raise CustomError(error_codes.ERROR__API__WRONG_RLC)
 
@@ -55,11 +56,26 @@ class EncryptedRecordPermissionRequestViewSet(APIView):
         if "can_edit" in request.data:
             can_edit = request.data["can_edit"]
 
-        e_permission = models.EncryptedRecordPermission(
+        record_permission = models.EncryptedRecordPermission(
             request_from=request.user, record=record, can_edit=can_edit
         )
-        e_permission.save()
-        return Response(serializers.RecordPermissionSerializer(e_permission).data)
+        record_permission.save()
+
+        users_with_permissions: [
+            UserProfile
+        ] = UserProfile.objects.get_users_with_special_permissions(
+            permissions=[permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC],
+            from_rlc=request.user.rlc,
+            for_rlc=request.user.rlc,
+        )
+        for user in users_with_permissions:
+            Notification.objects.create_notification_record_permission_request_requested(
+                user, request.user, record
+            )
+
+        return Response(
+            serializers.EncryptedRecordPermissionSerializer(record_permission).data
+        )
 
 
 class EncryptedRecordPermissionProcessViewSet(APIView):
@@ -88,28 +104,31 @@ class EncryptedRecordPermissionProcessViewSet(APIView):
         :param request:
         :return:
         """
-        user = request.user
+        user: UserProfile = request.user
         if not user.has_permission(
             permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
             for_rlc=user.rlc,
         ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
         if "id" not in request.data:
-            raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ID_NOT_PROVIDED)
+            raise CustomError(error_codes.ERROR__API__ID_NOT_PROVIDED)
         try:
-            permission_request = models.EncryptedRecordPermission.objects.get(
+            permission_request: models.EncryptedRecordPermission = models.EncryptedRecordPermission.objects.get(
                 pk=request.data["id"]
             )
         except Exception as e:
-            raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ID_NOT_FOUND)
+            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
 
+        if permission_request.record.from_rlc != user.rlc:
+            raise CustomError(error_codes.ERROR__API__WRONG_RLC)
         if "action" not in request.data:
             raise CustomError(error_codes.ERROR__API__NO_ACTION_PROVIDED)
         action = request.data["action"]
         if action != "accept" and action != "decline":
-            raise CustomError(
-                error_codes.ERROR__RECORD__PERMISSION__NO_VALID_ACTION_PROVIDED
-            )
+            raise CustomError(error_codes.ERROR__API__ACTION_NOT_VALID)
+
+        if permission_request.state != "re":
+            raise CustomError(error_codes.ERROR__API__ALREADY_PROCESSED)
 
         permission_request.request_processed = user
         permission_request.processed_on = datetime.utcnow().replace(tzinfo=pytz.utc)

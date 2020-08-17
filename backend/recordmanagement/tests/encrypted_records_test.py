@@ -27,6 +27,7 @@ from backend.static.permissions import (
     PERMISSION_CAN_ADD_RECORD_RLC,
     PERMISSION_CAN_CONSULT,
 )
+from backend.static.queryset_difference import QuerysetDifference
 
 
 class EncryptedRecordTests(TransactionTestCase):
@@ -112,7 +113,7 @@ class EncryptedRecordTests(TransactionTestCase):
         number_of_record_encryptions_before: int = record_models.RecordEncryption.objects.count()
         number_of_clients_before: int = record_models.EncryptedClient.objects.count()
         number_of_notifications_before: int = api_models.Notification.objects.count()
-        notification_groups_before: [api_models.Notification] = list(
+        group_difference: QuerysetDifference = QuerysetDifference(
             api_models.NotificationGroup.objects.all()
         )
 
@@ -190,11 +191,9 @@ class EncryptedRecordTests(TransactionTestCase):
         self.assertEqual(
             number_of_notifications_before + 1, api_models.Notification.objects.count()
         )
-        to_exclude: [int] = [o.id for o in notification_groups_before]
-        new_notification_groups: [api_models.NotificationGroup] = list(
-            api_models.NotificationGroup.objects.all().exclude(id__in=to_exclude)
-        )
-        new_notification_group: api_models.NotificationGroup = new_notification_groups[
+        new_notification_group: (
+            api_models.NotificationGroup
+        ) = group_difference.get_new_items(api_models.NotificationGroup.objects.all())[
             0
         ]
         self.assertEqual(
