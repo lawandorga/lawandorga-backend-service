@@ -77,17 +77,20 @@ class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
             deletion_request.explanation = request.data["explanation"]
         deletion_request.save()
 
-        users_with_permissions: [
-            UserProfile
-        ] = UserProfile.objects.get_users_with_special_permissions(
-            permissions=[permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS],
-            from_rlc=request.user.rlc,
-            for_rlc=request.user.rlc,
+        # users_with_permissions: [
+        #     UserProfile
+        # ] = UserProfile.objects.get_users_with_special_permissions(
+        #     permissions=[permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS],
+        #     from_rlc=request.user.rlc,
+        #     for_rlc=request.user.rlc,
+        # )
+        # for user in users_with_permissions:
+        #     Notification.objects.create_notification_record_deletion_request_requested(
+        #         user, request.user, record
+        #     )
+        Notification.objects.notify_record_deletion_requested(
+            request.user, deletion_request
         )
-        for user in users_with_permissions:
-            Notification.objects.create_notification_record_deletion_request_requested(
-                user, request.user, record
-            )
 
         return Response(
             serializers.EncryptedRecordDeletionRequestSerializer(deletion_request).data,

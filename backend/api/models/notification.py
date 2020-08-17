@@ -176,18 +176,18 @@ class NotificationManager(models.Manager):
             notification_type=NotificationType.RECORD_PERMISSION_REQUEST__REQUESTED,
         )
 
-    @staticmethod
-    def create_notification_record_permission_request_processed(
-        user: UserProfile, source_user: UserProfile, record: "EncryptedRecord"
-    ) -> (NotificationGroup, "Notification"):
-        return Notification.objects.create_notification(
-            user=user,
-            source_user=source_user,
-            ref_id=str(record.id),
-            ref_text=record.record_token,
-            notification_group_type=NotificationGroupType.RECORD_PERMISSION_REQUEST,
-            notification_type=NotificationType.RECORD_PERMISSION_REQUEST__PROCESSED,
-        )
+    # @staticmethod
+    # def create_notification_record_permission_request_processed(
+    #     user: UserProfile, source_user: UserProfile, record: "EncryptedRecord"
+    # ) -> (NotificationGroup, "Notification"):
+    #     return Notification.objects.create_notification(
+    #         user=user,
+    #         source_user=source_user,
+    #         ref_id=str(record.id),
+    #         ref_text=record.record_token,
+    #         notification_group_type=NotificationGroupType.RECORD_PERMISSION_REQUEST,
+    #         notification_type=NotificationType.RECORD_PERMISSION_REQUEST__PROCESSED,
+    #     )
 
     @staticmethod
     def create_notification_record_deletion_request_requested(
@@ -202,18 +202,18 @@ class NotificationManager(models.Manager):
             notification_type=NotificationType.RECORD_DELETION_REQUEST__REQUESTED,
         )
 
-    @staticmethod
-    def create_notification_record_deletion_request_processed(
-        user: UserProfile, source_user: UserProfile, record: "EncryptedRecord"
-    ) -> (NotificationGroup, "Notification"):
-        return Notification.objects.create_notification(
-            user=user,
-            source_user=source_user,
-            ref_id=str(record.id),
-            ref_text=record.record_token,
-            notification_group_type=NotificationGroupType.RECORD_DELETION_REQUEST,
-            notification_type=NotificationType.RECORD_DELETION_REQUEST__PROCESSED,
-        )
+    # @staticmethod
+    # def create_notification_record_deletion_request_processed(
+    #     user: UserProfile, source_user: UserProfile, record: "EncryptedRecord"
+    # ) -> (NotificationGroup, "Notification"):
+    #     return Notification.objects.create_notification(
+    #         user=user,
+    #         source_user=source_user,
+    #         ref_id=str(record.id),
+    #         ref_text=record.record_token,
+    #         notification_group_type=NotificationGroupType.RECORD_DELETION_REQUEST,
+    #         notification_type=NotificationType.RECORD_DELETION_REQUEST__PROCESSED,
+    #     )
 
     @staticmethod
     def notify_record_permission_accepted(
@@ -290,6 +290,30 @@ class NotificationManager(models.Manager):
             notification_group_type=NotificationGroupType.RECORD,
             notification_type=NotificationType.RECORD__ACCESS_DENIED,
         )
+
+    @staticmethod
+    def notify_record_deletion_requested(
+        source_user: UserProfile, record_deletion: "EncryptedRecordDeletionRequest"
+    ):
+        users_with_permissions: [
+            UserProfile
+        ] = UserProfile.objects.get_users_with_special_permissions(
+            permissions=[permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS],
+            from_rlc=source_user.rlc,
+            for_rlc=source_user.rlc,
+        )
+        for user in users_with_permissions:
+            if user != source_user:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(record_deletion.record.id),
+                    ref_text=record_deletion.record.record_token,
+                    notification_group_type=NotificationGroupType.RECORD_DELETION_REQUEST,
+                    notification_type=NotificationType.RECORD_DELETION_REQUEST__REQUESTED,
+                )
+
+        # record_deletion.request_from
 
 
 class Notification(models.Model):

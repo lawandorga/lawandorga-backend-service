@@ -243,10 +243,10 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
             record_models.EncryptedRecordDeletionRequest.objects.count(),
         )
         self.assertEqual(
-            notifications_before + 2, api_models.Notification.objects.count()
+            notifications_before + 1, api_models.Notification.objects.count()
         )
         self.assertEqual(
-            notification_groups_before + 2, api_models.NotificationGroup.objects.count()
+            notification_groups_before + 1, api_models.NotificationGroup.objects.count()
         )
 
         response: Response = self.client.post(
@@ -259,10 +259,10 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
             record_models.EncryptedRecordDeletionRequest.objects.count(),
         )
         self.assertEqual(
-            notifications_before + 2, api_models.Notification.objects.count()
+            notifications_before + 1, api_models.Notification.objects.count()
         )
         self.assertEqual(
-            notification_groups_before + 2, api_models.NotificationGroup.objects.count()
+            notification_groups_before + 1, api_models.NotificationGroup.objects.count()
         )
 
     def test_record_deletion_request_second_other_user(self):
@@ -282,10 +282,10 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
             record_models.EncryptedRecordDeletionRequest.objects.count(),
         )
         self.assertEqual(
-            notifications_before + 2, api_models.Notification.objects.count()
+            notifications_before + 1, api_models.Notification.objects.count()
         )
         self.assertEqual(
-            notification_groups_before + 2, api_models.NotificationGroup.objects.count()
+            notification_groups_before + 1, api_models.NotificationGroup.objects.count()
         )
 
         response: Response = self.base_fixtures["users"][2]["client"].post(
@@ -298,7 +298,7 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
             record_models.EncryptedRecordDeletionRequest.objects.count(),
         )
         self.assertEqual(
-            notifications_before + 4, api_models.Notification.objects.count()
+            notifications_before + 3, api_models.Notification.objects.count()
         )
         self.assertEqual(
             notification_groups_before + 2, api_models.NotificationGroup.objects.count()
