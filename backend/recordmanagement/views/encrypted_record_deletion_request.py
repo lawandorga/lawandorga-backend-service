@@ -131,22 +131,23 @@ class EncryptedRecordDeletionProcessViewSet(APIView):
             tzinfo=pytz.utc
         )
 
-        users_with_permissions: [
-            UserProfile
-        ] = UserProfile.objects.get_users_with_special_permissions(
-            permissions=[permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS],
-            from_rlc=request.user.rlc,
-            for_rlc=request.user.rlc,
-        )
-        for current_user in users_with_permissions:
-            if current_user != user:
-                Notification.objects.create_notification_record_deletion_request_requested(
-                    current_user, request.user, record_deletion_request.record
-                )
+        # users_with_permissions: [
+        #     UserProfile
+        # ] = UserProfile.objects.get_users_with_special_permissions(
+        #     permissions=[permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS],
+        #     from_rlc=request.user.rlc,
+        #     for_rlc=request.user.rlc,
+        # )
+        # for current_user in users_with_permissions:
+        #     if current_user != user:
+        #         Notification.objects.create_notification_record_deletion_request_requested(
+        #             current_user, request.user, record_deletion_request.record
+        #         )
 
         if action == "accept":
             # if record_deletion_request.state == "re":
             record_deletion_request.state = "gr"
+            record_deletion_request.request_processed = request.user
             record_deletion_request.save()
 
             other_deletion_requests_of_same_record: [
@@ -156,12 +157,20 @@ class EncryptedRecordDeletionProcessViewSet(APIView):
             )
             for other_request in other_deletion_requests_of_same_record:
                 other_request.state = "gr"
+                other_request.request_processed = request.user
                 other_request.save()
 
+            Notification.objects.notify_record_deletion_accepted(
+                request.user, record_deletion_request
+            )
             record_deletion_request.record.delete()
         else:
             record_deletion_request.state = "de"
             record_deletion_request.save()
+
+            Notification.objects.notify_record_deletion_declined(
+                request.user, record_deletion_request
+            )
 
         response_request = models.EncryptedRecordDeletionRequest.objects.get(
             pk=record_deletion_request.id

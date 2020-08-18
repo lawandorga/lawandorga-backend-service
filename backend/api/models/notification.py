@@ -60,126 +60,138 @@ class NotificationManager(models.Manager):
         notification.save()
         return group, notification
 
-    @staticmethod
-    def create_notification_new_record_message(
-        user: UserProfile, source_user: UserProfile, record: "EncrypedRecord"
-    ) -> (NotificationGroup, "Notification"):
-        return Notification.objects.create_notification(
-            user,
-            source_user,
-            str(record.id),
-            record.record_token,
-            NotificationGroupType.RECORD,
-            NotificationType.RECORD__RECORD_MESSAGE_ADDED,
-        )
-
-    @staticmethod
-    def create_notification_new_record(
-        user: UserProfile, source_user: UserProfile, record: "EncryptedRecord"
-    ) -> (NotificationGroup, "Notification"):
-        return Notification.objects.create_notification(
-            user=user,
-            source_user=source_user,
-            ref_id=str(record.id),
-            ref_text=record.record_token,
-            notification_group_type=NotificationGroupType.RECORD,
-            notification_type=NotificationType.RECORD__CREATED,
-        )
-
-    @staticmethod
-    def create_notification_updated_record(
-        user: UserProfile,
-        source_user: UserProfile,
-        record: "EncryptedRecord",
-        text: str,
-    ) -> (NotificationGroup, "Notification"):
-        return Notification.objects.create_notification(
-            user=user,
-            source_user=source_user,
-            ref_id=str(record.id),
-            ref_text=record.record_token,
-            notification_group_type=NotificationGroupType.RECORD,
-            notification_type=NotificationType.RECORD__UPDATED,
-            text=text,
-        )
-
-    @staticmethod
-    def create_notification_added_to_group(
-        user: UserProfile, source_user: UserProfile, group: "Group"
-    ) -> (NotificationGroup, "Notification"):
-        return Notification.objects.create_notification(
-            user=user,
-            source_user=source_user,
-            ref_id=str(group.id),
-            ref_text=group.name,
-            notification_group_type=NotificationGroupType.GROUP,
-            notification_type=NotificationType.GROUP__ADDED_ME,
-        )
-
-    @staticmethod
-    def create_notification_removed_from_group(
-        user: UserProfile, source_user: UserProfile, group: "Group"
-    ) -> (NotificationGroup, "Notification"):
-        return Notification.objects.create_notification(
-            user=user,
-            source_user=source_user,
-            ref_id=str(group.id),
-            ref_text=group.name,
-            notification_group_type=NotificationGroupType.GROUP,
-            notification_type=NotificationType.GROUP__REMOVED_ME,
-        )
-
-    @staticmethod
-    def create_notification_record_document_added(
-        user: UserProfile,
-        source_user: UserProfile,
-        record: "EncryptedRecord",
-        text: str,
-    ) -> (NotificationGroup, "Notification"):
-        return Notification.objects.create_notification(
-            user=user,
-            source_user=source_user,
-            ref_id=str(record.id),
-            ref_text=record.record_token,
-            notification_group_type=NotificationGroupType.RECORD,
-            notification_type=NotificationType.RECORD__RECORD_DOCUMENT_ADDED,
-            text=text,
-        )
-
-    @staticmethod
-    def create_notification_record_document_modified(
-        user: UserProfile,
-        source_user: UserProfile,
-        record: "EncryptedRecord",
-        text: str,
-    ) -> (NotificationGroup, "Notification"):
-        return Notification.objects.create_notification(
-            user=user,
-            source_user=source_user,
-            ref_id=str(record.id),
-            ref_text=record.record_token,
-            notification_group_type=NotificationGroupType.RECORD,
-            notification_type=NotificationType.RECORD__RECORD_DOCUMENT_MODIFIED,
-            text=text,
-        )
-
-    @staticmethod
-    def create_notification_record_deletion_request_requested(
-        user: UserProfile, source_user: UserProfile, record: "EncryptedRecord"
-    ) -> (NotificationGroup, "Notification"):
-        return Notification.objects.create_notification(
-            user=user,
-            source_user=source_user,
-            ref_id=str(record.id),
-            ref_text=record.record_token,
-            notification_group_type=NotificationGroupType.RECORD_DELETION_REQUEST,
-            notification_type=NotificationType.RECORD_DELETION_REQUEST__REQUESTED,
-        )
+    # @staticmethod
+    # def create_notification_new_record_message(
+    #     user: UserProfile, source_user: UserProfile, record: "EncrypedRecord"
+    # ) -> (NotificationGroup, "Notification"):
+    #     return Notification.objects.create_notification(
+    #         user,
+    #         source_user,
+    #         str(record.id),
+    #         record.record_token,
+    #         NotificationGroupType.RECORD,
+    #         NotificationType.RECORD__RECORD_MESSAGE_ADDED,
+    #     )
+    #
+    # @staticmethod
+    # def create_notification_new_record(
+    #     user: UserProfile, source_user: UserProfile, record: "EncryptedRecord"
+    # ) -> (NotificationGroup, "Notification"):
+    #     return Notification.objects.create_notification(
+    #         user=user,
+    #         source_user=source_user,
+    #         ref_id=str(record.id),
+    #         ref_text=record.record_token,
+    #         notification_group_type=NotificationGroupType.RECORD,
+    #         notification_type=NotificationType.RECORD__CREATED,
+    #     )
+    #
+    # @staticmethod
+    # def create_notification_updated_record(
+    #     user: UserProfile,
+    #     source_user: UserProfile,
+    #     record: "EncryptedRecord",
+    #     text: str,
+    # ) -> (NotificationGroup, "Notification"):
+    #     return Notification.objects.create_notification(
+    #         user=user,
+    #         source_user=source_user,
+    #         ref_id=str(record.id),
+    #         ref_text=record.record_token,
+    #         notification_group_type=NotificationGroupType.RECORD,
+    #         notification_type=NotificationType.RECORD__UPDATED,
+    #         text=text,
+    #     )
+    #
+    # @staticmethod
+    # def create_notification_added_to_group(
+    #     user: UserProfile, source_user: UserProfile, group: "Group"
+    # ) -> (NotificationGroup, "Notification"):
+    #     return Notification.objects.create_notification(
+    #         user=user,
+    #         source_user=source_user,
+    #         ref_id=str(group.id),
+    #         ref_text=group.name,
+    #         notification_group_type=NotificationGroupType.GROUP,
+    #         notification_type=NotificationType.GROUP__ADDED_ME,
+    #     )
+    #
+    # @staticmethod
+    # def create_notification_removed_from_group(
+    #     user: UserProfile, source_user: UserProfile, group: "Group"
+    # ) -> (NotificationGroup, "Notification"):
+    #     return Notification.objects.create_notification(
+    #         user=user,
+    #         source_user=source_user,
+    #         ref_id=str(group.id),
+    #         ref_text=group.name,
+    #         notification_group_type=NotificationGroupType.GROUP,
+    #         notification_type=NotificationType.GROUP__REMOVED_ME,
+    #     )
+    #
+    # @staticmethod
+    # def create_notification_record_document_added(
+    #     user: UserProfile,
+    #     source_user: UserProfile,
+    #     record: "EncryptedRecord",
+    #     text: str,
+    # ) -> (NotificationGroup, "Notification"):
+    #     return Notification.objects.create_notification(
+    #         user=user,
+    #         source_user=source_user,
+    #         ref_id=str(record.id),
+    #         ref_text=record.record_token,
+    #         notification_group_type=NotificationGroupType.RECORD,
+    #         notification_type=NotificationType.RECORD__RECORD_DOCUMENT_ADDED,
+    #         text=text,
+    #     )
+    #
+    # @staticmethod
+    # def create_notification_record_document_modified(
+    #     user: UserProfile,
+    #     source_user: UserProfile,
+    #     record: "EncryptedRecord",
+    #     text: str,
+    # ) -> (NotificationGroup, "Notification"):
+    #     return Notification.objects.create_notification(
+    #         user=user,
+    #         source_user=source_user,
+    #         ref_id=str(record.id),
+    #         ref_text=record.record_token,
+    #         notification_group_type=NotificationGroupType.RECORD,
+    #         notification_type=NotificationType.RECORD__RECORD_DOCUMENT_MODIFIED,
+    #         text=text,
+    #     )
+    #
+    # @staticmethod
+    # def create_notification_record_deletion_request_requested(
+    #     user: UserProfile, source_user: UserProfile, record: "EncryptedRecord"
+    # ) -> (NotificationGroup, "Notification"):
+    #     return Notification.objects.create_notification(
+    #         user=user,
+    #         source_user=source_user,
+    #         ref_id=str(record.id),
+    #         ref_text=record.record_token,
+    #         notification_group_type=NotificationGroupType.RECORD_DELETION_REQUEST,
+    #         notification_type=NotificationType.RECORD_DELETION_REQUEST__REQUESTED,
+    #     )
 
     @staticmethod
     def notify_record_permission_accepted(
         source_user: UserProfile, record_permission: "EncryptedRecordPermission"
     ):
+        """
+        creates notification for accepted record permission request
+
+        creates notifications for every user with permit record permission in rlc
+        creates notifications for every user with access to record (working_on or record permission)
+        except source_user and record permission requestor
+        creates notification for requestor that record permission is accepted
+
+        :param source_user:
+        :param record_permission:
+        :return:
+        """
         notification_users: [
             UserProfile
         ] = record_permission.record.get_notification_users()
@@ -202,7 +214,7 @@ class NotificationManager(models.Manager):
             for_rlc=source_user.rlc,
         )
         for user in users_with_permissions:
-            if user != source_user:
+            if user != source_user and user != record_permission.request_from:
                 Notification.objects.create_notification(
                     user=user,
                     source_user=source_user,
@@ -256,6 +268,15 @@ class NotificationManager(models.Manager):
     def notify_record_deletion_requested(
         source_user: UserProfile, record_deletion: "EncryptedRecordDeletionRequest"
     ):
+        """
+        created notification for new deletion request
+
+        creates notifications for every user with process record deletion request
+        except source_user
+        :param source_user:
+        :param record_deletion:
+        :return:
+        """
         users_with_permissions: [
             UserProfile
         ] = UserProfile.objects.get_users_with_special_permissions(
@@ -278,6 +299,15 @@ class NotificationManager(models.Manager):
     def notify_record_permission_requested(
         source_user: UserProfile, record_permission: "EncryptedRecordPermission"
     ):
+        """
+        creates notification for new record permission request
+
+        creates  notifications for every user with permit record permission in rlc
+        except source_user
+        :param source_user:
+        :param record_permission:
+        :return:
+        """
         users_with_permissions: [
             UserProfile
         ] = UserProfile.objects.get_users_with_special_permissions(
@@ -296,6 +326,94 @@ class NotificationManager(models.Manager):
                     notification_type=NotificationType.RECORD_PERMISSION_REQUEST__REQUESTED,
                 )
 
+    @staticmethod
+    def notify_record_deletion_accepted(
+        source_user: UserProfile, record_deletion: "EncryptedRecordDeletionRequest"
+    ):
+        """
+        creates notification for a accepted record deletion
+
+        creates notifications for every user with process record deletion request
+        creates notifications for every user with access to record (working_on and record_permission)
+        except source_user
+        :param source_user:
+        :param record_deletion:
+        :return:
+        """
+        users_with_permissions: [
+            UserProfile
+        ] = UserProfile.objects.get_users_with_special_permissions(
+            permissions=[permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS],
+            from_rlc=source_user.rlc,
+            for_rlc=source_user.rlc,
+        )
+        for user in users_with_permissions:
+            if user != source_user and user != record_deletion.request_from:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(record_deletion.record.id),
+                    ref_text=record_deletion.record.record_token,
+                    notification_group_type=NotificationGroupType.RECORD_DELETION_REQUEST,
+                    notification_type=NotificationType.RECORD_DELETION_REQUEST__ACCEPTED,
+                )
+
+        notification_users: [
+            UserProfile
+        ] = record_deletion.record.get_notification_users()
+        for user in notification_users:
+            if user != source_user:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(record_deletion.record.id),
+                    ref_text=record_deletion.record.record_token,
+                    notification_group_type=NotificationGroupType.RECORD,
+                    notification_type=NotificationType.RECORD__DELETED,
+                )
+
+    @staticmethod
+    def notify_record_deletion_declined(
+        source_user: UserProfile, record_deletion: "EncryptedRecordDeletionRequest"
+    ):
+        """
+        created notifications for declined record deletion
+
+        creates notifications for every user with process record deletion request in rlc
+        except source user
+
+        creates notification for requestor of record deletion
+        :param source_user:
+        :param record_deletion:
+        :return:
+        """
+        users_with_permissions: [
+            UserProfile
+        ] = UserProfile.objects.get_users_with_special_permissions(
+            permissions=[permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS],
+            from_rlc=source_user.rlc,
+            for_rlc=source_user.rlc,
+        )
+        for user in users_with_permissions:
+            if user != source_user and user != record_deletion.request_from:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(record_deletion.record.id),
+                    ref_text=record_deletion.record.record_token,
+                    notification_group_type=NotificationGroupType.RECORD_DELETION_REQUEST,
+                    notification_type=NotificationType.RECORD_DELETION_REQUEST__DECLINED,
+                )
+
+        Notification.objects.create_notification(
+            user=record_deletion.request_from,
+            source_user=source_user,
+            ref_id=str(record_deletion.record.id),
+            ref_text=record_deletion.record.record_token,
+            notification_group_type=NotificationGroupType.RECORD,
+            notification_type=NotificationType.RECORD__DELETION_REQUEST_DENIED,
+        )
+
 
 class Notification(models.Model):
     notification_group = models.ForeignKey(
@@ -311,12 +429,10 @@ class Notification(models.Model):
         null=True,
     )
     created = models.DateTimeField(default=timezone.now)
-
     type = models.CharField(
         max_length=75, choices=NotificationType.choices(), null=False, default=""
     )
     read = models.BooleanField(default=False, null=False)
-
     text = models.TextField(null=True)
 
     objects = NotificationManager()

@@ -410,30 +410,39 @@ class CreateFixtures:
         notification_groups: [NotificationGroup] = []
 
         # record
-        (group, notification) = Notification.objects.create_notification_new_record(
-            user=main_user, source_user=source_user, record=records[0]
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=records[0].record_token,
+            ref_id=str(records[0].id),
+            notification_group_type=NotificationGroupType.RECORD,
+            notification_type=NotificationType.RECORD__CREATED,
         )
         notification.created = datetime(2020, 7, 23, 10, 26, 48).replace(
             tzinfo=pytz.timezone(settings.TIME_ZONE)
         )
         notification.save()
 
-        (group, notification) = Notification.objects.create_notification_updated_record(
+        (group, notification) = Notification.objects.create_notification(
             user=main_user,
             source_user=source_user,
-            record=records[0],
-            text="circumstances,record_note",
+            ref_text=records[0].record_token,
+            ref_id=str(records[0].id),
+            notification_group_type=NotificationGroupType.RECORD,
+            notification_type=NotificationType.RECORD__UPDATED,
         )
         notification.created = datetime(2020, 7, 24, 17, 13, 0).replace(
             tzinfo=pytz.timezone(settings.TIME_ZONE)
         )
         notification.save()
 
-        (
-            group,
-            notification,
-        ) = Notification.objects.create_notification_new_record_message(
-            user=main_user, source_user=source_user, record=records[0]
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=records[0].record_token,
+            ref_id=str(records[0].id),
+            notification_group_type=NotificationGroupType.RECORD,
+            notification_type=NotificationType.RECORD__RECORD_MESSAGE_ADDED,
         )
         notification.created = datetime(2020, 7, 24, 17, 45, 0).replace(
             tzinfo=pytz.timezone(settings.TIME_ZONE)
@@ -446,8 +455,13 @@ class CreateFixtures:
         notification_groups.append(group)
 
         # group1
-        (group, notification) = Notification.objects.create_notification_added_to_group(
-            user=main_user, source_user=source_user, group=groups[0]
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=groups[0].name,
+            ref_id=str(groups[0].id),
+            notification_group_type=NotificationGroupType.GROUP,
+            notification_type=NotificationType.GROUP__ADDED_ME,
         )
         notification.created = datetime(2020, 7, 24, 9, 12, 0).replace(
             tzinfo=pytz.timezone(settings.TIME_ZONE)
@@ -460,19 +474,27 @@ class CreateFixtures:
         notification_groups.append(group)
 
         # group2
-        (group, notification) = Notification.objects.create_notification_added_to_group(
-            user=main_user, source_user=source_user, group=groups[1]
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=groups[1].name,
+            ref_id=str(groups[1].id),
+            notification_group_type=NotificationGroupType.GROUP,
+            notification_type=NotificationType.GROUP__ADDED_ME,
         )
         notification.created = datetime(2020, 7, 21, 12, 1, 0).replace(
             tzinfo=pytz.timezone(settings.TIME_ZONE)
         )
         notification.save()
-        (
-            group,
-            notification,
-        ) = Notification.objects.create_notification_removed_from_group(
-            user=main_user, source_user=source_user, group=groups[1]
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=groups[1].name,
+            ref_id=str(groups[1].id),
+            notification_group_type=NotificationGroupType.GROUP,
+            notification_type=NotificationType.GROUP__REMOVED_ME,
         )
+
         notification.created = datetime(2020, 7, 25, 7, 12, 0).replace(
             tzinfo=pytz.timezone(settings.TIME_ZONE)
         )

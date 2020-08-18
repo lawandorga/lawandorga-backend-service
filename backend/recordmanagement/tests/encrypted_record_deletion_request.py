@@ -427,11 +427,11 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
             ).count(),
         )
         self.assertEqual(
-            number_of_notification_groups_before + 1,
+            number_of_notification_groups_before + 3,
             api_models.NotificationGroup.objects.count(),
         )
         self.assertEqual(
-            number_of_notifications_before + 1, api_models.Notification.objects.count()
+            number_of_notifications_before + 3, api_models.Notification.objects.count()
         )
 
     def test_accept_doubled_deletion_request(self):
@@ -476,11 +476,11 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
             ).count(),
         )
         self.assertEqual(
-            number_of_notification_groups_before + 1,
+            number_of_notification_groups_before + 3,
             api_models.NotificationGroup.objects.count(),
         )
         self.assertEqual(
-            number_of_notifications_before + 1, api_models.Notification.objects.count()
+            number_of_notifications_before + 3, api_models.Notification.objects.count()
         )
 
     def test_decline_deletion_request(self):
@@ -525,11 +525,11 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
             ).count(),
         )
         self.assertEqual(
-            number_of_notification_groups_before + 1,
+            number_of_notification_groups_before + 2,
             api_models.NotificationGroup.objects.count(),
         )
         self.assertEqual(
-            number_of_notifications_before + 1, api_models.Notification.objects.count()
+            number_of_notifications_before + 2, api_models.Notification.objects.count()
         )
 
     def test_double_process_request(self):
