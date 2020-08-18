@@ -52,12 +52,7 @@ class EncryptedRecordMessageManager(models.Manager):
         )
         new_message.save()
 
-        notification_users: [UserProfile] = record.get_notification_users()
-        for user in notification_users:
-            if user.id != sender.id:
-                Notification.objects.create_notification_new_record_message(
-                    user=user, source_user=sender, record=record
-                )
+        Notification.objects.notify_record_message_added(sender, new_message)
         return new_message, record_key
 
 

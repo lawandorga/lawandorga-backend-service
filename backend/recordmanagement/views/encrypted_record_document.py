@@ -104,13 +104,9 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
                 already_existing.save()
                 e_record_documents_handled.append(already_existing)
 
-                for user in notification_users:
-                    Notification.objects.create_notification_record_document_modified(
-                        user=user,
-                        source_user=request.user,
-                        record=e_record,
-                        text=already_existing.name,
-                    )
+                Notification.objects.notify_record_document_modified(
+                    request.user, already_existing
+                )
             else:
                 new_encrypted_record_document = models.EncryptedRecordDocument(
                     record=e_record,
@@ -119,13 +115,10 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
                     name=file_information["file_name"],
                 )
                 new_encrypted_record_document.save()
-                for user in notification_users:
-                    Notification.objects.create_notification_record_document_added(
-                        user=user,
-                        source_user=request.user,
-                        record=e_record,
-                        text=new_encrypted_record_document.name,
-                    )
+
+                Notification.objects.notify_record_document_added(
+                    request.user, new_encrypted_record_document
+                )
                 e_record_documents_handled.append(new_encrypted_record_document)
         return Response(
             serializers.EncryptedRecordDocumentSerializer(

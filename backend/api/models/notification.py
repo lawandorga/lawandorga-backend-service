@@ -414,6 +414,181 @@ class NotificationManager(models.Manager):
             notification_type=NotificationType.RECORD__DELETION_REQUEST_DENIED,
         )
 
+    @staticmethod
+    def notify_group_member_added(
+        source_user: UserProfile, new_user: UserProfile, group: "Group"
+    ):
+        """
+        creates notifications after user is added to group
+
+        only adds one notification for new user
+        :param source_user:
+        :param new_user:
+        :param group:
+        :return:
+        """
+        Notification.objects.create_notification(
+            user=new_user,
+            source_user=source_user,
+            ref_id=str(group.id),
+            ref_text=group.name,
+            notification_group_type=NotificationGroupType.GROUP,
+            notification_type=NotificationType.GROUP__ADDED_ME,
+        )
+
+    @staticmethod
+    def notify_group_member_removed(
+        source_user: UserProfile, new_user: UserProfile, group: "Group"
+    ):
+        """
+        creates notifications after user removed from group
+
+        only adds one notification for removed user
+        :param source_user:
+        :param new_user:
+        :param group:
+        :return:
+        """
+        Notification.objects.create_notification(
+            user=new_user,
+            source_user=source_user,
+            ref_id=str(group.id),
+            ref_text=group.name,
+            notification_group_type=NotificationGroupType.GROUP,
+            notification_type=NotificationType.GROUP__REMOVED_ME,
+        )
+
+    @staticmethod
+    def notify_record_patched(
+        source_user: UserProfile, record: "EncryptedRecord", text: str
+    ):
+        """
+        creates notification if record was patched
+
+        creates notification for all users with access to record
+        except source_user
+        :param source_user:
+        :param record:
+        :param text:
+        :return:
+        """
+        notification_users: [UserProfile] = record.get_notification_users()
+        for user in notification_users:
+            if user != source_user:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(record.id),
+                    ref_text=record.record_token,
+                    notification_group_type=NotificationGroupType.RECORD,
+                    notification_type=NotificationType.RECORD__UPDATED,
+                    text=text,
+                )
+
+    @staticmethod
+    def notify_record_message_added(
+        source_user: UserProfile, record_message: "EncryptedRecordMessage"
+    ):
+        """
+        creates notification after record message was added to record
+
+        creates notification for all users with access to record
+        except source_user
+        :param source_user:
+        :param record_message:
+        :return:
+        """
+        notification_users: [
+            UserProfile
+        ] = record_message.record.get_notification_users()
+        for user in notification_users:
+            if user != source_user:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(record_message.record.id),
+                    ref_text=record_message.record.record_token,
+                    notification_group_type=NotificationGroupType.RECORD,
+                    notification_type=NotificationType.RECORD__RECORD_MESSAGE_ADDED,
+                )
+
+    @staticmethod
+    def notify_record_document_added(
+        source_user: UserProfile, record_document: "EncryptedRecordDocument"
+    ):
+        """
+        creates notifications after record document was added to record
+
+        creates notifications for all users which have access to record
+        except source_user
+        :param source_user:
+        :param record_document:
+        :return:
+        """
+        notification_users: [
+            UserProfile
+        ] = record_document.record.get_notification_users()
+        for user in notification_users:
+            if user != source_user:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(record_document.record.id),
+                    ref_text=record_document.record.record_token,
+                    notification_group_type=NotificationGroupType.RECORD,
+                    notification_type=NotificationType.RECORD__RECORD_DOCUMENT_ADDED,
+                )
+
+    @staticmethod
+    def notify_record_document_modified(
+        source_user: UserProfile, record_document: "EncryptedRecordDocument"
+    ):
+        """
+        creates notifications after record document was modified (reuploaded)
+
+        creates notifications for all users which have access to record
+        except source_user
+        :param source_user:
+        :param record_document:
+        :return:
+        """
+        notification_users: [
+            UserProfile
+        ] = record_document.record.get_notification_users()
+        for user in notification_users:
+            if user != source_user:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(record_document.record.id),
+                    ref_text=record_document.record.record_token,
+                    notification_group_type=NotificationGroupType.RECORD,
+                    notification_type=NotificationType.RECORD__RECORD_DOCUMENT_MODIFIED,
+                )
+
+    @staticmethod
+    def notify_record_created(source_user: UserProfile, record: "EncryptedRecord"):
+        """
+        creates notifications after record was created
+
+        creates notification for all users which have access to record
+        except source_user
+        :param source_user:
+        :param record:
+        :return:
+        """
+        notification_users: [UserProfile] = record.get_notification_users()
+        for user in notification_users:
+            if user != source_user:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(record.id),
+                    ref_text=record.record_token,
+                    notification_group_type=NotificationGroupType.RECORD,
+                    notification_type=NotificationType.RECORD__CREATED,
+                )
+
 
 class Notification(models.Model):
     notification_group = models.ForeignKey(

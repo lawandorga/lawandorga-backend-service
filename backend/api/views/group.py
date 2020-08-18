@@ -117,17 +117,18 @@ class GroupMembersViewSet(APIView):
                 )
             for user in users:
                 group.group_members.add(user)
-                models.Notification.objects.create_notification_added_to_group(
-                    user, request_user, group
+                models.Notification.objects.notify_group_member_added(
+                    request.user, user, group
                 )
             group.save()
             return Response(serializers.GroupSerializer(group).data)
         elif request.data["action"] == "remove":
             for user in users:
                 group.group_members.remove(user)
-                models.Notification.objects.create_notification_removed_from_group(
-                    user, request_user, group
+                models.Notification.objects.notify_group_member_removed(
+                    request.user, user, group
                 )
+
             group.save()
             return Response(serializers.GroupSerializer(group).data)
 

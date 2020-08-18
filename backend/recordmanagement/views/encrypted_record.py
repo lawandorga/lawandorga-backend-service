@@ -172,11 +172,7 @@ class EncryptedRecordViewSet(APIView):
             record_encryption.save()
         e_record.save()  # TODO: why?
 
-        for user in consultants:
-            if user != request.user:
-                Notification.objects.create_notification_new_record(
-                    user=user, source_user=request.user, record=e_record
-                )
+        Notification.objects.notify_record_created(request.user, e_record)
 
         if not settings.DEBUG:
             url = FrontendLinks.get_record_link(e_record)
@@ -273,13 +269,8 @@ class EncryptedRecordViewSet(APIView):
                 client_data=client_data, clients_aes_key=client_key
             )
 
-        notification_users: [UserProfile] = e_record.get_notification_users()
         notification_text = ",".join(record_patched + client_patched)
-        for current_user in notification_users:
-            if current_user != user:
-                Notification.objects.create_notification_updated_record(
-                    current_user, user, e_record, notification_text
-                )
+        Notification.objects.notify_record_patched(user, e_record, notification_text)
 
         record_from_db = models.EncryptedRecord.objects.get(pk=e_record.id)
         client_from_db = models.EncryptedClient.objects.get(pk=client.id)

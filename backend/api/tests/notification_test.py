@@ -21,7 +21,6 @@ from rest_framework.test import APIClient
 from backend.api.models import *
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.recordmanagement import models as record_models
-from backend.static.queryset_difference import QuerysetDifference
 from backend.static import permissions
 
 
@@ -109,63 +108,6 @@ class NotificationTest(TransactionTestCase):
         self.assertEqual(
             NotificationType.RECORD__UPDATED.value, second_notification_from_db.type
         )
-
-    # def test_create_added_removed_group_notifications(self):
-    #     self.assertEqual(0, NotificationGroup.objects.count())
-    #     self.assertEqual(0, Notification.objects.count())
-    #
-    #     (
-    #         return_notification_group,
-    #         return_notification,
-    #     ) = Notification.objects.create_notification_added_to_group(
-    #         user=self.users[0], source_user=self.users[1], group=self.group
-    #     )
-    #
-    #     self.assertEqual(1, NotificationGroup.objects.count())
-    #     self.assertEqual(1, Notification.objects.count())
-    #
-    #     first_group_from_db: NotificationGroup = NotificationGroup.objects.first()
-    #     self.assertEqual(return_notification_group, first_group_from_db)
-    #     self.assertEqual(self.users[0], first_group_from_db.user)
-    #     self.assertEqual(1, first_group_from_db.notifications.count())
-    #     self.assertEqual(NotificationGroupType.GROUP.value, first_group_from_db.type)
-    #     self.assertEqual(str(self.group.id), first_group_from_db.ref_id)
-    #     self.assertEqual(self.group.name, first_group_from_db.ref_text)
-    #
-    #     first_notification_from_db: Notification = Notification.objects.first()
-    #     self.assertEqual(return_notification, first_notification_from_db)
-    #     self.assertEqual(
-    #         first_group_from_db, first_notification_from_db.notification_group
-    #     )
-    #     self.assertEqual(self.users[1], first_notification_from_db.source_user)
-    #     self.assertEqual(
-    #         NotificationType.GROUP__ADDED_ME.value, first_notification_from_db.type
-    #     )
-    #
-    #     (
-    #         return_notification_group,
-    #         return_notification,
-    #     ) = Notification.objects.create_notification_removed_from_group(
-    #         user=self.users[0], source_user=self.users[1], group=self.group
-    #     )
-    #     self.assertEqual(1, NotificationGroup.objects.count())
-    #     self.assertEqual(2, Notification.objects.count())
-    #
-    #     second_group_from_db: NotificationGroup = NotificationGroup.objects.first()
-    #     self.assertEqual(return_notification_group, second_group_from_db)
-    #     self.assertEqual(2, second_group_from_db.notifications.count())
-    #     self.assertTrue(
-    #         second_group_from_db.last_activity > first_group_from_db.last_activity
-    #     )
-    #
-    #     second_notification_from_db: Notification = second_group_from_db.notifications.filter(
-    #         ~Q(id=first_notification_from_db.id)
-    #     ).first()
-    #     self.assertEqual(return_notification, second_notification_from_db)
-    #     self.assertEqual(self.users[1], second_notification_from_db.source_user)
-    #     self.assertEqual(
-    #         NotificationType.GROUP__REMOVED_ME.value, second_notification_from_db.type
-    #     )
 
     def test_read_notification(self):
         user: UserProfile = self.base_fixtures["users"][0]["user"]
@@ -742,5 +684,127 @@ class NotificationTest(TransactionTestCase):
             1,
             Notification.objects.filter(
                 type=NotificationType.RECORD__DELETION_REQUEST_DENIED.value
+            ).count(),
+        )
+
+    def test_notify_group_member_added(self):
+        Notification.objects.notify_group_member_added(
+            self.users[0], self.users[1], self.group
+        )
+
+        self.assertEqual(1, Notification.objects.count())
+        self.assertEqual(1, NotificationGroup.objects.count())
+        self.assertEqual(self.group.name, NotificationGroup.objects.first().ref_text)
+        self.assertEqual(
+            NotificationType.GROUP__ADDED_ME.value, Notification.objects.first().type
+        )
+
+    def test_notify_group_member_removed(self):
+        Notification.objects.notify_group_member_removed(
+            self.users[0], self.users[1], self.group
+        )
+
+        self.assertEqual(1, Notification.objects.count())
+        self.assertEqual(1, NotificationGroup.objects.count())
+        self.assertEqual(self.group.name, NotificationGroup.objects.first().ref_text)
+        self.assertEqual(
+            NotificationType.GROUP__REMOVED_ME.value, Notification.objects.first().type
+        )
+
+    def test_notify_record_created(self):
+        Notification.objects.notify_record_created(
+            self.base_fixtures["users"][3]["user"], self.record
+        )
+
+        self.assertEqual(3, Notification.objects.count())
+        self.assertEqual(3, NotificationGroup.objects.count())
+
+        self.assertEqual(
+            3,
+            Notification.objects.filter(
+                type=NotificationType.RECORD__CREATED.value
+            ).count(),
+        )
+        self.assertEqual(
+            1,
+            Notification.objects.filter(notification_group__user=self.users[0]).count(),
+        )
+        Notification.objects.all().delete()
+        NotificationGroup.objects.all().delete()
+
+        Notification.objects.notify_record_created(self.users[0], self.record)
+        self.assertEqual(2, Notification.objects.count())
+        self.assertEqual(2, NotificationGroup.objects.count())
+
+    def test_notify_record_patched(self):
+        text = "circumstances,contact_information"
+        Notification.objects.notify_record_patched(
+            self.users[0], self.record, text=text
+        )
+        self.assertEqual(2, Notification.objects.count())
+        self.assertEqual(2, NotificationGroup.objects.count())
+
+        self.assertEqual(
+            2,
+            Notification.objects.filter(
+                type=NotificationType.RECORD__UPDATED.value
+            ).count(),
+        )
+        notification_from_db: Notification = Notification.objects.filter(
+            notification_group__user=self.users[1]
+        ).first()
+        self.assertEqual("circumstances,contact_information", notification_from_db.text)
+
+    def test_notify_record_message_added(self):
+        message = record_models.EncryptedRecordMessage(
+            sender=self.users[0], record=self.record, message=b"test"
+        )
+        message.save()
+
+        Notification.objects.notify_record_message_added(self.users[0], message)
+
+        self.assertEqual(2, Notification.objects.count())
+        self.assertEqual(2, NotificationGroup.objects.count())
+
+        self.assertEqual(
+            2,
+            Notification.objects.filter(
+                type=NotificationType.RECORD__RECORD_MESSAGE_ADDED.value
+            ).count(),
+        )
+
+    def test_notify_record_document_added(self):
+        document = record_models.EncryptedRecordDocument(
+            name="test doc", creator=self.users[0], record=self.record, file_size=12321,
+        )
+        document.save()
+
+        Notification.objects.notify_record_document_added(self.users[0], document)
+
+        self.assertEqual(2, Notification.objects.count())
+        self.assertEqual(2, NotificationGroup.objects.count())
+
+        self.assertEqual(
+            2,
+            Notification.objects.filter(
+                type=NotificationType.RECORD__RECORD_DOCUMENT_ADDED.value
+            ).count(),
+        )
+
+    def test_notify_record_document_modified(self):
+        document = record_models.EncryptedRecordDocument(
+            name="test doc", creator=self.users[0], record=self.record, file_size=12321,
+        )
+        document.save()
+
+        Notification.objects.notify_record_document_modified(self.users[0], document)
+
+        self.assertEqual(2, Notification.objects.count())
+        self.assertEqual(2, NotificationGroup.objects.count())
+
+        self.assertEqual(
+            2,
+            Notification.objects.filter(
+                type=NotificationType.RECORD__RECORD_DOCUMENT_MODIFIED.value
             ).count(),
         )
