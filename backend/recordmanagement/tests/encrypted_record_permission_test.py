@@ -222,6 +222,12 @@ class EncryptedRecordRequestTest(TransactionTestCase):
         self.assertEqual(
             notifications_before + 2, api_models.Notification.objects.count()
         )
+        self.assertEqual(
+            2,
+            api_models.Notification.objects.filter(
+                type=api_models.NotificationType.RECORD_PERMISSION_REQUEST__REQUESTED.value
+            ).count(),
+        )
 
     def test_request_record_permission_doubled_already_working_on(self):
         url = (
@@ -338,9 +344,28 @@ class EncryptedRecordRequestTest(TransactionTestCase):
         self.assertEqual(4, api_models.NotificationGroup.objects.count())
 
     def test_decline_record_permission(self):
-        # TODO: do and assert
-        # TODO: notifications
-        pass
+        self.add_process_record_permission_request_permission()
+        requests: [
+            record_models.EncryptedRecordPermission
+        ] = self.add_record_permission_request_fixtures()
+        record_encryptions_before: int = record_models.RecordEncryption.objects.count()
+
+        response: Response = self.process_client.post(
+            self.list_and_process_url,
+            {"id": requests[1].id, "action": "decline"},
+            format="json",
+            **{"HTTP_PRIVATE_KEY": self.process_private},
+        )
+
+        self.assertEqual(200, response.status_code)
+        request_from_db: (
+            record_models.EncryptedRecordPermission
+        ) = record_models.EncryptedRecordPermission.objects.get(id=response.data["id"])
+        self.assertEqual("de", request_from_db.state)
+        self.assertEqual(requests[1].record, request_from_db.record)
+        self.assertEqual(
+            record_encryptions_before, record_models.RecordEncryption.objects.count()
+        )
 
     def test_process_record_permission_wrong_id(self):
         self.add_process_record_permission_request_permission()

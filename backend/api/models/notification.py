@@ -164,32 +164,6 @@ class NotificationManager(models.Manager):
         )
 
     @staticmethod
-    def create_notification_record_permission_request_requested(
-        user: UserProfile, source_user: UserProfile, record: "EncryptedRecord"
-    ) -> (NotificationGroup, "Notification"):
-        return Notification.objects.create_notification(
-            user=user,
-            source_user=source_user,
-            ref_id=str(record.id),
-            ref_text=record.record_token,
-            notification_group_type=NotificationGroupType.RECORD_PERMISSION_REQUEST,
-            notification_type=NotificationType.RECORD_PERMISSION_REQUEST__REQUESTED,
-        )
-
-    # @staticmethod
-    # def create_notification_record_permission_request_processed(
-    #     user: UserProfile, source_user: UserProfile, record: "EncryptedRecord"
-    # ) -> (NotificationGroup, "Notification"):
-    #     return Notification.objects.create_notification(
-    #         user=user,
-    #         source_user=source_user,
-    #         ref_id=str(record.id),
-    #         ref_text=record.record_token,
-    #         notification_group_type=NotificationGroupType.RECORD_PERMISSION_REQUEST,
-    #         notification_type=NotificationType.RECORD_PERMISSION_REQUEST__PROCESSED,
-    #     )
-
-    @staticmethod
     def create_notification_record_deletion_request_requested(
         user: UserProfile, source_user: UserProfile, record: "EncryptedRecord"
     ) -> (NotificationGroup, "Notification"):
@@ -201,19 +175,6 @@ class NotificationManager(models.Manager):
             notification_group_type=NotificationGroupType.RECORD_DELETION_REQUEST,
             notification_type=NotificationType.RECORD_DELETION_REQUEST__REQUESTED,
         )
-
-    # @staticmethod
-    # def create_notification_record_deletion_request_processed(
-    #     user: UserProfile, source_user: UserProfile, record: "EncryptedRecord"
-    # ) -> (NotificationGroup, "Notification"):
-    #     return Notification.objects.create_notification(
-    #         user=user,
-    #         source_user=source_user,
-    #         ref_id=str(record.id),
-    #         ref_text=record.record_token,
-    #         notification_group_type=NotificationGroupType.RECORD_DELETION_REQUEST,
-    #         notification_type=NotificationType.RECORD_DELETION_REQUEST__PROCESSED,
-    #     )
 
     @staticmethod
     def notify_record_permission_accepted(
@@ -313,7 +274,27 @@ class NotificationManager(models.Manager):
                     notification_type=NotificationType.RECORD_DELETION_REQUEST__REQUESTED,
                 )
 
-        # record_deletion.request_from
+    @staticmethod
+    def notify_record_permission_requested(
+        source_user: UserProfile, record_permission: "EncryptedRecordPermission"
+    ):
+        users_with_permissions: [
+            UserProfile
+        ] = UserProfile.objects.get_users_with_special_permissions(
+            permissions=[permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC],
+            from_rlc=source_user.rlc,
+            for_rlc=source_user.rlc,
+        )
+        for user in users_with_permissions:
+            if user != source_user:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(record_permission.record.id),
+                    ref_text=record_permission.record.record_token,
+                    notification_group_type=NotificationGroupType.RECORD_PERMISSION_REQUEST,
+                    notification_type=NotificationType.RECORD_PERMISSION_REQUEST__REQUESTED,
+                )
 
 
 class Notification(models.Model):

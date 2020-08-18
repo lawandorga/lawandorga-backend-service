@@ -61,17 +61,9 @@ class EncryptedRecordPermissionRequestViewSet(APIView):
         )
         record_permission.save()
 
-        users_with_permissions: [
-            UserProfile
-        ] = UserProfile.objects.get_users_with_special_permissions(
-            permissions=[permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC],
-            from_rlc=request.user.rlc,
-            for_rlc=request.user.rlc,
+        Notification.objects.notify_record_permission_requested(
+            request.user, record_permission
         )
-        for user in users_with_permissions:
-            Notification.objects.create_notification_record_permission_request_requested(
-                user, request.user, record
-            )
 
         return Response(
             serializers.EncryptedRecordPermissionSerializer(record_permission).data

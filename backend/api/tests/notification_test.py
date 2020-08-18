@@ -22,6 +22,7 @@ from backend.api.models import *
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.recordmanagement import models as record_models
 from backend.static.queryset_difference import QuerysetDifference
+from backend.static import permissions
 
 
 class NotificationTest(TransactionTestCase):
@@ -416,9 +417,66 @@ class NotificationTest(TransactionTestCase):
         pass  # TODO: requested and processsed (-> for requesting user and other adminsa)
 
     def test_create_new_user_request_notification(self):
-        pass  # TODO: just for ohter admins
+        pass  # TODO: just for other admins
+
+    def test_request_record_permission_notifications(self):
+        """
+        check if notifications are created accordingly
+        X for each user with process permission
+        :return:
+        """
+        permission: Permission = Permission.objects.get(
+            name=permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC
+        )
+        has_permission: HasPermission = HasPermission(
+            permission=permission,
+            permission_for_rlc=self.base_fixtures["rlc"],
+            group_has_permission=self.base_fixtures["groups"][0],
+        )
+        has_permission.save()
+        permission: Permission = Permission.objects.get(
+            name=permissions.PERMISSION_VIEW_RECORDS_RLC
+        )
+        has_permission: HasPermission = HasPermission(
+            permission=permission,
+            permission_for_rlc=self.base_fixtures["rlc"],
+            group_has_permission=self.base_fixtures["groups"][2],
+        )
+        has_permission.save()
+
+        url = (
+            "/api/records/record/"
+            + str(self.base_record_fixtures["records"][0]["record"].id)
+            + "/request_permission"
+        )
+        notification_groups_before: int = NotificationGroup.objects.count()
+        notifications_before: int = Notification.objects.count()
+
+        response: Response = self.base_fixtures["users"][3]["client"].post(url, {})
+        self.assertEqual(200, response.status_code)
+
+        self.assertEqual(
+            notification_groups_before + 2, NotificationGroup.objects.count()
+        )
+        self.assertEqual(notifications_before + 2, Notification.objects.count())
+
+        self.assertEqual(
+            2,
+            Notification.objects.filter(
+                type=NotificationType.RECORD_PERMISSION_REQUEST__REQUESTED.value
+            ).count(),
+        )
 
     def test_accept_record_permission_notifications(self):
+        """
+        check if notifications are generated accordingly
+        1 for requesting user
+        X for every user with process permission
+        Y for every user with access to record (working on or record permission)
+
+        in this case 4 in total: 1 requesting, 1 process, 2 record
+        :return:
+        """
         process_client: APIClient = self.base_fixtures["users"][0]["client"]
         process_private: bytes = self.base_fixtures["users"][0]["private"]
 
@@ -499,6 +557,12 @@ class NotificationTest(TransactionTestCase):
         )
 
     def test_decline_record_permission_notifications(self):
+        """
+        check if notifications are generated accordingly
+        1 for requesting user, X for every user with process permission
+        in this case in total 2
+        :return:
+        """
         process_client: APIClient = self.base_fixtures["users"][0]["client"]
         process_private: bytes = self.base_fixtures["users"][0]["private"]
 
