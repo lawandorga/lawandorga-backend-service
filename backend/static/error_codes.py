@@ -115,7 +115,7 @@ ERROR__RECORD__RECORD__COULD_NOT_SAVE = {
 }
 
 ERROR__RECORD__PERMISSION__ALREADY_WORKING_ON = {
-    "error_detail": "the user is already working on the client",
+    "error_detail": "the user is already working on the record",
     "error_code": "record.permission.already_working_on",
 }
 
@@ -124,25 +124,11 @@ ERROR__RECORD__PERMISSION__ALREADY_REQUESTED = {
     "error_code": "record.permission.already_requested",
 }
 
-ERROR__RECORD__PERMISSION__ID_NOT_FOUND = {
-    "error_detail": "recordpermissionrequest with this id not found",
-    "error_code": "record.permission.id_not_found",
-}
-
-ERROR__RECORD__PERMISSION__ID_NOT_PROVIDED = {
-    "error_detail": "recordpermissionrequest not provided",
-    "error_code": "record.permission.id_not_provided",
-}
-
 ERROR__API__NO_ACTION_PROVIDED = {
     "error_detail": "no action in request.data provided",
     "error_code": "record.permission.no_action_provided",
 }
 
-ERROR__RECORD__PERMISSION__NO_VALID_ACTION_PROVIDED = {
-    "error_detail": "no action in request.data provided",
-    "error_code": "record.permission.no_action_provided",
-}
 
 ERROR__RECORD__PERMISSION__NO_REQUESTS_FOUND = {
     "error_detail": "no requests in database",
@@ -385,4 +371,24 @@ ERROR__API__USER__NO_OWNERSHIP = {
     "error_detail": "user has no ownership of resource",
     "error_code": "api.user.no_ownership",
     "error_status_code": 403,
+}
+
+ERROR__API__FIELD_NOT_ALLOWED = {
+    "error_detail": "field is not allowed",
+    "error_code": "api.field_not_allowed",
+}
+
+ERROR__RECORD__TAG__AT_LEAST_ONE = {
+    "error_detail": "at least one tag is needed",
+    "error_code": "record.tag.at_least_one",
+}
+
+ERROR__API__PARAMS_NOT_VALID = {
+    "error_detail": "parameters are not valid",
+    "error_code": "api.params_not_valid",
+}
+
+ERROR__API__ALREADY_PROCESSED = {
+    "error_detail": "already processed item",
+    "error_code": "api.already_processed",
 }

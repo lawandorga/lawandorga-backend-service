@@ -16,12 +16,17 @@
 
 from django.db import models
 from django.db.models import Q
+from datetime import datetime
+import pytz
 
 from backend.api.errors import CustomError
 from backend.api.models import Rlc, UserProfile
 from backend.recordmanagement.models import RecordTag
-from backend.static.error_codes import ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND
+from backend.static import error_codes
 from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from backend.static.date_utils import parse_date
+from backend.static.encryption import AESEncryption
+from backend.static import permissions
 
 
 class EncryptedRecordManager(models.Manager):
@@ -35,7 +40,26 @@ class EncryptedRecordManager(models.Manager):
         return self.get_queryset().get_no_access_e_records(user)
 
     def filter_by_rlc(self, rlc):
+        """
+        filters records by rlc
+        :param rlc:
+        :return:
+        """
         return self.get_queryset().filter_by_rlc(rlc)
+
+    def get_record(self, user: UserProfile, id) -> "EncryptedRecord":
+        if not user.has_permission(
+            permissions.PERMISSION_VIEW_RECORDS_RLC, for_rlc=user.rlc
+        ):
+            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+        try:
+            e_record: EncryptedRecord = EncryptedRecord.objects.get(pk=int(id))
+        except Exception as e:
+            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
+        if user.rlc != e_record.from_rlc:
+            raise CustomError(error_codes.ERROR__API__WRONG_RLC)
+
+        return e_record
 
 
 class EncryptedRecordQuerySet(models.QuerySet):
@@ -132,6 +156,107 @@ class EncryptedRecord(models.Model):
     def __str__(self):
         return "e_record: " + str(self.id) + ":" + self.record_token
 
+    def patch(self, record_data, record_key: str) -> [str]:
+        """
+        patches record from object, updating last_edited
+        :param record_data: object containing fields of record  with new values, only fields which will be patched are needed
+        :param record_key: record encryption key
+        :return: array containing names of fields which were patched
+        """
+        unpatachable_fields = self.ignore_fields()
+        unencrypted_changeable_fields = self.unencrypted_changeable_fields()
+        changeable_datetime_fields = self.changeable_datetime_fields()
+
+        new_tags = []
+        patched = []
+        for key, value in record_data.items():
+            if key not in self.allowed_fields():
+                raise CustomError(error_codes.ERROR__API__FIELD_NOT_ALLOWED)
+
+            if key in unpatachable_fields:
+                continue
+            elif key == "tagged":
+                if record_data[key].__len__() == 0:
+                    raise CustomError(error_codes.ERROR__RECORD__TAG__AT_LEAST_ONE)
+                for tag_id in record_data[key]:
+                    try:
+                        tag: RecordTag = RecordTag.objects.get(pk=tag_id)
+                    except Exception as e:
+                        raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
+                    new_tags.append(tag)
+            elif key == "working_on_record":
+                pass
+            else:
+                patched.append(key)
+                if key in unencrypted_changeable_fields:
+                    to_save = value
+                elif key in changeable_datetime_fields:
+                    to_save = parse_date(value)
+                else:
+                    to_save = AESEncryption.encrypt(value, record_key)
+                setattr(self, key, to_save)
+
+        if new_tags.__len__() > 0:
+            patched.append("tagged")
+            self.tagged.clear()
+            for tag in new_tags:
+                self.tagged.add(tag)
+
+        self.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
+        self.save()
+        return patched
+
+    @staticmethod
+    def unencrypted_changeable_fields():
+        return ["official_note", "state", "record_token"]
+
+    @staticmethod
+    def encrypted_changeable_fields():
+        return [
+            "note",
+            "consultant_team",
+            "lawyer",
+            "related_persons",
+            "contact",
+            "bamf_token",
+            "foreign_token",
+            "first_correspondence",
+            "circumstances",
+            "next_steps",
+            "status_described",
+            "additional_facts",
+        ]
+
+    @staticmethod
+    def changeable_datetime_fields():
+        return ["last_contact_date", "first_contact_date", "first_consultation"]
+
+    @staticmethod
+    def ignore_fields():
+        return [
+            "id",
+            "client",
+            "from_rlc",
+            "created_on",
+            "last_edited",
+            "from_rlc",
+            "client",
+        ]
+
+    @staticmethod
+    def specific_changed_fields():
+        return ["working_on_record", "tagged"]
+
+    @staticmethod
+    def allowed_fields():
+        return (
+            EncryptedRecord.changeable_datetime_fields()
+            + EncryptedRecord.ignore_fields()
+            + EncryptedRecord.unencrypted_changeable_fields()
+            + EncryptedRecord.encrypted_changeable_fields()
+            + EncryptedRecord.specific_changed_fields()
+        )
+
     def user_has_permission(self, user):
         """
         return if the user has permission edit and view the record in full detail
@@ -169,8 +294,8 @@ class EncryptedRecord(models.Model):
         users = []
         for user in list(self.working_on_record.all()):
             users.append(user)
-        for permission_request in list(
-            EncryptedRecordPermission.objects.filter(record=self, state="gr")
+        for permission_request in EncryptedRecordPermission.objects.filter(
+            record=self, state="gr"
         ):
             users.append(permission_request.request_from)
         return users
@@ -231,5 +356,7 @@ class EncryptedRecord(models.Model):
             except:
                 encryption.delete()
         if not result:
-            raise CustomError(ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND)
+            raise CustomError(
+                error_codes.ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND
+            )
         return result

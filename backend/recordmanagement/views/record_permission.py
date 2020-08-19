@@ -25,7 +25,6 @@ from backend.recordmanagement import models, serializers
 from backend.static import error_codes
 from backend.api.errors import CustomError
 from backend.static import permissions
-from backend.recordmanagement.helpers import get_record
 
 
 class RecordPermissionViewSet(viewsets.ModelViewSet):
@@ -35,7 +34,7 @@ class RecordPermissionViewSet(viewsets.ModelViewSet):
 
 class RecordPermissionRequestViewSet(APIView):
     def post(self, request, id):
-        record = get_record(request.user, id)
+        record = models.EncryptedRecord.objects.get_record(request.user, id)
         if record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ALREADY_WORKING_ON)
 

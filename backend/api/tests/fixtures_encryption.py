@@ -14,19 +14,14 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from datetime import datetime
+import pytz
+from django.conf import settings
+
 from rest_framework.test import APIClient
 
 from backend.api.management.commands.fixtures import Fixtures as MainFixtures
-from backend.api.models import (
-    Group,
-    HasPermission,
-    Permission,
-    Rlc,
-    RlcEncryptionKeys,
-    UserEncryptionKeys,
-    UserProfile,
-    UsersRlcKeys,
-)
+from backend.api.models import *
 from backend.files import models as file_models
 from backend.files.static.folder_permissions import get_all_folder_permissions_strings
 from backend.recordmanagement import models as record_models
@@ -80,10 +75,10 @@ class CreateFixtures:
         return_object.update({"rlc": rlc})
 
         users = [
+            CreateFixtures.create_user(rlc, "user0", rlc_aes_key),
             CreateFixtures.create_user(rlc, "user1", rlc_aes_key),
             CreateFixtures.create_user(rlc, "user2", rlc_aes_key),
             CreateFixtures.create_user(rlc, "user3", rlc_aes_key),
-            CreateFixtures.create_user(rlc, "user4", rlc_aes_key),
         ]
         return_object.update({"users": users})
 
@@ -96,6 +91,53 @@ class CreateFixtures:
             ),
             CreateFixtures._create_group(
                 rlc, "group3", [users[2]["user"], users[3]["user"]]
+            ),
+        ]
+        return_object.update({"groups": groups})
+
+        return return_object
+
+    @staticmethod
+    def create_foreign_rlc_fixture() -> {
+        "rlc": Rlc,
+        "users": [{"user": UserProfile, "private": bytes, "client": APIClient}],
+        "groups": [Group],
+    }:
+        """
+        created another set of fixtures with another rlc
+        used for testing access rights from other rlcs
+        :return:
+        """
+        return_object = {}
+
+        rlc = Rlc(name="other testrlc", id=7001)
+        rlc.save()
+        rlc_aes_key = "SecureAesKeyOtherOne"
+        private, public = RSAEncryption.generate_keys()
+        encrypted_private = AESEncryption.encrypt(private, rlc_aes_key)
+        rlc_keys = RlcEncryptionKeys(
+            rlc=rlc, encrypted_private_key=encrypted_private, public_key=public
+        )
+        rlc_keys.save()
+        return_object.update({"rlc": rlc})
+
+        users = [
+            CreateFixtures.create_user(rlc, "other user1", rlc_aes_key),
+            CreateFixtures.create_user(rlc, "other user2", rlc_aes_key),
+            CreateFixtures.create_user(rlc, "otheruser3", rlc_aes_key),
+            CreateFixtures.create_user(rlc, "other user4", rlc_aes_key),
+        ]
+        return_object.update({"users": users})
+
+        groups = [
+            CreateFixtures._create_group(
+                rlc, "other group1", [users[0]["user"], users[1]["user"]]
+            ),
+            CreateFixtures._create_group(
+                rlc, "other group2", [users[1]["user"], users[2]["user"]]
+            ),
+            CreateFixtures._create_group(
+                rlc, "other group3", [users[2]["user"], users[3]["user"]]
             ),
         ]
         return_object.update({"groups": groups})
@@ -207,6 +249,8 @@ class CreateFixtures:
             - key: Bytes, Clients Aes Key
         records
             - record 1 2
+                - record
+                - key
         """
         return_object = {}
 
@@ -216,7 +260,14 @@ class CreateFixtures:
         e_client.note = AESEncryption.encrypt(
             "important MainClient note", aes_client_key
         )
+        e_client.phone_number = AESEncryption.encrypt("1238222", aes_client_key)
+
+        rlcs_public_key = rlc.get_public_key()
+        e_client.encrypted_client_key = RSAEncryption.encrypt(
+            aes_client_key, rlcs_public_key
+        )
         e_client.save()
+
         e_client = e_client
         client_obj = {"client": e_client, "key": aes_client_key}
         return_object.update({"client": client_obj})
@@ -334,3 +385,123 @@ class CreateFixtures:
         )
         has_permission.save()
         return has_permission
+
+    @staticmethod
+    def add_notification_fixtures(
+        main_user: UserProfile,
+        source_user: UserProfile,
+        records: [record_models.EncryptedRecord],
+        groups: [Group],
+    ) -> [NotificationGroup]:
+        """
+
+        :param main_user: gets all notifications
+        :param source_user: caused all notifications
+        :param records: referenced in some notifications
+        :param groups: referenced in some notifications
+        :return:
+        """
+
+        if records.__len__() != 2:
+            raise RuntimeError("records wrong length")
+        if groups.__len__() != 2:
+            raise RuntimeError("groups wrong length")
+
+        notification_groups: [NotificationGroup] = []
+
+        # record
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=records[0].record_token,
+            ref_id=str(records[0].id),
+            notification_group_type=NotificationGroupType.RECORD,
+            notification_type=NotificationType.RECORD__CREATED,
+        )
+        notification.created = datetime(2020, 7, 23, 10, 26, 48).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        notification.save()
+
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=records[0].record_token,
+            ref_id=str(records[0].id),
+            notification_group_type=NotificationGroupType.RECORD,
+            notification_type=NotificationType.RECORD__UPDATED,
+        )
+        notification.created = datetime(2020, 7, 24, 17, 13, 0).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        notification.save()
+
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=records[0].record_token,
+            ref_id=str(records[0].id),
+            notification_group_type=NotificationGroupType.RECORD,
+            notification_type=NotificationType.RECORD__RECORD_MESSAGE_ADDED,
+        )
+        notification.created = datetime(2020, 7, 24, 17, 45, 0).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        notification.save()
+        group.last_activity = datetime(2020, 7, 24, 17, 45, 0).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        group.save()
+        notification_groups.append(group)
+
+        # group1
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=groups[0].name,
+            ref_id=str(groups[0].id),
+            notification_group_type=NotificationGroupType.GROUP,
+            notification_type=NotificationType.GROUP__ADDED_ME,
+        )
+        notification.created = datetime(2020, 7, 24, 9, 12, 0).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        notification.save()
+        group.last_activity = datetime(2020, 7, 24, 9, 12, 0).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        group.save()
+        notification_groups.append(group)
+
+        # group2
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=groups[1].name,
+            ref_id=str(groups[1].id),
+            notification_group_type=NotificationGroupType.GROUP,
+            notification_type=NotificationType.GROUP__ADDED_ME,
+        )
+        notification.created = datetime(2020, 7, 21, 12, 1, 0).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        notification.save()
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=groups[1].name,
+            ref_id=str(groups[1].id),
+            notification_group_type=NotificationGroupType.GROUP,
+            notification_type=NotificationType.GROUP__REMOVED_ME,
+        )
+
+        notification.created = datetime(2020, 7, 25, 7, 12, 0).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        notification.save()
+        group.last_activity = datetime(2020, 7, 25, 7, 12, 0).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        group.save()
+        notification_groups.append(group)
+        return notification_groups

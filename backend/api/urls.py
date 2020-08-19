@@ -57,6 +57,9 @@ router.register(
     "missing_rlc_keys", views.MissingRlcKeysViewSet, base_name="missing_rlc_keys"
 )
 router.register("notifications", views.NotificationViewSet, base_name="notifications")
+router.register(
+    "notification_groups", views.NotificationGroupViewSet, base_name="notifications"
+)
 
 
 urlpatterns = [

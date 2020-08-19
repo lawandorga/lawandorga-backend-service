@@ -21,7 +21,7 @@ from rest_framework.views import APIView
 import pytz
 
 from backend.api.errors import CustomError
-from backend.api.models import NewUserRequest, UserActivationLink
+from backend.api.models import NewUserRequest, UserActivationLink, Notification
 from backend.api.serializers import NewUserRequestSerializer
 from backend.static import error_codes
 from backend.static.permissions import PERMISSION_ACCEPT_NEW_USERS_RLC
@@ -90,10 +90,17 @@ class NewUserRequestAdmitViewSet(APIView):
             )
             users_rlc_keys.save()
 
+            Notification.objects.notify_new_user_accepted(
+                request.user, new_user_request
+            )
+
             if user_activation_link.activated:
                 new_user_request.request_from.is_active = True
                 new_user_request.request_from.save()
         else:
+            Notification.objects.notify_new_user_declined(
+                request.user, new_user_request
+            )
             new_user_request.state = "de"
         new_user_request.save()
         return Response(NewUserRequestSerializer(new_user_request).data)

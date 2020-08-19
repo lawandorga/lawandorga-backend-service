@@ -13,9 +13,10 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+
 from typing import Any
 
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Q
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.pagination import LimitOffsetPagination
@@ -23,27 +24,36 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from backend.api.errors import CustomError
-from backend.api.models import Notification, NotificationGroup
-from backend.api.serializers import NotificationSerializer
+from backend.api.models import NotificationGroup
+from backend.api.serializers import (
+    NotificationGroupSerializer,
+    NotificationGroupOrderedSerializer,
+)
 from backend.static.error_codes import (
     ERROR__API__ID_NOT_PROVIDED,
     ERROR__API__NOTIFICATION__UPDATE_INVALID,
     ERROR__API__USER__NO_OWNERSHIP,
     ERROR__API__ID_NOT_FOUND,
+    ERROR__API__PARAMS_NOT_VALID,
 )
 
 
-class NotificationViewSet(viewsets.ModelViewSet):
-    queryset = Notification.objects.all()
-    serializer_class = NotificationSerializer
+class NotificationGroupViewSet(viewsets.ModelViewSet):
+    queryset = NotificationGroup.objects.all()
+    serializer_class = NotificationGroupOrderedSerializer
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self) -> QuerySet:
         if not self.request.user.is_superuser:
-            queryset = Notification.objects.filter(user=self.request.user)
+            queryset = NotificationGroup.objects.filter(user=self.request.user)
         else:
-            queryset = Notification.objects.all()
+            queryset = NotificationGroup.objects.all()
+
         request: Request = self.request
+        if "filter" in request.query_params and request.query_params["filter"] != "":
+            parts = request.query_params["filter"].split("___")
+            queryset = queryset.filter(type__in=parts)
+
         if "sort" in request.query_params:
             if (
                 "sortdirection" in request.query_params
@@ -55,8 +65,8 @@ class NotificationViewSet(viewsets.ModelViewSet):
         else:
             to_sort = "-created"
 
-        if to_sort != "created" and to_sort != "-created":
-            queryset = queryset.order_by(to_sort, "-created")
+        if to_sort != "created" and to_sort != "-last_activity":
+            queryset = queryset.order_by(to_sort, "-last_activity")
         else:
             queryset = queryset.order_by(to_sort)
 
@@ -65,25 +75,30 @@ class NotificationViewSet(viewsets.ModelViewSet):
     def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         if "pk" not in kwargs:
             raise CustomError(ERROR__API__ID_NOT_PROVIDED)
+
         try:
-            notification: Notification = Notification.objects.get(pk=kwargs["pk"])
+            notification_group: NotificationGroup = NotificationGroup.objects.get(
+                pk=kwargs["pk"]
+            )
         except Exception as e:
             raise CustomError(ERROR__API__ID_NOT_FOUND)
 
-        if request.user != notification.notification_group.user:
+        if not request.user.is_superuser and request.user != notification_group.user:
             raise CustomError(ERROR__API__USER__NO_OWNERSHIP)
 
-        if "read" not in request.data or request.data.__len__() > 1:
-            raise CustomError(ERROR__API__NOTIFICATION__UPDATE_INVALID)
-        notification.read = request.data["read"]
-        notification.save()
+        if (
+            "read" not in request.data
+            or (request.data["read"] is not True and request.data["read"] is not False)
+            or request.data.__len__() != 1
+        ):
+            raise CustomError(ERROR__API__PARAMS_NOT_VALID)
+
+        notification_group.read = request.data["read"]
+        notification_group.save()
+
+        if request.data["read"]:
+            for notification in notification_group.notifications.all():
+                notification.read = True
+                notification.save()
 
         return Response({"success": True})
-
-
-class UnreadNotificationsViewSet(APIView):
-    def get(self, response, *args, **kwargs) -> Response:
-        unread_notifications = NotificationGroup.objects.filter(
-            user=response.user, read=False
-        ).count()
-        return Response({"unread_notifications": unread_notifications})

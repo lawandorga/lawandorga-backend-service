@@ -39,6 +39,7 @@ from backend.api.models import (
     Rlc,
     UserEncryptionKeys,
     Notification,
+    NotificationGroup,
 )
 from backend.api.serializers import (
     UserProfileSerializer,
@@ -46,7 +47,6 @@ from backend.api.serializers import (
     UserProfileNameSerializer,
     RlcSerializer,
     UserProfileForeignSerializer,
-    NotificationSerializer,
 )
 from backend.static.permissions import PERMISSION_ACCEPT_NEW_USERS_RLC
 from backend.static.middleware import get_private_key_from_request
@@ -129,12 +129,13 @@ class UserProfileViewSet(viewsets.ModelViewSet):
             user.user_state = data["user_state"]
         if "user_record_state" in data:
             user.user_record_state = data["user_record_state"]
-        if request.user.is_superuser and "email" in data:
-            user.email = data["email"]
-        if request.user.is_superuser and "name" in data:
-            user.name = data["name"]
-        if request.user.is_superuser and "is_active" in data:
-            user.is_active = data["is_active"]
+        if request.user.is_superuser:
+            if "email" in data and data["email"] != "":
+                user.email = data["email"]
+            if "name" in data and data["name"] != "":
+                user.name = data["name"]
+            if "is_active" in data:
+                user.is_active = data["is_active"]
         user.save()
         return Response(UserProfileSerializer(user).data)
 
@@ -189,18 +190,17 @@ class UserProfileCreatorViewSet(viewsets.ModelViewSet):
 
         new_user_request = NewUserRequest(request_from=user)
         new_user_request.save()
+
         # new user activation link
         from backend.api.models import UserActivationLink
 
         user_activation_link = UserActivationLink(user=user)
         user_activation_link.save()
-
         EmailSender.send_user_activation_email(
             user, FrontendLinks.get_user_activation_link(user_activation_link)
         )
-        UserProfile.objects.get_users_with_special_permission(
-            PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=rlc.id
-        )  # TODO ?
+
+        Notification.objects.notify_new_user_request(user, new_user_request)
 
         headers = self.get_success_headers(serializer.data)
         return Response(
@@ -278,7 +278,7 @@ class LoginViewSet(viewsets.ViewSet):
         serialized_user = UserProfileSerializer(user).data
         serialized_rlc = RlcSerializer(user.rlc).data
 
-        notifications = Notification.objects.filter(user=user, read=False).count()
+        notifications = NotificationGroup.objects.filter(user=user, read=False).count()
 
         statics = LoginViewSet.get_statics(user)
         return_object = {
