@@ -25,7 +25,7 @@ class EmailSender:
     @staticmethod
     def send_email_notification(email_addresses, subject: str, text: str) -> None:
         """
-        Sends emails to all email_addresses with subject and text
+        Sends emails to all email_addresses with subject and description_text
         :param email_addresses: array with email adresses
         :param subject: subject of the email
         :param text: the email content itself
@@ -34,7 +34,7 @@ class EmailSender:
         from_email = get_env_variable("EMAIL_ADDRESS")
         msg = EmailMultiAlternatives(subject, text, from_email, email_addresses)
         msg.send()
-        # send_mail(subject, text, 'notification@rlcm.de', email_addresses, fail_silently=False)
+        # send_mail(subject, description_text, 'notification@rlcm.de', email_addresses, fail_silently=False)
 
     @staticmethod
     def send_html_email(

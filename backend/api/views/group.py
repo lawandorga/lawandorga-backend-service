@@ -31,12 +31,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if not user.is_superuser:
-            # return models.Group.objects.get_groups_with_mange_rights(user)
             return models.Group.objects.get_visible_groups_for_user(user)
-            # if user.has_permission(permissions.PERMISSION_MANAGE_GROUPS_RLC, for_rlc=user.rlc):
-            #     return models.Group.objects.filter(from_rlc=user.rlc)
-            # else:
-            #     return models.Group.objects.filter(from_rlc=user.rlc, visible=True)
         else:
             return models.Group.objects.all()
 
@@ -117,17 +112,18 @@ class GroupMembersViewSet(APIView):
                 )
             for user in users:
                 group.group_members.add(user)
-                models.Notification.objects.create_notification_added_to_group(
-                    user, request_user, group
+                models.Notification.objects.notify_group_member_added(
+                    request.user, user, group
                 )
             group.save()
             return Response(serializers.GroupSerializer(group).data)
         elif request.data["action"] == "remove":
             for user in users:
                 group.group_members.remove(user)
-                models.Notification.objects.create_notification_removed_from_group(
-                    user, request_user, group
+                models.Notification.objects.notify_group_member_removed(
+                    request.user, user, group
                 )
+
             group.save()
             return Response(serializers.GroupSerializer(group).data)
 

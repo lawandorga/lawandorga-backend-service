@@ -25,6 +25,7 @@ from backend.api import serializers as api_serializers
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.recordmanagement import models as record_models
 from backend.static.notification_enums import NotificationType
+from backend.static.encryption import AESEncryption
 
 
 class NotificationGroupTest(TransactionTestCase):
@@ -183,9 +184,19 @@ class NotificationGroupTest(TransactionTestCase):
         response: Response = client.get("/api/notification_groups/")
 
         self.assertEqual(200, response.status_code)
-        self.assertEqual(3, response.data.__len__())
-        self.assertIn(notification_groups[0], response.data)
-        # TODO: check more
+        self.assertEqual(3, response.data["results"].__len__())
+        # self.assertIn(notification_groups[2], response.data)
+
+        response: Response = client.get("/api/notification_groups/?filter=RECORD")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, response.data["results"].__len__())
+
+        response: Response = client.get(
+            "/api/notification_groups/?filter=RECORD___GROUP"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(3, response.data["results"].__len__())
+        # TODO: check more, especially single notifications
 
     def test_read_notification_group(self):
         user: api_models.UserProfile = self.base_fixtures["users"][0]["user"]
@@ -259,13 +270,59 @@ class NotificationGroupTest(TransactionTestCase):
         )
         self.assertEqual(400, response.status_code)
 
-    # TODO: check if read works (all single notifications -> group too)
+    def test_patch_record_notifications(self):
+        record: record_models.EncryptedRecord = self.record_fixtures["records"][0][
+            "record"
+        ]
+        notification_groups_before = api_models.NotificationGroup.objects.all().count()
+        notifications_before = api_models.Notification.objects.all().count()
+
+        private_key: bytes = self.base_fixtures["users"][0]["private"]
+        client: APIClient = self.base_fixtures["users"][0]["client"]
+        user: api_models.UserProfile = self.base_fixtures["users"][0]["user"]
+
+        # post new record message
+        new_note = "new note"
+        response: Response = client.patch(
+            "/api/records/e_record/" + str(record.id) + "/",
+            {"record": {"note": new_note, "circumstances": "nothing new to tell",}},
+            format="json",
+            **{"HTTP_PRIVATE_KEY": private_key}
+        )
+        self.assertEqual(200, response.status_code)
+
+        record_key = record.get_decryption_key(user, private_key)
+        record_from_db: record_models.EncryptedRecord = record_models.EncryptedRecord.objects.get(
+            pk=record.id
+        )
+        self.assertEqual(
+            new_note, AESEncryption.decrypt(record_from_db.note, record_key)
+        )
+
+        notification_groups_after = api_models.NotificationGroup.objects.all().count()
+        notifications_after = api_models.Notification.objects.all().count()
+        self.assertNotEqual(notifications_after, notifications_before)
+
+        self.assertEqual(
+            0,
+            api_models.NotificationGroup.objects.filter(
+                user=user, ref_id=str(record.id)
+            ).count(),
+        )
+
+        notification_group: api_models.NotificationGroup = api_models.NotificationGroup.objects.get(
+            user=self.base_fixtures["users"][1]["user"], ref_id=str(record.id)
+        )
+        self.assertEqual(1, notification_group.notifications.count())
+        notification: api_models.Notification = notification_group.notifications.first()
+        text: str = notification.text
+        self.assertIn("circumstances", text)
+        self.assertIn("note", text)
 
     # TODO: check other notification sources... A LOT
-    # check record updated
-    # check new record (consultants)
+    # check new record document
     # check group member added /removed
-    # check group permission request
-    # check group deletion request
+    # check record permission request
+    # check record deletion request
     # check new user request
     #

@@ -21,6 +21,7 @@ from django.core.management.base import BaseCommand
 from backend.api import models as api_models
 from backend.api.management.commands.fixtures import AddMethods
 from backend.recordmanagement import models as record_models
+from backend.api.tests.fixtures_encryption import CreateFixtures as EncCreateFixtures
 from backend.static import permissions
 from .commands import (
     migrate_to_encryption,
@@ -70,8 +71,10 @@ class Command(BaseCommand):
         best_encrypted_record: record_models.EncryptedRecord = record_models.EncryptedRecord.objects.filter(
             record_token=best_record.record_token
         ).first()
+        groups_list: [api_models.Group] = list(api_models.Group.objects.all())
+        groups: [api_models.Group] = [groups_list[0], groups_list[1]]
         Command.create_notifications(
-            main_user, other_dummy_users[0], best_encrypted_record
+            main_user, other_dummy_users[0], best_encrypted_record, groups
         )
 
     def get_and_create_dummy_user(self, rlc):
@@ -762,20 +765,11 @@ class Command(BaseCommand):
         user: api_models.UserProfile,
         source_user: api_models.UserProfile,
         record: record_models.EncryptedRecord,
+        groups: [api_models.Group],
     ):
-        from backend.api.tests.notification_test import NotificationTest
-
-        NotificationTest.generate_notifications(
-            user=user,
+        EncCreateFixtures.add_notification_fixtures(
+            main_user=user,
             source_user=source_user,
-            number_of_notifications=40,
-            ref_id=str(record.id),
-            ref_text=record.record_token,
-        )
-        NotificationTest.generate_notifications(
-            user=source_user,
-            source_user=user,
-            number_of_notifications=40,
-            ref_id=str(record.id),
-            ref_text=record.record_token,
+            records=[record, record],
+            groups=groups,
         )

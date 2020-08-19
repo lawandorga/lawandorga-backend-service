@@ -23,7 +23,6 @@ from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
 from backend.recordmanagement import models, serializers
-from backend.recordmanagement.helpers import get_record
 from backend.static import error_codes, permissions
 
 
@@ -54,7 +53,9 @@ class RecordDeletionRequestViewSet(viewsets.ModelViewSet):
         if "record_id" not in request.data:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__ID_NOT_PROVIDED)
 
-        record = get_record(request.user, request.data["record_id"])
+        record = models.EncryptedRecord.objects.get_record(
+            request.user, request.data["record_id"]
+        )
         if not record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
         if (

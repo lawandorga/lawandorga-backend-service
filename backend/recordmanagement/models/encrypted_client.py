@@ -15,8 +15,18 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from datetime import datetime
+import pytz
+
 from backend.api.models import Rlc
 from backend.static.encryption import RSAEncryption
+from backend.api.errors import CustomError
+from backend.api.models import Rlc, UserProfile
+from backend.recordmanagement.models import RecordTag, OriginCountry
+from backend.static import error_codes
+from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from backend.static.date_utils import parse_date
+from backend.static.encryption import AESEncryption
 
 
 class EncryptedClient(models.Model):
@@ -40,6 +50,60 @@ class EncryptedClient(models.Model):
 
     def __str__(self):
         return "e_client: " + str(self.id)
+
+    def patch(self, client_data, clients_aes_key: str) -> [str]:
+        patched = []
+        for key, value in client_data.items():
+            if key not in self.allowed_fields():
+                raise CustomError(error_codes.ERROR__API__PARAMS_NOT_VALID)
+            if key in self.ignore_fields():
+                continue
+            patched.append(key)
+            if key == "origin_country":
+                try:
+                    country = OriginCountry.objects.get(pk=value)
+                except Exception as e:
+                    raise CustomError(
+                        error_codes.ERROR__RECORD__ORIGIN_COUNTRY__NOT_FOUND
+                    )
+                self.origin_country = country
+
+            else:
+                to_save = ""
+                if key in self.changeable_datetime_fields():
+                    to_save = parse_date(value)
+                elif key in self.changeable_encrypted_fields():
+                    to_save = AESEncryption.encrypt(value, clients_aes_key)
+                setattr(self, key, to_save)
+
+        self.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
+        self.save()
+        return patched
+
+    @staticmethod
+    def allowed_fields():
+        return (
+            EncryptedClient.changeable_datetime_fields()
+            + EncryptedClient.changeable_encrypted_fields()
+            + EncryptedClient.ignore_fields()
+            + EncryptedClient.specific_changed_fields()
+        )
+
+    @staticmethod
+    def changeable_datetime_fields():
+        return ["birthday"]
+
+    @staticmethod
+    def ignore_fields():
+        return ["id", "encrypted_client_key", "created_on", "last_edited", "from_rlc"]
+
+    @staticmethod
+    def specific_changed_fields():
+        return ["origin_country"]
+
+    @staticmethod
+    def changeable_encrypted_fields():
+        return ["name", "note", "phone_number"]
 
     def get_password(self, rlcs_private_key):
         encrypted_client_key = self.encrypted_client_key

@@ -14,7 +14,6 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import os
 from datetime import datetime
 import base64
 import pytz
@@ -33,6 +32,7 @@ from backend.static.middleware import get_private_key_from_request
 from backend.static.multithreading import MultithreadedFileUploads
 from backend.static.storage_management import LocalStorageManager
 from backend.static.getter import get_e_record
+from backend.api.models import Notification, UserProfile
 
 
 class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
@@ -69,38 +69,44 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
 
     def post(self, request, id):
         try:
-            e_record = models.EncryptedRecord.objects.get(pk=id)
+            e_record: models.EncryptedRecord = models.EncryptedRecord.objects.get(pk=id)
         except Exception as e:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
 
         if not e_record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
-        users_private_key = get_private_key_from_request(request)
+        users_private_key: bytes = get_private_key_from_request(request)
         files = request.FILES.getlist("files")
         if files.__len__() == 0:
             raise CustomError(error_codes.ERROR__FILES__NO_FILES_TO_UPLOAD)
         local_file_information = LocalStorageManager.save_files_locally(files)
-        filepaths = [n["local_file_path"] for n in local_file_information]
+        filepaths: [str] = [n["local_file_path"] for n in local_file_information]
 
-        directory = storage_folders.get_storage_folder_encrypted_record_document(
+        directory: str = storage_folders.get_storage_folder_encrypted_record_document(
             e_record.from_rlc_id, e_record.id
         )
-        record_key = e_record.get_decryption_key(request.user, users_private_key)
+        record_key: str = e_record.get_decryption_key(request.user, users_private_key)
         MultithreadedFileUploads.encrypt_files_and_upload_to_single_s3_folder(
             filepaths, record_key, directory
         )
 
+        notification_users: [UserProfile] = e_record.get_notification_users()
         e_record_documents_handled = []
         for file_information in local_file_information:
-            already_existing = models.EncryptedRecordDocument.objects.filter(
+            already_existing: models.EncryptedRecordDocument = models.EncryptedRecordDocument.objects.filter(
                 record=e_record, name=file_information["file_name"]
             ).first()
             if already_existing is not None:
                 already_existing.file_size = file_information["file_size"]
                 already_existing.last_edited = datetime.now().replace(tzinfo=pytz.utc)
+                already_existing.creator = request.user
                 already_existing.save()
                 e_record_documents_handled.append(already_existing)
+
+                Notification.objects.notify_record_document_modified(
+                    request.user, already_existing
+                )
             else:
                 new_encrypted_record_document = models.EncryptedRecordDocument(
                     record=e_record,
@@ -109,6 +115,10 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
                     name=file_information["file_name"],
                 )
                 new_encrypted_record_document.save()
+
+                Notification.objects.notify_record_document_added(
+                    request.user, new_encrypted_record_document
+                )
                 e_record_documents_handled.append(new_encrypted_record_document)
         return Response(
             serializers.EncryptedRecordDocumentSerializer(

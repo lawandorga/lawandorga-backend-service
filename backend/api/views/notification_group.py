@@ -16,7 +16,7 @@
 
 from typing import Any
 
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Q
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.pagination import LimitOffsetPagination
@@ -25,7 +25,10 @@ from rest_framework.response import Response
 
 from backend.api.errors import CustomError
 from backend.api.models import NotificationGroup
-from backend.api.serializers import NotificationGroupSerializer
+from backend.api.serializers import (
+    NotificationGroupSerializer,
+    NotificationGroupOrderedSerializer,
+)
 from backend.static.error_codes import (
     ERROR__API__ID_NOT_PROVIDED,
     ERROR__API__NOTIFICATION__UPDATE_INVALID,
@@ -37,7 +40,8 @@ from backend.static.error_codes import (
 
 class NotificationGroupViewSet(viewsets.ModelViewSet):
     queryset = NotificationGroup.objects.all()
-    serializer_class = NotificationGroupSerializer
+    serializer_class = NotificationGroupOrderedSerializer
+    pagination_class = LimitOffsetPagination
 
     def get_queryset(self) -> QuerySet:
         if not self.request.user.is_superuser:
@@ -46,6 +50,25 @@ class NotificationGroupViewSet(viewsets.ModelViewSet):
             queryset = NotificationGroup.objects.all()
 
         request: Request = self.request
+        if "filter" in request.query_params and request.query_params["filter"] != "":
+            parts = request.query_params["filter"].split("___")
+            queryset = queryset.filter(type__in=parts)
+
+        if "sort" in request.query_params:
+            if (
+                "sortdirection" in request.query_params
+                and request.query_params["sortdirection"] == "desc"
+            ):
+                to_sort = "-" + request.query_params["sort"]
+            else:
+                to_sort = request.query_params["sort"]
+        else:
+            to_sort = "-created"
+
+        if to_sort != "created" and to_sort != "-last_activity":
+            queryset = queryset.order_by(to_sort, "-last_activity")
+        else:
+            queryset = queryset.order_by(to_sort)
 
         return queryset
 

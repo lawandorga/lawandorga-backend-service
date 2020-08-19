@@ -27,13 +27,13 @@ from backend.static.permissions import (
     PERMISSION_CAN_ADD_RECORD_RLC,
     PERMISSION_CAN_CONSULT,
 )
+from backend.static.queryset_difference import QuerysetDifference
 
 
 class EncryptedRecordTests(TransactionTestCase):
     def setUp(self):
         self.client = StaticTestMethods.force_authentication_superuser()
-        self.base_list_url = "/api/records/records/"
-        self.base_detail_url = "/api/records/record/"
+        self.base_url = "/api/records/records/"
         self.base_create_record_url = "/api/records/create_record/"
 
         self.base_fixtures = CreateFixtures.create_base_fixtures()
@@ -113,8 +113,8 @@ class EncryptedRecordTests(TransactionTestCase):
         number_of_record_encryptions_before: int = record_models.RecordEncryption.objects.count()
         number_of_clients_before: int = record_models.EncryptedClient.objects.count()
         number_of_notifications_before: int = api_models.Notification.objects.count()
-        notifications_before: [api_models.Notification] = list(
-            api_models.Notification.objects.all()
+        group_difference: QuerysetDifference = QuerysetDifference(
+            api_models.NotificationGroup.objects.all()
         )
 
         private_key: bytes = self.base_fixtures["users"][0]["private"]
@@ -191,17 +191,21 @@ class EncryptedRecordTests(TransactionTestCase):
         self.assertEqual(
             number_of_notifications_before + 1, api_models.Notification.objects.count()
         )
-        to_exclude: [int] = [o.id for o in notifications_before]
-        new_notifications: [api_models.Notification] = list(
-            api_models.Notification.objects.all().exclude(id__in=to_exclude)
-        )
-        new_notification: api_models.Notification = new_notifications[0]
+        new_notification_group: (
+            api_models.NotificationGroup
+        ) = group_difference.get_new_items(api_models.NotificationGroup.objects.all())[
+            0
+        ]
         self.assertEqual(
-            new_notification.source_user, self.base_fixtures["users"][0]["user"]
+            new_notification_group.user, self.base_fixtures["users"][1]["user"]
         )
-        self.assertEqual(new_notification.user, self.base_fixtures["users"][1]["user"])
-        self.assertEqual(new_notification.ref_id, str(response.data["id"]))
-        self.assertEqual(new_notification.ref_text, response.data["record_token"])
+        self.assertEqual(new_notification_group.ref_id, str(response.data["id"]))
+        self.assertEqual(new_notification_group.ref_text, response.data["record_token"])
+        self.assertEqual(1, new_notification_group.notifications.count())
+        self.assertEqual(
+            self.base_fixtures["users"][0]["user"],
+            new_notification_group.notifications.first().source_user,
+        )
 
         # get record back from db
         response: Response = client.get(
@@ -295,7 +299,6 @@ class EncryptedRecordTests(TransactionTestCase):
         new_record_from_db: record_models.EncryptedRecord = record_models.EncryptedRecord.objects.get(
             pk=response.data["id"]
         )
-
         record_key = new_record_from_db.get_decryption_key(user, private_key)
         self.assertEqual(
             record_note, AESEncryption.decrypt(new_record_from_db.note, record_key)
@@ -330,7 +333,7 @@ class EncryptedRecordTests(TransactionTestCase):
 
         # TODO: client stuff
 
-    def test_patch_encrypted_record_wrong_id(self):
+    def test_patch_encrypted_record_error(self):
         private_key: bytes = self.base_fixtures["users"][0]["private"]
         client: APIClient = self.base_fixtures["users"][0]["client"]
 
@@ -368,3 +371,7 @@ class EncryptedRecordTests(TransactionTestCase):
             **{"HTTP_PRIVATE_KEY": private_key}
         )
         self.assertEqual(400, response.status_code)
+
+    def test_record_model_patching(self):
+        pass
+        # test record_model.patch

@@ -1,5 +1,5 @@
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -14,20 +14,16 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from django.db.models import QuerySet
 
-from backend.static import env_getter
 
+class QuerysetDifference:
+    def __init__(self, org_queryset: QuerySet):
+        self.items = list(org_queryset)
+        self.exclude_ids = [item.id for item in org_queryset]
 
-class FrontendLinks:
-    @staticmethod
-    def get_record_link(record):
-        return env_getter.get_website_base_url() + "records/" + str(record.id)
+    def get_new_items(self, new_queryset: QuerySet) -> []:
+        return list(self.get_new_queryset(new_queryset))
 
-    @staticmethod
-    def get_user_activation_link(activation_link):
-        return (
-            env_getter.get_website_base_url()
-            + "/activate_account/"
-            + str(activation_link.link)
-            + "/"
-        )
+    def get_new_queryset(self, new_queryset: QuerySet) -> QuerySet:
+        return new_queryset.exclude(id__in=self.exclude_ids)

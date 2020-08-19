@@ -23,8 +23,8 @@ from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
 from backend.recordmanagement import models, serializers
-from backend.recordmanagement.helpers import get_record, get_e_record
 from backend.static import error_codes, permissions
+from backend.api.models import UserProfile, Notification
 
 
 class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
@@ -52,16 +52,18 @@ class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
             ).data
         )
 
-    def create(self, request):
+    def create(self, request, **kwargs):
         if "record_id" not in request.data:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__ID_NOT_PROVIDED)
 
-        record = get_e_record(request.user, request.data["record_id"])
+        record = models.EncryptedRecord.objects.get_record(
+            request.user, request.data["record_id"]
+        )
         if not record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
         if (
             models.EncryptedRecordDeletionRequest.objects.filter(
-                record=record, state="re"
+                record=record, state="re", request_from=request.user
             ).count()
             >= 1
         ):
@@ -69,20 +71,24 @@ class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
                 error_codes.ERROR__RECORD__RECORD_DELETION__ALREADY_REQUESTED
             )
         deletion_request = models.EncryptedRecordDeletionRequest(
-            request_from=request.user,
-            record=record,
-            explanation=request.data["explanation"],
+            request_from=request.user, record=record,
         )
         if "explanation" in request.data:
             deletion_request.explanation = request.data["explanation"]
         deletion_request.save()
+
+        Notification.objects.notify_record_deletion_requested(
+            request.user, deletion_request
+        )
+
         return Response(
-            serializers.EncryptedRecordDeletionRequestSerializer(deletion_request).data
+            serializers.EncryptedRecordDeletionRequestSerializer(deletion_request).data,
+            status=201,
         )
 
 
 class EncryptedRecordDeletionProcessViewSet(APIView):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         user = request.user
         if not user.has_permission(
             permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS, for_rlc=user.rlc
@@ -96,7 +102,12 @@ class EncryptedRecordDeletionProcessViewSet(APIView):
                 pk=request.data["request_id"]
             )
         except:
-            raise CustomError(error_codes.ERROR__RECORD__DELETION_REQUEST__NOT_EXISTING)
+            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
+        if record_deletion_request.record.from_rlc != user.rlc:
+            raise CustomError(error_codes.ERROR__API__WRONG_RLC)
+
+        if record_deletion_request.state != "re":
+            raise CustomError(error_codes.ERROR__API__ALREADY_PROCESSED)
 
         if "action" not in request.data:
             raise CustomError(error_codes.ERROR__API__NO_ACTION_PROVIDED)
@@ -108,14 +119,35 @@ class EncryptedRecordDeletionProcessViewSet(APIView):
         record_deletion_request.processed_on = datetime.utcnow().replace(
             tzinfo=pytz.utc
         )
+
         if action == "accept":
-            if record_deletion_request.state == "re":
-                record_deletion_request.state = "gr"
-                record_deletion_request.save()
+            # if record_deletion_request.state == "re":
+            record_deletion_request.state = "gr"
+            record_deletion_request.request_processed = request.user
+            record_deletion_request.save()
+
+            other_deletion_requests_of_same_record: [
+                models.EncryptedRecordDeletionRequest
+            ] = models.EncryptedRecordDeletionRequest.objects.filter(
+                record=record_deletion_request.record, state="re"
+            )
+            for other_request in other_deletion_requests_of_same_record:
+                other_request.state = "gr"
+                other_request.request_processed = request.user
+                other_request.save()
+
+            Notification.objects.notify_record_deletion_accepted(
+                request.user, record_deletion_request
+            )
             record_deletion_request.record.delete()
         else:
             record_deletion_request.state = "de"
             record_deletion_request.save()
+
+            Notification.objects.notify_record_deletion_declined(
+                request.user, record_deletion_request
+            )
+
         response_request = models.EncryptedRecordDeletionRequest.objects.get(
             pk=record_deletion_request.id
         )

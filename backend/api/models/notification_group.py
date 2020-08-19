@@ -15,9 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
-import pytz
-from datetime import datetime
-from django.conf import settings
+from django.utils import timezone
 
 from backend.api.models import UserProfile
 from backend.static.notification_enums import NotificationGroupType
@@ -27,8 +25,8 @@ class NotificationGroup(models.Model):
     user = models.ForeignKey(
         UserProfile, related_name="notification_groups", on_delete=models.CASCADE
     )
-    last_activity = models.DateTimeField(auto_now_add=True)
-    created = models.DateTimeField(auto_now_add=True)
+    last_activity = models.DateTimeField(default=timezone.now)
+    created = models.DateTimeField(default=timezone.now)
 
     type = models.CharField(
         max_length=100, choices=NotificationGroupType.choices(), null=False
@@ -39,8 +37,12 @@ class NotificationGroup(models.Model):
     ref_text = models.CharField(max_length=100, null=True)
 
     def new_activity(self):
-        self.last_activity = datetime.utcnow().replace(
-            tzinfo=pytz.timezone(settings.TIME_ZONE)
-        )
+        self.last_activity = timezone.now()
         self.read = False
         self.save()
+
+    def all_notifications_read(self) -> bool:
+        return (
+            self.notifications.count() > 0
+            and self.notifications.filter(read=False).count() == 0
+        )

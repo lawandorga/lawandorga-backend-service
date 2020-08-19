@@ -172,11 +172,7 @@ class EncryptedRecordViewSet(APIView):
             record_encryption.save()
         e_record.save()  # TODO: why?
 
-        for user in consultants:
-            if user != request.user:
-                Notification.objects.create_notification_new_record(
-                    user=user, source_user=request.user, record=e_record
-                )
+        Notification.objects.notify_record_created(request.user, e_record)
 
         if not settings.DEBUG:
             url = FrontendLinks.get_record_link(e_record)
@@ -260,76 +256,21 @@ class EncryptedRecordViewSet(APIView):
         client = e_record.client
         client_key = client.get_password(rlcs_private_key)
 
+        record_patched = []
         if "record" in request.data:
             record_data: dict = request.data["record"]
-
-            unpatachable_fields = models.EncryptedRecord.ignore_fields()
-            unencrypted_changeable_fields = (
-                models.EncryptedRecord.unencrypted_changeable_fields()
+            record_patched = e_record.patch(
+                record_data=record_data, record_key=record_key
             )
-            changeable_datetime_fields = (
-                models.EncryptedRecord.changeable_datetime_fields()
-            )
-
-            for key, value in record_data.items():
-                if key not in models.EncryptedRecord.allowed_fields():
-                    raise CustomError(error_codes.ERROR__API__FIELD_NOT_ALLOWED)
-
-                if key in unpatachable_fields:
-                    continue
-                elif key == "tagged":
-                    if record_data[key].__len__() == 0:
-                        raise CustomError(error_codes.ERROR__RECORD__TAG__AT_LEAST_ONE)
-                    e_record.tagged.clear()
-                    for tag_id in record_data[key]:
-                        try:
-                            tag: models.RecordTag = models.RecordTag.objects.get(
-                                pk=tag_id
-                            )
-                        except Exception as e:
-                            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
-                        e_record.tagged.add(tag)
-                elif key == "working_on_record":
-                    pass
-                else:
-                    if key in unencrypted_changeable_fields:
-                        to_save = value
-                    elif key in changeable_datetime_fields:
-                        to_save = parse_date(value)
-                    else:
-                        to_save = AESEncryption.encrypt(value, record_key)
-                    setattr(e_record, key, to_save)
-
-            e_record.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
-            e_record.save()
-
+        client_patched = []
         if "client" in request.data:
             client_data = request.data["client"]
-
-            client.birthday = parse_date(client_data["birthday"])
-            client.origin_country = models.OriginCountry.objects.get(
-                pk=client_data["origin_country"]
+            client_patched = client.patch(
+                client_data=client_data, clients_aes_key=client_key
             )
 
-            client.note = AESEncryption.encrypt(client_data["note"], client_key)
-            client.name = AESEncryption.encrypt(client_data["name"], client_key)
-            client.phone_number = AESEncryption.encrypt(
-                client_data["phone_number"], client_key
-            )
-            client.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
-            client.save()
-
-        # except Exception as e:
-        #     raise CustomError(error_codes.ERROR__RECORD__RECORD__COULD_NOT_SAVE)
-        if not settings.DEBUG:
-            record_url = FrontendLinks.get_record_link(e_record)
-            for user in e_record.working_on_record.all():
-                EmailSender.send_email_notification(
-                    [user.email],
-                    "Patched Record",
-                    "RLC Intranet Notification - A record of yours was changed. Look here:"
-                    + record_url,
-                )
+        notification_text = ",".join(record_patched + client_patched)
+        Notification.objects.notify_record_patched(user, e_record, notification_text)
 
         record_from_db = models.EncryptedRecord.objects.get(pk=e_record.id)
         client_from_db = models.EncryptedClient.objects.get(pk=client.id)
@@ -339,6 +280,7 @@ class EncryptedRecordViewSet(APIView):
         decrypted_client_data = serializers.EncryptedClientSerializer(
             client_from_db
         ).get_decrypted_data(client_key)
+
         return Response(
             {"record": decrypted_record_data, "client": decrypted_client_data}
         )

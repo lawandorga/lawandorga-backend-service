@@ -23,7 +23,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from backend.api.errors import CustomError
-from backend.api.models import Notification
+from backend.api.models import Notification, NotificationGroup
 from backend.api.serializers import NotificationSerializer
 from backend.static.error_codes import (
     ERROR__API__ID_NOT_PROVIDED,
@@ -70,7 +70,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
         except Exception as e:
             raise CustomError(ERROR__API__ID_NOT_FOUND)
 
-        if request.user != notification.user:
+        if request.user != notification.notification_group.user:
             raise CustomError(ERROR__API__USER__NO_OWNERSHIP)
 
         if "read" not in request.data or request.data.__len__() > 1:
@@ -83,7 +83,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
 class UnreadNotificationsViewSet(APIView):
     def get(self, response, *args, **kwargs) -> Response:
-        unread_notifications = Notification.objects.filter(
+        unread_notifications = NotificationGroup.objects.filter(
             user=response.user, read=False
         ).count()
         return Response({"unread_notifications": unread_notifications})
