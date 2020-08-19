@@ -49,6 +49,7 @@ from backend.static.encryption import RSAEncryption
 #         raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
 #     return e_record
 
+
 def add_record_encryption_keys_for_users(
     granting_user, granting_users_private_key, users_to_give
 ):

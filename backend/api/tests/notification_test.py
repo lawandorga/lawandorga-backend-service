@@ -142,15 +142,6 @@ class NotificationTest(TransactionTestCase):
         )
 
         response: Response = client.patch(
-            "/api/notifications/" + str(notifications[1].id) + "/",
-            {"read": True},
-            format="json",
-        )
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(number_of_group_members + 2, group.group_members.count())
-        self.assertEqual(number_of_notifications_before + 2, api_models.Notification.objects.count())
-
-        response: Response = client.patch(
             "/api/notifications/" + str(notifications[2].id) + "/",
             {"read": True},
             format="json",
