@@ -23,13 +23,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0001_initial'),
+        ("recordmanagement", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='client',
-            name='phone_number',
-            field=models.CharField(default=None, max_length=100, null=True, validators=[django.core.validators.RegexValidator(message='Phone number must be entered in the format: Up to 15 digits allowed.', regex='^\\+{0,2}\\d{6,15}$')]),
+            model_name="client",
+            name="phone_number",
+            field=models.CharField(
+                default=None,
+                max_length=100,
+                null=True,
+                validators=[
+                    django.core.validators.RegexValidator(
+                        message="Phone number must be entered in the format: Up to 15 digits allowed.",
+                        regex="^\\+{0,2}\\d{6,15}$",
+                    )
+                ],
+            ),
         ),
     ]

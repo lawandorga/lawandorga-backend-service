@@ -25,49 +25,49 @@ class EmailSender:
     @staticmethod
     def send_email_notification(email_addresses, subject: str, text: str) -> None:
         """
-        Sends emails to all email_addresses with subject and text
+        Sends emails to all email_addresses with subject and description_text
         :param email_addresses: array with email adresses
         :param subject: subject of the email
         :param text: the email content itself
         :return:
         """
-        from_email = get_env_variable('EMAIL_ADDRESS')
+        from_email = get_env_variable("EMAIL_ADDRESS")
         msg = EmailMultiAlternatives(subject, text, from_email, email_addresses)
         msg.send()
-        # send_mail(subject, text, 'notification@rlcm.de', email_addresses, fail_silently=False)
+        # send_mail(subject, description_text, 'notification@rlcm.de', email_addresses, fail_silently=False)
 
     @staticmethod
-    def send_html_email(email_addresses, subject: str, html_content: str, text_alternative: str) -> None:
-        from_email = get_env_variable('EMAIL_ADDRESS')
-        msg = EmailMultiAlternatives(subject, text_alternative, from_email, email_addresses)
+    def send_html_email(
+        email_addresses, subject: str, html_content: str, text_alternative: str
+    ) -> None:
+        from_email = get_env_variable("EMAIL_ADDRESS")
+        msg = EmailMultiAlternatives(
+            subject, text_alternative, from_email, email_addresses
+        )
         msg.attach_alternative(html_content, "text/html")
         msg.send()
 
     @staticmethod
     def send_user_activation_email(user, link) -> None:
         html_message = loader.render_to_string(
-            'email_templates/activate_account.html',
-            {
-                'url': link
-            }
+            "email_templates/activate_account.html", {"url": link}
         )
         alternative_text = "Law & Orga - Activate your account here: " + link
         subject = "Law & Orga registration"
-        EmailSender.send_html_email([user.email], subject, html_message, alternative_text)
+        EmailSender.send_html_email(
+            [user.email], subject, html_message, alternative_text
+        )
 
     @staticmethod
     def send_record_new_message_notification_email(record) -> None:
         emails = record.get_notification_emails()
         link = FrontendLinks.get_record_link(record)
         html_message = loader.render_to_string(
-            'email_templates/new_record_message.html',
-            {
-                'url': link,
-                'record_token': record.record_token
-            }
+            "email_templates/new_record_message.html",
+            {"url": link, "record_token": record.record_token},
         )
         alternative_text = "Law & Orga - New message in record: " + link
-        subject = 'Law & Orga - New Message'
+        subject = "Law & Orga - New Message"
         EmailSender.send_html_email(emails, subject, html_message, alternative_text)
 
     @staticmethod
@@ -77,10 +77,7 @@ class EmailSender:
     @staticmethod
     def test_send(email) -> None:
         html_message = loader.render_to_string(
-            'email_templates/activate_account.html',
-            {
-                'url': 'asdasd'
-            }
+            "email_templates/activate_account.html", {"url": "asdasd"}
         )
         alternative_text = "Law & Orga - Activate your account here: "
         subject = "Law & Orga registration"
@@ -89,22 +86,19 @@ class EmailSender:
     @staticmethod
     def send_forgot_password(email, link) -> None:
         html_message = loader.render_to_string(
-            'email_templates/forgot_password.html',
-            {
-                'link': link,
-            }
+            "email_templates/forgot_password.html", {"link": link,}
         )
         alternative_text = "Law & Orga - Password Reset: " + link
-        subject = 'Law & Orga - Password Reset'
+        subject = "Law & Orga - Password Reset"
         EmailSender.send_html_email([email], subject, html_message, alternative_text)
 
     @staticmethod
     def send_reset_password_complete(email) -> None:
         html_message = loader.render_to_string(
-            'email_templates/regenerating_rlc_keys_complete.html'
+            "email_templates/regenerating_rlc_keys_complete.html"
         )
         alternative_text = "Law & Orga - Reset password complete"
-        subject = 'Law & Orga - Reset password complete'
+        subject = "Law & Orga - Reset password complete"
         EmailSender.send_html_email([email], subject, html_message, alternative_text)
 
     @staticmethod
@@ -115,5 +109,8 @@ class EmailSender:
         :param url: link to newly created record
         :return:
         """
-        text = "RLC Intranet Notification - Your were assigned as a consultant for a new record. Look here:" + url
+        text = (
+            "RLC Intranet Notification - Your were assigned as a consultant for a new record. Look here:"
+            + url
+        )
         EmailSender.send_email_notification([email_address], "New Record", text)

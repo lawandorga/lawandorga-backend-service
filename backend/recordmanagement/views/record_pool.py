@@ -19,7 +19,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from backend.api.errors import CustomError
 from backend.recordmanagement.models import PoolConsultant, PoolRecord, RecordEncryption
-from backend.recordmanagement.serializers import PoolConsultantSerializer, PoolRecordSerializer
+from backend.recordmanagement.serializers import (
+    PoolConsultantSerializer,
+    PoolRecordSerializer,
+)
 from backend.static import error_codes
 from backend.static.permissions import PERMISSION_CAN_CONSULT
 
@@ -33,17 +36,19 @@ class RecordPoolViewSet(APIView):
         queryset = PoolRecord.objects.filter(record__from_rlc=user.rlc)
         if queryset.count() > 0:
             data = PoolRecordSerializer(queryset, many=True).data
-            return_val = {'type': 'records'}
-            return_val.update({'entries': data})
+            return_val = {"type": "records"}
+            return_val.update({"entries": data})
             return Response(return_val)
 
         queryset = PoolConsultant.objects.filter(consultant__rlc=user.rlc)
         if queryset.count() > 0:
             data = PoolConsultantSerializer(queryset, many=True).data
-            return_val = {'type': 'consultants'}
-            return_val.update({'entries': data})
-            number_of_own_enlistings = PoolConsultant.objects.filter(consultant=user).count()
-            return_val.update({'number_of_own_enlistings': number_of_own_enlistings})
+            return_val = {"type": "consultants"}
+            return_val.update({"entries": data})
+            number_of_own_enlistings = PoolConsultant.objects.filter(
+                consultant=user
+            ).count()
+            return_val.update({"number_of_own_enlistings": number_of_own_enlistings})
             return Response(return_val)
 
-        return Response({'type': 'empty'})
+        return Response({"type": "empty"})

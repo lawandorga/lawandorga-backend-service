@@ -25,7 +25,9 @@ class EncryptedClientListSerializer(serializers.ListSerializer):
         data = []
         for client in self.instance.all():
             client_password = client.get_password(rlcs_private_key)
-            client_data = EncryptedClientSerializer(client).get_decrypted_data(client_password)
+            client_data = EncryptedClientSerializer(client).get_decrypted_data(
+                client_password
+            )
             data.append(client_data)
         return data
 
@@ -39,13 +41,13 @@ class EncryptedClientSerializer(serializers.ModelSerializer):
     class Meta:
         list_serializer_class = EncryptedClientListSerializer
         model = EncryptedClient
-        exclude = ['encrypted_client_key']
+        exclude = ["encrypted_client_key"]
 
     def get_decrypted_data(self, client_key):
         data = self.data
-        AESEncryption.decrypt_field(data, data, 'name', client_key)
-        AESEncryption.decrypt_field(data, data, 'note', client_key)
-        AESEncryption.decrypt_field(data, data, 'phone_number', client_key)
+        AESEncryption.decrypt_field(data, data, "name", client_key)
+        AESEncryption.decrypt_field(data, data, "note", client_key)
+        AESEncryption.decrypt_field(data, data, "phone_number", client_key)
         return data
 
 
@@ -55,4 +57,8 @@ class EncryptedClientNameSerializer(serializers.ModelSerializer):
     # TODO: maybe use in all clients list view?
     class Meta:
         model = EncryptedClient
-        fields = ('id', 'name', 'origin_country', )
+        fields = (
+            "id",
+            "name",
+            "origin_country",
+        )

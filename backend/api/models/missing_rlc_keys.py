@@ -20,8 +20,9 @@ from backend.api.models import UserProfile
 
 
 class MissingRlcKey(models.Model):
-    user = models.ForeignKey(UserProfile, related_name="missing_rlc_keys", on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        UserProfile, related_name="missing_rlc_keys", on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return "missing rlc keys: " + str(self.user)
-

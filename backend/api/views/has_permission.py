@@ -23,9 +23,16 @@ from django.forms.models import model_to_dict
 
 from backend.api.errors import CustomError
 from backend.static import error_codes
-from backend.static.permissions import PERMISSION_MANAGE_PERMISSIONS_RLC, get_record_encryption_keys_permissions
+from backend.static.permissions import (
+    PERMISSION_MANAGE_PERMISSIONS_RLC,
+    get_record_encryption_keys_permissions,
+)
 from ..models import HasPermission, Group, UserProfile, Permission
-from ..serializers import HasPermissionSerializer, GroupNameSerializer, UserProfileNameSerializer
+from ..serializers import (
+    HasPermissionSerializer,
+    GroupNameSerializer,
+    UserProfileNameSerializer,
+)
 from backend.recordmanagement.helpers import check_encryption_key_holders_and_grant
 from backend.static.middleware import get_private_key_from_request
 
@@ -39,10 +46,10 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
         pass
 
     def destroy(self, request, *args, **kwargs):
-        if 'pk' not in kwargs:
+        if "pk" not in kwargs:
             raise CustomError(error_codes.ERROR__API__HAS_PERMISSION__NO_ID_PROVIDED)
         try:
-            hasPermission = HasPermission.objects.get(pk=kwargs['pk'])
+            hasPermission = HasPermission.objects.get(pk=kwargs["pk"])
         except:
             raise CustomError(error_codes.ERROR__API__HAS_PERMISSION__NOT_FOUND)
 
@@ -51,7 +58,7 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
             return CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
         hasPermission.delete()
-        return Response({'status': 'success'})
+        return Response({"status": "success"})
 
     # def create(self, request, *args, **kwargs) -> Response:
     #     if not request.user.has_permission(PERMISSION_MANAGE_PERMISSIONS_RLC, for_rlc=request.user.rlc):
@@ -61,8 +68,9 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
     #     pass
 
     def create(self, request, *args, **kwargs):
-        if not request.user.is_superuser and not request.user.has_permission(PERMISSION_MANAGE_PERMISSIONS_RLC,
-                                                                             for_rlc=request.user.rlc):
+        if not request.user.is_superuser and not request.user.has_permission(
+            PERMISSION_MANAGE_PERMISSIONS_RLC, for_rlc=request.user.rlc
+        ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
         # if request.data['rlc_has_permission'] and request.user.rlc.id != request.data['rlc_has_permission'] or \
         #     request.data['permission_for_rlc'] and request.user.rlc.id != request.data['permission_for_rlc']:
@@ -74,10 +82,12 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
 
-        permission = Permission.objects.get(id=request.data['permission'])
+        permission = Permission.objects.get(id=request.data["permission"])
         if permission in get_record_encryption_keys_permissions():
             granting_users_private_key = get_private_key_from_request(request)
-            check_encryption_key_holders_and_grant(request.user, granting_users_private_key)
+            check_encryption_key_holders_and_grant(
+                request.user, granting_users_private_key
+            )
         # check if permission in rec enc perms TODO: this would be more performant
         # get users private key
         # if rlc -> add rec enc for all rlc users
@@ -85,7 +95,9 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
         # if user -> add for user
 
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
 
 class HasPermissionStaticsViewSet(APIView):
@@ -97,15 +109,15 @@ class HasPermissionStaticsViewSet(APIView):
             users = UserProfile.objects.filter(rlc=response.user.rlc, is_active=True)
             groups = Group.objects.filter(from_rlc=response.user.rlc)
         data = {
-            'users': UserProfileNameSerializer(users, many=True).data,
-            'groups': GroupNameSerializer(groups, many=True).data
+            "users": UserProfileNameSerializer(users, many=True).data,
+            "groups": GroupNameSerializer(groups, many=True).data,
         }
         return Response(data)
 
 
 class UserHasPermissionsViewSet(APIView):
     def get(self, request):
-        user_permissions = [model_to_dict(perm) for perm in request.user.get_all_user_permissions()]
-        return Response({
-            'user_permissions': user_permissions
-        })
+        user_permissions = [
+            model_to_dict(perm) for perm in request.user.get_all_user_permissions()
+        ]
+        return Response({"user_permissions": user_permissions})

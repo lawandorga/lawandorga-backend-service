@@ -25,14 +25,17 @@ from backend.static import permissions
 class RecordQuerySet(models.QuerySet):
     def get_full_access_records(self, user):
         from backend.recordmanagement.models import RecordPermission
-        permissions = RecordPermission.objects.filter(request_from=user, state='gr')
 
-        return self.filter(Q(id__in=user.working_on_record.values_list('id', flat=True)) | Q(
-            id__in=permissions.values_list('record_id', flat=True)))
+        permissions = RecordPermission.objects.filter(request_from=user, state="gr")
+
+        return self.filter(
+            Q(id__in=user.working_on_record.values_list("id", flat=True))
+            | Q(id__in=permissions.values_list("record_id", flat=True))
+        )
 
     def get_no_access_records(self, user):
         has_perm = self.get_full_access_records(user)
-        return self.exclude(id__in=has_perm.values_list('id', flat=True))
+        return self.exclude(id__in=has_perm.values_list("id", flat=True))
 
     def filter_by_rlc(self, rlc):
         """
@@ -45,21 +48,30 @@ class RecordQuerySet(models.QuerySet):
 
 class Record(models.Model):
     creator = models.ForeignKey(
-        UserProfile, related_name="records_created", on_delete=models.SET_NULL, null=True)
-    from_rlc = models.ForeignKey(Rlc, related_name='record_from_rlc', on_delete=models.SET_NULL, null=True,
-                                 default=None)
+        UserProfile,
+        related_name="records_created",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    from_rlc = models.ForeignKey(
+        Rlc,
+        related_name="record_from_rlc",
+        on_delete=models.SET_NULL,
+        null=True,
+        default=None,
+    )
 
     created_on = models.DateField(auto_now_add=True)
     last_edited = models.DateTimeField(auto_now_add=True)
 
     client = models.ForeignKey(
-        'Client', related_name="records", on_delete=models.SET_NULL, null=True)
+        "Client", related_name="records", on_delete=models.SET_NULL, null=True
+    )
     first_contact_date = models.DateField(default=None, null=True)
     last_contact_date = models.DateTimeField(default=None, null=True)
     first_consultation = models.DateTimeField(default=None, null=True)
 
-    record_token = models.CharField(
-        max_length=50, unique=True)
+    record_token = models.CharField(max_length=50, unique=True)
     note = models.TextField(blank=True, null=True)
     official_note = models.TextField(blank=True, null=True)
 
@@ -78,14 +90,15 @@ class Record(models.Model):
     additional_facts = models.TextField(blank=True, null=True)
 
     working_on_record = models.ManyToManyField(
-        UserProfile, related_name="working_on_record", blank=True)
+        UserProfile, related_name="working_on_record", blank=True
+    )
     tagged = models.ManyToManyField(RecordTag, related_name="tagged", blank=True)
 
     record_states_possible = (
-        ('op', 'open'),
-        ('cl', 'closed'),
-        ('wa', 'waiting'),
-        ('wo', 'working')
+        ("op", "open"),
+        ("cl", "closed"),
+        ("wa", "waiting"),
+        ("wo", "working"),
     )
 
     state = models.CharField(max_length=2, choices=record_states_possible)
@@ -93,7 +106,7 @@ class Record(models.Model):
     objects = RecordQuerySet.as_manager()
 
     def __str__(self):
-        return 'record: ' + str(self.id) + ':' + self.record_token
+        return "record: " + str(self.id) + ":" + self.record_token
 
     def user_has_permission(self, user):
         """
@@ -102,25 +115,42 @@ class Record(models.Model):
         :return: boolean, true if the user has permission
         """
         from backend.recordmanagement.models import RecordPermission
-        return self.working_on_record.filter(id=user.id).count() == 1 or \
-               RecordPermission.objects.filter(record=self, request_from=user, state='gr') or \
-               user.has_permission(permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc)
+
+        return (
+            self.working_on_record.filter(id=user.id).count() == 1
+            or RecordPermission.objects.filter(
+                record=self, request_from=user, state="gr"
+            )
+            or user.has_permission(
+                permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc
+            )
+        )
 
     def get_users_with_permission(self):
         from backend.api.models import UserProfile, Permission
+
         working_on_users = self.working_on_record.all()
-        users_with_record_permission = UserProfile.objects.filter(record_permissions_requested__record=self,
-                                                                  record_permissions_requested__state='gr')
+        users_with_record_permission = UserProfile.objects.filter(
+            record_permissions_requested__record=self,
+            record_permissions_requested__state="gr",
+        )
         users_with_overall_permission = Permission.objects.get(
-            name=permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC).get_real_users_with_permission_for_rlc(
-            self.from_rlc)
-        return working_on_users.union(users_with_record_permission).union(users_with_overall_permission).distinct()
+            name=permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+        ).get_real_users_with_permission_for_rlc(self.from_rlc)
+        return (
+            working_on_users.union(users_with_record_permission)
+            .union(users_with_overall_permission)
+            .distinct()
+        )
 
     def get_notification_emails(self):
         from backend.recordmanagement.models import RecordPermission
+
         emails = []
         for user in list(self.working_on_record.all()):
             emails.append(user.email)
-        for permission_request in list(RecordPermission.objects.filter(record=self, state='gr')):
+        for permission_request in list(
+            RecordPermission.objects.filter(record=self, state="gr")
+        ):
             emails.append(permission_request.request_from.email)
         return emails

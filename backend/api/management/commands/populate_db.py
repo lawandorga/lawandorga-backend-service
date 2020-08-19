@@ -22,29 +22,21 @@ from backend.recordmanagement.models import *
 
 
 class Command(BaseCommand):
-    help = 'populates database with all test data'
+    help = "populates database with all test data"
 
     def add_arguments(self, parser):
-        parser.add_argument('--users',
-                            default=20,
-                            type=int,
-                            help='number of fake users to create'
-                            )
-        parser.add_argument('--clients',
-                            default=50,
-                            type=int,
-                            help='number of fake clients to create'
-                            )
-        parser.add_argument('--records',
-                            default=50,
-                            type=int,
-                            help='number of fake records to create'
-                            )
-        parser.add_argument('--groups',
-                            default=4,
-                            type=int,
-                            help='number of fake groups to create'
-                            )
+        parser.add_argument(
+            "--users", default=20, type=int, help="number of fake users to create"
+        )
+        parser.add_argument(
+            "--clients", default=50, type=int, help="number of fake clients to create"
+        )
+        parser.add_argument(
+            "--records", default=50, type=int, help="number of fake records to create"
+        )
+        parser.add_argument(
+            "--groups", default=4, type=int, help="number of fake groups to create"
+        )
 
     def handle(self, *args, **options):
         Fixtures.create_example_record_tags()
@@ -55,12 +47,14 @@ class Command(BaseCommand):
         AddMethods.add_to_rlc(2, 1)
         AddMethods.add_to_rlc(1, 2)
 
-        for _ in range(options['users']):
+        for _ in range(options["users"]):
             UserFactory.create(rlcs=(list(Rlc.objects.all())))
-        for _ in range(options['clients']):
+        for _ in range(options["clients"]):
             ClientFactory.create()
-        for _ in range(options['records']):
-            RecordFactory.create(tags=(list(RecordTag.objects.all())),
-                                 working_on_users=(list(UserProfile.objects.all())))
-        for _ in range(options['groups']):
+        for _ in range(options["records"]):
+            RecordFactory.create(
+                tags=(list(RecordTag.objects.all())),
+                working_on_users=(list(UserProfile.objects.all())),
+            )
+        for _ in range(options["groups"]):
             GroupFactory.create(group_members=(list(UserProfile.objects.all())))

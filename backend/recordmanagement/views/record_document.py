@@ -35,6 +35,7 @@ def start_new_thread(function):
         t = Thread(target=function, args=args, kwargs=kwargs)
         t.daemon = True
         t.start()
+
     return decorator
 
 
@@ -50,9 +51,9 @@ class RecordDocumentUploadEncryptViewSet(APIView):
     parser_classes = [FileUploadParser]
 
     def put(self, request, filename, format=None):
-        file_obj = request.data['file']
-        file_path = os.path.join('temp', filename)
-        file = open(file_path, 'wb')
+        file_obj = request.data["file"]
+        file_path = os.path.join("temp", filename)
+        file = open(file_path, "wb")
         if file_obj.multiple_chunks():
             for chunk in file_obj.chunks():
                 file.write(chunk)
@@ -60,7 +61,7 @@ class RecordDocumentUploadEncryptViewSet(APIView):
             file.write(file_obj.read())
             file.close()
         iv = os.urandom(16)
-        self.encrypt_and_send_to_s3(file_path, 'asdasd', iv, 'tests')
+        self.encrypt_and_send_to_s3(file_path, "asdasd", iv, "tests")
         return Response(status=204)
 
     @start_new_thread
@@ -83,9 +84,11 @@ class RecordDocumentUploadViewSet(APIView):
         if not record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
-        file_dir = storage_folders.get_storage_folder_record_document(record.from_rlc_id, record.id)
-        file_name = request.query_params.get('file_name', '')
-        file_type = request.query_params.get('file_type', '')
+        file_dir = storage_folders.get_storage_folder_record_document(
+            record.from_rlc_id, record.id
+        )
+        file_name = request.query_params.get("file_name", "")
+        file_type = request.query_params.get("file_type", "")
 
         return storage_generator.generate_presigned_post(file_name, file_type, file_dir)
 
@@ -98,7 +101,7 @@ class RecordDocumentByRecordViewSet(APIView):
         pass
 
     def post(self, request, id):
-        filename = request.data['filename']
+        filename = request.data["filename"]
         try:
             record = models.Record.objects.get(pk=id)
         except Exception as e:
@@ -107,23 +110,33 @@ class RecordDocumentByRecordViewSet(APIView):
         if not record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
-        directory = storage_folders.get_storage_folder_record_document(record.from_rlc_id, record.id)
-        information = storage_generator.check_file_and_get_information(directory, filename)
-        if 'error' in information:
+        directory = storage_folders.get_storage_folder_record_document(
+            record.from_rlc_id, record.id
+        )
+        information = storage_generator.check_file_and_get_information(
+            directory, filename
+        )
+        if "error" in information:
             return Response(information)
 
-        already_existing = models.RecordDocument.objects.filter(name=information['key']).first()
+        already_existing = models.RecordDocument.objects.filter(
+            name=information["key"]
+        ).first()
         if already_existing is not None:
-            already_existing.file_size = information['size']
+            already_existing.file_size = information["size"]
             already_existing.last_edited = datetime.now()
             already_existing.save()
 
             serializer = serializers.RecordDocumentSerializer(already_existing)
             return Response(serializer.data)
         else:
-            name = information['key'].split('/')[-1]
-            new_document = models.RecordDocument(record=record, name=name, creator=request.user,
-                                                 file_size=information['size'])
+            name = information["key"].split("/")[-1]
+            new_document = models.RecordDocument(
+                record=record,
+                name=name,
+                creator=request.user,
+                file_size=information["size"],
+            )
             new_document.save()
 
             serializer = serializers.RecordDocumentSerializer(new_document)
@@ -146,4 +159,4 @@ class RecordDocumentDownloadAllViewSet(APIView):
             storage_generator.download_file(doc.get_file_key(), doc.name)
             filenames.append(doc.name)
 
-        return storage_generator.zip_files_and_create_response(filenames, 'record.zip')
+        return storage_generator.zip_files_and_create_response(filenames, "record.zip")

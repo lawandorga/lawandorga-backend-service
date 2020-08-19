@@ -24,5 +24,4 @@ class RecordDocumentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecordDocument
-        fields = '__all__'
-
+        fields = "__all__"

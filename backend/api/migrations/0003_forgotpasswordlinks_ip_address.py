@@ -23,13 +23,13 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0002_auto_20190206_1302'),
+        ("api", "0002_auto_20190206_1302"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='forgotpasswordlinks',
-            name='ip_address',
+            model_name="forgotpasswordlinks",
+            name="ip_address",
             field=models.CharField(default=django.utils.timezone.now, max_length=64),
             preserve_default=False,
         ),

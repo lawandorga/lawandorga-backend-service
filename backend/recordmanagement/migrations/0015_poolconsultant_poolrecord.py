@@ -9,26 +9,64 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('recordmanagement', '0014_encryptedrecorddeletionrequest'),
+        ("recordmanagement", "0014_encryptedrecorddeletionrequest"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PoolRecord',
+            name="PoolRecord",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('enlisted', models.DateTimeField(auto_now_add=True)),
-                ('record_key', models.CharField(max_length=255)),
-                ('record', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='e_record_pool_entry', to='recordmanagement.EncryptedRecord')),
-                ('yielder', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='e_records_yielded', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("enlisted", models.DateTimeField(auto_now_add=True)),
+                ("record_key", models.CharField(max_length=255)),
+                (
+                    "record",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="e_record_pool_entry",
+                        to="recordmanagement.EncryptedRecord",
+                    ),
+                ),
+                (
+                    "yielder",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="e_records_yielded",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='PoolConsultant',
+            name="PoolConsultant",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('enlisted', models.DateTimeField(auto_now_add=True)),
-                ('consultant', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='enlisted_in_record_pool', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("enlisted", models.DateTimeField(auto_now_add=True)),
+                (
+                    "consultant",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="enlisted_in_record_pool",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

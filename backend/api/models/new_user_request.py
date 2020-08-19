@@ -1,5 +1,5 @@
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -21,18 +21,29 @@ from backend.api.models import UserProfile
 
 class NewUserRequest(models.Model):
     request_from = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
-    request_processed = models.ForeignKey(UserProfile, related_name="new_user_requests_processed",
-                                          on_delete=models.SET_NULL, null=True)
+    request_processed = models.ForeignKey(
+        UserProfile,
+        related_name="new_user_requests_processed",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
 
     requested = models.DateTimeField(auto_now_add=True)
     processed_on = models.DateTimeField(null=True)
 
     new_user_request_states_possible = (
-        ('re', 'requested'),
-        ('gr', 'granted'),
-        ('de', 'declined')
+        ("re", "requested"),
+        ("gr", "granted"),
+        ("de", "declined"),
     )
-    state = models.CharField(max_length=2, choices=new_user_request_states_possible, default='re')
+    state = models.CharField(
+        max_length=2, choices=new_user_request_states_possible, default="re"
+    )
 
     def __str__(self):
-        return 'new_user_request: ' + str(self.id) + ' ; from user: ' + str(self.request_from.name)
+        return (
+            "new_user_request: "
+            + str(self.id)
+            + " ; from user: "
+            + str(self.request_from.name)
+        )

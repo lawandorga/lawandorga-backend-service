@@ -20,7 +20,7 @@ from backend.api.models import UserProfile, Rlc
 
 
 class Command(BaseCommand):
-    help = 'populates database for test environment'
+    help = "populates database for test environment"
 
     def add_arguments(self, parser):
         pass

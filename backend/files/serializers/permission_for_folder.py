@@ -17,19 +17,24 @@
 from rest_framework import serializers
 from backend.api.serializers import GroupNameSerializer
 from backend.files.models import PermissionForFolder
-from backend.files.serializers import FolderPermissionSerializer, FolderNamePathSerializer
+from backend.files.serializers import (
+    FolderPermissionSerializer,
+    FolderNamePathSerializer,
+)
 from backend.api.errors import EntryAlreadyExistingError
 
 
 class PermissionForFolderSerializer(serializers.ModelSerializer):
     class Meta:
         model = PermissionForFolder
-        fields = '__all__'
+        fields = "__all__"
 
     def validate(self, attrs):
         if PermissionForFolder.validate_values(attrs):
             return attrs
-        raise serializers.ValidationError("validation error at creating PermissionForFolder")
+        raise serializers.ValidationError(
+            "validation error at creating PermissionForFolder"
+        )
 
     # def create(self, validated_data):
     #     if PermissionForFolder.already_existing(validated_data):
@@ -51,4 +56,4 @@ class PermissionForFolderNestedSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PermissionForFolder
-        fields = '__all__'
+        fields = "__all__"

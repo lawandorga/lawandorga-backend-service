@@ -22,4 +22,4 @@ from backend.recordmanagement.models import RecordDocumentTag
 class RecordDocumentTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordDocumentTag
-        fields = '__all__'
+        fields = "__all__"

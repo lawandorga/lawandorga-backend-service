@@ -40,13 +40,13 @@ class RecordDocumentTagByDocumentViewSet(APIView):
         if not document.record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
-        if 'tag_ids' not in request.data:
+        if "tag_ids" not in request.data:
             raise CustomError(error_codes.ERROR__RECORD__DOCUMENT__NO_TAG_PROVIDED)
 
         tags = []
-        for tag in request.data['tag_ids']:
+        for tag in request.data["tag_ids"]:
             try:
-                real_tag = models.RecordDocumentTag.objects.get(pk=tag['id'])  # tag_ids
+                real_tag = models.RecordDocumentTag.objects.get(pk=tag["id"])  # tag_ids
             except Exception as e:
                 raise CustomError(error_codes.ERROR__RECORD__DOCUMENT__TAG_NOT_EXISTING)
             tags.append(real_tag)

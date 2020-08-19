@@ -18,7 +18,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from backend.api.serializers import UserProfileNameSerializer
-from ..serializers import RecordTagNameSerializer, OriginCountryNameStateSerializer, RecordDocumentTagSerializer
+from ..serializers import (
+    RecordTagNameSerializer,
+    OriginCountryNameStateSerializer,
+    RecordDocumentTagSerializer,
+)
 from ..models import RecordTag, OriginCountry, Record, RecordDocumentTag, UserProfile
 
 
@@ -29,20 +33,28 @@ class StaticViewSet(APIView):
         if user.rlc is None:
             consultants = []
         else:
-            consultants = UserProfileNameSerializer(user.rlc.get_consultants(), many=True).data
+            consultants = UserProfileNameSerializer(
+                user.rlc.get_consultants(), many=True
+            ).data
 
         record_tags = RecordTagNameSerializer(RecordTag.objects.all(), many=True).data
-        countries = OriginCountryNameStateSerializer(OriginCountry.objects.all(), many=True).data
-        document_tags = RecordDocumentTagSerializer(RecordDocumentTag.objects.all(), many=True).data
+        countries = OriginCountryNameStateSerializer(
+            OriginCountry.objects.all(), many=True
+        ).data
+        document_tags = RecordDocumentTagSerializer(
+            RecordDocumentTag.objects.all(), many=True
+        ).data
 
         states_for_records = Record.record_states_possible
         states_for_countries = OriginCountry.origin_country_states_possible
 
-        return Response({
-            'record_tags': record_tags,
-            'consultants': consultants,
-            'countries': countries,
-            'record_states': states_for_records,
-            'country_states': states_for_countries,
-            'record_document_tags': document_tags
-        })
+        return Response(
+            {
+                "record_tags": record_tags,
+                "consultants": consultants,
+                "countries": countries,
+                "record_states": states_for_records,
+                "country_states": states_for_countries,
+                "record_document_tags": document_tags,
+            }
+        )

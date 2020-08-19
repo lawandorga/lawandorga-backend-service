@@ -23,8 +23,10 @@ from backend.recordmanagement.serializers import EncryptedRecordNoDetailSerializ
 class EncryptedRecordDeletionRequestSerializer(serializers.ModelSerializer):
     request_from = UserProfileNameSerializer(many=False, read_only=True)
     request_processed = UserProfileNameSerializer(many=False, read_only=True)
-    record = EncryptedRecordNoDetailSerializer(many=False, read_only=True, allow_null=True)
+    record = EncryptedRecordNoDetailSerializer(
+        many=False, read_only=True, allow_null=True
+    )
 
     class Meta:
         model = models.EncryptedRecordDeletionRequest
-        fields = '__all__'
+        fields = "__all__"

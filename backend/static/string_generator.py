@@ -30,4 +30,4 @@ def generate_secure_random_string(length=64):
     :param length: length of random string, 64 rsa encrypted results still in 256 bytes
     """
     password_characters = string.ascii_letters + string.digits + string.punctuation
-    return ''.join(secrets.choice(password_characters) for i in range(length))
+    return "".join(secrets.choice(password_characters) for i in range(length))

@@ -21,4 +21,4 @@ from backend.recordmanagement.models import PoolConsultant
 class PoolConsultantSerializer(serializers.ModelSerializer):
     class Meta:
         model = PoolConsultant
-        fields = '__all__'
+        fields = "__all__"

@@ -21,24 +21,39 @@ from backend.api.models import UserProfile
 
 class EncryptedRecordPermission(models.Model):
     request_from = models.ForeignKey(
-        UserProfile, related_name="e_record_permissions_requested", on_delete=models.CASCADE, null=False)
+        UserProfile,
+        related_name="e_record_permissions_requested",
+        on_delete=models.CASCADE,
+        null=False,
+    )
     request_processed = models.ForeignKey(
-        UserProfile, related_name="e_record_permissions_processed", on_delete=models.SET_NULL, null=True)
+        UserProfile,
+        related_name="e_record_permissions_processed",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
 
-    record = models.ForeignKey('EncryptedRecord', related_name="e_permissions_requested",
-                               on_delete=models.CASCADE,
-                               null=False)
+    record = models.ForeignKey(
+        "EncryptedRecord",
+        related_name="e_permissions_requested",
+        on_delete=models.CASCADE,
+        null=False,
+    )
 
     requested = models.DateTimeField(auto_now_add=True)
     processed_on = models.DateTimeField(null=True)
     can_edit = models.BooleanField(default=False)
 
     encrypted_record_permission_states_possible = (
-        ('re', 'requested'),
-        ('gr', 'granted'),
-        ('de', 'declined')
+        ("re", "requested"),
+        ("gr", "granted"),
+        ("de", "declined"),
     )
-    state = models.CharField(max_length=2, choices=encrypted_record_permission_states_possible, default='re')
+    state = models.CharField(
+        max_length=2, choices=encrypted_record_permission_states_possible, default="re"
+    )
 
     def __str__(self):
-        return 'e_record_permission: ' + str(self.id) + '; from: ' + str(self.request_from)
+        return (
+            "e_record_permission: " + str(self.id) + "; from: " + str(self.request_from)
+        )

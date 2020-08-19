@@ -21,7 +21,7 @@ from .commands import create_missing_key_entries
 
 
 class Command(BaseCommand):
-    help = 'finds missing record key entries'
+    help = "finds missing record key entries"
 
     def handle(self, *args, **options):
         create_missing_key_entries()

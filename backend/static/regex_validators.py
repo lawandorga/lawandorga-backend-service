@@ -17,12 +17,13 @@
 from django.core.validators import RegexValidator
 import re
 
-PHONE_REGEX = '^\+{0,2}\d{6,15}$'
-RECORD_STORAGE_REGEX = '^rlcs\/\d+\/records\/\d+\/?$'
+PHONE_REGEX = "^\+{0,2}\d{6,15}$"
+RECORD_STORAGE_REGEX = "^rlcs\/\d+\/records\/\d+\/?$"
 
-phone_regex = RegexValidator(regex=r'{}'.format(PHONE_REGEX),
-                             message="Phone number must be entered "
-                                     "in the format: Up to 15 digits allowed.")
+phone_regex = RegexValidator(
+    regex=r"{}".format(PHONE_REGEX),
+    message="Phone number must be entered " "in the format: Up to 15 digits allowed.",
+)
 
 
 def is_storage_folder_of_record(dir: str):
@@ -30,4 +31,4 @@ def is_storage_folder_of_record(dir: str):
 
 
 def is_phone_number(phone_number: str):
-    return bool(re.match(PHONE_REGEX, phone_number.replace(' ', '')))
+    return bool(re.match(PHONE_REGEX, phone_number.replace(" ", "")))

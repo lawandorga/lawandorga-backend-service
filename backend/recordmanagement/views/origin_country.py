@@ -25,5 +25,8 @@ from backend.api.permissions import OriginCountry
 class OriginCountriesViewSet(viewsets.ModelViewSet):
     queryset = models.OriginCountry.objects.all()
     serializer_class = serializers.OriginCountrySerializer
-    permission_classes = (IsAuthenticated, OriginCountry, )
+    permission_classes = (
+        IsAuthenticated,
+        OriginCountry,
+    )
     # TODO: search fields: state, to count (?)

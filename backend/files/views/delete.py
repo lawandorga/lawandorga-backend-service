@@ -25,16 +25,18 @@ from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 class DeleteViewSet(APIView):
     def post(self, request):
         user = request.user
-        root_folder = Folder.get_folder_from_path('files/' + request.data['path'], user.rlc)
+        root_folder = Folder.get_folder_from_path(
+            "files/" + request.data["path"], user.rlc
+        )
         if not root_folder.user_has_permission_write(user):
             raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
-        entries = request.data['entries']
+        entries = request.data["entries"]
         for entry in entries:
-            if entry['type'] == 1:
+            if entry["type"] == 1:
                 # file
-                file = File.objects.get(pk=entry['id'])
+                file = File.objects.get(pk=entry["id"])
                 file.delete()
             else:
-                folder = Folder.objects.get(pk=entry['id'])
+                folder = Folder.objects.get(pk=entry["id"])
                 folder.delete()
-        return Response({'success': True})
+        return Response({"success": True})

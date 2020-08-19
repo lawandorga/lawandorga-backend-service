@@ -21,11 +21,11 @@ from django.db import models
 class OriginCountry(models.Model):
     name = models.CharField(max_length=200, unique=True)
     origin_country_states_possible = (
-        ('st', 'safe third country'),
-        ('ot', 'other third country'),
-        ('so', 'safe country')
+        ("st", "safe third country"),
+        ("ot", "other third country"),
+        ("so", "safe country"),
     )
     state = models.CharField(max_length=2, choices=origin_country_states_possible)
 
     def __str__(self):
-        return 'origin_country: ' + str(self.id) + ':' + self.name
+        return "origin_country: " + str(self.id) + ":" + self.name

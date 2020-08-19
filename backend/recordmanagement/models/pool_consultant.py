@@ -19,6 +19,10 @@ from backend.api.models import UserProfile
 
 
 class PoolConsultant(models.Model):
-    consultant = models.ForeignKey(UserProfile, related_name="enlisted_in_record_pool", on_delete=models.CASCADE, null=False)
+    consultant = models.ForeignKey(
+        UserProfile,
+        related_name="enlisted_in_record_pool",
+        on_delete=models.CASCADE,
+        null=False,
+    )
     enlisted = models.DateTimeField(auto_now_add=True)
-

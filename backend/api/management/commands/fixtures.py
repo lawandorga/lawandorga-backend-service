@@ -20,7 +20,13 @@ import pytz
 from django.conf import settings
 
 from backend.api.models import *
-from backend.recordmanagement.models import Client, OriginCountry, Record, RecordDocumentTag, RecordTag
+from backend.recordmanagement.models import (
+    Client,
+    OriginCountry,
+    Record,
+    RecordDocumentTag,
+    RecordTag,
+)
 from backend.static.permissions import get_all_permissions_strings
 from backend.files.models import FolderPermission
 from backend.files.static.folder_permissions import get_all_folder_permissions_strings
@@ -29,83 +35,269 @@ from backend.files.static.folder_permissions import get_all_folder_permissions_s
 class Fixtures:
     @staticmethod
     def create_example_static_users():
-        user = UserProfile(id=1, email='abc@web.de', name='Betsy', is_active=True)
-        user.set_password('qwe123')
+        user = UserProfile(id=1, email="abc@web.de", name="Betsy", is_active=True)
+        user.set_password("qwe123")
         user.save()
 
-        user = UserProfile(id=2, email='jehob@web.de', name='Peter', is_active=True, is_superuser=True)
-        user.set_password('qwe123')
+        user = UserProfile(
+            id=2, email="jehob@web.de", name="Peter", is_active=True, is_superuser=True
+        )
+        user.set_password("qwe123")
         user.save()
 
     @staticmethod
     def create_example_record_tags():
-        tags = [('Dublin III',), ('family reunion',), ('asylum',), ('stay',), ('employment',)]
+        tags = [
+            ("Dublin III",),
+            ("family reunion",),
+            ("asylum",),
+            ("stay",),
+            ("employment",),
+        ]
         for single_tag in tags:
             AddMethods.add_record_tag(single_tag)
 
     @staticmethod
     def create_example_origin_countries():
-        countries = [('Botswana', 'st'), ('Ghana', 'ot'), ('Nigeria', 'so'),
-                     ('Turkey', 'so'), ('Sahara', 'ot'), ('Ukraine', 'st'),
-                     ('Syria', 'ot')]
+        countries = [
+            ("Botswana", "st"),
+            ("Ghana", "ot"),
+            ("Nigeria", "so"),
+            ("Turkey", "so"),
+            ("Sahara", "ot"),
+            ("Ukraine", "st"),
+            ("Syria", "ot"),
+        ]
         for country in countries:
             AddMethods.add_country(country)
 
     @staticmethod
     def create_real_origin_countries():
-        countries = [('Abchasien',), ('Afghanistan',), ('Ägypten',), ('Albanien',), ('Algerien',), ('Andorra',), (
-            'Angola',), ('Antigua und Barbuda',), ('Äquatorialguinea',), ('Argentinien',), ('Armenien',), ('Arzach',), (
-                         'Aserbaidschan',), ('Äthiopien',), ('Australien',), ('Bahamas',), (
-                         'Bahrain',), ('Bangladesch',), ('Barbados',), ('Belgien',), ('Belize',), (
-                         'Benin',), ('Bhutan',), ('Bolivien',), ('Bosnien und Herzegowina',), (
-                         'Botswana',), ('Brasilien',), ('Brunei',), ('Bulgarien',), ('Burkina Faso',), (
-                         'Burundi',), ('Chile',), ('Republik China',), ('Volksrepublik China',), (
-                         'Cookinseln',), ('Costa Rica',), ('Dänemark',), ('Deutschland',), ('Dominica',), (
-                         'Dominikanische Republik',), ('Dschibuti',), ('Ecuador',), ('El Salvador',), (
-                         'Elfenbeinküste',), ('Eritrea',), ('Estland',), ('Fidschi',), ('Finnland',), (
-                         'Frankreich',), ('Gabun',), ('Gambia',), ('Georgien',), ('Ghana',), (
-                         'Grenada',), ('Griechenland',), ('Guatemala',), ('Guinea',), (
-                         'Guinea-Bissau',), ('Guyana',), ('Haiti',), ('Honduras',), ('Indien',), (
-                         'Indonesien',), ('Irak',), ('Iran',), ('Irland',), ('Island',), ('Israel',), (
-                         'Italien',), ('Jamaika',), ('Japan',), ('Jemen',), ('Jordanien',), (
-                         'Kambodscha',), ('Kamerun',), ('Kanada',), ('Kap Verde',), ('Kasachstan',), (
-                         'Katar',), ('Kenia',), ('Kirgisistan',), ('Kiribati',), ('Kolumbien',), (
-                         'Komoren',), ('Kongo, Demokratische Republik',), ('Kongo, Republik',), (
-                         'Nordkorea',), ('Südkorea',), ('Kosovo',), ('Kroatien',), ('Kuba',), (
-                         'Kuwait',), ('Laos',), ('Lesotho',), ('Lettland',), ('Libanon',), (
-                         'Liberia',), ('Libyen',), ('Liechtenstein',), ('Litauen',), ('Luxemburg',), (
-                         'Madagaskar',), ('Malawi',), ('Malaysia',), ('Malediven',), ('Mali',), (
-                         'Malta',), ('Marokko',), ('Marshallinseln',), ('Mauretanien',), ('Mauritius',), (
-                         'Mexiko',), ('Mikronesien',), ('Moldau',), ('Monaco',), ('Mongolei',), (
-                         'Montenegro',), ('Mosambik',), ('Myanmar',), ('Namibia',), ('Nauru',), (
-                         'Nepal',), ('Neuseeland',), ('Nicaragua',), ('Niederlande',), ('Curaçao',), (
-                         'Sint Maarten',), ('Niger',), ('Nigeria',), ('Niue',), ('Nordmazedonien',), (
-                         'Nordzypern',), ('Norwegen',), ('Oman',), ('Österreich',), (
-                         'Osttimor / Timor-Leste',), ('Pakistan',), ('Palästina',), ('Palau',), (
-                         'Panama',), ('Papua-Neuguinea',), ('Paraguay',), ('Peru',), ('Philippinen',), (
-                         'Polen',), ('Portugal',), ('Ruanda',), ('Rumänien',), ('Russland',), (
-                         'Salomonen',), ('Sambia',), ('Samoa',), ('San Marino',), (
-                         'São Tomé und Príncipe',), ('Saudi-Arabien',), ('Schweden',), ('Schweiz',), (
-                         'Senegal',), ('Serbien',), ('Seychellen',), ('Sierra Leone',), ('Simbabwe',), (
-                         'Singapur',), ('Slowakei',), ('Slowenien',), ('Somalia',), ('Somaliland',), (
-                         'Spanien',), ('Sri Lanka',), ('St. Kitts und Nevis',), ('St. Lucia',), (
-                         'St. Vincent und die Grenadinen',), ('Südafrika',), ('Sudan ',), (
-                         'Südossetien',), ('Südsudan',), ('Suriname',), ('Swasiland',), ('Syrien',), (
-                         'Tadschikistan',), ('Tansania',), ('Thailand',), ('Togo',), ('Tonga',), (
-                         'Transnistrien',), ('Trinidad und Tobago',), ('Tschad',), ('Tschechien',), (
-                         'Tunesien',), ('Türkei',), ('Turkmenistan',), ('Tuvalu',), ('Uganda',), (
-                         'Ukraine',), ('Ungarn',), ('Uruguay',), ('Usbekistan',), ('Vanuatu',), (
-                         'Vatikanstadt',), ('Venezuela',), ('Vereinigte Arabische Emirate',), (
-                         'Vereinigte Staaten',), ('Vereinigtes Königreich',), ('Vietnam',), (
-                         'Weißrussland',), ('Westsahara',), ('Zentral­afrikanische Republik',), (
-                         'Zypern',), ('unbekanntes Herkunftsland',)]
+        countries = [
+            ("Abchasien",),
+            ("Afghanistan",),
+            ("Ägypten",),
+            ("Albanien",),
+            ("Algerien",),
+            ("Andorra",),
+            ("Angola",),
+            ("Antigua und Barbuda",),
+            ("Äquatorialguinea",),
+            ("Argentinien",),
+            ("Armenien",),
+            ("Arzach",),
+            ("Aserbaidschan",),
+            ("Äthiopien",),
+            ("Australien",),
+            ("Bahamas",),
+            ("Bahrain",),
+            ("Bangladesch",),
+            ("Barbados",),
+            ("Belgien",),
+            ("Belize",),
+            ("Benin",),
+            ("Bhutan",),
+            ("Bolivien",),
+            ("Bosnien und Herzegowina",),
+            ("Botswana",),
+            ("Brasilien",),
+            ("Brunei",),
+            ("Bulgarien",),
+            ("Burkina Faso",),
+            ("Burundi",),
+            ("Chile",),
+            ("Republik China",),
+            ("Volksrepublik China",),
+            ("Cookinseln",),
+            ("Costa Rica",),
+            ("Dänemark",),
+            ("Deutschland",),
+            ("Dominica",),
+            ("Dominikanische Republik",),
+            ("Dschibuti",),
+            ("Ecuador",),
+            ("El Salvador",),
+            ("Elfenbeinküste",),
+            ("Eritrea",),
+            ("Estland",),
+            ("Fidschi",),
+            ("Finnland",),
+            ("Frankreich",),
+            ("Gabun",),
+            ("Gambia",),
+            ("Georgien",),
+            ("Ghana",),
+            ("Grenada",),
+            ("Griechenland",),
+            ("Guatemala",),
+            ("Guinea",),
+            ("Guinea-Bissau",),
+            ("Guyana",),
+            ("Haiti",),
+            ("Honduras",),
+            ("Indien",),
+            ("Indonesien",),
+            ("Irak",),
+            ("Iran",),
+            ("Irland",),
+            ("Island",),
+            ("Israel",),
+            ("Italien",),
+            ("Jamaika",),
+            ("Japan",),
+            ("Jemen",),
+            ("Jordanien",),
+            ("Kambodscha",),
+            ("Kamerun",),
+            ("Kanada",),
+            ("Kap Verde",),
+            ("Kasachstan",),
+            ("Katar",),
+            ("Kenia",),
+            ("Kirgisistan",),
+            ("Kiribati",),
+            ("Kolumbien",),
+            ("Komoren",),
+            ("Kongo, Demokratische Republik",),
+            ("Kongo, Republik",),
+            ("Nordkorea",),
+            ("Südkorea",),
+            ("Kosovo",),
+            ("Kroatien",),
+            ("Kuba",),
+            ("Kuwait",),
+            ("Laos",),
+            ("Lesotho",),
+            ("Lettland",),
+            ("Libanon",),
+            ("Liberia",),
+            ("Libyen",),
+            ("Liechtenstein",),
+            ("Litauen",),
+            ("Luxemburg",),
+            ("Madagaskar",),
+            ("Malawi",),
+            ("Malaysia",),
+            ("Malediven",),
+            ("Mali",),
+            ("Malta",),
+            ("Marokko",),
+            ("Marshallinseln",),
+            ("Mauretanien",),
+            ("Mauritius",),
+            ("Mexiko",),
+            ("Mikronesien",),
+            ("Moldau",),
+            ("Monaco",),
+            ("Mongolei",),
+            ("Montenegro",),
+            ("Mosambik",),
+            ("Myanmar",),
+            ("Namibia",),
+            ("Nauru",),
+            ("Nepal",),
+            ("Neuseeland",),
+            ("Nicaragua",),
+            ("Niederlande",),
+            ("Curaçao",),
+            ("Sint Maarten",),
+            ("Niger",),
+            ("Nigeria",),
+            ("Niue",),
+            ("Nordmazedonien",),
+            ("Nordzypern",),
+            ("Norwegen",),
+            ("Oman",),
+            ("Österreich",),
+            ("Osttimor / Timor-Leste",),
+            ("Pakistan",),
+            ("Palästina",),
+            ("Palau",),
+            ("Panama",),
+            ("Papua-Neuguinea",),
+            ("Paraguay",),
+            ("Peru",),
+            ("Philippinen",),
+            ("Polen",),
+            ("Portugal",),
+            ("Ruanda",),
+            ("Rumänien",),
+            ("Russland",),
+            ("Salomonen",),
+            ("Sambia",),
+            ("Samoa",),
+            ("San Marino",),
+            ("São Tomé und Príncipe",),
+            ("Saudi-Arabien",),
+            ("Schweden",),
+            ("Schweiz",),
+            ("Senegal",),
+            ("Serbien",),
+            ("Seychellen",),
+            ("Sierra Leone",),
+            ("Simbabwe",),
+            ("Singapur",),
+            ("Slowakei",),
+            ("Slowenien",),
+            ("Somalia",),
+            ("Somaliland",),
+            ("Spanien",),
+            ("Sri Lanka",),
+            ("St. Kitts und Nevis",),
+            ("St. Lucia",),
+            ("St. Vincent und die Grenadinen",),
+            ("Südafrika",),
+            ("Sudan ",),
+            ("Südossetien",),
+            ("Südsudan",),
+            ("Suriname",),
+            ("Swasiland",),
+            ("Syrien",),
+            ("Tadschikistan",),
+            ("Tansania",),
+            ("Thailand",),
+            ("Togo",),
+            ("Tonga",),
+            ("Transnistrien",),
+            ("Trinidad und Tobago",),
+            ("Tschad",),
+            ("Tschechien",),
+            ("Tunesien",),
+            ("Türkei",),
+            ("Turkmenistan",),
+            ("Tuvalu",),
+            ("Uganda",),
+            ("Ukraine",),
+            ("Ungarn",),
+            ("Uruguay",),
+            ("Usbekistan",),
+            ("Vanuatu",),
+            ("Vatikanstadt",),
+            ("Venezuela",),
+            ("Vereinigte Arabische Emirate",),
+            ("Vereinigte Staaten",),
+            ("Vereinigtes Königreich",),
+            ("Vietnam",),
+            ("Weißrussland",),
+            ("Westsahara",),
+            ("Zentral­afrikanische Republik",),
+            ("Zypern",),
+            ("unbekanntes Herkunftsland",),
+        ]
         for country in countries:
             AddMethods.add_country(country)
 
     @staticmethod
     def create_example_permissions():
-        permissions = [('add_records',), ('edit_records',), ('remove_records',), ('view_records',), ('view_users',),
-                       ('view_records_full_detail',), ('can_consult',)]
+        permissions = [
+            ("add_records",),
+            ("edit_records",),
+            ("remove_records",),
+            ("view_records",),
+            ("view_users",),
+            ("view_records_full_detail",),
+            ("can_consult",),
+        ]
         real_perms = get_all_permissions_strings()
         for rperm in real_perms:
             if (rperm,) not in permissions:
@@ -116,9 +308,11 @@ class Fixtures:
 
     @staticmethod
     def create_rlcs():
-        rlcs = ((1, 'RLC Muenchen', False, True),
-                (2, 'RLC Hamburg', False, True),
-                (3, 'RLC Leipzig', False, True))
+        rlcs = (
+            (1, "RLC Muenchen", False, True),
+            (2, "RLC Hamburg", False, True),
+            (3, "RLC Leipzig", False, True),
+        )
         for rlc in rlcs:
             AddMethods.add_rlc(rlc)
 
@@ -144,50 +338,119 @@ class Fixtures:
 
     @staticmethod
     def create_real_tags():
-        tags = [('Familiennachzug',), ('Dublin IV',), ('Arbeitserlaubnis',), ('Flüchtlingseigenschaft',),
-                ('subsidiärer Schutz',), ('Eheschließung',), ('Verlobung',),
-                ('illegale Ausreise aus dem Bundesgebiet',), ('Untertauchen',), ('Kinder anerkennen',), ('Ausbildung',),
-                ('Geburt ',), ('Eines Kindes im Asylverfahren',), ('Duldung',), ('Ausbildungsduldung',), ('Visum',),
-                ('Anhörung',), ('Wechsel der Unterkunft',), ('Wohnsitzauflage',), ('Folgeantrag',), ('Zweitantrag',),
-                ('Unterbringung im Asylverfahren',), ('Widerruf der Asylberechtigung',),
-                ('Rücknahme der Asyberechtigung',),
-                ('Passbeschaffung',), ('Mitwirkungspflichten',), ('Nichtbetreiben des Verfahrens',),
-                ('Krankheit im Asylverfahren',), ('Familienasyl',), ('UmF',),
-                ('Familienzusammenführung nach Dublin III',), ('Negativbescheid',), ('Relocation',), ('Resettlement',),
-                ('Asylbewerberleistungsgesetz',), ('Kirchenasyl',), ('Asylantrag',), ('Abschiebung',),
-                ('Untätigkeitsklage',), ('Studium',), ('Strafverfolgung',), ('Sonstiges',), ]
+        tags = [
+            ("Familiennachzug",),
+            ("Dublin IV",),
+            ("Arbeitserlaubnis",),
+            ("Flüchtlingseigenschaft",),
+            ("subsidiärer Schutz",),
+            ("Eheschließung",),
+            ("Verlobung",),
+            ("illegale Ausreise aus dem Bundesgebiet",),
+            ("Untertauchen",),
+            ("Kinder anerkennen",),
+            ("Ausbildung",),
+            ("Geburt ",),
+            ("Eines Kindes im Asylverfahren",),
+            ("Duldung",),
+            ("Ausbildungsduldung",),
+            ("Visum",),
+            ("Anhörung",),
+            ("Wechsel der Unterkunft",),
+            ("Wohnsitzauflage",),
+            ("Folgeantrag",),
+            ("Zweitantrag",),
+            ("Unterbringung im Asylverfahren",),
+            ("Widerruf der Asylberechtigung",),
+            ("Rücknahme der Asyberechtigung",),
+            ("Passbeschaffung",),
+            ("Mitwirkungspflichten",),
+            ("Nichtbetreiben des Verfahrens",),
+            ("Krankheit im Asylverfahren",),
+            ("Familienasyl",),
+            ("UmF",),
+            ("Familienzusammenführung nach Dublin III",),
+            ("Negativbescheid",),
+            ("Relocation",),
+            ("Resettlement",),
+            ("Asylbewerberleistungsgesetz",),
+            ("Kirchenasyl",),
+            ("Asylantrag",),
+            ("Abschiebung",),
+            ("Untätigkeitsklage",),
+            ("Studium",),
+            ("Strafverfolgung",),
+            ("Sonstiges",),
+        ]
         for tag in tags:
             AddMethods.add_record_tag(tag)
 
     @staticmethod
     def create_real_document_tags():
-        tags = [('Pass',), ('Passersatzpapier',), ('Geburtsurkunde',), ('Heiratsurkunde',), ('Ankunftsnachweis',),
-                ('Duldung',), ('Aufenthaltsgestattung',), ('Aufenthaltstitel',), ('Bescheid (Ablehnung)',),
-                ('Bescheid (Flüchtling)',), ('Bescheid (subsidiärer Schutz)',), ('Bescheid (Abschiebeverbote)',),
-                ('Bescheid (Sozialleistungen)',), ('Bescheid (Arbeiten)',), ('Bescheid (Wohnen)',),
-                ('Widerspruch',), ('Antwortschreiben',), ('Erwiderung',), ('Sachstandsanfrage',), ('Klageschrift',),
-                ('Akteneinsicht',), ('Anfrage',), ('Terminvereinbarung',), ('Attest',), ('Verschwiegenheitserklärung',),
-                ('Datenschutzerklärung',), ('Erklärung',), ('Vertrag',), ('Antrag',), ('Zeugnis',),
-                ('Zertifikat',), ('Vollmacht',), ('Anhörungsvorbereitung',), ('Haftbeschluss',), ('Anzeige',),
-                ('Strafanzeige',), ('Medizinischer Befund',), ('Haftantrag',), ('Haftaufhebung',), ('Haftbeschwerde',),
-                ('Antwort an',), ('Amtsgericht',), ('Anwältin/Anwalt',), ('Beratungsstelle',), ('Korrespondenz',),
-                ('Supervisor*in',), ('Dolmetscher*in',), ('Sonstiges',), ('Antwort von',),]
+        tags = [
+            ("Pass",),
+            ("Passersatzpapier",),
+            ("Geburtsurkunde",),
+            ("Heiratsurkunde",),
+            ("Ankunftsnachweis",),
+            ("Duldung",),
+            ("Aufenthaltsgestattung",),
+            ("Aufenthaltstitel",),
+            ("Bescheid (Ablehnung)",),
+            ("Bescheid (Flüchtling)",),
+            ("Bescheid (subsidiärer Schutz)",),
+            ("Bescheid (Abschiebeverbote)",),
+            ("Bescheid (Sozialleistungen)",),
+            ("Bescheid (Arbeiten)",),
+            ("Bescheid (Wohnen)",),
+            ("Widerspruch",),
+            ("Antwortschreiben",),
+            ("Erwiderung",),
+            ("Sachstandsanfrage",),
+            ("Klageschrift",),
+            ("Akteneinsicht",),
+            ("Anfrage",),
+            ("Terminvereinbarung",),
+            ("Attest",),
+            ("Verschwiegenheitserklärung",),
+            ("Datenschutzerklärung",),
+            ("Erklärung",),
+            ("Vertrag",),
+            ("Antrag",),
+            ("Zeugnis",),
+            ("Zertifikat",),
+            ("Vollmacht",),
+            ("Anhörungsvorbereitung",),
+            ("Haftbeschluss",),
+            ("Anzeige",),
+            ("Strafanzeige",),
+            ("Medizinischer Befund",),
+            ("Haftantrag",),
+            ("Haftaufhebung",),
+            ("Haftbeschwerde",),
+            ("Antwort an",),
+            ("Amtsgericht",),
+            ("Anwältin/Anwalt",),
+            ("Beratungsstelle",),
+            ("Korrespondenz",),
+            ("Supervisor*in",),
+            ("Dolmetscher*in",),
+            ("Sonstiges",),
+            ("Antwort von",),
+        ]
         for tag in tags:
             AddMethods.add_record_document_tag(tag)
 
     @staticmethod
     def create_real_starting_rlcs():
-        rlcs = (('RLC München', False, True),
-                ('RLC Hamburg', False, True))
+        rlcs = (("RLC München", False, True), ("RLC Hamburg", False, True))
         for rlc in rlcs:
             AddMethods.add_rlc(rlc)
         return list(Rlc.objects.all())
 
     @staticmethod
     def create_real_groups(rlcs):
-        groups = [('Members', False),
-                  ('Admins', False),
-                  ('Consultants', False)]
+        groups = [("Members", False), ("Admins", False), ("Consultants", False)]
         for rlc in rlcs:
             for group in groups:
                 AddMethods.add_group(group, rlc.id)
@@ -195,68 +458,74 @@ class Fixtures:
 
     @staticmethod
     def create_good_example_records():
-        r = Record(creator_id=1, from_rlc_id=1, created_on=date(2017, 12, 24),
-                   last_edited=datetime(2018, 4, 12, 13, 56, 0, 0), client=1, first_contact_date=date(2017, 12, 24),
-                   last_contact_date=datetime(2018, 4, 12, 18, 30, 0, 0), record_token='AZ-MUC-14/28',
-                   note='was in italy before', state='op')
+        r = Record(
+            creator_id=1,
+            from_rlc_id=1,
+            created_on=date(2017, 12, 24),
+            last_edited=datetime(2018, 4, 12, 13, 56, 0, 0),
+            client=1,
+            first_contact_date=date(2017, 12, 24),
+            last_contact_date=datetime(2018, 4, 12, 18, 30, 0, 0),
+            record_token="AZ-MUC-14/28",
+            note="was in italy before",
+            state="op",
+        )
         r.tagged.add(12)
         r.working_on_record.add(1)
         r.save()
 
     @staticmethod
     def create_handmade_examples():
-        record_tags = [(1001, 'Familiennachzug'),
-                       (1002, 'Ausbildung'),
-                       (1003, 'Anhörung'),
-                       (1004, 'Abschiebung'),
-                       (1005, 'Asylantrag')
-                       ]
+        record_tags = [
+            (1001, "Familiennachzug"),
+            (1002, "Ausbildung"),
+            (1003, "Anhörung"),
+            (1004, "Abschiebung"),
+            (1005, "Asylantrag"),
+        ]
         for tag in record_tags:
             AddMethods.add_record_tag(tag)
 
-        record_document_tags = [(120001, 'Official Document'),
-                                (120002, 'Pleading'),
-                                (120004, 'Proof'),
-                                (120003, 'Passport')]
+        record_document_tags = [
+            (120001, "Official Document"),
+            (120002, "Pleading"),
+            (120004, "Proof"),
+            (120003, "Passport"),
+        ]
         for tag in record_document_tags:
             AddMethods.add_record_document_tag(tag)
 
-        countries = [(2001, 'Italien', 'ot'),
-                     (2002, 'Syrien', 'so'),
-                     (2003, 'Norwegen', 'st'),
-                     (2004, 'Bulgarien', 'ot'),
-                     (2005, 'Spanien', 'ot'),
-                     (2006, 'Griechenland', 'ot'),
-                     (2007, 'Irak', 'so'),
-                     (2008, 'Iran', 'so'),
-                     (2009, 'Afghanistan', 'so'),
-                     (2010, 'Nigeria', 'st')
-                     ]
+        countries = [
+            (2001, "Italien", "ot"),
+            (2002, "Syrien", "so"),
+            (2003, "Norwegen", "st"),
+            (2004, "Bulgarien", "ot"),
+            (2005, "Spanien", "ot"),
+            (2006, "Griechenland", "ot"),
+            (2007, "Irak", "so"),
+            (2008, "Iran", "so"),
+            (2009, "Afghanistan", "so"),
+            (2010, "Nigeria", "st"),
+        ]
         for country in countries:
             AddMethods.add_country(country)
 
         rlcs = [
             (
                 3001,
-                'Hamburg Bucerius Law School',
+                "Hamburg Bucerius Law School",
                 True,  # visible
                 True,  # part of umbrella
-                'beraten auch zu Familienrecht, Sozialrecht und Arbeitsrecht'
+                "beraten auch zu Familienrecht, Sozialrecht und Arbeitsrecht",
             ),
             (
                 3002,
-                'Hamburg Universität',
+                "Hamburg Universität",
                 True,
                 True,
-                'bieten Anhörungsvorbereitung, Studierende können zum Teil Farsi und Arabisch'
+                "bieten Anhörungsvorbereitung, Studierende können zum Teil Farsi und Arabisch",
             ),
-            (
-                3003,
-                'München',
-                False,
-                True,
-                'gut organisiertes Ausbildungsprogramm'
-            )
+            (3003, "München", False, True, "gut organisiertes Ausbildungsprogramm"),
         ]
         for rlc in rlcs:
             AddMethods.add_rlc(rlc)
@@ -264,334 +533,334 @@ class Fixtures:
         users = [
             (
                 4001,
-                'ludwig.maximilian@outlook.de',
-                'Ludwig Maximilian',
+                "ludwig.maximilian@outlook.de",
+                "Ludwig Maximilian",
                 (1985, 5, 12),  # birthday
-                '01732421123',
-                'Maximilianstrasse 12',
-                'München',
-                '80539',
-                3003  # rlc_member
+                "01732421123",
+                "Maximilianstrasse 12",
+                "München",
+                "80539",
+                3003,  # rlc_member
             ),
             (
                 4002,
-                'xxALIxxstone@hotmail.com',
-                'Albert Einstein',
+                "xxALIxxstone@hotmail.com",
+                "Albert Einstein",
                 (1879, 3, 14),
-                '01763425656',
-                'Blumengasse 23',
-                'Hamburg',
-                '83452',
-                3001
+                "01763425656",
+                "Blumengasse 23",
+                "Hamburg",
+                "83452",
+                3001,
             ),
             (
                 4003,
-                'mariecurry53@hotmail.com',
-                'Marie Curie',
+                "mariecurry53@hotmail.com",
+                "Marie Curie",
                 (1867, 11, 7),
-                '0174565656',
-                'Jungfernstieg 2',
-                'Hamburg',
-                '34264',
-                3001
+                "0174565656",
+                "Jungfernstieg 2",
+                "Hamburg",
+                "34264",
+                3001,
             ),
             (
                 4004,
-                'max.mustermann@gmail.com',
-                'Maximilian Gustav Mustermann',
+                "max.mustermann@gmail.com",
+                "Maximilian Gustav Mustermann",
                 (1997, 10, 23),
-                '0176349756',
-                'Schlossallee 100',
-                'Grünwald',
-                '82031',
-                3003
+                "0176349756",
+                "Schlossallee 100",
+                "Grünwald",
+                "82031",
+                3003,
             ),
             (
                 4005,
-                'petergustav@gmail.com',
-                'Peter Klaus Gustav von Guttenberg',
+                "petergustav@gmail.com",
+                "Peter Klaus Gustav von Guttenberg",
                 (1995, 3, 11),
-                '01763423732',
-                'Leopoldstrasse 31',
-                'Muenchen',
-                '80238',
-                3003
+                "01763423732",
+                "Leopoldstrasse 31",
+                "Muenchen",
+                "80238",
+                3003,
             ),
             (
                 4006,
-                'gabi92@hotmail.com',
-                'Gabriele Schwarz',
+                "gabi92@hotmail.com",
+                "Gabriele Schwarz",
                 (1998, 12, 10),
-                '0175647332',
-                'Kartoffelweg 12',
-                'Muenchen',
-                '80238',
-                3002
+                "0175647332",
+                "Kartoffelweg 12",
+                "Muenchen",
+                "80238",
+                3002,
             ),
             (
                 4007,
-                'rudi343@gmail.com',
-                'Rudolf Mayer',
+                "rudi343@gmail.com",
+                "Rudolf Mayer",
                 (1996, 5, 23),
-                '01534423732',
-                'Barerstrasse 3',
-                'Muenchen',
-                '80238',
-                3002
+                "01534423732",
+                "Barerstrasse 3",
+                "Muenchen",
+                "80238",
+                3002,
             ),
             (
                 4008,
-                'lea.g@gmx.com',
-                'Lea Glas',
+                "lea.g@gmx.com",
+                "Lea Glas",
                 (1985, 7, 11),
-                '01763222732',
-                'Argentinische Allee 34',
-                'Hamburg',
-                '34264',
-                3003
+                "01763222732",
+                "Argentinische Allee 34",
+                "Hamburg",
+                "34264",
+                3003,
             ),
             (
                 4009,
-                'butterkeks@gmail.com',
-                'Bettina Rupprecht',
+                "butterkeks@gmail.com",
+                "Bettina Rupprecht",
                 (1995, 10, 11),
-                '01765673732',
-                'Ordensmeisterstrasse 56',
-                'Hamburg',
-                '34264',
-                3001
+                "01765673732",
+                "Ordensmeisterstrasse 56",
+                "Hamburg",
+                "34264",
+                3001,
             ),
             (
                 4010,
-                'willi.B@web.de',
-                'Willi Birne',
+                "willi.B@web.de",
+                "Willi Birne",
                 (1997, 6, 15),
-                '01763425555',
-                'Grunewaldstrasse 45',
-                'Hamburg',
-                '34264',
-                3001
+                "01763425555",
+                "Grunewaldstrasse 45",
+                "Hamburg",
+                "34264",
+                3001,
             ),
             (
                 4011,
-                'pippi.langstrumpf@gmail.com',
-                'Pippi Langstumpf',
+                "pippi.langstrumpf@gmail.com",
+                "Pippi Langstumpf",
                 (1981, 7, 22),
-                '01766767732',
-                'Muehlenstraße 12',
-                'Muenchen',
-                '80238',
-                3002
+                "01766767732",
+                "Muehlenstraße 12",
+                "Muenchen",
+                "80238",
+                3002,
             ),
             (
                 4012,
-                'Ludwig.S@gmail.com',
-                'Ludwig Stockmann',
+                "Ludwig.S@gmail.com",
+                "Ludwig Stockmann",
                 (1999, 6, 6),
-                '01763433332',
-                'Bernauerstrasse 34',
-                'Muenchen',
-                '80238',
-                3002
+                "01763433332",
+                "Bernauerstrasse 34",
+                "Muenchen",
+                "80238",
+                3002,
             ),
             (
                 4013,
-                'tick.d@gmx.com',
-                'Tick Duck',
+                "tick.d@gmx.com",
+                "Tick Duck",
                 (1986, 9, 13),
-                '01459275903',
-                'Herzbergstrasse 25',
-                'Hamburg',
-                '34264',
-                3003
+                "01459275903",
+                "Herzbergstrasse 25",
+                "Hamburg",
+                "34264",
+                3003,
             ),
             (
                 4014,
-                'trick.d@gmx.com',
-                'Trick Duck',
+                "trick.d@gmx.com",
+                "Trick Duck",
                 (1987, 5, 15),
-                '01763463458',
-                'Schönhauser Allee 45',
-                'Hamburg',
-                '34264',
-                3003
+                "01763463458",
+                "Schönhauser Allee 45",
+                "Hamburg",
+                "34264",
+                3003,
             ),
             (
                 4015,
-                'track.d@gmx.com',
-                'Track Duck',
+                "track.d@gmx.com",
+                "Track Duck",
                 (1988, 7, 23),
-                '01763423732',
-                'Holzhauser Strasse 56',
-                'Hamburg',
-                '34264',
-                3003
+                "01763423732",
+                "Holzhauser Strasse 56",
+                "Hamburg",
+                "34264",
+                3003,
             ),
             (
                 4016,
-                'Siva.F@gmx.com',
-                'Siva Franz',
+                "Siva.F@gmx.com",
+                "Siva Franz",
                 (1995, 5, 15),
-                '01763445892',
-                'Nollendorfstrasse 37',
-                'Muenchen',
-                '80238',
-                3002
+                "01763445892",
+                "Nollendorfstrasse 37",
+                "Muenchen",
+                "80238",
+                3002,
             ),
             (
                 4017,
-                'Luise.K@hotmail.com',
-                'Luise Kieselbach',
+                "Luise.K@hotmail.com",
+                "Luise Kieselbach",
                 (1997, 8, 15),
-                '01456423732',
-                'Winterfeldstrasse 3',
-                'Muenchen',
-                '80238',
-                3002
+                "01456423732",
+                "Winterfeldstrasse 3",
+                "Muenchen",
+                "80238",
+                3002,
             ),
             (
                 4018,
-                'Linda.Ku@outlook.com',
-                'Linda Kurz',
+                "Linda.Ku@outlook.com",
+                "Linda Kurz",
                 (1981, 11, 11),
-                '01763424962',
-                'Goethestrasse 52',
-                'Muenchen',
-                '80238',
-                3002
+                "01763424962",
+                "Goethestrasse 52",
+                "Muenchen",
+                "80238",
+                3002,
             ),
             (
                 4019,
-                'Hans.H@outlook.com',
-                'Hans Helfer',
+                "Hans.H@outlook.com",
+                "Hans Helfer",
                 (1995, 12, 11),
-                '01276423732',
-                'Pestalozzistrasse 72',
-                'Muenchen',
-                '80238',
-                3002
+                "01276423732",
+                "Pestalozzistrasse 72",
+                "Muenchen",
+                "80238",
+                3002,
             ),
             (
                 4020,
-                'Lucas.p@outlook.com',
-                'Lucas Peeter',
+                "Lucas.p@outlook.com",
+                "Lucas Peeter",
                 (1997, 2, 10),
-                '01763434232',
-                'Röntgenstrasse 75',
-                'Muenchen',
-                '80238',
-                3002
+                "01763434232",
+                "Röntgenstrasse 75",
+                "Muenchen",
+                "80238",
+                3002,
             ),
             (
                 4021,
-                'Gabriel.P@gmail.com',
-                'Gabriel Pfeifer',
+                "Gabriel.P@gmail.com",
+                "Gabriel Pfeifer",
                 (1998, 10, 11),
-                '01763462872',
-                'Schlüterstrasse 45',
-                'Hamburg',
-                '34264',
-                3001
+                "01763462872",
+                "Schlüterstrasse 45",
+                "Hamburg",
+                "34264",
+                3001,
             ),
             (
                 4022,
-                'Herbert.Graf@gmx.com',
-                'Herbert Graf',
+                "Herbert.Graf@gmx.com",
+                "Herbert Graf",
                 (1994, 4, 17),
-                '01265423732',
-                'Fraunhoferstrasse 62',
-                'Hamburg',
-                '34264',
-                3001
+                "01265423732",
+                "Fraunhoferstrasse 62",
+                "Hamburg",
+                "34264",
+                3001,
             ),
             (
                 4023,
-                'ali.cia@gmx.com',
-                'Alicia Dreier',
+                "ali.cia@gmx.com",
+                "Alicia Dreier",
                 (1995, 12, 20),
-                '01760086732',
-                'EInsteinstrasse 49',
-                'Hamburg',
-                '34264',
-                3001
+                "01760086732",
+                "EInsteinstrasse 49",
+                "Hamburg",
+                "34264",
+                3001,
             ),
             (
                 4024,
-                'Petunia@gmx.com',
-                'Petunia Schreiber',
+                "Petunia@gmx.com",
+                "Petunia Schreiber",
                 (1995, 8, 15),
-                '01768865732',
-                'Arcostrasse 63',
-                'Hamburg',
-                '34264',
-                3001
+                "01768865732",
+                "Arcostrasse 63",
+                "Hamburg",
+                "34264",
+                3001,
             ),
             (
                 4025,
-                'Horti23@gmx.com',
-                'Hortensia Lutz',
+                "Horti23@gmx.com",
+                "Hortensia Lutz",
                 (1998, 1, 15),
-                '01729963732',
-                'Minnewitstrasse 66',
-                'Hamburg',
-                '34264',
-                3001
+                "01729963732",
+                "Minnewitstrasse 66",
+                "Hamburg",
+                "34264",
+                3001,
             ),
             (
                 4026,
-                'Thomas.d@gmail.com',
-                'Thomas Dach',
+                "Thomas.d@gmail.com",
+                "Thomas Dach",
                 (1989, 12, 19),
-                '01755673732',
-                'Pariser Strasse 37',
-                'Muenchen',
-                '80238',
-                3002
+                "01755673732",
+                "Pariser Strasse 37",
+                "Muenchen",
+                "80238",
+                3002,
             ),
             (
                 4027,
-                'Albert.g@outlook.com',
-                'Albert Greif',
+                "Albert.g@outlook.com",
+                "Albert Greif",
                 (1995, 4, 19),
-                '01762277732',
-                'Güntzelstrasse 34',
-                'Muenchen',
-                '80238',
-                3002
+                "01762277732",
+                "Güntzelstrasse 34",
+                "Muenchen",
+                "80238",
+                3002,
             ),
             (
                 4028,
-                'Tina.Z78@gmail.com',
-                'Tina Ziegenbart',
+                "Tina.Z78@gmail.com",
+                "Tina Ziegenbart",
                 (1996, 6, 27),
-                '01733983732',
-                'Haberlstrasse 78',
-                'Muenchen',
-                '80238',
-                3002
+                "01733983732",
+                "Haberlstrasse 78",
+                "Muenchen",
+                "80238",
+                3002,
             ),
             (
                 4029,
-                'Anna.i@outlook.com',
-                'Anna Igel',
+                "Anna.i@outlook.com",
+                "Anna Igel",
                 (1998, 2, 13),
-                '01763433332',
-                'Grainauer Strasse 56',
-                'Muenchen',
-                '80238',
-                3002
+                "01763433332",
+                "Grainauer Strasse 56",
+                "Muenchen",
+                "80238",
+                3002,
             ),
             (
                 4030,
-                'Karl.M@gmail.com',
-                'Karl Marx',
+                "Karl.M@gmail.com",
+                "Karl Marx",
                 (2000, 9, 23),
-                '01752964732',
-                'Eisenacher Strasse 98',
-                'Muenchen',
-                '80238',
-                3002
-            )
+                "01752964732",
+                "Eisenacher Strasse 98",
+                "Muenchen",
+                "80238",
+                3002,
+            ),
         ]
         for user in users:
             AddMethods.add_user(user)
@@ -601,401 +870,401 @@ class Fixtures:
                 5001,  # id
                 (2018, 7, 12),  # created_on
                 (2018, 8, 28, 21, 3, 0, 0),  # last_edited
-                'Bibi Aisha',  # name
-                'auf Flucht von Ehemann getrennt worden',  # note
-                '01793456542',  # phone number
+                "Bibi Aisha",  # name
+                "auf Flucht von Ehemann getrennt worden",  # note
+                "01793456542",  # phone number
                 (1990, 5, 1),  # birthday
-                2002  # origin country id
+                2002,  # origin country id
             ),
             (
                 5002,
                 (2017, 3, 17),
                 (2017, 12, 24, 12, 2, 0, 0),
-                'Mustafa Kubi',
-                'möchte eine Ausbildung beginnen',
-                '01456378963',
+                "Mustafa Kubi",
+                "möchte eine Ausbildung beginnen",
+                "01456378963",
                 (1998, 12, 3),
-                2002
+                2002,
             ),
             (
                 5003,
                 (2018, 1, 1),
                 (2018, 3, 3, 14, 5, 0, 0),
-                'Ali Baba',
-                'fragt wie er seine deutsche Freundin heiraten kann',
-                '01345626534',
+                "Ali Baba",
+                "fragt wie er seine deutsche Freundin heiraten kann",
+                "01345626534",
                 (1985, 6, 27),
-                2002
+                2002,
             ),
             (
                 5004,
                 (2018, 8, 1),
                 (2018, 8, 2, 16, 3, 0, 0),
-                'Kamila Iman',
-                'möchte zu ihrer Schwester in eine andere Aufnahmeeinrichtung ziehen',
-                '01562736778',
+                "Kamila Iman",
+                "möchte zu ihrer Schwester in eine andere Aufnahmeeinrichtung ziehen",
+                "01562736778",
                 (1956, 4, 3),
-                2002
+                2002,
             ),
             (
                 5005,
                 (2017, 9, 10),
                 (2017, 10, 2, 15, 3, 0, 0),
-                'Junis Haddad',
-                'Informationen zum Asylverfahren',
-                '013345736778',
+                "Junis Haddad",
+                "Informationen zum Asylverfahren",
+                "013345736778",
                 (1998, 6, 2),
-                2006
+                2006,
             ),
             (
                 5006,
                 (2017, 9, 10),
                 (2018, 9, 2, 16, 3, 0, 0),
-                'Nael Mousa',
-                'Informationen zum Asylverfahren',
-                '01444436778',
+                "Nael Mousa",
+                "Informationen zum Asylverfahren",
+                "01444436778",
                 (1997, 6, 4),
-                2006
+                2006,
             ),
             (
                 5007,
                 (2017, 9, 10),
                 (2018, 1, 12, 16, 3, 0, 0),
-                'Amir Hamdan',
-                'Informationen zum Asylverfahren',
-                '01457636778',
+                "Amir Hamdan",
+                "Informationen zum Asylverfahren",
+                "01457636778",
                 (1996, 6, 8),
-                2006
+                2006,
             ),
             (
                 5008,
                 (2017, 9, 10),
                 (2018, 1, 2, 16, 3, 0, 0),
-                'Amar Yousef',
-                'Informationen zum Asylverfahren',
-                '01566546778',
+                "Amar Yousef",
+                "Informationen zum Asylverfahren",
+                "01566546778",
                 (1995, 5, 10),
-                2006
+                2006,
             ),
             (
                 5009,
                 (2017, 9, 10),
                 (2017, 12, 2, 16, 3, 0, 0),
-                'Tarek Habib',
-                'Informationen zum Asylverfahren',
-                '013564736778',
+                "Tarek Habib",
+                "Informationen zum Asylverfahren",
+                "013564736778",
                 (1994, 5, 12),
-                2006
+                2006,
             ),
             (
                 5010,
                 (2017, 9, 10),
                 (2018, 10, 2, 16, 3, 0, 0),
-                'Kaya Yousif',
-                'Informationen zum Asylverfahren',
-                '01564586778',
+                "Kaya Yousif",
+                "Informationen zum Asylverfahren",
+                "01564586778",
                 (1993, 4, 14),
-                2006
+                2006,
             ),
             (
                 5011,
                 (2018, 4, 20),
                 (2018, 5, 12, 16, 3, 0, 0),
-                'Ilias Essa',
-                'Familiennachzug',
-                '01546536778',
+                "Ilias Essa",
+                "Familiennachzug",
+                "01546536778",
                 (1992, 3, 16),
-                2007
+                2007,
             ),
             (
                 5012,
                 (2018, 4, 20),
                 (2018, 5, 13, 16, 3, 0, 0),
-                'Yasin Naffar',
-                'Familiennachzug',
-                '015345676778',
+                "Yasin Naffar",
+                "Familiennachzug",
+                "015345676778",
                 (1991, 2, 18),
-                2008
+                2008,
             ),
             (
                 5013,
                 (2018, 4, 20),
                 (2018, 5, 12, 16, 3, 0, 0),
-                'Mara Shaheen',
-                'Familiennachzug',
-                '015627334575',
+                "Mara Shaheen",
+                "Familiennachzug",
+                "015627334575",
                 (1990, 1, 20),
-                2007
+                2007,
             ),
             (
                 5014,
                 (2018, 4, 20),
                 (2018, 5, 12, 16, 3, 0, 0),
-                'Aleyna Alam',
-                'Familiennachzug',
-                '01865736778',
+                "Aleyna Alam",
+                "Familiennachzug",
+                "01865736778",
                 (1989, 11, 22),
-                2008
+                2008,
             ),
             (
                 5015,
                 (2018, 4, 20),
                 (2018, 5, 2, 16, 3, 0, 0),
-                'Yara Mansoor',
-                'Familiennachzug',
-                '01566666778',
+                "Yara Mansoor",
+                "Familiennachzug",
+                "01566666778",
                 (1988, 11, 3),
-                2007
+                2007,
             ),
             (
                 5016,
                 (2018, 4, 20),
                 (2018, 10, 22, 16, 3, 0, 0),
-                'Mayla Sulayman',
-                'Familiennachzug',
-                '01222736778',
+                "Mayla Sulayman",
+                "Familiennachzug",
+                "01222736778",
                 (1985, 12, 5),
-                2008
+                2008,
             ),
             (
                 5017,
                 (2018, 4, 20),
                 (2018, 8, 23, 16, 3, 0, 0),
-                'Leyla Amin',
-                'drohende Dublin-Abschiebung',
-                '01555536778',
+                "Leyla Amin",
+                "drohende Dublin-Abschiebung",
+                "01555536778",
                 (1987, 12, 7),
-                2007
+                2007,
             ),
             (
                 5018,
                 (2018, 4, 20),
                 (2018, 8, 22, 17, 3, 0, 0),
-                'Amira Mustafa',
-                'drohende Dublin-Abschiebung',
-                '01563336778',
+                "Amira Mustafa",
+                "drohende Dublin-Abschiebung",
+                "01563336778",
                 (1985, 1, 9),
-                2008
+                2008,
             ),
             (
                 5019,
                 (2018, 4, 20),
                 (2018, 9, 2, 16, 3, 0, 0),
-                'Kiano Isa',
-                'drohende Dublin-Abschiebung',
-                '01564566778',
+                "Kiano Isa",
+                "drohende Dublin-Abschiebung",
+                "01564566778",
                 (1984, 1, 11),
-                2007
+                2007,
             ),
             (
                 5020,
                 (2018, 4, 20),
                 (2018, 8, 12, 17, 3, 0, 0),
-                'Rafiki Omer',
-                'drohende Dublin-Abschiebung',
-                '01564657878',
+                "Rafiki Omer",
+                "drohende Dublin-Abschiebung",
+                "01564657878",
                 (1983, 1, 13),
-                2008
+                2008,
             ),
             (
                 5021,
                 (2018, 12, 30),
                 (2018, 12, 30, 12, 3, 0, 0),
-                'Taio Aziz',
-                'drohende Dublin-Abschiebung',
-                '0154547688',
+                "Taio Aziz",
+                "drohende Dublin-Abschiebung",
+                "0154547688",
                 (1982, 3, 30),
-                2009
+                2009,
             ),
             (
                 5022,
                 (2018, 12, 30),
                 (2018, 12, 30, 16, 3, 0, 0),
-                'Nio Salih',
-                'drohende Dublin-Abschiebung',
-                '01564536778',
+                "Nio Salih",
+                "drohende Dublin-Abschiebung",
+                "01564536778",
                 (1981, 3, 14),
-                2009
+                2009,
             ),
             (
                 5023,
                 (2018, 12, 30),
                 (2018, 12, 30, 13, 4, 0, 0),
-                'Chi Salah',
-                'drohende Dublin-Abschiebung',
-                '01565656778',
+                "Chi Salah",
+                "drohende Dublin-Abschiebung",
+                "01565656778",
                 (1980, 3, 28),
-                2009
+                2009,
             ),
             (
                 5024,
                 (2018, 12, 30),
                 (2018, 12, 30, 18, 3, 0, 0),
-                'Zola Hamid',
-                'drohende Dublin-Abschiebung',
-                '01232336778',
+                "Zola Hamid",
+                "drohende Dublin-Abschiebung",
+                "01232336778",
                 (1978, 3, 26),
-                2009
+                2009,
             ),
             (
                 5025,
                 (2018, 12, 30),
                 (2018, 12, 30, 16, 3, 0, 0),
-                'Malaika Hussain',
-                'möchte heiraten',
-                '01562277678',
+                "Malaika Hussain",
+                "möchte heiraten",
+                "01562277678",
                 (1976, 4, 24),
-                2009
+                2009,
             ),
             (
                 5026,
                 (2018, 12, 30),
                 (2018, 12, 30, 17, 5, 0, 0),
-                'Jala Hana',
-                'möchte heiraten',
-                '01388736778',
+                "Jala Hana",
+                "möchte heiraten",
+                "01388736778",
                 (1975, 4, 23),
-                2010
+                2010,
             ),
             (
                 5027,
                 (2018, 12, 30),
                 (2018, 12, 30, 16, 3, 0, 0),
-                'Imani Naser',
-                'möchte heiraten',
-                '01367836778',
+                "Imani Naser",
+                "möchte heiraten",
+                "01367836778",
                 (1974, 6, 21),
-                2010
+                2010,
             ),
             (
                 5028,
                 (2018, 12, 30),
                 (2018, 12, 30, 18, 3, 0, 0),
-                'Ashanti Abba',
-                'möchte heiraten',
-                '01564466678',
+                "Ashanti Abba",
+                "möchte heiraten",
+                "01564466678",
                 (1972, 6, 19),
-                2010
+                2010,
             ),
             (
                 5029,
                 (2018, 12, 30),
                 (2018, 12, 30, 17, 3, 0, 0),
-                'Saba Ibraheem',
-                'möchte heiraten',
-                '01534636778',
+                "Saba Ibraheem",
+                "möchte heiraten",
+                "01534636778",
                 (1970, 6, 17),
-                2010
+                2010,
             ),
             (
                 5030,
                 (2018, 2, 12),
                 (2018, 12, 2, 12, 3, 0, 0),
-                'Baschar Abneh',
-                'möchte heiraten',
-                '01562778978',
+                "Baschar Abneh",
+                "möchte heiraten",
+                "01562778978",
                 (1961, 6, 15),
-                2010
+                2010,
             ),
             (
                 5031,
                 (2018, 2, 12),
                 (2018, 8, 12, 13, 3, 0, 0),
-                'Djamal Abdulah',
-                'möchte Unterkunft wechseln',
-                '01534536778',
+                "Djamal Abdulah",
+                "möchte Unterkunft wechseln",
+                "01534536778",
                 (1960, 7, 13),
-                2003
+                2003,
             ),
             (
                 5032,
                 (2018, 2, 12),
                 (2018, 8, 5, 16, 3, 0, 0),
-                'Firas Abdel',
-                'möchte Unterkunft wechseln',
-                '01568564778',
+                "Firas Abdel",
+                "möchte Unterkunft wechseln",
+                "01568564778",
                 (1959, 7, 11),
-                2003
+                2003,
             ),
             (
                 5033,
                 (2018, 2, 12),
                 (2018, 4, 2, 12, 3, 0, 0),
-                'Jalil Karim',
-                'möchte Unterkunft wechseln',
-                '01864636778',
+                "Jalil Karim",
+                "möchte Unterkunft wechseln",
+                "01864636778",
                 (1958, 8, 9),
-                2003
+                2003,
             ),
             (
                 5034,
                 (2018, 2, 12),
                 (2018, 3, 8, 12, 3, 0, 0),
-                'Najiim Ali',
-                'Namensberichtigung',
-                '01562456778',
+                "Najiim Ali",
+                "Namensberichtigung",
+                "01562456778",
                 (1957, 8, 7),
-                2003
+                2003,
             ),
             (
                 5035,
                 (2018, 2, 12),
                 (2018, 3, 2, 15, 3, 0, 0),
-                'Enis Sam',
-                'Namensberichtigung',
-                '01222736778',
+                "Enis Sam",
+                "Namensberichtigung",
+                "01222736778",
                 (1956, 9, 12),
-                2003
+                2003,
             ),
             (
                 5036,
                 (2018, 11, 13),
                 (2018, 11, 13, 18, 3, 0, 0),
-                'Gibran Hadad',
-                'Namensberichtigung',
-                '01526478978',
+                "Gibran Hadad",
+                "Namensberichtigung",
+                "01526478978",
                 (1955, 9, 14),
-                2004
+                2004,
             ),
             (
                 5037,
                 (2018, 11, 13),
                 (2018, 11, 15, 16, 3, 0, 0),
-                'Esat Hasan',
-                'Fragen zu Ausbildungsduldung',
-                '01563333778',
+                "Esat Hasan",
+                "Fragen zu Ausbildungsduldung",
+                "01563333778",
                 (1954, 10, 16),
-                2004
+                2004,
             ),
             (
                 5038,
                 (2018, 11, 13),
                 (2018, 11, 14, 12, 2, 0, 0),
-                'Leron Rahman',
-                'Fragen zu Ausbildungsduldung',
-                '01563487778',
+                "Leron Rahman",
+                "Fragen zu Ausbildungsduldung",
+                "01563487778",
                 (1953, 10, 18),
-                2004
+                2004,
             ),
             (
                 5039,
                 (2018, 11, 13),
                 (2018, 12, 2, 7, 13, 0, 0),
-                'Saad Ahmed',
-                'Fragen zu Ausbildungsduldung',
-                '01562723678',
+                "Saad Ahmed",
+                "Fragen zu Ausbildungsduldung",
+                "01562723678",
                 (1952, 11, 20),
-                2004
+                2004,
             ),
             (
                 5040,
                 (2018, 11, 13),
                 (2018, 11, 13, 13, 3, 0, 0),
-                'Zarif Rashid',
-                'Fragen zu Ausbildungsduldung',
-                '01533336778',
+                "Zarif Rashid",
+                "Fragen zu Ausbildungsduldung",
+                "01533336778",
                 (1951, 12, 22),
-                2004
+                2004,
             ),
         ]
         for client in clients:
@@ -1011,11 +1280,12 @@ class Fixtures:
                 5001,  # client
                 (2018, 7, 10),  # first contact
                 (2018, 8, 14, 17, 30, 0, 0),  # last contact
-                'AZ-123/18',  # record token
-                'cl',  # status, cl wa op
+                "AZ-123/18",  # record token
+                "cl",  # status, cl wa op
                 [4001],  # working on
-                [1001, 1002]  # tags
-            ), (
+                [1001, 1002],  # tags
+            ),
+            (
                 7002,
                 4004,
                 3003,
@@ -1024,11 +1294,12 @@ class Fixtures:
                 5002,
                 (2018, 6, 20),
                 (2018, 7, 10, 17, 30, 0, 0),
-                'AZ-124/18',
-                'op',
+                "AZ-124/18",
+                "op",
                 [4004, 4001],
-                [1003, 1004]
-            ), (
+                [1003, 1004],
+            ),
+            (
                 7003,
                 4005,
                 3003,
@@ -1037,11 +1308,12 @@ class Fixtures:
                 5003,
                 (2018, 8, 22),
                 (2018, 8, 22, 18, 30, 0, 0),
-                'AZ-125/18',
-                'wa',
+                "AZ-125/18",
+                "wa",
                 [4003, 4001],
-                [1001, 1004]
-            ), (
+                [1001, 1004],
+            ),
+            (
                 7004,
                 4001,
                 3003,
@@ -1050,11 +1322,12 @@ class Fixtures:
                 5004,
                 (2018, 3, 9),
                 (2018, 3, 24, 15, 54, 0, 0),
-                'AZ-126/18',
-                'cl',
+                "AZ-126/18",
+                "cl",
                 [4001, 4004],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7005,
                 4001,
                 3003,
@@ -1063,11 +1336,12 @@ class Fixtures:
                 5005,
                 (2017, 9, 10),
                 (2017, 10, 2, 15, 3, 0, 0),
-                'AZ-127/18',
-                'cl',
+                "AZ-127/18",
+                "cl",
                 [4001, 4004],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7006,
                 4002,
                 3001,
@@ -1076,11 +1350,12 @@ class Fixtures:
                 5006,
                 (2017, 9, 10),
                 (2018, 9, 2, 16, 3, 0, 0),
-                'AZ-128/18',
-                'wa',
+                "AZ-128/18",
+                "wa",
                 [4002, 4004],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7007,
                 4003,
                 3001,
@@ -1089,11 +1364,12 @@ class Fixtures:
                 5007,
                 (2017, 9, 10),
                 (2018, 1, 12, 16, 3, 0, 0),
-                'AZ-129/18',
-                'op',
+                "AZ-129/18",
+                "op",
                 [4003, 4004],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7008,
                 4004,
                 3003,
@@ -1102,11 +1378,12 @@ class Fixtures:
                 5008,
                 (2017, 9, 10),
                 (2018, 1, 2, 16, 3, 0, 0),
-                'AZ-130/18',
-                'cl',
+                "AZ-130/18",
+                "cl",
                 [4005, 4004],
-                [1004, 1001]
-            ), (
+                [1004, 1001],
+            ),
+            (
                 7009,
                 4005,
                 3003,
@@ -1115,11 +1392,12 @@ class Fixtures:
                 5009,
                 (2017, 9, 10),
                 (2018, 12, 2, 16, 3, 0, 0),
-                'AZ-131/18',
-                'wa',
+                "AZ-131/18",
+                "wa",
                 [4005, 4004],
-                [1005, 1003]
-            ), (
+                [1005, 1003],
+            ),
+            (
                 7010,
                 4006,
                 3002,
@@ -1128,11 +1406,12 @@ class Fixtures:
                 5010,
                 (2017, 9, 10),
                 (2018, 10, 2, 16, 3, 0, 0),
-                'AZ-132/18',
-                'op',
+                "AZ-132/18",
+                "op",
                 [4006, 4004],
-                [1002, 1001]
-            ), (
+                [1002, 1001],
+            ),
+            (
                 7011,
                 4007,
                 3002,
@@ -1141,11 +1420,12 @@ class Fixtures:
                 5011,
                 (2018, 4, 20),
                 (2018, 5, 12, 16, 3, 0, 0),
-                'AZ-133/18',
-                'cl',
+                "AZ-133/18",
+                "cl",
                 [4005, 4007],
-                [1005, 1004]
-            ), (
+                [1005, 1004],
+            ),
+            (
                 7012,
                 4008,
                 3003,
@@ -1154,11 +1434,12 @@ class Fixtures:
                 5012,
                 (2018, 4, 20),
                 (2018, 5, 13, 16, 3, 0, 0),
-                'AZ-134/18',
-                'cl',
+                "AZ-134/18",
+                "cl",
                 [4008, 4004],
-                [1003, 1001]
-            ), (
+                [1003, 1001],
+            ),
+            (
                 7013,
                 4008,
                 3003,
@@ -1167,11 +1448,12 @@ class Fixtures:
                 5013,
                 (2018, 4, 20),
                 (2018, 5, 12, 16, 3, 0, 0),
-                'AZ-135/18',
-                'wa',
+                "AZ-135/18",
+                "wa",
                 [4005, 4008],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7014,
                 4008,
                 3003,
@@ -1180,11 +1462,12 @@ class Fixtures:
                 5014,
                 (2018, 4, 20),
                 (2018, 5, 12, 16, 3, 0, 0),
-                'AZ-136/18',
-                'wa',
+                "AZ-136/18",
+                "wa",
                 [4008, 4004],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7015,
                 4009,
                 3001,
@@ -1193,11 +1476,12 @@ class Fixtures:
                 5015,
                 (2018, 4, 20),
                 (2018, 5, 2, 16, 3, 0, 0),
-                'AZ-137/18',
-                'cl',
+                "AZ-137/18",
+                "cl",
                 [4005, 4009],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7016,
                 4010,
                 3001,
@@ -1206,11 +1490,12 @@ class Fixtures:
                 5016,
                 (2018, 4, 20),
                 (2018, 10, 22, 16, 3, 0, 0),
-                'AZ-138/18',
-                'cl',
+                "AZ-138/18",
+                "cl",
                 [4005, 4010],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7017,
                 4011,
                 3002,
@@ -1219,11 +1504,12 @@ class Fixtures:
                 5017,
                 (2018, 4, 20),
                 (2018, 8, 23, 16, 3, 0, 0),
-                'AZ-139/18',
-                'cl',
+                "AZ-139/18",
+                "cl",
                 [4011, 4004],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7018,
                 4011,
                 3002,
@@ -1232,11 +1518,12 @@ class Fixtures:
                 5018,
                 (2018, 4, 20),
                 (2018, 8, 22, 17, 3, 0, 0),
-                'AZ-140/18',
-                'cl',
+                "AZ-140/18",
+                "cl",
                 [4011, 4004],
-                [1005, 1001, 1003]
-            ), (
+                [1005, 1001, 1003],
+            ),
+            (
                 7019,
                 4012,
                 3002,
@@ -1245,11 +1532,12 @@ class Fixtures:
                 5019,
                 (2018, 4, 20),
                 (2018, 9, 2, 16, 3, 0, 0),
-                'AZ-141/18',
-                'cl',
+                "AZ-141/18",
+                "cl",
                 [4012, 4004],
-                [1005, 1003]
-            ), (
+                [1005, 1003],
+            ),
+            (
                 7020,
                 4012,
                 3002,
@@ -1258,11 +1546,12 @@ class Fixtures:
                 5020,
                 (2018, 4, 20),
                 (2018, 8, 12, 17, 3, 0, 0),
-                'AZ-142/18',
-                'wa',
+                "AZ-142/18",
+                "wa",
                 [4012, 4004],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7021,
                 4013,
                 3003,
@@ -1271,11 +1560,12 @@ class Fixtures:
                 5021,
                 (2018, 12, 30),
                 (2018, 12, 30, 12, 3, 0, 0),
-                'AZ-143/18',
-                'cl',
+                "AZ-143/18",
+                "cl",
                 [4013, 4004],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7022,
                 4014,
                 3003,
@@ -1284,11 +1574,12 @@ class Fixtures:
                 5022,
                 (2018, 12, 30),
                 (2018, 12, 30, 16, 3, 0, 0),
-                'AZ-144/18',
-                'cl',
+                "AZ-144/18",
+                "cl",
                 [4005, 4014],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7023,
                 4014,
                 3003,
@@ -1297,11 +1588,12 @@ class Fixtures:
                 5023,
                 (2018, 12, 30),
                 (2018, 12, 30, 13, 4, 0, 0),
-                'AZ-145/18',
-                'op',
+                "AZ-145/18",
+                "op",
                 [4014, 4004],
-                [1004, 1001]
-            ), (
+                [1004, 1001],
+            ),
+            (
                 7024,
                 4015,
                 3003,
@@ -1310,11 +1602,12 @@ class Fixtures:
                 5024,
                 (2018, 12, 30),
                 (2018, 12, 30, 18, 3, 0, 0),
-                'AZ-146/18',
-                'op',
+                "AZ-146/18",
+                "op",
                 [4005, 4015],
-                [1005, 1003]
-            ), (
+                [1005, 1003],
+            ),
+            (
                 7025,
                 4016,
                 3002,
@@ -1323,11 +1616,12 @@ class Fixtures:
                 5025,
                 (2018, 12, 30),
                 (2018, 12, 30, 16, 3, 0, 0),
-                'AZ-147/18',
-                'cl',
+                "AZ-147/18",
+                "cl",
                 [4016, 4004],
-                [1004, 1001]
-            ), (
+                [1004, 1001],
+            ),
+            (
                 7026,
                 4017,
                 3002,
@@ -1336,11 +1630,12 @@ class Fixtures:
                 5026,
                 (2018, 12, 30),
                 (2018, 12, 30, 17, 5, 0, 0),
-                'AZ-148/18',
-                'cl',
+                "AZ-148/18",
+                "cl",
                 [4005, 4017],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7027,
                 4018,
                 3002,
@@ -1349,11 +1644,12 @@ class Fixtures:
                 5027,
                 (2018, 12, 30),
                 (2018, 12, 30, 16, 3, 0, 0),
-                'AZ-149/18',
-                'wa',
+                "AZ-149/18",
+                "wa",
                 [4018, 4004],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7028,
                 4019,
                 3002,
@@ -1362,11 +1658,12 @@ class Fixtures:
                 5028,
                 (2018, 12, 30),
                 (2018, 12, 30, 18, 3, 0, 0),
-                'AZ-150/18',
-                'wa',
+                "AZ-150/18",
+                "wa",
                 [4005, 4019],
-                [1005, 1003]
-            ), (
+                [1005, 1003],
+            ),
+            (
                 7029,
                 4020,
                 3002,
@@ -1375,11 +1672,12 @@ class Fixtures:
                 5029,
                 (2018, 12, 30),
                 (2018, 12, 30, 17, 3, 0, 0),
-                'AZ-151/18',
-                'cl',
+                "AZ-151/18",
+                "cl",
                 [4020, 4004],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7030,
                 4021,
                 3001,
@@ -1388,11 +1686,12 @@ class Fixtures:
                 5030,
                 (2018, 2, 12),
                 (2018, 12, 2, 12, 3, 0, 0),
-                'AZ-152/18',
-                'cl',
+                "AZ-152/18",
+                "cl",
                 [4005, 4021],
-                [1004, 1001]
-            ), (
+                [1004, 1001],
+            ),
+            (
                 7031,
                 4022,
                 3001,
@@ -1401,11 +1700,12 @@ class Fixtures:
                 5031,
                 (2018, 2, 12),
                 (2018, 8, 12, 13, 3, 0, 0),
-                'AZ-153/18',
-                'cl',
+                "AZ-153/18",
+                "cl",
                 [4022, 4004],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7032,
                 4023,
                 3001,
@@ -1414,11 +1714,12 @@ class Fixtures:
                 5032,
                 (2018, 2, 12),
                 (2018, 8, 5, 16, 3, 0, 0),
-                'AZ-154/18',
-                'cl',
+                "AZ-154/18",
+                "cl",
                 [4005, 4023],
-                [1005, 1003]
-            ), (
+                [1005, 1003],
+            ),
+            (
                 7033,
                 4024,
                 3001,
@@ -1427,11 +1728,12 @@ class Fixtures:
                 5033,
                 (2018, 2, 12),
                 (2018, 4, 2, 12, 3, 0, 0),
-                'AZ-155/18',
-                'op',
+                "AZ-155/18",
+                "op",
                 [4024, 4004],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7034,
                 4025,
                 3001,
@@ -1440,11 +1742,12 @@ class Fixtures:
                 5034,
                 (2018, 2, 12),
                 (2018, 3, 8, 12, 3, 0, 0),
-                'AZ-156/18',
-                'op',
+                "AZ-156/18",
+                "op",
                 [4005, 4025],
-                [1004, 1001]
-            ), (
+                [1004, 1001],
+            ),
+            (
                 7035,
                 4026,
                 3002,
@@ -1453,11 +1756,12 @@ class Fixtures:
                 5035,
                 (2018, 2, 12),
                 (2018, 3, 2, 15, 3, 0, 0),
-                'AZ-157/18',
-                'cl',
+                "AZ-157/18",
+                "cl",
                 [4026, 4004],
-                [1005, 1002]
-            ), (
+                [1005, 1002],
+            ),
+            (
                 7036,
                 4027,
                 3002,
@@ -1466,11 +1770,12 @@ class Fixtures:
                 5036,
                 (2018, 11, 13),
                 (2018, 11, 13, 18, 3, 0, 0),
-                'AZ-158/18',
-                'cl',
+                "AZ-158/18",
+                "cl",
                 [4005, 4027],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7037,
                 4028,
                 3002,
@@ -1479,11 +1784,12 @@ class Fixtures:
                 5037,
                 (2018, 11, 13),
                 (2018, 11, 15, 16, 3, 0, 0),
-                'AZ-159/18',
-                'op',
+                "AZ-159/18",
+                "op",
                 [4005, 4028],
-                [1003, 1001]
-            ), (
+                [1003, 1001],
+            ),
+            (
                 7038,
                 4029,
                 3002,
@@ -1492,11 +1798,12 @@ class Fixtures:
                 5038,
                 (2018, 11, 13),
                 (2018, 11, 14, 12, 2, 0, 0),
-                'AZ-160/18',
-                'wa',
+                "AZ-160/18",
+                "wa",
                 [4029, 4004],
-                [1005, 1001]
-            ), (
+                [1005, 1001],
+            ),
+            (
                 7039,
                 4030,
                 3002,
@@ -1505,11 +1812,12 @@ class Fixtures:
                 5039,
                 (2018, 11, 13),
                 (2018, 12, 2, 7, 13, 0, 0),
-                'AZ-161/18',
-                'cl',
+                "AZ-161/18",
+                "cl",
                 [4030, 4004],
-                [1005, 1002]
-            ), (
+                [1005, 1002],
+            ),
+            (
                 7040,
                 4030,
                 3002,
@@ -1518,11 +1826,12 @@ class Fixtures:
                 5040,
                 (2018, 11, 13),
                 (2018, 11, 13, 13, 3, 0, 0),
-                'AZ-162/18',
-                'cl',
+                "AZ-162/18",
+                "cl",
                 [4030, 4004],
-                [1005, 1001]
-            )]
+                [1005, 1001],
+            ),
+        ]
         for record in records:
             AddMethods.add_record(record)
 
@@ -1531,26 +1840,12 @@ class Fixtures:
                 6001,
                 4002,  # id des Nutzers der die Gruppe erstellt hat
                 3001,  # id der RLC zu der die Gruppe gehoert
-                'RLC Hamburg Bucerius Law School members',  # name der Gruppe
+                "RLC Hamburg Bucerius Law School members",  # name der Gruppe
                 False,  # gibt an ob die Gruppe fuer alle sichtbar ist
-                [4002, 4003]  # IDs aller Nutzer die in der Gruppe sind
+                [4002, 4003],  # IDs aller Nutzer die in der Gruppe sind
             ),
-            (
-                6002,
-                4001,
-                3003,
-                'RLC München member',
-                False,
-                [4001, 4004]
-            ),
-            (
-                6003,
-                4001,
-                3003,
-                'RLC München board_member',
-                False,
-                [4001]
-            )
+            (6002, 4001, 3003, "RLC München member", False, [4001, 4004]),
+            (6003, 4001, 3003, "RLC München board_member", False, [4001]),
         ]
         for group in groups:
             AddMethods.add_group(group)
@@ -1570,16 +1865,32 @@ class AddMethods:
 		"""
 
         if user.__len__() == 4:
-            us = UserProfile(email=user[0], name=user[1], is_superuser=user[2], is_active=True)
+            us = UserProfile(
+                email=user[0], name=user[1], is_superuser=user[2], is_active=True
+            )
             us.set_password(user[3])
         elif user.__len__() == 5:
-            us = UserProfile(id=user[0], email=user[1], name=user[2], is_superuser=user[3], is_active=True)
+            us = UserProfile(
+                id=user[0],
+                email=user[1],
+                name=user[2],
+                is_superuser=user[3],
+                is_active=True,
+            )
             us.set_password(user[4])
         elif user.__len__() == 9:
-            us = UserProfile(id=user[0], email=user[1], name=user[2], phone_number=user[4],
-                             street=user[5], city=user[6], postal_code=user[7], rlc_id=user[8])
+            us = UserProfile(
+                id=user[0],
+                email=user[1],
+                name=user[2],
+                phone_number=user[4],
+                street=user[5],
+                city=user[6],
+                postal_code=user[7],
+                rlc_id=user[8],
+            )
             us.birthday = AddMethods.generate_date(user[3])
-            us.set_password('qwe123')
+            us.set_password("qwe123")
             us.save()
         else:
             raise AttributeError
@@ -1600,7 +1911,13 @@ class AddMethods:
         elif rlc.__len__() == 4:
             lc = Rlc(id=rlc[0], name=rlc[1], uni_tied=rlc[2], part_of_umbrella=rlc[3])
         elif rlc.__len__() == 5:
-            lc = Rlc(id=rlc[0], name=rlc[1], uni_tied=rlc[2], part_of_umbrella=rlc[3], note=rlc[4])
+            lc = Rlc(
+                id=rlc[0],
+                name=rlc[1],
+                uni_tied=rlc[2],
+                part_of_umbrella=rlc[3],
+                note=rlc[4],
+            )
         else:
             raise AttributeError
         lc.save()
@@ -1721,7 +2038,13 @@ class AddMethods:
         if group.__len__() == 2:
             g = Group(name=group[0], visible=group[1], from_rlc_id=rlc_id)
         elif group.__len__() == 5:
-            g = Group(id=group[0], creator_id=group[1], from_rlc_id=rlc_id, name=group[2], visible=group[3])
+            g = Group(
+                id=group[0],
+                creator_id=group[1],
+                from_rlc_id=rlc_id,
+                name=group[2],
+                visible=group[3],
+            )
             g.save()
             for user_id in group[5]:
                 g.group_members.add(UserProfile.objects.get(pk=user_id))
@@ -1734,7 +2057,13 @@ class AddMethods:
         if group.__len__() == 3:
             g = Group(name=group[0], visible=group[1], from_rlc_id=group[2])
         elif group.__len__() == 6:
-            g = Group(id=group[0], creator_id=group[1], from_rlc_id=group[2], name=group[3], visible=group[4])
+            g = Group(
+                id=group[0],
+                creator_id=group[1],
+                from_rlc_id=group[2],
+                name=group[3],
+                visible=group[4],
+            )
             g.save()
             for user_id in group[5]:
                 g.group_members.add(UserProfile.objects.get(pk=user_id))
@@ -1745,8 +2074,13 @@ class AddMethods:
     @staticmethod
     def add_client(client):
         if client.__len__() == 8:
-            cl = Client(id=client[0], name=client[3], note=client[4], phone_number=client[5],
-                        origin_country_id=client[7])
+            cl = Client(
+                id=client[0],
+                name=client[3],
+                note=client[4],
+                phone_number=client[5],
+                origin_country_id=client[7],
+            )
             cl.created_on = AddMethods.generate_date(client[1])
             cl.last_edited = AddMethods.generate_datetime(client[2])
             cl.birthday = AddMethods.generate_date(client[6])
@@ -1755,8 +2089,14 @@ class AddMethods:
     @staticmethod
     def add_record(record):
         if record.__len__() == 12:
-            rc = Record(id=record[0], creator_id=record[1], from_rlc_id=record[2], client_id=record[5],
-                        record_token=record[8], state=record[9])
+            rc = Record(
+                id=record[0],
+                creator_id=record[1],
+                from_rlc_id=record[2],
+                client_id=record[5],
+                record_token=record[8],
+                state=record[9],
+            )
             rc.created_on = AddMethods.generate_date(record[3])
             rc.last_edited = AddMethods.generate_datetime(record[4])
             rc.first_contact_date = AddMethods.generate_date(record[6])
@@ -1771,10 +2111,17 @@ class AddMethods:
     @staticmethod
     def generate_date(information):
         return datetime(information[0], information[1], information[2]).replace(
-            tzinfo=pytz.timezone(settings.TIME_ZONE))
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
 
     @staticmethod
     def generate_datetime(information):
-        return datetime(information[0], information[1], information[2], information[3], information[4], information[5],
-                        information[6]).replace(
-            tzinfo=pytz.timezone(settings.TIME_ZONE))
+        return datetime(
+            information[0],
+            information[1],
+            information[2],
+            information[3],
+            information[4],
+            information[5],
+            information[6],
+        ).replace(tzinfo=pytz.timezone(settings.TIME_ZONE))

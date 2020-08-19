@@ -20,9 +20,17 @@ from backend.recordmanagement.models import EncryptedRecord
 
 
 class MissingRecordKey(models.Model):
-    user = models.ForeignKey(UserProfile, related_name='missing_record_keys', on_delete=models.CASCADE)
-    record = models.ForeignKey(EncryptedRecord, related_name='missing_record_keys', on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        UserProfile, related_name="missing_record_keys", on_delete=models.CASCADE
+    )
+    record = models.ForeignKey(
+        EncryptedRecord, related_name="missing_record_keys", on_delete=models.CASCADE
+    )
 
     def __str__(self):
-        return 'missing records keys, user: ' + str(self.user) + '; record: ' + str(self.record)
-
+        return (
+            "missing records keys, user: "
+            + str(self.user)
+            + "; record: "
+            + str(self.record)
+        )

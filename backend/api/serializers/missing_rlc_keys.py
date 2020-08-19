@@ -21,4 +21,4 @@ from backend.api.models import MissingRlcKey
 class MissingRlcKeySerializer(serializers.ModelSerializer):
     class Meta:
         model = MissingRlcKey
-        fields = '__all__'
+        fields = "__all__"

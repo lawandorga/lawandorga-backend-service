@@ -21,13 +21,18 @@ from backend.api.models import UserProfile
 
 class RecordMessage(models.Model):
     sender = models.ForeignKey(
-        UserProfile, related_name="record_messages_sent", on_delete=models.SET_NULL, null=True)
+        UserProfile,
+        related_name="record_messages_sent",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
 
-    record = models.ForeignKey('Record', related_name="record_messages", on_delete=models.CASCADE,
-                               null=True)
+    record = models.ForeignKey(
+        "Record", related_name="record_messages", on_delete=models.CASCADE, null=True
+    )
 
     created_on = models.DateTimeField(auto_now_add=True)
     message = models.CharField(max_length=4096, null=False)
 
     def __str__(self):
-        return 'record_message: ' + str(self.id) + '; message: ' + self.message
+        return "record_message: " + str(self.id) + "; message: " + self.message

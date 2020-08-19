@@ -21,14 +21,14 @@ from backend.static.encryption import get_string_from_bytes_or_return_string
 
 
 def get_private_key_from_request(request):
-    private_key = request.META.get('HTTP_PRIVATE_KEY')
+    private_key = request.META.get("HTTP_PRIVATE_KEY")
     if not private_key:
         raise CustomError(ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED)
     private_key = get_string_from_bytes_or_return_string(private_key)
-    if '\\n' in private_key:
-        private_key = private_key.replace('\\n', '\n')
-    if '<linebreak>' in private_key:
-        private_key = private_key.replace('<linebreak>', '\n')
+    if "\\n" in private_key:
+        private_key = private_key.replace("\\n", "\n")
+    if "<linebreak>" in private_key:
+        private_key = private_key.replace("<linebreak>", "\n")
 
     if isinstance(private_key, str):
         private_key = get_bytes_from_string_or_return_bytes(private_key)

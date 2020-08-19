@@ -21,4 +21,4 @@ class FolderPermission(models.Model):
     name = models.CharField(max_length=255, null=False, unique=True)
 
     def __str__(self):
-        return 'folder permission: ' + str(self.id) + '; ' + self.name
+        return "folder permission: " + str(self.id) + "; " + self.name

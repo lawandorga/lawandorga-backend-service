@@ -33,9 +33,9 @@ class RecordMessageViewSet(viewsets.ModelViewSet):
 class RecordMessageByRecordViewSet(APIView):
     def post(self, request, id):
         # request = self.request
-        if 'message' not in request.data or request.data['message'] == '':
+        if "message" not in request.data or request.data["message"] == "":
             raise CustomError(error_codes.ERROR__RECORD__MESSAGE__NO_MESSAGE_PROVIDED)
-        message = request.data['message']
+        message = request.data["message"]
 
         try:
             record = models.Record.objects.get(pk=id)
@@ -44,7 +44,9 @@ class RecordMessageByRecordViewSet(APIView):
         if not record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
-        record_message = models.RecordMessage(sender=request.user, message=message, record=record)
+        record_message = models.RecordMessage(
+            sender=request.user, message=message, record=record
+        )
         record_message.save()
 
         EmailSender.send_record_new_message_notification_email(record)

@@ -24,9 +24,9 @@ class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = UserProfile
 
-    email = factory.Faker('email')
-    name = factory.Faker('name')
-    phone_number = factory.Faker('phone_number')
+    email = factory.Faker("email")
+    name = factory.Faker("name")
+    phone_number = factory.Faker("phone_number")
     is_active = True
     is_staff = False
 
@@ -42,13 +42,13 @@ class ClientFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Client
 
-    name = factory.Faker('name')
-    note = factory.Faker('text')
-    phone_number = factory.Faker('phone_number')
-    birthday = factory.Faker('date_this_decade')
+    name = factory.Faker("name")
+    note = factory.Faker("description_text")
+    phone_number = factory.Faker("phone_number")
+    birthday = factory.Faker("date_this_decade")
     origin_country = factory.Iterator(OriginCountry.objects.all())
-    created_on = factory.Faker('date_this_year')
-    last_edited = factory.Faker('date_time_this_month')
+    created_on = factory.Faker("date_this_year")
+    last_edited = factory.Faker("date_time_this_month")
 
 
 class RecordFactory(factory.django.DjangoModelFactory):
@@ -57,14 +57,16 @@ class RecordFactory(factory.django.DjangoModelFactory):
 
     creator = factory.Iterator(UserProfile.objects.all())
     from_rlc = factory.Iterator(Rlc.objects.all())
-    created_on = factory.Faker('date_this_year')
-    last_edited = factory.Faker('date_time_this_month')
+    created_on = factory.Faker("date_this_year")
+    last_edited = factory.Faker("date_time_this_month")
     client = factory.Iterator(Client.objects.all())
-    first_contact_date = factory.Faker('date_this_year')
-    last_contact_date = factory.Faker('date_time_this_month')
-    record_token = factory.Faker('isbn13')
-    note = factory.Faker('text')
-    state = factory.Faker('random_element', elements=[e[0] for e in Record.record_states_possible])
+    first_contact_date = factory.Faker("date_this_year")
+    last_contact_date = factory.Faker("date_time_this_month")
+    record_token = factory.Faker("isbn13")
+    note = factory.Faker("description_text")
+    state = factory.Faker(
+        "random_element", elements=[e[0] for e in Record.record_states_possible]
+    )
 
     @factory.post_generation
     def tags(self, create, extracted, **kwargs):
@@ -88,9 +90,15 @@ class GroupFactory(factory.django.DjangoModelFactory):
 
     creator = factory.Iterator(UserProfile.objects.all())
     from_rlc = factory.Iterator(Rlc.objects.all())
-    name = factory.Faker('word', ext_word_list=[
-        'Network ressort', 'Translation ressort', 'It ressort', 'Board',
-    ])
+    name = factory.Faker(
+        "word",
+        ext_word_list=[
+            "Network ressort",
+            "Translation ressort",
+            "It ressort",
+            "Board",
+        ],
+    )
     visible = True
 
     @factory.post_generation
@@ -99,5 +107,4 @@ class GroupFactory(factory.django.DjangoModelFactory):
             return
         if extracted:
             for _ in range(10, 20):
-                self.group_members.add(
-                    extracted[randint(0, extracted.__len__() - 1)])
+                self.group_members.add(extracted[randint(0, extracted.__len__() - 1)])

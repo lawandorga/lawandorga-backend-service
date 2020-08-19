@@ -28,12 +28,9 @@ class RecordFullDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Record
-        fields = '__all__'
-        extra_kwargs = {
-            'creator': {
-                'read_only': True
-            }
-        }
+        fields = "__all__"
+        extra_kwargs = {"creator": {"read_only": True}}
+
     # TODO: create Record, validate Data?
 
 
@@ -44,12 +41,21 @@ class RecordNoDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Record
-        fields = ('id', 'last_contact_date', 'state', 'official_note',
-                  'record_token', 'working_on_record', 'tagged')
+        fields = (
+            "id",
+            "last_contact_date",
+            "state",
+            "official_note",
+            "record_token",
+            "working_on_record",
+            "tagged",
+        )
+
+
 # TODO: anonymized records?? old records, but well researched
 
 
 class RecordTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = Record
-        fields = ('id', 'record_token')
+        fields = ("id", "record_token")

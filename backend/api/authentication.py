@@ -29,21 +29,25 @@ class ExpiringTokenAuthentication(TokenAuthentication):
         try:
             token = Token.objects.get(key=key)
         except self.model.DoesNotExist:
-            raise AuthenticationFailed('Invalid token')
+            raise AuthenticationFailed("Invalid token")
 
         if not token.user.is_active:
-            raise AuthenticationFailed('User inactive or deleted')
+            raise AuthenticationFailed("User inactive or deleted")
 
         utc_now = datetime.utcnow().replace(tzinfo=pytz.timezone(settings.TIME_ZONE))
 
-        if (token.created < (utc_now - settings.TIMEOUT_TIMEDELTA)) and not token.user.is_superuser:
+        if (
+            token.created < (utc_now - settings.TIMEOUT_TIMEDELTA)
+        ) and not token.user.is_superuser:
             token.delete()
-            raise AuthenticationFailed('Token has expired')
+            raise AuthenticationFailed("Token has expired")
 
-        token.created = datetime.utcnow().replace(tzinfo=pytz.timezone(settings.TIME_ZONE))
+        token.created = datetime.utcnow().replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
         token.save()
-        token.user.last_login = datetime.utcnow().replace(tzinfo=pytz.timezone(settings.TIME_ZONE))
+        token.user.last_login = datetime.utcnow().replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
         token.user.save()
         return token.user, token
-
-

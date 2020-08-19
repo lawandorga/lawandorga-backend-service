@@ -22,9 +22,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
-from backend.api.models import UserEncryptionKeys
+from backend.api.models import UserEncryptionKeys, UserProfile, Notification
 from backend.recordmanagement import models, serializers
-from backend.recordmanagement.helpers import get_e_record
 from backend.static import error_codes, permissions
 from backend.static.encryption import RSAEncryption
 from backend.static.middleware import get_private_key_from_request
@@ -32,75 +31,126 @@ from backend.static.middleware import get_private_key_from_request
 
 class RecordPermissionViewSet(viewsets.ModelViewSet):
     queryset = models.RecordPermission.objects.all()
-    serializer_class = serializers.RecordPermissionSerializer
+    serializer_class = serializers.EncryptedRecordPermissionSerializer
 
 
 class EncryptedRecordPermissionRequestViewSet(APIView):
-    def post(self, request, id):
-        e_record = get_e_record(request.user, id)
-        if e_record.user_has_permission(request.user):
+    def post(self, request, id) -> Response:
+        record: models.EncryptedRecord = models.EncryptedRecord.objects.get_record(
+            request.user, id
+        )
+        if record.from_rlc != request.user.rlc:
+            raise CustomError(error_codes.ERROR__API__WRONG_RLC)
+
+        if record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ALREADY_WORKING_ON)
 
-        if models.EncryptedRecordPermission.objects.filter(record=e_record, request_from=request.user,
-                                                           state='re').count() >= 1:
+        if (
+            models.EncryptedRecordPermission.objects.filter(
+                record=record, request_from=request.user, state="re"
+            ).count()
+            >= 1
+        ):
             raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ALREADY_REQUESTED)
         can_edit = False
-        if 'can_edit' in request.data:
-            can_edit = request.data['can_edit']
+        if "can_edit" in request.data:
+            can_edit = request.data["can_edit"]
 
-        e_permission = models.EncryptedRecordPermission(request_from=request.user, record=e_record, can_edit=can_edit)
-        e_permission.save()
-        return Response(serializers.RecordPermissionSerializer(e_permission).data)
+        record_permission = models.EncryptedRecordPermission(
+            request_from=request.user, record=record, can_edit=can_edit
+        )
+        record_permission.save()
+
+        Notification.objects.notify_record_permission_requested(
+            request.user, record_permission
+        )
+
+        return Response(
+            serializers.EncryptedRecordPermissionSerializer(record_permission).data
+        )
 
 
-class EncryptedRecordPermissionAdmitViewSet(APIView):
-    def get(self, request):
+class EncryptedRecordPermissionProcessViewSet(APIView):
+    def get(self, request) -> Response:
         """
         used from admins to see which permission requests are for the own rlc in the system
         :param request:
         :return:
         """
         user = request.user
-        if not user.has_permission(permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC, for_rlc=user.rlc):
+        if not user.has_permission(
+            permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
+            for_rlc=user.rlc,
+        ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-        requests = models.EncryptedRecordPermission.objects.filter(record__from_rlc=user.rlc)
-        return Response(serializers.EncryptedRecordPermissionSerializer(requests, many=True).data)
+        requests = models.EncryptedRecordPermission.objects.filter(
+            record__from_rlc=user.rlc
+        )
+        return Response(
+            serializers.EncryptedRecordPermissionSerializer(requests, many=True).data
+        )
 
-    def post(self, request):
+    def post(self, request) -> Response:
         """
         used to admit or decline a given permission request
         :param request:
         :return:
         """
-        user = request.user
-        if not user.has_permission(permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC, for_rlc=user.rlc):
+        user: UserProfile = request.user
+        if not user.has_permission(
+            permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
+            for_rlc=user.rlc,
+        ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-        if 'id' not in request.data:
-            raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ID_NOT_PROVIDED)
+        if "id" not in request.data:
+            raise CustomError(error_codes.ERROR__API__ID_NOT_PROVIDED)
         try:
-            permission_request = models.EncryptedRecordPermission.objects.get(pk=request.data['id'])
+            permission_request: models.EncryptedRecordPermission = models.EncryptedRecordPermission.objects.get(
+                pk=request.data["id"]
+            )
         except Exception as e:
-            raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ID_NOT_FOUND)
+            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
 
-        if 'action' not in request.data:
+        if permission_request.record.from_rlc != user.rlc:
+            raise CustomError(error_codes.ERROR__API__WRONG_RLC)
+        if "action" not in request.data:
             raise CustomError(error_codes.ERROR__API__NO_ACTION_PROVIDED)
-        action = request.data['action']
-        if action != 'accept' and action != 'decline':
-            raise CustomError(error_codes.ERROR__RECORD__PERMISSION__NO_VALID_ACTION_PROVIDED)
+        action = request.data["action"]
+        if action != "accept" and action != "decline":
+            raise CustomError(error_codes.ERROR__API__ACTION_NOT_VALID)
+
+        if permission_request.state != "re":
+            raise CustomError(error_codes.ERROR__API__ALREADY_PROCESSED)
 
         permission_request.request_processed = user
         permission_request.processed_on = datetime.utcnow().replace(tzinfo=pytz.utc)
-        if action == 'accept':
-            permission_request.state = 'gr'
+        if action == "accept":
+            permission_request.state = "gr"
+            permission_request.save()
+
             users_private_key = get_private_key_from_request(request)
-            record_key = permission_request.record.get_decryption_key(user, users_private_key)
-            users_public_key = UserEncryptionKeys.objects.get_users_public_key(permission_request.request_from)
+            record_key = permission_request.record.get_decryption_key(
+                user, users_private_key
+            )
+            users_public_key = UserEncryptionKeys.objects.get_users_public_key(
+                permission_request.request_from
+            )
             encrypted_record_key = RSAEncryption.encrypt(record_key, users_public_key)
-            record_encryption = models.RecordEncryption(user=permission_request.request_from,
-                                                        record=permission_request.record,
-                                                        encrypted_key=encrypted_record_key)
+            record_encryption = models.RecordEncryption(
+                user=permission_request.request_from,
+                record=permission_request.record,
+                encrypted_key=encrypted_record_key,
+            )
             record_encryption.save()
+            Notification.objects.notify_record_permission_accepted(
+                request.user, permission_request
+            )
         else:
-            permission_request.state = 'de'
-        permission_request.save()
-        return Response(serializers.EncryptedRecordPermissionSerializer(permission_request).data)
+            permission_request.state = "de"
+            permission_request.save()
+            Notification.objects.notify_record_permission_declined(
+                request.user, permission_request
+            )
+        return Response(
+            serializers.EncryptedRecordPermissionSerializer(permission_request).data
+        )

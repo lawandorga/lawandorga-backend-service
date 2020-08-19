@@ -22,4 +22,4 @@ from backend.api.models import UserActivationLink
 class UserActivationLinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserActivationLink
-        fields = '__all__'
+        fields = "__all__"

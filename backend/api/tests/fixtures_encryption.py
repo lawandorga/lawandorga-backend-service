@@ -14,11 +14,14 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from datetime import datetime
+import pytz
+from django.conf import settings
+
 from rest_framework.test import APIClient
 
 from backend.api.management.commands.fixtures import Fixtures as MainFixtures
-from backend.api.models import Group, HasPermission, Permission, Rlc, RlcEncryptionKeys, UserEncryptionKeys, \
-    UserProfile, UsersRlcKeys
+from backend.api.models import *
 from backend.files import models as file_models
 from backend.files.static.folder_permissions import get_all_folder_permissions_strings
 from backend.recordmanagement import models as record_models
@@ -28,8 +31,11 @@ from backend.static.permissions import get_all_permissions_strings
 
 class CreateFixtures:
     @staticmethod
-    def create_base_fixtures() -> {'rlc': Rlc, 'users': [{'user': UserProfile, 'private': bytes, 'client': APIClient}],
-                                   'groups': [Group]}:
+    def create_base_fixtures() -> {
+        "rlc": Rlc,
+        "users": [{"user": UserProfile, "private": bytes, "client": APIClient}],
+        "groups": [Group],
+    }:
         """
         creates Basic fixtures for testing purposes
         creates all permissions, 1 rlc, 4 users and 3 groups
@@ -59,29 +65,89 @@ class CreateFixtures:
 
         rlc = Rlc(name="testrlc", id=3001)
         rlc.save()
-        rlc_aes_key = 'SecureAesKey'
+        rlc_aes_key = "SecureAesKey"
         private, public = RSAEncryption.generate_keys()
         encrypted_private = AESEncryption.encrypt(private, rlc_aes_key)
-        rlc_keys = RlcEncryptionKeys(rlc=rlc, encrypted_private_key=encrypted_private, public_key=public)
+        rlc_keys = RlcEncryptionKeys(
+            rlc=rlc, encrypted_private_key=encrypted_private, public_key=public
+        )
         rlc_keys.save()
         return_object.update({"rlc": rlc})
 
-        users = [CreateFixtures.create_user(rlc, "user1", rlc_aes_key),
-                 CreateFixtures.create_user(rlc, "user2", rlc_aes_key),
-                 CreateFixtures.create_user(rlc, "user3", rlc_aes_key),
-                 CreateFixtures.create_user(rlc, "user4", rlc_aes_key)]
+        users = [
+            CreateFixtures.create_user(rlc, "user0", rlc_aes_key),
+            CreateFixtures.create_user(rlc, "user1", rlc_aes_key),
+            CreateFixtures.create_user(rlc, "user2", rlc_aes_key),
+            CreateFixtures.create_user(rlc, "user3", rlc_aes_key),
+        ]
         return_object.update({"users": users})
 
-        groups = [CreateFixtures._create_group(rlc, 'group1', [users[0]['user'], users[1]['user']]),
-                  CreateFixtures._create_group(rlc, 'group2', [users[1]['user'], users[2]['user']]),
-                  CreateFixtures._create_group(rlc, 'group3', [users[2]['user'], users[3]['user']])]
-        return_object.update({'groups': groups})
+        groups = [
+            CreateFixtures._create_group(
+                rlc, "group1", [users[0]["user"], users[1]["user"]]
+            ),
+            CreateFixtures._create_group(
+                rlc, "group2", [users[1]["user"], users[2]["user"]]
+            ),
+            CreateFixtures._create_group(
+                rlc, "group3", [users[2]["user"], users[3]["user"]]
+            ),
+        ]
+        return_object.update({"groups": groups})
 
         return return_object
 
     @staticmethod
-    def create_user(rlc: Rlc, name: str, rlc_aes_key: str) -> {'user': UserProfile, 'private': bytes,
-                                                               'client': APIClient}:
+    def create_foreign_rlc_fixture() -> {
+        "rlc": Rlc,
+        "users": [{"user": UserProfile, "private": bytes, "client": APIClient}],
+        "groups": [Group],
+    }:
+        """
+        created another set of fixtures with another rlc
+        used for testing access rights from other rlcs
+        :return:
+        """
+        return_object = {}
+
+        rlc = Rlc(name="other testrlc", id=7001)
+        rlc.save()
+        rlc_aes_key = "SecureAesKeyOtherOne"
+        private, public = RSAEncryption.generate_keys()
+        encrypted_private = AESEncryption.encrypt(private, rlc_aes_key)
+        rlc_keys = RlcEncryptionKeys(
+            rlc=rlc, encrypted_private_key=encrypted_private, public_key=public
+        )
+        rlc_keys.save()
+        return_object.update({"rlc": rlc})
+
+        users = [
+            CreateFixtures.create_user(rlc, "other user1", rlc_aes_key),
+            CreateFixtures.create_user(rlc, "other user2", rlc_aes_key),
+            CreateFixtures.create_user(rlc, "otheruser3", rlc_aes_key),
+            CreateFixtures.create_user(rlc, "other user4", rlc_aes_key),
+        ]
+        return_object.update({"users": users})
+
+        groups = [
+            CreateFixtures._create_group(
+                rlc, "other group1", [users[0]["user"], users[1]["user"]]
+            ),
+            CreateFixtures._create_group(
+                rlc, "other group2", [users[1]["user"], users[2]["user"]]
+            ),
+            CreateFixtures._create_group(
+                rlc, "other group3", [users[2]["user"], users[3]["user"]]
+            ),
+        ]
+        return_object.update({"groups": groups})
+
+        return return_object
+
+    @staticmethod
+    def create_user(
+        rlc: Rlc, name: str, rlc_aes_key: str
+    ) -> {"user": UserProfile, "private": bytes, "client": APIClient}:
         """
         creates user with given parameters and generic email
 
@@ -106,11 +172,7 @@ class CreateFixtures:
 
         client = APIClient()
         client.force_authenticate(user=user)
-        return {
-            "user": user,
-            "private": private,
-            "client": client
-        }
+        return {"user": user, "private": private, "client": client}
 
     @staticmethod
     def _create_group(rlc: Rlc, name: str, members: [UserProfile]) -> Group:
@@ -143,7 +205,11 @@ class CreateFixtures:
             file_models.FolderPermission.objects.create(name=perm)
 
     @staticmethod
-    def create_superuser() -> {'user': UserProfile, 'private': bytes, 'client': APIClient}:
+    def create_superuser() -> {
+        "user": UserProfile,
+        "private": bytes,
+        "client": APIClient,
+    }:
         """
         creates superuser with generic information
 
@@ -152,19 +218,19 @@ class CreateFixtures:
         private: bytes, private key of superuser
         client: ApiClient, ApiClient with authenticated superuser
         """
-        superuser = UserProfile(name='superuser', email='superuser@test.de', is_superuser=True)
-        superuser.set_password('qwe123')
+        superuser = UserProfile(
+            name="superuser", email="superuser@test.de", is_superuser=True
+        )
+        superuser.set_password("qwe123")
         superuser.save()
         private, public = RSAEncryption.generate_keys()
-        keys = UserEncryptionKeys(user=superuser, private_key=private, public_key=public)
+        keys = UserEncryptionKeys(
+            user=superuser, private_key=private, public_key=public
+        )
         keys.save()
         client = APIClient()
         client.force_authenticate(user=superuser)
-        return {
-            "user": superuser,
-            "private": private,
-            "client": client
-        }
+        return {"user": superuser, "private": private, "client": client}
 
     @staticmethod
     def create_record_base_fixtures(rlc: Rlc, users: [UserProfile]):
@@ -183,38 +249,54 @@ class CreateFixtures:
             - key: Bytes, Clients Aes Key
         records
             - record 1 2
+                - record
+                - key
         """
         return_object = {}
 
         aes_client_key = AESEncryption.generate_secure_key()
         e_client = record_models.EncryptedClient(from_rlc=rlc)
-        e_client.name = AESEncryption.encrypt('MainClient', aes_client_key)
-        e_client.note = AESEncryption.encrypt('important MainClient note', aes_client_key)
+        e_client.name = AESEncryption.encrypt("MainClient", aes_client_key)
+        e_client.note = AESEncryption.encrypt(
+            "important MainClient note", aes_client_key
+        )
+        e_client.phone_number = AESEncryption.encrypt("1238222", aes_client_key)
+
+        rlcs_public_key = rlc.get_public_key()
+        e_client.encrypted_client_key = RSAEncryption.encrypt(
+            aes_client_key, rlcs_public_key
+        )
         e_client.save()
+
         e_client = e_client
-        client_obj = {
-            "client": e_client,
-            "key": aes_client_key
-        }
+        client_obj = {"client": e_client, "key": aes_client_key}
         return_object.update({"client": client_obj})
 
         # create records
         records = []
         # 1
-        record1 = CreateFixtures.add_record(record_token='record1', rlc=rlc, client=e_client,
-                                            creator=users[0],
-                                            note='record1 note',
-                                            working_on_record=[users[0], users[1]],
-                                            with_record_permission=[users[2]],
-                                            with_encryption_keys=[users[0], users[1], users[2]])
+        record1 = CreateFixtures.add_record(
+            record_token="record1",
+            rlc=rlc,
+            client=e_client,
+            creator=users[0],
+            note="record1 note",
+            working_on_record=[users[0], users[1]],
+            with_record_permission=[users[2]],
+            with_encryption_keys=[users[0], users[1], users[2]],
+        )
         records.append(record1)
         # 2
-        record2 = CreateFixtures.add_record(record_token='record2', rlc=rlc, client=e_client,
-                                            creator=users[1],
-                                            note='record2 note',
-                                            working_on_record=[users[1], users[2]],
-                                            with_record_permission=[users[0]],
-                                            with_encryption_keys=[users[0], users[1], users[2]])
+        record2 = CreateFixtures.add_record(
+            record_token="record2",
+            rlc=rlc,
+            client=e_client,
+            creator=users[1],
+            note="record2 note",
+            working_on_record=[users[1], users[2]],
+            with_record_permission=[users[0]],
+            with_encryption_keys=[users[0], users[1], users[2]],
+        )
         records.append(record2)
 
         return_object.update({"records": records})
@@ -222,9 +304,16 @@ class CreateFixtures:
         return return_object
 
     @staticmethod
-    def add_record(record_token: str, rlc: Rlc, client: record_models.EncryptedClient, creator: UserProfile, note: str,
-                   working_on_record: [UserProfile], with_record_permission: [UserProfile] = [],
-                   with_encryption_keys: [UserProfile] = []) -> {'record': record_models.EncryptedRecord, 'key': str}:
+    def add_record(
+        record_token: str,
+        rlc: Rlc,
+        client: record_models.EncryptedClient,
+        creator: UserProfile,
+        note: str,
+        working_on_record: [UserProfile],
+        with_record_permission: [UserProfile] = [],
+        with_encryption_keys: [UserProfile] = [],
+    ) -> {"record": record_models.EncryptedRecord, "key": str}:
         """
         adds record with given parameters to database
         record_permissions and encryption_key holders can be specified separately
@@ -242,8 +331,9 @@ class CreateFixtures:
         key: aes key
         """
         aes_key = AESEncryption.generate_secure_key()
-        record = record_models.EncryptedRecord(record_token=record_token, from_rlc=rlc,
-                                               creator=creator, client=client)
+        record = record_models.EncryptedRecord(
+            record_token=record_token, from_rlc=rlc, creator=creator, client=client
+        )
         record.note = AESEncryption.encrypt(note, aes_key)
         record.save()
 
@@ -252,20 +342,24 @@ class CreateFixtures:
         record.save()
 
         for user in with_record_permission:
-            permission = record_models.EncryptedRecordPermission(request_from=user, request_processed=creator,
-                                                                 record=record, can_edit=True, state='gr')
+            permission = record_models.EncryptedRecordPermission(
+                request_from=user,
+                request_processed=creator,
+                record=record,
+                can_edit=True,
+                state="gr",
+            )
             permission.save()
 
         for user in with_encryption_keys:
             CreateFixtures.add_encryption_key(user, record, aes_key)
 
-        return {
-            'record': record,
-            'key': aes_key
-        }
+        return {"record": record, "key": aes_key}
 
     @staticmethod
-    def add_encryption_key(user: UserProfile, record: record_models.EncryptedRecord, aes_key: str) -> None:
+    def add_encryption_key(
+        user: UserProfile, record: record_models.EncryptedRecord, aes_key: str
+    ) -> None:
         """
         add encryption key of record for user
         :param user: new encryption key holder
@@ -275,14 +369,139 @@ class CreateFixtures:
         """
         pub = user.get_public_key()
         encrypted_key = RSAEncryption.encrypt(aes_key, pub)
-        record_encryption = record_models.RecordEncryption(user=user, record=record, encrypted_key=encrypted_key)
+        record_encryption = record_models.RecordEncryption(
+            user=user, record=record, encrypted_key=encrypted_key
+        )
         record_encryption.save()
 
     @staticmethod
-    def add_permission_for_user(user: UserProfile, permission: Permission or str) -> HasPermission:
+    def add_permission_for_user(
+        user: UserProfile, permission: Permission or str
+    ) -> HasPermission:
         if isinstance(permission, str):
             permission = Permission.objects.get(name=permission)
-        has_permission: HasPermission = HasPermission(permission=permission, user_has_permission=user,
-                                                      permission_for_rlc=user.rlc)
+        has_permission: HasPermission = HasPermission(
+            permission=permission, user_has_permission=user, permission_for_rlc=user.rlc
+        )
         has_permission.save()
         return has_permission
+
+    @staticmethod
+    def add_notification_fixtures(
+        main_user: UserProfile,
+        source_user: UserProfile,
+        records: [record_models.EncryptedRecord],
+        groups: [Group],
+    ) -> [NotificationGroup]:
+        """
+
+        :param main_user: gets all notifications
+        :param source_user: caused all notifications
+        :param records: referenced in some notifications
+        :param groups: referenced in some notifications
+        :return:
+        """
+
+        if records.__len__() != 2:
+            raise RuntimeError("records wrong length")
+        if groups.__len__() != 2:
+            raise RuntimeError("groups wrong length")
+
+        notification_groups: [NotificationGroup] = []
+
+        # record
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=records[0].record_token,
+            ref_id=str(records[0].id),
+            notification_group_type=NotificationGroupType.RECORD,
+            notification_type=NotificationType.RECORD__CREATED,
+        )
+        notification.created = datetime(2020, 7, 23, 10, 26, 48).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        notification.save()
+
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=records[0].record_token,
+            ref_id=str(records[0].id),
+            notification_group_type=NotificationGroupType.RECORD,
+            notification_type=NotificationType.RECORD__UPDATED,
+        )
+        notification.created = datetime(2020, 7, 24, 17, 13, 0).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        notification.save()
+
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=records[0].record_token,
+            ref_id=str(records[0].id),
+            notification_group_type=NotificationGroupType.RECORD,
+            notification_type=NotificationType.RECORD__RECORD_MESSAGE_ADDED,
+        )
+        notification.created = datetime(2020, 7, 24, 17, 45, 0).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        notification.save()
+        group.last_activity = datetime(2020, 7, 24, 17, 45, 0).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        group.save()
+        notification_groups.append(group)
+
+        # group1
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=groups[0].name,
+            ref_id=str(groups[0].id),
+            notification_group_type=NotificationGroupType.GROUP,
+            notification_type=NotificationType.GROUP__ADDED_ME,
+        )
+        notification.created = datetime(2020, 7, 24, 9, 12, 0).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        notification.save()
+        group.last_activity = datetime(2020, 7, 24, 9, 12, 0).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        group.save()
+        notification_groups.append(group)
+
+        # group2
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=groups[1].name,
+            ref_id=str(groups[1].id),
+            notification_group_type=NotificationGroupType.GROUP,
+            notification_type=NotificationType.GROUP__ADDED_ME,
+        )
+        notification.created = datetime(2020, 7, 21, 12, 1, 0).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        notification.save()
+        (group, notification) = Notification.objects.create_notification(
+            user=main_user,
+            source_user=source_user,
+            ref_text=groups[1].name,
+            ref_id=str(groups[1].id),
+            notification_group_type=NotificationGroupType.GROUP,
+            notification_type=NotificationType.GROUP__REMOVED_ME,
+        )
+
+        notification.created = datetime(2020, 7, 25, 7, 12, 0).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        notification.save()
+        group.last_activity = datetime(2020, 7, 25, 7, 12, 0).replace(
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        )
+        group.save()
+        notification_groups.append(group)
+        return notification_groups

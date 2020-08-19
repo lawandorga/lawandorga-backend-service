@@ -25,8 +25,8 @@ from backend.static.string_generator import generate_secure_random_string
 
 class EncryptionTests(SimpleTestCase):
     def test_aes_en_decrypt(self):
-        msg = 'secret message. encrypt and decrypt it!'
-        key = 'shhh! its a secret!asd'
+        msg = "secret message. encrypt and decrypt it!"
+        key = "shhh! its a secret!asd"
         iv = AESEncryption.generate_iv()
 
         encrypted = AESEncryption.encrypt_with_iv(msg, key, iv)
@@ -35,10 +35,10 @@ class EncryptionTests(SimpleTestCase):
         self.assertEqual(decrypted, msg)
 
     def test_aes_en_decrypt_long(self):
-        msg = 'secret message. encrypt and decrypt it!'
+        msg = "secret message. encrypt and decrypt it!"
         for i in range(20):
             msg = msg + msg
-        key = 'shhh! its a secret!'
+        key = "shhh! its a secret!"
         iv = AESEncryption.generate_iv()
 
         encrypted = AESEncryption.encrypt_with_iv(msg, key, iv)
@@ -63,7 +63,9 @@ class EncryptionTests(SimpleTestCase):
             iv = AESEncryption.generate_iv()
 
             encrypted = AESEncryption.encrypt_with_iv(msg, key, iv)
-            decrypted = AESEncryption.decrypt_with_iv(encrypted, key, iv, OutputType.BYTES)
+            decrypted = AESEncryption.decrypt_with_iv(
+                encrypted, key, iv, OutputType.BYTES
+            )
 
             self.assertEqual(decrypted, msg)
 
@@ -74,7 +76,9 @@ class EncryptionTests(SimpleTestCase):
             iv = AESEncryption.generate_iv()
 
             encrypted = AESEncryption.encrypt_with_iv(msg, key, iv)
-            decrypted = AESEncryption.decrypt_with_iv(encrypted, key, iv, OutputType.BYTES)
+            decrypted = AESEncryption.decrypt_with_iv(
+                encrypted, key, iv, OutputType.BYTES
+            )
 
             self.assertEqual(decrypted, msg)
 
@@ -85,12 +89,14 @@ class EncryptionTests(SimpleTestCase):
             iv = AESEncryption.generate_iv()
 
             encrypted = AESEncryption.encrypt_hazmat(msg, key, iv)
-            decrypted = AESEncryption.decrypt_hazmat(encrypted, key, iv, OutputType.BYTES)
+            decrypted = AESEncryption.decrypt_hazmat(
+                encrypted, key, iv, OutputType.BYTES
+            )
 
             self.assertEqual(decrypted, msg)
 
     def test_rsa_en_decrypt(self):
-        msg = 'really secret message'
+        msg = "really secret message"
         private_key, public_key = RSAEncryption.generate_keys()
         encrypted = RSAEncryption.encrypt(msg, public_key)
         decrypted = RSAEncryption.decrypt(encrypted, private_key)
@@ -106,7 +112,7 @@ class EncryptionTests(SimpleTestCase):
         self.assertEqual(decrypted, msg)
 
     def test_rsa_en_decrypt_cryptodome(self):
-        msg = 'kjsenf29349nfkse1-2{ad2k'
+        msg = "kjsenf29349nfkse1-2{ad2k"
         private_key, public_key = RSAEncryption.generate_keys_cryptodome()
         encrypted = RSAEncryption.encrypt_cryptodome(msg, public_key)
         decrypted = RSAEncryption.decrypt_cryptodome(encrypted, private_key)
@@ -135,7 +141,9 @@ class EncryptionTests(SimpleTestCase):
             msg = os.urandom(180)
             private_key, public_key = RSAEncryption.generate_keys_cryptodome()
             encrypted = RSAEncryption.encrypt_cryptodome(msg, public_key)
-            decrypted = RSAEncryption.decrypt_cryptodome(encrypted, private_key, OutputType.BYTES)
+            decrypted = RSAEncryption.decrypt_cryptodome(
+                encrypted, private_key, OutputType.BYTES
+            )
 
             self.assertEqual(decrypted, msg)
 
@@ -151,31 +159,55 @@ class EncryptionTests(SimpleTestCase):
 
     def test_aes_en_decrypt_file(self):
         iv = AESEncryption.generate_iv()
-        key = 'secret password'
-        AESEncryption.encrypt_file_with_iv('test_files/test_file.png', key, iv)
-        AESEncryption.decrypt_file_with_iv('test_files/test_file.png.enc', key, iv,
-                                   'test_files/test_file_decrypted.png')
-        self.assertTrue(filecmp.cmp('test_files/test_file.png', 'test_files/test_file_decrypted.png'))
+        key = "secret password"
+        AESEncryption.encrypt_file_with_iv("test_files/test_file.png", key, iv)
+        AESEncryption.decrypt_file_with_iv(
+            "test_files/test_file.png.enc",
+            key,
+            iv,
+            "test_files/test_file_decrypted.png",
+        )
+        self.assertTrue(
+            filecmp.cmp(
+                "test_files/test_file.png", "test_files/test_file_decrypted.png"
+            )
+        )
 
     def test_aes_en_decrypt_big_file(self):
         iv = AESEncryption.generate_iv()
-        key = 'secret password'
-        AESEncryption.encrypt_file_with_iv('test_files/big_file.test', key, iv)
-        AESEncryption.decrypt_file_with_iv('test_files/big_file.test.enc', key, iv,
-                                   'test_files/big_file_decrypted.test')
-        self.assertTrue(filecmp.cmp('test_files/big_file.test', 'test_files/big_file_decrypted.test'))
+        key = "secret password"
+        AESEncryption.encrypt_file_with_iv("test_files/big_file.test", key, iv)
+        AESEncryption.decrypt_file_with_iv(
+            "test_files/big_file.test.enc",
+            key,
+            iv,
+            "test_files/big_file_decrypted.test",
+        )
+        self.assertTrue(
+            filecmp.cmp(
+                "test_files/big_file.test", "test_files/big_file_decrypted.test"
+            )
+        )
 
     def test_aes_en_decrypt_big_video(self):
         iv = AESEncryption.generate_iv()
-        key = 'secret password!sdifu923'
-        AESEncryption.encrypt_file_with_iv('test_files/big_video.mp4', key, iv)
-        AESEncryption.decrypt_file_with_iv('test_files/big_video.mp4.enc', key, iv,
-                                   'test_files/big_video_decrypted.mp4')
-        self.assertTrue(filecmp.cmp('test_files/big_video.mp4', 'test_files/big_video_decrypted.mp4'))
+        key = "secret password!sdifu923"
+        AESEncryption.encrypt_file_with_iv("test_files/big_video.mp4", key, iv)
+        AESEncryption.decrypt_file_with_iv(
+            "test_files/big_video.mp4.enc",
+            key,
+            iv,
+            "test_files/big_video_decrypted.mp4",
+        )
+        self.assertTrue(
+            filecmp.cmp(
+                "test_files/big_video.mp4", "test_files/big_video_decrypted.mp4"
+            )
+        )
 
     def test_aes_wo_iv_en_decrypt(self):
-        msg = 'secret message. encrypt and decrypt it!'
-        key = 'shhh! its a secret!asd'
+        msg = "secret message. encrypt and decrypt it!"
+        key = "shhh! its a secret!asd"
 
         encrypted = AESEncryption.encrypt(msg, key)
         decrypted = AESEncryption.decrypt(encrypted, key)
@@ -183,61 +215,91 @@ class EncryptionTests(SimpleTestCase):
         self.assertEqual(decrypted, msg)
 
     def test_aes__wo_iv_en_decrypt_file(self):
-        key = 'secret password'
-        AESEncryption.encrypt_file('test_files/test_file.png', key)
-        AESEncryption.decrypt_file('test_files/test_file.png.enc', key, 'test_files/test_file_decrypted.png')
-        self.assertTrue(filecmp.cmp('test_files/test_file.png', 'test_files/test_file_decrypted.png'))
+        key = "secret password"
+        AESEncryption.encrypt_file("test_files/test_file.png", key)
+        AESEncryption.decrypt_file(
+            "test_files/test_file.png.enc", key, "test_files/test_file_decrypted.png"
+        )
+        self.assertTrue(
+            filecmp.cmp(
+                "test_files/test_file.png", "test_files/test_file_decrypted.png"
+            )
+        )
 
     def test_aes_wo_iv_en_decrypt_big_video(self):
-        key = 'secret password!sdifu923'
-        AESEncryption.encrypt_file('test_files/big_video.mp4', key)
-        AESEncryption.decrypt_file('test_files/big_video.mp4.enc', key, 'test_files/big_video_decrypted.mp4')
-        self.assertTrue(filecmp.cmp('test_files/big_video.mp4', 'test_files/big_video_decrypted.mp4'))
+        key = "secret password!sdifu923"
+        AESEncryption.encrypt_file("test_files/big_video.mp4", key)
+        AESEncryption.decrypt_file(
+            "test_files/big_video.mp4.enc", key, "test_files/big_video_decrypted.mp4"
+        )
+        self.assertTrue(
+            filecmp.cmp(
+                "test_files/big_video.mp4", "test_files/big_video_decrypted.mp4"
+            )
+        )
 
     def test_encrypt_field(self):
         class ClassWithSecrets:
             def __init__(self, preset=0):
                 if preset == 2:
-                    self.secret_field_1 = 'secret1'
-                    self.secret_field_2 = 'secret1'
-                    self.field = 'not so secret'
+                    self.secret_field_1 = "secret1"
+                    self.secret_field_2 = "secret1"
+                    self.field = "not so secret"
                 if preset == 1:
-                    self.secret_field_1 = ''
-                    self.secret_field_2 = ''
-                    self.field = ''
+                    self.secret_field_1 = ""
+                    self.secret_field_2 = ""
+                    self.field = ""
 
         not_encrypted = ClassWithSecrets(2)
         encrypted = ClassWithSecrets(1)
-        key = 'kerkekrkerk!'
+        key = "kerkekrkerk!"
 
-        AESEncryption.encrypt_field(not_encrypted, encrypted, 'secret_field_1', key)
-        AESEncryption.encrypt_field(not_encrypted, encrypted, 'secret_field_2', key)
+        AESEncryption.encrypt_field(not_encrypted, encrypted, "secret_field_1", key)
+        AESEncryption.encrypt_field(not_encrypted, encrypted, "secret_field_2", key)
         # should do nothing
-        AESEncryption.encrypt_field(not_encrypted, encrypted, 'secret_field_3', key)
+        AESEncryption.encrypt_field(not_encrypted, encrypted, "secret_field_3", key)
 
-        self.assertTrue(getattr(encrypted, 'secret_field_3', None) is None)
-        self.assertEqual(AESEncryption.decrypt(getattr(encrypted, 'secret_field_1'), key), getattr(not_encrypted, 'secret_field_1'))
-        self.assertEqual(AESEncryption.decrypt(getattr(encrypted, 'secret_field_2'), key), getattr(not_encrypted, 'secret_field_2'))
+        self.assertTrue(getattr(encrypted, "secret_field_3", None) is None)
+        self.assertEqual(
+            AESEncryption.decrypt(getattr(encrypted, "secret_field_1"), key),
+            getattr(not_encrypted, "secret_field_1"),
+        )
+        self.assertEqual(
+            AESEncryption.decrypt(getattr(encrypted, "secret_field_2"), key),
+            getattr(not_encrypted, "secret_field_2"),
+        )
 
     def test_encrypt_field_self(self):
         class ClassWithSecrets:
             def __init__(self, preset=0):
                 if preset == 2:
-                    self.secret_field_1 = 'secret1'
-                    self.secret_field_2 = 'secret2'
-                    self.field = 'not so secret'
+                    self.secret_field_1 = "secret1"
+                    self.secret_field_2 = "secret2"
+                    self.field = "not so secret"
                 if preset == 1:
-                    self.secret_field_1 = ''
-                    self.secret_field_2 = ''
-                    self.field = ''
+                    self.secret_field_1 = ""
+                    self.secret_field_2 = ""
+                    self.field = ""
 
         source_ception = ClassWithSecrets(2)
-        key = 'kerkekrkerk!'
+        key = "kerkekrkerk!"
 
-        AESEncryption.encrypt_field(source_ception, source_ception, 'secret_field_1', key)
-        AESEncryption.encrypt_field(source_ception, source_ception, 'secret_field_2', key)
+        AESEncryption.encrypt_field(
+            source_ception, source_ception, "secret_field_1", key
+        )
+        AESEncryption.encrypt_field(
+            source_ception, source_ception, "secret_field_2", key
+        )
         # should do nothing
-        AESEncryption.encrypt_field(source_ception, source_ception, 'secret_field_3', key)
+        AESEncryption.encrypt_field(
+            source_ception, source_ception, "secret_field_3", key
+        )
 
-        self.assertEqual(AESEncryption.decrypt(getattr(source_ception, 'secret_field_1'), key), 'secret1')
-        self.assertEqual(AESEncryption.decrypt(getattr(source_ception, 'secret_field_2'), key), 'secret2')
+        self.assertEqual(
+            AESEncryption.decrypt(getattr(source_ception, "secret_field_1"), key),
+            "secret1",
+        )
+        self.assertEqual(
+            AESEncryption.decrypt(getattr(source_ception, "secret_field_2"), key),
+            "secret2",
+        )

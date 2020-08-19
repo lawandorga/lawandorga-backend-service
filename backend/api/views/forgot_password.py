@@ -22,12 +22,17 @@ from backend.api.errors import CustomError
 from backend.static.emails import EmailSender
 from backend.static.env_getter import get_website_base_url
 from backend.static.error_codes import *
-from backend.api.models import UserProfile, ForgotPasswordLinks, MissingRlcKey, UserEncryptionKeys, UsersRlcKeys
+from backend.api.models import (
+    UserProfile,
+    ForgotPasswordLinks,
+    MissingRlcKey,
+    UserEncryptionKeys,
+    UsersRlcKeys,
+)
 from backend.static.encryption import RSAEncryption
 from backend.api.serializers import ForgotPasswordSerializer
 from backend.recordmanagement.models import RecordEncryption
 from backend.api.management.commands.commands import create_missing_key_entries
-
 
 
 class ForgotPasswordViewSet(ModelViewSet):
@@ -40,8 +45,8 @@ class ForgotPasswordUnauthenticatedViewSet(APIView):
     permission_classes = ()
 
     def post(self, request):
-        if 'email' in request.data:
-            email = request.data['email']
+        if "email" in request.data:
+            email = request.data["email"]
         else:
             raise CustomError(ERROR__API__EMAIL__NO_EMAIL_PROVIDED)
         try:
@@ -76,9 +81,9 @@ class ResetPasswordViewSet(APIView):
             link = ForgotPasswordLinks.objects.get(link=id)
         except:
             raise CustomError(ERROR__API__USER__PASSWORD_RESET_LINK_DOES_NOT_EXIST)
-        if 'new_password' not in request.data:
+        if "new_password" not in request.data:
             raise CustomError(ERROR__API__USER__NEW_PASSWORD_NOT_PROVIDED)
-        new_password = request.data['new_password']
+        new_password = request.data["new_password"]
         link.user.set_password(new_password)
         link.user.is_active = False
         link.user.save()
