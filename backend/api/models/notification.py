@@ -348,7 +348,7 @@ class NotificationManager(models.Manager):
             for_rlc=source_user.rlc,
         )
         for user in users_with_permissions:
-            if user != source_user and user != record_deletion.request_from:
+            if user != source_user:
                 Notification.objects.create_notification(
                     user=user,
                     source_user=source_user,
@@ -395,7 +395,7 @@ class NotificationManager(models.Manager):
             for_rlc=source_user.rlc,
         )
         for user in users_with_permissions:
-            if user != source_user and user != record_deletion.request_from:
+            if user != source_user:
                 Notification.objects.create_notification(
                     user=user,
                     source_user=source_user,
@@ -571,7 +571,7 @@ class NotificationManager(models.Manager):
         """
         creates notifications after record was created
 
-        creates notification for all users which have access to record
+        creates notifications for all users which have access to record
         except source_user
         :param source_user:
         :param record:
@@ -587,6 +587,82 @@ class NotificationManager(models.Manager):
                     ref_text=record.record_token,
                     notification_group_type=NotificationGroupType.RECORD,
                     notification_type=NotificationType.RECORD__CREATED,
+                )
+
+    from backend.api.models import NewUserRequest
+
+    @staticmethod
+    def notify_new_user_request(
+        source_user: UserProfile, new_user_request: NewUserRequest
+    ):
+        """
+        creates notifications after new user request (registering in rlc)
+
+        creates notifications for all users which have accept new users permission
+        (source user is not possible)
+        :param source_user:
+        :param new_user_request:
+        :return:
+        """
+        users_with_permissions: [
+            UserProfile
+        ] = UserProfile.objects.get_users_with_special_permissions(
+            permissions=[permissions.PERMISSION_ACCEPT_NEW_USERS_RLC],
+            from_rlc=source_user.rlc,
+            for_rlc=source_user.rlc,
+        )
+        for user in users_with_permissions:
+            Notification.objects.create_notification(
+                user=user,
+                source_user=source_user,
+                ref_id=str(new_user_request.request_from.id),
+                ref_text=new_user_request.request_from.name,
+                notification_group_type=NotificationGroupType.USER_REQUEST,
+                notification_type=NotificationType.USER_REQUEST__REQUESTED,
+            )
+
+    @staticmethod
+    def notify_new_user_accepted(
+        source_user: UserProfile, new_user_request: NewUserRequest
+    ):
+        users_with_permissions: [
+            UserProfile
+        ] = UserProfile.objects.get_users_with_special_permissions(
+            permissions=[permissions.PERMISSION_ACCEPT_NEW_USERS_RLC],
+            from_rlc=source_user.rlc,
+            for_rlc=source_user.rlc,
+        )
+        for user in users_with_permissions:
+            if user != source_user:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(new_user_request.request_from.id),
+                    ref_text=new_user_request.request_from.name,
+                    notification_group_type=NotificationGroupType.USER_REQUEST,
+                    notification_type=NotificationType.USER_REQUEST__ACCEPTED,
+                )
+
+    @staticmethod
+    def notify_new_user_declined(
+        source_user: UserProfile, new_user_request: NewUserRequest
+    ):
+        users_with_permissions: [
+            UserProfile
+        ] = UserProfile.objects.get_users_with_special_permissions(
+            permissions=[permissions.PERMISSION_ACCEPT_NEW_USERS_RLC],
+            from_rlc=source_user.rlc,
+            for_rlc=source_user.rlc,
+        )
+        for user in users_with_permissions:
+            if user != source_user:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(new_user_request.request_from.id),
+                    ref_text=new_user_request.request_from.name,
+                    notification_group_type=NotificationGroupType.USER_REQUEST,
+                    notification_type=NotificationType.USER_REQUEST__DECLINED,
                 )
 
 

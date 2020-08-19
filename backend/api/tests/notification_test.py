@@ -808,3 +808,109 @@ class NotificationTest(TransactionTestCase):
                 type=NotificationType.RECORD__RECORD_DOCUMENT_MODIFIED.value
             ).count(),
         )
+
+    def test_notify_new_user_request(self):
+        new_user: UserProfile = UserProfile(
+            is_active=False,
+            is_superuser=False,
+            email="newuser@law-orga.de",
+            name="new user",
+            rlc=self.base_fixtures["rlc"],
+        )
+        new_user.save()
+        request = NewUserRequest(request_from=new_user)
+        request.save()
+
+        permission: Permission = Permission.objects.get(
+            name=permissions.PERMISSION_ACCEPT_NEW_USERS_RLC
+        )
+        has_permission: HasPermission = HasPermission(
+            permission=permission,
+            permission_for_rlc=self.base_fixtures["rlc"],
+            group_has_permission=self.base_fixtures["groups"][0],
+        )
+        has_permission.save()
+
+        Notification.objects.notify_new_user_request(new_user, request)
+
+        self.assertEqual(2, Notification.objects.count())
+        self.assertEqual(2, NotificationGroup.objects.count())
+
+        self.assertEqual(
+            2,
+            Notification.objects.filter(
+                type=NotificationType.USER_REQUEST__REQUESTED.value
+            ).count(),
+        )
+
+    def test_notify_new_user_accepted(self):
+        new_user: UserProfile = UserProfile(
+            is_active=False,
+            is_superuser=False,
+            email="newuser@law-orga.de",
+            name="new user",
+            rlc=self.base_fixtures["rlc"],
+        )
+        new_user.save()
+        request = NewUserRequest(request_from=new_user, state="ac")
+        request.save()
+
+        permission: Permission = Permission.objects.get(
+            name=permissions.PERMISSION_ACCEPT_NEW_USERS_RLC
+        )
+        has_permission: HasPermission = HasPermission(
+            permission=permission,
+            permission_for_rlc=self.base_fixtures["rlc"],
+            group_has_permission=self.base_fixtures["groups"][0],
+        )
+        has_permission.save()
+
+        Notification.objects.notify_new_user_accepted(
+            self.base_fixtures["users"][0]["user"], request
+        )
+
+        self.assertEqual(1, Notification.objects.count())
+        self.assertEqual(1, NotificationGroup.objects.count())
+
+        self.assertEqual(
+            1,
+            Notification.objects.filter(
+                type=NotificationType.USER_REQUEST__ACCEPTED.value
+            ).count(),
+        )
+
+    def test_notify_new_user_declined(self):
+        new_user: UserProfile = UserProfile(
+            is_active=False,
+            is_superuser=False,
+            email="newuser@law-orga.de",
+            name="new user",
+            rlc=self.base_fixtures["rlc"],
+        )
+        new_user.save()
+        request = NewUserRequest(request_from=new_user, state="de")
+        request.save()
+
+        permission: Permission = Permission.objects.get(
+            name=permissions.PERMISSION_ACCEPT_NEW_USERS_RLC
+        )
+        has_permission: HasPermission = HasPermission(
+            permission=permission,
+            permission_for_rlc=self.base_fixtures["rlc"],
+            group_has_permission=self.base_fixtures["groups"][0],
+        )
+        has_permission.save()
+
+        Notification.objects.notify_new_user_declined(
+            self.base_fixtures["users"][0]["user"], request
+        )
+
+        self.assertEqual(1, Notification.objects.count())
+        self.assertEqual(1, NotificationGroup.objects.count())
+
+        self.assertEqual(
+            1,
+            Notification.objects.filter(
+                type=NotificationType.USER_REQUEST__DECLINED.value
+            ).count(),
+        )
