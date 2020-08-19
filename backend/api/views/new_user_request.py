@@ -33,7 +33,9 @@ class NewUserRequestViewSet(viewsets.ModelViewSet):
     queryset = NewUserRequest.objects.all()
 
     def list(self, request, *args, **kwargs):
-        if not request.user.has_permission(PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=request.user.rlc):
+        if not request.user.has_permission(
+            PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=request.user.rlc
+        ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
         queryset = NewUserRequest.objects.filter(request_from__rlc=request.user.rlc)
         return Response(NewUserRequestSerializer(queryset, many=True).data)
@@ -42,45 +44,56 @@ class NewUserRequestViewSet(viewsets.ModelViewSet):
 class NewUserRequestAdmitViewSet(APIView):
     def post(self, request):
         from backend.api.models import UsersRlcKeys
-        if not request.user.has_permission(PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=request.user.rlc):
+
+        if not request.user.has_permission(
+            PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=request.user.rlc
+        ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
-        if 'id' not in request.data:
+        if "id" not in request.data:
             raise CustomError(error_codes.ERROR__API__NEW_USER_REQUEST__ID_NOT_PROVIDED)
-        if 'action' not in request.data:
+        if "action" not in request.data:
             raise CustomError(error_codes.ERROR__API__NO_ACTION_PROVIDED)
 
         try:
-            new_user_request = NewUserRequest.objects.get(pk=request.data['id'])
+            new_user_request = NewUserRequest.objects.get(pk=request.data["id"])
         except:
             raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
         try:
-            user_activation_link = UserActivationLink.objects.get(user=new_user_request.request_from)
+            user_activation_link = UserActivationLink.objects.get(
+                user=new_user_request.request_from
+            )
         except:
-            raise CustomError(error_codes.ERROR__API__NEW_USER_REQUEST__NO_USER_ACTIVATION_LINK)
+            raise CustomError(
+                error_codes.ERROR__API__NEW_USER_REQUEST__NO_USER_ACTIVATION_LINK
+            )
 
-
-
-        action = request.data['action']
-        if action != 'accept' and action != 'decline':
+        action = request.data["action"]
+        if action != "accept" and action != "decline":
             raise CustomError(error_codes.ERROR__API__ACTION_NOT_VALID)
 
         new_user_request.request_processed = request.user
         new_user_request.processed_on = datetime.utcnow().replace(tzinfo=pytz.utc)
-        if action == 'accept':
-            new_user_request.state = 'gr'
+        if action == "accept":
+            new_user_request.state = "gr"
 
             # create encryption key for new user
             creators_private_key = get_private_key_from_request(request)
             rlcs_aes_key = request.user.get_rlcs_aes_key(creators_private_key)
-            encrypted_rlcs_private_key = new_user_request.request_from.rsa_encrypt(rlcs_aes_key)
-            users_rlc_keys = UsersRlcKeys(user=new_user_request.request_from, rlc=request.user.rlc, encrypted_key=encrypted_rlcs_private_key)
+            encrypted_rlcs_private_key = new_user_request.request_from.rsa_encrypt(
+                rlcs_aes_key
+            )
+            users_rlc_keys = UsersRlcKeys(
+                user=new_user_request.request_from,
+                rlc=request.user.rlc,
+                encrypted_key=encrypted_rlcs_private_key,
+            )
             users_rlc_keys.save()
 
             if user_activation_link.activated:
                 new_user_request.request_from.is_active = True
                 new_user_request.request_from.save()
         else:
-            new_user_request.state = 'de'
+            new_user_request.state = "de"
         new_user_request.save()
         return Response(NewUserRequestSerializer(new_user_request).data)

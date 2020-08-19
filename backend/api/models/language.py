@@ -22,4 +22,4 @@ class Language(models.Model):
     name = models.CharField(max_length=200, null=False)
 
     def __str__(self):
-        return 'language: ' + str(self.id) + ':' + self.name
+        return "language: " + str(self.id) + ":" + self.name

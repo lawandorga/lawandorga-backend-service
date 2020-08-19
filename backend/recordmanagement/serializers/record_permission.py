@@ -16,7 +16,10 @@
 
 from rest_framework import serializers
 from backend.recordmanagement import models
-from backend.api.serializers.user import UserProfileNameSerializer, UserProfileSerializer
+from backend.api.serializers.user import (
+    UserProfileNameSerializer,
+    UserProfileSerializer,
+)
 from backend.recordmanagement.serializers import RecordTokenSerializer
 
 
@@ -27,4 +30,4 @@ class RecordPermissionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.RecordPermission
-        fields = '__all__'
+        fields = "__all__"

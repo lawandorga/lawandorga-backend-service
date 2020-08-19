@@ -36,31 +36,44 @@ def create_missing_key_entries():
     for rlc in rlcs:
         # get users with overall permission for rlc
         users_with_decryption_key_permissions = api_models.UserProfile.objects.get_users_with_special_permissions(
-            get_record_encryption_keys_permissions_strings(), for_rlc=rlc)
+            get_record_encryption_keys_permissions_strings(), for_rlc=rlc
+        )
         # iterate over records
         records = record_models.EncryptedRecord.objects.filter(from_rlc=rlc)
         for record in records:
             # get all users with permission for record: overall + working on + record permission
             users_with_record_permission = api_models.UserProfile.objects.filter(
                 e_record_permissions_requested__record=record,
-                e_record_permissions_requested__state='gr')
-            users_with_keys = record.working_on_record.all().union(users_with_record_permission).union(
-                users_with_decryption_key_permissions).union(superusers).distinct()
+                e_record_permissions_requested__state="gr",
+            )
+            users_with_keys = (
+                record.working_on_record.all()
+                .union(users_with_record_permission)
+                .union(users_with_decryption_key_permissions)
+                .union(superusers)
+                .distinct()
+            )
             # iterate over users
             for user in users_with_keys:
                 # check if record encryption entry exists
-                keys = record_models.RecordEncryption.objects.filter(record=record, user=user).count()
+                keys = record_models.RecordEncryption.objects.filter(
+                    record=record, user=user
+                ).count()
                 if not keys > 0:
                     # NO: check if missing record key entry exists
-                    missing_keys = record_models.MissingRecordKey.objects.filter(record=record, user=user).count()
+                    missing_keys = record_models.MissingRecordKey.objects.filter(
+                        record=record, user=user
+                    ).count()
                     if not missing_keys > 0:
                         # NO: add new missing key entry
-                        missing_key = record_models.MissingRecordKey(record=record, user=user)
+                        missing_key = record_models.MissingRecordKey(
+                            record=record, user=user
+                        )
                         missing_key.save()
 
 
 # def create_missing_rlc_keys_entries():
-    # TODO?
+# TODO?
 
 
 def migrate_to_encryption():
@@ -84,25 +97,31 @@ def migrate_to_encryption():
 
 def aws_environment_variables_viable(command):
     if settings.AWS_S3_BUCKET_NAME:
-        command.stdout.write("s3bucket: " + settings.AWS_S3_BUCKET_NAME, ending='')
+        command.stdout.write("s3bucket: " + settings.AWS_S3_BUCKET_NAME, ending="")
     else:
         command.stdout.write("s3 bucket not found!")
         return False
 
     if settings.AWS_S3_REGION_NAME:
-        command.stdout.write("s3 region name: " + settings.AWS_S3_REGION_NAME, ending='')
+        command.stdout.write(
+            "s3 region name: " + settings.AWS_S3_REGION_NAME, ending=""
+        )
     else:
         command.stdout.write("s3 region not found!")
         return False
 
     if settings.AWS_ACCESS_KEY_ID:
-        command.stdout.write("s3 access key id: " + settings.AWS_ACCESS_KEY_ID, ending='')
+        command.stdout.write(
+            "s3 access key id: " + settings.AWS_ACCESS_KEY_ID, ending=""
+        )
     else:
         command.stdout.write("s3 access key not found!")
         return False
 
     if settings.AWS_SECRET_ACCESS_KEY:
-        command.stdout.write("s3 secret access key id: " + settings.AWS_SECRET_ACCESS_KEY, ending='')
+        command.stdout.write(
+            "s3 secret access key id: " + settings.AWS_SECRET_ACCESS_KEY, ending=""
+        )
     else:
         command.stdout.write("s3 secret access key not found!")
         return False

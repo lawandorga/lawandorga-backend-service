@@ -22,13 +22,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0003_auto_20190411_1633'),
+        ("recordmanagement", "0003_auto_20190411_1633"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='record',
-            name='state',
-            field=models.CharField(choices=[('op', 'open'), ('cl', 'closed'), ('wa', 'waiting'), ('wo', 'working')], max_length=2),
+            model_name="record",
+            name="state",
+            field=models.CharField(
+                choices=[
+                    ("op", "open"),
+                    ("cl", "closed"),
+                    ("wa", "waiting"),
+                    ("wo", "working"),
+                ],
+                max_length=2,
+            ),
         ),
     ]

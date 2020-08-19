@@ -19,7 +19,7 @@ from .commands import delete_all_forgot_password_links
 
 
 class Command(BaseCommand):
-    help = 'deletes all forgot password links'
+    help = "deletes all forgot password links"
 
     def handle(self, *args, **options):
         delete_all_forgot_password_links()

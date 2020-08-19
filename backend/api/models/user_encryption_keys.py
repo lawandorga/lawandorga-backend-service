@@ -31,7 +31,12 @@ class UserEncryptionKeysQuerySet(models.QuerySet):
 
 
 class UserEncryptionKeys(models.Model):
-    user = models.OneToOneField(UserProfile, related_name="encryption_keys", on_delete=models.CASCADE, null=False)
+    user = models.OneToOneField(
+        UserProfile,
+        related_name="encryption_keys",
+        on_delete=models.CASCADE,
+        null=False,
+    )
     private_key = models.BinaryField()
     private_key_encrypted = models.BooleanField(default=False)
     public_key = models.BinaryField()
@@ -60,4 +65,4 @@ class UserEncryptionKeys(models.Model):
             return private_key
 
     def __str__(self):
-        return 'EncryptionKeys: ' + str(self.id) + '; for user: ' + str(self.user.id)
+        return "EncryptionKeys: " + str(self.id) + "; for user: " + str(self.user.id)

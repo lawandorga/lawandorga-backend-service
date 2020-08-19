@@ -26,8 +26,8 @@ from backend.static.error_codes import ERROR__API__EMAIL__NO_EMAIL_PROVIDED
 
 class SendEmailViewSet(APIView):
     def post(self, request):
-        if 'email' in request.data:
-            email = request.data['email']
+        if "email" in request.data:
+            email = request.data["email"]
         else:
             raise CustomError(ERROR__API__EMAIL__NO_EMAIL_PROVIDED)
         # EmailSender.send_email_notification([email], 'SYSTEM NOTIFICATION', 'There was a change')
@@ -40,10 +40,9 @@ class GetRlcsViewSet(APIView):
     permission_classes = ()
 
     def get(self, request):
-        if 'ON_HEROKU' in os.environ and 'ON_DEPLOY' in os.environ:
-            rlcs = Rlc.objects.all().exclude(name='Dummy RLC').order_by('name')
+        if "ON_HEROKU" in os.environ and "ON_DEPLOY" in os.environ:
+            rlcs = Rlc.objects.all().exclude(name="Dummy RLC").order_by("name")
         else:
-            rlcs = Rlc.objects.all().order_by('name')
+            rlcs = Rlc.objects.all().order_by("name")
         serialized = RlcOnlyNameSerializer(rlcs, many=True).data
         return Response(serialized)
-

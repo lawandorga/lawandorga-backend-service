@@ -34,9 +34,11 @@ def generate_link_id():
 class UserActivationLink(models.Model):
     user = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
 
-    link = models.CharField(auto_created=True, unique=True, default=generate_link_id, max_length=32)
+    link = models.CharField(
+        auto_created=True, unique=True, default=generate_link_id, max_length=32
+    )
     date = models.DateTimeField(auto_now_add=True)
     activated = models.BooleanField(default=False)
 
     def __str__(self):
-        return 'user activation link: ' + str(self.id) + ':' + self.user.email
+        return "user activation link: " + str(self.id) + ":" + self.user.email

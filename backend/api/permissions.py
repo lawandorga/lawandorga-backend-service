@@ -42,7 +42,7 @@ class OnlySuperuser(permissions.BasePermission):
 
 class EditPermissions(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.method == 'GET':
+        if request.method == "GET":
             return True
         return request.user.is_superuser
 
@@ -51,7 +51,7 @@ class OriginCountry(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.user.is_superuser:
             return True
-        if request.method == 'GET':
+        if request.method == "GET":
             return True
         else:
             return False
@@ -59,6 +59,6 @@ class OriginCountry(permissions.BasePermission):
 
 class GetOrSuperuser(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.user.is_superuser or request.method == 'GET':
+        if request.user.is_superuser or request.method == "GET":
             return True
         return False

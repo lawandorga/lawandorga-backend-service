@@ -17,7 +17,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.static.error_codes import *
-from backend.shared.storage_generator import generate_presigned_post, generate_presigned_url
+from backend.shared.storage_generator import (
+    generate_presigned_post,
+    generate_presigned_url,
+)
 from backend.static.storage_folders import user_has_permission
 from backend.api.errors import CustomError
 
@@ -29,9 +32,9 @@ class StorageUploadViewSet(APIView):
         :param request: in the params should be defined: file_name, file_type and file_dir
         :return: the presigend post data
         """
-        file_name = request.query_params.get('file_name')
-        file_type = request.query_params.get('file_type')
-        file_dir = request.query_params.get('file_dir', '')
+        file_name = request.query_params.get("file_name")
+        file_type = request.query_params.get("file_type")
+        file_dir = request.query_params.get("file_dir", "")
         return generate_presigned_post(file_name, file_type, file_dir)
 
     def post(self, request):
@@ -41,9 +44,9 @@ class StorageUploadViewSet(APIView):
         :param request:
         :return:
         """
-        file_dir = request.data['file_dir']
-        file_names = request.data['file_names']
-        file_types = request.data['file_types']
+        file_dir = request.data["file_dir"]
+        file_names = request.data["file_names"]
+        file_types = request.data["file_types"]
         if file_names.__len__() != file_types.__len__():
             raise CustomError(ERROR__RECORD__UPLOAD__NAMES_TYPES_LENGTH_MISMATCH)
 
@@ -54,13 +57,13 @@ class StorageUploadViewSet(APIView):
         for i in range(file_names.__len__()):
             new_post = generate_presigned_post(file_names[i], file_types[i], file_dir)
             posts.append(new_post)
-        return Response({'presigned_posts': posts})
+        return Response({"presigned_posts": posts})
 
 
 class StorageDownloadViewSet(APIView):
     def get(self, request):
-        file_key = request.query_params.get('file', '')
-        file_dir = file_key[:file_key.rfind('/')]
+        file_key = request.query_params.get("file", "")
+        file_dir = file_key[: file_key.rfind("/")]
         if not user_has_permission(file_dir, request.user):
             raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 

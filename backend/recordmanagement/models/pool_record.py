@@ -20,9 +20,17 @@ from backend.recordmanagement.models import EncryptedRecord
 
 
 class PoolRecord(models.Model):
-    record = models.ForeignKey(EncryptedRecord, related_name="e_record_pool_entry", on_delete=models.CASCADE, null=False)
+    record = models.ForeignKey(
+        EncryptedRecord,
+        related_name="e_record_pool_entry",
+        on_delete=models.CASCADE,
+        null=False,
+    )
     enlisted = models.DateTimeField(auto_now_add=True)
-    yielder = models.ForeignKey(UserProfile, related_name="e_records_yielded", on_delete=models.SET_NULL, null=True)
+    yielder = models.ForeignKey(
+        UserProfile,
+        related_name="e_records_yielded",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
     record_key = models.CharField(null=False, max_length=255)
-
-

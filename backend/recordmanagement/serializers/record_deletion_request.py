@@ -16,7 +16,10 @@
 
 from rest_framework import serializers
 from backend.recordmanagement import models
-from backend.api.serializers.user import UserProfileNameSerializer, UserProfileSerializer
+from backend.api.serializers.user import (
+    UserProfileNameSerializer,
+    UserProfileSerializer,
+)
 from backend.recordmanagement.serializers import RecordNoDetailSerializer
 
 
@@ -27,4 +30,4 @@ class RecordDeletionRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.RecordDeletionRequest
-        fields = '__all__'
+        fields = "__all__"

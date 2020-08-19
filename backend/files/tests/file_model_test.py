@@ -26,15 +26,38 @@ class FileModelTests(TransactionTestCase):
 
     def test_delete_on_cloud(self):
         File.delete_on_cloud = MagicMock()
-        folder = Folder(name='root folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+        folder = Folder(
+            name="root folder",
+            creator=self.fixtures["users"][0]["user"],
+            rlc=self.fixtures["rlc"],
+        )
         folder.save()
-        folder2 = Folder(name='middle folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+        folder2 = Folder(
+            name="middle folder",
+            creator=self.fixtures["users"][0]["user"],
+            rlc=self.fixtures["rlc"],
+        )
         folder2.save()
-        file = File(name='file1', creator=self.fixtures['users'][0]['user'], folder=folder2, size=12)
+        file = File(
+            name="file1",
+            creator=self.fixtures["users"][0]["user"],
+            folder=folder2,
+            size=12,
+        )
         file.save()
-        file2 = File(name='file2', creator=self.fixtures['users'][0]['user'], folder=folder2, size=12)
+        file2 = File(
+            name="file2",
+            creator=self.fixtures["users"][0]["user"],
+            folder=folder2,
+            size=12,
+        )
         file2.save()
-        file3 = File(name='file3', creator=self.fixtures['users'][0]['user'], folder=folder, size=12)
+        file3 = File(
+            name="file3",
+            creator=self.fixtures["users"][0]["user"],
+            folder=folder,
+            size=12,
+        )
         file3.save()
 
         self.assertEqual(2, Folder.objects.count())
@@ -45,16 +68,35 @@ class FileModelTests(TransactionTestCase):
         self.assertEqual(2, File.delete_on_cloud.call_count)
 
     def test_update_folder_size(self):
-        folder = Folder(name='root folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+        folder = Folder(
+            name="root folder",
+            creator=self.fixtures["users"][0]["user"],
+            rlc=self.fixtures["rlc"],
+        )
         folder.save()
-        folder2 = Folder(name='middle folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'], parent=folder)
+        folder2 = Folder(
+            name="middle folder",
+            creator=self.fixtures["users"][0]["user"],
+            rlc=self.fixtures["rlc"],
+            parent=folder,
+        )
         folder2.save()
         self.assertEqual(0, folder.size)
         self.assertEqual(0, folder2.size)
 
-        file = File(name='file1', creator=self.fixtures['users'][0]['user'], folder=folder2, size=1000)
+        file = File(
+            name="file1",
+            creator=self.fixtures["users"][0]["user"],
+            folder=folder2,
+            size=1000,
+        )
         file.save()
-        file2 = File(name='file2', creator=self.fixtures['users'][0]['user'], folder=folder, size=1000)
+        file2 = File(
+            name="file2",
+            creator=self.fixtures["users"][0]["user"],
+            folder=folder,
+            size=1000,
+        )
         file2.save()
         self.assertEqual(2000, folder.size)
         self.assertEqual(1000, folder2.size)
@@ -69,20 +111,43 @@ class FileModelTests(TransactionTestCase):
         self.assertEqual(0, folder.size)
 
     def test_file_key(self):
-        folder = Folder(name='root folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+        folder = Folder(
+            name="root folder",
+            creator=self.fixtures["users"][0]["user"],
+            rlc=self.fixtures["rlc"],
+        )
         folder.save()
-        file = File(name='file1', creator=self.fixtures['users'][0]['user'], folder=folder, size=1000)
+        file = File(
+            name="file1",
+            creator=self.fixtures["users"][0]["user"],
+            folder=folder,
+            size=1000,
+        )
         file.save()
 
-        self.assertEqual('rlcs/3001/root folder/file1', file.get_file_key())
+        self.assertEqual("rlcs/3001/root folder/file1", file.get_file_key())
 
     def test_duplicate_file(self):
-        folder = Folder(name='root folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+        folder = Folder(
+            name="root folder",
+            creator=self.fixtures["users"][0]["user"],
+            rlc=self.fixtures["rlc"],
+        )
         folder.save()
-        file = File(name='file1', creator=self.fixtures['users'][0]['user'], folder=folder, size=1000)
+        file = File(
+            name="file1",
+            creator=self.fixtures["users"][0]["user"],
+            folder=folder,
+            size=1000,
+        )
         File.create_or_update(file)
 
-        file2 = File(name='file1', creator=self.fixtures['users'][0]['user'], folder=folder, size=1238)
+        file2 = File(
+            name="file1",
+            creator=self.fixtures["users"][0]["user"],
+            folder=folder,
+            size=1238,
+        )
         File.create_or_update(file2)
         self.assertEqual(1, File.objects.count())
-        self.assertEqual(1238, File.objects.get(name='file1', folder=folder).size)
+        self.assertEqual(1238, File.objects.get(name="file1", folder=folder).size)

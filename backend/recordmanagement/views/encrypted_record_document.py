@@ -54,10 +54,18 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
         users_private_key = get_private_key_from_request(request)
         record_key = e_record.get_decryption_key(request.user, users_private_key)
         downloaded = []
-        for record_document in models.EncryptedRecordDocument.objects.filter(record=e_record):
-            EncryptedStorage.download_from_s3_and_decrypt_file(record_document.get_file_key(), record_key, storage_folders.get_temp_storage_folder())
-            downloaded.append(storage_folders.get_temp_storage_path(record_document.name))
-        return storage_generator.zip_files_and_create_response(downloaded, 'record.zip')
+        for record_document in models.EncryptedRecordDocument.objects.filter(
+            record=e_record
+        ):
+            EncryptedStorage.download_from_s3_and_decrypt_file(
+                record_document.get_file_key(),
+                record_key,
+                storage_folders.get_temp_storage_folder(),
+            )
+            downloaded.append(
+                storage_folders.get_temp_storage_path(record_document.name)
+            )
+        return storage_generator.zip_files_and_create_response(downloaded, "record.zip")
 
     def post(self, request, id):
         try:
@@ -69,32 +77,44 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
         users_private_key = get_private_key_from_request(request)
-        files = request.FILES.getlist('files')
+        files = request.FILES.getlist("files")
         if files.__len__() == 0:
             raise CustomError(error_codes.ERROR__FILES__NO_FILES_TO_UPLOAD)
         local_file_information = LocalStorageManager.save_files_locally(files)
-        filepaths = [n['local_file_path'] for n in local_file_information]
+        filepaths = [n["local_file_path"] for n in local_file_information]
 
-        directory = storage_folders.get_storage_folder_encrypted_record_document(e_record.from_rlc_id, e_record.id)
+        directory = storage_folders.get_storage_folder_encrypted_record_document(
+            e_record.from_rlc_id, e_record.id
+        )
         record_key = e_record.get_decryption_key(request.user, users_private_key)
-        MultithreadedFileUploads.encrypt_files_and_upload_to_single_s3_folder(filepaths, record_key, directory)
+        MultithreadedFileUploads.encrypt_files_and_upload_to_single_s3_folder(
+            filepaths, record_key, directory
+        )
 
         e_record_documents_handled = []
         for file_information in local_file_information:
-            already_existing = models.EncryptedRecordDocument.objects.filter(record=e_record,
-                                                                             name=file_information['file_name']).first()
+            already_existing = models.EncryptedRecordDocument.objects.filter(
+                record=e_record, name=file_information["file_name"]
+            ).first()
             if already_existing is not None:
-                already_existing.file_size = file_information['file_size']
+                already_existing.file_size = file_information["file_size"]
                 already_existing.last_edited = datetime.now().replace(tzinfo=pytz.utc)
                 already_existing.save()
                 e_record_documents_handled.append(already_existing)
             else:
-                new_encrypted_record_document = models.EncryptedRecordDocument(record=e_record, creator=request.user,
-                                                                               file_size=file_information['file_size'],
-                                                                               name=file_information['file_name'])
+                new_encrypted_record_document = models.EncryptedRecordDocument(
+                    record=e_record,
+                    creator=request.user,
+                    file_size=file_information["file_size"],
+                    name=file_information["file_name"],
+                )
                 new_encrypted_record_document.save()
                 e_record_documents_handled.append(new_encrypted_record_document)
-        return Response(serializers.EncryptedRecordDocumentSerializer(e_record_documents_handled, many=True).data)
+        return Response(
+            serializers.EncryptedRecordDocumentSerializer(
+                e_record_documents_handled, many=True
+            ).data
+        )
 
 
 class EncryptedRecordDocumentDownloadViewSet(APIView):
@@ -110,10 +130,19 @@ class EncryptedRecordDocumentDownloadViewSet(APIView):
         users_private_key = get_private_key_from_request(request)
         record_key = e_record.get_decryption_key(request.user, users_private_key)
 
-        EncryptedStorage.download_from_s3_and_decrypt_file(e_record_document.get_file_key(), record_key,
-                                                           storage_folders.get_temp_storage_folder())
+        EncryptedStorage.download_from_s3_and_decrypt_file(
+            e_record_document.get_file_key(),
+            record_key,
+            storage_folders.get_temp_storage_folder(),
+        )
 
-        file = base64.b64encode(open(storage_folders.get_temp_storage_path(e_record_document.name), 'rb').read())
+        file = base64.b64encode(
+            open(
+                storage_folders.get_temp_storage_path(e_record_document.name), "rb"
+            ).read()
+        )
         res = Response(file, content_type=mimetypes.guess_type(e_record_document.name))
-        res['Content-Disposition'] = 'attachment; filename="' + e_record_document.name + '"'
+        res["Content-Disposition"] = (
+            'attachment; filename="' + e_record_document.name + '"'
+        )
         return res

@@ -22,13 +22,29 @@ from backend.static.encryption import RSAEncryption
 
 
 class RecordEncryption(models.Model):
-    user = models.ForeignKey(UserProfile, related_name="record_encryptions", on_delete=models.CASCADE, null=False)
-    record = models.ForeignKey(EncryptedRecord, related_name="encryptions", on_delete=models.CASCADE, null=False)
+    user = models.ForeignKey(
+        UserProfile,
+        related_name="record_encryptions",
+        on_delete=models.CASCADE,
+        null=False,
+    )
+    record = models.ForeignKey(
+        EncryptedRecord,
+        related_name="encryptions",
+        on_delete=models.CASCADE,
+        null=False,
+    )
     encrypted_key = models.BinaryField()
 
     def __str__(self):
-        return 'record_encryption: ' + str(self.id) + '; user: ' + str(self.user.id) + '; e_record: ' + str(
-            self.record.id)
+        return (
+            "record_encryption: "
+            + str(self.id)
+            + "; user: "
+            + str(self.user.id)
+            + "; e_record: "
+            + str(self.record.id)
+        )
 
     def decrypt(self, pem_private_key_of_user):
         encrypted_key = self.encrypted_key

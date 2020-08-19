@@ -6,28 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0010_auto_20200106_2320'),
+        ("recordmanagement", "0010_auto_20200106_2320"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='encryptedclient',
-            name='encrypted_client_key',
+            model_name="encryptedclient",
+            name="encrypted_client_key",
             field=models.BinaryField(null=True),
         ),
         migrations.AlterField(
-            model_name='encryptedclient',
-            name='name',
+            model_name="encryptedclient",
+            name="name",
             field=models.BinaryField(null=True),
         ),
         migrations.AlterField(
-            model_name='encryptedclient',
-            name='note',
+            model_name="encryptedclient",
+            name="note",
             field=models.BinaryField(null=True),
         ),
         migrations.AlterField(
-            model_name='encryptedclient',
-            name='phone_number',
+            model_name="encryptedclient",
+            name="phone_number",
             field=models.BinaryField(null=True),
         ),
     ]

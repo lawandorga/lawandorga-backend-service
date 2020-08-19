@@ -6,11 +6,9 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0011_auto_20200108_1640'),
+        ("recordmanagement", "0011_auto_20200108_1640"),
     ]
 
     operations = [
-        migrations.DeleteModel(
-            name='ClientEncryption',
-        ),
+        migrations.DeleteModel(name="ClientEncryption",),
     ]

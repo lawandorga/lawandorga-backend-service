@@ -16,7 +16,10 @@
 
 from rest_framework import serializers
 from backend.recordmanagement.models import EncryptedRecordPermission
-from backend.api.serializers.user import UserProfileNameSerializer, UserProfileSerializer
+from backend.api.serializers.user import (
+    UserProfileNameSerializer,
+    UserProfileSerializer,
+)
 from backend.recordmanagement.serializers import EncryptedRecordTokenSerializer
 
 
@@ -27,4 +30,4 @@ class EncryptedRecordPermissionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EncryptedRecordPermission
-        fields = '__all__'
+        fields = "__all__"

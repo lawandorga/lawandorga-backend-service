@@ -25,4 +25,9 @@ class FrontendLinks:
 
     @staticmethod
     def get_user_activation_link(activation_link):
-        return env_getter.get_website_base_url() + "/api/activate_user_activation_link/" + str(activation_link.link) + "/"
+        return (
+            env_getter.get_website_base_url()
+            + "/api/activate_user_activation_link/"
+            + str(activation_link.link)
+            + "/"
+        )

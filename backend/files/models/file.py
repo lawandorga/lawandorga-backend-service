@@ -29,24 +29,33 @@ from .folder import Folder
 class File(models.Model):
     name = models.CharField(max_length=255)
 
-    creator = models.ForeignKey(UserProfile, related_name="files_created", on_delete=models.SET_NULL, null=True)
+    creator = models.ForeignKey(
+        UserProfile, related_name="files_created", on_delete=models.SET_NULL, null=True
+    )
     created = models.DateTimeField(auto_now_add=True)
 
-    last_editor = models.ForeignKey(UserProfile, related_name="last_edited", on_delete=models.SET_NULL, null=True,
-                                    default=None)
+    last_editor = models.ForeignKey(
+        UserProfile,
+        related_name="last_edited",
+        on_delete=models.SET_NULL,
+        null=True,
+        default=None,
+    )
     last_edited = models.DateTimeField(auto_now_add=True)
 
-    folder = models.ForeignKey(Folder, related_name="files_in_folder", on_delete=models.CASCADE, null=False)
+    folder = models.ForeignKey(
+        Folder, related_name="files_in_folder", on_delete=models.CASCADE, null=False
+    )
     size = models.BigIntegerField(null=False)
 
     def __str__(self):
-        return 'file: ' + self.get_file_key()
+        return "file: " + self.get_file_key()
 
     def get_file_key(self):
         return self.folder.get_file_key() + self.name
 
     def delete_on_cloud(self):
-        EncryptedStorage.delete_on_s3(self.get_file_key() + '.enc')
+        EncryptedStorage.delete_on_s3(self.get_file_key() + ".enc")
 
     @receiver(pre_delete)
     def pre_deletion(sender, instance, **kwargs):
@@ -64,8 +73,9 @@ class File(models.Model):
             instance.folder.save()
 
     def download(self, aes_key, local_destination_folder):
-        EncryptedStorage.download_from_s3_and_decrypt_file(self.get_file_key() + '.enc', aes_key,
-                                                           local_destination_folder)
+        EncryptedStorage.download_from_s3_and_decrypt_file(
+            self.get_file_key() + ".enc", aes_key, local_destination_folder
+        )
         # EncryptedStorage.download_file_from_s3(self.get_file_key(), os.path.join(local_destination_folder, self.name + '.enc'))
 
     @staticmethod
@@ -89,11 +99,11 @@ class File(models.Model):
             file.save()
             return file
         count = 1
-        extension_index = file.name.rindex('.')
+        extension_index = file.name.rindex(".")
         base = file.name[:extension_index]
         extension = file.name[extension_index:]
         while True:
-            new_name = base + ' (' + str(count) + ')' + extension
+            new_name = base + " (" + str(count) + ")" + extension
             try:
                 File.objects.get(folder=file.folder, name=new_name)
                 count += 1

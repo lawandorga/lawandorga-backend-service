@@ -25,60 +25,93 @@ class PermissionForFolderTest(TransactionTestCase):
         self.fixtures = CreateFixtures.create_base_fixtures()
 
     def test_create_same_permission_twice(self):
-        permission = FolderPermission(name='read')
+        permission = FolderPermission(name="read")
         permission.save()
-        folder = Folder(name='folder1', size='123', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+        folder = Folder(
+            name="folder1",
+            size="123",
+            creator=self.fixtures["users"][0]["user"],
+            rlc=self.fixtures["rlc"],
+        )
         folder.save()
 
-        perm1 = PermissionForFolder(permission=permission, group_has_permission=self.fixtures['groups'][0],
-                                    folder=folder)
+        perm1 = PermissionForFolder(
+            permission=permission,
+            group_has_permission=self.fixtures["groups"][0],
+            folder=folder,
+        )
         perm1.save()
         self.assertEqual(1, PermissionForFolder.objects.count())
 
         # creating same
-        perm2 = PermissionForFolder(permission=permission, group_has_permission=self.fixtures['groups'][0],
-                                    folder=folder)
+        perm2 = PermissionForFolder(
+            permission=permission,
+            group_has_permission=self.fixtures["groups"][0],
+            folder=folder,
+        )
         perm2.save()
         self.assertEqual(1, PermissionForFolder.objects.count())
 
         # creating different but changing afterwards
-        perm3 = PermissionForFolder(permission=permission, group_has_permission=self.fixtures['groups'][1],
-                                    folder=folder)
+        perm3 = PermissionForFolder(
+            permission=permission,
+            group_has_permission=self.fixtures["groups"][1],
+            folder=folder,
+        )
         perm3.save()
         self.assertEqual(2, PermissionForFolder.objects.count())
 
-        perm3.group_has_permission = self.fixtures['groups'][0]
+        perm3.group_has_permission = self.fixtures["groups"][0]
         with self.assertRaises(Exception, msg="saving should fail and throw error"):
             perm3.save()
         self.assertEqual(1, PermissionForFolder.objects.count())
 
     def test_create_different_permission_group(self):
-        permission = FolderPermission(name='read')
+        permission = FolderPermission(name="read")
         permission.save()
-        top_folder = Folder(name='top folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+        top_folder = Folder(
+            name="top folder",
+            creator=self.fixtures["users"][0]["user"],
+            rlc=self.fixtures["rlc"],
+        )
         top_folder.save()
-        middle_folder = Folder(name='middle folder', creator=self.fixtures['users'][0]['user'],
-                               rlc=self.fixtures['rlc'],
-                               parent=top_folder)
+        middle_folder = Folder(
+            name="middle folder",
+            creator=self.fixtures["users"][0]["user"],
+            rlc=self.fixtures["rlc"],
+            parent=top_folder,
+        )
         middle_folder.save()
 
-        perm1 = PermissionForFolder(permission=permission, group_has_permission=self.fixtures['groups'][0],
-                                    folder=top_folder)
+        perm1 = PermissionForFolder(
+            permission=permission,
+            group_has_permission=self.fixtures["groups"][0],
+            folder=top_folder,
+        )
         perm1.save()
         self.assertEqual(1, PermissionForFolder.objects.count())
 
-        perm2 = PermissionForFolder(permission=permission, group_has_permission=self.fixtures['groups'][1],
-                                    folder=middle_folder)
+        perm2 = PermissionForFolder(
+            permission=permission,
+            group_has_permission=self.fixtures["groups"][1],
+            folder=middle_folder,
+        )
         with self.assertRaises(Exception, msg="saving should fail"):
             perm2.save()
         self.assertEqual(1, PermissionForFolder.objects.count())
 
-        perm3 = PermissionForFolder(permission=permission, group_has_permission=self.fixtures['groups'][1],
-                                    folder=top_folder)
+        perm3 = PermissionForFolder(
+            permission=permission,
+            group_has_permission=self.fixtures["groups"][1],
+            folder=top_folder,
+        )
         perm3.save()
         self.assertEqual(2, PermissionForFolder.objects.count())
 
-        perm4 = PermissionForFolder(permission=permission, group_has_permission=self.fixtures['groups'][1],
-                                    folder=middle_folder)
+        perm4 = PermissionForFolder(
+            permission=permission,
+            group_has_permission=self.fixtures["groups"][1],
+            folder=middle_folder,
+        )
         perm4.save()
         self.assertEqual(3, PermissionForFolder.objects.count())

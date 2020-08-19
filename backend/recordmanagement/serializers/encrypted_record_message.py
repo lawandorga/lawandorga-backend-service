@@ -25,7 +25,11 @@ class EncryptedRecordMessageListSerializer(serializers.ListSerializer):
     def get_decrypted_data(self, record_aes_key):
         data = []
         for message in self.instance.all():
-            data.append(EncryptedRecordMessageSerializer(message).get_decrypted_data(record_aes_key))
+            data.append(
+                EncryptedRecordMessageSerializer(message).get_decrypted_data(
+                    record_aes_key
+                )
+            )
         return data
 
 
@@ -36,9 +40,9 @@ class EncryptedRecordMessageSerializer(serializers.ModelSerializer):
     class Meta:
         list_serializer_class = EncryptedRecordMessageListSerializer
         model = EncryptedRecordMessage
-        fields = '__all__'
+        fields = "__all__"
 
     def get_decrypted_data(self, key):
         data = self.data
-        AESEncryption.decrypt_field(data, data, 'message', key)
+        AESEncryption.decrypt_field(data, data, "message", key)
         return data

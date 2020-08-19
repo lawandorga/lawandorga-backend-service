@@ -22,4 +22,4 @@ from backend.api.models import UserEncryptionKeys
 class UserEncryptionKeysSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserEncryptionKeys
-        fields = '__all__'
+        fields = "__all__"

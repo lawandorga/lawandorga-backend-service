@@ -19,7 +19,10 @@ import base64
 import os
 from rest_framework.response import Response
 
-from backend.static.storage_folders import get_temp_storage_path, get_temp_storage_folder
+from backend.static.storage_folders import (
+    get_temp_storage_path,
+    get_temp_storage_folder,
+)
 
 
 class LocalStorageManager:
@@ -38,19 +41,23 @@ class LocalStorageManager:
             if paths is None:
                 local_file_path = get_temp_storage_path(file_information.name)
             else:
-                as_path = file_information.name + ';' + str(file_information.size)
+                as_path = file_information.name + ";" + str(file_information.size)
                 for path in paths:
                     if path.endswith(as_path):
-                        real_path_part = path[:-(1 + str(file_information.size).__len__())]
-                        if path.startswith('/'):
+                        real_path_part = path[
+                            : -(1 + str(file_information.size).__len__())
+                        ]
+                        if path.startswith("/"):
                             real_path_part = real_path_part[1:]
-                        local_file_path = os.path.join(get_temp_storage_path(real_path_part))
+                        local_file_path = os.path.join(
+                            get_temp_storage_path(real_path_part)
+                        )
                         break
             try:
                 os.makedirs(os.path.dirname(local_file_path))
             except:
                 pass
-            file = open(local_file_path, 'wb')
+            file = open(local_file_path, "wb")
             if file_information.multiple_chunks():
                 for chunk in file_information.chunks():
                     file.write(chunk)
@@ -60,22 +67,24 @@ class LocalStorageManager:
             # local_file_paths.append(local_file_path)
             # file_names.append(file_information.name)
             # file_sizes.append(file_information.size)
-            output_file_information.append({
-                'file_name': file_information.name,
-                'file_size': file_information.size,
-                'local_file_path': local_file_path
-            })
+            output_file_information.append(
+                {
+                    "file_name": file_information.name,
+                    "file_size": file_information.size,
+                    "local_file_path": local_file_path,
+                }
+            )
         return output_file_information
 
     @staticmethod
     def zip_folder_and_delete(zip_path, folder_path):
-        shutil.make_archive(zip_path, 'zip', folder_path)
+        shutil.make_archive(zip_path, "zip", folder_path)
         shutil.rmtree(folder_path)
 
     @staticmethod
     def create_response_from_zip_file(zip_path):
-        encoded_file = base64.b64encode(open(zip_path, 'rb').read())
-        res = Response(encoded_file, content_type='application/zip')
-        res['Content-Disposition'] = 'attachment; filename="' + zip_path + '"'
+        encoded_file = base64.b64encode(open(zip_path, "rb").read())
+        res = Response(encoded_file, content_type="application/zip")
+        res["Content-Disposition"] = 'attachment; filename="' + zip_path + '"'
         os.remove(zip_path)
         return res

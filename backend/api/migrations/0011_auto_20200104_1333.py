@@ -8,13 +8,17 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0010_encryptionkeys'),
+        ("api", "0010_encryptionkeys"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='encryptionkeys',
-            name='user',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='encryption_keys', to=settings.AUTH_USER_MODEL),
+            model_name="encryptionkeys",
+            name="user",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="encryption_keys",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

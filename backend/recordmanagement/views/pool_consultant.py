@@ -35,7 +35,11 @@ class PoolConsultantViewSet(viewsets.ModelViewSet):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
         if PoolRecord.objects.filter(record__from_rlc=user.rlc).count() >= 1:
-            entry = PoolRecord.objects.filter(record__from_rlc=user.rlc).order_by('enlisted').first()
+            entry = (
+                PoolRecord.objects.filter(record__from_rlc=user.rlc)
+                .order_by("enlisted")
+                .first()
+            )
 
             record = entry.record
             record.working_on_record.remove(entry.yielder)
@@ -43,19 +47,22 @@ class PoolConsultantViewSet(viewsets.ModelViewSet):
             record.save()
 
             RecordEncryption.objects.filter(record=record, user=entry.yielder).delete()
-            new_keys = RecordEncryption(user=user, record=record, encrypted_key=user.rsa_encrypt(entry.record_key))
+            new_keys = RecordEncryption(
+                user=user,
+                record=record,
+                encrypted_key=user.rsa_encrypt(entry.record_key),
+            )
             new_keys.save()
 
             entry.delete()
-            return Response({'action': 'matched'})
+            return Response({"action": "matched"})
         else:
             pool_consultant = PoolConsultant(consultant=user)
             pool_consultant.save()
 
             number_of_entries = PoolConsultant.objects.filter(consultant=user).count()
             return_val = PoolConsultantSerializer(pool_consultant).data
-            return_val.update({
-                'action': 'created',
-                'number_of_enlistings': number_of_entries
-            })
+            return_val.update(
+                {"action": "created", "number_of_enlistings": number_of_entries}
+            )
             return Response(return_val)

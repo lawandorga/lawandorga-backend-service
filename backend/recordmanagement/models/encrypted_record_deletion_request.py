@@ -19,20 +19,31 @@ from backend.api.models import UserProfile
 
 
 class EncryptedRecordDeletionRequest(models.Model):
-    record = models.ForeignKey('EncryptedRecord', related_name="deletions_requested", on_delete=models.SET_NULL, null=True)
+    record = models.ForeignKey(
+        "EncryptedRecord",
+        related_name="deletions_requested",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
     request_from = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
-    request_processed = models.ForeignKey(UserProfile, related_name="e_record_deletion_request_processed",
-                                          on_delete=models.SET_NULL, null=True)
+    request_processed = models.ForeignKey(
+        UserProfile,
+        related_name="e_record_deletion_request_processed",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
     explanation = models.CharField(max_length=4096)
     requested = models.DateTimeField(auto_now_add=True)
     processed_on = models.DateTimeField(null=True)
 
     record_deletion_request_states_possible = (
-        ('re', 'requested'),
-        ('gr', 'granted'),
-        ('de', 'declined')
+        ("re", "requested"),
+        ("gr", "granted"),
+        ("de", "declined"),
     )
-    state = models.CharField(max_length=2, choices=record_deletion_request_states_possible, default='re')
+    state = models.CharField(
+        max_length=2, choices=record_deletion_request_states_possible, default="re"
+    )
 
     def __str__(self):
-        return 'e record deletion request:' + str(self.id)
+        return "e record deletion request:" + str(self.id)

@@ -24,19 +24,52 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0004_auto_20190212_0750'),
+        ("api", "0004_auto_20190212_0750"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='NewUserRequest',
+            name="NewUserRequest",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('requested', models.DateTimeField(auto_now_add=True)),
-                ('processed_on', models.DateTimeField(null=True)),
-                ('state', models.CharField(choices=[('re', 'requested'), ('gr', 'granted'), ('de', 'declined')], default='re', max_length=2)),
-                ('request_from', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('request_processed', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='new_user_permissions_processed', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("requested", models.DateTimeField(auto_now_add=True)),
+                ("processed_on", models.DateTimeField(null=True)),
+                (
+                    "state",
+                    models.CharField(
+                        choices=[
+                            ("re", "requested"),
+                            ("gr", "granted"),
+                            ("de", "declined"),
+                        ],
+                        default="re",
+                        max_length=2,
+                    ),
+                ),
+                (
+                    "request_from",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "request_processed",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="new_user_permissions_processed",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

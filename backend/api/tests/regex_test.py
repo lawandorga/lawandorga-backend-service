@@ -29,29 +29,23 @@ class RegexTests(TransactionTestCase):
             self.assertTrue(method_to_check(value))
 
     def test_is_storage_folder_success(self):
-        folder = 'rlcs/123/records/123/'
+        folder = "rlcs/123/records/123/"
         self.assertTrue(is_storage_folder_of_record(folder))
-        folder = 'rlcs/123/records/123'
+        folder = "rlcs/123/records/123"
         self.assertTrue(is_storage_folder_of_record(folder))
 
     def test_is_storage_folder_error(self):
-        folder = 'aa/123/records/123/'
+        folder = "aa/123/records/123/"
         self.assertTrue(not is_storage_folder_of_record(folder))
-        folder = 'rlcs/123a/records/123/'
+        folder = "rlcs/123a/records/123/"
         self.assertTrue(not is_storage_folder_of_record(folder))
 
     def test_is_phone_number_success(self):
         numbers = [
-            '0753939209',
-            '07539 39209',
-            '08923738',
+            "0753939209",
+            "07539 39209",
+            "08923738",
             # '07539-39209',
             # '07539/39209'
         ]
         self.test_array(numbers, is_phone_number)
-
-
-
-
-
-

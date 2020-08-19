@@ -21,13 +21,16 @@ class Permission(models.Model):
     name = models.CharField(max_length=200, null=False, unique=True)
 
     def __str__(self):
-        return 'permission: ' + str(self.id) + ':' + self.name
+        return "permission: " + str(self.id) + ":" + self.name
 
     def get_groups_with_permission_from_rlc(self, rlc):
         from backend.api.models import Group, HasPermission
+
         groups = Group.objects.filter(from_rlc=rlc)
-        return HasPermission.objects.filter(permission=self,
-                                            group_has_permission__in=groups.values_list('pk', flat=True))
+        return HasPermission.objects.filter(
+            permission=self,
+            group_has_permission__in=groups.values_list("pk", flat=True),
+        )
 
     def get_users_with_permission_from_rlc(self, rlc):
         """
@@ -36,19 +39,27 @@ class Permission(models.Model):
         :return:
         """
         from backend.api.models import UserProfile, HasPermission
+
         users = UserProfile.objects.filter(rlc=rlc)
-        return HasPermission.objects.filter(permission=self,
-                                            user_has_permission__in=users.values_list('pk', flat=True))
+        return HasPermission.objects.filter(
+            permission=self, user_has_permission__in=users.values_list("pk", flat=True)
+        )
 
     def get_rlc_permissions_with_special_permission(self, rlc):
         from backend.api.models import HasPermission
+
         return HasPermission.objects.filter(permission=self, rlc_has_permission=rlc)
 
     def get_real_users_with_permission_for_rlc(self, rlc):
         # TODO: add permission_for_rlc?
         from backend.api.models import UserProfile, HasPermission
+
         if HasPermission.objects.filter(rlc_has_permission=rlc, permission=self):
             return UserProfile.objects.filter(rlc=rlc)
-        users = UserProfile.objects.filter(user_has_permission__permission=self, rlc=rlc)
-        group_users = UserProfile.objects.filter(group_members__group_has_permission__permission=self, rlc=rlc).distinct()
+        users = UserProfile.objects.filter(
+            user_has_permission__permission=self, rlc=rlc
+        )
+        group_users = UserProfile.objects.filter(
+            group_members__group_has_permission__permission=self, rlc=rlc
+        ).distinct()
         return users.union(group_users).distinct()

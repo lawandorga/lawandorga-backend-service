@@ -22,20 +22,37 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0003_forgotpasswordlinks_ip_address'),
+        ("api", "0003_forgotpasswordlinks_ip_address"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='user_record_state',
-            field=models.CharField(choices=[('ac', 'accepting'), ('na', 'not accepting'), ('de', 'depends')], default='ac', max_length=2),
+            model_name="userprofile",
+            name="user_record_state",
+            field=models.CharField(
+                choices=[
+                    ("ac", "accepting"),
+                    ("na", "not accepting"),
+                    ("de", "depends"),
+                ],
+                default="ac",
+                max_length=2,
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='user_state',
-            field=models.CharField(choices=[('ac', 'active'), ('ia', 'inactive'), ('ex', 'exam'), ('ab', 'abroad')], default='ac', max_length=2),
+            model_name="userprofile",
+            name="user_state",
+            field=models.CharField(
+                choices=[
+                    ("ac", "active"),
+                    ("ia", "inactive"),
+                    ("ex", "exam"),
+                    ("ab", "abroad"),
+                ],
+                default="ac",
+                max_length=2,
+            ),
             preserve_default=False,
         ),
     ]

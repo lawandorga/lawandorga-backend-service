@@ -31,10 +31,13 @@ class RlcSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Rlc
-        fields = '__all__'
+        fields = "__all__"
 
 
 class RlcOnlyNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rlc
-        fields = ('id', 'name',)
+        fields = (
+            "id",
+            "name",
+        )

@@ -22,4 +22,4 @@ from backend.recordmanagement.models import RecordEncryption
 class RecordEncryptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordEncryption
-        fields = '__all__'
+        fields = "__all__"

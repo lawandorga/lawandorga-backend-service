@@ -30,28 +30,42 @@ class PermissionViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.PermissionNameSerializer
 
     def retrieve(self, request, *args, **kwargs):
-        if 'pk' not in kwargs:
+        if "pk" not in kwargs:
             raise CustomError(error_codes.ERROR__API__MISSING_ARGUMENT)
         try:
-            permission = models.Permission.objects.get(pk=kwargs['pk'])
+            permission = models.Permission.objects.get(pk=kwargs["pk"])
         except:
             raise CustomError(error_codes.ERROR__API__PERMISSION__NOT_FOUND)
 
-        if not request.user.has_permission(PERMISSION_VIEW_PERMISSIONS_RLC, for_rlc=request.user.rlc):
+        if not request.user.has_permission(
+            PERMISSION_VIEW_PERMISSIONS_RLC, for_rlc=request.user.rlc
+        ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
-        user_permissions = [model_to_dict(has_permission) for has_permission in
-                            permission.get_users_with_permission_from_rlc(request.user.rlc)]
-        group_permissions = [model_to_dict(has_permission) for has_permission in
-                             permission.get_groups_with_permission_from_rlc(request.user.rlc)]
-        rlc_permissions = [model_to_dict(has_permission) for has_permission in
-                           permission.get_rlc_permissions_with_special_permission(request.user.rlc)]
+        user_permissions = [
+            model_to_dict(has_permission)
+            for has_permission in permission.get_users_with_permission_from_rlc(
+                request.user.rlc
+            )
+        ]
+        group_permissions = [
+            model_to_dict(has_permission)
+            for has_permission in permission.get_groups_with_permission_from_rlc(
+                request.user.rlc
+            )
+        ]
+        rlc_permissions = [
+            model_to_dict(has_permission)
+            for has_permission in permission.get_rlc_permissions_with_special_permission(
+                request.user.rlc
+            )
+        ]
 
         data = serializers.PermissionSerializer(permission).data
 
-        data.update({
-            'has_permissions': user_permissions + group_permissions + rlc_permissions
-        })
+        data.update(
+            {"has_permissions": user_permissions + group_permissions + rlc_permissions}
+        )
         return Response(data)
 
 
@@ -62,10 +76,16 @@ class PermissionsForGroupViewSet(APIView):
         except:
             raise CustomError(error_codes.ERROR__API__GROUP__GROUP_NOT_FOUND)
 
-        if not request.user.has_permission(PERMISSION_VIEW_PERMISSIONS_RLC, for_rlc=request.user.rlc):
+        if not request.user.has_permission(
+            PERMISSION_VIEW_PERMISSIONS_RLC, for_rlc=request.user.rlc
+        ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
-        data = [model_to_dict(has_permission) for has_permission in
-                models.HasPermission.objects.filter(group_has_permission=group)]
+        data = [
+            model_to_dict(has_permission)
+            for has_permission in models.HasPermission.objects.filter(
+                group_has_permission=group
+            )
+        ]
 
         return Response(data)
