@@ -1,0 +1,10 @@
+.pytest_cache
+.vscode
+staticfiles
+temp
+venv
+.idea
+Procfile
+**/.git
+
+*/static/tests/*
