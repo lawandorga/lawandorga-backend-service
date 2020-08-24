@@ -11,7 +11,8 @@ services:
         image: jehob/law-orga-backend
 
     nginx:
-        build: ./nginx
+        image: nginx:1.19.0-alpine
+        restart: unless-stopped
         ports:
             - 80:80
             - 443:443
@@ -19,14 +20,14 @@ services:
         depends_on:
             - web
         volumes:
-            - ./data/nginx:/etc/nginx/conf.d
+            - ./nginx:/etc/nginx/conf.d
             - ./data/certbot/conf:/etc/letsencrypt
             - ./data/certbot/www:/var/www/certbot
-        image: jehob/law-orga-nginx
         command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
     certbot:
         image: certbot/certbot
+        restart: unless-stopped
         volumes:
             - ./data/certbot/conf:/etc/letsencrypt
             - ./data/certbot/www:/var/www/certbot
