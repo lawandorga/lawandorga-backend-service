@@ -53,8 +53,7 @@ RUN chown -R app:app $APP_HOME
 # change to the app user
 USER app
 
-
-
+CMD ["gunicorn", "backend.wsgi:application", "--bind", "0.0.0.0:8000"]
 
 
 
