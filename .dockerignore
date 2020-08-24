@@ -6,5 +6,6 @@ venv
 .idea
 Procfile
 **/.git
-
+nginx
+environments
 */static/tests/*

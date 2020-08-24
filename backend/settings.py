@@ -38,10 +38,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "srt(vue=+gl&0c_c3pban6a&m2h2iz6mhbx^%^_%9!#-jg0*lz"
+if "SECRET_KEY" in os.environ:
+    os.environ.get("SECRET_KEY")
+else:
+    SECRET_KEY = "srt(vue=+gl&0c_c3pban6a&m2h2iz6mhbx^%^_%9!#-jg0*lz"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if "ON_HEROKU" in os.environ and "DEBUG" in os.environ:
+if "DEBUG" in os.environ:
     DEBUG = os.environ["DEBUG"]
 else:
     DEBUG = True
