@@ -3,7 +3,7 @@ version: '2'
 services:
     web:
         build: .
-        command: gunicorn backend.wsgi:application --bind 0.0.0.0:8001
+        command: gunicorn backend.wsgi:application --bind 0.0.0.0:8001 --log-level debug
         expose:
             - 8001
         env_file:

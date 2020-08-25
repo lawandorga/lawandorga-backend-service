@@ -212,6 +212,10 @@ if "ON_HEROKU" in os.environ and os.environ["ON_HEROKU"]:
     STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
     COMPRESS_STORAGE = "backend.shared.storage_generator.CachedS3Boto3Storage"
 
+SCW_SECRET_KEY = os.environ.get("SCW_SECRET_KEY")
+SCW_ACCESS_KEY = os.environ.get("SCW_ACCESS_KEY")
+SCW_S3_BUCKET_NAME = os.environ.get("SCW_S3_BUCKET_NAME")
+
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME")
