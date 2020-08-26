@@ -84,13 +84,13 @@ class CreateFixtures:
 
         groups = [
             CreateFixtures._create_group(
-                rlc, "group1", [users[0]["user"], users[1]["user"]]
+                rlc, "group0", [users[0]["user"], users[1]["user"]]
             ),
             CreateFixtures._create_group(
-                rlc, "group2", [users[1]["user"], users[2]["user"]]
+                rlc, "group1", [users[1]["user"], users[2]["user"]]
             ),
             CreateFixtures._create_group(
-                rlc, "group3", [users[2]["user"], users[3]["user"]]
+                rlc, "group2", [users[2]["user"], users[3]["user"]]
             ),
         ]
         return_object.update({"groups": groups})
