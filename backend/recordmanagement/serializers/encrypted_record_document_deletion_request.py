@@ -14,23 +14,19 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from .origin_country import *
-from .client import *
-from .record_tag import *
-from .record import *
-from .record_document import *
-from .record_document_tag import *
-from .record_message import *
-from .record_permission import *
-from .record_deletion_request import *
-from .encrypted_record import *
-from .record_encryption import *
-from .encrypted_client import *
-from .encrypted_record_document import *
-from .encrypted_record_message import *
-from .encrypted_record_permission import *
-from .encrypted_record_deletion_request import *
-from .pool_consultant import *
-from .pool_record import *
-from .missing_record_key import *
-from .encrypted_record_document_deletion_request import *
+from rest_framework import serializers
+from backend.api.serializers import UserProfileNameSerializer
+from backend.recordmanagement.models import EncryptedRecordDocumentDeletionRequest
+from backend.recordmanagement.serializers import EncryptedRecordDocumentSerializer
+
+
+class EncryptedRecordDocumentDeletionRequestSerializer(serializers.ModelSerializer):
+    request_from = UserProfileNameSerializer(many=False, read_only=True)
+    request_processed = UserProfileNameSerializer(many=False, read_only=True)
+    document = EncryptedRecordDocumentSerializer(
+        many=False, read_only=True, allow_null=True
+    )
+
+    class Meta:
+        model = EncryptedRecordDocumentDeletionRequest
+        fields = "__all__"

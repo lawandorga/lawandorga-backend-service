@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
-from backend.recordmanagement import models
+from backend.recordmanagement.models import EncryptedRecordDeletionRequest
 from backend.api.serializers.user import UserProfileNameSerializer
 from backend.recordmanagement.serializers import EncryptedRecordNoDetailSerializer
 
@@ -28,5 +28,5 @@ class EncryptedRecordDeletionRequestSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = models.EncryptedRecordDeletionRequest
+        model = EncryptedRecordDeletionRequest
         fields = "__all__"
