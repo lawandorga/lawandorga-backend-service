@@ -35,15 +35,31 @@ class EncryptedRecordDocumentDeletionRequestViewSet(viewsets.ModelViewSet):
     serializer_class = EncryptedRecordDocumentDeletionRequestSerializer
 
     def get_queryset(self) -> QuerySet:
-        return EncryptedRecordDocumentDeletionRequest.objects.all()
+        if self.request.user.is_superuser:
+            return EncryptedRecordDocumentDeletionRequest.objects.all()
+        else:
+            return EncryptedRecordDocumentDeletionRequest.objects.filter(
+                document__record__from_rlc=self.request.user.rlc
+            )
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        document: EncryptedRecordDocument = EncryptedRecordDocument.objects.get(
-            pk=request.data["document_id"]
-        )
+        try:
+            document: EncryptedRecordDocument = EncryptedRecordDocument.objects.get(
+                pk=request.data["document_id"]
+            )
+        except Exception as e:
+            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
 
         if not document.record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+
+        if (
+            EncryptedRecordDocumentDeletionRequest.objects.filter(
+                request_from=request.user, document=document
+            ).count()
+            > 0
+        ):
+            raise CustomError(error_codes.ERROR__API__ALREADY_REQUESTED)
 
         deletion_request: (
             EncryptedRecordDocumentDeletionRequest
@@ -54,3 +70,19 @@ class EncryptedRecordDocumentDeletionRequestViewSet(viewsets.ModelViewSet):
         deletion_request.save()
 
         return Response(status=201)
+
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        if (
+            not request.user.has_permission(
+                permissions.PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS,
+                for_rlc=request.user.rlc,
+            )
+            and not request.user.is_superuser
+        ):
+            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+
+        return Response(
+            EncryptedRecordDocumentDeletionRequestSerializer(
+                self.get_queryset(), many=True
+            ).data
+        )

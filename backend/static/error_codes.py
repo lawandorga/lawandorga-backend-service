@@ -392,3 +392,8 @@ ERROR__API__ALREADY_PROCESSED = {
     "error_detail": "already processed item",
     "error_code": "api.already_processed",
 }
+
+ERROR__API__ALREADY_REQUESTED = {
+    "error_detail": "already requested",
+    "error_code": "api.already_requested",
+}

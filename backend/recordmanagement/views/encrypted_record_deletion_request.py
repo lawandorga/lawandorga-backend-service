@@ -67,9 +67,7 @@ class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
             ).count()
             >= 1
         ):
-            raise CustomError(
-                error_codes.ERROR__RECORD__RECORD_DELETION__ALREADY_REQUESTED
-            )
+            raise CustomError(error_codes.ERROR__API__ALREADY_REQUESTED)
         deletion_request = models.EncryptedRecordDeletionRequest(
             request_from=request.user, record=record,
         )

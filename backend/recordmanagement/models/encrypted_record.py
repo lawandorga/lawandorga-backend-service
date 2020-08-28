@@ -272,7 +272,7 @@ class EncryptedRecord(models.Model):
             ).count()
             == 1
             or user.has_permission(
-                PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc
+                PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=self.from_rlc
             )
         )
 

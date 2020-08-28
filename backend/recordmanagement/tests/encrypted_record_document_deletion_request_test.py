@@ -23,7 +23,8 @@ from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.recordmanagement import models as record_models
 from backend.static.permissions import (
     PERMISSION_VIEW_RECORDS_RLC,
-    PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
+    PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS,
+    PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC,
 )
 from backend.static import error_codes
 
@@ -61,6 +62,38 @@ class EncryptedRecordDocumentDeletionRequestTest(TransactionTestCase):
         # )
         # has_permission.save()
 
+    def add_process_record_document_deletion_requests_permission(self):
+        permission: api_models.Permission = api_models.Permission.objects.get(
+            name=PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS
+        )
+        has_permission: api_models.HasPermission = api_models.HasPermission(
+            permission=permission,
+            permission_for_rlc=self.base_fixtures["rlc"],
+            group_has_permission=self.base_fixtures["groups"][0],
+        )
+        has_permission.save()
+
+    def add_record_document_deletion_requests_fixtures(
+        self,
+    ) -> [record_models.EncryptedRecordDocumentDeletionRequest]:
+        documents: [record_models.EncryptedRecordDocument] = list(
+            record_models.EncryptedRecordDocument.objects.all()
+        )
+        request: (
+            record_models.EncryptedRecordDocumentDeletionRequest
+        ) = record_models.EncryptedRecordDocumentDeletionRequest(
+            request_from=self.base_fixtures["users"][1]["user"], document=documents[0]
+        )
+        request.save()
+        request1: (
+            record_models.EncryptedRecordDocumentDeletionRequest
+        ) = record_models.EncryptedRecordDocumentDeletionRequest(
+            request_from=self.base_fixtures["users"][0]["user"], document=documents[1]
+        )
+        request1.save()
+
+        return [request, request1]
+
     def test_record_document_deletion_requested_unauthenticated(self):
         client: APIClient = APIClient()
         document = record_models.EncryptedRecordDocument.objects.first()
@@ -79,6 +112,30 @@ class EncryptedRecordDocumentDeletionRequestTest(TransactionTestCase):
             error_codes.ERROR__API__PERMISSION__INSUFFICIENT["error_code"],
             response.data["error_code"],
         )
+
+    def test_record_document_deletion_requested_success_full_detail_all_records_permission(
+        self,
+    ):
+        user: api_models.UserProfile = self.base_fixtures["users"][3]["user"]
+        permission: api_models.Permission = api_models.Permission.objects.get(
+            name=PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+        )
+        has_permission: api_models.HasPermission = api_models.HasPermission(
+            permission=permission,
+            permission_for_rlc=self.base_fixtures["rlc"],
+            user_has_permission=user,
+        )
+        has_permission.save()
+
+        self.assertEqual(
+            0, record_models.EncryptedRecordDocumentDeletionRequest.objects.count()
+        )
+        document = record_models.EncryptedRecordDocument.objects.first()
+
+        response: Response = self.base_fixtures["users"][3]["client"].post(
+            self.base_url, {"document_id": document.id}
+        )
+        self.assertEqual(201, response.status_code)
 
     def test_record_document_deletion_requested_success(self):
         self.assertEqual(
@@ -127,20 +184,136 @@ class EncryptedRecordDocumentDeletionRequestTest(TransactionTestCase):
         )
         self.assertEqual(explanation, newly_created_deletion_request.explanation)
 
+    def test_record_document_deletion_requested_foreign_rlc(self):
+        foreign_rlc_fixtures = CreateFixtures.create_foreign_rlc_fixture()
+        user = foreign_rlc_fixtures["users"][0]["user"]
+
+        permission: api_models.Permission = api_models.Permission.objects.get(
+            name=PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+        )
+        has_permission: api_models.HasPermission = api_models.HasPermission(
+            permission=permission,
+            permission_for_rlc=foreign_rlc_fixtures["rlc"],
+            user_has_permission=user,
+        )
+        has_permission.save()
+        document = record_models.EncryptedRecordDocument.objects.first()
+
+        response: Response = foreign_rlc_fixtures["users"][0]["client"].post(
+            self.base_url, {"document_id": document.id}
+        )
+        self.assertEqual(403, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__API__PERMISSION__INSUFFICIENT["error_code"],
+            response.data["error_code"],
+        )
+
+    def test_record_document_deletion_requested_wrong_id(self):
+        self.assertEqual(
+            0, record_models.EncryptedRecordDocumentDeletionRequest.objects.count()
+        )
+
+        response: Response = self.client.post(self.base_url, {"document_id": 243234})
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__API__ID_NOT_FOUND["error_code"],
+            response.data["error_code"],
+        )
+
+    def test_record_document_deletion_requested_doubled_same_user(self):
+        self.assertEqual(
+            0, record_models.EncryptedRecordDocumentDeletionRequest.objects.count()
+        )
+        document = record_models.EncryptedRecordDocument.objects.first()
+
+        response: Response = self.client.post(
+            self.base_url, {"document_id": document.id}
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(
+            1, record_models.EncryptedRecordDocumentDeletionRequest.objects.count()
+        )
+
+        response: Response = self.client.post(
+            self.base_url, {"document_id": document.id}
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__API__ALREADY_REQUESTED["error_code"],
+            response.data["error_code"],
+        )
+
+    def test_record_document_deletion_requested_doubled_other_user(self):
+        self.assertEqual(
+            0, record_models.EncryptedRecordDocumentDeletionRequest.objects.count()
+        )
+        document = record_models.EncryptedRecordDocument.objects.first()
+
+        response: Response = self.client.post(
+            self.base_url, {"document_id": document.id}
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(
+            1, record_models.EncryptedRecordDocumentDeletionRequest.objects.count()
+        )
+
+        response: Response = self.base_fixtures["users"][1]["client"].post(
+            self.base_url, {"document_id": document.id}
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(
+            2, record_models.EncryptedRecordDocumentDeletionRequest.objects.count()
+        )
+
+    def test_record_document_deletion_list_no_permission(self):
+        response: Response = self.client.get(self.base_url)
+        self.assertEqual(403, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__API__PERMISSION__INSUFFICIENT["error_code"],
+            response.data["error_code"],
+        )
+
+    def test_record_document_deletion_list_success(self):
+        self.add_record_document_deletion_requests_fixtures()
+        self.assertEqual(
+            2, record_models.EncryptedRecordDocumentDeletionRequest.objects.count()
+        )
+        self.add_process_record_document_deletion_requests_permission()
+
+        response: Response = self.client.get(self.base_url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(2, response.data.__len__())
+
+    def test_record_document_deletion_list_unauthenticated(self):
+        response: Response = APIClient().get(self.base_url)
+        self.assertEqual(401, response.status_code)
+
+    def test_record_document_deletion_list_foreign_rlc(self):
+        foreign_rlc_fixtures = CreateFixtures.create_foreign_rlc_fixture()
+        user = foreign_rlc_fixtures["users"][0]["user"]
+        self.add_record_document_deletion_requests_fixtures()
+
+        permission: api_models.Permission = api_models.Permission.objects.get(
+            name=PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS
+        )
+        has_permission: api_models.HasPermission = api_models.HasPermission(
+            permission=permission,
+            permission_for_rlc=foreign_rlc_fixtures["rlc"],
+            user_has_permission=user,
+        )
+        has_permission.save()
+
+        response: Response = foreign_rlc_fixtures["users"][0]["client"].get(
+            self.base_url
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, response.data.__len__())
+
+    def accept_record_document_deletion_request(self):
+        pass
+
 
 # TODO
-# request deletion
-# foreign rlc
-# no permission for record
-# wrong id
-# doubled same
-# doubled other
-
-# view deletion request list
-# no permission
-# unauthenticated
-# foreign rlc
-
 # process deletion request
 # accept (check if delete on s3 called))
 # accept multiple (all get accepted)
