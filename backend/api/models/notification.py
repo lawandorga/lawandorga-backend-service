@@ -549,6 +549,116 @@ class NotificationManager(models.Manager):
                     notification_type=NotificationType.USER_REQUEST__DECLINED,
                 )
 
+    from backend.recordmanagement.models import EncryptedRecordDocumentDeletionRequest
+
+    @staticmethod
+    def notify_new_record_document_deletion_request(
+        source_user: UserProfile,
+        document_deletion_request: EncryptedRecordDocumentDeletionRequest,
+    ):
+        """
+        creates notification for requested record document deletion
+
+        creates notification for every user with process record document deletion request
+        except source user
+        :param source_user:
+        :param document_deletion_request:
+        :return:
+        """
+        users_with_permissions: [
+            UserProfile
+        ] = UserProfile.objects.get_users_with_special_permissions(
+            permissions=[
+                permissions.PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS
+            ],
+            from_rlc=source_user.rlc,
+            for_rlc=source_user.rlc,
+        )
+        for user in users_with_permissions:
+            if user != source_user:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(document_deletion_request.document.id),
+                    ref_text=document_deletion_request.document.name,
+                    notification_group_type=NotificationGroupType.RECORD_DOCUMENT_DELETION_REQUEST,
+                    notification_type=NotificationType.RECORD_DOCUMENT_DELETION_REQUEST__REQUESTED,
+                )
+
+    @staticmethod
+    def notify_record_document_deletion_accepted(
+        source_user: UserProfile,
+        document_deletion_request: EncryptedRecordDocumentDeletionRequest,
+    ):
+        users_with_permissions: [
+            UserProfile
+        ] = UserProfile.objects.get_users_with_special_permissions(
+            permissions=[
+                permissions.PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS
+            ],
+            from_rlc=source_user.rlc,
+            for_rlc=source_user.rlc,
+        )
+        for user in users_with_permissions:
+            if user != source_user:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(document_deletion_request.document.id),
+                    ref_text=document_deletion_request.document.name,
+                    notification_group_type=NotificationGroupType.RECORD_DOCUMENT_DELETION_REQUEST,
+                    notification_type=NotificationType.RECORD_DOCUMENT_DELETION_REQUEST__ACCEPTED,
+                )
+
+        notification_users: [
+            UserProfile
+        ] = document_deletion_request.document.record.get_notification_users()
+        for user in notification_users:
+            if user != source_user:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(document_deletion_request.document.record.id),
+                    ref_text=document_deletion_request.document.record.record_token,
+                    notification_group_type=NotificationGroupType.RECORD,
+                    notification_type=NotificationType.RECORD__DOCUMENT_DELETED,
+                    text=document_deletion_request.document.name,
+                )
+
+    @staticmethod
+    def notify_record_document_deletion_declined(
+        source_user: UserProfile,
+        document_deletion_request: EncryptedRecordDocumentDeletionRequest,
+    ):
+        Notification.objects.create_notification(
+            user=document_deletion_request.request_from,
+            source_user=source_user,
+            ref_id=str(document_deletion_request.document.record.id),
+            ref_text=document_deletion_request.document.record.record_token,
+            notification_group_type=NotificationGroupType.RECORD,
+            notification_type=NotificationType.RECORD__DOCUMENT_DELETION_REQUEST_DECLINED,
+        )
+
+        users_with_permissions: [
+            UserProfile
+        ] = UserProfile.objects.get_users_with_special_permissions(
+            permissions=[
+                permissions.PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS
+            ],
+            from_rlc=source_user.rlc,
+            for_rlc=source_user.rlc,
+        )
+        for user in users_with_permissions:
+            if user != source_user:
+                Notification.objects.create_notification(
+                    user=user,
+                    source_user=source_user,
+                    ref_id=str(document_deletion_request.document.id),
+                    ref_text=document_deletion_request.document.name,
+                    notification_group_type=NotificationGroupType.RECORD_DOCUMENT_DELETION_REQUEST,
+                    notification_type=NotificationType.RECORD_DOCUMENT_DELETION_REQUEST__DECLINED,
+                )
+
 
 class Notification(models.Model):
     notification_group = models.ForeignKey(
