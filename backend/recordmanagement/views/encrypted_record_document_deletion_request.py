@@ -86,3 +86,46 @@ class EncryptedRecordDocumentDeletionRequestViewSet(viewsets.ModelViewSet):
                 self.get_queryset(), many=True
             ).data
         )
+
+
+class EncryptedRecordDocumentDeletionProcessViewSet(APIView):
+    def post(self, request: Request, *args: Any, **kwargs: Any):
+        if "request_id" not in request.data:
+            raise CustomError(error_codes.ERROR__API__ID_NOT_PROVIDED)
+        try:
+            deletion_request: EncryptedRecordDocumentDeletionRequest = EncryptedRecordDocumentDeletionRequest.objects.get(
+                pk=request.data["request_id"]
+            )
+        except:
+            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
+
+        if not request.user.has_permission(
+            permissions.PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS,
+            for_rlc=deletion_request.document.record.from_rlc,
+        ):
+            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+
+        action = request.data.get("action", "")
+        if action == "accept":
+            for (
+                current_deletion_request
+            ) in EncryptedRecordDocumentDeletionRequest.objects.filter(
+                document=deletion_request.document, state="re"
+            ):
+                if current_deletion_request != deletion_request:
+                    current_deletion_request.state = "ac"
+                    current_deletion_request.save()
+
+            deletion_request.document.delete()
+            deletion_request.document = None
+            deletion_request.state = "ac"
+            deletion_request.save()
+        elif action == "decline":
+            deletion_request.state = "de"
+            deletion_request.save()
+        elif action == "":
+            raise CustomError(error_codes.ERROR__API__NO_ACTION_PROVIDED)
+        else:
+            raise CustomError(error_codes.ERROR__API__ACTION_NOT_VALID)
+
+        return Response({"success": True})

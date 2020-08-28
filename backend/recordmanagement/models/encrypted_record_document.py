@@ -15,9 +15,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from django.db.models.signals import post_save, pre_delete
+from django.dispatch import receiver
 
 from backend.api.models import UserProfile
 from backend.static.storage_folders import get_storage_folder_encrypted_record_document
+from backend.static.encrypted_storage import EncryptedStorage
 
 
 class EncryptedRecordDocument(models.Model):
@@ -67,3 +70,11 @@ class EncryptedRecordDocument(models.Model):
         return get_storage_folder_encrypted_record_document(
             self.record.from_rlc_id, self.record.id
         )
+
+    def delete_on_cloud(self):
+        EncryptedStorage.delete_on_s3(self.get_file_key())
+
+    @receiver(pre_delete)
+    def pre_deletion(sender, instance, **kwargs):
+        if sender == EncryptedRecordDocument:
+            instance.delete_on_cloud()

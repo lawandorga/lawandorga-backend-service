@@ -13,6 +13,7 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from unittest.mock import MagicMock
 
 from django.test import TransactionTestCase
 from rest_framework.response import Response
@@ -21,8 +22,8 @@ from rest_framework.test import APIClient
 from backend.api import models as api_models
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.recordmanagement import models as record_models
+from backend.static.encrypted_storage import EncryptedStorage
 from backend.static.permissions import (
-    PERMISSION_VIEW_RECORDS_RLC,
     PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS,
     PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC,
 )
@@ -45,22 +46,6 @@ class EncryptedRecordDocumentDeletionRequestTest(TransactionTestCase):
         )
         self.client: APIClient = self.base_fixtures["users"][0]["client"]
         self.user: api_models.UserProfile = self.base_fixtures["users"][0]["user"]
-
-        # permission: api_models.Permission = api_models.Permission.objects.get(
-        #     name=PERMISSION_VIEW_RECORDS_RLC
-        # )
-        # has_permission: api_models.HasPermission = api_models.HasPermission(
-        #     permission=permission,
-        #     permission_for_rlc=self.base_fixtures["rlc"],
-        #     group_has_permission=self.base_fixtures["groups"][0],
-        # )
-        # has_permission.save()
-        # has_permission: api_models.HasPermission = api_models.HasPermission(
-        #     permission=permission,
-        #     permission_for_rlc=self.base_fixtures["rlc"],
-        #     group_has_permission=self.base_fixtures["groups"][1],
-        # )
-        # has_permission.save()
 
     def add_process_record_document_deletion_requests_permission(self):
         permission: api_models.Permission = api_models.Permission.objects.get(
@@ -85,6 +70,12 @@ class EncryptedRecordDocumentDeletionRequestTest(TransactionTestCase):
             request_from=self.base_fixtures["users"][1]["user"], document=documents[0]
         )
         request.save()
+        request2: (
+            record_models.EncryptedRecordDocumentDeletionRequest
+        ) = record_models.EncryptedRecordDocumentDeletionRequest(
+            request_from=self.base_fixtures["users"][0]["user"], document=documents[0]
+        )
+        request2.save()
         request1: (
             record_models.EncryptedRecordDocumentDeletionRequest
         ) = record_models.EncryptedRecordDocumentDeletionRequest(
@@ -92,7 +83,7 @@ class EncryptedRecordDocumentDeletionRequestTest(TransactionTestCase):
         )
         request1.save()
 
-        return [request, request1]
+        return [request, request2, request1]
 
     def test_record_document_deletion_requested_unauthenticated(self):
         client: APIClient = APIClient()
@@ -276,13 +267,13 @@ class EncryptedRecordDocumentDeletionRequestTest(TransactionTestCase):
     def test_record_document_deletion_list_success(self):
         self.add_record_document_deletion_requests_fixtures()
         self.assertEqual(
-            2, record_models.EncryptedRecordDocumentDeletionRequest.objects.count()
+            3, record_models.EncryptedRecordDocumentDeletionRequest.objects.count()
         )
         self.add_process_record_document_deletion_requests_permission()
 
         response: Response = self.client.get(self.base_url)
         self.assertEqual(200, response.status_code)
-        self.assertEqual(2, response.data.__len__())
+        self.assertEqual(3, response.data.__len__())
 
     def test_record_document_deletion_list_unauthenticated(self):
         response: Response = APIClient().get(self.base_url)
@@ -309,22 +300,250 @@ class EncryptedRecordDocumentDeletionRequestTest(TransactionTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(0, response.data.__len__())
 
-    def accept_record_document_deletion_request(self):
-        pass
+    def test_accept_record_document_deletion_request(self):
+        EncryptedStorage.delete_on_s3 = MagicMock()
+        deletion_requests: [
+            record_models.EncryptedRecordDocumentDeletionRequest
+        ] = self.add_record_document_deletion_requests_fixtures()
+        self.add_process_record_document_deletion_requests_permission()
+        number_of_record_documents_before: int = record_models.EncryptedRecordDocument.objects.count()
 
+        response: Response = self.client.post(
+            self.process_url,
+            {"request_id": deletion_requests[2].id, "action": "accept"},
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            number_of_record_documents_before - 1,
+            record_models.EncryptedRecordDocument.objects.count(),
+        )
+        self.assertEqual(1, EncryptedStorage.delete_on_s3.call_count)
+        request_from_db: (
+            record_models.EncryptedRecordDocumentDeletionRequest
+        ) = record_models.EncryptedRecordDocumentDeletionRequest.objects.get(
+            pk=deletion_requests[2].id
+        )
+        self.assertEqual("ac", request_from_db.state)
+        self.assertEqual(
+            2,
+            record_models.EncryptedRecordDocumentDeletionRequest.objects.filter(
+                state="re"
+            ).count(),
+        )
+        self.assertEqual(
+            1,
+            record_models.EncryptedRecordDocumentDeletionRequest.objects.filter(
+                state="ac"
+            ).count(),
+        )
 
-# TODO
-# process deletion request
-# accept (check if delete on s3 called))
-# accept multiple (all get accepted)
-# decline
-# decline (multiple, just one gets declined)
-# no permission
-# wrong id
-# wrong method
-# no method
-# no id?
-# foreign rlc
-# unauthenticated
+    def test_accept_record_document_deletion_request_multiple(self):
+        EncryptedStorage.delete_on_s3 = MagicMock()
+        deletion_requests: [
+            record_models.EncryptedRecordDocumentDeletionRequest
+        ] = self.add_record_document_deletion_requests_fixtures()
+        self.add_process_record_document_deletion_requests_permission()
+        number_of_record_documents_before: int = record_models.EncryptedRecordDocument.objects.count()
+
+        # there are 2 deletion requests for same document
+        # accept one, other should be accepted too
+        response: Response = self.client.post(
+            self.process_url,
+            {"request_id": deletion_requests[0].id, "action": "accept"},
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            number_of_record_documents_before - 1,
+            record_models.EncryptedRecordDocument.objects.count(),
+        )
+        self.assertEqual(1, EncryptedStorage.delete_on_s3.call_count)
+        request_from_db: (
+            record_models.EncryptedRecordDocumentDeletionRequest
+        ) = record_models.EncryptedRecordDocumentDeletionRequest.objects.get(
+            pk=deletion_requests[0].id
+        )
+        self.assertEqual("ac", request_from_db.state)
+        self.assertEqual(
+            1,
+            record_models.EncryptedRecordDocumentDeletionRequest.objects.filter(
+                state="re"
+            ).count(),
+        )
+        self.assertEqual(
+            2,
+            record_models.EncryptedRecordDocumentDeletionRequest.objects.filter(
+                state="ac"
+            ).count(),
+        )
+
+    def test_decline_record_document_deletion_request(self):
+        EncryptedStorage.delete_on_s3 = MagicMock()
+        deletion_requests: [
+            record_models.EncryptedRecordDocumentDeletionRequest
+        ] = self.add_record_document_deletion_requests_fixtures()
+        self.add_process_record_document_deletion_requests_permission()
+        number_of_record_documents_before: int = record_models.EncryptedRecordDocument.objects.count()
+
+        response: Response = self.client.post(
+            self.process_url,
+            {"request_id": deletion_requests[2].id, "action": "decline"},
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            number_of_record_documents_before,
+            record_models.EncryptedRecordDocument.objects.count(),
+        )
+        self.assertEqual(0, EncryptedStorage.delete_on_s3.call_count)
+        request_from_db: (
+            record_models.EncryptedRecordDocumentDeletionRequest
+        ) = record_models.EncryptedRecordDocumentDeletionRequest.objects.get(
+            pk=deletion_requests[2].id
+        )
+        self.assertEqual("de", request_from_db.state)
+        self.assertEqual(
+            2,
+            record_models.EncryptedRecordDocumentDeletionRequest.objects.filter(
+                state="re"
+            ).count(),
+        )
+        self.assertEqual(
+            1,
+            record_models.EncryptedRecordDocumentDeletionRequest.objects.filter(
+                state="de"
+            ).count(),
+        )
+
+    def test_process_record_document_deletion_request_no_permission(self):
+        deletion_requests: [
+            record_models.EncryptedRecordDocumentDeletionRequest
+        ] = self.add_record_document_deletion_requests_fixtures()
+        self.add_process_record_document_deletion_requests_permission()
+
+        response: Response = self.base_fixtures["users"][3]["client"].post(
+            self.process_url,
+            {"request_id": deletion_requests[2].id, "action": "decline"},
+        )
+        self.assertEqual(403, response.status_code)
+        self.assertEqual(
+            3,
+            record_models.EncryptedRecordDocumentDeletionRequest.objects.filter(
+                state="re"
+            ).count(),
+        )
+
+    def test_process_record_document_deletion_request_wrong_id(self):
+        self.add_record_document_deletion_requests_fixtures()
+        self.add_process_record_document_deletion_requests_permission()
+
+        response: Response = self.client.post(
+            self.process_url, {"request_id": 123923, "action": "decline"},
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__API__ID_NOT_FOUND["error_code"],
+            response.data["error_code"],
+        )
+        self.assertEqual(
+            3,
+            record_models.EncryptedRecordDocumentDeletionRequest.objects.filter(
+                state="re"
+            ).count(),
+        )
+
+    def test_process_record_document_deletion_request_invalid_action(self):
+        deletion_requests: [
+            record_models.EncryptedRecordDocumentDeletionRequest
+        ] = self.add_record_document_deletion_requests_fixtures()
+        self.add_process_record_document_deletion_requests_permission()
+
+        response: Response = self.client.post(
+            self.process_url,
+            {"request_id": deletion_requests[2].id, "action": "afdsadf"},
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__API__ACTION_NOT_VALID["error_code"],
+            response.data["error_code"],
+        )
+        self.assertEqual(
+            3,
+            record_models.EncryptedRecordDocumentDeletionRequest.objects.filter(
+                state="re"
+            ).count(),
+        )
+
+    def test_process_record_document_deletion_request_no_action(self):
+        deletion_requests: [
+            record_models.EncryptedRecordDocumentDeletionRequest
+        ] = self.add_record_document_deletion_requests_fixtures()
+        self.add_process_record_document_deletion_requests_permission()
+
+        response: Response = self.client.post(
+            self.process_url, {"request_id": deletion_requests[2].id},
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__API__NO_ACTION_PROVIDED["error_code"],
+            response.data["error_code"],
+        )
+        self.assertEqual(
+            3,
+            record_models.EncryptedRecordDocumentDeletionRequest.objects.filter(
+                state="re"
+            ).count(),
+        )
+
+    def test_process_record_document_deletion_request_no_id_provided(self):
+        self.add_record_document_deletion_requests_fixtures()
+        self.add_process_record_document_deletion_requests_permission()
+
+        response: Response = self.client.post(
+            self.process_url, {"action": "accept"},
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__API__ID_NOT_PROVIDED["error_code"],
+            response.data["error_code"],
+        )
+        self.assertEqual(
+            3,
+            record_models.EncryptedRecordDocumentDeletionRequest.objects.filter(
+                state="re"
+            ).count(),
+        )
+
+    def test_process_record_document_deletion_request_foreign_rlc(self):
+        deletion_requests: [
+            record_models.EncryptedRecordDocumentDeletionRequest
+        ] = self.add_record_document_deletion_requests_fixtures()
+        self.add_process_record_document_deletion_requests_permission()
+        foreign_fixtures = CreateFixtures.create_foreign_rlc_fixture()
+
+        permission: api_models.Permission = api_models.Permission.objects.get(
+            name=PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS
+        )
+        has_permission: api_models.HasPermission = api_models.HasPermission(
+            permission=permission,
+            permission_for_rlc=foreign_fixtures["rlc"],
+            user_has_permission=foreign_fixtures["users"][0]["user"],
+        )
+        has_permission.save()
+
+        response: Response = foreign_fixtures["users"][0]["client"].post(
+            self.process_url,
+            {"request_id": deletion_requests[2].id, "action": "accept"},
+        )
+        self.assertEqual(403, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__API__PERMISSION__INSUFFICIENT["error_code"],
+            response.data["error_code"],
+        )
+        self.assertEqual(
+            3,
+            record_models.EncryptedRecordDocumentDeletionRequest.objects.filter(
+                state="re"
+            ).count(),
+        )
+
 
 # TODO: over all check notification for accept, decline and request
