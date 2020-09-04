@@ -40,7 +40,7 @@ class EncryptedRecordDocumentDeletionRequestViewSet(viewsets.ModelViewSet):
             return EncryptedRecordDocumentDeletionRequest.objects.all()
         else:
             return EncryptedRecordDocumentDeletionRequest.objects.filter(
-                document__record__from_rlc=self.request.user.rlc
+                request_from__rlc=self.request.user.rlc
             )
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -141,5 +141,9 @@ class EncryptedRecordDocumentDeletionProcessViewSet(APIView):
             raise CustomError(error_codes.ERROR__API__NO_ACTION_PROVIDED)
         else:
             raise CustomError(error_codes.ERROR__API__ACTION_NOT_VALID)
+
+        deletion_request.request_processed = request.user
+        deletion_request.processed_on = timezone.now()
+        deletion_request.save()
 
         return Response({"success": True})
