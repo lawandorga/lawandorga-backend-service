@@ -549,12 +549,10 @@ class NotificationManager(models.Manager):
                     notification_type=NotificationType.USER_REQUEST__DECLINED,
                 )
 
-    from backend.recordmanagement.models import EncryptedRecordDocumentDeletionRequest
-
     @staticmethod
     def notify_new_record_document_deletion_request(
         source_user: UserProfile,
-        document_deletion_request: EncryptedRecordDocumentDeletionRequest,
+        document_deletion_request: "EncryptedRecordDocumentDeletionRequest",
     ):
         """
         creates notification for requested record document deletion
@@ -588,7 +586,7 @@ class NotificationManager(models.Manager):
     @staticmethod
     def notify_record_document_deletion_accepted(
         source_user: UserProfile,
-        document_deletion_request: EncryptedRecordDocumentDeletionRequest,
+        document_deletion_request: "EncryptedRecordDocumentDeletionRequest",
     ):
         users_with_permissions: [
             UserProfile
@@ -628,7 +626,7 @@ class NotificationManager(models.Manager):
     @staticmethod
     def notify_record_document_deletion_declined(
         source_user: UserProfile,
-        document_deletion_request: EncryptedRecordDocumentDeletionRequest,
+        document_deletion_request: "EncryptedRecordDocumentDeletionRequest",
     ):
         Notification.objects.create_notification(
             user=document_deletion_request.request_from,

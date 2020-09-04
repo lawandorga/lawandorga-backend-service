@@ -26,6 +26,7 @@ from backend.api.errors import CustomError
 from backend.recordmanagement.models import *
 from backend.recordmanagement.serializers import (
     EncryptedRecordDocumentDeletionRequestSerializer,
+    EncryptedRecordDocumentDeletionRequestListSerializer,
 )
 from backend.static import error_codes, permissions
 from backend.api.models import Notification
@@ -69,6 +70,10 @@ class EncryptedRecordDocumentDeletionRequestViewSet(viewsets.ModelViewSet):
         deletion_request.explanation = request.data.get("explanation", "")
         deletion_request.save()
 
+        Notification.objects.notify_new_record_document_deletion_request(
+            request.user, deletion_request
+        )
+
         return Response(status=201)
 
     def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -82,7 +87,7 @@ class EncryptedRecordDocumentDeletionRequestViewSet(viewsets.ModelViewSet):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
         return Response(
-            EncryptedRecordDocumentDeletionRequestSerializer(
+            EncryptedRecordDocumentDeletionRequestListSerializer(
                 self.get_queryset(), many=True
             ).data
         )
@@ -116,13 +121,22 @@ class EncryptedRecordDocumentDeletionProcessViewSet(APIView):
                     current_deletion_request.state = "ac"
                     current_deletion_request.save()
 
+            Notification.objects.notify_record_document_deletion_accepted(
+                request.user, deletion_request
+            )
+
             deletion_request.document.delete()
             deletion_request.document = None
             deletion_request.state = "ac"
             deletion_request.save()
+
         elif action == "decline":
             deletion_request.state = "de"
             deletion_request.save()
+
+            Notification.objects.notify_record_document_deletion_declined(
+                request.user, deletion_request
+            )
         elif action == "":
             raise CustomError(error_codes.ERROR__API__NO_ACTION_PROVIDED)
         else:

@@ -16,7 +16,10 @@
 
 from rest_framework import serializers
 from backend.recordmanagement.models import EncryptedRecordDocument
-from backend.recordmanagement.serializers import RecordDocumentTagSerializer
+from backend.recordmanagement.serializers import (
+    RecordDocumentTagSerializer,
+    EncryptedRecordTokenSerializer,
+)
 
 
 class EncryptedRecordDocumentSerializer(serializers.ModelSerializer):
@@ -25,3 +28,15 @@ class EncryptedRecordDocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = EncryptedRecordDocument
         fields = "__all__"
+
+
+class EncryptedRecordDocumentNameSerializer(serializers.ModelSerializer):
+    record = EncryptedRecordTokenSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = EncryptedRecordDocument
+        fields = (
+            "name",
+            "id",
+            "record",
+        )

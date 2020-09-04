@@ -17,13 +17,28 @@
 from rest_framework import serializers
 from backend.api.serializers import UserProfileNameSerializer
 from backend.recordmanagement.models import EncryptedRecordDocumentDeletionRequest
-from backend.recordmanagement.serializers import EncryptedRecordDocumentSerializer
+from backend.recordmanagement.serializers import (
+    EncryptedRecordDocumentSerializer,
+    EncryptedRecordDocumentNameSerializer,
+)
 
 
 class EncryptedRecordDocumentDeletionRequestSerializer(serializers.ModelSerializer):
     request_from = UserProfileNameSerializer(many=False, read_only=True)
     request_processed = UserProfileNameSerializer(many=False, read_only=True)
     document = EncryptedRecordDocumentSerializer(
+        many=False, read_only=True, allow_null=True
+    )
+
+    class Meta:
+        model = EncryptedRecordDocumentDeletionRequest
+        fields = "__all__"
+
+
+class EncryptedRecordDocumentDeletionRequestListSerializer(serializers.ModelSerializer):
+    request_from = UserProfileNameSerializer(many=False, read_only=True)
+    request_processed = UserProfileNameSerializer(many=False, read_only=True)
+    document = EncryptedRecordDocumentNameSerializer(
         many=False, read_only=True, allow_null=True
     )
 
