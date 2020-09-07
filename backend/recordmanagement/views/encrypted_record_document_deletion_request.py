@@ -40,7 +40,7 @@ class EncryptedRecordDocumentDeletionRequestViewSet(viewsets.ModelViewSet):
             return EncryptedRecordDocumentDeletionRequest.objects.all()
         else:
             return EncryptedRecordDocumentDeletionRequest.objects.filter(
-                request_from__rlc=self.request.user.rlc
+                record__from_rlc=self.request.user.rlc
             )
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -56,7 +56,7 @@ class EncryptedRecordDocumentDeletionRequestViewSet(viewsets.ModelViewSet):
 
         if (
             EncryptedRecordDocumentDeletionRequest.objects.filter(
-                request_from=request.user, document=document
+                request_from=request.user, document=document, state="re"
             ).count()
             > 0
         ):
@@ -65,7 +65,7 @@ class EncryptedRecordDocumentDeletionRequestViewSet(viewsets.ModelViewSet):
         deletion_request: (
             EncryptedRecordDocumentDeletionRequest
         ) = EncryptedRecordDocumentDeletionRequest(
-            document=document, request_from=request.user
+            document=document, request_from=request.user, record=document.record
         )
         deletion_request.explanation = request.data.get("explanation", "")
         deletion_request.save()
@@ -106,7 +106,7 @@ class EncryptedRecordDocumentDeletionProcessViewSet(APIView):
 
         if not request.user.has_permission(
             permissions.PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS,
-            for_rlc=deletion_request.document.record.from_rlc,
+            for_rlc=deletion_request.record.from_rlc,
         ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 

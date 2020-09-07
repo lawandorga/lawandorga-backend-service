@@ -72,7 +72,10 @@ class EncryptedRecordDocument(models.Model):
         )
 
     def delete_on_cloud(self):
-        EncryptedStorage.delete_on_s3(self.get_file_key())
+        try:
+            EncryptedStorage.delete_on_s3(self.get_file_key())
+        except:
+            print("couldnt delete " + self.name + " on cloud")
 
     @receiver(pre_delete)
     def pre_deletion(sender, instance, **kwargs):

@@ -25,6 +25,12 @@ class EncryptedRecordDocumentDeletionRequest(models.Model):
         on_delete=models.SET_NULL,
         null=True,
     )
+    record = models.ForeignKey(
+        "EncryptedRecord",
+        related_name="document_deletions_requests",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
 
     request_from = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
     request_processed = models.ForeignKey(

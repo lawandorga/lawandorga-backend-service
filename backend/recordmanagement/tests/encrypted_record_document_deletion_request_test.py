@@ -67,19 +67,25 @@ class EncryptedRecordDocumentDeletionRequestTest(TransactionTestCase):
         request: (
             record_models.EncryptedRecordDocumentDeletionRequest
         ) = record_models.EncryptedRecordDocumentDeletionRequest(
-            request_from=self.base_fixtures["users"][1]["user"], document=documents[0]
+            request_from=self.base_fixtures["users"][1]["user"],
+            document=documents[0],
+            record=documents[0].record,
         )
         request.save()
         request2: (
             record_models.EncryptedRecordDocumentDeletionRequest
         ) = record_models.EncryptedRecordDocumentDeletionRequest(
-            request_from=self.base_fixtures["users"][0]["user"], document=documents[0]
+            request_from=self.base_fixtures["users"][0]["user"],
+            document=documents[0],
+            record=documents[0].record,
         )
         request2.save()
         request1: (
             record_models.EncryptedRecordDocumentDeletionRequest
         ) = record_models.EncryptedRecordDocumentDeletionRequest(
-            request_from=self.base_fixtures["users"][0]["user"], document=documents[1]
+            request_from=self.base_fixtures["users"][0]["user"],
+            document=documents[1],
+            record=documents[1].record,
         )
         request1.save()
 

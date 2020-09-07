@@ -31,12 +31,9 @@ class EncryptedRecordDocumentSerializer(serializers.ModelSerializer):
 
 
 class EncryptedRecordDocumentNameSerializer(serializers.ModelSerializer):
-    record = EncryptedRecordTokenSerializer(many=False, read_only=True)
-
     class Meta:
         model = EncryptedRecordDocument
         fields = (
             "name",
             "id",
-            "record",
         )
