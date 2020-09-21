@@ -193,7 +193,7 @@ django_heroku.settings(locals())
 AUTH_USER_MODEL = "api.UserProfile"
 
 # email
-if "ON_HEROKU" in os.environ:  # or 'EMAIL_HOST' in os.environ
+if "EMAIL_HOST" in os.environ:  # or 'EMAIL_HOST' in os.environ
     EMAIL_HOST = os.environ["EMAIL_HOST"]
     EMAIL_PORT = os.environ["EMAIL_PORT"]
     EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]
