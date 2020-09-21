@@ -135,7 +135,6 @@ class Folder(models.Model):
         relevant_folders = self.get_all_parents() + [self]
         users_groups = user.group_members.all()
         p_read = FolderPermission.objects.get(name=PERMISSION_READ_FOLDER)
-        # TODO: or write?
         relevant_permissions = PermissionForFolder.objects.filter(
             folder__in=relevant_folders,
             group_has_permission__in=users_groups,
