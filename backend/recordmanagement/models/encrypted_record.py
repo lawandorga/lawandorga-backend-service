@@ -353,7 +353,7 @@ class EncryptedRecord(models.Model):
             try:
                 key = encryption.decrypt(users_private_key)
                 result = key
-            except:
+            except Exception as e:
                 encryption.delete()
         if not result:
             raise CustomError(

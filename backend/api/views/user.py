@@ -254,11 +254,11 @@ class LoginViewSet(viewsets.ViewSet):
             # decrypt keys with users password (or: if not encrypted atm, encrypt them with users password)
             private_key = encryption_keys.decrypt_private_key(user_password)
 
-            from backend.recordmanagement.helpers import (
-                resolve_missing_record_key_entries,
-            )
+            # from backend.recordmanagement.helpers import (
+            #     resolve_missing_record_key_entries,
+            # )
 
-            resolve_missing_record_key_entries(token.user, private_key)
+            # resolve_missing_record_key_entries(token.user, private_key)
             # TODO: superuser?
             if not token.user.is_superuser:
                 from backend.api.helpers import resolve_missing_rlc_keys_entries

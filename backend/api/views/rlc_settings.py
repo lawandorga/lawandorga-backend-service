@@ -24,7 +24,6 @@ from backend.static.error_codes import (
     ERROR__API__RLC_SETTINGS__WRONG_COUNT,
 )
 from backend.api.models import RlcSettings
-from backend.api.permissions import OnlySuperuser
 from backend.api.serializers import RlcSettingsSerializer
 
 
