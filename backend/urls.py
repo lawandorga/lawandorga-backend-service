@@ -38,6 +38,7 @@ from backend.api import urls as api_urls
 urlpatterns = [
     url(r"^admin/", admin.site.urls),
     url(r"^api/", include(api_urls)),
-    url(r"^$", TemplateView.as_view(template_name="index.html")),
-    url(r"^(?:.*)/?$", TemplateView.as_view(template_name="index.html")),
+    url('', include('django_prometheus.urls')),
+    # url(r"^$", TemplateView.as_view(template_name="index.html")),
+    # url(r"^(?:.*)/?$", TemplateView.as_view(template_name="index.html")),
 ]
