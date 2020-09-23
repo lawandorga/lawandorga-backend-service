@@ -18,6 +18,7 @@ from django.db import models
 from django.db.models import Q
 from datetime import datetime
 import pytz
+from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.errors import CustomError
 from backend.api.models import Rlc, UserProfile
@@ -88,7 +89,7 @@ class EncryptedRecordQuerySet(models.QuerySet):
         return self.filter(from_rlc=rlc)
 
 
-class EncryptedRecord(models.Model):
+class EncryptedRecord(ExportModelOperationsMixin('encrypted_record'), models.Model):
     creator = models.ForeignKey(
         UserProfile,
         related_name="e_records_created",
