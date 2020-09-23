@@ -75,6 +75,6 @@ services:
             - 3000:3000
         volumes:
             - ./data/grafana:/var/lib/grafana
-            - ./grafana/provisioning/:/etc/grafana/provisioning/
+            - ./data/grafana-provisioning/:/etc/grafana/provisioning/
         environment:
             - GF_USERS_ALLOW_SIGN_UP=false
