@@ -13,6 +13,7 @@ services:
         env_file:
             - ./environments/dev.env
         image: jehob/law-orga-backend
+        # image: jehob/law-orga-backend:0.1.1prometheus
 
     nginx:
         image: jehob/law-orga-nginx
@@ -35,6 +36,25 @@ services:
             - ./data/certbot/www:/var/www/certbot
         entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
+    node-exporter:
+        image: prom/node-exporter:latest
+        container_name: monitoring_node_exporter
+        restart: unless-stopped
+        expose:
+        - 9100
+
+    cadvisor:
+        image: google/cadvisor:latest
+        container_name: monitoring_cadvisor
+        restart: unless-stopped
+        volumes:
+        - /:/rootfs:ro
+        - /var/run:/var/run:rw
+        - /sys:/sys:ro
+        - /var/lib/docker/:/var/lib/docker:ro
+        expose:
+        - 8080
+
     prometheus:
         image: prom/prometheus
         restart: unless-stopped
@@ -49,6 +69,7 @@ services:
 
     grafana:
         image: grafana/grafana
+        restart: unless-stopped
         depends_on:
             - prometheus
         ports:
@@ -56,6 +77,8 @@ services:
         volumes:
             - grafana_data:/var/lib/grafana
             - ./grafana/provisioning/:/etc/grafana/provisioning/
+        environment:
+            - GF_USERS_ALLOW_SIGN_UP=false
 
 # local
 #version: '3.7'
