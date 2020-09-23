@@ -31,6 +31,14 @@ services:
             - ./data/certbot/www:/var/www/certbot
         entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
+    prometheus:
+        image: prom/prometheus
+        restart: unless-stopped
+        ports:
+            - 9090:9090
+        volumes:
+            - ./prometheus:/etc/prometheus
+
 
 # local
 #version: '3.7'
