@@ -22,4 +22,4 @@ scrape_configs:
     
     scrape_interval: 5s
     static_configs:
-      - targets: ['0.0.0.0:8001']
+      - targets: ['web:8001']
