@@ -12,7 +12,7 @@ services:
         # image: jehob/law-orga-backend:0.1.1prometheus
 
     nginx:
-        image: jehob/law-orga-nginx
+        image: nginx:1.19.0-alpine
         restart: unless-stopped
         ports:
             - 80:80
@@ -20,6 +20,7 @@ services:
         depends_on:
             - web
         volumes:
+            - ./containers/nginx:/etc/nginx/conf.d
             - ./data/certbot/conf:/etc/letsencrypt
             - ./data/certbot/www:/var/www/certbot
         command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
@@ -58,7 +59,7 @@ services:
         expose:
             - 9090
         volumes:
-            - ./prometheus/:/etc/prometheus/
+            - ./containers/prometheus/:/etc/prometheus/
             - ./data/prometheus:/prometheus
         command:
             - '--config.file=/etc/prometheus/prometheus.yml'
