@@ -9,3 +9,6 @@ Procfile
 nginx
 environments
 */static/tests/*
+containers
+docker-compose.yml
+db.sqlite3
