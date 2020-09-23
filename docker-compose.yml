@@ -1,9 +1,5 @@
 version: '2'
 
-volumes:
-    prometheus_data: {}
-    grafana_data: {}
-
 services:
     web:
         build: .
@@ -58,11 +54,12 @@ services:
     prometheus:
         image: prom/prometheus
         restart: unless-stopped
+        user: "root"
         expose:
             - 9090
         volumes:
             - ./prometheus/:/etc/prometheus/
-            - prometheus_data:/prometheus
+            - ./data/prometheus:/prometheus
         command:
             - '--config.file=/etc/prometheus/prometheus.yml'
             - '--storage.tsdb.path=/prometheus'
@@ -70,26 +67,13 @@ services:
     grafana:
         image: grafana/grafana
         restart: unless-stopped
+        user: "root"
         depends_on:
             - prometheus
         ports:
             - 3000:3000
         volumes:
-            - grafana_data:/var/lib/grafana
+            - ./data/grafana:/var/lib/grafana
             - ./grafana/provisioning/:/etc/grafana/provisioning/
         environment:
             - GF_USERS_ALLOW_SIGN_UP=false
-
-# local
-#version: '3.7'
-#
-#services:
-#    web:
-#        build: .
-#        command: python manage.py runserver 0.0.0.0:8000
-#        volumes:
-#            - ./:/usr/src/app/
-#        ports:
-#            - 8000:8000
-#        env_file:
-#            - ./environments/dev.env
