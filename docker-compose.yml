@@ -54,12 +54,11 @@ services:
             - 8080
 
     timescaledb:
-        image: timescale/timescaledb:latest-pg12
+        image: timescaledev/timescale_prometheus_extra:latest-pg12
         restart: always
         environment:
             - POSTGRES_PASSWORD=password
-        ports:
-            - 5432:5432
+            - POSTGRES_HOST_AUTH_METHOD=trust
         expose:
             - 5432
 
@@ -75,7 +74,6 @@ services:
             - TS_PROM_DB_SSL_MODE=disable
         expose:
             - 9201
-
 
     prometheus:
         image: prom/prometheus
