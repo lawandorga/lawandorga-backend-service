@@ -4,12 +4,14 @@ services:
     web:
         build: .
         command: gunicorn backend.wsgi:application --bind 0.0.0.0:8001 --log-level debug
+        depends_on:
+            - logspout
         expose:
             - 8001
         env_file:
             - ./environments/web.test.env
-        image: jehob/law-orga-backend
-        # image: jehob/law-orga-backend:0.1.1prometheus
+        # image: jehob/law-orga-backend
+        image: jehob/law-orga-backend:0.1.1prometheus
 
     nginx:
         image: nginx:1.19.0-alpine
@@ -103,3 +105,46 @@ services:
             - ./data/grafana-provisioning/:/etc/grafana/provisioning/
         environment:
             - GF_USERS_ALLOW_SIGN_UP=false
+
+    logspout:
+        image: gliderlabs/logspout:v3
+        command: 'udp://logstash:5000'
+        restart: unless-stopped
+        links:
+            - logstash
+        volumes:
+            - '/var/run/docker.sock:/tmp/docker.sock'
+        depends_on:
+            - elasticsearch
+            - logstash
+            - kibana
+    logstash:
+        image: logstash:2.1.1
+        restart: unless-stopped
+        environment:
+        - STDOUT=true
+        links:
+        - elasticsearch
+        expose:
+        - 5000
+        depends_on:
+        - elasticsearch
+        - kibana
+        command: 'logstash -e "input { udp { port => 5000 } } output { elasticsearch { hosts => elasticsearch } }"'
+    kibana:
+        image: kibana:4.1.2
+        restart: unless-stopped
+        links:
+        - elasticsearch
+        environment:
+        - ELASTICSEARCH_URL=http://elasticsearch:9200
+        ports:
+        - '5601:5601'
+        depends_on:
+        - elasticsearch
+    elasticsearch:
+        image: elasticsearch:1.5.2
+        restart: unless-stopped
+        ports:
+        - '9200:9200'
+        - '9300:9300'
