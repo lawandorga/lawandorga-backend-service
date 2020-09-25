@@ -61,6 +61,8 @@ services:
         environment:
             - POSTGRES_PASSWORD=password
             - POSTGRES_HOST_AUTH_METHOD=trust
+        volumes:
+            - ./data/postgres:/var/lib/postgresql
         expose:
             - 5432
 
@@ -107,7 +109,7 @@ services:
             - GF_USERS_ALLOW_SIGN_UP=false
 
     logspout:
-        image: gliderlabs/logspout:v3
+        image: gliderlabs/logspout:v3.2.11
         command: 'udp://logstash:5000'
         restart: unless-stopped
         links:
@@ -118,8 +120,9 @@ services:
             - elasticsearch
             - logstash
             - kibana
+        
     logstash:
-        image: logstash:2.1.1
+        image: logstash:7.9.1
         restart: unless-stopped
         environment:
         - STDOUT=true
@@ -131,20 +134,27 @@ services:
         - elasticsearch
         - kibana
         command: 'logstash -e "input { udp { port => 5000 } } output { elasticsearch { hosts => elasticsearch } }"'
+        mem_limit: 700m
+
     kibana:
-        image: kibana:4.1.2
+        image: kibana:7.9.1
         restart: unless-stopped
         links:
         - elasticsearch
         environment:
         - ELASTICSEARCH_URL=http://elasticsearch:9200
         ports:
-        - '5601:5601'
+        - 5601:5601
         depends_on:
         - elasticsearch
+        mem_limit: 700m
+
     elasticsearch:
-        image: elasticsearch:1.5.2
+        image: elasticsearch:7.9.1
         restart: unless-stopped
         ports:
-        - '9200:9200'
-        - '9300:9300'
+        - 9200:9200
+        - 9300:9300
+        environment:
+            ES_JAVA_OPTS: -Xms512m -Xmx512m
+
