@@ -135,7 +135,6 @@ services:
         - elasticsearch
         - kibana
         command: 'logstash -e "input { udp { port => 5000 } } output { elasticsearch { hosts => elasticsearch } }"'
-        mem_limit: 700m
 
     kibana:
         image: kibana:7.9.1
@@ -148,7 +147,6 @@ services:
         - 5601:5601
         depends_on:
         - elasticsearch
-        mem_limit: 700m
 
     elasticsearch:
         image: elasticsearch:7.9.1
@@ -157,5 +155,8 @@ services:
         - 9200:9200
         - 9300:9300
         environment:
-            ES_JAVA_OPTS: -Xms512m -Xmx512m
+            - node.name=elasticsearch
+            - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+            - cluster.initial_master_nodes=elasticsearch
 
+ 

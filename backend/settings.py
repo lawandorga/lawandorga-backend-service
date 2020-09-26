@@ -47,7 +47,9 @@ if "DEBUG" in os.environ:
 else:
     DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "web"
+]
 
 # Application definition
 
@@ -272,6 +274,7 @@ CORS_ORIGIN_WHITELIST = [
     "https://d7pmzq2neb57w.cloudfront.net",
     # test
     "https://d33cushiywgecu.cloudfront.net",
+
 ]
 
 CORS_ALLOW_HEADERS = [
