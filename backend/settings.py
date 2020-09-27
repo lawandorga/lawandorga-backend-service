@@ -47,9 +47,10 @@ if "DEBUG" in os.environ:
 else:
     DEBUG = True
 
-ALLOWED_HOSTS = [
-    "web"
-]
+if "HOST" in os.environ:
+    ALLOWED_HOSTS = ["web", os.environ['HOST']]
+else:
+    ALLOWED_HOSTS = ["web"]
 
 # Application definition
 
@@ -143,39 +144,16 @@ WSGI_APPLICATION = "backend.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-if "ON_HEROKU" in os.environ:
-    # heroku database
-    if "ON_DEPLOY" in os.environ:
-        DATABASES = {
+if "LOCAL" in os.environ and os.environ['LOCAL'] == '0' or os.environ["LOCAL"] == 'false':
+    # remote database
+    DATABASES = {
             "default": {
-                "ENGINE": "django.db.backends.postgresql",
+                "ENGINE": "django_prometheus.db.backends.postgresql",
                 "NAME": os.environ["DB_NAME"],  # database
                 "USER": os.environ["DB_USER"],  # user
                 "PASSWORD": os.environ["DB_PASSWORD"],  # password
                 "HOST": os.environ["DB_HOST"],  # part of uri, after @ before :, or host
                 "PORT": os.environ["DB_PORT"],  # port
-            }
-        }
-    elif "ON_DEV" in os.environ:
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.postgresql",
-                "NAME": "dd804idbj534r1",
-                "USER": "hnegrdmxsdnsdg",
-                "PASSWORD": "85f8d3c19c4d8791b8d3ddc61848e84d0e7fdaa1015a8c1f9d06b12f192f166c",
-                "HOST": "ec2-54-247-79-32.eu-west-1.compute.amazonaws.com",
-                "PORT": "5432",
-            }
-        }
-    elif "ON_TEST" in os.environ:
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.postgresql",
-                "NAME": "db29qk1cvplv1b",
-                "USER": "oxnphgrugnpugu",
-                "PASSWORD": "4f25e6ee4581095852494124d7aab7ca6bed3be9f0eeb0152bc58f292abbc7c9",
-                "HOST": "ec2-54-217-218-80.eu-west-1.compute.amazonaws.com",
-                "PORT": "5432",
             }
         }
 else:
@@ -274,7 +252,6 @@ CORS_ORIGIN_WHITELIST = [
     "https://d7pmzq2neb57w.cloudfront.net",
     # test
     "https://d33cushiywgecu.cloudfront.net",
-
 ]
 
 CORS_ALLOW_HEADERS = [
