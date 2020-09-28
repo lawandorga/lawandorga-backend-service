@@ -3,7 +3,7 @@ version: '2'
 services:
     web:
         build: .
-        command: gunicorn backend.wsgi:application --bind 0.0.0.0:8001 --log-level debug
+        command: gunicorn backend.wsgi:application --bind 0.0.0.0:8001
         restart: unless-stopped
         container_name: web
         depends_on:
@@ -14,15 +14,6 @@ services:
             - ./environments/web.test.env
         # image: jehob/law-orga-backend
         image: jehob/law-orga-backend:0.1.1prometheus
-        # logging:
-        #     driver: syslog
-        #     options:
-        #         # tag: web
-        #         # syslog-tag: container=,
-        #         tag: "{{.ImageName}}/{{.Name}}/{{.ID}}"
-        labels:
-            container: "web"
-            com.example.service: "web"
 
     nginx:
         image: nginx:1.19.0-alpine
@@ -74,6 +65,8 @@ services:
             - POSTGRES_HOST_AUTH_METHOD=trust
         volumes:
             - ./data/postgres:/var/lib/postgresql
+        labels:
+            de.laworga.logging: "none"
         expose:
             - 5432
 
@@ -82,6 +75,8 @@ services:
         restart: unless-stopped
         depends_on:
             - timescaledb
+        labels:
+            de.laworga.logging: "none"
         environment:
             - TS_PROM_DB_NAME=postgres
             - TS_PROM_DB_HOST=timescaledb
@@ -118,6 +113,8 @@ services:
             - ./data/grafana-provisioning/:/etc/grafana/provisioning/
         environment:
             - GF_USERS_ALLOW_SIGN_UP=false
+        labels:
+            de.laworga.logging: "none"
 
     logspout:
         image: gliderlabs/logspout:v3.2.11
@@ -127,6 +124,8 @@ services:
             - logstash
         volumes:
             - '/var/run/docker.sock:/tmp/docker.sock'
+        environment:
+            - EXCLUDE_LABEL=de.laworga.logging:none
         depends_on:
             - elasticsearch
             - logstash
@@ -137,6 +136,7 @@ services:
         restart: unless-stopped
         environment:
             - LOGSPOUT=ignore
+            - TIMESCALE=ignore
             # - STDOUT=true
         links:
             - elasticsearch
@@ -153,6 +153,7 @@ services:
             - elasticsearch
         environment:
             - LOGSPOUT=ignore
+            - TIMESCALE=ignore
             - ELASTICSEARCH_URL=http://elasticsearch:9200
         ports:
             - 5601:5601
@@ -167,6 +168,7 @@ services:
         - 9300:9300
         environment:
             - LOGSPOUT=ignore
+            - TIMESCALE=ignore
             - node.name=elasticsearch
             - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
             - cluster.initial_master_nodes=elasticsearch
