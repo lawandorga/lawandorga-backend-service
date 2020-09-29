@@ -20,6 +20,7 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.errors import CustomError
 from backend.static.error_codes import (
@@ -148,7 +149,9 @@ class UserProfileManager(BaseUserManager):
         return users
 
 
-class UserProfile(AbstractBaseUser, PermissionsMixin):
+class UserProfile(
+    ExportModelOperationsMixin("user"), AbstractBaseUser, PermissionsMixin
+):
     """ profile of users """
 
     email = models.EmailField(max_length=255, unique=True)

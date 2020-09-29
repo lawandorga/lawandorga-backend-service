@@ -15,10 +15,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
+
 from backend.api.models import UserProfile, Rlc
 
 
-class UsersRlcKeys(models.Model):
+class UsersRlcKeys(ExportModelOperationsMixin("users_rlc_keys"), models.Model):
     user = models.ForeignKey(
         UserProfile, related_name="users_rlc_keys", on_delete=models.CASCADE, null=False
     )

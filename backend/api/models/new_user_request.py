@@ -15,11 +15,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.models import UserProfile
 
 
-class NewUserRequest(models.Model):
+class NewUserRequest(ExportModelOperationsMixin("new_user_request"), models.Model):
     request_from = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
     request_processed = models.ForeignKey(
         UserProfile,
