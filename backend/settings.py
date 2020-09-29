@@ -48,9 +48,9 @@ else:
     DEBUG = True
 
 if "HOST" in os.environ:
-    ALLOWED_HOSTS = ["web", os.environ['HOST']]
+    ALLOWED_HOSTS = ["web", os.environ["HOST"]]
 else:
-    ALLOWED_HOSTS = ["web"]
+    ALLOWED_HOSTS = ["web", "127.0.0.1"]
 
 # Application definition
 
@@ -91,7 +91,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "backend.api.authentication.ExpiringTokenAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_PERMISSION_CLASSES": ("backend.api.permissions.IsAuthenticatedLogging",),
     "EXCEPTION_HANDLER": "backend.api.exception_handler.custom_exception_handler",
     "PAGE_SIZE": 100,
 }
@@ -144,18 +144,20 @@ WSGI_APPLICATION = "backend.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-if "LOCAL" in os.environ and os.environ['LOCAL'] == '0' or os.environ["LOCAL"] == 'false':
+if "LOCAL" in os.environ and (
+    os.environ["LOCAL"] == "0" or os.environ["LOCAL"] == "false"
+):
     # remote database
     DATABASES = {
-            "default": {
-                "ENGINE": "django_prometheus.db.backends.postgresql",
-                "NAME": os.environ["DB_NAME"],  # database
-                "USER": os.environ["DB_USER"],  # user
-                "PASSWORD": os.environ["DB_PASSWORD"],  # password
-                "HOST": os.environ["DB_HOST"],  # part of uri, after @ before :, or host
-                "PORT": os.environ["DB_PORT"],  # port
-            }
+        "default": {
+            "ENGINE": "django_prometheus.db.backends.postgresql",
+            "NAME": os.environ["DB_NAME"],  # database
+            "USER": os.environ["DB_USER"],  # user
+            "PASSWORD": os.environ["DB_PASSWORD"],  # password
+            "HOST": os.environ["DB_HOST"],  # part of uri, after @ before :, or host
+            "PORT": os.environ["DB_PORT"],  # port
         }
+    }
 else:
     DATABASES = {
         "default": {
