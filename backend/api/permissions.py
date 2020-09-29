@@ -15,6 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import permissions
+from rest_framework.request import Request
+from rest_framework.views import View
 
 
 # TODO: what to do with this?? custom permissions?
@@ -60,5 +62,18 @@ class OriginCountry(permissions.BasePermission):
 class GetOrSuperuser(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.user.is_superuser or request.method == "GET":
+            return True
+        return False
+
+
+class IsAuthenticatedLogging(permissions.BasePermission):
+    def has_permission(self, request: Request, view: View) -> bool:
+        if bool(request.user and request.user.is_authenticated):
+            print(
+                "general_activity user:"
+                + str(request.user.id)
+                + "; rlc:"
+                + str(request.user.rlc.id)
+            )
             return True
         return False
