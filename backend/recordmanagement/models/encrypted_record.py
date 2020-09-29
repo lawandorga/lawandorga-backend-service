@@ -89,7 +89,7 @@ class EncryptedRecordQuerySet(models.QuerySet):
         return self.filter(from_rlc=rlc)
 
 
-class EncryptedRecord(ExportModelOperationsMixin('encrypted_record'), models.Model):
+class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Model):
     creator = models.ForeignKey(
         UserProfile,
         related_name="e_records_created",

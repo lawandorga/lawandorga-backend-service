@@ -29,8 +29,6 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 from datetime import timedelta
 
-import django_heroku
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -39,7 +37,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 if "SECRET_KEY" in os.environ:
-    os.environ.get("SECRET_KEY")
+    SECRET_KEY = os.environ.get("SECRET_KEY")
 else:
     SECRET_KEY = "srt(vue=+gl&0c_c3pban6a&m2h2iz6mhbx^%^_%9!#-jg0*lz"
 
@@ -49,7 +47,10 @@ if "DEBUG" in os.environ:
 else:
     DEBUG = True
 
-ALLOWED_HOSTS = []
+if "HOST" in os.environ:
+    ALLOWED_HOSTS = ["web", os.environ["HOST"]]
+else:
+    ALLOWED_HOSTS = ["web", "127.0.0.1"]
 
 # Application definition
 
@@ -90,7 +91,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "backend.api.authentication.ExpiringTokenAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_PERMISSION_CLASSES": ("backend.api.permissions.IsAuthenticatedLogging",),
     "EXCEPTION_HANDLER": "backend.api.exception_handler.custom_exception_handler",
     "PAGE_SIZE": 100,
 }
@@ -143,41 +144,20 @@ WSGI_APPLICATION = "backend.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-if "ON_HEROKU" in os.environ:
-    # heroku database
-    if "ON_DEPLOY" in os.environ:
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.postgresql",
-                "NAME": os.environ["DB_NAME"],  # database
-                "USER": os.environ["DB_USER"],  # user
-                "PASSWORD": os.environ["DB_PASSWORD"],  # password
-                "HOST": os.environ["DB_HOST"],  # part of uri, after @ before :, or host
-                "PORT": os.environ["DB_PORT"],  # port
-            }
+if "LOCAL" in os.environ and (
+    os.environ["LOCAL"] == "0" or os.environ["LOCAL"] == "false"
+):
+    # remote database
+    DATABASES = {
+        "default": {
+            "ENGINE": "django_prometheus.db.backends.postgresql",
+            "NAME": os.environ["DB_NAME"],  # database
+            "USER": os.environ["DB_USER"],  # user
+            "PASSWORD": os.environ["DB_PASSWORD"],  # password
+            "HOST": os.environ["DB_HOST"],  # part of uri, after @ before :, or host
+            "PORT": os.environ["DB_PORT"],  # port
         }
-    elif "ON_DEV" in os.environ:
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.postgresql",
-                "NAME": "dd804idbj534r1",
-                "USER": "hnegrdmxsdnsdg",
-                "PASSWORD": "85f8d3c19c4d8791b8d3ddc61848e84d0e7fdaa1015a8c1f9d06b12f192f166c",
-                "HOST": "ec2-54-247-79-32.eu-west-1.compute.amazonaws.com",
-                "PORT": "5432",
-            }
-        }
-    elif "ON_TEST" in os.environ:
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.postgresql",
-                "NAME": "db29qk1cvplv1b",
-                "USER": "oxnphgrugnpugu",
-                "PASSWORD": "4f25e6ee4581095852494124d7aab7ca6bed3be9f0eeb0152bc58f292abbc7c9",
-                "HOST": "ec2-54-217-218-80.eu-west-1.compute.amazonaws.com",
-                "PORT": "5432",
-            }
-        }
+    }
 else:
     DATABASES = {
         "default": {
@@ -194,8 +174,7 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-# heroku and authentication
-django_heroku.settings(locals())
+# authentication
 AUTH_USER_MODEL = "api.UserProfile"
 
 # email
