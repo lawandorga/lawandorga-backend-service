@@ -17,6 +17,7 @@
 from rest_framework import permissions
 from rest_framework.request import Request
 from rest_framework.views import View
+import logging
 
 
 # TODO: what to do with this?? custom permissions?
@@ -69,6 +70,13 @@ class GetOrSuperuser(permissions.BasePermission):
 class IsAuthenticatedLogging(permissions.BasePermission):
     def has_permission(self, request: Request, view: View) -> bool:
         if bool(request.user and request.user.is_authenticated):
+            logger = logging.getLogger(__name__)
+            logger.info(
+                "general_activity user:"
+                + str(request.user.id)
+                + "; rlc:"
+                + str(request.user.rlc.id)
+            )
             print(
                 "general_activity user:"
                 + str(request.user.id)

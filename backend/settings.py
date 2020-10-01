@@ -91,7 +91,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "backend.api.authentication.ExpiringTokenAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": ("backend.api.permissions.IsAuthenticatedLogging",),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "EXCEPTION_HANDLER": "backend.api.exception_handler.custom_exception_handler",
     "PAGE_SIZE": 100,
 }
