@@ -13,7 +13,7 @@ services:
         env_file:
             - ./environments/web.test.env
         # image: jehob/law-orga-backend
-        image: jehob/law-orga-backend:0.1.1prometheus
+        image: jehob/law-orga-backend:0.1
 
     nginx:
         image: nginx:1.19.0-alpine

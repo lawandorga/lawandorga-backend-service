@@ -29,6 +29,17 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 from datetime import timedelta
 
+
+def env_true(env_label: str) -> bool:
+    if env_label in os.environ and (
+        os.environ[env_label] == "1"
+        or os.environ[env_label] == "true"
+        or os.environ[env_label] == "True"
+    ):
+        return True
+    return False
+
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -42,13 +53,10 @@ else:
     SECRET_KEY = "srt(vue=+gl&0c_c3pban6a&m2h2iz6mhbx^%^_%9!#-jg0*lz"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if "DEBUG" in os.environ:
-    DEBUG = os.environ["DEBUG"]
-else:
-    DEBUG = True
+DEBUG = env_true("DEBUG")
 
 if "HOST" in os.environ:
-    ALLOWED_HOSTS = ["web", os.environ["HOST"]]
+    ALLOWED_HOSTS = ["web", "127.0.0.1", os.environ["HOST"]]
 else:
     ALLOWED_HOSTS = ["web", "127.0.0.1"]
 
@@ -99,54 +107,34 @@ REST_FRAMEWORK = {
 SILENCED_SYSTEM_CHECKS = ["rest_framework.W001"]
 
 # Authentication Timeout
-if "ON_HEROKU" in os.environ:
-    TIMEOUT_TIMEDELTA = timedelta(minutes=10)
-else:
+if env_true("DEV") or env_true("TEST"):
     TIMEOUT_TIMEDELTA = timedelta(weeks=10)
+else:
+    TIMEOUT_TIMEDELTA = timedelta(minutes=10)
 
 # Templates
-if "ON_HEROKU" in os.environ:
-    TEMPLATES = [
-        {
-            "BACKEND": "django.template.backends.django.DjangoTemplates",
-            "DIRS": ["static"],
-            "APP_DIRS": True,
-            "OPTIONS": {
-                "context_processors": [
-                    "django.template.context_processors.debug",
-                    "django.template.context_processors.request",
-                    "django.contrib.auth.context_processors.auth",
-                    "django.contrib.messages.context_processors.messages",
-                    "backend.static.env_getter.export_vars",
-                ],
-            },
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": ["static/dev", "static"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "backend.static.env_getter.export_vars",
+            ],
         },
-    ]
-else:
-    TEMPLATES = [
-        {
-            "BACKEND": "django.template.backends.django.DjangoTemplates",
-            "DIRS": ["static/dev", "static"],
-            "APP_DIRS": True,
-            "OPTIONS": {
-                "context_processors": [
-                    "django.template.context_processors.debug",
-                    "django.template.context_processors.request",
-                    "django.contrib.auth.context_processors.auth",
-                    "django.contrib.messages.context_processors.messages",
-                    "backend.static.env_getter.export_vars",
-                ],
-            },
-        },
-    ]
+    },
+]
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-if "LOCAL" in os.environ and (
-    os.environ["LOCAL"] == "0" or os.environ["LOCAL"] == "false"
-):
+if not env_true("LOCAL"):
     # remote database
     DATABASES = {
         "default": {
@@ -178,7 +166,7 @@ USE_TZ = True
 AUTH_USER_MODEL = "api.UserProfile"
 
 # email
-if "ON_HEROKU" in os.environ:  # or 'EMAIL_HOST' in os.environ
+if not env_true("DEV"):
     EMAIL_HOST = os.environ["EMAIL_HOST"]
     EMAIL_PORT = os.environ["EMAIL_PORT"]
     EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]
@@ -188,40 +176,40 @@ if "ON_HEROKU" in os.environ:  # or 'EMAIL_HOST' in os.environ
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-# storage
-if "ON_HEROKU" in os.environ and os.environ["ON_HEROKU"]:
-    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-    STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-    COMPRESS_STORAGE = "backend.shared.storage_generator.CachedS3Boto3Storage"
+# # storage
+# if "ON_HEROKU" in os.environ and os.environ["ON_HEROKU"]:
+#     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+#     STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+#     COMPRESS_STORAGE = "backend.shared.storage_generator.CachedS3Boto3Storage"
 
 SCW_SECRET_KEY = os.environ.get("SCW_SECRET_KEY")
 SCW_ACCESS_KEY = os.environ.get("SCW_ACCESS_KEY")
 SCW_S3_BUCKET_NAME = os.environ.get("SCW_S3_BUCKET_NAME")
 
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME")
-AWS_S3_BUCKET_NAME = os.environ.get("AWS_S3_BUCKET_NAME")
-AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_S3_BUCKET_NAME")
-AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_S3_BUCKET_NAME
-AWS_LOCATION = "static"
-AWS_DEFAULT_ACL = "private"
-AWS_S3_SIGV4 = True
-AWS_S3_SIGNATURE_VERSION = "s3v4"
-AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
+# AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+# AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+# AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME")
+# AWS_S3_BUCKET_NAME = os.environ.get("AWS_S3_BUCKET_NAME")
+# AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_S3_BUCKET_NAME")
+# AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_S3_BUCKET_NAME
+# AWS_LOCATION = "static"
+# AWS_DEFAULT_ACL = "private"
+# AWS_S3_SIGV4 = True
+# AWS_S3_SIGNATURE_VERSION = "s3v4"
+# AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
 # AWS_S3_CALLING_FORMAT = 'boto.s3.connection.OrdinaryCallingFormat'
 # GZIP
-if "ON_HEROKU" in os.environ and os.environ["ON_HEROKU"]:
-    AWS_IS_GZIPPED = True
-    GZIP_CONTENT_TYPES = (
-        "text/css",
-        "application/javascript",
-        "application/x-javascript",
-        "text/javascript",
-        "text/jscript",
-        "text/ecmascript",
-        "application/ecmascript",
-    )
+# if "ON_HEROKU" in os.environ and os.environ["ON_HEROKU"]:
+#     AWS_IS_GZIPPED = True
+#     GZIP_CONTENT_TYPES = (
+#         "text/css",
+#         "application/javascript",
+#         "application/x-javascript",
+#         "text/javascript",
+#         "text/jscript",
+#         "text/ecmascript",
+#         "application/ecmascript",
+#     )
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
@@ -230,11 +218,11 @@ STATICFILES_LOCATION = "static"
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 
-if "ON_HEROKU" in os.environ and os.environ["ON_HEROKU"]:
-    STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
-    COMPRESS_URL = STATIC_URL
-else:
-    STATIC_URL = "/static/"
+# if "ON_HEROKU" in os.environ and os.environ["ON_HEROKU"]:
+#     STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
+#     COMPRESS_URL = STATIC_URL
+# else:
+STATIC_URL = "/static/"
 
 # CORS policy
 # CORS_ORIGIN_ALLOW_ALL=True
