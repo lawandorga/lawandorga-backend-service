@@ -130,7 +130,7 @@ services:
             - elasticsearch
             - logstash
             - kibana
-        
+
     logstash:
         image: logstash:7.9.1
         restart: unless-stopped
@@ -173,4 +173,3 @@ services:
             - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
             - cluster.initial_master_nodes=elasticsearch
 
- 

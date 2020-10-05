@@ -43,9 +43,6 @@ def env_true(env_label: str) -> bool:
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
 if "SECRET_KEY" in os.environ:
     SECRET_KEY = os.environ.get("SECRET_KEY")
@@ -176,56 +173,19 @@ if not env_true("DEV"):
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-# # storage
-# if "ON_HEROKU" in os.environ and os.environ["ON_HEROKU"]:
-#     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-#     STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-#     COMPRESS_STORAGE = "backend.shared.storage_generator.CachedS3Boto3Storage"
-
 SCW_SECRET_KEY = os.environ.get("SCW_SECRET_KEY")
 SCW_ACCESS_KEY = os.environ.get("SCW_ACCESS_KEY")
 SCW_S3_BUCKET_NAME = os.environ.get("SCW_S3_BUCKET_NAME")
 
-# AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-# AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-# AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME")
-# AWS_S3_BUCKET_NAME = os.environ.get("AWS_S3_BUCKET_NAME")
-# AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_S3_BUCKET_NAME")
-# AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_S3_BUCKET_NAME
-# AWS_LOCATION = "static"
-# AWS_DEFAULT_ACL = "private"
-# AWS_S3_SIGV4 = True
-# AWS_S3_SIGNATURE_VERSION = "s3v4"
-# AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
-# AWS_S3_CALLING_FORMAT = 'boto.s3.connection.OrdinaryCallingFormat'
-# GZIP
-# if "ON_HEROKU" in os.environ and os.environ["ON_HEROKU"]:
-#     AWS_IS_GZIPPED = True
-#     GZIP_CONTENT_TYPES = (
-#         "text/css",
-#         "application/javascript",
-#         "application/x-javascript",
-#         "text/javascript",
-#         "text/jscript",
-#         "text/ecmascript",
-#         "application/ecmascript",
-#     )
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.1/howto/static-files/
 STATICFILES_LOCATION = "static"
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
-
-# if "ON_HEROKU" in os.environ and os.environ["ON_HEROKU"]:
-#     STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
-#     COMPRESS_URL = STATIC_URL
-# else:
 STATIC_URL = "/static/"
 
-# CORS policy
-# CORS_ORIGIN_ALLOW_ALL=True
+# TODO: delete cors? routed through nginx -> no cross site
 CORS_ORIGIN_WHITELIST = [
     # prod
     "https://law-orga.de",
@@ -256,3 +216,80 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
     "private-key",
 ]
+
+import logging.config
+from logging.handlers import SysLogHandler
+
+LOGGING_CONFIG = None
+# logging.config.dictConfig(
+#     {
+#         "version": 1,
+#         "disable_existing_loggers": False,
+#         "formatters": {
+#             "console": {
+#                 # exact format is not important, this is the minimum information
+#                 "format": "%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
+#             },
+#             "standard": {
+#                 "format": "[YOUR PROJECT NAME] [%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+#                 "datefmt": "%d/%b/%Y %H:%M:%S",
+#             },
+#         },
+#         "handlers": {
+#             "console": {"class": "logging.StreamHandler", "formatter": "console",},
+#             "syslog": {
+#                 "class": "logging.handlers.SysLogHandler",
+#                 "formatter": "standard",
+#                 "facility": "user",
+#                 # uncomment next line if rsyslog works with unix socket only (UDP reception disabled)
+#                 #'address': '/dev/log'
+#             },
+#         },
+#         "loggers": {
+#             # root logger
+#             "": {
+#                 "level": "DEBUG",
+#                 "handlers": ["syslog"],
+#                 "disable": False,
+#                 "propagate": True,
+#             },
+#         },
+#     }
+# )
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "standard": {
+#             "format": "[YOUR PROJECT NAME] [%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+#             "datefmt": "%d/%b/%Y %H:%M:%S",
+#         }
+#     },
+#     "handlers": {
+#         "console": {"class": "logging.StreamHandler",},
+#         "syslog": {
+#             "class": "logging.handlers.SysLogHandler",
+#             "formatter": "standard",
+#             "facility": "user",
+#             # uncomment next line if rsyslog works with unix socket only (UDP reception disabled)
+#             #'address': '/dev/log'
+#         },
+#     },
+#     "loggers": {
+#         "django": {
+#             "handlers": ["syslog"],
+#             "level": "DEBUG",
+#             "disabled": False,
+#             "propagate": True,
+#         },
+#         "django.server": {"handlers": ["syslog"], "level": "DEBUG",},
+#     },
+# }
+# MY_LOGGERS = {}
+# for app in INSTALLED_APPS:
+#     MY_LOGGERS[app] = {
+#         "handlers": ["syslog"],
+#         "level": "DEBUG",
+#         "propagate": True,
+#     }
+# LOGGING["loggers"].update(MY_LOGGERS)
