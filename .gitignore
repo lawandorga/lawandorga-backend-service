@@ -56,3 +56,4 @@ backend/static/tests/test_files/
 backend/static/tests/test_file.png
 
 temp/
+data/

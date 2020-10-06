@@ -155,6 +155,9 @@ services:
             - LOGSPOUT=ignore
             - TIMESCALE=ignore
             - ELASTICSEARCH_URL=http://elasticsearch:9200
+            - XPACK_SECURITY_ENABLED=true
+            - ELASTICSEARCH_PASSWORD=changethispassword
+            - ELASTICSEARCH_USERNAME=elastic
         ports:
             - 5601:5601
         depends_on:
@@ -172,4 +175,7 @@ services:
             - node.name=elasticsearch
             - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
             - cluster.initial_master_nodes=elasticsearch
+            - xpack.security.enabled=true
+            - ELASTIC_PASSWORD=changethispassword
+
 
