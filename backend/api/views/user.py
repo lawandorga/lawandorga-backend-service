@@ -196,6 +196,7 @@ class UserProfileCreatorViewSet(viewsets.ModelViewSet):
 
         user_activation_link = UserActivationLink(user=user)
         user_activation_link.save()
+
         EmailSender.send_user_activation_email(
             user, FrontendLinks.get_user_activation_link(user_activation_link)
         )

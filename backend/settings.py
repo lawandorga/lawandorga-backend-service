@@ -164,6 +164,8 @@ AUTH_USER_MODEL = "api.UserProfile"
 
 # email
 if not env_true("DEV"):
+    DEFAULT_FROM_EMAIL = os.environ["EMAIL_ADDRESS"]
+    SERVER_EMAIL = os.environ["EMAIL_ADDRESS"]
     EMAIL_HOST = os.environ["EMAIL_HOST"]
     EMAIL_PORT = os.environ["EMAIL_PORT"]
     EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]
@@ -186,23 +188,42 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 STATIC_URL = "/static/"
 
 # TODO: delete cors? routed through nginx -> no cross site
-CORS_ORIGIN_WHITELIST = [
-    # prod
-    "https://law-orga.de",
-    "http://law-orga.de",
-    "http://www.law-orga.de",
-    "https://www.law-orga.de",
-    "https://d1g37iqegvaqxr.cloudfront.net",
-    # local
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:3001",
-    "http://localhost:3000",
-    "http://localhost:3001",
-    # dev
-    "https://d7pmzq2neb57w.cloudfront.net",
-    # test
-    "https://d33cushiywgecu.cloudfront.net",
-]
+CORS_ORIGIN_ALLOW_ALL = True  # TODO: remove this, don't even have cors enabled?
+# CORS_ORIGIN_WHITELIST = [
+#     # prod
+#     "https://law-orga.de",
+#     "http://law-orga.de",
+#     "http://www.law-orga.de",
+#     "https://www.law-orga.de",
+#     "https://d1g37iqegvaqxr.cloudfront.net",
+#     # local
+#     "http://127.0.0.1:3000",
+#     "http://127.0.0.1:3001",
+#     "http://localhost:3000",
+#     "http://localhost:3001",
+#     # dev
+#     "https://d7pmzq2neb57w.cloudfront.net",
+#     # test
+#     "https://d33cushiywgecu.cloudfront.net",
+# ]
+# CORS_ALLOWED_ORIGINS = [
+#     # prod
+#     "https://law-orga.de",
+#     "http://law-orga.de",
+#     "http://www.law-orga.de",
+#     "https://www.law-orga.de",
+#     "https://d1g37iqegvaqxr.cloudfront.net",
+#     # local
+#     "http://127.0.0.1:3000",
+#     "http://127.0.0.1:3001",
+#     "http://localhost:3000",
+#     "http://localhost:3001",
+#     # dev
+#     "https://d7pmzq2neb57w.cloudfront.net",
+#     "https://d7pmzq2neb57w.cloudfront.net/",
+#     # test
+#     "https://d33cushiywgecu.cloudfront.net",
+# ]
 
 CORS_ALLOW_HEADERS = [
     "accept",
@@ -256,40 +277,40 @@ LOGGING_CONFIG = None
 #         },
 #     }
 # )
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "formatters": {
-#         "standard": {
-#             "format": "[YOUR PROJECT NAME] [%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-#             "datefmt": "%d/%b/%Y %H:%M:%S",
-#         }
-#     },
-#     "handlers": {
-#         "console": {"class": "logging.StreamHandler",},
-#         "syslog": {
-#             "class": "logging.handlers.SysLogHandler",
-#             "formatter": "standard",
-#             "facility": "user",
-#             # uncomment next line if rsyslog works with unix socket only (UDP reception disabled)
-#             #'address': '/dev/log'
-#         },
-#     },
-#     "loggers": {
-#         "django": {
-#             "handlers": ["syslog"],
-#             "level": "DEBUG",
-#             "disabled": False,
-#             "propagate": True,
-#         },
-#         "django.server": {"handlers": ["syslog"], "level": "DEBUG",},
-#     },
-# }
-# MY_LOGGERS = {}
-# for app in INSTALLED_APPS:
-#     MY_LOGGERS[app] = {
-#         "handlers": ["syslog"],
-#         "level": "DEBUG",
-#         "propagate": True,
-#     }
-# LOGGING["loggers"].update(MY_LOGGERS)
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {
+            "format": "[YOUR PROJECT NAME] [%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            "datefmt": "%d/%b/%Y %H:%M:%S",
+        }
+    },
+    "handlers": {
+        "console": {"class": "logging.StreamHandler",},
+        "syslog": {
+            "class": "logging.handlers.SysLogHandler",
+            "formatter": "standard",
+            "facility": "user",
+            # uncomment next line if rsyslog works with unix socket only (UDP reception disabled)
+            #'address': '/dev/log'
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["syslog"],
+            "level": "INFO",
+            "disabled": False,
+            "propagate": True,
+        },
+        "django.server": {"handlers": ["syslog"], "level": "INFO", "disabled": False},
+    },
+}
+MY_LOGGERS = {}
+for app in INSTALLED_APPS:
+    MY_LOGGERS[app] = {
+        "handlers": ["syslog"],
+        "level": "INFO",
+        "propagate": True,
+    }
+LOGGING["loggers"].update(MY_LOGGERS)
