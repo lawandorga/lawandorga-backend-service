@@ -381,6 +381,11 @@ class Fixtures:
             ("Studium",),
             ("Strafverfolgung",),
             ("Sonstiges",),
+            ("Aufenthaltserlaubnis",),
+            ("Aufenthaltsgestattung",),
+            ("Niederlassungserlaubnis",),
+            ("Einbürgerung",),
+            ("Staatsbürgerschaft",),
         ]
         for tag in tags:
             AddMethods.add_record_tag(tag)
@@ -437,6 +442,7 @@ class Fixtures:
             ("Dolmetscher*in",),
             ("Sonstiges",),
             ("Antwort von",),
+            ("Verwaltungsgericht",),
         ]
         for tag in tags:
             AddMethods.add_record_document_tag(tag)
