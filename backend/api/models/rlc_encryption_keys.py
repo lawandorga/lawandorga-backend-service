@@ -15,6 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.models import Rlc
 from backend.static.error_codes import ERROR__API__RLC__NO_PUBLIC_KEY_FOUND
@@ -31,7 +32,7 @@ class RlcEncryptionKeysQuerySet(models.QuerySet):
         return keys.public_key
 
 
-class RlcEncryptionKeys(models.Model):
+class RlcEncryptionKeys(ExportModelOperationsMixin("rlc_encryption_key"), models.Model):
     rlc = models.OneToOneField(
         Rlc, related_name="encryption_keys", on_delete=models.CASCADE
     )

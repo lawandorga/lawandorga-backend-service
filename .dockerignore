@@ -4,8 +4,12 @@ staticfiles
 temp
 venv
 .idea
-Procfile
 **/.git
 nginx
 environments
 */static/tests/*
+containers
+docker-compose.yml
+db.sqlite3
+init-letsencrypt.sh
+requirements_dev.txt

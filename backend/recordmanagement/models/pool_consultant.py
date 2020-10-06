@@ -15,10 +15,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
+
 from backend.api.models import UserProfile
 
 
-class PoolConsultant(models.Model):
+class PoolConsultant(ExportModelOperationsMixin("pool_consultant"), models.Model):
     consultant = models.ForeignKey(
         UserProfile,
         related_name="enlisted_in_record_pool",

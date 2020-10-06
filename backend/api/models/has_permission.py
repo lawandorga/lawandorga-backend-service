@@ -16,6 +16,8 @@
 
 from django.db import models
 from django.db.models.query import QuerySet
+from django_prometheus.models import ExportModelOperationsMixin
+
 from . import Permission
 
 
@@ -34,7 +36,7 @@ class HasPermissionManager(models.Manager):
         return getattr(self.get_query_set(), item, *args)
 
 
-class HasPermission(models.Model):
+class HasPermission(ExportModelOperationsMixin("has_permission"), models.Model):
     permission = models.ForeignKey(
         Permission,
         related_name="in_has_permission",
@@ -96,7 +98,7 @@ class HasPermission(models.Model):
         )
 
     """
-    
+
     """
 
     @staticmethod

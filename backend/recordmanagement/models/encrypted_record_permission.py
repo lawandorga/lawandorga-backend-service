@@ -15,11 +15,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.models import UserProfile
 
 
-class EncryptedRecordPermission(models.Model):
+class EncryptedRecordPermission(
+    ExportModelOperationsMixin("encrypted_record_permission"), models.Model
+):
     request_from = models.ForeignKey(
         UserProfile,
         related_name="e_record_permissions_requested",
