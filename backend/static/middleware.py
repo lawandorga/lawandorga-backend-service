@@ -33,3 +33,26 @@ def get_private_key_from_request(request):
     if isinstance(private_key, str):
         private_key = get_bytes_from_string_or_return_bytes(private_key)
     return private_key
+
+
+class SimpleMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        # One-time configuration and initialization.
+
+    def __call__(self, request):
+        # Code to be executed for each request before
+        # the view (and later middleware) are called.
+
+        response = self.get_response(request)
+
+        print("logging")
+        print("path: " + str(request.path))
+        if request.user.is_authenticated:
+            print("user: " + str(request.user.id))
+            print("rlc: " + str(request.user.rlc.id))
+
+        # Code to be executed for each request/response after
+        # the view is called.
+
+        return response
