@@ -397,3 +397,8 @@ ERROR__API__INVALID_PRIVATE_KEY = {
     "error_detail": "invalid private key",
     "error_code": "api.private_key_invalid",
 }
+
+ERROR__API__NOT_AUTHENTICATED = {
+    "error_detail": "not authenticated",
+    "error_code": "api.not_authenticated",
+}

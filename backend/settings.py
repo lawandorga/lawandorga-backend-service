@@ -107,7 +107,7 @@ SILENCED_SYSTEM_CHECKS = ["rest_framework.W001"]
 if env_true("DEV") or env_true("TEST"):
     TIMEOUT_TIMEDELTA = timedelta(weeks=10)
 else:
-    TIMEOUT_TIMEDELTA = timedelta(minutes=10)
+    TIMEOUT_TIMEDELTA = timedelta(minutes=1)
 
 # Templates
 TEMPLATES = [
@@ -182,8 +182,6 @@ SCW_S3_BUCKET_NAME = os.environ.get("SCW_S3_BUCKET_NAME")
 
 # Static files (CSS, JavaScript, Images)
 STATICFILES_LOCATION = "static"
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 STATIC_URL = "/static/"
 

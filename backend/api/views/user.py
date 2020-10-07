@@ -271,6 +271,11 @@ class LoginViewSet(viewsets.ViewSet):
 
     def get(self, request):
         token = request.META["HTTP_AUTHORIZATION"].split(" ")[1]
+        try:
+            Token.objects.get(key=token)
+        except:
+            raise CustomError(ERROR__API__NOT_AUTHENTICATED)
+
         return Response(LoginViewSet.get_login_data(token))
 
     @staticmethod
@@ -328,7 +333,12 @@ class LoginViewSet(viewsets.ViewSet):
 
 
 class LogoutViewSet(APIView):
+    authentication_classes = ()
+    permission_classes = ()
+
     def post(self, request):
+        if not request.user.is_authenticated:
+            return Response()
         Token.objects.filter(user=request.user).delete()
         return Response()
 
