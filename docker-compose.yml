@@ -186,6 +186,7 @@ services:
             - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
             - cluster.initial_master_nodes=elasticsearch
             - xpack.security.enabled=true
+            - xpack.security.transport.ssl.enabled=true
             - ELASTIC_PASSWORD=changethispassword
 
 
