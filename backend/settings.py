@@ -242,41 +242,6 @@ import logging.config
 from logging.handlers import SysLogHandler
 
 LOGGING_CONFIG = None
-# logging.config.dictConfig(
-#     {
-#         "version": 1,
-#         "disable_existing_loggers": False,
-#         "formatters": {
-#             "console": {
-#                 # exact format is not important, this is the minimum information
-#                 "format": "%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
-#             },
-#             "standard": {
-#                 "format": "[YOUR PROJECT NAME] [%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-#                 "datefmt": "%d/%b/%Y %H:%M:%S",
-#             },
-#         },
-#         "handlers": {
-#             "console": {"class": "logging.StreamHandler", "formatter": "console",},
-#             "syslog": {
-#                 "class": "logging.handlers.SysLogHandler",
-#                 "formatter": "standard",
-#                 "facility": "user",
-#                 # uncomment next line if rsyslog works with unix socket only (UDP reception disabled)
-#                 #'address': '/dev/log'
-#             },
-#         },
-#         "loggers": {
-#             # root logger
-#             "": {
-#                 "level": "DEBUG",
-#                 "handlers": ["syslog"],
-#                 "disable": False,
-#                 "propagate": True,
-#             },
-#         },
-#     }
-# )
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
