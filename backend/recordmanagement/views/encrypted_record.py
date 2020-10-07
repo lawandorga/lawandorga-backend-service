@@ -14,9 +14,6 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from datetime import datetime
-
-import pytz
 from django.conf import settings
 from django.db.models import Q
 from rest_framework import status, viewsets
@@ -204,7 +201,7 @@ class EncryptedRecordViewSet(APIView):
             status=status.HTTP_201_CREATED,
         )
 
-    def get(self, request, id):
+    def get(self, request, id) -> Response:
         try:
             e_record: models.EncryptedRecord = models.EncryptedRecord.objects.get(pk=id)
         except:

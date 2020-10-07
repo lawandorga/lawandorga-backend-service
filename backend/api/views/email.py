@@ -1,5 +1,5 @@
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -14,10 +14,19 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from .users_test import *
-from .groups_test import *
-from .permissions_test import *
-from .rlcs_test import *
-from .storage_test import *
-from .regex_test import *
-from .notification_group_test import *
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from backend.api.errors import CustomError
+from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
+from backend.static.emails import EmailSender
+
+
+class EmailPingViewSet(APIView):
+    def post(self, request) -> Response:
+        if not request.user.is_superuser:
+            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+        EmailSender.send_html_email(
+            [request.user.email], "test email", "hello there", "alternative text"
+        )
+
+        return Response({})

@@ -27,8 +27,8 @@ from backend.static.permissions import (
     PERMISSION_MANAGE_PERMISSIONS_RLC,
     get_record_encryption_keys_permissions,
 )
-from ..models import HasPermission, Group, UserProfile, Permission
-from ..serializers import (
+from backend.api.models import HasPermission, Group, UserProfile, Permission, Rlc
+from backend.api.serializers import (
     HasPermissionSerializer,
     GroupNameSerializer,
     UserProfileNameSerializer,
@@ -47,15 +47,21 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         if "pk" not in kwargs:
-            raise CustomError(error_codes.ERROR__API__HAS_PERMISSION__NO_ID_PROVIDED)
+            raise CustomError(error_codes.ERROR__API__ID_NOT_PROVIDED)
         try:
             hasPermission = HasPermission.objects.get(pk=kwargs["pk"])
         except:
-            raise CustomError(error_codes.ERROR__API__HAS_PERMISSION__NOT_FOUND)
+            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
 
-        user = request.user
-        if not user.has_permission(PERMISSION_MANAGE_PERMISSIONS_RLC, for_rlc=user.rlc):
-            return CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+        if hasPermission.permission_for_rlc is not None:
+            rlc = hasPermission.permission_for_rlc
+        else:
+            rlc = request.user.rlc
+
+        if not request.user.has_permission(
+            PERMISSION_MANAGE_PERMISSIONS_RLC, for_rlc=rlc
+        ):
+            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
         hasPermission.delete()
         return Response({"status": "success"})
@@ -68,17 +74,26 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
     #     pass
 
     def create(self, request, *args, **kwargs):
+        data = request.data
+
+        if "permission_for_rlc" in data:
+            try:
+                rlc = Rlc.objects.get(pk=data["permission_for_rlc"])
+            except:
+                raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
+        else:
+            rlc = request.user.rlc
+
         if not request.user.is_superuser and not request.user.has_permission(
-            PERMISSION_MANAGE_PERMISSIONS_RLC, for_rlc=request.user.rlc
+            PERMISSION_MANAGE_PERMISSIONS_RLC, for_rlc=rlc
         ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-        # if request.data['rlc_has_permission'] and request.user.rlc.id != request.data['rlc_has_permission'] or \
-        #     request.data['permission_for_rlc'] and request.user.rlc.id != request.data['permission_for_rlc']:
-        #     raise CustomError(error_codes.ERROR__API__HAS_PERMISSION__CAN_NOT_CREATE)
-        if HasPermission.already_existing(request.data):
+
+        # can be removed?
+        if HasPermission.already_existing(data):
             raise CustomError(error_codes.ERROR__API__HAS_PERMISSION__ALREADY_EXISTING)
 
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
 
