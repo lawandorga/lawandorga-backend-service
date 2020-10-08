@@ -23,7 +23,7 @@ from .permission import PermissionNameSerializer
 class HasPermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = HasPermission
-        fields = '__all__'
+        fields = "__all__"
 
     """
     Validates if the values provided are correct and implement the model right
@@ -36,20 +36,22 @@ class HasPermissionSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         if HasPermission.already_existing(validated_data):
-            raise EntryAlreadyExistingError('entry already exists')
+            raise EntryAlreadyExistingError("entry already exists")
         has_permission = HasPermission.objects.create(
-            permission=validated_data.get('permission', None),
-            user_has_permission=validated_data.get('user_has_permission', None),
-            group_has_permission=validated_data.get('group_has_permission', None),
-            rlc_has_permission=validated_data.get('rlc_has_permission', None),
-            permission_for_user=validated_data.get('permission_for_user', None),
-            permission_for_group=validated_data.get('permission_for_group', None),
-            permission_for_rlc=validated_data.get('permission_for_rlc', None)
+            permission=validated_data.get("permission", None),
+            user_has_permission=validated_data.get("user_has_permission", None),
+            group_has_permission=validated_data.get("group_has_permission", None),
+            rlc_has_permission=validated_data.get("rlc_has_permission", None),
+            permission_for_user=validated_data.get("permission_for_user", None),
+            permission_for_group=validated_data.get("permission_for_group", None),
+            permission_for_rlc=validated_data.get("permission_for_rlc", None),
         )
         return has_permission
 
     def update(self, instance, validated_data):
-        has_permission, aa = HasPermission.objects.filter(permission=validated_data.get('permission', None))
+        has_permission, aa = HasPermission.objects.filter(
+            permission=validated_data.get("permission", None)
+        )
         return instance
 
 
@@ -58,7 +60,12 @@ class HasPermissionOnlyPermissionForSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HasPermission
-        fields = ('id', 'permission', 'permission_for_user', 'permission_for_group',)
+        fields = (
+            "id",
+            "permission",
+            "permission_for_user",
+            "permission_for_group",
+        )
 
 
 class HasPermissionOnlyHasPermissionSerializer(serializers.ModelSerializer):
@@ -66,7 +73,12 @@ class HasPermissionOnlyHasPermissionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HasPermission
-        fields = ('id', 'permission', 'user_has_permission', 'group_has_permission',)
+        fields = (
+            "id",
+            "permission",
+            "user_has_permission",
+            "group_has_permission",
+        )
 
 
 class HasPermissionWithPermissionNameSerializer(serializers.ModelSerializer):
@@ -74,4 +86,4 @@ class HasPermissionWithPermissionNameSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HasPermission
-        fields = '__all__'
+        fields = "__all__"

@@ -38,14 +38,18 @@ class UserActivationLinkViewSet(APIView):
         except:
             raise CustomError(error_codes.ERROR__API__USER_ACTIVATION__LINK_NOT_FOUND)
         try:
-            new_user_request = NewUserRequest.objects.get(request_from=user_activation.user)
+            new_user_request = NewUserRequest.objects.get(
+                request_from=user_activation.user
+            )
         except:
-            raise CustomError(error_codes.ERROR__API__NEW_USER_REQUEST__REQUEST_NOT_FOUND)
+            raise CustomError(
+                error_codes.ERROR__API__NEW_USER_REQUEST__REQUEST_NOT_FOUND
+            )
 
         user_activation.activated = True
         user_activation.save()
 
-        if new_user_request.state == 'gr':
+        if new_user_request.state == "gr":
             user_activation.user.is_active = True
             user_activation.user.save()
 

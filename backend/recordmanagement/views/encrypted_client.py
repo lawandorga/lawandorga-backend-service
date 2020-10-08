@@ -27,7 +27,9 @@ class EncryptedClientsViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.EncryptedClientSerializer
 
     def perform_create(self, serializer):
-        country = models.OriginCountry.objects.get(id=self.request.data['origin_country'])
+        country = models.OriginCountry.objects.get(
+            id=self.request.data["origin_country"]
+        )
         serializer.save(origin_country=country)
 
 
@@ -36,6 +38,12 @@ class GetEncryptedClientsFromBirthday(APIView):
         # TODO validate birthday
         users_private_key = get_private_key_from_request(request)
         rlcs_private_key = request.user.get_rlcs_private_key(users_private_key)
-        birthday = request.data['birthday']
-        clients = models.EncryptedClient.objects.filter(birthday=request.data['birthday'], from_rlc=request.user.rlc)
-        return Response(serializers.EncryptedClientSerializer(clients, many=True).get_decrypted_data(rlcs_private_key))
+        birthday = request.data["birthday"]
+        clients = models.EncryptedClient.objects.filter(
+            birthday=request.data["birthday"], from_rlc=request.user.rlc
+        )
+        return Response(
+            serializers.EncryptedClientSerializer(
+                clients, many=True
+            ).get_decrypted_data(rlcs_private_key)
+        )

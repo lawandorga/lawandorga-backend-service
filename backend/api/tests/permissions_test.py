@@ -22,50 +22,52 @@ from backend.api.tests.statics import StaticTestMethods
 class PermissionTests(TransactionTestCase):
     def setUp(self):
         self.client = StaticTestMethods.force_authentication_superuser()
-        self.user = UserProfile.objects.get(email='test123@test.com')
-        self.base_url = '/api/permissions/'
+        self.user = UserProfile.objects.get(email="test123@test.com")
+        self.base_url = "/api/permissions/"
 
     def test_create_new_permission_success(self):
         before = Permission.objects.count()
-        response = self.client.post(self.base_url, {
-            'name': 'delete all'
-        })
+        response = self.client.post(self.base_url, {"name": "delete all"})
         after = Permission.objects.count()
         self.assertTrue(response.status_code == 201)
-        self.assertTrue(before+1 == after)
+        self.assertTrue(before + 1 == after)
 
     def test_create_new_permission_error_double(self):
         before = Permission.objects.count()
-        to_post = {
-            'name': 'delete all'
-        }
+        to_post = {"name": "delete all"}
         self.client.post(self.base_url, to_post)
         response = self.client.post(self.base_url, to_post)
         after = Permission.objects.count()
         self.assertTrue(response.status_code == 400)
-        self.assertTrue(before+1 == after)
+        self.assertTrue(before + 1 == after)
 
     def test_get_real_users_with_permission_for_rlc_1(self):
-        rlc = Rlc(name='test rlc')
+        rlc = Rlc(name="test rlc")
         rlc.save()
 
-        permission = Permission(name='test_permission')
+        permission = Permission(name="test_permission")
         permission.save()
 
         users = StaticTestMethods.generate_users(5, rlc)
 
-        group = Group(name='test_group', from_rlc=rlc, visible=False)
+        group = Group(name="test_group", from_rlc=rlc, visible=False)
         group.save()
         group.group_members.add(users[0])
         group.group_members.add(users[1])
         group.save()
 
-        has_permission = HasPermission(group_has_permission=group, permission=permission, permission_for_rlc=rlc)
+        has_permission = HasPermission(
+            group_has_permission=group, permission=permission, permission_for_rlc=rlc
+        )
         has_permission.save()
 
-        has_permission = HasPermission(user_has_permission=users[2], permission=permission, permission_for_rlc=rlc)
+        has_permission = HasPermission(
+            user_has_permission=users[2], permission=permission, permission_for_rlc=rlc
+        )
         has_permission.save()
-        has_permission = HasPermission(user_has_permission=users[4], permission=permission, permission_for_rlc=rlc)
+        has_permission = HasPermission(
+            user_has_permission=users[4], permission=permission, permission_for_rlc=rlc
+        )
         has_permission.save()
 
         users_with_permissions = permission.get_real_users_with_permission_for_rlc(rlc)
@@ -76,16 +78,18 @@ class PermissionTests(TransactionTestCase):
         self.assertTrue(users[2] in users_with_permissions)
         self.assertTrue(users[4] in users_with_permissions)
 
-    def test_get_real_users_with_permission_for_rlc_1(self):
-        rlc = Rlc(name='test rlc')
+    def test_get_real_users_with_permission_for_rlc_2(self):
+        rlc = Rlc(name="test rlc")
         rlc.save()
 
-        permission = Permission(name='test_permission')
+        permission = Permission(name="test_permission")
         permission.save()
 
         users = StaticTestMethods.generate_users(5, rlc)
 
-        has_permission = HasPermission(rlc_has_permission=rlc, permission=permission, permission_for_rlc=rlc)
+        has_permission = HasPermission(
+            rlc_has_permission=rlc, permission=permission, permission_for_rlc=rlc
+        )
         has_permission.save()
 
         users_with_permissions = permission.get_real_users_with_permission_for_rlc(rlc)
@@ -96,3 +100,48 @@ class PermissionTests(TransactionTestCase):
         self.assertTrue(users[2] in users_with_permissions)
         self.assertTrue(users[3] in users_with_permissions)
         self.assertTrue(users[4] in users_with_permissions)
+
+    def test_user_has_permission(self):
+        rlc: Rlc = Rlc(name="test rlc")
+        rlc.save()
+
+        permission_name = "test_permission"
+        permission: Permission = Permission(name=permission_name)
+        permission.save()
+
+        global_permission_name = "global_permission"
+        global_permission: Permission = Permission(name=global_permission_name)
+        global_permission.save()
+
+        users: [UserProfile] = StaticTestMethods.generate_users(5, rlc)
+
+        group: Group = Group(name="test_group", from_rlc=rlc, visible=False)
+        group.save()
+        group.group_members.add(users[0])
+        group.group_members.add(users[1])
+        group.save()
+
+        has_permission = HasPermission(
+            group_has_permission=group, permission=permission, permission_for_rlc=rlc
+        )
+        has_permission.save()
+
+        has_permission = HasPermission(
+            user_has_permission=users[2], permission=permission, permission_for_rlc=rlc
+        )
+        has_permission.save()
+
+        self.assertTrue(users[0].has_permission(permission_name, for_rlc=rlc))
+        self.assertTrue(users[1].has_permission(permission_name, for_rlc=rlc))
+        self.assertTrue(users[2].has_permission(permission_name, for_rlc=rlc))
+        self.assertFalse(users[3].has_permission(permission_name, for_rlc=rlc))
+
+        has_permission = HasPermission(
+            rlc_has_permission=rlc, permission_for_rlc=rlc, permission=global_permission
+        )
+        has_permission.save()
+
+        self.assertTrue(users[0].has_permission(global_permission_name, for_rlc=rlc))
+        self.assertTrue(users[1].has_permission(global_permission_name, for_rlc=rlc))
+        self.assertTrue(users[2].has_permission(global_permission_name, for_rlc=rlc))
+        self.assertTrue(users[3].has_permission(global_permission_name, for_rlc=rlc))

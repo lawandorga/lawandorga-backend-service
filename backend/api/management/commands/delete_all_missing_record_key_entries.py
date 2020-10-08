@@ -19,7 +19,7 @@ from .commands import delete_all_missing_record_key_entries
 
 
 class Command(BaseCommand):
-    help = 'deletes all missing record key entries'
+    help = "deletes all missing record key entries"
 
     def handle(self, *args, **options):
         delete_all_missing_record_key_entries()

@@ -20,7 +20,7 @@ from backend.api.errors import CustomError
 
 
 def get_website_base_url():
-    return get_env_variable('URL')
+    return get_env_variable("URL")
 
 
 def get_env_variable(variable_name):
@@ -31,5 +31,5 @@ def get_env_variable(variable_name):
 
 def export_vars(request):
     data = {}
-    data['URL'] = get_website_base_url()
+    data["URL"] = get_website_base_url()
     return data

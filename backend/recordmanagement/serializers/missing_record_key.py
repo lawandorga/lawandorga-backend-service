@@ -21,4 +21,4 @@ from backend.recordmanagement.models import MissingRecordKey
 class MissingRecordKeySerializer(serializers.ModelSerializer):
     class Meta:
         model = MissingRecordKey
-        fields = '__all__'
+        fields = "__all__"

@@ -29,21 +29,23 @@ class DownloadViewSet(APIView):
         users_private_key = get_private_key_from_request(request)
         aes_key = request.user.get_rlcs_aes_key(users_private_key)
 
-        entries = request.data['entries']
-        request_path = request.data['path']
-        if request_path == '':
-            request_path = 'root'
-        root_folder_name = get_temp_storage_folder() + '/' + request_path
+        entries = request.data["entries"]
+        request_path = request.data["path"]
+        if request_path == "":
+            request_path = "root"
+        root_folder_name = get_temp_storage_folder() + "/" + request_path
         for entry in entries:
-            if entry['type'] == 1:
+            if entry["type"] == 1:
                 # file
-                file = File.objects.get(pk=entry['id'])
+                file = File.objects.get(pk=entry["id"])
                 if file.folder.user_has_permission_read(request.user):
                     file.download(aes_key, root_folder_name)
             else:
-                folder = Folder.objects.get(pk=entry['id'])
+                folder = Folder.objects.get(pk=entry["id"])
                 if folder.user_has_permission_read(request.user):
                     folder.download_folder(aes_key, root_folder_name)
 
         LocalStorageManager.zip_folder_and_delete(root_folder_name, root_folder_name)
-        return LocalStorageManager.create_response_from_zip_file(get_temp_storage_folder() + '/' + request_path + '.zip')
+        return LocalStorageManager.create_response_from_zip_file(
+            get_temp_storage_folder() + "/" + request_path + ".zip"
+        )

@@ -15,6 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from django.db import models
 from django.db.models import Q
+from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.static import permissions
 from . import UserProfile
@@ -23,22 +24,34 @@ from . import UserProfile
 class GroupQuerySet(models.QuerySet):
     def get_visible_groups_for_user(self, user):
         from backend.api.models import Group
-        if user.has_permission(permissions.PERMISSION_MANAGE_GROUPS_RLC, for_rlc=user.rlc):
+
+        if user.has_permission(
+            permissions.PERMISSION_MANAGE_GROUPS_RLC, for_rlc=user.rlc
+        ):
             return self.filter(from_rlc=user.rlc)
         else:
             invisible = list(Group.objects.filter(from_rlc=user.rlc, visible=False))
             permitted = []
             for gr in invisible:
-                if user.has_permission(permissions.PERMISSION_MANAGE_GROUP, for_group=gr):
+                if user.has_permission(
+                    permissions.PERMISSION_MANAGE_GROUP, for_group=gr
+                ):
                     permitted.append(gr.id)
 
             return self.filter(Q(from_rlc=user.rlc, visible=True) | Q(id__in=permitted))
 
 
-class Group(models.Model):
-    creator = models.ForeignKey(UserProfile, related_name='group_created', on_delete=models.SET_NULL, null=True)
-    from_rlc = models.ForeignKey('Rlc', related_name='group_from_rlc', on_delete=models.SET_NULL, null=True,
-                                 default=None)
+class Group(ExportModelOperationsMixin("group"), models.Model):
+    creator = models.ForeignKey(
+        UserProfile, related_name="group_created", on_delete=models.SET_NULL, null=True
+    )
+    from_rlc = models.ForeignKey(
+        "Rlc",
+        related_name="group_from_rlc",
+        on_delete=models.SET_NULL,
+        null=True,
+        default=None,
+    )
     name = models.CharField(max_length=200, null=False)
     visible = models.BooleanField(null=False, default=True)
     group_members = models.ManyToManyField(UserProfile, related_name="group_members")
@@ -48,14 +61,23 @@ class Group(models.Model):
     objects = GroupQuerySet.as_manager()
 
     def __str__(self):
-        return 'group: ' + str(self.id) + ':' + self.name + '; from ' + str(self.from_rlc)
+        return (
+            "group: " + str(self.id) + ":" + self.name + "; from " + str(self.from_rlc)
+        )
 
     def has_group_permission(self, permission):
         from backend.api.models import HasPermission, Permission
+
         if isinstance(permission, str):
             permission = Permission.objects.get(name=permission)
-        return HasPermission.objects.filter(group_has_permission=self, permission_for_rlc=self.from_rlc,
-                                            permission=permission).count() >= 1
+        return (
+            HasPermission.objects.filter(
+                group_has_permission=self,
+                permission_for_rlc=self.from_rlc,
+                permission=permission,
+            ).count()
+            >= 1
+        )
 
     def has_group_one_permission(self, permissions_to_check):
         for permission in permissions_to_check:
@@ -64,5 +86,7 @@ class Group(models.Model):
         return False
 
     def group_has_record_encryption_keys_permission(self):
-        record_encryption_keys_permissions = permissions.get_record_encryption_keys_permissions()
+        record_encryption_keys_permissions = (
+            permissions.get_record_encryption_keys_permissions()
+        )
         return self.has_group_one_permission(record_encryption_keys_permissions)

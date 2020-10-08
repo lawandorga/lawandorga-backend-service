@@ -8,13 +8,17 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0007_auto_20191203_1210'),
+        ("recordmanagement", "0007_auto_20191203_1210"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='recorddeletionrequest',
-            name='request_from',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL),
+            model_name="recorddeletionrequest",
+            name="request_from",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

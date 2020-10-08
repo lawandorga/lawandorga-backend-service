@@ -31,26 +31,27 @@ class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Group
-        fields = '__all__'
+        fields = "__all__"
 
 
 class GroupSmallSerializer(serializers.ModelSerializer):
-    group_has_permission = serializers.PrimaryKeyRelatedField(
-        many=True, read_only=True
-    )
-    permission_for_group = serializers.PrimaryKeyRelatedField(
-        many=True, read_only=True
-    )
+    group_has_permission = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    permission_for_group = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Group
-        fields = ('id', 'name', 'group_has_permission', 'permission_for_group', )
+        fields = (
+            "id",
+            "name",
+            "group_has_permission",
+            "permission_for_group",
+        )
 
 
 class GroupNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
-        fields = ('id', 'name')
+        fields = ("id", "name")
 
 
 class GroupShowSerializer(serializers.ModelSerializer):
@@ -58,4 +59,12 @@ class GroupShowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Group
-        fields = ('id', 'name', 'group_members', 'description', 'note', 'visible', 'note')
+        fields = (
+            "id",
+            "name",
+            "group_members",
+            "description",
+            "note",
+            "visible",
+            "note",
+        )

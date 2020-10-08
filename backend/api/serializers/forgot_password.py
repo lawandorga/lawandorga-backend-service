@@ -22,4 +22,4 @@ from backend.api.models import ForgotPasswordLinks
 class ForgotPasswordSerializer(serializers.ModelSerializer):
     class Meta:
         model = ForgotPasswordLinks
-        fields = '__all__'
+        fields = "__all__"

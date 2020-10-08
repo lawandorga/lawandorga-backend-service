@@ -19,16 +19,19 @@ from datetime import date
 from backend.api.models import UserProfile
 from backend.api.tests.fixtures import CreateFixtures
 from backend.api.tests.statics import StaticTestMethods
-from backend.static.permissions import PERMISSION_VIEW_RECORDS_RLC, PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from backend.static.permissions import (
+    PERMISSION_VIEW_RECORDS_RLC,
+    PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC,
+)
 from backend.recordmanagement.models import Record, RecordPermission
 
 
 class RecordTests(TransactionTestCase):
     def setUp(self):
         self.client = StaticTestMethods.force_authentication_superuser()
-        self.base_list_url = '/api/records/records/'
-        self.base_detail_url = '/api/records/record/'
-        self.base_create_record_url = '/api/records/create_record/'
+        self.base_list_url = "/api/records/records/"
+        self.base_detail_url = "/api/records/record/"
+        self.base_create_record_url = "/api/records/create_record/"
 
     @staticmethod
     def create_samples():
@@ -36,19 +39,31 @@ class RecordTests(TransactionTestCase):
 
         :return:
         """
-        users = [CreateFixtures.add_user(1, "qqq@web.de", "qqq", "asd123"),
-                 CreateFixtures.add_user(2, "aa@web.de", "aa", "asd123"),
-                 CreateFixtures.add_user(3, "bb@web.de", "bb", "asd123")]
-        rlc1 = CreateFixtures.add_rlc(10, "munich", [1, 2, ], True, False, "best rlc in the world")
-        rlc2 = CreateFixtures.add_rlc(11, "berlin", [3, ], True, False, "second best rlc in the world")
+        users = [
+            CreateFixtures.add_user(1, "qqq@web.de", "qqq", "asd123"),
+            CreateFixtures.add_user(2, "aa@web.de", "aa", "asd123"),
+            CreateFixtures.add_user(3, "bb@web.de", "bb", "asd123"),
+        ]
+        rlc1 = CreateFixtures.add_rlc(
+            10, "munich", [1, 2,], True, False, "best rlc in the world"
+        )
+        rlc2 = CreateFixtures.add_rlc(
+            11, "berlin", [3,], True, False, "second best rlc in the world"
+        )
         origin_country = CreateFixtures.add_country(30, "Botswana", "st")
-        client = CreateFixtures.add_client(20, "Peter Parker", "batman", "1929129912", date.today(), 30)
+        client = CreateFixtures.add_client(
+            20, "Peter Parker", "batman", "1929129912", date.today(), 30
+        )
         tags = CreateFixtures.add_tags([(1, "Abschiebung"), (2, "Familiennachzug")])
 
         permission = CreateFixtures.add_permission(90, PERMISSION_VIEW_RECORDS_RLC)
         CreateFixtures.add_permission(91, PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC)
-        CreateFixtures.add_has_permission(100, permission.id, rlc_has=rlc1.id, for_rlc=rlc1.id)
-        CreateFixtures.add_has_permission(101, permission.id, rlc_has=rlc2.id, for_rlc=rlc2.id)
+        CreateFixtures.add_has_permission(
+            100, permission.id, rlc_has=rlc1.id, for_rlc=rlc1.id
+        )
+        CreateFixtures.add_has_permission(
+            101, permission.id, rlc_has=rlc2.id, for_rlc=rlc2.id
+        )
         return users, [rlc1, rlc2], client, tags
 
     def create_first_record(self):
@@ -64,7 +79,7 @@ class RecordTests(TransactionTestCase):
             "record_token": "AZ12391-123",
             "consultants": [2],
             "tags": [1],
-            "record_note": "new record note"
+            "record_note": "new record note",
         }
         response = client.post(self.base_create_record_url, to_post)
         new_record = response.data
@@ -87,7 +102,7 @@ class RecordTests(TransactionTestCase):
             "record_token": "AZ12391-123",
             "consultants": [2],
             "tags": [1],
-            "record_note": "new record note"
+            "record_note": "new record note",
         }
         response = client.post(self.base_create_record_url, to_post)
         all_records_after = Record.objects.count()
@@ -101,14 +116,14 @@ class RecordTests(TransactionTestCase):
         """
         users, rlcs, record = self.create_first_record()
         client = StaticTestMethods.force_authentication_with_user_email(users[0].email)
-        record_from_other_rlc = Record(from_rlc=rlcs[1], record_token='213')
+        record_from_other_rlc = Record(from_rlc=rlcs[1], record_token="213")
         record_from_other_rlc.save()
 
         response = client.get(self.base_list_url)
         after_creation_user_counting = response.data
         self.assertTrue(response.status_code == 200)
         self.assertTrue(after_creation_user_counting.__len__() == 1)
-        self.assertTrue(after_creation_user_counting[0]['id'] == record['id'])
+        self.assertTrue(after_creation_user_counting[0]["id"] == record["id"])
 
     def test_list_no_record_from_other_rlc(self):
         users, rlcs, record = self.create_first_record()
@@ -122,29 +137,29 @@ class RecordTests(TransactionTestCase):
         users, rlcs, record = self.create_first_record()
         client = StaticTestMethods.force_authentication_with_user_email(users[1].email)
 
-        response = client.get(self.base_detail_url + str(record['id']) + '/')
+        response = client.get(self.base_detail_url + str(record["id"]) + "/")
         self.assertTrue(response.status_code == 200)
-        self.assertTrue('record' in response.data)
-        self.assertTrue('client' in response.data)
-        self.assertTrue('origin_country' in response.data)
-        self.assertTrue('record_documents' in response.data)
-        self.assertTrue('record_messages' in response.data)
+        self.assertTrue("record" in response.data)
+        self.assertTrue("client" in response.data)
+        self.assertTrue("origin_country" in response.data)
+        self.assertTrue("record_documents" in response.data)
+        self.assertTrue("record_messages" in response.data)
 
     def test_retrieve_record_wrong_rlc_error(self):
         users, rlcs, record = self.create_first_record()
         client = StaticTestMethods.force_authentication_with_user_email(users[2].email)
 
-        response = client.get(self.base_detail_url + str(record['id']) + '/')
+        response = client.get(self.base_detail_url + str(record["id"]) + "/")
         self.assertTrue(response.status_code == 400)
 
     def test_user_has_permission(self):
-        user1 = UserProfile(email='abc1@web.de', name="abc1")
+        user1 = UserProfile(email="abc1@web.de", name="abc1")
         user1.save()
-        user2 = UserProfile(email='abc2@web.de', name="abc2")
+        user2 = UserProfile(email="abc2@web.de", name="abc2")
         user2.save()
-        user3 = UserProfile(email='abc3@web.de', name="abc3")
+        user3 = UserProfile(email="abc3@web.de", name="abc3")
         user3.save()
-        record = Record(record_token='asd123')
+        record = Record(record_token="asd123")
         record.save()
         record.working_on_record.add(user1)
         record.working_on_record.add(user2)
@@ -155,19 +170,20 @@ class RecordTests(TransactionTestCase):
 
     def test_user_has_permission_record_permissions(self):
         users = list(UserProfile.objects.all())
-        user1 = UserProfile(email='abc1@web.de', name="abc1")
+        user1 = UserProfile(email="abc1@web.de", name="abc1")
         user1.save()
-        user2 = UserProfile(email='abc2@web.de', name="abc2")
+        user2 = UserProfile(email="abc2@web.de", name="abc2")
         user2.save()
-        user3 = UserProfile(email='abc3@web.de', name="abc3")
+        user3 = UserProfile(email="abc3@web.de", name="abc3")
         user3.save()
-        record = Record(record_token='asd123')
+        record = Record(record_token="asd123")
         record.save()
         record.working_on_record.add(user1)
 
-        permission = RecordPermission(request_from=user2, request_processed=user3, state='gr', record=record)
+        permission = RecordPermission(
+            request_from=user2, request_processed=user3, state="gr", record=record
+        )
         permission.save()
 
         self.assertTrue(record.user_has_permission(user1))
         self.assertTrue(record.user_has_permission(user2))
-

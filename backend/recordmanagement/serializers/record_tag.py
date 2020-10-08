@@ -24,10 +24,13 @@ class RecordTagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.RecordTag
-        fields = '__all__'
+        fields = "__all__"
 
 
 class RecordTagNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.RecordTag
-        fields = ('id', 'name', )
+        fields = (
+            "id",
+            "name",
+        )

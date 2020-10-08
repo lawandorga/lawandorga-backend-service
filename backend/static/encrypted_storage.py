@@ -35,28 +35,56 @@ class EncryptedStorage:
         :param key: the key of the uploaded file
         :return: -
         """
-        s3_bucket = settings.AWS_S3_BUCKET_NAME
-        session = boto3.session.Session(region_name=settings.AWS_S3_REGION_NAME)
-        s3 = session.client('s3', config=Config(signature_version='s3v4'))
+        session = boto3.session.Session()
+        s3 = session.client(
+            service_name="s3",
+            region_name="fr-par",
+            use_ssl=True,
+            endpoint_url="http://s3.fr-par.scw.cloud",
+            aws_access_key_id=settings.SCW_ACCESS_KEY,
+            aws_secret_access_key=settings.SCW_SECRET_KEY,
+        )
+        s3_bucket = settings.SCW_S3_BUCKET_NAME
+
+        # s3_bucket = settings.SCW_S3_BUCKET_NAME
+        # session = boto3.session.Session(region_name=settings.AWS_S3_REGION_NAME)
+        # s3 = session.client("s3", config=Config(signature_version="s3v4"))
         s3.upload_file(filename, s3_bucket, key)
 
     @staticmethod
     def encrypt_file_and_upload_to_s3(filepath, aes_key, s3_folder):
-        encrypted_filepath, encrypted_filename = AESEncryption.encrypt_file(filepath, aes_key)
-        EncryptedStorage.upload_file_to_s3(encrypted_filepath,
-                                           combine_s3_folder_with_filename(s3_folder, encrypted_filename))
+        encrypted_filepath, encrypted_filename = AESEncryption.encrypt_file(
+            filepath, aes_key
+        )
+        EncryptedStorage.upload_file_to_s3(
+            encrypted_filepath,
+            combine_s3_folder_with_filename(s3_folder, encrypted_filename),
+        )
         os.remove(encrypted_filepath)
 
     @staticmethod
     def download_file_from_s3(s3_key, filename=None):
         if not filename:
-            filename = s3_key[s3_key.rindex('/') + 1:]
-        s3_bucket = settings.AWS_S3_BUCKET_NAME
-        session = boto3.session.Session(region_name=settings.AWS_S3_REGION_NAME)
-        s3 = session.client('s3', config=Config(signature_version='s3v4'))
+            filename = s3_key[s3_key.rindex("/") + 1 :]
+        # s3_bucket = settings.AWS_S3_BUCKET_NAME
+        # session = boto3.session.Session(region_name=settings.AWS_S3_REGION_NAME)
+        # s3 = session.client("s3", config=Config(signature_version="s3v4"))
+
+        session = boto3.session.Session()
+        s3 = session.client(
+            service_name="s3",
+            region_name="fr-par",
+            use_ssl=True,
+            endpoint_url="http://s3.fr-par.scw.cloud",
+            aws_access_key_id=settings.SCW_ACCESS_KEY,
+            aws_secret_access_key=settings.SCW_SECRET_KEY,
+        )
+        s3_bucket = settings.SCW_S3_BUCKET_NAME
+
         import os
+
         try:
-            os.makedirs(filename[:filename.rindex('/') + 1])
+            os.makedirs(filename[: filename.rindex("/") + 1])
         except:
             pass
         try:
@@ -65,9 +93,11 @@ class EncryptedStorage:
             raise CustomError(error_codes.ERROR__API__DOWNLOAD__NO_SUCH_KEY)
 
     @staticmethod
-    def download_from_s3_and_decrypt_file(s3_key, encryption_key, local_folder, downloaded_file_name=None):
+    def download_from_s3_and_decrypt_file(
+        s3_key, encryption_key, local_folder, downloaded_file_name=None
+    ):
         if not downloaded_file_name:
-            filename = s3_key[s3_key.rindex('/') + 1:]
+            filename = s3_key[s3_key.rindex("/") + 1 :]
             downloaded_file_name = os.path.join(local_folder, filename)
         # TODO: what happens to local_Folder if downloaded file name is given???
         EncryptedStorage.download_file_from_s3(s3_key, downloaded_file_name)
@@ -76,9 +106,20 @@ class EncryptedStorage:
 
     @staticmethod
     def delete_on_s3(s3_key):
-        s3_bucket = settings.AWS_S3_BUCKET_NAME
-        session = boto3.session.Session(region_name=settings.AWS_S3_REGION_NAME)
-        s3 = session.client('s3', config=Config(signature_version='s3v4'))
+        session = boto3.session.Session()
+        s3 = session.client(
+            service_name="s3",
+            region_name="fr-par",
+            use_ssl=True,
+            endpoint_url="http://s3.fr-par.scw.cloud",
+            aws_access_key_id=settings.SCW_ACCESS_KEY,
+            aws_secret_access_key=settings.SCW_SECRET_KEY,
+        )
+        s3_bucket = settings.SCW_S3_BUCKET_NAME
+
+        # s3_bucket = settings.AWS_S3_BUCKET_NAME
+        # session = boto3.session.Session(region_name=settings.AWS_S3_REGION_NAME)
+        # s3 = session.client("s3", config=Config(signature_version="s3v4"))
         try:
             s3.delete_object(Bucket=s3_bucket, Key=s3_key)
         except Exception as e:

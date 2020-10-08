@@ -15,6 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.models import UserProfile
 from backend.static.string_generator import get_random_string
@@ -31,12 +32,18 @@ def generate_link_id():
             return pot_id
 
 
-class ForgotPasswordLinks(models.Model):
+class ForgotPasswordLinks(ExportModelOperationsMixin("forgot_password"), models.Model):
     user = models.ForeignKey(
-        UserProfile, related_name="forgot_password_link", on_delete=models.SET_NULL, null=True)
-    link = models.CharField(auto_created=True, unique=True, default=generate_link_id, max_length=32)
+        UserProfile,
+        related_name="forgot_password_link",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    link = models.CharField(
+        auto_created=True, unique=True, default=generate_link_id, max_length=32
+    )
     date = models.DateTimeField(auto_now_add=True)
     ip_address = models.CharField(max_length=64)
 
     def __str__(self):
-        return 'forgot_password: ' + str(self.id) + ':' + self.user.email
+        return "forgot_password: " + str(self.id) + ":" + self.user.email

@@ -23,10 +23,14 @@ class OriginCountrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.OriginCountry
-        fields = '__all__'
+        fields = "__all__"
 
 
 class OriginCountryNameStateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.OriginCountry
-        fields = ('id', 'name', 'state', )
+        fields = (
+            "id",
+            "name",
+            "state",
+        )

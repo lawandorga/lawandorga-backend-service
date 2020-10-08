@@ -31,27 +31,43 @@ class CheckRuntimeTest(TransactionTestCase):
         for i in range(20):
             start_time = time.time()
             # replace below
-            top_folder = Folder(name='top folder', creator=self.fixtures['users'][0]['user'], rlc=self.fixtures['rlc'])
+            top_folder = Folder(
+                name="top folder",
+                creator=self.fixtures["users"][0]["user"],
+                rlc=self.fixtures["rlc"],
+            )
             top_folder.save()
             self.assertEqual(0, top_folder.get_all_parents().__len__())
 
-            middle_folder = Folder(name='middle folder', creator=self.fixtures['users'][0]['user'],
-                                   rlc=self.fixtures['rlc'], parent=top_folder)
+            middle_folder = Folder(
+                name="middle folder",
+                creator=self.fixtures["users"][0]["user"],
+                rlc=self.fixtures["rlc"],
+                parent=top_folder,
+            )
             middle_folder.save()
             parents = middle_folder.get_all_parents()
             self.assertEqual(1, parents.__len__())
             self.assertEqual(0, parents.index(top_folder))
 
-            bottom_folder = Folder(name='bottom folder', creator=self.fixtures['users'][0]['user'],
-                                   rlc=self.fixtures['rlc'], parent=middle_folder)
+            bottom_folder = Folder(
+                name="bottom folder",
+                creator=self.fixtures["users"][0]["user"],
+                rlc=self.fixtures["rlc"],
+                parent=middle_folder,
+            )
             bottom_folder.save()
             parents = bottom_folder.get_all_parents()
             self.assertEqual(2, parents.__len__())
             self.assertEqual(0, parents.index(top_folder))
             self.assertEqual(1, parents.index(middle_folder))
 
-            most_bottom = Folder(name='most bottom folder', creator=self.fixtures['users'][0]['user'],
-                                 rlc=self.fixtures['rlc'], parent=bottom_folder)
+            most_bottom = Folder(
+                name="most bottom folder",
+                creator=self.fixtures["users"][0]["user"],
+                rlc=self.fixtures["rlc"],
+                parent=bottom_folder,
+            )
             most_bottom.save()
             parents = most_bottom.get_all_parents()
             self.assertEqual(3, parents.__len__())
@@ -59,8 +75,12 @@ class CheckRuntimeTest(TransactionTestCase):
             self.assertEqual(1, parents.index(middle_folder))
             self.assertEqual(2, parents.index(bottom_folder))
 
-            most_bottom2 = Folder(name='most bottom 2 folder', creator=self.fixtures['users'][0]['user'],
-                                  rlc=self.fixtures['rlc'], parent=bottom_folder)
+            most_bottom2 = Folder(
+                name="most bottom 2 folder",
+                creator=self.fixtures["users"][0]["user"],
+                rlc=self.fixtures["rlc"],
+                parent=bottom_folder,
+            )
             most_bottom2.save()
             parents = most_bottom2.get_all_parents()
             self.assertEqual(3, parents.__len__())
@@ -72,4 +92,4 @@ class CheckRuntimeTest(TransactionTestCase):
             # end replace
             time_sum = time_sum + (time.time() - start_time)
 
-        print("average: ", time_sum/20)
+        print("average: ", time_sum / 20)

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0012_delete_clientencryption'),
+        ("recordmanagement", "0012_delete_clientencryption"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='encryptedrecorddocument',
-            name='name',
+            model_name="encryptedrecorddocument",
+            name="name",
             field=models.CharField(max_length=200),
         ),
     ]

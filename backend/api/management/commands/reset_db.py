@@ -20,7 +20,7 @@ from .commands import reset_db
 
 
 class Command(BaseCommand):
-    help = 'resets database'
+    help = "resets database"
 
     def add_arguments(self, parser):
         pass

@@ -15,34 +15,58 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.models import UserProfile
 from backend.static.storage_folders import get_storage_folder_encrypted_record_document
 
 
-class EncryptedRecordDocument(models.Model):
+class EncryptedRecordDocument(
+    ExportModelOperationsMixin("encrypted_record_document"), models.Model
+):
     name = models.CharField(max_length=200)
     creator = models.ForeignKey(
-        UserProfile, related_name="e_record_documents_created", on_delete=models.SET_NULL, null=True
+        UserProfile,
+        related_name="e_record_documents_created",
+        on_delete=models.SET_NULL,
+        null=True,
     )
 
-    record = models.ForeignKey('EncryptedRecord', related_name="e_record_documents", on_delete=models.CASCADE)
+    record = models.ForeignKey(
+        "EncryptedRecord", related_name="e_record_documents", on_delete=models.CASCADE
+    )
 
     created_on = models.DateTimeField(auto_now_add=True)
     last_edited = models.DateTimeField(auto_now_add=True)
 
     file_size = models.BigIntegerField()
 
-    tagged = models.ManyToManyField('RecordDocumentTag', related_name="e_tagged", blank=True)
+    tagged = models.ManyToManyField(
+        "RecordDocumentTag", related_name="e_tagged", blank=True
+    )
 
     def __str__(self):
-        return 'e_record_document: ' + str(self.id) + ':' + self.name + '; creator: ' + str(
-            self.creator.id) + '; record: ' + str(self.record.id)
+        return (
+            "e_record_document: "
+            + str(self.id)
+            + ":"
+            + self.name
+            + "; creator: "
+            + str(self.creator.id)
+            + "; record: "
+            + str(self.record.id)
+        )
 
     def get_file_key(self):
-        return get_storage_folder_encrypted_record_document(self.record.from_rlc_id,
-                                                            self.record.id) + self.name + '.enc'
+        return (
+            get_storage_folder_encrypted_record_document(
+                self.record.from_rlc_id, self.record.id
+            )
+            + self.name
+            + ".enc"
+        )
 
     def get_folder(self):
-        return get_storage_folder_encrypted_record_document(self.record.from_rlc_id,
-                                                            self.record.id)
+        return get_storage_folder_encrypted_record_document(
+            self.record.from_rlc_id, self.record.id
+        )

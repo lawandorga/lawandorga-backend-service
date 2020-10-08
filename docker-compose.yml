@@ -1,0 +1,192 @@
+version: "2"
+
+services:
+    web:
+        build: .
+        command: gunicorn backend.wsgi:application --bind 0.0.0.0:8001
+        restart: unless-stopped
+        container_name: backend
+        depends_on:
+            - logspout
+        expose:
+            - 8001
+        env_file:
+            - ./environments/web.test.env
+        # image: jehob/law-orga-backend
+        image: jehob/law-orga-backend:0.1
+
+    nginx:
+        image: nginx:1.19.0-alpine
+        restart: unless-stopped
+        container_name: nginx
+        ports:
+            - 80:80
+            - 443:443
+        depends_on:
+            - web
+        volumes:
+            - ./containers/nginx:/etc/nginx/conf.d
+            - ./data/certbot/conf:/etc/letsencrypt
+            - ./data/certbot/www:/var/www/certbot
+        command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+    certbot:
+        image: certbot/certbot
+        restart: unless-stopped
+        container_name: certbot
+        volumes:
+            - ./data/certbot/conf:/etc/letsencrypt
+            - ./data/certbot/www:/var/www/certbot
+        entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+    node-exporter:
+        image: prom/node-exporter:latest
+        container_name: monitoring_node_exporter
+        restart: unless-stopped
+        expose:
+            - 9100
+
+    cadvisor:
+        image: google/cadvisor:latest
+        container_name: monitoring_cadvisor
+        restart: unless-stopped
+        volumes:
+        - /:/rootfs:ro
+        - /var/run:/var/run:rw
+        - /sys:/sys:ro
+        - /var/lib/docker/:/var/lib/docker:ro
+        - /dev/disk/:/dev/disk:ro
+        expose:
+            - 8080
+
+    timescaledb:
+        image: timescaledev/timescale_prometheus_extra:latest-pg12
+        restart: always
+        container_name: timescaledb
+        environment:
+            - POSTGRES_PASSWORD=password
+            - POSTGRES_HOST_AUTH_METHOD=trust
+        volumes:
+            - ./data/postgres:/var/lib/postgresql
+        labels:
+            de.laworga.logging: "none"
+        expose:
+            - 5432
+
+    timescale:
+        image: timescale/timescale-prometheus:0.1
+        restart: unless-stopped
+        container_name: timescale
+        depends_on:
+            - timescaledb
+        labels:
+            de.laworga.logging: "none"
+        environment:
+            - TS_PROM_DB_NAME=postgres
+            - TS_PROM_DB_HOST=timescaledb
+            - TS_PROM_DB_PASSWORD=password
+            - TS_PROM_DB_SSL_MODE=disable
+        expose:
+            - 9201
+
+    prometheus:
+        image: prom/prometheus
+        restart: unless-stopped
+        container_name: prometheus
+        user: "root"
+        depends_on:
+            - timescale
+        expose:
+            - 9090
+        volumes:
+            - ./containers/prometheus/:/etc/prometheus/
+            - ./data/prometheus:/prometheus
+        command:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+            - '--storage.tsdb.path=/prometheus'
+
+    grafana:
+        image: grafana/grafana
+        restart: unless-stopped
+        container_name: grafana
+        user: "root"
+        depends_on:
+            - prometheus
+        ports:
+            - 3000:3000
+        volumes:
+            - ./data/grafana:/var/lib/grafana
+            - ./data/grafana-provisioning/:/etc/grafana/provisioning/
+        environment:
+            - GF_USERS_ALLOW_SIGN_UP=false
+        labels:
+            de.laworga.logging: "none"
+
+    logspout:
+        image: gliderlabs/logspout:v3.2.11
+        command: 'syslog://logstash:5000'
+        restart: unless-stopped
+        container_name: logspout
+        links:
+            - logstash
+        volumes:
+            - '/var/run/docker.sock:/tmp/docker.sock'
+        environment:
+            - EXCLUDE_LABEL=de.laworga.logging:none
+        depends_on:
+            - elasticsearch
+            - logstash
+            - kibana
+
+    logstash:
+        image: logstash:7.9.1
+        restart: unless-stopped
+        container_name: logstash
+        environment:
+            - LOGSPOUT=ignore
+            - TIMESCALE=ignore
+            # - STDOUT=true
+        links:
+            - elasticsearch
+        depends_on:
+            - elasticsearch
+            - kibana
+        volumes:
+            - ./containers/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+
+    kibana:
+        image: kibana:7.9.1
+        restart: unless-stopped
+        container_name: kibana
+        links:
+            - elasticsearch
+        environment:
+            - LOGSPOUT=ignore
+            - TIMESCALE=ignore
+            - ELASTICSEARCH_URL=http://elasticsearch:9200
+            - XPACK_SECURITY_ENABLED=true
+            - ELASTICSEARCH_PASSWORD=changethispassword
+            - ELASTICSEARCH_USERNAME=elastic
+        ports:
+            - 5601:5601
+        depends_on:
+            - elasticsearch
+
+    elasticsearch:
+        image: elasticsearch:7.9.1
+        restart: unless-stopped
+        container_name: elasticsearch
+        ports:
+        - 9200:9200
+        - 9300:9300
+        environment:
+            - LOGSPOUT=ignore
+            - TIMESCALE=ignore
+            - node.name=elasticsearch
+            - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+            - cluster.initial_master_nodes=elasticsearch
+            - xpack.security.enabled=true
+            - xpack.security.transport.ssl.enabled=true
+            - ELASTIC_PASSWORD=changethispassword
+
+

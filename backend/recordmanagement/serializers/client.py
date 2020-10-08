@@ -24,10 +24,14 @@ class ClientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Client
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ClientNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Client
-        fields = ('id', 'name', 'origin_country', )
+        fields = (
+            "id",
+            "name",
+            "origin_country",
+        )

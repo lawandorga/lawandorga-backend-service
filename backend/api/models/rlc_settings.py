@@ -20,9 +20,11 @@ from backend.api.models import Rlc
 
 
 class RlcSettings(models.Model):
-    rlc = models.ForeignKey(Rlc, related_name='rlc_settings', on_delete=models.CASCADE, null=False)
+    rlc = models.ForeignKey(
+        Rlc, related_name="rlc_settings", on_delete=models.CASCADE, null=False
+    )
 
     user_record_pool = models.BooleanField(default=False, null=False)
 
     def __str__(self):
-        return 'rlc settings for rlc: ' + str(self.rlc) + '; '
+        return "rlc settings for rlc: " + str(self.rlc) + "; "

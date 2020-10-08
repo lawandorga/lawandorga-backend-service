@@ -27,21 +27,21 @@ class Command(BaseCommand):
         successes = 0
         errors = 0
         for document in documents:
-            print('document: ', document)
+            print("document: ", document)
             s3_path = document.get_file_key()
-            print('download from: ', s3_path)
-            local_path = os.path.join('temp', document.name)
-            print('to: ', local_path)
+            print("download from: ", s3_path)
+            local_path = os.path.join("temp", document.name)
+            print("to: ", local_path)
             try:
                 EncryptedStorage.download_file_from_s3(s3_path, local_path)
-                print('file successfully downloaded')
+                print("file successfully downloaded")
                 os.remove(local_path)
-                print('file deleted')
+                print("file deleted")
                 successes = successes + 1
             except:
-                print('error at downloading file, not found probably')
+                print("error at downloading file, not found probably")
                 errors = errors + 1
         if errors == 0:
-            print('no errors, all files in database found on s3')
+            print("no errors, all files in database found on s3")
         else:
-            print('there were some errors')
+            print("there were some errors")

@@ -22,4 +22,4 @@ from backend.api.models import RlcSettings
 class RlcSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = RlcSettings
-        fields = '__all__'
+        fields = "__all__"

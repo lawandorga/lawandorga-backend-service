@@ -26,9 +26,11 @@ class StaticTestMethods:
         creates a superuser with a static email and returns the forced authenticated apiClient
         :return: the forced APIClient
         """
-        UserProfile.objects.create_superuser(email='test123@test.com', name='XX', password='test123')
+        UserProfile.objects.create_superuser(
+            email="test123@test.com", name="XX", password="test123"
+        )
         client = APIClient()
-        user = UserProfile.objects.get(email='test123@test.com')
+        user = UserProfile.objects.get(email="test123@test.com")
         client.force_authenticate(user=user)
         return client
 
@@ -56,12 +58,12 @@ class StaticTestMethods:
         return client
 
     @staticmethod
-    def generate_users(number_of_users, rlc):
-        base_name = 'test_user'
+    def generate_users(number_of_users, rlc) -> [UserProfile]:
+        base_name = "test_user"
         users = []
         for i in range(number_of_users):
             name = base_name + str(i)
-            email = name + '@web.de'
+            email = name + "@web.de"
             user = UserProfile(email=email, name=name)
             if rlc:
                 user.rlc = rlc
@@ -71,7 +73,7 @@ class StaticTestMethods:
 
     @staticmethod
     def generate_test_user(rlc=None):
-        user = UserProfile(name='test_user_1', email='test_user@web.de')
+        user = UserProfile(name="test_user_1", email="test_user@web.de")
         if rlc:
             user.rlc = rlc
         user.save()

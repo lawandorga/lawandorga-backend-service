@@ -15,6 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.models import UserProfile
 from backend.static.string_generator import get_random_string
@@ -31,12 +32,16 @@ def generate_link_id():
             return pot_id
 
 
-class UserActivationLink(models.Model):
+class UserActivationLink(
+    ExportModelOperationsMixin("user_activation_link"), models.Model
+):
     user = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
 
-    link = models.CharField(auto_created=True, unique=True, default=generate_link_id, max_length=32)
+    link = models.CharField(
+        auto_created=True, unique=True, default=generate_link_id, max_length=32
+    )
     date = models.DateTimeField(auto_now_add=True)
     activated = models.BooleanField(default=False)
 
     def __str__(self):
-        return 'user activation link: ' + str(self.id) + ':' + self.user.email
+        return "user activation link: " + str(self.id) + ":" + self.user.email

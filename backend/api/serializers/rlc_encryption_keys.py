@@ -22,4 +22,4 @@ from backend.api.models import RlcEncryptionKeys
 class RlcEncryptionKeysSerializer(serializers.ModelSerializer):
     class Meta:
         model = RlcEncryptionKeys
-        fields = '__all__'
+        fields = "__all__"

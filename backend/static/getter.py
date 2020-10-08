@@ -21,7 +21,9 @@ from backend.recordmanagement.models import EncryptedRecord
 
 
 def get_e_record(user, e_record_id):
-    if not user.has_permission(permissions.PERMISSION_VIEW_RECORDS_RLC, for_rlc=user.rlc):
+    if not user.has_permission(
+        permissions.PERMISSION_VIEW_RECORDS_RLC, for_rlc=user.rlc
+    ):
         raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
     try:
         e_record = EncryptedRecord.objects.get(pk=e_record_id)

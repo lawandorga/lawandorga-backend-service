@@ -24,23 +24,23 @@ STORAGE_FOLDER_PROFILE_PICTURES = "profile_pictures/"
 
 
 def get_storage_folder_record_document(rlc_id, record_id):
-    return 'rlcs/' + str(rlc_id) + '/records/' + str(record_id) + '/'
+    return "rlcs/" + str(rlc_id) + "/records/" + str(record_id) + "/"
 
 
 def get_storage_folder_encrypted_record_document(rlc_id, record_id):
-    return 'rlcs/' + str(rlc_id) + '/encrypted_records/' + str(record_id) + '/'
+    return "rlcs/" + str(rlc_id) + "/encrypted_records/" + str(record_id) + "/"
 
 
 def get_storage_base_files_folder(rlc_id):
-    return 'rlcs/' + str(rlc_id) + '/'
+    return "rlcs/" + str(rlc_id) + "/"
 
 
 def get_temp_storage_path(filename):
-    return os.path.join('temp', filename)
+    return os.path.join("temp", filename)
 
 
 def get_temp_storage_folder():
-    return 'temp'
+    return "temp"
 
 
 def combine_s3_folder_with_filename(s3_folder, filename):
@@ -48,7 +48,7 @@ def combine_s3_folder_with_filename(s3_folder, filename):
 
 
 def get_filename_from_full_path(filepath):
-    return filepath[filepath.rindex('/')+1:]
+    return filepath[filepath.rindex("/") + 1 :]
 
 
 def user_has_permission(file_dir, user):
@@ -59,7 +59,7 @@ def user_has_permission(file_dir, user):
     :return: bool, true if the user has the permissions
     """
     if is_storage_folder_of_record(file_dir):
-        id = file_dir.strip('/').split('/')[-1]
+        id = file_dir.strip("/").split("/")[-1]
         try:
             record = Record.objects.get(pk=id)
         except Exception as e:

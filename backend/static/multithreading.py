@@ -19,7 +19,11 @@ import shutil
 from threading import Thread
 
 from backend.static.encrypted_storage import EncryptedStorage
-from backend.static.storage_folders import get_temp_storage_path, combine_s3_folder_with_filename, get_filename_from_full_path
+from backend.static.storage_folders import (
+    get_temp_storage_path,
+    combine_s3_folder_with_filename,
+    get_filename_from_full_path,
+)
 
 
 def start_new_thread(function):
@@ -27,6 +31,7 @@ def start_new_thread(function):
         t = Thread(target=function, args=args, kwargs=kwargs)
         t.daemon = True
         t.start()
+
     return decorator
 
 
@@ -36,7 +41,6 @@ class MultithreadedFileUploads:
     def encrypt_file_and_upload_to_s3(filename, key, s3_folder):
         EncryptedStorage.encrypt_file_and_upload_to_s3(filename, key, s3_folder)
         os.remove(filename)
-
 
     @staticmethod
     @start_new_thread
@@ -49,13 +53,17 @@ class MultithreadedFileUploads:
         :return:
         """
         for local_file_path in files:
-            EncryptedStorage.encrypt_file_and_upload_to_s3(local_file_path, aes_key, s3_folder)
+            EncryptedStorage.encrypt_file_and_upload_to_s3(
+                local_file_path, aes_key, s3_folder
+            )
             os.remove(local_file_path)
 
     @staticmethod
     @start_new_thread
     def encrypt_files_and_upload_to_s3(local_files, s3_folders, aes_key):
         for i in range(local_files.__len__()):
-            EncryptedStorage.encrypt_file_and_upload_to_s3(local_files[i], aes_key, s3_folders[i])
-        temp_folder = local_files[i][:local_files[i].index('/', 5)]
+            EncryptedStorage.encrypt_file_and_upload_to_s3(
+                local_files[i], aes_key, s3_folders[i]
+            )
+        temp_folder = local_files[i][: local_files[i].index("/", 5)]
         shutil.rmtree(temp_folder)
