@@ -14,6 +14,8 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from django.utils import timezone
+
 from backend.static.encryption import get_bytes_from_string_or_return_bytes
 from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED
@@ -51,6 +53,7 @@ class SimpleMiddleware:
         if request.user.is_authenticated:
             print("user: " + str(request.user.id))
             print("rlc: " + str(request.user.rlc.id))
+        print("date: " + str(timezone.now()))
 
         # Code to be executed for each request/response after
         # the view is called.
