@@ -107,7 +107,7 @@ SILENCED_SYSTEM_CHECKS = ["rest_framework.W001"]
 if env_true("DEV") or env_true("TEST"):
     TIMEOUT_TIMEDELTA = timedelta(weeks=10)
 else:
-    TIMEOUT_TIMEDELTA = timedelta(minutes=1)
+    TIMEOUT_TIMEDELTA = timedelta(minutes=10)
 
 # Templates
 TEMPLATES = [
