@@ -12,8 +12,7 @@ services:
             - 8001
         env_file:
             - ./environments/web.test.env
-        # image: jehob/law-orga-backend
-        image: jehob/law-orga-backend:0.1
+        image: jehob/law-orga-backend:0.2
 
     nginx:
         image: nginx:1.19.0-alpine
