@@ -57,6 +57,9 @@ if "HOST" in os.environ:
 else:
     ALLOWED_HOSTS = ["web", "127.0.0.1"]
 
+if "HOST_IP" in os.environ:
+    ALLOWED_HOSTS.append(os.environ["HOST_IP"])
+
 # Application definition
 
 INSTALLED_APPS = [
