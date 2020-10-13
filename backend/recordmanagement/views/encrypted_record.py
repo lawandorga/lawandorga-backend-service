@@ -19,6 +19,7 @@ from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
+import logging
 
 from backend.api.errors import CustomError
 from backend.api.models import Notification, UserEncryptionKeys, UserProfile
@@ -37,6 +38,23 @@ class EncryptedRecordsListViewSet(viewsets.ViewSet):
         :param request:
         :return:
         """
+        logger = logging.getLogger(__name__)
+        logger.error(
+            "nothing important but error, "
+            + str(request.user)
+            + "; "
+            + str(request.user.rlc)
+        )
+        logger.info(
+            "some information, " + str(request.user) + "; " + str(request.user.rlc)
+        )
+        logger.debug(
+            "some debug information, "
+            + str(request.user)
+            + "; "
+            + str(request.user.rlc)
+        )
+
         parts = request.query_params.get("search", "").split(" ")
         user = request.user
 

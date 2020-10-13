@@ -15,12 +15,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.models import UserProfile
 from backend.static.storage_folders import get_storage_folder_encrypted_record_document
 
 
-class EncryptedRecordDocument(models.Model):
+class EncryptedRecordDocument(
+    ExportModelOperationsMixin("encrypted_record_document"), models.Model
+):
     name = models.CharField(max_length=200)
     creator = models.ForeignKey(
         UserProfile,

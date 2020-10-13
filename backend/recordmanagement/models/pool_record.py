@@ -15,11 +15,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
+
 from backend.api.models import UserProfile
 from backend.recordmanagement.models import EncryptedRecord
 
 
-class PoolRecord(models.Model):
+class PoolRecord(ExportModelOperationsMixin("pool_record"), models.Model):
     record = models.ForeignKey(
         EncryptedRecord,
         related_name="e_record_pool_entry",

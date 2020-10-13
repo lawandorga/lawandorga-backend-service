@@ -21,7 +21,7 @@ from .views import *
 
 router = DefaultRouter()
 # recheck all
-router.register("records", RecordsListViewSet, base_name="records")
+router.register("records", RecordsListViewSet, basename="record")
 router.register("origin_countries", OriginCountriesViewSet)
 router.register("record_tags", RecordTagViewSet)
 router.register("clients", ClientsViewSet)
@@ -32,11 +32,11 @@ router.register("record_deletion_requests", EncryptedRecordDeletionRequestViewSe
 # router.register('record_deletion_requests', RecordDeletionRequestViewSet) OLD
 # encryption
 router.register("record_encryptions", RecordEncryptionViewSet)
-router.register("e_records", EncryptedRecordsListViewSet, base_name="e_records")
+router.register("e_records", EncryptedRecordsListViewSet, basename="e_records")
 router.register(
-    "e_clients", EncryptedClientsViewSet, base_name="e_records"
+    "e_clients", EncryptedClientsViewSet, basename="e_records"
 )  # TODO: add all encrypted fields here
-router.register("pool_records", PoolRecordViewSet, base_name="pool_records")
+router.register("pool_records", PoolRecordViewSet, basename="pool_records")
 router.register("pool_consultants", PoolConsultantViewSet)
 router.register("missing_record_keys", MissingRecordKeyViewSet)
 

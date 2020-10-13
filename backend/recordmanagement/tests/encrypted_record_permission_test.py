@@ -307,6 +307,7 @@ class EncryptedRecordRequestTest(TransactionTestCase):
         record_encryption_difference: (QuerysetDifference) = QuerysetDifference(
             record_models.RecordEncryption.objects.all()
         )
+        record_encryptions_before = record_models.RecordEncryption.objects.count()
 
         response: Response = self.process_client.post(
             self.list_and_process_url,
@@ -322,6 +323,10 @@ class EncryptedRecordRequestTest(TransactionTestCase):
         self.assertEqual("gr", request_from_db.state)
         self.assertEqual(requests[1].record, request_from_db.record)
 
+        self.assertEqual(
+            record_encryptions_before + 1,
+            record_models.RecordEncryption.objects.count(),
+        )
         new_record_encryptions: [
             record_models.RecordEncryption
         ] = record_encryption_difference.get_new_items(

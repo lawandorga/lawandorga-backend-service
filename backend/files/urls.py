@@ -20,15 +20,15 @@ from rest_framework.routers import DefaultRouter
 from backend.files.views import *
 
 router = DefaultRouter()
-router.register("folder_base", FolderBaseViewSet, base_name="folder_base")
-router.register("file_base", FileBaseViewSet, base_name="file_base")
+router.register("folder_base", FolderBaseViewSet, basename="folder_base")
+router.register("file_base", FileBaseViewSet, basename="file_base")
 router.register(
     "permission_for_folder",
     PermissionForFolderViewSet,
-    base_name="permission_for_folder",
+    basename="permission_for_folder",
 )
 router.register(
-    "folder_permission", FolderPermissionViewSet, base_name="folder_permission"
+    "folder_permission", FolderPermissionViewSet, basename="folder_permission"
 )
 
 urlpatterns = [

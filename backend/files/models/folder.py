@@ -15,6 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.models import Rlc, UserProfile
 from backend.files.models.folder_permission import FolderPermission
@@ -33,7 +34,7 @@ from backend.static.storage_folders import (
 )
 
 
-class Folder(models.Model):
+class Folder(ExportModelOperationsMixin("folder"), models.Model):
     name = models.CharField(max_length=255)
 
     creator = models.ForeignKey(
@@ -135,7 +136,6 @@ class Folder(models.Model):
         relevant_folders = self.get_all_parents() + [self]
         users_groups = user.group_members.all()
         p_read = FolderPermission.objects.get(name=PERMISSION_READ_FOLDER)
-        # TODO: or write?
         relevant_permissions = PermissionForFolder.objects.filter(
             folder__in=relevant_folders,
             group_has_permission__in=users_groups,

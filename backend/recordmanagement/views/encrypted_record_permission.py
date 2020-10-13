@@ -122,12 +122,7 @@ class EncryptedRecordPermissionProcessViewSet(APIView):
         if permission_request.state != "re":
             raise CustomError(error_codes.ERROR__API__ALREADY_PROCESSED)
 
-        permission_request.request_processed = user
-        permission_request.processed_on = datetime.utcnow().replace(tzinfo=pytz.utc)
         if action == "accept":
-            permission_request.state = "gr"
-            permission_request.save()
-
             users_private_key = get_private_key_from_request(request)
             record_key = permission_request.record.get_decryption_key(
                 user, users_private_key
@@ -142,6 +137,10 @@ class EncryptedRecordPermissionProcessViewSet(APIView):
                 encrypted_key=encrypted_record_key,
             )
             record_encryption.save()
+
+            permission_request.state = "gr"
+            permission_request.save()
+
             Notification.objects.notify_record_permission_accepted(
                 request.user, permission_request
             )
@@ -151,6 +150,9 @@ class EncryptedRecordPermissionProcessViewSet(APIView):
             Notification.objects.notify_record_permission_declined(
                 request.user, permission_request
             )
+        permission_request.request_processed = user
+        permission_request.processed_on = datetime.utcnow().replace(tzinfo=pytz.utc)
+
         return Response(
             serializers.EncryptedRecordPermissionSerializer(permission_request).data
         )
