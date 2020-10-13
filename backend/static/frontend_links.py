@@ -27,7 +27,7 @@ class FrontendLinks:
     def get_user_activation_link(activation_link):
         return (
             env_getter.get_website_base_url()
-            + "/activate_account/"
+            + "activate_account/"
             + str(activation_link.link)
             + "/"
         )

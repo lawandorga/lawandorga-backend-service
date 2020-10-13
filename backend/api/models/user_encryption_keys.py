@@ -15,8 +15,10 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
+
 from backend.api.models import UserProfile
-from backend.static.encryption import AESEncryption, OutputType
+from backend.static.encryption import AESEncryption
 from backend.static.error_codes import ERROR__API__USER__NO_PUBLIC_KEY_FOUND
 from backend.api.errors import CustomError
 
@@ -30,7 +32,9 @@ class UserEncryptionKeysQuerySet(models.QuerySet):
         return keys.public_key
 
 
-class UserEncryptionKeys(models.Model):
+class UserEncryptionKeys(
+    ExportModelOperationsMixin("user_encryption_keys"), models.Model
+):
     user = models.OneToOneField(
         UserProfile,
         related_name="encryption_keys",

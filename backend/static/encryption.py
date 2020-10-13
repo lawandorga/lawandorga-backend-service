@@ -27,6 +27,8 @@ from Crypto.PublicKey import RSA
 from hashlib import sha3_256
 
 from backend.static.string_generator import generate_secure_random_string
+from backend.static.error_codes import ERROR__API__INVALID_PRIVATE_KEY
+from backend.api.errors import CustomError
 
 
 class OutputType(Enum):
@@ -316,9 +318,13 @@ class RSAEncryption:
     @staticmethod
     def decrypt(ciphertext, pem_private_key, output_type=OutputType.STRING):
         pem_private_key = get_bytes_from_string_or_return_bytes(pem_private_key)
-        private_key = serialization.load_pem_private_key(
-            pem_private_key, None, backend=default_backend()
-        )
+        try:
+            private_key = serialization.load_pem_private_key(
+                pem_private_key, None, backend=default_backend()
+            )
+        except ValueError as valueError:
+            raise CustomError(ERROR__API__INVALID_PRIVATE_KEY)
+
         plaintext = private_key.decrypt(
             ciphertext,
             asymmetric_padding.OAEP(

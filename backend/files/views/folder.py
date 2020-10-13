@@ -58,7 +58,9 @@ class FolderViewSet(APIView):
                 children_to_show.append(child)
         return_obj = {"folders": FolderSerializer(children_to_show, many=True).data}
 
-        if folder.user_has_permission_read(user):
+        if folder.user_has_permission_read(user) or folder.user_has_permission_write(
+            user
+        ):
             files = File.objects.filter(folder=folder)
             files_data = FileSerializer(files, many=True).data
             return_obj.update({"files": files_data})

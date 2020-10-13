@@ -15,11 +15,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
-from backend.api.models import UserProfile
 from django.utils import timezone
+from django_prometheus.models import ExportModelOperationsMixin
+
+from backend.api.models import UserProfile
 
 
-class EncryptedRecordDeletionRequest(models.Model):
+class EncryptedRecordDeletionRequest(
+    ExportModelOperationsMixin("encrypted_record_deletion_request"), models.Model
+):
     record = models.ForeignKey(
         "EncryptedRecord",
         related_name="deletions_requested",

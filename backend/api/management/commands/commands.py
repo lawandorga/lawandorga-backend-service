@@ -96,35 +96,26 @@ def migrate_to_encryption():
 
 
 def aws_environment_variables_viable(command):
-    if settings.AWS_S3_BUCKET_NAME:
-        command.stdout.write("s3bucket: " + settings.AWS_S3_BUCKET_NAME, ending="")
+    if settings.SCW_SECRET_KEY:
+        command.stdout.write("secret key: " + settings.SCW_SECRET_KEY, ending="")
     else:
-        command.stdout.write("s3 bucket not found!")
+        command.stdout.write("s3 secret key not found!")
         return False
 
-    if settings.AWS_S3_REGION_NAME:
-        command.stdout.write(
-            "s3 region name: " + settings.AWS_S3_REGION_NAME, ending=""
-        )
+    if settings.SCW_ACCESS_KEY:
+        command.stdout.write("scw access key: " + settings.SCW_ACCESS_KEY, ending="")
     else:
-        command.stdout.write("s3 region not found!")
+        command.stdout.write("scw access key not found!")
         return False
 
-    if settings.AWS_ACCESS_KEY_ID:
+    if settings.SCW_S3_BUCKET_NAME:
         command.stdout.write(
-            "s3 access key id: " + settings.AWS_ACCESS_KEY_ID, ending=""
+            "scw bucket name: " + settings.SCW_S3_BUCKET_NAME, ending=""
         )
     else:
-        command.stdout.write("s3 access key not found!")
+        command.stdout.write("scw bucket name not found!")
         return False
 
-    if settings.AWS_SECRET_ACCESS_KEY:
-        command.stdout.write(
-            "s3 secret access key id: " + settings.AWS_SECRET_ACCESS_KEY, ending=""
-        )
-    else:
-        command.stdout.write("s3 secret access key not found!")
-        return False
     return True
 
 
@@ -163,6 +154,7 @@ def reset_db():
     FolderPermission.objects.all().delete()
     PermissionForFolder.objects.all().delete()
     Notification.objects.all().delete()
+    NotificationGroup.objects.all().delete()
     reset_db_encrypted()
 
 

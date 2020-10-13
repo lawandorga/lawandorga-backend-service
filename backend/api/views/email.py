@@ -14,30 +14,19 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.db import models
-from django_prometheus.models import ExportModelOperationsMixin
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from backend.api.errors import CustomError
+from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
+from backend.static.emails import EmailSender
 
-from backend.api.models import UserProfile, Rlc
 
-
-class UsersRlcKeys(ExportModelOperationsMixin("users_rlc_keys"), models.Model):
-    user = models.ForeignKey(
-        UserProfile, related_name="users_rlc_keys", on_delete=models.CASCADE, null=False
-    )
-    rlc = models.ForeignKey(
-        Rlc,
-        related_name="encrypted_users_rlc_keys",
-        on_delete=models.CASCADE,
-        null=False,
-    )
-    encrypted_key = models.BinaryField()
-
-    def __str__(self):
-        return (
-            "users_lrc_keys: "
-            + str(self.id)
-            + "; user: "
-            + str(self.user.id)
-            + "; rlc: "
-            + str(self.rlc.id)
+class EmailPingViewSet(APIView):
+    def post(self, request) -> Response:
+        if not request.user.is_superuser:
+            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+        EmailSender.send_html_email(
+            [request.user.email], "test email", "hello there", "alternative text"
         )
+
+        return Response({})

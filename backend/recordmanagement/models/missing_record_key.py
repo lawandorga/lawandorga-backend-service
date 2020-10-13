@@ -15,11 +15,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
+
 from backend.api.models import UserProfile
 from backend.recordmanagement.models import EncryptedRecord
 
 
-class MissingRecordKey(models.Model):
+class MissingRecordKey(ExportModelOperationsMixin("missing_record_key"), models.Model):
     user = models.ForeignKey(
         UserProfile, related_name="missing_record_keys", on_delete=models.CASCADE
     )

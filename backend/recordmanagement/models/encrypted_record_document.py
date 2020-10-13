@@ -15,15 +15,18 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
-from django.db.models.signals import post_save, pre_delete
+from django_prometheus.models import ExportModelOperationsMixin
 from django.dispatch import receiver
+from django.db.models.signals import post_save, pre_delete
 
 from backend.api.models import UserProfile
 from backend.static.storage_folders import get_storage_folder_encrypted_record_document
 from backend.static.encrypted_storage import EncryptedStorage
 
 
-class EncryptedRecordDocument(models.Model):
+class EncryptedRecordDocument(
+    ExportModelOperationsMixin("encrypted_record_document"), models.Model
+):
     name = models.CharField(max_length=200)
     creator = models.ForeignKey(
         UserProfile,

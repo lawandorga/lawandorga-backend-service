@@ -23,42 +23,40 @@ from backend.files import urls as file_urls
 
 router = DefaultRouter()
 router.register("profiles", views.user.UserProfileViewSet)
-router.register("login", views.LoginViewSet, base_name="login")
+router.register("login", views.LoginViewSet, basename="login")
 router.register(
-    "create_profile", views.UserProfileCreatorViewSet, base_name="create_profile"
+    "create_profile", views.UserProfileCreatorViewSet, basename="create_profile"
 )
-router.register("groups", views.GroupViewSet, base_name="groups")
-router.register("permissions", views.PermissionViewSet, base_name="permissions")
-router.register(
-    "has_permission", views.HasPermissionViewSet, base_name="has_permission"
-)
-router.register("rlcs", views.RlcViewSet, base_name="rlcs")
+router.register("groups", views.GroupViewSet, basename="groups")
+router.register("permissions", views.PermissionViewSet, basename="permissions")
+router.register("has_permission", views.HasPermissionViewSet, basename="has_permission")
+router.register("rlcs", views.RlcViewSet, basename="rlcs")
 router.register(
     "forgot_password_links",
     views.ForgotPasswordViewSet,
-    base_name="forgot_password_links",
+    basename="forgot_password_links",
 )
 router.register(
-    "new_user_request", views.NewUserRequestViewSet, base_name="new_user_request"
+    "new_user_request", views.NewUserRequestViewSet, basename="new_user_request"
 )
 router.register(
     "user_activation_links",
     views.UserActivationBackendViewSet,
-    base_name="user_activation_links",
+    basename="user_activation_links",
 )
 router.register(
     "user_encryption_keys",
     views.UserEncryptionKeysViewSet,
-    base_name="user_encryption_keys",
+    basename="user_encryption_keys",
 )
-router.register("users_rlc_keys", views.UsersRlcKeysViewSet, base_name="users_rlc_keys")
-router.register("rlc_settings", views.RlcSettingsViewSet, base_name="rlc_settings")
+router.register("users_rlc_keys", views.UsersRlcKeysViewSet, basename="users_rlc_keys")
+router.register("rlc_settings", views.RlcSettingsViewSet, basename="rlc_settings")
 router.register(
-    "missing_rlc_keys", views.MissingRlcKeysViewSet, base_name="missing_rlc_keys"
+    "missing_rlc_keys", views.MissingRlcKeysViewSet, basename="missing_rlc_keys"
 )
-router.register("notifications", views.NotificationViewSet, base_name="notifications")
+router.register("notifications", views.NotificationViewSet, basename="notifications")
 router.register(
-    "notification_groups", views.NotificationGroupViewSet, base_name="notifications"
+    "notification_groups", views.NotificationGroupViewSet, basename="notifications"
 )
 
 
@@ -92,4 +90,5 @@ urlpatterns = [
     url(r"user_has_permissions/", views.UserHasPermissionsViewSet.as_view()),
     url(r"my_rlc_settings/", views.RlcSettingsMineViewSet.as_view()),
     url(r"unread_notifications/", views.UnreadNotificationsViewSet.as_view()),
+    url(r"email_ping/", views.EmailPingViewSet.as_view()),
 ]

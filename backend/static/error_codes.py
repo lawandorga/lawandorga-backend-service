@@ -393,6 +393,16 @@ ERROR__API__ALREADY_PROCESSED = {
     "error_code": "api.already_processed",
 }
 
+ERROR__API__INVALID_PRIVATE_KEY = {
+    "error_detail": "invalid private key",
+    "error_code": "api.private_key_invalid",
+}
+
+ERROR__API__NOT_AUTHENTICATED = {
+    "error_detail": "not authenticated",
+    "error_code": "api.not_authenticated",
+}
+
 ERROR__API__ALREADY_REQUESTED = {
     "error_detail": "already requested",
     "error_code": "api.already_requested",

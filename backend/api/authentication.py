@@ -42,9 +42,7 @@ class ExpiringTokenAuthentication(TokenAuthentication):
             token.delete()
             raise AuthenticationFailed("Token has expired")
 
-        token.created = datetime.utcnow().replace(
-            tzinfo=pytz.timezone(settings.TIME_ZONE)
-        )
+        token.created = utc_now
         token.save()
         token.user.last_login = datetime.utcnow().replace(
             tzinfo=pytz.timezone(settings.TIME_ZONE)

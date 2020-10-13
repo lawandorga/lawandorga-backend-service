@@ -14,20 +14,17 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from datetime import datetime
-
-import pytz
 from django.conf import settings
 from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
+import logging
 
 from backend.api.errors import CustomError
 from backend.api.models import Notification, UserEncryptionKeys, UserProfile
 from backend.recordmanagement import models, serializers
 from backend.static import error_codes, permissions
-from backend.static.date_utils import parse_date
 from backend.static.emails import EmailSender
 from backend.static.encryption import AESEncryption, RSAEncryption
 from backend.static.frontend_links import FrontendLinks
@@ -41,6 +38,23 @@ class EncryptedRecordsListViewSet(viewsets.ViewSet):
         :param request:
         :return:
         """
+        logger = logging.getLogger(__name__)
+        logger.error(
+            "nothing important but error, "
+            + str(request.user)
+            + "; "
+            + str(request.user.rlc)
+        )
+        logger.info(
+            "some information, " + str(request.user) + "; " + str(request.user.rlc)
+        )
+        logger.debug(
+            "some debug information, "
+            + str(request.user)
+            + "; "
+            + str(request.user.rlc)
+        )
+
         parts = request.query_params.get("search", "").split(" ")
         user = request.user
 
@@ -187,7 +201,7 @@ class EncryptedRecordViewSet(APIView):
             status=status.HTTP_201_CREATED,
         )
 
-    def get(self, request, id):
+    def get(self, request, id) -> Response:
         try:
             e_record: models.EncryptedRecord = models.EncryptedRecord.objects.get(pk=id)
         except:
