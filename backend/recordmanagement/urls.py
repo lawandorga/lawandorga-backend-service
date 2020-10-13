@@ -31,7 +31,7 @@ router.register("record_permissions", RecordPermissionViewSet)
 router.register(
     "record_deletion_requests",
     EncryptedRecordDeletionRequestViewSet,
-    base_name="record_deletion_requests",
+    basename="record_deletion_requests",
 )
 # router.register('record_deletion_requests', RecordDeletionRequestViewSet) OLD
 # encryption
