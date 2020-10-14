@@ -15,9 +15,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
+from django.db.models import QuerySet
+
+
 from backend.recordmanagement.models import EncryptedRecord
 from backend.api.serializers.user import UserProfileNameSerializer
-from .record_tag import RecordTagNameSerializer
+from backend.recordmanagement.serializers.record_tag import RecordTagNameSerializer
 from backend.static.encryption import AESEncryption
 from backend.static.serializer_fields import EncryptedField
 
@@ -64,11 +67,18 @@ class EncryptedRecordFullDetailSerializer(serializers.ModelSerializer):
 class EncryptedRecordNoDetailListSerializer(serializers.ListSerializer):
     def add_has_permission(self, user):
         data = []
-        for record in self.instance.all():
-            has_permission = record.user_has_permission(user)
-            record_data = EncryptedRecordNoDetailSerializer(record).data
-            record_data.update({"has_permission": has_permission})
-            data.append(record_data)
+        if isinstance(self.instance, QuerySet):
+            for record in self.instance.all():
+                has_permission = record.user_has_permission(user)
+                record_data = EncryptedRecordNoDetailSerializer(record).data
+                record_data.update({"has_permission": has_permission})
+                data.append(record_data)
+        else:
+            for record in self.instance:
+                has_permission = record.user_has_permission(user)
+                record_data = EncryptedRecordNoDetailSerializer(record).data
+                record_data.update({"has_permission": has_permission})
+                data.append(record_data)
         return data
 
 
