@@ -15,9 +15,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
+from django.db.models import QuerySet
+
+
 from backend.recordmanagement.models import EncryptedRecord
 from backend.api.serializers.user import UserProfileNameSerializer
-from .record_tag import RecordTagNameSerializer
+from backend.recordmanagement.serializers.record_tag import RecordTagNameSerializer
 from backend.static.encryption import AESEncryption
 from backend.static.serializer_fields import EncryptedField
 
@@ -61,14 +64,39 @@ class EncryptedRecordFullDetailSerializer(serializers.ModelSerializer):
         return data
 
 
-class EncryptedRecordNoDetailListSerializer(serializers.ListSerializer):
+class EncryptedRecordNoDetailListSerializer(serializers.ModelSerializer):
+    access = serializers.IntegerField()
+    tagged = RecordTagNameSerializer(many=True, read_only=True)
+    working_on_record = UserProfileNameSerializer(many=True, read_only=True)
+    state = serializers.CharField()
+
+    class Meta:
+        model = EncryptedRecord
+        fields = (
+            "id",
+            "last_contact_date",
+            "state",
+            "official_note",
+            "record_token",
+            "working_on_record",
+            "tagged",
+            "access",
+        )
+
     def add_has_permission(self, user):
         data = []
-        for record in self.instance.all():
-            has_permission = record.user_has_permission(user)
-            record_data = EncryptedRecordNoDetailSerializer(record).data
-            record_data.update({"has_permission": has_permission})
-            data.append(record_data)
+        if isinstance(self.instance, QuerySet):
+            for record in self.instance.all():
+                has_permission = record.user_has_permission(user)
+                record_data = EncryptedRecordNoDetailSerializer(record).data
+                record_data.update({"has_permission": has_permission})
+                data.append(record_data)
+        else:
+            for record in self.instance:
+                has_permission = record.user_has_permission(user)
+                record_data = EncryptedRecordNoDetailSerializer(record).data
+                record_data.update({"has_permission": has_permission})
+                data.append(record_data)
         return data
 
 
@@ -78,7 +106,7 @@ class EncryptedRecordNoDetailSerializer(serializers.ModelSerializer):
     state = serializers.CharField()
 
     class Meta:
-        list_serializer_class = EncryptedRecordNoDetailListSerializer
+        # list_serializer_class = EncryptedRecordNoDetailListSerializer
         model = EncryptedRecord
         fields = (
             "id",

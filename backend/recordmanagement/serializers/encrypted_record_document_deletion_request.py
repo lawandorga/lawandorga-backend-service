@@ -15,18 +15,36 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
-from backend.recordmanagement.models import EncryptedRecordDeletionRequest
-from backend.api.serializers.user import UserProfileNameSerializer
-from backend.recordmanagement.serializers import EncryptedRecordNoDetailSerializer
+from backend.api.serializers import UserProfileNameSerializer
+from backend.recordmanagement.models import EncryptedRecordDocumentDeletionRequest
+from backend.recordmanagement.serializers import (
+    EncryptedRecordDocumentSerializer,
+    EncryptedRecordDocumentNameSerializer,
+    EncryptedRecordTokenSerializer,
+)
 
 
-class EncryptedRecordDeletionRequestSerializer(serializers.ModelSerializer):
+class EncryptedRecordDocumentDeletionRequestSerializer(serializers.ModelSerializer):
     request_from = UserProfileNameSerializer(many=False, read_only=True)
     request_processed = UserProfileNameSerializer(many=False, read_only=True)
-    record = EncryptedRecordNoDetailSerializer(
+    document = EncryptedRecordDocumentSerializer(
         many=False, read_only=True, allow_null=True
     )
 
     class Meta:
-        model = EncryptedRecordDeletionRequest
+        model = EncryptedRecordDocumentDeletionRequest
+        fields = "__all__"
+
+
+class EncryptedRecordDocumentDeletionRequestListSerializer(serializers.ModelSerializer):
+    request_from = UserProfileNameSerializer(many=False, read_only=True)
+    request_processed = UserProfileNameSerializer(many=False, read_only=True)
+    record = EncryptedRecordTokenSerializer(many=False, read_only=True)
+
+    document = EncryptedRecordDocumentNameSerializer(
+        many=False, read_only=True, allow_null=True
+    )
+
+    class Meta:
+        model = EncryptedRecordDocumentDeletionRequest
         fields = "__all__"

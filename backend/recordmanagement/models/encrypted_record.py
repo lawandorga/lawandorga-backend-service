@@ -160,7 +160,7 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Mod
     def patch(self, record_data, record_key: str) -> [str]:
         """
         patches record from object, updating last_edited
-        :param record_data: object containing fields of record  with new values, only fields which will be patched are needed
+        :param record_data: object containing only fields of record with new values
         :param record_key: record encryption key
         :return: array containing names of fields which were patched
         """
@@ -273,7 +273,7 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Mod
             ).count()
             == 1
             or user.has_permission(
-                PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc
+                PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=self.from_rlc
             )
         )
 

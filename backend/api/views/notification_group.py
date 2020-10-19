@@ -18,20 +18,15 @@ from typing import Any
 
 from django.db.models import QuerySet, Q
 from rest_framework import viewsets
-from rest_framework.views import APIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from backend.api.errors import CustomError
 from backend.api.models import NotificationGroup
-from backend.api.serializers import (
-    NotificationGroupSerializer,
-    NotificationGroupOrderedSerializer,
-)
+from backend.api.serializers import NotificationGroupOrderedSerializer
 from backend.static.error_codes import (
     ERROR__API__ID_NOT_PROVIDED,
-    ERROR__API__NOTIFICATION__UPDATE_INVALID,
     ERROR__API__USER__NO_OWNERSHIP,
     ERROR__API__ID_NOT_FOUND,
     ERROR__API__PARAMS_NOT_VALID,

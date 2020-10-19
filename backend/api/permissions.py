@@ -85,3 +85,8 @@ class IsAuthenticatedLogging(permissions.BasePermission):
             )
             return True
         return False
+
+
+class OnlyGet(permissions.BasePermission):
+    def has_permission(self, request: Request, view: View) -> bool:
+        return request.method == "GET"

@@ -255,6 +255,10 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
         )
         self.assertEqual(400, response.status_code)
         self.assertEqual(
+            error_codes.ERROR__API__ALREADY_REQUESTED["error_code"],
+            response.data["error_code"],
+        )
+        self.assertEqual(
             deletion_requests_before + 1,
             record_models.EncryptedRecordDeletionRequest.objects.count(),
         )

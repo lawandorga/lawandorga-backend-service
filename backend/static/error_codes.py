@@ -402,3 +402,8 @@ ERROR__API__NOT_AUTHENTICATED = {
     "error_detail": "not authenticated",
     "error_code": "api.not_authenticated",
 }
+
+ERROR__API__ALREADY_REQUESTED = {
+    "error_detail": "already requested",
+    "error_code": "api.already_requested",
+}

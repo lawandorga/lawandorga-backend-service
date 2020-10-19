@@ -124,7 +124,7 @@ class NotificationTest(TransactionTestCase):
             groups=[self.base_fixtures["groups"][0], self.base_fixtures["groups"][1]],
         )
 
-        notifications: Notification = notification_groups[0].notifications.all()
+        notifications: [Notification] = notification_groups[0].notifications.all()
         response: Response = client.patch(
             "/api/notifications/" + str(notifications[0].id) + "/",
             {"read": True},
