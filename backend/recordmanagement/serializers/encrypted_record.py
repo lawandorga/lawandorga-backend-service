@@ -64,7 +64,25 @@ class EncryptedRecordFullDetailSerializer(serializers.ModelSerializer):
         return data
 
 
-class EncryptedRecordNoDetailListSerializer(serializers.ListSerializer):
+class EncryptedRecordNoDetailListSerializer(serializers.ModelSerializer):
+    access = serializers.IntegerField()
+    tagged = RecordTagNameSerializer(many=True, read_only=True)
+    working_on_record = UserProfileNameSerializer(many=True, read_only=True)
+    state = serializers.CharField()
+
+    class Meta:
+        model = EncryptedRecord
+        fields = (
+            "id",
+            "last_contact_date",
+            "state",
+            "official_note",
+            "record_token",
+            "working_on_record",
+            "tagged",
+            "access",
+        )
+
     def add_has_permission(self, user):
         data = []
         if isinstance(self.instance, QuerySet):
@@ -88,7 +106,7 @@ class EncryptedRecordNoDetailSerializer(serializers.ModelSerializer):
     state = serializers.CharField()
 
     class Meta:
-        list_serializer_class = EncryptedRecordNoDetailListSerializer
+        # list_serializer_class = EncryptedRecordNoDetailListSerializer
         model = EncryptedRecord
         fields = (
             "id",

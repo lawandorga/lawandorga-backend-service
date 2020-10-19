@@ -16,8 +16,9 @@
 
 from typing import Any
 import logging
+import time
 from django.conf import settings
-from django.db.models import Q, QuerySet
+from django.db.models import Q, QuerySet, Case, When, Value, IntegerField
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -50,6 +51,7 @@ class EncryptedRecordsListViewSet(viewsets.ModelViewSet):
             )
 
         request: Request = self.request
+        user: UserProfile = request.user
         query_params = request.query_params
 
         if "filter" in query_params and query_params["filter"] != "":
@@ -64,9 +66,43 @@ class EncryptedRecordsListViewSet(viewsets.ModelViewSet):
                     | Q(record_token__icontains=part)
                 ).distinct()
 
-        if "sort" in query_params and query_params["sort"] != "":
-            # queryset.order_by()
-            a = 10
+        if user.is_superuser or user.has_permission(
+            permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc
+        ):
+            queryset = queryset.annotate(access=Value(1))
+        else:
+            record_ids = [single_record.id for single_record in list(queryset)]
+            a = [
+                record_permission.record.id
+                for record_permission in list(
+                    models.EncryptedRecordPermission.objects.filter(
+                        request_from=user, state="gr", record__id__in=record_ids
+                    )
+                )
+            ]
+            b = [
+                record.id
+                for record in list(user.working_on_e_record.filter(id__in=record_ids))
+            ]
+            queryset = queryset.annotate(
+                access=Case(
+                    When(id__in=a + b, then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                )
+            )
+        if "sort" in request.query_params:
+            if (
+                "sortdirection" in request.query_params
+                and request.query_params["sortdirection"] == "desc"
+            ):
+                to_sort = "-" + request.query_params["sort"]
+            else:
+                to_sort = request.query_params["sort"]
+        else:
+            to_sort = "-access"
+
+        queryset = queryset.order_by(to_sort)
 
         return queryset
 
@@ -95,26 +131,22 @@ class EncryptedRecordsListViewSet(viewsets.ModelViewSet):
         )
         user = request.user
 
-        if user.is_superuser:
-            entries = self.get_queryset()
-            paginated = self.paginate_queryset(entries)
-            data = serializers.EncryptedRecordNoDetailSerializer(
-                paginated, many=True
-            ).add_has_permission(user)
-            return self.get_paginated_response(data)
-
-        if not user.has_permission(
-            permissions.PERMISSION_VIEW_RECORDS_RLC, for_rlc=user.rlc
-        ) and not user.has_permission(
-            permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc
+        if (
+            not user.has_permission(
+                permissions.PERMISSION_VIEW_RECORDS_RLC, for_rlc=user.rlc
+            )
+            and not user.has_permission(
+                permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc
+            )
+            and not user.is_superuser
         ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
         entries = self.get_queryset()
         paginated = self.paginate_queryset(entries)
-        data = serializers.EncryptedRecordNoDetailSerializer(
+        data = serializers.EncryptedRecordNoDetailListSerializer(
             paginated, many=True
-        ).add_has_permission(user)
+        ).data
         return self.get_paginated_response(data)
 
 
