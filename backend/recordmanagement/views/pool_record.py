@@ -44,6 +44,9 @@ class PoolRecordViewSet(viewsets.ModelViewSet):
         except:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
 
+        if PoolRecord.objects.filter(record=record, yielder=user).count() > 0:
+            raise CustomError(error_codes.ERROR__API__ALREADY_REQUESTED)
+
         try:
             record.working_on_record.get(pk=user.id)
         except:

@@ -28,7 +28,11 @@ router.register("clients", ClientsViewSet)
 router.register("record_documents", RecordDocumentViewSet)
 router.register("record_document_tags", RecordDocumentTagViewSet)
 router.register("record_permissions", RecordPermissionViewSet)
-router.register("record_deletion_requests", EncryptedRecordDeletionRequestViewSet)
+router.register(
+    "record_deletion_requests",
+    EncryptedRecordDeletionRequestViewSet,
+    basename="record_deletion_requests",
+)
 # router.register('record_deletion_requests', RecordDeletionRequestViewSet) OLD
 # encryption
 router.register("record_encryptions", RecordEncryptionViewSet)
@@ -39,6 +43,11 @@ router.register(
 router.register("pool_records", PoolRecordViewSet, basename="pool_records")
 router.register("pool_consultants", PoolConsultantViewSet)
 router.register("missing_record_keys", MissingRecordKeyViewSet)
+router.register(
+    "record_document_deletion_requests",
+    EncryptedRecordDocumentDeletionRequestViewSet,
+    basename="record_document_deletion_requests",
+)
 
 
 urlpatterns = [
@@ -83,11 +92,15 @@ urlpatterns = [
     url(
         r"process_record_deletion_request",
         EncryptedRecordDeletionProcessViewSet.as_view(),
-    ),  # OLD
+    ),
     # url(r'process_record_deletion_request', RecordDeletionProcessViewSet.as_view()),    # OLD
     # url(r'^e_upload/$', EncryptedRecordDocumentsUploadViewSet.as_view()),               # deprecated
     url(
         r"^upload/(?P<filename>[^/]+)$", RecordDocumentUploadEncryptViewSet.as_view()
     ),  # deprecated
     url(r"record_pool/$", RecordPoolViewSet.as_view()),
+    url(
+        r"process_record_document_deletion_request/$",
+        EncryptedRecordDocumentDeletionProcessViewSet.as_view(),
+    ),
 ]

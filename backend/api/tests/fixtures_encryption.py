@@ -354,6 +354,15 @@ class CreateFixtures:
         for user in with_encryption_keys:
             CreateFixtures.add_encryption_key(user, record, aes_key)
 
+        doc0 = record_models.EncryptedRecordDocument(
+            name="doc0", creator=working_on_record[0], record=record, file_size=1000,
+        )
+        doc0.save()
+        doc1 = record_models.EncryptedRecordDocument(
+            name="doc1", creator=working_on_record[0], record=record, file_size=2000,
+        )
+        doc1.save()
+
         return {"record": record, "key": aes_key}
 
     @staticmethod
