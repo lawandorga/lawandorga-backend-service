@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -89,7 +89,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "backend.static.middleware.SimpleMiddleware",
+    "backend.static.middleware.LoggingMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 

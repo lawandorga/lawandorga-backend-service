@@ -15,6 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.utils import timezone
+from rest_framework.request import Request
+from rest_framework.response import Response
 
 from backend.static.encryption import get_bytes_from_string_or_return_bytes
 from backend.api.errors import CustomError
@@ -37,23 +39,31 @@ def get_private_key_from_request(request):
     return private_key
 
 
-class SimpleMiddleware:
+class LoggingMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
         # One-time configuration and initialization.
 
-    def __call__(self, request):
+    def __call__(self, request: Request):
         # Code to be executed for each request before
         # the view (and later middleware) are called.
 
-        response = self.get_response(request)
+        response: Response = self.get_response(request)
+        print("\n")
 
-        print("logging")
+        # print("logging")
+        # print("path: " + str(request.path))
         print("path: " + str(request.path))
-        if request.user.is_authenticated:
-            print("user: " + str(request.user.id))
-            print("rlc: " + str(request.user.rlc.id))
-        print("date: " + str(timezone.now()))
+
+        if request.path.find("unread_notifications") != -1:
+            print("shouldnt log because unread")
+        else:
+            print("path: " + str(request.path))
+            if request.user.is_authenticated:
+                print("user: " + str(request.user.id))
+                print("rlc: " + str(request.user.rlc.id))
+            print("date: " + str(timezone.now()))
+            print("\n")
 
         # Code to be executed for each request/response after
         # the view is called.
