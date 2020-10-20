@@ -55,7 +55,10 @@ class EncryptedStorage:
             encrypted_filepath,
             combine_s3_folder_with_filename(s3_folder, encrypted_filename),
         )
+        # print("delete: " + encrypted_filepath)
+        # print("org file: " + filepath)
         os.remove(encrypted_filepath)
+        os.remove(filepath)
 
     @staticmethod
     def download_file_from_s3(s3_key, filename=None):

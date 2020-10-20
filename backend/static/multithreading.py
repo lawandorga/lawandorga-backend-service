@@ -23,6 +23,7 @@ from backend.static.storage_folders import (
     get_temp_storage_path,
     combine_s3_folder_with_filename,
     get_filename_from_full_path,
+    get_temp_storage_folder,
 )
 
 
@@ -65,5 +66,11 @@ class MultithreadedFileUploads:
             EncryptedStorage.encrypt_file_and_upload_to_s3(
                 local_files[i], aes_key, s3_folders[i]
             )
-        temp_folder = local_files[i][: local_files[i].index("/", 5)]
-        shutil.rmtree(temp_folder)
+        temp_folder = get_temp_storage_folder()
+        # if os.path.fi
+        file_set = set()
+        for root, dirs, files in os.walk(temp_folder):
+            for fileName in files:
+                file_set.add(os.path.join(root[len(temp_folder) :], fileName))
+        if file_set.__len__() == 0:
+            shutil.rmtree(temp_folder)

@@ -82,9 +82,13 @@ class LocalStorageManager:
         shutil.rmtree(folder_path)
 
     @staticmethod
-    def create_response_from_zip_file(zip_path):
+    def create_response_from_zip_file(zip_path: str):
         encoded_file = base64.b64encode(open(zip_path, "rb").read())
         res = Response(encoded_file, content_type="application/zip")
-        res["Content-Disposition"] = 'attachment; filename="' + zip_path + '"'
+        res["Content-Disposition"] = (
+            'attachment; filename="'
+            + zip_path.encode("ascii", "ignore").decode("ascii")
+            + '"'
+        )
         os.remove(zip_path)
         return res
