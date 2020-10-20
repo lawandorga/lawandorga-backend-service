@@ -14,22 +14,28 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from datetime import datetime
-
-import pytz
+from django.db.models import QuerySet
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.utils import timezone
 
 from backend.api.errors import CustomError
 from backend.recordmanagement import models, serializers
 from backend.static import error_codes, permissions
-from backend.api.models import UserProfile, Notification
+from backend.api.models import Notification
 
 
 class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.EncryptedRecordDeletionRequestSerializer
     queryset = models.EncryptedRecordDeletionRequest.objects.all()
+
+    def get_queryset(self) -> QuerySet:
+        if self.request.user.is_superuser:
+            return models.EncryptedRecordDeletionRequest.objects.all()
+        return models.EncryptedRecordDeletionRequest.objects.filter(
+            request_from__rlc=self.request.user.rlc
+        )
 
     def list(self, request, *args, **kwargs):
         if (
@@ -40,15 +46,9 @@ class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
             and not request.user.is_superuser
         ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-        if request.user.is_superuser:
-            queryset = models.EncryptedRecordDeletionRequest.objects.all()
-        else:
-            queryset = models.EncryptedRecordDeletionRequest.objects.filter(
-                request_from__rlc=request.user.rlc
-            )
         return Response(
             serializers.EncryptedRecordDeletionRequestSerializer(
-                queryset, many=True
+                self.get_queryset(), many=True
             ).data
         )
 
@@ -67,9 +67,7 @@ class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
             ).count()
             >= 1
         ):
-            raise CustomError(
-                error_codes.ERROR__RECORD__RECORD_DELETION__ALREADY_REQUESTED
-            )
+            raise CustomError(error_codes.ERROR__API__ALREADY_REQUESTED)
         deletion_request = models.EncryptedRecordDeletionRequest(
             request_from=request.user, record=record,
         )
@@ -116,9 +114,7 @@ class EncryptedRecordDeletionProcessViewSet(APIView):
             raise CustomError(error_codes.ERROR__API__ACTION_NOT_VALID)
 
         record_deletion_request.request_processed = user
-        record_deletion_request.processed_on = datetime.utcnow().replace(
-            tzinfo=pytz.utc
-        )
+        record_deletion_request.processed_on = timezone.now()
 
         if action == "accept":
             # if record_deletion_request.state == "re":

@@ -91,7 +91,6 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
             filepaths, record_key, directory
         )
 
-        notification_users: [UserProfile] = e_record.get_notification_users()
         e_record_documents_handled = []
         for file_information in local_file_information:
             already_existing: models.EncryptedRecordDocument = models.EncryptedRecordDocument.objects.filter(

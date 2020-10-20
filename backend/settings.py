@@ -134,7 +134,7 @@ WSGI_APPLICATION = "backend.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-if not env_true("LOCAL"):
+if not env_true("LOCAL") and "DB_NAME" in os.environ:
     # remote database
     DATABASES = {
         "default": {
@@ -166,10 +166,10 @@ USE_TZ = True
 AUTH_USER_MODEL = "api.UserProfile"
 
 # email
-if not env_true("DEV"):
+if not env_true("DEV") and "EMAIL_HOST" in os.environ:
+    EMAIL_HOST = os.environ["EMAIL_HOST"]
     DEFAULT_FROM_EMAIL = os.environ["EMAIL_ADDRESS"]
     SERVER_EMAIL = os.environ["EMAIL_ADDRESS"]
-    EMAIL_HOST = os.environ["EMAIL_HOST"]
     EMAIL_PORT = os.environ["EMAIL_PORT"]
     EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]
     EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]

@@ -15,10 +15,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 import os
-
 import boto3
-from botocore.client import Config
 from django.conf import settings
+import logging
 
 from backend.api.errors import CustomError
 from backend.static import error_codes
@@ -45,10 +44,6 @@ class EncryptedStorage:
             aws_secret_access_key=settings.SCW_SECRET_KEY,
         )
         s3_bucket = settings.SCW_S3_BUCKET_NAME
-
-        # s3_bucket = settings.SCW_S3_BUCKET_NAME
-        # session = boto3.session.Session(region_name=settings.AWS_S3_REGION_NAME)
-        # s3 = session.client("s3", config=Config(signature_version="s3v4"))
         s3.upload_file(filename, s3_bucket, key)
 
     @staticmethod
@@ -66,10 +61,6 @@ class EncryptedStorage:
     def download_file_from_s3(s3_key, filename=None):
         if not filename:
             filename = s3_key[s3_key.rindex("/") + 1 :]
-        # s3_bucket = settings.AWS_S3_BUCKET_NAME
-        # session = boto3.session.Session(region_name=settings.AWS_S3_REGION_NAME)
-        # s3 = session.client("s3", config=Config(signature_version="s3v4"))
-
         session = boto3.session.Session()
         s3 = session.client(
             service_name="s3",
@@ -116,11 +107,9 @@ class EncryptedStorage:
             aws_secret_access_key=settings.SCW_SECRET_KEY,
         )
         s3_bucket = settings.SCW_S3_BUCKET_NAME
-
-        # s3_bucket = settings.AWS_S3_BUCKET_NAME
-        # session = boto3.session.Session(region_name=settings.AWS_S3_REGION_NAME)
-        # s3 = session.client("s3", config=Config(signature_version="s3v4"))
         try:
             s3.delete_object(Bucket=s3_bucket, Key=s3_key)
         except Exception as e:
-            raise CustomError(error_codes.ERROR__API__STORAGE__DELETE__NO_SUCH_KEY)
+            logger = logging.getLogger(__name__)
+            logger.error("couldnt delete file from s3: " + s3_key)
+            # raise CustomError(error_codes.ERROR__API__STORAGE__DELETE__NO_SUCH_KEY)
