@@ -31,5 +31,5 @@ from .missing_rlc_keys import *
 from .notification_group import *
 from .notification import *
 from .user_activity_path import *
-from .user_activity import *
 from .user_session import *
+from .user_session_path import *

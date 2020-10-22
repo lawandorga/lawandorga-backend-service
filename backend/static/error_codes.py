@@ -407,3 +407,13 @@ ERROR__API__ALREADY_REQUESTED = {
     "error_detail": "already requested",
     "error_code": "api.already_requested",
 }
+
+ERROR__API__LOGGING__TOO_MANY_SESSIONS_FOUND = {
+    "error_detail": "to many logging sessions found",
+    "error_code": "api.logging.too_many_sessions_found",
+}
+
+ERROR__API__LOGGING__TOO_MANY_SESSION_PATHS_FOUND = {
+    "error_detail": "to many logging session paths found",
+    "error_code": "api.logging.too_many_session_paths_found",
+}

@@ -14,14 +14,17 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.utils import timezone
 from rest_framework.request import Request
 from rest_framework.response import Response
+from django.utils import timezone
+from datetime import timedelta
 
+from backend.api.models import UserSession
 from backend.static.encryption import get_bytes_from_string_or_return_bytes
 from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED
 from backend.static.encryption import get_string_from_bytes_or_return_string
+from backend.static.metrics import Metrics
 
 
 def get_private_key_from_request(request):
@@ -45,27 +48,25 @@ class LoggingMiddleware:
         # One-time configuration and initialization.
 
     def __call__(self, request: Request):
-        # Code to be executed for each request before
-        # the view (and later middleware) are called.
+        if request.path.find("metrics") != -1:
+            timeframe = timezone.now() - timedelta(minutes=5)
+
+            active_users = (
+                UserSession.objects.filter(end_time__gt=timeframe)
+                .values("user")
+                .distinct()
+                .count()
+            )
+            Metrics.currently_active_users.set(active_users)
 
         response: Response = self.get_response(request)
-        print("\n")
 
-        # print("logging")
-        # print("path: " + str(request.path))
-        print("path: " + str(request.path))
-
-        if request.path.find("unread_notifications") != -1:
-            print("shouldnt log because unread")
-        else:
-            print("path: " + str(request.path))
-            if request.user.is_authenticated:
-                print("user: " + str(request.user.id))
-                print("rlc: " + str(request.user.rlc.id))
-            print("date: " + str(timezone.now()))
-            print("\n")
-
-        # Code to be executed for each request/response after
-        # the view is called.
-
+        if (
+            request.path.find("unread_notifications") == -1
+            and request.path.find("login") == -1
+            and request.path.find("user_has_permissions") == -1
+        ):
+            UserSession.objects.log_user_activity(
+                request.user, str(request.path), str(request.method)
+            )
         return response

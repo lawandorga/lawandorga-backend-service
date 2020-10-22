@@ -16,7 +16,6 @@
 
 from typing import Any
 import logging
-import time
 from django.conf import settings
 from django.db.models import Q, QuerySet, Case, When, Value, IntegerField
 from rest_framework import status, viewsets
@@ -69,7 +68,7 @@ class EncryptedRecordsListViewSet(viewsets.ModelViewSet):
         if user.is_superuser or user.has_permission(
             permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc
         ):
-            queryset = queryset.annotate(access=Value(1))
+            queryset = queryset.annotate(access=Value(1, output_field=IntegerField()))
         else:
             record_ids = [single_record.id for single_record in list(queryset)]
             a = [
@@ -113,22 +112,22 @@ class EncryptedRecordsListViewSet(viewsets.ModelViewSet):
         :param request:
         :return:
         """
-        logger = logging.getLogger(__name__)
-        logger.error(
-            "nothing important but error, "
-            + str(request.user)
-            + "; "
-            + str(request.user.rlc)
-        )
-        logger.info(
-            "some information, " + str(request.user) + "; " + str(request.user.rlc)
-        )
-        logger.debug(
-            "some debug information, "
-            + str(request.user)
-            + "; "
-            + str(request.user.rlc)
-        )
+        # logger = logging.getLogger(__name__)
+        # logger.error(
+        #     "nothing important but error, "
+        #     + str(request.user)
+        #     + "; "
+        #     + str(request.user.rlc)
+        # )
+        # logger.info(
+        #     "some information, " + str(request.user) + "; " + str(request.user.rlc)
+        # )
+        # logger.debug(
+        #     "some debug information, "
+        #     + str(request.user)
+        #     + "; "
+        #     + str(request.user.rlc)
+        # )
         user = request.user
 
         if (

@@ -164,7 +164,7 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Mod
         :param record_key: record encryption key
         :return: array containing names of fields which were patched
         """
-        unpatachable_fields = self.ignore_fields()
+        unpatchable_fields = self.ignore_fields()
         unencrypted_changeable_fields = self.unencrypted_changeable_fields()
         changeable_datetime_fields = self.changeable_datetime_fields()
 
@@ -174,7 +174,7 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Mod
             if key not in self.allowed_fields():
                 raise CustomError(error_codes.ERROR__API__FIELD_NOT_ALLOWED)
 
-            if key in unpatachable_fields:
+            if key in unpatchable_fields:
                 continue
             elif key == "tagged":
                 if record_data[key].__len__() == 0:

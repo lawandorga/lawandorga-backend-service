@@ -13,10 +13,3 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
-
-
-class UserActivityPath(models.Model):
-    # "HTTP_METHOD PATH"
-    path = models.CharField(max_length=255, null=False)

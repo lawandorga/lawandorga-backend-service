@@ -14,9 +14,10 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.db import models
+from prometheus_client import Gauge, Counter
 
 
-class UserActivityPath(models.Model):
-    # "HTTP_METHOD PATH"
-    path = models.CharField(max_length=255, null=False)
+class Metrics:
+    currently_active_users = Gauge(
+        "currently_active_users", "how many users are active at the moment"
+    )
