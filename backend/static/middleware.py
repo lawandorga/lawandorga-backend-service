@@ -18,6 +18,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from django.utils import timezone
 from datetime import timedelta
+from prometheus_client import Gauge
 
 from backend.api.models import UserSession
 from backend.static.encryption import get_bytes_from_string_or_return_bytes
@@ -65,6 +66,7 @@ class LoggingMiddleware:
             request.path.find("unread_notifications") == -1
             and request.path.find("login") == -1
             and request.path.find("user_has_permissions") == -1
+            and request.path.find("metrics") == -1
         ):
             UserSession.objects.log_user_activity(
                 request.user, str(request.path), str(request.method)
