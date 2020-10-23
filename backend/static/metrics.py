@@ -21,3 +21,8 @@ class Metrics:
     currently_active_users = Gauge(
         "currently_active_users", "how many users are active at the moment"
     )
+    currently_active_users_per_rlc = Gauge(
+        "currently_active_users_per_rlc",
+        "Number of currently active users per rlc",
+        ["rlc_name"],
+    )

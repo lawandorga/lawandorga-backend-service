@@ -20,7 +20,6 @@ from datetime import timedelta
 from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.models import Rlc, UserProfile
-from backend.static.metrics import Metrics
 
 
 class UserSessionManager(models.Manager):
@@ -33,9 +32,8 @@ class UserSessionManager(models.Manager):
             pseudo_user = str(hash(str(user.id) + user.email))
             rlc = user.rlc
 
-        # print("path: " + method + " " + path + "  ; hash: " + pseudo_user)
         now = timezone.now()
-        before = now - timedelta(minutes=10)
+        before = now - timedelta(minutes=20)
 
         existing = UserSession.objects.filter(end_time__gt=before, user=pseudo_user)
         existing_count = existing.count()
@@ -48,7 +46,6 @@ class UserSessionManager(models.Manager):
                 user=pseudo_user, rlc=rlc, end_time=now, start_time=now
             )
             session.save()
-            # Metrics.currently_active_users.inc(1)
         from backend.api.models import UserSessionPath
 
         complete_path = method + " " + path

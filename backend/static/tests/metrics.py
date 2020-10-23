@@ -60,6 +60,22 @@ class MetricsTest(TransactionTestCase):
 
         return now
 
+    @staticmethod
+    def get_additional_rlc_users():
+        rlc1 = api_models.Rlc(name="testrlc1", id=3004)
+        rlc1.save()
+
+        user11 = CreateFixtures.create_user(rlc1, "user11", "ad")
+        user12 = CreateFixtures.create_user(rlc1, "user12", "ad")
+        user13 = CreateFixtures.create_user(rlc1, "user13", "ad")
+
+        rlc2 = api_models.Rlc(name="testrlc2", id=3006)
+        rlc2.save()
+        user21 = CreateFixtures.create_user(rlc2, "user21", "ad")
+        user22 = CreateFixtures.create_user(rlc2, "user22", "ad")
+
+        return [user11, user12, user13, user21, user22]
+
     def test_get_metrics(self):
         # Metrics.currently_active_users.set(3)
         response: Response = APIClient().get("/metrics")
@@ -135,3 +151,59 @@ class MetricsTest(TransactionTestCase):
 
         user_activity_paths = api_models.UserActivityPath.objects.count()
         self.assertEqual(user_activity_paths, 1)
+
+        timezone.now = MetricsTest.mock_datetime_now(1, 50, 10)
+        response: Response = APIClient().get("/metrics")
+        lines: [str] = response.content.decode("utf-8").split("\n")
+        self.assertEqual(
+            int(MetricsTest.get_value(lines, "currently_active_users")), 1,
+        )
+
+        timezone.now = MetricsTest.mock_datetime_now(1, 50, 11)
+        self.base_fixtures["users"][1]["client"].get("/api/profiles/")
+
+        timezone.now = MetricsTest.mock_datetime_now(1, 50, 12)
+        response: Response = APIClient().get("/metrics")
+        lines: [str] = response.content.decode("utf-8").split("\n")
+        self.assertEqual(
+            int(MetricsTest.get_value(lines, "currently_active_users")), 2,
+        )
+
+    def test_different_rlc_metrics(self):
+        timezone.now = MetricsTest.mock_datetime_now(1, 0)
+        self.base_fixtures["users"][0]["client"].get("/api/profiles/")
+        self.base_fixtures["users"][1]["client"].get("/api/profiles/")
+        self.base_fixtures["users"][2]["client"].get("/api/profiles/")
+        self.base_fixtures["users"][3]["client"].get("/api/profiles/")
+
+        users = MetricsTest.get_additional_rlc_users()
+        users[0]["client"].get("/api/profiles/")
+        users[1]["client"].get("/api/profiles/")
+        users[2]["client"].get("/api/profiles/")
+        users[3]["client"].get("/api/profiles/")
+        users[4]["client"].get("/api/profiles/")
+
+        timezone.now = MetricsTest.mock_datetime_now(1, 0, 3)
+        response: Response = APIClient().get("/metrics")
+        lines: [str] = response.content.decode("utf-8").split("\n")
+        self.assertEqual(
+            int(MetricsTest.get_value(lines, "currently_active_users")), 9,
+        )
+
+        timezone.now = MetricsTest.mock_datetime_now(2, 0)
+        self.base_fixtures["users"][0]["client"].get("/api/profiles/")
+        self.base_fixtures["users"][1]["client"].get("/api/profiles/")
+        self.base_fixtures["users"][2]["client"].get("/api/profiles/")
+        users[0]["client"].get("/api/profiles/")
+        users[1]["client"].get("/api/profiles/")
+        users[3]["client"].get("/api/profiles/")
+
+        timezone.now = MetricsTest.mock_datetime_now(2, 0, 3)
+        response: Response = APIClient().get("/metrics")
+        lines: [str] = response.content.decode("utf-8").split("\n")
+        self.assertEqual(
+            int(MetricsTest.get_value(lines, "currently_active_users")), 6,
+        )
+
+        # a = int(MetricsTest.get_value(lines, "currently_active_users_per_rlc"))
+        # b = 1
