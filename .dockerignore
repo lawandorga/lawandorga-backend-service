@@ -17,3 +17,4 @@ data/
 .DS_Store
 .editorconfig
 test_runner.py
+configs
