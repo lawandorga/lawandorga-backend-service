@@ -1,5 +1,5 @@
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -14,22 +14,15 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from .permission import *
-from .has_permission import *
-from .user import *
-from .group import *
-from .rlc import *
-from .language import *
-from .forgot_password import *
-from .new_user_request import *
-from .user_activation_link import *
-from .user_encryption_keys import *
-from .rlc_encryption_keys import *
-from .users_rlc_keys import *
-from .rlc_settings import *
-from .missing_rlc_keys import *
-from .notification_group import *
-from .notification import *
-from .user_activity_path import *
-from .user_session import *
-from .user_session_path import *
+from prometheus_client import Gauge, Counter
+
+
+class Metrics:
+    currently_active_users = Gauge(
+        "currently_active_users", "how many users are active at the moment"
+    )
+    currently_active_users_per_rlc = Gauge(
+        "currently_active_users_per_rlc",
+        "Number of currently active users per rlc",
+        ["rlc_name"],
+    )
