@@ -189,43 +189,24 @@ STATICFILES_LOCATION = "static"
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 STATIC_URL = "/static/"
 
-# TODO: delete cors? routed through nginx -> no cross site
-CORS_ORIGIN_ALLOW_ALL = True  # TODO: remove this, don't even have cors enabled?
-# CORS_ORIGIN_WHITELIST = [
-#     # prod
-#     "https://law-orga.de",
-#     "http://law-orga.de",
-#     "http://www.law-orga.de",
-#     "https://www.law-orga.de",
-#     "https://d1g37iqegvaqxr.cloudfront.net",
-#     # local
-#     "http://127.0.0.1:3000",
-#     "http://127.0.0.1:3001",
-#     "http://localhost:3000",
-#     "http://localhost:3001",
-#     # dev
-#     "https://d7pmzq2neb57w.cloudfront.net",
-#     # test
-#     "https://d33cushiywgecu.cloudfront.net",
-# ]
-# CORS_ALLOWED_ORIGINS = [
-#     # prod
-#     "https://law-orga.de",
-#     "http://law-orga.de",
-#     "http://www.law-orga.de",
-#     "https://www.law-orga.de",
-#     "https://d1g37iqegvaqxr.cloudfront.net",
-#     # local
-#     "http://127.0.0.1:3000",
-#     "http://127.0.0.1:3001",
-#     "http://localhost:3000",
-#     "http://localhost:3001",
-#     # dev
-#     "https://d7pmzq2neb57w.cloudfront.net",
-#     "https://d7pmzq2neb57w.cloudfront.net/",
-#     # test
-#     "https://d33cushiywgecu.cloudfront.net",
-# ]
+CORS_ALLOWED_ORIGINS = [
+    # prod
+    "https://law-orga.de",
+    "http://law-orga.de",
+    "http://www.law-orga.de",
+    "https://www.law-orga.de",
+    "https://d1g37iqegvaqxr.cloudfront.net",
+    # local
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "http://localhost:3000",
+    "http://localhost:3001",
+    # dev
+    "https://d7pmzq2neb57w.cloudfront.net",
+    "https://d7pmzq2neb57w.cloudfront.net/",
+    # test
+    "https://d33cushiywgecu.cloudfront.net",
+]
 
 CORS_ALLOW_HEADERS = [
     "accept",
