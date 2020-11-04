@@ -220,35 +220,38 @@ CORS_ALLOW_HEADERS = [
     "private-key",
 ]
 
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {"simple": {"format": "%(levelname)s %(message)s"},},
     "handlers": {
         "console": {
-            "level": "DEBUG",
+            "level": os.environ.get("LOG_LEVEL", "ERROR"),
             "class": "logging.StreamHandler",
             "formatter": "simple",
         },
         "logstash": {
-            "level": "DEBUG",
+            "level": os.environ.get("LOG_LEVEL", "ERROR"),
             "class": "logstash.TCPLogstashHandler",
             "host": "logstash",
             "port": 5959,
             "version": 1,
             "message_type": "django",
             "fqdn": False,
-            "tags": ["django.request", "django", "root",],
+            "tags": ["django.request", "django", "backend"],
             "formatter": "simple",
         },
     },
     "loggers": {
         "django.request": {
             "handlers": ["logstash"],
-            "level": "DEBUG",
+            "level": os.environ.get("LOG_LEVEL", "ERROR"),
             "propagate": True,
         },
-        "backend": {"handlers": ["console", "logstash"], "propagate": True,},
+        "backend": {
+            "handlers": ["console", "logstash"],
+            "level": os.environ.get("LOG_LEVEL", "ERROR"),
+            "propagate": True,
+        },
     },
 }
