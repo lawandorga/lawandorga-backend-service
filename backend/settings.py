@@ -240,44 +240,35 @@ CORS_ALLOW_HEADERS = [
     "private-key",
 ]
 
-import logging.config
-from logging.handlers import SysLogHandler
 
-LOGGING_CONFIG = None
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {
-        "standard": {
-            "format": "[YOUR PROJECT NAME] [%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            "datefmt": "%d/%b/%Y %H:%M:%S",
-        }
-    },
+    "formatters": {"simple": {"format": "%(levelname)s %(message)s"},},
     "handlers": {
-        "console": {"class": "logging.StreamHandler",},
-        "syslog": {
-            "class": "logging.handlers.SysLogHandler",
-            "formatter": "standard",
-            "facility": "user",
-            # uncomment next line if rsyslog works with unix socket only (UDP reception disabled)
-            #'address': '/dev/log'
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "logstash": {
+            "level": "DEBUG",
+            "class": "logstash.TCPLogstashHandler",
+            "host": "logstash",
+            "port": 5959,
+            "version": 1,
+            "message_type": "django",
+            "fqdn": False,
+            "tags": ["django.request", "django", "root",],
+            "formatter": "simple",
         },
     },
     "loggers": {
-        "django": {
-            "handlers": ["syslog"],
-            "level": "INFO",
-            "disabled": False,
+        "django.request": {
+            "handlers": ["logstash"],
+            "level": "DEBUG",
             "propagate": True,
         },
-        "django.server": {"handlers": ["syslog"], "level": "INFO", "disabled": False},
+        "backend": {"handlers": ["console", "logstash"], "propagate": True,},
     },
 }
-MY_LOGGERS = {}
-for app in INSTALLED_APPS:
-    MY_LOGGERS[app] = {
-        "handlers": ["syslog"],
-        "level": "INFO",
-        "propagate": True,
-    }
-LOGGING["loggers"].update(MY_LOGGERS)

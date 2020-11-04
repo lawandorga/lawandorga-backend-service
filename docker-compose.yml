@@ -12,7 +12,8 @@ services:
             - 8001
         env_file:
             - ./environments/web.test.env
-        image: jehob/law-orga-backend:0.2
+        image: jehob/law-orga-backend:test
+        # image: jehob/law-orga-backend:latest
 
     nginx:
         image: nginx:1.19.0-alpine
@@ -144,7 +145,9 @@ services:
         environment:
             - LOGSPOUT=ignore
             - TIMESCALE=ignore
-            # - STDOUT=true
+            - STDOUT=true
+        expose:
+            - 5959
         links:
             - elasticsearch
         depends_on:
