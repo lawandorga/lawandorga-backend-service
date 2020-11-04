@@ -203,7 +203,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3001",
     # dev
     "https://d7pmzq2neb57w.cloudfront.net",
-    "https://d7pmzq2neb57w.cloudfront.net/",
     # test
     "https://d33cushiywgecu.cloudfront.net",
 ]
