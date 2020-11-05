@@ -57,6 +57,8 @@ class EncryptedStorage:
         )
         # print("delete: " + encrypted_filepath)
         # print("org file: " + filepath)
+        logger = logging.getLogger(__name__)
+        logger.error("logger, error: org file to delete")
         os.remove(encrypted_filepath)
         os.remove(filepath)
 

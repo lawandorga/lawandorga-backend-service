@@ -31,6 +31,7 @@ class LocalStorageManager:
         """
         saves files in temp local storage and returns filepaths and file_names
         :param files: InMemoryObjects
+        :param paths:
         :return:
         """
         # local_file_paths = []

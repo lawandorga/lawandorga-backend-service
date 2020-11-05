@@ -317,7 +317,10 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
         except:
             pass
         for file in files_in_folder:
-            file.download(aes_key, os.path.join(local_path, self.name))
+            try:
+                file.download(aes_key, os.path.join(local_path, self.name))
+            except Exception as e:
+                pass
         for child in self.child_folders.all():
             child.download_folder(aes_key, os.path.join(local_path, self.name))
 

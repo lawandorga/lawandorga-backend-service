@@ -77,7 +77,6 @@ class File(ExportModelOperationsMixin("file"), models.Model):
         EncryptedStorage.download_from_s3_and_decrypt_file(
             self.get_file_key() + ".enc", aes_key, local_destination_folder
         )
-        # EncryptedStorage.download_file_from_s3(self.get_file_key(), os.path.join(local_destination_folder, self.name + '.enc'))
 
     @staticmethod
     def create_or_update(file):
@@ -94,6 +93,11 @@ class File(ExportModelOperationsMixin("file"), models.Model):
 
     @staticmethod
     def create_or_duplicate(file):
+        """
+        created file, check if file with same name already existing, if yes, create "file(x)"
+        :param file:
+        :return:
+        """
         try:
             File.objects.get(folder=file.folder, name=file.name)
         except:

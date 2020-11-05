@@ -14,14 +14,13 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+import logging
 from rest_framework.views import APIView
 
 from backend.files.models import Folder, File
 from backend.static.storage_folders import get_temp_storage_folder
 from backend.static.storage_management import LocalStorageManager
 from backend.static.middleware import get_private_key_from_request
-from backend.api.errors import CustomError
-from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 
 
 class DownloadViewSet(APIView):
@@ -34,17 +33,24 @@ class DownloadViewSet(APIView):
         if request_path == "":
             request_path = "root"
         root_folder_name = get_temp_storage_folder() + "/" + request_path
+
+        not_existing = []
+
         for entry in entries:
             if entry["type"] == 1:
                 # file
                 file = File.objects.get(pk=entry["id"])
                 if file.folder.user_has_permission_read(request.user):
-                    file.download(aes_key, root_folder_name)
+                    try:
+                        file.download(aes_key, root_folder_name)
+                    except Exception as e:
+                        logger = logging.getLogger(__name__)
+                        logger.error("file couldn't be downloaded")
             else:
                 folder = Folder.objects.get(pk=entry["id"])
                 if folder.user_has_permission_read(request.user):
                     folder.download_folder(aes_key, root_folder_name)
-
+        # TODO: check if folder empty
         LocalStorageManager.zip_folder_and_delete(root_folder_name, root_folder_name)
         return LocalStorageManager.create_response_from_zip_file(
             get_temp_storage_folder() + "/" + request_path + ".zip"

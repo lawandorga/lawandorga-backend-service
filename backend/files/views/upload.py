@@ -47,7 +47,6 @@ class UploadViewSet(APIView):
 
         s3_paths = []
         for file_info in file_information:
-            # TODO: remove temp from local-file-paths at folder creation
             folder = Folder.create_folders_for_file_path(
                 root_folder, file_info["local_file_path"][5:], user
             )
@@ -59,7 +58,7 @@ class UploadViewSet(APIView):
                 last_editor=user,
             )
             file = File.create_or_duplicate(new_file)
-            if file.name != file_info["file_name"]:
+            if file.name != file_info["file_name"]:  # check if rename happened
                 import os
 
                 local_file_path = file_info["local_file_path"]

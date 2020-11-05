@@ -71,7 +71,7 @@ class EncryptedRecordsListViewSet(viewsets.ModelViewSet):
             queryset = queryset.annotate(access=Value(1, output_field=IntegerField()))
         else:
             record_ids = [single_record.id for single_record in list(queryset)]
-            a = [
+            from_record_permissions = [
                 record_permission.record.id
                 for record_permission in list(
                     models.EncryptedRecordPermission.objects.filter(
@@ -79,13 +79,15 @@ class EncryptedRecordsListViewSet(viewsets.ModelViewSet):
                     )
                 )
             ]
-            b = [
+            from_working_on = [
                 record.id
                 for record in list(user.working_on_e_record.filter(id__in=record_ids))
             ]
             queryset = queryset.annotate(
                 access=Case(
-                    When(id__in=a + b, then=Value(1)),
+                    When(
+                        id__in=from_record_permissions + from_working_on, then=Value(1)
+                    ),
                     default=Value(0),
                     output_field=IntegerField(),
                 )
@@ -112,23 +114,22 @@ class EncryptedRecordsListViewSet(viewsets.ModelViewSet):
         :param request:
         :return:
         """
-        logger = logging.getLogger(__name__)
-        logger.setLevel(logging.DEBUG)
-        logger.debug(
-            "some debug information, "
-            + str(request.user)
-            + "; "
-            + str(request.user.rlc)
-        )
-        logger.info(
-            "some information, " + str(request.user) + "; " + str(request.user.rlc)
-        )
-        logger.error(
-            "nothing important but error, "
-            + str(request.user)
-            + "; "
-            + str(request.user.rlc)
-        )
+        # logger = logging.getLogger(__name__)
+        # logger.debug(
+        #     "some debug information, "
+        #     + str(request.user)
+        #     + "; "
+        #     + str(request.user.rlc)
+        # )
+        # logger.info(
+        #     "some information, " + str(request.user) + "; " + str(request.user.rlc)
+        # )
+        # logger.error(
+        #     "nothing important but error, "
+        #     + str(request.user)
+        #     + "; "
+        #     + str(request.user.rlc)
+        # )
 
         user = request.user
 
