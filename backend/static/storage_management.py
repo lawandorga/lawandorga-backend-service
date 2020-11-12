@@ -93,3 +93,12 @@ class LocalStorageManager:
         )
         os.remove(zip_path)
         return res
+
+    @staticmethod
+    def get_all_files_in_folder(folder_path: str) -> set:
+        files_set = set()
+        for root, dirs, files in os.walk(folder_path):
+            for fileName in files:
+                if fileName != ".DS_STORE":
+                    files_set.add(os.path.join(root[len(folder_path) :], fileName))
+        return files_set

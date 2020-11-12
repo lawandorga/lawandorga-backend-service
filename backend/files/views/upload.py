@@ -58,6 +58,7 @@ class UploadViewSet(APIView):
                 last_editor=user,
             )
             file = File.create_or_duplicate(new_file)
+            file_info["file_object"] = file
             if file.name != file_info["file_name"]:  # check if rename happened
                 import os
 
@@ -69,8 +70,9 @@ class UploadViewSet(APIView):
             s3_paths.append(folder.get_file_key())
 
         filepaths = [n["local_file_path"] for n in file_information]
+        file_objects = [n["file_object"] for n in file_information]
         MultithreadedFileUploads.encrypt_files_and_upload_to_s3(
-            filepaths, s3_paths, aes_key
+            filepaths, s3_paths, file_objects, aes_key
         )
 
         return Response({})

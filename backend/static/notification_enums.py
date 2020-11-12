@@ -77,6 +77,8 @@ class NotificationType(Enum):
     GROUP__ADDED_ME = "GROUP__ADDED_ME"
     GROUP__REMOVED_ME = "GROUP__REMOVED_ME"
 
+    FILE__UPLOAD_ERROR = "FILE__UPLOAD_ERROR"
+
     @classmethod
     def choices(cls):
         return [(key.value, key.name) for key in cls]

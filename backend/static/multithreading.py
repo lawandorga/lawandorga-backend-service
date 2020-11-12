@@ -16,9 +16,13 @@
 
 import os
 import shutil
+import logging
 from threading import Thread
 
+from backend.api.models import Notification
+from backend.files.models import File
 from backend.static.encrypted_storage import EncryptedStorage
+from backend.static.storage_management import LocalStorageManager
 from backend.static.storage_folders import (
     get_temp_storage_path,
     combine_s3_folder_with_filename,
@@ -61,16 +65,42 @@ class MultithreadedFileUploads:
 
     @staticmethod
     @start_new_thread
-    def encrypt_files_and_upload_to_s3(local_files, s3_folders, aes_key):
+    def encrypt_files_and_upload_to_s3(
+        local_files: [str], s3_folders: [str], file_objects: [File], aes_key: str
+    ):
+        temp_folder = get_temp_storage_folder()
+
         for i in range(local_files.__len__()):
-            EncryptedStorage.encrypt_file_and_upload_to_s3(
+            (
+                encrypted_filepath,
+                encrypted_filename,
+            ) = EncryptedStorage.encrypt_file_and_upload_to_s3(
                 local_files[i], aes_key, s3_folders[i]
             )
-        temp_folder = get_temp_storage_folder()
-        # if os.path.fi
-        file_set = set()
-        for root, dirs, files in os.walk(temp_folder):
-            for fileName in files:
-                file_set.add(os.path.join(root[len(temp_folder) :], fileName))
-        if file_set.__len__() == 0:
+
+            if not EncryptedStorage.file_exists_on_s3(
+                encrypted_filename, s3_folders[i]
+            ):
+                EncryptedStorage.upload_file_to_s3(
+                    encrypted_filepath,
+                    combine_s3_folder_with_filename(s3_folders[i], encrypted_filename),
+                )
+                # check if download was successful now, if not, delete model
+                if not EncryptedStorage.file_exists_on_s3(
+                    encrypted_filename, s3_folders[i]
+                ):
+                    logger = logging.getLogger(__name__)
+                    logger.info(
+                        "second upload of file failed, deleting model: " + str()
+                    )
+                    Notification.objects.notify_file_upload_error(file_objects[i])
+                    file_objects[i].delete()
+
+        # if uploaded, delete local and check folders
+        for file in local_files:
+            os.remove(file)
+            os.remove(file + ".enc")
+
+        file_set: set = LocalStorageManager.get_all_files_in_folder(temp_folder)
+        if file_set.__len__() == 0:  # TODO:  else?
             shutil.rmtree(temp_folder)

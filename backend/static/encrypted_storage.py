@@ -47,20 +47,52 @@ class EncryptedStorage:
         s3.upload_file(filename, s3_bucket, key)
 
     @staticmethod
-    def encrypt_file_and_upload_to_s3(filepath, aes_key, s3_folder):
+    def encrypt_file_and_upload_to_s3(
+        local_filepath: str, aes_key: str, s3_folder: str
+    ) -> (str, str):
+        """
+        encrypts file on local filesystem and uploads it to s3
+        :param local_filepath: local filepath
+        :param aes_key: encryption key for encrypting the file
+        :param s3_folder: s3 folder to upload to
+        :return: encrypted filepath and encrypted filename
+        """
+        logger = logging.getLogger(__name__)
+
         encrypted_filepath, encrypted_filename = AESEncryption.encrypt_file(
-            filepath, aes_key
+            local_filepath, aes_key
         )
+        logger.debug("file encrypted: " + str(local_filepath))
+
         EncryptedStorage.upload_file_to_s3(
             encrypted_filepath,
             combine_s3_folder_with_filename(s3_folder, encrypted_filename),
         )
-        # print("delete: " + encrypted_filepath)
-        # print("org file: " + filepath)
+        logger.debug("file uploaded to: " + str(s3_folder) + str(encrypted_filename))
+        logger.info("file encrypted and uploaded to s3: " + local_filepath)
+        return encrypted_filepath, encrypted_filename
+
+    @staticmethod
+    def file_exists_on_s3(filepath: str, s3_folder: str) -> bool:
         logger = logging.getLogger(__name__)
-        logger.error("logger, error: org file to delete")
-        os.remove(encrypted_filepath)
-        os.remove(filepath)
+        try:
+            session = boto3.session.Session()
+            s3 = session.client(
+                service_name="s3",
+                region_name="fr-par",
+                use_ssl=True,
+                endpoint_url="http://s3.fr-par.scw.cloud",
+                aws_access_key_id=settings.SCW_ACCESS_KEY,
+                aws_secret_access_key=settings.SCW_SECRET_KEY,
+            )
+            s3.get_object(
+                Bucket=settings.SCW_S3_BUCKET_NAME,
+                Key=s3_folder + filepath[filepath.rindex("/") + 1 :],
+            )
+        except Exception as e:
+            logger.info("file does not exist on s3: " + filepath)
+            return False
+        return True
 
     @staticmethod
     def download_file_from_s3(s3_key, filename=None):
