@@ -52,11 +52,22 @@ class File(ExportModelOperationsMixin("file"), models.Model):
     def __str__(self):
         return "file: " + self.get_file_key()
 
-    def get_file_key(self):
+    def get_file_key(self) -> str:
+        """
+
+        :return: full file-key (absolute path on s3)
+        """
         return self.folder.get_file_key() + self.name
 
+    def get_encrypted_file_key(self) -> str:
+        """
+
+        :return:
+        """
+        return self.get_file_key() + ".enc"
+
     def delete_on_cloud(self):
-        EncryptedStorage.delete_on_s3(self.get_file_key() + ".enc")
+        EncryptedStorage.delete_on_s3(self.get_encrypted_file_key())
 
     @receiver(pre_delete)
     def pre_deletion(sender, instance, **kwargs):
@@ -75,8 +86,11 @@ class File(ExportModelOperationsMixin("file"), models.Model):
 
     def download(self, aes_key, local_destination_folder):
         EncryptedStorage.download_from_s3_and_decrypt_file(
-            self.get_file_key() + ".enc", aes_key, local_destination_folder
+            self.get_encrypted_file_key(), aes_key, local_destination_folder
         )
+
+    def exists_on_s3(self) -> bool:
+        return EncryptedStorage.file_exists(self.get_encrypted_file_key())
 
     @staticmethod
     def create_or_update(file):

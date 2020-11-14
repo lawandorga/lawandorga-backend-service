@@ -16,6 +16,7 @@
 
 import os
 import boto3
+from botocore.client import BaseClient
 from django.conf import settings
 import logging
 
@@ -27,15 +28,9 @@ from backend.static.storage_folders import combine_s3_folder_with_filename
 
 class EncryptedStorage:
     @staticmethod
-    def upload_file_to_s3(filename, key):
-        """
-
-        :param filename: file which should get uploaded
-        :param key: the key of the uploaded file
-        :return: -
-        """
+    def get_s3_client() -> BaseClient:
         session = boto3.session.Session()
-        s3 = session.client(
+        return session.client(
             service_name="s3",
             region_name="fr-par",
             use_ssl=True,
@@ -43,8 +38,17 @@ class EncryptedStorage:
             aws_access_key_id=settings.SCW_ACCESS_KEY,
             aws_secret_access_key=settings.SCW_SECRET_KEY,
         )
-        s3_bucket = settings.SCW_S3_BUCKET_NAME
-        s3.upload_file(filename, s3_bucket, key)
+
+    @staticmethod
+    def upload_file_to_s3(filename, key):
+        """
+
+        :param filename: file which should get uploaded
+        :param key: the key of the uploaded file
+        :return: -
+        """
+        s3: BaseClient = EncryptedStorage.get_s3_client()
+        s3.upload_file(filename, settings.SCW_S3_BUCKET_NAME, key)
 
     @staticmethod
     def encrypt_file_and_upload_to_s3(
@@ -73,24 +77,15 @@ class EncryptedStorage:
         return encrypted_filepath, encrypted_filename
 
     @staticmethod
-    def file_exists_on_s3(filepath: str, s3_folder: str) -> bool:
+    def file_exists(s3_key: str) -> bool:
         logger = logging.getLogger(__name__)
         try:
-            session = boto3.session.Session()
-            s3 = session.client(
-                service_name="s3",
-                region_name="fr-par",
-                use_ssl=True,
-                endpoint_url="http://s3.fr-par.scw.cloud",
-                aws_access_key_id=settings.SCW_ACCESS_KEY,
-                aws_secret_access_key=settings.SCW_SECRET_KEY,
-            )
+            s3: BaseClient = EncryptedStorage.get_s3_client()
             s3.get_object(
-                Bucket=settings.SCW_S3_BUCKET_NAME,
-                Key=s3_folder + filepath[filepath.rindex("/") + 1 :],
+                Bucket=settings.SCW_S3_BUCKET_NAME, Key=s3_key,
             )
         except Exception as e:
-            logger.info("file does not exist on s3: " + filepath)
+            logger.info("file does not exist on s3: " + s3_key)
             return False
         return True
 
@@ -98,25 +93,14 @@ class EncryptedStorage:
     def download_file_from_s3(s3_key, filename=None):
         if not filename:
             filename = s3_key[s3_key.rindex("/") + 1 :]
-        session = boto3.session.Session()
-        s3 = session.client(
-            service_name="s3",
-            region_name="fr-par",
-            use_ssl=True,
-            endpoint_url="http://s3.fr-par.scw.cloud",
-            aws_access_key_id=settings.SCW_ACCESS_KEY,
-            aws_secret_access_key=settings.SCW_SECRET_KEY,
-        )
-        s3_bucket = settings.SCW_S3_BUCKET_NAME
-
-        import os
+        s3: BaseClient = EncryptedStorage.get_s3_client()
 
         try:
             os.makedirs(filename[: filename.rindex("/") + 1])
         except:
             pass
         try:
-            s3.download_file(s3_bucket, s3_key, filename)
+            s3.download_file(settings.SCW_S3_BUCKET_NAME, s3_key, filename)
         except Exception as e:
             raise CustomError(error_codes.ERROR__API__DOWNLOAD__NO_SUCH_KEY)
 
@@ -134,18 +118,9 @@ class EncryptedStorage:
 
     @staticmethod
     def delete_on_s3(s3_key):
-        session = boto3.session.Session()
-        s3 = session.client(
-            service_name="s3",
-            region_name="fr-par",
-            use_ssl=True,
-            endpoint_url="http://s3.fr-par.scw.cloud",
-            aws_access_key_id=settings.SCW_ACCESS_KEY,
-            aws_secret_access_key=settings.SCW_SECRET_KEY,
-        )
-        s3_bucket = settings.SCW_S3_BUCKET_NAME
+        s3: BaseClient = EncryptedStorage.get_s3_client()
         try:
-            s3.delete_object(Bucket=s3_bucket, Key=s3_key)
+            s3.delete_object(Bucket=settings.SCW_S3_BUCKET_NAME, Key=s3_key)
         except Exception as e:
             logger = logging.getLogger(__name__)
             logger.error("couldnt delete file from s3: " + s3_key)

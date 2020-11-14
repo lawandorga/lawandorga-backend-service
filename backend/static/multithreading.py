@@ -77,21 +77,17 @@ class MultithreadedFileUploads:
             ) = EncryptedStorage.encrypt_file_and_upload_to_s3(
                 local_files[i], aes_key, s3_folders[i]
             )
-
-            if not EncryptedStorage.file_exists_on_s3(
-                encrypted_filename, s3_folders[i]
-            ):
+            if not file_objects[i].exists_on_s3():
                 EncryptedStorage.upload_file_to_s3(
                     encrypted_filepath,
                     combine_s3_folder_with_filename(s3_folders[i], encrypted_filename),
                 )
                 # check if download was successful now, if not, delete model
-                if not EncryptedStorage.file_exists_on_s3(
-                    encrypted_filename, s3_folders[i]
-                ):
+                if not file_objects[i].exists_on_s3():
                     logger = logging.getLogger(__name__)
-                    logger.info(
-                        "second upload of file failed, deleting model: " + str()
+                    logger.error(
+                        "second upload of file failed, deleting model: "
+                        + file_objects[i].name
                     )
                     Notification.objects.notify_file_upload_error(file_objects[i])
                     file_objects[i].delete()
