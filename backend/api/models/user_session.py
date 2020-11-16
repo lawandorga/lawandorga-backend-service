@@ -18,8 +18,8 @@ from django.db import models
 from django.utils import timezone
 from datetime import timedelta
 from django_prometheus.models import ExportModelOperationsMixin
-import logging
 
+from backend.static.logger import Logger
 from backend.api.models import Rlc, UserProfile
 
 
@@ -50,9 +50,7 @@ class UserSessionManager(models.Manager):
         from backend.api.models import UserSessionPath
 
         complete_path = method + " " + path
-
-        logger = logging.getLogger(__name__)
-        logger.debug("logging complete path: " + complete_path)
+        Logger.debug("logging complete path: " + complete_path)
         UserSessionPath.objects.log_path(session=session, path=complete_path)
 
 

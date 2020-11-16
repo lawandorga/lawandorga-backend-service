@@ -114,23 +114,6 @@ class EncryptedRecordsListViewSet(viewsets.ModelViewSet):
         :param request:
         :return:
         """
-        # logger = logging.getLogger(__name__)
-        # logger.debug(
-        #     "some debug information, "
-        #     + str(request.user)
-        #     + "; "
-        #     + str(request.user.rlc)
-        # )
-        # logger.info(
-        #     "some information, " + str(request.user) + "; " + str(request.user.rlc)
-        # )
-        # logger.error(
-        #     "nothing important but error, "
-        #     + str(request.user)
-        #     + "; "
-        #     + str(request.user.rlc)
-        # )
-
         user = request.user
 
         if (

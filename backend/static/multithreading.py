@@ -16,7 +16,6 @@
 
 import os
 import shutil
-import logging
 from threading import Thread
 
 from backend.api.models import Notification
@@ -24,11 +23,10 @@ from backend.files.models import File
 from backend.static.encrypted_storage import EncryptedStorage
 from backend.static.storage_management import LocalStorageManager
 from backend.static.storage_folders import (
-    get_temp_storage_path,
     combine_s3_folder_with_filename,
-    get_filename_from_full_path,
     get_temp_storage_folder,
 )
+from backend.static.logger import Logger
 
 
 def start_new_thread(function):
@@ -84,8 +82,7 @@ class MultithreadedFileUploads:
                 )
                 # check if download was successful now, if not, delete model
                 if not file_objects[i].exists_on_s3():
-                    logger = logging.getLogger(__name__)
-                    logger.error(
+                    Logger.error(
                         "second upload of file failed, deleting model: "
                         + file_objects[i].name
                     )

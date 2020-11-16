@@ -21,6 +21,7 @@ from backend.files.models import Folder, File
 from backend.static.storage_folders import get_temp_storage_folder
 from backend.static.storage_management import LocalStorageManager
 from backend.static.middleware import get_private_key_from_request
+from backend.static.logger import Logger
 
 
 class DownloadViewSet(APIView):
@@ -44,8 +45,7 @@ class DownloadViewSet(APIView):
                     try:
                         file.download(aes_key, root_folder_name)
                     except Exception as e:
-                        logger = logging.getLogger(__name__)
-                        logger.error("file couldn't be downloaded")
+                        Logger.error("file couldn't be downloaded")
             else:
                 folder = Folder.objects.get(pk=entry["id"])
                 if folder.user_has_permission_read(request.user):

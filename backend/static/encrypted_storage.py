@@ -18,12 +18,12 @@ import os
 import boto3
 from botocore.client import BaseClient
 from django.conf import settings
-import logging
 
 from backend.api.errors import CustomError
 from backend.static import error_codes
 from backend.static.encryption import AESEncryption
 from backend.static.storage_folders import combine_s3_folder_with_filename
+from backend.static.logger import Logger
 
 
 class EncryptedStorage:
@@ -61,31 +61,29 @@ class EncryptedStorage:
         :param s3_folder: s3 folder to upload to
         :return: encrypted filepath and encrypted filename
         """
-        logger = logging.getLogger(__name__)
 
         encrypted_filepath, encrypted_filename = AESEncryption.encrypt_file(
             local_filepath, aes_key
         )
-        logger.debug("file encrypted: " + str(local_filepath))
+        Logger.debug("file encrypted: " + str(local_filepath))
 
         EncryptedStorage.upload_file_to_s3(
             encrypted_filepath,
             combine_s3_folder_with_filename(s3_folder, encrypted_filename),
         )
-        logger.debug("file uploaded to: " + str(s3_folder) + str(encrypted_filename))
-        logger.info("file encrypted and uploaded to s3: " + local_filepath)
+        Logger.debug("file uploaded to: " + str(s3_folder) + str(encrypted_filename))
+        Logger.info("file encrypted and uploaded to s3: " + local_filepath)
         return encrypted_filepath, encrypted_filename
 
     @staticmethod
     def file_exists(s3_key: str) -> bool:
-        logger = logging.getLogger(__name__)
         try:
             s3: BaseClient = EncryptedStorage.get_s3_client()
             s3.get_object(
                 Bucket=settings.SCW_S3_BUCKET_NAME, Key=s3_key,
             )
         except Exception as e:
-            logger.info("file does not exist on s3: " + s3_key)
+            Logger.info("file does not exist on s3: " + s3_key)
             return False
         return True
 
@@ -122,6 +120,5 @@ class EncryptedStorage:
         try:
             s3.delete_object(Bucket=settings.SCW_S3_BUCKET_NAME, Key=s3_key)
         except Exception as e:
-            logger = logging.getLogger(__name__)
-            logger.error("couldnt delete file from s3: " + s3_key)
+            Logger.error("couldnt delete file from s3: " + s3_key)
             # raise CustomError(error_codes.ERROR__API__STORAGE__DELETE__NO_SUCH_KEY)
