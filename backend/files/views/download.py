@@ -14,18 +14,20 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import logging
+from rest_framework.request import Request
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from backend.api.errors import CustomError
 from backend.files.models import Folder, File
 from backend.static.storage_folders import get_temp_storage_folder
 from backend.static.storage_management import LocalStorageManager
 from backend.static.middleware import get_private_key_from_request
-from backend.static.logger import Logger
+from backend.static.error_codes import ERROR__FILES__FOLDER__CONTENT_DIDNT_EXIST
 
 
 class DownloadViewSet(APIView):
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         users_private_key = get_private_key_from_request(request)
         aes_key = request.user.get_rlcs_aes_key(users_private_key)
 
@@ -35,22 +37,21 @@ class DownloadViewSet(APIView):
             request_path = "root"
         root_folder_name = get_temp_storage_folder() + "/" + request_path
 
-        not_existing = []
-
         for entry in entries:
+            # file
             if entry["type"] == 1:
-                # file
                 file = File.objects.get(pk=entry["id"])
                 if file.folder.user_has_permission_read(request.user):
-                    try:
-                        file.download(aes_key, root_folder_name)
-                    except Exception as e:
-                        Logger.error("file couldn't be downloaded")
+                    file.download(aes_key, root_folder_name)
+            # folder
             else:
                 folder = Folder.objects.get(pk=entry["id"])
                 if folder.user_has_permission_read(request.user):
                     folder.download_folder(aes_key, root_folder_name)
-        # TODO: check if folder empty
+        if LocalStorageManager.delete_folder_if_empty(root_folder_name):
+            LocalStorageManager.delete_folder_if_empty(get_temp_storage_folder())
+            raise CustomError(ERROR__FILES__FOLDER__CONTENT_DIDNT_EXIST)
+
         LocalStorageManager.zip_folder_and_delete(root_folder_name, root_folder_name)
         return LocalStorageManager.create_response_from_zip_file(
             get_temp_storage_folder() + "/" + request_path + ".zip"

@@ -47,8 +47,6 @@ class UploadViewSet(APIView):
 
         s3_paths = []
         for file_info in file_information:
-            b = file_info["local_file_path"]
-            a = file_info["local_file_path"][5:]
             folder = Folder.create_folders_for_file_path(
                 root_folder, file_info["local_file_path"][5:], user
             )
@@ -76,5 +74,4 @@ class UploadViewSet(APIView):
         MultithreadedFileUploads.encrypt_files_and_upload_to_s3(
             filepaths, s3_paths, file_objects, aes_key
         )
-
-        return Response({})
+        return Response({"success": True})

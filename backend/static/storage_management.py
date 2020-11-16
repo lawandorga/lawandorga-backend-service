@@ -27,6 +27,38 @@ from backend.static.storage_folders import (
 
 class LocalStorageManager:
     @staticmethod
+    def delete_file(file_path: str):
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+    @staticmethod
+    def delete_file_and_enc(file_path: str):
+        LocalStorageManager.delete_file(file_path)
+        LocalStorageManager.delete_file(file_path + ".enc")
+
+    @staticmethod
+    def folder_empty(local_folder_path: str) -> bool:
+        """
+        checks if folder is empty
+        :param local_folder_path:
+        :return: if folder is empty
+        """
+        file_set: set = LocalStorageManager.get_all_files_in_folder(local_folder_path)
+        return file_set.__len__() == 0
+
+    @staticmethod
+    def delete_folder_if_empty(local_folder_path: str) -> bool:
+        """
+        deletes folder if emtpy, returns True is successful
+        :param local_folder_path:
+        :return: True if deletion was successful, False if folder not empty
+        """
+        if LocalStorageManager.folder_empty(local_folder_path):
+            shutil.rmtree(local_folder_path)
+            return True
+        return False
+
+    @staticmethod
     def save_files_locally(files, paths=None):
         """
         saves files in temp local storage and returns filepaths and file_names
@@ -78,7 +110,7 @@ class LocalStorageManager:
         return output_file_information
 
     @staticmethod
-    def zip_folder_and_delete(zip_path, folder_path):
+    def zip_folder_and_delete(zip_path: str, folder_path: str):
         shutil.make_archive(zip_path, "zip", folder_path)
         shutil.rmtree(folder_path)
 

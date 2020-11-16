@@ -17,7 +17,7 @@
 from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
 
-from backend.api.models import Rlc, UserProfile, Group
+from backend.api.models import Rlc, UserProfile, Group, Notification
 from backend.files.models.folder_permission import FolderPermission
 from backend.files.static.folder_permissions import (
     PERMISSION_READ_FOLDER,
@@ -65,17 +65,17 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
         Rlc, related_name="folders", on_delete=models.CASCADE, null=False
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "folder: " + self.name
 
-    def get_file_key(self):
+    def get_file_key(self) -> str:
         if self.parent:
             key = self.parent.get_file_key()
         else:
             key = get_storage_base_files_folder(self.rlc.id)
         return key + self.name + "/"
 
-    def propagate_new_size_up(self, delta: int = -1):
+    def propagate_new_size_up(self, delta: int = -1) -> None:
         if self.parent:
             self.parent.propagate_new_size_up(delta)
         self.size = self.size + delta
@@ -85,11 +85,11 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
             self.number_of_files = self.number_of_files - 1
         self.save()
 
-    def update_folder_tree_sizes(self, delta: int):
+    def update_folder_tree_sizes(self, delta: int) -> None:
         self.size = self.size - delta
         self.propagate_new_size_up(delta)
 
-    def get_all_parents(self):
+    def get_all_parents(self) -> ["Folder"]:
         if not self.parent:
             return []
         elif self.parent.parent:
@@ -97,7 +97,7 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
         else:
             return [self.parent]
 
-    def get_all_children(self):
+    def get_all_children(self) -> ["Folder"]:
         if not self.child_folders:
             return []
         children = []
@@ -108,7 +108,7 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
+    ) -> None:
         if (
             Folder.objects.filter(parent=self.parent, name=self.name, rlc=self.rlc)
             .exclude(pk=self.id)
@@ -118,7 +118,7 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
             raise Exception("duplicate folder")
         super().save(force_insert, force_update, using, update_fields)
 
-    def user_has_permission_read(self, user: UserProfile):
+    def user_has_permission_read(self, user: UserProfile) -> bool:
         from backend.files.models import PermissionForFolder
 
         if user.rlc != self.rlc:
@@ -307,7 +307,7 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
 
         return folder_permissions, folder_visible, list(has_permissions_for_groups)
 
-    def download_folder(self, aes_key: str, local_path: str = ""):
+    def download_folder(self, aes_key: str, local_path: str = "") -> None:
         # create local folder
         # download all files in this folder to local folder
         # call download_folder of children
@@ -322,10 +322,7 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
         except:
             pass
         for file in files_in_folder:
-            try:
-                file.download(aes_key, os.path.join(local_path, self.name))
-            except Exception as e:
-                pass
+            file.download(aes_key, os.path.join(local_path, self.name))
         for child in self.child_folders.all():
             child.download_folder(aes_key, os.path.join(local_path, self.name))
 
@@ -355,7 +352,14 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
     @staticmethod
     def create_folders_for_file_path(
         root_folder: "Folder", path: str, user: UserProfile
-    ) -> None:
+    ) -> "Folder":
+        """
+        creates folder for path, returns last folder created/in path
+        :param root_folder:
+        :param path:
+        :param user:
+        :return: returns last folder in path
+        """
         path_parts = path.split("/")
         i = 0
         folder = root_folder

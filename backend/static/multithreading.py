@@ -14,7 +14,6 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import os
 import shutil
 from threading import Thread
 
@@ -39,15 +38,19 @@ def start_new_thread(function):
 
 
 class MultithreadedFileUploads:
-    @staticmethod
-    @start_new_thread
-    def encrypt_file_and_upload_to_s3(filename, key, s3_folder):
-        EncryptedStorage.encrypt_file_and_upload_to_s3(filename, key, s3_folder)
-        os.remove(filename)
+    # @staticmethod
+    # @start_new_thread
+    # def encrypt_file_and_upload_to_s3(
+    #     local_file_path: str, key: str, s3_folder: str
+    # ) -> None:
+    #     EncryptedStorage.encrypt_file_and_upload_to_s3(local_file_path, key, s3_folder)
+    #     LocalStorageManager.delete_file(local_file_path)
 
     @staticmethod
     @start_new_thread
-    def encrypt_files_and_upload_to_single_s3_folder(files, aes_key, s3_folder):
+    def encrypt_files_and_upload_to_single_s3_folder(
+        files: [str], s3_folder: str, aes_key: str
+    ) -> None:
         """
 
         :param files: local filepaths
@@ -59,15 +62,14 @@ class MultithreadedFileUploads:
             EncryptedStorage.encrypt_file_and_upload_to_s3(
                 local_file_path, aes_key, s3_folder
             )
-            os.remove(local_file_path)
+            LocalStorageManager.delete_file_and_enc(local_file_path)
+            LocalStorageManager.delete_folder_if_empty(get_temp_storage_folder())
 
     @staticmethod
     @start_new_thread
     def encrypt_files_and_upload_to_s3(
         local_files: [str], s3_folders: [str], file_objects: [File], aes_key: str
     ):
-        temp_folder = get_temp_storage_folder()
-
         for i in range(local_files.__len__()):
             (
                 encrypted_filepath,
@@ -91,9 +93,7 @@ class MultithreadedFileUploads:
 
         # if uploaded, delete local and check folders
         for file in local_files:
-            os.remove(file)
-            os.remove(file + ".enc")
+            LocalStorageManager.delete_file_and_enc(file)
 
-        file_set: set = LocalStorageManager.get_all_files_in_folder(temp_folder)
-        if file_set.__len__() == 0:  # TODO:  else?
-            shutil.rmtree(temp_folder)
+        LocalStorageManager.delete_folder_if_empty(get_temp_storage_folder())
+        # TODO: get if not successful?

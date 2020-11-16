@@ -22,9 +22,10 @@ from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django_prometheus.models import ExportModelOperationsMixin
 
-from backend.api.models import UserProfile
+from backend.api.models import UserProfile, Notification
 from backend.static.encrypted_storage import EncryptedStorage
 from .folder import Folder
+from backend.static.logger import Logger
 
 
 class File(ExportModelOperationsMixin("file"), models.Model):
@@ -85,9 +86,14 @@ class File(ExportModelOperationsMixin("file"), models.Model):
             instance.folder.save()
 
     def download(self, aes_key, local_destination_folder):
-        EncryptedStorage.download_from_s3_and_decrypt_file(
-            self.get_encrypted_file_key(), aes_key, local_destination_folder
-        )
+        try:
+            EncryptedStorage.download_from_s3_and_decrypt_file(
+                self.get_encrypted_file_key(), aes_key, local_destination_folder
+            )
+        except Exception as e:
+            Notification.objects.notify_file_download_error(self.creator, self)
+            Logger.error("file couldn't be downloaded: " + self.get_file_key())
+            self.delete()
 
     def exists_on_s3(self) -> bool:
         return EncryptedStorage.file_exists(self.get_encrypted_file_key())

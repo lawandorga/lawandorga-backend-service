@@ -665,8 +665,20 @@ class NotificationManager(models.Manager):
             source_user=file.creator,
             ref_id=str(file.folder.id),
             ref_text=file.folder.name,
-            notification_group_type=NotificationGroupType.FILE,
-            notification_type=NotificationType.FILE__UPLOAD_ERROR,
+            notification_group_type=NotificationGroupType.FOLDER,
+            notification_type=NotificationType.FOLDER__FILE_UPLOAD_ERROR,
+            text=file.name,
+        )
+
+    @staticmethod
+    def notify_file_download_error(source_user: UserProfile, file: "File"):
+        Notification.objects.create_notification(
+            user=file.creator,
+            source_user=source_user,
+            ref_id=str(file.folder.id),
+            ref_text=file.folder.name,
+            notification_group_type=NotificationGroupType.FOLDER,
+            notification_type=NotificationType.FOLDER__FILE_NOT_EXISTING,
             text=file.name,
         )
 

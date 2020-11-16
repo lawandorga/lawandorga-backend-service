@@ -106,6 +106,14 @@ class EncryptedStorage:
     def download_from_s3_and_decrypt_file(
         s3_key, encryption_key, local_folder, downloaded_file_name=None
     ):
+        """
+        downloads file from s3,
+        :param s3_key:
+        :param encryption_key:
+        :param local_folder:
+        :param downloaded_file_name:
+        :return:
+        """
         if not downloaded_file_name:
             filename = s3_key[s3_key.rindex("/") + 1 :]
             downloaded_file_name = os.path.join(local_folder, filename)
