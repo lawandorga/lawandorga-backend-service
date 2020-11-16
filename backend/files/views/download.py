@@ -54,5 +54,5 @@ class DownloadViewSet(APIView):
 
         LocalStorageManager.zip_folder_and_delete(root_folder_name, root_folder_name)
         return LocalStorageManager.create_response_from_zip_file(
-            get_temp_storage_folder() + "/" + request_path + ".zip"
+            root_folder_name + ".zip"
         )

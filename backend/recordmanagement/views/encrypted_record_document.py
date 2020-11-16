@@ -19,19 +19,20 @@ import base64
 import pytz
 import mimetypes
 from rest_framework import viewsets
-from rest_framework.parsers import FileUploadParser, FormParser, MultiPartParser
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
+from backend.static.error_codes import ERROR__RECORD__DOCUMENT__ALL_MISSING
 from backend.recordmanagement import models, serializers
-from backend.shared import storage_generator
 from backend.static import error_codes, storage_folders
 from backend.static.encrypted_storage import EncryptedStorage
 from backend.static.middleware import get_private_key_from_request
 from backend.static.multithreading import MultithreadedFileUploads
 from backend.static.storage_management import LocalStorageManager
+from backend.static.storage_folders import get_temp_storage_folder
 from backend.static.getter import get_e_record
 from backend.api.models import Notification
 
@@ -54,32 +55,33 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
         :param id:
         :return:
         """
-
         e_record = get_e_record(request.user, id)
         if not e_record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
         users_private_key = get_private_key_from_request(request)
         record_key = e_record.get_decryption_key(request.user, users_private_key)
-        downloaded = []
-        local_folder_path = storage_folders.get_temp_storage_folder() + "/"
+        root_folder_name = (
+            storage_folders.get_temp_storage_folder() + "/record" + str(e_record.id)
+        )
+
         for record_document in models.EncryptedRecordDocument.objects.filter(
             record=e_record
         ):
             EncryptedStorage.download_from_s3_and_decrypt_file(
-                record_document.get_file_key(), record_key, local_folder_path
-            )
-            downloaded.append(
-                storage_folders.get_temp_storage_path(record_document.name)
+                record_document.get_file_key(), record_key, root_folder_name
             )
 
-        # TODO: completely refactor this
-        # res: Response = storage_generator.zip_files_and_create_response(
-        #     downloaded, e_record.record_token + ".zip"
-        # )
-        # LocalStorageManager.delete_file(e_record.record_token + ".zip")
-        return storage_generator.zip_files_and_create_response(
-            downloaded, e_record.record_token + ".zip"
+        # check if all docs are missing?
+        if LocalStorageManager.delete_folder_if_empty(root_folder_name):
+            LocalStorageManager.delete_folder_if_empty(
+                storage_folders.get_temp_storage_folder()
+            )
+            raise CustomError(ERROR__RECORD__DOCUMENT__ALL_MISSING)
+
+        LocalStorageManager.zip_folder_and_delete(root_folder_name, root_folder_name)
+        return LocalStorageManager.create_response_from_zip_file(
+            root_folder_name + ".zip"
         )
 
     def post(self, request, id):
@@ -166,13 +168,12 @@ class EncryptedRecordDocumentDownloadViewSet(APIView):
             storage_folders.get_temp_storage_folder(),
         )
 
-        file = base64.b64encode(
-            open(
-                storage_folders.get_temp_storage_path(e_record_document.name), "rb"
-            ).read()
-        )
+        local_file_path = storage_folders.get_temp_storage_path(e_record_document.name)
+        file = base64.b64encode(open(local_file_path, "rb").read())
         res = Response(file, content_type=mimetypes.guess_type(e_record_document.name))
         res["Content-Disposition"] = (
             'attachment; filename="' + e_record_document.name + '"'
         )
+        LocalStorageManager.delete_file(local_file_path)
+        LocalStorageManager.delete_folder_if_empty(get_temp_storage_folder())
         return res

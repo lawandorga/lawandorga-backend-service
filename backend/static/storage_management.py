@@ -115,7 +115,7 @@ class LocalStorageManager:
         shutil.rmtree(folder_path)
 
     @staticmethod
-    def create_response_from_zip_file(zip_path: str):
+    def create_response_from_zip_file(zip_path: str) -> Response:
         encoded_file = base64.b64encode(open(zip_path, "rb").read())
         res = Response(encoded_file, content_type="application/zip")
         res["Content-Disposition"] = (
@@ -124,6 +124,7 @@ class LocalStorageManager:
             + '"'
         )
         os.remove(zip_path)
+        LocalStorageManager.delete_folder_if_empty(get_temp_storage_folder())
         return res
 
     @staticmethod
