@@ -23,23 +23,23 @@ STORAGE_FOLDER_PROFILE_PICTURES = "profile_pictures/"
 # TODO refactor this into classes, 1 storage folders specific, 1 general filename manipulation
 
 
-def get_storage_folder_record_document(rlc_id, record_id):
+def get_storage_folder_record_document(rlc_id: int, record_id: int) -> str:
     return "rlcs/" + str(rlc_id) + "/records/" + str(record_id) + "/"
 
 
-def get_storage_folder_encrypted_record_document(rlc_id, record_id):
+def get_storage_folder_encrypted_record_document(rlc_id: int, record_id: int) -> str:
     return "rlcs/" + str(rlc_id) + "/encrypted_records/" + str(record_id) + "/"
 
 
-def get_storage_base_files_folder(rlc_id):
+def get_storage_base_files_folder(rlc_id: int) -> str:
     return "rlcs/" + str(rlc_id) + "/"
 
 
-def get_temp_storage_path(filename):
+def get_temp_storage_path(filename) -> str:
     return os.path.join("temp", filename)
 
 
-def get_temp_storage_folder():
+def get_temp_storage_folder() -> str:
     return "temp"
 
 
@@ -47,11 +47,11 @@ def combine_s3_folder_with_filename(s3_folder, filename):
     return os.path.join(s3_folder, filename)
 
 
-def get_filename_from_full_path(filepath):
+def get_filename_from_full_path(filepath: str) -> str:
     return filepath[filepath.rindex("/") + 1 :]
 
 
-def user_has_permission(file_dir, user):
+def user_has_permission(file_dir, user) -> bool:
     """
     checks if the user has permission for the given file_dir
     :param file_dir: string, file_dir for which it is to check if the user has permission

@@ -19,4 +19,4 @@ from django.db import models
 
 class UserActivityPath(models.Model):
     # "HTTP_METHOD PATH"
-    path = models.CharField(max_length=255, null=False)
+    path = models.CharField(max_length=1024, null=False)

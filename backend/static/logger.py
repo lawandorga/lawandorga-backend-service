@@ -14,9 +14,23 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import os
+import logging
 
 
-def delete_file(file):
-    if os.path.exists(file):
-        os.remove(file)
+class Logger:
+    @staticmethod
+    def get_logger() -> logging.Logger:
+        logger = logging.getLogger(__name__)
+        return logger
+
+    @staticmethod
+    def debug(msg: str):
+        Logger.get_logger().debug(msg)
+
+    @staticmethod
+    def error(msg: str):
+        Logger.get_logger().error(msg)
+
+    @staticmethod
+    def info(msg: str):
+        Logger.get_logger().info(msg)

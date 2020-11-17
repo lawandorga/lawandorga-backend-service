@@ -47,7 +47,6 @@ class UploadViewSet(APIView):
 
         s3_paths = []
         for file_info in file_information:
-            # TODO: remove temp from local-file-paths at folder creation
             folder = Folder.create_folders_for_file_path(
                 root_folder, file_info["local_file_path"][5:], user
             )
@@ -59,7 +58,8 @@ class UploadViewSet(APIView):
                 last_editor=user,
             )
             file = File.create_or_duplicate(new_file)
-            if file.name != file_info["file_name"]:
+            file_info["file_object"] = file
+            if file.name != file_info["file_name"]:  # check if rename happened
                 import os
 
                 local_file_path = file_info["local_file_path"]
@@ -70,8 +70,8 @@ class UploadViewSet(APIView):
             s3_paths.append(folder.get_file_key())
 
         filepaths = [n["local_file_path"] for n in file_information]
+        file_objects = [n["file_object"] for n in file_information]
         MultithreadedFileUploads.encrypt_files_and_upload_to_s3(
-            filepaths, s3_paths, aes_key
+            filepaths, s3_paths, file_objects, aes_key
         )
-
-        return Response({})
+        return Response({"success": True})

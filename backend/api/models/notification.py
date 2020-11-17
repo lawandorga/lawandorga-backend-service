@@ -658,6 +658,30 @@ class NotificationManager(models.Manager):
                     notification_type=NotificationType.RECORD_DOCUMENT_DELETION_REQUEST__DECLINED,
                 )
 
+    @staticmethod
+    def notify_file_upload_error(file: "File",):
+        Notification.objects.create_notification(
+            user=file.creator,
+            source_user=file.creator,
+            ref_id=str(file.folder.id),
+            ref_text=file.folder.name,
+            notification_group_type=NotificationGroupType.FOLDER,
+            notification_type=NotificationType.FOLDER__FILE_UPLOAD_ERROR,
+            text=file.name,
+        )
+
+    @staticmethod
+    def notify_file_download_error(source_user: UserProfile, file: "File"):
+        Notification.objects.create_notification(
+            user=file.creator,
+            source_user=source_user,
+            ref_id=str(file.folder.id),
+            ref_text=file.folder.name,
+            notification_group_type=NotificationGroupType.FOLDER,
+            notification_type=NotificationType.FOLDER__FILE_NOT_EXISTING,
+            text=file.name,
+        )
+
 
 class Notification(ExportModelOperationsMixin("notification"), models.Model):
     notification_group = models.ForeignKey(

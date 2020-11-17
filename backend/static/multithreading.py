@@ -14,17 +14,18 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import os
 import shutil
 from threading import Thread
 
+from backend.api.models import Notification
+from backend.files.models import File
 from backend.static.encrypted_storage import EncryptedStorage
+from backend.static.storage_management import LocalStorageManager
 from backend.static.storage_folders import (
-    get_temp_storage_path,
     combine_s3_folder_with_filename,
-    get_filename_from_full_path,
     get_temp_storage_folder,
 )
+from backend.static.logger import Logger
 
 
 def start_new_thread(function):
@@ -37,15 +38,19 @@ def start_new_thread(function):
 
 
 class MultithreadedFileUploads:
-    @staticmethod
-    @start_new_thread
-    def encrypt_file_and_upload_to_s3(filename, key, s3_folder):
-        EncryptedStorage.encrypt_file_and_upload_to_s3(filename, key, s3_folder)
-        os.remove(filename)
+    # @staticmethod
+    # @start_new_thread
+    # def encrypt_file_and_upload_to_s3(
+    #     local_file_path: str, key: str, s3_folder: str
+    # ) -> None:
+    #     EncryptedStorage.encrypt_file_and_upload_to_s3(local_file_path, key, s3_folder)
+    #     LocalStorageManager.delete_file(local_file_path)
 
     @staticmethod
     @start_new_thread
-    def encrypt_files_and_upload_to_single_s3_folder(files, aes_key, s3_folder):
+    def encrypt_files_and_upload_to_single_s3_folder(
+        files: [str], s3_folder: str, aes_key: str
+    ) -> None:
         """
 
         :param files: local filepaths
@@ -57,20 +62,38 @@ class MultithreadedFileUploads:
             EncryptedStorage.encrypt_file_and_upload_to_s3(
                 local_file_path, aes_key, s3_folder
             )
-            os.remove(local_file_path)
+            LocalStorageManager.delete_file_and_enc(local_file_path)
+            LocalStorageManager.delete_folder_if_empty(get_temp_storage_folder())
 
     @staticmethod
     @start_new_thread
-    def encrypt_files_and_upload_to_s3(local_files, s3_folders, aes_key):
+    def encrypt_files_and_upload_to_s3(
+        local_files: [str], s3_folders: [str], file_objects: [File], aes_key: str
+    ):
         for i in range(local_files.__len__()):
-            EncryptedStorage.encrypt_file_and_upload_to_s3(
+            (
+                encrypted_filepath,
+                encrypted_filename,
+            ) = EncryptedStorage.encrypt_file_and_upload_to_s3(
                 local_files[i], aes_key, s3_folders[i]
             )
-        temp_folder = get_temp_storage_folder()
-        # if os.path.fi
-        file_set = set()
-        for root, dirs, files in os.walk(temp_folder):
-            for fileName in files:
-                file_set.add(os.path.join(root[len(temp_folder) :], fileName))
-        if file_set.__len__() == 0:
-            shutil.rmtree(temp_folder)
+            if not file_objects[i].exists_on_s3():
+                EncryptedStorage.upload_file_to_s3(
+                    encrypted_filepath,
+                    combine_s3_folder_with_filename(s3_folders[i], encrypted_filename),
+                )
+                # check if download was successful now, if not, delete model
+                if not file_objects[i].exists_on_s3():
+                    Logger.error(
+                        "second upload of file failed, deleting model: "
+                        + file_objects[i].name
+                    )
+                    Notification.objects.notify_file_upload_error(file_objects[i])
+                    file_objects[i].delete()
+
+        # if uploaded, delete local and check folders
+        for file in local_files:
+            LocalStorageManager.delete_file_and_enc(file)
+
+        LocalStorageManager.delete_folder_if_empty(get_temp_storage_folder())
+        # TODO: get if not successful?
