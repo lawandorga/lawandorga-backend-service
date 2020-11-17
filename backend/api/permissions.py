@@ -68,16 +68,11 @@ class GetOrSuperuser(permissions.BasePermission):
 
 
 class IsAuthenticatedLogging(permissions.BasePermission):
+    # Not used
     def has_permission(self, request: Request, view: View) -> bool:
         if bool(request.user and request.user.is_authenticated):
             logger = logging.getLogger(__name__)
             logger.info(
-                "general_activity user:"
-                + str(request.user.id)
-                + "; rlc:"
-                + str(request.user.rlc.id)
-            )
-            print(
                 "general_activity user:"
                 + str(request.user.id)
                 + "; rlc:"

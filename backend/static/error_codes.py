@@ -417,3 +417,13 @@ ERROR__API__LOGGING__TOO_MANY_SESSION_PATHS_FOUND = {
     "error_detail": "to many logging session paths found",
     "error_code": "api.logging.too_many_session_paths_found",
 }
+
+ERROR__FILES__FOLDER__CONTENT_DIDNT_EXIST = {
+    "error_detail": "contents of folder didn't exist, download failed",
+    "error_code": "files.folder.content_didnt_exist",
+}
+
+ERROR__RECORD__DOCUMENT__ALL_MISSING = {
+    "error_detail": "all records documents were missing",
+    "error_code": "record.document.all_missing",
+}

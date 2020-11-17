@@ -29,6 +29,7 @@ class NotificationGroupType(Enum):
     USER_REQUEST = "USER_REQUEST"
     GROUP = "GROUP"
     FILE = "FILE"  # ?
+    FOLDER = "FOLDER"
 
     @classmethod
     def choices(cls):
@@ -76,6 +77,11 @@ class NotificationType(Enum):
 
     GROUP__ADDED_ME = "GROUP__ADDED_ME"
     GROUP__REMOVED_ME = "GROUP__REMOVED_ME"
+
+    FILE__UPLOAD_ERROR = "FILE__UPLOAD_ERROR"  #  TODO: event needed anymore?
+
+    FOLDER__FILE_NOT_EXISTING = "FOLDER__FILE_NOT_EXISTING"
+    FOLDER__FILE_UPLOAD_ERROR = "FOLDER__FILE_UPLOAD_ERROR"
 
     @classmethod
     def choices(cls):

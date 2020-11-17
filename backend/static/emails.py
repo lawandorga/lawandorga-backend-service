@@ -21,6 +21,7 @@ from django.core.mail import send_mail
 
 from backend.static.env_getter import get_env_variable
 from backend.static.frontend_links import FrontendLinks
+from backend.static.logger import Logger
 
 
 class EmailSender:
@@ -44,14 +45,6 @@ class EmailSender:
     ) -> None:
         try:
             from_email = get_env_variable("EMAIL_ADDRESS")
-            # msg = EmailMultiAlternatives(
-            #     subject, text_alternative, from_email, email_addresses
-            # )
-            # logger.error("error: msg from EmailMultiAlternatives created")
-            # msg.attach_alternative(html_content, "text/html")
-            # logger.error("error: send html email now")
-            # msg.send()
-            # logger.error("error: email sent")
 
             send_mail(
                 subject=subject,
@@ -61,8 +54,7 @@ class EmailSender:
                 recipient_list=email_addresses,
             )
         except Exception as e:
-            logger = logging.getLogger(__name__)
-            logger.error("error at sending email: " + str(e))
+            Logger.error("error at sending email: " + str(e))
 
     @staticmethod
     def send_user_activation_email(user, link) -> None:

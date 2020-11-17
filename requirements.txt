@@ -28,6 +28,7 @@ psycopg2==2.7.4
 psycopg2-binary==2.7.4
 pycparser==2.19
 pycryptodome==3.9.4
+python3-logstash==0.4.80
 pytz==2018.3
 rcssmin==1.0.6
 rjsmin==1.0.12

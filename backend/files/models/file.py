@@ -22,9 +22,10 @@ from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django_prometheus.models import ExportModelOperationsMixin
 
-from backend.api.models import UserProfile
+from backend.api.models import UserProfile, Notification
 from backend.static.encrypted_storage import EncryptedStorage
 from .folder import Folder
+from backend.static.logger import Logger
 
 
 class File(ExportModelOperationsMixin("file"), models.Model):
@@ -52,11 +53,22 @@ class File(ExportModelOperationsMixin("file"), models.Model):
     def __str__(self):
         return "file: " + self.get_file_key()
 
-    def get_file_key(self):
+    def get_file_key(self) -> str:
+        """
+
+        :return: full file-key (absolute path on s3)
+        """
         return self.folder.get_file_key() + self.name
 
+    def get_encrypted_file_key(self) -> str:
+        """
+
+        :return:
+        """
+        return self.get_file_key() + ".enc"
+
     def delete_on_cloud(self):
-        EncryptedStorage.delete_on_s3(self.get_file_key() + ".enc")
+        EncryptedStorage.delete_on_s3(self.get_encrypted_file_key())
 
     @receiver(pre_delete)
     def pre_deletion(sender, instance, **kwargs):
@@ -74,10 +86,17 @@ class File(ExportModelOperationsMixin("file"), models.Model):
             instance.folder.save()
 
     def download(self, aes_key, local_destination_folder):
-        EncryptedStorage.download_from_s3_and_decrypt_file(
-            self.get_file_key() + ".enc", aes_key, local_destination_folder
-        )
-        # EncryptedStorage.download_file_from_s3(self.get_file_key(), os.path.join(local_destination_folder, self.name + '.enc'))
+        try:
+            EncryptedStorage.download_from_s3_and_decrypt_file(
+                self.get_encrypted_file_key(), aes_key, local_destination_folder
+            )
+        except Exception as e:
+            Notification.objects.notify_file_download_error(self.creator, self)
+            Logger.error("file couldn't be downloaded: " + self.get_file_key())
+            self.delete()
+
+    def exists_on_s3(self) -> bool:
+        return EncryptedStorage.file_exists(self.get_encrypted_file_key())
 
     @staticmethod
     def create_or_update(file):
@@ -94,6 +113,11 @@ class File(ExportModelOperationsMixin("file"), models.Model):
 
     @staticmethod
     def create_or_duplicate(file):
+        """
+        created file, check if file with same name already existing, if yes, create "file(x)"
+        :param file:
+        :return:
+        """
         try:
             File.objects.get(folder=file.folder, name=file.name)
         except:

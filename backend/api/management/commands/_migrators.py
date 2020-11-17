@@ -38,7 +38,7 @@ from backend.recordmanagement.models import (
 )
 from backend.static.encrypted_storage import EncryptedStorage
 from backend.static.encryption import AESEncryption, RSAEncryption
-from backend.static.file_utils import delete_file
+from backend.static.storage_management import LocalStorageManager
 
 
 class OneTimeGenerators:
@@ -255,5 +255,5 @@ class Migrators:
             local_path_to_file, e_record_key, e_record_document.get_folder()
         )
         # delete old
-        delete_file(local_path_to_file)
-        delete_file(local_path_to_file + ".enc")
+        LocalStorageManager.delete_file(local_path_to_file)
+        LocalStorageManager.delete_file(local_path_to_file + ".enc")
