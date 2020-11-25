@@ -14,15 +14,5 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.conf.urls import url, include
-from rest_framework.routers import DefaultRouter
 
-from backend.collab.views import CollabDocumentAPIView
-
-router = DefaultRouter()
-
-
-urlpatterns = [
-    url(r"", include(router.urls)),
-    url(r"edit_collab_document/(?P<id>.+)/$", CollabDocumentAPIView.as_view()),
-]
+from .collab_document import *

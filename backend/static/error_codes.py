@@ -427,3 +427,8 @@ ERROR__RECORD__DOCUMENT__ALL_MISSING = {
     "error_detail": "all records documents were missing",
     "error_code": "record.document.all_missing",
 }
+
+ERROR__COLLAB__TYPE_NOT_EXISTING = {
+    "error_detail": "type does not exist",
+    "error_code": "record.type_not_exisiting",
+}

@@ -241,7 +241,7 @@ class EncryptedRecordViewSet(APIView):
             status=status.HTTP_201_CREATED,
         )
 
-    def get(self, request, id) -> Response:
+    def get(self, request: Request, id) -> Response:
         try:
             e_record: models.EncryptedRecord = models.EncryptedRecord.objects.get(pk=id)
         except:

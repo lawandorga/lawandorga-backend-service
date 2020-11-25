@@ -14,15 +14,26 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.conf.urls import url, include
-from rest_framework.routers import DefaultRouter
+from typing import Any
+import logging
+from django.conf import settings
+from django.db.models import Q, QuerySet, Case, When, Value, IntegerField
+from rest_framework import status, viewsets
+from rest_framework.response import Response
+from rest_framework.request import Request
+from rest_framework.views import APIView
+from rest_framework.pagination import LimitOffsetPagination
 
-from backend.collab.views import CollabDocumentAPIView
-
-router = DefaultRouter()
+from backend.collab.models import EditingRoom, CollabDocument
 
 
-urlpatterns = [
-    url(r"", include(router.urls)),
-    url(r"edit_collab_document/(?P<id>.+)/$", CollabDocumentAPIView.as_view()),
-]
+class CollabDocumentAPIView(APIView):
+    def get(self, request: Request, id: str) -> Response:
+        try:
+            document = CollabDocument.objects.get(pk=id)
+        except Exception as e:
+            pass
+
+        room = EditingRoom(document=document)
+        room.save()
+        return Response({})
