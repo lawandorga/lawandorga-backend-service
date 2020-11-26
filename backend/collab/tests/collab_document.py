@@ -24,6 +24,7 @@ from backend.static.encryption import AESEncryption
 
 
 class CollabDocumentConnectionTest(TransactionTestCase):
+    # TODO: double connection -> one room, no valid private key?, no valid collab doc id, wrong rlc,
     def setUp(self) -> None:
         self.urls_edit_collab = "/api/collab/edit_collab_document/"
         self.urls_list_collab = "/api/collab/collab_documents/"
@@ -69,18 +70,19 @@ class CollabDocumentConnectionTest(TransactionTestCase):
 
         self.assertEqual(401, response.status_code)
 
-    # TODO: double connection -> one room, no valid private key?, no valid collab doc id, wrong rlc,
-
 
 class CollabDocumentTest(TransactionTestCase):
+    # TODO: wrong rlc, unauthenticated, with path
+    # TODO: post,
     def setUp(self) -> None:
         self.urls_edit_collab = "/api/collab/edit_collab_document/"
         self.urls_list_collab = "/api/collab/collab_documents/"
 
         self.base_fixtures = CreateFixtures.create_base_fixtures()
         self.base_client: APIClient = self.base_fixtures["users"][0]["client"]
+        self.foreign_rlc = CreateFixtures.create_foreign_rlc_fixture()
 
-    def test_list_documents(self):
+    def test_list_documents_simple(self):
         document = CollabDocument(
             rlc=self.base_fixtures["rlc"],
             parent=None,
@@ -100,4 +102,55 @@ class CollabDocumentTest(TransactionTestCase):
         self.assertEqual(2, response.data.__len__())
         ids = [item["pk"] for item in response.data]
         self.assertIn(document.id, ids)
-        # TODO: wrong rlc, unauthenticated,
+        self.assertIn(document2.id, ids)
+
+    def test_list_documents_foreign_rlc(self):
+        document = CollabDocument(
+            rlc=self.base_fixtures["rlc"],
+            parent=None,
+            name="test doc 1",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        document.save()
+        document2 = CollabDocument(
+            rlc=self.base_fixtures["rlc"],
+            parent=None,
+            name="test doc 2",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        document2.save()
+
+        document_foreign = CollabDocument(
+            rlc=self.foreign_rlc["rlc"],
+            parent=None,
+            name="test doc 2",
+            creator=self.foreign_rlc["users"][0]["user"],
+        )
+        document_foreign.save()
+
+        response: Response = self.base_client.get(self.urls_list_collab,)
+        self.assertEqual(2, response.data.__len__())
+        ids = [item["pk"] for item in response.data]
+        self.assertIn(document.id, ids)
+        self.assertIn(document2.id, ids)
+
+    def test_list_documents_from_path(self):
+        document = CollabDocument(
+            rlc=self.base_fixtures["rlc"],
+            parent=None,
+            name="test doc 1",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        document.save()
+        document2 = CollabDocument(
+            rlc=self.base_fixtures["rlc"],
+            parent=document,
+            name="test doc 2",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        document2.save()
+
+        response: Response = self.base_client.get(self.urls_list_collab,)
+        self.assertEqual(1, response.data.__len__())
+        ids = [item["pk"] for item in response.data]
+        self.assertIn(document.id, ids)

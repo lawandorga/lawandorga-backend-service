@@ -37,10 +37,13 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
     permission_classes = (OnlyGet,)
 
     def get_queryset(self) -> QuerySet:
-        return self.queryset
+        if self.request.user.is_superuser:
+            return self.queryset
+        else:
+            return self.queryset.filter(rlc=self.request.user.rlc)
 
     def list(self, request: Request, **kwargs: Any) -> Response:
-        queryset = self.get_queryset()
+        queryset = self.get_queryset().filter(parent=None)
         data = CollabDocumentListSerializer(queryset, many=True).data
         return Response(data)
 
