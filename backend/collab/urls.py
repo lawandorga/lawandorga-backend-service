@@ -17,12 +17,20 @@
 from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
 
-from backend.collab.views import CollabDocumentAPIView
+from backend.collab.views import (
+    CollabDocumentConnectAPIView,
+    CollabDocumentListViewSet,
+    DisconnectMeetingRoomAPIView,
+)
 
 router = DefaultRouter()
+router.register(
+    "collab_documents", CollabDocumentListViewSet, basename="collab_documents"
+)
 
 
 urlpatterns = [
     url(r"", include(router.urls)),
-    url(r"edit_collab_document/(?P<id>.+)/$", CollabDocumentAPIView.as_view()),
+    url(r"edit_collab_document/(?P<id>.+)/$", CollabDocumentConnectAPIView.as_view()),
+    url(r"leave_editing_room/(?P<id>.+)/$", DisconnectMeetingRoomAPIView.as_view()),
 ]

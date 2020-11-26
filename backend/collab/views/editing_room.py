@@ -14,25 +14,26 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from rest_framework import serializers
+from typing import Any
+import logging
+from django.conf import settings
+from django.db.models import Q, QuerySet, Case, When, Value, IntegerField
+from rest_framework import status, viewsets
+from rest_framework.response import Response
+from rest_framework.request import Request
+from rest_framework.views import APIView
+from rest_framework.pagination import LimitOffsetPagination
 
-from backend.collab.models import CollabDocument
+from backend.collab.models import EditingRoom, CollabDocument
+from backend.collab.serializers import EditingRoomSerializer
 
 
-class CollabDocumentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CollabDocument
-        fields = "__all__"
-
-
-class CollabDocumentListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CollabDocument
-        fields = (
-            "pk",
-            "name",
-            "created",
-            "creator",
-            "last_edited",
-            "last_editor",
-        )
+class DisconnectMeetingRoomAPIView(APIView):
+    def post(self, request: Request, id: str):
+        """
+        editing room closed from user, send content of current doc to save it
+        :param request:
+        :param id:
+        :return:
+        """
+        pass

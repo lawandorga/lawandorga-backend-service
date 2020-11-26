@@ -25,10 +25,37 @@ from rest_framework.views import APIView
 from rest_framework.pagination import LimitOffsetPagination
 
 from backend.collab.models import EditingRoom, CollabDocument
+from backend.collab.serializers import (
+    EditingRoomSerializer,
+    CollabDocumentListSerializer,
+)
+from backend.api.permissions import OnlyGet
 
 
-class CollabDocumentAPIView(APIView):
+class CollabDocumentListViewSet(viewsets.ModelViewSet):
+    queryset = CollabDocument.objects.all()
+    permission_classes = (OnlyGet,)
+
+    def get_queryset(self) -> QuerySet:
+        return self.queryset
+
+    def list(self, request: Request, **kwargs: Any) -> Response:
+        queryset = self.get_queryset()
+        data = CollabDocumentListSerializer(queryset, many=True).data
+        return Response(data)
+
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        pass
+
+
+class CollabDocumentConnectAPIView(APIView):
     def get(self, request: Request, id: str) -> Response:
+        """
+        start editing document, open new editing room if none is open, else return open room
+        :param request:
+        :param id:
+        :return:
+        """
         try:
             document = CollabDocument.objects.get(pk=id)
         except Exception as e:
@@ -36,4 +63,4 @@ class CollabDocumentAPIView(APIView):
 
         room = EditingRoom(document=document)
         room.save()
-        return Response({})
+        return Response(EditingRoomSerializer(room).data)

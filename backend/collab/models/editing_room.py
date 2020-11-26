@@ -37,22 +37,16 @@ def generate_room_id():
 
 class EditingRoom(ExportModelOperationsMixin("editing_room"), models.Model):
     created = models.DateTimeField(default=timezone.now)
-    # document = models.ForeignKey(
-    #     TextDocument,
-    #     related_name="editing_rooms",
-    #     null=False,
-    #     on_delete=models.CASCADE,
-    #     unique=True,
-    # )
     document = models.OneToOneField(TextDocument, on_delete=models.CASCADE)
 
     room_id = models.CharField(
         max_length=255, default=generate_room_id, auto_created=True, unique=True
     )
-    AESEncryption.generate_secure_key()
     password = models.CharField(
         max_length=255,
         default=AESEncryption.generate_secure_key,
         auto_created=True,
         unique=True,
     )
+
+    # TODO: number of connected users

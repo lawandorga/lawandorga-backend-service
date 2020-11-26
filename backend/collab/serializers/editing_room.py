@@ -16,23 +16,10 @@
 
 from rest_framework import serializers
 
-from backend.collab.models import CollabDocument
+from backend.collab.models import EditingRoom
 
 
-class CollabDocumentSerializer(serializers.ModelSerializer):
+class EditingRoomSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CollabDocument
+        model = EditingRoom
         fields = "__all__"
-
-
-class CollabDocumentListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CollabDocument
-        fields = (
-            "pk",
-            "name",
-            "created",
-            "creator",
-            "last_edited",
-            "last_editor",
-        )

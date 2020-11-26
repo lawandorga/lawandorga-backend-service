@@ -15,3 +15,5 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from .text_document import *
+from .collab_document import *
+from .editing_room import *

@@ -20,6 +20,6 @@ from backend.collab.models import TextDocument
 
 
 class TextDocumentSerializer(serializers.ModelSerializer):
-    class Mega:
+    class Meta:
         model = TextDocument
         fields = "__all__"
