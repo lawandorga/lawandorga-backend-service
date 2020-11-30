@@ -18,6 +18,7 @@ from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.collab.models import TextDocument
+from backend.api.models import Rlc
 
 
 class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument):
@@ -28,3 +29,31 @@ class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument
         null=True,
         default=None,
     )
+
+    @staticmethod
+    def get_collab_document_from_path(path: str, rlc: Rlc) -> "CollabDocument":
+        """
+        searches for collab document in virtual path
+        a document can have child_pages / a parent page -> parent is above in folder
+        pages in paths are separated through "//"
+        :param path:
+        :param rlc:
+        :return:
+        """
+        path_parts = path.split("//")
+        i = 0
+
+        collab_doc = CollabDocument.objects.filter(
+            name=path_parts[i], parent=None, rlc=rlc
+        ).first()
+        if not collab_doc:
+            return None
+        while True:
+            i += 1
+            if i >= path_parts.__len__() or path_parts[i] == "":
+                break
+            if not collab_doc:
+                # ERROR
+                pass
+            collab_doc = collab_doc.child_pages.filter(name=path_parts[i]).first()
+        return collab_doc

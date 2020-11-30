@@ -73,7 +73,7 @@ class CollabDocumentConnectionTest(TransactionTestCase):
 
 class CollabDocumentTest(TransactionTestCase):
     # TODO: wrong rlc, unauthenticated, with path
-    # TODO: post,
+    # TODO: post, (don't create with same name!!)
     def setUp(self) -> None:
         self.urls_edit_collab = "/api/collab/edit_collab_document/"
         self.urls_list_collab = "/api/collab/collab_documents/"
@@ -83,26 +83,50 @@ class CollabDocumentTest(TransactionTestCase):
         self.foreign_rlc = CreateFixtures.create_foreign_rlc_fixture()
 
     def test_list_documents_simple(self):
-        document = CollabDocument(
+        doc_top = CollabDocument(
             rlc=self.base_fixtures["rlc"],
             parent=None,
-            name="test doc 1",
+            name="top_doc",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        document.save()
-        document2 = CollabDocument(
+        doc_top.save()
+        doc_top_2 = CollabDocument(
             rlc=self.base_fixtures["rlc"],
             parent=None,
-            name="test doc 2",
+            name="atop_doc",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        document2.save()
+        doc_top_2.save()
+        doc_middle = CollabDocument(
+            rlc=self.base_fixtures["rlc"],
+            parent=doc_top,
+            name="middle_doc",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_middle.save()
+        doc_bottom = CollabDocument(
+            rlc=self.base_fixtures["rlc"],
+            parent=doc_middle,
+            name="bottom_doc",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_bottom.save()
+        doc_bottom_first = CollabDocument(
+            rlc=self.base_fixtures["rlc"],
+            parent=doc_middle,
+            name="a first",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_bottom_first.save()
 
         response: Response = self.base_client.get(self.urls_list_collab,)
         self.assertEqual(2, response.data.__len__())
-        ids = [item["pk"] for item in response.data]
-        self.assertIn(document.id, ids)
-        self.assertIn(document2.id, ids)
+        self.assertEqual(doc_top_2.id, response.data[0]["pk"])
+        self.assertEqual(doc_top.id, response.data[1]["pk"])
+        self.assertEqual(doc_middle.id, response.data[1]["children"][0]["pk"])
+        self.assertEqual(
+            doc_bottom_first.id, response.data[1]["children"][0]["children"][0]["pk"]
+        )
 
     def test_list_documents_foreign_rlc(self):
         document = CollabDocument(
@@ -134,23 +158,65 @@ class CollabDocumentTest(TransactionTestCase):
         self.assertIn(document.id, ids)
         self.assertIn(document2.id, ids)
 
-    def test_list_documents_from_path(self):
-        document = CollabDocument(
+    def test_model_get_document_from_path(self):
+        doc_top = CollabDocument(
             rlc=self.base_fixtures["rlc"],
             parent=None,
-            name="test doc 1",
+            name="top_doc",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        document.save()
-        document2 = CollabDocument(
+        doc_top.save()
+        doc_middle = CollabDocument(
             rlc=self.base_fixtures["rlc"],
-            parent=document,
-            name="test doc 2",
+            parent=doc_top,
+            name="middle_doc",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        document2.save()
+        doc_middle.save()
 
-        response: Response = self.base_client.get(self.urls_list_collab,)
-        self.assertEqual(1, response.data.__len__())
-        ids = [item["pk"] for item in response.data]
-        self.assertIn(document.id, ids)
+        doc_bottom = CollabDocument(
+            rlc=self.base_fixtures["rlc"],
+            parent=doc_middle,
+            name="bottom_doc",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_bottom.save()
+
+        doc_bottom_with_dash = CollabDocument(
+            rlc=self.base_fixtures["rlc"],
+            parent=doc_middle,
+            name="with/dash",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_bottom_with_dash.save()
+
+        self.assertEqual(
+            doc_middle,
+            CollabDocument.get_collab_document_from_path(
+                "top_doc//middle_doc//", self.base_fixtures["rlc"]
+            ),
+        )
+        self.assertEqual(
+            doc_middle,
+            CollabDocument.get_collab_document_from_path(
+                "top_doc//middle_doc", self.base_fixtures["rlc"]
+            ),
+        )
+        self.assertEqual(
+            doc_bottom,
+            CollabDocument.get_collab_document_from_path(
+                "top_doc//middle_doc//bottom_doc", self.base_fixtures["rlc"]
+            ),
+        )
+        self.assertEqual(
+            doc_bottom,
+            CollabDocument.get_collab_document_from_path(
+                "top_doc//middle_doc//bottom_doc", self.base_fixtures["rlc"]
+            ),
+        )
+        self.assertEqual(
+            doc_bottom_with_dash,
+            CollabDocument.get_collab_document_from_path(
+                "top_doc//middle_doc//with/dash", self.base_fixtures["rlc"]
+            ),
+        )

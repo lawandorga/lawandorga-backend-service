@@ -26,6 +26,8 @@ class CollabDocumentSerializer(serializers.ModelSerializer):
 
 
 class CollabDocumentListSerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField()
+
     class Meta:
         model = CollabDocument
         fields = (
@@ -35,4 +37,9 @@ class CollabDocumentListSerializer(serializers.ModelSerializer):
             "creator",
             "last_edited",
             "last_editor",
+            "children",
         )
+
+    def get_children(self, instance):
+        children = instance.child_pages.all().order_by("name")
+        return CollabDocumentListSerializer(children, many=True).data

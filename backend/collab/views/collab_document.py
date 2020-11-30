@@ -43,7 +43,8 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
             return self.queryset.filter(rlc=self.request.user.rlc)
 
     def list(self, request: Request, **kwargs: Any) -> Response:
-        queryset = self.get_queryset().filter(parent=None)
+        # path = request.query_params.get("path", "")
+        queryset = self.get_queryset().filter(parent=None).order_by("name")
         data = CollabDocumentListSerializer(queryset, many=True).data
         return Response(data)
 
