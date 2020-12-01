@@ -28,13 +28,15 @@ from backend.collab.models import EditingRoom, CollabDocument
 from backend.collab.serializers import (
     EditingRoomSerializer,
     CollabDocumentListSerializer,
+    CollabDocumentSerializer,
 )
 from backend.api.permissions import OnlyGet
+from backend.api.errors import CustomError
+from backend.static.error_codes import ERROR__API__ID_NOT_FOUND
 
 
 class CollabDocumentListViewSet(viewsets.ModelViewSet):
     queryset = CollabDocument.objects.all()
-    permission_classes = (OnlyGet,)
 
     def get_queryset(self) -> QuerySet:
         if self.request.user.is_superuser:
@@ -43,13 +45,27 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
             return self.queryset.filter(rlc=self.request.user.rlc)
 
     def list(self, request: Request, **kwargs: Any) -> Response:
-        # path = request.query_params.get("path", "")
         queryset = self.get_queryset().filter(parent=None).order_by("name")
         data = CollabDocumentListSerializer(queryset, many=True).data
         return Response(data)
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        pass
+        data = request.data
+
+        if "parent_id" in data and data["parent_id"] != None:
+            try:
+                parent = CollabDocument.objects.get(pk=data["parent_id"])
+            except:
+                raise CustomError(ERROR__API__ID_NOT_FOUND)
+        else:
+            parent = None
+
+        new_document = CollabDocument(
+            rlc=request.user.rlc, name=data["name"], parent=parent
+        )
+        CollabDocument.create_or_duplicate(new_document)
+
+        return Response(CollabDocumentSerializer(new_document).data)
 
 
 class CollabDocumentConnectAPIView(APIView):

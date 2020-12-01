@@ -31,6 +31,32 @@ class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument
     )
 
     @staticmethod
+    def create_or_duplicate(collab_document: "CollabDocument") -> "CollabDocument":
+        """
+        creates new collab document, either with given name
+        or if name under parent doc is already exsiting with appendix (1), (2)...
+        :param collab_document:
+        :return:
+        """
+        try:
+            CollabDocument.objects.get(
+                parent=collab_document.parent, name=collab_document.name
+            )
+        except:
+            collab_document.save()
+            return collab_document
+        count = 1
+        while True:
+            new_name = collab_document.name + " (" + str(count) + ")"
+            try:
+                CollabDocument.objects.get(parent=collab_document.parent, name=new_name)
+                count += 1
+            except:
+                collab_document.name = new_name
+                collab_document.save()
+                return collab_document
+
+    @staticmethod
     def get_collab_document_from_path(path: str, rlc: Rlc) -> "CollabDocument":
         """
         searches for collab document in virtual path
