@@ -15,14 +15,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from typing import Any
-import logging
-from django.conf import settings
-from django.db.models import Q, QuerySet, Case, When, Value, IntegerField
-from rest_framework import status, viewsets
+from django.db.models import QuerySet
+from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
-from rest_framework.pagination import LimitOffsetPagination
 
 from backend.collab.models import EditingRoom, CollabDocument
 from backend.collab.serializers import (
@@ -30,7 +27,6 @@ from backend.collab.serializers import (
     CollabDocumentListSerializer,
     CollabDocumentSerializer,
 )
-from backend.api.permissions import OnlyGet
 from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__API__ID_NOT_FOUND
 
@@ -79,6 +75,7 @@ class CollabDocumentConnectAPIView(APIView):
         try:
             document = CollabDocument.objects.get(pk=id)
         except Exception as e:
+            # TODO: what happens here?
             pass
 
         room = EditingRoom(document=document)
