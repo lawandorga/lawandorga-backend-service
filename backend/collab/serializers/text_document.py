@@ -20,8 +20,12 @@ from backend.collab.models import TextDocument
 from backend.static.encryption import AESEncryption
 from backend.static.serializer_fields import EncryptedField
 
+from backend.api.serializers import UserProfileNameSerializer
+
 
 class TextDocumentSerializer(serializers.ModelSerializer):
+    creator = UserProfileNameSerializer(many=False, read_only=True)
+    last_editor = UserProfileNameSerializer(many=False, read_only=True)
     content = EncryptedField()
 
     class Meta:

@@ -57,7 +57,11 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
             parent = None
 
         new_document = CollabDocument(
-            rlc=request.user.rlc, name=data["name"], parent=parent
+            rlc=request.user.rlc,
+            name=data["name"],
+            parent=parent,
+            creator=request.user,
+            last_editor=request.user,
         )
         CollabDocument.create_or_duplicate(new_document)
 
