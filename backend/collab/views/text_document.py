@@ -20,14 +20,17 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
+from backend.api.models import UserProfile
 from backend.collab.models import EditingRoom, CollabDocument, TextDocument
 from backend.collab.serializers import (
     EditingRoomSerializer,
     CollabDocumentListSerializer,
     CollabDocumentSerializer,
+    TextDocumentSerializer,
 )
 from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__API__ID_NOT_FOUND
+from backend.static.middleware import get_private_key_from_request
 
 
 class TextDocumentModelViewSet(viewsets.ModelViewSet):
@@ -39,5 +42,9 @@ class TextDocumentModelViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(rlc=self.request.user.rlc)
 
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        a = 10
-        return Response({})
+        doc = TextDocument.objects.get(pk=kwargs["pk"])
+        creators_private_key = get_private_key_from_request(request)
+        user: UserProfile = request.user
+        key: str = user.get_rlcs_aes_key(creators_private_key)
+        data = TextDocumentSerializer(doc).get_decrypted_data(key)
+        return Response(data)

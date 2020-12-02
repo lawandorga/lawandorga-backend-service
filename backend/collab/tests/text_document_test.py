@@ -33,7 +33,7 @@ from backend.static import error_codes
 
 class TextDocumentTest(TransactionTestCase):
     def setUp(self) -> None:
-        self.urls_collab_documents = "/api/collab/text_documents/"
+        self.urls_text_documents = "/api/collab/text_documents/"
 
         self.base_fixtures = CreateFixtures.create_base_fixtures()
         self.base_client: APIClient = self.base_fixtures["users"][0]["client"]
@@ -43,26 +43,32 @@ class TextDocumentTest(TransactionTestCase):
 
     def test_get_collab_document(self):
         private_key = self.base_fixtures["users"][0]["private"]
-        user: UserProfile
+        user: UserProfile = self.base_fixtures["users"][0]["user"]
+        rlcs_aes: str = user.get_rlcs_aes_key(private_key)
         content = "hello there, in this document is important information"
-        # AESEncryption.encrypt()
+        encrypted_content = AESEncryption.encrypt(content, rlcs_aes)
 
         first_document = CollabDocument(
             rlc=self.base_fixtures["rlc"],
             parent=None,
             name="first document",
             creator=self.base_fixtures["users"][0]["user"],
+            content=encrypted_content,
         )
         first_document.save()
 
         response: Response = self.base_client.get(
-            self.urls_collab_documents + str(first_document.id) + "/"
+            self.urls_text_documents + str(first_document.id) + "/",
+            format="json",
+            **{"HTTP_PRIVATE_KEY": private_key}
         )
         self.assertEqual(200, response.status_code)
         self.assertTrue("id" in response.data)
         self.assertEqual(first_document.id, response.data["id"])
         self.assertTrue("name" in response.data)
         self.assertEqual(first_document.name, response.data["name"])
+        self.assertTrue("content" in response.data)
+        self.assertEqual(content, response.data["content"])
 
     def test_indexes(self):
         users: [UserProfile] = [

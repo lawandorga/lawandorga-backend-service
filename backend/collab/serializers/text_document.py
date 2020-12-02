@@ -17,9 +17,18 @@
 from rest_framework import serializers
 
 from backend.collab.models import TextDocument
+from backend.static.encryption import AESEncryption
+from backend.static.serializer_fields import EncryptedField
 
 
 class TextDocumentSerializer(serializers.ModelSerializer):
+    content = EncryptedField()
+
     class Meta:
         model = TextDocument
         fields = "__all__"
+
+    def get_decrypted_data(self, aes_key: str) -> {}:
+        data = self.data
+        AESEncryption.decrypt_field(data, data, "content", aes_key)
+        return data
