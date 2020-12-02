@@ -54,5 +54,6 @@ class TextDocumentModelViewSet(viewsets.ModelViewSet):
         users_private_key = get_private_key_from_request(request)
         user: UserProfile = request.user
         key: str = user.get_rlcs_aes_key(users_private_key)
+        doc.patch(request.data, key, user)
 
-        return Response({})
+        return Response(TextDocumentSerializer(doc).get_decrypted_data(key))
