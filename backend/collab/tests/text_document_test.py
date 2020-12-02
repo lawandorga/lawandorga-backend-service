@@ -18,7 +18,8 @@ from django.test import TransactionTestCase
 from rest_framework.response import Response
 from rest_framework.test import APIClient
 
-from backend.api.models import UserProfile
+from backend.api.models import UserProfile, Rlc
+from backend.recordmanagement.models import EncryptedRecord
 from backend.collab.models import (
     CollabDocument,
     EditingRoom,
@@ -64,4 +65,26 @@ class TextDocumentTest(TransactionTestCase):
         self.assertEqual(first_document.name, response.data["name"])
 
     def test_indexes(self):
-        pass
+        users: [UserProfile] = [
+            self.base_fixtures["users"][0]["user"],
+            self.base_fixtures["users"][1]["user"],
+            self.base_fixtures["users"][2]["user"],
+        ]
+        rlc: Rlc = self.base_fixtures["rlc"]
+        record_fixtures = CreateFixtures.create_record_base_fixtures(
+            rlc=rlc, users=users
+        )
+        record: EncryptedRecord = record_fixtures["records"][0]["record"]
+        user: UserProfile = self.base_fixtures["users"][0]["user"]
+
+        record_doc_1 = RecordDocument(
+            record=record, name="rec doc 1", rlc=rlc, creator=user
+        )
+        record_doc_1.save()
+        collab_doc_1 = CollabDocument(
+            parent=None, name="collab doc 1", rlc=rlc, creator=user
+        )
+        collab_doc_1.save()
+
+        text_doc_2: TextDocument = TextDocument.objects.get(pk=collab_doc_1.id)
+        self.assertEqual(text_doc_2.get_collab_document(), collab_doc_1)
