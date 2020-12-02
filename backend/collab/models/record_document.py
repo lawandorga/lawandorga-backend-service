@@ -14,7 +14,19 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
 
-from .collab_document import *
-from .editing_room import *
-from .text_document import *
+from backend.collab.models import TextDocument
+from backend.recordmanagement.models import EncryptedRecord
+
+
+class RecordDocument(
+    ExportModelOperationsMixin("record_collab_document"), TextDocument
+):
+    record = models.ForeignKey(
+        EncryptedRecord,
+        related_name="collab_documents",
+        on_delete=models.CASCADE,
+        null=False,
+    )

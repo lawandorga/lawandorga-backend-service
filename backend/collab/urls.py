@@ -21,12 +21,14 @@ from backend.collab.views import (
     CollabDocumentConnectAPIView,
     CollabDocumentListViewSet,
     DisconnectMeetingRoomAPIView,
+    TextDocumentModelViewSet,
 )
 
 router = DefaultRouter()
 router.register(
     "collab_documents", CollabDocumentListViewSet, basename="collab_documents"
 )
+router.register("text_documents", TextDocumentModelViewSet, basename="text_documents")
 
 
 urlpatterns = [

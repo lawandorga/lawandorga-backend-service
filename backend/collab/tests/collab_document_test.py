@@ -18,6 +18,7 @@ from django.test import TransactionTestCase
 from rest_framework.response import Response
 from rest_framework.test import APIClient
 
+from backend.api.models import UserProfile
 from backend.collab.models import CollabDocument, EditingRoom, TextDocument
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.static.encryption import AESEncryption
@@ -72,7 +73,7 @@ class CollabDocumentConnectionTest(TransactionTestCase):
         self.assertEqual(401, response.status_code)
 
 
-class CollabDocumentTest(TransactionTestCase):
+class CollabDocumentListTest(TransactionTestCase):
     # TODO: wrong rlc, unauthenticated
     def setUp(self) -> None:
         self.urls_edit_collab = "/api/collab/edit_collab_document/"
