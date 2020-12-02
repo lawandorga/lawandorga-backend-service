@@ -22,6 +22,7 @@ from django_prometheus.models import ExportModelOperationsMixin
 from backend.api.models import Rlc, UserProfile
 from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__COLLAB__TYPE_NOT_EXISTING
+from backend.static.encryption import AESEncryption
 
 
 class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):
@@ -49,9 +50,26 @@ class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):
 
     objects = InheritanceManager()
 
-    def get_collab_document(self):
+    def get_collab_document(self) -> "CollabDocument":
         try:
             collab_doc = self.collabdocument
             return collab_doc
         except Exception as e:
             raise CustomError(ERROR__COLLAB__TYPE_NOT_EXISTING)
+
+    def get_record_document(self) -> "RecordDocument":
+        try:
+            record_doc = self.recorddocument
+            return record_doc
+        except Exception as e:
+            raise CustomError(ERROR__COLLAB__TYPE_NOT_EXISTING)
+
+    def patch(self, document_data: {}, aes_key: str, user: UserProfile) -> None:
+        if "content" in document_data or "name" in document_data:
+            if "name" in document_data:
+                self.name = document_data["name"]
+            if "content" in document_data:
+                self.content = AESEncryption.encrypt(document_data["content"], aes_key)
+            self.last_editor = user
+            self.last_edited = timezone.now()
+            self.save()

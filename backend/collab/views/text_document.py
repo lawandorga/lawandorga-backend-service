@@ -42,9 +42,17 @@ class TextDocumentModelViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(rlc=self.request.user.rlc)
 
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        doc = TextDocument.objects.get(pk=kwargs["pk"])
-        creators_private_key = get_private_key_from_request(request)
+        doc: TextDocument = TextDocument.objects.get(pk=kwargs["pk"])
+        users_private_key = get_private_key_from_request(request)
         user: UserProfile = request.user
-        key: str = user.get_rlcs_aes_key(creators_private_key)
+        key: str = user.get_rlcs_aes_key(users_private_key)
         data = TextDocumentSerializer(doc).get_decrypted_data(key)
         return Response(data)
+
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        doc: TextDocument = TextDocument.objects.get(pk=kwargs["pk"])
+        users_private_key = get_private_key_from_request(request)
+        user: UserProfile = request.user
+        key: str = user.get_rlcs_aes_key(users_private_key)
+
+        return Response({})
