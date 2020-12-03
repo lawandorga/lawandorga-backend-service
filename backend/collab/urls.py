@@ -18,10 +18,9 @@ from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
 
 from backend.collab.views import (
-    CollabDocumentConnectAPIView,
     CollabDocumentListViewSet,
-    DisconnectMeetingRoomAPIView,
     TextDocumentModelViewSet,
+    TextDocumentConnectionAPIView,
 )
 
 router = DefaultRouter()
@@ -33,6 +32,5 @@ router.register("text_documents", TextDocumentModelViewSet, basename="text_docum
 
 urlpatterns = [
     url(r"", include(router.urls)),
-    url(r"edit_collab_document/(?P<id>.+)/$", CollabDocumentConnectAPIView.as_view()),
-    url(r"leave_editing_room/(?P<id>.+)/$", DisconnectMeetingRoomAPIView.as_view()),
+    url(r"editing/(?P<id>.+)/$", TextDocumentConnectionAPIView.as_view()),
 ]

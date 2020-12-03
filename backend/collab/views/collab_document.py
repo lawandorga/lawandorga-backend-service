@@ -66,22 +66,3 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
         CollabDocument.create_or_duplicate(new_document)
 
         return Response(CollabDocumentSerializer(new_document).data)
-
-
-class CollabDocumentConnectAPIView(APIView):
-    def get(self, request: Request, id: str) -> Response:
-        """
-        start editing document, open new editing room if none is open, else return open room
-        :param request:
-        :param id:
-        :return:
-        """
-        try:
-            document = CollabDocument.objects.get(pk=id)
-        except Exception as e:
-            # TODO: what happens here?
-            pass
-
-        room = EditingRoom(document=document)
-        room.save()
-        return Response(EditingRoomSerializer(room).data)

@@ -57,3 +57,23 @@ class TextDocumentModelViewSet(viewsets.ModelViewSet):
         doc.patch(request.data, key, user)
 
         return Response(TextDocumentSerializer(doc).get_decrypted_data(key))
+
+
+class TextDocumentConnectionAPIView(APIView):
+    def get(self, request: Request, id: str) -> Response:
+        try:
+            document = TextDocument.objects.get(pk=id)
+        except Exception as e:
+            raise CustomError(ERROR__API__ID_NOT_FOUND)
+
+        existing = EditingRoom.objects.filter(document=document).first()
+        did_create = False
+        if existing:
+            room = existing
+        else:
+            room = EditingRoom(document=document)
+            room.save()
+            did_create = True
+        response_obj = EditingRoomSerializer(room).data
+        response_obj.update({"did_create": did_create})
+        return Response(response_obj)
