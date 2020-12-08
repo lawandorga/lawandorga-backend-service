@@ -88,3 +88,18 @@ class EditingRoomViewSetTest(TransactionTestCase):
         self.assertEqual(from_db.password, response.data["password"])
         self.assertEqual(from_db.room_id, response.data["room_id"])
         self.assertEqual(False, response.data["did_create"])
+
+    def test_close_room(self):
+        self.assertEqual(0, EditingRoom.objects.count())
+
+        response: Response = self.base_client.get(
+            self.urls_editing + str(self.document.id) + "/"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, EditingRoom.objects.count())
+
+        response: Response = self.base_client.delete(
+            self.urls_editing + str(self.document.id) + "/"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, EditingRoom.objects.count())

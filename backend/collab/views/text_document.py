@@ -59,7 +59,7 @@ class TextDocumentModelViewSet(viewsets.ModelViewSet):
         return Response(TextDocumentSerializer(doc).get_decrypted_data(key))
 
 
-class TextDocumentConnectionAPIView(APIView):
+class TextDocumentConnectionAPIView(APIView,):
     def get(self, request: Request, id: str) -> Response:
         try:
             document = TextDocument.objects.get(pk=id)
@@ -77,3 +77,17 @@ class TextDocumentConnectionAPIView(APIView):
         response_obj = EditingRoomSerializer(room).data
         response_obj.update({"did_create": did_create})
         return Response(response_obj)
+
+    def post(self, request: Request, id: str):
+        pass
+
+    def delete(self, request: Request, id: str):
+        try:
+            document = TextDocument.objects.get(pk=id)
+        except Exception as e:
+            raise CustomError(ERROR__API__ID_NOT_FOUND)
+        EditingRoom.objects.filter(document=document).delete()
+        print("editing room deleted")
+        # TODO: check permission rights
+
+        return Response({"success": True})
