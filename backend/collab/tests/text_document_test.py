@@ -79,7 +79,6 @@ class TextDocumentViewSetTest(TransactionTestCase):
         self.foreign_rlc = CreateFixtures.create_foreign_rlc_fixture()
         # TODO: foreign RLC, unauthenticated, no private
         # TODO: list, post methods? close them!
-        # TODO: wrong id, no id,
 
     def test_get_text_document(self):
         private_key = self.base_fixtures["users"][0]["private"]
@@ -167,3 +166,29 @@ class TextDocumentViewSetTest(TransactionTestCase):
 
         text_doc_from_db: TextDocument = TextDocument.objects.get(pk=record_doc_1.id)
         self.assertEqual(text_doc_from_db.get_record_document(), record_doc_1)
+
+    def test_get_wrong_id(self):
+        private_key = self.base_fixtures["users"][0]["private"]
+        user: UserProfile = self.base_fixtures["users"][0]["user"]
+        rlcs_aes: str = user.get_rlcs_aes_key(private_key)
+        content = "hello there, in this document is important information"
+        encrypted_content = AESEncryption.encrypt(content, rlcs_aes)
+
+        first_document = TextDocument(
+            rlc=self.base_fixtures["rlc"],
+            name="first document",
+            creator=user,
+            content=encrypted_content,
+        )
+        first_document.save()
+
+        response: Response = self.base_client.get(
+            self.urls_text_documents + str(first_document.id + 1) + "/",
+            format="json",
+            **{"HTTP_PRIVATE_KEY": private_key}
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__API__ID_NOT_FOUND["error_code"],
+            response.data["error_code"],
+        )

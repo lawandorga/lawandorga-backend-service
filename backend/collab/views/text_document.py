@@ -21,11 +21,9 @@ from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from backend.api.models import UserProfile
-from backend.collab.models import EditingRoom, CollabDocument, TextDocument
+from backend.collab.models import EditingRoom, TextDocument
 from backend.collab.serializers import (
     EditingRoomSerializer,
-    CollabDocumentListSerializer,
-    CollabDocumentSerializer,
     TextDocumentSerializer,
 )
 from backend.api.errors import CustomError
@@ -42,7 +40,10 @@ class TextDocumentModelViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(rlc=self.request.user.rlc)
 
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        doc: TextDocument = TextDocument.objects.get(pk=kwargs["pk"])
+        try:
+            doc: TextDocument = TextDocument.objects.get(pk=kwargs["pk"])
+        except Exception as e:
+            raise CustomError(ERROR__API__ID_NOT_FOUND)
         users_private_key = get_private_key_from_request(request)
         user: UserProfile = request.user
         key: str = user.get_rlcs_aes_key(users_private_key)
