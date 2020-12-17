@@ -14,7 +14,27 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+from django.db import models
+from django.utils import timezone
+from django_prometheus.models import ExportModelOperationsMixin
 
-from .collab_document import *
-from .text_document import *
-from .text_document_version import *
+from backend.api.models import UserProfile
+from backend.collab.models import TextDocument
+
+
+class TextDocumentVersion(
+    ExportModelOperationsMixin("text_document_version"), models.Model
+):
+    document = models.ForeignKey(
+        TextDocument, related_name="versions", null=False, on_delete=models.CASCADE
+    )
+    created = models.DateTimeField(default=timezone.now)
+    creator = models.ForeignKey(
+        UserProfile,
+        related_name="text_document_versions_created",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+
+    is_draft = models.BooleanField(default=True)
+    content = models.BinaryField()

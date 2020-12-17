@@ -15,6 +15,21 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 
-from .collab_document import *
-from .text_document import *
-from .text_document_version import *
+from rest_framework import serializers
+
+from backend.collab.models import TextDocument, TextDocumentVersion
+from backend.static.encryption import AESEncryption
+from backend.static.serializer_fields import EncryptedField
+
+from backend.api.serializers import UserProfileNameSerializer
+
+
+class TextDocumentVersionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TextDocumentVersion
+        fields = "__all__"
+
+    def get_decrypted_data(self, aes_key: str) -> {}:
+        data = self.data
+        AESEncryption.decrypt_field(data, data, "content", aes_key)
+        return data
