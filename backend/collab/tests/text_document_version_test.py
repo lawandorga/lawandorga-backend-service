@@ -40,3 +40,27 @@ class TextDocumentVersionViewSetTest(TransactionTestCase):
 
     def test_create(self):
         pass
+
+
+class VersionsOfTextDocumentsViewSetTest(TransactionTestCase):
+    def setUp(self) -> None:
+        self.urls_text_document_versions = "/api/collab/text_documents/{}/versions/"
+        self.base_fixtures = CreateFixtures.create_base_fixtures()
+        self.base_client: APIClient = self.base_fixtures["users"][0]["client"]
+
+    def test_create_new_version(self):
+        private_key = self.base_fixtures["users"][0]["private"]
+        document = TextDocument(
+            rlc=self.base_fixtures["rlc"],
+            name="first document",
+            creator=self.base_fixtures["users"][0]["user"],
+            content=b"",
+        )
+        document.save()
+
+        url = self.urls_text_document_versions.format(document.id)
+
+        response: Response = self.base_client.post(
+            url, format="json", **{"HTTP_PRIVATE_KEY": private_key}
+        )
+        self.assertEqual(201, response.status_code)

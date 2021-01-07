@@ -21,6 +21,7 @@ from backend.collab.views import (
     CollabDocumentListViewSet,
     TextDocumentModelViewSet,
     TextDocumentConnectionAPIView,
+    VersionsOfTextDocumentViewSet,
 )
 
 router = DefaultRouter()
@@ -33,4 +34,7 @@ router.register("text_documents", TextDocumentModelViewSet, basename="text_docum
 urlpatterns = [
     url(r"", include(router.urls)),
     url(r"editing/(?P<id>.+)/$", TextDocumentConnectionAPIView.as_view()),
+    url(
+        r"text_documents/(?P<id>.+)/versions/$", VersionsOfTextDocumentViewSet.as_view()
+    ),
 ]

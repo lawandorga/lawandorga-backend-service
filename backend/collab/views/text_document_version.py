@@ -44,3 +44,12 @@ class TextDocumentVersionModelViewSet(viewsets.ModelViewSet):
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         pass
+
+
+class VersionsOfTextDocumentViewSet(APIView):
+    def get(self, request: Request, id: str) -> Response:
+        a = 10
+        pass
+
+    def post(self, request: Request, id: str) -> Response:
+        return Response(status=201)
