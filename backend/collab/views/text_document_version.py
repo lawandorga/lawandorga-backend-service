@@ -25,9 +25,13 @@ from backend.collab.models import EditingRoom, TextDocument, TextDocumentVersion
 from backend.collab.serializers import (
     EditingRoomSerializer,
     TextDocumentSerializer,
+    TextDocumentVersionSerializer,
 )
 from backend.api.errors import CustomError
-from backend.static.error_codes import ERROR__API__ID_NOT_FOUND
+from backend.static.error_codes import (
+    ERROR__API__ID_NOT_FOUND,
+    ERROR__API__PARAMS_NOT_VALID,
+)
 from backend.static.middleware import get_private_key_from_request
 
 
@@ -52,4 +56,22 @@ class VersionsOfTextDocumentViewSet(APIView):
         pass
 
     def post(self, request: Request, id: str) -> Response:
-        return Response(status=201)
+        try:
+            document = TextDocument.objects.get(pk=id)
+        except Exception as e:
+            raise CustomError(ERROR__API__ID_NOT_FOUND)
+
+        if "content" not in request.data or "is_draft" not in request.data:
+            raise CustomError(ERROR__API__PARAMS_NOT_VALID)
+
+        users_private_key = get_private_key_from_request(request)
+        user: UserProfile = request.user
+        key: str = user.get_rlcs_aes_key(users_private_key)
+
+        version = TextDocumentVersion.create(
+            request.data["content"], request.data["is_draft"], key, user, document
+        )
+
+        return Response(
+            TextDocumentVersionSerializer(version).get_decrypted_data(key), status=201
+        )

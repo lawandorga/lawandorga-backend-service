@@ -20,6 +20,7 @@ from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.models import UserProfile
 from backend.collab.models import TextDocument
+from backend.static.encryption import AESEncryption
 
 
 class TextDocumentVersion(
@@ -38,3 +39,21 @@ class TextDocumentVersion(
 
     is_draft = models.BooleanField(default=True)
     content = models.BinaryField()
+
+    @staticmethod
+    def create(
+        content: str,
+        is_draft: bool,
+        aes_key: str,
+        user: UserProfile,
+        document: TextDocument,
+    ) -> "TextDocumentVersion":
+        encrypted_content = AESEncryption.encrypt(content, aes_key)
+        version = TextDocumentVersion(
+            is_draft=is_draft,
+            content=encrypted_content,
+            creator=user,
+            document=document,
+        )
+        version.save()
+        return version

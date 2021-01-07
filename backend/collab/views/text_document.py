@@ -51,6 +51,7 @@ class TextDocumentModelViewSet(viewsets.ModelViewSet):
         return Response(data)
 
     def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        pass
         doc: TextDocument = TextDocument.objects.get(pk=kwargs["pk"])
         users_private_key = get_private_key_from_request(request)
         user: UserProfile = request.user

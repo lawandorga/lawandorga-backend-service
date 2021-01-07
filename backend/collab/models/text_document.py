@@ -31,8 +31,6 @@ class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):
     )
     name = models.CharField(max_length=255, null=False)
 
-    content = models.BinaryField()
-
     created = models.DateTimeField(default=timezone.now)
     creator = models.ForeignKey(
         UserProfile,
@@ -64,12 +62,10 @@ class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):
         except Exception as e:
             raise CustomError(ERROR__COLLAB__TYPE_NOT_EXISTING)
 
-    def patch(self, document_data: {}, aes_key: str, user: UserProfile) -> None:
+    def patch(self, document_data: {}, user: UserProfile) -> None:
         if "content" in document_data or "name" in document_data:
             if "name" in document_data:
                 self.name = document_data["name"]
-            if "content" in document_data:
-                self.content = AESEncryption.encrypt(document_data["content"], aes_key)
             self.last_editor = user
             self.last_edited = timezone.now()
             self.save()

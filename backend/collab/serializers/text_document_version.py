@@ -25,6 +25,9 @@ from backend.api.serializers import UserProfileNameSerializer
 
 
 class TextDocumentVersionSerializer(serializers.ModelSerializer):
+    creator = UserProfileNameSerializer(many=False, read_only=True)
+    content = EncryptedField()
+
     class Meta:
         model = TextDocumentVersion
         fields = "__all__"

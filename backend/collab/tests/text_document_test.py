@@ -88,10 +88,7 @@ class TextDocumentViewSetTest(TransactionTestCase):
         encrypted_content = AESEncryption.encrypt(content, rlcs_aes)
 
         first_document = TextDocument(
-            rlc=self.base_fixtures["rlc"],
-            name="first document",
-            creator=user,
-            content=encrypted_content,
+            rlc=self.base_fixtures["rlc"], name="first document", creator=user,
         )
         first_document.save()
 
