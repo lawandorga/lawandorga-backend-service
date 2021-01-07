@@ -78,6 +78,8 @@ class VersionsOfTextDocumentsViewSetTest(TransactionTestCase):
         self.assertEqual(version_from_db.document, document_from_db)
         self.assertEqual(content, response.data["content"])
 
+        # TODO: modify textdocument (last edited, last editor, maybe more?), mocks in metrics tests
+
         # TODO: second version, user not from rlc, user no permissions?,
 
     def test_create_wrong_document(self):

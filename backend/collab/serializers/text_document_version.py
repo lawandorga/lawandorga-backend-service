@@ -22,6 +22,7 @@ from backend.static.encryption import AESEncryption
 from backend.static.serializer_fields import EncryptedField
 
 from backend.api.serializers import UserProfileNameSerializer
+from backend.collab.serializers import TextDocumentNameSerializer
 
 
 class TextDocumentVersionSerializer(serializers.ModelSerializer):
@@ -36,3 +37,12 @@ class TextDocumentVersionSerializer(serializers.ModelSerializer):
         data = self.data
         AESEncryption.decrypt_field(data, data, "content", aes_key)
         return data
+
+
+class TextDocumentVersionListSerializer(serializers.ModelSerializer):
+    document = TextDocumentNameSerializer(many=False, read_only=True)
+    creator = UserProfileNameSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = TextDocumentVersion
+        fields = ("creator", "created", "document", "is_draft")

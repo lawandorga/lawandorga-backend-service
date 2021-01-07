@@ -36,3 +36,9 @@ class TextDocumentSerializer(serializers.ModelSerializer):
     #     data = self.data
     #     AESEncryption.decrypt_field(data, data, "content", aes_key)
     #     return data
+
+
+class TextDocumentNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TextDocument
+        fields = ("pk", "name")
