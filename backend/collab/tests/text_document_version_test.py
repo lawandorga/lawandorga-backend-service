@@ -157,7 +157,41 @@ class VersionsOfTextDocumentsViewSetTest(TransactionTestCase):
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, TextDocumentVersion.objects.count())
 
-    def test_create_wrong_document(self):
+    def test_create_second_public_version(self):
+        private_key = self.base_fixtures["users"][0]["private"]
+        document = TextDocument(
+            rlc=self.base_fixtures["rlc"],
+            name="first document",
+            creator=self.base_fixtures["users"][1]["user"],
+            last_editor=self.base_fixtures["users"][1]["user"],
+            created=timezone.now(),
+            last_edited=timezone.now(),
+        )
+        document.save()
+        content = "hello there how are you </adsfadf>"
+
+        url = self.urls_text_document_versions.format(document.id)
+        response: Response = self.base_client.post(
+            url,
+            {"content": content, "is_draft": False},
+            format="json",
+            **{"HTTP_PRIVATE_KEY": private_key}
+        )
+        self.assertEqual(201, response.status_code)
+
+        content = "another version, some changes, all overwritten"
+        response: Response = self.base_client.post(
+            url,
+            {"content": content, "is_draft": False},
+            format="json",
+            **{"HTTP_PRIVATE_KEY": private_key}
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(2, TextDocumentVersion.objects.count())
+        document_from_db = TextDocument.objects.first()
+        self.assertEqual(2, document_from_db.versions.count())
+
+    def test_create_not_existing_document(self):
         private_key = self.base_fixtures["users"][0]["private"]
         document = TextDocument(
             rlc=self.base_fixtures["rlc"],
@@ -215,3 +249,60 @@ class VersionsOfTextDocumentsViewSetTest(TransactionTestCase):
             error_codes.ERROR__API__PARAMS_NOT_VALID["error_code"],
             response.data["error_code"],
         )
+
+    def test_get_versions(self):
+        private_key = self.base_fixtures["users"][0]["private"]
+        document = TextDocument(
+            rlc=self.base_fixtures["rlc"],
+            name="first document",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        document.save()
+
+        user0: UserProfile = self.base_fixtures["users"][0]["user"]
+        rlcs_aes_key = user0.get_rlcs_aes_key(private_key)
+        timezone.now = mock_datetime_now(0, 0)
+
+        version1: TextDocumentVersion = TextDocumentVersion.create(
+            "first content really interesting", False, rlcs_aes_key, user0, document
+        )
+        version1.created = timezone.now()
+        version1.save()
+
+        timezone.now = mock_datetime_now(3, 0)
+        version2_content = "version 3 of document, changed something"
+        version2: TextDocumentVersion = TextDocumentVersion.create(
+            version2_content, False, rlcs_aes_key, user0, document,
+        )
+        version2.created = timezone.now()
+        version2.save()
+
+        timezone.now = mock_datetime_now(1, 30)
+        version3: TextDocumentVersion = TextDocumentVersion.create(
+            "version 2 of document, changed everything",
+            False,
+            rlcs_aes_key,
+            user0,
+            document,
+        )
+        version3.created = timezone.now()
+        version3.save()
+
+        url = self.urls_text_document_versions.format(document.id)
+        start = datetime.now()
+        response: Response = self.base_client.get(
+            url, format="json", **{"HTTP_PRIVATE_KEY": private_key}
+        )
+        print("request duration: ", (datetime.now() - start).microseconds / 1000, "ms")
+        self.assertEqual(200, response.status_code)
+        self.assertIsNotNone(response.data)
+        self.assertEqual(3, response.data.__len__())
+        self.assertEqual(version2.id, response.data[0]["id"])
+        self.assertEqual(version2_content, response.data[0]["content"])
+        self.assertEqual(version3.id, response.data[1]["id"])
+        self.assertNotIn("content", response.data[1])
+        self.assertEqual(version1.id, response.data[2]["id"])
+        self.assertNotIn("content", response.data[2])
+
+    def test_get_versions_max(self):
+        pass

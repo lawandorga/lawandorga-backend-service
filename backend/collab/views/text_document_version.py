@@ -26,6 +26,7 @@ from backend.collab.serializers import (
     EditingRoomSerializer,
     TextDocumentSerializer,
     TextDocumentVersionSerializer,
+    TextDocumentVersionListSerializer,
 )
 from backend.api.errors import CustomError
 from backend.static.error_codes import (
@@ -52,7 +53,22 @@ class TextDocumentVersionModelViewSet(viewsets.ModelViewSet):
 
 class VersionsOfTextDocumentViewSet(APIView):
     def get(self, request: Request, id: str) -> Response:
-        return Response()
+        try:
+            document = TextDocument.objects.get(pk=id)
+        except Exception as e:
+            raise CustomError(ERROR__API__ID_NOT_FOUND)
+
+        users_private_key = get_private_key_from_request(request)
+        user: UserProfile = request.user
+        key: str = user.get_rlcs_aes_key(users_private_key)
+
+        versions = document.versions.all().order_by("-created")
+
+        full_data = [
+            TextDocumentVersionSerializer(versions.first()).get_decrypted_data(key),
+            *TextDocumentVersionListSerializer(versions, many=True).data[1:],
+        ]
+        return Response(full_data)
 
     def post(self, request: Request, id: str) -> Response:
         try:

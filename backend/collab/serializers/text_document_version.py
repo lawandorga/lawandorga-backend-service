@@ -27,6 +27,7 @@ from backend.collab.serializers import TextDocumentNameSerializer
 
 class TextDocumentVersionSerializer(serializers.ModelSerializer):
     creator = UserProfileNameSerializer(many=False, read_only=True)
+    document = TextDocumentNameSerializer(many=False, read_only=True)
     content = EncryptedField()
 
     class Meta:
@@ -45,4 +46,4 @@ class TextDocumentVersionListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TextDocumentVersion
-        fields = ("creator", "created", "document", "is_draft")
+        fields = ("creator", "created", "document", "is_draft", "id")
