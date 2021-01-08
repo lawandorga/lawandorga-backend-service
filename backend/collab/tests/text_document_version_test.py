@@ -305,7 +305,7 @@ class VersionsOfTextDocumentsViewSetTest(TransactionTestCase):
         self.assertEqual(version1.id, response.data[2]["id"])
         self.assertNotIn("content", response.data[2])
 
-    def test_get_versions_max(self):
+    def test_get_single_version(self):
         private_key = self.base_fixtures["users"][0]["private"]
         document = TextDocument(
             rlc=self.base_fixtures["rlc"],
@@ -322,7 +322,6 @@ class VersionsOfTextDocumentsViewSetTest(TransactionTestCase):
             content, False, rlcs_aes_key, user0, document
         )
 
-        a = self.urls_versions_model_url + str(version1.id) + "/"
         response: Response = self.base_client.get(
             self.urls_versions_model_url + str(version1.id) + "/",
             format="json",
@@ -331,3 +330,31 @@ class VersionsOfTextDocumentsViewSetTest(TransactionTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(version1.id, response.data["id"])
         self.assertEqual(content, response.data["content"])
+
+    def test_get_single_version_wrong_id(self):
+        private_key = self.base_fixtures["users"][0]["private"]
+        document = TextDocument(
+            rlc=self.base_fixtures["rlc"],
+            name="first document",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        document.save()
+
+        user0: UserProfile = self.base_fixtures["users"][0]["user"]
+        rlcs_aes_key = user0.get_rlcs_aes_key(private_key)
+
+        content = "first content really interesting"
+        version1: TextDocumentVersion = TextDocumentVersion.create(
+            content, False, rlcs_aes_key, user0, document
+        )
+
+        response: Response = self.base_client.get(
+            self.urls_versions_model_url + "23894/",
+            format="json",
+            **{"HTTP_PRIVATE_KEY": private_key}
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            error_codes.ERROR__API__ID_NOT_FOUND["error_code"],
+            response.data["error_code"],
+        )

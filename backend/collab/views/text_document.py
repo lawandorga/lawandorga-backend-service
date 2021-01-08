@@ -25,6 +25,7 @@ from backend.collab.models import EditingRoom, TextDocument
 from backend.collab.serializers import (
     EditingRoomSerializer,
     TextDocumentSerializer,
+    TextDocumentVersionSerializer,
 )
 from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__API__ID_NOT_FOUND
@@ -47,10 +48,16 @@ class TextDocumentModelViewSet(viewsets.ModelViewSet):
         users_private_key = get_private_key_from_request(request)
         user: UserProfile = request.user
         key: str = user.get_rlcs_aes_key(users_private_key)
-        data = TextDocumentSerializer(doc).get_decrypted_data(key)
+
+        data = TextDocumentSerializer(doc).data
+        data["version"] = TextDocumentVersionSerializer(
+            doc.get_last_published_version()
+        ).get_decrypted_data(key)
+
         return Response(data)
 
     def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        # TODO: needed?
         pass
         doc: TextDocument = TextDocument.objects.get(pk=kwargs["pk"])
         users_private_key = get_private_key_from_request(request)

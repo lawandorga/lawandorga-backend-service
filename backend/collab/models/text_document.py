@@ -69,3 +69,6 @@ class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):
             self.last_editor = user
             self.last_edited = timezone.now()
             self.save()
+
+    def get_last_published_version(self) -> "TextDocumentVersion":
+        return self.versions.filter(is_draft=False).order_by("-created").first()

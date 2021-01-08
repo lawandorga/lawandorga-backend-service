@@ -28,10 +28,12 @@ from backend.collab.models import (
     EditingRoom,
     TextDocument,
     RecordDocument,
+    TextDocumentVersion,
 )
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.static.encryption import AESEncryption
 from backend.static import error_codes
+from backend.static.mocks import mock_datetime_now
 
 
 class TextDocumentModelTest(TransactionTestCase):
@@ -39,35 +41,84 @@ class TextDocumentModelTest(TransactionTestCase):
         self.base_fixtures = CreateFixtures.create_base_fixtures()
 
     def test_patch(self):
-        private_key = self.base_fixtures["users"][0]["private"]
-        user: UserProfile = self.base_fixtures["users"][0]["user"]
-        rlcs_aes: str = user.get_rlcs_aes_key(private_key)
-        org_content = "hello there, in this document is important information"
-        encrypted_content = AESEncryption.encrypt(org_content, rlcs_aes)
-        new_content = "new content, overwrites old one"
+        # TODO: needed anymore? maybe test text document version?
+        # private_key = self.base_fixtures["users"][0]["private"]
+        # user: UserProfile = self.base_fixtures["users"][0]["user"]
+        # rlcs_aes: str = user.get_rlcs_aes_key(private_key)
+        # org_content = "hello there, in this document is important information"
+        # encrypted_content = AESEncryption.encrypt(org_content, rlcs_aes)
+        # new_content = "new content, overwrites old one"
+        #
+        # created_time = datetime(2018, 12, 30, 16, 3, 0, 0)
+        # first_document = TextDocument(
+        #     rlc=self.base_fixtures["rlc"],
+        #     name="first document",
+        #     creator=user,
+        #     content=encrypted_content,
+        #     last_edited=created_time,
+        #     created=created_time,
+        # )
+        # first_document.save()
+        #
+        # first_document.patch(
+        #     {"content": new_content}, rlcs_aes, self.base_fixtures["users"][1]["user"]
+        # )
+        #
+        # doc_from_db: TextDocument = TextDocument.objects.get(pk=first_document.id)
+        # decrypted_content_from_db = AESEncryption.decrypt(doc_from_db.content, rlcs_aes)
+        # self.assertEqual(new_content, decrypted_content_from_db)
+        # self.assertNotEqual(created_time, doc_from_db.last_edited)
+        # self.assertEqual(
+        #     self.base_fixtures["users"][1]["user"], doc_from_db.last_editor
+        # )
+        pass
 
-        created_time = datetime(2018, 12, 30, 16, 3, 0, 0)
-        first_document = TextDocument(
+    def test_get_last_version(self):
+        private_key = self.base_fixtures["users"][0]["private"]
+        document = TextDocument(
             rlc=self.base_fixtures["rlc"],
             name="first document",
-            creator=user,
-            content=encrypted_content,
-            last_edited=created_time,
-            created=created_time,
+            creator=self.base_fixtures["users"][0]["user"],
         )
-        first_document.save()
+        document.save()
 
-        first_document.patch(
-            {"content": new_content}, rlcs_aes, self.base_fixtures["users"][1]["user"]
-        )
+        user0: UserProfile = self.base_fixtures["users"][0]["user"]
+        rlcs_aes_key = user0.get_rlcs_aes_key(private_key)
+        timezone.now = mock_datetime_now(0, 0)
 
-        doc_from_db: TextDocument = TextDocument.objects.get(pk=first_document.id)
-        decrypted_content_from_db = AESEncryption.decrypt(doc_from_db.content, rlcs_aes)
-        self.assertEqual(new_content, decrypted_content_from_db)
-        self.assertNotEqual(created_time, doc_from_db.last_edited)
-        self.assertEqual(
-            self.base_fixtures["users"][1]["user"], doc_from_db.last_editor
+        version1: TextDocumentVersion = TextDocumentVersion.create(
+            "first content really interesting", False, rlcs_aes_key, user0, document
         )
+        version1.created = timezone.now()
+        version1.save()
+
+        self.assertEqual(version1, document.get_last_published_version())
+        version1.is_draft = True
+        version1.save()
+        self.assertIsNone(document.get_last_published_version())
+        version1.is_draft = False
+        version1.save()
+
+        timezone.now = mock_datetime_now(3, 0)
+        version2_content = "version 3 of document, changed something"
+        version2: TextDocumentVersion = TextDocumentVersion.create(
+            version2_content, False, rlcs_aes_key, user0, document,
+        )
+        version2.created = timezone.now()
+        version2.save()
+        self.assertEqual(version2, document.get_last_published_version())
+
+        timezone.now = mock_datetime_now(1, 30)
+        version3: TextDocumentVersion = TextDocumentVersion.create(
+            "version 2 of document, changed everything",
+            False,
+            rlcs_aes_key,
+            user0,
+            document,
+        )
+        version3.created = timezone.now()
+        version3.save()
+        self.assertEqual(version2, document.get_last_published_version())
 
 
 class TextDocumentViewSetTest(TransactionTestCase):
@@ -87,23 +138,29 @@ class TextDocumentViewSetTest(TransactionTestCase):
         content = "hello there, in this document is important information"
         encrypted_content = AESEncryption.encrypt(content, rlcs_aes)
 
-        first_document = TextDocument(
+        document = TextDocument(
             rlc=self.base_fixtures["rlc"], name="first document", creator=user,
         )
-        first_document.save()
+        document.save()
+        version = TextDocumentVersion(
+            document=document, creator=user, is_draft=False, content=encrypted_content
+        )
+        version.save()
 
         response: Response = self.base_client.get(
-            self.urls_text_documents + str(first_document.id) + "/",
+            self.urls_text_documents + str(document.id) + "/",
             format="json",
             **{"HTTP_PRIVATE_KEY": private_key}
         )
         self.assertEqual(200, response.status_code)
         self.assertTrue("id" in response.data)
-        self.assertEqual(first_document.id, response.data["id"])
+        self.assertEqual(document.id, response.data["id"])
         self.assertTrue("name" in response.data)
-        self.assertEqual(first_document.name, response.data["name"])
-        self.assertTrue("content" in response.data)
-        self.assertEqual(content, response.data["content"])
+        self.assertEqual(document.name, response.data["name"])
+
+        self.assertTrue("version" in response.data)
+        self.assertTrue("content" in response.data["version"])
+        self.assertEqual(content, response.data["version"]["content"])
 
     def test_update_text_document(self):
         private_key = self.base_fixtures["users"][0]["private"]
