@@ -56,4 +56,9 @@ class TextDocumentVersion(
             document=document,
         )
         version.save()
+
+        document.last_editor = user
+        document.last_edited = timezone.now()
+        document.save()
+
         return version

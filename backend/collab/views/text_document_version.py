@@ -52,8 +52,7 @@ class TextDocumentVersionModelViewSet(viewsets.ModelViewSet):
 
 class VersionsOfTextDocumentViewSet(APIView):
     def get(self, request: Request, id: str) -> Response:
-        a = 10
-        pass
+        return Response()
 
     def post(self, request: Request, id: str) -> Response:
         try:
@@ -63,6 +62,8 @@ class VersionsOfTextDocumentViewSet(APIView):
 
         if "content" not in request.data or "is_draft" not in request.data:
             raise CustomError(ERROR__API__PARAMS_NOT_VALID)
+
+        TextDocumentVersion.objects.filter(document=document, is_draft=True).delete()
 
         users_private_key = get_private_key_from_request(request)
         user: UserProfile = request.user

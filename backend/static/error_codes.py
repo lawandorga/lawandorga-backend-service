@@ -430,5 +430,5 @@ ERROR__RECORD__DOCUMENT__ALL_MISSING = {
 
 ERROR__COLLAB__TYPE_NOT_EXISTING = {
     "error_detail": "type does not exist",
-    "error_code": "record.type_not_exisiting",
+    "error_code": "collab.type_not_exisiting",
 }
