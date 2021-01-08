@@ -50,6 +50,17 @@ class TextDocumentVersionModelViewSet(viewsets.ModelViewSet):
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         pass
 
+    def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        try:
+            version = TextDocumentVersion.objects.get(pk=kwargs["pk"])
+        except Exception as e:
+            raise CustomError(ERROR__API__ID_NOT_FOUND)
+
+        users_private_key = get_private_key_from_request(request)
+        key: str = request.user.get_rlcs_aes_key(users_private_key)
+
+        return Response(TextDocumentVersionSerializer(version).get_decrypted_data(key))
+
 
 class VersionsOfTextDocumentViewSet(APIView):
     def get(self, request: Request, id: str) -> Response:
@@ -59,8 +70,7 @@ class VersionsOfTextDocumentViewSet(APIView):
             raise CustomError(ERROR__API__ID_NOT_FOUND)
 
         users_private_key = get_private_key_from_request(request)
-        user: UserProfile = request.user
-        key: str = user.get_rlcs_aes_key(users_private_key)
+        key: str = request.user.get_rlcs_aes_key(users_private_key)
 
         versions = document.versions.all().order_by("-created")
 

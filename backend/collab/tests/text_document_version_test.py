@@ -46,6 +46,7 @@ class TextDocumentVersionViewSetTest(TransactionTestCase):
 class VersionsOfTextDocumentsViewSetTest(TransactionTestCase):
     def setUp(self) -> None:
         self.urls_text_document_versions = "/api/collab/text_documents/{}/versions/"
+        self.urls_versions_model_url = "/api/collab/text_document_version/"
         self.base_fixtures = CreateFixtures.create_base_fixtures()
         self.base_client: APIClient = self.base_fixtures["users"][0]["client"]
 
@@ -305,4 +306,28 @@ class VersionsOfTextDocumentsViewSetTest(TransactionTestCase):
         self.assertNotIn("content", response.data[2])
 
     def test_get_versions_max(self):
-        pass
+        private_key = self.base_fixtures["users"][0]["private"]
+        document = TextDocument(
+            rlc=self.base_fixtures["rlc"],
+            name="first document",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        document.save()
+
+        user0: UserProfile = self.base_fixtures["users"][0]["user"]
+        rlcs_aes_key = user0.get_rlcs_aes_key(private_key)
+
+        content = "first content really interesting"
+        version1: TextDocumentVersion = TextDocumentVersion.create(
+            content, False, rlcs_aes_key, user0, document
+        )
+
+        a = self.urls_versions_model_url + str(version1.id) + "/"
+        response: Response = self.base_client.get(
+            self.urls_versions_model_url + str(version1.id) + "/",
+            format="json",
+            **{"HTTP_PRIVATE_KEY": private_key}
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(version1.id, response.data["id"])
+        self.assertEqual(content, response.data["content"])
