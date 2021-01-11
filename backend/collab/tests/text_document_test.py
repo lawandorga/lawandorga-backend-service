@@ -162,6 +162,25 @@ class TextDocumentViewSetTest(TransactionTestCase):
         self.assertTrue("content" in response.data["version"])
         self.assertEqual(content, response.data["version"]["content"])
 
+    def test_get_text_document_empty(self):
+        private_key = self.base_fixtures["users"][0]["private"]
+        user: UserProfile = self.base_fixtures["users"][0]["user"]
+
+        document = TextDocument(
+            rlc=self.base_fixtures["rlc"], name="first document", creator=user,
+        )
+        document.save()
+
+        response: Response = self.base_client.get(
+            self.urls_text_documents + str(document.id) + "/",
+            format="json",
+            **{"HTTP_PRIVATE_KEY": private_key}
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertTrue("content" in response.data["version"])
+        self.assertEqual("", response.data["version"]["content"])
+        self.assertEqual(0, TextDocumentVersion.objects.count())
+
     def test_update_text_document(self):
         private_key = self.base_fixtures["users"][0]["private"]
         user: UserProfile = self.base_fixtures["users"][0]["user"]

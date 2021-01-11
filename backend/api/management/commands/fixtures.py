@@ -1977,7 +1977,8 @@ class AddMethods:
             raise AttributeError
         try:
             t.save()
-        except:
+        except Exception as e:
+            print("error at saving record tag: " + str(tag))
             pass
 
     @staticmethod

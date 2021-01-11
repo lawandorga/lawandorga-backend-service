@@ -21,7 +21,7 @@ from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from backend.api.models import UserProfile
-from backend.collab.models import EditingRoom, TextDocument
+from backend.collab.models import EditingRoom, TextDocument, TextDocumentVersion
 from backend.collab.serializers import (
     EditingRoomSerializer,
     TextDocumentSerializer,
@@ -50,8 +50,18 @@ class TextDocumentModelViewSet(viewsets.ModelViewSet):
         key: str = user.get_rlcs_aes_key(users_private_key)
 
         data = TextDocumentSerializer(doc).data
+        last_version = doc.get_last_published_version()
+        if not last_version:
+            last_version = TextDocumentVersion(
+                document=doc,
+                content=b"",
+                is_draft=False,
+                creator=doc.creator,
+                created=doc.created,
+            )
+
         data["version"] = TextDocumentVersionSerializer(
-            doc.get_last_published_version()
+            last_version
         ).get_decrypted_data(key)
 
         return Response(data)
