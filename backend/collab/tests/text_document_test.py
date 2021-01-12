@@ -158,9 +158,10 @@ class TextDocumentViewSetTest(TransactionTestCase):
         self.assertTrue("name" in response.data)
         self.assertEqual(document.name, response.data["name"])
 
-        self.assertTrue("version" in response.data)
-        self.assertTrue("content" in response.data["version"])
-        self.assertEqual(content, response.data["version"]["content"])
+        self.assertTrue("versions" in response.data)
+        self.assertEqual(1, response.data["versions"].__len__())
+        self.assertTrue("content" in response.data["versions"][0])
+        self.assertEqual(content, response.data["versions"][0]["content"])
 
     def test_get_text_document_empty(self):
         private_key = self.base_fixtures["users"][0]["private"]
@@ -177,8 +178,10 @@ class TextDocumentViewSetTest(TransactionTestCase):
             **{"HTTP_PRIVATE_KEY": private_key}
         )
         self.assertEqual(200, response.status_code)
-        self.assertTrue("content" in response.data["version"])
-        self.assertEqual("", response.data["version"]["content"])
+        self.assertTrue("versions" in response.data)
+        self.assertEqual(1, response.data["versions"].__len__())
+        self.assertTrue("content" in response.data["versions"][0])
+        self.assertEqual("", response.data["versions"][0]["content"])
         self.assertEqual(0, TextDocumentVersion.objects.count())
 
     def test_update_text_document(self):

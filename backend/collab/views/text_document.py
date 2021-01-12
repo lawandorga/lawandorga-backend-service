@@ -60,9 +60,9 @@ class TextDocumentModelViewSet(viewsets.ModelViewSet):
                 created=doc.created,
             )
 
-        data["version"] = TextDocumentVersionSerializer(
-            last_version
-        ).get_decrypted_data(key)
+        data["versions"] = [
+            TextDocumentVersionSerializer(last_version).get_decrypted_data(key)
+        ]
 
         return Response(data)
 
