@@ -72,3 +72,6 @@ class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):
 
     def get_last_published_version(self) -> "TextDocumentVersion":
         return self.versions.filter(is_draft=False).order_by("-created").first()
+
+    def get_draft(self) -> "TextDocumentVersion":
+        return self.versions.filter(is_draft=True).first()

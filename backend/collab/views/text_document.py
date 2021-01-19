@@ -60,9 +60,16 @@ class TextDocumentModelViewSet(viewsets.ModelViewSet):
                 created=doc.created,
             )
 
-        data["versions"] = [
-            TextDocumentVersionSerializer(last_version).get_decrypted_data(key)
-        ]
+        draft = doc.get_draft()
+        if draft:
+            data["versions"] = [
+                TextDocumentVersionSerializer(draft).get_decrypted_data(key),
+                TextDocumentVersionSerializer(last_version).get_decrypted_data(key),
+            ]
+        else:
+            data["versions"] = [
+                TextDocumentVersionSerializer(last_version).get_decrypted_data(key),
+            ]
 
         return Response(data)
 
