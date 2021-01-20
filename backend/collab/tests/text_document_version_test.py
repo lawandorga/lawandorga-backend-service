@@ -158,6 +158,56 @@ class VersionsOfTextDocumentsViewSetTest(TransactionTestCase):
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, TextDocumentVersion.objects.count())
 
+    def test_create_create_last_version_copy(self):
+        timezone.now = mock_datetime_now(1, 0)
+        private_key = self.base_fixtures["users"][0]["private"]
+        document = TextDocument(
+            rlc=self.base_fixtures["rlc"],
+            name="first document",
+            creator=self.base_fixtures["users"][1]["user"],
+            last_editor=self.base_fixtures["users"][1]["user"],
+            created=timezone.now(),
+            last_edited=timezone.now(),
+        )
+        document.save()
+
+        timezone.now = mock_datetime_now(3, 0)
+        first_time = timezone.now()
+        content = "hello there how are you </adsfadf>"
+
+        url = self.urls_text_document_versions.format(document.id)
+        response: Response = self.base_client.post(
+            url,
+            {"content": content, "is_draft": False},
+            format="json",
+            **{"HTTP_PRIVATE_KEY": private_key}
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(content, response.data["content"])
+
+        timezone.now = mock_datetime_now(5, 0)
+        response: Response = self.base_client.post(
+            url,
+            {"content": content, "is_draft": False},
+            format="json",
+            **{"HTTP_PRIVATE_KEY": private_key}
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(
+            1, TextDocumentVersion.objects.all().count(),
+        )
+        self.assertEqual(1, TextDocument.objects.all().count())
+
+        document_from_db = TextDocument.objects.first()
+        self.assertEqual(1, document_from_db.versions.all().count())
+        self.assertEqual(first_time, document_from_db.last_edited)
+        self.assertEqual(
+            self.base_fixtures["users"][0]["user"], document_from_db.last_editor
+        )
+
+        version_from_db = TextDocumentVersion.objects.first()
+        self.assertEqual(version_from_db.document, document_from_db)
+
     def test_create_second_public_version(self):
         private_key = self.base_fixtures["users"][0]["private"]
         document = TextDocument(

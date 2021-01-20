@@ -82,7 +82,7 @@ class VersionsOfTextDocumentViewSet(APIView):
 
     def post(self, request: Request, id: str) -> Response:
         try:
-            document = TextDocument.objects.get(pk=id)
+            document: TextDocument = TextDocument.objects.get(pk=id)
         except Exception as e:
             raise CustomError(ERROR__API__ID_NOT_FOUND)
 
@@ -94,6 +94,17 @@ class VersionsOfTextDocumentViewSet(APIView):
         users_private_key = get_private_key_from_request(request)
         user: UserProfile = request.user
         key: str = user.get_rlcs_aes_key(users_private_key)
+
+        last_version: TextDocumentVersion = document.get_last_published_version()
+        if last_version:
+            last_content = TextDocumentVersionSerializer(
+                last_version
+            ).get_decrypted_data(key)["content"]
+            if request.data["content"] == last_content:
+                return Response(
+                    TextDocumentVersionSerializer(last_version).get_decrypted_data(key),
+                    status=201,
+                )
 
         version = TextDocumentVersion.create(
             request.data["content"], request.data["is_draft"], key, user, document
