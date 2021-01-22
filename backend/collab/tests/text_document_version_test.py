@@ -37,10 +37,43 @@ from backend.static.mocks import mock_datetime_now
 
 class TextDocumentVersionViewSetTest(TransactionTestCase):
     def setUp(self) -> None:
+        self.model_url = "/api/collab/text_document_version/"
         self.base_fixtures = CreateFixtures.create_base_fixtures()
+        self.base_client: APIClient = self.base_fixtures["users"][0]["client"]
 
     def test_create(self):
         pass
+
+    def test_get_single_text_document_version(self):
+        private_key = self.base_fixtures["users"][0]["private"]
+        rlcs_aes_key = self.base_fixtures["users"][0]["user"].get_rlcs_aes_key(
+            private_key
+        )
+        document = TextDocument(
+            rlc=self.base_fixtures["rlc"],
+            name="first document",
+            creator=self.base_fixtures["users"][1]["user"],
+            last_editor=self.base_fixtures["users"][1]["user"],
+            created=timezone.now(),
+            last_edited=timezone.now(),
+        )
+        document.save()
+        content = "hello there how are you </adsfadf>"
+        version = TextDocumentVersion(
+            document=document,
+            creator=self.base_fixtures["users"][0]["user"],
+            content=AESEncryption.encrypt(content, rlcs_aes_key),
+        )
+        version.save()
+
+        response: Response = self.base_client.get(
+            self.model_url + str(version.id) + "/",
+            format="json",
+            **{"HTTP_PRIVATE_KEY": private_key}
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertIn("content", response.data)
+        self.assertEqual(content, response.data["content"])
 
 
 class VersionsOfTextDocumentsViewSetTest(TransactionTestCase):

@@ -44,11 +44,11 @@ class TextDocumentVersionModelViewSet(viewsets.ModelViewSet):
             return self.queryset
         return self.queryset.filter(document_rlc=self.request.user.rlc)
 
-    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        pass
-
-    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        pass
+    # def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    #     pass
+    #
+    # def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    #     pass
 
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         try:
