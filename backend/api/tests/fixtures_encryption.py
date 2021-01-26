@@ -273,6 +273,7 @@ class CreateFixtures:
         return_object.update({"client": client_obj})
 
         # create records
+        tags = list(record_models.RecordTag.objects.all())
         records = []
         # 1
         record1 = CreateFixtures.add_record(
@@ -284,6 +285,7 @@ class CreateFixtures:
             working_on_record=[users[0], users[1]],
             with_record_permission=[users[2]],
             with_encryption_keys=[users[0], users[1], users[2]],
+            tags=[tags[0], tags[1]],
         )
         records.append(record1)
         # 2
@@ -296,6 +298,7 @@ class CreateFixtures:
             working_on_record=[users[1], users[2]],
             with_record_permission=[users[0]],
             with_encryption_keys=[users[0], users[1], users[2]],
+            tags=[tags[0], tags[2]],
         )
         records.append(record2)
 
@@ -313,6 +316,7 @@ class CreateFixtures:
         working_on_record: [UserProfile],
         with_record_permission: [UserProfile] = [],
         with_encryption_keys: [UserProfile] = [],
+        tags: [record_models.RecordTag] = [],
     ) -> {"record": record_models.EncryptedRecord, "key": str}:
         """
         adds record with given parameters to database
@@ -335,6 +339,10 @@ class CreateFixtures:
             record_token=record_token, from_rlc=rlc, creator=creator, client=client
         )
         record.note = AESEncryption.encrypt(note, aes_key)
+        record.save()
+
+        for tag in tags:
+            record.tagged.add(tag)
         record.save()
 
         for user in working_on_record:

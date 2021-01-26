@@ -37,3 +37,4 @@ from .pool_record import *
 from .record_pool import *
 from .missing_record_key import *
 from .encrypted_record_document_deletion_request import *
+from .record_statistics import *
