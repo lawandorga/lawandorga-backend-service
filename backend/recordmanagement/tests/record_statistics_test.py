@@ -43,6 +43,14 @@ class RecordStatisticsTests(TransactionTestCase):
             rlc=self.base_fixtures["rlc"], users=users
         )
 
+        self.foreign_fixtures = CreateFixtures.create_foreign_rlc_fixture()
+        users: [api_models.UserProfile] = [
+            self.foreign_fixtures["users"][0]["user"],
+            self.foreign_fixtures["users"][1]["user"],
+            self.foreign_fixtures["users"][2]["user"],
+        ]
+        CreateFixtures.create_record_base_fixtures(self.foreign_fixtures["rlc"], users)
+
         self.base_client = self.base_fixtures["users"][0]["client"]
         self.base_url = "/api/records/statistics/"
 
@@ -50,5 +58,7 @@ class RecordStatisticsTests(TransactionTestCase):
         number_of_record_tags = record_models.RecordTag.objects.count()
 
         response: Response = self.base_client.get(self.base_url)
-        c = list(record_models.EncryptedRecord.objects.all())
-        a = 10
+        self.assertEqual(number_of_record_tags, response.data.__len__())
+        self.assertEqual(2, response.data[0]["value"])
+        self.assertEqual(1, response.data[1]["value"])
+        self.assertEqual(1, response.data[2]["value"])

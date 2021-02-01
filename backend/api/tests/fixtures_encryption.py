@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from datetime import datetime
+from datetime import datetime, date, timedelta
 import pytz
 from django.conf import settings
 
@@ -124,7 +124,7 @@ class CreateFixtures:
         users = [
             CreateFixtures.create_user(rlc, "other user1", rlc_aes_key),
             CreateFixtures.create_user(rlc, "other user2", rlc_aes_key),
-            CreateFixtures.create_user(rlc, "otheruser3", rlc_aes_key),
+            CreateFixtures.create_user(rlc, "other user3", rlc_aes_key),
             CreateFixtures.create_user(rlc, "other user4", rlc_aes_key),
         ]
         return_object.update({"users": users})
@@ -287,6 +287,8 @@ class CreateFixtures:
             with_encryption_keys=[users[0], users[1], users[2]],
             tags=[tags[0], tags[1]],
         )
+        record1["record"].created_on = date.today() - timedelta(1)
+        record1["record"].save()
         records.append(record1)
         # 2
         record2 = CreateFixtures.add_record(
