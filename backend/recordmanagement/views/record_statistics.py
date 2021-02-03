@@ -68,13 +68,13 @@ class RecordStatisticsViewSet(APIView):
             {
                 "tags": out_tags,
                 "records": {
-                    "total": {
-                        "overall": total_records,
-                        "open": total_records_open,
-                        "waiting": total_records_waiting,
-                        "closed": total_records_closed,
-                        "working": total_records_working,
-                    }
+                    "overall": total_records,
+                    "states": [
+                        {"name": "open", "value": total_records_open},
+                        {"name": "waiting", "value": total_records_waiting},
+                        {"name": "closed", "value": total_records_closed},
+                        {"name": "working", "value": total_records_working},
+                    ],
                 },
             }
         )
