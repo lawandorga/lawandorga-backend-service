@@ -117,7 +117,7 @@ else:
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ["static/dev", "static"],
+        "DIRS": [os.path.join(BASE_DIR, 'templates')],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -166,7 +166,8 @@ USE_TZ = True
 # authentication
 AUTH_USER_MODEL = "api.UserProfile"
 
-# email
+# E-Mail
+# See: https://docs.djangoproject.com/en/dev/topics/email/#smtp-backend
 if not env_true("DEV") and "EMAIL_HOST" in os.environ:
     EMAIL_HOST = os.environ["EMAIL_HOST"]
     DEFAULT_FROM_EMAIL = os.environ["EMAIL_ADDRESS"]
@@ -179,16 +180,20 @@ if not env_true("DEV") and "EMAIL_HOST" in os.environ:
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
+# secret keys
 SCW_SECRET_KEY = os.environ.get("SCW_SECRET_KEY")
 SCW_ACCESS_KEY = os.environ.get("SCW_ACCESS_KEY")
 SCW_S3_BUCKET_NAME = os.environ.get("SCW_S3_BUCKET_NAME")
 
 
-# Static files (CSS, JavaScript, Images)
-STATICFILES_LOCATION = "static"
-STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
+# Static Files
+# See: https://docs.djangoproject.com/en/dev/howto/static-files/
+STATICFILES_LOCATION = "static"  # this setting has no effect. in django there doesn't exist this setting?
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static/dist/")]
 STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "tmp/static/")
 
+# cors
 CORS_ALLOWED_ORIGINS = [
     # prod
     "https://law-orga.de",
@@ -220,6 +225,7 @@ CORS_ALLOW_HEADERS = [
     "private-key",
 ]
 
+# logging
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

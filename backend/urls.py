@@ -28,17 +28,14 @@ Including another URLconf
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-
-from django.conf.urls import url, include
-from django.contrib import admin
 from django.views.generic import TemplateView
+from django.contrib import admin
 from backend.api import urls as api_urls
+from django.urls import path, include
 
 urlpatterns = [
-    url(r"^admin/", admin.site.urls),
-    url(r"^api/", include(api_urls)),
-    url("", include("django_prometheus.urls")),
-    url(r"^$", TemplateView.as_view(template_name="index.html")),
-    url(r"^(?:.*)/?$", TemplateView.as_view(template_name="index.html")),
+    path("admin/", admin.site.urls),
+    path("api/", include(api_urls)),
+    path("prometheus/", include("django_prometheus.urls")),
+    path("", TemplateView.as_view(template_name="index.html")),
 ]
