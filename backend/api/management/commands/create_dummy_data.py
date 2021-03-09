@@ -23,6 +23,7 @@ from backend.api.management.commands.fixtures import AddMethods
 from backend.recordmanagement import models as record_models
 from backend.api.tests.fixtures_encryption import CreateFixtures as EncCreateFixtures
 from backend.static import permissions
+from backend.static.encryption import AESEncryption
 from .commands import (
     migrate_to_encryption,
     migrate_to_rlc_settings,
@@ -438,7 +439,7 @@ class Command(BaseCommand):
             (
                 random.choice(consultants),  # creator id
                 (2018, 7, 12),  # created
-                (2018, 8, 29, 13, 54, 0, 0),  # las edited
+                (2018, 8, 29, 13, 54, 0, 0),  # last edited
                 clients[0],  # client
                 (2018, 7, 10),  # first contact
                 (2018, 8, 14, 17, 30, 0, 0),  # last contact
@@ -603,32 +604,20 @@ class Command(BaseCommand):
             records_in_db.append(record)
         return records_in_db
 
-    def get_and_create_client(self, client, rlc):
-        cl = record_models.Client(
-            name=client[2], note=client[3], phone_number=client[4]
+    def get_and_create_client(self, client, rlc: api_models.Rlc):
+        new_client = {
+            "name": client[2],
+            "from_rlc": rlc,
+            "created_on": AddMethods.generate_date(client[0]),
+            "last_edited": AddMethods.generate_date(client[1]),
+            "birthday": AddMethods.generate_date(client[5]),
+            "origin_country": client[6],
+            "note": client[3],
+            "phone_number": client[4],
+        }
+        return record_models.EncryptedClient.objects.create(
+            rlc.get_public_key(), **new_client
         )
-        cl.created_on = AddMethods.generate_date(client[0])
-        cl.last_edited = AddMethods.generate_datetime(client[1])
-        cl.birthday = AddMethods.generate_date(client[5])
-        cl.origin_country = client[6]
-        cl.from_rlc = rlc
-        cl.save()
-        return cl
-
-    # def get_and_create_record(self, rec, rlc):
-    #     record = models.Record(from_rlc=rlc, creator=rec[0], client=rec[3], record_token=rec[6],
-    #                            official_note=rec[7], state=rec[8])
-    #     record.created_on = AddMethods.generate_date(rec[1])
-    #     record.first_contact_date = AddMethods.generate_date(rec[4])
-    #     record.last_edited = AddMethods.generate_datetime(rec[2])
-    #     record.last_contact_date = AddMethods.generate_datetime(rec[5])
-    #     record.save()
-    #     for user in rec[9]:
-    #         record.working_on_record.add(user)
-    #     for tag in rec[10]:
-    #         record.tagged.add(tag)
-    #     record.save()
-    #     return record
 
     def create_the_best_record_ever(self, main_user, clients, consultants, rlc):
         tags = list(record_models.RecordTag.objects.all())

@@ -13,19 +13,28 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
+from typing import Any
 from django.db import models
 from datetime import datetime
 import pytz
 from django_prometheus.models import ExportModelOperationsMixin
 
-from backend.static.encryption import RSAEncryption
 from backend.api.errors import CustomError
 from backend.api.models import Rlc
 from backend.recordmanagement.models import OriginCountry
 from backend.static import error_codes
 from backend.static.date_utils import parse_date
-from backend.static.encryption import AESEncryption
+from backend.static.encryption import AESEncryption, RSAEncryption
+
+
+class EncryptedClientManager(models.Manager):
+    def create(self, rlc_public_key, *args: Any, **kwargs: Any) -> "EncryptedClient":
+        aes_key = AESEncryption.generate_secure_key()
+        for field in ["name", "note", "phone_number"]:
+            if field in kwargs:
+                kwargs[field] = AESEncryption.encrypt(kwargs[field], aes_key)
+        kwargs["encrypted_client_key"] = RSAEncryption.encrypt(aes_key, rlc_public_key)
+        return super().create(*args, **kwargs)
 
 
 class EncryptedClient(ExportModelOperationsMixin("encrypted_client"), models.Model):
@@ -46,6 +55,8 @@ class EncryptedClient(ExportModelOperationsMixin("encrypted_client"), models.Mod
     phone_number = models.BinaryField(null=True)
 
     encrypted_client_key = models.BinaryField(null=True)
+
+    objects = EncryptedClientManager()
 
     def __str__(self):
         return "e_client: " + str(self.id)
@@ -78,6 +89,20 @@ class EncryptedClient(ExportModelOperationsMixin("encrypted_client"), models.Mod
         self.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
         self.save()
         return patched
+
+    def get_decrypted(self, rlc_private_key) -> dict:
+        aes_key = RSAEncryption.decrypt(self.encrypted_client_key, rlc_private_key)
+        return_dict = {
+            "name": AESEncryption.decrypt(self.name, aes_key),
+            "birthday": self.birthday,
+            "from_rlc": self.from_rlc,
+            "created_on": self.created_on,
+            "last_edited": self.last_edited,
+            "origin_country": self.origin_country,
+            "note": AESEncryption.decrypt(self.note, aes_key),
+            "phone_number": AESEncryption.decrypt(self.phone_number, aes_key),
+        }
+        return return_dict
 
     @staticmethod
     def allowed_fields():

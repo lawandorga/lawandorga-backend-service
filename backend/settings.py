@@ -117,7 +117,7 @@ else:
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, 'templates')],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -188,7 +188,9 @@ SCW_S3_BUCKET_NAME = os.environ.get("SCW_S3_BUCKET_NAME")
 
 # Static Files
 # See: https://docs.djangoproject.com/en/dev/howto/static-files/
-STATICFILES_LOCATION = "static"  # this setting has no effect. in django there doesn't exist this setting?
+STATICFILES_LOCATION = (
+    "static"  # this setting has no effect. in django there doesn't exist this setting?
+)
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static/dist/")]
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "tmp/static/")
