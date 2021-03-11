@@ -37,12 +37,15 @@ class SendEmailViewSet(APIView):
 
 class GetRlcsViewSet(APIView):
     authentication_classes = ()
+    # TODO: why is everybody allowed?
     permission_classes = ()
 
     def get(self, request):
+        # TODO: what is this? why exclude?
         if "ON_HEROKU" in os.environ and "ON_DEPLOY" in os.environ:
             rlcs = Rlc.objects.all().exclude(name="Dummy RLC").order_by("name")
         else:
             rlcs = Rlc.objects.all().order_by("name")
+        # TODO: why not return a json response? turn a list into a json list like: return json.dumps([1,2,3])
         serialized = RlcOnlyNameSerializer(rlcs, many=True).data
         return Response(serialized)

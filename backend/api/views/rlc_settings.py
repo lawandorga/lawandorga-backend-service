@@ -32,6 +32,8 @@ class RlcSettingsViewSet(viewsets.ModelViewSet):
     serializer_class = RlcSettingsSerializer
 
     def create(self, request):
+        # TODO: handle this differently, by maybe not allowing post with http_method_names. or by not including
+        # TODO: creteModelMixin
         raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 
     def update(self, request, *args, **kwargs):

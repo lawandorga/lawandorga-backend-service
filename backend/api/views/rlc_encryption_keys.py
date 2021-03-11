@@ -21,6 +21,7 @@ from backend.api.models import RlcEncryptionKeys
 from backend.api.serializers import RlcEncryptionKeysSerializer
 
 
+# TODO: Why define a ModelViewSet only for superuser? When is this used in the real world?
 class RlcEncryptionKeysViewSet(ModelViewSet):
     queryset = RlcEncryptionKeys.objects.all()
     serializer_class = RlcEncryptionKeysSerializer

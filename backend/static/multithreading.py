@@ -14,9 +14,7 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import shutil
 from threading import Thread
-
 from backend.api.models import Notification
 from backend.files.models import File
 from backend.static.encrypted_storage import EncryptedStorage

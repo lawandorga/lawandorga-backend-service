@@ -17,7 +17,6 @@
 from rest_framework import serializers
 from ..models import HasPermission
 from ..errors import EntryAlreadyExistingError
-from .permission import PermissionNameSerializer
 
 
 class HasPermissionSerializer(serializers.ModelSerializer):
@@ -35,6 +34,7 @@ class HasPermissionSerializer(serializers.ModelSerializer):
         raise serializers.ValidationError("validationError at creating has_permission")
 
     def create(self, validated_data):
+        # TODO: this should be possible automatically maybe. djrf might be able to handle it
         if HasPermission.already_existing(validated_data):
             raise EntryAlreadyExistingError("entry already exists")
         has_permission = HasPermission.objects.create(
@@ -49,41 +49,5 @@ class HasPermissionSerializer(serializers.ModelSerializer):
         return has_permission
 
     def update(self, instance, validated_data):
-        has_permission, aa = HasPermission.objects.filter(
-            permission=validated_data.get("permission", None)
-        )
+        # TODO: this does not update?
         return instance
-
-
-class HasPermissionOnlyPermissionForSerializer(serializers.ModelSerializer):
-    permission = PermissionNameSerializer()
-
-    class Meta:
-        model = HasPermission
-        fields = (
-            "id",
-            "permission",
-            "permission_for_user",
-            "permission_for_group",
-        )
-
-
-class HasPermissionOnlyHasPermissionSerializer(serializers.ModelSerializer):
-    permission = PermissionNameSerializer()
-
-    class Meta:
-        model = HasPermission
-        fields = (
-            "id",
-            "permission",
-            "user_has_permission",
-            "group_has_permission",
-        )
-
-
-class HasPermissionWithPermissionNameSerializer(serializers.ModelSerializer):
-    permission = PermissionNameSerializer()
-
-    class Meta:
-        model = HasPermission
-        fields = "__all__"

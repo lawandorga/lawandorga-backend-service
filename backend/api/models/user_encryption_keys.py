@@ -23,6 +23,7 @@ from backend.static.error_codes import ERROR__API__USER__NO_PUBLIC_KEY_FOUND
 from backend.api.errors import CustomError
 
 
+# TODO: refactor objects.get_users_public_key to objects.get(user=user)? but exception might be different.
 class UserEncryptionKeysQuerySet(models.QuerySet):
     def get_users_public_key(self, user):
         try:

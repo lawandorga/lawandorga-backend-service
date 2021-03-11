@@ -44,6 +44,7 @@ def get_private_key_from_request(request):
     return private_key
 
 
+# TODO: What is this class doing exactly?
 class LoggingMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response

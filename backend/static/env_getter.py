@@ -29,6 +29,7 @@ def get_env_variable(variable_name):
     return os.environ[variable_name]
 
 
+# TODO: why? templates is not even used?
 def export_vars(request):
     data = {}
     data["URL"] = get_website_base_url()

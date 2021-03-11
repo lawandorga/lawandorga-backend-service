@@ -23,6 +23,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     """serializer for user profile objects"""
 
     records_created = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    # TODO: how does this work? this field doesn't exist on user
     working_on_record = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     group_members = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     record_messages_sent = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
