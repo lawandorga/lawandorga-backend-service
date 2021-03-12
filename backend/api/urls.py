@@ -49,9 +49,6 @@ router.register(
 )
 router.register("users_rlc_keys", views.UsersRlcKeysViewSet, basename="users_rlc_keys")
 router.register("rlc_settings", views.RlcSettingsViewSet, basename="rlc_settings")
-router.register(
-    "missing_rlc_keys", views.MissingRlcKeysViewSet, basename="missing_rlc_keys"
-)
 router.register("notifications", views.NotificationViewSet, basename="notifications")
 router.register(
     "notification_groups", views.NotificationGroupViewSet, basename="notifications"

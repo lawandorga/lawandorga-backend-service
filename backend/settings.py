@@ -51,6 +51,7 @@ else:
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_true("DEBUG")
+PROD = env_true("PROD")
 
 if "HOST" in os.environ:
     ALLOWED_HOSTS = ["web", "127.0.0.1", os.environ["HOST"]]

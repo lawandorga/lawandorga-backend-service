@@ -13,7 +13,6 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
 from rest_framework import serializers
 from ..models import Rlc
 
@@ -32,12 +31,3 @@ class RlcSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rlc
         fields = "__all__"
-
-
-class RlcOnlyNameSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Rlc
-        fields = (
-            "id",
-            "name",
-        )

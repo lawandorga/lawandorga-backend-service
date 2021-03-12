@@ -13,15 +13,14 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from rest_framework.views import APIView
-from rest_framework.response import Response
-import os
-
-from backend.static.emails import EmailSender
-from ..models.rlc import Rlc
-from ..serializers.rlc import RlcOnlyNameSerializer
-from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__API__EMAIL__NO_EMAIL_PROVIDED
+from rest_framework.response import Response
+from backend.static.emails import EmailSender
+from rest_framework.views import APIView
+from backend.api.errors import CustomError
+from ..models.rlc import Rlc
+from django.conf import settings
+import json
 
 
 class SendEmailViewSet(APIView):
@@ -30,22 +29,17 @@ class SendEmailViewSet(APIView):
             email = request.data["email"]
         else:
             raise CustomError(ERROR__API__EMAIL__NO_EMAIL_PROVIDED)
-        # EmailSender.send_email_notification([email], 'SYSTEM NOTIFICATION', 'There was a change')
         EmailSender.test_send(email)
         return Response()
 
 
 class GetRlcsViewSet(APIView):
     authentication_classes = ()
-    # TODO: why is everybody allowed?
     permission_classes = ()
 
     def get(self, request):
-        # TODO: what is this? why exclude?
-        if "ON_HEROKU" in os.environ and "ON_DEPLOY" in os.environ:
-            rlcs = Rlc.objects.all().exclude(name="Dummy RLC").order_by("name")
-        else:
-            rlcs = Rlc.objects.all().order_by("name")
-        # TODO: why not return a json response? turn a list into a json list like: return json.dumps([1,2,3])
-        serialized = RlcOnlyNameSerializer(rlcs, many=True).data
-        return Response(serialized)
+        rlcs = Rlc.objects.all().order_by("name")
+        if settings.PROD:
+            rlcs = rlcs.exclude(name="Dummy RLC")
+        data = json.dumps([rlc.name for rlc in rlcs])
+        return Response(data)
