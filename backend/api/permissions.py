@@ -21,6 +21,7 @@ import logging
 
 
 # TODO: what to do with this?? custom permissions?
+# comment daniel: why not just allow him to edit profile?
 class UpdateOwnProfile(permissions.BasePermission):
     """allow users to edit their own profile"""
 

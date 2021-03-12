@@ -33,10 +33,7 @@ from .commands import (
 
 
 class Command(BaseCommand):
-    help = "populates database for deployment environment"
-
-    def add_arguments(self, parser):
-        pass
+    help = "Populates database for deployment environment."
 
     def handle(self, *args, **options):
         reset_db()

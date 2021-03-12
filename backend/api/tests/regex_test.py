@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.test import TransactionTestCase
-from backend.static.regex_validators import is_storage_folder_of_record, is_phone_number
+from backend.static.regex_validators import is_storage_folder_of_record
 
 
 class RegexTests(TransactionTestCase):
@@ -39,13 +39,3 @@ class RegexTests(TransactionTestCase):
         self.assertTrue(not is_storage_folder_of_record(folder))
         folder = "rlcs/123a/records/123/"
         self.assertTrue(not is_storage_folder_of_record(folder))
-
-    def test_is_phone_number_success(self):
-        numbers = [
-            "0753939209",
-            "07539 39209",
-            "08923738",
-            # '07539-39209',
-            # '07539/39209'
-        ]
-        self.test_array(numbers, is_phone_number)

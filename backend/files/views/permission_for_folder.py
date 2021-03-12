@@ -20,10 +20,7 @@ from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
 from backend.api.models import Group
-from backend.api.serializers import (
-    HasPermissionWithPermissionNameSerializer,
-    HasPermissionSerializer,
-)
+from backend.api.serializers import HasPermissionSerializer
 from backend.files.models import Folder, PermissionForFolder, FolderPermission
 from backend.files.serializers import (
     PermissionForFolderSerializer,

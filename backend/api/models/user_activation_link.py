@@ -13,12 +13,10 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
-
+from django.utils.crypto import get_random_string
 from backend.api.models import UserProfile
-from backend.static.string_generator import get_random_string
+from django.db import models
 
 
 def generate_link_id():

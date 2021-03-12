@@ -18,7 +18,7 @@ from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.models import UserProfile
-from backend.static.string_generator import get_random_string
+from django.utils.crypto import get_random_string
 
 
 def generate_link_id():

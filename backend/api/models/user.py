@@ -19,6 +19,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
 
@@ -358,13 +359,11 @@ class UserProfile(
         gets the public key of the user from the database
         :return: public key of user (PEM)
         """
-        from backend.api.models import UserEncryptionKeys
-
         try:
-            public_key = UserEncryptionKeys.objects.get_users_public_key(self)
-        except Exception as e:
+            public_key = self.encryption_keys
+        except ObjectDoesNotExist:
             self.generate_new_user_encryption_keys()
-            public_key = UserEncryptionKeys.objects.get_users_public_key(self)
+            public_key = self.encryption_keys
         return public_key
 
     def get_private_key(self, decryption_key):

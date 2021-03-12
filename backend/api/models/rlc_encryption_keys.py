@@ -13,23 +13,10 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
-from django_prometheus.models import ExportModelOperationsMixin
-
-from backend.api.models import Rlc
-from backend.static.error_codes import ERROR__API__RLC__NO_PUBLIC_KEY_FOUND
-from backend.api.errors import CustomError
 from backend.static.encryption import AESEncryption
-
-
-class RlcEncryptionKeysQuerySet(models.QuerySet):
-    def get_rlcs_public_key(self, rlc):
-        try:
-            keys = self.get(rlc=rlc)
-        except Exception:
-            raise CustomError(ERROR__API__RLC__NO_PUBLIC_KEY_FOUND)
-        return keys.public_key
+from django_prometheus.models import ExportModelOperationsMixin
+from backend.api.models import Rlc
+from django.db import models
 
 
 class RlcEncryptionKeys(ExportModelOperationsMixin("rlc_encryption_key"), models.Model):
@@ -38,8 +25,6 @@ class RlcEncryptionKeys(ExportModelOperationsMixin("rlc_encryption_key"), models
     )
     public_key = models.BinaryField()
     encrypted_private_key = models.BinaryField()
-
-    objects = RlcEncryptionKeysQuerySet.as_manager()
 
     def decrypt_private_key(self, key_to_encrypt):
         encrypted_private_key = self.encrypted_private_key

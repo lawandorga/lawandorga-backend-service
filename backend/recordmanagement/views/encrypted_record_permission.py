@@ -127,9 +127,7 @@ class EncryptedRecordPermissionProcessViewSet(APIView):
             record_key = permission_request.record.get_decryption_key(
                 user, users_private_key
             )
-            users_public_key = UserEncryptionKeys.objects.get_users_public_key(
-                permission_request.request_from
-            )
+            users_public_key = permission_request.request_from.get_public_key()
             encrypted_record_key = RSAEncryption.encrypt(record_key, users_public_key)
             record_encryption = models.RecordEncryption(
                 user=permission_request.request_from,

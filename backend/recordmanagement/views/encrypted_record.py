@@ -217,7 +217,7 @@ class EncryptedRecordViewSet(APIView):
 
         users_with_keys = e_record.get_users_with_decryption_keys()
         for user in users_with_keys:
-            users_public_key = UserEncryptionKeys.objects.get_users_public_key(user)
+            users_public_key = user.get_public_key()
 
             encrypted_record_key = RSAEncryption.encrypt(record_key, users_public_key)
             record_encryption = models.RecordEncryption(

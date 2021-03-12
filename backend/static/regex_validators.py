@@ -28,7 +28,3 @@ phone_regex = RegexValidator(
 
 def is_storage_folder_of_record(dir: str):
     return bool(re.match(RECORD_STORAGE_REGEX, dir))
-
-
-def is_phone_number(phone_number: str):
-    return bool(re.match(PHONE_REGEX, phone_number.replace(" ", "")))

@@ -13,13 +13,11 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from rest_framework import serializers
-
 from backend.api.models import UsersRlcKeys
+from rest_framework import serializers
 
 
 class UsersRlcKeysSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsersRlcKeys
-        fields = "__all__"
+        fields = '__all__'

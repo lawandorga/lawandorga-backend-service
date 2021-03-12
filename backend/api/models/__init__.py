@@ -19,7 +19,6 @@ from .has_permission import *
 from .user import *
 from .group import *
 from .rlc import *
-from .language import *
 from .forgot_password import *
 from .new_user_request import *
 from .user_activation_link import *

@@ -80,10 +80,6 @@ class EmailSender:
         EmailSender.send_html_email(emails, subject, html_message, alternative_text)
 
     @staticmethod
-    def send_new_user_request_notification_email() -> None:
-        pass
-
-    @staticmethod
     def test_send(email) -> None:
         html_message = loader.render_to_string(
             "email_templates/activate_account.html", {"url": "asdasd"}

@@ -14,20 +14,10 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.test import TransactionTestCase
-from rest_framework.response import Response
-from rest_framework.test import APIClient
-
-from backend.api import models as api_models
 from backend.api.tests.fixtures_encryption import CreateFixtures
-from backend.recordmanagement import models as record_models
-from backend.static.permissions import (
-    PERMISSION_VIEW_RECORDS_RLC,
-    PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
-)
-from backend.static import error_codes
-from backend.static.queryset_difference import QuerysetDifference
-from backend.static.encryption import AESEncryption
+from backend.static.permissions import PERMISSION_VIEW_RECORDS_RLC
+from django.test import TransactionTestCase
+from backend.api import models as api_models
 
 
 class NewUserRequestTest(TransactionTestCase):
