@@ -48,7 +48,6 @@ router.register(
     basename="user_encryption_keys",
 )
 router.register("users_rlc_keys", views.UsersRlcKeysViewSet, basename="users_rlc_keys")
-router.register("rlc_settings", views.RlcSettingsViewSet, basename="rlc_settings")
 router.register("notifications", views.NotificationViewSet, basename="notifications")
 router.register(
     "notification_groups", views.NotificationGroupViewSet, basename="notifications"
