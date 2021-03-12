@@ -13,422 +13,73 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-import random
-
-from django.core.management.base import BaseCommand
-
-from backend.api import models as api_models
 from backend.api.management.commands.fixtures import AddMethods
-from backend.recordmanagement import models as record_models
 from backend.api.tests.fixtures_encryption import CreateFixtures as EncCreateFixtures
+from django.core.management.base import BaseCommand
 from backend.static import permissions
-from backend.static.encryption import AESEncryption
+from backend.api.tests import example_data as ed
 from .commands import (
     migrate_to_encryption,
     migrate_to_rlc_settings,
     populate_deploy_db,
     reset_db,
 )
+from backend.recordmanagement import models as record_models
+from backend.api import models as api_models
+import random
 
 
 class Command(BaseCommand):
     help = "Populates database for deployment environment."
 
     def handle(self, *args, **options):
+        # reset
         reset_db()
         populate_deploy_db()
 
-        rlc = api_models.Rlc(
-            name="Dummy RLC",
-            note="this is a dummy rlc, just for showing how the system works",
-            id=3033,
-        )
-        rlc.save()
-        users = self.get_and_create_users(rlc)
-        main_user = self.get_and_create_dummy_user(rlc)
-        self.create_inactive_user(rlc)
-        self.create_groups(rlc, main_user, users)
-        clients = self.get_and_create_clients(rlc)
-        consultant_group = api_models.Group.objects.filter(
-            name="Berater", from_rlc=rlc
-        ).first()
-        consultants = list(consultant_group.group_members.all())
-        self.get_and_create_records(clients, consultants, rlc)
-        best_record = self.create_the_best_record_ever(
-            main_user, clients, consultants, rlc
-        )
+        # create the dummy rlc
+        rlc = ed.create_rlc()
+
+        # create users
+        users = ed.create_users(rlc)
+
+        # create the dummy user you can login with to test everything
+        dummy_users = ed.create_dummy_users(rlc)
+        main_user = dummy_users[0]
+        users = dummy_users + users
+
+        # create inactive user
+        mr_inactive = ed.create_inactive_user(rlc)
+
+        # create groups
+        groups = ed.create_groups(rlc, main_user, users)
+        admin_group = ed.create_admin_group(rlc, main_user)
+
+        # create clients
+        clients = ed.create_clients(rlc)
+
+        # create records
+        records = ed.create_records(clients, users, rlc)
+        # TODO: create best record
+        best_record = self.create_the_best_record_ever(main_user, clients, users, rlc)
+
+        # create requests
         self.create_record_deletion_request(main_user, best_record)
         self.create_record_permission_request(users[4], best_record)
-        other_dummy_users = self.create_additional_dummy_users(rlc)
 
-        # TODO: generate inactive user, generate encryption stuff here, not old unencrypted
+        # TODO: delete later
         migrate_to_encryption()
         migrate_to_rlc_settings()
 
-        best_encrypted_record: record_models.EncryptedRecord = record_models.EncryptedRecord.objects.filter(
+        # create notifications
+        best_encrypted_record = record_models.EncryptedRecord.objects.filter(
             record_token=best_record.record_token
         ).first()
-        groups_list: [api_models.Group] = list(api_models.Group.objects.all())
-        groups: [api_models.Group] = [groups_list[0], groups_list[1]]
+        groups_list = list(api_models.Group.objects.all())
+        groups = [groups_list[0], groups_list[1]]
         Command.create_notifications(
-            main_user, other_dummy_users[0], best_encrypted_record, groups
+            main_user, dummy_users[-1], best_encrypted_record, groups
         )
-
-    def get_and_create_dummy_user(self, rlc):
-        user = api_models.UserProfile(
-            name="Mr Dummy",
-            email="dummy@rlcm.de",
-            phone_number="01666666666",
-            street="Dummyweg 12",
-            city="Dummycity",
-            postal_code="00000",
-            rlc=rlc,
-        )
-        user.birthday = AddMethods.generate_date((1995, 1, 1))
-        user.set_password("qwe123")
-        user.save()
-        return user
-
-    def create_additional_dummy_users(self, rlc):
-        user = api_models.UserProfile(
-            name="Tester 1",
-            email="tester1@law-orga.de",
-            phone_number="123812382",
-            rlc=rlc,
-        )
-        user.set_password("qwe123")
-        user.save()
-
-        user1 = api_models.UserProfile(
-            name="Tester 2",
-            email="tester2@law-orga.de",
-            phone_number="123812383",
-            rlc=rlc,
-        )
-        user1.set_password("qwe123")
-        user1.save()
-
-        return [user, user1]
-
-    def create_inactive_user(self, rlc):
-        user = api_models.UserProfile(
-            name="Im Not that active",
-            email="inactive@rlcm.de",
-            phone_number="1293283882",
-            street="Inaktive Strasse",
-            city="InAktiv",
-            postal_code="29292",
-            rlc=rlc,
-        )
-        user.birthday = AddMethods.generate_date((1950, 1, 1))
-        user.set_password("qwe123")
-        user.is_active = False
-        user.save()
-
-    def get_and_create_users(self, rlc):
-        users = [
-            (
-                "ludwig.maximilian@outlook.de",
-                "Ludwig Maximilian",
-                (1985, 5, 12),
-                "01732421123",
-                "Maximilianstrasse 12",
-                "München",
-                "80539",
-            ),
-            (
-                "xxALIxxstone@hotmail.com",
-                "Albert Einstein",
-                (1879, 3, 14),
-                "01763425656",
-                "Blumengasse 23",
-                "Hamburg",
-                "83452",
-            ),
-            (
-                "mariecurry53@hotmail.com",
-                "Marie Curie",
-                (1867, 11, 7),
-                "0174565656",
-                "Jungfernstieg 2",
-                "Hamburg",
-                "34264",
-            ),
-            (
-                "max.mustermann@gmail.com",
-                "Maximilian Gustav Mustermann",
-                (1997, 10, 23),
-                "0176349756",
-                "Schlossallee 100",
-                "Grünwald",
-                "82031",
-            ),
-            (
-                "petergustav@gmail.com",
-                "Peter Klaus Gustav von Guttenberg",
-                (1995, 3, 11),
-                "01763423732",
-                "Leopoldstrasse 31",
-                "Muenchen",
-                "80238",
-            ),
-            (
-                "gabi92@hotmail.com",
-                "Gabriele Schwarz",
-                (1998, 12, 10),
-                "0175647332",
-                "Kartoffelweg 12",
-                "Muenchen",
-                "80238",
-            ),
-            (
-                "rudi343@gmail.com",
-                "Rudolf Mayer",
-                (1996, 5, 23),
-                "01534423732",
-                "Barerstrasse 3",
-                "Muenchen",
-                "80238",
-            ),
-            (
-                "lea.g@gmx.com",
-                "Lea Glas",
-                (1985, 7, 11),
-                "01763222732",
-                "Argentinische Allee 34",
-                "Hamburg",
-                "34264",
-            ),
-            (
-                "butterkeks@gmail.com",
-                "Bettina Rupprecht",
-                (1995, 10, 11),
-                "01765673732",
-                "Ordensmeisterstrasse 56",
-                "Hamburg",
-                "34264",
-            ),
-            (
-                "willi.B@web.de",
-                "Willi Birne",
-                (1997, 6, 15),
-                "01763425555",
-                "Grunewaldstrasse 45",
-                "Hamburg",
-                "34264",
-            ),
-            (
-                "pippi.langstrumpf@gmail.com",
-                "Pippi Langstumpf",
-                (1981, 7, 22),
-                "01766767732",
-                "Muehlenstraße 12",
-                "Muenchen",
-                "80238",
-            ),
-        ]
-
-        new_users = []
-        for user in users:
-            new_user = api_models.UserProfile(
-                email=user[0],
-                name=user[1],
-                phone_number=user[3],
-                street=user[4],
-                city=user[5],
-                postal_code=user[6],
-                rlc=rlc,
-            )
-            new_user.birthday = AddMethods.generate_date(user[2])
-            new_user.save()
-            new_users.append(new_user)
-        return new_users
-
-    def create_groups(self, rlc, main_user, users):
-        consultants = api_models.Group(
-            creator=main_user,
-            from_rlc=rlc,
-            name="Berater",
-            visible=False,
-            description="all consultants",
-            note="only add consultants",
-        )
-        consultants.save()
-        consultants.group_members.add(users[0])
-        consultants.group_members.add(users[1])
-        consultants.group_members.add(users[2])
-        consultants.group_members.add(users[3])
-        consultants.group_members.add(users[4])
-        consultants.group_members.add(users[5])
-        consultants.group_members.add(users[6])
-        consultants.group_members.add(users[7])
-        consultants.group_members.add(users[8])
-        consultants.save()
-        self.add_permission_to_group(
-            consultants, rlc, permissions.PERMISSION_CAN_CONSULT
-        )
-        self.add_permission_to_group(
-            consultants, rlc, permissions.PERMISSION_VIEW_RECORDS_RLC
-        )
-
-        ag1 = api_models.Group(
-            creator=users[0],
-            from_rlc=rlc,
-            name="AG Datenschutz",
-            visible=True,
-            description="DSGVO",
-            note="bitte mithelfen",
-        )
-        ag1.save()
-        ag1.group_members.add(users[1])
-        ag1.group_members.add(users[2])
-        ag1.group_members.add(users[3])
-        ag1.save()
-
-        admins = api_models.Group(
-            creator=main_user,
-            from_rlc=rlc,
-            name="Administratoren",
-            visible=False,
-            description="haben alle Berechtigungen",
-            note="IT ressort",
-        )
-        admins.save()
-        admins.group_members.add(users[0])
-        admins.group_members.add(main_user)
-        admins.save()
-        self.add_permission_to_group(
-            admins, rlc, permissions.PERMISSION_VIEW_PERMISSIONS_RLC
-        )
-        self.add_permission_to_group(
-            admins, rlc, permissions.PERMISSION_MANAGE_PERMISSIONS_RLC
-        )
-        self.add_permission_to_group(
-            admins, rlc, permissions.PERMISSION_MANAGE_GROUPS_RLC
-        )
-        self.add_permission_to_group(
-            admins, rlc, permissions.PERMISSION_ACCEPT_NEW_USERS_RLC
-        )
-        self.add_permission_to_group(
-            admins, rlc, permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC
-        )
-        self.add_permission_to_group(
-            admins, rlc, permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
-        )
-        self.add_permission_to_group(
-            admins, rlc, permissions.PERMISSION_VIEW_RECORDS_RLC
-        )
-
-    def get_permission(self, permission):
-        return api_models.Permission.objects.get(name=permission)
-
-    def add_permission_to_group(self, group, rlc, permission_name):
-        has_permission = api_models.HasPermission(
-            group_has_permission=group,
-            permission_for_rlc=rlc,
-            permission=self.get_permission(permission_name),
-        )
-        has_permission.save()
-
-    def get_and_create_clients(self, rlc):
-        origin_countries = list(record_models.OriginCountry.objects.all())
-        clients = [
-            (
-                (2018, 7, 12),  # created_on
-                (2018, 8, 28, 21, 3, 0, 0),  # last_edited
-                "Bibi Aisha",  # name
-                "auf Flucht von Ehemann getrennt worden",  # note
-                "01793456542",  # phone number
-                (1990, 5, 1),  # birthday
-                random.choice(origin_countries),  # origin country id
-            ),
-            (
-                (2017, 3, 17),
-                (2017, 12, 24, 12, 2, 0, 0),
-                "Mustafa Kubi",
-                "möchte eine Ausbildung beginnen",
-                None,
-                (1998, 12, 3),
-                random.choice(origin_countries),
-            ),
-            (
-                (2018, 1, 1),
-                (2018, 3, 3, 14, 5, 0, 0),
-                "Ali Baba",
-                "fragt wie er seine deutsche Freundin heiraten kann",
-                "",
-                (1985, 6, 27),
-                random.choice(origin_countries),
-            ),
-            (
-                (2018, 8, 1),
-                (2018, 8, 2, 16, 3, 0, 0),
-                "Kamila Iman",
-                "möchte zu ihrer Schwester in eine andere Aufnahmeeinrichtung ziehen",
-                "01562736778",
-                (1956, 4, 3),
-                random.choice(origin_countries),
-            ),
-            (
-                (2017, 9, 10),
-                (2017, 10, 2, 15, 3, 0, 0),
-                "Junis Haddad",
-                "Informationen zum Asylverfahren",
-                "013345736778",
-                (1998, 6, 2),
-                random.choice(origin_countries),
-            ),
-            (
-                (2017, 9, 10),
-                (2018, 9, 2, 16, 3, 0, 0),
-                "Nael Mousa",
-                "Informationen zum Asylverfahren",
-                "01444436778",
-                (1997, 6, 4),
-                random.choice(origin_countries),
-            ),
-            (
-                (2017, 9, 10),
-                (2018, 1, 12, 16, 3, 0, 0),
-                "Amir Hamdan",
-                "Informationen zum Asylverfahren",
-                "01457636778",
-                (1996, 6, 8),
-                random.choice(origin_countries),
-            ),
-            (
-                (2017, 9, 10),
-                (2018, 1, 2, 16, 3, 0, 0),
-                "Amar Yousef",
-                "Informationen zum Asylverfahren",
-                "01566546778",
-                (1995, 5, 10),
-                random.choice(origin_countries),
-            ),
-            (
-                (2017, 9, 10),
-                (2017, 12, 2, 16, 3, 0, 0),
-                "Tarek Habib",
-                "Informationen zum Asylverfahren",
-                "013564736778",
-                (1994, 5, 12),
-                random.choice(origin_countries),
-            ),
-            (
-                (2017, 9, 10),
-                (2018, 10, 2, 16, 3, 0, 0),
-                "Kaya Yousif",
-                "Informationen zum Asylverfahren",
-                "01564586778",
-                (1993, 4, 14),
-                random.choice(origin_countries),
-            ),
-        ]
-        clients_in_db = []
-        for client in clients:
-            clients_in_db.append(self.get_and_create_client(client, rlc))
-        return clients_in_db
 
     def get_and_create_records(self, clients, consultants, rlc):
         tags = list(record_models.RecordTag.objects.all())
@@ -600,21 +251,6 @@ class Command(BaseCommand):
             record.save()
             records_in_db.append(record)
         return records_in_db
-
-    def get_and_create_client(self, client, rlc: api_models.Rlc):
-        new_client = {
-            "name": client[2],
-            "from_rlc": rlc,
-            "created_on": AddMethods.generate_date(client[0]),
-            "last_edited": AddMethods.generate_date(client[1]),
-            "birthday": AddMethods.generate_date(client[5]),
-            "origin_country": client[6],
-            "note": client[3],
-            "phone_number": client[4],
-        }
-        return record_models.EncryptedClient.objects.create(
-            rlc.get_public_key(), **new_client
-        )
 
     def create_the_best_record_ever(self, main_user, clients, consultants, rlc):
         tags = list(record_models.RecordTag.objects.all())

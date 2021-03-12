@@ -13,28 +13,16 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from typing import Any
+from backend.recordmanagement.models import OriginCountry
+from backend.static.encryption import AESEncryption, RSAEncryption
+from backend.static.date_utils import parse_date
+from django_prometheus.models import ExportModelOperationsMixin
+from backend.api.errors import CustomError
+from backend.api.models import Rlc
+from backend.static import error_codes
 from django.db import models
 from datetime import datetime
 import pytz
-from django_prometheus.models import ExportModelOperationsMixin
-
-from backend.api.errors import CustomError
-from backend.api.models import Rlc
-from backend.recordmanagement.models import OriginCountry
-from backend.static import error_codes
-from backend.static.date_utils import parse_date
-from backend.static.encryption import AESEncryption, RSAEncryption
-
-
-class EncryptedClientManager(models.Manager):
-    def create(self, rlc_public_key, *args: Any, **kwargs: Any) -> "EncryptedClient":
-        aes_key = AESEncryption.generate_secure_key()
-        for field in ["name", "note", "phone_number"]:
-            if field in kwargs:
-                kwargs[field] = AESEncryption.encrypt(kwargs[field], aes_key)
-        kwargs["encrypted_client_key"] = RSAEncryption.encrypt(aes_key, rlc_public_key)
-        return super().create(*args, **kwargs)
 
 
 class EncryptedClient(ExportModelOperationsMixin("encrypted_client"), models.Model):
@@ -56,10 +44,22 @@ class EncryptedClient(ExportModelOperationsMixin("encrypted_client"), models.Mod
 
     encrypted_client_key = models.BinaryField(null=True)
 
-    objects = EncryptedClientManager()
-
     def __str__(self):
         return "e_client: " + str(self.id)
+
+    def encrypt(self, rlc_public_key):
+        aes_key = AESEncryption.generate_secure_key()
+        for field in ["name", "note", "phone_number"]:
+            setattr(self, field, AESEncryption.encrypt(getattr(self, field), aes_key))
+        self.encrypted_client_key = RSAEncryption.encrypt(aes_key, rlc_public_key)
+
+    def decrypt(self):
+        # TODO: make the decryption work
+        raise NotImplemented()
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None) -> None:
+        # TODO: throw exception if a field that should be encrypted is not encrypted
+        super().save(force_insert, force_update, using, update_fields)
 
     def patch(self, client_data, clients_aes_key: str) -> [str]:
         patched = []

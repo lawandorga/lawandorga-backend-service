@@ -68,7 +68,7 @@ class OneTimeGenerators:
             )
             rlc_keys.save()
 
-            users_from_rlc = rlc.get_users_from_rlc()
+            users_from_rlc = UserProfile.objects.filter(rlc=rlc)
             for user in users_from_rlc:
                 users_public = user.get_public_key()
                 for_user_encrypted_rlc_aes_key = RSAEncryption.encrypt(

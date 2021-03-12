@@ -14,10 +14,9 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from backend.static.permissions import PERMISSION_CAN_CONSULT
+from ...static.encryption import AESEncryption, RSAEncryption
 from django.db import models
-from . import UserProfile
-from ..errors import CustomError
-from ...static.error_codes import ERROR__API__RLC__NO_PUBLIC_KEY_FOUND
+from . import UserProfile, RlcEncryptionKeys, UsersRlcKeys
 
 
 class Rlc(models.Model):
@@ -41,12 +40,28 @@ class Rlc(models.Model):
             PERMISSION_CAN_CONSULT, for_rlc=self.id
         )
 
-    def get_users_from_rlc(self):
-        return UserProfile.objects.filter(rlc=self)
+    def get_public_key(self) -> bytes:
+        if not hasattr(self, 'encryption_keys'):
+            self.generate_keys()
+        return self.encryption_keys.public_key
 
-    def get_public_key(self):
-        try:
-            keys = self.encryption_keys.get(rlc=self)
-        except Exception:
-            raise CustomError(ERROR__API__RLC__NO_PUBLIC_KEY_FOUND)
-        return keys.public_key
+    def generate_keys(self) -> None:
+        if hasattr(self, 'encryption_keys'):
+            return
+        # generate some keys
+        aes_key = AESEncryption.generate_secure_key()
+        private, public = RSAEncryption.generate_keys()
+        encrypted_private = AESEncryption.encrypt(private, aes_key)
+        # create encryption key for rlc
+        RlcEncryptionKeys.objects.create(
+            rlc=self,
+            encrypted_private_key=encrypted_private,
+            public_key=public
+        )
+        # create encryption keys for users to be able to decrypt rlc private key with users private key
+        # the aes key is encrypted with the users public key, but only the user's private key can decrypt
+        # the encrypted aes key
+        for user in self.rlc_members.all():
+            encrypted_aes_key = RSAEncryption.encrypt(aes_key, user.get_public_key())
+            user_rlc_keys = UsersRlcKeys(user=user, rlc=self, encrypted_key=encrypted_aes_key)
+            user_rlc_keys.save()

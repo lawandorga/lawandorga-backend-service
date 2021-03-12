@@ -157,6 +157,19 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Mod
     def __str__(self):
         return "e_record: " + str(self.id) + ":" + self.record_token
 
+    def encrypt(self):
+        # TODO: encrypt the record
+        raise NotImplemented()
+
+    def decrypt(self):
+        # TODO: decrypt the record
+        raise NotImplemented()
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        # TODO: check if every field is encrypted and throw exception if not
+        super().save(force_insert, force_update, using, update_fields)
+
     def patch(self, record_data, record_key: str) -> [str]:
         """
         patches record from object, updating last_edited

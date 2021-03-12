@@ -354,17 +354,14 @@ class UserProfile(
             or self.is_superuser
         )
 
-    def get_public_key(self):
+    def get_public_key(self) -> bytes:
         """
         gets the public key of the user from the database
         :return: public key of user (PEM)
         """
-        try:
-            public_key = self.encryption_keys
-        except ObjectDoesNotExist:
+        if not hasattr(self, 'encryption_keys'):
             self.generate_new_user_encryption_keys()
-            public_key = self.encryption_keys
-        return public_key
+        return self.encryption_keys.public_key
 
     def get_private_key(self, decryption_key):
         """

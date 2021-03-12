@@ -54,7 +54,7 @@ class AESEncryption:
         return os.urandom(16)
 
     @staticmethod
-    def generate_secure_key():
+    def generate_secure_key() -> str:
         return generate_secure_random_string(64)
 
     @staticmethod
