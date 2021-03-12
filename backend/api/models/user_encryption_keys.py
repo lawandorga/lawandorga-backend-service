@@ -13,24 +13,12 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
-from django_prometheus.models import ExportModelOperationsMixin
-
-from backend.api.models import UserProfile
-from backend.static.encryption import AESEncryption
 from backend.static.error_codes import ERROR__API__USER__NO_PUBLIC_KEY_FOUND
+from backend.static.encryption import AESEncryption
+from django_prometheus.models import ExportModelOperationsMixin
 from backend.api.errors import CustomError
-
-
-# TODO: refactor objects.get_users_public_key to objects.get(user=user)? but exception might be different.
-class UserEncryptionKeysQuerySet(models.QuerySet):
-    def get_users_public_key(self, user):
-        try:
-            keys = self.get(user=user)
-        except Exception:
-            raise CustomError(ERROR__API__USER__NO_PUBLIC_KEY_FOUND)
-        return keys.public_key
+from backend.api.models import UserProfile
+from django.db import models
 
 
 class UserEncryptionKeys(
@@ -46,7 +34,12 @@ class UserEncryptionKeys(
     private_key_encrypted = models.BooleanField(default=False)
     public_key = models.BinaryField()
 
-    objects = UserEncryptionKeysQuerySet.as_manager()
+    def get_users_public_key(self):
+        try:
+            keys = UserEncryptionKeys.objects.get(user=self.user)
+        except Exception:
+            raise CustomError(ERROR__API__USER__NO_PUBLIC_KEY_FOUND)
+        return keys.public_key
 
     def decrypt_private_key(self, key_to_encrypt):
         """

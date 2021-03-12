@@ -16,6 +16,8 @@
 from backend.static.permissions import PERMISSION_CAN_CONSULT
 from django.db import models
 from . import UserProfile
+from ..errors import CustomError
+from ...static.error_codes import ERROR__API__RLC__NO_PUBLIC_KEY_FOUND
 
 
 class Rlc(models.Model):
@@ -43,6 +45,8 @@ class Rlc(models.Model):
         return UserProfile.objects.filter(rlc=self)
 
     def get_public_key(self):
-        # TODO: refactoring possible via related name?
-        from backend.api.models import RlcEncryptionKeys
-        return RlcEncryptionKeys.objects.get_rlcs_public_key(self)
+        try:
+            keys = self.encryption_keys.get(rlc=self)
+        except Exception:
+            raise CustomError(ERROR__API__RLC__NO_PUBLIC_KEY_FOUND)
+        return keys.public_key

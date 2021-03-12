@@ -13,11 +13,10 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from django.db import models
-
+from backend.static.error_codes import ERROR__API__LOGGING__TOO_MANY_SESSION_PATHS_FOUND
 from backend.api.models import UserActivityPath, UserSession
 from backend.api.errors import CustomError
-from backend.static.error_codes import ERROR__API__LOGGING__TOO_MANY_SESSION_PATHS_FOUND
+from django.db import models
 
 
 class UserSessionPathManager(models.Manager):

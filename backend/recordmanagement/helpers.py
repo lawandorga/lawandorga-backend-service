@@ -84,12 +84,9 @@ def check_encryption_key_holders_and_grant(granting_user, granting_users_private
         )
         users_with_keys = record.get_users_with_decryption_keys()
         for user in users_with_keys:
-            try:
-                already_existing = RecordEncryption.objects.get(
-                    user=user, record=record
-                )
-            except:
-                users_public_key = UserEncryptionKeys.objects.get_users_public_key(user)
+
+            if not RecordEncryption.objects.filter(user=user, record=record).exists():
+                users_public_key = user.get_public_key()
                 encrypted_record_key = RSAEncryption.encrypt(
                     record_key, users_public_key
                 )
@@ -107,9 +104,7 @@ def resolve_missing_record_key_entries(user, users_private_key):
         ).first()
         if mine:
             try:
-                missing_key_users_public_key = UserEncryptionKeys.objects.get_users_public_key(
-                    missing_key.user
-                )
+                missing_key_users_public_key = missing_key.user.get_public_key()
                 record_key = mine.decrypt(users_private_key)
                 encrypted_record_key = RSAEncryption.encrypt(
                     record_key, missing_key_users_public_key
