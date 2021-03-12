@@ -66,13 +66,6 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
         hasPermission.delete()
         return Response({"status": "success"})
 
-    # def create(self, request, *args, **kwargs) -> Response:
-    #     if not request.user.has_permission(PERMISSION_MANAGE_PERMISSIONS_RLC, for_rlc=request.user.rlc):
-    #         raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-    #
-    #     a = 10
-    #     pass
-
     def create(self, request, *args, **kwargs):
         data = request.data
 

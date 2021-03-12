@@ -24,30 +24,12 @@ class HasPermissionSerializer(serializers.ModelSerializer):
         model = HasPermission
         fields = "__all__"
 
-    """
-    Validates if the values provided are correct and implement the model right
-    """
-
     def validate(self, data):
         if HasPermission.validate_values(data):
             return data
         raise serializers.ValidationError("validationError at creating has_permission")
 
     def create(self, validated_data):
-        # TODO: this should be possible automatically maybe. djrf might be able to handle it
         if HasPermission.already_existing(validated_data):
             raise EntryAlreadyExistingError("entry already exists")
-        has_permission = HasPermission.objects.create(
-            permission=validated_data.get("permission", None),
-            user_has_permission=validated_data.get("user_has_permission", None),
-            group_has_permission=validated_data.get("group_has_permission", None),
-            rlc_has_permission=validated_data.get("rlc_has_permission", None),
-            permission_for_user=validated_data.get("permission_for_user", None),
-            permission_for_group=validated_data.get("permission_for_group", None),
-            permission_for_rlc=validated_data.get("permission_for_rlc", None),
-        )
-        return has_permission
-
-    def update(self, instance, validated_data):
-        # TODO: this does not update?
-        return instance
+        return super().create(validated_data)

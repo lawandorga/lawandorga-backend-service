@@ -90,16 +90,7 @@ class HasPermission(ExportModelOperationsMixin("has_permission"), models.Model):
     objects = HasPermissionManager
 
     def __str__(self):
-        return (
-            "hasPermission: "
-            + str(self.id)
-            + "; permissionName: "
-            + self.permission.name
-        )
-
-    """
-
-    """
+        return "hasPermission: {}; permissionName: {}".format(self.id, self.permission.name)
 
     @staticmethod
     def already_existing(data):
