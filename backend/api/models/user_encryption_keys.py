@@ -34,13 +34,6 @@ class UserEncryptionKeys(
     private_key_encrypted = models.BooleanField(default=False)
     public_key = models.BinaryField()
 
-    def get_users_public_key(self):
-        try:
-            keys = UserEncryptionKeys.objects.get(user=self.user)
-        except Exception:
-            raise CustomError(ERROR__API__USER__NO_PUBLIC_KEY_FOUND)
-        return keys.public_key
-
     def decrypt_private_key(self, key_to_encrypt):
         """
         decrypt the saved encrypted private key of the user with the given key, this key is the users 'normal' password
