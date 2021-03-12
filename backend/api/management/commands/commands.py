@@ -145,7 +145,6 @@ def reset_db():
     RecordDocumentTag.objects.all().delete()
     RecordPermission.objects.all().delete()
     ForgotPasswordLinks.objects.all().delete()
-    Language.objects.all().delete()
     NewUserRequest.objects.all().delete()
     UserActivationLink.objects.all().delete()
     RecordDeletionRequest.objects.all().delete()

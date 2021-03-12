@@ -1937,7 +1937,6 @@ class AddMethods:
 						(id [number], permissionName [String])
 
 		Returns:
-
 		"""
         if isinstance(permission, str):
             perm = Permission(name=permission)
