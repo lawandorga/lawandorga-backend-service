@@ -13,13 +13,9 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-
-from django.db import models
-from datetime import timedelta
-
-from . import UserProfile
 from backend.static.permissions import PERMISSION_CAN_CONSULT
+from django.db import models
+from . import UserProfile
 
 
 class Rlc(models.Model):
@@ -31,10 +27,8 @@ class Rlc(models.Model):
     part_of_umbrella = models.BooleanField(default=True)
     note = models.CharField(max_length=4000, null=True, default="")
 
-    # record_permission_valid = models.DurationField(default=timedelta(weeks=3))
-
     def __str__(self):
-        return "rlc: " + str(self.id) + ":" + self.name
+        return "rlc: {}:{}".format(self.id, self.name)
 
     def get_consultants(self):
         """
@@ -49,6 +43,6 @@ class Rlc(models.Model):
         return UserProfile.objects.filter(rlc=self)
 
     def get_public_key(self):
+        # TODO: refactoring possible via related name?
         from backend.api.models import RlcEncryptionKeys
-
         return RlcEncryptionKeys.objects.get_rlcs_public_key(self)
