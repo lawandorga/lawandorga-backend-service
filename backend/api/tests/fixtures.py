@@ -277,11 +277,6 @@ class CreateFixtures:
         country.save()
 
     @staticmethod
-    def add_countries(countries):
-        for country in countries:
-            CreateFixtures.add_country(country[0], country[1], country[2])
-
-    @staticmethod
     def add_permission(id, name):
         """
         creates a permission in the database

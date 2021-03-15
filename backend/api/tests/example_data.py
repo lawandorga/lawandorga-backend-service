@@ -13,13 +13,14 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from backend.static.permissions import get_all_permissions_strings
 from backend.api.models import Rlc, Group, HasPermission, Permission, permissions
 from backend.api.models import UserProfile
-from datetime import date
 from random import randint, choice
 
 # helpers
-from backend.recordmanagement.models import OriginCountry, EncryptedClient, RecordTag, EncryptedRecord
+from backend.recordmanagement.models import OriginCountry, EncryptedClient, RecordTag, EncryptedRecord, Record, \
+    RecordDocument, RecordDocumentTag, RecordMessage
 
 
 def add_permissions_to_group(group: Group, permission_name):
@@ -39,12 +40,43 @@ def create_rlc():
     )
 
 
+def create_fixtures():
+    # create countries
+    countries = [
+        ("Abchasien",),
+        ("Afghanistan",),
+        ("Ägypten",),
+        ("Albanien",),
+        ("Algerien",),
+    ]
+    for country in countries:
+        OriginCountry.objects.create(name=country[0])
+
+    # TODO: permissions get and create instead of creating upfront
+    # create permissions
+    for permission in get_all_permissions_strings():
+        Permission.objects.get_or_create(name=permission)
+
+    # create record tags
+    tags = [
+        ("Familiennachzug",),
+        ("Dublin IV",),
+        ("Arbeitserlaubnis",),
+        ("Flüchtlingseigenschaft",),
+        ("subsidiärer Schutz",),
+        ("Eheschließung",),
+        ("Verlobung",),
+    ]
+    for tag in tags:
+        RecordTag.objects.create(name=tag)
+
+
 def create_users(rlc):
     users = [
         (
             "ludwig.maximilian@outlook.de",
             "Ludwig Maximilian",
-            (1985, 5, 12),
+            '1985-05-12',
             "01732421123",
             "Maximilianstrasse 12",
             "München",
@@ -53,7 +85,7 @@ def create_users(rlc):
         (
             "xxALIxxstone@hotmail.com",
             "Albert Einstein",
-            (1879, 3, 14),
+            '1879-3-14',
             "01763425656",
             "Blumengasse 23",
             "Hamburg",
@@ -62,7 +94,7 @@ def create_users(rlc):
         (
             "mariecurry53@hotmail.com",
             "Marie Curie",
-            (1867, 11, 7),
+            '1867-11-7',
             "0174565656",
             "Jungfernstieg 2",
             "Hamburg",
@@ -71,7 +103,7 @@ def create_users(rlc):
         (
             "max.mustermann@gmail.com",
             "Maximilian Gustav Mustermann",
-            (1997, 10, 23),
+            '1997-10-23',
             "0176349756",
             "Schlossallee 100",
             "Grünwald",
@@ -80,7 +112,7 @@ def create_users(rlc):
         (
             "petergustav@gmail.com",
             "Peter Klaus Gustav von Guttenberg",
-            (1995, 3, 11),
+            '1995-3-11',
             "01763423732",
             "Leopoldstrasse 31",
             "Muenchen",
@@ -89,7 +121,7 @@ def create_users(rlc):
         (
             "gabi92@hotmail.com",
             "Gabriele Schwarz",
-            (1998, 12, 10),
+            '1998-12-10',
             "0175647332",
             "Kartoffelweg 12",
             "Muenchen",
@@ -98,7 +130,7 @@ def create_users(rlc):
         (
             "rudi343@gmail.com",
             "Rudolf Mayer",
-            (1996, 5, 23),
+            '1996-5-23',
             "01534423732",
             "Barerstrasse 3",
             "Muenchen",
@@ -107,7 +139,7 @@ def create_users(rlc):
         (
             "lea.g@gmx.com",
             "Lea Glas",
-            (1985, 7, 11),
+            '1985-7-11',
             "01763222732",
             "Argentinische Allee 34",
             "Hamburg",
@@ -116,7 +148,7 @@ def create_users(rlc):
         (
             "butterkeks@gmail.com",
             "Bettina Rupprecht",
-            (1995, 10, 11),
+            '1995-10-11',
             "01765673732",
             "Ordensmeisterstrasse 56",
             "Hamburg",
@@ -125,7 +157,7 @@ def create_users(rlc):
         (
             "willi.B@web.de",
             "Willi Birne",
-            (1997, 6, 15),
+            "1997-6-15",
             "01763425555",
             "Grunewaldstrasse 45",
             "Hamburg",
@@ -134,7 +166,7 @@ def create_users(rlc):
         (
             "pippi.langstrumpf@gmail.com",
             "Pippi Langstumpf",
-            (1981, 7, 22),
+            '1981-7-22',
             "01766767732",
             "Muehlenstraße 12",
             "Muenchen",
@@ -144,7 +176,6 @@ def create_users(rlc):
 
     created_users = []
     for user in users:
-        birthday = users[2]
         created_users.append(
             UserProfile.objects.create(
                 email=user[0],
@@ -153,14 +184,14 @@ def create_users(rlc):
                 street=user[4],
                 city=user[5],
                 postal_code=user[6],
-                birthday=date(*birthday),
+                birthday=user[2],
                 rlc=rlc,
             )
         )
     return created_users
 
 
-def create_dummy_users(rlc: Rlc):
+def create_dummy_users(rlc: Rlc) -> [UserProfile]:
     users = []
 
     # main user
@@ -172,7 +203,7 @@ def create_dummy_users(rlc: Rlc):
         city="Dummycity",
         postal_code="00000",
         rlc=rlc,
-        birthday=(1995, 1, 1)
+        birthday='1995-1-1'
     )
     user.set_password("qwe123")
     user.save()
@@ -212,7 +243,7 @@ def create_inactive_user(rlc):
         city="InAktiv",
         postal_code="29292",
         rlc=rlc,
-        birthday=(1950, 1, 1)
+        birthday='1950-1-1'
     )
     user.set_password("qwe123")
     user.is_active = False
@@ -281,93 +312,93 @@ def create_clients(rlc: Rlc):
     origin_countries = OriginCountry.objects.all()
     clients = [
         (
-            (2018, 7, 12),  # created_on
-            (2018, 8, 28, 21, 3, 0, 0),  # last_edited
+            '2018-7-12',  # created_on
+            '2018-8-28T21:3:0',  # last_edited
             "Bibi Aisha",  # name
             "auf Flucht von Ehemann getrennt worden",  # note
             "01793456542",  # phone number
-            (1990, 5, 1),  # birthday
+            '1990-5-1',  # birthday
             choice(origin_countries),  # origin country id
         ),
         (
             (2017, 3, 17),
-            (2017, 12, 24, 12, 2, 0, 0),
+            '2017-12-24T12:2:0',
             "Mustafa Kubi",
             "möchte eine Ausbildung beginnen",
             None,
-            (1998, 12, 3),
+            '1998-12-3',
             choice(origin_countries),
         ),
         (
-            (2018, 1, 1),
-            (2018, 3, 3, 14, 5, 0, 0),
+            '2018-1-1',
+            '2018-3-3T14:5:0',
             "Ali Baba",
             "fragt wie er seine deutsche Freundin heiraten kann",
             "",
-            (1985, 6, 27),
+            "1985-6-27",
             choice(origin_countries),
         ),
         (
-            (2018, 8, 1),
-            (2018, 8, 2, 16, 3, 0, 0),
+            '2018-8-1',
+            '2018-8-2T16:3:0',
             "Kamila Iman",
             "möchte zu ihrer Schwester in eine andere Aufnahmeeinrichtung ziehen",
             "01562736778",
-            (1956, 4, 3),
+            '1956-4-3',
             choice(origin_countries),
         ),
         (
-            (2017, 9, 10),
-            (2017, 10, 2, 15, 3, 0, 0),
+            '2017-9-10',
+            '2017-10-2T15:3:0',
             "Junis Haddad",
             "Informationen zum Asylverfahren",
             "013345736778",
-            (1998, 6, 2),
+            '1998-6-2',
             choice(origin_countries),
         ),
         (
-            (2017, 9, 10),
-            (2018, 9, 2, 16, 3, 0, 0),
+            '2017-9-10',
+            '2018-9-2T16:3:0',
             "Nael Mousa",
             "Informationen zum Asylverfahren",
             "01444436778",
-            (1997, 6, 4),
+            '1997-6-4',
             choice(origin_countries),
         ),
         (
-            (2017, 9, 10),
-            (2018, 1, 12, 16, 3, 0, 0),
+            '2017-9-10',
+            '2018-1-12T16:3:0',
             "Amir Hamdan",
             "Informationen zum Asylverfahren",
             "01457636778",
-            (1996, 6, 8),
+            '1996-6-8',
             choice(origin_countries),
         ),
         (
-            (2017, 9, 10),
-            (2018, 1, 2, 16, 3, 0, 0),
+            '2017-9-10',
+            '2018-1-2T16:3:0',
             "Amar Yousef",
             "Informationen zum Asylverfahren",
             "01566546778",
-            (1995, 5, 10),
+            '1995-5-10',
             choice(origin_countries),
         ),
         (
-            (2017, 9, 10),
-            (2017, 12, 2, 16, 3, 0, 0),
+            '2017-9-10',
+            '2017-12-2T16:3:0',
             "Tarek Habib",
             "Informationen zum Asylverfahren",
             "013564736778",
-            (1994, 5, 12),
+            '1994-5-12',
             choice(origin_countries),
         ),
         (
-            (2017, 9, 10),
-            (2018, 10, 2, 16, 3, 0, 0),
+            '2017-9-10',
+            '2018-10-2T16:3:0',
             "Kaya Yousif",
             "Informationen zum Asylverfahren",
             "01564586778",
-            (1993, 4, 14),
+            "1993-4-14",
             choice(origin_countries),
         ),
     ]
@@ -391,154 +422,153 @@ def create_clients(rlc: Rlc):
     return created_clients
 
 
-def create_records(clients, consultants, rlc):
+def create_records(clients: [EncryptedClient], consultants: [UserProfile], rlc: Rlc) -> [EncryptedRecord]:
     assert len(clients) > 9
-    assert len(consultants) > 5
-
     tags = RecordTag.objects.all()
+
     records = [
         (
             choice(consultants),  # creator id
-            (2018, 7, 12),  # created
-            (2018, 8, 29, 13, 54, 0, 0),  # last edited
+            '2018-7-12',  # created
+            '2018-8-29T13:54:0',  # last edited
             clients[0],  # client
-            (2018, 7, 10),  # first contact
-            (2018, 8, 14, 17, 30, 0, 0),  # last contact
+            '2018-7-10',  # first contact
+            '2018-8-14T17:30:0',  # last contact
             "AZ-123/18",  # record token
             "informationen zum asylrecht",
             "cl",  # status, cl wa op
-            [consultants[0], consultants[1]],  # working on
-            [tags[0], tags[1]],  # tags
+            [choice(consultants), choice(consultants)],  # working on
+            [choice(tags), choice(tags)],  # tags
         ),
         (
             choice(consultants),
             (2018, 6, 23),
-            (2018, 8, 22, 23, 3, 0, 0),
+            '2018-8-22T23:3:0',
             clients[1],
-            (2018, 6, 20),
-            (2018, 7, 10, 17, 30, 0, 0),
+            '2018-6-20',
+            '2018-7-10T17:30:0',
             "AZ-124/18",
             "nicht abgeschlossen",
             "op",
-            [consultants[0], consultants[2]],
-            [tags[0], tags[12]],
+            [choice(consultants), choice(consultants)],
+            [choice(tags), choice(tags)],
         ),
         (
             choice(consultants),
             (2018, 8, 24),
-            (2018, 8, 31, 1, 2, 0, 0),
+            '2018-8-31T1:2:0',
             clients[2],
-            (2018, 8, 22),
-            (2018, 8, 22, 18, 30, 0, 0),
+            '2018-8-22',
+            '2018-8-22T18:30:0',
             "AZ-125/18",
             "auf Bescheid wartend",
             "wa",
-            [consultants[0], consultants[3]],
-            [tags[0], tags[11]],
+            [choice(consultants), choice(consultants)],
+            [choice(tags), choice(tags)],
         ),
         (
             choice(consultants),
-            (2018, 3, 10),
-            (2018, 4, 30, 19, 22, 0, 0),
+            '2018-3-10',
+            '2018-4-30T19:22:0',
             clients[3],
-            (2018, 3, 9),
-            (2018, 3, 24, 15, 54, 0, 0),
+            '2018-3-9',
+            '2018-3-24T15:54:0',
             "AZ-126/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
             "cl",
-            [consultants[0], consultants[4]],
-            [tags[0], tags[10]],
+            [choice(consultants), choice(consultants)],
+            [choice(tags), choice(tags)],
         ),
         (
             choice(consultants),
-            (2017, 9, 10),
-            (2017, 10, 2, 15, 3, 0, 0),
+            '2017-9-10',
+            '2017-10-2T15:3:0',
             clients[4],
-            (2017, 9, 10),
-            (2017, 10, 2, 15, 3, 0, 0),
+            '2017-9-10',
+            '2017-10-2T15:3:0',
             "AZ-127/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
             "cl",
-            [consultants[0], consultants[5]],
-            [tags[1], tags[2]],
+            [choice(consultants), choice(consultants)],
+            [choice(tags), choice(tags)],
         ),
         (
             choice(consultants),
-            (2017, 9, 10),
-            (2018, 9, 2, 16, 3, 0, 0),
+            '2017-9-10',
+            '2018-9-2T16:3:0',
             clients[5],
-            (2017, 9, 10),
-            (2018, 9, 2, 16, 3, 0, 0),
+            '2017-9-10',
+            '2018-9-2T16:3:0',
             "AZ-128/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
             "wa",
-            [consultants[1], consultants[2]],
-            [tags[1], tags[3]],
+            [choice(consultants), choice(consultants)],
+            [choice(tags), choice(tags)],
         ),
         (
             choice(consultants),
-            (2017, 9, 10),
-            (2018, 1, 12, 16, 3, 0, 0),
+            '2017-9-10',
+            '2018-1-12T16:3:0',
             clients[6],
-            (2017, 9, 10),
-            (2018, 1, 12, 16, 3, 0, 0),
+            '2017-9-10',
+            '2018-1-12T16:3:0',
             "AZ-129/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
             "op",
-            [consultants[1], consultants[3]],
-            [tags[2], tags[4]],
+            [choice(consultants), choice(consultants)],
+            [choice(tags), choice(tags)],
         ),
         (
             choice(consultants),
-            (2017, 9, 10),
-            (2018, 1, 2, 16, 3, 0, 0),
+            '2017-9-10',
+            '2018-1-2T16:3:0',
             clients[7],
-            (2017, 9, 10),
-            (2018, 1, 2, 16, 3, 0, 0),
+            '2017-9-10',
+            '2018-1-2T16:3:0',
             "AZ-130/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
             "cl",
-            [consultants[2], consultants[5]],
-            [tags[1], tags[5]],
+            [choice(consultants), choice(consultants)],
+            [choice(tags), choice(tags)],
         ),
         (
             choice(consultants),
-            (2017, 9, 10),
-            (2018, 12, 2, 16, 3, 0, 0),
+            '2017-9-10',
+            '2018-12-2T16:3:0',
             clients[8],
-            (2017, 9, 10),
-            (2018, 12, 2, 16, 3, 0, 0),
+            '2017-9-10',
+            '2018-12-2T16:3:0',
             "AZ-131/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
             "wa",
-            [consultants[3], consultants[4]],
-            [tags[0], tags[7]],
+            [choice(consultants), choice(consultants)],
+            [choice(tags), choice(tags)],
         ),
         (
             choice(consultants),
-            (2017, 9, 10),
-            (2018, 10, 2, 16, 3, 0, 0),
+            '2017-9-10',
+            '2018-10-2T16:3:0',
             clients[9],
-            (2017, 9, 10),
-            (2018, 10, 2, 16, 3, 0, 0),
+            '2017-9-10',
+            '2018-10-2T16:3:0',
             "AZ-132/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
             "op",
-            [consultants[5], consultants[4]],
-            [tags[3], tags[4]],
+            [choice(consultants), choice(consultants)],
+            [choice(tags), choice(tags)],
         ),
         (
             choice(consultants),
-            (2017, 9, 10),
-            (2018, 10, 2, 16, 3, 0, 0),
+            '2017-9-10',
+            '2018-10-2T16:3:0',
             clients[0],
-            (2017, 9, 10),
-            (2018, 10, 2, 16, 3, 0, 0),
+            '2017-9-10',
+            '2018-10-2T16:3:0',
             "AZ-139/18",
             "zweite akte von client 0",
             "op",
-            [consultants[5], consultants[4]],
-            [tags[3], tags[4]],
+            [choice(consultants), choice(consultants)],
+            [choice(tags), choice(tags)],
         ),
     ]
 
@@ -564,3 +594,120 @@ def create_records(clients, consultants, rlc):
         record.save()
         created_records.append(record)
     return created_records
+
+
+def create_informative_record(main_user: UserProfile, clients: [EncryptedClient], consultants: [UserProfile],
+                              rlc: Rlc) -> EncryptedRecord:
+    tags = list(RecordTag.objects.all())
+    record = Record(
+        from_rlc=rlc,
+        creator=main_user,
+        client=clients[0],
+        record_token="AZ-001/18",
+        official_note="best record ever",
+        state="op",
+        id=7181,
+    )
+
+    record.created_on = '2018-1-3'
+    record.first_contact_date = '2018-1-3'
+    record.last_edited = '2019-3-11T9:32:21'
+    record.last_contact_date = '2019-2-28T17:33:0'
+    record.first_consultation = '2018-1-2T23:55:0'
+
+    record.note = "Mandant moechte dass wir ihn vor Gericht vertreten. Das duerfen wir aber nicht. #RDG"
+    record.consultant_team = "Taskforce 417"
+    record.lawyer = "RA Guenther-Klaus, Kiesweg 3"
+    record.related_persons = "Sozialarbeiter Apfel (Direkt in der Unterkunft)"
+    record.contact = "Mail: asksk1@bmw.de,\n Telefon: 0800 444 55 444"
+    record.bamf_token = "QRS-232/2018"
+    record.foreign_token = "Vor Gericht: FA93932-1320"
+    record.first_correspondence = (
+        "Hallo Liebes Team der RLC,\n ich habe folgendes Problem.\nKoennt ihr mir "
+        "helfen?\n Vielen Dank"
+    )
+    record.circumstances = "Kam ueber die Balkanroute, Bruder auf dem Weg verloren, wenig Kontakt zu Familie."
+    record.next_steps = "Klae einreichen und gewinnen!"
+    record.status_described = (
+        "Auf Antwort wartend, anschliessend weitere Bearbeitung."
+    )
+    record.additional_facts = "Hat noch nie ne Schweinshaxe gegessen."
+
+    record.save()
+    record.working_on_record.add(choice(consultants), main_user)
+    record.tagged.add(choice(tags), choice(tags))
+    record.save()
+
+    document1 = RecordDocument(
+        name="7_1_19__pass.jpg", creator=main_user, record=record, file_size=18839
+    )
+    document1.created_on = '2019-1-7'
+    document1.save()
+    document1.tagged.add(RecordDocumentTag.objects.get(name="Pass"))
+
+    document2 = RecordDocument(
+        name="3_10_18__geburtsurkunde.pdf",
+        creator=main_user,
+        record=record,
+        file_size=488383,
+    )
+    document2.created_on = '2018-10-3'
+    document2.save()
+    document2.tagged.add(
+        RecordDocumentTag.objects.get(name="Geburtsurkunde")
+    )
+
+    document3 = RecordDocument(
+        name="3_12_18__Ablehnungbescheid.pdf",
+        creator=main_user,
+        record=record,
+        file_size=343433,
+    )
+    document3.created_on = '2018-12-3'
+    document3.save()
+    document3.tagged.add(
+        RecordDocumentTag.objects.get(name="Bescheid (Ablehnung)")
+    )
+
+    document4 = RecordDocument(
+        name="1_1_19__Klageschrift.docx",
+        creator=main_user,
+        record=record,
+        file_size=444444,
+    )
+    document4.save()
+    document4.created_on = '2019-1-1'
+
+    message = RecordMessage(
+        sender=main_user,
+        record=record,
+        message="Bitte dringend die Kontaktdaten des Mandanten eintragen.",
+    )
+    message.save()
+    message.created_on = '2019-3-11T10:12:21'
+    message.save()
+    message = RecordMessage(
+        sender=choice(consultants),
+        record=record,
+        message="Ist erledigt! Koennen wir uns morgen treffen um das zu besprechen?",
+    )
+    message.save()
+    message.created_on = '2019-3-12T9:32:21'
+    message.save()
+    message = RecordMessage(
+        sender=main_user,
+        record=record,
+        message="Klar, einfach direkt in der Mittagspause in der Mensa.",
+    )
+    message.save()
+    message.created_on = '2019-3-12T14:7:21'
+    message.save()
+    message = RecordMessage(
+        sender=choice(consultants),
+        record=record,
+        message="Gut, jetzt faellt mir aber auch nichts mehr ein.",
+    )
+    message.save()
+    message.created_on = '2019-3-13T18:7:21'
+    message.save()
+    return record

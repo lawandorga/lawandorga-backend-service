@@ -44,21 +44,30 @@ class EncryptedClient(ExportModelOperationsMixin("encrypted_client"), models.Mod
 
     encrypted_client_key = models.BinaryField(null=True)
 
+    encrypted_fields = ['name', 'note', 'phone_number']
+
     def __str__(self):
         return "e_client: " + str(self.id)
 
-    def encrypt(self, rlc_public_key):
+    def encrypt(self, rlc_public_key: bytes) -> None:
         aes_key = AESEncryption.generate_secure_key()
-        for field in ["name", "note", "phone_number"]:
-            setattr(self, field, AESEncryption.encrypt(getattr(self, field), aes_key))
+        for field in self.encrypted_fields:
+            encrypted_field = AESEncryption.encrypt(getattr(self, field), aes_key)
+            setattr(self, field, encrypted_field)
         self.encrypted_client_key = RSAEncryption.encrypt(aes_key, rlc_public_key)
 
-    def decrypt(self):
-        # TODO: make the decryption work
-        raise NotImplemented()
+    def decrypt(self, rlc_private_key: str) -> None:
+        aes_key = RSAEncryption.decrypt(self.encrypted_client_key, rlc_private_key)
+        for field in self.encrypted_fields:
+            decrypted_field = AESEncryption.decrypt(getattr(self, field), aes_key)
+            setattr(self, field, decrypted_field)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None) -> None:
-        # TODO: throw exception if a field that should be encrypted is not encrypted
+        for field in self.encrypted_fields:
+            data_in_field = getattr(self, field)
+            if data_in_field and not isinstance(data_in_field, bytes):
+                raise ValueError(
+                    'The field {} of object {} is not encrypted. Do not save unencrypted data.'.format(field, self))
         super().save(force_insert, force_update, using, update_fields)
 
     def patch(self, client_data, clients_aes_key: str) -> [str]:

@@ -363,7 +363,7 @@ class UserProfile(
             self.generate_new_user_encryption_keys()
         return self.encryption_keys.public_key
 
-    def get_private_key(self, decryption_key):
+    def get_private_key(self, decryption_key) -> bytes:
         """
         gets the private key of the user
         this key is saved encrypted in the database
@@ -373,11 +373,11 @@ class UserProfile(
         """
         from backend.api.models import UserEncryptionKeys
 
-        try:
-            keys = UserEncryptionKeys.objects.get(user=self)
-        except Exception:
-            raise CustomError(ERROR__API__USER__NO_PUBLIC_KEY_FOUND)
-        keys.decrypt_private_key(decryption_key)
+        if not hasattr(self, 'encryption_keys'):
+            self.generate_new_user_encryption_keys()
+
+        keys = UserEncryptionKeys.objects.get(user=self)
+        return keys.decrypt_private_key(decryption_key)
 
     def get_rlcs_public_key(self):
         return self.rlc.get_public_key()

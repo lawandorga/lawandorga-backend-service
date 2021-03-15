@@ -32,7 +32,7 @@ class UserEncryptionKeys(
     private_key_encrypted = models.BooleanField(default=False)
     public_key = models.BinaryField()
 
-    def decrypt_private_key(self, key_to_encrypt):
+    def decrypt_private_key(self, key_to_encrypt: str) -> bytes:
         """
         decrypt the saved encrypted private key of the user with the given key, this key is the users 'normal' password
 
@@ -40,18 +40,13 @@ class UserEncryptionKeys(
         :param key_to_encrypt: users password
         :return: private key of the user
         """
-        if self.private_key_encrypted:
-            return AESEncryption.decrypt(self.private_key, key_to_encrypt)
-        else:
-            private_key = self.private_key
-            try:
-                private_key = private_key.tobytes()
-            except:
-                pass
-            self.private_key = AESEncryption.encrypt(private_key, key_to_encrypt)
+        if not self.private_key_encrypted:
+            self.private_key = AESEncryption.encrypt(self.private_key, key_to_encrypt)
             self.private_key_encrypted = True
             self.save()
-            return private_key
+
+        private_key = AESEncryption.decrypt(self.private_key, key_to_encrypt)
+        return private_key
 
     def __str__(self):
         return "EncryptionKeys: " + str(self.id) + "; for user: " + str(self.user.id)

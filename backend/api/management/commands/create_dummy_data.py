@@ -16,7 +16,6 @@
 from backend.api.management.commands.fixtures import AddMethods
 from backend.api.tests.fixtures_encryption import CreateFixtures as EncCreateFixtures
 from django.core.management.base import BaseCommand
-from backend.static import permissions
 from backend.api.tests import example_data as ed
 from .commands import (
     migrate_to_encryption,
@@ -63,7 +62,7 @@ class Command(BaseCommand):
         # TODO: create best record
         best_record = self.create_the_best_record_ever(main_user, clients, users, rlc)
 
-        # create requests
+        # TODO: create requests
         self.create_record_deletion_request(main_user, best_record)
         self.create_record_permission_request(users[4], best_record)
 
@@ -71,7 +70,7 @@ class Command(BaseCommand):
         migrate_to_encryption()
         migrate_to_rlc_settings()
 
-        # create notifications
+        # TODO: create notifications
         best_encrypted_record = record_models.EncryptedRecord.objects.filter(
             record_token=best_record.record_token
         ).first()

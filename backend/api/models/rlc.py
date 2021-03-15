@@ -16,7 +16,7 @@
 from backend.static.permissions import PERMISSION_CAN_CONSULT
 from ...static.encryption import AESEncryption, RSAEncryption
 from django.db import models
-from . import UserProfile, RlcEncryptionKeys, UsersRlcKeys
+from . import UserProfile
 
 
 class Rlc(models.Model):
@@ -46,6 +46,9 @@ class Rlc(models.Model):
         return self.encryption_keys.public_key
 
     def generate_keys(self) -> None:
+        from backend.api.models.rlc_encryption_keys import RlcEncryptionKeys
+        from backend.api.models.users_rlc_keys import UsersRlcKeys
+
         if hasattr(self, 'encryption_keys'):
             return
         # generate some keys

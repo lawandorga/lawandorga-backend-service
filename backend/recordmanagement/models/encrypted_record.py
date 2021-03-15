@@ -26,7 +26,7 @@ from backend.recordmanagement.models import RecordTag
 from backend.static import error_codes
 from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 from backend.static.date_utils import parse_date
-from backend.static.encryption import AESEncryption
+from backend.static.encryption import AESEncryption, RSAEncryption
 from backend.static import permissions
 
 
@@ -152,23 +152,36 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Mod
     status_described = models.BinaryField()
     additional_facts = models.BinaryField()
 
+    encrypted_fields = ["note", "consultant_team", "lawyer", "related_persons", "contact", "bamf_token",
+                        "foreign_token", "first_correspondence", "circumstances", "next_steps", "status_described",
+                        "additional_facts"]
+
     objects = EncryptedRecordManager()
 
     def __str__(self):
         return "e_record: " + str(self.id) + ":" + self.record_token
 
-    def encrypt(self):
-        # TODO: encrypt the record
-        raise NotImplemented()
-
-    def decrypt(self):
-        # TODO: decrypt the record
-        raise NotImplemented()
-
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
-        # TODO: check if every field is encrypted and throw exception if not
-        super().save(force_insert, force_update, using, update_fields)
+    # TODO: encrypt and decrypt
+    # def encrypt(self, public_key: bytes) -> None:
+    #     aes_key = AESEncryption.generate_secure_key()
+    #     for field in self.encrypted_fields:
+    #         encrypted_field = AESEncryption.encrypt(getattr(self, field), aes_key)
+    #         setattr(self, field, encrypted_field)
+    #     self.encrypted_client_key = RSAEncryption.encrypt(aes_key, public_key)
+    #
+    # def decrypt(self, private_key: str) -> None:
+    #     aes_key = RSAEncryption.decrypt(self.encrypted_client_key, private_key)
+    #     for field in self.encrypted_fields:
+    #         decrypted_field = AESEncryption.decrypt(getattr(self, field), aes_key)
+    #         setattr(self, field, decrypted_field)
+    #
+    # def save(self, force_insert=False, force_update=False, using=None, update_fields=None) -> None:
+    #     for field in self.encrypted_fields:
+    #         data_in_field = getattr(self, field)
+    #         if data_in_field and not isinstance(data_in_field, bytes):
+    #             raise ValueError(
+    #                 'The field {} of object {} is not encrypted. Do not save unencrypted data.'.format(field, self))
+    #     super().save(force_insert, force_update, using, update_fields)
 
     def patch(self, record_data, record_key: str) -> [str]:
         """
