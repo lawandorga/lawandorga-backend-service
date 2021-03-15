@@ -333,7 +333,7 @@ class Fixtures:
     def create_real_folder_permissions_no_duplicate():
         folder_permissions = get_all_folder_permissions_strings()
         for folder_permission in folder_permissions:
-            if FolderPermission.objects.filter(name=folder_permission).count() == 0:
+            if not FolderPermission.objects.filter(name=folder_permission).exists():
                 AddMethods.add_folder_permission(folder_permission)
 
     @staticmethod
