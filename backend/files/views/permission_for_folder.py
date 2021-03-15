@@ -20,17 +20,13 @@ from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
 from backend.api.models import Group
-from backend.api.serializers import (
-    HasPermissionWithPermissionNameSerializer,
-    HasPermissionSerializer,
-)
+from backend.api.serializers import HasPermissionSerializer
 from backend.files.models import Folder, PermissionForFolder, FolderPermission
 from backend.files.serializers import (
     PermissionForFolderSerializer,
     PermissionForFolderNestedSerializer,
 )
 from backend.static.error_codes import (
-    ERROR__API__ID_NOT_FOUND,
     ERROR__API__PERMISSION__INSUFFICIENT,
     ERROR__API__WRONG_RLC,
     ERROR__API__MISSING_ARGUMENT,
@@ -48,6 +44,7 @@ class PermissionForFolderViewSet(viewsets.ModelViewSet):
     serializer_class = PermissionForFolderSerializer
 
     def create(self, request):
+        # TODO: refactor
         user = request.user
         if not user.is_superuser and not user.has_permission(
             PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC, for_rlc=user.rlc
@@ -116,7 +113,7 @@ class PermissionForFolderPerFolderViewSet(APIView):
             folder_permissions,
             folder_visible,
             general_permissions,
-        ) = folder.get_all_groups_permissions_new()
+        ) = folder.get_all_groups_permissions()
         return_object = {
             "folder_permissions": PermissionForFolderNestedSerializer(
                 folder_permissions, many=True

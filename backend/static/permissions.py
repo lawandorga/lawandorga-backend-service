@@ -40,6 +40,9 @@ PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC = "manage_folder_permissions_rlc"
 PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS = (
     "process_record_document_deletion_requests"
 )
+PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC = (
+    "manage_collab_document_permissions_rlc"
+)
 
 
 def get_all_permissions_strings():
@@ -64,6 +67,7 @@ def get_all_permissions_strings():
         PERMISSION_WRITE_ALL_FOLDERS_RLC,
         PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC,
         PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS,
+        PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
     ]
 
 

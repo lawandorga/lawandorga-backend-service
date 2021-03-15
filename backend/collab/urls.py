@@ -17,12 +17,17 @@
 from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
 
+from backend.collab.models import PermissionForCollabDocument
 from backend.collab.views import (
     CollabDocumentListViewSet,
     TextDocumentModelViewSet,
     TextDocumentConnectionAPIView,
     VersionsOfTextDocumentViewSet,
     TextDocumentVersionModelViewSet,
+)
+from backend.collab.views.collab_permission import CollabPermissionViewSet
+from backend.collab.views.permission_for_collab_document import (
+    PermissionForCollabDocumentViewSet,
 )
 
 router = DefaultRouter()
@@ -34,6 +39,14 @@ router.register(
     "text_document_version",
     TextDocumentVersionModelViewSet,
     basename="text_document_version",
+)
+router.register(
+    "collab_permission", CollabPermissionViewSet, basename="collab_permission"
+)
+router.register(
+    "permission_for_collab_document",
+    PermissionForCollabDocumentViewSet,
+    basename="permission_for_collab_document",
 )
 
 

@@ -18,11 +18,18 @@ from django.test import TransactionTestCase
 from rest_framework.response import Response
 from rest_framework.test import APIClient
 
-from backend.api.models import UserProfile
-from backend.collab.models import CollabDocument, EditingRoom, TextDocument
+from backend.api.models import HasPermission, Permission, UserProfile
+from backend.collab.models import (
+    CollabDocument,
+    CollabPermission,
+    EditingRoom,
+    PermissionForCollabDocument,
+    TextDocument,
+)
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.static.encryption import AESEncryption
 from backend.static import error_codes
+from backend.static.permissions import PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC
 
 
 class CollabDocumentConnectionTest(TransactionTestCase):
@@ -73,7 +80,7 @@ class CollabDocumentConnectionTest(TransactionTestCase):
         self.assertEqual(401, response.status_code)
 
 
-class CollabDocumentListTest(TransactionTestCase):
+class CollabDocumentViewSetTest(TransactionTestCase):
     # TODO: wrong rlc, unauthenticated
     def setUp(self) -> None:
         self.urls_edit_collab = "/api/collab/edit_collab_document/"
@@ -330,3 +337,34 @@ class CollabDocumentListTest(TransactionTestCase):
                 "top_doc//middle_doc//with/dash", self.base_fixtures["rlc"]
             ),
         )
+
+    def test_get_for_document(self):
+        permission: CollabPermission = CollabPermission.objects.create(
+            name="test_permission"
+        )
+        document = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            parent=None,
+            name="test doc 1",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        permission_for_collab_document = PermissionForCollabDocument.objects.create(
+            group_has_permission=self.base_fixtures["groups"][0],
+            permission=permission,
+            document=document,
+        )
+        HasPermission.objects.create(
+            permission=Permission.objects.get(
+                name=PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC
+            ),
+            group_has_permission=self.base_fixtures["groups"][0],
+            permission_for_rlc=self.base_fixtures["rlc"],
+        )
+
+        client: APIClient = self.base_fixtures["users"][0]["client"]
+        url = "{}{}/permissions/".format(
+            self.urls_collab_documents, permission_for_collab_document.id
+        )
+        response: Response = client.get(url)
+
+        self.assertEqual(200, response.status_code)

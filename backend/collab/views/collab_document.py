@@ -17,11 +17,16 @@
 from typing import Any
 from django.db.models import QuerySet
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
-from backend.collab.models import EditingRoom, CollabDocument
+from backend.collab.models import (
+    EditingRoom,
+    CollabDocument,
+    PermissionForCollabDocument,
+)
 from backend.collab.serializers import (
     EditingRoomSerializer,
     CollabDocumentListSerializer,
@@ -66,3 +71,7 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
         CollabDocument.create_or_duplicate(new_document)
 
         return Response(CollabDocumentSerializer(new_document).data)
+
+    @action(detail=True, methods=["get"])
+    def permissions(self, request: Request, pk: int):
+        permissions = PermissionForCollabDocument.objects.filter(document__id=pk)
