@@ -28,6 +28,7 @@ from backend.collab.models import (
     PermissionForCollabDocument,
 )
 from backend.collab.serializers import (
+    CollabDocumentRecursiveSerializer,
     EditingRoomSerializer,
     CollabDocumentListSerializer,
     CollabDocumentSerializer,
@@ -47,8 +48,11 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
 
     def list(self, request: Request, **kwargs: Any) -> Response:
         queryset = self.get_queryset().filter(parent=None).order_by("name")
-        data = CollabDocumentListSerializer(queryset, many=True).data
-        return Response(data)
+        # data = CollabDocumentListSerializer(queryset, many=True).data
+        serializer = CollabDocumentRecursiveSerializer(
+            instance=queryset, user=request.user, many=True, context={request: request}
+        )
+        return Response(serializer.data)
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         data = request.data

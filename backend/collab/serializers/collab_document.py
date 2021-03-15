@@ -13,10 +13,11 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from typing import Any
 
 from rest_framework import serializers
 
-from backend.collab.models import CollabDocument
+from backend.collab.models import CollabDocument, UserProfile
 
 
 class CollabDocumentSerializer(serializers.ModelSerializer):
@@ -43,3 +44,27 @@ class CollabDocumentListSerializer(serializers.ModelSerializer):
     def get_children(self, instance):
         children = instance.child_pages.all().order_by("name")
         return CollabDocumentListSerializer(children, many=True).data
+
+
+class CollabDocumentRecursiveSerializer(serializers.ModelSerializer):
+    child_pages = serializers.SerializerMethodField("get_child_pages")
+
+    def __init__(self, user: UserProfile, **kwargs: Any):
+        super().__init__(**kwargs)
+        self.user = user
+
+    def get_child_pages(self, document: CollabDocument):
+        queryset = CollabDocument.objects.filter(parent=document)
+        # user.has_permission -> read all /write all /manage
+        # if has -> see all
+
+        # permission for collab documents check
+
+        serializer = CollabDocumentRecursiveSerializer(
+            instance=queryset, many=True, context=self.context, user=self.user
+        )
+        return serializer.data
+
+    class Meta:
+        model = CollabDocument
+        fields = "__all__"
