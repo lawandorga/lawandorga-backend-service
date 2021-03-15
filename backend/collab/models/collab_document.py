@@ -17,8 +17,12 @@
 from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
 
-from backend.collab.models import TextDocument
-from backend.api.models import Rlc
+from backend.collab.models import (
+    CollabPermission,
+    PermissionForCollabDocument,
+    TextDocument,
+)
+from backend.api.models import Rlc, UserProfile
 
 
 class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument):
@@ -29,6 +33,22 @@ class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument
         null=True,
         default=None,
     )
+
+    def user_can_view(self, user: UserProfile) -> bool:
+        user_groups = user.group_members.all()
+        permissions = CollabPermission.objects.all()
+
+        return self.user_can_view_recursive(user, user_groups, permissions)
+
+    def user_can_view_recursive(self, user, groups, permissions):
+        if PermissionForCollabDocument.objects.exists(
+            document=self, group_has_permission__in=groups, permission__in=permissions,
+        ):
+            return True
+        for child in self.child_pages:
+            if child.user_can_view(user):
+                return True
+        return False
 
     @staticmethod
     def create_or_duplicate(collab_document: "CollabDocument") -> "CollabDocument":

@@ -18,6 +18,11 @@ from typing import Any
 from rest_framework import serializers
 
 from backend.collab.models import CollabDocument, UserProfile
+from backend.static.permissions import (
+    PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC,
+    PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
+    PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
+)
 
 
 class CollabDocumentSerializer(serializers.ModelSerializer):
@@ -51,12 +56,25 @@ class CollabDocumentRecursiveSerializer(serializers.ModelSerializer):
 
     def __init__(self, user: UserProfile, **kwargs: Any):
         super().__init__(**kwargs)
-        self.user = user
+        self.user: UserProfile = user
 
     def get_child_pages(self, document: CollabDocument):
         queryset = CollabDocument.objects.filter(parent=document)
         # user.has_permission -> read all /write all /manage
         # if has -> see all
+        if (
+            not self.user.has_permission(
+                PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC, for_rlc=self.user.rlc
+            )
+            and not self.user.has_permission(
+                PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC, for_rlc=self.user.rlc
+            )
+            and not self.user.has_permission(
+                PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC, for_rlc=self.user.rlc
+            )
+        ):
+
+            pass
 
         # permission for collab documents check
 
