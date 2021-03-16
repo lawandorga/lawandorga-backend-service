@@ -1,12 +1,3 @@
-"""
-WSGI config for backend project.
-
-It exposes the WSGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/2.1/howto/deployment/wsgi/
-"""
-
 #  law&orga - record and organization management software for refugee law clinics
 #  Copyright (C) 2019  Dominik Walser
 #
@@ -22,15 +13,9 @@ https://docs.djangoproject.com/en/2.1/howto/deployment/wsgi/
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-import os
 from django.core.wsgi import get_wsgi_application
+import os
 
-# from whitenoise.django import DjangoWhiteNoise
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
-os.environ["DJANGO_SETTINGS_MODULE"] = "backend.settings"
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.production")
 
 application = get_wsgi_application()
-# if "ON_HEROKU" not in os.environ or not os.environ["ON_HEROKU"]:
-#     application = DjangoWhiteNoise(application)
