@@ -16,6 +16,7 @@
 
 from rest_framework import serializers
 from backend.api import models
+from backend.api.models.new_user_request import NewUserRequest
 from backend.api.serializers.user import (
     UserProfileNameSerializer,
     UserProfileSerializer,
@@ -27,5 +28,5 @@ class NewUserRequestSerializer(serializers.ModelSerializer):
     request_processed = UserProfileNameSerializer(many=False, read_only=True)
 
     class Meta:
-        model = models.NewUserRequest
+        model = NewUserRequest
         fields = "__all__"

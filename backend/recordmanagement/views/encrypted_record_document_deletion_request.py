@@ -23,13 +23,15 @@ from rest_framework.views import APIView
 from django.utils import timezone
 
 from backend.api.errors import CustomError
-from backend.recordmanagement.models import *
+from backend.api.models.notification import Notification
+from backend.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
+from backend.recordmanagement.models.encrypted_record_document_deletion_request import \
+    EncryptedRecordDocumentDeletionRequest
 from backend.recordmanagement.serializers import (
     EncryptedRecordDocumentDeletionRequestSerializer,
     EncryptedRecordDocumentDeletionRequestListSerializer,
 )
 from backend.static import error_codes, permissions
-from backend.api.models import Notification
 
 
 class EncryptedRecordDocumentDeletionRequestViewSet(viewsets.ModelViewSet):

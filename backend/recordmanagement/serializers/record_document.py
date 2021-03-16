@@ -15,7 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
-from backend.recordmanagement.models import RecordDocument
+
+from backend.recordmanagement.models.record_document import RecordDocument
 from backend.recordmanagement.serializers import RecordDocumentTagSerializer
 
 

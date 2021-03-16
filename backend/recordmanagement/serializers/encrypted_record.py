@@ -18,8 +18,8 @@ from rest_framework import serializers
 from django.db.models import QuerySet
 
 
-from backend.recordmanagement.models import EncryptedRecord
 from backend.api.serializers.user import UserProfileNameSerializer
+from backend.recordmanagement.models.encrypted_record import EncryptedRecord
 from backend.recordmanagement.serializers.record_tag import RecordTagNameSerializer
 from backend.static.encryption import AESEncryption
 from backend.static.serializer_fields import EncryptedField

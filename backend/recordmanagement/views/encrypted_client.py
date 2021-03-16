@@ -18,16 +18,18 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from backend.recordmanagement import models, serializers
+from backend.recordmanagement import serializers
+from backend.recordmanagement.models.encrypted_client import EncryptedClient
+from backend.recordmanagement.models.origin_country import OriginCountry
 from backend.static.middleware import get_private_key_from_request
 
 
 class EncryptedClientsViewSet(viewsets.ModelViewSet):
-    queryset = models.EncryptedClient.objects.all()
+    queryset = EncryptedClient.objects.all()
     serializer_class = serializers.EncryptedClientSerializer
 
     def perform_create(self, serializer):
-        country = models.OriginCountry.objects.get(
+        country = OriginCountry.objects.get(
             id=self.request.data["origin_country"]
         )
         serializer.save(origin_country=country)
@@ -39,7 +41,7 @@ class GetEncryptedClientsFromBirthday(APIView):
         users_private_key = get_private_key_from_request(request)
         rlcs_private_key = request.user.get_rlcs_private_key(users_private_key)
         birthday = request.data["birthday"]
-        clients = models.EncryptedClient.objects.filter(
+        clients = EncryptedClient.objects.filter(
             birthday=request.data["birthday"], from_rlc=request.user.rlc
         )
         return Response(

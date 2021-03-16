@@ -16,7 +16,7 @@
 
 from rest_framework import serializers
 
-from backend.api.models import ForgotPasswordLinks
+from backend.api.models.forgot_password import ForgotPasswordLinks
 
 
 class ForgotPasswordSerializer(serializers.ModelSerializer):

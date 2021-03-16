@@ -25,8 +25,15 @@ from rest_framework.views import APIView
 from rest_framework.pagination import LimitOffsetPagination
 
 from backend.api.errors import CustomError
-from backend.api.models import Notification, UserEncryptionKeys, UserProfile
+from backend.api.models import UserProfile
+from backend.api.models.notification import Notification
 from backend.recordmanagement import models, serializers
+from backend.recordmanagement.models.encrypted_client import EncryptedClient
+from backend.recordmanagement.models.encrypted_record import EncryptedRecord
+from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
+from backend.recordmanagement.models.origin_country import OriginCountry
+from backend.recordmanagement.models.record_encryption import RecordEncryption
+from backend.recordmanagement.models.record_tag import RecordTag
 from backend.static import error_codes, permissions
 from backend.static.emails import EmailSender
 from backend.static.encryption import AESEncryption, RSAEncryption
@@ -36,16 +43,16 @@ from backend.api.permissions import OnlyGet
 
 
 class EncryptedRecordsListViewSet(viewsets.ModelViewSet):
-    queryset = models.EncryptedRecord.objects.all()
+    queryset = EncryptedRecord.objects.all()
     pagination_class = LimitOffsetPagination
     serializer_class = serializers.EncryptedRecordNoDetailSerializer
     permission_classes = (OnlyGet,)
 
     def get_queryset(self) -> QuerySet:
         if self.request.user.is_superuser:
-            queryset = models.EncryptedRecord.objects.all()
+            queryset = EncryptedRecord.objects.all()
         else:
-            queryset = models.EncryptedRecord.objects.filter_by_rlc(
+            queryset = EncryptedRecord.objects.filter_by_rlc(
                 self.request.user.rlc
             )
 
@@ -74,7 +81,7 @@ class EncryptedRecordsListViewSet(viewsets.ModelViewSet):
             from_record_permissions = [
                 record_permission.record.id
                 for record_permission in list(
-                    models.EncryptedRecordPermission.objects.filter(
+                    EncryptedRecordPermission.objects.filter(
                         request_from=user, state="gr", record__id__in=record_ids
                     )
                 )
@@ -159,7 +166,7 @@ class EncryptedRecordViewSet(APIView):
         if "client_id" in data:
             rlcs_private_key = request.user.get_rlcs_private_key(creators_private_key)
             try:
-                e_client = models.EncryptedClient.objects.get(pk=data["client_id"])
+                e_client = EncryptedClient.objects.get(pk=data["client_id"])
             except:
                 raise CustomError(error_codes.ERROR__RECORD__CLIENT__NOT_EXISTING)
 
@@ -172,7 +179,7 @@ class EncryptedRecordViewSet(APIView):
             e_client.save()
         else:
             client_key = AESEncryption.generate_secure_key()
-            e_client = models.EncryptedClient(
+            e_client = EncryptedClient(
                 birthday=data["client_birthday"], from_rlc=rlc
             )
             e_client.name = AESEncryption.encrypt(data["client_name"], client_key)
@@ -189,13 +196,13 @@ class EncryptedRecordViewSet(APIView):
             e_client.save()
 
         try:
-            origin = models.OriginCountry.objects.get(pk=data["origin_country"])
+            origin = OriginCountry.objects.get(pk=data["origin_country"])
         except:
             raise CustomError(error_codes.ERROR__RECORD__ORIGIN_COUNTRY__NOT_FOUND)
         e_client.origin_country = origin
         e_client.save()
 
-        e_record = models.EncryptedRecord(
+        e_record = EncryptedRecord(
             client_id=e_client.id,
             first_contact_date=data["first_contact_date"],
             last_contact_date=data["first_contact_date"],
@@ -209,7 +216,7 @@ class EncryptedRecordViewSet(APIView):
         e_record.save()
 
         for tag_id in data["tags"]:
-            e_record.tagged.add(models.RecordTag.objects.get(pk=tag_id))
+            e_record.tagged.add(RecordTag.objects.get(pk=tag_id))
         for consultant in consultants:
             e_record.working_on_record.add(consultant)
 
@@ -220,7 +227,7 @@ class EncryptedRecordViewSet(APIView):
             users_public_key = user.get_public_key()
 
             encrypted_record_key = RSAEncryption.encrypt(record_key, users_public_key)
-            record_encryption = models.RecordEncryption(
+            record_encryption = RecordEncryption(
                 user=user, record=e_record, encrypted_key=encrypted_record_key
             )
             record_encryption.save()
@@ -243,7 +250,7 @@ class EncryptedRecordViewSet(APIView):
 
     def get(self, request, id) -> Response:
         try:
-            e_record: models.EncryptedRecord = models.EncryptedRecord.objects.get(pk=id)
+            e_record: EncryptedRecord = EncryptedRecord.objects.get(pk=id)
         except:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
 
@@ -282,7 +289,7 @@ class EncryptedRecordViewSet(APIView):
             )
         else:
             serializer = serializers.EncryptedRecordNoDetailSerializer(e_record)
-            permission_request = models.EncryptedRecordPermission.objects.filter(
+            permission_request = EncryptedRecordPermission.objects.filter(
                 record=e_record, request_from=user, state="re"
             ).first()
 
@@ -294,7 +301,7 @@ class EncryptedRecordViewSet(APIView):
 
     def patch(self, request, id):
         try:
-            e_record = models.EncryptedRecord.objects.get(pk=id)
+            e_record = EncryptedRecord.objects.get(pk=id)
         except Exception as e:
             raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
         user = request.user
@@ -326,8 +333,8 @@ class EncryptedRecordViewSet(APIView):
         notification_text = ",".join(record_patched + client_patched)
         Notification.objects.notify_record_patched(user, e_record, notification_text)
 
-        record_from_db = models.EncryptedRecord.objects.get(pk=e_record.id)
-        client_from_db = models.EncryptedClient.objects.get(pk=client.id)
+        record_from_db = EncryptedRecord.objects.get(pk=e_record.id)
+        client_from_db = EncryptedClient.objects.get(pk=client.id)
         decrypted_record_data = serializers.EncryptedRecordFullDetailSerializer(
             record_from_db
         ).get_decrypted_data(record_key)
@@ -341,7 +348,7 @@ class EncryptedRecordViewSet(APIView):
 
     def delete(self, request, id):
         try:
-            record = models.Record.objects.get(pk=id)
+            record = Record.objects.get(pk=id)
         except:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
         user = request.user

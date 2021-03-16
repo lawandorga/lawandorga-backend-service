@@ -20,13 +20,15 @@ from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
 from backend.recordmanagement import models, serializers
+from backend.recordmanagement.models.encrypted_record import EncryptedRecord
+from backend.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
 from backend.static import error_codes
 from backend.static.emails import EmailSender
 from backend.static.middleware import get_private_key_from_request
 
 
 class EncryptedRecordMessageViewSet(viewsets.ModelViewSet):
-    queryset = models.EncryptedRecordMessage.objects.all()
+    queryset = EncryptedRecordMessage.objects.all()
     serializer_class = serializers.EncryptedRecordMessageSerializer
 
 
@@ -37,7 +39,7 @@ class EncryptedRecordMessageByRecordViewSet(APIView):
         users_private_key = get_private_key_from_request(request)
 
         try:
-            e_record = models.EncryptedRecord.objects.get(pk=id)
+            e_record = EncryptedRecord.objects.get(pk=id)
         except Exception as e:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
         if not e_record.user_has_permission(request.user):
@@ -46,7 +48,7 @@ class EncryptedRecordMessageByRecordViewSet(APIView):
         (
             record_message,
             record_key,
-        ) = models.EncryptedRecordMessage.objects.create_encrypted_record_message(
+        ) = EncryptedRecordMessage.objects.create_encrypted_record_message(
             sender=request.user,
             message=request.data["message"],
             record=e_record,

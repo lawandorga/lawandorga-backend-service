@@ -15,7 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
-from backend.recordmanagement.models import EncryptedClient
+
+from backend.recordmanagement.models.encrypted_client import EncryptedClient
 from backend.static.serializer_fields import EncryptedField
 from backend.static.encryption import AESEncryption
 

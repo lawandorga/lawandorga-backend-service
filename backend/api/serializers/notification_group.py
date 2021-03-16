@@ -13,8 +13,8 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from backend.api.models.notification_group import NotificationGroup
 from backend.api.serializers import NotificationSerializer
-from backend.api.models import NotificationGroup
 from rest_framework import serializers
 
 

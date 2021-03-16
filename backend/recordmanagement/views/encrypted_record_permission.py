@@ -22,21 +22,26 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
-from backend.api.models import UserEncryptionKeys, UserProfile, Notification
+from backend.api.models import UserProfile
+from backend.api.models.notification import Notification
 from backend.recordmanagement import models, serializers
+from backend.recordmanagement.models.encrypted_record import EncryptedRecord
+from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
+from backend.recordmanagement.models.record_encryption import RecordEncryption
+from backend.recordmanagement.models.record_permission import RecordPermission
 from backend.static import error_codes, permissions
 from backend.static.encryption import RSAEncryption
 from backend.static.middleware import get_private_key_from_request
 
 
 class RecordPermissionViewSet(viewsets.ModelViewSet):
-    queryset = models.RecordPermission.objects.all()
+    queryset = RecordPermission.objects.all()
     serializer_class = serializers.EncryptedRecordPermissionSerializer
 
 
 class EncryptedRecordPermissionRequestViewSet(APIView):
     def post(self, request, id) -> Response:
-        record: models.EncryptedRecord = models.EncryptedRecord.objects.get_record(
+        record: EncryptedRecord = EncryptedRecord.objects.get_record(
             request.user, id
         )
         if record.from_rlc != request.user.rlc:
@@ -46,7 +51,7 @@ class EncryptedRecordPermissionRequestViewSet(APIView):
             raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ALREADY_WORKING_ON)
 
         if (
-            models.EncryptedRecordPermission.objects.filter(
+            EncryptedRecordPermission.objects.filter(
                 record=record, request_from=request.user, state="re"
             ).count()
             >= 1
@@ -56,7 +61,7 @@ class EncryptedRecordPermissionRequestViewSet(APIView):
         if "can_edit" in request.data:
             can_edit = request.data["can_edit"]
 
-        record_permission = models.EncryptedRecordPermission(
+        record_permission = EncryptedRecordPermission(
             request_from=request.user, record=record, can_edit=can_edit
         )
         record_permission.save()
@@ -83,7 +88,7 @@ class EncryptedRecordPermissionProcessViewSet(APIView):
             for_rlc=user.rlc,
         ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-        requests = models.EncryptedRecordPermission.objects.filter(
+        requests = EncryptedRecordPermission.objects.filter(
             record__from_rlc=user.rlc
         )
         return Response(
@@ -105,7 +110,7 @@ class EncryptedRecordPermissionProcessViewSet(APIView):
         if "id" not in request.data:
             raise CustomError(error_codes.ERROR__API__ID_NOT_PROVIDED)
         try:
-            permission_request: models.EncryptedRecordPermission = models.EncryptedRecordPermission.objects.get(
+            permission_request: EncryptedRecordPermission = EncryptedRecordPermission.objects.get(
                 pk=request.data["id"]
             )
         except Exception as e:
@@ -129,7 +134,7 @@ class EncryptedRecordPermissionProcessViewSet(APIView):
             )
             users_public_key = permission_request.request_from.get_public_key()
             encrypted_record_key = RSAEncryption.encrypt(record_key, users_public_key)
-            record_encryption = models.RecordEncryption(
+            record_encryption = RecordEncryption(
                 user=permission_request.request_from,
                 record=permission_request.record,
                 encrypted_key=encrypted_record_key,

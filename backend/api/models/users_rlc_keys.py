@@ -13,13 +13,14 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
+from backend.api.models.rlc import Rlc
+from backend.api.models.user import UserProfile
+from backend.static.encryption import EncryptedModelMixin, AESEncryption, RSAEncryption
 from django_prometheus.models import ExportModelOperationsMixin
-from backend.api.models import UserProfile, Rlc
 from django.db import models
 
 
-class UsersRlcKeys(ExportModelOperationsMixin("users_rlc_keys"), models.Model):
+class UsersRlcKeys(ExportModelOperationsMixin("users_rlc_keys"), EncryptedModelMixin, models.Model):
     user = models.ForeignKey(
         UserProfile, related_name="users_rlc_keys", on_delete=models.CASCADE, null=False
     )
@@ -31,12 +32,17 @@ class UsersRlcKeys(ExportModelOperationsMixin("users_rlc_keys"), models.Model):
     )
     encrypted_key = models.BinaryField()
 
+    encryption_class = RSAEncryption
+    encrypted_fields = ['encrypted_key']
+
+    class Meta:
+        unique_together = ('user', 'rlc')
+
     def __str__(self):
-        return (
-            "users_lrc_keys: "
-            + str(self.id)
-            + "; user: "
-            + str(self.user.id)
-            + "; rlc: "
-            + str(self.rlc.id)
-        )
+        return "users_lrc_keys: {}; user: ; rlc: {};".format(self.pk, self.user.pk, self.rlc.pk)
+
+    def decrypt(self, private_key_user: bytes) -> None:
+        super().decrypt(private_key_user)
+
+    def encrypt(self, private_key_user:  bytes) -> None:
+        super().encrypt(private_key_user)

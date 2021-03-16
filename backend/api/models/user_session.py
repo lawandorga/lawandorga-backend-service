@@ -13,19 +13,22 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
 from django.db import models
 from django.utils import timezone
 from datetime import timedelta
 from django_prometheus.models import ExportModelOperationsMixin
 
+from backend.api.models.rlc import Rlc
+from backend.api.models.user import UserProfile
 from backend.static.logger import Logger
-from backend.api.models import Rlc, UserProfile
 
 
 class UserSessionManager(models.Manager):
     @staticmethod
     def log_user_activity(user: UserProfile, path: str, method: str) -> None:
+
+        from backend.api.models.user_session_path import UserSessionPath
+
         if not user.is_authenticated:
             pseudo_user = "anonymous"
             rlc = None
@@ -47,7 +50,6 @@ class UserSessionManager(models.Manager):
                 user=pseudo_user, rlc=rlc, end_time=now, start_time=now
             )
             session.save()
-        from backend.api.models import UserSessionPath
 
         complete_path = method + " " + path
         Logger.debug("logging complete path: " + complete_path)

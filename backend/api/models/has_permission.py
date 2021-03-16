@@ -13,12 +13,11 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
-from django.db.models.query import QuerySet
 from django_prometheus.models import ExportModelOperationsMixin
+from django.db.models.query import QuerySet
+from django.db import models
 
-from . import Permission
+from backend.api.models.permission import Permission
 
 
 class HasPermissionQuerySet(QuerySet):

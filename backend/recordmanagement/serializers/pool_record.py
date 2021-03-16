@@ -15,7 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
-from backend.recordmanagement.models import PoolRecord
+
+from backend.recordmanagement.models.pool_record import PoolRecord
 
 
 class PoolRecordSerializer(serializers.ModelSerializer):

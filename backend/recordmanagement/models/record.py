@@ -17,14 +17,16 @@
 from django.db import models
 from django.db.models import Q
 
-from backend.api.models import Rlc, UserProfile
-from backend.recordmanagement.models import RecordTag
+from backend.api.models.permission import Permission
+from backend.api.models.rlc import Rlc
+from backend.api.models.user import UserProfile
+from backend.recordmanagement.models.record_permission import RecordPermission
+from backend.recordmanagement.models.record_tag import RecordTag
 from backend.static import permissions
 
 
 class RecordQuerySet(models.QuerySet):
     def get_full_access_records(self, user):
-        from backend.recordmanagement.models import RecordPermission
 
         permissions = RecordPermission.objects.filter(request_from=user, state="gr")
 
@@ -114,7 +116,6 @@ class Record(models.Model):
         :param user: user object, the user to check
         :return: boolean, true if the user has permission
         """
-        from backend.recordmanagement.models import RecordPermission
 
         return (
             self.working_on_record.filter(id=user.id).count() == 1
@@ -127,8 +128,6 @@ class Record(models.Model):
         )
 
     def get_users_with_permission(self):
-        from backend.api.models import UserProfile, Permission
-
         working_on_users = self.working_on_record.all()
         users_with_record_permission = UserProfile.objects.filter(
             record_permissions_requested__record=self,
@@ -144,7 +143,6 @@ class Record(models.Model):
         )
 
     def get_notification_emails(self):
-        from backend.recordmanagement.models import RecordPermission
 
         emails = []
         for user in list(self.working_on_record.all()):

@@ -18,7 +18,9 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 
 from backend.api.errors import CustomError
-from backend.recordmanagement.models import PoolConsultant, PoolRecord, RecordEncryption
+from backend.recordmanagement.models.pool_consultant import PoolConsultant
+from backend.recordmanagement.models.pool_record import PoolRecord
+from backend.recordmanagement.models.record_encryption import RecordEncryption
 from backend.recordmanagement.serializers import PoolConsultantSerializer
 from backend.static import error_codes
 from backend.static.permissions import PERMISSION_CAN_CONSULT

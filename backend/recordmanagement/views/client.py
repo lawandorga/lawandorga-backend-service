@@ -17,16 +17,17 @@
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
-from backend.recordmanagement import models, serializers
+from backend.recordmanagement import serializers
+from backend.recordmanagement.models.client import Client
+from backend.recordmanagement.models.origin_country import OriginCountry
 
 
 class ClientsViewSet(viewsets.ModelViewSet):
-    queryset = models.Client.objects.all()
+    queryset = Client.objects.all()
     serializer_class = serializers.ClientSerializer
 
     def perform_create(self, serializer):
-        country = models.OriginCountry.objects.get(
+        country = OriginCountry.objects.get(
             id=self.request.data["origin_country"]
         )
         serializer.save(origin_country=country)
@@ -34,7 +35,7 @@ class ClientsViewSet(viewsets.ModelViewSet):
 
 class GetClientsFromBirthday(APIView):
     def post(self, request):
-        clients = models.Client.objects.filter(
+        clients = Client.objects.filter(
             birthday=request.data["birthday"], from_rlc=request.user.rlc
         )
         return Response(serializers.ClientSerializer(clients, many=True).data)

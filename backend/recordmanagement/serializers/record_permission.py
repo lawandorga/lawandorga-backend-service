@@ -15,11 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
-from backend.recordmanagement import models
-from backend.api.serializers.user import (
-    UserProfileNameSerializer,
-    UserProfileSerializer,
-)
+from backend.api.serializers.user import UserProfileNameSerializer
+from backend.recordmanagement.models.record_permission import RecordPermission
 from backend.recordmanagement.serializers import RecordTokenSerializer
 
 
@@ -29,5 +26,5 @@ class RecordPermissionSerializer(serializers.ModelSerializer):
     record = RecordTokenSerializer(many=False, read_only=True)
 
     class Meta:
-        model = models.RecordPermission
+        model = RecordPermission
         fields = "__all__"

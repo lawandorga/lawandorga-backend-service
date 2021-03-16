@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from backend.static.encryption import AESEncryption
 from django_prometheus.models import ExportModelOperationsMixin
-from backend.api.models import UserProfile
+from backend.api.models.user import UserProfile
 from django.db import models
 
 

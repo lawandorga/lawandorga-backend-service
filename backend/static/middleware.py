@@ -21,7 +21,9 @@ from datetime import timedelta
 from prometheus_client import Gauge
 from django.db.models import Count
 from django.db.models import Q
-from backend.api.models import UserSession, Rlc
+
+from backend.api.models.rlc import Rlc
+from backend.api.models.user_session import UserSession
 from backend.static.encryption import get_bytes_from_string_or_return_bytes
 from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED

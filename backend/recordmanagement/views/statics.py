@@ -18,12 +18,15 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from backend.api.serializers import UserProfileNameSerializer
+from ..models.origin_country import OriginCountry
+from ..models.record import Record
+from ..models.record_document_tag import RecordDocumentTag
+from ..models.record_tag import RecordTag
 from ..serializers import (
     RecordTagNameSerializer,
     OriginCountryNameStateSerializer,
     RecordDocumentTagSerializer,
 )
-from ..models import RecordTag, OriginCountry, Record, RecordDocumentTag, UserProfile
 
 
 class StaticViewSet(APIView):

@@ -19,21 +19,21 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.errors import CustomError
+from backend.api.models.has_permission import HasPermission
+from backend.api.models.permission import Permission
+from backend.static.encryption import RSAEncryption
 from backend.static.error_codes import (
     ERROR__API__PERMISSION__NOT_FOUND,
     ERROR__API__RLC__NO_PUBLIC_KEY_FOUND,
-    ERROR__API__USER__NO_PUBLIC_KEY_FOUND,
     ERROR__API__MISSING_KEY_WAIT,
 )
 from backend.static.regex_validators import phone_regex
 from backend.static.env_getter import get_website_base_url
 from backend.api.helpers import get_client_ip
-from backend.api.models import HasPermission, Permission
 from backend.static.emails import EmailSender
 
 
@@ -363,27 +363,27 @@ class UserProfile(
             self.generate_new_user_encryption_keys()
         return self.encryption_keys.public_key
 
-    def get_private_key(self, decryption_key) -> bytes:
+    def get_private_key(self, password_user) -> bytes:
         """
         gets the private key of the user
         this key is saved encrypted in the database
         therefore it has to be decrypted with the given decryption_key (users password)
-        :param decryption_key: decryption_key (users password)
+        :param password_user: decryption_key (users password)
         :return: user's private key (PEM)
         """
-        from backend.api.models import UserEncryptionKeys
+        from backend.api.models.user_encryption_keys import UserEncryptionKeys
 
         if not hasattr(self, 'encryption_keys'):
             self.generate_new_user_encryption_keys()
 
         keys = UserEncryptionKeys.objects.get(user=self)
-        return keys.decrypt_private_key(decryption_key)
+        return keys.decrypt_private_key(password_user)
 
     def get_rlcs_public_key(self):
         return self.rlc.get_public_key()
 
     def get_rlcs_private_key(self, users_private_key):
-        from backend.api.models import RlcEncryptionKeys
+        from backend.api.models.rlc_encryption_keys import RlcEncryptionKeys
 
         try:
             rlc_keys = RlcEncryptionKeys.objects.get(rlc=self.rlc)
@@ -394,8 +394,8 @@ class UserProfile(
         return rlcs_private_key
 
     def get_rlcs_aes_key(self, users_private_key):
-        from backend.api.models import UsersRlcKeys, MissingRlcKey
-        from backend.static.encryption import RSAEncryption
+        from backend.api.models.missing_rlc_keys import MissingRlcKey
+        from backend.api.models.users_rlc_keys import UsersRlcKeys
 
         # check if there is only one usersRlcKey
         keys = UsersRlcKeys.objects.filter(user=self)
@@ -420,9 +420,8 @@ class UserProfile(
         return RSAEncryption.decrypt(rlc_encrypted_key_for_user, users_private_key)
 
     def generate_new_user_encryption_keys(self):
-        from backend.api.models import UserEncryptionKeys
-        from backend.static.encryption import RSAEncryption
 
+        from backend.api.models.user_encryption_keys import UserEncryptionKeys
         UserEncryptionKeys.objects.filter(user=self).delete()
         private, public = RSAEncryption.generate_keys()
         user_keys = UserEncryptionKeys(
@@ -431,10 +430,9 @@ class UserProfile(
         user_keys.save()
 
     def generate_rlc_keys_for_this_user(self, rlcs_aes_key):
-        from backend.api.models import UsersRlcKeys
-        from backend.static.encryption import RSAEncryption
 
         # delete (maybe) old existing rlc keys
+        from backend.api.models.users_rlc_keys import UsersRlcKeys
         UsersRlcKeys.objects.filter(user=self, rlc=self.rlc).delete()
 
         own_public_key = self.get_public_key()
@@ -450,7 +448,7 @@ class UserProfile(
         return RSAEncryption.encrypt(plain, self.get_public_key())
 
     def forgot_password(self, request, user):
-        from backend.api.models import ForgotPasswordLinks
+        from backend.api.models.forgot_password import ForgotPasswordLinks
 
         ForgotPasswordLinks.objects.filter(user=user).delete()
 

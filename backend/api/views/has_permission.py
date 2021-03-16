@@ -22,12 +22,15 @@ from rest_framework.views import APIView
 from django.forms.models import model_to_dict
 
 from backend.api.errors import CustomError
+from backend.api.models.group import Group
+from backend.api.models.has_permission import HasPermission
+from backend.api.models.permission import Permission
 from backend.static import error_codes
 from backend.static.permissions import (
     PERMISSION_MANAGE_PERMISSIONS_RLC,
     get_record_encryption_keys_permissions,
 )
-from backend.api.models import HasPermission, Group, UserProfile, Permission, Rlc
+from backend.api.models import UserProfile, Rlc
 from backend.api.serializers import (
     HasPermissionSerializer,
     GroupNameSerializer,

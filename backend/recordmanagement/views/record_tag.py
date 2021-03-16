@@ -18,8 +18,9 @@
 from rest_framework import viewsets
 
 from backend.recordmanagement import models, serializers
+from backend.recordmanagement.models.record_tag import RecordTag
 
 
 class RecordTagViewSet(viewsets.ModelViewSet):
-    queryset = models.RecordTag.objects.all()
+    queryset = RecordTag.objects.all()
     serializer_class = serializers.RecordTagSerializer

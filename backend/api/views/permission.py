@@ -22,18 +22,21 @@ from rest_framework.views import APIView
 from backend.api.errors import CustomError
 from backend.static import error_codes
 from backend.static.permissions import PERMISSION_VIEW_PERMISSIONS_RLC
-from .. import models, serializers
+from .. import serializers
+from backend.api.models.group import Group
+from backend.api.models.has_permission import HasPermission
+from backend.api.models.permission import Permission
 
 
 class PermissionViewSet(viewsets.ModelViewSet):
-    queryset = models.Permission.objects.all()
+    queryset = Permission.objects.all()
     serializer_class = serializers.PermissionNameSerializer
 
     def retrieve(self, request, *args, **kwargs):
         if "pk" not in kwargs:
             raise CustomError(error_codes.ERROR__API__MISSING_ARGUMENT)
         try:
-            permission = models.Permission.objects.get(pk=kwargs["pk"])
+            permission = Permission.objects.get(pk=kwargs["pk"])
         except:
             raise CustomError(error_codes.ERROR__API__PERMISSION__NOT_FOUND)
 
@@ -72,7 +75,7 @@ class PermissionViewSet(viewsets.ModelViewSet):
 class PermissionsForGroupViewSet(APIView):
     def get(self, request, pk):
         try:
-            group = models.Group.objects.get(pk=pk)
+            group = Group.objects.get(pk=pk)
         except:
             raise CustomError(error_codes.ERROR__API__GROUP__GROUP_NOT_FOUND)
 
@@ -83,7 +86,7 @@ class PermissionsForGroupViewSet(APIView):
 
         data = [
             model_to_dict(has_permission)
-            for has_permission in models.HasPermission.objects.filter(
+            for has_permission in HasPermission.objects.filter(
                 group_has_permission=group
             )
         ]

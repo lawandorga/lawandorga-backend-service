@@ -17,7 +17,8 @@
 from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
 
-from backend.api.models import Rlc, UserProfile, Group, Notification
+from backend.api.models import UserProfile
+from backend.api.models.rlc import Rlc
 from backend.files.models.folder_permission import FolderPermission
 from backend.files.static.folder_permissions import (
     PERMISSION_READ_FOLDER,
@@ -119,7 +120,6 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
         super().save(force_insert, force_update, using, update_fields)
 
     def user_has_permission_read(self, user: UserProfile) -> bool:
-        from backend.files.models import PermissionForFolder
 
         if user.rlc != self.rlc:
             return False
@@ -139,6 +139,7 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
         relevant_folders = self.get_all_parents() + [self]
         users_groups = user.group_members.all()
         p_read = FolderPermission.objects.get(name=PERMISSION_READ_FOLDER)
+        from backend.files.models.permission_for_folder import PermissionForFolder
         relevant_permissions = PermissionForFolder.objects.filter(
             folder__in=relevant_folders,
             group_has_permission__in=users_groups,
@@ -150,7 +151,7 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
         return False
 
     def user_has_permission_write(self, user: UserProfile) -> bool:
-        from backend.files.models import PermissionForFolder
+
 
         if user.rlc != self.rlc:
             return False
@@ -166,6 +167,7 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
         relevant_folders = self.get_all_parents() + [self]
         users_groups = user.group_members.all()
         p_write = FolderPermission.objects.get(name=PERMISSION_WRITE_FOLDER)
+        from backend.files.models.permission_for_folder import PermissionForFolder
         relevant_permissions = PermissionForFolder.objects.filter(
             folder__in=relevant_folders,
             group_has_permission__in=users_groups,
@@ -177,8 +179,7 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
         return False
 
     def user_can_see_folder(self, user: UserProfile) -> bool:
-        from backend.files.models import PermissionForFolder
-
+        from backend.files.models.permission_for_folder import PermissionForFolder
         if user.rlc != self.rlc:
             return False
         if self.user_has_permission_read(user) or self.user_has_permission_write(user):
@@ -192,9 +193,9 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
             return True
         return False
 
-    def get_groups_permission(self, group: Group) -> {}:
-        from backend.files.models import PermissionForFolder
+    def get_groups_permission(self, group) -> {}:
 
+        from backend.files.models.permission_for_folder import PermissionForFolder
         if group.has_group_permission(PERMISSION_WRITE_ALL_FOLDERS_RLC):
             return "WRITE", None
         elif group.has_group_permission(
@@ -209,6 +210,7 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
         )
         if relevant_permissions.count() >= 1:
             return "WRITE", relevant_permissions.first()
+
         relevant_permissions = PermissionForFolder.objects.filter(
             folder=self, group_has_permission=group, permission=p_write
         )
@@ -236,7 +238,7 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
         return "", None
 
     def get_all_groups_permissions(self):
-        from backend.api.models import Group
+        from backend.api.models.group import Group
         from backend.files.serializers import PermissionForFolderNestedSerializer
 
         groups = list(Group.objects.filter(from_rlc=self.rlc))
@@ -262,8 +264,8 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
     def get_all_groups_permissions_new(
         self,
     ) -> (["PermissionForFolder"], ["PermissionForFolder"], ["HasPermission"]):
-        from backend.api.models import Group, HasPermission, Permission
-        from backend.files.models import PermissionForFolder
+        from backend.api.models.group import Group
+        from backend.files.models.permission_for_folder import PermissionForFolder
         from backend.static.permissions import (
             PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC,
             PERMISSION_READ_ALL_FOLDERS_RLC,
@@ -280,9 +282,11 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
             PERMISSION_READ_ALL_FOLDERS_RLC,
             PERMISSION_WRITE_ALL_FOLDERS_RLC,
         ]
+        from backend.api.models.permission import Permission
         overall_permissions = Permission.objects.filter(
             name__in=overall_permissions_strings
         )
+        from backend.api.models.has_permission import HasPermission
         has_permissions_for_groups = HasPermission.objects.filter(
             group_has_permission__in=groups,
             permission_for_rlc=self.rlc,
@@ -311,7 +315,7 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
         # create local folder
         # download all files in this folder to local folder
         # call download_folder of children
-        from backend.files.models import File
+        from backend.files.models.file import File
         import os
 
         files_in_folder = File.objects.filter(folder=self)

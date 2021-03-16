@@ -45,11 +45,11 @@ class RecordDocument(models.Model):
         "RecordDocumentTag", related_name="tagged", blank=True
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "record_document: " + str(self.id) + ":" + self.name
 
     def get_file_key(self):
         return (
-            get_storage_folder_record_document(self.record.from_rlc_id, self.record.id)
+            get_storage_folder_record_document(self.record.from_rlc.pk, self.record.id)
             + self.name
         )

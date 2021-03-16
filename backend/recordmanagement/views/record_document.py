@@ -23,6 +23,7 @@ from datetime import datetime
 from threading import Thread
 
 from backend.recordmanagement import models, serializers
+from backend.recordmanagement.models.record_document import RecordDocument
 from backend.shared import storage_generator
 from backend.static import error_codes, storage_folders
 from backend.api.errors import CustomError
@@ -40,7 +41,7 @@ def start_new_thread(function):
 
 
 class RecordDocumentViewSet(viewsets.ModelViewSet):
-    queryset = models.RecordDocument.objects.all()
+    queryset = RecordDocument.objects.all()
     serializer_class = serializers.RecordDocumentSerializer
 
     def post(self, request):

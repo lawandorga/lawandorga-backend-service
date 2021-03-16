@@ -21,7 +21,8 @@ from rest_framework.views import APIView
 import pytz
 
 from backend.api.errors import CustomError
-from backend.api.models import NewUserRequest, UserActivationLink, Notification
+from backend.api.models import NewUserRequest, UserActivationLink
+from backend.api.models.notification import Notification
 from backend.api.serializers import NewUserRequestSerializer
 from backend.static import error_codes
 from backend.static.permissions import PERMISSION_ACCEPT_NEW_USERS_RLC

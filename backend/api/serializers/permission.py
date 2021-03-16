@@ -15,7 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
-from ..models import Permission
+
+from backend.api.models.permission import Permission
 
 
 class PermissionSerializer(serializers.ModelSerializer):

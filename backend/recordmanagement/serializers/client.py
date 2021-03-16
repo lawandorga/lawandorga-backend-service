@@ -16,20 +16,21 @@
 
 
 from rest_framework import serializers
-from backend.recordmanagement import models
+
+from backend.recordmanagement.models.client import Client
 
 
 class ClientSerializer(serializers.ModelSerializer):
     records = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
-        model = models.Client
+        model = Client
         fields = "__all__"
 
 
 class ClientNameSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Client
+        model = Client
         fields = (
             "id",
             "name",

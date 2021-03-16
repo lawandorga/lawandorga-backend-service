@@ -18,15 +18,16 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from backend.recordmanagement import models, serializers
-from backend.api.permissions import OriginCountry
+from backend.recordmanagement import serializers
+from backend.recordmanagement.models.origin_country import OriginCountry
+from backend.api.permissions import OriginCountry as OriginCountryPermission
 
 
 class OriginCountriesViewSet(viewsets.ModelViewSet):
-    queryset = models.OriginCountry.objects.all()
+    queryset = OriginCountry.objects.all()
     serializer_class = serializers.OriginCountrySerializer
     permission_classes = (
         IsAuthenticated,
-        OriginCountry,
+        OriginCountryPermission,
     )
     # TODO: search fields: state, to count (?)

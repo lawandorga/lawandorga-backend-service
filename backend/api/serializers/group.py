@@ -16,7 +16,7 @@
 
 from rest_framework import serializers
 
-from ..models import Group
+from ..models.group import Group
 from ..serializers.user import UserProfileNameSerializer
 
 

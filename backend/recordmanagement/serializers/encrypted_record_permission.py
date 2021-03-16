@@ -15,11 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
-from backend.recordmanagement.models import EncryptedRecordPermission
-from backend.api.serializers.user import (
-    UserProfileNameSerializer,
-    UserProfileSerializer,
-)
+from backend.api.serializers.user import UserProfileNameSerializer
+from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
 from backend.recordmanagement.serializers import EncryptedRecordTokenSerializer
 
 

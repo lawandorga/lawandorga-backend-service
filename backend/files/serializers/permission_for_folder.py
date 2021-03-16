@@ -16,7 +16,7 @@
 
 from rest_framework import serializers
 from backend.api.serializers import GroupNameSerializer
-from backend.files.models import PermissionForFolder
+from backend.files.models.permission_for_folder import PermissionForFolder
 from backend.files.serializers import (
     FolderPermissionSerializer,
     FolderNamePathSerializer,

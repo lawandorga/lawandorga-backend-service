@@ -15,30 +15,24 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
-from django.db.models import Q
 from datetime import datetime
 import pytz
 from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.errors import CustomError
-from backend.api.models import Rlc, UserProfile
-from backend.recordmanagement.models import RecordTag
+from backend.api.models import UserProfile
+from backend.api.models.rlc import Rlc
+from backend.recordmanagement.models.record_tag import RecordTag
 from backend.static import error_codes
 from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 from backend.static.date_utils import parse_date
-from backend.static.encryption import AESEncryption, RSAEncryption
+from backend.static.encryption import AESEncryption, EncryptedModelMixin
 from backend.static import permissions
 
 
 class EncryptedRecordManager(models.Manager):
     def get_queryset(self):
         return EncryptedRecordQuerySet(self.model, using=self._db)
-
-    def get_full_access_e_records(self, user):
-        return self.get_queryset().get_full_access_e_records(user)
-
-    def get_no_access_e_records(self, user):
-        return self.get_queryset().get_no_access_e_records(user)
 
     def filter_by_rlc(self, rlc):
         """
@@ -64,22 +58,6 @@ class EncryptedRecordManager(models.Manager):
 
 
 class EncryptedRecordQuerySet(models.QuerySet):
-    def get_full_access_e_records(self, user):
-        from backend.recordmanagement.models import EncryptedRecordPermission
-
-        permissions = EncryptedRecordPermission.objects.filter(
-            request_from=user, state="gr"
-        )
-
-        return self.filter(
-            Q(id__in=user.working_on_e_record.values_list("id", flat=True))
-            | Q(id__in=permissions.values_list("record_id", flat=True))
-        )
-
-    def get_no_access_e_records(self, user):
-        has_perm = self.get_full_access_records(user)
-        return self.exclude(id__in=has_perm.values_list("id", flat=True))
-
     def filter_by_rlc(self, rlc):
         """
         filters by the instance of the given rlc
@@ -89,16 +67,16 @@ class EncryptedRecordQuerySet(models.QuerySet):
         return self.filter(from_rlc=rlc)
 
 
-class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Model):
+class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedModelMixin, models.Model):
     creator = models.ForeignKey(
         UserProfile,
-        related_name="e_records_created",
+        related_name="encrypted_records",
         on_delete=models.SET_NULL,
         null=True,
     )
     from_rlc = models.ForeignKey(
         Rlc,
-        related_name="e_record_from_rlc",
+        related_name="encrypted_records",
         on_delete=models.SET_NULL,
         null=True,
         default=None,
@@ -152,6 +130,7 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Mod
     status_described = models.BinaryField()
     additional_facts = models.BinaryField()
 
+    encryption_class = AESEncryption
     encrypted_fields = ["note", "consultant_team", "lawyer", "related_persons", "contact", "bamf_token",
                         "foreign_token", "first_correspondence", "circumstances", "next_steps", "status_described",
                         "additional_facts"]
@@ -161,27 +140,25 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Mod
     def __str__(self):
         return "e_record: " + str(self.id) + ":" + self.record_token
 
-    # TODO: encrypt and decrypt
-    # def encrypt(self, public_key: bytes) -> None:
-    #     aes_key = AESEncryption.generate_secure_key()
-    #     for field in self.encrypted_fields:
-    #         encrypted_field = AESEncryption.encrypt(getattr(self, field), aes_key)
-    #         setattr(self, field, encrypted_field)
-    #     self.encrypted_client_key = RSAEncryption.encrypt(aes_key, public_key)
-    #
-    # def decrypt(self, private_key: str) -> None:
-    #     aes_key = RSAEncryption.decrypt(self.encrypted_client_key, private_key)
-    #     for field in self.encrypted_fields:
-    #         decrypted_field = AESEncryption.decrypt(getattr(self, field), aes_key)
-    #         setattr(self, field, decrypted_field)
-    #
-    # def save(self, force_insert=False, force_update=False, using=None, update_fields=None) -> None:
-    #     for field in self.encrypted_fields:
-    #         data_in_field = getattr(self, field)
-    #         if data_in_field and not isinstance(data_in_field, bytes):
-    #             raise ValueError(
-    #                 'The field {} of object {} is not encrypted. Do not save unencrypted data.'.format(field, self))
-    #     super().save(force_insert, force_update, using, update_fields)
+    def encrypt(self, user: UserProfile = None, private_key_user: bytes = None, aes_key: str = None) -> None:
+        if user and private_key_user:
+            record_encryption = self.encryptions.get(user=user)
+            record_encryption.decrypt(private_key_user)
+            key = record_encryption.encrypted_key
+        elif aes_key:
+            key = aes_key
+        else:
+            raise ValueError('You have to set (user and private_key_user) or (aes_key).')
+        super().encrypt(key)
+
+    def decrypt(self, user: UserProfile = None, private_key_user: str = None) -> None:
+        if user and private_key_user:
+            encryption = self.encryptions.get(user=user)
+            encryption.decrypt(private_key_user)
+            key = encryption.encrypted_key
+        else:
+            raise ValueError('You have to set (user and private_key_user).')
+        super().decrypt(key)
 
     def patch(self, record_data, record_key: str) -> [str]:
         """
@@ -290,8 +267,8 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Mod
         :param user: user object, the user to check
         :return: boolean, true if the user has permission
         """
-        from backend.recordmanagement.models import EncryptedRecordPermission
 
+        from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
         return (
             self.working_on_record.filter(id=user.id).count() == 1
             or EncryptedRecordPermission.objects.filter(
@@ -304,11 +281,11 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Mod
         )
 
     def get_notification_emails(self):
-        from backend.recordmanagement.models import EncryptedRecordPermission
 
         emails = []
         for user in list(self.working_on_record.all()):
             emails.append(user.email)
+        from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
         for permission_request in list(
             EncryptedRecordPermission.objects.filter(record=self, state="gr")
         ):
@@ -316,11 +293,11 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Mod
         return emails
 
     def get_notification_users(self) -> [UserProfile]:
-        from backend.recordmanagement.models import EncryptedRecordPermission
 
         users = []
         for user in list(self.working_on_record.all()):
             users.append(user)
+        from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
         for permission_request in EncryptedRecordPermission.objects.filter(
             record=self, state="gr"
         ):
@@ -328,13 +305,14 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Mod
         return users
 
     def get_users_with_permission(self) -> [UserProfile]:
-        from backend.api.models import UserProfile, Permission
+        from backend.api.models import UserProfile
 
         working_on_users = self.working_on_record.all()
         users_with_record_permission = UserProfile.objects.filter(
             e_record_permissions_requested__record=self,
             e_record_permissions_requested__state="gr",
         )
+        from backend.api.models.permission import Permission
         users_with_overall_permission = Permission.objects.get(
             name=PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
         ).get_real_users_with_permission_for_rlc(self.from_rlc)
@@ -367,8 +345,9 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Mod
         )
 
     def get_decryption_key(self, user: UserProfile, users_private_key: bytes) -> str:
-        from backend.recordmanagement.models import RecordEncryption
 
+
+        from backend.recordmanagement.models.record_encryption import RecordEncryption
         record_encryptions: [RecordEncryption] = RecordEncryption.objects.filter(
             user=user, record=self
         )
@@ -378,7 +357,8 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Mod
                 encryption.delete()
                 continue
             try:
-                key = encryption.decrypt(users_private_key)
+                encryption.decrypt(users_private_key)
+                key = encryption.encrypted_key
                 result = key
             except Exception as e:
                 encryption.delete()

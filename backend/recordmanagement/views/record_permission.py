@@ -22,24 +22,26 @@ from datetime import datetime
 import pytz
 
 from backend.recordmanagement import models, serializers
+from backend.recordmanagement.models.encrypted_record import EncryptedRecord
+from backend.recordmanagement.models.record_permission import RecordPermission
 from backend.static import error_codes
 from backend.api.errors import CustomError
 from backend.static import permissions
 
 
 class RecordPermissionViewSet(viewsets.ModelViewSet):
-    queryset = models.RecordPermission.objects.all()
+    queryset = RecordPermission.objects.all()
     serializer_class = serializers.RecordPermissionSerializer
 
 
 class RecordPermissionRequestViewSet(APIView):
     def post(self, request, id):
-        record = models.EncryptedRecord.objects.get_record(request.user, id)
+        record = EncryptedRecord.objects.get_record(request.user, id)
         if record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ALREADY_WORKING_ON)
 
         if (
-            models.RecordPermission.objects.filter(
+            RecordPermission.objects.filter(
                 record=record, request_from=request.user, state="re"
             ).count()
             >= 1
@@ -49,7 +51,7 @@ class RecordPermissionRequestViewSet(APIView):
         if "can_edit" in request.data:
             can_edit = request.data["can_edit"]
 
-        permission = models.RecordPermission(
+        permission = RecordPermission(
             request_from=request.user, record=record, can_edit=can_edit
         )
         permission.save()
@@ -69,7 +71,7 @@ class RecordPermissionAdmitViewSet(APIView):
             for_rlc=user.rlc,
         ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-        requests = models.RecordPermission.objects.filter(record__from_rlc=user.rlc)
+        requests = RecordPermission.objects.filter(record__from_rlc=user.rlc)
         # if requests.count() == 0:
         #     raise CustomError(error_codes)
         return Response(
@@ -91,7 +93,7 @@ class RecordPermissionAdmitViewSet(APIView):
         if "id" not in request.data:
             raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ID_NOT_PROVIDED)
         try:
-            permission_request = models.RecordPermission.objects.get(
+            permission_request = RecordPermission.objects.get(
                 pk=request.data["id"]
             )
         except Exception as e:

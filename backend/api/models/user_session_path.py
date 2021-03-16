@@ -13,8 +13,9 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from backend.api.models.user_activity_path import UserActivityPath
+from backend.api.models.user_session import UserSession
 from backend.static.error_codes import ERROR__API__LOGGING__TOO_MANY_SESSION_PATHS_FOUND
-from backend.api.models import UserActivityPath, UserSession
 from backend.api.errors import CustomError
 from django.db import models
 

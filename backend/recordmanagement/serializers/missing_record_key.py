@@ -15,7 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
-from backend.recordmanagement.models import MissingRecordKey
+
+from backend.recordmanagement.models.missing_record_key import MissingRecordKey
 
 
 class MissingRecordKeySerializer(serializers.ModelSerializer):

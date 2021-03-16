@@ -14,9 +14,9 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from backend.static.permissions import PERMISSION_CAN_CONSULT
-from ...static.encryption import AESEncryption, RSAEncryption
+from backend.static.encryption import AESEncryption, RSAEncryption
+from backend.api.models.user import UserProfile
 from django.db import models
-from . import UserProfile
 
 
 class Rlc(models.Model):
@@ -41,9 +41,29 @@ class Rlc(models.Model):
         )
 
     def get_public_key(self) -> bytes:
+        # safety check
         if not hasattr(self, 'encryption_keys'):
             self.generate_keys()
+        # return the public key
         return self.encryption_keys.public_key
+
+    def get_private_key(self, user: UserProfile, user_private_key: bytes):
+        from backend.api.models.users_rlc_keys import UsersRlcKeys
+
+        # safety check
+        if not hasattr(self, 'encryption_keys'):
+            self.generate_keys()
+
+        # get the aes key that encrypted the rlc private key. this aes key is encrypted for every user with its
+        # public key, therefore only its private key can unlock the aes key.
+        keys = UsersRlcKeys.objects.get(user=user, rlc=self)
+        keys.decrypt(user_private_key)
+        aes_key = keys.encrypted_key
+
+        rlc_keys = self.encryption_keys
+        rlc_keys.decrypt(aes_key)
+
+        return rlc_keys.encrypted_private_key
 
     def generate_keys(self) -> None:
         from backend.api.models.rlc_encryption_keys import RlcEncryptionKeys

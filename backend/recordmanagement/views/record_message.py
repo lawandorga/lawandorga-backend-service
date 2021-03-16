@@ -20,13 +20,15 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from backend.recordmanagement import models, serializers
+from backend.recordmanagement.models.record import Record
+from backend.recordmanagement.models.record_message import RecordMessage
 from backend.static import error_codes
 from backend.api.errors import CustomError
 from backend.static.emails import EmailSender
 
 
 class RecordMessageViewSet(viewsets.ModelViewSet):
-    queryset = models.RecordMessage.objects.all()
+    queryset = RecordMessage.objects.all()
     serializer_class = serializers.RecordMessageSerializer
 
 
@@ -38,13 +40,13 @@ class RecordMessageByRecordViewSet(APIView):
         message = request.data["message"]
 
         try:
-            record = models.Record.objects.get(pk=id)
+            record = Record.objects.get(pk=id)
         except Exception as e:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
         if not record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
-        record_message = models.RecordMessage(
+        record_message = RecordMessage(
             sender=request.user, message=message, record=record
         )
         record_message.save()

@@ -16,8 +16,9 @@
 
 
 from django.db import models
+
+from backend.api.models.rlc import Rlc
 from backend.api.models.user import phone_regex
-from backend.api.models import Rlc
 
 
 class Client(models.Model):

@@ -16,7 +16,8 @@
 
 
 from rest_framework import serializers
-from backend.recordmanagement.models import RecordDocumentTag
+
+from backend.recordmanagement.models.record_document_tag import RecordDocumentTag
 
 
 class RecordDocumentTagSerializer(serializers.ModelSerializer):

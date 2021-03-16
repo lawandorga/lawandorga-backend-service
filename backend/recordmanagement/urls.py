@@ -19,6 +19,7 @@ from .views import *
 
 router = DefaultRouter()
 # recheck all
+# TODO: remove records?
 router.register("records", RecordsListViewSet, basename="record")
 router.register("origin_countries", OriginCountriesViewSet)
 router.register("record_tags", RecordTagViewSet)

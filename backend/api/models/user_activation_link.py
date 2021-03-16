@@ -15,8 +15,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from django_prometheus.models import ExportModelOperationsMixin
 from django.utils.crypto import get_random_string
-from backend.api.models import UserProfile
 from django.db import models
+
+from backend.api.models.user import UserProfile
 
 
 def generate_link_id():

@@ -18,7 +18,7 @@
 from rest_framework import viewsets
 
 from backend.api.permissions import OnlySuperuser
-from backend.recordmanagement.models import MissingRecordKey
+from backend.recordmanagement.models.missing_record_key import MissingRecordKey
 from backend.recordmanagement.serializers import MissingRecordKeySerializer
 
 

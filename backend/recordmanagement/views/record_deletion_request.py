@@ -23,12 +23,13 @@ from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
 from backend.recordmanagement import models, serializers
+from backend.recordmanagement.models.record_deletion_request import RecordDeletionRequest
 from backend.static import error_codes, permissions
 
 
 class RecordDeletionRequestViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.RecordDeletionRequestSerializer
-    queryset = models.RecordDeletionRequest.objects.all()
+    queryset = RecordDeletionRequest.objects.all()
 
     def list(self, request, *args, **kwargs):
         if (
@@ -40,9 +41,9 @@ class RecordDeletionRequestViewSet(viewsets.ModelViewSet):
         ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
         if request.user.is_superuser:
-            queryset = models.RecordDeletionRequest.objects.all()
+            queryset = RecordDeletionRequest.objects.all()
         else:
-            queryset = models.RecordDeletionRequest.objects.filter(
+            queryset = RecordDeletionRequest.objects.filter(
                 request_from__rlc=request.user.rlc
             )
         return Response(
@@ -53,13 +54,13 @@ class RecordDeletionRequestViewSet(viewsets.ModelViewSet):
         if "record_id" not in request.data:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__ID_NOT_PROVIDED)
 
-        record = models.EncryptedRecord.objects.get_record(
+        record = EncryptedRecord.objects.get_record(
             request.user, request.data["record_id"]
         )
         if not record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
         if (
-            models.RecordDeletionRequest.objects.filter(
+            RecordDeletionRequest.objects.filter(
                 record=record, state="re"
             ).count()
             >= 1
@@ -67,7 +68,7 @@ class RecordDeletionRequestViewSet(viewsets.ModelViewSet):
             raise CustomError(
                 error_codes.ERROR__RECORD__RECORD_DELETION__ALREADY_REQUESTED
             )
-        deletion_request = models.RecordDeletionRequest(
+        deletion_request = RecordDeletionRequest(
             request_from=request.user,
             record=record,
             explanation=request.data["explanation"],
@@ -91,7 +92,7 @@ class RecordDeletionProcessViewSet(APIView):
         if "request_id" not in request.data:
             raise CustomError(error_codes.ERROR__API__ID_NOT_PROVIDED)
         try:
-            record_deletion_request = models.RecordDeletionRequest.objects.get(
+            record_deletion_request = RecordDeletionRequest.objects.get(
                 pk=request.data["request_id"]
             )
         except:
@@ -115,7 +116,7 @@ class RecordDeletionProcessViewSet(APIView):
         else:
             record_deletion_request.state = "de"
             record_deletion_request.save()
-        response_request = models.RecordDeletionRequest.objects.get(
+        response_request = RecordDeletionRequest.objects.get(
             pk=record_deletion_request.id
         )
         return Response(

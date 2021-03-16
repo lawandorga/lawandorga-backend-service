@@ -16,7 +16,7 @@
 
 from rest_framework.viewsets import ModelViewSet
 
-from backend.recordmanagement.models import RecordEncryption
+from backend.recordmanagement.models.record_encryption import RecordEncryption
 from backend.recordmanagement.serializers import RecordEncryptionSerializer
 
 

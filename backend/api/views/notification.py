@@ -23,7 +23,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from backend.api.errors import CustomError
-from backend.api.models import Notification, NotificationGroup
+from backend.api.models import NotificationGroup
+from backend.api.models.notification import Notification
 from backend.api.serializers import NotificationSerializer
 from backend.static.error_codes import (
     ERROR__API__ID_NOT_PROVIDED,

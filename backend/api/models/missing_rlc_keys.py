@@ -13,11 +13,9 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
-
-from backend.api.models import UserProfile
+from backend.api.models.user import UserProfile
+from django.db import models
 
 
 class MissingRlcKey(ExportModelOperationsMixin("missing_rlc_key"), models.Model):

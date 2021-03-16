@@ -21,11 +21,11 @@ from django.db import models
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django_prometheus.models import ExportModelOperationsMixin
-
-from backend.api.models import UserProfile, Notification
 from backend.static.encrypted_storage import EncryptedStorage
 from .folder import Folder
 from backend.static.logger import Logger
+from ...api.models.notification import Notification
+from ...api.models.user import UserProfile
 
 
 class File(ExportModelOperationsMixin("file"), models.Model):

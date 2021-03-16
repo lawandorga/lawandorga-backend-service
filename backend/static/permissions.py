@@ -13,9 +13,6 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from backend.api.models import Permission
-
 PERMISSION_CAN_CONSULT = "can_consult"
 PERMISSION_VIEW_RECORDS_RLC = "view_records_rlc"
 PERMISSION_CAN_ADD_RECORD_RLC = "add_record_rlc"
@@ -77,6 +74,8 @@ def get_record_encryption_keys_permissions_strings():
 
 
 def get_record_encryption_keys_permissions():
+    from backend.api.models.permission import Permission
+
     permissions = []
     for permission_string in get_record_encryption_keys_permissions_strings():
         permissions.append(Permission.objects.get(name=permission_string))

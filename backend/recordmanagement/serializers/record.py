@@ -16,9 +16,9 @@
 
 
 from rest_framework import serializers
-from backend.recordmanagement.models import Record
 from backend.api.serializers.user import UserProfileNameSerializer
 from .record_tag import RecordTagNameSerializer
+from ..models.record import Record
 
 
 class RecordFullDetailSerializer(serializers.ModelSerializer):

@@ -13,16 +13,26 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from backend.api.models.group import Group
+from backend.api.models.has_permission import HasPermission
+from backend.api.models.permission import Permission
+from backend.api.models.rlc import Rlc
+from backend.recordmanagement.models import OriginCountry
+from backend.recordmanagement.models.encrypted_client import EncryptedClient
+from backend.recordmanagement.models.encrypted_record import EncryptedRecord
+from backend.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
+from backend.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
+from backend.recordmanagement.models.record_document_tag import RecordDocumentTag
+from backend.recordmanagement.models.record_encryption import RecordEncryption
+from backend.recordmanagement.models.record_tag import RecordTag
+from backend.static import permissions
+from backend.static.encryption import AESEncryption
 from backend.static.permissions import get_all_permissions_strings
-from backend.api.models import Rlc, Group, HasPermission, Permission, permissions
 from backend.api.models import UserProfile
 from random import randint, choice
 
+
 # helpers
-from backend.recordmanagement.models import OriginCountry, EncryptedClient, RecordTag, EncryptedRecord, Record, \
-    RecordDocument, RecordDocumentTag, RecordMessage
-
-
 def add_permissions_to_group(group: Group, permission_name):
     HasPermission.objects.create(
         group_has_permission=group,
@@ -42,33 +52,20 @@ def create_rlc():
 
 def create_fixtures():
     # create countries
-    countries = [
-        ("Abchasien",),
-        ("Afghanistan",),
-        ("Ägypten",),
-        ("Albanien",),
-        ("Algerien",),
-    ]
-    for country in countries:
-        OriginCountry.objects.create(name=country[0])
+    countries = ["Abchasien", "Afghanistan", "Ägypten", "Albanien", "Algerien"]
+    [OriginCountry.objects.create(name=country) for country in countries]
 
-    # TODO: permissions get and create instead of creating upfront
     # create permissions
-    for permission in get_all_permissions_strings():
-        Permission.objects.get_or_create(name=permission)
+    [Permission.objects.get_or_create(name=permission) for permission in get_all_permissions_strings()]
 
     # create record tags
-    tags = [
-        ("Familiennachzug",),
-        ("Dublin IV",),
-        ("Arbeitserlaubnis",),
-        ("Flüchtlingseigenschaft",),
-        ("subsidiärer Schutz",),
-        ("Eheschließung",),
-        ("Verlobung",),
-    ]
-    for tag in tags:
-        RecordTag.objects.create(name=tag)
+    tags = ["Familiennachzug", "Dublin IV", "Arbeitserlaubnis", "Flüchtlingseigenschaft", "subsidiärer Schutz",
+            "Eheschließung", "Verlobung"]
+    [RecordTag.objects.create(name=tag) for tag in tags]
+
+    # create record document tags
+    tags = ["Official Document", "Pleading", "Proof", "Passport"]
+    [RecordDocumentTag.objects.create(name=tag) for tag in tags]
 
 
 def create_users(rlc):
@@ -191,7 +188,7 @@ def create_users(rlc):
     return created_users
 
 
-def create_dummy_users(rlc: Rlc) -> [UserProfile]:
+def create_dummy_users(rlc: Rlc, dummy_password: str = 'qwe123') -> [UserProfile]:
     users = []
 
     # main user
@@ -205,7 +202,7 @@ def create_dummy_users(rlc: Rlc) -> [UserProfile]:
         rlc=rlc,
         birthday='1995-1-1'
     )
-    user.set_password("qwe123")
+    user.set_password(dummy_password)
     user.save()
     users.append(user)
 
@@ -251,21 +248,21 @@ def create_inactive_user(rlc):
 
 
 def create_groups(rlc: Rlc, creator: UserProfile, users: [UserProfile]):
-    # create consultants group
-    consultants_group = Group.objects.create(
+    # create users group
+    users_group = Group.objects.create(
         creator=creator,
         from_rlc=rlc,
         name="Berater",
         visible=False,
-        description="all consultants",
-        note="only add consultants",
+        description="all users",
+        note="only add users",
     )
 
     for i in range(0, randint(0, len(users))):
-        consultants_group.group_members.add(users[i])
+        users_group.group_members.add(users[i])
 
-    add_permissions_to_group(consultants_group, permissions.PERMISSION_CAN_CONSULT)
-    add_permissions_to_group(consultants_group, permissions.PERMISSION_VIEW_RECORDS_RLC)
+    add_permissions_to_group(users_group, permissions.PERMISSION_CAN_CONSULT)
+    add_permissions_to_group(users_group, permissions.PERMISSION_VIEW_RECORDS_RLC)
 
     # create ag group
     ag_group = Group.objects.create(
@@ -281,7 +278,7 @@ def create_groups(rlc: Rlc, creator: UserProfile, users: [UserProfile]):
         ag_group.group_members.add(users[i])
 
     # return
-    return [consultants_group, ag_group]
+    return [users_group, ag_group]
 
 
 def create_admin_group(rlc: Rlc, main_user: UserProfile):
@@ -308,7 +305,7 @@ def create_admin_group(rlc: Rlc, main_user: UserProfile):
     return admin_group
 
 
-def create_clients(rlc: Rlc):
+def create_clients(rlc: Rlc) -> [EncryptedClient]:
     origin_countries = OriginCountry.objects.all()
     clients = [
         (
@@ -422,152 +419,152 @@ def create_clients(rlc: Rlc):
     return created_clients
 
 
-def create_records(clients: [EncryptedClient], consultants: [UserProfile], rlc: Rlc) -> [EncryptedRecord]:
+def create_records(clients: [EncryptedClient], users: [UserProfile], rlc: Rlc) -> [EncryptedRecord]:
     assert len(clients) > 9
     tags = RecordTag.objects.all()
 
     records = [
         (
-            choice(consultants),  # creator id
+            choice(users),  # creator id
             '2018-7-12',  # created
-            '2018-8-29T13:54:0',  # last edited
+            '2018-8-29T13:54:0+00:00',  # last edited
             clients[0],  # client
             '2018-7-10',  # first contact
-            '2018-8-14T17:30:0',  # last contact
+            '2018-8-14T17:30:0+00:00',  # last contact
             "AZ-123/18",  # record token
             "informationen zum asylrecht",
             "cl",  # status, cl wa op
-            [choice(consultants), choice(consultants)],  # working on
+            [choice(users), choice(users)],  # working on
             [choice(tags), choice(tags)],  # tags
         ),
         (
-            choice(consultants),
-            (2018, 6, 23),
-            '2018-8-22T23:3:0',
+            choice(users),
+            '2018-6-23',
+            '2018-8-22T23:3:0+00:00',
             clients[1],
             '2018-6-20',
-            '2018-7-10T17:30:0',
+            '2018-7-10T17:30:0+00:00',
             "AZ-124/18",
             "nicht abgeschlossen",
             "op",
-            [choice(consultants), choice(consultants)],
+            [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(consultants),
-            (2018, 8, 24),
-            '2018-8-31T1:2:0',
+            choice(users),
+            '2018-8-24',
+            '2018-8-31T1:2:0+00:00',
             clients[2],
             '2018-8-22',
-            '2018-8-22T18:30:0',
+            '2018-8-22T18:30:0+00:00',
             "AZ-125/18",
             "auf Bescheid wartend",
             "wa",
-            [choice(consultants), choice(consultants)],
+            [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(consultants),
+            choice(users),
             '2018-3-10',
-            '2018-4-30T19:22:0',
+            '2018-4-30T19:22:0+00:00',
             clients[3],
             '2018-3-9',
-            '2018-3-24T15:54:0',
+            '2018-3-24T15:54:0+00:00',
             "AZ-126/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
             "cl",
-            [choice(consultants), choice(consultants)],
+            [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(consultants),
+            choice(users),
             '2017-9-10',
-            '2017-10-2T15:3:0',
+            '2017-10-2T15:3:0+00:00',
             clients[4],
             '2017-9-10',
-            '2017-10-2T15:3:0',
+            '2017-10-2T15:3:0+00:00',
             "AZ-127/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
             "cl",
-            [choice(consultants), choice(consultants)],
+            [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(consultants),
+            choice(users),
             '2017-9-10',
-            '2018-9-2T16:3:0',
+            '2018-9-2T16:3:0+00:00',
             clients[5],
             '2017-9-10',
-            '2018-9-2T16:3:0',
+            '2018-9-2T16:3:0+00:00',
             "AZ-128/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
             "wa",
-            [choice(consultants), choice(consultants)],
+            [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(consultants),
+            choice(users),
             '2017-9-10',
-            '2018-1-12T16:3:0',
+            '2018-1-12T16:3:0+00:00',
             clients[6],
             '2017-9-10',
-            '2018-1-12T16:3:0',
+            '2018-1-12T16:3:0+00:00',
             "AZ-129/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
             "op",
-            [choice(consultants), choice(consultants)],
+            [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(consultants),
+            choice(users),
             '2017-9-10',
-            '2018-1-2T16:3:0',
+            '2018-1-2T16:3:0+00:00',
             clients[7],
             '2017-9-10',
-            '2018-1-2T16:3:0',
+            '2018-1-2T16:3:0+00:00',
             "AZ-130/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
             "cl",
-            [choice(consultants), choice(consultants)],
+            [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(consultants),
+            choice(users),
             '2017-9-10',
-            '2018-12-2T16:3:0',
+            '2018-12-2T16:3:0+00:00',
             clients[8],
             '2017-9-10',
-            '2018-12-2T16:3:0',
+            '2018-12-2T16:3:0+00:00',
             "AZ-131/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
             "wa",
-            [choice(consultants), choice(consultants)],
+            [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(consultants),
+            choice(users),
             '2017-9-10',
-            '2018-10-2T16:3:0',
+            '2018-10-2T16:3:0+00:00',
             clients[9],
             '2017-9-10',
-            '2018-10-2T16:3:0',
+            '2018-10-2T16:3:0+00:00',
             "AZ-132/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
             "op",
-            [choice(consultants), choice(consultants)],
+            [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(consultants),
+            choice(users),
             '2017-9-10',
-            '2018-10-2T16:3:0',
+            '2018-10-2T16:3:0+00:00',
             clients[0],
             '2017-9-10',
-            '2018-10-2T16:3:0',
+            '2018-10-2T16:3:0+00:00',
             "AZ-139/18",
             "zweite akte von client 0",
             "op",
-            [choice(consultants), choice(consultants)],
+            [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
     ]
@@ -586,40 +583,51 @@ def create_records(clients: [EncryptedClient], consultants: [UserProfile], rlc: 
             last_edited=record[2],
             last_contact_date=record[5]
         )
-        created_record.encrypt()
-        for user in records[9]:
+        created_record.save()
+        for user in record[9]:
             created_record.working_on_record.add(user)
-        for tag in records[10]:
+        for tag in record[10]:
             created_record.tagged.add(tag)
-        record.save()
-        created_records.append(record)
+        # secure the record
+        aes_key = AESEncryption.generate_secure_key()
+        for user in created_record.working_on_record.all():
+            record_encryption = RecordEncryption(user=user, record=created_record, encrypted_key=aes_key)
+            record_encryption.encrypt(user.get_public_key())
+            record_encryption.save()
+        created_record.encrypt(aes_key=aes_key)
+        created_record.save()
+        created_records.append(created_record)
     return created_records
 
 
-def create_informative_record(main_user: UserProfile, clients: [EncryptedClient], consultants: [UserProfile],
-                              rlc: Rlc) -> EncryptedRecord:
+def create_informative_record(main_user: UserProfile, main_user_password: str, clients: [EncryptedClient],
+                              users: [UserProfile], rlc: Rlc) -> EncryptedRecord:
     tags = list(RecordTag.objects.all())
-    record = Record(
+    document_tags = list(RecordDocumentTag.objects.all())
+    users = [main_user] + users
+
+    # create the informative record
+    record = EncryptedRecord(
         from_rlc=rlc,
         creator=main_user,
         client=clients[0],
         record_token="AZ-001/18",
         official_note="best record ever",
         state="op",
-        id=7181,
+        created_on='2018-1-3',
+        first_contact_date='2018-1-3',
+        last_edited='2019-3-11T9:32:21+00:00',
+        last_contact_date='2019-2-28T17:33:0+00:00',
+        first_consultation='2018-1-2T23:55:0+00:00'
     )
+    record.save()
 
-    record.created_on = '2018-1-3'
-    record.first_contact_date = '2018-1-3'
-    record.last_edited = '2019-3-11T9:32:21'
-    record.last_contact_date = '2019-2-28T17:33:0'
-    record.first_consultation = '2018-1-2T23:55:0'
-
+    # add encrypted data
     record.note = "Mandant moechte dass wir ihn vor Gericht vertreten. Das duerfen wir aber nicht. #RDG"
     record.consultant_team = "Taskforce 417"
     record.lawyer = "RA Guenther-Klaus, Kiesweg 3"
     record.related_persons = "Sozialarbeiter Apfel (Direkt in der Unterkunft)"
-    record.contact = "Mail: asksk1@bmw.de,\n Telefon: 0800 444 55 444"
+    record.contact = "Mail: asksk1@beispiel.de,\n Telefon: 0800 444 55 444"
     record.bamf_token = "QRS-232/2018"
     record.foreign_token = "Vor Gericht: FA93932-1320"
     record.first_correspondence = (
@@ -627,87 +635,57 @@ def create_informative_record(main_user: UserProfile, clients: [EncryptedClient]
         "helfen?\n Vielen Dank"
     )
     record.circumstances = "Kam ueber die Balkanroute, Bruder auf dem Weg verloren, wenig Kontakt zu Familie."
-    record.next_steps = "Klae einreichen und gewinnen!"
-    record.status_described = (
-        "Auf Antwort wartend, anschliessend weitere Bearbeitung."
-    )
+    record.next_steps = "Klage einreichen und gewinnen!"
+    record.status_described = "Auf Antwort wartend, anschliessend weitere Bearbeitung."
     record.additional_facts = "Hat noch nie ne Schweinshaxe gegessen."
 
+    # add relations
+    record_users = [choice(users), main_user]
+    for user in record_users:
+        record.working_on_record.add(user)
+    for tag in [choice(tags), choice(tags)]:
+        record.tagged.add(tag)
+
+    # encrypt the record
+    aes_key = AESEncryption.generate_secure_key()
+    for user in record_users:
+        record_encryption = RecordEncryption(user=user, record=record, encrypted_key=aes_key)
+        record_encryption.encrypt(user.get_public_key())
+        record_encryption.save()
+    record.encrypt(aes_key=aes_key)
     record.save()
-    record.working_on_record.add(choice(consultants), main_user)
-    record.tagged.add(choice(tags), choice(tags))
-    record.save()
 
-    document1 = RecordDocument(
-        name="7_1_19__pass.jpg", creator=main_user, record=record, file_size=18839
-    )
-    document1.created_on = '2019-1-7'
-    document1.save()
-    document1.tagged.add(RecordDocumentTag.objects.get(name="Pass"))
-
-    document2 = RecordDocument(
-        name="3_10_18__geburtsurkunde.pdf",
-        creator=main_user,
-        record=record,
-        file_size=488383,
-    )
-    document2.created_on = '2018-10-3'
-    document2.save()
-    document2.tagged.add(
-        RecordDocumentTag.objects.get(name="Geburtsurkunde")
-    )
-
-    document3 = RecordDocument(
-        name="3_12_18__Ablehnungbescheid.pdf",
-        creator=main_user,
-        record=record,
-        file_size=343433,
-    )
-    document3.created_on = '2018-12-3'
-    document3.save()
-    document3.tagged.add(
-        RecordDocumentTag.objects.get(name="Bescheid (Ablehnung)")
-    )
-
-    document4 = RecordDocument(
-        name="1_1_19__Klageschrift.docx",
-        creator=main_user,
-        record=record,
-        file_size=444444,
-    )
+    # add some documents
+    document1 = EncryptedRecordDocument.objects.create(name="7_1_19__pass.jpg", creator=main_user, record=record,
+                                                       file_size=18839, created_on='2019-1-7')
+    document1.tagged.add(choice(document_tags))
+    document2 = EncryptedRecordDocument.objects.create(name="3_10_18__geburtsurkunde.pdf", creator=main_user,
+                                                       record=record, file_size=488383, created_on='2018-10-3')
+    document2.tagged.add(choice(document_tags))
+    document3 = EncryptedRecordDocument.objects.create(name="3_12_18__Ablehnungbescheid.pdf", creator=main_user,
+                                                       record=record, file_size=343433, created_on='2018-12-3')
+    document3.tagged.add(choice(document_tags))
+    document4 = EncryptedRecordDocument.objects.create(name="1_1_19__Klageschrift.docx", creator=main_user,
+                                                       record=record, file_size=444444, created_on='2019-1-1')
     document4.save()
-    document4.created_on = '2019-1-1'
 
-    message = RecordMessage(
-        sender=main_user,
-        record=record,
-        message="Bitte dringend die Kontaktdaten des Mandanten eintragen.",
-    )
-    message.save()
-    message.created_on = '2019-3-11T10:12:21'
-    message.save()
-    message = RecordMessage(
-        sender=choice(consultants),
-        record=record,
-        message="Ist erledigt! Koennen wir uns morgen treffen um das zu besprechen?",
-    )
-    message.save()
-    message.created_on = '2019-3-12T9:32:21'
-    message.save()
-    message = RecordMessage(
-        sender=main_user,
-        record=record,
-        message="Klar, einfach direkt in der Mittagspause in der Mensa.",
-    )
-    message.save()
-    message.created_on = '2019-3-12T14:7:21'
-    message.save()
-    message = RecordMessage(
-        sender=choice(consultants),
-        record=record,
-        message="Gut, jetzt faellt mir aber auch nichts mehr ein.",
-    )
-    message.save()
-    message.created_on = '2019-3-13T18:7:21'
-    message.save()
+    # add some messages
+    message1 = EncryptedRecordMessage(sender=main_user, record=record, created_on='2019-3-11T10:12:21+00:00',
+                                      message="Bitte dringend die Kontaktdaten des Mandanten eintragen.")
+    message1.encrypt(main_user, main_user.get_private_key(main_user_password))
+    message1.save()
+    message2 = EncryptedRecordMessage(sender=choice(users), record=record, created_on='2019-3-12T9:32:21',
+                                      message="Ist erledigt! Koennen wir uns morgen treffen um das zu besprechen?")
+    message2.encrypt(main_user, main_user.get_private_key(main_user_password))
+    message2.save()
+    message3 = EncryptedRecordMessage(sender=main_user, record=record, created_on='2019-3-12T14:7:21',
+                                      message="Klar, einfach direkt in der Mittagspause in der Mensa.")
+    message3.encrypt(main_user, main_user.get_private_key(main_user_password))
+    message3.save()
+    message4 = EncryptedRecordMessage(sender=choice(users), record=record, created_on='2019-3-13T18:7:21',
+                                      message="Gut, jetzt faellt mir aber auch nichts mehr ein.")
+    message4.encrypt(main_user, main_user.get_private_key(main_user_password))
+    message4.save()
+
+    # return
     return record

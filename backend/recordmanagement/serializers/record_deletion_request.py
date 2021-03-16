@@ -20,6 +20,7 @@ from backend.api.serializers.user import (
     UserProfileNameSerializer,
     UserProfileSerializer,
 )
+from backend.recordmanagement.models.record_deletion_request import RecordDeletionRequest
 from backend.recordmanagement.serializers import RecordNoDetailSerializer
 
 
@@ -29,5 +30,5 @@ class RecordDeletionRequestSerializer(serializers.ModelSerializer):
     record = RecordNoDetailSerializer(many=False, read_only=True, allow_null=True)
 
     class Meta:
-        model = models.RecordDeletionRequest
+        model = RecordDeletionRequest
         fields = "__all__"

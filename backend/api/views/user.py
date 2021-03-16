@@ -28,6 +28,8 @@ from rest_framework.views import APIView
 from rest_framework.request import Request
 
 from backend.api.errors import CustomError
+from backend.api.models.notification import Notification
+from backend.api.models.permission import Permission
 from backend.static import permissions
 from backend.static.date_utils import parse_date
 from backend.static.emails import EmailSender, FrontendLinks
@@ -35,10 +37,8 @@ from backend.static.encryption import RSAEncryption
 from backend.static.error_codes import *
 from backend.api.models import (
     UserProfile,
-    Permission,
     Rlc,
     UserEncryptionKeys,
-    Notification,
     NotificationGroup,
 )
 from backend.api.serializers import (

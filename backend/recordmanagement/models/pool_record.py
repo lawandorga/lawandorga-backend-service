@@ -18,7 +18,7 @@ from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.models import UserProfile
-from backend.recordmanagement.models import EncryptedRecord
+from backend.recordmanagement.models.encrypted_record import EncryptedRecord
 
 
 class PoolRecord(ExportModelOperationsMixin("pool_record"), models.Model):

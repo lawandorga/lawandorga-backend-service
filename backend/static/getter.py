@@ -15,9 +15,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from backend.api.errors import CustomError
+from backend.recordmanagement.models.encrypted_record import EncryptedRecord
 from backend.static import error_codes
 from backend.static import permissions
-from backend.recordmanagement.models import EncryptedRecord
 
 
 def get_e_record(user, e_record_id):

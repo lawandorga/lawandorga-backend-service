@@ -13,10 +13,8 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
+from backend.api.models.rlc import Rlc
 from django.db import models
-
-from backend.api.models import Rlc
 
 
 class RlcSettings(models.Model):

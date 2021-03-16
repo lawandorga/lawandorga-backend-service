@@ -19,7 +19,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
-from backend.files.models import File, Folder
+from backend.files.models.file import File
+from backend.files.models.folder import Folder
 from backend.files.serializers import FileSerializer, FolderSerializer
 from backend.static.error_codes import (
     ERROR__API__ID_NOT_FOUND,
