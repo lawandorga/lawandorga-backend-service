@@ -6,7 +6,7 @@ from backend.recordmanagement.models.encrypted_client import EncryptedClient
 
 class ExampleDataTestCase(TestCase):
     def setUp(self) -> None:
-        dummy_password = 'qwe123'
+        dummy_password = "qwe123"
         # fixtures
         ed.create_fixtures()
         # dummy
@@ -15,7 +15,9 @@ class ExampleDataTestCase(TestCase):
         # keys
         self.dummy_private_key = self.dummy.get_private_key(dummy_password)
         self.rlc_public_key = self.rlc.get_public_key()
-        self.rlc_private_key = self.rlc.get_private_key(self.dummy, self.dummy_private_key)
+        self.rlc_private_key = self.rlc.get_private_key(
+            self.dummy, self.dummy_private_key
+        )
         # data
         self.clients = ed.create_clients(self.rlc)
         self.users = ed.create_users(self.rlc)
@@ -23,8 +25,9 @@ class ExampleDataTestCase(TestCase):
         self.groups = ed.create_groups(self.rlc, self.dummy, self.users)
         self.records = ed.create_records(self.clients, self.users, self.rlc)
         self.admin_group = ed.create_admin_group(self.rlc, self.dummy)
-        self.informative_record = ed.create_informative_record(self.dummy, dummy_password, self.clients, self.users,
-                                                               self.rlc)
+        self.informative_record = ed.create_informative_record(
+            self.dummy, dummy_password, self.clients, self.users, self.rlc
+        )
 
     def test_client_encrypt_and_decrypt_field(self):
         ed.create_clients(self.rlc)

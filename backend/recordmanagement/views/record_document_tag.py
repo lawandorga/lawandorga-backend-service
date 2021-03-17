@@ -20,7 +20,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from backend.recordmanagement import models, serializers
-from backend.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
+from backend.recordmanagement.models.encrypted_record_document import (
+    EncryptedRecordDocument,
+)
 from backend.recordmanagement.models.record_document_tag import RecordDocumentTag
 from backend.static import error_codes
 from backend.api.errors import CustomError

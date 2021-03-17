@@ -42,7 +42,7 @@ class Rlc(models.Model):
 
     def get_public_key(self) -> bytes:
         # safety check
-        if not hasattr(self, 'encryption_keys'):
+        if not hasattr(self, "encryption_keys"):
             self.generate_keys()
         # return the public key
         return self.encryption_keys.public_key
@@ -51,7 +51,7 @@ class Rlc(models.Model):
         from backend.api.models.users_rlc_keys import UsersRlcKeys
 
         # safety check
-        if not hasattr(self, 'encryption_keys'):
+        if not hasattr(self, "encryption_keys"):
             self.generate_keys()
 
         # get the aes key that encrypted the rlc private key. this aes key is encrypted for every user with its
@@ -69,7 +69,7 @@ class Rlc(models.Model):
         from backend.api.models.rlc_encryption_keys import RlcEncryptionKeys
         from backend.api.models.users_rlc_keys import UsersRlcKeys
 
-        if hasattr(self, 'encryption_keys'):
+        if hasattr(self, "encryption_keys"):
             return
         # generate some keys
         aes_key = AESEncryption.generate_secure_key()
@@ -77,14 +77,14 @@ class Rlc(models.Model):
         encrypted_private = AESEncryption.encrypt(private, aes_key)
         # create encryption key for rlc
         RlcEncryptionKeys.objects.create(
-            rlc=self,
-            encrypted_private_key=encrypted_private,
-            public_key=public
+            rlc=self, encrypted_private_key=encrypted_private, public_key=public
         )
         # create encryption keys for users to be able to decrypt rlc private key with users private key
         # the aes key is encrypted with the users public key, but only the user's private key can decrypt
         # the encrypted aes key
         for user in self.rlc_members.all():
             encrypted_aes_key = RSAEncryption.encrypt(aes_key, user.get_public_key())
-            user_rlc_keys = UsersRlcKeys(user=user, rlc=self, encrypted_key=encrypted_aes_key)
+            user_rlc_keys = UsersRlcKeys(
+                user=user, rlc=self, encrypted_key=encrypted_aes_key
+            )
             user_rlc_keys.save()

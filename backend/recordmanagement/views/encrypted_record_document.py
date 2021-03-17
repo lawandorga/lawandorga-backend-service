@@ -27,7 +27,9 @@ from rest_framework.views import APIView
 from backend.api.errors import CustomError
 from backend.api.models.notification import Notification
 from backend.recordmanagement.models.encrypted_record import EncryptedRecord
-from backend.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
+from backend.recordmanagement.models.encrypted_record_document import (
+    EncryptedRecordDocument,
+)
 from backend.static.error_codes import ERROR__RECORD__DOCUMENT__ALL_MISSING
 from backend.recordmanagement import models, serializers
 from backend.static import error_codes, storage_folders
@@ -67,9 +69,7 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
             storage_folders.get_temp_storage_folder() + "/record" + str(e_record.id)
         )
 
-        for record_document in EncryptedRecordDocument.objects.filter(
-            record=e_record
-        ):
+        for record_document in EncryptedRecordDocument.objects.filter(record=e_record):
             EncryptedStorage.download_from_s3_and_decrypt_file(
                 record_document.get_file_key(), record_key, root_folder_name
             )

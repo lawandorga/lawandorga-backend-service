@@ -66,8 +66,14 @@ urlpatterns = [
     path("group_members/", views.GroupMembersViewSet.as_view()),
     path("permissions_for_group/<int:pk>/", views.PermissionsForGroupViewSet.as_view()),
     path("has_permission_statics/", views.HasPermissionStaticsViewSet.as_view()),
-    path("check_user_activation_link/<int:id>/", views.CheckUserActivationLinkViewSet.as_view()),
-    path("activate_user_activation_link/<int:id>/", views.UserActivationLinkViewSet.as_view()),
+    path(
+        "check_user_activation_link/<int:id>/",
+        views.CheckUserActivationLinkViewSet.as_view(),
+    ),
+    path(
+        "activate_user_activation_link/<int:id>/",
+        views.UserActivationLinkViewSet.as_view(),
+    ),
     path("new_user_request_admit/", views.NewUserRequestAdmitViewSet.as_view()),
     path("logout/", views.LogoutViewSet.as_view()),
     path("inactive_users/", views.InactiveUsersViewSet.as_view()),

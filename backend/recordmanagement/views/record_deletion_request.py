@@ -23,7 +23,9 @@ from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
 from backend.recordmanagement import models, serializers
-from backend.recordmanagement.models.record_deletion_request import RecordDeletionRequest
+from backend.recordmanagement.models.record_deletion_request import (
+    RecordDeletionRequest,
+)
 from backend.static import error_codes, permissions
 
 
@@ -59,12 +61,7 @@ class RecordDeletionRequestViewSet(viewsets.ModelViewSet):
         )
         if not record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-        if (
-            RecordDeletionRequest.objects.filter(
-                record=record, state="re"
-            ).count()
-            >= 1
-        ):
+        if RecordDeletionRequest.objects.filter(record=record, state="re").count() >= 1:
             raise CustomError(
                 error_codes.ERROR__RECORD__RECORD_DELETION__ALREADY_REQUESTED
             )

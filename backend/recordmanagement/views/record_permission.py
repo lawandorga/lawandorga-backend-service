@@ -93,9 +93,7 @@ class RecordPermissionAdmitViewSet(APIView):
         if "id" not in request.data:
             raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ID_NOT_PROVIDED)
         try:
-            permission_request = RecordPermission.objects.get(
-                pk=request.data["id"]
-            )
+            permission_request = RecordPermission.objects.get(pk=request.data["id"])
         except Exception as e:
             raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ID_NOT_FOUND)
 

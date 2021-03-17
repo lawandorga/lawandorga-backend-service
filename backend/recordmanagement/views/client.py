@@ -27,9 +27,7 @@ class ClientsViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ClientSerializer
 
     def perform_create(self, serializer):
-        country = OriginCountry.objects.get(
-            id=self.request.data["origin_country"]
-        )
+        country = OriginCountry.objects.get(id=self.request.data["origin_country"])
         serializer.save(origin_country=country)
 
 

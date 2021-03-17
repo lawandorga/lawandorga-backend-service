@@ -24,7 +24,9 @@ from backend.api.errors import CustomError
 from backend.api.models.notification import Notification
 from backend.recordmanagement import models, serializers
 from backend.recordmanagement.models.encrypted_record import EncryptedRecord
-from backend.recordmanagement.models.encrypted_record_deletion_request import EncryptedRecordDeletionRequest
+from backend.recordmanagement.models.encrypted_record_deletion_request import (
+    EncryptedRecordDeletionRequest,
+)
 from backend.static import error_codes, permissions
 
 

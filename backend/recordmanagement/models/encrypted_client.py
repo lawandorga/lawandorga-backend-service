@@ -25,7 +25,9 @@ from datetime import datetime
 import pytz
 
 
-class EncryptedClient(ExportModelOperationsMixin("encrypted_client"), EncryptedModelMixin, models.Model):
+class EncryptedClient(
+    ExportModelOperationsMixin("encrypted_client"), EncryptedModelMixin, models.Model
+):
     from_rlc = models.ForeignKey(
         Rlc, related_name="e_client_from_rlc", on_delete=models.SET_NULL, null=True
     )
@@ -45,7 +47,7 @@ class EncryptedClient(ExportModelOperationsMixin("encrypted_client"), EncryptedM
     encrypted_client_key = models.BinaryField(null=True)
 
     encryption_class = AESEncryption
-    encrypted_fields = ['name', 'note', 'phone_number']
+    encrypted_fields = ["name", "note", "phone_number"]
 
     def __str__(self):
         return "e_client: " + str(self.id)

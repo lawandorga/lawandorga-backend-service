@@ -30,7 +30,9 @@ from backend.api.models.notification import Notification
 from backend.recordmanagement import models, serializers
 from backend.recordmanagement.models.encrypted_client import EncryptedClient
 from backend.recordmanagement.models.encrypted_record import EncryptedRecord
-from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
+from backend.recordmanagement.models.encrypted_record_permission import (
+    EncryptedRecordPermission,
+)
 from backend.recordmanagement.models.origin_country import OriginCountry
 from backend.recordmanagement.models.record_encryption import RecordEncryption
 from backend.recordmanagement.models.record_tag import RecordTag
@@ -52,9 +54,7 @@ class EncryptedRecordsListViewSet(viewsets.ModelViewSet):
         if self.request.user.is_superuser:
             queryset = EncryptedRecord.objects.all()
         else:
-            queryset = EncryptedRecord.objects.filter_by_rlc(
-                self.request.user.rlc
-            )
+            queryset = EncryptedRecord.objects.filter_by_rlc(self.request.user.rlc)
 
         request: Request = self.request
         user: UserProfile = request.user
@@ -179,9 +179,7 @@ class EncryptedRecordViewSet(APIView):
             e_client.save()
         else:
             client_key = AESEncryption.generate_secure_key()
-            e_client = EncryptedClient(
-                birthday=data["client_birthday"], from_rlc=rlc
-            )
+            e_client = EncryptedClient(birthday=data["client_birthday"], from_rlc=rlc)
             e_client.name = AESEncryption.encrypt(data["client_name"], client_key)
             e_client.phone_number = AESEncryption.encrypt(
                 data["client_phone_number"], client_key

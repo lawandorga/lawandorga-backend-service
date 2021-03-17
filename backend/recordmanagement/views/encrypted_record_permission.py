@@ -26,7 +26,9 @@ from backend.api.models import UserProfile
 from backend.api.models.notification import Notification
 from backend.recordmanagement import models, serializers
 from backend.recordmanagement.models.encrypted_record import EncryptedRecord
-from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
+from backend.recordmanagement.models.encrypted_record_permission import (
+    EncryptedRecordPermission,
+)
 from backend.recordmanagement.models.record_encryption import RecordEncryption
 from backend.recordmanagement.models.record_permission import RecordPermission
 from backend.static import error_codes, permissions
@@ -41,9 +43,7 @@ class RecordPermissionViewSet(viewsets.ModelViewSet):
 
 class EncryptedRecordPermissionRequestViewSet(APIView):
     def post(self, request, id) -> Response:
-        record: EncryptedRecord = EncryptedRecord.objects.get_record(
-            request.user, id
-        )
+        record: EncryptedRecord = EncryptedRecord.objects.get_record(request.user, id)
         if record.from_rlc != request.user.rlc:
             raise CustomError(error_codes.ERROR__API__WRONG_RLC)
 
@@ -88,9 +88,7 @@ class EncryptedRecordPermissionProcessViewSet(APIView):
             for_rlc=user.rlc,
         ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-        requests = EncryptedRecordPermission.objects.filter(
-            record__from_rlc=user.rlc
-        )
+        requests = EncryptedRecordPermission.objects.filter(record__from_rlc=user.rlc)
         return Response(
             serializers.EncryptedRecordPermissionSerializer(requests, many=True).data
         )

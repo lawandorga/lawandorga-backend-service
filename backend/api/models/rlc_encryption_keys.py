@@ -19,14 +19,16 @@ from backend.api.models.rlc import Rlc
 from django.db import models
 
 
-class RlcEncryptionKeys(ExportModelOperationsMixin("rlc_encryption_key"), EncryptedModelMixin, models.Model):
+class RlcEncryptionKeys(
+    ExportModelOperationsMixin("rlc_encryption_key"), EncryptedModelMixin, models.Model
+):
     rlc = models.OneToOneField(
         Rlc, related_name="encryption_keys", on_delete=models.CASCADE
     )
     public_key = models.BinaryField()
     encrypted_private_key = models.BinaryField()
 
-    encrypted_fields = ['encrypted_private_key']
+    encrypted_fields = ["encrypted_private_key"]
     encryption_class = AESEncryption
 
     def decrypt_private_key(self, key_to_encrypt):

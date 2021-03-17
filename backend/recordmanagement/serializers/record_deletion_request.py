@@ -20,7 +20,9 @@ from backend.api.serializers.user import (
     UserProfileNameSerializer,
     UserProfileSerializer,
 )
-from backend.recordmanagement.models.record_deletion_request import RecordDeletionRequest
+from backend.recordmanagement.models.record_deletion_request import (
+    RecordDeletionRequest,
+)
 from backend.recordmanagement.serializers import RecordNoDetailSerializer
 
 

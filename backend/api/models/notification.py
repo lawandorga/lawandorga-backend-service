@@ -473,7 +473,6 @@ class NotificationManager(models.Manager):
                     notification_type=NotificationType.RECORD__CREATED,
                 )
 
-
     @staticmethod
     def notify_new_user_request(
         source_user: UserProfile, new_user_request: NewUserRequest

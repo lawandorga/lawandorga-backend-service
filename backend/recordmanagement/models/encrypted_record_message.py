@@ -58,7 +58,11 @@ class EncryptedRecordMessageManager(models.Manager):
         return new_message, record_key
 
 
-class EncryptedRecordMessage(ExportModelOperationsMixin("encrypted_record_message"), EncryptedModelMixin, models.Model):
+class EncryptedRecordMessage(
+    ExportModelOperationsMixin("encrypted_record_message"),
+    EncryptedModelMixin,
+    models.Model,
+):
     sender = models.ForeignKey(
         UserProfile,
         related_name="e_record_messages_sent",
@@ -66,10 +70,7 @@ class EncryptedRecordMessage(ExportModelOperationsMixin("encrypted_record_messag
         null=True,
     )
     record = models.ForeignKey(
-        "EncryptedRecord",
-        related_name="messages",
-        on_delete=models.CASCADE,
-        null=True,
+        "EncryptedRecord", related_name="messages", on_delete=models.CASCADE, null=True,
     )
     created_on = models.DateTimeField(auto_now_add=True)
 
@@ -77,11 +78,16 @@ class EncryptedRecordMessage(ExportModelOperationsMixin("encrypted_record_messag
     message = models.BinaryField(null=False)
 
     encryption_class = AESEncryption
-    encrypted_fields = ['message']
+    encrypted_fields = ["message"]
 
     objects = EncryptedRecordMessageManager()
 
-    def encrypt(self, user: UserProfile = None, private_key_user: bytes = None, aes_key: str = None) -> None:
+    def encrypt(
+        self,
+        user: UserProfile = None,
+        private_key_user: bytes = None,
+        aes_key: str = None,
+    ) -> None:
         if user and private_key_user:
             record_encryption = self.record.encryptions.get(user=user)
             record_encryption.decrypt(private_key_user)
@@ -89,7 +95,9 @@ class EncryptedRecordMessage(ExportModelOperationsMixin("encrypted_record_messag
         elif aes_key:
             key = aes_key
         else:
-            raise ValueError('You have to set (user and private_key_user) or (aes_key).')
+            raise ValueError(
+                "You have to set (user and private_key_user) or (aes_key)."
+            )
         super().encrypt(key)
 
     def decrypt(self, user: UserProfile = None, private_key_user: bytes = None) -> None:
@@ -98,9 +106,10 @@ class EncryptedRecordMessage(ExportModelOperationsMixin("encrypted_record_messag
             record_encryption.decrypt(private_key_user)
             key = record_encryption.encrypted_key
         else:
-            raise ValueError('You have to set (user and private_key_user).')
+            raise ValueError("You have to set (user and private_key_user).")
         super().decrypt(key)
 
     def __str__(self):
-        return 'encrypted_record_message: {}; encrypted_record: {}; sender: {};' \
-            .format(self.pk, self.record.pk, self.sender.pk)
+        return "encrypted_record_message: {}; encrypted_record: {}; sender: {};".format(
+            self.pk, self.record.pk, self.sender.pk
+        )
