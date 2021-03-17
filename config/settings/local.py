@@ -30,6 +30,8 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
     'EXCEPTION_HANDLER': 'backend.api.exception_handler.custom_exception_handler',
+    'PAGE_SIZE': 100,
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
 }
 
 # E-Mail
@@ -39,3 +41,7 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # Installed app django-cors-headers
 # https://pypi.org/project/django-cors-headers/
 CORS_ALLOW_ALL_ORIGINS = True
+
+# The standard password of the dummy user, this is used within get_private_key in UserProfile
+# This enables us to do a lot of cool stuff, for example: test the restframework api directly
+DUMMY_USER_PASSWORD = 'qwe123'

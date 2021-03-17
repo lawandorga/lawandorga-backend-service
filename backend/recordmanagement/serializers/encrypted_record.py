@@ -68,6 +68,7 @@ class EncryptedRecordSerializer(serializers.ModelSerializer):
     tagged = RecordTagNameSerializer(many=True, read_only=True)
     working_on_record = UserProfileNameSerializer(many=True, read_only=True)
     messages = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    working_on_record_informative = UserProfileNameSerializer(many=True, read_only=True, )
 
     note = serializers.CharField()
     consultant_team = serializers.CharField()

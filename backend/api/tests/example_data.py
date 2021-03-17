@@ -217,6 +217,8 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
         postal_code="00000",
         rlc=rlc,
         birthday="1995-1-1",
+        is_superuser=True,
+        is_staff=True,
     )
     user.set_password(dummy_password)
     user.save()

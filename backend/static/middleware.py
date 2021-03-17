@@ -13,40 +13,21 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from rest_framework.request import Request
+from backend.api.models.user_session import UserSession
 from rest_framework.response import Response
-from django.utils import timezone
-from datetime import timedelta
-from prometheus_client import Gauge
+from rest_framework.request import Request
+from backend.api.models.rlc import Rlc
+from backend.static.metrics import Metrics
 from django.db.models import Count
 from django.db.models import Q
-
-from backend.api.models.rlc import Rlc
-from backend.api.models.user_session import UserSession
-from backend.static.encryption import get_bytes_from_string_or_return_bytes
-from backend.api.errors import CustomError
-from backend.static.error_codes import ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED
-from backend.static.encryption import get_string_from_bytes_or_return_string
-from backend.static.metrics import Metrics
+from django.utils import timezone
+from datetime import timedelta
 
 
 def get_private_key_from_request(request):
-    private_key = request.META.get("HTTP_PRIVATE_KEY")
-    if not private_key:
-        raise CustomError(ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED)
-    private_key = get_string_from_bytes_or_return_string(private_key)
-    if "\\n" in private_key:
-        private_key = private_key.replace("\\n", "\n")
-    if "<linebreak>" in private_key:
-        private_key = private_key.replace("<linebreak>", "\n")
-
-    if isinstance(private_key, str):
-        private_key = get_bytes_from_string_or_return_bytes(private_key)
-    return private_key
+    return request.user.get_private_key(request=request)
 
 
-# TODO: What is this class doing exactly?
 class LoggingMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response

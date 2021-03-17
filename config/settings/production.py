@@ -22,6 +22,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
     'EXCEPTION_HANDLER': 'backend.api.exception_handler.custom_exception_handler',
     'PAGE_SIZE': 100,
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
 }
 # This is used by the ExpiringTokenAuthentication which extends from rest's token authentication
 TIMEOUT_TIMEDELTA = timedelta(minutes=10)

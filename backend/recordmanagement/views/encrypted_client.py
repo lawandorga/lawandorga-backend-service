@@ -13,37 +13,11 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from rest_framework import viewsets
-from rest_framework.views import APIView
-from rest_framework.response import Response
-
-from backend.recordmanagement import serializers
 from backend.recordmanagement.models.encrypted_client import EncryptedClient
-from backend.recordmanagement.models.origin_country import OriginCountry
-from backend.static.middleware import get_private_key_from_request
+from backend.recordmanagement import serializers
+from rest_framework import viewsets
 
 
 class EncryptedClientsViewSet(viewsets.ModelViewSet):
     queryset = EncryptedClient.objects.all()
     serializer_class = serializers.EncryptedClientSerializer
-
-    def perform_create(self, serializer):
-        country = OriginCountry.objects.get(id=self.request.data["origin_country"])
-        serializer.save(origin_country=country)
-
-
-class GetEncryptedClientsFromBirthday(APIView):
-    def post(self, request):
-        # TODO validate birthday
-        users_private_key = get_private_key_from_request(request)
-        rlcs_private_key = request.user.get_rlcs_private_key(users_private_key)
-        birthday = request.data["birthday"]
-        clients = EncryptedClient.objects.filter(
-            birthday=request.data["birthday"], from_rlc=request.user.rlc
-        )
-        return Response(
-            serializers.EncryptedClientSerializer(
-                clients, many=True
-            ).get_decrypted_data(rlcs_private_key)
-        )

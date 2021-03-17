@@ -20,7 +20,7 @@ from backend.recordmanagement.models.record_tag import RecordTag
 
 
 class RecordTagSerializer(serializers.ModelSerializer):
-    tagged = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    e_tagged = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = RecordTag

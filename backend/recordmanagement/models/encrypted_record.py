@@ -171,7 +171,7 @@ class EncryptedRecord(
             )
         super().encrypt(key)
 
-    def decrypt(self, user: UserProfile = None, private_key_user: str = None) -> None:
+    def decrypt(self, user: UserProfile = None, private_key_user: bytes = None) -> None:
         if user and private_key_user:
             encryption = self.encryptions.get(user=user)
             encryption.decrypt(private_key_user)
@@ -288,9 +288,7 @@ class EncryptedRecord(
         :return: boolean, true if the user has permission
         """
 
-        from backend.recordmanagement.models.encrypted_record_permission import (
-            EncryptedRecordPermission,
-        )
+        from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
 
         return (
             self.working_on_record.filter(id=user.id).count() == 1

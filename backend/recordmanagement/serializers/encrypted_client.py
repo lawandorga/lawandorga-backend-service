@@ -13,53 +13,16 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from rest_framework import serializers
-
 from backend.recordmanagement.models.encrypted_client import EncryptedClient
-from backend.static.serializer_fields import EncryptedField
-from backend.static.encryption import AESEncryption
-
-
-class EncryptedClientListSerializer(serializers.ListSerializer):
-    def get_decrypted_data(self, rlcs_private_key):
-        data = []
-        for client in self.instance.all():
-            client_password = client.get_password(rlcs_private_key)
-            client_data = EncryptedClientSerializer(client).get_decrypted_data(
-                client_password
-            )
-            data.append(client_data)
-        return data
+from rest_framework import serializers
 
 
 class EncryptedClientSerializer(serializers.ModelSerializer):
     e_records = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    name = EncryptedField()
-    note = EncryptedField()
-    phone_number = EncryptedField()
+    name = serializers.CharField()
+    note = serializers.CharField()
+    phone_number = serializers.CharField()
 
     class Meta:
-        list_serializer_class = EncryptedClientListSerializer
         model = EncryptedClient
         exclude = ["encrypted_client_key"]
-
-    def get_decrypted_data(self, client_key):
-        data = self.data
-        AESEncryption.decrypt_field(data, data, "name", client_key)
-        AESEncryption.decrypt_field(data, data, "note", client_key)
-        AESEncryption.decrypt_field(data, data, "phone_number", client_key)
-        return data
-
-
-class EncryptedClientNameSerializer(serializers.ModelSerializer):
-    name = EncryptedField()
-
-    # TODO: maybe use in all clients list view?
-    class Meta:
-        model = EncryptedClient
-        fields = (
-            "id",
-            "name",
-            "origin_country",
-        )

@@ -32,7 +32,7 @@ class UserEncryptionKeys(
     private_key_encrypted = models.BooleanField(default=False)
     public_key = models.BinaryField()
 
-    def decrypt_private_key(self, key_to_encrypt: str) -> bytes:
+    def decrypt_private_key(self, key_to_encrypt: str) -> str:
         """
         decrypt the saved encrypted private key of the user with the given key, this key is the users 'normal' password
 

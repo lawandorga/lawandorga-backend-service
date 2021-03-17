@@ -13,14 +13,11 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-
-from rest_framework import viewsets
-
-from backend.recordmanagement import models, serializers
 from backend.recordmanagement.models.record_tag import RecordTag
+from backend.recordmanagement.serializers import RecordTagSerializer
+from rest_framework import viewsets
 
 
 class RecordTagViewSet(viewsets.ModelViewSet):
     queryset = RecordTag.objects.all()
-    serializer_class = serializers.RecordTagSerializer
+    serializer_class = RecordTagSerializer

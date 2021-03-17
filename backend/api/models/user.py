@@ -13,7 +13,7 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
+from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -21,6 +21,7 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
+from rest_framework.request import Request
 
 from backend.api.errors import CustomError
 from backend.api.models.has_permission import HasPermission
@@ -29,7 +30,7 @@ from backend.static.encryption import RSAEncryption
 from backend.static.error_codes import (
     ERROR__API__PERMISSION__NOT_FOUND,
     ERROR__API__RLC__NO_PUBLIC_KEY_FOUND,
-    ERROR__API__MISSING_KEY_WAIT,
+    ERROR__API__MISSING_KEY_WAIT, ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED,
 )
 from backend.static.regex_validators import phone_regex
 from backend.static.env_getter import get_website_base_url
@@ -93,8 +94,8 @@ class UserProfileManager(BaseUserManager):
                 permission_for_group=for_group,
                 permission_for_rlc=for_rlc,
             )
-            .values("user_has_permission")
-            .distinct()
+                .values("user_has_permission")
+                .distinct()
         )
 
         user_ids = [has_permission["user_has_permission"] for has_permission in users]
@@ -346,11 +347,11 @@ class UserProfile(
         return (
             self.__has_as_user_permission(permission, for_user, for_group, for_rlc)
             or self.__has_as_group_member_permission(
-                permission, for_user, for_group, for_rlc
-            )
+            permission, for_user, for_group, for_rlc
+        )
             or self.__has_as_rlc_member_permission(
-                permission, for_user, for_group, for_rlc
-            )
+            permission, for_user, for_group, for_rlc
+        )
             or self.is_superuser
         )
 
@@ -363,21 +364,27 @@ class UserProfile(
             self.generate_new_user_encryption_keys()
         return self.encryption_keys.public_key
 
-    def get_private_key(self, password_user) -> bytes:
-        """
-        gets the private key of the user
-        this key is saved encrypted in the database
-        therefore it has to be decrypted with the given decryption_key (users password)
-        :param password_user: decryption_key (users password)
-        :return: user's private key (PEM)
-        """
-        from backend.api.models.user_encryption_keys import UserEncryptionKeys
-
+    def get_private_key(self, password_user: str = None, request: Request = None) -> str:
         if not hasattr(self, "encryption_keys"):
             self.generate_new_user_encryption_keys()
 
-        keys = UserEncryptionKeys.objects.get(user=self)
-        return keys.decrypt_private_key(password_user)
+        if password_user and not request:
+            private_key = self.encryption_keys.decrypt_private_key(password_user)
+
+        elif request and not password_user:
+            private_key = request.META.get("HTTP_PRIVATE_KEY")
+            if not private_key:
+                # enable direct testing of the rest framework
+                if settings.DEBUG and self.email == 'dummy@rlcm.de' and settings.DUMMY_USER_PASSWORD:
+                    return self.encryption_keys.decrypt_private_key(settings.DUMMY_USER_PASSWORD)
+                else:
+                    raise CustomError(ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED)
+            private_key = private_key.replace("\\n", "\n").replace("<linebreak>", "\n")
+
+        else:
+            raise ValueError('You need to pass (password_user) or (request).')
+
+        return private_key
 
     def get_rlcs_public_key(self):
         return self.rlc.get_public_key()

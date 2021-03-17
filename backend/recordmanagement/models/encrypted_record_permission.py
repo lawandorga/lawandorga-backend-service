@@ -57,6 +57,4 @@ class EncryptedRecordPermission(
     )
 
     def __str__(self):
-        return (
-            "e_record_permission: " + str(self.id) + "; from: " + str(self.request_from)
-        )
+        return "e_record_permission: {}; from: {};".format(self.id, self.request_from)

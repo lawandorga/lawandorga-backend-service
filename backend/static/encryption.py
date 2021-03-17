@@ -280,3 +280,7 @@ class EncryptedModelMixin(object):
         for field in self.encrypted_fields:
             encrypted_field = self.encryption_class.encrypt(getattr(self, field), key)
             setattr(self, field, encrypted_field)
+
+    def reset_encrypted_fields(self):
+        for field in self.encrypted_fields:
+            setattr(self, field, None)

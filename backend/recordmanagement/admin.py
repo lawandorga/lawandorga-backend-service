@@ -13,8 +13,7 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-
+from backend.recordmanagement.models import EncryptedRecord
 from django.contrib import admin
 
-# Register your models here.
+admin.site.register(EncryptedRecord)
