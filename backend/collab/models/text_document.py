@@ -22,7 +22,6 @@ from django_prometheus.models import ExportModelOperationsMixin
 from backend.api.models import Rlc, UserProfile
 from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__COLLAB__TYPE_NOT_EXISTING
-from backend.static.encryption import AESEncryption
 
 
 class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):

@@ -13,46 +13,42 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from typing import Optional, Sequence, Union
 
 from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
 
-from backend.collab.models import (
-    CollabPermission,
-    PermissionForCollabDocument,
-    TextDocument,
-)
-from backend.api.models import Rlc, UserProfile
+from backend.collab.models import TextDocument
+from backend.api.models import Rlc
 
 
 class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument):
-    parent = models.ForeignKey(
-        "CollabDocument",
-        related_name="child_pages",
-        on_delete=models.CASCADE,
-        null=True,
-        default=None,
-    )
+    path = models.CharField(max_length=4096, null=False, default="/", blank=False)
 
-    def user_can_view(self, user: UserProfile) -> bool:
-        user_groups = user.group_members.all()
-        permissions = CollabPermission.objects.all()
+    def get_full_path(self) -> str:
+        return "{}/{}".format(self.path, self.name)
 
-        return self.user_can_view_recursive(user, user_groups, permissions)
-
-    def user_can_view_recursive(self, user, groups, permissions):
-        if PermissionForCollabDocument.objects.exists(
-            document=self, group_has_permission__in=groups, permission__in=permissions,
-        ):
-            return True
-        for child in self.child_pages:
-            if child.user_can_view(user):
-                return True
-        return False
+    def save(self, *args, **kwargs) -> None:
+        if "/" in self.name:
+            raise ValueError("CollabDocument name can't contain a /")
+        if not CollabDocument.objects.filter(name=self.name, path=self.path).exists():
+            return super().save(*args, **kwargs)
+        # it's a duplicate (name and path), append number at the end and save
+        count = 1
+        org_name = self.name
+        while True:
+            new_name = "{}({})".format(org_name, count)
+            if CollabDocument.objects.filter(name=new_name, path=self.path).exists():
+                count += 1
+                continue
+            else:
+                self.name = new_name
+                return super().save(*args, **kwargs)
 
     @staticmethod
     def create_or_duplicate(collab_document: "CollabDocument") -> "CollabDocument":
         """
+        TODO: delete, deprecated
         creates new collab document, either with given name
         or if name under parent doc is already exsiting with appendix (1), (2)...
         :param collab_document:
@@ -79,6 +75,7 @@ class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument
     @staticmethod
     def get_collab_document_from_path(path: str, rlc: Rlc) -> "CollabDocument":
         """
+        TODO: check if and where really needed, delete or refactor
         searches for collab document in virtual path
         a document can have child_pages / a parent page -> parent is above in folder
         pages in paths are separated through "//"

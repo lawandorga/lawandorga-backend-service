@@ -13,7 +13,7 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
+from django.core.exceptions import ValidationError
 from django.test import TransactionTestCase
 from rest_framework.response import Response
 from rest_framework.test import APIClient
@@ -32,52 +32,57 @@ from backend.static import error_codes
 from backend.static.permissions import PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC
 
 
-class CollabDocumentConnectionTest(TransactionTestCase):
-    # TODO: double connection -> one room, no valid private key?, no valid collab doc id, wrong rlc,
+class CollabDocumentModelTest(TransactionTestCase):
     def setUp(self) -> None:
-        self.urls_edit_collab = "/api/collab/edit_collab_document/"
-        self.urls_list_collab = "/api/collab/collab_documents/"
-
         self.base_fixtures = CreateFixtures.create_base_fixtures()
-        self.base_client: APIClient = self.base_fixtures["users"][0]["client"]
 
-    def test_connect_one_user(self):
-        document = CollabDocument(
+    def test_create(self):
+        document = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
-            parent=None,
             name="test doc 1",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        document.save()
-        self.assertEqual(0, EditingRoom.objects.count())
+        self.assertEqual(1, CollabDocument.objects.count())
+        self.assertEqual(1, TextDocument.objects.count())
+        self.assertEqual("/", document.path)
 
-        response: Response = self.base_client.get(
-            self.urls_edit_collab + str(document.id) + "/",
-        )
+    def test_name_with_slash_value_error(self):
+        with self.assertRaises(ValueError):
+            CollabDocument.objects.create(
+                rlc=self.base_fixtures["rlc"],
+                name="test/doc 2",
+                creator=self.base_fixtures["users"][0]["user"],
+            )
+        self.assertEqual(0, CollabDocument.objects.count())
+        self.assertEqual(0, TextDocument.objects.count())
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(1, EditingRoom.objects.count())
+    def test_create_duplicates(self):
+        create_data = {
+            "rlc": self.base_fixtures["rlc"],
+            "name": "test doc 1",
+            "creator": self.base_fixtures["users"][0]["user"],
+        }
 
-        room: EditingRoom = EditingRoom.objects.first()
-        self.assertEqual(room.document.get_collab_document(), document)
+        CollabDocument.objects.create(**create_data)
+        self.assertEqual(1, CollabDocument.objects.count())
 
-        self.assertEqual(response.data["room_id"], room.room_id)
-        self.assertEqual(response.data["password"], room.password)
+        document: CollabDocument = CollabDocument.objects.create(**create_data)
+        self.assertEqual(2, CollabDocument.objects.count())
+        self.assertEqual(2, TextDocument.objects.count())
+        self.assertEqual(document.name, "{}(1)".format(create_data["name"]))
 
-    def test_unauthenticated(self):
-        document = CollabDocument(
+        document: CollabDocument = CollabDocument.objects.create(**create_data)
+        self.assertEqual(3, CollabDocument.objects.count())
+        self.assertEqual(3, TextDocument.objects.count())
+        self.assertEqual(document.name, "{}(2)".format(create_data["name"]))
+
+    def test_get_path(self):
+        document: CollabDocument = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
-            parent=None,
             name="test doc 1",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        document.save()
-
-        response: Response = APIClient().get(
-            self.urls_edit_collab + str(document.id) + "/",
-        )
-
-        self.assertEqual(401, response.status_code)
+        self.assertEqual("/test doc 1", document.get_full_path())
 
 
 class CollabDocumentViewSetTest(TransactionTestCase):
@@ -139,11 +144,11 @@ class CollabDocumentViewSetTest(TransactionTestCase):
 
         response: Response = self.base_client.get(self.urls_collab_documents,)
         self.assertEqual(2, response.data.__len__())
-        self.assertEqual(doc_top_2.id, response.data[0]["pk"])
-        self.assertEqual(doc_top.id, response.data[1]["pk"])
-        self.assertEqual(doc_middle.id, response.data[1]["children"][0]["pk"])
+        self.assertEqual(doc_top_2.id, response.data[0]["id"])
+        self.assertEqual(doc_top.id, response.data[1]["id"])
+        self.assertEqual(doc_middle.id, response.data[1]["child_pages"][0]["id"])
         self.assertEqual(
-            doc_bottom_first.id, response.data[1]["children"][0]["children"][0]["pk"]
+            doc_bottom.id, response.data[1]["child_pages"][0]["child_pages"][0]["id"],
         )
 
     def test_create_collab_document(self):
@@ -271,7 +276,7 @@ class CollabDocumentViewSetTest(TransactionTestCase):
 
         response: Response = self.base_client.get(self.urls_collab_documents,)
         self.assertEqual(2, response.data.__len__())
-        ids = [item["pk"] for item in response.data]
+        ids = [item["id"] for item in response.data]
         self.assertIn(document.id, ids)
         self.assertIn(document2.id, ids)
 
