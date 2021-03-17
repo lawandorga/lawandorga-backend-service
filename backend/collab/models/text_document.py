@@ -28,6 +28,7 @@ class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):
     rlc = models.ForeignKey(
         Rlc, related_name="text_documents", null=False, on_delete=models.CASCADE
     )
+    # TODO: remove name here and move it to recordDocument (collabDocument has path)
     name = models.CharField(max_length=255, null=False)
 
     created = models.DateTimeField(default=timezone.now)
