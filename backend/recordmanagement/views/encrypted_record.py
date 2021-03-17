@@ -313,8 +313,8 @@ class EncryptedRecordViewSet(APIView):
         users_private_key = get_private_key_from_request(request)
         record_key = e_record.get_decryption_key(user, users_private_key)
         rlcs_private_key = user.get_rlcs_private_key(users_private_key)
-
-        super().update()
+        # TODO: fix here
+        # super().update()
         client = e_record.client
         client_key = client.get_password(rlcs_private_key)
 
@@ -349,7 +349,7 @@ class EncryptedRecordViewSet(APIView):
 
     def delete(self, request, id):
         try:
-            record = Record.objects.get(pk=id)
+            record = EncryptedRecord.objects.get(pk=id)
         except:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
         user = request.user
