@@ -761,17 +761,11 @@ def create() -> None:
     # dummy
     rlc = create_rlc()
     dummy = create_dummy_users(rlc)[0]
-    # keys
-    dummy_private_key = dummy.get_private_key(dummy_password)
-    rlc_public_key = rlc.get_public_key()
-    rlc_private_key = rlc.get_private_key(dummy, dummy_private_key)
     # data
     clients = create_clients(rlc)
     users = create_users(rlc)
-    inactive_user = create_inactive_user(rlc)
-    groups = create_groups(rlc, dummy, users)
-    admin_group = create_admin_group(rlc, dummy)
-    records = create_records(clients, users, rlc)
-    informative_record = create_informative_record(
-        dummy, dummy_password, clients, users, rlc
-    )
+    create_inactive_user(rlc)
+    create_groups(rlc, dummy, users)
+    create_admin_group(rlc, dummy)
+    create_records(clients, users, rlc)
+    create_informative_record(dummy, dummy_password, clients, users, rlc)
