@@ -18,8 +18,6 @@ from backend.recordmanagement.models.origin_country import OriginCountry
 
 
 class OriginCountrySerializer(serializers.ModelSerializer):
-    clients = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-
     class Meta:
         model = OriginCountry
         fields = "__all__"

@@ -13,41 +13,30 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
+from backend.api.models import UserProfile
 from rest_framework import serializers
-
-from .. import models
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    """serializer for user profile objects"""
-
-    records_created = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    # TODO: how does this work? this field doesn't exist on user
-    working_on_record = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     group_members = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    record_messages_sent = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    # rlc_members = RlcOnlyNameSerializer(
-    #     many=True, read_only=True)
-
     user_has_permission = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     permission_for_user = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
-        model = models.UserProfile
+        model = UserProfile
         fields = "__all__"
         extra_kwargs = {"password": {"write_only": True}}
 
 
 class UserProfileForeignSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.UserProfile
+        model = UserProfile
         fields = ("id", "name", "email", "name", "phone_number")
 
 
 class UserProfileNameSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.UserProfile
+        model = UserProfile
         fields = (
             "id",
             "name",
@@ -59,7 +48,7 @@ class UserProfileCreatorSerializer(serializers.ModelSerializer):
     """serializer for user profile objects"""
 
     class Meta:
-        model = models.UserProfile
+        model = UserProfile
         fields = (
             "id",
             "password",
@@ -72,9 +61,9 @@ class UserProfileCreatorSerializer(serializers.ModelSerializer):
         )
         extra_kwargs = {"password": {"write_only": True}}
 
-    def create(self, validated_data) -> models.UserProfile:
+    def create(self, validated_data) -> UserProfile:
         """create and return a new user"""
-        user = models.UserProfile(
+        user = UserProfile(
             email=validated_data["email"],
             name=validated_data["name"],
             is_active=True,

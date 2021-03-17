@@ -13,8 +13,17 @@ ALLOWED_HOSTS = get_secret('ALLOWED_HOSTS')
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY
 SECRET_KEY = get_secret('SECRET_KEY')
 
-# Authentication Timeout
-# TODO: figure out what this is
+# Rest Framework
+# https://www.django-rest-framework.org/api-guide/settings/
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'backend.api.authentication.ExpiringTokenAuthentication'
+    ],
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
+    'EXCEPTION_HANDLER': 'backend.api.exception_handler.custom_exception_handler',
+    'PAGE_SIZE': 100,
+}
+# This is used by the ExpiringTokenAuthentication which extends from rest's token authentication
 TIMEOUT_TIMEDELTA = timedelta(minutes=10)
 
 # Database
@@ -55,3 +64,41 @@ CORS_ALLOWED_ORIGINS = [
     # test
     "https://d33cushiywgecu.cloudfront.net",
 ]
+
+# Logging
+# https://docs.djangoproject.com/en/dev/topics/logging/
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {'simple': {'format': '%(levelname)s %(message)s'}, },
+    'handlers': {
+        'console': {
+            'level': 'ERROR',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'logstash': {
+            'level': 'ERROR',
+            'class': 'logstash.TCPLogstashHandler',
+            'host': 'logstash',
+            'port': 5959,
+            'version': 1,
+            'message_type': 'django',
+            'fqdn': False,
+            'tags': ['django.request', 'django', 'backend'],
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['logstash'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'backend': {
+            'handlers': ['console', 'logstash'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
