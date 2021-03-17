@@ -15,7 +15,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from backend.recordmanagement.models import (
     EncryptedRecord,
-    Record,
     RecordEncryption,
     MissingRecordKey,
 )

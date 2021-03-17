@@ -23,16 +23,6 @@ from django.conf import settings
 import json
 
 
-class SendEmailViewSet(APIView):
-    def post(self, request):
-        if "email" in request.data:
-            email = request.data["email"]
-        else:
-            raise CustomError(ERROR__API__EMAIL__NO_EMAIL_PROVIDED)
-        EmailSender.test_send(email)
-        return Response()
-
-
 class GetRlcsViewSet(APIView):
     authentication_classes = ()
     permission_classes = ()

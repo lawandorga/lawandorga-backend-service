@@ -19,7 +19,6 @@ from .permission import *
 from .has_permission import *
 from .rlc import *
 from .other import *
-from .storage import *
 from .forgot_password import *
 from .new_user_request import *
 from .user_activation_link import *
@@ -29,4 +28,3 @@ from .users_rlc_keys import *
 from .rlc_settings import *
 from .notification import *
 from .notification_group import *
-from .email import *

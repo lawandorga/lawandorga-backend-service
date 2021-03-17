@@ -18,27 +18,14 @@ from django.urls import path, include, re_path
 from .views import *
 
 router = DefaultRouter()
-# recheck all
-# TODO: remove records?
-router.register("records", RecordsListViewSet, basename="record")
 router.register("origin_countries", OriginCountriesViewSet)
 router.register("record_tags", RecordTagViewSet)
-router.register("clients", ClientsViewSet)
-router.register("record_documents", RecordDocumentViewSet)
+
 router.register("record_document_tags", RecordDocumentTagViewSet)
-router.register("record_permissions", RecordPermissionViewSet)
-router.register(
-    "record_deletion_requests",
-    EncryptedRecordDeletionRequestViewSet,
-    basename="record_deletion_requests",
-)
-# router.register('record_deletion_requests', RecordDeletionRequestViewSet) OLD
-# encryption
+
 router.register("record_encryptions", RecordEncryptionViewSet)
 router.register("e_records", EncryptedRecordsListViewSet, basename="e_records")
-router.register(
-    "e_clients", EncryptedClientsViewSet, basename="e_records"
-)  # TODO: add all encrypted fields here
+router.register("e_clients", EncryptedClientsViewSet, basename="e_records")
 router.register("pool_records", PoolRecordViewSet, basename="pool_records")
 router.register("pool_consultants", PoolConsultantViewSet)
 router.register("missing_record_keys", MissingRecordKeyViewSet)
@@ -57,13 +44,11 @@ urlpatterns = [
         "e_record/documents/<int:id>/", EncryptedRecordDocumentDownloadViewSet.as_view()
     ),
     path("statics/", StaticViewSet.as_view()),
-    path("e_clients_by_birthday/", GetEncryptedClientsFromBirthday.as_view()),
-    path("clients_by_birthday", GetClientsFromBirthday.as_view()),  # deprecated
+    path(
+        "e_clients_by_birthday/", GetEncryptedClientsFromBirthday.as_view()
+    ),  # deprecated
     path("e_record/<int:id>/", EncryptedRecordViewSet.as_view()),
     path("e_record/", EncryptedRecordViewSet.as_view()),
-    path(
-        "record/<int:id>/documents/", RecordDocumentByRecordViewSet.as_view()
-    ),  # deprecated
     path(
         "e_record/<int:id>/messages/", EncryptedRecordMessageByRecordViewSet.as_view()
     ),
@@ -77,18 +62,9 @@ urlpatterns = [
         EncryptedRecordPermissionProcessViewSet.as_view(),
     ),
     path(
-        "record_permission_requests/", RecordPermissionAdmitViewSet.as_view()
-    ),  # deprecated
-    path(
-        "documents_download/<int:id>/", RecordDocumentDownloadAllViewSet.as_view()
-    ),  # deprecated
-    path(
         "process_record_deletion_request/",
         EncryptedRecordDeletionProcessViewSet.as_view(),
     ),
-    re_path(
-        r"^upload/(?P<filename>[^/]+)/$", RecordDocumentUploadEncryptViewSet.as_view()
-    ),  # deprecated
     path("record_pool/", RecordPoolViewSet.as_view()),
     path(
         "process_record_document_deletion_request/",

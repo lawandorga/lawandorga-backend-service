@@ -57,10 +57,7 @@ urlpatterns = [
     path("", include(router.urls)),
     path("records/", include(record_urls)),
     path("files/", include(file_urls)),
-    path("send_email/", views.SendEmailViewSet.as_view()),
     path("get_rlcs/", views.GetRlcsViewSet.as_view()),
-    path("storage_up/", views.StorageUploadViewSet.as_view()),
-    path("storage_down/", views.StorageDownloadViewSet.as_view()),
     path("forgot_password/", views.ForgotPasswordUnauthenticatedViewSet.as_view()),
     path("reset_password/<int:id>/", views.ResetPasswordViewSet.as_view()),
     path("group_members/", views.GroupMembersViewSet.as_view()),
@@ -80,5 +77,4 @@ urlpatterns = [
     path("user_has_permissions/", views.UserHasPermissionsViewSet.as_view()),
     path("my_rlc_settings/", views.RlcSettingsMineViewSet.as_view()),
     path("unread_notifications/", views.UnreadNotificationsViewSet.as_view()),
-    path("email_ping/", views.EmailPingViewSet.as_view()),
 ]

@@ -30,4 +30,3 @@ class OriginCountriesViewSet(viewsets.ModelViewSet):
         IsAuthenticated,
         OriginCountryPermission,
     )
-    # TODO: search fields: state, to count (?)
