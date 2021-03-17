@@ -23,7 +23,7 @@ from backend.api.models import Rlc
 
 
 class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument):
-    path = models.CharField(max_length=4096, null=False, default="/", blank=False)
+    path = models.CharField(max_length=4096, null=False, default="", blank=False)
 
     def get_full_path(self) -> str:
         return "{}/{}".format(self.path, self.name)
@@ -31,6 +31,8 @@ class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument
     def save(self, *args, **kwargs) -> None:
         if "/" in self.name:
             raise ValueError("CollabDocument name can't contain a /")
+        # if CollabDocument.objects.filter()
+
         if not CollabDocument.objects.filter(name=self.name, path=self.path).exists():
             return super().save(*args, **kwargs)
         # it's a duplicate (name and path), append number at the end and save

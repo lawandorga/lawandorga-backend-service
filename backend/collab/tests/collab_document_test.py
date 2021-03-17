@@ -44,7 +44,7 @@ class CollabDocumentModelTest(TransactionTestCase):
         )
         self.assertEqual(1, CollabDocument.objects.count())
         self.assertEqual(1, TextDocument.objects.count())
-        self.assertEqual("/", document.path)
+        self.assertEqual("", document.path)
 
     def test_name_with_slash_value_error(self):
         with self.assertRaises(ValueError):
@@ -77,12 +77,31 @@ class CollabDocumentModelTest(TransactionTestCase):
         self.assertEqual(document.name, "{}(2)".format(create_data["name"]))
 
     def test_get_path(self):
-        document: CollabDocument = CollabDocument.objects.create(
+        document_top: CollabDocument = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
             name="test doc 1",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        self.assertEqual("/test doc 1", document.get_full_path())
+        self.assertEqual("/test doc 1", document_top.get_full_path())
+
+        document_middle: CollabDocument = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            name="test doc 2",
+            path=document_top.get_full_path(),
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        self.assertEqual("/test doc 1/test doc 2", document_middle.get_full_path())
+
+    def test_create_without_parent_value_error(self):
+        with self.assertRaises(ValueError):
+            CollabDocument.objects.create(
+                rlc=self.base_fixtures["rlc"],
+                name="test doc 2",
+                path="/first non existent level",
+                creator=self.base_fixtures["users"][0]["user"],
+            )
+        self.assertEqual(0, CollabDocument.objects.count())
+        self.assertEqual(0, TextDocument.objects.count())
 
 
 class CollabDocumentViewSetTest(TransactionTestCase):
