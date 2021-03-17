@@ -13,12 +13,7 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
+from backend.api.models import UserProfile
 from django.contrib import admin
 
-# Register your models here.
-# admin.site.register(models.UserProfile)
-# admin.site.register(models.Record)
-# admin.site.register(models.Client)
-# admin.site.register(models.OriginCountry)
-# admin.site.register(models.Tag)
+admin.site.register(UserProfile)
