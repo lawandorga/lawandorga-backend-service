@@ -19,8 +19,6 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from backend.api.errors import CustomError
-from backend.static.emails import EmailSender
-from backend.static.env_getter import get_website_base_url
 from backend.static.error_codes import *
 from backend.api.models import (
     UserProfile,
@@ -29,7 +27,6 @@ from backend.api.models import (
     UserEncryptionKeys,
     UsersRlcKeys,
 )
-from backend.static.encryption import RSAEncryption
 from backend.api.serializers import ForgotPasswordSerializer
 from backend.recordmanagement.models import RecordEncryption
 from backend.api.management.commands.commands import create_missing_key_entries

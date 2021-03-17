@@ -14,9 +14,8 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from datetime import date, datetime
 from backend.api.models import UserProfile, HasPermission, Permission, Group, Rlc
-from backend.recordmanagement.models import OriginCountry, Client, Record, RecordTag
+from backend.recordmanagement.models import OriginCountry, RecordTag
 
 
 class CreateFixtures:
@@ -34,67 +33,6 @@ class CreateFixtures:
         CreateFixtures.add_user(3, "batman@gmx.de", "Bruceee Wayne", "XXthepasswordXX")
         CreateFixtures.add_user(4, "soyummy@aol.to", "The Boss", "original")
         return list(UserProfile.objects.all())
-
-    @staticmethod
-    def create_sample_clients():
-        countries = CreateFixtures.create_sample_countries()
-
-        CreateFixtures.add_client(
-            1, "Tex Thompson", "Americommando", 287389352, "1910-3-24", countries[0].id
-        )
-        CreateFixtures.add_client(
-            2,
-            "Percy Pilbeam",
-            "Big E",
-            293829842,
-            "2000-12-30",
-            countries[1 % countries.__len__()].id,
-        )
-        CreateFixtures.add_client(
-            3,
-            "Boston Brand",
-            "Deadman",
-            183743430,
-            "1990-12-24",
-            countries[2 % countries.__len__()].id,
-        )
-        return list(Client.objects.all())
-
-    @staticmethod
-    def create_sample_records():
-        users = CreateFixtures.create_sample_users()
-        corresponding_client = list(Client.objects.all())[0]
-        CreateFixtures.add_record(
-            1,
-            date(2018, 4, 3),
-            datetime(2018, 4, 25, 10, 26, 48),
-            "ABC1283238,23",
-            "important note",
-            "op",
-            corresponding_client.id,
-            [users[0 % users.__len__()].id],
-        )
-        CreateFixtures.add_record(
-            2,
-            date(2018, 4, 3),
-            datetime(2018, 4, 25, 10, 26, 48),
-            "ACD2838,23",
-            "AA",
-            "wa",
-            corresponding_client.id,
-            [users[0 % users.__len__()].id],
-        )
-        CreateFixtures.add_record(
-            3,
-            date(2018, 4, 3),
-            datetime(2018, 4, 25, 10, 26, 48),
-            "XXX12838,23",
-            "BB",
-            "cl",
-            corresponding_client.id,
-            [users[1 % users.__len__()].id],
-        )
-        return list(Record.objects.all())
 
     @staticmethod
     def create_sample_groups():
@@ -187,70 +125,6 @@ class CreateFixtures:
                 CreateFixtures.add_group(group[0], group[1], group[2], group[3])
             )
         return created
-
-    @staticmethod
-    def add_record(id, first, last, token, note, state, client, working):
-        """
-        creates a record with the given information and saves it to the database
-        :param id: int, id of the record
-        :param first: date, first contact date
-        :param last: date, last contact date
-        :param token: string, record token
-        :param note: string, note of the record
-        :param state: string, state of the record
-        :param client: int, id of the client which the record is of
-        :param working: [int], list of ids of the users which are working on the record
-        :return: the record which was created
-        """
-        record = Record(
-            id=id,
-            first_contact_date=first,
-            last_contact_date=last,
-            record_token=token,
-            note=note,
-            state=state,
-            client_id=client,
-        )
-        record.save()
-        for user in working:
-            record.working_on_record.add(user)
-        return record
-
-    @staticmethod
-    def add_records(records):
-        created = []
-        for record in records:
-            r = CreateFixtures.add_record(
-                record[0],
-                record[1],
-                record[2],
-                record[3],
-                record[4],
-                record[5],
-                record[6],
-                record[7],
-            )
-            created.append(r)
-        return created
-
-    @staticmethod
-    def add_client(id, name, note, phone_number, birthday, origin):
-        client = Client(
-            id=id,
-            name=name,
-            note=note,
-            phone_number=phone_number,
-            birthday=birthday,
-            origin_country_id=origin,
-        )
-        client.save()
-
-    @staticmethod
-    def add_clients(clients):
-        for client in clients:
-            CreateFixtures.add_client(
-                client[0], client[1], client[2], client[3], client[4], client[5]
-            )
 
     @staticmethod
     def add_user(id, email, name, password):

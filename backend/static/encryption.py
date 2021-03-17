@@ -148,7 +148,7 @@ class AESEncryption:
         hashed_key_bytes = sha3_256(key).digest()
         file_index = file.rindex("/")
         file_path = file[:file_index]
-        file_to_write = file[file_index + 1:] + ".enc"
+        file_to_write = file[file_index + 1 :] + ".enc"
         file_size = os.path.getsize(file)
         iv = AESEncryption.generate_iv()
         encryptor = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
@@ -258,12 +258,17 @@ class EncryptedModelMixin(object):
     encrypted_fields = []
     encryption_class = RSAEncryption
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None) -> None:
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ) -> None:
         for field in self.encrypted_fields:
             data_in_field = getattr(self, field)
             if data_in_field and not isinstance(data_in_field, bytes):
                 raise ValueError(
-                    'The field {} of object {} is not encrypted. Do not save unencrypted data.'.format(field, self))
+                    "The field {} of object {} is not encrypted. Do not save unencrypted data.".format(
+                        field, self
+                    )
+                )
         super().save(force_insert, force_update, using, update_fields)
 
     def decrypt(self, key: str or bytes) -> None:

@@ -30,7 +30,9 @@ from backend.api.models.notification import Notification
 from backend.recordmanagement import models, serializers
 from backend.recordmanagement.models.encrypted_client import EncryptedClient
 from backend.recordmanagement.models.encrypted_record import EncryptedRecord
-from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
+from backend.recordmanagement.models.encrypted_record_permission import (
+    EncryptedRecordPermission,
+)
 from backend.recordmanagement.models.origin_country import OriginCountry
 from backend.recordmanagement.models.record_encryption import RecordEncryption
 from backend.recordmanagement.models.record_tag import RecordTag
@@ -52,9 +54,7 @@ class EncryptedRecordsListViewSet(viewsets.ModelViewSet):
         if self.request.user.is_superuser:
             queryset = EncryptedRecord.objects.all()
         else:
-            queryset = EncryptedRecord.objects.filter_by_rlc(
-                self.request.user.rlc
-            )
+            queryset = EncryptedRecord.objects.filter_by_rlc(self.request.user.rlc)
 
         request: Request = self.request
         user: UserProfile = request.user
@@ -179,9 +179,7 @@ class EncryptedRecordViewSet(APIView):
             e_client.save()
         else:
             client_key = AESEncryption.generate_secure_key()
-            e_client = EncryptedClient(
-                birthday=data["client_birthday"], from_rlc=rlc
-            )
+            e_client = EncryptedClient(birthday=data["client_birthday"], from_rlc=rlc)
             e_client.name = AESEncryption.encrypt(data["client_name"], client_key)
             e_client.phone_number = AESEncryption.encrypt(
                 data["client_phone_number"], client_key
@@ -261,9 +259,10 @@ class EncryptedRecordViewSet(APIView):
         if e_record.user_has_permission(user):
             users_private_key = get_private_key_from_request(request)
             record_key = e_record.get_decryption_key(user, users_private_key)
-            record_data = serializers.EncryptedRecordFullDetailSerializer(
-                e_record
-            ).get_decrypted_data(record_key)
+
+            e_record.decrypt(user, users_private_key)
+            record_data = serializers.EncryptedRecordSerializer(e_record).data
+
             rlcs_private_key = user.get_rlcs_private_key(users_private_key)
             client_password = e_record.client.get_password(rlcs_private_key)
             client_serializer = serializers.EncryptedClientSerializer(
@@ -276,7 +275,7 @@ class EncryptedRecordViewSet(APIView):
                 e_record.e_record_documents, many=True
             )
             messages = serializers.EncryptedRecordMessageSerializer(
-                e_record.e_record_messages, many=True
+                e_record.messages, many=True
             ).get_decrypted_data(record_key)
             return Response(
                 {
@@ -314,6 +313,8 @@ class EncryptedRecordViewSet(APIView):
         users_private_key = get_private_key_from_request(request)
         record_key = e_record.get_decryption_key(user, users_private_key)
         rlcs_private_key = user.get_rlcs_private_key(users_private_key)
+        # TODO: fix here
+        # super().update()
         client = e_record.client
         client_key = client.get_password(rlcs_private_key)
 
@@ -348,7 +349,7 @@ class EncryptedRecordViewSet(APIView):
 
     def delete(self, request, id):
         try:
-            record = Record.objects.get(pk=id)
+            record = EncryptedRecord.objects.get(pk=id)
         except:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
         user = request.user

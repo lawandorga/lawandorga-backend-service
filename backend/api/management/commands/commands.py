@@ -17,12 +17,13 @@
 from django.conf import settings
 from backend.api import models as api_models
 from backend.recordmanagement import models as record_models
-from backend.api.management.commands._migrators import Migrators, OneTimeGenerators
+from backend.api.management.commands._migrators import OneTimeGenerators
 from backend.static.permissions import get_record_encryption_keys_permissions_strings
 from backend.api.models import *
 from backend.recordmanagement.models import *
 from backend.api.management.commands.fixtures import Fixtures
 from backend.files.models import *
+from backend.api.tests.example_data import create
 
 
 def create_missing_key_entries():
@@ -130,24 +131,18 @@ def migrate_to_rlc_settings():
 
 
 def reset_db():
-    UserProfile.objects.exclude(is_superuser=True).delete()
-    # UserProfile.objects.all().delete()
-    Client.objects.all().delete()
+    # UserProfile.objects.exclude(is_superuser=True).delete()
+    UserProfile.objects.all().delete()
     OriginCountry.objects.all().delete()
     RecordTag.objects.all().delete()
-    Record.objects.all().delete()
     Group.objects.all().delete()
     HasPermission.objects.all().delete()
     Permission.objects.all().delete()
     Rlc.objects.all().delete()
-    RecordMessage.objects.all().delete()
-    RecordDocument.objects.all().delete()
     RecordDocumentTag.objects.all().delete()
-    RecordPermission.objects.all().delete()
     ForgotPasswordLinks.objects.all().delete()
     NewUserRequest.objects.all().delete()
     UserActivationLink.objects.all().delete()
-    RecordDeletionRequest.objects.all().delete()
     File.objects.all().delete()
     Folder.objects.all().delete()
     FolderPermission.objects.all().delete()
@@ -190,3 +185,7 @@ def delete_all_missing_rlc_key_entries():
 
 def delete_all_forgot_password_links():
     ForgotPasswordLinks.objects.all().delete()
+
+
+def create_dummy_data():
+    create()

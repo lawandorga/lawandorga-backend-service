@@ -16,7 +16,9 @@
 
 from rest_framework import serializers
 
-from backend.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
+from backend.recordmanagement.models.encrypted_record_document import (
+    EncryptedRecordDocument,
+)
 from backend.recordmanagement.serializers import RecordDocumentTagSerializer
 
 

@@ -8,20 +8,31 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0033_delete_language'),
+        ("api", "0033_delete_language"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('recordmanagement', '0021_auto_20210316_1513'),
+        ("recordmanagement", "0021_auto_20210316_1513"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='encryptedrecord',
-            name='creator',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='encrypted_records', to=settings.AUTH_USER_MODEL),
+            model_name="encryptedrecord",
+            name="creator",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="encrypted_records",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
-            model_name='encryptedrecord',
-            name='from_rlc',
-            field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='encrypted_records', to='api.Rlc'),
+            model_name="encryptedrecord",
+            name="from_rlc",
+            field=models.ForeignKey(
+                default=None,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="encrypted_records",
+                to="api.Rlc",
+            ),
         ),
     ]

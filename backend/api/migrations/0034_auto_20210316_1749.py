@@ -6,12 +6,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0033_delete_language'),
+        ("api", "0033_delete_language"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='usersrlckeys',
-            unique_together={('user', 'rlc')},
+            name="usersrlckeys", unique_together={("user", "rlc")},
         ),
     ]

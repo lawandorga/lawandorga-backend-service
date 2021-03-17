@@ -67,7 +67,9 @@ class EncryptedRecordQuerySet(models.QuerySet):
         return self.filter(from_rlc=rlc)
 
 
-class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedModelMixin, models.Model):
+class EncryptedRecord(
+    ExportModelOperationsMixin("encrypted_record"), EncryptedModelMixin, models.Model
+):
     creator = models.ForeignKey(
         UserProfile,
         related_name="encrypted_records",
@@ -131,16 +133,32 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedM
     additional_facts = models.BinaryField()
 
     encryption_class = AESEncryption
-    encrypted_fields = ["note", "consultant_team", "lawyer", "related_persons", "contact", "bamf_token",
-                        "foreign_token", "first_correspondence", "circumstances", "next_steps", "status_described",
-                        "additional_facts"]
+    encrypted_fields = [
+        "note",
+        "consultant_team",
+        "lawyer",
+        "related_persons",
+        "contact",
+        "bamf_token",
+        "foreign_token",
+        "first_correspondence",
+        "circumstances",
+        "next_steps",
+        "status_described",
+        "additional_facts",
+    ]
 
     objects = EncryptedRecordManager()
 
     def __str__(self):
         return "e_record: " + str(self.id) + ":" + self.record_token
 
-    def encrypt(self, user: UserProfile = None, private_key_user: bytes = None, aes_key: str = None) -> None:
+    def encrypt(
+        self,
+        user: UserProfile = None,
+        private_key_user: bytes = None,
+        aes_key: str = None,
+    ) -> None:
         if user and private_key_user:
             record_encryption = self.encryptions.get(user=user)
             record_encryption.decrypt(private_key_user)
@@ -148,7 +166,9 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedM
         elif aes_key:
             key = aes_key
         else:
-            raise ValueError('You have to set (user and private_key_user) or (aes_key).')
+            raise ValueError(
+                "You have to set (user and private_key_user) or (aes_key)."
+            )
         super().encrypt(key)
 
     def decrypt(self, user: UserProfile = None, private_key_user: str = None) -> None:
@@ -157,7 +177,7 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedM
             encryption.decrypt(private_key_user)
             key = encryption.encrypted_key
         else:
-            raise ValueError('You have to set (user and private_key_user).')
+            raise ValueError("You have to set (user and private_key_user).")
         super().decrypt(key)
 
     def patch(self, record_data, record_key: str) -> [str]:
@@ -268,7 +288,10 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedM
         :return: boolean, true if the user has permission
         """
 
-        from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
+        from backend.recordmanagement.models.encrypted_record_permission import (
+            EncryptedRecordPermission,
+        )
+
         return (
             self.working_on_record.filter(id=user.id).count() == 1
             or EncryptedRecordPermission.objects.filter(
@@ -285,7 +308,10 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedM
         emails = []
         for user in list(self.working_on_record.all()):
             emails.append(user.email)
-        from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
+        from backend.recordmanagement.models.encrypted_record_permission import (
+            EncryptedRecordPermission,
+        )
+
         for permission_request in list(
             EncryptedRecordPermission.objects.filter(record=self, state="gr")
         ):
@@ -297,7 +323,10 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedM
         users = []
         for user in list(self.working_on_record.all()):
             users.append(user)
-        from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
+        from backend.recordmanagement.models.encrypted_record_permission import (
+            EncryptedRecordPermission,
+        )
+
         for permission_request in EncryptedRecordPermission.objects.filter(
             record=self, state="gr"
         ):
@@ -313,6 +342,7 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedM
             e_record_permissions_requested__state="gr",
         )
         from backend.api.models.permission import Permission
+
         users_with_overall_permission = Permission.objects.get(
             name=PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
         ).get_real_users_with_permission_for_rlc(self.from_rlc)
@@ -346,8 +376,8 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedM
 
     def get_decryption_key(self, user: UserProfile, users_private_key: bytes) -> str:
 
-
         from backend.recordmanagement.models.record_encryption import RecordEncryption
+
         record_encryptions: [RecordEncryption] = RecordEncryption.objects.filter(
             user=user, record=self
         )

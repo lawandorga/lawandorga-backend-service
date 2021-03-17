@@ -21,7 +21,9 @@ from rest_framework.views import APIView
 from backend.api.errors import CustomError
 from backend.recordmanagement import models, serializers
 from backend.recordmanagement.models.encrypted_record import EncryptedRecord
-from backend.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
+from backend.recordmanagement.models.encrypted_record_message import (
+    EncryptedRecordMessage,
+)
 from backend.static import error_codes
 from backend.static.emails import EmailSender
 from backend.static.middleware import get_private_key_from_request

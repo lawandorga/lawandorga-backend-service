@@ -16,7 +16,9 @@
 
 from rest_framework import serializers
 from backend.api.serializers.user import UserProfileNameSerializer
-from backend.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
+from backend.recordmanagement.models.encrypted_record_message import (
+    EncryptedRecordMessage,
+)
 from backend.static.serializer_fields import EncryptedField
 from backend.static.encryption import AESEncryption
 

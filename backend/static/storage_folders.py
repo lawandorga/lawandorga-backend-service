@@ -16,9 +16,6 @@
 
 import os
 
-from backend.recordmanagement.models.record import Record
-from backend.static.regex_validators import is_storage_folder_of_record
-
 
 # TODO refactor this into classes, 1 storage folders specific, 1 general filename manipulation
 
@@ -49,20 +46,3 @@ def combine_s3_folder_with_filename(s3_folder, filename):
 
 def get_filename_from_full_path(filepath: str) -> str:
     return filepath[filepath.rindex("/") + 1 :]
-
-
-def user_has_permission(file_dir, user) -> bool:
-    """
-    checks if the user has permission for the given file_dir
-    :param file_dir: string, file_dir for which it is to check if the user has permission
-    :param user: UserProfile, the user which is to check
-    :return: bool, true if the user has the permissions
-    """
-    if is_storage_folder_of_record(file_dir):
-        id = file_dir.strip("/").split("/")[-1]
-        try:
-            record = Record.objects.get(pk=id)
-        except Exception as e:
-            return False
-        return record.user_has_permission(user)
-    return False

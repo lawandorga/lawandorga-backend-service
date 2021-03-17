@@ -20,7 +20,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from backend.recordmanagement import serializers
 from backend.recordmanagement.models.origin_country import OriginCountry
-from backend.api.permissions import OriginCountry as OriginCountryPermission
+from backend.api.permissions import OriginCountryPermission
 
 
 class OriginCountriesViewSet(viewsets.ModelViewSet):
@@ -30,4 +30,3 @@ class OriginCountriesViewSet(viewsets.ModelViewSet):
         IsAuthenticated,
         OriginCountryPermission,
     )
-    # TODO: search fields: state, to count (?)

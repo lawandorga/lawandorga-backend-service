@@ -15,6 +15,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 
-from .clients_test import *
 from .origin_countries_test import *
-from .records_test import *
+
+# TODO: add other files here?

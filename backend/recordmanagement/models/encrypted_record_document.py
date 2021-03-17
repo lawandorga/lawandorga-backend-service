@@ -47,8 +47,9 @@ class EncryptedRecordDocument(
     )
 
     def __str__(self):
-        return "encrypted_record_document: {} - {}; creator: {}; record: {};"\
-            .format(self.pk, self.name, self.creator.pk, self.record.pk)
+        return "encrypted_record_document: {} - {}; creator: {}; record: {};".format(
+            self.pk, self.name, self.creator.pk, self.record.pk
+        )
 
     def get_file_key(self):
         return (

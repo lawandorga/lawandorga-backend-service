@@ -359,7 +359,7 @@ class UserProfile(
         gets the public key of the user from the database
         :return: public key of user (PEM)
         """
-        if not hasattr(self, 'encryption_keys'):
+        if not hasattr(self, "encryption_keys"):
             self.generate_new_user_encryption_keys()
         return self.encryption_keys.public_key
 
@@ -373,7 +373,7 @@ class UserProfile(
         """
         from backend.api.models.user_encryption_keys import UserEncryptionKeys
 
-        if not hasattr(self, 'encryption_keys'):
+        if not hasattr(self, "encryption_keys"):
             self.generate_new_user_encryption_keys()
 
         keys = UserEncryptionKeys.objects.get(user=self)
@@ -422,6 +422,7 @@ class UserProfile(
     def generate_new_user_encryption_keys(self):
 
         from backend.api.models.user_encryption_keys import UserEncryptionKeys
+
         UserEncryptionKeys.objects.filter(user=self).delete()
         private, public = RSAEncryption.generate_keys()
         user_keys = UserEncryptionKeys(
@@ -433,6 +434,7 @@ class UserProfile(
 
         # delete (maybe) old existing rlc keys
         from backend.api.models.users_rlc_keys import UsersRlcKeys
+
         UsersRlcKeys.objects.filter(user=self, rlc=self.rlc).delete()
 
         own_public_key = self.get_public_key()

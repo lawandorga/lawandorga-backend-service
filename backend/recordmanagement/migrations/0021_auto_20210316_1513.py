@@ -8,12 +8,11 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('recordmanagement', '0020_encryptedrecorddocumentdeletionrequest_record'),
+        ("recordmanagement", "0020_encryptedrecorddocumentdeletionrequest_record"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='recordencryption',
-            unique_together={('user', 'record')},
+            name="recordencryption", unique_together={("user", "record")},
         ),
     ]
