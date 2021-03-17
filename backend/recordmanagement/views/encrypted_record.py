@@ -259,9 +259,10 @@ class EncryptedRecordViewSet(APIView):
         if e_record.user_has_permission(user):
             users_private_key = get_private_key_from_request(request)
             record_key = e_record.get_decryption_key(user, users_private_key)
-            record_data = serializers.EncryptedRecordFullDetailSerializer(
-                e_record
-            ).get_decrypted_data(record_key)
+
+            e_record.decrypt(user, users_private_key)
+            record_data = serializers.EncryptedRecordSerializer(e_record).data
+
             rlcs_private_key = user.get_rlcs_private_key(users_private_key)
             client_password = e_record.client.get_password(rlcs_private_key)
             client_serializer = serializers.EncryptedClientSerializer(
@@ -274,7 +275,7 @@ class EncryptedRecordViewSet(APIView):
                 e_record.e_record_documents, many=True
             )
             messages = serializers.EncryptedRecordMessageSerializer(
-                e_record.e_record_messages, many=True
+                e_record.messages, many=True
             ).get_decrypted_data(record_key)
             return Response(
                 {
@@ -312,6 +313,8 @@ class EncryptedRecordViewSet(APIView):
         users_private_key = get_private_key_from_request(request)
         record_key = e_record.get_decryption_key(user, users_private_key)
         rlcs_private_key = user.get_rlcs_private_key(users_private_key)
+
+        super().update()
         client = e_record.client
         client_key = client.get_password(rlcs_private_key)
 

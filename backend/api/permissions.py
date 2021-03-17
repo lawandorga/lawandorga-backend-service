@@ -51,7 +51,7 @@ class EditPermissions(permissions.BasePermission):
         return request.user.is_superuser
 
 
-class OriginCountry(permissions.BasePermission):
+class OriginCountryPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.user.is_superuser:
             return True

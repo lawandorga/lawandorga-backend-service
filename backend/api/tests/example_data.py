@@ -32,7 +32,7 @@ from backend.recordmanagement.models.record_tag import RecordTag
 from backend.static import permissions
 from backend.static.encryption import AESEncryption
 from backend.static.permissions import get_all_permissions_strings
-from backend.api.models import UserProfile
+from backend.api.models import RlcSettings, UserProfile
 from random import randint, choice
 
 
@@ -47,11 +47,13 @@ def add_permissions_to_group(group: Group, permission_name):
 
 # create
 def create_rlc():
-    return Rlc.objects.create(
+    rlc = Rlc.objects.create(
         name="Dummy RLC",
         note="This is a dummy rlc, just for showing how the system works.",
         id=3033,
     )
+    RlcSettings.objects.create(rlc=rlc)
+    return rlc
 
 
 def create_fixtures():
@@ -604,12 +606,14 @@ def create_records(
             created_record.tagged.add(tag)
         # secure the record
         aes_key = AESEncryption.generate_secure_key()
-        for user in created_record.working_on_record.all():
+        users_with_permission = created_record.get_users_with_decryption_keys()
+        for user in users_with_permission:
             record_encryption = RecordEncryption(
                 user=user, record=created_record, encrypted_key=aes_key
             )
             record_encryption.encrypt(user.get_public_key())
             record_encryption.save()
+
         created_record.encrypt(aes_key=aes_key)
         created_record.save()
         created_records.append(created_record)
@@ -748,3 +752,26 @@ def create_informative_record(
 
     # return
     return record
+
+
+def create() -> None:
+    dummy_password = "qwe123"
+    # fixtures
+    create_fixtures()
+    # dummy
+    rlc = create_rlc()
+    dummy = create_dummy_users(rlc)[0]
+    # keys
+    dummy_private_key = dummy.get_private_key(dummy_password)
+    rlc_public_key = rlc.get_public_key()
+    rlc_private_key = rlc.get_private_key(dummy, dummy_private_key)
+    # data
+    clients = create_clients(rlc)
+    users = create_users(rlc)
+    inactive_user = create_inactive_user(rlc)
+    groups = create_groups(rlc, dummy, users)
+    admin_group = create_admin_group(rlc, dummy)
+    records = create_records(clients, users, rlc)
+    informative_record = create_informative_record(
+        dummy, dummy_password, clients, users, rlc
+    )

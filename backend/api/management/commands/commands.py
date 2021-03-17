@@ -23,6 +23,7 @@ from backend.api.models import *
 from backend.recordmanagement.models import *
 from backend.api.management.commands.fixtures import Fixtures
 from backend.files.models import *
+from backend.api.tests.example_data import create
 
 
 def create_missing_key_entries():
@@ -130,8 +131,8 @@ def migrate_to_rlc_settings():
 
 
 def reset_db():
-    UserProfile.objects.exclude(is_superuser=True).delete()
-    # UserProfile.objects.all().delete()
+    # UserProfile.objects.exclude(is_superuser=True).delete()
+    UserProfile.objects.all().delete()
     Client.objects.all().delete()
     OriginCountry.objects.all().delete()
     RecordTag.objects.all().delete()
@@ -190,3 +191,7 @@ def delete_all_missing_rlc_key_entries():
 
 def delete_all_forgot_password_links():
     ForgotPasswordLinks.objects.all().delete()
+
+
+def create_dummy_data():
+    create()

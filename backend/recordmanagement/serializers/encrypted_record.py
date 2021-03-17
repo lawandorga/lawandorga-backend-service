@@ -64,6 +64,29 @@ class EncryptedRecordFullDetailSerializer(serializers.ModelSerializer):
         return data
 
 
+class EncryptedRecordSerializer(serializers.ModelSerializer):
+    tagged = RecordTagNameSerializer(many=True, read_only=True)
+    working_on_record = UserProfileNameSerializer(many=True, read_only=True)
+    messages = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    note = serializers.CharField()
+    consultant_team = serializers.CharField()
+    lawyer = serializers.CharField()
+    related_persons = serializers.CharField()
+    contact = serializers.CharField()
+    bamf_token = serializers.CharField()
+    foreign_token = serializers.CharField()
+    first_correspondence = serializers.CharField()
+    circumstances = serializers.CharField()
+    next_steps = serializers.CharField()
+    status_described = serializers.CharField()
+    additional_facts = serializers.CharField()
+
+    class Meta:
+        model = EncryptedRecord
+        fields = "__all__"
+
+
 class EncryptedRecordNoDetailListSerializer(serializers.ModelSerializer):
     access = serializers.IntegerField()
     tagged = RecordTagNameSerializer(many=True, read_only=True)

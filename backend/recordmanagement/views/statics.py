@@ -18,11 +18,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from backend.api.serializers import UserProfileNameSerializer
-from ..models.origin_country import OriginCountry
-from ..models.record import Record
-from ..models.record_document_tag import RecordDocumentTag
-from ..models.record_tag import RecordTag
-from ..serializers import (
+from backend.recordmanagement.models.origin_country import OriginCountry
+from backend.recordmanagement.models.record import Record
+from backend.recordmanagement.models.record_document_tag import RecordDocumentTag
+from backend.recordmanagement.models.record_tag import RecordTag
+from backend.recordmanagement.serializers import (
     RecordTagNameSerializer,
     OriginCountryNameStateSerializer,
     RecordDocumentTagSerializer,
