@@ -32,9 +32,4 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Installed app django-cors-headers
 # https://pypi.org/project/django-cors-headers/
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:3001",
-    "http://localhost:3000",
-    "http://localhost:3001",
-]
+CORS_ALLOW_ALL_ORIGINS = True

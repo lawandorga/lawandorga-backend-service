@@ -32,7 +32,6 @@ router.register(
     EncryptedRecordDeletionRequestViewSet,
     basename="record_deletion_requests",
 )
-# router.register('record_deletion_requests', RecordDeletionRequestViewSet) OLD
 # encryption
 router.register("record_encryptions", RecordEncryptionViewSet)
 router.register("e_records", EncryptedRecordsListViewSet, basename="e_records")
