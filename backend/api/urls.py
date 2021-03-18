@@ -13,9 +13,7 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from backend.recordmanagement import urls as record_urls
 from rest_framework.routers import DefaultRouter
-from backend.files import urls as file_urls
 from django.urls import path, include
 from backend.api import views
 
@@ -52,12 +50,10 @@ router.register("notifications", views.NotificationViewSet, basename="notificati
 router.register(
     "notification_groups", views.NotificationGroupViewSet, basename="notifications"
 )
+router.register('rlcs', views.RlcViewset)
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("records/", include(record_urls)),
-    path("files/", include(file_urls)),
-    path("get_rlcs/", views.GetRlcsViewSet.as_view()),
     path("forgot_password/", views.ForgotPasswordUnauthenticatedViewSet.as_view()),
     path("reset_password/<int:id>/", views.ResetPasswordViewSet.as_view()),
     path("group_members/", views.GroupMembersViewSet.as_view()),

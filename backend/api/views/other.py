@@ -13,23 +13,27 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from backend.static.error_codes import ERROR__API__EMAIL__NO_EMAIL_PROVIDED
+from backend.api.serializers import RlcSerializer
 from rest_framework.response import Response
-from backend.static.emails import EmailSender
-from rest_framework.views import APIView
-from backend.api.errors import CustomError
-from ..models.rlc import Rlc
+from backend.api.models.rlc import Rlc
+from django.db.models import QuerySet
+from rest_framework import viewsets, mixins
 from django.conf import settings
 import json
 
 
-class GetRlcsViewSet(APIView):
+class RlcViewset(mixins.ListModelMixin, viewsets.GenericViewSet):
     authentication_classes = ()
     permission_classes = ()
+    serializer_class = RlcSerializer
+    queryset = Rlc.objects.none()
 
-    def get(self, request):
-        rlcs = Rlc.objects.all().order_by("name")
-        if settings.PROD:
-            rlcs = rlcs.exclude(name="Dummy RLC")
-        data = json.dumps([rlc.name for rlc in rlcs])
+    def get_queryset(self) -> QuerySet:
+        queryset = Rlc.objects.all().order_by('name')
+        if not settings.DEBUG:
+            queryset = queryset.exclude(name='Dummy RLC')
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        data = json.dumps([rlc.name for rlc in self.get_queryset()])
         return Response(data)
