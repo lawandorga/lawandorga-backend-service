@@ -36,7 +36,7 @@ from backend.static.middleware import get_private_key_from_request
 
 class EncryptedRecordPermissionRequestViewSet(APIView):
     def post(self, request, id) -> Response:
-        record: EncryptedRecord = EncryptedRecord.objects.get_record(request.user, id)
+        record: EncryptedRecord = EncryptedRecord.objects.get(id)
         if record.from_rlc != request.user.rlc:
             raise CustomError(error_codes.ERROR__API__WRONG_RLC)
 

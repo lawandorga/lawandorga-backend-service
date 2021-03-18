@@ -87,27 +87,6 @@ class EncryptedRecordTests(TransactionTestCase):
         self.assertTrue(record.user_has_permission(user1))
         self.assertTrue(record.user_has_permission(user2))
 
-    def test_get_users_with_permission(self):
-        user1 = api_models.UserProfile(email="abc1@web.de", name="abc1")
-        user1.save()
-        user2 = api_models.UserProfile(email="abc2@web.de", name="abc2")
-        user2.save()
-        user3 = api_models.UserProfile(email="abc3@web.de", name="abc3")
-        user3.save()
-        record = record_models.EncryptedRecord(record_token="asd123")
-        record.save()
-        record.working_on_record.add(user1)
-
-        permission = record_models.EncryptedRecordPermission(
-            request_from=user2, request_processed=user3, state="gr", record=record
-        )
-        permission.save()
-
-        users_with_permission = record.get_users_with_permission()
-        self.assertTrue(users_with_permission.__len__() == 2)
-        self.assertTrue(user1 in users_with_permission)
-        self.assertTrue(user2 in users_with_permission)
-
     def test_create_and_get_encrypted_record(self):
         number_of_records_before: int = record_models.EncryptedRecord.objects.count()
         number_of_record_encryptions_before: int = record_models.RecordEncryption.objects.count()

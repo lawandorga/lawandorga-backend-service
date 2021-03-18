@@ -36,7 +36,6 @@ urlpatterns = [
     path("e_record/<int:id>/documents/", EncryptedRecordDocumentByRecordViewSet.as_view()),
     path("e_record/documents/<int:id>/", EncryptedRecordDocumentDownloadViewSet.as_view()),
     path("statics/", StaticViewSet.as_view()),
-    path("e_record/<int:id>/messages/", EncryptedRecordMessageByRecordViewSet.as_view()),
     path("record/<int:id>/request_permission/", EncryptedRecordPermissionRequestViewSet.as_view()),
     path("documents/<int:id>/", RecordDocumentTagByDocumentViewSet.as_view()),
     path("e_record_permission_requests/", EncryptedRecordPermissionProcessViewSet.as_view()),

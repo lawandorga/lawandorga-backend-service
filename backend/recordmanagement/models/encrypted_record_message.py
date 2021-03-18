@@ -63,16 +63,10 @@ class EncryptedRecordMessage(
     EncryptedModelMixin,
     models.Model,
 ):
-    sender = models.ForeignKey(
-        UserProfile,
-        related_name="e_record_messages_sent",
-        on_delete=models.SET_NULL,
-        null=True,
-    )
-    record = models.ForeignKey(
-        "EncryptedRecord", related_name="messages", on_delete=models.CASCADE, null=True,
-    )
     created_on = models.DateTimeField(auto_now_add=True)
+    #
+    sender = models.ForeignKey(UserProfile, related_name="e_record_messages_sent", on_delete=models.SET_NULL, null=True)
+    record = models.ForeignKey("EncryptedRecord", related_name="messages", on_delete=models.CASCADE)
 
     # encrypted
     message = models.BinaryField(null=False)

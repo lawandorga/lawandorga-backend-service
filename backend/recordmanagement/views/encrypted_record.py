@@ -13,11 +13,13 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from rest_framework.decorators import action
+
 from backend.recordmanagement.serializers import EncryptedRecordSerializer, EncryptedClientSerializer, \
-    OriginCountrySerializer, EncryptedRecordDocumentSerializer, EncryptedRecordMessageSerializer, \
-    EncryptedRecordListSerializer
+    OriginCountrySerializer, EncryptedRecordDocumentSerializer, EncryptedRecordMessageDetailSerializer, \
+    EncryptedRecordListSerializer, EncryptedRecordMessageSerializer
 from backend.recordmanagement.models import EncryptedRecordPermission, RecordEncryption, EncryptedClient, \
-    EncryptedRecord
+    EncryptedRecord, EncryptedRecordMessage
 from backend.static.frontend_links import FrontendLinks
 from backend.static.serializers import map_values
 from backend.static.encryption import AESEncryption
@@ -218,7 +220,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
             messages_data = []
             for message in list(messages):
                 message.decrypt(user=request.user, private_key_user=private_key_user)
-                messages_data.append(EncryptedRecordMessageSerializer(message).data)
+                messages_data.append(EncryptedRecordMessageDetailSerializer(message).data)
 
             return Response({
                 "record": self.get_serializer(record).data,
@@ -300,3 +302,36 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
             record.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post'])
+    def add_message(self, request, pk=None):
+        # get the record
+        record = self.get_object()
+
+        # permission stuff
+        if not record.user_has_permission(request.user):
+            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+
+        # get the private key of the user for later
+        private_key_user = request.user.get_private_key(request=request)
+
+        # set the data
+        request.data['record'] = record.pk
+        request.data['sender'] = request.user.pk
+
+        # validate the data
+        message_serializer = EncryptedRecordMessageSerializer(data=request.data)
+        message_serializer.is_valid(raise_exception=True)
+        data = message_serializer.validated_data
+
+        # create the message
+        message = EncryptedRecordMessage(**data)
+        message.encrypt(user=request.user, private_key_user=private_key_user)
+        message.save()
+
+        # notify about the new message
+        Notification.objects.notify_record_message_added(request.user, message)
+
+        # return response
+        message.decrypt(user=request.user, private_key_user=private_key_user)
+        return Response(EncryptedRecordMessageDetailSerializer(message).data, status=status.HTTP_201_CREATED)

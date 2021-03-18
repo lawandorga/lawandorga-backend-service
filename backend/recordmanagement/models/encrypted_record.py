@@ -13,58 +13,13 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
-from datetime import datetime
-import pytz
-from django_prometheus.models import ExportModelOperationsMixin
-
-from backend.api.errors import CustomError
-from backend.api.models import UserProfile
-from backend.api.models.rlc import Rlc
-from backend.recordmanagement.models.record_tag import RecordTag
-from backend.static import error_codes
+from backend.recordmanagement.models import RecordTag
 from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
-from backend.static.date_utils import parse_date
 from backend.static.encryption import AESEncryption, EncryptedModelMixin
-from backend.static import permissions
-
-
-class EncryptedRecordManager(models.Manager):
-    def get_queryset(self):
-        return EncryptedRecordQuerySet(self.model, using=self._db)
-
-    def filter_by_rlc(self, rlc):
-        """
-        filters records by rlc
-        :param rlc:
-        :return:
-        """
-        return self.get_queryset().filter_by_rlc(rlc)
-
-    def get_record(self, user: UserProfile, id) -> "EncryptedRecord":
-        if not user.has_permission(
-            permissions.PERMISSION_VIEW_RECORDS_RLC, for_rlc=user.rlc
-        ):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-        try:
-            e_record: EncryptedRecord = EncryptedRecord.objects.get(pk=int(id))
-        except Exception as e:
-            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
-        if user.rlc != e_record.from_rlc:
-            raise CustomError(error_codes.ERROR__API__WRONG_RLC)
-
-        return e_record
-
-
-class EncryptedRecordQuerySet(models.QuerySet):
-    def filter_by_rlc(self, rlc):
-        """
-        filters by the instance of the given rlc
-        :param rlc: instance of rlc
-        :return: filtered values
-        """
-        return self.filter(from_rlc=rlc)
+from django_prometheus.models import ExportModelOperationsMixin
+from backend.api.models.rlc import Rlc
+from backend.api.models import UserProfile
+from django.db import models
 
 
 class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedModelMixin, models.Model):
@@ -121,8 +76,6 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedM
         "additional_facts",
     ]
 
-    objects = EncryptedRecordManager()
-
     def __str__(self):
         return "e_record: " + str(self.id) + ":" + self.record_token
 
@@ -144,11 +97,9 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedM
             )
         super().encrypt(key)
 
-    def decrypt(self, user: UserProfile = None, private_key_user: bytes = None) -> None:
+    def decrypt(self, user: UserProfile = None, private_key_user: str = None) -> None:
         if user and private_key_user:
-            encryption = self.encryptions.get(user=user)
-            encryption.decrypt(private_key_user)
-            key = encryption.encrypted_key
+            key = self.get_decryption_key(user, private_key_user)
         else:
             raise ValueError("You have to set (user and private_key_user).")
         super().decrypt(key)
@@ -202,25 +153,6 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedM
             users.append(permission_request.request_from)
         return users
 
-    def get_users_with_permission(self) -> [UserProfile]:
-        from backend.api.models import UserProfile
-
-        working_on_users = self.working_on_record.all()
-        users_with_record_permission = UserProfile.objects.filter(
-            e_record_permissions_requested__record=self,
-            e_record_permissions_requested__state="gr",
-        )
-        from backend.api.models.permission import Permission
-
-        users_with_overall_permission = Permission.objects.get(
-            name=PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
-        ).get_real_users_with_permission_for_rlc(self.from_rlc)
-        return (
-            working_on_users.union(users_with_record_permission)
-            .union(users_with_overall_permission)
-            .distinct()
-        )
-
     def get_users_with_decryption_keys(self) -> [UserProfile]:
         from backend.api.models import UserProfile
         from backend.static.permissions import (
@@ -243,26 +175,8 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedM
             .distinct()
         )
 
-    def get_decryption_key(self, user: UserProfile, users_private_key: bytes) -> str:
-
-        from backend.recordmanagement.models.record_encryption import RecordEncryption
-
-        record_encryptions: [RecordEncryption] = RecordEncryption.objects.filter(
-            user=user, record=self
-        )
-        result = None
-        for encryption in record_encryptions:
-            if result:
-                encryption.delete()
-                continue
-            try:
-                encryption.decrypt(users_private_key)
-                key = encryption.encrypted_key
-                result = key
-            except Exception as e:
-                encryption.delete()
-        if not result:
-            raise CustomError(
-                error_codes.ERROR__RECORD__KEY__RECORD_ENCRYPTION_NOT_FOUND
-            )
-        return result
+    def get_decryption_key(self, user: UserProfile, users_private_key: str) -> str:
+        encryption = self.encryptions.get(user=user)
+        encryption.decrypt(users_private_key)
+        key = encryption.encrypted_key
+        return key

@@ -13,8 +13,6 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-
 from .origin_country import *
 from .record_tag import *
 from .statics import *
@@ -23,7 +21,6 @@ from .record_encryption import *
 from .encrypted_record_permission import *
 from .encrypted_record import *
 from .encrypted_client import *
-from .encrypted_record_message import *
 from .encrypted_record_document import *
 from .encrypted_record_deletion_request import *
 from .pool_consultant import *
