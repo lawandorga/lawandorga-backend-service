@@ -23,29 +23,45 @@ from backend.api.models import Rlc
 
 
 class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument):
-    path = models.CharField(max_length=4096, null=False, default="", blank=False)
-
-    def get_full_path(self) -> str:
-        return "{}/{}".format(self.path, self.name)
+    path = models.CharField(max_length=4096, null=False, blank=False)
 
     def save(self, *args, **kwargs) -> None:
-        if "/" in self.name:
-            raise ValueError("CollabDocument name can't contain a /")
-        # if CollabDocument.objects.filter()
+        if "/" in self.path:
+            parent_doc = "/".join(self.path.split("/")[0:-1])
+            if not CollabDocument.objects.filter(path=parent_doc).exists():
+                raise ValueError("parent document doesn't exist")
 
-        if not CollabDocument.objects.filter(name=self.name, path=self.path).exists():
-            return super().save(*args, **kwargs)
-        # it's a duplicate (name and path), append number at the end and save
-        count = 1
-        org_name = self.name
-        while True:
-            new_name = "{}({})".format(org_name, count)
-            if CollabDocument.objects.filter(name=new_name, path=self.path).exists():
-                count += 1
-                continue
-            else:
-                self.name = new_name
-                return super().save(*args, **kwargs)
+        if CollabDocument.objects.filter(path=self.path).exists():
+            count = 1
+            org_path = self.path
+            while True:
+                new_path = "{}({})".format(org_path, count)
+                if CollabDocument.objects.filter(path=new_path).exists():
+                    count += 1
+                    continue
+                else:
+                    self.path = new_path
+                    return super().save(*args, **kwargs)
+
+        return super().save(*args, **kwargs)
+
+        # if "/" in self.name:
+        #     raise ValueError("CollabDocument name can't contain a /")
+        # # if CollabDocument.objects.filter()
+        #
+        # if not CollabDocument.objects.filter(name=self.name, path=self.path).exists():
+        #     return super().save(*args, **kwargs)
+        # # it's a duplicate (name and path), append number at the end and save
+        # count = 1
+        # org_name = self.name
+        # while True:
+        #     new_name = "{}({})".format(org_name, count)
+        #     if CollabDocument.objects.filter(name=new_name, path=self.path).exists():
+        #         count += 1
+        #         continue
+        #     else:
+        #         self.name = new_name
+        #         return super().save(*args, **kwargs)
 
     @staticmethod
     def create_or_duplicate(collab_document: "CollabDocument") -> "CollabDocument":

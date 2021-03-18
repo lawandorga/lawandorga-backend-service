@@ -28,8 +28,6 @@ class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):
     rlc = models.ForeignKey(
         Rlc, related_name="text_documents", null=False, on_delete=models.CASCADE
     )
-    # TODO: remove name here and move it to recordDocument (collabDocument has path)
-    name = models.CharField(max_length=255, null=False)
 
     created = models.DateTimeField(default=timezone.now)
     creator = models.ForeignKey(
@@ -63,6 +61,7 @@ class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):
             raise CustomError(ERROR__COLLAB__TYPE_NOT_EXISTING)
 
     def patch(self, document_data: {}, user: UserProfile) -> None:
+        # TODO: recheck this
         if "content" in document_data or "name" in document_data:
             if "name" in document_data:
                 self.name = document_data["name"]

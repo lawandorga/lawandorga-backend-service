@@ -13,21 +13,18 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from django.core.exceptions import ValidationError
 from django.test import TransactionTestCase
 from rest_framework.response import Response
 from rest_framework.test import APIClient
 
-from backend.api.models import HasPermission, Permission, UserProfile
+from backend.api.models import HasPermission, Permission
 from backend.collab.models import (
     CollabDocument,
     CollabPermission,
-    EditingRoom,
     PermissionForCollabDocument,
     TextDocument,
 )
 from backend.api.tests.fixtures_encryption import CreateFixtures
-from backend.static.encryption import AESEncryption
 from backend.static import error_codes
 from backend.static.permissions import PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC
 
@@ -39,18 +36,18 @@ class CollabDocumentModelTest(TransactionTestCase):
     def test_create(self):
         document = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
-            name="test doc 1",
+            path="test doc 1",
             creator=self.base_fixtures["users"][0]["user"],
         )
         self.assertEqual(1, CollabDocument.objects.count())
         self.assertEqual(1, TextDocument.objects.count())
-        self.assertEqual("", document.path)
+        self.assertEqual("test doc 1", document.path)
 
     def test_name_with_slash_value_error(self):
         with self.assertRaises(ValueError):
             CollabDocument.objects.create(
                 rlc=self.base_fixtures["rlc"],
-                name="test/doc 2",
+                path="test/doc 2",
                 creator=self.base_fixtures["users"][0]["user"],
             )
         self.assertEqual(0, CollabDocument.objects.count())
@@ -59,7 +56,7 @@ class CollabDocumentModelTest(TransactionTestCase):
     def test_create_duplicates(self):
         create_data = {
             "rlc": self.base_fixtures["rlc"],
-            "name": "test doc 1",
+            "path": "test doc 1",
             "creator": self.base_fixtures["users"][0]["user"],
         }
 
@@ -69,35 +66,18 @@ class CollabDocumentModelTest(TransactionTestCase):
         document: CollabDocument = CollabDocument.objects.create(**create_data)
         self.assertEqual(2, CollabDocument.objects.count())
         self.assertEqual(2, TextDocument.objects.count())
-        self.assertEqual(document.name, "{}(1)".format(create_data["name"]))
+        self.assertEqual(document.path, "{}(1)".format(create_data["path"]))
 
         document: CollabDocument = CollabDocument.objects.create(**create_data)
         self.assertEqual(3, CollabDocument.objects.count())
         self.assertEqual(3, TextDocument.objects.count())
-        self.assertEqual(document.name, "{}(2)".format(create_data["name"]))
-
-    def test_get_path(self):
-        document_top: CollabDocument = CollabDocument.objects.create(
-            rlc=self.base_fixtures["rlc"],
-            name="test doc 1",
-            creator=self.base_fixtures["users"][0]["user"],
-        )
-        self.assertEqual("/test doc 1", document_top.get_full_path())
-
-        document_middle: CollabDocument = CollabDocument.objects.create(
-            rlc=self.base_fixtures["rlc"],
-            name="test doc 2",
-            path=document_top.get_full_path(),
-            creator=self.base_fixtures["users"][0]["user"],
-        )
-        self.assertEqual("/test doc 1/test doc 2", document_middle.get_full_path())
+        self.assertEqual(document.path, "{}(2)".format(create_data["path"]))
 
     def test_create_without_parent_value_error(self):
         with self.assertRaises(ValueError):
             CollabDocument.objects.create(
                 rlc=self.base_fixtures["rlc"],
-                name="test doc 2",
-                path="/first non existent level",
+                path="first non existent level/test doc 2",
                 creator=self.base_fixtures["users"][0]["user"],
             )
         self.assertEqual(0, CollabDocument.objects.count())
@@ -127,36 +107,31 @@ class CollabDocumentViewSetTest(TransactionTestCase):
     def test_list_documents_simple(self):
         doc_top = CollabDocument(
             rlc=self.base_fixtures["rlc"],
-            parent=None,
-            name="top_doc",
+            path="top_doc",
             creator=self.base_fixtures["users"][0]["user"],
         )
         doc_top.save()
         doc_top_2 = CollabDocument(
             rlc=self.base_fixtures["rlc"],
-            parent=None,
-            name="atop_doc",
+            path="atop_doc",
             creator=self.base_fixtures["users"][0]["user"],
         )
         doc_top_2.save()
         doc_middle = CollabDocument(
             rlc=self.base_fixtures["rlc"],
-            parent=doc_top,
-            name="middle_doc",
+            name="top_doc/middle_doc",
             creator=self.base_fixtures["users"][0]["user"],
         )
         doc_middle.save()
         doc_bottom = CollabDocument(
             rlc=self.base_fixtures["rlc"],
-            parent=doc_middle,
-            name="bottom_doc",
+            path="top_doc/middle_doc/bottom_doc",
             creator=self.base_fixtures["users"][0]["user"],
         )
         doc_bottom.save()
         doc_bottom_first = CollabDocument(
             rlc=self.base_fixtures["rlc"],
-            parent=doc_middle,
-            name="a first",
+            path="top_doc/middle_doc/a first",
             creator=self.base_fixtures["users"][0]["user"],
         )
         doc_bottom_first.save()

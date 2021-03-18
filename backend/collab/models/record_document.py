@@ -30,3 +30,4 @@ class RecordDocument(
         on_delete=models.CASCADE,
         null=False,
     )
+    name = models.CharField(max_length=1024, null=False)
