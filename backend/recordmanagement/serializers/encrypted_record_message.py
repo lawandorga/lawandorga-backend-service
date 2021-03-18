@@ -13,7 +13,9 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from backend.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
+from backend.recordmanagement.models.encrypted_record_message import (
+    EncryptedRecordMessage,
+)
 from backend.api.serializers.user import UserProfileNameSerializer
 from rest_framework import serializers
 
@@ -23,8 +25,8 @@ class EncryptedRecordMessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EncryptedRecordMessage
-        fields = '__all__'
-        extra_kwargs = {'sender': {'required': True}}
+        fields = "__all__"
+        extra_kwargs = {"sender": {"required": True}}
 
 
 class EncryptedRecordMessageDetailSerializer(EncryptedRecordMessageSerializer):
@@ -32,4 +34,4 @@ class EncryptedRecordMessageDetailSerializer(EncryptedRecordMessageSerializer):
 
     class Meta:
         model = EncryptedRecordMessage
-        fields = '__all__'
+        fields = "__all__"

@@ -21,25 +21,48 @@ router = DefaultRouter()
 router.register("origin_countries", OriginCountriesViewSet)
 router.register("record_tags", RecordTagViewSet)
 router.register("record_document_tags", RecordDocumentTagViewSet)
-router.register("record_deletion_requests", EncryptedRecordDeletionRequestViewSet, basename="record_deletion_requests")
+router.register(
+    "record_deletion_requests",
+    EncryptedRecordDeletionRequestViewSet,
+    basename="record_deletion_requests",
+)
 router.register("record_encryptions", RecordEncryptionViewSet)
 router.register("records", EncryptedRecordViewSet, basename="e_records")
 router.register("e_clients", EncryptedClientsViewSet, basename="e_clients")
 router.register("pool_records", PoolRecordViewSet, basename="pool_records")
 router.register("pool_consultants", PoolConsultantViewSet)
 router.register("missing_record_keys", MissingRecordKeyViewSet)
-router.register("record_document_deletion_requests", EncryptedRecordDocumentDeletionRequestViewSet,
-                basename="record_document_deletion_requests")
+router.register(
+    "record_document_deletion_requests",
+    EncryptedRecordDocumentDeletionRequestViewSet,
+    basename="record_document_deletion_requests",
+)
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("e_record/<int:id>/documents/", EncryptedRecordDocumentByRecordViewSet.as_view()),
-    path("e_record/documents/<int:id>/", EncryptedRecordDocumentDownloadViewSet.as_view()),
+    path(
+        "e_record/<int:id>/documents/", EncryptedRecordDocumentByRecordViewSet.as_view()
+    ),
+    path(
+        "e_record/documents/<int:id>/", EncryptedRecordDocumentDownloadViewSet.as_view()
+    ),
     path("statics/", StaticViewSet.as_view()),
-    path("record/<int:id>/request_permission/", EncryptedRecordPermissionRequestViewSet.as_view()),
+    path(
+        "record/<int:id>/request_permission/",
+        EncryptedRecordPermissionRequestViewSet.as_view(),
+    ),
     path("documents/<int:id>/", RecordDocumentTagByDocumentViewSet.as_view()),
-    path("e_record_permission_requests/", EncryptedRecordPermissionProcessViewSet.as_view()),
-    path("process_record_deletion_request/", EncryptedRecordDeletionProcessViewSet.as_view()),
+    path(
+        "e_record_permission_requests/",
+        EncryptedRecordPermissionProcessViewSet.as_view(),
+    ),
+    path(
+        "process_record_deletion_request/",
+        EncryptedRecordDeletionProcessViewSet.as_view(),
+    ),
     path("record_pool/", RecordPoolViewSet.as_view()),
-    path("process_record_document_deletion_request/", EncryptedRecordDocumentDeletionProcessViewSet.as_view()),
+    path(
+        "process_record_document_deletion_request/",
+        EncryptedRecordDocumentDeletionProcessViewSet.as_view(),
+    ),
 ]

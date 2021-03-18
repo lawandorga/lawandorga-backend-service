@@ -27,7 +27,7 @@ class EncryptedRecordDocumentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EncryptedRecordDocument
-        fields = '__all__'
+        fields = "__all__"
 
 
 class EncryptedRecordDocumentNameSerializer(serializers.ModelSerializer):

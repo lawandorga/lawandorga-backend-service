@@ -22,20 +22,30 @@ from backend.api.models import UserProfile
 from django.db import models
 
 
-class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedModelMixin, models.Model):
+class EncryptedRecord(
+    ExportModelOperationsMixin("encrypted_record"), EncryptedModelMixin, models.Model
+):
     created_on = models.DateField(auto_now_add=True)
     last_edited = models.DateTimeField(auto_now_add=True)
 
-    creator = models.ForeignKey(UserProfile, related_name="encrypted_records", on_delete=models.CASCADE)
-    from_rlc = models.ForeignKey(Rlc, related_name="encrypted_records", on_delete=models.CASCADE)
-    client = models.ForeignKey("EncryptedClient", related_name="e_records", on_delete=models.CASCADE)
+    creator = models.ForeignKey(
+        UserProfile, related_name="encrypted_records", on_delete=models.CASCADE
+    )
+    from_rlc = models.ForeignKey(
+        Rlc, related_name="encrypted_records", on_delete=models.CASCADE
+    )
+    client = models.ForeignKey(
+        "EncryptedClient", related_name="e_records", on_delete=models.CASCADE
+    )
 
     first_contact_date = models.DateField(default=None, null=True)
     last_contact_date = models.DateTimeField(default=None, null=True)
     first_consultation = models.DateTimeField(default=None, null=True)
     record_token = models.CharField(max_length=50, unique=True)
     official_note = models.TextField(blank=True, null=True)
-    working_on_record = models.ManyToManyField(UserProfile, related_name="working_on_e_record")
+    working_on_record = models.ManyToManyField(
+        UserProfile, related_name="working_on_e_record"
+    )
     tagged = models.ManyToManyField(RecordTag, related_name="e_tagged")
 
     record_states_possible = (
@@ -110,7 +120,9 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedM
         :param user: user object, the user to check
         :return: boolean, true if the user has permission
         """
-        from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
+        from backend.recordmanagement.models.encrypted_record_permission import (
+            EncryptedRecordPermission,
+        )
 
         return (
             self.working_on_record.filter(id=user.id).count() == 1

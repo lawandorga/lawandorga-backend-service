@@ -7,13 +7,17 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0024_auto_20210318_1152'),
+        ("recordmanagement", "0024_auto_20210318_1152"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='encryptedrecordmessage',
-            name='record',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='messages', to='recordmanagement.EncryptedRecord'),
+            model_name="encryptedrecordmessage",
+            name="record",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="messages",
+                to="recordmanagement.EncryptedRecord",
+            ),
         ),
     ]

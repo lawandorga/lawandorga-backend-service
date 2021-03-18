@@ -21,7 +21,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Secret settings
-with open(os.path.join(BASE_DIR, 'tmp/secrets.json')) as f:
+with open(os.path.join(BASE_DIR, "tmp/secrets.json")) as f:
     secrets_json = json.loads(f.read())
 
 
@@ -29,48 +29,48 @@ def get_secret(setting, secrets=secrets_json):
     try:
         return secrets[setting]
     except KeyError:
-        error_msg = 'Set the {} environment variable.'.format(setting)
+        error_msg = "Set the {} environment variable.".format(setting)
         raise ImproperlyConfigured(error_msg)
 
 
 # Application definition
 # https://docs.djangoproject.com/en/dev/ref/applications/
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'rest_framework',
-    'backend.api',
-    'backend.recordmanagement',
-    'backend.files',
-    'rest_framework.authtoken',
-    'storages',
-    'corsheaders',
-    'django_prometheus',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "rest_framework",
+    "backend.api",
+    "backend.recordmanagement",
+    "backend.files",
+    "rest_framework.authtoken",
+    "storages",
+    "corsheaders",
+    "django_prometheus",
 ]
 
 # Middleware
 # https://docs.djangoproject.com/en/dev/topics/http/middleware/
 MIDDLEWARE = [
-    'django_prometheus.middleware.PrometheusBeforeMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'backend.static.middleware.LoggingMiddleware',
-    'django_prometheus.middleware.PrometheusAfterMiddleware',
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "backend.static.middleware.LoggingMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 # Url conf
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-ROOT_URLCONF
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 # SILENCED_SYSTEM_CHECKS = ['rest_framework.W001']
 
@@ -78,15 +78,15 @@ ROOT_URLCONF = 'config.urls'
 # https://docs.djangoproject.com/en/dev/topics/templates/#configuration
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
@@ -94,43 +94,43 @@ TEMPLATES = [
 
 # WSGI
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-WSGI_APPLICATION
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Europe/Berlin'
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "Europe/Berlin"
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
 # Authentication
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-AUTH_USER_MODEL
-AUTH_USER_MODEL = 'api.UserProfile'
+AUTH_USER_MODEL = "api.UserProfile"
 
 # secret keys
 # TODO: figure out what this is and if it is need on local and prod
-SCW_SECRET_KEY = os.environ.get('SCW_SECRET_KEY')
-SCW_ACCESS_KEY = os.environ.get('SCW_ACCESS_KEY')
-SCW_S3_BUCKET_NAME = os.environ.get('SCW_S3_BUCKET_NAME')
+SCW_SECRET_KEY = os.environ.get("SCW_SECRET_KEY")
+SCW_ACCESS_KEY = os.environ.get("SCW_ACCESS_KEY")
+SCW_S3_BUCKET_NAME = os.environ.get("SCW_S3_BUCKET_NAME")
 
 # Static Files
 # https://docs.djangoproject.com/en/dev/howto/static-files/
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static/dist/')]
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'tmp/static/')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static/dist/")]
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "tmp/static/")
 
 # Installed app django-cors-headers
 # https://pypi.org/project/django-cors-headers/
 CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
-    'private-key',
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+    "private-key",
 ]

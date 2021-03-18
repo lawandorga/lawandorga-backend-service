@@ -7,22 +7,20 @@ DEBUG = False
 
 # Allowed Hosts
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = get_secret('ALLOWED_HOSTS')
+ALLOWED_HOSTS = get_secret("ALLOWED_HOSTS")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY
-SECRET_KEY = get_secret('SECRET_KEY')
+SECRET_KEY = get_secret("SECRET_KEY")
 
 # Rest Framework
 # https://www.django-rest-framework.org/api-guide/settings/
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'backend.api.authentication.ExpiringTokenAuthentication'
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "backend.api.authentication.ExpiringTokenAuthentication"
     ],
-    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
-    'EXCEPTION_HANDLER': 'backend.api.exception_handler.custom_exception_handler',
-    'PAGE_SIZE': 100,
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "EXCEPTION_HANDLER": "backend.api.exception_handler.custom_exception_handler",
 }
 # This is used by the ExpiringTokenAuthentication which extends from rest's token authentication
 TIMEOUT_TIMEDELTA = timedelta(minutes=10)
@@ -32,11 +30,11 @@ TIMEOUT_TIMEDELTA = timedelta(minutes=10)
 DATABASES = {
     "default": {
         "ENGINE": "django_prometheus.db.backends.postgresql",
-        "NAME": get_secret('DB_NAME'),
+        "NAME": get_secret("DB_NAME"),
         "USER": get_secret("DB_USER"),
         "PASSWORD": get_secret("DB_PASSWORD"),
         "HOST": get_secret("DB_HOST"),
-        "PORT": get_secret("DB_PORT")
+        "PORT": get_secret("DB_PORT"),
     }
 }
 
@@ -69,37 +67,37 @@ CORS_ALLOWED_ORIGINS = [
 # Logging
 # https://docs.djangoproject.com/en/dev/topics/logging/
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {'simple': {'format': '%(levelname)s %(message)s'}, },
-    'handlers': {
-        'console': {
-            'level': 'ERROR',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"simple": {"format": "%(levelname)s %(message)s"},},
+    "handlers": {
+        "console": {
+            "level": "ERROR",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
         },
-        'logstash': {
-            'level': 'ERROR',
-            'class': 'logstash.TCPLogstashHandler',
-            'host': 'logstash',
-            'port': 5959,
-            'version': 1,
-            'message_type': 'django',
-            'fqdn': False,
-            'tags': ['django.request', 'django', 'backend'],
-            'formatter': 'simple',
+        "logstash": {
+            "level": "ERROR",
+            "class": "logstash.TCPLogstashHandler",
+            "host": "logstash",
+            "port": 5959,
+            "version": 1,
+            "message_type": "django",
+            "fqdn": False,
+            "tags": ["django.request", "django", "backend"],
+            "formatter": "simple",
         },
     },
-    'loggers': {
-        'django.request': {
-            'handlers': ['logstash'],
-            'level': 'ERROR',
-            'propagate': True,
+    "loggers": {
+        "django.request": {
+            "handlers": ["logstash"],
+            "level": "ERROR",
+            "propagate": True,
         },
-        'backend': {
-            'handlers': ['console', 'logstash'],
-            'level': 'ERROR',
-            'propagate': True,
+        "backend": {
+            "handlers": ["console", "logstash"],
+            "level": "ERROR",
+            "propagate": True,
         },
     },
 }
