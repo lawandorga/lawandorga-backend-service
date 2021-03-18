@@ -50,7 +50,6 @@ router.register("notifications", views.NotificationViewSet, basename="notificati
 router.register(
     "notification_groups", views.NotificationGroupViewSet, basename="notifications"
 )
-router.register('rlcs', views.RlcViewset)
 
 urlpatterns = [
     path("", include(router.urls)),
