@@ -13,10 +13,7 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from rest_framework.permissions import AllowAny
-from rest_framework.decorators import permission_classes
 from backend.api.serializers import RlcSerializer
-from backend.api.models.user import UserProfile
 from rest_framework.response import Response
 from backend.api.models.rlc import Rlc
 from django.db.models import QuerySet
@@ -25,9 +22,11 @@ from rest_framework import mixins
 from django.conf import settings
 
 
-class RlcViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
+class RlcViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Rlc.objects.all()
     serializer_class = RlcSerializer
+    permission_classes = []
+    authentication_classes = []
 
     def get_queryset(self) -> QuerySet:
         queryset = Rlc.objects.all().order_by('name')
@@ -35,10 +34,5 @@ class RlcViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.Generi
             queryset = queryset.exclude(name='Dummy RLC')
         return queryset
 
-    @permission_classes([AllowAny])
     def list(self, request, *args, **kwargs):
         return Response([rlc.name for rlc in self.get_queryset()])
-
-    def perform_create(self, serializer):
-        creator = UserProfile.objects.get(id=self.request.user.id)
-        serializer.save(creator=creator)
