@@ -57,24 +57,13 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         data = request.data
 
-        if "parent_id" in data and data["parent_id"] != None:
-            try:
-                parent = CollabDocument.objects.get(pk=data["parent_id"])
-            except:
-                raise CustomError(ERROR__API__ID_NOT_FOUND)
-        else:
-            parent = None
-
-        new_document = CollabDocument(
+        created_document = CollabDocument.objects.create(
             rlc=request.user.rlc,
-            name=data["name"],
-            parent=parent,
+            path=data["path"],
             creator=request.user,
             last_editor=request.user,
         )
-        CollabDocument.create_or_duplicate(new_document)
-
-        return Response(CollabDocumentSerializer(new_document).data)
+        return Response(CollabDocumentSerializer(created_document).data)
 
     @action(detail=True, methods=["get"])
     def permissions(self, request: Request, pk: int):

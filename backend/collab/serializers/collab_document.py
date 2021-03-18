@@ -82,8 +82,8 @@ class CollabDocumentTreeSerializer(serializers.ModelSerializer):
         child_documents = []
 
         for doc in self.all_documents:
-            ancestor = doc.path.startswith("{}/".format(document.path))
-            direct_child = "/" not in doc.path[len(document.path) + 1 :]
+            ancestor: bool = doc.path.startswith("{}/".format(document.path))
+            direct_child: bool = "/" not in doc.path[len(document.path) + 1 :]
 
             if ancestor and direct_child:
                 child_documents.append(

@@ -105,38 +105,33 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         self.assertTrue(True)
 
     def test_list_documents_simple(self):
-        doc_top = CollabDocument(
+        doc_top = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
             path="top_doc",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        doc_top.save()
-        doc_top_2 = CollabDocument(
+        doc_top_2 = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
             path="atop_doc",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        doc_top_2.save()
 
-        doc_middle = CollabDocument(
+        doc_middle = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
             path="top_doc/middle_doc",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        doc_middle.save()
 
-        doc_bottom = CollabDocument(
+        doc_bottom = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
             path="top_doc/middle_doc/bottom_doc",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        doc_bottom.save()
-        doc_bottom_first = CollabDocument(
+        doc_bottom_first = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
             path="top_doc/middle_doc/a first",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        doc_bottom_first.save()
 
         response: Response = self.base_client.get(self.urls_collab_documents,)
         self.assertEqual(2, response.data.__len__())
@@ -151,9 +146,7 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         self.assertEqual(0, CollabDocument.objects.count())
 
         response: Response = self.base_client.post(
-            self.urls_collab_documents,
-            {"name": "test document 1", "parent_id": None},
-            format="json",
+            self.urls_collab_documents, {"path": "test document 1"}, format="json",
         )
         self.assertEqual(1, CollabDocument.objects.count())
 
@@ -163,18 +156,14 @@ class CollabDocumentViewSetTest(TransactionTestCase):
 
     def test_create_dollab_document_doubled_name(self):
         doubled_name = "test doc 1"
-        first_document = CollabDocument(
+        CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
-            parent=None,
-            name=doubled_name,
+            path=doubled_name,
             creator=self.base_fixtures["users"][0]["user"],
         )
-        first_document.save()
 
         response: Response = self.base_client.post(
-            self.urls_collab_documents,
-            {"name": doubled_name, "parent_id": None},
-            format="json",
+            self.urls_collab_documents, {"path": doubled_name}, format="json",
         )
         self.assertEqual(2, CollabDocument.objects.count())
         self.assertTrue("id" in response.data)
