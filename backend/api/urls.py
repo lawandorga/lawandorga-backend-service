@@ -55,7 +55,6 @@ urlpatterns = [
     path("", include(router.urls)),
     path("forgot_password/", views.ForgotPasswordUnauthenticatedViewSet.as_view()),
     path("reset_password/<int:id>/", views.ResetPasswordViewSet.as_view()),
-    path("group_members/", views.GroupMembersViewSet.as_view()),
     path("permissions_for_group/<int:pk>/", views.PermissionsForGroupViewSet.as_view()),
     path("has_permission_statics/", views.HasPermissionStaticsViewSet.as_view()),
     path(

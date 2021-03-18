@@ -13,68 +13,72 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from rest_framework import viewsets
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
-from backend.api import models, serializers
-from backend.api.errors import CustomError
 from backend.recordmanagement.helpers import add_record_encryption_keys_for_users
-from backend.static import error_codes, permissions
+from backend.recordmanagement.models import EncryptedRecord, RecordEncryption, Notification
 from backend.static.middleware import get_private_key_from_request
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from backend.api.serializers import GroupSerializer, GroupMembersSerializer, GroupAddMemberSerializer
+from rest_framework.request import Request
+from rest_framework.views import APIView
+from backend.api.errors import CustomError
+from backend.api.models import Group, UserProfile
+from backend.static import error_codes, permissions
+from rest_framework import viewsets
+from backend.api import models, serializers
 
 
 class GroupViewSet(viewsets.ModelViewSet):
-    serializer_class = serializers.GroupSerializer
+    serializer_class = GroupSerializer
 
     def get_queryset(self):
-        user = self.request.user
-        if not user.is_superuser:
-            return models.Group.objects.get_visible_groups_for_user(user)
-        else:
-            return models.Group.objects.all()
-
-    def get_serializer_class(self):
-        if self.action == "list":
-            return serializers.GroupNameSerializer
-        else:
-            return serializers.GroupSerializer
-
-    def perform_create(self, serializer):
-        creator = models.UserProfile.objects.get(id=self.request.user.id)
-        serializer.save(creator=creator)
+        return Group.objects.get_visible_groups_for_user(self.request.user)
 
     def create(self, request, *args, **kwargs):
-        user: models.UserProfile = request.user
-        if not user.has_permission(
+        # permission stuff
+        if not request.user.has_permission(
             permissions.PERMISSION_MANAGE_GROUPS_RLC, for_rlc=request.user.rlc
-        ) and not user.has_permission(
+        ) and not request.user.has_permission(
             permissions.PERMISSION_ADD_GROUP_RLC, for_rlc=request.user.rlc
         ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
-        if "name" not in request.data or "visible" not in request.data:
-            raise CustomError(error_codes.ERROR__API__GROUP__CAN_NOT_CREATE)
+        # add data
+        request.data['creator'] = request.user
+        request.data['from_rlc'] = request.user.rlc
 
-        if models.Group.objects.filter(
-            name=request.data["name"], from_rlc=user.rlc
-        ).exists():
-            raise CustomError(error_codes.ERROR__API__GROUP__ALREADY_EXISTING)
-
-        group = models.Group(
-            name=request.data["name"],
-            visible=request.data["visible"],
-            creator=user,
-            from_rlc=user.rlc,
-        )
-        group.save()
-        return Response(serializers.GroupNameSerializer(group).data, status=201)
+        # do the usual stuff
+        return super().create(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = serializers.GroupShowSerializer(instance)
-        return Response(serializer.data)
+        self.serializer_class = GroupMembersSerializer
+        return super().retrieve(request, *args, **kwargs)
+
+    @action(detail=True, methods=['post', 'delete'])
+    def member(self, request: Request, pk=None):
+        # permission stuff
+        if not request.user.has_permission(permissions.PERMISSION_MANAGE_GROUPS_RLC, for_rlc=request.user.rlc):
+            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+
+        # get the group
+        group = self.get_object()
+
+        # get the data
+        serializer = GroupAddMemberSerializer(request.data)
+        member = UserProfile.objects.get(pk=serializer.validated_data['member'])
+
+        # add member to group
+        if request.method == 'POST':
+            group.group_members.add(member)
+            Notification.objects.notify_group_member_added(request.user, member, group)
+
+        # remove member from group
+        if request.method == 'DELETE':
+            group.group_members.remove(member)
+            Notification.objects.notify_group_member_removed(request.user, member, group)
+
+        # return something
+        return Response(self.get_serializer(group).data)
 
 
 class GroupMembersViewSet(APIView):
