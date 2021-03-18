@@ -61,9 +61,10 @@ class CollabDocumentPermissionListSerializer(serializers.ModelSerializer):
 class CollabDocumentTreeSerializer(serializers.ModelSerializer):
     child_pages = serializers.SerializerMethodField("get_sub_tree")
 
-    def __init__(self, user: UserProfile, **kwargs):
+    def __init__(self, user: UserProfile, all_documents: [CollabDocument], **kwargs):
         super().__init__(**kwargs)
         self.user = user
+        self.all_documents = all_documents
 
     class Meta:
         model = CollabDocument
@@ -77,16 +78,17 @@ class CollabDocumentTreeSerializer(serializers.ModelSerializer):
             "child_pages",
         )
 
-    def get_sub_tree(self, document: CollabDocument) -> dict:
-        children = CollabDocument.objects.exclude(pk=document.pk).filter(
-            path__startswith=document.path
-        )
-        as_list = list(children)
-        if children.count() > 0:
-            tree = CollabDocumentTreeSerializer(
-                instance=children, user=self.user, many=True
-            ).data
-        else:
-            tree = []
+    def get_sub_tree(self, document: CollabDocument):
+        child_documents = []
 
-        return tree
+        for doc in self.all_documents:
+            ancestor = doc.path.startswith("{}/".format(document.path))
+            direct_child = "/" not in doc.path[len(document.path) + 1 :]
+
+            if ancestor and direct_child:
+                child_documents.append(
+                    CollabDocumentTreeSerializer(
+                        instance=doc, user=self.user, all_documents=self.all_documents
+                    ).data
+                )
+        return child_documents

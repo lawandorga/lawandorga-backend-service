@@ -117,12 +117,14 @@ class CollabDocumentViewSetTest(TransactionTestCase):
             creator=self.base_fixtures["users"][0]["user"],
         )
         doc_top_2.save()
+
         doc_middle = CollabDocument(
             rlc=self.base_fixtures["rlc"],
             path="top_doc/middle_doc",
             creator=self.base_fixtures["users"][0]["user"],
         )
         doc_middle.save()
+
         doc_bottom = CollabDocument(
             rlc=self.base_fixtures["rlc"],
             path="top_doc/middle_doc/bottom_doc",
@@ -138,11 +140,11 @@ class CollabDocumentViewSetTest(TransactionTestCase):
 
         response: Response = self.base_client.get(self.urls_collab_documents,)
         self.assertEqual(2, response.data.__len__())
-        self.assertEqual(doc_top_2.id, response.data[0]["id"])
-        self.assertEqual(doc_top.id, response.data[1]["id"])
-        self.assertEqual(doc_middle.id, response.data[1]["child_pages"][0]["id"])
+        self.assertEqual(doc_top_2.id, response.data[0]["pk"])
+        self.assertEqual(doc_top.id, response.data[1]["pk"])
+        self.assertEqual(doc_middle.id, response.data[1]["child_pages"][0]["pk"])
         self.assertEqual(
-            doc_bottom.id, response.data[1]["child_pages"][0]["child_pages"][0]["id"],
+            doc_bottom.id, response.data[1]["child_pages"][0]["child_pages"][0]["pk"],
         )
 
     def test_create_collab_document(self):

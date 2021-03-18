@@ -45,12 +45,14 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
 
     def list(self, request: Request, **kwargs: Any) -> Response:
         queryset = self.get_queryset().exclude(path__contains="/").order_by("path")
-        tree = CollabDocumentTreeSerializer(
-            instance=queryset, user=request.user, many=True, context={request: request}
+        data = CollabDocumentTreeSerializer(
+            instance=queryset,
+            user=request.user,
+            all_documents=self.get_queryset(),
+            many=True,
+            context={request: request},
         ).data
-
-        serializer = CollabDocumentPermissionListSerializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response(data)
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         data = request.data
