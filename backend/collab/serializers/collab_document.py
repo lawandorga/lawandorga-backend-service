@@ -32,6 +32,7 @@ class CollabDocumentSerializer(serializers.ModelSerializer):
 
 
 class CollabDocumentListSerializer(serializers.ModelSerializer):
+    # TODO: doesn't work like that anymore
     children = serializers.SerializerMethodField()
 
     class Meta:
@@ -51,38 +52,41 @@ class CollabDocumentListSerializer(serializers.ModelSerializer):
         return CollabDocumentListSerializer(children, many=True).data
 
 
-class CollabDocumentRecursiveSerializer(serializers.ModelSerializer):
-    child_pages = serializers.SerializerMethodField("get_child_pages")
-
-    def __init__(self, user: UserProfile, **kwargs: Any):
-        super().__init__(**kwargs)
-        self.user: UserProfile = user
-
-    def get_child_pages(self, document: CollabDocument):
-        queryset = CollabDocument.objects.filter(parent=document)
-        # user.has_permission -> read all /write all /manage
-        # if has -> see all
-        if (
-            not self.user.has_permission(
-                PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC, for_rlc=self.user.rlc
-            )
-            and not self.user.has_permission(
-                PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC, for_rlc=self.user.rlc
-            )
-            and not self.user.has_permission(
-                PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC, for_rlc=self.user.rlc
-            )
-        ):
-
-            pass
-
-        # permission for collab documents check
-
-        serializer = CollabDocumentRecursiveSerializer(
-            instance=queryset, many=True, context=self.context, user=self.user
-        )
-        return serializer.data
-
+class CollabDocumentPermissionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CollabDocument
         fields = "__all__"
+
+
+class CollabDocumentTreeSerializer(serializers.ModelSerializer):
+    child_pages = serializers.SerializerMethodField("get_sub_tree")
+
+    def __init__(self, user: UserProfile, **kwargs):
+        super().__init__(**kwargs)
+        self.user = user
+
+    class Meta:
+        model = CollabDocument
+        fields = (
+            "pk",
+            "path",
+            "created",
+            "creator",
+            "last_edited",
+            "last_editor",
+            "child_pages",
+        )
+
+    def get_sub_tree(self, document: CollabDocument) -> dict:
+        children = CollabDocument.objects.exclude(pk=document.pk).filter(
+            path__startswith=document.path
+        )
+        as_list = list(children)
+        if children.count() > 0:
+            tree = CollabDocumentTreeSerializer(
+                instance=children, user=self.user, many=True
+            ).data
+        else:
+            tree = []
+
+        return tree

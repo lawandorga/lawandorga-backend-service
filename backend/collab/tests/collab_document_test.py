@@ -119,7 +119,7 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         doc_top_2.save()
         doc_middle = CollabDocument(
             rlc=self.base_fixtures["rlc"],
-            name="top_doc/middle_doc",
+            path="top_doc/middle_doc",
             creator=self.base_fixtures["users"][0]["user"],
         )
         doc_middle.save()

@@ -20,18 +20,15 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.request import Request
-from rest_framework.views import APIView
 
 from backend.collab.models import (
-    EditingRoom,
     CollabDocument,
     PermissionForCollabDocument,
 )
 from backend.collab.serializers import (
-    CollabDocumentRecursiveSerializer,
-    EditingRoomSerializer,
-    CollabDocumentListSerializer,
+    CollabDocumentPermissionListSerializer,
     CollabDocumentSerializer,
+    CollabDocumentTreeSerializer,
 )
 from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__API__ID_NOT_FOUND
@@ -47,11 +44,12 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
             return self.queryset.filter(rlc=self.request.user.rlc)
 
     def list(self, request: Request, **kwargs: Any) -> Response:
-        queryset = self.get_queryset().filter(parent=None).order_by("name")
-        # data = CollabDocumentListSerializer(queryset, many=True).data
-        serializer = CollabDocumentRecursiveSerializer(
+        queryset = self.get_queryset().exclude(path__contains="/").order_by("path")
+        tree = CollabDocumentTreeSerializer(
             instance=queryset, user=request.user, many=True, context={request: request}
-        )
+        ).data
+
+        serializer = CollabDocumentPermissionListSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
