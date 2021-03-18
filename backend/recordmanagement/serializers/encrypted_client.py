@@ -19,9 +19,9 @@ from rest_framework import serializers
 
 class EncryptedClientSerializer(serializers.ModelSerializer):
     e_records = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    name = serializers.CharField()
-    note = serializers.CharField()
-    phone_number = serializers.CharField()
+    name = serializers.CharField(allow_null=True)
+    note = serializers.CharField(allow_null=True)
+    phone_number = serializers.CharField(allow_null=True)
 
     class Meta:
         model = EncryptedClient

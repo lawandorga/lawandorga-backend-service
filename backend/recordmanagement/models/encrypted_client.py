@@ -57,8 +57,8 @@ class EncryptedClient(
         self.encrypted_client_key = RSAEncryption.encrypt(key, rlc_public_key)
         super().encrypt(key)
 
-    def decrypt(self, rlc_private_key: str) -> None:
-        key = RSAEncryption.decrypt(self.encrypted_client_key, rlc_private_key)
+    def decrypt(self, private_key_rlc: str = None) -> None:
+        key = RSAEncryption.decrypt(self.encrypted_client_key, private_key_rlc)
         super().decrypt(key)
 
     def patch(self, client_data, clients_aes_key: str) -> [str]:

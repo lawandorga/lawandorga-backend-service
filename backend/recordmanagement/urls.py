@@ -23,7 +23,7 @@ router.register("record_tags", RecordTagViewSet)
 router.register("record_document_tags", RecordDocumentTagViewSet)
 router.register("record_deletion_requests", EncryptedRecordDeletionRequestViewSet, basename="record_deletion_requests")
 router.register("record_encryptions", RecordEncryptionViewSet)
-router.register("e_records", EncryptedRecordViewSet, basename="e_records")
+router.register("records", EncryptedRecordViewSet, basename="e_records")
 router.register("e_clients", EncryptedClientsViewSet, basename="e_clients")
 router.register("pool_records", PoolRecordViewSet, basename="pool_records")
 router.register("pool_consultants", PoolConsultantViewSet)
@@ -36,8 +36,6 @@ urlpatterns = [
     path("e_record/<int:id>/documents/", EncryptedRecordDocumentByRecordViewSet.as_view()),
     path("e_record/documents/<int:id>/", EncryptedRecordDocumentDownloadViewSet.as_view()),
     path("statics/", StaticViewSet.as_view()),
-    path("e_record/<int:id>/", OldEncryptedRecordViewSet.as_view()),
-    path("e_record/", OldEncryptedRecordViewSet.as_view()),
     path("e_record/<int:id>/messages/", EncryptedRecordMessageByRecordViewSet.as_view()),
     path("record/<int:id>/request_permission/", EncryptedRecordPermissionRequestViewSet.as_view()),
     path("documents/<int:id>/", RecordDocumentTagByDocumentViewSet.as_view()),

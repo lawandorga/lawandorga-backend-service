@@ -13,115 +13,40 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
+from backend.recordmanagement.serializers import RecordTagNameSerializer
+from backend.recordmanagement.models import EncryptedRecord
+from backend.api.serializers import UserProfileNameSerializer
 from rest_framework import serializers
-from django.db.models import QuerySet
-
-
-from backend.api.serializers.user import UserProfileNameSerializer
-from backend.recordmanagement.models.encrypted_record import EncryptedRecord
-from backend.recordmanagement.serializers.record_tag import RecordTagNameSerializer
-from backend.static.encryption import AESEncryption
-from backend.static.serializer_fields import EncryptedField
-
-
-class EncryptedRecordFullDetailSerializer(serializers.ModelSerializer):
-    tagged = RecordTagNameSerializer(many=True, read_only=True)
-    working_on_record = UserProfileNameSerializer(many=True, read_only=True)
-    e_record_messages = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    note = EncryptedField()
-    consultant_team = EncryptedField()
-    lawyer = EncryptedField()
-    related_persons = EncryptedField()
-    contact = EncryptedField()
-    bamf_token = EncryptedField()
-    foreign_token = EncryptedField()
-    first_correspondence = EncryptedField()
-    circumstances = EncryptedField()
-    next_steps = EncryptedField()
-    status_described = EncryptedField()
-    additional_facts = EncryptedField()
-
-    class Meta:
-        model = EncryptedRecord
-        fields = "__all__"
-        extra_kwargs = {"creator": {"read_only": True}}
-
-    def get_decrypted_data(self, records_aes_key):
-        data = self.data
-        AESEncryption.decrypt_field(data, data, "note", records_aes_key)
-        AESEncryption.decrypt_field(data, data, "consultant_team", records_aes_key)
-        AESEncryption.decrypt_field(data, data, "lawyer", records_aes_key)
-        AESEncryption.decrypt_field(data, data, "related_persons", records_aes_key)
-        AESEncryption.decrypt_field(data, data, "contact", records_aes_key)
-        AESEncryption.decrypt_field(data, data, "bamf_token", records_aes_key)
-        AESEncryption.decrypt_field(data, data, "foreign_token", records_aes_key)
-        AESEncryption.decrypt_field(data, data, "first_correspondence", records_aes_key)
-        AESEncryption.decrypt_field(data, data, "circumstances", records_aes_key)
-        AESEncryption.decrypt_field(data, data, "next_steps", records_aes_key)
-        AESEncryption.decrypt_field(data, data, "status_described", records_aes_key)
-        AESEncryption.decrypt_field(data, data, "additional_facts", records_aes_key)
-        return data
 
 
 class EncryptedRecordSerializer(serializers.ModelSerializer):
-    tagged = RecordTagNameSerializer(many=True, read_only=True)
-    working_on_record = UserProfileNameSerializer(many=True, read_only=True)
-    messages = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    working_on_record_informative = UserProfileNameSerializer(many=True, read_only=True, )
-
-    note = serializers.CharField()
-    consultant_team = serializers.CharField()
-    lawyer = serializers.CharField()
-    related_persons = serializers.CharField()
-    contact = serializers.CharField()
-    bamf_token = serializers.CharField()
-    foreign_token = serializers.CharField()
-    first_correspondence = serializers.CharField()
-    circumstances = serializers.CharField()
-    next_steps = serializers.CharField()
-    status_described = serializers.CharField()
-    additional_facts = serializers.CharField()
+    note = serializers.CharField(allow_null=True, required=False)
+    consultant_team = serializers.CharField(allow_null=True, required=False)
+    lawyer = serializers.CharField(required=False)
+    related_persons = serializers.CharField(allow_null=True, required=False)
+    contact = serializers.CharField(allow_null=True, required=False)
+    bamf_token = serializers.CharField(allow_null=True, required=False)
+    foreign_token = serializers.CharField(allow_null=True, required=False)
+    first_correspondence = serializers.CharField(allow_null=True, required=False)
+    circumstances = serializers.CharField(allow_null=True, required=False)
+    next_steps = serializers.CharField(allow_null=True, required=False)
+    status_described = serializers.CharField(allow_null=True, required=False)
+    additional_facts = serializers.CharField(allow_null=True, required=False)
 
     class Meta:
         model = EncryptedRecord
         fields = "__all__"
 
 
-class EncryptedRecordNoDetailListSerializer(serializers.ModelSerializer):
+class EncryptedRecordListSerializer(EncryptedRecordSerializer):
     access = serializers.IntegerField()
     tagged = RecordTagNameSerializer(many=True, read_only=True)
     working_on_record = UserProfileNameSerializer(many=True, read_only=True)
-    state = serializers.CharField()
 
     class Meta:
         model = EncryptedRecord
-        fields = (
-            "id",
-            "last_contact_date",
-            "state",
-            "official_note",
-            "record_token",
-            "working_on_record",
-            "tagged",
-            "access",
-        )
-
-    def add_has_permission(self, user):
-        data = []
-        if isinstance(self.instance, QuerySet):
-            for record in self.instance.all():
-                has_permission = record.user_has_permission(user)
-                record_data = EncryptedRecordNoDetailSerializer(record).data
-                record_data.update({"has_permission": has_permission})
-                data.append(record_data)
-        else:
-            for record in self.instance:
-                has_permission = record.user_has_permission(user)
-                record_data = EncryptedRecordNoDetailSerializer(record).data
-                record_data.update({"has_permission": has_permission})
-                data.append(record_data)
-        return data
+        fields = ["id", "last_contact_date", "state", "official_note", "record_token", "working_on_record", "tagged",
+                  "access"]
 
 
 class EncryptedRecordNoDetailSerializer(serializers.ModelSerializer):
@@ -130,7 +55,6 @@ class EncryptedRecordNoDetailSerializer(serializers.ModelSerializer):
     state = serializers.CharField()
 
     class Meta:
-        # list_serializer_class = EncryptedRecordNoDetailListSerializer
         model = EncryptedRecord
         fields = (
             "id",

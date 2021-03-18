@@ -14,21 +14,19 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from backend.recordmanagement.serializers import EncryptedRecordSerializer, EncryptedClientSerializer, \
-    OriginCountrySerializer, EncryptedRecordDocumentSerializer, EncryptedRecordMessageSerializer
+    OriginCountrySerializer, EncryptedRecordDocumentSerializer, EncryptedRecordMessageSerializer, \
+    EncryptedRecordListSerializer
 from backend.recordmanagement.models import EncryptedRecordPermission, RecordEncryption, EncryptedClient, \
-    EncryptedRecord, OriginCountry, RecordTag
-from backend.api.models.notification import Notification
+    EncryptedRecord
 from backend.static.frontend_links import FrontendLinks
-from backend.static.encryption import AESEncryption, RSAEncryption
-from backend.static.middleware import get_private_key_from_request
+from backend.static.serializers import map_values
+from backend.static.encryption import AESEncryption
 from rest_framework.pagination import LimitOffsetPagination
-from backend.recordmanagement import serializers
 from rest_framework.response import Response
 from rest_framework.request import Request
 from backend.static.emails import EmailSender
-from rest_framework.views import APIView
 from backend.api.errors import CustomError
-from backend.api.models import UserProfile
+from backend.api.models import UserProfile, Notification
 from django.db.models import Q, QuerySet, Case, When, Value, IntegerField
 from backend.static import error_codes, permissions
 from rest_framework import status, viewsets
@@ -109,59 +107,96 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
         user = request.user
 
         if (
-            not user.has_permission(
-                permissions.PERMISSION_VIEW_RECORDS_RLC, for_rlc=user.rlc
-            )
-            and not user.has_permission(
-            permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc
-        )
-            and not user.is_superuser
+            not user.has_permission(permissions.PERMISSION_VIEW_RECORDS_RLC, for_rlc=user.rlc)
+            and not user.has_permission(permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc)
         ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
         entries = self.get_queryset_2()
         paginated = self.paginate_queryset(entries)
-        # data = serializers.EncryptedRecordNoDetailListSerializer(paginated, many=True).data
-        data = self.get_serializer(paginated, many=True).data
+        data = EncryptedRecordListSerializer(paginated, many=True).data
         return self.get_paginated_response(data)
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        # create and encrypt the client
-        client_serializer = EncryptedClientSerializer(data=request.data)
+        # permission stuff
+        if not request.user.has_permission(permissions.PERMISSION_CAN_ADD_RECORD_RLC, for_rlc=request.user.rlc):
+            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+
+        # set the client data
+        client_data = map_values({
+            'birthday': 'client_birthday',
+            'name': 'client_name',
+            'phone_number': 'client_phone_number',
+            'note': 'client_note',
+            'origin_country': 'origin_country'
+        }, request.data)
+
+        # validate the data
+        client_serializer = EncryptedClientSerializer(data=client_data)
         client_serializer.is_valid(raise_exception=True)
         data = client_serializer.validated_data
+
+        # create the client
         client = EncryptedClient(**data)
         client.encrypt(request.user.rlc.get_public_key())
         client.save()
 
-        # create and encrypt record
-        record_serializer = self.get_serializer(data=request.data)
+        # set the record data
+        record_data = map_values({
+            'record_token': 'record_token',
+            'note': 'record_note',
+            'working_on_record': 'consultants',
+            'tagged': 'tags',
+        }, request.data)
+        record_data['state'] = 'op'
+        record_data['creator'] = request.user.pk
+        record_data['from_rlc'] = request.user.rlc.pk
+        record_data['client'] = client.pk
+
+        # validate the record data
+        record_serializer = self.get_serializer(data=record_data)
         record_serializer.is_valid(raise_exception=True)
+
+        # remove many to many because record needs a pk first
         working_on_record = record_serializer.validated_data.pop('working_on_record')
         tagged = record_serializer.validated_data.pop('tagged')
         data = record_serializer.validated_data
+
+        # create the record
         aes_key = AESEncryption.generate_secure_key()
-        record = EncryptedRecord(client=client, **data)
+        record = EncryptedRecord(**data)
         record.encrypt(aes_key=aes_key)
         record.save()
+
+        # add many to many
         for item in working_on_record:
             record.working_on_record.add(item)
         for item in tagged:
             record.tagged.add(item)
+
+        # create encryption keys
         for user in record.get_users_with_decryption_keys():
             encryption = RecordEncryption(user=user, record=record, encrypted_key=aes_key)
             encryption.encrypt(user.get_public_key())
             encryption.save()
 
+        # notify about the new record
+        Notification.objects.notify_record_created(request.user, record)
+        if not settings.DEBUG:
+            url = FrontendLinks.get_record_link(record)
+            for user in working_on_record:
+                if user != request.user:
+                    EmailSender.send_new_record(user.email, url)
+
         # return response
+        record.decrypt(user=request.user, private_key_user=request.user.get_private_key(request=request))
         serializer = self.get_serializer(record)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         record = self.get_object()
 
-        if record.user_has_permission(self.request.user) and False:
+        if record.user_has_permission(self.request.user):
             private_key_user = request.user.get_private_key(request=request)
             private_key_rlc = request.user.rlc.get_private_key(request.user, private_key_user)
 
@@ -203,175 +238,65 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
                 state = permission_request.state
             return Response({"record": serializer.data, "request_state": state})
 
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        # get the record to be updated
+        record = self.get_object()
 
-class OldEncryptedRecordViewSet(APIView):
-    def post(self, request):
-        data = request.data
-        rlc = request.user.rlc
-        if not request.user.has_permission(
-            permissions.PERMISSION_CAN_ADD_RECORD_RLC, for_rlc=rlc
-        ):
+        # permission stuff
+        if not record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
-        creators_private_key = get_private_key_from_request(request)
+        # get the private keys
+        private_key_user = request.user.get_private_key(request=request)
+        private_key_rlc = request.user.rlc.get_private_key(request.user, private_key_user)
+        public_key_rlc = request.user.rlc.get_public_key()
 
-        consultants: [UserProfile] = []
-        for user_id in data["consultants"]:
-            try:
-                user: UserProfile = UserProfile.objects.get(pk=user_id)
-            except Exception:
-                raise CustomError(error_codes.ERROR__RECORD__CONSULTANT__NOT_EXISTING)
-            if not user.has_permission(permissions.PERMISSION_CAN_CONSULT, for_rlc=rlc):
-                raise CustomError(error_codes.ERROR__RECORD__CONSULTANT__NO_PERMISSION)
-            consultants.append(user)
+        # decrypt the record
+        record.decrypt(user=request.user, private_key_user=private_key_user)
 
-        if "client_id" in data:
-            rlcs_private_key = request.user.get_rlcs_private_key(creators_private_key)
-            try:
-                e_client = EncryptedClient.objects.get(pk=data["client_id"])
-            except:
-                raise CustomError(error_codes.ERROR__RECORD__CLIENT__NOT_EXISTING)
+        # get the client of the record
+        client = record.client
+        client.decrypt(private_key_rlc)
 
-            client_password = e_client.get_password(rlcs_private_key)
+        # check that the data is valid
+        partial = kwargs.pop('partial', False)
+        if 'record' not in request.data:
+            request.data['record'] = {}
+        record_serializer = self.get_serializer(record, data=request.data['record'], partial=partial)
+        record_serializer.is_valid(raise_exception=True)
+        if 'client' not in request.data:
+            request.data['client'] = {}
+        client_serializer = EncryptedClientSerializer(client, data=request.data['client'], partial=partial)
+        client_serializer.is_valid(raise_exception=True)
 
-            e_client.note = AESEncryption.encrypt(data["client_note"], client_password)
-            e_client.phone_number = AESEncryption.encrypt(
-                data["client_phone_number"], client_password
-            )
-            e_client.save()
-        else:
-            client_key = AESEncryption.generate_secure_key()
-            e_client = EncryptedClient(birthday=data["client_birthday"], from_rlc=rlc)
-            e_client.name = AESEncryption.encrypt(data["client_name"], client_key)
-            e_client.phone_number = AESEncryption.encrypt(
-                data["client_phone_number"], client_key
-            )
-            e_client.note = AESEncryption.encrypt(data["client_note"], client_key)
-            e_client.save()
+        # update the client
+        for attr, value in client_serializer.validated_data.items():
+            setattr(client, attr, value)
+        client.encrypt(public_key_rlc)
+        client.save()
 
-            rlcs_public_key = request.user.get_rlcs_public_key()
-            e_client.encrypted_client_key = RSAEncryption.encrypt(
-                client_key, rlcs_public_key
-            )
-            e_client.save()
+        # update the record
+        for attr, value in record_serializer.validated_data.items():
+            setattr(record, attr, value)
+        record.encrypt(request.user, private_key_user)
+        record.save()
 
-        try:
-            origin = OriginCountry.objects.get(pk=data["origin_country"])
-        except:
-            raise CustomError(error_codes.ERROR__RECORD__ORIGIN_COUNTRY__NOT_FOUND)
-        e_client.origin_country = origin
-        e_client.save()
+        # create a notification about this change
+        notification_text = "{}, {}".format(record, client)
+        Notification.objects.notify_record_patched(request.user, record, notification_text)
 
-        e_record = EncryptedRecord(
-            client_id=e_client.id,
-            first_contact_date=data["first_contact_date"],
-            last_contact_date=data["first_contact_date"],
-            record_token=data["record_token"],
-            creator_id=request.user.id,
-            from_rlc_id=rlc.id,
-            state="op",
-        )
-        record_key = AESEncryption.generate_secure_key()
-        e_record.note = AESEncryption.encrypt(data["record_note"], record_key)
-        e_record.save()
+        # return valid data
+        record.decrypt(user=request.user, private_key_user=private_key_user)
+        client.decrypt(private_key_rlc=private_key_rlc)
+        return Response({
+            'record': self.get_serializer(record).data,
+            'client': EncryptedClientSerializer(client).data
+        })
 
-        for tag_id in data["tags"]:
-            e_record.tagged.add(RecordTag.objects.get(pk=tag_id))
-        for consultant in consultants:
-            e_record.working_on_record.add(consultant)
-
-        e_record.save()
-
-        users_with_keys = e_record.get_users_with_decryption_keys()
-        for user in users_with_keys:
-            users_public_key = user.get_public_key()
-
-            encrypted_record_key = RSAEncryption.encrypt(record_key, users_public_key)
-            record_encryption = RecordEncryption(
-                user=user, record=e_record, encrypted_key=encrypted_record_key
-            )
-            record_encryption.save()
-        e_record.save()  # TODO: why?
-
-        Notification.objects.notify_record_created(request.user, e_record)
-
-        if not settings.DEBUG:
-            url = FrontendLinks.get_record_link(e_record)
-            for user in consultants:
-                if user != request.user:
-                    EmailSender.send_new_record(user.email, url)
-
-        return Response(
-            serializers.EncryptedRecordFullDetailSerializer(
-                e_record
-            ).get_decrypted_data(record_key),
-            status=status.HTTP_201_CREATED,
-        )
-
-    def patch(self, request, id):
-        try:
-            e_record = EncryptedRecord.objects.get(pk=id)
-        except Exception as e:
-            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
-        user = request.user
-        if user.rlc != e_record.from_rlc and not user.is_superuser:
-            raise CustomError(error_codes.ERROR__RECORD__RETRIEVE_RECORD__WRONG_RLC)
-
-        if not e_record.user_has_permission(user):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-
-        users_private_key = get_private_key_from_request(request)
-        record_key = e_record.get_decryption_key(user, users_private_key)
-        rlcs_private_key = user.get_rlcs_private_key(users_private_key)
-        # TODO: fix here
-        # super().update()
-        client = e_record.client
-        client_key = client.get_password(rlcs_private_key)
-
-        record_patched = []
-        if "record" in request.data:
-            record_data: dict = request.data["record"]
-            record_patched = e_record.patch(
-                record_data=record_data, record_key=record_key
-            )
-        client_patched = []
-        if "client" in request.data:
-            client_data = request.data["client"]
-            client_patched = client.patch(
-                client_data=client_data, clients_aes_key=client_key
-            )
-
-        notification_text = ",".join(record_patched + client_patched)
-        Notification.objects.notify_record_patched(user, e_record, notification_text)
-
-        record_from_db = EncryptedRecord.objects.get(pk=e_record.id)
-        client_from_db = EncryptedClient.objects.get(pk=client.id)
-        decrypted_record_data = serializers.EncryptedRecordFullDetailSerializer(
-            record_from_db
-        ).get_decrypted_data(record_key)
-        decrypted_client_data = serializers.EncryptedClientSerializer(
-            client_from_db
-        ).get_decrypted_data(client_key)
-
-        return Response(
-            {"record": decrypted_record_data, "client": decrypted_client_data}
-        )
-
-    def delete(self, request, id):
-        try:
-            record = EncryptedRecord.objects.get(pk=id)
-        except:
-            raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
-        user = request.user
-        if user.rlc != record.from_rlc and not user.is_superuser:
-            raise CustomError(error_codes.ERROR__RECORD__RETRIEVE_RECORD__WRONG_RLC)
-
-        if (
-            user.has_permission(
-                permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
-                for_rlc=user.rlc,
-            )
-            or user.is_superuser
-        ):
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        record = self.get_object()
+        if request.user.has_permission(permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
+                                       for_rlc=request.user.rlc):
             record.delete()
-        return Response()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)

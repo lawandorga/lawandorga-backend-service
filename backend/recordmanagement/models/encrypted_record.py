@@ -67,45 +67,21 @@ class EncryptedRecordQuerySet(models.QuerySet):
         return self.filter(from_rlc=rlc)
 
 
-class EncryptedRecord(
-    ExportModelOperationsMixin("encrypted_record"), EncryptedModelMixin, models.Model
-):
-    creator = models.ForeignKey(
-        UserProfile,
-        related_name="encrypted_records",
-        on_delete=models.SET_NULL,
-        null=True,
-    )
-    from_rlc = models.ForeignKey(
-        Rlc,
-        related_name="encrypted_records",
-        on_delete=models.SET_NULL,
-        null=True,
-        default=None,
-    )
-
+class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), EncryptedModelMixin, models.Model):
     created_on = models.DateField(auto_now_add=True)
     last_edited = models.DateTimeField(auto_now_add=True)
 
-    client = models.ForeignKey(
-        "EncryptedClient",
-        related_name="e_records",
-        on_delete=models.SET_NULL,
-        null=True,
-    )
+    creator = models.ForeignKey(UserProfile, related_name="encrypted_records", on_delete=models.CASCADE)
+    from_rlc = models.ForeignKey(Rlc, related_name="encrypted_records", on_delete=models.CASCADE)
+    client = models.ForeignKey("EncryptedClient", related_name="e_records", on_delete=models.CASCADE)
 
     first_contact_date = models.DateField(default=None, null=True)
     last_contact_date = models.DateTimeField(default=None, null=True)
     first_consultation = models.DateTimeField(default=None, null=True)
-
     record_token = models.CharField(max_length=50, unique=True)
-
     official_note = models.TextField(blank=True, null=True)
-
-    working_on_record = models.ManyToManyField(
-        UserProfile, related_name="working_on_e_record", blank=True
-    )
-    tagged = models.ManyToManyField(RecordTag, related_name="e_tagged", blank=True)
+    working_on_record = models.ManyToManyField(UserProfile, related_name="working_on_e_record")
+    tagged = models.ManyToManyField(RecordTag, related_name="e_tagged")
 
     record_states_possible = (
         ("op", "open"),
@@ -113,7 +89,6 @@ class EncryptedRecord(
         ("wa", "waiting"),
         ("wo", "working"),
     )
-
     state = models.CharField(max_length=2, choices=record_states_possible)
 
     # encrypted
@@ -122,10 +97,8 @@ class EncryptedRecord(
     lawyer = models.BinaryField()
     related_persons = models.BinaryField()
     contact = models.BinaryField()
-
     bamf_token = models.BinaryField()
     foreign_token = models.BinaryField()
-
     first_correspondence = models.BinaryField()
     circumstances = models.BinaryField()
     next_steps = models.BinaryField()
@@ -159,11 +132,11 @@ class EncryptedRecord(
         private_key_user: bytes = None,
         aes_key: str = None,
     ) -> None:
-        if user and private_key_user:
+        if user and private_key_user and aes_key is None:
             record_encryption = self.encryptions.get(user=user)
             record_encryption.decrypt(private_key_user)
             key = record_encryption.encrypted_key
-        elif aes_key:
+        elif aes_key and user is None and private_key_user is None:
             key = aes_key
         else:
             raise ValueError(
@@ -180,114 +153,12 @@ class EncryptedRecord(
             raise ValueError("You have to set (user and private_key_user).")
         super().decrypt(key)
 
-    def patch(self, record_data, record_key: str) -> [str]:
-        """
-        patches record from object, updating last_edited
-        :param record_data: object containing only fields of record with new values
-        :param record_key: record encryption key
-        :return: array containing names of fields which were patched
-        """
-        unpatchable_fields = self.ignore_fields()
-        unencrypted_changeable_fields = self.unencrypted_changeable_fields()
-        changeable_datetime_fields = self.changeable_datetime_fields()
-
-        new_tags = []
-        patched = []
-        for key, value in record_data.items():
-            if key not in self.allowed_fields():
-                raise CustomError(error_codes.ERROR__API__FIELD_NOT_ALLOWED)
-
-            if key in unpatchable_fields:
-                continue
-            elif key == "tagged":
-                if record_data[key].__len__() == 0:
-                    raise CustomError(error_codes.ERROR__RECORD__TAG__AT_LEAST_ONE)
-                for tag_id in record_data[key]:
-                    try:
-                        tag: RecordTag = RecordTag.objects.get(pk=tag_id)
-                    except Exception as e:
-                        raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
-                    new_tags.append(tag)
-            elif key == "working_on_record":
-                pass
-            else:
-                patched.append(key)
-                if key in unencrypted_changeable_fields:
-                    to_save = value
-                elif key in changeable_datetime_fields:
-                    to_save = parse_date(value)
-                else:
-                    to_save = AESEncryption.encrypt(value, record_key)
-                setattr(self, key, to_save)
-
-        if new_tags.__len__() > 0:
-            patched.append("tagged")
-            self.tagged.clear()
-            for tag in new_tags:
-                self.tagged.add(tag)
-
-        self.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
-        self.save()
-        return patched
-
-    @staticmethod
-    def unencrypted_changeable_fields():
-        return ["official_note", "state", "record_token"]
-
-    @staticmethod
-    def encrypted_changeable_fields():
-        return [
-            "note",
-            "consultant_team",
-            "lawyer",
-            "related_persons",
-            "contact",
-            "bamf_token",
-            "foreign_token",
-            "first_correspondence",
-            "circumstances",
-            "next_steps",
-            "status_described",
-            "additional_facts",
-        ]
-
-    @staticmethod
-    def changeable_datetime_fields():
-        return ["last_contact_date", "first_contact_date", "first_consultation"]
-
-    @staticmethod
-    def ignore_fields():
-        return [
-            "id",
-            "client",
-            "from_rlc",
-            "created_on",
-            "last_edited",
-            "from_rlc",
-            "client",
-        ]
-
-    @staticmethod
-    def specific_changed_fields():
-        return ["working_on_record", "tagged"]
-
-    @staticmethod
-    def allowed_fields():
-        return (
-            EncryptedRecord.changeable_datetime_fields()
-            + EncryptedRecord.ignore_fields()
-            + EncryptedRecord.unencrypted_changeable_fields()
-            + EncryptedRecord.encrypted_changeable_fields()
-            + EncryptedRecord.specific_changed_fields()
-        )
-
     def user_has_permission(self, user):
         """
         return if the user has permission edit and view the record in full detail
         :param user: user object, the user to check
         :return: boolean, true if the user has permission
         """
-
         from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
 
         return (
