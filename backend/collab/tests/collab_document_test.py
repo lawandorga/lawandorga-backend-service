@@ -197,7 +197,16 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         # )
         self.assertTrue(True)
 
-    def test_list_documents(self):
+    def test_list_documents_none(self):
+        self.add_document_structure()
+
+        response: Response = self.base_client.get(self.urls_collab_documents,)
+        self.assertEqual(0, response.data.__len__())
+
+        # TODO: permission for bottom document
+        # TODO: permission for top level document
+
+    def test_list_documents_overall(self):
         (
             doc_top,
             doc_top_2,
@@ -206,10 +215,7 @@ class CollabDocumentViewSetTest(TransactionTestCase):
             doc_bottom_first,
         ) = self.add_document_structure()
 
-        response: Response = self.base_client.get(self.urls_collab_documents,)
-        self.assertEqual(0, response.data.__len__())
-
-        overall_permission = HasPermission.objects.create(
+        HasPermission.objects.create(
             group_has_permission=self.base_fixtures["groups"][0],
             permission=self.full_write_permission,
             permission_for_rlc=self.base_fixtures["rlc"],
@@ -224,7 +230,15 @@ class CollabDocumentViewSetTest(TransactionTestCase):
             doc_bottom.id, response.data[1]["child_pages"][0]["child_pages"][1]["pk"],
         )
 
-        overall_permission.delete()
+    def test_list_documents_middle(self):
+        (
+            doc_top,
+            doc_top_2,
+            doc_middle,
+            doc_bottom,
+            doc_bottom_first,
+        ) = self.add_document_structure()
+
         collab_permission, created = CollabPermission.objects.get_or_create(
             name=PERMISSION_WRITE_DOCUMENT
         )
@@ -233,6 +247,7 @@ class CollabDocumentViewSetTest(TransactionTestCase):
             permission=collab_permission,
             group_has_permission=self.base_fixtures["groups"][0],
         )
+
         response: Response = self.base_client.get(self.urls_collab_documents,)
         self.assertEqual(1, response.data.__len__())
         self.assertEqual(doc_top.id, response.data[0]["pk"])
@@ -247,8 +262,88 @@ class CollabDocumentViewSetTest(TransactionTestCase):
             response.data[0]["child_pages"][0]["child_pages"][0]["pk"],
         )
 
-        # TODO: permission for bottom document
-        # TODO: permission for top level document
+    def test_list_documents_top(self):
+        (
+            doc_top,
+            doc_top_2,
+            doc_middle,
+            doc_bottom,
+            doc_bottom_first,
+        ) = self.add_document_structure()
+
+        collab_permission, created = CollabPermission.objects.get_or_create(
+            name=PERMISSION_WRITE_DOCUMENT
+        )
+        PermissionForCollabDocument.objects.create(
+            document=doc_top,
+            permission=collab_permission,
+            group_has_permission=self.base_fixtures["groups"][0],
+        )
+
+        response: Response = self.base_client.get(self.urls_collab_documents,)
+        self.assertEqual(1, response.data.__len__())
+        self.assertEqual(doc_top.id, response.data[0]["pk"])
+        self.assertEqual(1, response.data[0]["child_pages"].__len__())
+        self.assertEqual(doc_middle.id, response.data[0]["child_pages"][0]["pk"])
+        self.assertEqual(2, response.data[0]["child_pages"][0]["child_pages"].__len__())
+        self.assertEqual(
+            doc_bottom.id, response.data[0]["child_pages"][0]["child_pages"][1]["pk"],
+        )
+        self.assertEqual(
+            doc_bottom_first.id,
+            response.data[0]["child_pages"][0]["child_pages"][0]["pk"],
+        )
+
+    def test_list_documents_top_2(self):
+        (
+            doc_top,
+            doc_top_2,
+            doc_middle,
+            doc_bottom,
+            doc_bottom_first,
+        ) = self.add_document_structure()
+
+        collab_permission, created = CollabPermission.objects.get_or_create(
+            name=PERMISSION_WRITE_DOCUMENT
+        )
+        PermissionForCollabDocument.objects.create(
+            document=doc_top_2,
+            permission=collab_permission,
+            group_has_permission=self.base_fixtures["groups"][0],
+        )
+
+        response: Response = self.base_client.get(self.urls_collab_documents,)
+        self.assertEqual(1, response.data.__len__())
+        self.assertEqual(doc_top_2.id, response.data[0]["pk"])
+        self.assertEqual(0, response.data[0]["child_pages"].__len__())
+
+    def test_list_documents_bottom(self):
+        (
+            doc_top,
+            doc_top_2,
+            doc_middle,
+            doc_bottom,
+            doc_bottom_first,
+        ) = self.add_document_structure()
+
+        collab_permission, created = CollabPermission.objects.get_or_create(
+            name=PERMISSION_WRITE_DOCUMENT
+        )
+        PermissionForCollabDocument.objects.create(
+            document=doc_bottom,
+            permission=collab_permission,
+            group_has_permission=self.base_fixtures["groups"][0],
+        )
+
+        response: Response = self.base_client.get(self.urls_collab_documents,)
+        self.assertEqual(1, response.data.__len__())
+        self.assertEqual(doc_top.id, response.data[0]["pk"])
+        self.assertEqual(1, response.data[0]["child_pages"].__len__())
+        self.assertEqual(doc_middle.id, response.data[0]["child_pages"][0]["pk"])
+        self.assertEqual(1, response.data[0]["child_pages"][0]["child_pages"].__len__())
+        self.assertEqual(
+            doc_bottom.id, response.data[0]["child_pages"][0]["child_pages"][0]["pk"],
+        )
 
     def test_create_collab_document(self):
         self.assertEqual(0, CollabDocument.objects.count())
