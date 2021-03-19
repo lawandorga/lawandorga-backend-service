@@ -55,6 +55,15 @@ class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument
         )
         return permissions.count() > 0
 
+    def user_can_see_direct(self, user: UserProfile):
+        from backend.collab.models import PermissionForCollabDocument
+
+        groups = user.group_members.all()
+        permissions = PermissionForCollabDocument.objects.filter(
+            group_has_permission__in=groups, document__path=self.path
+        )
+        return permissions.count() > 0
+
     def user_has_read_permission(self, user: UserProfile):
         # add overall permission
         pass

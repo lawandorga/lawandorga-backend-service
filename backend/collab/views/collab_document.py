@@ -60,24 +60,35 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
         )
         if user_has_overall_permission:
             queryset = self.get_queryset().exclude(path__contains="/").order_by("path")
+            data = CollabDocumentTreeSerializer(
+                instance=queryset,
+                user=request.user,
+                all_documents=self.get_queryset().order_by("path"),
+                overall_permission=user_has_overall_permission,
+                see_subfolders=False,
+                many=True,
+                context={request: request},
+            ).data
         else:
             # self.get_queryset().none()
             queryset = self.get_queryset().exclude(path__contains="/").order_by("path")
+            data = []
             for document in queryset:
-                pass
-
-        collab_permission = PermissionForCollabDocument.objects.filter(
-            document__rlc=request.user.rlc
-        )
-
-        data = CollabDocumentTreeSerializer(
-            instance=queryset,
-            user=request.user,
-            all_documents=self.get_queryset(),
-            overall_permission=user_has_overall_permission,
-            many=True,
-            context={request: request},
-        ).data
+                if document.user_can_see(request.user):
+                    data.append(
+                        CollabDocumentTreeSerializer(
+                            instance=document,
+                            user=request.user,
+                            all_documents=self.get_queryset().order_by("path"),
+                            overall_permission=user_has_overall_permission,
+                            many=False,
+                            see_subfolders=False,
+                            context={request: request},
+                        ).data
+                    )
+        # collab_permission = PermissionForCollabDocument.objects.filter(
+        #     document__rlc=request.user.rlc
+        # )
         return Response(data)
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:

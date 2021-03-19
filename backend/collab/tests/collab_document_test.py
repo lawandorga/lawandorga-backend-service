@@ -218,9 +218,10 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         self.assertEqual(2, response.data.__len__())
         self.assertEqual(doc_top_2.id, response.data[0]["pk"])
         self.assertEqual(doc_top.id, response.data[1]["pk"])
+        self.assertEqual(1, response.data[1]["child_pages"].__len__())
         self.assertEqual(doc_middle.id, response.data[1]["child_pages"][0]["pk"])
         self.assertEqual(
-            doc_bottom.id, response.data[1]["child_pages"][0]["child_pages"][0]["pk"],
+            doc_bottom.id, response.data[1]["child_pages"][0]["child_pages"][1]["pk"],
         )
 
         overall_permission.delete()
@@ -247,6 +248,7 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         )
 
         # TODO: permission for bottom document
+        # TODO: permission for top level document
 
     def test_create_collab_document(self):
         self.assertEqual(0, CollabDocument.objects.count())
