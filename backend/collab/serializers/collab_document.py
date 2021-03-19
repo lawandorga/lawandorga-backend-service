@@ -61,10 +61,17 @@ class CollabDocumentPermissionListSerializer(serializers.ModelSerializer):
 class CollabDocumentTreeSerializer(serializers.ModelSerializer):
     child_pages = serializers.SerializerMethodField("get_sub_tree")
 
-    def __init__(self, user: UserProfile, all_documents: [CollabDocument], **kwargs):
+    def __init__(
+        self,
+        user: UserProfile,
+        all_documents: [CollabDocument],
+        overall_permission: bool,
+        **kwargs
+    ):
         super().__init__(**kwargs)
         self.user = user
         self.all_documents = all_documents
+        self.overall_permission = overall_permission
 
     class Meta:
         model = CollabDocument
@@ -82,13 +89,19 @@ class CollabDocumentTreeSerializer(serializers.ModelSerializer):
         child_documents = []
         # TODO: implement permissions (documents invisible)
         for doc in self.all_documents:
+            if not self.overall_permission:
+                continue
+
             ancestor: bool = doc.path.startswith("{}/".format(document.path))
             direct_child: bool = "/" not in doc.path[len(document.path) + 1 :]
 
             if ancestor and direct_child:
                 child_documents.append(
                     CollabDocumentTreeSerializer(
-                        instance=doc, user=self.user, all_documents=self.all_documents
+                        instance=doc,
+                        user=self.user,
+                        all_documents=self.all_documents,
+                        overall_permission=self.overall_permission,
                     ).data
                 )
         return child_documents

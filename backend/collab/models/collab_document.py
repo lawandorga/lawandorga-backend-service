@@ -17,6 +17,7 @@ from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.errors import CustomError
+from backend.api.models import UserProfile
 from backend.collab.models import TextDocument
 
 
@@ -43,3 +44,17 @@ class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument
                     return super().save(*args, **kwargs)
 
         return super().save(*args, **kwargs)
+
+    def user_can_see(self, user: UserProfile):
+        # add overall permission, maybe check before calling this?
+        from backend.collab.models import PermissionForCollabDocument
+
+        groups = user.group_members.all()
+        permissions = PermissionForCollabDocument.objects.filter(
+            group_has_permission__in=groups, document__path__startswith=self.path
+        )
+        return permissions.count() > 0
+
+    def user_has_read_permission(self, user: UserProfile):
+        # add overall permission
+        pass

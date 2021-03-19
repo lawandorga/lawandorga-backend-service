@@ -26,12 +26,14 @@ from backend.collab.models import (
     PermissionForCollabDocument,
 )
 from backend.collab.serializers import (
-    CollabDocumentPermissionListSerializer,
     CollabDocumentSerializer,
     CollabDocumentTreeSerializer,
 )
-from backend.api.errors import CustomError
-from backend.static.error_codes import ERROR__API__ID_NOT_FOUND
+from backend.static.permissions import (
+    PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
+    PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC,
+    PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
+)
 
 
 class CollabDocumentListViewSet(viewsets.ModelViewSet):
@@ -44,11 +46,35 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
             return self.queryset.filter(rlc=self.request.user.rlc)
 
     def list(self, request: Request, **kwargs: Any) -> Response:
-        queryset = self.get_queryset().exclude(path__contains="/").order_by("path")
+        user_has_overall_permission: bool = (
+            request.user.has_permission(
+                PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC, for_rlc=request.user.rlc
+            )
+            or request.user.has_permission(
+                PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC, for_rlc=request.user.rlc
+            )
+            or request.user.has_permission(
+                PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
+                for_rlc=request.user.rlc,
+            )
+        )
+        if user_has_overall_permission:
+            queryset = self.get_queryset().exclude(path__contains="/").order_by("path")
+        else:
+            # self.get_queryset().none()
+            queryset = self.get_queryset().exclude(path__contains="/").order_by("path")
+            for document in queryset:
+                pass
+
+        collab_permission = PermissionForCollabDocument.objects.filter(
+            document__rlc=request.user.rlc
+        )
+
         data = CollabDocumentTreeSerializer(
             instance=queryset,
             user=request.user,
             all_documents=self.get_queryset(),
+            overall_permission=user_has_overall_permission,
             many=True,
             context={request: request},
         ).data
