@@ -89,37 +89,23 @@ class CollabDocumentTreeSerializer(serializers.ModelSerializer):
 
     def get_sub_tree(self, document: CollabDocument):
         child_documents = []
-        # TODO: implement permissions (documents invisible)
         for doc in self.all_documents:
             ancestor: bool = doc.path.startswith("{}/".format(document.path))
             direct_child: bool = "/" not in doc.path[len(document.path) + 1 :]
 
-            if (
-                ancestor
-                and direct_child
-                and (
-                    self.overall_permission
-                    or self.see_subfolders
-                    or doc.user_can_see(self.user)
-                )
-            ):
-                if doc.user_can_see_direct(self.user) or self.see_subfolders:
-                    child_documents.append(
-                        CollabDocumentTreeSerializer(
-                            instance=doc,
-                            user=self.user,
-                            all_documents=self.all_documents,
-                            see_subfolders=True,
-                            overall_permission=self.overall_permission,
-                        ).data
-                    )
+            if ancestor and direct_child:
+                subfolders = False
+                if self.overall_permission or self.see_subfolders:
+                    add = True
                 else:
+                    add, subfolders = doc.user_can_see(self.user)
+                if add:
                     child_documents.append(
                         CollabDocumentTreeSerializer(
                             instance=doc,
                             user=self.user,
                             all_documents=self.all_documents,
-                            see_subfolders=False,
+                            see_subfolders=subfolders or self.see_subfolders,
                             overall_permission=self.overall_permission,
                         ).data
                     )

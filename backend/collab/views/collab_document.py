@@ -70,11 +70,11 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
                 context={request: request},
             ).data
         else:
-            # self.get_queryset().none()
             queryset = self.get_queryset().exclude(path__contains="/").order_by("path")
             data = []
             for document in queryset:
-                if document.user_can_see(request.user):
+                see, direct = document.user_can_see(request.user)
+                if see:
                     data.append(
                         CollabDocumentTreeSerializer(
                             instance=document,
@@ -82,13 +82,10 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
                             all_documents=self.get_queryset().order_by("path"),
                             overall_permission=user_has_overall_permission,
                             many=False,
-                            see_subfolders=False,
+                            see_subfolders=direct,
                             context={request: request},
                         ).data
                     )
-        # collab_permission = PermissionForCollabDocument.objects.filter(
-        #     document__rlc=request.user.rlc
-        # )
         return Response(data)
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:

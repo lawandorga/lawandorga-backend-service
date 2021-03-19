@@ -13,6 +13,8 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from typing import Tuple
+
 from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
 
@@ -45,24 +47,26 @@ class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument
 
         return super().save(*args, **kwargs)
 
-    def user_can_see(self, user: UserProfile):
-        # add overall permission, maybe check before calling this?
+    def user_can_see(self, user: UserProfile) -> Tuple[int, int]:
+        """
+        checks if user is able to see this document
+        return tuple with 2 elements
+            first if visible at all
+            second if visible directly (all subfolders should be visible too)
+        :param user:
+        :return:
+        """
         from backend.collab.models import PermissionForCollabDocument
 
         groups = user.group_members.all()
-        permissions = PermissionForCollabDocument.objects.filter(
-            group_has_permission__in=groups, document__path__startswith=self.path
-        )
-        return permissions.count() > 0
 
-    def user_can_see_direct(self, user: UserProfile):
-        from backend.collab.models import PermissionForCollabDocument
-
-        groups = user.group_members.all()
-        permissions = PermissionForCollabDocument.objects.filter(
+        permissions_direct = PermissionForCollabDocument.objects.filter(
             group_has_permission__in=groups, document__path=self.path
         )
-        return permissions.count() > 0
+        permissions_all = PermissionForCollabDocument.objects.filter(
+            group_has_permission__in=groups, document__path__startswith=self.path
+        )
+        return permissions_all.count() > 0, permissions_direct.count() > 0
 
     def user_has_read_permission(self, user: UserProfile):
         # add overall permission
