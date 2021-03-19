@@ -90,6 +90,7 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         data = request.data
+        # TODO: add permission here
 
         created_document = CollabDocument.objects.create(
             rlc=request.user.rlc,
@@ -101,4 +102,16 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"])
     def permissions(self, request: Request, pk: int):
-        permissions = PermissionForCollabDocument.objects.filter(document__id=pk)
+        document = CollabDocument.objects.get(id=pk)
+
+        user_groups = request.user.group_members.all()
+        permissions_direct = PermissionForCollabDocument.objects.filter(
+            group_has_permission__in=user_groups, document__path=document.path
+        )
+        permissions_below = PermissionForCollabDocument.objects.filter(
+            group_has_permission__in=user_groups,
+            document__path__startswith=document.path,
+        )
+        permissions_above = []
+        # parts = document.
+        return Response({})

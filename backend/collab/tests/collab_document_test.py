@@ -17,6 +17,7 @@ from django.test import TransactionTestCase
 from rest_framework.response import Response
 from rest_framework.test import APIClient
 
+from backend.api.errors import CustomError
 from backend.api.models import HasPermission, Permission
 from backend.collab.models import (
     CollabDocument,
@@ -47,7 +48,7 @@ class CollabDocumentModelTest(TransactionTestCase):
         self.assertEqual("test doc 1", document.path)
 
     def test_name_with_slash_value_error(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(CustomError):
             CollabDocument.objects.create(
                 rlc=self.base_fixtures["rlc"],
                 path="test/doc 2",
@@ -77,7 +78,7 @@ class CollabDocumentModelTest(TransactionTestCase):
         self.assertEqual(document.path, "{}(2)".format(create_data["path"]))
 
     def test_create_without_parent_value_error(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(CustomError):
             CollabDocument.objects.create(
                 rlc=self.base_fixtures["rlc"],
                 path="first non existent level/test doc 2",
@@ -92,7 +93,10 @@ class CollabDocumentModelTest(TransactionTestCase):
             path="test doc 1",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        self.assertFalse(document.user_can_see(self.base_fixtures["users"][0]["user"]))
+        self.assertEqual(
+            (False, False),
+            document.user_can_see(self.base_fixtures["users"][0]["user"]),
+        )
 
     def test_user_can_see_document_direct(self):
         document: CollabDocument = CollabDocument.objects.create(
@@ -108,7 +112,9 @@ class CollabDocumentModelTest(TransactionTestCase):
             permission=collab_permission,
             group_has_permission=self.base_fixtures["groups"][0],
         )
-        self.assertTrue(document.user_can_see(self.base_fixtures["users"][0]["user"]))
+        self.assertEqual(
+            (True, True), document.user_can_see(self.base_fixtures["users"][0]["user"])
+        )
 
     def test_user_can_see_document_indirect(self):
         document: CollabDocument = CollabDocument.objects.create(
@@ -135,12 +141,17 @@ class CollabDocumentModelTest(TransactionTestCase):
             permission=collab_permission,
             group_has_permission=self.base_fixtures["groups"][0],
         )
-        self.assertTrue(document.user_can_see(self.base_fixtures["users"][0]["user"]))
-        self.assertTrue(
-            document_middle.user_can_see(self.base_fixtures["users"][0]["user"])
+        self.assertEqual(
+            (True, False),
+            document.user_can_see(self.base_fixtures["users"][0]["user"]),
         )
-        self.assertFalse(
-            document_top.user_can_see(self.base_fixtures["users"][0]["user"])
+        self.assertEqual(
+            (True, True),
+            document_middle.user_can_see(self.base_fixtures["users"][0]["user"]),
+        )
+        self.assertEqual(
+            (False, False),
+            document_top.user_can_see(self.base_fixtures["users"][0]["user"]),
         )
 
 
@@ -153,8 +164,12 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         self.base_fixtures = CreateFixtures.create_base_fixtures()
         self.base_client: APIClient = self.base_fixtures["users"][0]["client"]
         self.foreign_rlc = CreateFixtures.create_foreign_rlc_fixture()
+
         self.full_write_permission, created = Permission.objects.get_or_create(
             name=PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC
+        )
+        self.collab_write_permission, created = CollabPermission.objects.get_or_create(
+            name=PERMISSION_WRITE_DOCUMENT
         )
 
     def add_document_structure(self):
@@ -203,9 +218,6 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         response: Response = self.base_client.get(self.urls_collab_documents,)
         self.assertEqual(0, response.data.__len__())
 
-        # TODO: permission for bottom document
-        # TODO: permission for top level document
-
     def test_list_documents_overall(self):
         (
             doc_top,
@@ -239,16 +251,13 @@ class CollabDocumentViewSetTest(TransactionTestCase):
             doc_bottom_first,
         ) = self.add_document_structure()
 
-        collab_permission, created = CollabPermission.objects.get_or_create(
-            name=PERMISSION_WRITE_DOCUMENT
-        )
         PermissionForCollabDocument.objects.create(
             document=doc_middle,
-            permission=collab_permission,
+            permission=self.collab_write_permission,
             group_has_permission=self.base_fixtures["groups"][0],
         )
 
-        response: Response = self.base_client.get(self.urls_collab_documents,)
+        response: Response = self.base_client.get(self.urls_collab_documents)
         self.assertEqual(1, response.data.__len__())
         self.assertEqual(doc_top.id, response.data[0]["pk"])
         self.assertEqual(1, response.data[0]["child_pages"].__len__())
@@ -271,16 +280,13 @@ class CollabDocumentViewSetTest(TransactionTestCase):
             doc_bottom_first,
         ) = self.add_document_structure()
 
-        collab_permission, created = CollabPermission.objects.get_or_create(
-            name=PERMISSION_WRITE_DOCUMENT
-        )
         PermissionForCollabDocument.objects.create(
             document=doc_top,
-            permission=collab_permission,
+            permission=self.collab_write_permission,
             group_has_permission=self.base_fixtures["groups"][0],
         )
 
-        response: Response = self.base_client.get(self.urls_collab_documents,)
+        response: Response = self.base_client.get(self.urls_collab_documents)
         self.assertEqual(1, response.data.__len__())
         self.assertEqual(doc_top.id, response.data[0]["pk"])
         self.assertEqual(1, response.data[0]["child_pages"].__len__())
@@ -303,16 +309,13 @@ class CollabDocumentViewSetTest(TransactionTestCase):
             doc_bottom_first,
         ) = self.add_document_structure()
 
-        collab_permission, created = CollabPermission.objects.get_or_create(
-            name=PERMISSION_WRITE_DOCUMENT
-        )
         PermissionForCollabDocument.objects.create(
             document=doc_top_2,
-            permission=collab_permission,
+            permission=self.collab_write_permission,
             group_has_permission=self.base_fixtures["groups"][0],
         )
 
-        response: Response = self.base_client.get(self.urls_collab_documents,)
+        response: Response = self.base_client.get(self.urls_collab_documents)
         self.assertEqual(1, response.data.__len__())
         self.assertEqual(doc_top_2.id, response.data[0]["pk"])
         self.assertEqual(0, response.data[0]["child_pages"].__len__())
@@ -326,16 +329,13 @@ class CollabDocumentViewSetTest(TransactionTestCase):
             doc_bottom_first,
         ) = self.add_document_structure()
 
-        collab_permission, created = CollabPermission.objects.get_or_create(
-            name=PERMISSION_WRITE_DOCUMENT
-        )
         PermissionForCollabDocument.objects.create(
             document=doc_bottom,
-            permission=collab_permission,
+            permission=self.collab_write_permission,
             group_has_permission=self.base_fixtures["groups"][0],
         )
 
-        response: Response = self.base_client.get(self.urls_collab_documents,)
+        response: Response = self.base_client.get(self.urls_collab_documents)
         self.assertEqual(1, response.data.__len__())
         self.assertEqual(doc_top.id, response.data[0]["pk"])
         self.assertEqual(1, response.data[0]["child_pages"].__len__())
@@ -422,6 +422,11 @@ class CollabDocumentViewSetTest(TransactionTestCase):
             rlc=self.base_fixtures["rlc"],
             path="test doc 2",
             creator=self.base_fixtures["users"][0]["user"],
+        )
+        HasPermission.objects.create(
+            group_has_permission=self.base_fixtures["groups"][0],
+            permission=self.full_write_permission,
+            permission_for_rlc=self.base_fixtures["rlc"],
         )
 
         CollabDocument.objects.create(
