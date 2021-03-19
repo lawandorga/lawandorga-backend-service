@@ -16,6 +16,7 @@
 from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
 
+from backend.api.errors import CustomError
 from backend.collab.models import TextDocument
 
 
@@ -26,7 +27,8 @@ class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument
         if "/" in self.path:
             parent_doc = "/".join(self.path.split("/")[0:-1])
             if not CollabDocument.objects.filter(path=parent_doc).exists():
-                raise ValueError("parent document doesn't exist")
+                # raise ValueError("parent document doesn't exist")
+                raise CustomError("parent document doesn't exist")
 
         if CollabDocument.objects.filter(path=self.path).exists():
             count = 1

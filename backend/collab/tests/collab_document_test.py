@@ -155,42 +155,35 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         self.assertEqual(response.data["id"], from_db.id)
 
     def test_create_dollab_document_doubled_name(self):
-        doubled_name = "test doc 1"
+        doubled_path = "test doc 1"
         CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
-            path=doubled_name,
+            path=doubled_path,
             creator=self.base_fixtures["users"][0]["user"],
         )
 
         response: Response = self.base_client.post(
-            self.urls_collab_documents, {"path": doubled_name}, format="json",
+            self.urls_collab_documents, {"path": doubled_path}, format="json",
         )
         self.assertEqual(2, CollabDocument.objects.count())
         self.assertTrue("id" in response.data)
-        self.assertTrue("name" in response.data)
-        self.assertEqual(doubled_name + " (1)", response.data["name"])
+        self.assertTrue("path" in response.data)
+        self.assertEqual(doubled_path + "(1)", response.data["path"])
+        self.assertEqual(1, CollabDocument.objects.filter(path=doubled_path).count())
         self.assertEqual(
-            1, CollabDocument.objects.filter(name=doubled_name, parent=None).count()
-        )
-        self.assertEqual(
-            1,
-            CollabDocument.objects.filter(
-                name=doubled_name + " (1)", parent=None
-            ).count(),
+            1, CollabDocument.objects.filter(path=doubled_path + "(1)").count(),
         )
 
     def test_create_collab_document_with_parent_id(self):
-        first_document = CollabDocument(
+        first_document = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
-            parent=None,
-            name="parent document",
+            path="top document",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        first_document.save()
 
         response: Response = self.base_client.post(
             self.urls_collab_documents,
-            {"name": "test document 1", "parent_id": first_document.id},
+            {"path": "top document/test document 1"},
             format="json",
         )
         self.assertEqual(2, CollabDocument.objects.count())
@@ -199,134 +192,46 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         from_db: CollabDocument = CollabDocument.objects.filter(
             pk=response.data["id"]
         ).first()
-        self.assertEqual(from_db.parent, first_document)
+        self.assertIn(first_document.path, from_db.path)
 
     def test_create_collab_document_with_wrong_parent_id(self):
-        first_document = CollabDocument(
+        CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
-            parent=None,
-            name="parent document",
+            path="parent document",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        first_document.save()
 
         response: Response = self.base_client.post(
             self.urls_collab_documents,
-            {"name": "test document 1", "parent_id": first_document.id + 1},
+            {"path": "parent document 1/test document 1"},
             format="json",
         )
         self.assertEqual(1, CollabDocument.objects.count())
         self.assertEqual(400, response.status_code)
-        self.assertEqual(
-            error_codes.ERROR__API__ID_NOT_FOUND["error_code"],
-            response.data["error_code"],
-        )
-
-    def test_create_collab_document_without_parent_id(self):
-        self.assertEqual(0, CollabDocument.objects.count())
-
-        response: Response = self.base_client.post(
-            self.urls_collab_documents, {"name": "test document 1"}, format="json",
-        )
-        self.assertEqual(1, CollabDocument.objects.count())
-
-        from_db: CollabDocument = CollabDocument.objects.first()
-        self.assertTrue("id" in response.data)
-        self.assertEqual(response.data["id"], from_db.id)
-        self.assertEqual(response.data["parent"], None)
 
     def test_list_documents_foreign_rlc(self):
-        document = CollabDocument(
+        document = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
-            parent=None,
-            name="test doc 1",
+            path="test doc 1",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        document.save()
-        document2 = CollabDocument(
+        document2 = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
-            parent=None,
-            name="test doc 2",
+            path="test doc 2",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        document2.save()
 
-        document_foreign = CollabDocument(
+        CollabDocument.objects.create(
             rlc=self.foreign_rlc["rlc"],
-            parent=None,
-            name="test doc 2",
+            path="test doc 2",
             creator=self.foreign_rlc["users"][0]["user"],
         )
-        document_foreign.save()
 
         response: Response = self.base_client.get(self.urls_collab_documents,)
         self.assertEqual(2, response.data.__len__())
-        ids = [item["id"] for item in response.data]
+        ids = [item["pk"] for item in response.data]
         self.assertIn(document.id, ids)
         self.assertIn(document2.id, ids)
-
-    def test_model_get_document_from_path(self):
-        doc_top = CollabDocument(
-            rlc=self.base_fixtures["rlc"],
-            parent=None,
-            name="top_doc",
-            creator=self.base_fixtures["users"][0]["user"],
-        )
-        doc_top.save()
-        doc_middle = CollabDocument(
-            rlc=self.base_fixtures["rlc"],
-            parent=doc_top,
-            name="middle_doc",
-            creator=self.base_fixtures["users"][0]["user"],
-        )
-        doc_middle.save()
-
-        doc_bottom = CollabDocument(
-            rlc=self.base_fixtures["rlc"],
-            parent=doc_middle,
-            name="bottom_doc",
-            creator=self.base_fixtures["users"][0]["user"],
-        )
-        doc_bottom.save()
-
-        doc_bottom_with_dash = CollabDocument(
-            rlc=self.base_fixtures["rlc"],
-            parent=doc_middle,
-            name="with/dash",
-            creator=self.base_fixtures["users"][0]["user"],
-        )
-        doc_bottom_with_dash.save()
-
-        self.assertEqual(
-            doc_middle,
-            CollabDocument.get_collab_document_from_path(
-                "top_doc//middle_doc//", self.base_fixtures["rlc"]
-            ),
-        )
-        self.assertEqual(
-            doc_middle,
-            CollabDocument.get_collab_document_from_path(
-                "top_doc//middle_doc", self.base_fixtures["rlc"]
-            ),
-        )
-        self.assertEqual(
-            doc_bottom,
-            CollabDocument.get_collab_document_from_path(
-                "top_doc//middle_doc//bottom_doc", self.base_fixtures["rlc"]
-            ),
-        )
-        self.assertEqual(
-            doc_bottom,
-            CollabDocument.get_collab_document_from_path(
-                "top_doc//middle_doc//bottom_doc", self.base_fixtures["rlc"]
-            ),
-        )
-        self.assertEqual(
-            doc_bottom_with_dash,
-            CollabDocument.get_collab_document_from_path(
-                "top_doc//middle_doc//with/dash", self.base_fixtures["rlc"]
-            ),
-        )
 
     def test_get_for_document(self):
         permission: CollabPermission = CollabPermission.objects.create(
@@ -334,8 +239,7 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         )
         document = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
-            parent=None,
-            name="test doc 1",
+            path="test doc 1",
             creator=self.base_fixtures["users"][0]["user"],
         )
         permission_for_collab_document = PermissionForCollabDocument.objects.create(
