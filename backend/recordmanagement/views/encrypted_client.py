@@ -18,6 +18,6 @@ from backend.recordmanagement import serializers
 from rest_framework import viewsets
 
 
-class EncryptedClientsViewSet(viewsets.ModelViewSet):
+class EncryptedClientViewSet(viewsets.ModelViewSet):
     queryset = EncryptedClient.objects.all()
     serializer_class = serializers.EncryptedClientSerializer

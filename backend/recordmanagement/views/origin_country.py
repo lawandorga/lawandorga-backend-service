@@ -23,7 +23,7 @@ from backend.recordmanagement.models.origin_country import OriginCountry
 from backend.api.permissions import OriginCountryPermission
 
 
-class OriginCountriesViewSet(viewsets.ModelViewSet):
+class OriginCountryViewSet(viewsets.ModelViewSet):
     queryset = OriginCountry.objects.all()
     serializer_class = serializers.OriginCountrySerializer
     permission_classes = (

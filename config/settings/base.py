@@ -72,8 +72,6 @@ MIDDLEWARE = [
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-ROOT_URLCONF
 ROOT_URLCONF = "config.urls"
 
-# SILENCED_SYSTEM_CHECKS = ['rest_framework.W001']
-
 # Templates
 # https://docs.djangoproject.com/en/dev/topics/templates/#configuration
 TEMPLATES = [
@@ -109,7 +107,7 @@ USE_TZ = True
 AUTH_USER_MODEL = "api.UserProfile"
 
 # secret keys
-# TODO: figure out what this is and if it is need on local and prod
+# TODO: add link to docs
 SCW_SECRET_KEY = os.environ.get("SCW_SECRET_KEY")
 SCW_ACCESS_KEY = os.environ.get("SCW_ACCESS_KEY")
 SCW_S3_BUCKET_NAME = os.environ.get("SCW_S3_BUCKET_NAME")

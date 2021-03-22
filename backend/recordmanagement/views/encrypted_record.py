@@ -23,7 +23,7 @@ from backend.recordmanagement.serializers import (
     EncryptedRecordDocumentSerializer,
     EncryptedRecordMessageDetailSerializer,
     EncryptedRecordListSerializer,
-    EncryptedRecordMessageSerializer,
+    EncryptedRecordMessageSerializer, EncryptedRecordPermissionSerializer,
 )
 from backend.recordmanagement.models import (
     EncryptedRecordPermission,
@@ -349,6 +349,39 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
             record.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post'])
+    def request_permission(self, request: Request, pk=None):
+        record: EncryptedRecord = EncryptedRecord.objects.get(pk)
+        if record.from_rlc != request.user.rlc:
+            raise CustomError(error_codes.ERROR__API__WRONG_RLC)
+
+        if record.user_has_permission(request.user):
+            raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ALREADY_WORKING_ON)
+
+        if (
+            EncryptedRecordPermission.objects.filter(
+                record=record, request_from=request.user, state="re"
+            ).count()
+            >= 1
+        ):
+            raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ALREADY_REQUESTED)
+        can_edit = False
+        if "can_edit" in request.data:
+            can_edit = request.data["can_edit"]
+
+        record_permission = EncryptedRecordPermission(
+            request_from=request.user, record=record, can_edit=can_edit
+        )
+        record_permission.save()
+
+        Notification.objects.notify_record_permission_requested(
+            request.user, record_permission
+        )
+
+        return Response(
+            EncryptedRecordPermissionSerializer(record_permission).data
+        )
 
     @action(detail=True, methods=["post"])
     def add_message(self, request, pk=None):
