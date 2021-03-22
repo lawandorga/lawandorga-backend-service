@@ -112,26 +112,12 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
         except Exception as e:
             raise CustomError("document does not exist")
 
-        # TODO: really filter  for this? should be implicit in textdocument -> rlc
-        groups = Group.objects.filter(from_rlc=request.user.rlc)
         permissions_direct = PermissionForCollabDocument.objects.filter(
-            group_has_permission__in=groups, document__path=document.path
+            document__path=document.path
         )
         permissions_below = PermissionForCollabDocument.objects.filter(
-            group_has_permission__in=groups, document__path__startswith=document.path,
+            document__path__startswith=document.path,
         ).exclude(document__path=document.path)
-
-        overall_permissions_strings = [
-            PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
-            PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
-            PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC,
-        ]
-        overall_permissions = Permission.objects.filter(
-            name__in=overall_permissions_strings
-        )
-        has_permissions_for_groups = HasPermission.objects.filter(
-            permission_for_rlc=request.user.rlc, permission__in=overall_permissions,
-        )
 
         permissions_above = []
         parts = document.path.split("/")
@@ -150,7 +136,18 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
             if i >= parts.__len__() - 1:
                 break
 
-        # parts = document.
+        overall_permissions_strings = [
+            PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
+            PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
+            PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC,
+        ]
+        overall_permissions = Permission.objects.filter(
+            name__in=overall_permissions_strings
+        )
+        has_permissions_for_groups = HasPermission.objects.filter(
+            permission_for_rlc=request.user.rlc, permission__in=overall_permissions,
+        )
+
         return_object = {
             "from_above": PermissionForCollabDocumentNestedSerializer(
                 permissions_above, many=True

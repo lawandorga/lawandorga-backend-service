@@ -575,3 +575,25 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         self.assertEqual(
             general_manage_permission.id, response.data["general"][0]["id"]
         )
+
+        # test for doc_1_1_1
+        url = "{}{}/permissions/".format(self.urls_collab_documents, doc_1_1_1.id)
+        response: Response = client.get(url)
+
+        self.assertEqual(200, response.status_code)
+        # response should contain: from_above, from_below, direct, general
+        self.assertEqual(4, len(response.data))
+        # from above
+        self.assertIn("from_above", response.data)
+        self.assertEqual(2, len(response.data["from_above"]))
+        self.assertEqual(permission_for_doc_1.id, response.data["from_above"][0]["id"])
+        self.assertEqual(
+            permission_for_doc_1_1.id, response.data["from_above"][1]["id"]
+        )
+        # from below
+        self.assertIn("from_above", response.data)
+        self.assertEqual(0, len(response.data["from_below"]))
+        # direct
+        self.assertIn("direct", response.data)
+        self.assertEqual(1, len(response.data["direct"]))
+        self.assertEqual(permission_for_doc_1_1_1.id, response.data["direct"][0]["id"])
