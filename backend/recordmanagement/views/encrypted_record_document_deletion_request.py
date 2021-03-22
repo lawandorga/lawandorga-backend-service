@@ -39,6 +39,7 @@ from backend.static import error_codes, permissions
 
 class EncryptedRecordDocumentDeletionRequestViewSet(viewsets.ModelViewSet):
     serializer_class = EncryptedRecordDocumentDeletionRequestSerializer
+    queryset = EncryptedRecordDocumentDeletionRequest.objects.none()
 
     def get_queryset(self) -> QuerySet:
         if self.request.user.is_superuser:

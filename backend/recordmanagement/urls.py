@@ -13,9 +13,9 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from backend.recordmanagement.views import *
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
-from .views import *
 
 router = DefaultRouter()
 router.register("origin_countries", OriginCountryViewSet)
