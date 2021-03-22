@@ -70,6 +70,21 @@ class GroupViewSet(viewsets.ModelViewSet):
         # add member to group
         if request.method == 'POST':
             group.group_members.add(member)
+            # check if group can see encrypted data and add keys for the new member if so
+            if group.group_has_record_encryption_keys_permission():
+                private_key_user = request.user.get_private_key(request=request)
+                records = list(EncryptedRecord.objects.filter(from_rlc=request.user.rlc))
+                for record in records:
+                    record_key = record.get_decryption_key(request.user, private_key_user)
+                    public_key_member = member.get_public_key()
+                    record_encryption = RecordEncryption(
+                        user=member,
+                        record=record,
+                        record_key=record_key
+                    )
+                    record_encryption.encrypt(public_key_member)
+                    record_encryption.save()
+            # notify
             Notification.objects.notify_group_member_added(request.user, member, group)
 
         # remove member from group
