@@ -66,7 +66,6 @@ urlpatterns = [
         views.UserActivationLinkViewSet.as_view(),
     ),
     path("new_user_request_admit/", views.NewUserRequestAdmitViewSet.as_view()),
-    path("logout/", views.LogoutViewSet.as_view()),
     path("user_has_permissions/", views.UserHasPermissionsViewSet.as_view()),
     path("my_rlc_settings/", views.RlcSettingsMineViewSet.as_view()),
 ]
