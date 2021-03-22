@@ -70,5 +70,4 @@ urlpatterns = [
     path("inactive_users/", views.InactiveUsersViewSet.as_view()),
     path("user_has_permissions/", views.UserHasPermissionsViewSet.as_view()),
     path("my_rlc_settings/", views.RlcSettingsMineViewSet.as_view()),
-    path("unread_notifications/", views.UnreadNotificationsViewSet.as_view()),
 ]
