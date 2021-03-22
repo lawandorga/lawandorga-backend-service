@@ -18,7 +18,7 @@ from django.urls import path, include
 from backend.api import views
 
 router = DefaultRouter()
-router.register("profiles", views.user.UserProfileViewSet)
+router.register("profiles", views.user.UserViewSet)
 router.register("login", views.LoginViewSet, basename="login")
 router.register(
     "create_profile", views.UserProfileCreatorViewSet, basename="create_profile"
@@ -67,7 +67,6 @@ urlpatterns = [
     ),
     path("new_user_request_admit/", views.NewUserRequestAdmitViewSet.as_view()),
     path("logout/", views.LogoutViewSet.as_view()),
-    path("inactive_users/", views.InactiveUsersViewSet.as_view()),
     path("user_has_permissions/", views.UserHasPermissionsViewSet.as_view()),
     path("my_rlc_settings/", views.RlcSettingsMineViewSet.as_view()),
 ]

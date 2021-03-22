@@ -22,6 +22,7 @@ from django.http import QueryDict
 from rest_framework import viewsets, filters, status
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.serializers import AuthTokenSerializer
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -42,7 +43,7 @@ from backend.api.models import (
     NotificationGroup,
 )
 from backend.api.serializers import (
-    UserProfileSerializer,
+    UserSerializer,
     UserProfileCreatorSerializer,
     UserProfileNameSerializer,
     RlcSerializer,
@@ -52,12 +53,11 @@ from backend.static.permissions import PERMISSION_ACCEPT_NEW_USERS_RLC
 from backend.static.middleware import get_private_key_from_request
 
 
-class UserProfileViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     """Handles reading and updating profiles"""
 
-    serializer_class = UserProfileSerializer
+    serializer_class = UserSerializer
     queryset = UserProfile.objects.all()
-    permission_classes = (IsAuthenticated,)
     filter_backends = (filters.SearchFilter,)
     search_fields = (
         "name",
@@ -94,14 +94,14 @@ class UserProfileViewSet(viewsets.ModelViewSet):
             if request.user.is_superuser or request.user.has_permission(
                 permissions.PERMISSION_VIEW_FULL_USER_DETAIL_OVERALL
             ):
-                serializer = UserProfileSerializer(user)
+                serializer = UserSerializer(user)
             else:
                 raise CustomError(ERROR__API__USER__NOT_SAME_RLC)
         else:
             if request.user.has_permission(
                 permissions.PERMISSION_VIEW_FULL_USER_DETAIL_RLC
             ):
-                serializer = UserProfileSerializer(user)
+                serializer = UserSerializer(user)
             else:
                 serializer = UserProfileForeignSerializer(user)
         return Response(serializer.data)
@@ -137,7 +137,47 @@ class UserProfileViewSet(viewsets.ModelViewSet):
             if "is_active" in data:
                 user.is_active = data["is_active"]
         user.save()
-        return Response(UserProfileSerializer(user).data)
+        return Response(UserSerializer(user).data)
+
+    @action(detail=False, methods=['post'])
+    def logout(self, request: Request):
+        if not request.user.is_authenticated:
+            return Response()
+        Token.objects.filter(user=request.user).delete()
+        return Response()
+
+    @action(detail=False, methods=['get', 'post'])
+    def inactive(self, request: Request):
+        if request.method == 'GET':
+            if not request.user.has_permission(permissions.PERMISSION_ACTIVATE_INACTIVE_USERS_RLC,
+                                               for_rlc=request.user.rlc):
+                raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+
+            inactive_users = UserProfile.objects.filter(rlc=request.user.rlc, is_active=False)
+            return Response(UserSerializer(inactive_users, many=True).data)
+
+        elif request.method == 'POST':
+            if not request.user.has_permission(
+                permissions.PERMISSION_ACTIVATE_INACTIVE_USERS_RLC, for_rlc=request.user.rlc
+            ):
+                raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+            # method and user_id
+            if request.data["method"] == "activate":
+                try:
+                    user = UserProfile.objects.get(pk=request.data["user_id"])
+                except:
+                    raise CustomError(ERROR__API__USER__NOT_FOUND)
+
+                granting_users_private_key = get_private_key_from_request(request)
+                rlcs_aes_key = request.user.get_rlcs_aes_key(granting_users_private_key)
+                user.generate_rlc_keys_for_this_user(rlcs_aes_key)
+
+                user.is_active = True
+                user.save()
+                return Response(UserSerializer(user).data)
+            raise CustomError(ERROR__API__ACTION_NOT_VALID)
+
+        return Response({})
 
 
 class UserProfileCreatorViewSet(viewsets.ModelViewSet):
@@ -281,7 +321,7 @@ class LoginViewSet(viewsets.ViewSet):
     @staticmethod
     def get_login_data(token, private_key=None):
         user = Token.objects.get(key=token).user
-        serialized_user = UserProfileSerializer(user).data
+        serialized_user = UserSerializer(user).data
         serialized_rlc = RlcSerializer(user.rlc).data
 
         notifications = NotificationGroup.objects.filter(user=user, read=False).count()
@@ -341,36 +381,3 @@ class LogoutViewSet(APIView):
             return Response()
         Token.objects.filter(user=request.user).delete()
         return Response()
-
-
-class InactiveUsersViewSet(APIView):
-    def get(self, request):
-        if not request.user.has_permission(
-            permissions.PERMISSION_ACTIVATE_INACTIVE_USERS_RLC, for_rlc=request.user.rlc
-        ):
-            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
-        inactive_users = UserProfile.objects.filter(
-            rlc=request.user.rlc, is_active=False
-        )
-        return Response(UserProfileSerializer(inactive_users, many=True).data)
-
-    def post(self, request):
-        if not request.user.has_permission(
-            permissions.PERMISSION_ACTIVATE_INACTIVE_USERS_RLC, for_rlc=request.user.rlc
-        ):
-            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
-        # method and user_id
-        if request.data["method"] == "activate":
-            try:
-                user = UserProfile.objects.get(pk=request.data["user_id"])
-            except:
-                raise CustomError(ERROR__API__USER__NOT_FOUND)
-
-            granting_users_private_key = get_private_key_from_request(request)
-            rlcs_aes_key = request.user.get_rlcs_aes_key(granting_users_private_key)
-            user.generate_rlc_keys_for_this_user(rlcs_aes_key)
-
-            user.is_active = True
-            user.save()
-            return Response(UserProfileSerializer(user).data)
-        raise CustomError(ERROR__API__ACTION_NOT_VALID)

@@ -17,7 +17,7 @@ from backend.api.models import UserProfile
 from rest_framework import serializers
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     group_members = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     user_has_permission = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     permission_for_user = serializers.PrimaryKeyRelatedField(many=True, read_only=True)

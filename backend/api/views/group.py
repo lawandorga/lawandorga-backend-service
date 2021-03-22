@@ -13,19 +13,15 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from backend.recordmanagement.helpers import add_record_encryption_keys_for_users
 from backend.recordmanagement.models import EncryptedRecord, RecordEncryption, Notification
-from backend.static.middleware import get_private_key_from_request
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from backend.api.serializers import GroupSerializer, GroupMembersSerializer, GroupAddMemberSerializer
 from rest_framework.request import Request
-from rest_framework.views import APIView
 from backend.api.errors import CustomError
 from backend.api.models import Group, UserProfile
 from backend.static import error_codes, permissions
 from rest_framework import viewsets
-from backend.api import models, serializers
 
 
 class GroupViewSet(viewsets.ModelViewSet):
@@ -95,56 +91,3 @@ class GroupViewSet(viewsets.ModelViewSet):
 
         # return something
         return Response(GroupMembersSerializer(group).data)
-
-
-class GroupMembersViewSet(APIView):
-    def post(self, request):
-        request_user: models.UserProfile = request.user
-        if not request_user.has_permission(
-            permissions.PERMISSION_MANAGE_GROUPS_RLC, for_rlc=request_user.rlc
-        ):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-
-        if (
-            "action" not in request.data
-            or "group_id" not in request.data
-            or "user_ids" not in request.data
-        ):
-            raise CustomError(error_codes.ERROR__API__MISSING_ARGUMENT)
-        try:
-            group = models.Group.objects.get(pk=request.data["group_id"])
-        except:
-            raise CustomError(error_codes.ERROR__API__GROUP__GROUP_NOT_FOUND)
-
-        users = []
-        for user_id in request.data["user_ids"]:
-            try:
-                user = models.UserProfile.objects.get(pk=user_id)
-                users.append(user)
-            except:
-                raise CustomError(error_codes.ERROR__API__USER__NOT_FOUND)
-
-        if request.data["action"] == "add":
-            if group.group_has_record_encryption_keys_permission():
-                granting_users_private_key = get_private_key_from_request(request)
-                add_record_encryption_keys_for_users(
-                    request.user, granting_users_private_key, users
-                )
-            for user in users:
-                group.group_members.add(user)
-                models.Notification.objects.notify_group_member_added(
-                    request.user, user, group
-                )
-            group.save()
-            return Response(serializers.GroupSerializer(group).data)
-        elif request.data["action"] == "remove":
-            for user in users:
-                group.group_members.remove(user)
-                models.Notification.objects.notify_group_member_removed(
-                    request.user, user, group
-                )
-
-            group.save()
-            return Response(serializers.GroupSerializer(group).data)
-
-        raise CustomError(error_codes.ERROR__API__NO_ACTION_PROVIDED)

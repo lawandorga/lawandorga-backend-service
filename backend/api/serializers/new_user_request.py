@@ -19,12 +19,12 @@ from backend.api import models
 from backend.api.models.new_user_request import NewUserRequest
 from backend.api.serializers.user import (
     UserProfileNameSerializer,
-    UserProfileSerializer,
+    UserSerializer,
 )
 
 
 class NewUserRequestSerializer(serializers.ModelSerializer):
-    request_from = UserProfileSerializer(many=False, read_only=True)
+    request_from = UserSerializer(many=False, read_only=True)
     request_processed = UserProfileNameSerializer(many=False, read_only=True)
 
     class Meta:
