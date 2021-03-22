@@ -30,6 +30,7 @@ from backend.collab.static.collab_permissions import PERMISSION_WRITE_DOCUMENT
 from backend.static.permissions import (
     PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
     PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
+    PERMISSION_MANAGE_GROUPS_RLC,
 )
 
 
@@ -464,9 +465,113 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         )
 
         client: APIClient = self.base_fixtures["users"][0]["client"]
-        url = "{}{}/permissions/".format(
-            self.urls_collab_documents, permission_for_collab_document.id
-        )
+        url = "{}{}/permissions/".format(self.urls_collab_documents, document.id)
         response: Response = client.get(url)
 
         self.assertEqual(200, response.status_code)
+
+    def test_get_permisssion_for_document_complicated(self):
+        permission: CollabPermission = CollabPermission.objects.create(
+            name="test_permission"
+        )
+        doc_1 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="top doc 1",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_2 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="top doc 2",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_1_1 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="{}/middle doc 1".format(doc_1.path),
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_1_2 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="{}/middle doc 2".format(doc_1.path),
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_1_1_1 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="{}/bottom doc 1".format(doc_1_1.path),
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_1_1_2 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="{}/bottom doc 2".format(doc_1_1.path),
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+
+        permission_for_doc_1_1 = PermissionForCollabDocument.objects.create(
+            group_has_permission=self.base_fixtures["groups"][0],
+            permission=permission,
+            document=doc_1_1,
+        )
+        permission_for_doc_1_1_1 = PermissionForCollabDocument.objects.create(
+            group_has_permission=self.base_fixtures["groups"][1],
+            permission=permission,
+            document=doc_1_1_1,
+        )
+        permission_for_doc_1_1_2 = PermissionForCollabDocument.objects.create(
+            group_has_permission=self.base_fixtures["groups"][1],
+            permission=permission,
+            document=doc_1_1_2,
+        )
+        permission_for_doc_1 = PermissionForCollabDocument.objects.create(
+            group_has_permission=self.base_fixtures["groups"][2],
+            permission=permission,
+            document=doc_1,
+        )
+        permission_for_doc_2 = PermissionForCollabDocument.objects.create(
+            group_has_permission=self.base_fixtures["groups"][2],
+            permission=permission,
+            document=doc_2,
+        )
+
+        # general permission
+        general_manage_permission = HasPermission.objects.create(
+            permission=Permission.objects.get(
+                name=PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC
+            ),
+            group_has_permission=self.base_fixtures["groups"][0],
+            permission_for_rlc=self.base_fixtures["rlc"],
+        )
+        unimportant_general_permission = HasPermission.objects.create(
+            permission=Permission.objects.get(name=PERMISSION_MANAGE_GROUPS_RLC),
+            group_has_permission=self.base_fixtures["groups"][0],
+            permission_for_rlc=self.base_fixtures["rlc"],
+        )
+
+        client: APIClient = self.base_fixtures["users"][0]["client"]
+        url = "{}{}/permissions/".format(self.urls_collab_documents, doc_1_1.id)
+        response: Response = client.get(url)
+
+        self.assertEqual(200, response.status_code)
+        # response should contain: from_above, from_below, direct, general
+        self.assertEqual(4, len(response.data))
+        # from above
+        self.assertIn("from_above", response.data)
+        self.assertEqual(1, len(response.data["from_above"]))
+        self.assertEqual(permission_for_doc_1.id, response.data["from_above"][0]["id"])
+        # from below
+        self.assertIn("from_below", response.data)
+        self.assertEqual(2, len(response.data["from_below"]))
+        self.assertEqual(
+            permission_for_doc_1_1_1.id, response.data["from_below"][0]["id"]
+        )
+        self.assertEqual(
+            permission_for_doc_1_1_2.id, response.data["from_below"][1]["id"]
+        )
+        # direct
+        self.assertIn("direct", response.data)
+        self.assertEqual(1, len(response.data["direct"]))
+        self.assertEqual(permission_for_doc_1_1.id, response.data["direct"][0]["id"])
+        # general
+        self.assertIn("general", response.data)
+        self.assertEqual(1, len(response.data["general"]))
+        self.assertEqual(
+            general_manage_permission.id, response.data["general"][0]["id"]
+        )
