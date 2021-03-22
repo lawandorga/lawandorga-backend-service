@@ -38,7 +38,7 @@ class TextDocumentSerializer(serializers.ModelSerializer):
     #     return data
 
 
-class TextDocumentNameSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TextDocument
-        fields = ("pk", "name")
+# class TextDocumentNameSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = TextDocument
+#         fields = ("pk", "]") # TODO: change this

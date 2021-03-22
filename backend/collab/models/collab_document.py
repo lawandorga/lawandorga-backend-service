@@ -13,7 +13,7 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from typing import Tuple
+from typing import Any, Dict, Tuple
 
 from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
@@ -46,6 +46,12 @@ class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument
                     return super().save(*args, **kwargs)
 
         return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs) -> Tuple[int, Dict[str, int]]:
+        CollabDocument.objects.exclude(path=self.path).filter(
+            path__startswith="{}/".format(self.path)
+        ).delete()
+        return super().delete(*args, **kwargs)
 
     def user_can_see(self, user: UserProfile) -> Tuple[int, int]:
         """

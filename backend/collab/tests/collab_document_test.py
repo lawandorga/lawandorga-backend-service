@@ -597,3 +597,63 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         self.assertIn("direct", response.data)
         self.assertEqual(1, len(response.data["direct"]))
         self.assertEqual(permission_for_doc_1_1_1.id, response.data["direct"][0]["id"])
+
+    def test_delete_document(self):
+        doc_1 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="top doc 1",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_2 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="top doc 2",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_1_1 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="{}/middle doc 1".format(doc_1.path),
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_1_2 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="{}/middle doc 2".format(doc_1.path),
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_1_1_1 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="{}/bottom doc 1".format(doc_1_1.path),
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        self.assertEqual(5, CollabDocument.objects.count())
+        self.assertEqual(5, TextDocument.objects.count())
+
+        client: APIClient = self.base_fixtures["users"][0]["client"]
+        url = "{}{}/".format(self.urls_collab_documents, doc_1_1.id)
+        response: Response = client.delete(url)
+
+        self.assertEqual(3, CollabDocument.objects.count())
+        self.assertEqual(3, TextDocument.objects.count())
+
+    def test_delete_document_same_start(self):
+        doc_1 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="top doc 1",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_12 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="top doc 1 2",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_13 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="top doc 1 3",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+
+        client: APIClient = self.base_fixtures["users"][0]["client"]
+        url = "{}{}/".format(self.urls_collab_documents, doc_1.id)
+        response: Response = client.delete(url)
+
+        self.assertEqual(2, CollabDocument.objects.count())
+        self.assertEqual(2, TextDocument.objects.count())

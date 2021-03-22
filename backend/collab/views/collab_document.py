@@ -116,7 +116,7 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
             document__path=document.path
         )
         permissions_below = PermissionForCollabDocument.objects.filter(
-            document__path__startswith=document.path,
+            document__path__startswith="{}/".format(document.path),
         ).exclude(document__path=document.path)
 
         permissions_above = []
