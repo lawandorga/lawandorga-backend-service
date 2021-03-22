@@ -64,7 +64,8 @@ class GroupViewSet(viewsets.ModelViewSet):
         group = self.get_object()
 
         # get the data
-        serializer = GroupAddMemberSerializer(request.data)
+        serializer = GroupAddMemberSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         member = UserProfile.objects.get(pk=serializer.validated_data['member'])
 
         # add member to group
@@ -93,7 +94,7 @@ class GroupViewSet(viewsets.ModelViewSet):
             Notification.objects.notify_group_member_removed(request.user, member, group)
 
         # return something
-        return Response(self.get_serializer(group).data)
+        return Response(GroupMembersSerializer(group).data)
 
 
 class GroupMembersViewSet(APIView):
