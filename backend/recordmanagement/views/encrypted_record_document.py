@@ -31,14 +31,13 @@ from backend.recordmanagement.models.encrypted_record_document import (
     EncryptedRecordDocument,
 )
 from backend.static.error_codes import ERROR__RECORD__DOCUMENT__ALL_MISSING
-from backend.recordmanagement import models, serializers
-from backend.static import error_codes, storage_folders
+from backend.recordmanagement import serializers
+from backend.static import error_codes, storage_folders, permissions
 from backend.static.encrypted_storage import EncryptedStorage
 from backend.static.middleware import get_private_key_from_request
 from backend.static.multithreading import MultithreadedFileUploads
 from backend.static.storage_management import LocalStorageManager
 from backend.static.storage_folders import get_temp_storage_folder
-from backend.static.getter import get_e_record
 
 
 class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
@@ -59,7 +58,15 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
         :param id:
         :return:
         """
-        e_record = get_e_record(request.user, id)
+        if not request.user.has_permission(
+            permissions.PERMISSION_VIEW_RECORDS_RLC, for_rlc=request.user.rlc
+        ):
+            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+        try:
+            e_record = EncryptedRecord.objects.get(pk=id)
+        except Exception as e:
+            raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
+
         if not e_record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
