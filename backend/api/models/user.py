@@ -33,7 +33,6 @@ from backend.static.error_codes import (
     ERROR__API__MISSING_KEY_WAIT,
     ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED,
 )
-from backend.static.regex_validators import phone_regex
 from backend.api.helpers import get_client_ip
 from backend.static.emails import EmailSender
 
@@ -160,9 +159,7 @@ class UserProfile(
     email_confirmed = models.BooleanField(default=False)
     name = models.CharField(max_length=255)
     birthday = models.DateField(null=True, blank=True)
-    phone_number = models.CharField(
-        validators=[phone_regex], max_length=17, null=True, default=None, blank=True
-    )
+    phone_number = models.CharField(max_length=17, null=True, default=None, blank=True)
 
     # address
     street = models.CharField(max_length=255, default=None, null=True)
