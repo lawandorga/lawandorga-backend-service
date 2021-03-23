@@ -34,7 +34,6 @@ from backend.static.error_codes import (
     ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED,
 )
 from backend.static.regex_validators import phone_regex
-from backend.static.env_getter import get_website_base_url
 from backend.api.helpers import get_client_ip
 from backend.static.emails import EmailSender
 
@@ -474,7 +473,7 @@ class UserProfile(
         forgot_password_link = ForgotPasswordLinks(user=user, ip_address=ip)
         forgot_password_link.save()
 
-        url = get_website_base_url() + "reset-password/" + forgot_password_link.link
+        url = settings.FRONTEND_URL + "reset-password/" + forgot_password_link.link
         EmailSender.send_forgot_password(self.email, url)
 
 
