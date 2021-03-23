@@ -19,6 +19,7 @@ from django.contrib import admin
 from backend.files import urls as file_urls
 from backend.api import urls as api_urls
 from django.urls import path, include
+from django.conf import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -28,3 +29,10 @@ urlpatterns = [
     path("prometheus/", include("django_prometheus.urls")),
     path("", TemplateView.as_view(template_name="index.html")),
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+
+    urlpatterns += [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ]

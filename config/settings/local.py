@@ -12,6 +12,18 @@ ALLOWED_HOSTS = ["*"]
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY
 SECRET_KEY = "srt(vue=+gl&0c_c3pban6a&m2h2iz6mhbx^%^_%9!#-jg0*lz"
 
+# Application definition
+# https://docs.djangoproject.com/en/dev/ref/applications/
+INSTALLED_APPS += [
+    'debug_toolbar'
+]
+
+# Middleware
+# https://docs.djangoproject.com/en/dev/topics/http/middleware/
+MIDDLEWARE = [
+                 'debug_toolbar.middleware.DebugToolbarMiddleware',
+             ] + MIDDLEWARE
+
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 DATABASES = {
@@ -43,3 +55,9 @@ CORS_ALLOW_ALL_ORIGINS = True
 # The standard password of the dummy user, this is used within get_private_key in UserProfile
 # This enables us to do a lot of cool stuff, for example: test the restframework api directly
 DUMMY_USER_PASSWORD = "qwe123"
+
+# Django Debug Toolbar
+# https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#configuring-internal-ips
+INTERNAL_IPS = [
+    '127.0.0.1'
+]
