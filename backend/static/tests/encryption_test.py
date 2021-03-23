@@ -20,7 +20,6 @@ import os
 from django.test import SimpleTestCase
 
 from backend.static.encryption import AESEncryption, OutputType, RSAEncryption
-from backend.static.string_generator import generate_secure_random_string
 
 
 class EncryptionTests(SimpleTestCase):
@@ -91,7 +90,7 @@ class EncryptionTests(SimpleTestCase):
         self.assertEqual(decrypted, msg)
 
     def test_rsa_en_decrypt_real_world(self):
-        msg = generate_secure_random_string(64)
+        msg = 'fdslkjsad320234rnjdlsfjsda£$£$$%////'
         private_key, public_key = RSAEncryption.generate_keys()
         encrypted = RSAEncryption.encrypt(msg, public_key)
         decrypted = RSAEncryption.decrypt(encrypted, private_key)

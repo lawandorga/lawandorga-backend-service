@@ -13,8 +13,10 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+import secrets
+import string
+
 from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padding, rsa
-from backend.static.string_generator import generate_secure_random_string
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.backends import default_backend
 from backend.static.error_codes import ERROR__API__INVALID_PRIVATE_KEY
@@ -51,7 +53,8 @@ class AESEncryption:
 
     @staticmethod
     def generate_secure_key() -> str:
-        return generate_secure_random_string(64)
+        password_characters = string.ascii_letters + string.digits + string.punctuation
+        return "".join(secrets.choice(password_characters) for i in range(64))
 
     @staticmethod
     def encrypt_with_iv(msg, key, iv):
