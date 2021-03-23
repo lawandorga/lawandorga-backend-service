@@ -16,7 +16,6 @@
 from backend.api.models.rlc import Rlc
 from backend.recordmanagement.models.origin_country import OriginCountry
 from backend.static.encryption import AESEncryption, RSAEncryption, EncryptedModelMixin
-from backend.static.date_utils import parse_date
 from django_prometheus.models import ExportModelOperationsMixin
 from backend.api.errors import CustomError
 from backend.static import error_codes
@@ -81,7 +80,7 @@ class EncryptedClient(
             else:
                 to_save = ""
                 if key in self.changeable_datetime_fields():
-                    to_save = parse_date(value)
+                    to_save = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ").date()
                 elif key in self.changeable_encrypted_fields():
                     to_save = AESEncryption.encrypt(value, clients_aes_key)
                 setattr(self, key, to_save)
