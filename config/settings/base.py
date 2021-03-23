@@ -94,6 +94,17 @@ TEMPLATES = [
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-WSGI_APPLICATION
 WSGI_APPLICATION = "config.wsgi.application"
 
+# E-Mail
+# https://docs.djangoproject.com/en/dev/topics/email/#smtp-backend
+EMAIL_HOST = get_secret("EMAIL_HOST")
+DEFAULT_FROM_EMAIL = get_secret("EMAIL_ADDRESS")
+SERVER_EMAIL = get_secret("EMAIL_ADDRESS")
+EMAIL_PORT = get_secret("EMAIL_PORT")
+EMAIL_HOST_USER = get_secret("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = get_secret("EMAIL_HOST_PASSWORD")
+EMAIL_USER_TLS = get_secret("EMAIL_USER_TLS")
+EMAIL_USE_SSL = get_secret("EMAIL_USE_SSL")
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 LANGUAGE_CODE = "en-us"

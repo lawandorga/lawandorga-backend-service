@@ -38,17 +38,6 @@ DATABASES = {
     }
 }
 
-# E-Mail
-# https://docs.djangoproject.com/en/dev/topics/email/#smtp-backend
-EMAIL_HOST = get_secret("EMAIL_HOST")
-DEFAULT_FROM_EMAIL = get_secret("EMAIL_ADDRESS")
-SERVER_EMAIL = get_secret("EMAIL_ADDRESS")
-EMAIL_PORT = get_secret("EMAIL_PORT")
-EMAIL_HOST_USER = get_secret("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = get_secret("EMAIL_HOST_PASSWORD")
-EMAIL_USER_TLS = get_secret("EMAIL_USER_TLS")
-EMAIL_USE_SSL = get_secret("EMAIL_USE_SSL")
-
 # Installed app django-cors-headers
 # https://pypi.org/project/django-cors-headers/
 CORS_ALLOWED_ORIGINS = [

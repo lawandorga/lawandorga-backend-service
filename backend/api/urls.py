@@ -20,9 +20,6 @@ from backend.api import views
 router = DefaultRouter()
 router.register("profiles", views.user.UserViewSet)
 router.register("login", views.LoginViewSet, basename="login")
-router.register(
-    "create_profile", views.UserProfileCreatorViewSet, basename="create_profile"
-)
 router.register("groups", views.GroupViewSet, basename="groups")
 router.register("permissions", views.PermissionViewSet, basename="permissions")
 router.register("has_permission", views.HasPermissionViewSet, basename="has_permission")
@@ -62,7 +59,7 @@ urlpatterns = [
         views.CheckUserActivationLinkViewSet.as_view(),
     ),
     path(
-        "activate_user_activation_link/<int:id>/",
+        "activate_user_activation_link/<str:id>/",
         views.UserActivationLinkViewSet.as_view(),
     ),
     path("new_user_request_admit/", views.NewUserRequestAdmitViewSet.as_view()),

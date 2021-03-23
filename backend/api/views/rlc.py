@@ -13,8 +13,7 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from backend.api.serializers import RlcSerializer
-from rest_framework.response import Response
+from backend.api.serializers import RlcSimpleSerializer
 from backend.api.models.rlc import Rlc
 from django.db.models import QuerySet
 from rest_framework import viewsets
@@ -24,7 +23,7 @@ from django.conf import settings
 
 class RlcViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Rlc.objects.all()
-    serializer_class = RlcSerializer
+    serializer_class = RlcSimpleSerializer
     permission_classes = []
     authentication_classes = []
 
@@ -33,6 +32,3 @@ class RlcViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         if not settings.DEBUG:
             queryset = queryset.exclude(name='Dummy RLC')
         return queryset
-
-    def list(self, request, *args, **kwargs):
-        return Response([rlc.name for rlc in self.get_queryset()])

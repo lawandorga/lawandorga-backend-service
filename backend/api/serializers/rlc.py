@@ -14,7 +14,6 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from rest_framework import serializers
-
 from backend.api.models.rlc import Rlc
 
 
@@ -32,3 +31,9 @@ class RlcSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rlc
         fields = "__all__"
+
+
+class RlcSimpleSerializer(RlcSerializer):
+    class Meta:
+        model = Rlc
+        fields = ['id', 'name']

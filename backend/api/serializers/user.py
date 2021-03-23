@@ -18,14 +18,16 @@ from rest_framework import serializers
 
 
 class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        exclude = ['groups', 'user_permissions']
+        extra_kwargs = {"password": {"write_only": True}}
+
+
+class OldUserSerializer(UserSerializer):
     group_members = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     user_has_permission = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     permission_for_user = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-
-    class Meta:
-        model = UserProfile
-        fields = "__all__"
-        extra_kwargs = {"password": {"write_only": True}}
 
 
 class UserProfileForeignSerializer(serializers.ModelSerializer):
@@ -44,13 +46,10 @@ class UserProfileNameSerializer(serializers.ModelSerializer):
         extra_kwargs = {"password": {"write_only": True}}
 
 
-class UserProfileCreatorSerializer(serializers.ModelSerializer):
-    """serializer for user profile objects"""
-
+class UserCreateSerializer(UserSerializer):
     class Meta:
         model = UserProfile
-        fields = (
-            "id",
+        fields = [
             "password",
             "email",
             "name",
@@ -58,29 +57,24 @@ class UserProfileCreatorSerializer(serializers.ModelSerializer):
             "street",
             "city",
             "postal_code",
-        )
+            'rlc'
+        ]
         extra_kwargs = {"password": {"write_only": True}}
 
-    def create(self, validated_data) -> UserProfile:
-        """create and return a new user"""
-        user = UserProfile(
-            email=validated_data["email"],
-            name=validated_data["name"],
-            is_active=True,
-            is_superuser=False,
-        )
+    def create(self, validated_data):
+        instance = super().create(validated_data)
+        instance.set_password(validated_data['password'])
+        instance.save()
+        return instance
 
-        user.set_password(validated_data["password"])
-        if "phone_number" in validated_data:
-            user.phone_number = validated_data["phone_number"]
-        if "street" in validated_data:
-            user.street = validated_data["street"]
-        if "city" in validated_data:
-            user.city = validated_data["city"]
-        if "postal_code" in validated_data:
-            user.postal_code = validated_data["postal_code"]
-        if "birthday" in validated_data:
-            user.birthday = validated_data["birthday"]
 
-        user.save()
-        return user
+class UserUpdateSerializer(UserSerializer):
+    class Meta:
+        model = UserProfile
+        fields = [
+            "name",
+            "phone_number",
+            "street",
+            "city",
+            "postal_code",
+        ]

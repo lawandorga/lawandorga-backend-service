@@ -25,5 +25,5 @@ def get_website_base_url():
 
 def get_env_variable(variable_name):
     if variable_name not in os.environ:
-        raise CustomError(ERROR__ENV__MISSING_VARIABLE)
+        raise Exception('Environment variable {} not set.'.format(variable_name))
     return os.environ[variable_name]

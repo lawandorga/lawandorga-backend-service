@@ -13,56 +13,88 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from datetime import datetime
-
-import pytz
-from django.forms.models import model_to_dict
-from django.http import QueryDict
-from rest_framework import viewsets, filters, status
-from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.request import Request
-
-from backend.api.errors import CustomError
 from backend.api.models.notification import Notification
+from rest_framework.authtoken.models import Token
 from backend.api.models.permission import Permission
-from backend.static import permissions
-from backend.static.date_utils import parse_date
-from backend.static.emails import EmailSender, FrontendLinks
-from backend.static.encryption import RSAEncryption
+from rest_framework.permissions import IsAuthenticated
 from backend.static.error_codes import *
-from backend.api.models import (
-    UserProfile,
-    Rlc,
-    UserEncryptionKeys,
-    NotificationGroup,
-)
-from backend.api.serializers import (
-    UserSerializer,
-    UserProfileCreatorSerializer,
-    UserProfileNameSerializer,
-    RlcSerializer,
-    UserProfileForeignSerializer,
-)
-from backend.static.permissions import PERMISSION_ACCEPT_NEW_USERS_RLC
 from backend.static.middleware import get_private_key_from_request
+from backend.static.encryption import RSAEncryption
+from backend.api.models import NewUserRequest, UserActivationLink
+from backend.static.date_utils import parse_date
+from rest_framework.decorators import action
+from backend.api.serializers import OldUserSerializer, UserCreateSerializer, UserProfileNameSerializer, \
+    RlcSerializer, UserProfileForeignSerializer, UserSerializer, UserUpdateSerializer
+from rest_framework.response import Response
+from rest_framework.request import Request
+from backend.static.emails import EmailSender, FrontendLinks
+from django.forms.models import model_to_dict
+from backend.api.models import UserProfile, Rlc, UserEncryptionKeys, NotificationGroup
+from backend.api.errors import CustomError
+from rest_framework import viewsets, filters, status
+from backend.static import permissions
+from django.http import QueryDict
+from datetime import datetime
+import pytz
+
+
+class SpecialPermission(IsAuthenticated):
+    def has_permission(self, request, view):
+        if request.method == 'POST':
+            return True
+        return super().has_permission(request, view)
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    """Handles reading and updating profiles"""
-
     serializer_class = UserSerializer
-    queryset = UserProfile.objects.all()
+    queryset = UserProfile.objects.none()
     filter_backends = (filters.SearchFilter,)
+    permission_classes = [SpecialPermission]
     search_fields = (
         "name",
         "email",
     )
+
+    def get_authenticators(self):
+        if self.request.method == 'POST':
+            return []
+        return super().get_authenticators()
+
+    def get_serializer_class(self):
+        if self.request.method in ['POST']:
+            return UserCreateSerializer
+        elif self.request.method in ['PUT', 'PATCH']:
+            return UserUpdateSerializer
+        return super().get_serializer_class()
+
+    def get_queryset(self):
+        if self.request.method == 'POST':
+            return super().get_queryset()
+        return UserProfile.objects.filter(rlc=self.request.user.rlc)
+
+    def create(self, request, *args, **kwargs):
+        # create the user
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        # new user request
+        user_request = NewUserRequest.objects.create(request_from=user)
+
+        # new user activation link
+        activation_link = UserActivationLink.objects.create(user=user)
+        EmailSender.send_user_activation_email(
+            user, FrontendLinks.get_user_activation_link(activation_link)
+        )
+
+        # notify about the new user
+        Notification.objects.notify_new_user_request(user, user_request)
+
+        # return the success response
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def list(self, request, *args, **kwargs):
         if request.user.is_superuser:
@@ -94,50 +126,17 @@ class UserViewSet(viewsets.ModelViewSet):
             if request.user.is_superuser or request.user.has_permission(
                 permissions.PERMISSION_VIEW_FULL_USER_DETAIL_OVERALL
             ):
-                serializer = UserSerializer(user)
+                serializer = OldUserSerializer(user)
             else:
                 raise CustomError(ERROR__API__USER__NOT_SAME_RLC)
         else:
             if request.user.has_permission(
                 permissions.PERMISSION_VIEW_FULL_USER_DETAIL_RLC
             ):
-                serializer = UserSerializer(user)
+                serializer = OldUserSerializer(user)
             else:
                 serializer = UserProfileForeignSerializer(user)
         return Response(serializer.data)
-
-    def update(self, request, *args, **kwargs):
-        try:
-            user_id = kwargs["pk"]
-            user = UserProfile.objects.get(pk=user_id)
-        except:
-            raise CustomError(ERROR__API__ID_NOT_FOUND)
-        if request.user != user and not request.user.is_superuser:
-            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
-        data = request.data
-        if "birthday" in data:
-            user.birthday = parse_date(data["birthday"])
-        if "postal_code" in data:
-            user.postal_code = data["postal_code"]
-        if "street" in data:
-            user.street = data["street"]
-        if "city" in data:
-            user.city = data["city"]
-        if "phone_number" in data:
-            user.phone_number = data["phone_number"]
-        if "user_state" in data:
-            user.user_state = data["user_state"]
-        if "user_record_state" in data:
-            user.user_record_state = data["user_record_state"]
-        if request.user.is_superuser:
-            if "email" in data and data["email"] != "":
-                user.email = data["email"]
-            if "name" in data and data["name"] != "":
-                user.name = data["name"]
-            if "is_active" in data:
-                user.is_active = data["is_active"]
-        user.save()
-        return Response(UserSerializer(user).data)
 
     @action(detail=False, methods=['post'])
     def logout(self, request: Request):
@@ -145,6 +144,9 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response()
         Token.objects.filter(user=request.user).delete()
         return Response()
+
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
 
     @action(detail=False, methods=['get', 'post'])
     def inactive(self, request: Request):
@@ -174,79 +176,10 @@ class UserViewSet(viewsets.ModelViewSet):
 
                 user.is_active = True
                 user.save()
-                return Response(UserSerializer(user).data)
+                return Response(OldUserSerializer(user).data)
             raise CustomError(ERROR__API__ACTION_NOT_VALID)
 
         return Response({})
-
-
-class UserProfileCreatorViewSet(viewsets.ModelViewSet):
-    """Handles creating profiles"""
-
-    serializer_class = UserProfileCreatorSerializer
-    queryset = UserProfile.objects.none()
-    authentication_classes = ()
-    permission_classes = ()
-
-    def create(self, request: Request):
-        if type(request.data) is QueryDict:
-            data = request.data.dict()
-        else:
-            data = dict(request.data)
-        if "rlc" in data:
-            del data["rlc"]
-
-        # Check if email already in use
-        if not "email" in request.data:
-            raise CustomError(ERROR__API__USER__CAN_NOT_CREATE)
-        if UserProfile.objects.filter(email=request.data["email"].lower()).count() > 0:
-            raise CustomError(ERROR__API__EMAIL__ALREADY_IN_USE)
-        data["email"] = data["email"].lower()
-
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-
-        # check if rlc exists before saving
-        if "rlc" not in request.data:
-            raise CustomError(ERROR__API__REGISTER__NO_RLC_PROVIDED)
-        try:
-            rlc = Rlc.objects.get(pk=request.data["rlc"])
-        except:
-            raise CustomError(ERROR__API__REGISTER__RLC_NOT_FOUND)
-        self.perform_create(serializer)
-
-        user = UserProfile.objects.get(email=request.data["email"].lower())
-        user.rlc = rlc
-        user.save()
-        if "birthday" in request.data and request.data["birthday"] != "Invalid date":
-            user.birthday = request.data["birthday"]
-        user.is_active = False
-        user.save()
-
-        user.generate_new_user_encryption_keys()
-
-        # new user request
-        from backend.api.models import NewUserRequest
-
-        new_user_request = NewUserRequest(request_from=user)
-        new_user_request.save()
-
-        # new user activation link
-        from backend.api.models import UserActivationLink
-
-        user_activation_link = UserActivationLink(user=user)
-        user_activation_link.save()
-
-        EmailSender.send_user_activation_email(
-            user, FrontendLinks.get_user_activation_link(user_activation_link)
-        )
-
-        Notification.objects.notify_new_user_request(user, new_user_request)
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
 
 
 class LoginViewSet(viewsets.ViewSet):
@@ -321,7 +254,7 @@ class LoginViewSet(viewsets.ViewSet):
     @staticmethod
     def get_login_data(token, private_key=None):
         user = Token.objects.get(key=token).user
-        serialized_user = UserSerializer(user).data
+        serialized_user = OldUserSerializer(user).data
         serialized_rlc = RlcSerializer(user.rlc).data
 
         notifications = NotificationGroup.objects.filter(user=user, read=False).count()
@@ -370,14 +303,3 @@ class LoginViewSet(viewsets.ViewSet):
             raise CustomError(ERROR__API__USER__NOT_FOUND)
         if not user.is_active:
             raise CustomError(ERROR__API__USER__INACTIVE)
-
-
-class LogoutViewSet(APIView):
-    authentication_classes = ()
-    permission_classes = ()
-
-    def post(self, request):
-        if not request.user.is_authenticated:
-            return Response()
-        Token.objects.filter(user=request.user).delete()
-        return Response()

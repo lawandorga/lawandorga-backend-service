@@ -159,9 +159,9 @@ class UserProfile(
 
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    birthday = models.DateField(null=True)
+    birthday = models.DateField(null=True, blank=True)
     phone_number = models.CharField(
-        validators=[phone_regex], max_length=17, null=True, default=None
+        validators=[phone_regex], max_length=17, null=True, default=None, blank=True
     )
 
     # address
@@ -169,7 +169,7 @@ class UserProfile(
     city = models.CharField(max_length=255, default=None, null=True)
     postal_code = models.CharField(max_length=255, default=None, null=True)
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
 
     rlc = models.ForeignKey(
@@ -197,9 +197,6 @@ class UserProfile(
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name"]  # email already in there, other are default
-
-    # class Meta:
-    #     ordering = ['name']
 
     def get_full_name(self):
         return self.name

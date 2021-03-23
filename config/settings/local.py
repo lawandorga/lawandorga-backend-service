@@ -20,9 +20,9 @@ INSTALLED_APPS += [
 
 # Middleware
 # https://docs.djangoproject.com/en/dev/topics/http/middleware/
-MIDDLEWARE = [
+MIDDLEWARE += [
                  'debug_toolbar.middleware.DebugToolbarMiddleware',
-             ] + MIDDLEWARE
+             ]
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
@@ -41,7 +41,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
-    "EXCEPTION_HANDLER": "backend.api.exception_handler.custom_exception_handler",
+    # "EXCEPTION_HANDLER": "backend.api.exception_handler.custom_exception_handler",
 }
 
 # E-Mail
