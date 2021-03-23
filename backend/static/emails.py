@@ -13,7 +13,6 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from backend.static.frontend_links import FrontendLinks
 from backend.static.logger import Logger
 from django.core.mail import EmailMultiAlternatives, send_mail
 from django.template import loader
@@ -66,7 +65,7 @@ class EmailSender:
     @staticmethod
     def send_record_new_message_notification_email(record) -> None:
         emails = record.get_notification_emails()
-        link = FrontendLinks.get_record_link(record)
+        link = settings.FRONTEND_URL + "records/" + str(record.id)
         html_message = loader.render_to_string(
             "email_templates/new_record_message.html",
             {"url": link, "record_token": record.record_token},

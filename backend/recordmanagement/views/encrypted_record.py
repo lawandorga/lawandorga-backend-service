@@ -32,7 +32,6 @@ from backend.recordmanagement.models import (
     EncryptedRecord,
     EncryptedRecordMessage,
 )
-from backend.static.frontend_links import FrontendLinks
 from backend.static.serializers import map_values
 from backend.static.encryption import AESEncryption
 from rest_framework.pagination import LimitOffsetPagination
@@ -207,11 +206,10 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
 
         # notify about the new record
         Notification.objects.notify_record_created(request.user, record)
-        if not settings.DEBUG:
-            url = FrontendLinks.get_record_link(record)
-            for user in working_on_record:
-                if user != request.user:
-                    EmailSender.send_new_record(user.email, url)
+        url = settings.FRONTEND_URL + "records/" + str(record.id)
+        for user in working_on_record:
+            if user != request.user:
+                EmailSender.send_new_record(user.email, url)
 
         # return response
         record.decrypt(
