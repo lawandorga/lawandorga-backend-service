@@ -21,7 +21,7 @@ from rest_framework.views import APIView
 import pytz
 
 from backend.api.errors import CustomError
-from backend.api.models import NewUserRequest, UserActivationLink
+from backend.api.models import NewUserRequest
 from backend.api.models.notification import Notification
 from backend.api.serializers import NewUserRequestSerializer
 from backend.static import error_codes
@@ -60,14 +60,6 @@ class NewUserRequestAdmitViewSet(APIView):
             new_user_request = NewUserRequest.objects.get(pk=request.data["id"])
         except:
             raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
-        try:
-            user_activation_link = UserActivationLink.objects.get(
-                user=new_user_request.request_from
-            )
-        except:
-            raise CustomError(
-                error_codes.ERROR__API__NEW_USER_REQUEST__NO_USER_ACTIVATION_LINK
-            )
 
         action = request.data["action"]
         if action != "accept" and action != "decline":

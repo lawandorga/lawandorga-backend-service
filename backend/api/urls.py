@@ -33,11 +33,6 @@ router.register(
     "new_user_request", views.NewUserRequestViewSet, basename="new_user_request"
 )
 router.register(
-    "user_activation_links",
-    views.UserActivationBackendViewSet,
-    basename="user_activation_links",
-)
-router.register(
     "user_encryption_keys",
     views.UserEncryptionKeysViewSet,
     basename="user_encryption_keys",
@@ -54,14 +49,6 @@ urlpatterns = [
     path("reset_password/<int:id>/", views.ResetPasswordViewSet.as_view()),
     path("permissions_for_group/<int:pk>/", views.PermissionsForGroupViewSet.as_view()),
     path("has_permission_statics/", views.HasPermissionStaticsViewSet.as_view()),
-    path(
-        "check_user_activation_link/<int:id>/",
-        views.CheckUserActivationLinkViewSet.as_view(),
-    ),
-    path(
-        "activate_user_activation_link/<str:id>/",
-        views.UserActivationLinkViewSet.as_view(),
-    ),
     path("new_user_request_admit/", views.NewUserRequestAdmitViewSet.as_view()),
     path("user_has_permissions/", views.UserHasPermissionsViewSet.as_view()),
     path("my_rlc_settings/", views.RlcSettingsMineViewSet.as_view()),

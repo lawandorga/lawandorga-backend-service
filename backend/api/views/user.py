@@ -13,7 +13,11 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from django.contrib.auth import authenticate
+from django.conf import settings
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import send_mail
+from django.template import loader
+from django.urls import reverse
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from backend.api.models.notification import Notification
 from rest_framework.authtoken.models import Token
@@ -22,20 +26,17 @@ from rest_framework.permissions import IsAuthenticated
 from backend.static.error_codes import *
 from backend.static.middleware import get_private_key_from_request
 from backend.static.encryption import RSAEncryption
-from backend.api.models import NewUserRequest, UserActivationLink
-from backend.static.date_utils import parse_date
 from rest_framework.decorators import action
 from backend.api.serializers import OldUserSerializer, UserCreateSerializer, UserProfileNameSerializer, \
     RlcSerializer, UserProfileForeignSerializer, UserSerializer, UserUpdateSerializer
 from rest_framework.response import Response
 from rest_framework.request import Request
-from backend.static.emails import EmailSender, FrontendLinks
 from django.forms.models import model_to_dict
-from backend.api.models import UserProfile, Rlc, UserEncryptionKeys, NotificationGroup
+from backend.api.models import NewUserRequest, UserProfile, UserEncryptionKeys, NotificationGroup, \
+    account_activation_token
 from backend.api.errors import CustomError
 from rest_framework import viewsets, filters, status
 from backend.static import permissions
-from django.http import QueryDict
 from datetime import datetime
 import pytz
 
@@ -50,12 +51,9 @@ class SpecialPermission(IsAuthenticated):
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     queryset = UserProfile.objects.none()
-    filter_backends = (filters.SearchFilter,)
+    filter_backends = [filters.SearchFilter]
     permission_classes = [SpecialPermission]
-    search_fields = (
-        "name",
-        "email",
-    )
+    search_fields = ["name", "email"]
 
     def get_authenticators(self):
         if self.request.method == 'POST':
@@ -72,7 +70,9 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if self.request.method == 'POST':
             return super().get_queryset()
-        return UserProfile.objects.filter(rlc=self.request.user.rlc)
+        if self.request.user.is_authenticated:
+            return UserProfile.objects.filter(rlc=self.request.user.rlc)
+        return super().get_queryset()
 
     def create(self, request, *args, **kwargs):
         # create the user
@@ -83,10 +83,19 @@ class UserViewSet(viewsets.ModelViewSet):
         # new user request
         user_request = NewUserRequest.objects.create(request_from=user)
 
-        # new user activation link
-        activation_link = UserActivationLink.objects.create(user=user)
-        EmailSender.send_user_activation_email(
-            user, FrontendLinks.get_user_activation_link(activation_link)
+        # send the user activation link
+        token = account_activation_token.make_token(user)
+        link = '{}activate-account/{}/{}/'.format(settings.FRONTEND_URL, user.id, token)
+
+        subject = "Law & Orga Registration"
+        message = "Law & Orga - Activate your account here: {}".format(link)
+        html_message = loader.render_to_string("email_templates/activate_account.html", {"url": link})
+        send_mail(
+            subject=subject,
+            html_message=html_message,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
         )
 
         # notify about the new user
@@ -145,8 +154,25 @@ class UserViewSet(viewsets.ModelViewSet):
         Token.objects.filter(user=request.user).delete()
         return Response()
 
-    def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
+    @action(detail=True, methods=['get'], url_path='activate/(?P<token>[^/.]+)', permission_classes=[],
+            authentication_classes=[])
+    def activate(self, request, token, *args, **kwargs):
+        self.queryset = UserProfile.objects.all()
+        user = self.get_object()
+
+        if account_activation_token.check_token(user, token):
+            user.email_confirmed = True
+            user.save()
+            return Response(status=status.HTTP_200_OK)
+        else:
+            if user.email_confirmed:
+                error = 'The confirmation link has already been used.'
+            else:
+                error = 'The confirmation link is invalid.'
+            data = {
+                'error': error
+            }
+            return Response(data, status=status.HTTP_404_NOT_FOUND)
 
     @action(detail=False, methods=['get', 'post'])
     def inactive(self, request: Request):

@@ -20,7 +20,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 from rest_framework.response import Response
 
-from backend.api.models import NewUserRequest, Rlc, UserActivationLink, UserProfile
+from backend.api.models import Rlc, UserProfile
 from backend.api.tests.fixtures_encryption import CreateFixtures as EncCreateFixtures
 from .fixtures import CreateFixtures
 from .statics import StaticTestMethods
@@ -354,8 +354,6 @@ class UsersTests(TransactionTestCase):
     )
     def test_register_user_full_cycle(self, mocked_email_sender):
         self.base_fixtures = EncCreateFixtures.create_base_fixtures()
-        activation_links_before = UserActivationLink.objects.all().count()
-        user_request_before = NewUserRequest.objects.all().count()
 
         # register
         register_response = APIClient().post(
@@ -368,12 +366,6 @@ class UsersTests(TransactionTestCase):
             },
         )
         self.assertEqual(201, register_response.status_code)
-        self.assertEqual(
-            activation_links_before + 1, UserActivationLink.objects.all().count()
-        )
-        self.assertEqual(
-            user_request_before + 1, UserActivationLink.objects.all().count()
-        )
 
         # get activation link
         user_activation_link: str = mocked_email_sender.mock_calls[0][1][1][22:]
@@ -382,17 +374,10 @@ class UsersTests(TransactionTestCase):
             user_activation_link.startswith("/activate_user_activation_link/")
         )
         just_link_id: str = user_activation_link[35:-1]
-        self.assertIsNotNone(
-            UserActivationLink.objects.filter(link=just_link_id).exists()
-        )
 
         # activate user from activation link
         activation_response = APIClient().post(user_activation_link, {})
         self.assertEqual(200, activation_response.status_code)
-        activation_link: UserActivationLink = UserActivationLink.objects.filter(
-            link=just_link_id
-        ).first()
-        self.assertTrue(activation_link.activated)
         new_user: UserProfile = UserProfile.objects.get(id=register_response.data["id"])
         self.assertFalse(new_user.is_active)
 

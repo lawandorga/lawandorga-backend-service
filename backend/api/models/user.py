@@ -22,7 +22,7 @@ from django.contrib.auth.models import (
 from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
 from rest_framework.request import Request
-
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from backend.api.errors import CustomError
 from backend.api.models.has_permission import HasPermission
 from backend.api.models.permission import Permission
@@ -158,6 +158,7 @@ class UserProfile(
     """ profile of users """
 
     email = models.EmailField(max_length=255, unique=True)
+    email_confirmed = models.BooleanField(default=False)
     name = models.CharField(max_length=255)
     birthday = models.DateField(null=True, blank=True)
     phone_number = models.CharField(
@@ -475,3 +476,15 @@ class UserProfile(
 
         url = get_website_base_url() + "reset-password/" + forgot_password_link.link
         EmailSender.send_forgot_password(self.email, url)
+
+
+# this is used on signup
+class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
+    def _make_hash_value(self, user, timestamp):
+        login_timestamp = '' if user.last_login is None else user.last_login.replace(microsecond=0, tzinfo=None)
+        super_make_hash_value = str(user.pk) + user.password + str(login_timestamp) + str(timestamp)
+        additional_hash_value = str(user.email_confirmed)
+        return super_make_hash_value + additional_hash_value
+
+
+account_activation_token = AccountActivationTokenGenerator()

@@ -143,3 +143,6 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
     "private-key",
 ]
+
+# This is used for links in activation emails and so on
+FRONTEND_URL = get_secret('FRONTEND_URL')

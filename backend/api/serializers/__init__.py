@@ -20,7 +20,6 @@ from .permission import *
 from .has_permission import *
 from .forgot_password import *
 from .new_user_request import *
-from .user_activation_link import *
 from .user_encryption_keys import *
 from .users_rlc_keys import *
 from .rlc_settings import *
