@@ -13,35 +13,28 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from django.conf import settings
-from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import send_mail
-from django.template import loader
-from django.urls import reverse
-from django.utils import timezone
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.authtoken.views import ObtainAuthToken
-
 from backend.api.models.notification import Notification
 from rest_framework.authtoken.models import Token
 from backend.api.models.permission import Permission
 from rest_framework.permissions import IsAuthenticated
 from backend.static.error_codes import *
 from backend.static.middleware import get_private_key_from_request
-from backend.static.encryption import RSAEncryption
 from rest_framework.decorators import action
 from backend.api.serializers import OldUserSerializer, UserCreateSerializer, UserProfileNameSerializer, \
     RlcSerializer, UserProfileForeignSerializer, UserSerializer, UserUpdateSerializer
 from rest_framework.response import Response
 from rest_framework.request import Request
 from django.forms.models import model_to_dict
-from backend.api.models import NewUserRequest, UserProfile, UserEncryptionKeys, NotificationGroup, \
+from backend.api.models import NewUserRequest, UserProfile, NotificationGroup, \
     account_activation_token
 from backend.api.errors import CustomError
+from django.core.mail import send_mail
+from django.template import loader
 from rest_framework import viewsets, filters, status
 from backend.static import permissions
-from datetime import datetime
-import pytz
+from django.utils import timezone
+from django.conf import settings
 
 
 class SpecialPermission(IsAuthenticated):
