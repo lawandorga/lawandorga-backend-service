@@ -40,9 +40,4 @@ class NewUserRequest(ExportModelOperationsMixin("new_user_request"), models.Mode
     )
 
     def __str__(self):
-        return (
-            "new_user_request: "
-            + str(self.id)
-            + " ; from user: "
-            + str(self.request_from.name)
-        )
+        return 'new_user_request: {}; from user: {};'.format(self.id, self.request_from.name)

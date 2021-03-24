@@ -18,7 +18,10 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.template import loader
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.authtoken.serializers import AuthTokenSerializer
+from rest_framework.authtoken.views import ObtainAuthToken
+
 from backend.api.models.notification import Notification
 from rest_framework.authtoken.models import Token
 from backend.api.models.permission import Permission
@@ -83,10 +86,9 @@ class UserViewSet(viewsets.ModelViewSet):
         # new user request
         user_request = NewUserRequest.objects.create(request_from=user)
 
-        # send the user activation link
+        # send the user activation link email
         token = account_activation_token.make_token(user)
         link = '{}activate-account/{}/{}/'.format(settings.FRONTEND_URL, user.id, token)
-
         subject = "Law & Orga Registration"
         message = "Law & Orga - Activate your account here: {}".format(link)
         html_message = loader.render_to_string("email_templates/activate_account.html", {"url": link})
@@ -147,8 +149,64 @@ class UserViewSet(viewsets.ModelViewSet):
                 serializer = UserProfileForeignSerializer(user)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['post'], permission_classes=[], authentication_classes=[])
+    def login(self, request: Request):
+        serializer = AuthTokenSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        password = serializer.validated_data['password']
+
+        # check if user active and user accepted in rlc
+        if not user.email_confirmed:
+            message = 'You can not login, yet. Please confirm your email first.'
+            return Response({'non_field_errors': [message]}, status.HTTP_400_BAD_REQUEST)
+        if not user.accepted:
+            message = 'You can not login, yet. Your RLC needs to accept you as their member.'
+            return Response({'non_field_errors': [message]}, status.HTTP_400_BAD_REQUEST)
+
+        # create the token and set the time if not created to keep it valid
+        token, created = Token.objects.get_or_create(user=user)
+        if not created:
+            token.created = timezone.now()
+            token.save()
+
+        # get the user's private key
+        private_key = user.get_private_key(password)
+
+        # build the response
+        data = {
+            "token": token.key,
+            "email": user.email,
+            "id": user.pk,
+            "users_private_key": private_key
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='statics/(?P<token>[^/.]+)')
+    def statics(self, request: Request, token=None, *args, **kwargs):
+        token = Token.objects.get(key=token)
+        user = token.user
+
+        notifications = NotificationGroup.objects.filter(user=user, read=False).count()
+        user_permissions = [model_to_dict(perm) for perm in user.get_all_user_permissions()]
+        overall_permissions = [model_to_dict(permission) for permission in Permission.objects.all()]
+        user_states_possible = UserProfile.user_states_possible
+        user_record_states_possible = UserProfile.user_record_states_possible
+
+        data = {
+            "user": OldUserSerializer(user).data,
+            "rlc": RlcSerializer(user.rlc).data,
+            "notifications": notifications,
+            "permissions": user_permissions,
+            "all_permissions": overall_permissions,
+            "user_states": user_states_possible,
+            "user_record_states": user_record_states_possible,
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
+
     @action(detail=False, methods=['post'])
-    def logout(self, request: Request):
+    def logout(self, request: Request, *args, **kwargs):
         if not request.user.is_authenticated:
             return Response()
         Token.objects.filter(user=request.user).delete()
@@ -165,14 +223,10 @@ class UserViewSet(viewsets.ModelViewSet):
             user.save()
             return Response(status=status.HTTP_200_OK)
         else:
-            if user.email_confirmed:
-                error = 'The confirmation link has already been used.'
-            else:
-                error = 'The confirmation link is invalid.'
             data = {
-                'error': error
+                'message': 'The confirmation link is invalid, possibly because it has already been used.'
             }
-            return Response(data, status=status.HTTP_404_NOT_FOUND)
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get', 'post'])
     def inactive(self, request: Request):
@@ -206,126 +260,3 @@ class UserViewSet(viewsets.ModelViewSet):
             raise CustomError(ERROR__API__ACTION_NOT_VALID)
 
         return Response({})
-
-
-class LoginViewSet(viewsets.ViewSet):
-    """checks email and password and returns auth token"""
-
-    serializer_class = AuthTokenSerializer
-    authentication_classes = ()
-    permission_classes = ()
-
-    def create(self, request):
-        """
-        use the obtainauthToken APIView to validate and create a token
-        additionally add all important information for app usage
-        like static possible states, possible permissions and so on
-        Args:
-            request: the request with data: 'username' and 'password"
-
-        Returns:
-        token, information and permissions of user
-        private_key of user
-        all possible permissions, country states, countries, clients, record states, consultants
-        """
-        user_password = request.data["password"]
-        data = {"password": user_password, "username": request.data["username"].lower()}
-        serializer = self.serializer_class(data=data)
-        LoginViewSet.check_if_user_active(data["username"])
-        if serializer.is_valid():
-            token, created = Token.objects.get_or_create(
-                user=serializer.validated_data["user"]
-            )
-            Token.objects.filter(user=token.user).exclude(
-                key=token.key
-            ).delete()  # delete old tokens, keep new
-            if not created:
-                # update the created time of the token to keep it valid
-                token.created = datetime.utcnow().replace(tzinfo=pytz.utc)
-                token.save()
-            # get encryption keys
-            encryption_keys = UserEncryptionKeys.objects.get(user=token.user)
-            if not encryption_keys:
-                private, public = RSAEncryption.generate_keys()
-                encryption_keys = UserEncryptionKeys(
-                    user=token.user, private_key=private, public_key=public
-                )
-                encryption_keys.save()
-            # decrypt keys with users password (or: if not encrypted atm, encrypt them with users password)
-            private_key = encryption_keys.decrypt_private_key(user_password)
-
-            # from backend.recordmanagement.helpers import (
-            #     resolve_missing_record_key_entries,
-            # )
-
-            # resolve_missing_record_key_entries(token.user, private_key)
-            # TODO: superuser?
-            if not token.user.is_superuser:
-                from backend.api.helpers import resolve_missing_rlc_keys_entries
-
-                resolve_missing_rlc_keys_entries(token.user, private_key)
-
-            return Response(LoginViewSet.get_login_data(token.key, private_key))
-        raise CustomError(ERROR__API__LOGIN__INVALID_CREDENTIALS)
-
-    def get(self, request):
-        token = request.META["HTTP_AUTHORIZATION"].split(" ")[1]
-        try:
-            Token.objects.get(key=token)
-        except:
-            raise CustomError(ERROR__API__NOT_AUTHENTICATED)
-
-        return Response(LoginViewSet.get_login_data(token))
-
-    @staticmethod
-    def get_login_data(token, private_key=None):
-        user = Token.objects.get(key=token).user
-        serialized_user = OldUserSerializer(user).data
-        serialized_rlc = RlcSerializer(user.rlc).data
-
-        notifications = NotificationGroup.objects.filter(user=user, read=False).count()
-
-        statics = LoginViewSet.get_statics(user)
-        return_object = {
-            "token": token,
-            "user": serialized_user,
-            "rlc": serialized_rlc,
-            "notifications": notifications,
-        }
-        return_object.update(statics)
-        if private_key:
-            return_object.update({"users_private_key": private_key})
-
-        return return_object
-
-    @staticmethod
-    def get_statics(user):
-        user_permissions = [
-            model_to_dict(perm) for perm in user.get_all_user_permissions()
-        ]
-        overall_permissions = [
-            model_to_dict(permission) for permission in Permission.objects.all()
-        ]
-        user_states_possible = UserProfile.user_states_possible
-        user_record_states_possible = UserProfile.user_record_states_possible
-
-        return {
-            "permissions": user_permissions,
-            "all_permissions": overall_permissions,
-            "user_states": user_states_possible,
-            "user_record_states": user_record_states_possible,
-        }
-
-    @staticmethod
-    def check_if_user_active(user_email):
-        """
-        checks if user exists and if user is active
-        :param user_email: string, email of user
-        :return:
-        """
-        try:
-            user = UserProfile.objects.get(email=user_email)
-        except:
-            raise CustomError(ERROR__API__USER__NOT_FOUND)
-        if not user.is_active:
-            raise CustomError(ERROR__API__USER__INACTIVE)

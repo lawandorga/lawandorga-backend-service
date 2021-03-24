@@ -19,7 +19,6 @@ from backend.api import views
 
 router = DefaultRouter()
 router.register("profiles", views.user.UserViewSet)
-router.register("login", views.LoginViewSet, basename="login")
 router.register("groups", views.GroupViewSet, basename="groups")
 router.register("permissions", views.PermissionViewSet, basename="permissions")
 router.register("has_permission", views.HasPermissionViewSet, basename="has_permission")

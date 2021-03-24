@@ -156,15 +156,15 @@ class UserProfile(
     """ profile of users """
 
     email = models.EmailField(max_length=255, unique=True)
-    email_confirmed = models.BooleanField(default=False)
+    email_confirmed = models.BooleanField(default=True)
     name = models.CharField(max_length=255)
     birthday = models.DateField(null=True, blank=True)
     phone_number = models.CharField(max_length=17, null=True, default=None, blank=True)
 
     # address
-    street = models.CharField(max_length=255, default=None, null=True)
-    city = models.CharField(max_length=255, default=None, null=True)
-    postal_code = models.CharField(max_length=255, default=None, null=True)
+    street = models.CharField(max_length=255, default=None, null=True, blank=True)
+    city = models.CharField(max_length=255, default=None, null=True, blank=True)
+    postal_code = models.CharField(max_length=255, default=None, null=True, blank=True)
 
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
@@ -172,6 +172,7 @@ class UserProfile(
     rlc = models.ForeignKey(
         "Rlc", related_name="rlc_members", on_delete=models.SET_NULL, null=True
     )
+    accepted = models.BooleanField(default=True)
 
     objects = UserProfileManager()
 

@@ -13,20 +13,18 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from datetime import datetime
-from rest_framework import viewsets
-from rest_framework.response import Response
-from rest_framework.views import APIView
-import pytz
-
-from backend.api.errors import CustomError
-from backend.api.models import NewUserRequest
 from backend.api.models.notification import Notification
-from backend.api.serializers import NewUserRequestSerializer
-from backend.static import error_codes
 from backend.static.permissions import PERMISSION_ACCEPT_NEW_USERS_RLC
 from backend.static.middleware import get_private_key_from_request
+from backend.api.serializers import NewUserRequestSerializer
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from backend.api.errors import CustomError
+from backend.api.models import NewUserRequest
+from backend.static import error_codes
+from rest_framework import viewsets
+from datetime import datetime
+import pytz
 
 
 class NewUserRequestViewSet(viewsets.ModelViewSet):
@@ -87,9 +85,9 @@ class NewUserRequestAdmitViewSet(APIView):
                 request.user, new_user_request
             )
 
-            if user_activation_link.activated:
-                new_user_request.request_from.is_active = True
-                new_user_request.request_from.save()
+            new_user_request.request_from.accepted = True
+            new_user_request.request_from.save()
+
         else:
             Notification.objects.notify_new_user_declined(
                 request.user, new_user_request

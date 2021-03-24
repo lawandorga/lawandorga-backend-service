@@ -64,6 +64,10 @@ class UserCreateSerializer(UserSerializer):
     def create(self, validated_data):
         instance = super().create(validated_data)
         instance.set_password(validated_data['password'])
+        # set the default stuff
+        instance.accepted = False
+        instance.email_confirmed = False
+        instance.is_active = True
         instance.save()
         return instance
 
