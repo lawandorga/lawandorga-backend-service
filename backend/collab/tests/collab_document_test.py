@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from rest_framework.test import APIClient
 
 from backend.api.errors import CustomError
-from backend.api.models import HasPermission, Permission
+from backend.api.models import Group, HasPermission, Permission
 from backend.collab.models import (
     CollabDocument,
     CollabPermission,
@@ -442,6 +442,83 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         self.assertIn(document.id, ids)
         self.assertIn(document2.id, ids)
 
+    def test_delete_document(self):
+        doc_1 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="top doc 1",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_2 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="top doc 2",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_1_1 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="{}/middle doc 1".format(doc_1.path),
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_1_2 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="{}/middle doc 2".format(doc_1.path),
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_1_1_1 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="{}/bottom doc 1".format(doc_1_1.path),
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        self.assertEqual(5, CollabDocument.objects.count())
+        self.assertEqual(5, TextDocument.objects.count())
+
+        client: APIClient = self.base_fixtures["users"][0]["client"]
+        url = "{}{}/".format(self.urls_collab_documents, doc_1_1.id)
+        response: Response = client.delete(url)
+
+        self.assertEqual(3, CollabDocument.objects.count())
+        self.assertEqual(3, TextDocument.objects.count())
+
+    def test_delete_document_same_start(self):
+        doc_1 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="top doc 1",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_12 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="top doc 1 2",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        doc_13 = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="top doc 1 3",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+
+        client: APIClient = self.base_fixtures["users"][0]["client"]
+        url = "{}{}/".format(self.urls_collab_documents, doc_1.id)
+        response: Response = client.delete(url)
+
+        self.assertEqual(2, CollabDocument.objects.count())
+        self.assertEqual(2, TextDocument.objects.count())
+
+
+class CollabDocumentPermissionsViewSetTest(TransactionTestCase):
+    def setUp(self) -> None:
+        self.urls_edit_collab = "/api/collab/edit_collab_document/"
+        self.urls_collab_documents = "/api/collab/collab_documents/"
+
+        self.base_fixtures = CreateFixtures.create_base_fixtures()
+        self.base_client: APIClient = self.base_fixtures["users"][0]["client"]
+        self.foreign_rlc = CreateFixtures.create_foreign_rlc_fixture()
+
+        self.full_write_permission, created = Permission.objects.get_or_create(
+            name=PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC
+        )
+        self.collab_write_permission, created = CollabPermission.objects.get_or_create(
+            name=PERMISSION_WRITE_DOCUMENT
+        )
+
     def test_get_permission_for_document(self):
         permission: CollabPermission = CollabPermission.objects.create(
             name="test_permission"
@@ -598,62 +675,59 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         self.assertEqual(1, len(response.data["direct"]))
         self.assertEqual(permission_for_doc_1_1_1.id, response.data["direct"][0]["id"])
 
-    def test_delete_document(self):
-        doc_1 = CollabDocument.objects.create(
+    def test_add_document_permission(self):
+        doc = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
             path="top doc 1",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        doc_2 = CollabDocument.objects.create(
-            rlc=self.base_fixtures["rlc"],
-            path="top doc 2",
-            creator=self.base_fixtures["users"][0]["user"],
-        )
-        doc_1_1 = CollabDocument.objects.create(
-            rlc=self.base_fixtures["rlc"],
-            path="{}/middle doc 1".format(doc_1.path),
-            creator=self.base_fixtures["users"][0]["user"],
-        )
-        doc_1_2 = CollabDocument.objects.create(
-            rlc=self.base_fixtures["rlc"],
-            path="{}/middle doc 2".format(doc_1.path),
-            creator=self.base_fixtures["users"][0]["user"],
-        )
-        doc_1_1_1 = CollabDocument.objects.create(
-            rlc=self.base_fixtures["rlc"],
-            path="{}/bottom doc 1".format(doc_1_1.path),
-            creator=self.base_fixtures["users"][0]["user"],
-        )
-        self.assertEqual(5, CollabDocument.objects.count())
-        self.assertEqual(5, TextDocument.objects.count())
+        group: Group = self.base_fixtures["groups"][0]
 
+        self.assertEqual(0, PermissionForCollabDocument.objects.count())
         client: APIClient = self.base_fixtures["users"][0]["client"]
-        url = "{}{}/".format(self.urls_collab_documents, doc_1_1.id)
-        response: Response = client.delete(url)
+        url = "{}{}/permissions/".format(self.urls_collab_documents, doc.id)
+        response: Response = client.post(
+            url,
+            {"group_id": group.id, "permission_id": self.collab_write_permission.id,},
+        )
 
-        self.assertEqual(3, CollabDocument.objects.count())
-        self.assertEqual(3, TextDocument.objects.count())
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, PermissionForCollabDocument.objects.count())
 
-    def test_delete_document_same_start(self):
-        doc_1 = CollabDocument.objects.create(
+    def test_add_document_permission_missing_param(self):
+        doc = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
             path="top doc 1",
             creator=self.base_fixtures["users"][0]["user"],
         )
-        doc_12 = CollabDocument.objects.create(
-            rlc=self.base_fixtures["rlc"],
-            path="top doc 1 2",
-            creator=self.base_fixtures["users"][0]["user"],
-        )
-        doc_13 = CollabDocument.objects.create(
-            rlc=self.base_fixtures["rlc"],
-            path="top doc 1 3",
-            creator=self.base_fixtures["users"][0]["user"],
-        )
+        group: Group = self.base_fixtures["groups"][0]
 
+        self.assertEqual(0, PermissionForCollabDocument.objects.count())
         client: APIClient = self.base_fixtures["users"][0]["client"]
-        url = "{}{}/".format(self.urls_collab_documents, doc_1.id)
-        response: Response = client.delete(url)
+        url = "{}{}/permissions/".format(self.urls_collab_documents, doc.id)
+        response: Response = client.post(
+            url, {"permission_id": self.collab_write_permission.id,},
+        )
 
-        self.assertEqual(2, CollabDocument.objects.count())
-        self.assertEqual(2, TextDocument.objects.count())
+        self.assertEqual(400, response.status_code)
+
+    def test_add_document_permission_wrong_group_id(self):
+        doc = CollabDocument.objects.create(
+            rlc=self.base_fixtures["rlc"],
+            path="top doc 1",
+            creator=self.base_fixtures["users"][0]["user"],
+        )
+        group: Group = self.base_fixtures["groups"][0]
+
+        self.assertEqual(0, PermissionForCollabDocument.objects.count())
+        client: APIClient = self.base_fixtures["users"][0]["client"]
+        url = "{}{}/permissions/".format(self.urls_collab_documents, doc.id)
+        response: Response = client.post(
+            url,
+            {
+                "permission_id": self.collab_write_permission.id,
+                "group_id": group.id + 100,
+            },
+        )
+
+        self.assertEqual(400, response.status_code)

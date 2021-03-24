@@ -26,6 +26,7 @@ from backend.api.models import Group, HasPermission, Permission
 from backend.api.serializers import HasPermissionSerializer
 from backend.collab.models import (
     CollabDocument,
+    CollabPermission,
     PermissionForCollabDocument,
 )
 from backend.collab.serializers import (
@@ -105,61 +106,78 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
         )
         return Response(CollabDocumentSerializer(created_document).data)
 
-    @action(detail=True, methods=["get"])
+    @action(detail=True, methods=["get", "post"])
     def permissions(self, request: Request, pk: int):
         try:
             document = CollabDocument.objects.get(id=pk)
         except Exception as e:
             raise CustomError("document does not exist")
 
-        permissions_direct = PermissionForCollabDocument.objects.filter(
-            document__path=document.path
-        )
-        permissions_below = PermissionForCollabDocument.objects.filter(
-            document__path__startswith="{}/".format(document.path),
-        ).exclude(document__path=document.path)
-
-        permissions_above = []
-        parts = document.path.split("/")
-        i = 0
-        while True:
-            current_path = ""
-            for j in range(i + 1):
-                if current_path != "":
-                    current_path += "/"
-                current_path += parts[j]
-            as_list = list(
-                PermissionForCollabDocument.objects.filter(document__path=current_path)
+        if request.method == "GET":
+            permissions_direct = PermissionForCollabDocument.objects.filter(
+                document__path=document.path
             )
-            permissions_above += as_list
-            i += 1
-            if i >= parts.__len__() - 1:
-                break
+            permissions_below = PermissionForCollabDocument.objects.filter(
+                document__path__startswith="{}/".format(document.path),
+            ).exclude(document__path=document.path)
 
-        overall_permissions_strings = [
-            PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
-            PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
-            PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC,
-        ]
-        overall_permissions = Permission.objects.filter(
-            name__in=overall_permissions_strings
-        )
-        has_permissions_for_groups = HasPermission.objects.filter(
-            permission_for_rlc=request.user.rlc, permission__in=overall_permissions,
-        )
+            permissions_above = []
+            parts = document.path.split("/")
+            i = 0
+            while True:
+                current_path = ""
+                for j in range(i + 1):
+                    if current_path != "":
+                        current_path += "/"
+                    current_path += parts[j]
+                as_list = list(
+                    PermissionForCollabDocument.objects.filter(
+                        document__path=current_path
+                    )
+                )
+                permissions_above += as_list
+                i += 1
+                if i >= parts.__len__() - 1:
+                    break
 
-        return_object = {
-            "from_above": PermissionForCollabDocumentNestedSerializer(
-                permissions_above, many=True
-            ).data,
-            "from_below": PermissionForCollabDocumentNestedSerializer(
-                permissions_below, many=True
-            ).data,
-            "direct": PermissionForCollabDocumentNestedSerializer(
-                permissions_direct, many=True
-            ).data,
-            "general": HasPermissionSerializer(
-                has_permissions_for_groups, many=True
-            ).data,
-        }
-        return Response(return_object)
+            overall_permissions_strings = [
+                PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
+                PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
+                PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC,
+            ]
+            overall_permissions = Permission.objects.filter(
+                name__in=overall_permissions_strings
+            )
+            has_permissions_for_groups = HasPermission.objects.filter(
+                permission_for_rlc=request.user.rlc, permission__in=overall_permissions,
+            )
+
+            return_object = {
+                "from_above": PermissionForCollabDocumentNestedSerializer(
+                    permissions_above, many=True
+                ).data,
+                "from_below": PermissionForCollabDocumentNestedSerializer(
+                    permissions_below, many=True
+                ).data,
+                "direct": PermissionForCollabDocumentNestedSerializer(
+                    permissions_direct, many=True
+                ).data,
+                "general": HasPermissionSerializer(
+                    has_permissions_for_groups, many=True
+                ).data,
+            }
+            return Response(return_object)
+        if request.method == "POST":
+            try:
+                permission_for_document = PermissionForCollabDocument.objects.create(
+                    group_has_permission_id=request.data["group_id"],
+                    permission_id=request.data["permission_id"],
+                    document=document,
+                )
+            except Exception as e:
+                raise CustomError("invalid arguments")
+
+            return Response(
+                PermissionForCollabDocumentSerializer(permission_for_document).data,
+                status=201,
+            )
