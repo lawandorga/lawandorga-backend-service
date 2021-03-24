@@ -172,8 +172,6 @@ class UserProfile(
     rlc = models.ForeignKey(
         "Rlc", related_name="rlc_members", on_delete=models.SET_NULL, null=True
     )
-    accepted = models.BooleanField(default=True)
-
     objects = UserProfileManager()
 
     user_states_possible = (

@@ -85,9 +85,6 @@ class NewUserRequestAdmitViewSet(APIView):
                 request.user, new_user_request
             )
 
-            new_user_request.request_from.accepted = True
-            new_user_request.request_from.save()
-
         else:
             Notification.objects.notify_new_user_declined(
                 request.user, new_user_request

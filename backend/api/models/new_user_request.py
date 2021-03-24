@@ -19,7 +19,7 @@ from django.db import models
 
 
 class NewUserRequest(ExportModelOperationsMixin("new_user_request"), models.Model):
-    request_from = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
+    request_from = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='accepted')
     request_processed = models.ForeignKey(
         UserProfile,
         related_name="new_user_requests_processed",

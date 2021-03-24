@@ -153,14 +153,14 @@ class UserViewSet(viewsets.ModelViewSet):
     def login(self, request: Request):
         serializer = AuthTokenSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
+        user: UserProfile = serializer.validated_data['user']
         password = serializer.validated_data['password']
 
         # check if user active and user accepted in rlc
         if not user.email_confirmed:
             message = 'You can not login, yet. Please confirm your email first.'
             return Response({'non_field_errors': [message]}, status.HTTP_400_BAD_REQUEST)
-        if not user.accepted:
+        if hasattr(user, 'accepted') and not user.accepted.state == 'gr':
             message = 'You can not login, yet. Your RLC needs to accept you as their member.'
             return Response({'non_field_errors': [message]}, status.HTTP_400_BAD_REQUEST)
 
