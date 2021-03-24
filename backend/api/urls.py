@@ -48,7 +48,6 @@ urlpatterns = [
     path("reset_password/<int:id>/", views.ResetPasswordViewSet.as_view()),
     path("permissions_for_group/<int:pk>/", views.PermissionsForGroupViewSet.as_view()),
     path("has_permission_statics/", views.HasPermissionStaticsViewSet.as_view()),
-    path("new_user_request_admit/", views.NewUserRequestAdmitViewSet.as_view()),
     path("user_has_permissions/", views.UserHasPermissionsViewSet.as_view()),
     path("my_rlc_settings/", views.RlcSettingsMineViewSet.as_view()),
 ]

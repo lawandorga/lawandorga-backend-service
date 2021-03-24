@@ -15,20 +15,18 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from backend.api.models.notification import Notification
 from backend.static.permissions import PERMISSION_ACCEPT_NEW_USERS_RLC
-from backend.static.middleware import get_private_key_from_request
-from backend.api.serializers import NewUserRequestSerializer
+from backend.api.serializers import OldNewUserRequestSerializer, NewUserRequestSerializer
+from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from backend.api.errors import CustomError
 from backend.api.models import NewUserRequest
 from backend.static import error_codes
-from rest_framework import viewsets
-from datetime import datetime
-import pytz
+from rest_framework import mixins
+from django.utils import timezone
 
 
-class NewUserRequestViewSet(viewsets.ModelViewSet):
-    serializer_class = NewUserRequestSerializer
+class NewUserRequestViewSet(mixins.UpdateModelMixin, mixins.ListModelMixin, GenericViewSet):
+    serializer_class = OldNewUserRequestSerializer
     queryset = NewUserRequest.objects.all()
 
     def list(self, request, *args, **kwargs):
@@ -37,58 +35,43 @@ class NewUserRequestViewSet(viewsets.ModelViewSet):
         ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
         queryset = NewUserRequest.objects.filter(request_from__rlc=request.user.rlc)
-        return Response(NewUserRequestSerializer(queryset, many=True).data)
+        return Response(OldNewUserRequestSerializer(queryset, many=True).data)
 
+    def update(self, request, *args, **kwargs):
+        user_request = self.get_object()
 
-class NewUserRequestAdmitViewSet(APIView):
-    def post(self, request):
         from backend.api.models import UsersRlcKeys
 
-        if not request.user.has_permission(
-            PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=request.user.rlc
-        ):
+        if not request.user.has_permission(PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=request.user.rlc):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
-        if "id" not in request.data:
-            raise CustomError(error_codes.ERROR__API__NEW_USER_REQUEST__ID_NOT_PROVIDED)
-        if "action" not in request.data:
-            raise CustomError(error_codes.ERROR__API__NO_ACTION_PROVIDED)
+        data = {
+            **request.data,
+            'processed_on': timezone.now(),
+            'processed': request.user
+        }
+        serializer = NewUserRequestSerializer(instance=user_request, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        user_request = serializer.save()
+        new_member = user_request.request_from
 
-        try:
-            new_user_request = NewUserRequest.objects.get(pk=request.data["id"])
-        except:
-            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
+        if user_request == 'gr':
 
-        action = request.data["action"]
-        if action != "accept" and action != "decline":
-            raise CustomError(error_codes.ERROR__API__ACTION_NOT_VALID)
+            # create the rlc encryption keys for new member
+            user_private_key = request.user.get_private_key(request=request)
+            rlc_private_key = request.user.rlc.get_private_key(user_private_key=user_private_key)
 
-        new_user_request.request_processed = request.user
-        new_user_request.processed_on = datetime.utcnow().replace(tzinfo=pytz.utc)
-        if action == "accept":
-            new_user_request.state = "gr"
-
-            # create encryption key for new user
-            creators_private_key = get_private_key_from_request(request)
-            rlcs_aes_key = request.user.get_rlcs_aes_key(creators_private_key)
-            encrypted_rlcs_private_key = new_user_request.request_from.rsa_encrypt(
-                rlcs_aes_key
-            )
-            users_rlc_keys = UsersRlcKeys(
-                user=new_user_request.request_from,
+            new_user_rlc_keys = UsersRlcKeys(
+                user=new_member,
                 rlc=request.user.rlc,
-                encrypted_key=encrypted_rlcs_private_key,
+                encrypted_key=rlc_private_key,
             )
-            users_rlc_keys.save()
+            new_user_rlc_keys.encrypt(new_member.get_public_key())
+            new_user_rlc_keys.save()
 
-            Notification.objects.notify_new_user_accepted(
-                request.user, new_user_request
-            )
+            Notification.objects.notify_new_user_accepted(request.user, user_request)
 
         else:
-            Notification.objects.notify_new_user_declined(
-                request.user, new_user_request
-            )
-            new_user_request.state = "de"
-        new_user_request.save()
-        return Response(NewUserRequestSerializer(new_user_request).data)
+            Notification.objects.notify_new_user_declined(request.user, user_request)
+
+        return Response(OldNewUserRequestSerializer(user_request).data)

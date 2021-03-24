@@ -45,8 +45,8 @@ class UsersRlcKeys(
             self.pk, self.user.pk, self.rlc.pk
         )
 
-    def decrypt(self, private_key_user: bytes) -> None:
+    def decrypt(self, private_key_user: str) -> None:
         super().decrypt(private_key_user)
 
-    def encrypt(self, private_key_user: bytes) -> None:
-        super().encrypt(private_key_user)
+    def encrypt(self, public_key_user: str) -> None:
+        super().encrypt(public_key_user)

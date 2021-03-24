@@ -26,8 +26,7 @@ from backend.api.serializers import OldUserSerializer, UserCreateSerializer, Use
 from rest_framework.response import Response
 from rest_framework.request import Request
 from django.forms.models import model_to_dict
-from backend.api.models import NewUserRequest, UserProfile, NotificationGroup, \
-    account_activation_token
+from backend.api.models import NewUserRequest, UserProfile, NotificationGroup, account_activation_token
 from backend.api.errors import CustomError
 from django.core.mail import send_mail
 from django.template import loader
@@ -154,7 +153,7 @@ class UserViewSet(viewsets.ModelViewSet):
             message = 'You can not login, yet. Please confirm your email first.'
             return Response({'non_field_errors': [message]}, status.HTTP_400_BAD_REQUEST)
         if hasattr(user, 'accepted') and not user.accepted.state == 'gr':
-            message = 'You can not login, yet. Your RLC needs to accept you as their member.'
+            message = 'You can not login, yet. Your RLC needs to accept you as a member.'
             return Response({'non_field_errors': [message]}, status.HTTP_400_BAD_REQUEST)
 
         # create the token and set the time if not created to keep it valid

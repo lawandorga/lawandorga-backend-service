@@ -169,9 +169,7 @@ class UserProfile(
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
 
-    rlc = models.ForeignKey(
-        "Rlc", related_name="rlc_members", on_delete=models.SET_NULL, null=True
-    )
+    rlc = models.ForeignKey("Rlc", related_name="rlc_members", on_delete=models.PROTECT)
     objects = UserProfileManager()
 
     user_states_possible = (
