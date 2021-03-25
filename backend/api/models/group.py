@@ -59,10 +59,12 @@ class Group(ExportModelOperationsMixin("group"), models.Model):
 
     objects = GroupQuerySet.as_manager()
 
+    class Meta:
+        verbose_name = 'Group'
+        verbose_name_plural = 'Groups'
+
     def __str__(self):
-        return (
-            "group: " + str(self.id) + ":" + self.name + "; from " + str(self.from_rlc)
-        )
+        return 'group: {}; name: {}; rlc: {};'.format(self.id, self.name, self.from_rlc.name)
 
     def has_group_permission(self, permission):
         if isinstance(permission, str):

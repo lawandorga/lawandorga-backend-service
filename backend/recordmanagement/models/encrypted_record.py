@@ -86,8 +86,12 @@ class EncryptedRecord(
         "additional_facts",
     ]
 
+    class Meta:
+        verbose_name = 'Record'
+        verbose_name_plural = 'Records'
+
     def __str__(self):
-        return "e_record: " + str(self.id) + ":" + self.record_token
+        return 'record: {}; token: {};'.format(self.pk, self.record_token)
 
     def encrypt(
         self,

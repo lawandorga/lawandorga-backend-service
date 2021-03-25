@@ -56,5 +56,9 @@ class EncryptedRecordPermission(
         max_length=2, choices=encrypted_record_permission_states_possible, default="re"
     )
 
+    class Meta:
+        verbose_name = 'RecordPermission'
+        verbose_name_plural = 'RecordPermissions'
+
     def __str__(self):
-        return "e_record_permission: {}; from: {};".format(self.id, self.request_from)
+        return "recordPermission: {}; from: {};".format(self.id, self.request_from.email)

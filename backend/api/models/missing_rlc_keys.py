@@ -23,5 +23,9 @@ class MissingRlcKey(ExportModelOperationsMixin("missing_rlc_key"), models.Model)
         UserProfile, related_name="missing_rlc_keys", on_delete=models.CASCADE
     )
 
+    class Meta:
+        verbose_name = 'MissingRlcKey'
+        verbose_name_plural = 'MissingRlcKeys'
+
     def __str__(self):
-        return "missing rlc keys: " + str(self.user)
+        return 'missingRlcKey: {}; user: {};'.format(self.id, self.user.email)

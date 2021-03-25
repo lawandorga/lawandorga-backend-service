@@ -83,6 +83,13 @@ class EncryptedRecordMessage(
 
     objects = EncryptedRecordMessageManager()
 
+    class Meta:
+        verbose_name = 'RecordMessage'
+        verbose_name_plural = 'RecordMessages'
+
+    def __str__(self):
+        return 'recordMessage: {}; record: {};'.format(self.pk, self.record.record_token)
+
     def encrypt(
         self,
         user: UserProfile = None,

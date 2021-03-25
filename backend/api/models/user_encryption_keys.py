@@ -32,6 +32,13 @@ class UserEncryptionKeys(
     private_key_encrypted = models.BooleanField(default=False)
     public_key = models.BinaryField()
 
+    class Meta:
+        verbose_name = 'UserEncryptionKey'
+        verbose_name_plural = 'UserEncryptionKeys'
+
+    def __str__(self):
+        return 'userEncryptionKey: {}; user: {};'.format(self.pk, self.user.email)
+
     def decrypt_private_key(self, key_to_encrypt: str) -> str:
         """
         decrypt the saved encrypted private key of the user with the given key, this key is the users 'normal' password
@@ -47,6 +54,3 @@ class UserEncryptionKeys(
 
         private_key = AESEncryption.decrypt(self.private_key, key_to_encrypt)
         return private_key
-
-    def __str__(self):
-        return "EncryptionKeys: " + str(self.id) + "; for user: " + str(self.user.id)

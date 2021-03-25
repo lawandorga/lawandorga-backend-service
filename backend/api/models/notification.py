@@ -702,8 +702,12 @@ class Notification(ExportModelOperationsMixin("notification"), models.Model):
 
     objects = NotificationManager()
 
+    class Meta:
+        verbose_name = 'Notification'
+        verbose_name_plural = 'Notifications'
+
     def __str__(self):
-        return "notification: " + str(self.id)
+        return 'notification: {};'.format(self.id)
 
     def save(self, *args, **kwargs):
         if not self.read and self.id is None:

@@ -93,7 +93,6 @@ def migrate_to_encryption():
 
     OneTimeGenerators.generate_encryption_keys_for_all_users()
     OneTimeGenerators.generate_encryption_keys_for_rlc()
-    Migrators.encrypt_all_records()
 
 
 def aws_environment_variables_viable(command):

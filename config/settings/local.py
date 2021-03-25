@@ -41,7 +41,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
-    # "EXCEPTION_HANDLER": "backend.api.exception_handler.custom_exception_handler",
+    "EXCEPTION_HANDLER": "backend.api.exception_handler.custom_exception_handler",
 }
 
 # E-Mail

@@ -42,6 +42,15 @@ class PermissionForFolder(models.Model):
         on_delete=models.CASCADE,
     )
 
+    class Meta:
+        verbose_name = 'PermissionForFolder'
+        verbose_name_plural = 'PermissionsForFolders'
+
+    def __str__(self):
+        return 'permissionForFolder: {}; folder: {}; permission: {};'.format(
+            self.pk, self.folder.name, self.permission.name
+        )
+
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
@@ -58,22 +67,4 @@ class PermissionForFolder(models.Model):
             else:
                 return
             raise Exception("PermissionForFolder doubled, deleting")
-
-        # parents = self.folder.get_all_parents()
-        #
-        # # if PermissionForFolder.objects.filter(folder__in=parents).exclude(
-        # #     group_has_permission=self.group_has_permission).count() > 0:
-        # #     raise Exception("Permission group differs from parents")
-        # ps = PermissionForFolder.objects.filter(folder__in=parents)
-        # perms = ps.distinct('folder')
-        # # for permission in perms:
-        # #     if
-        #
-        # permissions = PermissionForFolder.objects.filter(folder__in=parents).exclude(group_has_permission=self.group_has_permission)
-        # for permission in permissions:
-        #     # a = PermissionForFolder.objects.filter(folder=permission.folder, permission=permission.permission, group_has_permission=self.group_has_permission)
-        #
-        #     if PermissionForFolder.objects.filter(folder=permission.folder, permission=permission.permission, group_has_permission=self.group_has_permission).count() == 0:
-        #         raise Exception("Permission differs")
-
         super().save(force_insert, force_update, using, update_fields)

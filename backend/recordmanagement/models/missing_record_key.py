@@ -28,10 +28,9 @@ class MissingRecordKey(ExportModelOperationsMixin("missing_record_key"), models.
         EncryptedRecord, related_name="missing_record_keys", on_delete=models.CASCADE
     )
 
+    class Meta:
+        verbose_name = 'MissingRecordKey'
+        verbose_name_plural = 'MissingRecordKeys'
+
     def __str__(self):
-        return (
-            "missing records keys, user: "
-            + str(self.user)
-            + "; record: "
-            + str(self.record)
-        )
+        return 'missingRecordKey: {}; user: {}; record: {};'.format(self.pk, self.user.email, self.record.record_token)

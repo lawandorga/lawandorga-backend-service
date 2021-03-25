@@ -38,12 +38,12 @@ class UsersRlcKeys(
     encrypted_fields = ["encrypted_key"]
 
     class Meta:
+        verbose_name = 'UserRlcKeys'
+        verbose_name_plural = 'UsersRlcKeys'
         unique_together = ("user", "rlc")
 
     def __str__(self):
-        return "users_lrc_keys: {}; user: ; rlc: {};".format(
-            self.pk, self.user.pk, self.rlc.pk
-        )
+        return "userRlcKeys: {}; user: {}; rlc: {};".format(self.pk, self.user.email, self.rlc.name)
 
     def decrypt(self, private_key_user: str) -> None:
         super().decrypt(private_key_user)

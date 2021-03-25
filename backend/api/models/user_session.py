@@ -71,3 +71,10 @@ class UserSession(ExportModelOperationsMixin("user_session"), models.Model):
     end_time = models.DateTimeField(default=timezone.now)
 
     objects = UserSessionManager()
+
+    class Meta:
+        verbose_name = 'UserSession'
+        verbose_name_plural = 'UserSessions'
+
+    def __str__(self):
+        return 'userSession: {};'.format(self.pk)

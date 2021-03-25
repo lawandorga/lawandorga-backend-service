@@ -28,8 +28,12 @@ class Rlc(models.Model):
     part_of_umbrella = models.BooleanField(default=True)
     note = models.CharField(max_length=4000, null=True, default="")
 
+    class Meta:
+        verbose_name = 'Rlc'
+        verbose_name_plural = 'Rlcs'
+
     def __str__(self):
-        return "rlc: {}:{}".format(self.id, self.name)
+        return "rlc: {}; name: {};".format(self.pk, self.name)
 
     def get_consultants(self):
         """

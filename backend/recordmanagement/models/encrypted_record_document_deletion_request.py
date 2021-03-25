@@ -52,5 +52,9 @@ class EncryptedRecordDocumentDeletionRequest(models.Model):
         max_length=2, choices=record_deletion_request_states_possible, default="re"
     )
 
+    class Meta:
+        verbose_name = 'RecordDocumentDeletionRequest'
+        verbose_name_plural = 'RecordDocumentDeletionRequests'
+
     def __str__(self) -> str:
-        return "record document deletion request: " + str(self.id)
+        return 'recordDocumentDeletionRequest: {};'.format(self.pk)

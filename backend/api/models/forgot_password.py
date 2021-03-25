@@ -44,4 +44,8 @@ class ForgotPasswordLinks(ExportModelOperationsMixin("forgot_password"), models.
     ip_address = models.CharField(max_length=64)
 
     def __str__(self):
-        return "forgot_password: " + str(self.id) + ":" + self.user.email
+        return "forgot_password: {}; user: {};".format(self.id, self.user.email)
+
+    class Meta:
+        verbose_name = 'ForgotPasswordLink'
+        verbose_name_plural = 'ForgotPasswordLinks'

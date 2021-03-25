@@ -46,9 +46,13 @@ class EncryptedRecordDocument(
         "RecordDocumentTag", related_name="e_tagged", blank=True
     )
 
+    class Meta:
+        verbose_name = 'RecordDocument'
+        verbose_name_plural = 'RecordDocuments'
+
     def __str__(self):
-        return "encrypted_record_document: {} - {}; creator: {}; record: {};".format(
-            self.pk, self.name, self.creator.pk, self.record.pk
+        return "recordDocument: {}; name: {}; creator: {}; record: {};".format(
+            self.pk, self.name, self.creator.email, self.record.record_token
         )
 
     def get_file_key(self):

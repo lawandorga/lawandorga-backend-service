@@ -24,5 +24,9 @@ class RlcSettings(models.Model):
 
     user_record_pool = models.BooleanField(default=False, null=False)
 
+    class Meta:
+        verbose_name = 'RlcSetting'
+        verbose_name_plural = 'RlcSettings'
+
     def __str__(self):
-        return "rlc settings for rlc: " + str(self.rlc) + "; "
+        return "rlcSetting {}; rlc: {};".format(self.pk, self.rlc.name)

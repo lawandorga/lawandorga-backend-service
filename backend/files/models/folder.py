@@ -66,8 +66,12 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
         Rlc, related_name="folders", on_delete=models.CASCADE, null=False
     )
 
+    class Meta:
+        verbose_name = 'Folder'
+        verbose_name_plural = 'Folders'
+
     def __str__(self) -> str:
-        return "folder: " + self.name
+        return "folder: ; name: {};".format(self.pk, self.name)
 
     def get_file_key(self) -> str:
         if self.parent:

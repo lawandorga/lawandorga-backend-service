@@ -55,3 +55,10 @@ class UserSessionPath(models.Model):
     counter = models.IntegerField(default=1)
 
     objects = UserSessionPathManager()
+
+    class Meta:
+        verbose_name = 'UserSessionPath'
+        verbose_name_plural = 'UserSessionPaths'
+
+    def __str__(self):
+        return 'userSessionPath: {};'.format(self.pk)

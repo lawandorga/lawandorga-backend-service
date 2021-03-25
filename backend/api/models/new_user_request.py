@@ -39,5 +39,9 @@ class NewUserRequest(ExportModelOperationsMixin("new_user_request"), models.Mode
         max_length=2, choices=new_user_request_states_possible, default="re"
     )
 
+    class Meta:
+        verbose_name = 'NewUserRequest'
+        verbose_name_plural = 'NewUserRequests'
+
     def __str__(self):
-        return 'new_user_request: {}; from user: {};'.format(self.id, self.request_from.name)
+        return 'newUserRequest: {}; user: {};'.format(self.id, self.request_from.email)

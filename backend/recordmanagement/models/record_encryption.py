@@ -32,10 +32,12 @@ class RecordEncryption(models.Model):
 
     class Meta:
         unique_together = ("user", "record")
+        verbose_name = 'RecordEncryption'
+        verbose_name_plural = 'RecordEncryptions'
 
     def __str__(self):
-        return "record_encryption: {}; user: {}; encrypted_record: {};".format(
-            self.id, self.user.id, self.record.id
+        return "recordEncryption: {}; user: {}; record: {};".format(
+            self.id, self.user.email, self.record.record_token
         )
 
     def save(

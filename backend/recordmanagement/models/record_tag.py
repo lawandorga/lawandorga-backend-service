@@ -13,12 +13,15 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
 from django.db import models
 
 
 class RecordTag(models.Model):
     name = models.CharField(max_length=200, unique=True)
 
+    class Meta:
+        verbose_name = 'RecordTag'
+        verbose_name_plural = 'RecordTags'
+
     def __str__(self):
-        return "recordtag: " + str(self.id) + ":" + self.name
+        return "recordTag: {}; name: {};".format(self.pk, self.name)
