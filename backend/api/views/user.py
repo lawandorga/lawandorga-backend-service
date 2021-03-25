@@ -13,6 +13,8 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from backend.api.models.notification import Notification
 from rest_framework.authtoken.models import Token
@@ -22,11 +24,13 @@ from backend.static.error_codes import *
 from backend.static.middleware import get_private_key_from_request
 from rest_framework.decorators import action
 from backend.api.serializers import OldUserSerializer, UserCreateSerializer, UserProfileNameSerializer, \
-    RlcSerializer, UserProfileForeignSerializer, UserSerializer, UserUpdateSerializer
+    RlcSerializer, UserProfileForeignSerializer, UserSerializer, UserUpdateSerializer, UserPasswordResetSerializer, \
+    UserPasswordResetConfirmSerializer
 from rest_framework.response import Response
 from rest_framework.request import Request
 from django.forms.models import model_to_dict
-from backend.api.models import NewUserRequest, UserProfile, NotificationGroup, account_activation_token
+from backend.api.models import NewUserRequest, UserProfile, NotificationGroup, account_activation_token, \
+    password_reset_token, PasswordResetTokenGenerator
 from backend.api.errors import CustomError
 from django.core.mail import send_mail
 from django.template import loader
@@ -252,3 +256,51 @@ class UserViewSet(viewsets.ModelViewSet):
             raise CustomError(ERROR__API__ACTION_NOT_VALID)
 
         return Response({})
+
+    @action(detail=False, methods=['POST'])
+    def password_reset(self, request, *args, **kwargs):
+        # get the user
+        serializer = UserPasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user = UserProfile.objects.get(email=serializer.validated_data['email'])
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        # send the user activation link email
+        token = PasswordResetTokenGenerator().make_token(user)
+        link = '{}reset-password/{}/{}/'.format(settings.FRONTEND_URL, user.id, token)
+        subject = "Law & Orga Account Password reset"
+        message = "Law & Orga - Reset your password here: {}".format(link)
+        html_message = loader.render_to_string("email_templates/reset_password.html", {"link": link})
+        send_mail(
+            subject=subject,
+            html_message=html_message,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+        )
+
+        # return the success response
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(detail=True, methods=['POST'])
+    def password_reset_confirm(self, request, *args, **kwargs):
+        self.queryset = UserProfile.objects.all()
+        user = self.get_object()
+
+        serializer = UserPasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.validated_data['token']
+        new_password = serializer.validated_data['new_password']
+        if password_reset_token.check_token(user, token):
+            user.set_password(new_password)
+            user.save()
+            # TODO: make new user request
+            return Response(status=status.HTTP_200_OK)
+        else:
+            data = {
+                'message': 'The password reset link is invalid, possibly because it has already been used.'
+            }
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)

@@ -52,7 +52,6 @@ class NewUserRequestViewSet(mixins.UpdateModelMixin, mixins.ListModelMixin, Gene
         }
         serializer = NewUserRequestSerializer(instance=user_request, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
-        user_request = serializer.save()
         new_member = user_request.request_from
 
         if user_request == 'gr':
@@ -69,9 +68,16 @@ class NewUserRequestViewSet(mixins.UpdateModelMixin, mixins.ListModelMixin, Gene
             new_user_rlc_keys.encrypt(new_member.get_public_key())
             new_user_rlc_keys.save()
 
+            # in case the user is admitted because of a password forgotten, regenerate all his keys
+            # TODO: generate all keys; return error response if not all keys could be generated
+
             Notification.objects.notify_new_user_accepted(request.user, user_request)
 
         else:
             Notification.objects.notify_new_user_declined(request.user, user_request)
 
+        # save the user request if everything went well
+        user_request = serializer.save()
+
+        # return response
         return Response(OldNewUserRequestSerializer(user_request).data)

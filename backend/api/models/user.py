@@ -455,3 +455,6 @@ class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
 
 
 account_activation_token = AccountActivationTokenGenerator()
+
+# this is used on password reset
+password_reset_token = PasswordResetTokenGenerator()

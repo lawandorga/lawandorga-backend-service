@@ -30,6 +30,15 @@ class OldUserSerializer(UserSerializer):
     permission_for_user = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
 
+class UserPasswordResetSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+
+class UserPasswordResetConfirmSerializer(serializers.Serializer):
+    token = serializers.CharField()
+    new_password = serializers.CharField()
+
+
 class UserProfileForeignSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
