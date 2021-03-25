@@ -375,23 +375,10 @@ class UserProfile(
         return rlcs_private_key
 
     def get_rlcs_aes_key(self, users_private_key):
-        from backend.api.models.missing_rlc_keys import MissingRlcKey
         from backend.api.models.users_rlc_keys import UsersRlcKeys
 
         # check if there is only one usersRlcKey
         keys = UsersRlcKeys.objects.filter(user=self)
-        if keys.count() == 0:
-            missing = MissingRlcKey(user=self)
-            missing.save()
-            raise CustomError(ERROR__API__MISSING_KEY_WAIT)
-        if keys.count() > 1:
-            # delete if too many, cant check which is the right one
-            # create missingRlcKeyEntry to resolve missing key
-            missing = MissingRlcKey(user=self)
-            missing.save()
-            keys.delete()
-            raise CustomError(ERROR__API__MISSING_KEY_WAIT)
-
         users_rlc_keys = keys.first()
         rlc_encrypted_key_for_user = users_rlc_keys.encrypted_key
         try:
@@ -429,20 +416,6 @@ class UserProfile(
         from backend.static.encryption import RSAEncryption
 
         return RSAEncryption.encrypt(plain, self.get_public_key())
-
-    def forgot_password(self, request, user):
-        from backend.api.models.forgot_password import ForgotPasswordLinks
-
-        ForgotPasswordLinks.objects.filter(user=user).delete()
-
-        # self.is_active = False
-        # self.save()
-        ip = get_client_ip(request)
-        forgot_password_link = ForgotPasswordLinks(user=user, ip_address=ip)
-        forgot_password_link.save()
-
-        url = settings.FRONTEND_URL + "reset-password/" + forgot_password_link.link
-        EmailSender.send_forgot_password(self.email, url)
 
 
 # this is used on signup

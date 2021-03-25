@@ -16,7 +16,7 @@
 from backend.recordmanagement.models import OriginCountry, RecordTag, RecordDocumentTag, EncryptedRecord, \
     RecordEncryption, EncryptedClient, EncryptedRecordDocument, EncryptedRecordMessage, \
     EncryptedRecordPermission, EncryptedRecordDeletionRequest, PoolConsultant, PoolRecord, \
-    MissingRecordKey, EncryptedRecordDocumentDeletionRequest
+    EncryptedRecordDocumentDeletionRequest
 from django.contrib import admin
 
 admin.site.register(OriginCountry)
@@ -31,5 +31,4 @@ admin.site.register(EncryptedRecordDocumentDeletionRequest)
 admin.site.register(EncryptedRecordDeletionRequest)
 admin.site.register(PoolConsultant)
 admin.site.register(PoolRecord)
-admin.site.register(MissingRecordKey)
 admin.site.register(EncryptedRecord)

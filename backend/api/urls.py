@@ -24,11 +24,6 @@ router.register("permissions", views.PermissionViewSet, basename="permissions")
 router.register("has_permission", views.HasPermissionViewSet, basename="has_permission")
 router.register("rlcs", views.RlcViewSet, basename="rlcs")
 router.register(
-    "forgot_password_links",
-    views.ForgotPasswordViewSet,
-    basename="forgot_password_links",
-)
-router.register(
     "new_user_request", views.NewUserRequestViewSet, basename="new_user_request"
 )
 router.register(
@@ -44,8 +39,6 @@ router.register(
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("forgot_password/", views.ForgotPasswordUnauthenticatedViewSet.as_view()),
-    path("reset_password/<int:id>/", views.ResetPasswordViewSet.as_view()),
     path("permissions_for_group/<int:pk>/", views.PermissionsForGroupViewSet.as_view()),
     path("has_permission_statics/", views.HasPermissionStaticsViewSet.as_view()),
     path("user_has_permissions/", views.UserHasPermissionsViewSet.as_view()),

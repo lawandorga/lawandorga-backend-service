@@ -19,7 +19,6 @@ from .permission import *
 from .has_permission import *
 from .rlc import *
 from .other import *
-from .forgot_password import *
 from .new_user_request import *
 from .language import *
 from .user_encryption_keys import *

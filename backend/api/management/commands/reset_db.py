@@ -13,9 +13,7 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
 from django.core.management.base import BaseCommand
-
 from .commands import reset_db
 
 
