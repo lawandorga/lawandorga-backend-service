@@ -35,6 +35,7 @@ from backend.collab.serializers import (
     PermissionForCollabDocumentNestedSerializer,
     PermissionForCollabDocumentSerializer,
 )
+from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 from backend.static.permissions import (
     PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
     PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC,
@@ -44,6 +45,7 @@ from backend.static.permissions import (
 
 class CollabDocumentListViewSet(viewsets.ModelViewSet):
     queryset = CollabDocument.objects.all()
+    serializer_class = CollabDocumentSerializer
 
     def get_queryset(self) -> QuerySet:
         if self.request.user.is_superuser:
@@ -95,25 +97,39 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
         return Response(data)
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        data = request.data
-        # TODO: add permission check here
+        path = request.data["path"]
+        if not CollabDocument.user_has_permission_write(path, request.user):
+            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 
         created_document = CollabDocument.objects.create(
             rlc=request.user.rlc,
-            path=data["path"],
+            path=path,
             creator=request.user,
             last_editor=request.user,
         )
-        return Response(CollabDocumentSerializer(created_document).data)
+        return Response(CollabDocumentSerializer(created_document).data, status=201)
+
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        if not CollabDocument.user_has_permission_write(
+            self.get_object().path, request.user
+        ):
+            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+        return super().destroy(request, *args, **kwargs)
 
     @action(detail=True, methods=["get", "post"])
     def permissions(self, request: Request, pk: int):
         try:
-            document = CollabDocument.objects.get(id=pk)
+            document = CollabDocument.objects.get(id=pk)  # TODO: self.get object
         except Exception as e:
             raise CustomError("document does not exist")
 
+        if not request.user.has_permission(
+            PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC
+        ):
+            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+
         if request.method == "GET":
+
             permissions_direct = PermissionForCollabDocument.objects.filter(
                 document__path=document.path
             )

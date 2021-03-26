@@ -193,6 +193,7 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
         return False
 
     def get_groups_permission(self, group: Group) -> {}:
+        # deprecated? only used in tests
         from backend.files.models import PermissionForFolder
 
         if group.has_group_permission(PERMISSION_WRITE_ALL_FOLDERS_RLC):

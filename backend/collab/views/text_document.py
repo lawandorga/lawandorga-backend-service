@@ -15,10 +15,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from typing import Any
 from django.db.models import QuerySet
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
+from rest_framework.viewsets import GenericViewSet
 
 from backend.api.models import UserProfile
 from backend.collab.models import EditingRoom, TextDocument, TextDocumentVersion
@@ -32,7 +33,12 @@ from backend.static.error_codes import ERROR__API__ID_NOT_FOUND
 from backend.static.middleware import get_private_key_from_request
 
 
-class TextDocumentModelViewSet(viewsets.ModelViewSet):
+class TextDocumentModelViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet,
+):
     queryset = TextDocument.objects.all()
 
     def get_queryset(self) -> QuerySet:
@@ -83,6 +89,8 @@ class TextDocumentModelViewSet(viewsets.ModelViewSet):
         doc.patch(request.data, key, user)
 
         return Response(TextDocumentSerializer(doc).get_decrypted_data(key))
+
+    # TODO: action
 
 
 class TextDocumentConnectionAPIView(APIView,):

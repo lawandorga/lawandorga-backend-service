@@ -21,6 +21,15 @@ from django_prometheus.models import ExportModelOperationsMixin
 from backend.api.errors import CustomError
 from backend.api.models import UserProfile
 from backend.collab.models import TextDocument
+from backend.collab.static.collab_permissions import (
+    PERMISSION_READ_DOCUMENT,
+    PERMISSION_WRITE_DOCUMENT,
+)
+from backend.static.permissions import (
+    PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
+    PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC,
+    PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
+)
 
 
 class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument):
@@ -74,6 +83,71 @@ class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument
         )
         return permissions_all.count() > 0, permissions_direct.count() > 0
 
-    def user_has_read_permission(self, user: UserProfile):
-        # add overall permission
-        pass
+    @staticmethod
+    def user_has_permission_read(path: str, user: UserProfile) -> bool:
+        from backend.collab.models import PermissionForCollabDocument
+
+        if "/" not in path:
+            return True
+
+        overall_permissions_strings = [
+            PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
+            PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
+            PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC,
+        ]
+        for permission in overall_permissions_strings:
+            if user.has_permission(permission, for_rlc=user.rlc):
+                return True
+
+        parents = []
+        parts = path.split("/")
+        current = ""
+        for part in parts:
+            if current != "":
+                current += "/"
+            current += part
+            parents.append(current)
+
+        permission_names = [PERMISSION_READ_DOCUMENT, PERMISSION_WRITE_DOCUMENT]
+        groups = user.group_members.all()
+        for permission_name in permission_names:
+            if PermissionForCollabDocument.objects.filter(
+                permission__name=permission_name,
+                document__path__in=parents,
+                group_has_permission__in=groups,
+            ).exists():
+                return True
+        return False
+
+    @staticmethod
+    def user_has_permission_write(path: str, user: UserProfile) -> bool:
+        from backend.collab.models import PermissionForCollabDocument
+
+        if "/" not in path:
+            return True
+
+        overall_permissions_strings = [
+            PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
+            PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
+        ]
+        for permission in overall_permissions_strings:
+            if user.has_permission(permission, for_rlc=user.rlc):
+                return True
+
+        parents = []
+        parts = path.split("/")
+        current = ""
+        for part in parts:
+            if current != "":
+                current += "/"
+            current += part
+            parents.append(current)
+
+        groups = user.group_members.all()
+        if PermissionForCollabDocument.objects.filter(
+            permission__name=PERMISSION_WRITE_DOCUMENT,
+            document__path__in=parents,
+            group_has_permission__in=groups,
+        ).exists():
+            return True
+        return False
