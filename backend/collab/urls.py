@@ -17,11 +17,9 @@
 from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
 
-from backend.collab.models import PermissionForCollabDocument
 from backend.collab.views import (
     CollabDocumentListViewSet,
     TextDocumentModelViewSet,
-    TextDocumentConnectionAPIView,
     VersionsOfTextDocumentViewSet,
     TextDocumentVersionModelViewSet,
 )
@@ -52,7 +50,6 @@ router.register(
 
 urlpatterns = [
     url(r"", include(router.urls)),
-    url(r"editing/(?P<id>.+)/$", TextDocumentConnectionAPIView.as_view()),
     url(
         r"text_documents/(?P<id>.+)/versions/$", VersionsOfTextDocumentViewSet.as_view()
     ),

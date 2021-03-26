@@ -16,6 +16,7 @@
 from typing import Any
 from django.db.models import QuerySet
 from rest_framework import mixins, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -79,37 +80,23 @@ class TextDocumentModelViewSet(
 
         return Response(data)
 
-    # TODO: action
+    @action(detail=True, methods=["get", "delete"])
+    def editing(self, request: Request, pk: int):
+        document: TextDocument = self.get_object()
 
-
-class TextDocumentConnectionAPIView(APIView,):
-    def get(self, request: Request, id: str) -> Response:
-        try:
-            document = TextDocument.objects.get(pk=id)
-        except Exception as e:
-            raise CustomError(ERROR__API__ID_NOT_FOUND)
-
-        existing = EditingRoom.objects.filter(
-            document=document
-        ).first()  # TODO: check get or create
-        did_create = False
-        if existing:
-            room = existing
-        else:
-            room = EditingRoom(document=document)
-            room.save()
-            did_create = True
-        response_obj = EditingRoomSerializer(room).data
-        response_obj.update({"did_create": did_create})
-        return Response(response_obj)
-
-    def delete(self, request: Request, id: str):
-        try:
-            document = TextDocument.objects.get(pk=id)
-        except Exception as e:
-            raise CustomError(ERROR__API__ID_NOT_FOUND)
-        EditingRoom.objects.filter(document=document).delete()
-        print("editing room deleted")
-        # TODO: check permission rights
-
-        return Response({"success": True})
+        # TODO: permission
+        if request.method == "GET":
+            existing = EditingRoom.objects.filter(document=document).first()
+            did_create = False
+            if existing:
+                room = existing
+            else:
+                room = EditingRoom(document=document)
+                room.save()
+                did_create = True
+            response_obj = EditingRoomSerializer(room).data
+            response_obj.update({"did_create": did_create})
+            return Response(response_obj)
+        if request.method == "DELETE":
+            EditingRoom.objects.filter(document=document).delete()
+            return Response({"success": True})
