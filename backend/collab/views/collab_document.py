@@ -118,13 +118,10 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get", "post"])
     def permissions(self, request: Request, pk: int):
-        try:
-            document = CollabDocument.objects.get(id=pk)  # TODO: self.get object
-        except Exception as e:
-            raise CustomError("document does not exist")
+        document = self.get_object()
 
         if not request.user.has_permission(
-            PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC
+            PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC, for_rlc=request.user.rlc
         ):
             raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 

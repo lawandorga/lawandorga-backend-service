@@ -79,17 +79,6 @@ class TextDocumentModelViewSet(
 
         return Response(data)
 
-    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        # TODO: needed?
-        pass
-        doc: TextDocument = TextDocument.objects.get(pk=kwargs["pk"])
-        users_private_key = get_private_key_from_request(request)
-        user: UserProfile = request.user
-        key: str = user.get_rlcs_aes_key(users_private_key)
-        doc.patch(request.data, key, user)
-
-        return Response(TextDocumentSerializer(doc).get_decrypted_data(key))
-
     # TODO: action
 
 
@@ -100,7 +89,9 @@ class TextDocumentConnectionAPIView(APIView,):
         except Exception as e:
             raise CustomError(ERROR__API__ID_NOT_FOUND)
 
-        existing = EditingRoom.objects.filter(document=document).first()
+        existing = EditingRoom.objects.filter(
+            document=document
+        ).first()  # TODO: check get or create
         did_create = False
         if existing:
             room = existing
@@ -111,9 +102,6 @@ class TextDocumentConnectionAPIView(APIView,):
         response_obj = EditingRoomSerializer(room).data
         response_obj.update({"did_create": did_create})
         return Response(response_obj)
-
-    def post(self, request: Request, id: str):
-        pass
 
     def delete(self, request: Request, id: str):
         try:
