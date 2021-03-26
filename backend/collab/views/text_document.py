@@ -30,7 +30,7 @@ from backend.collab.serializers import (
     TextDocumentVersionSerializer,
 )
 from backend.api.errors import CustomError
-from backend.static.error_codes import ERROR__API__ID_NOT_FOUND
+from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 from backend.static.middleware import get_private_key_from_request
 
 
@@ -48,26 +48,36 @@ class TextDocumentModelViewSet(
         return self.queryset.filter(rlc=self.request.user.rlc)
 
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        document = self.get_object()
+
         try:
-            doc: TextDocument = TextDocument.objects.get(pk=kwargs["pk"])
+            record_doc = document.get_record_document()
+            # check if permission for record here
         except Exception as e:
-            raise CustomError(ERROR__API__ID_NOT_FOUND)
+            pass
+        try:
+            collab_doc = document.get_collab_document()
+            if not collab_doc.user_has_permission_write(request.user):
+                raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+        except Exception as e:
+            pass
+
         users_private_key = get_private_key_from_request(request)
         user: UserProfile = request.user
         key: str = user.get_rlcs_aes_key(users_private_key)
 
-        data = TextDocumentSerializer(doc).data
-        last_version = doc.get_last_published_version()
+        data = TextDocumentSerializer(document).data
+        last_version = document.get_last_published_version()
         if not last_version:
             last_version = TextDocumentVersion(
-                document=doc,
+                document=document,
                 content=b"",
                 is_draft=False,
-                creator=doc.creator,
-                created=doc.created,
+                creator=document.creator,
+                created=document.created,
             )
 
-        draft = doc.get_draft()
+        draft = document.get_draft()
         if draft:
             data["versions"] = [
                 TextDocumentVersionSerializer(draft).get_decrypted_data(key),
