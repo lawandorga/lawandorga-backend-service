@@ -51,23 +51,36 @@ class Rlc(models.Model):
         # return the public key
         return self.encryption_keys.public_key
 
-    def get_private_key(self, user: UserProfile, user_private_key: bytes):
-        from backend.api.models.users_rlc_keys import UsersRlcKeys
+    def get_aes_key(self, user: UserProfile = None, private_key_user: str = None) -> str:
+        if user and private_key_user:
+            # get the aes key that encrypted the rlc private key. this aes key is encrypted for every user with its
+            # public key, therefore only its private key can unlock the aes key.
+            keys = user.users_rlc_keys.get(rlc=self)
+            keys.decrypt(private_key_user)
+            aes_key = keys.encrypted_key
+            return aes_key
 
+        else:
+            raise ValueError('You need to set (user and private_key_user).')
+
+    def get_private_key(self, user: UserProfile = None, private_key_user: str = None) -> str:
         # safety check
         if not hasattr(self, "encryption_keys"):
             self.generate_keys()
 
-        # get the aes key that encrypted the rlc private key. this aes key is encrypted for every user with its
-        # public key, therefore only its private key can unlock the aes key.
-        keys = UsersRlcKeys.objects.get(user=user, rlc=self)
-        keys.decrypt(user_private_key)
-        aes_key = keys.encrypted_key
+        if user and private_key_user:
 
-        rlc_keys = self.encryption_keys
-        rlc_keys.decrypt(aes_key)
+            keys = user.users_rlc_keys.get(rlc=self)
+            keys.decrypt(private_key_user)
+            aes_key = self.get_aes_key(user=user, private_key_user=private_key_user)
 
-        return rlc_keys.encrypted_private_key
+            rlc_keys = self.encryption_keys
+            rlc_keys.decrypt(aes_key)
+
+            return rlc_keys.encrypted_private_key
+
+        else:
+            raise ValueError('You need to pass (user and private_key_user).')
 
     def generate_keys(self) -> None:
         from backend.api.models.rlc_encryption_keys import RlcEncryptionKeys

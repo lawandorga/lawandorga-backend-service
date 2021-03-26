@@ -349,8 +349,8 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['post'])
-    def request_permission(self, request: Request, pk=None):
-        record: EncryptedRecord = EncryptedRecord.objects.get(pk)
+    def request_permission(self, request, *args, **kwargs):
+        record = self.get_object()
         if record.from_rlc != request.user.rlc:
             raise CustomError(error_codes.ERROR__API__WRONG_RLC)
 

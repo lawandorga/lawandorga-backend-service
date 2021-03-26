@@ -145,6 +145,8 @@ class UserProfile(
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
 
+    locked = models.BooleanField(default=False)
+
     rlc = models.ForeignKey("Rlc", related_name="rlc_members", on_delete=models.PROTECT)
     objects = UserProfileManager()
 
@@ -321,7 +323,7 @@ class UserProfile(
             or self.is_superuser
         )
 
-    def get_public_key(self) -> bytes:
+    def get_public_key(self) -> str:
         """
         gets the public key of the user from the database
         :return: public key of user (PEM)

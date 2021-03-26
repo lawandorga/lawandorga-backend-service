@@ -60,12 +60,15 @@ class RecordEncryption(models.Model):
             )
             setattr(self, field, encrypted_field)
 
-    def decrypt(self, private_key_user: str) -> None:
-        for field in self.encrypted_fields:
-            decrypted_field = RSAEncryption.decrypt(
-                getattr(self, field), private_key_user
-            )
-            setattr(self, field, decrypted_field)
+    def decrypt(self, private_key_user: str = None) -> None:
+        if private_key_user:
+            for field in self.encrypted_fields:
+                decrypted_field = RSAEncryption.decrypt(
+                    getattr(self, field), private_key_user
+                )
+                setattr(self, field, decrypted_field)
+        else:
+            raise ValueError('You need to pass (private_key_user).')
 
     def get_key(self, private_key_user: str) -> str:
         if not self.encrypted_key:

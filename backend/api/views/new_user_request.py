@@ -54,22 +54,20 @@ class NewUserRequestViewSet(mixins.UpdateModelMixin, mixins.ListModelMixin, Gene
         serializer.is_valid(raise_exception=True)
         new_member = user_request.request_from
 
-        if user_request == 'gr':
+        if user_request.state == 'gr':
 
             # create the rlc encryption keys for new member
-            user_private_key = request.user.get_private_key(request=request)
-            rlc_private_key = request.user.rlc.get_private_key(user_private_key=user_private_key)
+            private_key_user = request.user.get_private_key(request=request)
+            aes_key_rlc = request.user.rlc.get_aes_key(user=request.user, private_key_user=private_key_user)
 
             new_user_rlc_keys = UsersRlcKeys(
                 user=new_member,
                 rlc=request.user.rlc,
-                encrypted_key=rlc_private_key,
+                encrypted_key=aes_key_rlc,
             )
-            new_user_rlc_keys.encrypt(new_member.get_public_key())
+            public_key = new_member.get_public_key()
+            new_user_rlc_keys.encrypt(public_key)
             new_user_rlc_keys.save()
-
-            # in case the user is admitted because of a password forgotten, regenerate all his keys
-            # TODO: generate all keys; return error response if not all keys could be generated
 
             Notification.objects.notify_new_user_accepted(request.user, user_request)
 

@@ -20,6 +20,8 @@ from backend.api.models.notification import Notification
 from rest_framework.authtoken.models import Token
 from backend.api.models.permission import Permission
 from rest_framework.permissions import IsAuthenticated
+
+from backend.recordmanagement.models import RecordEncryption
 from backend.static.error_codes import *
 from backend.static.middleware import get_private_key_from_request
 from rest_framework.decorators import action
@@ -30,7 +32,7 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from django.forms.models import model_to_dict
 from backend.api.models import NewUserRequest, UserProfile, NotificationGroup, account_activation_token, \
-    password_reset_token, PasswordResetTokenGenerator
+    password_reset_token, PasswordResetTokenGenerator, UsersRlcKeys
 from backend.api.errors import CustomError
 from django.core.mail import send_mail
 from django.template import loader
@@ -38,6 +40,8 @@ from rest_framework import viewsets, filters, status
 from backend.static import permissions
 from django.utils import timezone
 from django.conf import settings
+
+from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 
 
 class SpecialPermission(IsAuthenticated):
@@ -55,23 +59,20 @@ class UserViewSet(viewsets.ModelViewSet):
     search_fields = ["name", "email"]
 
     def get_authenticators(self):
-        if self.request.method == 'POST':
+        # self.action == 'create' would be better here but self.action is not set yet
+        if self.request.path == '/api/profiles/' and self.request.method == 'POST':
             return []
         return super().get_authenticators()
 
     def get_serializer_class(self):
-        if self.request.method in ['POST']:
+        if self.action == 'create':
             return UserCreateSerializer
-        elif self.request.method in ['PUT', 'PATCH']:
+        elif self.action in ['update', 'partial_update']:
             return UserUpdateSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):
-        if self.request.method == 'POST':
-            return super().get_queryset()
-        if self.request.user.is_authenticated:
-            return UserProfile.objects.filter(rlc=self.request.user.rlc)
-        return super().get_queryset()
+        return UserProfile.objects.filter(rlc=self.request.user.rlc)
 
     def create(self, request, *args, **kwargs):
         # create the user
@@ -257,7 +258,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response({})
 
-    @action(detail=False, methods=['POST'])
+    @action(detail=False, methods=['POST'], authentication_classes=[], permission_classes=[])
     def password_reset(self, request, *args, **kwargs):
         # get the user
         serializer = UserPasswordResetSerializer(data=request.data)
@@ -285,10 +286,10 @@ class UserViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=['POST'], authentication_classes=[], permission_classes=[])
     def password_reset_confirm(self, request, *args, **kwargs):
         self.queryset = UserProfile.objects.all()
-        user = self.get_object()
+        user: UserProfile = self.get_object()
 
         serializer = UserPasswordResetConfirmSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -296,11 +297,59 @@ class UserViewSet(viewsets.ModelViewSet):
         new_password = serializer.validated_data['new_password']
         if password_reset_token.check_token(user, token):
             user.set_password(new_password)
+            user.locked = True
             user.save()
-            # TODO: make new user request
+            # generate new user private and public key based on the new password
+            user.encryption_keys.delete()
+            user.get_private_key(password_user=new_password)
+            # return
             return Response(status=status.HTTP_200_OK)
         else:
             data = {
                 'message': 'The password reset link is invalid, possibly because it has already been used.'
             }
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['POST'])
+    def unlock(self, request, pk=None, *args, **kwargs):
+        """
+        when this api endpoint is called we assume that the public and private key of the submitted user is
+        valid and up to date. this means that his private key can be decrypted with the password that this
+         user has at the moment.
+        """
+        user = self.request.user
+        user_to_unlock = self.get_object()
+
+        if not request.user.has_permission(PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc):
+            data = {
+                'message': 'You need to have the view_records_full_detail permission in order to unlock this user.'
+                           'Because you need to be able to give this user all his encryption keys.'
+            }
+            return Response(data)
+
+        # generate new rlc key
+        user_to_unlock.users_rlc_keys.all().delete()
+        private_key_user = request.user.get_private_key(request=request)
+        aes_key_rlc = request.user.rlc.get_aes_key(user=user, private_key_user=private_key_user)
+        new_keys = UsersRlcKeys(user=user_to_unlock, rlc=user_to_unlock.rlc, encrypted_key=aes_key_rlc)
+        new_keys.encrypt(user_to_unlock.get_public_key())
+        new_keys.save()
+
+        # generate new record encryption
+        record_encryptions = user_to_unlock.record_encryptions.all()
+        record_encryptions_list = list(record_encryptions)
+        record_encryptions.delete()
+
+        for old_keys in record_encryptions_list:
+            encryption = RecordEncryption.objects.get(user=user, record=old_keys.record)
+            encryption.decrypt(private_key_user=private_key_user)
+            new_keys = RecordEncryption(user=user_to_unlock, record=old_keys.record,
+                                        encrypted_key=encryption.encrypted_key)
+            new_keys.encrypt(user_to_unlock.get_public_key())
+            new_keys.save()
+
+        # unlock the user
+        user.locked = False
+        user.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
