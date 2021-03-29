@@ -30,21 +30,19 @@ from backend.static.encryption import RSAEncryption
 from backend.static.error_codes import (
     ERROR__API__PERMISSION__NOT_FOUND,
     ERROR__API__RLC__NO_PUBLIC_KEY_FOUND,
-    ERROR__API__MISSING_KEY_WAIT,
     ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED,
 )
-from backend.api.helpers import get_client_ip
-from backend.static.emails import EmailSender
+from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 
 
 class UserProfileManager(BaseUserManager):
     @staticmethod
     def get_users_with_special_permission(
         permission,
-        from_rlc: "Rlc" = None,
-        for_user: "UserProfile" = None,
-        for_group: "Group" = None,
-        for_rlc: "Rlc" = None,
+        from_rlc = None,
+        for_user = None,
+        for_group = None,
+        for_rlc = None,
     ):
         """
         returns all users
@@ -109,10 +107,10 @@ class UserProfileManager(BaseUserManager):
     @staticmethod
     def get_users_with_special_permissions(
         permissions,
-        from_rlc: "Rlc" = None,
-        for_user: "UserProfile" = None,
-        for_group: "Group" = None,
-        for_rlc: "Rlc" = None,
+        from_rlc = None,
+        for_user = None,
+        for_group = None,
+        for_rlc = None,
     ):
         users = None
         for permission in permissions:
@@ -253,9 +251,6 @@ class UserProfile(
             HasPermission.objects.filter(
                 user_has_permission=self.pk,
                 permission_id=permission,
-                permission_for_user_id=for_user,
-                permission_for_group_id=for_group,
-                permission_for_rlc_id=for_rlc,
             ).count()
             >= 1
         )
@@ -268,9 +263,6 @@ class UserProfile(
             HasPermission.objects.filter(
                 group_has_permission_id__in=groups,
                 permission_id=permission,
-                permission_for_user_id=for_user,
-                permission_for_group_id=for_group,
-                permission_for_rlc_id=for_rlc,
             ).count()
             >= 1
         )
@@ -285,9 +277,6 @@ class UserProfile(
             HasPermission.objects.filter(
                 rlc_has_permission_id=self.rlc.id,
                 permission_id=permission,
-                permission_for_user_id=for_user,
-                permission_for_group_id=for_group,
-                permission_for_rlc_id=for_rlc,
             ).count()
             >= 1
         )
@@ -418,6 +407,36 @@ class UserProfile(
         from backend.static.encryption import RSAEncryption
 
         return RSAEncryption.encrypt(plain, self.get_public_key())
+
+    def generate_keys_for_user(self, private_key_self, user_to_unlock):
+        """
+        this method assumes that a valid public key exists for user_to_unlock
+        """
+        from backend.api.models import UsersRlcKeys
+        from backend.recordmanagement.models import RecordEncryption
+
+        # assert that the self user has all possible keys
+        assert self.has_permission(PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC)
+
+        # generate new rlc key
+        user_to_unlock.users_rlc_keys.all().delete()
+        aes_key_rlc = self.rlc.get_aes_key(user=self, private_key_user=private_key_self)
+        new_keys = UsersRlcKeys(user=user_to_unlock, rlc=user_to_unlock.rlc, encrypted_key=aes_key_rlc)
+        new_keys.encrypt(user_to_unlock.get_public_key())
+        new_keys.save()
+
+        # generate new record encryption
+        record_encryptions = user_to_unlock.record_encryptions.all()
+        record_encryptions_list = list(record_encryptions)
+        record_encryptions.delete()
+
+        for old_keys in record_encryptions_list:
+            encryption = RecordEncryption.objects.get(user=self, record=old_keys.record)
+            encryption.decrypt(private_key_user=private_key_self)
+            new_keys = RecordEncryption(user=user_to_unlock, record=old_keys.record,
+                                        encrypted_key=encryption.encrypted_key)
+            new_keys.encrypt(user_to_unlock.get_public_key())
+            new_keys.save()
 
 
 # this is used on signup

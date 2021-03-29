@@ -80,27 +80,24 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
             queryset = queryset.annotate(access=Value(1, output_field=IntegerField()))
         else:
             record_ids = [single_record.id for single_record in list(queryset)]
-            from_record_permissions = [
-                record_permission.record.id
-                for record_permission in list(
-                    EncryptedRecordPermission.objects.filter(
-                        request_from=user, state="gr", record__id__in=record_ids
+
+            record_ids_from_keys = [
+                key.record.id
+                for key in list(
+                    RecordEncryption.objects.filter(
+                        user=user, record__in=record_ids
                     )
                 )
             ]
-            from_working_on = [
-                record.id
-                for record in list(user.working_on_e_record.filter(id__in=record_ids))
-            ]
+
             queryset = queryset.annotate(
                 access=Case(
-                    When(
-                        id__in=from_record_permissions + from_working_on, then=Value(1)
-                    ),
+                    When(id__in=record_ids_from_keys, then=Value(1)),
                     default=Value(0),
                     output_field=IntegerField(),
                 )
             )
+
         if "sort" in request.query_params:
             if (
                 "sortdirection" in request.query_params
@@ -222,7 +219,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         record = self.get_object()
 
-        if record.user_has_permission(self.request.user):
+        if request.user.record_encryptions.filter(record=record).exists():
             private_key_user = request.user.get_private_key(request=request)
             private_key_rlc = request.user.rlc.get_private_key(
                 request.user, private_key_user
@@ -351,27 +348,10 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def request_permission(self, request, *args, **kwargs):
         record = self.get_object()
-        if record.from_rlc != request.user.rlc:
-            raise CustomError(error_codes.ERROR__API__WRONG_RLC)
 
-        if record.user_has_permission(request.user):
-            raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ALREADY_WORKING_ON)
-
-        if (
-            EncryptedRecordPermission.objects.filter(
-                record=record, request_from=request.user, state="re"
-            ).count()
-            >= 1
-        ):
-            raise CustomError(error_codes.ERROR__RECORD__PERMISSION__ALREADY_REQUESTED)
-        can_edit = False
-        if "can_edit" in request.data:
-            can_edit = request.data["can_edit"]
-
-        record_permission = EncryptedRecordPermission(
-            request_from=request.user, record=record, can_edit=can_edit
+        record_permission = EncryptedRecordPermission.objects.create(
+            request_from=request.user, record=record
         )
-        record_permission.save()
 
         Notification.objects.notify_record_permission_requested(
             request.user, record_permission

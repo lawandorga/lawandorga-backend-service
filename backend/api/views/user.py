@@ -13,15 +13,12 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from backend.api.models.notification import Notification
 from rest_framework.authtoken.models import Token
 from backend.api.models.permission import Permission
+from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 from rest_framework.permissions import IsAuthenticated
-
-from backend.recordmanagement.models import RecordEncryption
 from backend.static.error_codes import *
 from backend.static.middleware import get_private_key_from_request
 from rest_framework.decorators import action
@@ -29,10 +26,11 @@ from backend.api.serializers import OldUserSerializer, UserCreateSerializer, Use
     RlcSerializer, UserProfileForeignSerializer, UserSerializer, UserUpdateSerializer, UserPasswordResetSerializer, \
     UserPasswordResetConfirmSerializer
 from rest_framework.response import Response
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.request import Request
 from django.forms.models import model_to_dict
-from backend.api.models import NewUserRequest, UserProfile, NotificationGroup, account_activation_token, \
-    password_reset_token, PasswordResetTokenGenerator, UsersRlcKeys
+from backend.api.models import NewUserRequest, UserProfile, NotificationGroup, PasswordResetTokenGenerator, \
+    AccountActivationTokenGenerator
 from backend.api.errors import CustomError
 from django.core.mail import send_mail
 from django.template import loader
@@ -40,8 +38,6 @@ from rest_framework import viewsets, filters, status
 from backend.static import permissions
 from django.utils import timezone
 from django.conf import settings
-
-from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 
 
 class SpecialPermission(IsAuthenticated):
@@ -84,7 +80,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user_request = NewUserRequest.objects.create(request_from=user)
 
         # send the user activation link email
-        token = account_activation_token.make_token(user)
+        token = AccountActivationTokenGenerator().make_token(user)
         link = '{}activate-account/{}/{}/'.format(settings.FRONTEND_URL, user.id, token)
         subject = "Law & Orga Registration"
         message = "Law & Orga - Activate your account here: {}".format(link)
@@ -157,6 +153,10 @@ class UserViewSet(viewsets.ModelViewSet):
         if not user.email_confirmed:
             message = 'You can not login, yet. Please confirm your email first.'
             return Response({'non_field_errors': [message]}, status.HTTP_400_BAD_REQUEST)
+        if user.blocked:
+            message = 'Your account is temporarily blocked, because your keys need to be recreated. ' \
+                      'Please tell an admin to press the unlock button on your user.'
+            return Response({'non_field_errors': [message]}, status.HTTP_400_BAD_REQUEST)
         if hasattr(user, 'accepted') and not user.accepted.state == 'gr':
             message = 'You can not login, yet. Your RLC needs to accept you as a member.'
             return Response({'non_field_errors': [message]}, status.HTTP_400_BAD_REQUEST)
@@ -215,7 +215,7 @@ class UserViewSet(viewsets.ModelViewSet):
         self.queryset = UserProfile.objects.all()
         user = self.get_object()
 
-        if account_activation_token.check_token(user, token):
+        if AccountActivationTokenGenerator().check_token(user, token):
             user.email_confirmed = True
             user.save()
             return Response(status=status.HTTP_200_OK)
@@ -295,7 +295,7 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         token = serializer.validated_data['token']
         new_password = serializer.validated_data['new_password']
-        if password_reset_token.check_token(user, token):
+        if PasswordResetTokenGenerator().check_token(user, token):
             user.set_password(new_password)
             user.locked = True
             user.save()
@@ -328,25 +328,8 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(data)
 
         # generate new rlc key
-        user_to_unlock.users_rlc_keys.all().delete()
         private_key_user = request.user.get_private_key(request=request)
-        aes_key_rlc = request.user.rlc.get_aes_key(user=user, private_key_user=private_key_user)
-        new_keys = UsersRlcKeys(user=user_to_unlock, rlc=user_to_unlock.rlc, encrypted_key=aes_key_rlc)
-        new_keys.encrypt(user_to_unlock.get_public_key())
-        new_keys.save()
-
-        # generate new record encryption
-        record_encryptions = user_to_unlock.record_encryptions.all()
-        record_encryptions_list = list(record_encryptions)
-        record_encryptions.delete()
-
-        for old_keys in record_encryptions_list:
-            encryption = RecordEncryption.objects.get(user=user, record=old_keys.record)
-            encryption.decrypt(private_key_user=private_key_user)
-            new_keys = RecordEncryption(user=user_to_unlock, record=old_keys.record,
-                                        encrypted_key=encryption.encrypted_key)
-            new_keys.encrypt(user_to_unlock.get_public_key())
-            new_keys.save()
+        request.user.generate_keys_for_user(private_key_user, user_to_unlock)
 
         # unlock the user
         user.locked = False
