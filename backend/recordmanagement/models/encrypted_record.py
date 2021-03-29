@@ -118,7 +118,7 @@ class EncryptedRecord(ExportModelOperationsMixin("encrypted_record"), models.Mod
     last_contact_date = models.DateTimeField(default=None, null=True)
     first_consultation = models.DateTimeField(default=None, null=True)
 
-    record_token = models.CharField(max_length=50, unique=True)
+    record_token = models.CharField(max_length=50)
 
     official_note = models.TextField(blank=True, null=True)
 
