@@ -15,7 +15,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
-from django.db.models import Q
 
 from backend.api.models import Group
 from backend.files.models import Folder, FolderPermission

@@ -1,7 +1,5 @@
-#!/usr/bin/env python
-
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -16,17 +14,20 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import os
-import sys
+from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
 
-if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
-    try:
-        from django.core.management import execute_from_command_line
-    except ImportError as exc:
-        raise ImportError(
-            "Couldn't import Django. Are you sure it's installed and "
-            "available on your PYTHONPATH environment variable? Did you "
-            "forget to activate a virtual environment?"
-        ) from exc
-    execute_from_command_line(sys.argv)
+from backend.collab.models import TextDocument
+from backend.recordmanagement.models import EncryptedRecord
+
+
+class RecordDocument(
+    ExportModelOperationsMixin("record_collab_document"), TextDocument
+):
+    record = models.ForeignKey(
+        EncryptedRecord,
+        related_name="collab_documents",
+        on_delete=models.CASCADE,
+        null=False,
+    )
+    name = models.CharField(max_length=1024, null=False)

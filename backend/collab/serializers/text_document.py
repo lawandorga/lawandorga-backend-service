@@ -1,7 +1,5 @@
-#!/usr/bin/env python
-
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -16,17 +14,19 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import os
-import sys
+from rest_framework import serializers
 
-if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
-    try:
-        from django.core.management import execute_from_command_line
-    except ImportError as exc:
-        raise ImportError(
-            "Couldn't import Django. Are you sure it's installed and "
-            "available on your PYTHONPATH environment variable? Did you "
-            "forget to activate a virtual environment?"
-        ) from exc
-    execute_from_command_line(sys.argv)
+from backend.collab.models import TextDocument
+from backend.static.encryption import AESEncryption
+from backend.static.serializer_fields import EncryptedField
+
+from backend.api.serializers import UserProfileNameSerializer
+
+
+class TextDocumentSerializer(serializers.ModelSerializer):
+    creator = UserProfileNameSerializer(many=False, read_only=True)
+    last_editor = UserProfileNameSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = TextDocument
+        fields = "__all__"

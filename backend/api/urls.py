@@ -20,6 +20,7 @@ from rest_framework.routers import DefaultRouter
 from backend.api import views
 from backend.recordmanagement import urls as record_urls
 from backend.files import urls as file_urls
+from backend.collab import urls as collab_urls
 
 router = DefaultRouter()
 router.register("profiles", views.user.UserProfileViewSet)
@@ -64,6 +65,7 @@ urlpatterns = [
     url(r"", include(router.urls)),
     url(r"^records/", include(record_urls)),
     url(r"^files/", include(file_urls)),
+    url(r"^collab/", include(collab_urls)),
     url(r"send_email/", views.SendEmailViewSet.as_view()),
     url(r"get_rlcs/", views.GetRlcsViewSet.as_view()),
     url(r"storage_up/", views.StorageUploadViewSet.as_view()),

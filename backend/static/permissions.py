@@ -33,12 +33,21 @@ PERMISSION_MANAGE_PERMISSIONS_RLC = "manage_permissions_rlc"
 PERMISSION_ACCEPT_NEW_USERS_RLC = "accept_new_users_rlc"
 PERMISSION_ACTIVATE_INACTIVE_USERS_RLC = "activate_inactive_users_rlc"
 PERMISSION_PROCESS_RECORD_DELETION_REQUESTS = "process_record_deletion_requests"
+
 PERMISSION_READ_ALL_FOLDERS_RLC = "read_all_folders_rlc"
 PERMISSION_WRITE_ALL_FOLDERS_RLC = "write_all_folders_rlc"
 PERMISSION_ACCESS_TO_FILES_RLC = "access_to_files_rlc"
 PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC = "manage_folder_permissions_rlc"
+
 PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS = (
     "process_record_document_deletion_requests"
+)
+
+
+PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC = "read_all_collab_documents_rlc"
+PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC = "write_all_collab_documents_rlc"
+PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC = (
+    "manage_collab_document_permissions_rlc"
 )
 
 
@@ -64,6 +73,9 @@ def get_all_permissions_strings():
         PERMISSION_WRITE_ALL_FOLDERS_RLC,
         PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC,
         PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS,
+        PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
+        PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC,
+        PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
     ]
 
 
