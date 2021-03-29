@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "backend.api",
     "backend.recordmanagement",
     "backend.files",
+    "backend.collab",
     "rest_framework.authtoken",
     "storages",
     "corsheaders",

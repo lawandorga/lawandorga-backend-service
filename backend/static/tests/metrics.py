@@ -18,18 +18,10 @@ from django.test import TransactionTestCase
 from rest_framework.response import Response
 from rest_framework.test import APIClient
 from django.utils import timezone
-from unittest.mock import MagicMock
-import datetime
 
 from backend.api import models as api_models
 from backend.api.tests.fixtures_encryption import CreateFixtures
-from backend.recordmanagement import models as record_models
-from backend.static.permissions import (
-    PERMISSION_VIEW_RECORDS_RLC,
-    PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
-)
-from backend.static import error_codes
-from backend.static.metrics import Metrics
+from backend.static.mocks import mock_datetime_now
 
 
 class MetricsTest(TransactionTestCase):
@@ -50,15 +42,6 @@ class MetricsTest(TransactionTestCase):
             ):
                 return float(line.split(" ")[1])
         raise RuntimeError("value not found")
-
-    @staticmethod
-    def mock_datetime_now(hours, minutes, seconds=0):
-        def now():
-            return datetime.datetime(
-                2020, 10, 13, hours, minutes, seconds, tzinfo=timezone.utc
-            )
-
-        return now
 
     @staticmethod
     def get_additional_rlc_users():
@@ -111,39 +94,18 @@ class MetricsTest(TransactionTestCase):
             int(MetricsTest.get_value(lines, "currently_active_users")), 2,
         )
 
-    def test_tmp(self):
-        # datetime.datetime.now = self.tmp_mock
-        timezone.now = MetricsTest.mock_datetime_now(1, 0)
-
-        a = timezone.now()
-
-        before = api_models.UserSession.objects.count()
-        self.assertEqual(
-            datetime.datetime(2012, 3, 1, 10, 0, 30, tzinfo=timezone.utc), a
-        )
-        self.base_fixtures["users"][1]["client"].get("/api/profiles/")
-        after = api_models.UserSession.objects.count()
-        self.assertEqual(before, 0)
-        self.assertEqual(after, 1)
-
-        session: api_models.UserSession = api_models.UserSession.objects.first()
-        self.assertEqual(
-            session.start_time,
-            datetime.datetime(2012, 3, 1, 10, 0, 30, tzinfo=timezone.utc),
-        )
-
     def test_user_session_timed_out(self):
-        timezone.now = MetricsTest.mock_datetime_now(1, 0)
+        timezone.now = mock_datetime_now(1, 0)
         self.base_fixtures["users"][0]["client"].get("/api/profiles/")
-        timezone.now = MetricsTest.mock_datetime_now(1, 0, 20)
+        timezone.now = mock_datetime_now(1, 0, 20)
         self.base_fixtures["users"][0]["client"].get("/api/profiles/")
-        timezone.now = MetricsTest.mock_datetime_now(1, 0, 30)
+        timezone.now = mock_datetime_now(1, 0, 30)
         self.base_fixtures["users"][0]["client"].get("/api/profiles/")
 
         sessions_count = api_models.UserSession.objects.count()
         self.assertEqual(sessions_count, 1)
 
-        timezone.now = MetricsTest.mock_datetime_now(1, 50)
+        timezone.now = mock_datetime_now(1, 50)
         self.base_fixtures["users"][0]["client"].get("/api/profiles/")
 
         sessions_count = api_models.UserSession.objects.count()
@@ -152,17 +114,17 @@ class MetricsTest(TransactionTestCase):
         user_activity_paths = api_models.UserActivityPath.objects.count()
         self.assertEqual(user_activity_paths, 1)
 
-        timezone.now = MetricsTest.mock_datetime_now(1, 50, 10)
+        timezone.now = mock_datetime_now(1, 50, 10)
         response: Response = APIClient().get("/metrics")
         lines: [str] = response.content.decode("utf-8").split("\n")
         self.assertEqual(
             int(MetricsTest.get_value(lines, "currently_active_users")), 1,
         )
 
-        timezone.now = MetricsTest.mock_datetime_now(1, 50, 11)
+        timezone.now = mock_datetime_now(1, 50, 11)
         self.base_fixtures["users"][1]["client"].get("/api/profiles/")
 
-        timezone.now = MetricsTest.mock_datetime_now(1, 50, 12)
+        timezone.now = mock_datetime_now(1, 50, 12)
         response: Response = APIClient().get("/metrics")
         lines: [str] = response.content.decode("utf-8").split("\n")
         self.assertEqual(
@@ -170,7 +132,7 @@ class MetricsTest(TransactionTestCase):
         )
 
     def test_different_rlc_metrics(self):
-        timezone.now = MetricsTest.mock_datetime_now(1, 0)
+        timezone.now = mock_datetime_now(1, 0)
         self.base_fixtures["users"][0]["client"].get("/api/profiles/")
         self.base_fixtures["users"][1]["client"].get("/api/profiles/")
         self.base_fixtures["users"][2]["client"].get("/api/profiles/")
@@ -183,14 +145,14 @@ class MetricsTest(TransactionTestCase):
         users[3]["client"].get("/api/profiles/")
         users[4]["client"].get("/api/profiles/")
 
-        timezone.now = MetricsTest.mock_datetime_now(1, 0, 3)
+        timezone.now = mock_datetime_now(1, 0, 3)
         response: Response = APIClient().get("/metrics")
         lines: [str] = response.content.decode("utf-8").split("\n")
         self.assertEqual(
             int(MetricsTest.get_value(lines, "currently_active_users")), 9,
         )
 
-        timezone.now = MetricsTest.mock_datetime_now(2, 0)
+        timezone.now = mock_datetime_now(2, 0)
         self.base_fixtures["users"][0]["client"].get("/api/profiles/")
         self.base_fixtures["users"][1]["client"].get("/api/profiles/")
         self.base_fixtures["users"][2]["client"].get("/api/profiles/")
@@ -198,12 +160,9 @@ class MetricsTest(TransactionTestCase):
         users[1]["client"].get("/api/profiles/")
         users[3]["client"].get("/api/profiles/")
 
-        timezone.now = MetricsTest.mock_datetime_now(2, 0, 3)
+        timezone.now = mock_datetime_now(2, 0, 3)
         response: Response = APIClient().get("/metrics")
         lines: [str] = response.content.decode("utf-8").split("\n")
         self.assertEqual(
             int(MetricsTest.get_value(lines, "currently_active_users")), 6,
         )
-
-        # a = int(MetricsTest.get_value(lines, "currently_active_users_per_rlc"))
-        # b = 1

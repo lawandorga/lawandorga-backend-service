@@ -14,11 +14,9 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.db import models
 
-
-class FolderPermission(models.Model):
-    name = models.CharField(max_length=255, null=False, unique=True)
-
-    def __str__(self):
-        return "folder permission: {}; {}".format(self.id, self.name)
+from .collab_document import *
+from .text_document import *
+from .text_document_version import *
+from .collab_permission import *
+from .permission_for_collab_document import *

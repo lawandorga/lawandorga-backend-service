@@ -1,5 +1,5 @@
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2020  Dominik Walser
+#  Copyright (C) 2021  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -14,11 +14,12 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.db import models
+from rest_framework import viewsets
+
+from backend.collab.models import CollabPermission
+from backend.collab.serializers import CollabPermissionSerializer
 
 
-class FolderPermission(models.Model):
-    name = models.CharField(max_length=255, null=False, unique=True)
-
-    def __str__(self):
-        return "folder permission: {}; {}".format(self.id, self.name)
+class CollabPermissionViewSet(viewsets.ModelViewSet):
+    queryset = CollabPermission.objects.all()
+    serializer_class = CollabPermissionSerializer

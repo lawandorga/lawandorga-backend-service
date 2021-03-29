@@ -14,11 +14,19 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.db import models
+from rest_framework import serializers
+
+from backend.collab.models import TextDocument
+from backend.static.encryption import AESEncryption
+from backend.static.serializer_fields import EncryptedField
+
+from backend.api.serializers import UserProfileNameSerializer
 
 
-class FolderPermission(models.Model):
-    name = models.CharField(max_length=255, null=False, unique=True)
+class TextDocumentSerializer(serializers.ModelSerializer):
+    creator = UserProfileNameSerializer(many=False, read_only=True)
+    last_editor = UserProfileNameSerializer(many=False, read_only=True)
 
-    def __str__(self):
-        return "folder permission: {}; {}".format(self.id, self.name)
+    class Meta:
+        model = TextDocument
+        fields = "__all__"

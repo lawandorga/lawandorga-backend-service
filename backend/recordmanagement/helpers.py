@@ -14,40 +14,13 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from backend.api.errors import CustomError
 from backend.recordmanagement.models import (
     EncryptedRecord,
-    Record,
     RecordEncryption,
     MissingRecordKey,
 )
 from backend.api.models import UserEncryptionKeys
-from backend.static import error_codes, permissions
 from backend.static.encryption import RSAEncryption
-
-
-# def get_record(user, record_id):
-#     if not user.has_permission(
-#         permissions.PERMISSION_VIEW_RECORDS_RLC, for_rlc=user.rlc
-#     ):
-#         raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-#     try:
-#         record = Record.objects.get(pk=record_id)
-#     except Exception as e:
-#         raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
-#     return record
-#
-#
-# def get_e_record(user, e_record_id):
-#     if not user.has_permission(
-#         permissions.PERMISSION_VIEW_RECORDS_RLC, for_rlc=user.rlc
-#     ):
-#         raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-#     try:
-#         e_record = EncryptedRecord.objects.get(pk=e_record_id)
-#     except Exception as e:
-#         raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
-#     return e_record
 
 
 def add_record_encryption_keys_for_users(

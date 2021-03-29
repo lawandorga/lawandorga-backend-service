@@ -193,6 +193,7 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
         return False
 
     def get_groups_permission(self, group: Group) -> {}:
+        # deprecated? only used in tests
         from backend.files.models import PermissionForFolder
 
         if group.has_group_permission(PERMISSION_WRITE_ALL_FOLDERS_RLC):
@@ -235,31 +236,7 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
             return "SEE", relevant_permissions.first()
         return "", None
 
-    def get_all_groups_permissions(self):
-        from backend.api.models import Group
-        from backend.files.serializers import PermissionForFolderNestedSerializer
-
-        groups = list(Group.objects.filter(from_rlc=self.rlc))
-
-        allGroupsPermissions = {"SEE": [], "WRITE": [], "READ": []}
-        for group in groups:
-            perm_string, perm = self.get_groups_permission(group)
-            if perm:
-                data = PermissionForFolderNestedSerializer(perm).data
-            else:
-                data = {"general": True}
-            if perm_string == "":
-                continue
-            elif perm_string == "WRITE":
-                allGroupsPermissions["WRITE"].append(data)
-            elif perm_string == "READ":
-                allGroupsPermissions["READ"].append(data)
-            elif perm_string == "SEE":
-                allGroupsPermissions["SEE"].append(data)
-
-        return allGroupsPermissions
-
-    def get_all_groups_permissions_new(
+    def get_all_groups_permissions(
         self,
     ) -> (["PermissionForFolder"], ["PermissionForFolder"], ["HasPermission"]):
         from backend.api.models import Group, HasPermission, Permission
