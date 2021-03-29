@@ -26,19 +26,7 @@ from backend.api.serializers import UserProfileNameSerializer
 class TextDocumentSerializer(serializers.ModelSerializer):
     creator = UserProfileNameSerializer(many=False, read_only=True)
     last_editor = UserProfileNameSerializer(many=False, read_only=True)
-    # content = EncryptedField()
 
     class Meta:
         model = TextDocument
         fields = "__all__"
-
-    # def get_decrypted_data(self, aes_key: str) -> {}:
-    #     data = self.data
-    #     AESEncryption.decrypt_field(data, data, "content", aes_key)
-    #     return data
-
-
-# class TextDocumentNameSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = TextDocument
-#         fields = ("pk", "]") # TODO: change this

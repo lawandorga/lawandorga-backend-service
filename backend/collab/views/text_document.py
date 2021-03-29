@@ -50,8 +50,8 @@ class TextDocumentModelViewSet(
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         document: TextDocument = self.get_object()
 
-        if not document.user_has_permission_read(request.user):
-            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+        # if not document.user_has_permission_read(request.user):
+        #     raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 
         users_private_key = get_private_key_from_request(request)
         user: UserProfile = request.user
@@ -68,6 +68,12 @@ class TextDocumentModelViewSet(
                 created=document.created,
             )
 
+        data.update(
+            {
+                "read": document.user_has_permission_read(request.user),
+                "write": document.user_has_permission_write(request.user),
+            }
+        )
         draft = document.get_draft()
         if draft:
             data["versions"] = [

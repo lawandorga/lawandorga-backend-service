@@ -146,7 +146,7 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
                 as_list = list(
                     PermissionForCollabDocument.objects.filter(
                         document__path=current_path
-                    )
+                    ).exclude(document__path=document.path)
                 )
                 permissions_above += as_list
                 i += 1

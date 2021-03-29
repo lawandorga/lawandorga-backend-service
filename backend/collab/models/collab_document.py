@@ -87,9 +87,6 @@ class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument
     def user_has_permission_read(path: str, user: UserProfile) -> bool:
         from backend.collab.models import PermissionForCollabDocument
 
-        if "/" not in path:
-            return True
-
         overall_permissions_strings = [
             PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
             PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
@@ -122,9 +119,6 @@ class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument
     @staticmethod
     def user_has_permission_write(path: str, user: UserProfile) -> bool:
         from backend.collab.models import PermissionForCollabDocument
-
-        if "/" not in path:
-            return True
 
         overall_permissions_strings = [
             PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
