@@ -48,19 +48,10 @@ class TextDocumentModelViewSet(
         return self.queryset.filter(rlc=self.request.user.rlc)
 
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        document = self.get_object()
+        document: TextDocument = self.get_object()
 
-        try:
-            record_doc = document.get_record_document()
-            # check if permission for record here
-        except Exception as e:
-            pass
-        try:
-            collab_doc = document.get_collab_document()
-            if not collab_doc.user_has_permission_write(request.user):
-                raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
-        except Exception as e:
-            pass
+        if not document.user_has_permission_read(request.user):
+            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 
         users_private_key = get_private_key_from_request(request)
         user: UserProfile = request.user
@@ -94,7 +85,9 @@ class TextDocumentModelViewSet(
     def editing(self, request: Request, pk: int):
         document: TextDocument = self.get_object()
 
-        # TODO: permission
+        if not document.user_has_permission_write(request.user):
+            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+
         if request.method == "GET":
             existing = EditingRoom.objects.filter(document=document).first()
             did_create = False
