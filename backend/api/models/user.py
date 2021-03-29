@@ -465,4 +465,4 @@ class UserProfile(
         forgot_password_link.save()
 
         url = get_website_base_url() + "reset-password/" + forgot_password_link.link
-        EmailSender.send_forgot_password([self.email], url)
+        EmailSender.send_forgot_password(self.email, url)
