@@ -199,6 +199,7 @@ def create_users(rlc):
                 postal_code=user[6],
                 birthday=user[2],
                 rlc=rlc,
+                is_active=True,
             )
         )
     return created_users
@@ -219,6 +220,7 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
         birthday="1995-1-1",
         is_superuser=True,
         is_staff=True,
+        is_active=True,
     )
     user.set_password(dummy_password)
     user.save()
@@ -226,14 +228,22 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
 
     # other dummy users
     user = UserProfile.objects.create(
-        name="Tester 1", email="tester1@law-orga.de", phone_number="123812382", rlc=rlc,
+        name="Tester 1",
+        email="tester1@law-orga.de",
+        phone_number="123812382",
+        rlc=rlc,
+        is_active=True,
     )
     user.set_password("qwe123")
     user.save()
     users.append(user)
 
     user = UserProfile.objects.create(
-        name="Tester 2", email="tester2@law-orga.de", phone_number="123812383", rlc=rlc,
+        name="Tester 2",
+        email="tester2@law-orga.de",
+        phone_number="123812383",
+        rlc=rlc,
+        is_active=True,
     )
     user.set_password("qwe123")
     user.save()
