@@ -20,6 +20,8 @@ import pytz
 from django.conf import settings
 
 from backend.api.models import *
+from backend.collab.models import CollabPermission
+from backend.collab.static.collab_permissions import get_all_collab_permission_strings
 from backend.recordmanagement.models import (
     Client,
     OriginCountry,
@@ -335,6 +337,12 @@ class Fixtures:
         for folder_permission in folder_permissions:
             if not FolderPermission.objects.filter(name=folder_permission).exists():
                 AddMethods.add_folder_permission(folder_permission)
+
+    @staticmethod
+    def create_real_collab_permissions():
+        collab_permissions = get_all_collab_permission_strings()
+        for permission in collab_permissions:
+            CollabPermission.objects.get_or_create(name=permission)
 
     @staticmethod
     def create_real_tags():

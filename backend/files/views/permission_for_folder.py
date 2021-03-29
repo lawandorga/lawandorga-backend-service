@@ -79,7 +79,6 @@ class PermissionForFolderViewSet(viewsets.ModelViewSet):
             raise CustomError(ERROR__API__MISSING_ARGUMENT)
         user = request.user
 
-        a = list(PermissionForFolder.objects.all())
         try:
             permission_for_folder = PermissionForFolder.objects.get(pk=kwargs["pk"])
         except:

@@ -17,17 +17,17 @@
 
 from rest_framework import serializers
 
-from backend.collab.models import TextDocument, TextDocumentVersion
+from backend.collab.models import TextDocumentVersion
 from backend.static.encryption import AESEncryption
 from backend.static.serializer_fields import EncryptedField
 
 from backend.api.serializers import UserProfileNameSerializer
-from backend.collab.serializers import TextDocumentNameSerializer
+from backend.collab.serializers import TextDocumentSerializer
 
 
 class TextDocumentVersionSerializer(serializers.ModelSerializer):
     creator = UserProfileNameSerializer(many=False, read_only=True)
-    document = TextDocumentNameSerializer(many=False, read_only=True)
+    document = TextDocumentSerializer(many=False, read_only=True)
     content = EncryptedField()
 
     class Meta:
@@ -41,7 +41,7 @@ class TextDocumentVersionSerializer(serializers.ModelSerializer):
 
 
 class TextDocumentVersionListSerializer(serializers.ModelSerializer):
-    document = TextDocumentNameSerializer(many=False, read_only=True)
+    document = TextDocumentSerializer(many=False, read_only=True)
     creator = UserProfileNameSerializer(many=False, read_only=True)
 
     class Meta:

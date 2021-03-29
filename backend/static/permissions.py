@@ -44,7 +44,7 @@ PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS = (
 )
 
 
-PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC = "real_all_collab_documents_rlc"
+PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC = "read_all_collab_documents_rlc"
 PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC = "write_all_collab_documents_rlc"
 PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC = (
     "manage_collab_document_permissions_rlc"

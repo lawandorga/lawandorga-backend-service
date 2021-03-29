@@ -21,10 +21,8 @@ from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from backend.api.models import UserProfile
-from backend.collab.models import EditingRoom, TextDocument, TextDocumentVersion
+from backend.collab.models import TextDocument, TextDocumentVersion
 from backend.collab.serializers import (
-    EditingRoomSerializer,
-    TextDocumentSerializer,
     TextDocumentVersionSerializer,
     TextDocumentVersionListSerializer,
 )
@@ -32,7 +30,9 @@ from backend.api.errors import CustomError
 from backend.static.error_codes import (
     ERROR__API__ID_NOT_FOUND,
     ERROR__API__PARAMS_NOT_VALID,
+    ERROR__API__PERMISSION__INSUFFICIENT,
 )
+
 from backend.static.middleware import get_private_key_from_request
 
 
@@ -51,10 +51,10 @@ class TextDocumentVersionModelViewSet(viewsets.ModelViewSet):
     #     pass
 
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        try:
-            version = TextDocumentVersion.objects.get(pk=kwargs["pk"])
-        except Exception as e:
-            raise CustomError(ERROR__API__ID_NOT_FOUND)
+        version: TextDocumentVersion = self.get_object()
+
+        # if not version.document.user_has_permission_read(request.user):
+        #     raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 
         users_private_key = get_private_key_from_request(request)
         key: str = request.user.get_rlcs_aes_key(users_private_key)
@@ -68,6 +68,9 @@ class VersionsOfTextDocumentViewSet(APIView):
             document = TextDocument.objects.get(pk=id)
         except Exception as e:
             raise CustomError(ERROR__API__ID_NOT_FOUND)
+
+        # if not document.user_has_permission_read(request.user):
+        #     raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 
         users_private_key = get_private_key_from_request(request)
         key: str = request.user.get_rlcs_aes_key(users_private_key)
@@ -85,6 +88,9 @@ class VersionsOfTextDocumentViewSet(APIView):
             document: TextDocument = TextDocument.objects.get(pk=id)
         except Exception as e:
             raise CustomError(ERROR__API__ID_NOT_FOUND)
+
+        if not document.user_has_permission_write(request.user):
+            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 
         if "content" not in request.data or "is_draft" not in request.data:
             raise CustomError(ERROR__API__PARAMS_NOT_VALID)

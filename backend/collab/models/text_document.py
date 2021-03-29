@@ -21,15 +21,16 @@ from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.models import Rlc, UserProfile
 from backend.api.errors import CustomError
-from backend.static.error_codes import ERROR__COLLAB__TYPE_NOT_EXISTING
-from backend.static.encryption import AESEncryption
+from backend.static.error_codes import (
+    ERROR__COLLAB__TYPE_NOT_EXISTING,
+    ERROR__NOT__IMPLEMENTEND,
+)
 
 
 class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):
     rlc = models.ForeignKey(
         Rlc, related_name="text_documents", null=False, on_delete=models.CASCADE
     )
-    name = models.CharField(max_length=255, null=False)
 
     created = models.DateTimeField(default=timezone.now)
     creator = models.ForeignKey(
@@ -63,6 +64,7 @@ class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):
             raise CustomError(ERROR__COLLAB__TYPE_NOT_EXISTING)
 
     def patch(self, document_data: {}, user: UserProfile) -> None:
+        # TODO: recheck this
         if "content" in document_data or "name" in document_data:
             if "name" in document_data:
                 self.name = document_data["name"]
@@ -75,3 +77,23 @@ class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):
 
     def get_draft(self) -> "TextDocumentVersion":
         return self.versions.filter(is_draft=True).first()
+
+    def user_has_permission_write(self, user: UserProfile):
+        from backend.collab.models import CollabDocument
+
+        if self.collabdocument:
+            return CollabDocument.user_has_permission_write(
+                self.collabdocument.path, user
+            )
+        else:
+            raise CustomError(ERROR__NOT__IMPLEMENTEND)
+
+    def user_has_permission_read(self, user: UserProfile):
+        from backend.collab.models import CollabDocument
+
+        if self.collabdocument:
+            return CollabDocument.user_has_permission_read(
+                self.collabdocument.path, user
+            )
+        else:
+            raise CustomError(ERROR__NOT__IMPLEMENTEND)

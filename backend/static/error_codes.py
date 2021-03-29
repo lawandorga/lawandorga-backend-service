@@ -432,3 +432,8 @@ ERROR__COLLAB__TYPE_NOT_EXISTING = {
     "error_detail": "type does not exist",
     "error_code": "collab.type_not_exisiting",
 }
+
+ERROR__NOT__IMPLEMENTEND = {
+    "error_detail": "not implemented",
+    "error_code": "not.implemented",
+}

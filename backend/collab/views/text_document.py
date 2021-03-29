@@ -15,10 +15,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from typing import Any
 from django.db.models import QuerySet
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
+from rest_framework.viewsets import GenericViewSet
 
 from backend.api.models import UserProfile
 from backend.collab.models import EditingRoom, TextDocument, TextDocumentVersion
@@ -28,11 +30,16 @@ from backend.collab.serializers import (
     TextDocumentVersionSerializer,
 )
 from backend.api.errors import CustomError
-from backend.static.error_codes import ERROR__API__ID_NOT_FOUND
+from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 from backend.static.middleware import get_private_key_from_request
 
 
-class TextDocumentModelViewSet(viewsets.ModelViewSet):
+class TextDocumentModelViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet,
+):
     queryset = TextDocument.objects.all()
 
     def get_queryset(self) -> QuerySet:
@@ -41,26 +48,33 @@ class TextDocumentModelViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(rlc=self.request.user.rlc)
 
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        try:
-            doc: TextDocument = TextDocument.objects.get(pk=kwargs["pk"])
-        except Exception as e:
-            raise CustomError(ERROR__API__ID_NOT_FOUND)
+        document: TextDocument = self.get_object()
+
+        # if not document.user_has_permission_read(request.user):
+        #     raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+
         users_private_key = get_private_key_from_request(request)
         user: UserProfile = request.user
         key: str = user.get_rlcs_aes_key(users_private_key)
 
-        data = TextDocumentSerializer(doc).data
-        last_version = doc.get_last_published_version()
+        data = TextDocumentSerializer(document).data
+        last_version = document.get_last_published_version()
         if not last_version:
             last_version = TextDocumentVersion(
-                document=doc,
+                document=document,
                 content=b"",
                 is_draft=False,
-                creator=doc.creator,
-                created=doc.created,
+                creator=document.creator,
+                created=document.created,
             )
 
-        draft = doc.get_draft()
+        data.update(
+            {
+                "read": document.user_has_permission_read(request.user),
+                "write": document.user_has_permission_write(request.user),
+            }
+        )
+        draft = document.get_draft()
         if draft:
             data["versions"] = [
                 TextDocumentVersionSerializer(draft).get_decrypted_data(key),
@@ -73,47 +87,25 @@ class TextDocumentModelViewSet(viewsets.ModelViewSet):
 
         return Response(data)
 
-    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        # TODO: needed?
-        pass
-        doc: TextDocument = TextDocument.objects.get(pk=kwargs["pk"])
-        users_private_key = get_private_key_from_request(request)
-        user: UserProfile = request.user
-        key: str = user.get_rlcs_aes_key(users_private_key)
-        doc.patch(request.data, key, user)
+    @action(detail=True, methods=["get", "delete"])
+    def editing(self, request: Request, pk: int):
+        document: TextDocument = self.get_object()
 
-        return Response(TextDocumentSerializer(doc).get_decrypted_data(key))
+        if not document.user_has_permission_write(request.user):
+            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 
-
-class TextDocumentConnectionAPIView(APIView,):
-    def get(self, request: Request, id: str) -> Response:
-        try:
-            document = TextDocument.objects.get(pk=id)
-        except Exception as e:
-            raise CustomError(ERROR__API__ID_NOT_FOUND)
-
-        existing = EditingRoom.objects.filter(document=document).first()
-        did_create = False
-        if existing:
-            room = existing
-        else:
-            room = EditingRoom(document=document)
-            room.save()
-            did_create = True
-        response_obj = EditingRoomSerializer(room).data
-        response_obj.update({"did_create": did_create})
-        return Response(response_obj)
-
-    def post(self, request: Request, id: str):
-        pass
-
-    def delete(self, request: Request, id: str):
-        try:
-            document = TextDocument.objects.get(pk=id)
-        except Exception as e:
-            raise CustomError(ERROR__API__ID_NOT_FOUND)
-        EditingRoom.objects.filter(document=document).delete()
-        print("editing room deleted")
-        # TODO: check permission rights
-
-        return Response({"success": True})
+        if request.method == "GET":
+            existing = EditingRoom.objects.filter(document=document).first()
+            did_create = False
+            if existing:
+                room = existing
+            else:
+                room = EditingRoom(document=document)
+                room.save()
+                did_create = True
+            response_obj = EditingRoomSerializer(room).data
+            response_obj.update({"did_create": did_create})
+            return Response(response_obj)
+        if request.method == "DELETE":
+            EditingRoom.objects.filter(document=document).delete()
+            return Response({"success": True})

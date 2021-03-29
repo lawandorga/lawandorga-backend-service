@@ -15,10 +15,22 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
+
+from backend.api.serializers import GroupNameSerializer
 from backend.collab.models import PermissionForCollabDocument
+from backend.collab.serializers import CollabDocumentSerializer
 
 
 class PermissionForCollabDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PermissionForCollabDocument
+        fields = "__all__"
+
+
+class PermissionForCollabDocumentNestedSerializer(serializers.ModelSerializer):
+    group_has_permission = GroupNameSerializer(many=False, read_only=True)
+    document = CollabDocumentSerializer(many=False, read_only=True)
+
     class Meta:
         model = PermissionForCollabDocument
         fields = "__all__"

@@ -36,8 +36,7 @@ class PermissionForCollabDocumentModelTest(TransactionTestCase):
     def test_save_doubled_permission(self):
         document = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
-            parent=None,
-            name="test doc 1",
+            path="test doc 1",
             creator=self.base_fixtures["users"][0]["user"],
         )
         permission = CollabPermission.objects.create(name="test_permission")
@@ -59,22 +58,20 @@ class PermissionForCollabDocumentViewTest(TransactionTestCase):
     def setUp(self) -> None:
         self.base_fixtures = CreateFixtures.create_base_fixtures()
         self.url = "/api/collab/permission_for_collab_document/"
-
-    def test_post_no_permission(self):
-        permission: CollabPermission = CollabPermission.objects.create(
+        self.permission: CollabPermission = CollabPermission.objects.create(
             name="test_permission"
         )
-        document = CollabDocument.objects.create(
+        self.document = CollabDocument.objects.create(
             rlc=self.base_fixtures["rlc"],
-            parent=None,
-            name="test doc 1",
+            path="test doc 1",
             creator=self.base_fixtures["users"][0]["user"],
         )
 
+    def test_post_no_permission(self):
         to_post = {
             "group_has_permission": self.base_fixtures["groups"][0].id,
-            "permission": permission.id,
-            "document": document.id,
+            "permission": self.permission.id,
+            "document": self.document.id,
         }
 
         client: APIClient = self.base_fixtures["users"][0]["client"]
@@ -84,15 +81,6 @@ class PermissionForCollabDocumentViewTest(TransactionTestCase):
         self.assertEqual(0, PermissionForCollabDocument.objects.count())
 
     def test_post_with_permission(self):
-        permission: CollabPermission = CollabPermission.objects.create(
-            name="test_permission"
-        )
-        document = CollabDocument.objects.create(
-            rlc=self.base_fixtures["rlc"],
-            parent=None,
-            name="test doc 1",
-            creator=self.base_fixtures["users"][0]["user"],
-        )
         HasPermission.objects.create(
             permission=Permission.objects.get(
                 name=PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC
@@ -103,8 +91,8 @@ class PermissionForCollabDocumentViewTest(TransactionTestCase):
 
         to_post = {
             "group_has_permission": self.base_fixtures["groups"][0].id,
-            "permission": permission.id,
-            "document": document.id,
+            "permission": self.permission.id,
+            "document": self.document.id,
         }
 
         client: APIClient = self.base_fixtures["users"][0]["client"]
@@ -114,15 +102,6 @@ class PermissionForCollabDocumentViewTest(TransactionTestCase):
         self.assertEqual(1, PermissionForCollabDocument.objects.count())
 
     def test_post_wrong_document_id(self):
-        permission: CollabPermission = CollabPermission.objects.create(
-            name="test_permission"
-        )
-        document = CollabDocument.objects.create(
-            rlc=self.base_fixtures["rlc"],
-            parent=None,
-            name="test doc 1",
-            creator=self.base_fixtures["users"][0]["user"],
-        )
         HasPermission.objects.create(
             permission=Permission.objects.get(
                 name=PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC
@@ -133,8 +112,8 @@ class PermissionForCollabDocumentViewTest(TransactionTestCase):
 
         to_post = {
             "group_has_permission": self.base_fixtures["groups"][0].id,
-            "permission": permission.id,
-            "document": document.id + 1,
+            "permission": self.permission.id,
+            "document": self.document.id + 1,
         }
 
         client: APIClient = self.base_fixtures["users"][0]["client"]
@@ -144,19 +123,10 @@ class PermissionForCollabDocumentViewTest(TransactionTestCase):
         self.assertEqual(0, PermissionForCollabDocument.objects.count())
 
     def test_delete_permission_blocked(self):
-        permission: CollabPermission = CollabPermission.objects.create(
-            name="test_permission"
-        )
-        document = CollabDocument.objects.create(
-            rlc=self.base_fixtures["rlc"],
-            parent=None,
-            name="test doc 1",
-            creator=self.base_fixtures["users"][0]["user"],
-        )
         permission_for_collab_document = PermissionForCollabDocument.objects.create(
             group_has_permission=self.base_fixtures["groups"][0],
-            permission=permission,
-            document=document,
+            permission=self.permission,
+            document=self.document,
         )
         self.assertEqual(1, PermissionForCollabDocument.objects.count())
 
@@ -168,19 +138,10 @@ class PermissionForCollabDocumentViewTest(TransactionTestCase):
         self.assertEqual(1, PermissionForCollabDocument.objects.count())
 
     def test_delete_permission_success(self):
-        permission: CollabPermission = CollabPermission.objects.create(
-            name="test_permission"
-        )
-        document = CollabDocument.objects.create(
-            rlc=self.base_fixtures["rlc"],
-            parent=None,
-            name="test doc 1",
-            creator=self.base_fixtures["users"][0]["user"],
-        )
         permission_for_collab_document = PermissionForCollabDocument.objects.create(
             group_has_permission=self.base_fixtures["groups"][0],
-            permission=permission,
-            document=document,
+            permission=self.permission,
+            document=self.document,
         )
         self.assertEqual(1, PermissionForCollabDocument.objects.count())
         HasPermission.objects.create(

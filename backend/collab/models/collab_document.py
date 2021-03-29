@@ -13,93 +13,135 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from typing import Any, Dict, Tuple
 
 from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
 
-from backend.collab.models import (
-    CollabPermission,
-    PermissionForCollabDocument,
-    TextDocument,
+from backend.api.errors import CustomError
+from backend.api.models import UserProfile
+from backend.collab.models import TextDocument
+from backend.collab.static.collab_permissions import (
+    PERMISSION_READ_DOCUMENT,
+    PERMISSION_WRITE_DOCUMENT,
 )
-from backend.api.models import Rlc, UserProfile
+from backend.static.permissions import (
+    PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
+    PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC,
+    PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
+)
 
 
 class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument):
-    parent = models.ForeignKey(
-        "CollabDocument",
-        related_name="child_pages",
-        on_delete=models.CASCADE,
-        null=True,
-        default=None,
-    )
+    path = models.CharField(max_length=4096, null=False, blank=False)
 
-    def user_can_view(self, user: UserProfile) -> bool:
-        user_groups = user.group_members.all()
-        permissions = CollabPermission.objects.all()
+    def save(self, *args, **kwargs) -> None:
+        if "/" in self.path:
+            parent_doc = "/".join(self.path.split("/")[0:-1])
+            if not CollabDocument.objects.filter(path=parent_doc).exists():
+                # raise ValueError("parent document doesn't exist")
+                raise CustomError("parent document doesn't exist")
 
-        return self.user_can_view_recursive(user, user_groups, permissions)
+        if CollabDocument.objects.filter(path=self.path).exists():
+            count = 1
+            org_path = self.path
+            while True:
+                new_path = "{}({})".format(org_path, count)
+                if CollabDocument.objects.filter(path=new_path).exists():
+                    count += 1
+                    continue
+                else:
+                    self.path = new_path
+                    return super().save(*args, **kwargs)
 
-    def user_can_view_recursive(self, user, groups, permissions):
-        if PermissionForCollabDocument.objects.exists(
-            document=self, group_has_permission__in=groups, permission__in=permissions,
-        ):
-            return True
-        for child in self.child_pages:
-            if child.user_can_view(user):
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs) -> Tuple[int, Dict[str, int]]:
+        CollabDocument.objects.exclude(path=self.path).filter(
+            path__startswith="{}/".format(self.path)
+        ).delete()
+        return super().delete(*args, **kwargs)
+
+    def user_can_see(self, user: UserProfile) -> Tuple[int, int]:
+        """
+        checks if user is able to see this document
+        return tuple with 2 elements
+            first if visible at all
+            second if visible directly (all subfolders should be visible too)
+        :param user:
+        :return:
+        """
+        from backend.collab.models import PermissionForCollabDocument
+
+        groups = user.group_members.all()
+
+        permissions_direct = PermissionForCollabDocument.objects.filter(
+            group_has_permission__in=groups, document__path=self.path
+        )
+        permissions_all = PermissionForCollabDocument.objects.filter(
+            group_has_permission__in=groups, document__path__startswith=self.path
+        )
+        return permissions_all.count() > 0, permissions_direct.count() > 0
+
+    @staticmethod
+    def user_has_permission_read(path: str, user: UserProfile) -> bool:
+        from backend.collab.models import PermissionForCollabDocument
+
+        overall_permissions_strings = [
+            PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
+            PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
+            PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC,
+        ]
+        for permission in overall_permissions_strings:
+            if user.has_permission(permission, for_rlc=user.rlc):
+                return True
+
+        parents = []
+        parts = path.split("/")
+        current = ""
+        for part in parts:
+            if current != "":
+                current += "/"
+            current += part
+            parents.append(current)
+
+        permission_names = [PERMISSION_READ_DOCUMENT, PERMISSION_WRITE_DOCUMENT]
+        groups = user.group_members.all()
+        for permission_name in permission_names:
+            if PermissionForCollabDocument.objects.filter(
+                permission__name=permission_name,
+                document__path__in=parents,
+                group_has_permission__in=groups,
+            ).exists():
                 return True
         return False
 
     @staticmethod
-    def create_or_duplicate(collab_document: "CollabDocument") -> "CollabDocument":
-        """
-        creates new collab document, either with given name
-        or if name under parent doc is already exsiting with appendix (1), (2)...
-        :param collab_document:
-        :return:
-        """
-        try:
-            CollabDocument.objects.get(
-                parent=collab_document.parent, name=collab_document.name
-            )
-        except:
-            collab_document.save()
-            return collab_document
-        count = 1
-        while True:
-            new_name = collab_document.name + " (" + str(count) + ")"
-            try:
-                CollabDocument.objects.get(parent=collab_document.parent, name=new_name)
-                count += 1
-            except:
-                collab_document.name = new_name
-                collab_document.save()
-                return collab_document
+    def user_has_permission_write(path: str, user: UserProfile) -> bool:
+        from backend.collab.models import PermissionForCollabDocument
 
-    @staticmethod
-    def get_collab_document_from_path(path: str, rlc: Rlc) -> "CollabDocument":
-        """
-        searches for collab document in virtual path
-        a document can have child_pages / a parent page -> parent is above in folder
-        pages in paths are separated through "//"
-        :param path:
-        :param rlc:
-        :return:
-        """
-        path_parts = path.split("//")
-        i = 0
+        overall_permissions_strings = [
+            PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
+            PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
+        ]
+        for permission in overall_permissions_strings:
+            if user.has_permission(permission, for_rlc=user.rlc):
+                return True
 
-        collab_doc = CollabDocument.objects.filter(
-            name=path_parts[i], parent=None, rlc=rlc
-        ).first()
-        if not collab_doc:
-            return None
-        while True:
-            i += 1
-            if i >= path_parts.__len__() or path_parts[i] == "":
-                break
-            if not collab_doc:
-                # ERROR
-                pass
-            collab_doc = collab_doc.child_pages.filter(name=path_parts[i]).first()
-        return collab_doc
+        parents = []
+        parts = path.split("/")
+        current = ""
+        for part in parts:
+            if current != "":
+                current += "/"
+            current += part
+            parents.append(current)
+
+        groups = user.group_members.all()
+        if PermissionForCollabDocument.objects.filter(
+            permission__name=PERMISSION_WRITE_DOCUMENT,
+            document__path__in=parents,
+            group_has_permission__in=groups,
+        ).exists():
+            return True
+        return False

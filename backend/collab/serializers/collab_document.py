@@ -32,6 +32,7 @@ class CollabDocumentSerializer(serializers.ModelSerializer):
 
 
 class CollabDocumentListSerializer(serializers.ModelSerializer):
+    # TODO: doesn't work like that anymore
     children = serializers.SerializerMethodField()
 
     class Meta:
@@ -51,38 +52,61 @@ class CollabDocumentListSerializer(serializers.ModelSerializer):
         return CollabDocumentListSerializer(children, many=True).data
 
 
-class CollabDocumentRecursiveSerializer(serializers.ModelSerializer):
-    child_pages = serializers.SerializerMethodField("get_child_pages")
-
-    def __init__(self, user: UserProfile, **kwargs: Any):
-        super().__init__(**kwargs)
-        self.user: UserProfile = user
-
-    def get_child_pages(self, document: CollabDocument):
-        queryset = CollabDocument.objects.filter(parent=document)
-        # user.has_permission -> read all /write all /manage
-        # if has -> see all
-        if (
-            not self.user.has_permission(
-                PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC, for_rlc=self.user.rlc
-            )
-            and not self.user.has_permission(
-                PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC, for_rlc=self.user.rlc
-            )
-            and not self.user.has_permission(
-                PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC, for_rlc=self.user.rlc
-            )
-        ):
-
-            pass
-
-        # permission for collab documents check
-
-        serializer = CollabDocumentRecursiveSerializer(
-            instance=queryset, many=True, context=self.context, user=self.user
-        )
-        return serializer.data
-
+class CollabDocumentPermissionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CollabDocument
         fields = "__all__"
+
+
+class CollabDocumentTreeSerializer(serializers.ModelSerializer):
+    child_pages = serializers.SerializerMethodField("get_sub_tree")
+
+    def __init__(
+        self,
+        user: UserProfile,
+        all_documents: [CollabDocument],
+        overall_permission: bool,
+        see_subfolders: bool,
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self.user = user
+        self.all_documents = all_documents
+        self.overall_permission = overall_permission
+        self.see_subfolders = see_subfolders
+
+    class Meta:
+        model = CollabDocument
+        fields = (
+            "pk",
+            "path",
+            "created",
+            "creator",
+            "last_edited",
+            "last_editor",
+            "child_pages",
+        )
+
+    def get_sub_tree(self, document: CollabDocument):
+        child_documents = []
+        for doc in self.all_documents:
+            ancestor: bool = doc.path.startswith("{}/".format(document.path))
+            direct_child: bool = "/" not in doc.path[len(document.path) + 1 :]
+
+            if ancestor and direct_child:
+                subfolders = False
+                if self.overall_permission or self.see_subfolders:
+                    add = True
+                else:
+                    add, subfolders = doc.user_can_see(self.user)
+                if add:
+                    child_documents.append(
+                        CollabDocumentTreeSerializer(
+                            instance=doc,
+                            user=self.user,
+                            all_documents=self.all_documents,
+                            see_subfolders=subfolders or self.see_subfolders,
+                            overall_permission=self.overall_permission,
+                        ).data
+                    )
+        return child_documents
