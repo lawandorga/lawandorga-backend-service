@@ -18,13 +18,15 @@ from django.db import models
 
 
 class NewUserRequest(models.Model):
-    request_from = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='accepted')
+    request_from = models.OneToOneField(
+        UserProfile, on_delete=models.CASCADE, related_name="accepted"
+    )
     request_processed = models.ForeignKey(
         UserProfile,
         related_name="new_user_requests_processed",
         on_delete=models.SET_NULL,
         null=True,
-        blank=True
+        blank=True,
     )
 
     requested = models.DateTimeField(auto_now_add=True)
@@ -40,8 +42,8 @@ class NewUserRequest(models.Model):
     )
 
     class Meta:
-        verbose_name = 'NewUserRequest'
-        verbose_name_plural = 'NewUserRequests'
+        verbose_name = "NewUserRequest"
+        verbose_name_plural = "NewUserRequests"
 
     def __str__(self):
-        return 'newUserRequest: {}; user: {};'.format(self.id, self.request_from.email)
+        return "newUserRequest: {}; user: {};".format(self.id, self.request_from.email)

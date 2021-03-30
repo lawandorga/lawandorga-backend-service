@@ -13,9 +13,23 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from backend.api.models import UserProfile, Notification, Permission, HasPermission, Rlc, \
-    NewUserRequest, UserEncryptionKeys, RlcEncryptionKeys, UsersRlcKeys, RlcSettings, \
-    NotificationGroup, UserActivityPath, UserSession, UserSessionPath, Group
+from backend.api.models import (
+    UserProfile,
+    Notification,
+    Permission,
+    HasPermission,
+    Rlc,
+    NewUserRequest,
+    UserEncryptionKeys,
+    RlcEncryptionKeys,
+    UsersRlcKeys,
+    RlcSettings,
+    NotificationGroup,
+    UserActivityPath,
+    UserSession,
+    UserSessionPath,
+    Group,
+)
 from django.contrib import admin
 
 admin.site.register(Group)

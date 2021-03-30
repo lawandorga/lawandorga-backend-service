@@ -22,8 +22,8 @@ class RecordDocumentTag(models.Model):
     name = models.CharField(max_length=200, unique=True)
 
     class Meta:
-        verbose_name = 'RecordDocumentTag'
-        verbose_name_plural = 'RecordDocumentTags'
+        verbose_name = "RecordDocumentTag"
+        verbose_name_plural = "RecordDocumentTags"
 
     def __str__(self):
         return "recordDocumentTag: {}; name: {};".format(self.pk, self.name)

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0034_auto_20210318_1958'),
+        ("api", "0034_auto_20210318_1958"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userprofile',
-            name='is_active',
+            model_name="userprofile",
+            name="is_active",
             field=models.BooleanField(default=False),
         ),
     ]

@@ -29,8 +29,8 @@ class Rlc(models.Model):
     note = models.CharField(max_length=4000, null=True, default="")
 
     class Meta:
-        verbose_name = 'Rlc'
-        verbose_name_plural = 'Rlcs'
+        verbose_name = "Rlc"
+        verbose_name_plural = "Rlcs"
 
     def __str__(self):
         return "rlc: {}; name: {};".format(self.pk, self.name)
@@ -51,7 +51,9 @@ class Rlc(models.Model):
         # return the public key
         return self.encryption_keys.public_key
 
-    def get_aes_key(self, user: UserProfile = None, private_key_user: str = None) -> str:
+    def get_aes_key(
+        self, user: UserProfile = None, private_key_user: str = None
+    ) -> str:
         if user and private_key_user:
             # get the aes key that encrypted the rlc private key. this aes key is encrypted for every user with its
             # public key, therefore only its private key can unlock the aes key.
@@ -61,9 +63,11 @@ class Rlc(models.Model):
             return aes_key
 
         else:
-            raise ValueError('You need to set (user and private_key_user).')
+            raise ValueError("You need to set (user and private_key_user).")
 
-    def get_private_key(self, user: UserProfile = None, private_key_user: str = None) -> str:
+    def get_private_key(
+        self, user: UserProfile = None, private_key_user: str = None
+    ) -> str:
         # safety check
         if not hasattr(self, "encryption_keys"):
             self.generate_keys()
@@ -80,7 +84,7 @@ class Rlc(models.Model):
             return rlc_keys.encrypted_private_key
 
         else:
-            raise ValueError('You need to pass (user and private_key_user).')
+            raise ValueError("You need to pass (user and private_key_user).")
 
     def generate_keys(self) -> None:
         from backend.api.models.rlc_encryption_keys import RlcEncryptionKeys

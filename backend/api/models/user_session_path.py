@@ -57,8 +57,8 @@ class UserSessionPath(models.Model):
     objects = UserSessionPathManager()
 
     class Meta:
-        verbose_name = 'UserSessionPath'
-        verbose_name_plural = 'UserSessionPaths'
+        verbose_name = "UserSessionPath"
+        verbose_name_plural = "UserSessionPaths"
 
     def __str__(self):
-        return 'userSessionPath: {};'.format(self.pk)
+        return "userSessionPath: {};".format(self.pk)

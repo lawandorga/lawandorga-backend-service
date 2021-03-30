@@ -145,4 +145,4 @@ CORS_ALLOW_HEADERS = [
 ]
 
 # This is used for links in activation emails and so on
-FRONTEND_URL = get_secret('FRONTEND_URL')
+FRONTEND_URL = get_secret("FRONTEND_URL")

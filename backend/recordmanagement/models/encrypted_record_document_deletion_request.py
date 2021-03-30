@@ -53,8 +53,8 @@ class EncryptedRecordDocumentDeletionRequest(models.Model):
     )
 
     class Meta:
-        verbose_name = 'RecordDocumentDeletionRequest'
-        verbose_name_plural = 'RecordDocumentDeletionRequests'
+        verbose_name = "RecordDocumentDeletionRequest"
+        verbose_name_plural = "RecordDocumentDeletionRequests"
 
     def __str__(self) -> str:
-        return 'recordDocumentDeletionRequest: {};'.format(self.pk)
+        return "recordDocumentDeletionRequest: {};".format(self.pk)

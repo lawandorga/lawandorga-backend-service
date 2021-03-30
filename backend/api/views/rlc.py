@@ -28,7 +28,7 @@ class RlcViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     authentication_classes = []
 
     def get_queryset(self) -> QuerySet:
-        queryset = Rlc.objects.all().order_by('name')
+        queryset = Rlc.objects.all().order_by("name")
         if not settings.DEBUG:
-            queryset = queryset.exclude(name='Dummy RLC')
+            queryset = queryset.exclude(name="Dummy RLC")
         return queryset

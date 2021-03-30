@@ -22,15 +22,28 @@ from rest_framework.permissions import IsAuthenticated
 from backend.static.error_codes import *
 from backend.static.middleware import get_private_key_from_request
 from rest_framework.decorators import action
-from backend.api.serializers import OldUserSerializer, UserCreateSerializer, UserProfileNameSerializer, \
-    RlcSerializer, UserProfileForeignSerializer, UserSerializer, UserUpdateSerializer, UserPasswordResetSerializer, \
-    UserPasswordResetConfirmSerializer
+from backend.api.serializers import (
+    OldUserSerializer,
+    UserCreateSerializer,
+    UserProfileNameSerializer,
+    RlcSerializer,
+    UserProfileForeignSerializer,
+    UserSerializer,
+    UserUpdateSerializer,
+    UserPasswordResetSerializer,
+    UserPasswordResetConfirmSerializer,
+)
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.request import Request
 from django.forms.models import model_to_dict
-from backend.api.models import NewUserRequest, UserProfile, NotificationGroup, PasswordResetTokenGenerator, \
-    AccountActivationTokenGenerator
+from backend.api.models import (
+    NewUserRequest,
+    UserProfile,
+    NotificationGroup,
+    PasswordResetTokenGenerator,
+    AccountActivationTokenGenerator,
+)
 from backend.api.errors import CustomError
 from django.core.mail import send_mail
 from django.template import loader
@@ -42,7 +55,7 @@ from django.conf import settings
 
 class SpecialPermission(IsAuthenticated):
     def has_permission(self, request, view):
-        if request.method == 'POST':
+        if request.method == "POST":
             return True
         return super().has_permission(request, view)
 
@@ -56,19 +69,21 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_authenticators(self):
         # self.action == 'create' would be better here but self.action is not set yet
-        if self.request.path == '/api/profiles/' and self.request.method == 'POST':
+        if self.request.path == "/api/profiles/" and self.request.method == "POST":
             return []
         return super().get_authenticators()
 
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.action == "create":
             return UserCreateSerializer
-        elif self.action in ['update', 'partial_update']:
+        elif self.action in ["update", "partial_update"]:
             return UserUpdateSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):
-        return UserProfile.objects.filter(rlc=self.request.user.rlc).select_related('accepted')
+        return UserProfile.objects.filter(rlc=self.request.user.rlc).select_related(
+            "accepted"
+        )
 
     def create(self, request, *args, **kwargs):
         # create the user
@@ -81,10 +96,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
         # send the user activation link email
         token = AccountActivationTokenGenerator().make_token(user)
-        link = '{}activate-account/{}/{}/'.format(settings.FRONTEND_URL, user.id, token)
+        link = "{}activate-account/{}/{}/".format(settings.FRONTEND_URL, user.id, token)
         subject = "Law & Orga Registration"
         message = "Law & Orga - Activate your account here: {}".format(link)
-        html_message = loader.render_to_string("email_templates/activate_account.html", {"url": link})
+        html_message = loader.render_to_string(
+            "email_templates/activate_account.html", {"url": link}
+        )
         send_mail(
             subject=subject,
             html_message=html_message,
@@ -98,7 +115,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
         # return the success response
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
     def retrieve(self, request, pk=None, **kwargs):
         user = self.get_object()
@@ -119,24 +138,38 @@ class UserViewSet(viewsets.ModelViewSet):
                 serializer = UserProfileForeignSerializer(user)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['post'], permission_classes=[], authentication_classes=[])
+    @action(
+        detail=False, methods=["post"], permission_classes=[], authentication_classes=[]
+    )
     def login(self, request: Request):
-        serializer = AuthTokenSerializer(data=request.data, context={'request': request})
+        serializer = AuthTokenSerializer(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid()
-        user: UserProfile = serializer.validated_data['user']
-        password = serializer.validated_data['password']
+        user: UserProfile = serializer.validated_data["user"]
+        password = serializer.validated_data["password"]
 
         # check if user active and user accepted in rlc
         if not user.email_confirmed:
-            message = 'You can not login, yet. Please confirm your email first.'
-            return Response({'non_field_errors': [message]}, status.HTTP_400_BAD_REQUEST)
+            message = "You can not login, yet. Please confirm your email first."
+            return Response(
+                {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
+            )
         if user.locked:
-            message = 'Your account is temporarily blocked, because your keys need to be recreated. ' \
-                      'Please tell an admin to press the unlock button on your user.'
-            return Response({'non_field_errors': [message]}, status.HTTP_400_BAD_REQUEST)
-        if hasattr(user, 'accepted') and not user.accepted.state == 'gr':
-            message = 'You can not login, yet. Your RLC needs to accept you as a member.'
-            return Response({'non_field_errors': [message]}, status.HTTP_400_BAD_REQUEST)
+            message = (
+                "Your account is temporarily blocked, because your keys need to be recreated. "
+                "Please tell an admin to press the unlock button on your user."
+            )
+            return Response(
+                {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
+            )
+        if hasattr(user, "accepted") and not user.accepted.state == "gr":
+            message = (
+                "You can not login, yet. Your RLC needs to accept you as a member."
+            )
+            return Response(
+                {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
+            )
 
         # create the token and set the time if not created to keep it valid
         token, created = Token.objects.get_or_create(user=user)
@@ -152,18 +185,22 @@ class UserViewSet(viewsets.ModelViewSet):
             "token": token.key,
             "email": user.email,
             "id": user.pk,
-            "users_private_key": private_key
+            "users_private_key": private_key,
         }
         return Response(data, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['get'], url_path='statics/(?P<token>[^/.]+)')
+    @action(detail=False, methods=["get"], url_path="statics/(?P<token>[^/.]+)")
     def statics(self, request: Request, token=None, *args, **kwargs):
         token = Token.objects.get(key=token)
         user = token.user
 
         notifications = NotificationGroup.objects.filter(user=user, read=False).count()
-        user_permissions = [model_to_dict(perm) for perm in user.get_all_user_permissions()]
-        overall_permissions = [model_to_dict(permission) for permission in Permission.objects.all()]
+        user_permissions = [
+            model_to_dict(perm) for perm in user.get_all_user_permissions()
+        ]
+        overall_permissions = [
+            model_to_dict(permission) for permission in Permission.objects.all()
+        ]
         user_states_possible = UserProfile.user_states_possible
         user_record_states_possible = UserProfile.user_record_states_possible
 
@@ -179,15 +216,22 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(data, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['post'], authentication_classes=[], permission_classes=[])
+    @action(
+        detail=False, methods=["post"], authentication_classes=[], permission_classes=[]
+    )
     def logout(self, request: Request, *args, **kwargs):
         if not request.user.is_authenticated:
             return Response(status=status.HTTP_204_NO_CONTENT)
         Token.objects.filter(user=request.user).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['get'], url_path='activate/(?P<token>[^/.]+)', permission_classes=[],
-            authentication_classes=[])
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="activate/(?P<token>[^/.]+)",
+        permission_classes=[],
+        authentication_classes=[],
+    )
     def activate(self, request, token, *args, **kwargs):
         self.queryset = UserProfile.objects.all()
         user = self.get_object()
@@ -198,23 +242,28 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_200_OK)
         else:
             data = {
-                'message': 'The confirmation link is invalid, possibly because it has already been used.'
+                "message": "The confirmation link is invalid, possibly because it has already been used."
             }
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['get', 'post'])
+    @action(detail=False, methods=["get", "post"])
     def inactive(self, request: Request):
-        if request.method == 'GET':
-            if not request.user.has_permission(permissions.PERMISSION_ACTIVATE_INACTIVE_USERS_RLC,
-                                               for_rlc=request.user.rlc):
+        if request.method == "GET":
+            if not request.user.has_permission(
+                permissions.PERMISSION_ACTIVATE_INACTIVE_USERS_RLC,
+                for_rlc=request.user.rlc,
+            ):
                 raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 
-            inactive_users = UserProfile.objects.filter(rlc=request.user.rlc, is_active=False)
+            inactive_users = UserProfile.objects.filter(
+                rlc=request.user.rlc, is_active=False
+            )
             return Response(UserSerializer(inactive_users, many=True).data)
 
-        elif request.method == 'POST':
+        elif request.method == "POST":
             if not request.user.has_permission(
-                permissions.PERMISSION_ACTIVATE_INACTIVE_USERS_RLC, for_rlc=request.user.rlc
+                permissions.PERMISSION_ACTIVATE_INACTIVE_USERS_RLC,
+                for_rlc=request.user.rlc,
             ):
                 raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
             # method and user_id
@@ -235,22 +284,26 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response({})
 
-    @action(detail=False, methods=['POST'], authentication_classes=[], permission_classes=[])
+    @action(
+        detail=False, methods=["POST"], authentication_classes=[], permission_classes=[]
+    )
     def password_reset(self, request, *args, **kwargs):
         # get the user
         serializer = UserPasswordResetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            user = UserProfile.objects.get(email=serializer.validated_data['email'])
+            user = UserProfile.objects.get(email=serializer.validated_data["email"])
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         # send the user activation link email
         token = PasswordResetTokenGenerator().make_token(user)
-        link = '{}reset-password/{}/{}/'.format(settings.FRONTEND_URL, user.id, token)
+        link = "{}reset-password/{}/{}/".format(settings.FRONTEND_URL, user.id, token)
         subject = "Law & Orga Account Password reset"
         message = "Law & Orga - Reset your password here: {}".format(link)
-        html_message = loader.render_to_string("email_templates/reset_password.html", {"link": link})
+        html_message = loader.render_to_string(
+            "email_templates/reset_password.html", {"link": link}
+        )
         send_mail(
             subject=subject,
             html_message=html_message,
@@ -261,17 +314,21 @@ class UserViewSet(viewsets.ModelViewSet):
 
         # return the success response
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
-    @action(detail=True, methods=['POST'], authentication_classes=[], permission_classes=[])
+    @action(
+        detail=True, methods=["POST"], authentication_classes=[], permission_classes=[]
+    )
     def password_reset_confirm(self, request, *args, **kwargs):
         self.queryset = UserProfile.objects.all()
         user: UserProfile = self.get_object()
 
         serializer = UserPasswordResetConfirmSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        token = serializer.validated_data['token']
-        new_password = serializer.validated_data['new_password']
+        token = serializer.validated_data["token"]
+        new_password = serializer.validated_data["new_password"]
         if PasswordResetTokenGenerator().check_token(user, token):
             user.set_password(new_password)
             user.locked = True
@@ -283,11 +340,11 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_200_OK)
         else:
             data = {
-                'message': 'The password reset link is invalid, possibly because it has already been used.'
+                "message": "The password reset link is invalid, possibly because it has already been used."
             }
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=["POST"])
     def unlock(self, request, pk=None, *args, **kwargs):
         """
         when this api endpoint is called we assume that the public and private key of the submitted user is
@@ -297,10 +354,12 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.request.user
         user_to_unlock = self.get_object()
 
-        if not request.user.has_permission(PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc):
+        if not request.user.has_permission(
+            PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc
+        ):
             data = {
-                'message': 'You need to have the view_records_full_detail permission in order to unlock this user.'
-                           'Because you need to be able to give this user all his encryption keys.'
+                "message": "You need to have the view_records_full_detail permission in order to unlock this user."
+                "Because you need to be able to give this user all his encryption keys."
             }
             return Response(data)
 

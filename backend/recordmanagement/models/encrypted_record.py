@@ -87,11 +87,11 @@ class EncryptedRecord(
     ]
 
     class Meta:
-        verbose_name = 'Record'
-        verbose_name_plural = 'Records'
+        verbose_name = "Record"
+        verbose_name_plural = "Records"
 
     def __str__(self):
-        return 'record: {}; token: {};'.format(self.pk, self.record_token)
+        return "record: {}; token: {};".format(self.pk, self.record_token)
 
     def encrypt(
         self,

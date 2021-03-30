@@ -6,11 +6,9 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0038_auto_20210323_2014'),
+        ("api", "0038_auto_20210323_2014"),
     ]
 
     operations = [
-        migrations.DeleteModel(
-            name='UserActivationLink',
-        ),
+        migrations.DeleteModel(name="UserActivationLink",),
     ]

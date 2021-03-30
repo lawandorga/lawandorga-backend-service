@@ -8,13 +8,19 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0050_remove_newuserrequest_after_password_forgotten'),
+        ("api", "0050_remove_newuserrequest_after_password_forgotten"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='newuserrequest',
-            name='request_processed',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='new_user_requests_processed', to=settings.AUTH_USER_MODEL),
+            model_name="newuserrequest",
+            name="request_processed",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="new_user_requests_processed",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

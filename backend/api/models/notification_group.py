@@ -36,11 +36,11 @@ class NotificationGroup(ExportModelOperationsMixin("notification_group"), models
     ref_text = models.CharField(max_length=100, null=True)
 
     class Meta:
-        verbose_name = 'NotificationGroup'
-        verbose_name_plural = 'NotificationGroups'
+        verbose_name = "NotificationGroup"
+        verbose_name_plural = "NotificationGroups"
 
     def __str__(self):
-        return 'notificationGroup: {}; user: {};'.format(self.pk, self.user.email)
+        return "notificationGroup: {}; user: {};".format(self.pk, self.user.email)
 
     def new_activity(self):
         self.last_activity = timezone.now()

@@ -32,11 +32,11 @@ class RlcEncryptionKeys(
     encryption_class = AESEncryption
 
     class Meta:
-        verbose_name = 'RlcEncryptionKey'
-        verbose_name_plural = 'RlcEncryptionKeys'
+        verbose_name = "RlcEncryptionKey"
+        verbose_name_plural = "RlcEncryptionKeys"
 
     def __str__(self):
-        return 'rlcEncryptionKey: {}; rlc: {};'.format(self.pk, self.rlc.name)
+        return "rlcEncryptionKey: {}; rlc: {};".format(self.pk, self.rlc.name)
 
     def decrypt_private_key(self, key_to_encrypt):
         encrypted_private_key = self.encrypted_private_key

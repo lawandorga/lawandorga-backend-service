@@ -6,23 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0047_auto_20210324_2136'),
+        ("api", "0047_auto_20210324_2136"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='missingrlckey',
-            name='user',
-        ),
+        migrations.RemoveField(model_name="missingrlckey", name="user",),
         migrations.AddField(
-            model_name='newuserrequest',
-            name='after_password_forgotten',
+            model_name="newuserrequest",
+            name="after_password_forgotten",
             field=models.BooleanField(default=False),
         ),
-        migrations.DeleteModel(
-            name='ForgotPasswordLinks',
-        ),
-        migrations.DeleteModel(
-            name='MissingRlcKey',
-        ),
+        migrations.DeleteModel(name="ForgotPasswordLinks",),
+        migrations.DeleteModel(name="MissingRlcKey",),
     ]

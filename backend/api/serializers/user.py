@@ -21,16 +21,16 @@ from rest_framework import serializers
 
 class UserSerializer(serializers.ModelSerializer):
     # make sure select_related('accepted') is set on the user queryset or else the queries will explode
-    accepted = serializers.SerializerMethodField('get_accepted')
+    accepted = serializers.SerializerMethodField("get_accepted")
 
     class Meta:
         model = UserProfile
-        exclude = ['groups', 'user_permissions']
+        exclude = ["groups", "user_permissions"]
         extra_kwargs = {"password": {"write_only": True}}
 
     def get_accepted(self, obj):
         try:
-            if obj.accepted.state == 'gr':
+            if obj.accepted.state == "gr":
                 return True
         except ObjectDoesNotExist:
             return True
@@ -79,13 +79,13 @@ class UserCreateSerializer(UserSerializer):
             "street",
             "city",
             "postal_code",
-            'rlc'
+            "rlc",
         ]
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
         instance = super().create(validated_data)
-        instance.set_password(validated_data['password'])
+        instance.set_password(validated_data["password"])
         # set the default stuff
         instance.email_confirmed = False
         instance.is_active = True

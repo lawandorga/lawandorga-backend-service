@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0048_auto_20210326_1459'),
+        ("api", "0048_auto_20210326_1459"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='locked',
+            model_name="userprofile",
+            name="locked",
             field=models.BooleanField(default=False),
         ),
     ]

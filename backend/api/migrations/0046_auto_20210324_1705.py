@@ -7,14 +7,19 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0045_auto_20210324_1505'),
+        ("api", "0045_auto_20210324_1505"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userprofile',
-            name='rlc',
-            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.PROTECT, related_name='rlc_members', to='api.rlc'),
+            model_name="userprofile",
+            name="rlc",
+            field=models.ForeignKey(
+                default=None,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="rlc_members",
+                to="api.rlc",
+            ),
             preserve_default=False,
         ),
     ]

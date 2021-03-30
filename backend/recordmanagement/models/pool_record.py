@@ -38,8 +38,8 @@ class PoolRecord(ExportModelOperationsMixin("pool_record"), models.Model):
     record_key = models.CharField(null=False, max_length=255)
 
     class Meta:
-        verbose_name = 'PoolRecord'
-        verbose_name_plural = 'PoolRecords'
+        verbose_name = "PoolRecord"
+        verbose_name_plural = "PoolRecords"
 
     def __str__(self):
-        return 'poolRecord: {}; record: {};'.format(self.pk, self.record.record_token)
+        return "poolRecord: {}; record: {};".format(self.pk, self.record.record_token)

@@ -44,7 +44,7 @@ class Migration(migrations.Migration):
                     "link",
                     models.CharField(
                         auto_created=True,
-                        default='replaced-the-default-method-with-this-because-the-method-is-gone',
+                        default="replaced-the-default-method-with-this-because-the-method-is-gone",
                         max_length=32,
                         unique=True,
                     ),

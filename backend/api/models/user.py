@@ -38,11 +38,7 @@ from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 class UserProfileManager(BaseUserManager):
     @staticmethod
     def get_users_with_special_permission(
-        permission,
-        from_rlc = None,
-        for_user = None,
-        for_group = None,
-        for_rlc = None,
+        permission, from_rlc=None, for_user=None, for_group=None, for_rlc=None,
     ):
         """
         returns all users
@@ -106,11 +102,7 @@ class UserProfileManager(BaseUserManager):
 
     @staticmethod
     def get_users_with_special_permissions(
-        permissions,
-        from_rlc = None,
-        for_user = None,
-        for_group = None,
-        for_rlc = None,
+        permissions, from_rlc=None, for_user=None, for_group=None, for_rlc=None,
     ):
         users = None
         for permission in permissions:
@@ -169,9 +161,9 @@ class UserProfile(
     REQUIRED_FIELDS = ["name"]  # email already in there, other are default
 
     class Meta:
-        verbose_name = 'UserProfile'
-        verbose_name_plural = 'UserProfiles'
-        ordering = ['name']
+        verbose_name = "UserProfile"
+        verbose_name_plural = "UserProfiles"
+        ordering = ["name"]
 
     def __str__(self):
         return "user: {}; email: {};".format(self.pk, self.email)
@@ -250,8 +242,7 @@ class UserProfile(
     ):
         return (
             HasPermission.objects.filter(
-                user_has_permission=self.pk,
-                permission_id=permission,
+                user_has_permission=self.pk, permission_id=permission,
             ).count()
             >= 1
         )
@@ -262,8 +253,7 @@ class UserProfile(
         groups = [groups["id"] for groups in list(self.group_members.values("id"))]
         return (
             HasPermission.objects.filter(
-                group_has_permission_id__in=groups,
-                permission_id=permission,
+                group_has_permission_id__in=groups, permission_id=permission,
             ).count()
             >= 1
         )
@@ -276,8 +266,7 @@ class UserProfile(
 
         return (
             HasPermission.objects.filter(
-                rlc_has_permission_id=self.rlc.id,
-                permission_id=permission,
+                rlc_has_permission_id=self.rlc.id, permission_id=permission,
             ).count()
             >= 1
         )
@@ -422,7 +411,9 @@ class UserProfile(
         # generate new rlc key
         user_to_unlock.users_rlc_keys.all().delete()
         aes_key_rlc = self.rlc.get_aes_key(user=self, private_key_user=private_key_self)
-        new_keys = UsersRlcKeys(user=user_to_unlock, rlc=user_to_unlock.rlc, encrypted_key=aes_key_rlc)
+        new_keys = UsersRlcKeys(
+            user=user_to_unlock, rlc=user_to_unlock.rlc, encrypted_key=aes_key_rlc
+        )
         new_keys.encrypt(user_to_unlock.get_public_key())
         new_keys.save()
 
@@ -434,8 +425,11 @@ class UserProfile(
         for old_keys in record_encryptions_list:
             encryption = RecordEncryption.objects.get(user=self, record=old_keys.record)
             encryption.decrypt(private_key_user=private_key_self)
-            new_keys = RecordEncryption(user=user_to_unlock, record=old_keys.record,
-                                        encrypted_key=encryption.encrypted_key)
+            new_keys = RecordEncryption(
+                user=user_to_unlock,
+                record=old_keys.record,
+                encrypted_key=encryption.encrypted_key,
+            )
             new_keys.encrypt(user_to_unlock.get_public_key())
             new_keys.save()
 
@@ -443,8 +437,14 @@ class UserProfile(
 # this is used on signup
 class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
     def _make_hash_value(self, user, timestamp):
-        login_timestamp = '' if user.last_login is None else user.last_login.replace(microsecond=0, tzinfo=None)
-        super_make_hash_value = str(user.pk) + user.password + str(login_timestamp) + str(timestamp)
+        login_timestamp = (
+            ""
+            if user.last_login is None
+            else user.last_login.replace(microsecond=0, tzinfo=None)
+        )
+        super_make_hash_value = (
+            str(user.pk) + user.password + str(login_timestamp) + str(timestamp)
+        )
         additional_hash_value = str(user.email_confirmed)
         return super_make_hash_value + additional_hash_value
 

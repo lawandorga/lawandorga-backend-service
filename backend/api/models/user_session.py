@@ -73,8 +73,8 @@ class UserSession(ExportModelOperationsMixin("user_session"), models.Model):
     objects = UserSessionManager()
 
     class Meta:
-        verbose_name = 'UserSession'
-        verbose_name_plural = 'UserSessions'
+        verbose_name = "UserSession"
+        verbose_name_plural = "UserSessions"
 
     def __str__(self):
-        return 'userSession: {};'.format(self.pk)
+        return "userSession: {};".format(self.pk)

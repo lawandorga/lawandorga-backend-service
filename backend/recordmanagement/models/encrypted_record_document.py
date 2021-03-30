@@ -47,8 +47,8 @@ class EncryptedRecordDocument(
     )
 
     class Meta:
-        verbose_name = 'RecordDocument'
-        verbose_name_plural = 'RecordDocuments'
+        verbose_name = "RecordDocument"
+        verbose_name_plural = "RecordDocuments"
 
     def __str__(self):
         return "recordDocument: {}; name: {}; creator: {}; record: {};".format(

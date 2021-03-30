@@ -13,10 +13,21 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from backend.recordmanagement.models import OriginCountry, RecordTag, RecordDocumentTag, EncryptedRecord, \
-    RecordEncryption, EncryptedClient, EncryptedRecordDocument, EncryptedRecordMessage, \
-    EncryptedRecordPermission, EncryptedRecordDeletionRequest, PoolConsultant, PoolRecord, \
-    EncryptedRecordDocumentDeletionRequest
+from backend.recordmanagement.models import (
+    OriginCountry,
+    RecordTag,
+    RecordDocumentTag,
+    EncryptedRecord,
+    RecordEncryption,
+    EncryptedClient,
+    EncryptedRecordDocument,
+    EncryptedRecordMessage,
+    EncryptedRecordPermission,
+    EncryptedRecordDeletionRequest,
+    PoolConsultant,
+    PoolRecord,
+    EncryptedRecordDocumentDeletionRequest,
+)
 from django.contrib import admin
 
 admin.site.register(OriginCountry)

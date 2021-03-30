@@ -14,15 +14,13 @@ SECRET_KEY = "srt(vue=+gl&0c_c3pban6a&m2h2iz6mhbx^%^_%9!#-jg0*lz"
 
 # Application definition
 # https://docs.djangoproject.com/en/dev/ref/applications/
-INSTALLED_APPS += [
-    'debug_toolbar'
-]
+INSTALLED_APPS += ["debug_toolbar"]
 
 # Middleware
 # https://docs.djangoproject.com/en/dev/topics/http/middleware/
 MIDDLEWARE += [
-                 'debug_toolbar.middleware.DebugToolbarMiddleware',
-             ]
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+]
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
@@ -58,6 +56,4 @@ DUMMY_USER_PASSWORD = "qwe123"
 
 # Django Debug Toolbar
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#configuring-internal-ips
-INTERNAL_IPS = [
-    '127.0.0.1'
-]
+INTERNAL_IPS = ["127.0.0.1"]

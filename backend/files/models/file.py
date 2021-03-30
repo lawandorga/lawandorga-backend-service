@@ -51,8 +51,8 @@ class File(ExportModelOperationsMixin("file"), models.Model):
     size = models.BigIntegerField(null=False)
 
     class Meta:
-        verbose_name = 'File'
-        verbose_name_plural = 'Files'
+        verbose_name = "File"
+        verbose_name_plural = "Files"
 
     def __str__(self):
         return "file: {}; fileKey: {};".format(self.pk, self.get_file_key())

@@ -20,11 +20,11 @@ class Permission(models.Model):
     name = models.CharField(max_length=200, null=False, unique=True)
 
     class Meta:
-        verbose_name = 'Permission'
-        verbose_name_plural = 'Permissions'
+        verbose_name = "Permission"
+        verbose_name_plural = "Permissions"
 
     def __str__(self):
-        return 'permission: {}; name: {};'.format(self.pk, self.name)
+        return "permission: {}; name: {};".format(self.pk, self.name)
 
     def get_groups_with_permission_from_rlc(self, rlc):
         from backend.api.models import Group, HasPermission

@@ -13,7 +13,9 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
+from backend.recordmanagement.models.encrypted_record_permission import (
+    EncryptedRecordPermission,
+)
 from backend.recordmanagement.models.record_encryption import RecordEncryption
 from backend.api.models.notification import Notification
 from backend.static.middleware import get_private_key_from_request

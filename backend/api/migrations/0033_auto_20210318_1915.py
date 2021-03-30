@@ -6,15 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0032_auto_20210317_1048'),
+        ("api", "0032_auto_20210317_1048"),
     ]
 
     operations = [
-        migrations.DeleteModel(
-            name='Language',
-        ),
+        migrations.DeleteModel(name="Language",),
         migrations.AlterUniqueTogether(
-            name='usersrlckeys',
-            unique_together={('user', 'rlc')},
+            name="usersrlckeys", unique_together={("user", "rlc")},
         ),
     ]

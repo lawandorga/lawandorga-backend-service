@@ -28,8 +28,8 @@ class OriginCountry(models.Model):
     state = models.CharField(max_length=2, choices=origin_country_states_possible)
 
     class Meta:
-        verbose_name = 'OriginCountry'
-        verbose_name_plural = 'OriginCountries'
+        verbose_name = "OriginCountry"
+        verbose_name_plural = "OriginCountries"
 
     def __str__(self):
         return "originCountry: {}; name: {};".format(self.pk, self.name)

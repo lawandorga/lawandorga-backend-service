@@ -27,7 +27,9 @@ router.register("records", EncryptedRecordViewSet)
 router.register("e_clients", EncryptedClientViewSet)
 router.register("pool_records", PoolRecordViewSet)
 router.register("pool_consultants", PoolConsultantViewSet)
-router.register("record_document_deletion_requests", EncryptedRecordDocumentDeletionRequestViewSet)
+router.register(
+    "record_document_deletion_requests", EncryptedRecordDocumentDeletionRequestViewSet
+)
 
 urlpatterns = [
     path("", include(router.urls)),

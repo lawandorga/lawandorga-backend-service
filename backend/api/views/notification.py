@@ -14,8 +14,12 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from backend.api.models.notification import Notification
-from backend.static.error_codes import ERROR__API__ID_NOT_PROVIDED, ERROR__API__NOTIFICATION__UPDATE_INVALID, \
-    ERROR__API__USER__NO_OWNERSHIP, ERROR__API__ID_NOT_FOUND
+from backend.static.error_codes import (
+    ERROR__API__ID_NOT_PROVIDED,
+    ERROR__API__NOTIFICATION__UPDATE_INVALID,
+    ERROR__API__USER__NO_OWNERSHIP,
+    ERROR__API__ID_NOT_FOUND,
+)
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.decorators import action
 from backend.api.serializers import NotificationSerializer
@@ -75,7 +79,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
         return Response({"success": True})
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=["get"])
     def unread(self, request: Request):
         unread = NotificationGroup.objects.filter(user=request.user, read=False).count()
-        return Response({'unread_notification': unread})
+        return Response({"unread_notification": unread})

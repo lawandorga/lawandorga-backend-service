@@ -6,12 +6,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0049_userprofile_locked'),
+        ("api", "0049_userprofile_locked"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='newuserrequest',
-            name='after_password_forgotten',
+            model_name="newuserrequest", name="after_password_forgotten",
         ),
     ]

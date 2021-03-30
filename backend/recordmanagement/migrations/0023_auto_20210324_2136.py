@@ -6,60 +6,90 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0022_auto_20210318_1915'),
+        ("recordmanagement", "0022_auto_20210318_1915"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='encryptedclient',
-            options={'verbose_name': 'Client', 'verbose_name_plural': 'Clients'},
+            name="encryptedclient",
+            options={"verbose_name": "Client", "verbose_name_plural": "Clients"},
         ),
         migrations.AlterModelOptions(
-            name='encryptedrecord',
-            options={'verbose_name': 'Record', 'verbose_name_plural': 'Records'},
+            name="encryptedrecord",
+            options={"verbose_name": "Record", "verbose_name_plural": "Records"},
         ),
         migrations.AlterModelOptions(
-            name='encryptedrecorddocument',
-            options={'verbose_name': 'RecordDocument', 'verbose_name_plural': 'RecordDocuments'},
+            name="encryptedrecorddocument",
+            options={
+                "verbose_name": "RecordDocument",
+                "verbose_name_plural": "RecordDocuments",
+            },
         ),
         migrations.AlterModelOptions(
-            name='encryptedrecorddocumentdeletionrequest',
-            options={'verbose_name': 'RecordDocumentDeletionRequest', 'verbose_name_plural': 'RecordDocumentDeletionRequests'},
+            name="encryptedrecorddocumentdeletionrequest",
+            options={
+                "verbose_name": "RecordDocumentDeletionRequest",
+                "verbose_name_plural": "RecordDocumentDeletionRequests",
+            },
         ),
         migrations.AlterModelOptions(
-            name='encryptedrecordmessage',
-            options={'verbose_name': 'RecordMessage', 'verbose_name_plural': 'RecordMessages'},
+            name="encryptedrecordmessage",
+            options={
+                "verbose_name": "RecordMessage",
+                "verbose_name_plural": "RecordMessages",
+            },
         ),
         migrations.AlterModelOptions(
-            name='encryptedrecordpermission',
-            options={'verbose_name': 'RecordPermission', 'verbose_name_plural': 'RecordPermissions'},
+            name="encryptedrecordpermission",
+            options={
+                "verbose_name": "RecordPermission",
+                "verbose_name_plural": "RecordPermissions",
+            },
         ),
         migrations.AlterModelOptions(
-            name='missingrecordkey',
-            options={'verbose_name': 'MissingRecordKey', 'verbose_name_plural': 'MissingRecordKeys'},
+            name="missingrecordkey",
+            options={
+                "verbose_name": "MissingRecordKey",
+                "verbose_name_plural": "MissingRecordKeys",
+            },
         ),
         migrations.AlterModelOptions(
-            name='origincountry',
-            options={'verbose_name': 'OriginCountry', 'verbose_name_plural': 'OriginCountries'},
+            name="origincountry",
+            options={
+                "verbose_name": "OriginCountry",
+                "verbose_name_plural": "OriginCountries",
+            },
         ),
         migrations.AlterModelOptions(
-            name='poolconsultant',
-            options={'verbose_name': 'PoolConsultant', 'verbose_name_plural': 'PoolConsultants'},
+            name="poolconsultant",
+            options={
+                "verbose_name": "PoolConsultant",
+                "verbose_name_plural": "PoolConsultants",
+            },
         ),
         migrations.AlterModelOptions(
-            name='poolrecord',
-            options={'verbose_name': 'PoolRecord', 'verbose_name_plural': 'PoolRecords'},
+            name="poolrecord",
+            options={
+                "verbose_name": "PoolRecord",
+                "verbose_name_plural": "PoolRecords",
+            },
         ),
         migrations.AlterModelOptions(
-            name='recorddocumenttag',
-            options={'verbose_name': 'RecordDocumentTag', 'verbose_name_plural': 'RecordDocumentTags'},
+            name="recorddocumenttag",
+            options={
+                "verbose_name": "RecordDocumentTag",
+                "verbose_name_plural": "RecordDocumentTags",
+            },
         ),
         migrations.AlterModelOptions(
-            name='recordencryption',
-            options={'verbose_name': 'RecordEncryption', 'verbose_name_plural': 'RecordEncryptions'},
+            name="recordencryption",
+            options={
+                "verbose_name": "RecordEncryption",
+                "verbose_name_plural": "RecordEncryptions",
+            },
         ),
         migrations.AlterModelOptions(
-            name='recordtag',
-            options={'verbose_name': 'RecordTag', 'verbose_name_plural': 'RecordTags'},
+            name="recordtag",
+            options={"verbose_name": "RecordTag", "verbose_name_plural": "RecordTags"},
         ),
     ]

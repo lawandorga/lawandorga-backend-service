@@ -49,11 +49,11 @@ class EncryptedClient(
     encrypted_fields = ["name", "note", "phone_number"]
 
     class Meta:
-        verbose_name = 'Client'
-        verbose_name_plural = 'Clients'
+        verbose_name = "Client"
+        verbose_name_plural = "Clients"
 
     def __str__(self):
-        return 'client: {};'.format(self.pk)
+        return "client: {};".format(self.pk)
 
     def encrypt(self, rlc_public_key: bytes) -> None:
         key = AESEncryption.generate_secure_key()

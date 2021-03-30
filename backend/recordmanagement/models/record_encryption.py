@@ -32,8 +32,8 @@ class RecordEncryption(models.Model):
 
     class Meta:
         unique_together = ("user", "record")
-        verbose_name = 'RecordEncryption'
-        verbose_name_plural = 'RecordEncryptions'
+        verbose_name = "RecordEncryption"
+        verbose_name_plural = "RecordEncryptions"
 
     def __str__(self):
         return "recordEncryption: {}; user: {}; record: {};".format(
@@ -68,7 +68,7 @@ class RecordEncryption(models.Model):
                 )
                 setattr(self, field, decrypted_field)
         else:
-            raise ValueError('You need to pass (private_key_user).')
+            raise ValueError("You need to pass (private_key_user).")
 
     def get_key(self, private_key_user: str) -> str:
         if not self.encrypted_key:

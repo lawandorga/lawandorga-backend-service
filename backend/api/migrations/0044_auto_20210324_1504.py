@@ -8,13 +8,17 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0043_auto_20210324_1502'),
+        ("api", "0043_auto_20210324_1502"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='newuserrequest',
-            name='request_from',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='accepted2', to=settings.AUTH_USER_MODEL),
+            model_name="newuserrequest",
+            name="request_from",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="accepted2",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

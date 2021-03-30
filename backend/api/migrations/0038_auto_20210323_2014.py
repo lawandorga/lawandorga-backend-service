@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0037_userprofile_email_confirmed'),
+        ("api", "0037_userprofile_email_confirmed"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='useractivationlink',
-            name='link',
-            field=models.CharField(auto_created=True, default='default', max_length=32, unique=True),
+            model_name="useractivationlink",
+            name="link",
+            field=models.CharField(
+                auto_created=True, default="default", max_length=32, unique=True
+            ),
         ),
     ]

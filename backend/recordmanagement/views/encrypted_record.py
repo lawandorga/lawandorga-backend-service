@@ -23,7 +23,8 @@ from backend.recordmanagement.serializers import (
     EncryptedRecordDocumentSerializer,
     EncryptedRecordMessageDetailSerializer,
     EncryptedRecordListSerializer,
-    EncryptedRecordMessageSerializer, EncryptedRecordPermissionSerializer,
+    EncryptedRecordMessageSerializer,
+    EncryptedRecordPermissionSerializer,
 )
 from backend.recordmanagement.models import (
     EncryptedRecordPermission,
@@ -84,9 +85,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
             record_ids_from_keys = [
                 key.record.id
                 for key in list(
-                    RecordEncryption.objects.filter(
-                        user=user, record__in=record_ids
-                    )
+                    RecordEncryption.objects.filter(user=user, record__in=record_ids)
                 )
             ]
 
@@ -345,7 +344,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=["post"])
     def request_permission(self, request, *args, **kwargs):
         record = self.get_object()
 
@@ -357,9 +356,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
             request.user, record_permission
         )
 
-        return Response(
-            EncryptedRecordPermissionSerializer(record_permission).data
-        )
+        return Response(EncryptedRecordPermissionSerializer(record_permission).data)
 
     @action(detail=True, methods=["post"])
     def add_message(self, request, pk=None):

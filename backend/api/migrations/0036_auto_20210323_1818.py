@@ -7,18 +7,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0035_auto_20210323_1708'),
+        ("api", "0035_auto_20210323_1708"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userprofile',
-            name='birthday',
+            model_name="userprofile",
+            name="birthday",
             field=models.DateField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='userprofile',
-            name='phone_number',
-            field=models.CharField(blank=True, default=None, max_length=17, null=True, validators=[django.core.validators.RegexValidator(message='Phone number must be entered in the format: Up to 15 digits allowed.', regex='^\\+{0,2}\\d{6,15}$')]),
+            model_name="userprofile",
+            name="phone_number",
+            field=models.CharField(
+                blank=True,
+                default=None,
+                max_length=17,
+                null=True,
+                validators=[
+                    django.core.validators.RegexValidator(
+                        message="Phone number must be entered in the format: Up to 15 digits allowed.",
+                        regex="^\\+{0,2}\\d{6,15}$",
+                    )
+                ],
+            ),
         ),
     ]

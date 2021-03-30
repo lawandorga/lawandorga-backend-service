@@ -67,8 +67,8 @@ class Folder(ExportModelOperationsMixin("folder"), models.Model):
     )
 
     class Meta:
-        verbose_name = 'Folder'
-        verbose_name_plural = 'Folders'
+        verbose_name = "Folder"
+        verbose_name_plural = "Folders"
 
     def __str__(self) -> str:
         return "folder: ; name: {};".format(self.pk, self.name)

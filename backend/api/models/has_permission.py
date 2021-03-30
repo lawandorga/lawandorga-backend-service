@@ -89,11 +89,11 @@ class HasPermission(ExportModelOperationsMixin("has_permission"), models.Model):
     objects = HasPermissionManager
 
     class Meta:
-        verbose_name = 'HasPermission'
-        verbose_name_plural = 'HasPermissions'
+        verbose_name = "HasPermission"
+        verbose_name_plural = "HasPermissions"
 
     def __str__(self):
-        return 'hasPermission: {}; name: {};'.format(self.pk, self.permission.name)
+        return "hasPermission: {}; name: {};".format(self.pk, self.permission.name)
 
     @staticmethod
     def already_existing(data):

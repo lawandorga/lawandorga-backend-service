@@ -24,11 +24,11 @@ router.register("permission_for_folder", PermissionForFolderViewSet)
 router.register("folder_permission", FolderPermissionViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),
-    path('folder_download/', DownloadFolderViewSet.as_view()),
+    path("", include(router.urls)),
+    path("folder_download/", DownloadFolderViewSet.as_view()),
     path("folder/", FolderViewSet.as_view()),
     path("upload/", UploadViewSet.as_view()),
     path("delete/", DeleteViewSet.as_view()),
     path("download/", DownloadViewSet.as_view()),
-    path('folder_permissions/<int:id>/', PermissionForFolderPerFolderViewSet.as_view()),
+    path("folder_permissions/<int:id>/", PermissionForFolderPerFolderViewSet.as_view()),
 ]

@@ -44,7 +44,7 @@ class Migration(migrations.Migration):
                     "link",
                     models.CharField(
                         auto_created=True,
-                        default='removed-a-method',
+                        default="removed-a-method",
                         max_length=32,
                         unique=True,
                     ),

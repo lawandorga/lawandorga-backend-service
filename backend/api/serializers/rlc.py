@@ -36,4 +36,4 @@ class RlcSerializer(serializers.ModelSerializer):
 class RlcSimpleSerializer(RlcSerializer):
     class Meta:
         model = Rlc
-        fields = ['id', 'name']
+        fields = ["id", "name"]

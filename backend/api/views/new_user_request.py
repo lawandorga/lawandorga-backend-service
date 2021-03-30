@@ -15,7 +15,10 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from backend.api.models.notification import Notification
 from backend.static.permissions import PERMISSION_ACCEPT_NEW_USERS_RLC
-from backend.api.serializers import OldNewUserRequestSerializer, NewUserRequestSerializer
+from backend.api.serializers import (
+    OldNewUserRequestSerializer,
+    NewUserRequestSerializer,
+)
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 from backend.api.errors import CustomError
@@ -25,7 +28,9 @@ from rest_framework import mixins
 from django.utils import timezone
 
 
-class NewUserRequestViewSet(mixins.UpdateModelMixin, mixins.ListModelMixin, GenericViewSet):
+class NewUserRequestViewSet(
+    mixins.UpdateModelMixin, mixins.ListModelMixin, GenericViewSet
+):
     serializer_class = OldNewUserRequestSerializer
     queryset = NewUserRequest.objects.all()
 
@@ -42,28 +47,32 @@ class NewUserRequestViewSet(mixins.UpdateModelMixin, mixins.ListModelMixin, Gene
 
         from backend.api.models import UsersRlcKeys
 
-        if not request.user.has_permission(PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=request.user.rlc):
+        if not request.user.has_permission(
+            PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=request.user.rlc
+        ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
         data = {
             **request.data,
-            'processed_on': timezone.now(),
-            'processed': request.user
+            "processed_on": timezone.now(),
+            "processed": request.user,
         }
-        serializer = NewUserRequestSerializer(instance=user_request, data=data, partial=True)
+        serializer = NewUserRequestSerializer(
+            instance=user_request, data=data, partial=True
+        )
         serializer.is_valid(raise_exception=True)
         new_member = user_request.request_from
 
-        if user_request.state == 'gr':
+        if user_request.state == "gr":
 
             # create the rlc encryption keys for new member
             private_key_user = request.user.get_private_key(request=request)
-            aes_key_rlc = request.user.rlc.get_aes_key(user=request.user, private_key_user=private_key_user)
+            aes_key_rlc = request.user.rlc.get_aes_key(
+                user=request.user, private_key_user=private_key_user
+            )
 
             new_user_rlc_keys = UsersRlcKeys(
-                user=new_member,
-                rlc=request.user.rlc,
-                encrypted_key=aes_key_rlc,
+                user=new_member, rlc=request.user.rlc, encrypted_key=aes_key_rlc,
             )
             public_key = new_member.get_public_key()
             new_user_rlc_keys.encrypt(public_key)

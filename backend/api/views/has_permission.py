@@ -33,7 +33,8 @@ from backend.static.permissions import (
 from backend.api.models import UserProfile, Rlc
 from backend.api.serializers import (
     HasPermissionSerializer,
-    UserProfileNameSerializer, GroupSerializer,
+    UserProfileNameSerializer,
+    GroupSerializer,
 )
 from backend.recordmanagement.helpers import check_encryption_key_holders_and_grant
 from backend.static.middleware import get_private_key_from_request

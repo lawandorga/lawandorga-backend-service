@@ -6,20 +6,23 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('files', '0004_auto_20200325_1331'),
+        ("files", "0004_auto_20200325_1331"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='file',
-            options={'verbose_name': 'File', 'verbose_name_plural': 'Files'},
+            name="file",
+            options={"verbose_name": "File", "verbose_name_plural": "Files"},
         ),
         migrations.AlterModelOptions(
-            name='folder',
-            options={'verbose_name': 'Folder', 'verbose_name_plural': 'Folders'},
+            name="folder",
+            options={"verbose_name": "Folder", "verbose_name_plural": "Folders"},
         ),
         migrations.AlterModelOptions(
-            name='permissionforfolder',
-            options={'verbose_name': 'PermissionForFolder', 'verbose_name_plural': 'PermissionsForFolders'},
+            name="permissionforfolder",
+            options={
+                "verbose_name": "PermissionForFolder",
+                "verbose_name_plural": "PermissionsForFolders",
+            },
         ),
     ]

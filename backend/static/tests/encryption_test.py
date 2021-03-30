@@ -90,7 +90,7 @@ class EncryptionTests(SimpleTestCase):
         self.assertEqual(decrypted, msg)
 
     def test_rsa_en_decrypt_real_world(self):
-        msg = 'fdslkjsad320234rnjdlsfjsda£$£$$%////'
+        msg = "fdslkjsad320234rnjdlsfjsda£$£$$%////"
         private_key, public_key = RSAEncryption.generate_keys()
         encrypted = RSAEncryption.encrypt(msg, public_key)
         decrypted = RSAEncryption.decrypt(encrypted, private_key)

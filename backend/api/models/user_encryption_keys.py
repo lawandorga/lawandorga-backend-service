@@ -33,11 +33,11 @@ class UserEncryptionKeys(
     public_key = models.BinaryField()
 
     class Meta:
-        verbose_name = 'UserEncryptionKey'
-        verbose_name_plural = 'UserEncryptionKeys'
+        verbose_name = "UserEncryptionKey"
+        verbose_name_plural = "UserEncryptionKeys"
 
     def __str__(self):
-        return 'userEncryptionKey: {}; user: {};'.format(self.pk, self.user.email)
+        return "userEncryptionKey: {}; user: {};".format(self.pk, self.user.email)
 
     def decrypt_private_key(self, key_to_encrypt: str) -> str:
         """
