@@ -89,7 +89,7 @@ class GroupViewSet(viewsets.ModelViewSet):
                     )
                     public_key_member = member.get_public_key()
                     record_encryption = RecordEncryption(
-                        user=member, record=record, record_key=record_key
+                        user=member, record=record, encrypted_key=record_key
                     )
                     record_encryption.encrypt(public_key_member)
                     record_encryption.save()

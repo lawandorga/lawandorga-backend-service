@@ -39,13 +39,6 @@ class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):
         on_delete=models.SET_NULL,
         null=True,
     )
-    last_edited = models.DateTimeField(default=timezone.now)
-    last_editor = models.ForeignKey(
-        UserProfile,
-        related_name="text_documents_last_updated",
-        on_delete=models.SET_NULL,
-        null=True,
-    )
 
     objects = InheritanceManager()
 

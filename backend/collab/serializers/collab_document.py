@@ -82,8 +82,6 @@ class CollabDocumentTreeSerializer(serializers.ModelSerializer):
             "path",
             "created",
             "creator",
-            "last_edited",
-            "last_editor",
             "child_pages",
         )
 

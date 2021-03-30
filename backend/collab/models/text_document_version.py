@@ -20,11 +20,13 @@ from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.api.models import UserProfile
 from backend.collab.models import TextDocument
-from backend.static.encryption import AESEncryption
+from backend.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 
 class TextDocumentVersion(
-    ExportModelOperationsMixin("text_document_version"), models.Model
+    ExportModelOperationsMixin("text_document_version"),
+    EncryptedModelMixin,
+    models.Model,
 ):
     document = models.ForeignKey(
         TextDocument, related_name="versions", null=False, on_delete=models.CASCADE
@@ -40,25 +42,35 @@ class TextDocumentVersion(
     is_draft = models.BooleanField(default=True)
     content = models.BinaryField()
 
-    @staticmethod
-    def create(
-        content: str,
-        is_draft: bool,
-        aes_key: str,
-        user: UserProfile,
-        document: TextDocument,
-    ) -> "TextDocumentVersion":
-        encrypted_content = AESEncryption.encrypt(content, aes_key)
-        version = TextDocumentVersion(
-            is_draft=is_draft,
-            content=encrypted_content,
-            creator=user,
-            document=document,
-        )
-        version.save()
+    encrypted_fields = ["content"]
+    encryption_class = AESEncryption
 
-        document.last_editor = user
-        document.last_edited = timezone.now()
-        document.save()
+    # @staticmethod
+    # def create(
+    #     content: str,
+    #     is_draft: bool,
+    #     aes_key: str,
+    #     user: UserProfile,
+    #     document: TextDocument,
+    # ) -> "TextDocumentVersion":
+    #     encrypted_content = AESEncryption.encrypt(content, aes_key)
+    #     version = TextDocumentVersion(
+    #         is_draft=is_draft,
+    #         content=encrypted_content,
+    #         creator=user,
+    #         document=document,
+    #     )
+    #     version.save()
+    #
+    #     document.last_editor = user
+    #     document.last_edited = timezone.now()
+    #     document.save()
+    #
+    #     return version
 
-        return version
+    # def encrypt(self, rlc_aes_key: bytes) -> None:
+    #     super().encrypt(key)
+
+    # def decrypt(self, private_key_rlc: str = None) -> None:
+    #     key = RSAEncryption.decrypt(self.encrypted_client_key, private_key_rlc)
+    #     super().decrypt(key)

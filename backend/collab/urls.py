@@ -20,7 +20,6 @@ from rest_framework.routers import DefaultRouter
 from backend.collab.views import (
     CollabDocumentListViewSet,
     TextDocumentModelViewSet,
-    VersionsOfTextDocumentViewSet,
     TextDocumentVersionModelViewSet,
 )
 from backend.collab.views.collab_permission import CollabPermissionViewSet
@@ -50,7 +49,4 @@ router.register(
 
 urlpatterns = [
     url(r"", include(router.urls)),
-    url(
-        r"text_documents/(?P<id>.+)/versions/$", VersionsOfTextDocumentViewSet.as_view()
-    ),
 ]

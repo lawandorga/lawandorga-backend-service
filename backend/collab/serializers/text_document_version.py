@@ -18,26 +18,22 @@
 from rest_framework import serializers
 
 from backend.collab.models import TextDocumentVersion
-from backend.static.encryption import AESEncryption
-from backend.static.serializer_fields import EncryptedField
 
 from backend.api.serializers import UserProfileNameSerializer
 from backend.collab.serializers import TextDocumentSerializer
 
 
 class TextDocumentVersionSerializer(serializers.ModelSerializer):
-    creator = UserProfileNameSerializer(many=False, read_only=True)
-    document = TextDocumentSerializer(many=False, read_only=True)
-    content = EncryptedField()
+    content = serializers.CharField()
 
     class Meta:
         model = TextDocumentVersion
         fields = "__all__"
 
-    def get_decrypted_data(self, aes_key: str) -> {}:
-        data = self.data
-        AESEncryption.decrypt_field(data, data, "content", aes_key)
-        return data
+
+class TextDocumentVersionDetailSerializer(TextDocumentVersionSerializer):
+    creator = UserProfileNameSerializer(many=False, read_only=True)
+    document = TextDocumentSerializer(many=False, read_only=True)
 
 
 class TextDocumentVersionListSerializer(serializers.ModelSerializer):

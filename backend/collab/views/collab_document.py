@@ -102,10 +102,7 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
             raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 
         created_document = CollabDocument.objects.create(
-            rlc=request.user.rlc,
-            path=path,
-            creator=request.user,
-            last_editor=request.user,
+            rlc=request.user.rlc, path=path, creator=request.user,
         )
         return Response(CollabDocumentSerializer(created_document).data, status=201)
 
