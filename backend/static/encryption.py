@@ -48,7 +48,7 @@ def get_string_from_bytes_or_return_string(pot_bytes):
 
 class AESEncryption:
     @staticmethod
-    def generate_iv():
+    def generate_iv() -> bytes:
         return os.urandom(16)
 
     @staticmethod
@@ -57,7 +57,7 @@ class AESEncryption:
         return "".join(secrets.choice(password_characters) for i in range(64))
 
     @staticmethod
-    def encrypt_with_iv(msg, key, iv):
+    def encrypt_with_iv(msg: str, key: str, iv: bytes):
         msg = get_bytes_from_string_or_return_bytes(msg)
         key = get_bytes_from_string_or_return_bytes(key)
         hashed_key_bytes = sha3_256(key).digest()
@@ -80,7 +80,7 @@ class AESEncryption:
         return plaintext_bytes
 
     @staticmethod
-    def encrypt(msg, key):
+    def encrypt(msg: str, key: str) -> bytes:
         """
         :param msg: bytes/string, message which shall be encrypted
         :param key: bytes/string, key with which to encrypt
@@ -88,7 +88,7 @@ class AESEncryption:
         """
         if msg is None or msg.__len__() == 0:
             return bytearray()
-        iv = AESEncryption.generate_iv()
+        iv: bytes = AESEncryption.generate_iv()
         cipher_bytes = AESEncryption.encrypt_with_iv(msg, key, iv)
         cipher_bytes = iv + cipher_bytes
         return cipher_bytes

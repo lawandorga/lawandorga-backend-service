@@ -51,7 +51,7 @@ pytest-django==3.2.1
 python-dateutil==2.7.3
 python3-logstash==0.4.80
 pytz==2018.3
-PyYAML==5.1.1
+PyYAML==5.4
 rcssmin==1.0.6
 rjsmin==1.0.12
 s3transfer==0.1.13

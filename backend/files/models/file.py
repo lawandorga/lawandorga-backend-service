@@ -71,11 +71,11 @@ class File(ExportModelOperationsMixin("file"), models.Model):
         """
         return self.get_file_key() + ".enc"
 
-    def delete_on_cloud(self):
+    def delete_on_cloud(self) -> None:
         EncryptedStorage.delete_on_s3(self.get_encrypted_file_key())
 
     @receiver(pre_delete)
-    def pre_deletion(sender, instance, **kwargs):
+    def pre_deletion(sender, instance: "File", **kwargs) -> None:
         if sender == File:
             instance.delete_on_cloud()
             instance.folder.propagate_new_size_up(-instance.size)
@@ -83,13 +83,13 @@ class File(ExportModelOperationsMixin("file"), models.Model):
             instance.folder.save()
 
     @receiver(post_save)
-    def post_save(sender, instance, **kwargs):
+    def post_save(sender, instance: "File", **kwargs) -> None:
         if sender == File:
             instance.folder.propagate_new_size_up(instance.size)
             # instance.folder.number_of_files += 1
             instance.folder.save()
 
-    def download(self, aes_key, local_destination_folder):
+    def download(self, aes_key: str, local_destination_folder: str) -> None:
         try:
             EncryptedStorage.download_from_s3_and_decrypt_file(
                 self.get_encrypted_file_key(), aes_key, local_destination_folder
@@ -103,7 +103,12 @@ class File(ExportModelOperationsMixin("file"), models.Model):
         return EncryptedStorage.file_exists(self.get_encrypted_file_key())
 
     @staticmethod
-    def create_or_update(file):
+    def create_or_update(file: "File") -> "File":
+        """
+        creates file, or if file with name in parent folder is already existing updates
+        :param file:
+        :return:
+        """
         try:
             existing = File.objects.get(folder=file.folder, name=file.name)
             existing.last_editor = file.last_editor
@@ -116,7 +121,7 @@ class File(ExportModelOperationsMixin("file"), models.Model):
             return file
 
     @staticmethod
-    def create_or_duplicate(file):
+    def create_or_duplicate(file: "File") -> "File":
         """
         created file, check if file with same name already existing, if yes, create "file(x)"
         :param file:

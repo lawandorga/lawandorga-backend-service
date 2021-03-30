@@ -496,22 +496,6 @@ class FolderModelTests(TransactionTestCase):
         )
         self.assertEquals("READ", perm_string)
 
-    def test_get_all_groups_permissions(self):
-        p_read = FolderPermission.objects.get(name=PERMISSION_READ_FOLDER)
-        p_all_read = Permission.objects.get(name=PERMISSION_READ_ALL_FOLDERS_RLC)
-
-        created_folders = self.create_many_test_folders()
-
-        perm1 = PermissionForFolder(
-            folder=created_folders["ressorts"],
-            permission=p_read,
-            group_has_permission=self.fixtures["groups"][0],
-        )
-        perm1.save()
-
-        all_permissions = created_folders["ressorts"].get_all_groups_permissions()
-        self.assertEquals()
-
     def test_get_all_groups_permissions_new(self):
         p_read = FolderPermission.objects.get(name=PERMISSION_READ_FOLDER)
         p_all_read = Permission.objects.get(name=PERMISSION_READ_ALL_FOLDERS_RLC)
@@ -525,7 +509,7 @@ class FolderModelTests(TransactionTestCase):
         )
         perm1.save()
 
-        perms = created_folders["ressorts"].get_all_groups_permissions_new()
+        perms = created_folders["ressorts"].get_all_groups_permissions()
 
     # def test_download_folder(self):
     #   TODO: this?

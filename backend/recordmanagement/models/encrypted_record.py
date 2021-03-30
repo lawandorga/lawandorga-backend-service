@@ -41,7 +41,7 @@ class EncryptedRecord(
     first_contact_date = models.DateField(default=None, null=True)
     last_contact_date = models.DateTimeField(default=None, null=True)
     first_consultation = models.DateTimeField(default=None, null=True)
-    record_token = models.CharField(max_length=50, unique=True)
+    record_token = models.CharField(max_length=50)
     official_note = models.TextField(blank=True, null=True)
     working_on_record = models.ManyToManyField(
         UserProfile, related_name="working_on_e_record"
@@ -54,6 +54,7 @@ class EncryptedRecord(
         ("wa", "waiting"),
         ("wo", "working"),
     )
+
     state = models.CharField(max_length=2, choices=record_states_possible)
 
     # encrypted
@@ -69,6 +70,8 @@ class EncryptedRecord(
     next_steps = models.BinaryField()
     status_described = models.BinaryField()
     additional_facts = models.BinaryField()
+
+    # TODO: unique together with record token and rlc
 
     encryption_class = AESEncryption
     encrypted_fields = [
@@ -140,7 +143,6 @@ class EncryptedRecord(
         )
 
     def get_notification_emails(self):
-
         emails = []
         for user in list(self.working_on_record.all()):
             emails.append(user.email)
@@ -170,6 +172,7 @@ class EncryptedRecord(
         return users
 
     def get_users_with_decryption_keys(self) -> [UserProfile]:
+        # TODO: rename
         from backend.api.models import UserProfile
         from backend.static.permissions import (
             get_record_encryption_keys_permissions_strings,

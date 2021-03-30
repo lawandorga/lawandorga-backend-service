@@ -54,4 +54,5 @@ urlpatterns = [
         "process_record_document_deletion_request/",
         EncryptedRecordDocumentDeletionProcessViewSet.as_view(),
     ),
+    url(r"statistics/$", RecordStatisticsViewSet.as_view(),),
 ]
