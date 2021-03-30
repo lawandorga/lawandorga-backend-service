@@ -17,6 +17,9 @@ from backend.api.models.group import Group
 from backend.api.models.has_permission import HasPermission
 from backend.api.models.permission import Permission
 from backend.api.models.rlc import Rlc
+from backend.collab.models import CollabPermission
+from backend.collab.static.collab_permissions import get_all_collab_permission_strings
+from backend.files.models import FolderPermission
 from backend.recordmanagement.models import OriginCountry
 from backend.recordmanagement.models.encrypted_client import EncryptedClient
 from backend.recordmanagement.models.encrypted_record import EncryptedRecord
@@ -34,9 +37,12 @@ from backend.static.encryption import AESEncryption
 from backend.static.permissions import get_all_permissions_strings
 from backend.api.models import RlcSettings, UserProfile
 from random import randint, choice
+from staticfiles.folder_permissions import get_all_folder_permissions_strings
 
 
 # helpers
+
+
 def add_permissions_to_group(group: Group, permission_name):
     HasPermission.objects.create(
         group_has_permission=group,
@@ -82,6 +88,17 @@ def create_fixtures():
     # create record document tags
     tags = ["Official Document", "Pleading", "Proof", "Passport"]
     [RecordDocumentTag.objects.create(name=tag) for tag in tags]
+
+    # create collab permissions
+    [
+        CollabPermission.objects.get_or_create(name=permission)
+        for permission in get_all_collab_permission_strings()
+    ]
+    # create folder permissions
+    [
+        FolderPermission.objects.get_or_create(name=permission)
+        for permission in get_all_folder_permissions_strings()
+    ]
 
 
 def create_users(rlc):

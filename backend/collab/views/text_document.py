@@ -136,7 +136,7 @@ class TextDocumentModelViewSet(
             if not document.user_has_permission_write(request.user):
                 raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 
-            request.data["user"] = user.pk
+            request.data["creator"] = user.pk
             request.data["document"] = document.pk
 
             serializer = TextDocumentVersionSerializer(data=request.data)

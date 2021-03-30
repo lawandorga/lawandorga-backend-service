@@ -48,8 +48,8 @@ class GroupViewSet(viewsets.ModelViewSet):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
         # add data
-        request.data["creator"] = request.user
-        request.data["from_rlc"] = request.user.rlc
+        request.data["creator"] = request.user.pk
+        request.data["from_rlc"] = request.user.rlc.pk
 
         # do the usual stuff
         return super().create(request, *args, **kwargs)

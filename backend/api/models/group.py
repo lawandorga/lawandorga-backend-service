@@ -53,7 +53,9 @@ class Group(ExportModelOperationsMixin("group"), models.Model):
     )
     name = models.CharField(max_length=200, null=False, unique=True)
     visible = models.BooleanField(null=False, default=True)
-    group_members = models.ManyToManyField(UserProfile, related_name="group_members")
+    group_members = models.ManyToManyField(
+        UserProfile, related_name="group_members", blank=True
+    )
     description = models.TextField(blank=True, null=True)
     note = models.TextField(blank=True, null=True)
 
