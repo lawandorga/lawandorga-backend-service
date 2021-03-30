@@ -68,7 +68,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
     def get_queryset(self):
-        return UserProfile.objects.filter(rlc=self.request.user.rlc)
+        return UserProfile.objects.filter(rlc=self.request.user.rlc).select_related('accepted')
 
     def create(self, request, *args, **kwargs):
         # create the user
@@ -100,31 +100,8 @@ class UserViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def list(self, request, *args, **kwargs):
-        if request.user.is_superuser:
-            queryset = UserProfile.objects.all()
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = self.get_serializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(serializer.data)
-        else:
-            queryset = UserProfile.objects.filter(rlc=request.user.rlc, is_active=True)
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = UserProfileNameSerializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
-            serializer = UserProfileNameSerializer(queryset, many=True)
-            return Response(serializer.data)
-
     def retrieve(self, request, pk=None, **kwargs):
-        if pk is None:
-            raise CustomError(ERROR__API__USER__ID_NOT_PROVIDED)
-        try:
-            user = UserProfile.objects.get(pk=pk)
-        except Exception as e:
-            raise CustomError(ERROR__API__USER__NOT_FOUND)
+        user = self.get_object()
 
         if request.user.rlc != user.rlc:
             if request.user.is_superuser or request.user.has_permission(
@@ -145,7 +122,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], permission_classes=[], authentication_classes=[])
     def login(self, request: Request):
         serializer = AuthTokenSerializer(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid()
         user: UserProfile = serializer.validated_data['user']
         password = serializer.validated_data['password']
 
@@ -153,7 +130,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if not user.email_confirmed:
             message = 'You can not login, yet. Please confirm your email first.'
             return Response({'non_field_errors': [message]}, status.HTTP_400_BAD_REQUEST)
-        if user.blocked:
+        if user.locked:
             message = 'Your account is temporarily blocked, because your keys need to be recreated. ' \
                       'Please tell an admin to press the unlock button on your user.'
             return Response({'non_field_errors': [message]}, status.HTTP_400_BAD_REQUEST)
@@ -202,12 +179,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(data, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], authentication_classes=[], permission_classes=[])
     def logout(self, request: Request, *args, **kwargs):
         if not request.user.is_authenticated:
-            return Response()
+            return Response(status=status.HTTP_204_NO_CONTENT)
         Token.objects.filter(user=request.user).delete()
-        return Response()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['get'], url_path='activate/(?P<token>[^/.]+)', permission_classes=[],
             authentication_classes=[])

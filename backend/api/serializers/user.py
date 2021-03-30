@@ -13,15 +13,28 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from django.core.exceptions import ObjectDoesNotExist
+
 from backend.api.models import UserProfile
 from rest_framework import serializers
 
 
 class UserSerializer(serializers.ModelSerializer):
+    # make sure select_related('accepted') is set on the user queryset or else the queries will explode
+    accepted = serializers.SerializerMethodField('get_accepted')
+
     class Meta:
         model = UserProfile
         exclude = ['groups', 'user_permissions']
         extra_kwargs = {"password": {"write_only": True}}
+
+    def get_accepted(self, obj):
+        try:
+            if obj.accepted.state == 'gr':
+                return True
+        except ObjectDoesNotExist:
+            return True
+        return False
 
 
 class OldUserSerializer(UserSerializer):

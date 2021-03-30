@@ -171,6 +171,7 @@ class UserProfile(
     class Meta:
         verbose_name = 'UserProfile'
         verbose_name_plural = 'UserProfiles'
+        ordering = ['name']
 
     def __str__(self):
         return "user: {}; email: {};".format(self.pk, self.email)
