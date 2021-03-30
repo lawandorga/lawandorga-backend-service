@@ -18,6 +18,7 @@ from django.views.generic import TemplateView
 from django.contrib import admin
 from backend.files import urls as file_urls
 from backend.api import urls as api_urls
+from backend.collab import urls as collab_urls
 from django.urls import path, include
 from django.conf import settings
 
@@ -26,6 +27,7 @@ urlpatterns = [
     path("api/", include(api_urls)),
     path("api/records/", include(record_urls)),
     path("api/files/", include(file_urls)),
+    path("api/collab/", include(collab_urls)),
     path("prometheus/", include("django_prometheus.urls")),
     path("", TemplateView.as_view(template_name="index.html")),
 ]
