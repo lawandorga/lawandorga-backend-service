@@ -120,9 +120,9 @@ AUTH_USER_MODEL = "api.UserProfile"
 
 
 # Secret keys for s3-storage to save files from 'files' and documents from records
-SCW_SECRET_KEY = os.environ.get("SCW_SECRET_KEY")
-SCW_ACCESS_KEY = os.environ.get("SCW_ACCESS_KEY")
-SCW_S3_BUCKET_NAME = os.environ.get("SCW_S3_BUCKET_NAME")
+SCW_SECRET_KEY = get_secret("SCW_SECRET_KEY")
+SCW_ACCESS_KEY = get_secret("SCW_ACCESS_KEY")
+SCW_S3_BUCKET_NAME = get_secret("SCW_S3_BUCKET_NAME")
 
 # Static Files
 # https://docs.djangoproject.com/en/dev/howto/static-files/
