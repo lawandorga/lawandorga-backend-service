@@ -20,7 +20,7 @@ from rest_framework import serializers
 
 
 class EncryptedRecordSerializer(serializers.ModelSerializer):
-    note = serializers.CharField(allow_null=True, required=False)
+    note = serializers.CharField(allow_null=True, required=False, allow_blank=True)
     consultant_team = serializers.CharField(allow_null=True, required=False)
     lawyer = serializers.CharField(required=False)
     related_persons = serializers.CharField(allow_null=True, required=False)

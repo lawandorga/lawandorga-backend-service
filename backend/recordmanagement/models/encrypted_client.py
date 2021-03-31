@@ -39,6 +39,7 @@ class EncryptedClient(
     )
 
     # encrypted
+    # TODO: really name null?
     name = models.BinaryField(null=True)
     note = models.BinaryField(null=True)
     phone_number = models.BinaryField(null=True)
