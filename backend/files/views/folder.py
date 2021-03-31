@@ -41,8 +41,6 @@ class FolderBaseViewSet(viewsets.ModelViewSet):
 class FolderViewSet(APIView):
     def get(self, request):
         user = request.user
-        if not user.has_permission(PERMISSION_ACCESS_TO_FILES_RLC, for_rlc=user.rlc):
-            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 
         path = "files/" + request.query_params.get("path", "")
         if path.endswith("//"):
