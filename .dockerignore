@@ -2,11 +2,11 @@
 .vscode
 staticfiles
 temp
+tmp
 venv
 .idea
 **/.git
 environments
-*/static/tests/*
 containers
 docker-compose.yml
 db.sqlite3

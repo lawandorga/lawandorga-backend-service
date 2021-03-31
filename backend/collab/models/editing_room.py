@@ -37,7 +37,7 @@ def generate_room_id():
             return pot_room_id
 
 
-class EditingRoom(ExportModelOperationsMixin("editing_room"), models.Model):
+class EditingRoom(models.Model):
     created = models.DateTimeField(default=timezone.now)
     document = models.OneToOneField(TextDocument, on_delete=models.CASCADE)
 

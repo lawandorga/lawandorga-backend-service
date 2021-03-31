@@ -24,9 +24,7 @@ from backend.static.encryption import AESEncryption, EncryptedModelMixin, RSAEnc
 
 
 class TextDocumentVersion(
-    ExportModelOperationsMixin("text_document_version"),
-    EncryptedModelMixin,
-    models.Model,
+    EncryptedModelMixin, models.Model,
 ):
     document = models.ForeignKey(
         TextDocument, related_name="versions", null=False, on_delete=models.CASCADE

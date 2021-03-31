@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0027_auto_20210331_1055'),
+        ("recordmanagement", "0027_auto_20210331_1055"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='encryptedclient',
-            name='note',
+            model_name="encryptedclient",
+            name="note",
             field=models.BinaryField(null=True),
         ),
         migrations.AlterField(
-            model_name='encryptedclient',
-            name='phone_number',
+            model_name="encryptedclient",
+            name="phone_number",
             field=models.BinaryField(null=True),
         ),
     ]

@@ -27,7 +27,7 @@ from backend.static.error_codes import (
 )
 
 
-class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):
+class TextDocument(models.Model):
     rlc = models.ForeignKey(
         Rlc, related_name="text_documents", null=False, on_delete=models.CASCADE
     )

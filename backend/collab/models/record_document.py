@@ -21,9 +21,7 @@ from backend.collab.models import TextDocument
 from backend.recordmanagement.models import EncryptedRecord
 
 
-class RecordDocument(
-    ExportModelOperationsMixin("record_collab_document"), TextDocument
-):
+class RecordDocument(TextDocument):
     record = models.ForeignKey(
         EncryptedRecord,
         related_name="collab_documents",

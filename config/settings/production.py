@@ -3,7 +3,7 @@ from datetime import timedelta
 
 # Debug
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEBUG
-DEBUG = False
+DEBUG = get_secret("DEBUG")
 
 # Allowed Hosts
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
@@ -55,38 +55,51 @@ CORS_ALLOWED_ORIGINS = [
 
 # Logging
 # https://docs.djangoproject.com/en/dev/topics/logging/
+LOGGING_DIR = os.path.join(BASE_DIR, "tmp/logs")
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {"simple": {"format": "%(levelname)s %(message)s"},},
     "handlers": {
-        "console": {
-            "level": "ERROR",
-            "class": "logging.StreamHandler",
-            "formatter": "simple",
-        },
-        "logstash": {
-            "level": "ERROR",
-            "class": "logstash.TCPLogstashHandler",
-            "host": "logstash",
-            "port": 5959,
-            "version": 1,
-            "message_type": "django",
-            "fqdn": False,
-            "tags": ["django.request", "django", "backend"],
-            "formatter": "simple",
+        "file": {
+            "class": "logging.FileHandler",
+            "level": "WARNING",
+            "filename": os.path.join(LOGGING_DIR, "django.log"),
         },
     },
-    "loggers": {
-        "django.request": {
-            "handlers": ["logstash"],
-            "level": "ERROR",
-            "propagate": True,
-        },
-        "backend": {
-            "handlers": ["console", "logstash"],
-            "level": "ERROR",
-            "propagate": True,
-        },
-    },
+    "loggers": {"": {"handlers": ["file"], "propagate": True, "level": "INFO",},},
 }
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {"simple": {"format": "%(levelname)s %(message)s"},},
+#     "handlers": {
+#         "console": {
+#             "level": "ERROR",
+#             "class": "logging.StreamHandler",
+#             "formatter": "simple",
+#         },
+#         "logstash": {
+#             "level": "ERROR",
+#             "class": "logstash.TCPLogstashHandler",
+#             "host": "logstash",
+#             "port": 5959,
+#             "version": 1,
+#             "message_type": "django",
+#             "fqdn": False,
+#             "tags": ["django.request", "django", "backend"],
+#             "formatter": "simple",
+#         },
+#     },
+#     "loggers": {
+#         "django.request": {
+#             "handlers": ["logstash"],
+#             "level": "ERROR",
+#             "propagate": True,
+#         },
+#         "backend": {
+#             "handlers": ["console", "logstash"],
+#             "level": "ERROR",
+#             "propagate": True,
+#         },
+#     },
+# }
