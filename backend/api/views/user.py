@@ -121,21 +121,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, pk=None, **kwargs):
         user = self.get_object()
-
-        if request.user.rlc != user.rlc:
-            if request.user.is_superuser or request.user.has_permission(
-                permissions.PERMISSION_VIEW_FULL_USER_DETAIL_OVERALL
-            ):
-                serializer = OldUserSerializer(user)
-            else:
-                raise CustomError(ERROR__API__USER__NOT_SAME_RLC)
-        else:
-            if request.user.has_permission(
-                permissions.PERMISSION_VIEW_FULL_USER_DETAIL_RLC
-            ):
-                serializer = OldUserSerializer(user)
-            else:
-                serializer = UserProfileForeignSerializer(user)
+        serializer = UserProfileForeignSerializer(user)
         return Response(serializer.data)
 
     @action(
