@@ -244,6 +244,11 @@ class RSAEncryption:
         except ValueError as valueError:
             raise CustomError(ERROR__API__INVALID_PRIVATE_KEY)
 
+        if not isinstance(ciphertext, bytes):
+            try:
+                ciphertext = ciphertext.tobytes()
+            except Exception as e:
+                raise Exception("error at decrypting, wrong type: ", e)
         plaintext = private_key.decrypt(
             ciphertext,
             asymmetric_padding.OAEP(
