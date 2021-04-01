@@ -283,10 +283,8 @@ class UserProfile(
             False if the user doesnt have the permission
         """
         if isinstance(permission, str):
-            try:
-                permission = Permission.objects.get(name=permission).id
-            except Exception as e:
-                raise CustomError(ERROR__API__PERMISSION__NOT_FOUND)
+            permission, created = Permission.objects.get_or_create(name=permission)
+            permission = permission.id
         if for_user is not None and for_group is not None and for_rlc is not None:
             raise AttributeError()
 
