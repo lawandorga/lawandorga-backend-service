@@ -296,7 +296,6 @@ class UserProfile(
             or self.__has_as_rlc_member_permission(
                 permission, for_user, for_group, for_rlc
             )
-            or self.is_superuser
         )
 
     def get_public_key(self) -> str:

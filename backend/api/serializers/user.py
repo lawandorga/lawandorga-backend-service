@@ -102,4 +102,5 @@ class UserUpdateSerializer(UserSerializer):
             "street",
             "city",
             "postal_code",
+            "is_active"
         ]

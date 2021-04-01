@@ -17,7 +17,7 @@ from rest_framework.authtoken.serializers import AuthTokenSerializer
 from backend.api.models.notification import Notification
 from rest_framework.authtoken.models import Token
 from backend.api.models.permission import Permission
-from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, PERMISSION_MANAGE_USERS
 from rest_framework.permissions import IsAuthenticated
 from backend.static.error_codes import *
 from backend.static.middleware import get_private_key_from_request
@@ -123,6 +123,22 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.get_object()
         serializer = UserProfileForeignSerializer(user)
         return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        if not request.user.has_permission(PERMISSION_MANAGE_USERS):
+            data = {
+                'message': "You don't have the necessary permission to do this."
+            }
+            return Response(data, status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)
+
+    def update(self, request: Request, *args, **kwargs):
+        if not request.user.has_permission(PERMISSION_MANAGE_USERS):
+            data = {
+                'message': "You don't have the necessary permission to do this."
+            }
+            return Response(data, status=status.HTTP_403_FORBIDDEN)
+        return super().update(request, *args, **kwargs)
 
     @action(
         detail=False, methods=["post"], permission_classes=[], authentication_classes=[]
