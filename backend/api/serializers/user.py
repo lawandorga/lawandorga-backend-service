@@ -94,6 +94,7 @@ class UserCreateSerializer(UserSerializer):
 
 
 class UserUpdateSerializer(UserSerializer):
+    # TODO: make fields readonly
     class Meta:
         model = UserProfile
         fields = [
@@ -102,5 +103,8 @@ class UserUpdateSerializer(UserSerializer):
             "street",
             "city",
             "postal_code",
-            "is_active"
+            "is_active",
+            "accepted",
+            "email",
+            "locked",
         ]

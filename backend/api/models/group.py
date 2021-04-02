@@ -51,7 +51,7 @@ class Group(ExportModelOperationsMixin("group"), models.Model):
         null=True,
         default=None,
     )
-    name = models.CharField(max_length=200, null=False, unique=True)
+    name = models.CharField(max_length=200, null=False)
     visible = models.BooleanField(null=False, default=True)
     group_members = models.ManyToManyField(
         UserProfile, related_name="group_members", blank=True

@@ -28,7 +28,6 @@ from backend.api.models.has_permission import HasPermission
 from backend.api.models.permission import Permission
 from backend.static.encryption import RSAEncryption
 from backend.static.error_codes import (
-    ERROR__API__PERMISSION__NOT_FOUND,
     ERROR__API__RLC__NO_PUBLIC_KEY_FOUND,
     ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED,
 )
@@ -163,6 +162,7 @@ class UserProfile(
     class Meta:
         verbose_name = "UserProfile"
         verbose_name_plural = "UserProfiles"
+        ordering = ["name"]
 
     def __str__(self):
         return "user: {}; email: {};".format(self.pk, self.email)
