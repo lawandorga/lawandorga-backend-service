@@ -3,7 +3,7 @@ version: "2"
 services:
     web:
         build: .
-        command: gunicorn backend.wsgi:application --bind 0.0.0.0:8001 --timeout 90
+        command: gunicorn config.wsgi:application --bind 0.0.0.0:8001 --timeout 90
         restart: unless-stopped
         container_name: backend
         depends_on:
@@ -14,6 +14,8 @@ services:
             - ./environments/web.test.env
         image: jehob/law-orga-backend:test
         # image: jehob/law-orga-backend:latest
+        volumes:
+            - ./tmp/:/home/app/web/tmp/
 
     nginx:
         image: nginx:1.19.0-alpine

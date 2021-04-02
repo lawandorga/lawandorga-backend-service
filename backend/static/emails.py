@@ -13,15 +13,10 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.core.mail import EmailMultiAlternatives
-from django.template import loader
-import logging
-from django.core.mail import send_mail
-
-from backend.static.env_getter import get_env_variable
-from backend.static.frontend_links import FrontendLinks
 from backend.static.logger import Logger
+from django.core.mail import EmailMultiAlternatives, send_mail
+from django.template import loader
+from django.conf import settings
 
 
 class EmailSender:
@@ -34,7 +29,7 @@ class EmailSender:
         :param text: the email content itself
         :return:
         """
-        from_email = get_env_variable("EMAIL_ADDRESS")
+        from_email = settings.DEFAULT_FROM_EMAIL
         msg = EmailMultiAlternatives(subject, text, from_email, email_addresses)
         msg.send()
         # send_mail(subject, description_text, 'notification@rlcm.de', email_addresses, fail_silently=False)
@@ -44,7 +39,7 @@ class EmailSender:
         email_addresses, subject: str, html_content: str, text_alternative: str
     ) -> None:
         try:
-            from_email = get_env_variable("EMAIL_ADDRESS")
+            from_email = settings.DEFAULT_FROM_EMAIL
 
             send_mail(
                 subject=subject,
@@ -70,7 +65,7 @@ class EmailSender:
     @staticmethod
     def send_record_new_message_notification_email(record) -> None:
         emails = record.get_notification_emails()
-        link = FrontendLinks.get_record_link(record)
+        link = settings.FRONTEND_URL + "records/" + str(record.id)
         html_message = loader.render_to_string(
             "email_templates/new_record_message.html",
             {"url": link, "record_token": record.record_token},
@@ -78,10 +73,6 @@ class EmailSender:
         alternative_text = "Law & Orga - New message in record: " + link
         subject = "Law & Orga - New Message"
         EmailSender.send_html_email(emails, subject, html_message, alternative_text)
-
-    @staticmethod
-    def send_new_user_request_notification_email() -> None:
-        pass
 
     @staticmethod
     def test_send(email) -> None:

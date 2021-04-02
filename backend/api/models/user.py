@@ -13,7 +13,7 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
+from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -21,53 +21,23 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
-
+from rest_framework.request import Request
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from backend.api.errors import CustomError
+from backend.api.models.has_permission import HasPermission
+from backend.api.models.permission import Permission
+from backend.static.encryption import RSAEncryption
 from backend.static.error_codes import (
-    ERROR__API__PERMISSION__NOT_FOUND,
     ERROR__API__RLC__NO_PUBLIC_KEY_FOUND,
-    ERROR__API__USER__NO_PUBLIC_KEY_FOUND,
-    ERROR__API__MISSING_KEY_WAIT,
+    ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED,
 )
-from backend.static.regex_validators import phone_regex
-from backend.static.env_getter import get_website_base_url
-from backend.api.helpers import get_client_ip
-from backend.api.models import HasPermission, Permission
-from backend.static.emails import EmailSender
+from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 
 
 class UserProfileManager(BaseUserManager):
-    """"""
-
-    def create_user(self, email, name, password):
-        if not email:
-            raise ValueError("Users must have an email address")
-
-        email = self.normalize_email(email)
-        user = self.model(email=email, name=name)
-
-        user.set_password(password)
-        user.save(using=self._db)
-
-        return user
-
-    def create_superuser(self, email, name, password):
-        user = self.create_user(email, name, password)
-
-        user.is_superuser = True
-        user.is_staff = True
-
-        user.save(using=self._db)
-
-        return user
-
     @staticmethod
     def get_users_with_special_permission(
-        permission,
-        from_rlc: "Rlc" = None,
-        for_user: "UserProfile" = None,
-        for_group: "Group" = None,
-        for_rlc: "Rlc" = None,
+        permission, from_rlc=None, for_user=None, for_group=None, for_rlc=None,
     ):
         """
         returns all users
@@ -131,11 +101,7 @@ class UserProfileManager(BaseUserManager):
 
     @staticmethod
     def get_users_with_special_permissions(
-        permissions,
-        from_rlc: "Rlc" = None,
-        for_user: "UserProfile" = None,
-        for_group: "Group" = None,
-        for_rlc: "Rlc" = None,
+        permissions, from_rlc=None, for_user=None, for_group=None, for_rlc=None,
     ):
         users = None
         for permission in permissions:
@@ -155,24 +121,22 @@ class UserProfile(
     """ profile of users """
 
     email = models.EmailField(max_length=255, unique=True)
+    email_confirmed = models.BooleanField(default=True)
     name = models.CharField(max_length=255)
-    birthday = models.DateField(null=True)
-    phone_number = models.CharField(
-        validators=[phone_regex], max_length=17, null=True, default=None
-    )
+    birthday = models.DateField(null=True, blank=True)
+    phone_number = models.CharField(max_length=17, null=True, default=None, blank=True)
 
     # address
-    street = models.CharField(max_length=255, default=None, null=True)
-    city = models.CharField(max_length=255, default=None, null=True)
-    postal_code = models.CharField(max_length=255, default=None, null=True)
+    street = models.CharField(max_length=255, default=None, null=True, blank=True)
+    city = models.CharField(max_length=255, default=None, null=True, blank=True)
+    postal_code = models.CharField(max_length=255, default=None, null=True, blank=True)
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
 
-    rlc = models.ForeignKey(
-        "Rlc", related_name="rlc_members", on_delete=models.SET_NULL, null=True
-    )
+    locked = models.BooleanField(default=False)
 
+    rlc = models.ForeignKey("Rlc", related_name="rlc_members", on_delete=models.PROTECT)
     objects = UserProfileManager()
 
     user_states_possible = (
@@ -195,17 +159,13 @@ class UserProfile(
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name"]  # email already in there, other are default
 
-    # class Meta:
-    #     ordering = ['name']
-
-    def get_full_name(self):
-        return self.name
-
-    def get_short_name(self):
-        return self.name
+    class Meta:
+        verbose_name = "UserProfile"
+        verbose_name_plural = "UserProfiles"
+        ordering = ["name"]
 
     def __str__(self):
-        return "user: " + str(self.id) + ":" + self.email
+        return "user: {}; email: {};".format(self.pk, self.email)
 
     def __get_as_user_permissions(self):
         """
@@ -281,11 +241,7 @@ class UserProfile(
     ):
         return (
             HasPermission.objects.filter(
-                user_has_permission=self.pk,
-                permission_id=permission,
-                permission_for_user_id=for_user,
-                permission_for_group_id=for_group,
-                permission_for_rlc_id=for_rlc,
+                user_has_permission=self.pk, permission_id=permission,
             ).count()
             >= 1
         )
@@ -296,11 +252,7 @@ class UserProfile(
         groups = [groups["id"] for groups in list(self.group_members.values("id"))]
         return (
             HasPermission.objects.filter(
-                group_has_permission_id__in=groups,
-                permission_id=permission,
-                permission_for_user_id=for_user,
-                permission_for_group_id=for_group,
-                permission_for_rlc_id=for_rlc,
+                group_has_permission_id__in=groups, permission_id=permission,
             ).count()
             >= 1
         )
@@ -313,11 +265,7 @@ class UserProfile(
 
         return (
             HasPermission.objects.filter(
-                rlc_has_permission_id=self.rlc.id,
-                permission_id=permission,
-                permission_for_user_id=for_user,
-                permission_for_group_id=for_group,
-                permission_for_rlc_id=for_rlc,
+                rlc_has_permission_id=self.rlc.id, permission_id=permission,
             ).count()
             >= 1
         )
@@ -335,10 +283,8 @@ class UserProfile(
             False if the user doesnt have the permission
         """
         if isinstance(permission, str):
-            try:
-                permission = Permission.objects.get(name=permission).id
-            except Exception as e:
-                raise CustomError(ERROR__API__PERMISSION__NOT_FOUND)
+            permission, created = Permission.objects.get_or_create(name=permission)
+            permission = permission.id
         if for_user is not None and for_group is not None and for_rlc is not None:
             raise AttributeError()
 
@@ -350,44 +296,52 @@ class UserProfile(
             or self.__has_as_rlc_member_permission(
                 permission, for_user, for_group, for_rlc
             )
-            or self.is_superuser
         )
 
-    def get_public_key(self):
+    def get_public_key(self) -> str:
         """
         gets the public key of the user from the database
         :return: public key of user (PEM)
         """
-        from backend.api.models import UserEncryptionKeys
-
-        try:
-            public_key = UserEncryptionKeys.objects.get_users_public_key(self)
-        except Exception as e:
+        if not hasattr(self, "encryption_keys"):
             self.generate_new_user_encryption_keys()
-            public_key = UserEncryptionKeys.objects.get_users_public_key(self)
-        return public_key
+        return self.encryption_keys.public_key
 
-    def get_private_key(self, decryption_key):
-        """
-        gets the private key of the user
-        this key is saved encrypted in the database
-        therefore it has to be decrypted with the given decryption_key (users password)
-        :param decryption_key: decryption_key (users password)
-        :return: user's private key (PEM)
-        """
-        from backend.api.models import UserEncryptionKeys
+    def get_private_key(
+        self, password_user: str = None, request: Request = None
+    ) -> str:
+        if not hasattr(self, "encryption_keys"):
+            self.generate_new_user_encryption_keys()
 
-        try:
-            keys = UserEncryptionKeys.objects.get(user=self)
-        except Exception:
-            raise CustomError(ERROR__API__USER__NO_PUBLIC_KEY_FOUND)
-        keys.decrypt_private_key(decryption_key)
+        if password_user and not request:
+            private_key = self.encryption_keys.decrypt_private_key(password_user)
+
+        elif request and not password_user:
+            private_key = request.META.get("HTTP_PRIVATE_KEY")
+            if not private_key:
+                # enable direct testing of the rest framework
+                if (
+                    settings.DEBUG
+                    and self.email == "dummy@rlcm.de"
+                    and settings.DUMMY_USER_PASSWORD
+                ):
+                    return self.encryption_keys.decrypt_private_key(
+                        settings.DUMMY_USER_PASSWORD
+                    )
+                else:
+                    raise CustomError(ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED)
+            private_key = private_key.replace("\\n", "\n").replace("<linebreak>", "\n")
+
+        else:
+            raise ValueError("You need to pass (password_user) or (request).")
+
+        return private_key
 
     def get_rlcs_public_key(self):
         return self.rlc.get_public_key()
 
     def get_rlcs_private_key(self, users_private_key):
-        from backend.api.models import RlcEncryptionKeys
+        from backend.api.models.rlc_encryption_keys import RlcEncryptionKeys
 
         try:
             rlc_keys = RlcEncryptionKeys.objects.get(rlc=self.rlc)
@@ -398,23 +352,10 @@ class UserProfile(
         return rlcs_private_key
 
     def get_rlcs_aes_key(self, users_private_key):
-        from backend.api.models import UsersRlcKeys, MissingRlcKey
-        from backend.static.encryption import RSAEncryption
+        from backend.api.models.users_rlc_keys import UsersRlcKeys
 
         # check if there is only one usersRlcKey
         keys = UsersRlcKeys.objects.filter(user=self)
-        if keys.count() == 0:
-            missing = MissingRlcKey(user=self)
-            missing.save()
-            raise CustomError(ERROR__API__MISSING_KEY_WAIT)
-        if keys.count() > 1:
-            # delete if too many, cant check which is the right one
-            # create missingRlcKeyEntry to resolve missing key
-            missing = MissingRlcKey(user=self)
-            missing.save()
-            keys.delete()
-            raise CustomError(ERROR__API__MISSING_KEY_WAIT)
-
         users_rlc_keys = keys.first()
         rlc_encrypted_key_for_user = users_rlc_keys.encrypted_key
         try:
@@ -424,8 +365,8 @@ class UserProfile(
         return RSAEncryption.decrypt(rlc_encrypted_key_for_user, users_private_key)
 
     def generate_new_user_encryption_keys(self):
-        from backend.api.models import UserEncryptionKeys
-        from backend.static.encryption import RSAEncryption
+
+        from backend.api.models.user_encryption_keys import UserEncryptionKeys
 
         UserEncryptionKeys.objects.filter(user=self).delete()
         private, public = RSAEncryption.generate_keys()
@@ -435,10 +376,10 @@ class UserProfile(
         user_keys.save()
 
     def generate_rlc_keys_for_this_user(self, rlcs_aes_key):
-        from backend.api.models import UsersRlcKeys
-        from backend.static.encryption import RSAEncryption
 
         # delete (maybe) old existing rlc keys
+        from backend.api.models.users_rlc_keys import UsersRlcKeys
+
         UsersRlcKeys.objects.filter(user=self, rlc=self.rlc).delete()
 
         own_public_key = self.get_public_key()
@@ -453,16 +394,58 @@ class UserProfile(
 
         return RSAEncryption.encrypt(plain, self.get_public_key())
 
-    def forgot_password(self, request, user):
-        from backend.api.models import ForgotPasswordLinks
+    def generate_keys_for_user(self, private_key_self, user_to_unlock):
+        """
+        this method assumes that a valid public key exists for user_to_unlock
+        """
+        from backend.api.models import UsersRlcKeys
+        from backend.recordmanagement.models import RecordEncryption
 
-        ForgotPasswordLinks.objects.filter(user=user).delete()
+        # assert that the self user has all possible keys
+        assert self.has_permission(PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC)
 
-        # self.is_active = False
-        # self.save()
-        ip = get_client_ip(request)
-        forgot_password_link = ForgotPasswordLinks(user=user, ip_address=ip)
-        forgot_password_link.save()
+        # generate new rlc key
+        user_to_unlock.users_rlc_keys.all().delete()
+        aes_key_rlc = self.rlc.get_aes_key(user=self, private_key_user=private_key_self)
+        new_keys = UsersRlcKeys(
+            user=user_to_unlock, rlc=user_to_unlock.rlc, encrypted_key=aes_key_rlc
+        )
+        new_keys.encrypt(user_to_unlock.get_public_key())
+        new_keys.save()
 
-        url = get_website_base_url() + "reset-password/" + forgot_password_link.link
-        EmailSender.send_forgot_password(self.email, url)
+        # generate new record encryption
+        record_encryptions = user_to_unlock.record_encryptions.all()
+        record_encryptions_list = list(record_encryptions)
+        record_encryptions.delete()
+
+        for old_keys in record_encryptions_list:
+            encryption = RecordEncryption.objects.get(user=self, record=old_keys.record)
+            encryption.decrypt(private_key_user=private_key_self)
+            new_keys = RecordEncryption(
+                user=user_to_unlock,
+                record=old_keys.record,
+                encrypted_key=encryption.encrypted_key,
+            )
+            new_keys.encrypt(user_to_unlock.get_public_key())
+            new_keys.save()
+
+
+# this is used on signup
+class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
+    def _make_hash_value(self, user, timestamp):
+        login_timestamp = (
+            ""
+            if user.last_login is None
+            else user.last_login.replace(microsecond=0, tzinfo=None)
+        )
+        super_make_hash_value = (
+            str(user.pk) + user.password + str(login_timestamp) + str(timestamp)
+        )
+        additional_hash_value = str(user.email_confirmed)
+        return super_make_hash_value + additional_hash_value
+
+
+account_activation_token = AccountActivationTokenGenerator()
+
+# this is used on password reset
+password_reset_token = PasswordResetTokenGenerator()

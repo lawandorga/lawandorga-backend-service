@@ -27,7 +27,6 @@ from backend.static.permissions import (
     PERMISSION_CAN_ADD_RECORD_RLC,
     PERMISSION_CAN_CONSULT,
 )
-from backend.static.queryset_difference import QuerysetDifference
 
 
 class EncryptedRecordTests(TransactionTestCase):
@@ -87,35 +86,11 @@ class EncryptedRecordTests(TransactionTestCase):
         self.assertTrue(record.user_has_permission(user1))
         self.assertTrue(record.user_has_permission(user2))
 
-    def test_get_users_with_permission(self):
-        user1 = api_models.UserProfile(email="abc1@web.de", name="abc1")
-        user1.save()
-        user2 = api_models.UserProfile(email="abc2@web.de", name="abc2")
-        user2.save()
-        user3 = api_models.UserProfile(email="abc3@web.de", name="abc3")
-        user3.save()
-        record = record_models.EncryptedRecord(record_token="asd123")
-        record.save()
-        record.working_on_record.add(user1)
-
-        permission = record_models.EncryptedRecordPermission(
-            request_from=user2, request_processed=user3, state="gr", record=record
-        )
-        permission.save()
-
-        users_with_permission = record.get_users_with_permission()
-        self.assertTrue(users_with_permission.__len__() == 2)
-        self.assertTrue(user1 in users_with_permission)
-        self.assertTrue(user2 in users_with_permission)
-
     def test_create_and_get_encrypted_record(self):
         number_of_records_before: int = record_models.EncryptedRecord.objects.count()
         number_of_record_encryptions_before: int = record_models.RecordEncryption.objects.count()
         number_of_clients_before: int = record_models.EncryptedClient.objects.count()
         number_of_notifications_before: int = api_models.Notification.objects.count()
-        group_difference: QuerysetDifference = QuerysetDifference(
-            api_models.NotificationGroup.objects.all()
-        )
 
         private_key: bytes = self.base_fixtures["users"][0]["private"]
         client: APIClient = self.base_fixtures["users"][0]["client"]
@@ -190,21 +165,6 @@ class EncryptedRecordTests(TransactionTestCase):
         # check for notifications too
         self.assertEqual(
             number_of_notifications_before + 1, api_models.Notification.objects.count()
-        )
-        new_notification_group: (
-            api_models.NotificationGroup
-        ) = group_difference.get_new_items(api_models.NotificationGroup.objects.all())[
-            0
-        ]
-        self.assertEqual(
-            new_notification_group.user, self.base_fixtures["users"][1]["user"]
-        )
-        self.assertEqual(new_notification_group.ref_id, str(response.data["id"]))
-        self.assertEqual(new_notification_group.ref_text, response.data["record_token"])
-        self.assertEqual(1, new_notification_group.notifications.count())
-        self.assertEqual(
-            self.base_fixtures["users"][0]["user"],
-            new_notification_group.notifications.first().source_user,
         )
 
         # get record back from db

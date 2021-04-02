@@ -13,23 +13,10 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
-from django_prometheus.models import ExportModelOperationsMixin
-
-from backend.api.models import UserProfile
 from backend.static.encryption import AESEncryption
-from backend.static.error_codes import ERROR__API__USER__NO_PUBLIC_KEY_FOUND
-from backend.api.errors import CustomError
-
-
-class UserEncryptionKeysQuerySet(models.QuerySet):
-    def get_users_public_key(self, user):
-        try:
-            keys = self.get(user=user)
-        except Exception:
-            raise CustomError(ERROR__API__USER__NO_PUBLIC_KEY_FOUND)
-        return keys.public_key
+from django_prometheus.models import ExportModelOperationsMixin
+from backend.api.models.user import UserProfile
+from django.db import models
 
 
 class UserEncryptionKeys(
@@ -45,9 +32,14 @@ class UserEncryptionKeys(
     private_key_encrypted = models.BooleanField(default=False)
     public_key = models.BinaryField()
 
-    objects = UserEncryptionKeysQuerySet.as_manager()
+    class Meta:
+        verbose_name = "UserEncryptionKey"
+        verbose_name_plural = "UserEncryptionKeys"
 
-    def decrypt_private_key(self, key_to_encrypt):
+    def __str__(self):
+        return "userEncryptionKey: {}; user: {};".format(self.pk, self.user.email)
+
+    def decrypt_private_key(self, key_to_encrypt: str) -> str:
         """
         decrypt the saved encrypted private key of the user with the given key, this key is the users 'normal' password
 
@@ -55,18 +47,10 @@ class UserEncryptionKeys(
         :param key_to_encrypt: users password
         :return: private key of the user
         """
-        if self.private_key_encrypted:
-            return AESEncryption.decrypt(self.private_key, key_to_encrypt)
-        else:
-            private_key = self.private_key
-            try:
-                private_key = private_key.tobytes()
-            except:
-                pass
-            self.private_key = AESEncryption.encrypt(private_key, key_to_encrypt)
+        if not self.private_key_encrypted:
+            self.private_key = AESEncryption.encrypt(self.private_key, key_to_encrypt)
             self.private_key_encrypted = True
             self.save()
-            return private_key
 
-    def __str__(self):
-        return "EncryptionKeys: " + str(self.id) + "; for user: " + str(self.user.id)
+        private_key = AESEncryption.decrypt(self.private_key, key_to_encrypt)
+        return private_key

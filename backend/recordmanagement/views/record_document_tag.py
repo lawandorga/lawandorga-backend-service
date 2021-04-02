@@ -20,19 +20,23 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from backend.recordmanagement import models, serializers
+from backend.recordmanagement.models.encrypted_record_document import (
+    EncryptedRecordDocument,
+)
+from backend.recordmanagement.models.record_document_tag import RecordDocumentTag
 from backend.static import error_codes
 from backend.api.errors import CustomError
 
 
 class RecordDocumentTagViewSet(viewsets.ModelViewSet):
-    queryset = models.RecordDocumentTag.objects.all()
+    queryset = RecordDocumentTag.objects.all()
     serializer_class = serializers.RecordDocumentTagSerializer
 
 
 class RecordDocumentTagByDocumentViewSet(APIView):
     def post(self, request, id):
         try:
-            document = models.EncryptedRecordDocument.objects.get(pk=id)
+            document = EncryptedRecordDocument.objects.get(pk=id)
         except Exception as e:
             raise CustomError(error_codes.ERROR__RECORD__DOCUMENT__NOT_FOUND)
         if not document.record:
@@ -46,7 +50,7 @@ class RecordDocumentTagByDocumentViewSet(APIView):
         tags = []
         for tag in request.data["tag_ids"]:
             try:
-                real_tag = models.RecordDocumentTag.objects.get(pk=tag["id"])  # tag_ids
+                real_tag = RecordDocumentTag.objects.get(pk=tag["id"])  # tag_ids
             except Exception as e:
                 raise CustomError(error_codes.ERROR__RECORD__DOCUMENT__TAG_NOT_EXISTING)
             tags.append(real_tag)

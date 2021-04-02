@@ -18,12 +18,17 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from backend.api.serializers import UserProfileNameSerializer
-from ..serializers import (
+from backend.recordmanagement.models import (
+    OriginCountry,
+    EncryptedRecord,
+    RecordDocumentTag,
+    RecordTag,
+)
+from backend.recordmanagement.serializers import (
     RecordTagNameSerializer,
     OriginCountryNameStateSerializer,
     RecordDocumentTagSerializer,
 )
-from ..models import RecordTag, OriginCountry, Record, RecordDocumentTag, UserProfile
 
 
 class StaticViewSet(APIView):
@@ -45,7 +50,7 @@ class StaticViewSet(APIView):
             RecordDocumentTag.objects.all(), many=True
         ).data
 
-        states_for_records = Record.record_states_possible
+        states_for_records = EncryptedRecord.record_states_possible
         states_for_countries = OriginCountry.origin_country_states_possible
 
         return Response(

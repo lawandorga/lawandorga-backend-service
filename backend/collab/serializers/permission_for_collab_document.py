@@ -16,7 +16,7 @@
 
 from rest_framework import serializers
 
-from backend.api.serializers import GroupNameSerializer
+from backend.api.serializers import GroupSerializer
 from backend.collab.models import PermissionForCollabDocument
 from backend.collab.serializers import CollabDocumentSerializer
 
@@ -28,7 +28,7 @@ class PermissionForCollabDocumentSerializer(serializers.ModelSerializer):
 
 
 class PermissionForCollabDocumentNestedSerializer(serializers.ModelSerializer):
-    group_has_permission = GroupNameSerializer(many=False, read_only=True)
+    group_has_permission = GroupSerializer(many=False, read_only=True)
     document = CollabDocumentSerializer(many=False, read_only=True)
 
     class Meta:

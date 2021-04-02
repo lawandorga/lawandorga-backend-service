@@ -28,3 +28,12 @@ class PoolConsultant(ExportModelOperationsMixin("pool_consultant"), models.Model
         null=False,
     )
     enlisted = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "PoolConsultant"
+        verbose_name_plural = "PoolConsultants"
+
+    def __str__(self):
+        return "poolConsultant: {}; consultant: {};".format(
+            self.pk, self.consultant.email
+        )

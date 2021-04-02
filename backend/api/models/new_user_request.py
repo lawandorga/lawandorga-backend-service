@@ -13,20 +13,20 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
+from backend.api.models.user import UserProfile
 from django.db import models
-from django_prometheus.models import ExportModelOperationsMixin
-
-from backend.api.models import UserProfile
 
 
-class NewUserRequest(ExportModelOperationsMixin("new_user_request"), models.Model):
-    request_from = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
+class NewUserRequest(models.Model):
+    request_from = models.OneToOneField(
+        UserProfile, on_delete=models.CASCADE, related_name="accepted"
+    )
     request_processed = models.ForeignKey(
         UserProfile,
         related_name="new_user_requests_processed",
         on_delete=models.SET_NULL,
         null=True,
+        blank=True,
     )
 
     requested = models.DateTimeField(auto_now_add=True)
@@ -41,10 +41,9 @@ class NewUserRequest(ExportModelOperationsMixin("new_user_request"), models.Mode
         max_length=2, choices=new_user_request_states_possible, default="re"
     )
 
+    class Meta:
+        verbose_name = "NewUserRequest"
+        verbose_name_plural = "NewUserRequests"
+
     def __str__(self):
-        return (
-            "new_user_request: "
-            + str(self.id)
-            + " ; from user: "
-            + str(self.request_from.name)
-        )
+        return "newUserRequest: {}; user: {};".format(self.id, self.request_from.email)

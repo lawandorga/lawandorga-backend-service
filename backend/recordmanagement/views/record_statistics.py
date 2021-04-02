@@ -14,26 +14,10 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from typing import Any
-import logging
-from datetime import date
-from django.conf import settings
-from django.db.models import Q, QuerySet, Case, When, Value, IntegerField
-from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
-from rest_framework.pagination import LimitOffsetPagination
-
-from backend.api.errors import CustomError
-from backend.api.models import Notification, UserEncryptionKeys, UserProfile
-from backend.recordmanagement import models, serializers
-from backend.static import error_codes, permissions
-from backend.static.emails import EmailSender
-from backend.static.encryption import AESEncryption, RSAEncryption
-from backend.static.frontend_links import FrontendLinks
-from backend.static.middleware import get_private_key_from_request
-from backend.api.permissions import OnlyGet
+from backend.recordmanagement import models
 
 
 class RecordStatisticsViewSet(APIView):
@@ -56,13 +40,6 @@ class RecordStatisticsViewSet(APIView):
         total_records_waiting = rlc_records.filter(state="wa").count()
         total_records_closed = rlc_records.filter(state="cl").count()
         total_records_working = rlc_records.filter(state="wo").count()
-
-        # first_record: models.EncryptedRecord = (from_rlc=request.user.rlc
-        #     models.EncryptedRecord.objects.filter(from_rlc=request.user.rlc)
-        #     .order_by("created_on")
-        #     .first()
-        # )
-        # timedelta = date.today() - first_record.created_on
 
         return Response(
             {

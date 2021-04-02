@@ -15,8 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
-from backend.api.serializers import GroupNameSerializer
-from backend.files.models import PermissionForFolder
+from backend.api.serializers import GroupSerializer
+from backend.files.models.permission_for_folder import PermissionForFolder
 from backend.files.serializers import (
     FolderPermissionSerializer,
     FolderNamePathSerializer,
@@ -50,7 +50,7 @@ class PermissionForFolderSerializer(serializers.ModelSerializer):
 
 
 class PermissionForFolderNestedSerializer(serializers.ModelSerializer):
-    group_has_permission = GroupNameSerializer(many=False, read_only=True)
+    group_has_permission = GroupSerializer(many=False, read_only=True)
     permission = FolderPermissionSerializer(many=False, read_only=True)
     folder = FolderNamePathSerializer(many=False, read_only=True)
 

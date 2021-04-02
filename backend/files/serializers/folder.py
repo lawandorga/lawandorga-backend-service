@@ -15,8 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
-from backend.files.models import Folder
 from backend.api.serializers import UserProfileNameSerializer
+from backend.files.models.folder import Folder
 
 
 class FolderSerializer(serializers.ModelSerializer):

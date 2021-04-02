@@ -13,24 +13,23 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from typing import Any
-
-from django.db.models import QuerySet
-from rest_framework import viewsets
-from rest_framework.views import APIView
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.request import Request
-from rest_framework.response import Response
-
-from backend.api.errors import CustomError
-from backend.api.models import Notification, NotificationGroup
-from backend.api.serializers import NotificationSerializer
+from backend.api.models.notification import Notification
 from backend.static.error_codes import (
     ERROR__API__ID_NOT_PROVIDED,
     ERROR__API__NOTIFICATION__UPDATE_INVALID,
     ERROR__API__USER__NO_OWNERSHIP,
     ERROR__API__ID_NOT_FOUND,
 )
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.decorators import action
+from backend.api.serializers import NotificationSerializer
+from rest_framework.response import Response
+from rest_framework.request import Request
+from backend.api.models import NotificationGroup
+from backend.api.errors import CustomError
+from django.db.models import QuerySet
+from rest_framework import viewsets
+from typing import Any
 
 
 class NotificationViewSet(viewsets.ModelViewSet):
@@ -80,10 +79,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
         return Response({"success": True})
 
-
-class UnreadNotificationsViewSet(APIView):
-    def get(self, response, *args, **kwargs) -> Response:
-        unread_notifications = NotificationGroup.objects.filter(
-            user=response.user, read=False
-        ).count()
-        return Response({"unread_notifications": unread_notifications})
+    @action(detail=False, methods=["get"])
+    def unread(self, request: Request):
+        unread = NotificationGroup.objects.filter(user=request.user, read=False).count()
+        return Response({"unread_notification": unread})

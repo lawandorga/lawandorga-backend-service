@@ -21,6 +21,7 @@ import logging
 
 
 # TODO: what to do with this?? custom permissions?
+# comment daniel: why not just allow him to edit profile?
 class UpdateOwnProfile(permissions.BasePermission):
     """allow users to edit their own profile"""
 
@@ -50,7 +51,7 @@ class EditPermissions(permissions.BasePermission):
         return request.user.is_superuser
 
 
-class OriginCountry(permissions.BasePermission):
+class OriginCountryPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.user.is_superuser:
             return True

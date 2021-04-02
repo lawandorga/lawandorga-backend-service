@@ -15,8 +15,10 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
-from backend.recordmanagement.models import EncryptedRecordDeletionRequest
 from backend.api.serializers.user import UserProfileNameSerializer
+from backend.recordmanagement.models.encrypted_record_deletion_request import (
+    EncryptedRecordDeletionRequest,
+)
 from backend.recordmanagement.serializers import EncryptedRecordNoDetailSerializer
 
 

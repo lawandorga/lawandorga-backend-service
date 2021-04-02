@@ -16,7 +16,7 @@
 
 from rest_framework import serializers
 
-from backend.recordmanagement.models import RecordEncryption
+from backend.recordmanagement.models.record_encryption import RecordEncryption
 
 
 class RecordEncryptionSerializer(serializers.ModelSerializer):

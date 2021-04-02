@@ -13,18 +13,17 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from django.db import models
-from django.db.models import Q
+from backend.api.models.has_permission import HasPermission
+from backend.api.models.permission import Permission
 from django_prometheus.models import ExportModelOperationsMixin
-
+from backend.api.models.user import UserProfile
+from django.db.models import Q
 from backend.static import permissions
-from . import UserProfile
+from django.db import models
 
 
 class GroupQuerySet(models.QuerySet):
     def get_visible_groups_for_user(self, user):
-        from backend.api.models import Group
-
         if user.has_permission(
             permissions.PERMISSION_MANAGE_GROUPS_RLC, for_rlc=user.rlc
         ):
@@ -54,20 +53,24 @@ class Group(ExportModelOperationsMixin("group"), models.Model):
     )
     name = models.CharField(max_length=200, null=False)
     visible = models.BooleanField(null=False, default=True)
-    group_members = models.ManyToManyField(UserProfile, related_name="group_members")
+    group_members = models.ManyToManyField(
+        UserProfile, related_name="group_members", blank=True
+    )
     description = models.TextField(blank=True, null=True)
     note = models.TextField(blank=True, null=True)
 
     objects = GroupQuerySet.as_manager()
 
+    class Meta:
+        verbose_name = "Group"
+        verbose_name_plural = "Groups"
+
     def __str__(self):
-        return (
-            "group: " + str(self.id) + ":" + self.name + "; from " + str(self.from_rlc)
+        return "group: {}; name: {}; rlc: {};".format(
+            self.id, self.name, self.from_rlc.name
         )
 
     def has_group_permission(self, permission):
-        from backend.api.models import HasPermission, Permission
-
         if isinstance(permission, str):
             permission = Permission.objects.get(name=permission)
         return (

@@ -17,9 +17,6 @@
 from rest_framework import serializers
 
 from backend.collab.models import TextDocument
-from backend.static.encryption import AESEncryption
-from backend.static.serializer_fields import EncryptedField
-
 from backend.api.serializers import UserProfileNameSerializer
 
 

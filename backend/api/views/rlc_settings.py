@@ -13,32 +13,12 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from rest_framework import viewsets
+from backend.static.error_codes import ERROR__API__RLC_SETTINGS__WRONG_COUNT
+from backend.api.serializers import RlcSettingsSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from backend.api.errors import CustomError
-from backend.static.error_codes import (
-    ERROR__API__PERMISSION__INSUFFICIENT,
-    ERROR__API__RLC_SETTINGS__WRONG_COUNT,
-)
 from backend.api.models import RlcSettings
-from backend.api.serializers import RlcSettingsSerializer
-
-
-class RlcSettingsViewSet(viewsets.ModelViewSet):
-    queryset = RlcSettings.objects.all()
-    serializer_class = RlcSettingsSerializer
-
-    def create(self, request):
-        raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
-
-    def update(self, request, *args, **kwargs):
-        if not request.user.is_superuser:
-            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
-
-        return super().update(request, args, kwargs)
 
 
 class RlcSettingsMineViewSet(APIView):

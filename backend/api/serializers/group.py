@@ -13,58 +13,20 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
+from backend.api.serializers.user import UserProfileNameSerializer
+from backend.api.models.group import Group
 from rest_framework import serializers
-
-from ..models import Group
-from ..serializers.user import UserProfileNameSerializer
 
 
 class GroupSerializer(serializers.ModelSerializer):
-    group_has_permission = serializers.PrimaryKeyRelatedField(
-        many=True, read_only=True, required=False
-    )
-    permission_for_group = serializers.PrimaryKeyRelatedField(
-        many=True, read_only=True, required=False,
-    )
-    group_members = UserProfileNameSerializer(many=True)
-
     class Meta:
         model = Group
         fields = "__all__"
 
 
-class GroupSmallSerializer(serializers.ModelSerializer):
-    group_has_permission = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    permission_for_group = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-
-    class Meta:
-        model = Group
-        fields = (
-            "id",
-            "name",
-            "group_has_permission",
-            "permission_for_group",
-        )
-
-
-class GroupNameSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Group
-        fields = ("id", "name")
-
-
-class GroupShowSerializer(serializers.ModelSerializer):
+class GroupMembersSerializer(GroupSerializer):
     group_members = UserProfileNameSerializer(many=True)
 
-    class Meta:
-        model = Group
-        fields = (
-            "id",
-            "name",
-            "group_members",
-            "description",
-            "note",
-            "visible",
-            "note",
-        )
+
+class GroupAddMemberSerializer(serializers.Serializer):
+    member = serializers.IntegerField()

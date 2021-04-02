@@ -13,15 +13,18 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
 from django.db import models
 
 
 class Permission(models.Model):
     name = models.CharField(max_length=200, null=False, unique=True)
 
+    class Meta:
+        verbose_name = "Permission"
+        verbose_name_plural = "Permissions"
+
     def __str__(self):
-        return "permission: " + str(self.id) + ":" + self.name
+        return "permission: {}; name: {};".format(self.pk, self.name)
 
     def get_groups_with_permission_from_rlc(self, rlc):
         from backend.api.models import Group, HasPermission

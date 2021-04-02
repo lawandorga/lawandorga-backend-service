@@ -13,11 +13,11 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from django.db import models
-
-from backend.api.models import UserActivityPath, UserSession
-from backend.api.errors import CustomError
+from backend.api.models.user_activity_path import UserActivityPath
+from backend.api.models.user_session import UserSession
 from backend.static.error_codes import ERROR__API__LOGGING__TOO_MANY_SESSION_PATHS_FOUND
+from backend.api.errors import CustomError
+from django.db import models
 
 
 class UserSessionPathManager(models.Manager):
@@ -55,3 +55,10 @@ class UserSessionPath(models.Model):
     counter = models.IntegerField(default=1)
 
     objects = UserSessionPathManager()
+
+    class Meta:
+        verbose_name = "UserSessionPath"
+        verbose_name_plural = "UserSessionPaths"
+
+    def __str__(self):
+        return "userSessionPath: {};".format(self.pk)

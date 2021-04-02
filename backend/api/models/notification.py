@@ -13,15 +13,14 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
-from django.utils import timezone
-from django_prometheus.models import ExportModelOperationsMixin
-
-
-from backend.api.models import NotificationGroup, UserProfile
+from backend.api.models.new_user_request import NewUserRequest
+from backend.api.models.notification_group import NotificationGroup
 from backend.static.notification_enums import NotificationGroupType, NotificationType
+from django_prometheus.models import ExportModelOperationsMixin
+from backend.api.models.user import UserProfile
 from backend.static import permissions
+from django.utils import timezone
+from django.db import models
 
 
 class NotificationManager(models.Manager):
@@ -474,8 +473,6 @@ class NotificationManager(models.Manager):
                     notification_type=NotificationType.RECORD__CREATED,
                 )
 
-    from backend.api.models import NewUserRequest
-
     @staticmethod
     def notify_new_user_request(
         source_user: UserProfile, new_user_request: NewUserRequest
@@ -705,8 +702,12 @@ class Notification(ExportModelOperationsMixin("notification"), models.Model):
 
     objects = NotificationManager()
 
+    class Meta:
+        verbose_name = "Notification"
+        verbose_name_plural = "Notifications"
+
     def __str__(self):
-        return "notification: " + str(self.id)
+        return "notification: {};".format(self.id)
 
     def save(self, *args, **kwargs):
         if not self.read and self.id is None:

@@ -32,7 +32,7 @@ from backend.static.permissions import (
 )
 
 
-class CollabDocument(ExportModelOperationsMixin("collab_document"), TextDocument):
+class CollabDocument(TextDocument):
     path = models.CharField(max_length=4096, null=False, blank=False)
 
     def save(self, *args, **kwargs) -> None:

@@ -27,7 +27,7 @@ from backend.static.error_codes import (
 )
 
 
-class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):
+class TextDocument(models.Model):
     rlc = models.ForeignKey(
         Rlc, related_name="text_documents", null=False, on_delete=models.CASCADE
     )
@@ -36,13 +36,6 @@ class TextDocument(ExportModelOperationsMixin("text_document"), models.Model):
     creator = models.ForeignKey(
         UserProfile,
         related_name="text_documents_created",
-        on_delete=models.SET_NULL,
-        null=True,
-    )
-    last_edited = models.DateTimeField(default=timezone.now)
-    last_editor = models.ForeignKey(
-        UserProfile,
-        related_name="text_documents_last_updated",
         on_delete=models.SET_NULL,
         null=True,
     )

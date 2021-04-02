@@ -13,9 +13,6 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from backend.api.models import Permission
-
 PERMISSION_CAN_CONSULT = "can_consult"
 PERMISSION_VIEW_RECORDS_RLC = "view_records_rlc"
 PERMISSION_CAN_ADD_RECORD_RLC = "add_record_rlc"
@@ -23,9 +20,8 @@ PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC = "view_records_full_detail_rlc"
 PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC = (
     "permit_record_permission_requests_rlc"
 )
-PERMISSION_VIEW_FULL_USER_DETAIL_RLC = "view_full_user_detail_own_rlc"
-PERMISSION_VIEW_FULL_USER_DETAIL_OVERALL = "view_full_user_detail_overall"
 PERMISSION_MANAGE_GROUPS_RLC = "manage_groups_rlc"
+PERMISSION_MANAGE_USERS = "manage_users"
 PERMISSION_MANAGE_GROUP = "manage_group"
 PERMISSION_ADD_GROUP_RLC = "add_group_rlc"
 PERMISSION_VIEW_PERMISSIONS_RLC = "view_permissions_rlc"
@@ -57,10 +53,9 @@ def get_all_permissions_strings():
         PERMISSION_VIEW_RECORDS_RLC,
         PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC,
         PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
-        PERMISSION_VIEW_FULL_USER_DETAIL_RLC,
-        PERMISSION_VIEW_FULL_USER_DETAIL_OVERALL,
         PERMISSION_MANAGE_GROUPS_RLC,
         PERMISSION_MANAGE_GROUP,
+        PERMISSION_MANAGE_USERS,
         PERMISSION_ADD_GROUP_RLC,
         PERMISSION_VIEW_PERMISSIONS_RLC,
         PERMISSION_MANAGE_PERMISSIONS_RLC,
@@ -89,6 +84,8 @@ def get_record_encryption_keys_permissions_strings():
 
 
 def get_record_encryption_keys_permissions():
+    from backend.api.models.permission import Permission
+
     permissions = []
     for permission_string in get_record_encryption_keys_permissions_strings():
         permissions.append(Permission.objects.get(name=permission_string))

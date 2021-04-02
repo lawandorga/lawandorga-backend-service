@@ -15,7 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from typing import Any
 from django.db.models import QuerySet
-from rest_framework import viewsets
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -23,6 +24,7 @@ from rest_framework.views import APIView
 from backend.api.models import UserProfile
 from backend.collab.models import TextDocument, TextDocumentVersion
 from backend.collab.serializers import (
+    TextDocumentVersionDetailSerializer,
     TextDocumentVersionSerializer,
     TextDocumentVersionListSerializer,
 )
@@ -40,82 +42,13 @@ class TextDocumentVersionModelViewSet(viewsets.ModelViewSet):
     queryset = TextDocumentVersion.objects.all()
 
     def get_queryset(self) -> QuerySet:
-        if self.request.user.is_superuser:
-            return self.queryset
-        return self.queryset.filter(document_rlc=self.request.user.rlc)
-
-    # def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-    #     pass
-    #
-    # def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-    #     pass
+        return self.queryset.filter(document__rlc=self.request.user.rlc)
 
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         version: TextDocumentVersion = self.get_object()
 
-        # if not version.document.user_has_permission_read(request.user):
-        #     raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
-
         users_private_key = get_private_key_from_request(request)
-        key: str = request.user.get_rlcs_aes_key(users_private_key)
+        rlcs_aes_key = request.user.get_rlcs_aes_key(users_private_key)
 
-        return Response(TextDocumentVersionSerializer(version).get_decrypted_data(key))
-
-
-class VersionsOfTextDocumentViewSet(APIView):
-    def get(self, request: Request, id: str) -> Response:
-        try:
-            document = TextDocument.objects.get(pk=id)
-        except Exception as e:
-            raise CustomError(ERROR__API__ID_NOT_FOUND)
-
-        # if not document.user_has_permission_read(request.user):
-        #     raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
-
-        users_private_key = get_private_key_from_request(request)
-        key: str = request.user.get_rlcs_aes_key(users_private_key)
-
-        versions = document.versions.all().order_by("-created")
-
-        full_data = [
-            TextDocumentVersionSerializer(versions.first()).get_decrypted_data(key),
-            *TextDocumentVersionListSerializer(versions, many=True).data[1:],
-        ]
-        return Response(full_data)
-
-    def post(self, request: Request, id: str) -> Response:
-        try:
-            document: TextDocument = TextDocument.objects.get(pk=id)
-        except Exception as e:
-            raise CustomError(ERROR__API__ID_NOT_FOUND)
-
-        if not document.user_has_permission_write(request.user):
-            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
-
-        if "content" not in request.data or "is_draft" not in request.data:
-            raise CustomError(ERROR__API__PARAMS_NOT_VALID)
-
-        TextDocumentVersion.objects.filter(document=document, is_draft=True).delete()
-
-        users_private_key = get_private_key_from_request(request)
-        user: UserProfile = request.user
-        key: str = user.get_rlcs_aes_key(users_private_key)
-
-        last_version: TextDocumentVersion = document.get_last_published_version()
-        if last_version:
-            last_content = TextDocumentVersionSerializer(
-                last_version
-            ).get_decrypted_data(key)["content"]
-            if request.data["content"] == last_content:
-                return Response(
-                    TextDocumentVersionSerializer(last_version).get_decrypted_data(key),
-                    status=201,
-                )
-
-        version = TextDocumentVersion.create(
-            request.data["content"], request.data["is_draft"], key, user, document
-        )
-
-        return Response(
-            TextDocumentVersionSerializer(version).get_decrypted_data(key), status=201
-        )
+        version.decrypt(rlcs_aes_key)
+        return Response(TextDocumentVersionDetailSerializer(version).data)

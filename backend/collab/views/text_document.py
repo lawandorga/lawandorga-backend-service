@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from typing import Any
 from django.db.models import QuerySet
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -27,11 +27,15 @@ from backend.collab.models import EditingRoom, TextDocument, TextDocumentVersion
 from backend.collab.serializers import (
     EditingRoomSerializer,
     TextDocumentSerializer,
+    TextDocumentVersionDetailSerializer,
+    TextDocumentVersionListSerializer,
     TextDocumentVersionSerializer,
+    UserProfileNameSerializer,
 )
 from backend.api.errors import CustomError
 from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 from backend.static.middleware import get_private_key_from_request
+from backend.static.serializers import map_values
 
 
 class TextDocumentModelViewSet(
@@ -50,15 +54,12 @@ class TextDocumentModelViewSet(
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         document: TextDocument = self.get_object()
 
-        # if not document.user_has_permission_read(request.user):
-        #     raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
-
         users_private_key = get_private_key_from_request(request)
         user: UserProfile = request.user
         key: str = user.get_rlcs_aes_key(users_private_key)
 
         data = TextDocumentSerializer(document).data
-        last_version = document.get_last_published_version()
+        last_version: TextDocumentVersion = document.get_last_published_version()
         if not last_version:
             last_version = TextDocumentVersion(
                 document=document,
@@ -70,21 +71,25 @@ class TextDocumentModelViewSet(
 
         data.update(
             {
+                "last_editor": UserProfileNameSerializer(last_version.creator).data,
+                "last_edited": last_version.created,
                 "read": document.user_has_permission_read(request.user),
                 "write": document.user_has_permission_write(request.user),
             }
         )
-        draft = document.get_draft()
+        draft: TextDocumentVersion = document.get_draft()
+
+        last_version.decrypt(key)
         if draft:
+            draft.decrypt(key)
             data["versions"] = [
-                TextDocumentVersionSerializer(draft).get_decrypted_data(key),
-                TextDocumentVersionSerializer(last_version).get_decrypted_data(key),
+                TextDocumentVersionSerializer(draft).data,
+                TextDocumentVersionSerializer(last_version).data,
             ]
         else:
             data["versions"] = [
-                TextDocumentVersionSerializer(last_version).get_decrypted_data(key),
+                TextDocumentVersionSerializer(last_version).data,
             ]
-
         return Response(data)
 
     @action(detail=True, methods=["get", "delete"])
@@ -109,3 +114,53 @@ class TextDocumentModelViewSet(
         if request.method == "DELETE":
             EditingRoom.objects.filter(document=document).delete()
             return Response({"success": True})
+
+    @action(methods=["get", "post"], detail=True)
+    def versions(self, request: Request, *args, **kwargs):
+        document: TextDocument = self.get_object()
+        user: UserProfile = request.user
+        users_private_key = get_private_key_from_request(request)
+        key: str = user.get_rlcs_aes_key(users_private_key)
+
+        if request.method == "GET":
+            versions = document.versions.all().order_by("-created")
+
+            first: TextDocumentVersion = versions.first()
+            first.decrypt(key)
+            full_data = [
+                TextDocumentVersionDetailSerializer(first).data,
+                *TextDocumentVersionListSerializer(versions, many=True).data[1:],
+            ]
+            return Response(full_data)
+        if request.method == "POST":
+            if not document.user_has_permission_write(request.user):
+                raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+
+            request.data["creator"] = user.pk
+            request.data["document"] = document.pk
+
+            serializer = TextDocumentVersionSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            TextDocumentVersion.objects.filter(
+                document=document, is_draft=True
+            ).delete()
+
+            last_version: TextDocumentVersion = document.get_last_published_version()
+            if last_version:
+                last_version.decrypt(key)
+                if request.data["content"] == last_version.content:
+                    return Response(
+                        TextDocumentVersionDetailSerializer(last_version).data,
+                        status=status.HTTP_201_CREATED,
+                    )
+
+            version = TextDocumentVersion(**serializer.validated_data)
+            version.encrypt(key)
+            version.save()
+
+            version.decrypt(key)
+            return Response(
+                TextDocumentVersionDetailSerializer(version).data,
+                status=status.HTTP_201_CREATED,
+            )

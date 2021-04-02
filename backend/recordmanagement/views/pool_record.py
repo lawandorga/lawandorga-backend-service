@@ -18,12 +18,10 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 
 from backend.api.errors import CustomError
-from backend.recordmanagement.models import (
-    EncryptedRecord,
-    PoolConsultant,
-    PoolRecord,
-    RecordEncryption,
-)
+from backend.recordmanagement.models.encrypted_record import EncryptedRecord
+from backend.recordmanagement.models.pool_consultant import PoolConsultant
+from backend.recordmanagement.models.pool_record import PoolRecord
+from backend.recordmanagement.models.record_encryption import RecordEncryption
 from backend.recordmanagement.serializers import PoolRecordSerializer
 from backend.static import error_codes
 from backend.static.middleware import get_private_key_from_request

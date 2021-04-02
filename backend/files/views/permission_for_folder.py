@@ -19,9 +19,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
-from backend.api.models import Group
+from backend.api.models.group import Group
 from backend.api.serializers import HasPermissionSerializer
-from backend.files.models import Folder, PermissionForFolder, FolderPermission
+from backend.files.models.folder import Folder
+from backend.files.models.folder_permission import FolderPermission
+from backend.files.models.permission_for_folder import PermissionForFolder
 from backend.files.serializers import (
     PermissionForFolderSerializer,
     PermissionForFolderNestedSerializer,

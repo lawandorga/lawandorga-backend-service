@@ -13,18 +13,9 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from rest_framework import serializers
-from backend.api.models import NotificationGroup
+from backend.api.models.notification_group import NotificationGroup
 from backend.api.serializers import NotificationSerializer
-
-
-class NotificationGroupSerializer(serializers.ModelSerializer):
-    notifications = NotificationSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = NotificationGroup
-        fields = "__all__"
+from rest_framework import serializers
 
 
 class NotificationGroupOrderedSerializer(serializers.ModelSerializer):
@@ -38,15 +29,3 @@ class NotificationGroupOrderedSerializer(serializers.ModelSerializer):
         return NotificationSerializer(
             obj.notifications.all().order_by("-created"), many=True, read_only=True
         ).data
-
-
-#
-# def get_files(self, obj):
-#     result = {'pdf': [], 'txt':[]}
-#     for file in obj.file_set.all():
-#         serializer = FileSerializer(file)
-#         if file.name.endswith('pdf'):
-#             result['pdf'].append(serializer.data)
-#         if file.name.endswith('txt'):
-#             result['txt'].append(serializer.data)
-#     return result

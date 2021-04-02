@@ -13,20 +13,14 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
 from .user import *
 from .group import *
 from .rlc import *
 from .permission import *
 from .has_permission import *
-from .forgot_password import *
 from .new_user_request import *
-from .user_activation_link import *
-from .language import *
 from .user_encryption_keys import *
-from .rlc_encryption_keys import *
 from .users_rlc_keys import *
 from .rlc_settings import *
-from .missing_rlc_keys import *
 from .notification import *
 from .notification_group import *

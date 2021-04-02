@@ -16,10 +16,12 @@
 
 from django.db import models
 from django.utils import timezone
+from django.utils.crypto import get_random_string
 from django_prometheus.models import ExportModelOperationsMixin
 
 from backend.collab.models.text_document import TextDocument
-from backend.static.string_generator import get_random_string
+
+# from backend.static.string_generator import get_random_string
 from backend.static.encryption import AESEncryption
 
 
@@ -35,7 +37,7 @@ def generate_room_id():
             return pot_room_id
 
 
-class EditingRoom(ExportModelOperationsMixin("editing_room"), models.Model):
+class EditingRoom(models.Model):
     created = models.DateTimeField(default=timezone.now)
     document = models.OneToOneField(TextDocument, on_delete=models.CASCADE)
 

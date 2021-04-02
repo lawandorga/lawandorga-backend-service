@@ -14,11 +14,9 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import shutil
 from threading import Thread
 
-from backend.api.models import Notification
-from backend.files.models import File
+from backend.api.models.notification import Notification
 from backend.static.encrypted_storage import EncryptedStorage
 from backend.static.storage_management import LocalStorageManager
 from backend.static.storage_folders import (
@@ -68,7 +66,7 @@ class MultithreadedFileUploads:
     @staticmethod
     @start_new_thread
     def encrypt_files_and_upload_to_s3(
-        local_files: [str], s3_folders: [str], file_objects: [File], aes_key: str
+        local_files: [str], s3_folders: [str], file_objects, aes_key: str
     ):
         for i in range(local_files.__len__()):
             (

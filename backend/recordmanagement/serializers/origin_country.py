@@ -13,22 +13,19 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
 from rest_framework import serializers
-from backend.recordmanagement import models
+from backend.recordmanagement.models.origin_country import OriginCountry
 
 
 class OriginCountrySerializer(serializers.ModelSerializer):
-    clients = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-
     class Meta:
-        model = models.OriginCountry
+        model = OriginCountry
         fields = "__all__"
 
 
 class OriginCountryNameStateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.OriginCountry
+        model = OriginCountry
         fields = (
             "id",
             "name",

@@ -16,7 +16,7 @@
 
 from rest_framework import serializers
 
-from backend.api.models import RlcSettings
+from backend.api.models.rlc_settings import RlcSettings
 
 
 class RlcSettingsSerializer(serializers.ModelSerializer):

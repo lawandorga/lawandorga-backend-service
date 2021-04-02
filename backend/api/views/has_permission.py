@@ -22,16 +22,19 @@ from rest_framework.views import APIView
 from django.forms.models import model_to_dict
 
 from backend.api.errors import CustomError
+from backend.api.models.group import Group
+from backend.api.models.has_permission import HasPermission
+from backend.api.models.permission import Permission
 from backend.static import error_codes
 from backend.static.permissions import (
     PERMISSION_MANAGE_PERMISSIONS_RLC,
     get_record_encryption_keys_permissions,
 )
-from backend.api.models import HasPermission, Group, UserProfile, Permission, Rlc
+from backend.api.models import UserProfile, Rlc
 from backend.api.serializers import (
     HasPermissionSerializer,
-    GroupNameSerializer,
     UserProfileNameSerializer,
+    GroupSerializer,
 )
 from backend.recordmanagement.helpers import check_encryption_key_holders_and_grant
 from backend.static.middleware import get_private_key_from_request
@@ -65,13 +68,6 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
 
         hasPermission.delete()
         return Response({"status": "success"})
-
-    # def create(self, request, *args, **kwargs) -> Response:
-    #     if not request.user.has_permission(PERMISSION_MANAGE_PERMISSIONS_RLC, for_rlc=request.user.rlc):
-    #         raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-    #
-    #     a = 10
-    #     pass
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -125,7 +121,7 @@ class HasPermissionStaticsViewSet(APIView):
             groups = Group.objects.filter(from_rlc=response.user.rlc)
         data = {
             "users": UserProfileNameSerializer(users, many=True).data,
-            "groups": GroupNameSerializer(groups, many=True).data,
+            "groups": GroupSerializer(groups, many=True).data,
         }
         return Response(data)
 
