@@ -26,5 +26,3 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         populate_deploy_db()
-        # rlcs = Fixtures.create_real_starting_rlcs()
-        # Fixtures.create_real_groups(rlcs)

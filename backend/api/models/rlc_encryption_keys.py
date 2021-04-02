@@ -13,33 +13,30 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
+from backend.static.encryption import AESEncryption, EncryptedModelMixin
 from django_prometheus.models import ExportModelOperationsMixin
-
-from backend.api.models import Rlc
-from backend.static.error_codes import ERROR__API__RLC__NO_PUBLIC_KEY_FOUND
-from backend.api.errors import CustomError
-from backend.static.encryption import AESEncryption
+from backend.api.models.rlc import Rlc
+from django.db import models
 
 
-class RlcEncryptionKeysQuerySet(models.QuerySet):
-    def get_rlcs_public_key(self, rlc):
-        try:
-            keys = self.get(rlc=rlc)
-        except Exception:
-            raise CustomError(ERROR__API__RLC__NO_PUBLIC_KEY_FOUND)
-        return keys.public_key
-
-
-class RlcEncryptionKeys(ExportModelOperationsMixin("rlc_encryption_key"), models.Model):
+class RlcEncryptionKeys(
+    ExportModelOperationsMixin("rlc_encryption_key"), EncryptedModelMixin, models.Model
+):
     rlc = models.OneToOneField(
         Rlc, related_name="encryption_keys", on_delete=models.CASCADE
     )
     public_key = models.BinaryField()
     encrypted_private_key = models.BinaryField()
 
-    objects = RlcEncryptionKeysQuerySet.as_manager()
+    encrypted_fields = ["encrypted_private_key"]
+    encryption_class = AESEncryption
+
+    class Meta:
+        verbose_name = "RlcEncryptionKey"
+        verbose_name_plural = "RlcEncryptionKeys"
+
+    def __str__(self):
+        return "rlcEncryptionKey: {}; rlc: {};".format(self.pk, self.rlc.name)
 
     def decrypt_private_key(self, key_to_encrypt):
         encrypted_private_key = self.encrypted_private_key
@@ -48,3 +45,9 @@ class RlcEncryptionKeys(ExportModelOperationsMixin("rlc_encryption_key"), models
         except:
             pass
         return AESEncryption.decrypt(encrypted_private_key, key_to_encrypt)
+
+    def decrypt(self, aes_key: str) -> None:
+        super().decrypt(aes_key)
+
+    def encrypt(self, aes_key: str) -> None:
+        super().encrypt(aes_key)

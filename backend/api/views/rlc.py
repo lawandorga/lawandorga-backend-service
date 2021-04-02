@@ -13,18 +13,22 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
+from backend.api.serializers import RlcSimpleSerializer
+from backend.api.models.rlc import Rlc
+from django.db.models import QuerySet
 from rest_framework import viewsets
-
-from ..models.rlc import Rlc
-from ..models.user import UserProfile
-from ..serializers.rlc import RlcSerializer
+from rest_framework import mixins
+from django.conf import settings
 
 
-class RlcViewSet(viewsets.ModelViewSet):
-    queryset = Rlc.objects.exclude(name="Dummy RLC")
-    serializer_class = RlcSerializer
+class RlcViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    queryset = Rlc.objects.all()
+    serializer_class = RlcSimpleSerializer
+    permission_classes = []
+    authentication_classes = []
 
-    def perform_create(self, serializer):
-        creator = UserProfile.objects.get(id=self.request.user.id)
-        serializer.save(creator=creator)
+    def get_queryset(self) -> QuerySet:
+        queryset = Rlc.objects.all().order_by("name")
+        if not settings.DEBUG:
+            queryset = queryset.exclude(name="Dummy RLC")
+        return queryset

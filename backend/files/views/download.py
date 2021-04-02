@@ -19,7 +19,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
-from backend.files.models import Folder, File
+from backend.files.models.file import File
+from backend.files.models.folder import Folder
 from backend.static.storage_folders import get_temp_storage_folder
 from backend.static.storage_management import LocalStorageManager
 from backend.static.middleware import get_private_key_from_request

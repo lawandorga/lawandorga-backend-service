@@ -29,6 +29,7 @@ from backend.static.permissions import (
 )
 
 
+# TODO: add the encrypted client tests from example data tests to this tests
 class EncryptedClientTests(TransactionTestCase):
     def setUp(self):
         self.base_fixtures = CreateFixtures.create_base_fixtures()

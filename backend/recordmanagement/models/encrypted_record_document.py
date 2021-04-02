@@ -13,15 +13,13 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
-from django_prometheus.models import ExportModelOperationsMixin
-from django.dispatch import receiver
-from django.db.models.signals import post_save, pre_delete
-
-from backend.api.models import UserProfile
-from backend.static.storage_folders import get_storage_folder_encrypted_record_document
 from backend.static.encrypted_storage import EncryptedStorage
+from backend.static.storage_folders import get_storage_folder_encrypted_record_document
+from django_prometheus.models import ExportModelOperationsMixin
+from django.db.models.signals import pre_delete
+from backend.api.models import UserProfile, EncryptedModelMixin
+from django.dispatch import receiver
+from django.db import models
 
 
 class EncryptedRecordDocument(
@@ -48,22 +46,19 @@ class EncryptedRecordDocument(
         "RecordDocumentTag", related_name="e_tagged", blank=True
     )
 
+    class Meta:
+        verbose_name = "RecordDocument"
+        verbose_name_plural = "RecordDocuments"
+
     def __str__(self):
-        return (
-            "e_record_document: "
-            + str(self.id)
-            + ":"
-            + self.name
-            + "; creator: "
-            + str(self.creator.id)
-            + "; record: "
-            + str(self.record.id)
+        return "recordDocument: {}; name: {}; creator: {}; record: {};".format(
+            self.pk, self.name, self.creator.email, self.record.record_token
         )
 
     def get_file_key(self):
         return (
             get_storage_folder_encrypted_record_document(
-                self.record.from_rlc_id, self.record.id
+                self.record.from_rlc.pk, self.record.id
             )
             + self.name
             + ".enc"
@@ -71,7 +66,7 @@ class EncryptedRecordDocument(
 
     def get_folder(self):
         return get_storage_folder_encrypted_record_document(
-            self.record.from_rlc_id, self.record.id
+            self.record.from_rlc.pk, self.record.id
         )
 
     def delete_on_cloud(self):

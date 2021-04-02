@@ -13,13 +13,11 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
-from django.utils import timezone
-from django_prometheus.models import ExportModelOperationsMixin
-
-from backend.api.models import UserProfile
 from backend.static.notification_enums import NotificationGroupType
+from django_prometheus.models import ExportModelOperationsMixin
+from backend.api.models.user import UserProfile
+from django.utils import timezone
+from django.db import models
 
 
 class NotificationGroup(ExportModelOperationsMixin("notification_group"), models.Model):
@@ -36,6 +34,13 @@ class NotificationGroup(ExportModelOperationsMixin("notification_group"), models
 
     ref_id = models.CharField(max_length=50, null=False)
     ref_text = models.CharField(max_length=100, null=True)
+
+    class Meta:
+        verbose_name = "NotificationGroup"
+        verbose_name_plural = "NotificationGroups"
+
+    def __str__(self):
+        return "notificationGroup: {}; user: {};".format(self.pk, self.user.email)
 
     def new_activity(self):
         self.last_activity = timezone.now()

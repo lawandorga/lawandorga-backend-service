@@ -13,11 +13,9 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
-
 from backend.api.models import UserProfile
+from django.db import models
 
 
 class EncryptedRecordPermission(
@@ -45,7 +43,6 @@ class EncryptedRecordPermission(
 
     requested = models.DateTimeField(auto_now_add=True)
     processed_on = models.DateTimeField(null=True)
-    can_edit = models.BooleanField(default=False)
 
     encrypted_record_permission_states_possible = (
         ("re", "requested"),
@@ -56,7 +53,11 @@ class EncryptedRecordPermission(
         max_length=2, choices=encrypted_record_permission_states_possible, default="re"
     )
 
+    class Meta:
+        verbose_name = "RecordPermission"
+        verbose_name_plural = "RecordPermissions"
+
     def __str__(self):
-        return (
-            "e_record_permission: " + str(self.id) + "; from: " + str(self.request_from)
+        return "recordPermission: {}; from: {};".format(
+            self.id, self.request_from.email
         )

@@ -13,36 +13,25 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from rest_framework import serializers
-from backend.recordmanagement.models import EncryptedRecordMessage
+from backend.recordmanagement.models.encrypted_record_message import (
+    EncryptedRecordMessage,
+)
 from backend.api.serializers.user import UserProfileNameSerializer
-from backend.static.serializer_fields import EncryptedField
-from backend.static.encryption import AESEncryption
-
-
-class EncryptedRecordMessageListSerializer(serializers.ListSerializer):
-    def get_decrypted_data(self, record_aes_key):
-        data = []
-        for message in self.instance.all():
-            data.append(
-                EncryptedRecordMessageSerializer(message).get_decrypted_data(
-                    record_aes_key
-                )
-            )
-        return data
+from rest_framework import serializers
 
 
 class EncryptedRecordMessageSerializer(serializers.ModelSerializer):
-    sender = UserProfileNameSerializer(many=False, read_only=True)
-    message = EncryptedField()
+    message = serializers.CharField()
 
     class Meta:
-        list_serializer_class = EncryptedRecordMessageListSerializer
         model = EncryptedRecordMessage
         fields = "__all__"
+        extra_kwargs = {"sender": {"required": True}}
 
-    def get_decrypted_data(self, key):
-        data = self.data
-        AESEncryption.decrypt_field(data, data, "message", key)
-        return data
+
+class EncryptedRecordMessageDetailSerializer(EncryptedRecordMessageSerializer):
+    sender = UserProfileNameSerializer(read_only=True)
+
+    class Meta:
+        model = EncryptedRecordMessage
+        fields = "__all__"

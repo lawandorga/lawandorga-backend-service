@@ -21,19 +21,23 @@ from rest_framework.views import APIView
 from django.utils import timezone
 
 from backend.api.errors import CustomError
+from backend.api.models.notification import Notification
 from backend.recordmanagement import models, serializers
+from backend.recordmanagement.models.encrypted_record import EncryptedRecord
+from backend.recordmanagement.models.encrypted_record_deletion_request import (
+    EncryptedRecordDeletionRequest,
+)
 from backend.static import error_codes, permissions
-from backend.api.models import Notification
 
 
 class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.EncryptedRecordDeletionRequestSerializer
-    queryset = models.EncryptedRecordDeletionRequest.objects.all()
+    queryset = EncryptedRecordDeletionRequest.objects.all()
 
     def get_queryset(self) -> QuerySet:
         if self.request.user.is_superuser:
-            return models.EncryptedRecordDeletionRequest.objects.all()
-        return models.EncryptedRecordDeletionRequest.objects.filter(
+            return EncryptedRecordDeletionRequest.objects.all()
+        return EncryptedRecordDeletionRequest.objects.filter(
             request_from__rlc=self.request.user.rlc
         )
 
@@ -56,20 +60,18 @@ class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
         if "record_id" not in request.data:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__ID_NOT_PROVIDED)
 
-        record = models.EncryptedRecord.objects.get_record(
-            request.user, request.data["record_id"]
-        )
-        if not record.user_has_permission(request.user):
+        e_record = EncryptedRecord.objects.get(int(request.data["record_id"]))
+        if not e_record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
         if (
-            models.EncryptedRecordDeletionRequest.objects.filter(
-                record=record, state="re", request_from=request.user
+            EncryptedRecordDeletionRequest.objects.filter(
+                record=e_record, state="re", request_from=request.user
             ).count()
             >= 1
         ):
             raise CustomError(error_codes.ERROR__API__ALREADY_REQUESTED)
-        deletion_request = models.EncryptedRecordDeletionRequest(
-            request_from=request.user, record=record,
+        deletion_request = EncryptedRecordDeletionRequest(
+            request_from=request.user, record=e_record,
         )
         if "explanation" in request.data:
             deletion_request.explanation = request.data["explanation"]
@@ -96,7 +98,7 @@ class EncryptedRecordDeletionProcessViewSet(APIView):
         if "request_id" not in request.data:
             raise CustomError(error_codes.ERROR__API__ID_NOT_PROVIDED)
         try:
-            record_deletion_request = models.EncryptedRecordDeletionRequest.objects.get(
+            record_deletion_request = EncryptedRecordDeletionRequest.objects.get(
                 pk=request.data["request_id"]
             )
         except:
@@ -123,8 +125,8 @@ class EncryptedRecordDeletionProcessViewSet(APIView):
             record_deletion_request.save()
 
             other_deletion_requests_of_same_record: [
-                models.EncryptedRecordDeletionRequest
-            ] = models.EncryptedRecordDeletionRequest.objects.filter(
+                EncryptedRecordDeletionRequest
+            ] = EncryptedRecordDeletionRequest.objects.filter(
                 record=record_deletion_request.record, state="re"
             )
             for other_request in other_deletion_requests_of_same_record:
@@ -144,7 +146,7 @@ class EncryptedRecordDeletionProcessViewSet(APIView):
                 request.user, record_deletion_request
             )
 
-        response_request = models.EncryptedRecordDeletionRequest.objects.get(
+        response_request = EncryptedRecordDeletionRequest.objects.get(
             pk=record_deletion_request.id
         )
         return Response(

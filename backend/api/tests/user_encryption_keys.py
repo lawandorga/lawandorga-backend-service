@@ -16,7 +16,7 @@
 
 
 from django.test import TransactionTestCase
-from backend.api.models import UserProfile, UserEncryptionKeys
+from backend.api.models import UserEncryptionKeys
 from backend.api.tests.statics import StaticTestMethods
 from backend.static.encryption import (
     RSAEncryption,

@@ -13,22 +13,20 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+import secrets
+import string
 
-import os
-import struct
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes, padding, serialization
 from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padding, rsa
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from enum import Enum
-from Crypto.Cipher import AES, PKCS1_OAEP
-from Crypto.Util.Padding import pad, unpad
-from Crypto.PublicKey import RSA
-from hashlib import sha3_256
-
-from backend.static.string_generator import generate_secure_random_string
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.backends import default_backend
 from backend.static.error_codes import ERROR__API__INVALID_PRIVATE_KEY
+from Crypto.Util.Padding import pad, unpad
 from backend.api.errors import CustomError
+from Crypto.Cipher import AES
+from hashlib import sha3_256
+from enum import Enum
+import struct
+import os
 
 
 class OutputType(Enum):
@@ -50,50 +48,16 @@ def get_string_from_bytes_or_return_string(pot_bytes):
 
 class AESEncryption:
     @staticmethod
-    def generate_iv():
+    def generate_iv() -> bytes:
         return os.urandom(16)
 
     @staticmethod
-    def generate_secure_key():
-        return generate_secure_random_string(64)
+    def generate_secure_key() -> str:
+        password_characters = string.ascii_letters + string.digits + string.punctuation
+        return "".join(secrets.choice(password_characters) for i in range(64))
 
     @staticmethod
-    def encrypt_hazmat(msg, key, iv):
-        msg = get_bytes_from_string_or_return_bytes(msg)
-        backend = default_backend()
-
-        padder = padding.PKCS7(128).padder()
-        padded_data = padder.update(msg) + padder.finalize()
-
-        key = get_bytes_from_string_or_return_bytes(key)
-        hasher = hashes.Hash(hashes.SHA3_256(), backend=backend)
-        hasher.update(key)
-        key_bytes = hasher.finalize()
-
-        cipher = Cipher(algorithms.AES(key_bytes), modes.CBC(iv), backend=backend)
-        encryptor = cipher.encryptor()
-
-        return encryptor.update(padded_data) + encryptor.finalize()
-
-    @staticmethod
-    def decrypt_hazmat(encrypted, key, iv, output_type=OutputType.STRING):
-        backend = default_backend()
-        key = get_bytes_from_string_or_return_bytes(key)
-        hasher = hashes.Hash(hashes.SHA3_256(), backend=backend)
-        hasher.update(key)
-        key_bytes = hasher.finalize()
-
-        cipher = Cipher(algorithms.AES(key_bytes), modes.CBC(iv), backend=backend)
-        decryptor = cipher.decryptor()
-        decrypted_bytes = decryptor.update(encrypted) + decryptor.finalize()
-        unpadder = padding.PKCS7(128).unpadder()
-        unpadded_bytes = unpadder.update(decrypted_bytes) + unpadder.finalize()
-        if output_type == OutputType.STRING:
-            return get_string_from_bytes_or_return_string(unpadded_bytes)
-        return unpadded_bytes
-
-    @staticmethod
-    def encrypt_with_iv(msg, key, iv):
+    def encrypt_with_iv(msg: str, key: str, iv: bytes):
         msg = get_bytes_from_string_or_return_bytes(msg)
         key = get_bytes_from_string_or_return_bytes(key)
         hashed_key_bytes = sha3_256(key).digest()
@@ -116,7 +80,7 @@ class AESEncryption:
         return plaintext_bytes
 
     @staticmethod
-    def encrypt(msg, key):
+    def encrypt(msg: str, key: str) -> bytes:
         """
         :param msg: bytes/string, message which shall be encrypted
         :param key: bytes/string, key with which to encrypt
@@ -124,7 +88,7 @@ class AESEncryption:
         """
         if msg is None or msg.__len__() == 0:
             return bytearray()
-        iv = AESEncryption.generate_iv()
+        iv: bytes = AESEncryption.generate_iv()
         cipher_bytes = AESEncryption.encrypt_with_iv(msg, key, iv)
         cipher_bytes = iv + cipher_bytes
         return cipher_bytes
@@ -172,51 +136,6 @@ class AESEncryption:
             if attr:
                 # destination[field_name] = AESEncryption.decrypt(source[field_name], key)
                 setattr(destination, field_name, AESEncryption.decrypt(attr, key))
-
-    @staticmethod
-    def encrypt_file_with_iv(file, key, iv):
-        chunk_size = 64 * 1024
-        key = get_bytes_from_string_or_return_bytes(key)
-        hashed_key_bytes = sha3_256(key).digest()
-        file_index = file.rindex("/")
-        file_path = file[:file_index]
-        file_to_write = file[file_index + 1 :] + ".enc"
-        file_size = os.path.getsize(file)
-        encryptor = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
-
-        with open(file, "rb") as infile:
-            with open(os.path.join(file_path, file_to_write), "wb") as outfile:
-                outfile.write(struct.pack("<Q", file_size))
-
-                while True:
-                    chunk = infile.read(chunk_size)
-                    if len(chunk) == 0:
-                        break
-                    elif len(chunk) % 16 != 0:
-                        chunk += b" " * (16 - len(chunk) % 16)
-                    outfile.write(encryptor.encrypt(chunk))
-
-    @staticmethod
-    def decrypt_file_with_iv(file, key, iv, output_file_name=None):
-        chunk_size = 64 * 1024
-        key = get_bytes_from_string_or_return_bytes(key)
-        hashed_key_bytes = sha3_256(key).digest()
-
-        if not output_file_name:
-            output_file_name = os.path.splitext(file)[0]
-
-        with open(file, "rb") as infile:
-            org_size = struct.unpack("<Q", infile.read(struct.calcsize("Q")))[0]
-            decryptor = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
-
-            with open(output_file_name, "wb") as outfile:
-                while True:
-                    chunk = infile.read(chunk_size)
-                    if len(chunk) == 0:
-                        break
-                    outfile.write(decryptor.decrypt(chunk))
-
-                outfile.truncate(org_size)
 
     @staticmethod
     def encrypt_file(file, key):
@@ -325,6 +244,11 @@ class RSAEncryption:
         except ValueError as valueError:
             raise CustomError(ERROR__API__INVALID_PRIVATE_KEY)
 
+        if not isinstance(ciphertext, bytes):
+            try:
+                ciphertext = ciphertext.tobytes()
+            except Exception as e:
+                raise Exception("error at decrypting, wrong type: ", e)
         plaintext = private_key.decrypt(
             ciphertext,
             asymmetric_padding.OAEP(
@@ -337,25 +261,34 @@ class RSAEncryption:
             return get_string_from_bytes_or_return_string(plaintext)
         return plaintext
 
-    @staticmethod
-    def generate_keys_cryptodome():
-        key = RSA.generate(2048)
-        return key.export_key("PEM"), key.publickey().export_key("PEM")
 
-    @staticmethod
-    def encrypt_cryptodome(msg, pem_public_key):
-        msg = get_bytes_from_string_or_return_bytes(msg)
-        rsa = RSA.import_key(pem_public_key)
-        a1 = PKCS1_OAEP.new(rsa)
-        return a1.encrypt(msg)
+class EncryptedModelMixin(object):
+    encrypted_fields = []
+    encryption_class = RSAEncryption
 
-    @staticmethod
-    def decrypt_cryptodome(
-        cipher_bytes, pem_private_key, output_type=OutputType.STRING
-    ):
-        rsa = RSA.import_key(pem_private_key)
-        cipher_rsa = PKCS1_OAEP.new(rsa)
-        plain_bytes = cipher_rsa.decrypt(cipher_bytes)
-        if output_type == OutputType.STRING:
-            return get_string_from_bytes_or_return_string(plain_bytes)
-        return plain_bytes
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ) -> None:
+        for field in self.encrypted_fields:
+            data_in_field = getattr(self, field)
+            if data_in_field and not isinstance(data_in_field, bytes):
+                raise ValueError(
+                    "The field {} of object {} is not encrypted. Do not save unencrypted data.".format(
+                        field, self
+                    )
+                )
+        super().save(force_insert, force_update, using, update_fields)
+
+    def decrypt(self, key: str or bytes) -> None:
+        for field in self.encrypted_fields:
+            decrypted_field = self.encryption_class.decrypt(getattr(self, field), key)
+            setattr(self, field, decrypted_field)
+
+    def encrypt(self, key: str or bytes) -> None:
+        for field in self.encrypted_fields:
+            encrypted_field = self.encryption_class.encrypt(getattr(self, field), key)
+            setattr(self, field, encrypted_field)
+
+    def reset_encrypted_fields(self):
+        for field in self.encrypted_fields:
+            setattr(self, field, None)

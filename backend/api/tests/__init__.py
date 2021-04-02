@@ -19,5 +19,4 @@ from .groups_test import *
 from .permissions_test import *
 from .rlcs_test import *
 from .storage_test import *
-from .regex_test import *
 from .notification_group_test import *

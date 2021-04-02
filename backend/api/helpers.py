@@ -24,25 +24,3 @@ def get_client_ip(request):
     else:
         ip = request.META.get("REMOTE_ADDR")
     return ip
-
-
-def resolve_missing_rlc_keys_entries(user, users_private_key):
-    from backend.api.models import MissingRlcKey
-
-    missing_rlc_keys = MissingRlcKey.objects.filter(user__rlc=user.rlc)
-    rlcs_aes_key = user.get_rlcs_aes_key(users_private_key)
-    users_processed = []
-    for missing_rlc_key in missing_rlc_keys:
-        # encrypt for user
-        try:
-            if missing_rlc_key.user not in users_processed:
-                missing_rlc_key.user.generate_rlc_keys_for_this_user(rlcs_aes_key)
-                missing_rlc_key.user.is_active = True
-                missing_rlc_key.user.save()
-                EmailSender.send_reset_password_complete(missing_rlc_key.user.email)
-                missing_rlc_key.delete()
-
-                users_processed.append(missing_rlc_key.user)
-                MissingRlcKey.objects.filter(user=missing_rlc_key.user).delete()
-        except Exception as e:
-            pass

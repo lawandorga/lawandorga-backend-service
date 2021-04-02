@@ -19,7 +19,8 @@ import json
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from backend.files.models import File, Folder
+from backend.files.models.file import File
+from backend.files.models.folder import Folder
 from backend.static.multithreading import MultithreadedFileUploads
 from backend.static.storage_management import LocalStorageManager
 from backend.static.middleware import get_private_key_from_request

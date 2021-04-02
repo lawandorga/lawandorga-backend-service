@@ -16,7 +16,9 @@
 
 from rest_framework import serializers
 from backend.api.serializers import UserProfileNameSerializer
-from backend.recordmanagement.models import EncryptedRecordDocumentDeletionRequest
+from backend.recordmanagement.models.encrypted_record_document_deletion_request import (
+    EncryptedRecordDocumentDeletionRequest,
+)
 from backend.recordmanagement.serializers import (
     EncryptedRecordDocumentSerializer,
     EncryptedRecordDocumentNameSerializer,

@@ -13,22 +13,20 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
+from backend.api.models.rlc import Rlc
+from backend.recordmanagement.models.origin_country import OriginCountry
+from backend.static.encryption import AESEncryption, RSAEncryption, EncryptedModelMixin
+from django_prometheus.models import ExportModelOperationsMixin
+from backend.api.errors import CustomError
+from backend.static import error_codes
 from django.db import models
 from datetime import datetime
 import pytz
-from django_prometheus.models import ExportModelOperationsMixin
-
-from backend.static.encryption import RSAEncryption
-from backend.api.errors import CustomError
-from backend.api.models import Rlc
-from backend.recordmanagement.models import OriginCountry
-from backend.static import error_codes
-from backend.static.date_utils import parse_date
-from backend.static.encryption import AESEncryption
 
 
-class EncryptedClient(ExportModelOperationsMixin("encrypted_client"), models.Model):
+class EncryptedClient(
+    ExportModelOperationsMixin("encrypted_client"), EncryptedModelMixin, models.Model
+):
     from_rlc = models.ForeignKey(
         Rlc, related_name="e_client_from_rlc", on_delete=models.SET_NULL, null=True
     )
@@ -41,14 +39,31 @@ class EncryptedClient(ExportModelOperationsMixin("encrypted_client"), models.Mod
     )
 
     # encrypted
+    # TODO: really name null?
     name = models.BinaryField(null=True)
     note = models.BinaryField(null=True)
     phone_number = models.BinaryField(null=True)
 
     encrypted_client_key = models.BinaryField(null=True)
 
+    encryption_class = AESEncryption
+    encrypted_fields = ["name", "note", "phone_number"]
+
+    class Meta:
+        verbose_name = "Client"
+        verbose_name_plural = "Clients"
+
     def __str__(self):
-        return "e_client: " + str(self.id)
+        return "client: {};".format(self.pk)
+
+    def encrypt(self, rlc_public_key: bytes) -> None:
+        key = AESEncryption.generate_secure_key()
+        self.encrypted_client_key = RSAEncryption.encrypt(key, rlc_public_key)
+        super().encrypt(key)
+
+    def decrypt(self, private_key_rlc: str = None) -> None:
+        key = RSAEncryption.decrypt(self.encrypted_client_key, private_key_rlc)
+        super().decrypt(key)
 
     def patch(self, client_data, clients_aes_key: str) -> [str]:
         patched = []
@@ -70,7 +85,7 @@ class EncryptedClient(ExportModelOperationsMixin("encrypted_client"), models.Mod
             else:
                 to_save = ""
                 if key in self.changeable_datetime_fields():
-                    to_save = parse_date(value)
+                    to_save = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ").date()
                 elif key in self.changeable_encrypted_fields():
                     to_save = AESEncryption.encrypt(value, clients_aes_key)
                 setattr(self, key, to_save)
@@ -78,6 +93,20 @@ class EncryptedClient(ExportModelOperationsMixin("encrypted_client"), models.Mod
         self.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
         self.save()
         return patched
+
+    def get_decrypted(self, rlc_private_key) -> dict:
+        aes_key = RSAEncryption.decrypt(self.encrypted_client_key, rlc_private_key)
+        return_dict = {
+            "name": AESEncryption.decrypt(self.name, aes_key),
+            "birthday": self.birthday,
+            "from_rlc": self.from_rlc,
+            "created_on": self.created_on,
+            "last_edited": self.last_edited,
+            "origin_country": self.origin_country,
+            "note": AESEncryption.decrypt(self.note, aes_key),
+            "phone_number": AESEncryption.decrypt(self.phone_number, aes_key),
+        }
+        return return_dict
 
     @staticmethod
     def allowed_fields():

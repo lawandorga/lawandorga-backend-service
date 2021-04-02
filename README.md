@@ -69,3 +69,61 @@ use this command to run the server
 
 `python manage.py runserver`
 
+## Deploy Test
+
+The place and the tag: -t jehob/law-orga-backend:test
+The directory: .
+List all directories: docker image ls
+An image is just an image and a container is a running image
+
+1. install docker
+   - docker login
+2. docker build -t jehob/law-orga-backend:test .
+3. docker push jehob/law-orga-backend:test
+4. ssh into test server
+    1. docker image ls
+    2. docker container ls
+    3. docker-compose down
+    4. cat docker-compose.yml and look that the web container has the right image version
+    5. docker pull jehob/law-orga-backend:test
+    6. docker image ls   
+    5. docker-compose up
+
+docker container ls get the id
+docker exec -it f93 sh
+
+f93 is the beginning of the id
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

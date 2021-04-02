@@ -25,20 +25,23 @@ from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
+from backend.api.models.notification import Notification
+from backend.recordmanagement.models.encrypted_record import EncryptedRecord
+from backend.recordmanagement.models.encrypted_record_document import (
+    EncryptedRecordDocument,
+)
 from backend.static.error_codes import ERROR__RECORD__DOCUMENT__ALL_MISSING
-from backend.recordmanagement import models, serializers
-from backend.static import error_codes, storage_folders
+from backend.recordmanagement import serializers
+from backend.static import error_codes, storage_folders, permissions
 from backend.static.encrypted_storage import EncryptedStorage
 from backend.static.middleware import get_private_key_from_request
 from backend.static.multithreading import MultithreadedFileUploads
 from backend.static.storage_management import LocalStorageManager
 from backend.static.storage_folders import get_temp_storage_folder
-from backend.static.getter import get_e_record
-from backend.api.models import Notification
 
 
 class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
-    queryset = models.EncryptedRecordDocument.objects.all()
+    queryset = EncryptedRecordDocument.objects.all()
     serializer_class = serializers.EncryptedRecordDocumentSerializer
 
     def post(self, request):
@@ -55,7 +58,15 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
         :param id:
         :return:
         """
-        e_record = get_e_record(request.user, id)
+        if not request.user.has_permission(
+            permissions.PERMISSION_VIEW_RECORDS_RLC, for_rlc=request.user.rlc
+        ):
+            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+        try:
+            e_record = EncryptedRecord.objects.get(pk=id)
+        except Exception as e:
+            raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
+
         if not e_record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
@@ -65,9 +76,7 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
             storage_folders.get_temp_storage_folder() + "/record" + str(e_record.id)
         )
 
-        for record_document in models.EncryptedRecordDocument.objects.filter(
-            record=e_record
-        ):
+        for record_document in EncryptedRecordDocument.objects.filter(record=e_record):
             EncryptedStorage.download_from_s3_and_decrypt_file(
                 record_document.get_file_key(), record_key, root_folder_name
             )
@@ -86,7 +95,7 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
 
     def post(self, request, id):
         try:
-            e_record: models.EncryptedRecord = models.EncryptedRecord.objects.get(pk=id)
+            e_record: EncryptedRecord = EncryptedRecord.objects.get(pk=id)
         except Exception as e:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
 
@@ -110,7 +119,7 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
 
         e_record_documents_handled = []
         for file_information in local_file_information:
-            already_existing: models.EncryptedRecordDocument = models.EncryptedRecordDocument.objects.filter(
+            already_existing: EncryptedRecordDocument = EncryptedRecordDocument.objects.filter(
                 record=e_record, name=file_information["file_name"]
             ).first()
             if already_existing is not None:
@@ -124,7 +133,7 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
                     request.user, already_existing
                 )
             else:
-                new_encrypted_record_document = models.EncryptedRecordDocument(
+                new_encrypted_record_document = EncryptedRecordDocument(
                     record=e_record,
                     creator=request.user,
                     file_size=file_information["file_size"],
@@ -152,7 +161,7 @@ class EncryptedRecordDocumentDownloadViewSet(APIView):
         :return:
         """
         try:
-            e_record_document = models.EncryptedRecordDocument.objects.get(pk=id)
+            e_record_document = EncryptedRecordDocument.objects.get(pk=id)
         except:
             raise CustomError(error_codes.ERROR__RECORD__DOCUMENT__NOT_FOUND)
         e_record = e_record_document.record

@@ -19,7 +19,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
-from backend.files.models import File, Folder
+from backend.files.models.file import File
+from backend.files.models.folder import Folder
 from backend.files.serializers import FileSerializer, FolderSerializer
 from backend.static.error_codes import (
     ERROR__API__ID_NOT_FOUND,
@@ -40,8 +41,6 @@ class FolderBaseViewSet(viewsets.ModelViewSet):
 class FolderViewSet(APIView):
     def get(self, request):
         user = request.user
-        if not user.has_permission(PERMISSION_ACCESS_TO_FILES_RLC, for_rlc=user.rlc):
-            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
 
         path = "files/" + request.query_params.get("path", "")
         if path.endswith("//"):

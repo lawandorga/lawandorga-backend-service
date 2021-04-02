@@ -16,9 +16,7 @@
 
 from rest_framework import viewsets
 from rest_framework.views import APIView
-from rest_framework.response import Response
-
-from backend.files.models import File, Folder
+from backend.files.models.file import File
 from backend.files.serializers import FileSerializer
 
 

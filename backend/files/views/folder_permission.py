@@ -16,7 +16,7 @@
 
 from rest_framework import viewsets
 
-from backend.files.models import FolderPermission
+from backend.files.models.folder_permission import FolderPermission
 from backend.files.serializers import FolderPermissionSerializer
 
 

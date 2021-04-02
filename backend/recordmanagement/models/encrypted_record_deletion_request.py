@@ -51,4 +51,6 @@ class EncryptedRecordDeletionRequest(
     )
 
     def __str__(self):
-        return "e record deletion request:" + str(self.id)
+        return "recordDeletionRequest: {}; record: {};".format(
+            self.pk, self.record.record_token
+        )

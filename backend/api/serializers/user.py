@@ -13,40 +13,54 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from django.core.exceptions import ObjectDoesNotExist
 
+from backend.api.models import UserProfile
 from rest_framework import serializers
 
-from .. import models
+
+class UserSerializer(serializers.ModelSerializer):
+    # make sure select_related('accepted') is set on the user queryset or else the queries will explode
+    accepted = serializers.SerializerMethodField("get_accepted")
+
+    class Meta:
+        model = UserProfile
+        exclude = ["groups", "user_permissions"]
+        extra_kwargs = {"password": {"write_only": True}}
+
+    def get_accepted(self, obj):
+        try:
+            if obj.accepted.state == "gr":
+                return True
+        except ObjectDoesNotExist:
+            return True
+        return False
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
-    """serializer for user profile objects"""
-
-    records_created = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    working_on_record = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+class OldUserSerializer(UserSerializer):
     group_members = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    record_messages_sent = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    # rlc_members = RlcOnlyNameSerializer(
-    #     many=True, read_only=True)
-
     user_has_permission = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     permission_for_user = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
-    class Meta:
-        model = models.UserProfile
-        fields = "__all__"
-        extra_kwargs = {"password": {"write_only": True}}
+
+class UserPasswordResetSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+
+class UserPasswordResetConfirmSerializer(serializers.Serializer):
+    token = serializers.CharField()
+    new_password = serializers.CharField()
 
 
 class UserProfileForeignSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.UserProfile
+        model = UserProfile
         fields = ("id", "name", "email", "name", "phone_number")
 
 
 class UserProfileNameSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.UserProfile
+        model = UserProfile
         fields = (
             "id",
             "name",
@@ -54,13 +68,10 @@ class UserProfileNameSerializer(serializers.ModelSerializer):
         extra_kwargs = {"password": {"write_only": True}}
 
 
-class UserProfileCreatorSerializer(serializers.ModelSerializer):
-    """serializer for user profile objects"""
-
+class UserCreateSerializer(UserSerializer):
     class Meta:
-        model = models.UserProfile
-        fields = (
-            "id",
+        model = UserProfile
+        fields = [
             "password",
             "email",
             "name",
@@ -68,29 +79,32 @@ class UserProfileCreatorSerializer(serializers.ModelSerializer):
             "street",
             "city",
             "postal_code",
-        )
+            "rlc",
+        ]
         extra_kwargs = {"password": {"write_only": True}}
 
-    def create(self, validated_data) -> models.UserProfile:
-        """create and return a new user"""
-        user = models.UserProfile(
-            email=validated_data["email"],
-            name=validated_data["name"],
-            is_active=True,
-            is_superuser=False,
-        )
+    def create(self, validated_data):
+        instance = super().create(validated_data)
+        instance.set_password(validated_data["password"])
+        # set the default stuff
+        instance.email_confirmed = False
+        instance.is_active = True
+        instance.save()
+        return instance
 
-        user.set_password(validated_data["password"])
-        if "phone_number" in validated_data:
-            user.phone_number = validated_data["phone_number"]
-        if "street" in validated_data:
-            user.street = validated_data["street"]
-        if "city" in validated_data:
-            user.city = validated_data["city"]
-        if "postal_code" in validated_data:
-            user.postal_code = validated_data["postal_code"]
-        if "birthday" in validated_data:
-            user.birthday = validated_data["birthday"]
 
-        user.save()
-        return user
+class UserUpdateSerializer(UserSerializer):
+    # TODO: make fields readonly
+    class Meta:
+        model = UserProfile
+        fields = [
+            "name",
+            "phone_number",
+            "street",
+            "city",
+            "postal_code",
+            "is_active",
+            "accepted",
+            "email",
+            "locked",
+        ]

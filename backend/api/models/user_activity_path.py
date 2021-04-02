@@ -18,5 +18,11 @@ from django.db import models
 
 
 class UserActivityPath(models.Model):
-    # "HTTP_METHOD PATH"
     path = models.CharField(max_length=1024, null=False)
+
+    class Meta:
+        verbose_name = "UserActivityPath"
+        verbose_name_plural = "UserActivityPaths"
+
+    def __str__(self):
+        return "userActivityPath: {}; path: {};".format(self.pk, self.path)

@@ -26,8 +26,6 @@ from backend.static.permissions import (
     PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
 )
 from backend.static import error_codes
-from backend.static.queryset_difference import QuerysetDifference
-from backend.static.encryption import AESEncryption
 
 
 class EncryptedRecordRequestTest(TransactionTestCase):
@@ -304,9 +302,6 @@ class EncryptedRecordRequestTest(TransactionTestCase):
         requests: [
             record_models.EncryptedRecordPermission
         ] = self.add_record_permission_request_fixtures()
-        record_encryption_difference: (QuerysetDifference) = QuerysetDifference(
-            record_models.RecordEncryption.objects.all()
-        )
         record_encryptions_before = record_models.RecordEncryption.objects.count()
 
         response: Response = self.process_client.post(
@@ -327,24 +322,7 @@ class EncryptedRecordRequestTest(TransactionTestCase):
             record_encryptions_before + 1,
             record_models.RecordEncryption.objects.count(),
         )
-        new_record_encryptions: [
-            record_models.RecordEncryption
-        ] = record_encryption_difference.get_new_items(
-            record_models.RecordEncryption.objects.all()
-        )
-        self.assertEqual(1, new_record_encryptions.__len__())
-        self.assertEqual(self.request_user, new_record_encryptions[0].user)
-        self.assertEqual(requests[1].record, new_record_encryptions[0].record)
 
-        records_decryption_key: str = new_record_encryptions[
-            0
-        ].record.get_decryption_key(self.request_user, self.request_private)
-        self.assertEqual(
-            "record1 note",
-            AESEncryption.decrypt(
-                new_record_encryptions[0].record.note, records_decryption_key
-            ),
-        )
         self.assertEqual(4, api_models.Notification.objects.count())
         self.assertEqual(4, api_models.NotificationGroup.objects.count())
 

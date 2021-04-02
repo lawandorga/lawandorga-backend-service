@@ -17,9 +17,10 @@
 from django.db import models
 from django_prometheus.models import ExportModelOperationsMixin
 
-from backend.api.models import Notification, UserProfile
-from backend.recordmanagement.models import EncryptedRecord
-from backend.static.encryption import AESEncryption
+from backend.api.models import UserProfile
+from backend.api.models.notification import Notification
+from backend.recordmanagement.models.encrypted_record import EncryptedRecord
+from backend.static.encryption import AESEncryption, EncryptedModelMixin
 
 
 class EncryptedRecordMessageManager(models.Manager):
@@ -58,8 +59,12 @@ class EncryptedRecordMessageManager(models.Manager):
 
 
 class EncryptedRecordMessage(
-    ExportModelOperationsMixin("encrypted_record_message"), models.Model
+    ExportModelOperationsMixin("encrypted_record_message"),
+    EncryptedModelMixin,
+    models.Model,
 ):
+    created_on = models.DateTimeField(auto_now_add=True)
+    #
     sender = models.ForeignKey(
         UserProfile,
         related_name="e_record_messages_sent",
@@ -67,24 +72,54 @@ class EncryptedRecordMessage(
         null=True,
     )
     record = models.ForeignKey(
-        "EncryptedRecord",
-        related_name="e_record_messages",
-        on_delete=models.CASCADE,
-        null=True,
+        "EncryptedRecord", related_name="messages", on_delete=models.CASCADE
     )
-    created_on = models.DateTimeField(auto_now_add=True)
 
     # encrypted
     message = models.BinaryField(null=False)
 
+    encryption_class = AESEncryption
+    encrypted_fields = ["message"]
+
     objects = EncryptedRecordMessageManager()
 
+    class Meta:
+        verbose_name = "RecordMessage"
+        verbose_name_plural = "RecordMessages"
+
     def __str__(self):
-        return (
-            "e_record_message: "
-            + str(self.id)
-            + "; e_record: "
-            + str(self.record)
-            + "; sender: "
-            + str(self.sender.id)
+        return "recordMessage: {}; record: {};".format(
+            self.pk, self.record.record_token
+        )
+
+    def encrypt(
+        self,
+        user: UserProfile = None,
+        private_key_user: bytes = None,
+        aes_key: str = None,
+    ) -> None:
+        if user and private_key_user:
+            record_encryption = self.record.encryptions.get(user=user)
+            record_encryption.decrypt(private_key_user)
+            key = record_encryption.encrypted_key
+        elif aes_key:
+            key = aes_key
+        else:
+            raise ValueError(
+                "You have to set (user and private_key_user) or (aes_key)."
+            )
+        super().encrypt(key)
+
+    def decrypt(self, user: UserProfile = None, private_key_user: bytes = None) -> None:
+        if user and private_key_user:
+            record_encryption = self.record.encryptions.get(user=user)
+            record_encryption.decrypt(private_key_user)
+            key = record_encryption.encrypted_key
+        else:
+            raise ValueError("You have to set (user and private_key_user).")
+        super().decrypt(key)
+
+    def __str__(self):
+        return "encrypted_record_message: {}; encrypted_record: {}; sender: {};".format(
+            self.pk, self.record.pk, self.sender.pk
         )

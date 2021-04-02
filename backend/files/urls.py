@@ -13,33 +13,22 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
-
 from backend.files.views import *
+from django.urls import path, include
 
 router = DefaultRouter()
-router.register("folder_base", FolderBaseViewSet, basename="folder_base")
-router.register("file_base", FileBaseViewSet, basename="file_base")
-router.register(
-    "permission_for_folder",
-    PermissionForFolderViewSet,
-    basename="permission_for_folder",
-)
-router.register(
-    "folder_permission", FolderPermissionViewSet, basename="folder_permission"
-)
+router.register("folder_base", FolderBaseViewSet)
+router.register("file_base", FileBaseViewSet)
+router.register("permission_for_folder", PermissionForFolderViewSet)
+router.register("folder_permission", FolderPermissionViewSet)
 
 urlpatterns = [
-    url(r"", include(router.urls)),
-    url(r"folder_download", DownloadFolderViewSet.as_view()),
-    url(r"folder$", FolderViewSet.as_view()),
-    url(r"upload", UploadViewSet.as_view()),
-    url(r"delete", DeleteViewSet.as_view()),
-    url(r"download", DownloadViewSet.as_view()),
-    url(
-        r"folder_permissions/(?P<id>.+)/$",
-        PermissionForFolderPerFolderViewSet.as_view(),
-    ),
+    path("", include(router.urls)),
+    path("folder_download/", DownloadFolderViewSet.as_view()),
+    path("folder/", FolderViewSet.as_view()),
+    path("upload/", UploadViewSet.as_view()),
+    path("delete/", DeleteViewSet.as_view()),
+    path("download/", DownloadViewSet.as_view()),
+    path("folder_permissions/<int:id>/", PermissionForFolderPerFolderViewSet.as_view()),
 ]

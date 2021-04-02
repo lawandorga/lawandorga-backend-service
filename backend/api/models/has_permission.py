@@ -13,12 +13,11 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
-from django.db.models.query import QuerySet
 from django_prometheus.models import ExportModelOperationsMixin
+from django.db.models.query import QuerySet
+from django.db import models
 
-from . import Permission
+from backend.api.models.permission import Permission
 
 
 class HasPermissionQuerySet(QuerySet):
@@ -89,17 +88,12 @@ class HasPermission(ExportModelOperationsMixin("has_permission"), models.Model):
 
     objects = HasPermissionManager
 
+    class Meta:
+        verbose_name = "HasPermission"
+        verbose_name_plural = "HasPermissions"
+
     def __str__(self):
-        return (
-            "hasPermission: "
-            + str(self.id)
-            + "; permissionName: "
-            + self.permission.name
-        )
-
-    """
-
-    """
+        return "hasPermission: {}; name: {};".format(self.pk, self.permission.name)
 
     @staticmethod
     def already_existing(data):

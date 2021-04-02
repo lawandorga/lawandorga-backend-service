@@ -13,294 +13,189 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from datetime import datetime
-
-import pytz
-from django.forms.models import model_to_dict
-from django.http import QueryDict
-from rest_framework import viewsets, filters, status
-from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.request import Request
-
-from backend.api.errors import CustomError
-from backend.static import permissions
-from backend.static.date_utils import parse_date
-from backend.static.emails import EmailSender, FrontendLinks
-from backend.static.encryption import RSAEncryption
-from backend.static.error_codes import *
-from backend.api.models import (
-    UserProfile,
-    Permission,
-    Rlc,
-    UserEncryptionKeys,
-    Notification,
-    NotificationGroup,
+from backend.api.models.notification import Notification
+from rest_framework.authtoken.models import Token
+from backend.api.models.permission import Permission
+from backend.static.permissions import (
+    PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC,
+    PERMISSION_MANAGE_USERS,
 )
+from rest_framework.permissions import IsAuthenticated
+from backend.static.error_codes import *
+from backend.static.middleware import get_private_key_from_request
+from rest_framework.decorators import action
 from backend.api.serializers import (
-    UserProfileSerializer,
-    UserProfileCreatorSerializer,
+    OldUserSerializer,
+    UserCreateSerializer,
     UserProfileNameSerializer,
     RlcSerializer,
     UserProfileForeignSerializer,
+    UserSerializer,
+    UserUpdateSerializer,
+    UserPasswordResetSerializer,
+    UserPasswordResetConfirmSerializer,
 )
-from backend.static.permissions import PERMISSION_ACCEPT_NEW_USERS_RLC
-from backend.static.middleware import get_private_key_from_request
+from rest_framework.response import Response
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.request import Request
+from django.forms.models import model_to_dict
+from backend.api.models import (
+    NewUserRequest,
+    UserProfile,
+    NotificationGroup,
+    PasswordResetTokenGenerator,
+    AccountActivationTokenGenerator,
+)
+from backend.api.errors import CustomError
+from django.core.mail import send_mail
+from django.template import loader
+from rest_framework import viewsets, filters, status
+from backend.static import permissions
+from django.utils import timezone
+from django.conf import settings
 
 
-class UserProfileViewSet(viewsets.ModelViewSet):
-    """Handles reading and updating profiles"""
-
-    serializer_class = UserProfileSerializer
-    queryset = UserProfile.objects.all()
-    permission_classes = (IsAuthenticated,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = (
-        "name",
-        "email",
-    )
-
-    def list(self, request, *args, **kwargs):
-        if request.user.is_superuser:
-            queryset = UserProfile.objects.all()
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = self.get_serializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(serializer.data)
-        else:
-            queryset = UserProfile.objects.filter(rlc=request.user.rlc, is_active=True)
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = UserProfileNameSerializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
-            serializer = UserProfileNameSerializer(queryset, many=True)
-            return Response(serializer.data)
-
-    def retrieve(self, request, pk=None, **kwargs):
-        if pk is None:
-            raise CustomError(ERROR__API__USER__ID_NOT_PROVIDED)
-        try:
-            user = UserProfile.objects.get(pk=pk)
-        except Exception as e:
-            raise CustomError(ERROR__API__USER__NOT_FOUND)
-
-        if request.user.rlc != user.rlc:
-            if request.user.is_superuser or request.user.has_permission(
-                permissions.PERMISSION_VIEW_FULL_USER_DETAIL_OVERALL
-            ):
-                serializer = UserProfileSerializer(user)
-            else:
-                raise CustomError(ERROR__API__USER__NOT_SAME_RLC)
-        else:
-            if request.user.has_permission(
-                permissions.PERMISSION_VIEW_FULL_USER_DETAIL_RLC
-            ):
-                serializer = UserProfileSerializer(user)
-            else:
-                serializer = UserProfileForeignSerializer(user)
-        return Response(serializer.data)
-
-    def update(self, request, *args, **kwargs):
-        try:
-            user_id = kwargs["pk"]
-            user = UserProfile.objects.get(pk=user_id)
-        except:
-            raise CustomError(ERROR__API__ID_NOT_FOUND)
-        if request.user != user and not request.user.is_superuser:
-            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
-        data = request.data
-        if "birthday" in data:
-            user.birthday = parse_date(data["birthday"])
-        if "postal_code" in data:
-            user.postal_code = data["postal_code"]
-        if "street" in data:
-            user.street = data["street"]
-        if "city" in data:
-            user.city = data["city"]
-        if "phone_number" in data:
-            user.phone_number = data["phone_number"]
-        if "user_state" in data:
-            user.user_state = data["user_state"]
-        if "user_record_state" in data:
-            user.user_record_state = data["user_record_state"]
-        if request.user.is_superuser:
-            if "email" in data and data["email"] != "":
-                user.email = data["email"]
-            if "name" in data and data["name"] != "":
-                user.name = data["name"]
-            if "is_active" in data:
-                user.is_active = data["is_active"]
-        user.save()
-        return Response(UserProfileSerializer(user).data)
+class SpecialPermission(IsAuthenticated):
+    def has_permission(self, request, view):
+        if request.method == "POST":
+            return True
+        return super().has_permission(request, view)
 
 
-class UserProfileCreatorViewSet(viewsets.ModelViewSet):
-    """Handles creating profiles"""
-
-    serializer_class = UserProfileCreatorSerializer
+class UserViewSet(viewsets.ModelViewSet):
+    serializer_class = UserSerializer
     queryset = UserProfile.objects.none()
-    authentication_classes = ()
-    permission_classes = ()
+    filter_backends = [filters.SearchFilter]
+    permission_classes = [SpecialPermission]
+    search_fields = ["name", "email"]
 
-    def create(self, request: Request):
-        if type(request.data) is QueryDict:
-            data = request.data.dict()
-        else:
-            data = dict(request.data)
-        if "rlc" in data:
-            del data["rlc"]
+    def get_authenticators(self):
+        # self.action == 'create' would be better here but self.action is not set yet
+        if self.request.path == "/api/profiles/" and self.request.method == "POST":
+            return []
+        return super().get_authenticators()
 
-        # Check if email already in use
-        if not "email" in request.data:
-            raise CustomError(ERROR__API__USER__CAN_NOT_CREATE)
-        if UserProfile.objects.filter(email=request.data["email"].lower()).count() > 0:
-            raise CustomError(ERROR__API__EMAIL__ALREADY_IN_USE)
-        data["email"] = data["email"].lower()
+    def get_serializer_class(self):
+        if self.action == "create":
+            return UserCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return UserUpdateSerializer
+        return super().get_serializer_class()
 
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-
-        # check if rlc exists before saving
-        if "rlc" not in request.data:
-            raise CustomError(ERROR__API__REGISTER__NO_RLC_PROVIDED)
-        try:
-            rlc = Rlc.objects.get(pk=request.data["rlc"])
-        except:
-            raise CustomError(ERROR__API__REGISTER__RLC_NOT_FOUND)
-        self.perform_create(serializer)
-
-        user = UserProfile.objects.get(email=request.data["email"].lower())
-        user.rlc = rlc
-        user.save()
-        if "birthday" in request.data and request.data["birthday"] != "Invalid date":
-            user.birthday = request.data["birthday"]
-        user.is_active = False
-        user.save()
-
-        user.generate_new_user_encryption_keys()
-
-        # new user request
-        from backend.api.models import NewUserRequest
-
-        new_user_request = NewUserRequest(request_from=user)
-        new_user_request.save()
-
-        # new user activation link
-        from backend.api.models import UserActivationLink
-
-        user_activation_link = UserActivationLink(user=user)
-        user_activation_link.save()
-
-        EmailSender.send_user_activation_email(
-            user, FrontendLinks.get_user_activation_link(user_activation_link)
+    def get_queryset(self):
+        return UserProfile.objects.filter(rlc=self.request.user.rlc).select_related(
+            "accepted"
         )
 
-        Notification.objects.notify_new_user_request(user, new_user_request)
+    def create(self, request, *args, **kwargs):
+        # create the user
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
 
+        # new user request
+        user_request = NewUserRequest.objects.create(request_from=user)
+
+        # send the user activation link email
+        token = AccountActivationTokenGenerator().make_token(user)
+        link = "{}activate-account/{}/{}/".format(settings.FRONTEND_URL, user.id, token)
+        subject = "Law & Orga Registration"
+        message = "Law & Orga - Activate your account here: {}".format(link)
+        html_message = loader.render_to_string(
+            "email_templates/activate_account.html", {"url": link}
+        )
+        send_mail(
+            subject=subject,
+            html_message=html_message,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+        )
+
+        # notify about the new user
+        Notification.objects.notify_new_user_request(user, user_request)
+
+        # return the success response
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
+    def retrieve(self, request, pk=None, **kwargs):
+        user = self.get_object()
+        serializer = UserProfileForeignSerializer(user)
+        return Response(serializer.data)
 
-class LoginViewSet(viewsets.ViewSet):
-    """checks email and password and returns auth token"""
+    def destroy(self, request, *args, **kwargs):
+        if not request.user.has_permission(PERMISSION_MANAGE_USERS):
+            data = {"message": "You don't have the necessary permission to do this."}
+            return Response(data, status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)
 
-    serializer_class = AuthTokenSerializer
-    authentication_classes = ()
-    permission_classes = ()
+    def update(self, request: Request, *args, **kwargs):
+        if not request.user.has_permission(PERMISSION_MANAGE_USERS):
+            data = {"message": "You don't have the necessary permission to do this."}
+            return Response(data, status=status.HTTP_403_FORBIDDEN)
+        return super().update(request, *args, **kwargs)
 
-    def create(self, request):
-        """
-        use the obtainauthToken APIView to validate and create a token
-        additionally add all important information for app usage
-        like static possible states, possible permissions and so on
-        Args:
-            request: the request with data: 'username' and 'password"
+    @action(
+        detail=False, methods=["post"], permission_classes=[], authentication_classes=[]
+    )
+    def login(self, request: Request):
+        serializer = AuthTokenSerializer(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid()
+        user: UserProfile = serializer.validated_data["user"]
+        password = serializer.validated_data["password"]
 
-        Returns:
-        token, information and permissions of user
-        private_key of user
-        all possible permissions, country states, countries, clients, record states, consultants
-        """
-        user_password = request.data["password"]
-        data = {"password": user_password, "username": request.data["username"].lower()}
-        serializer = self.serializer_class(data=data)
-        LoginViewSet.check_if_user_active(data["username"])
-        if serializer.is_valid():
-            token, created = Token.objects.get_or_create(
-                user=serializer.validated_data["user"]
+        # check if user active and user accepted in rlc
+        if not user.email_confirmed:
+            message = "You can not login, yet. Please confirm your email first."
+            return Response(
+                {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
             )
-            Token.objects.filter(user=token.user).exclude(
-                key=token.key
-            ).delete()  # delete old tokens, keep new
-            if not created:
-                # update the created time of the token to keep it valid
-                token.created = datetime.utcnow().replace(tzinfo=pytz.utc)
-                token.save()
-            # get encryption keys
-            encryption_keys = UserEncryptionKeys.objects.get(user=token.user)
-            if not encryption_keys:
-                private, public = RSAEncryption.generate_keys()
-                encryption_keys = UserEncryptionKeys(
-                    user=token.user, private_key=private, public_key=public
-                )
-                encryption_keys.save()
-            # decrypt keys with users password (or: if not encrypted atm, encrypt them with users password)
-            private_key = encryption_keys.decrypt_private_key(user_password)
+        if user.locked:
+            message = (
+                "Your account is temporarily blocked, because your keys need to be recreated. "
+                "Please tell an admin to press the unlock button on your user."
+            )
+            return Response(
+                {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
+            )
+        if hasattr(user, "accepted") and not user.accepted.state == "gr":
+            message = (
+                "You can not login, yet. Your RLC needs to accept you as a member."
+            )
+            return Response(
+                {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
+            )
 
-            # from backend.recordmanagement.helpers import (
-            #     resolve_missing_record_key_entries,
-            # )
+        # create the token and set the time if not created to keep it valid
+        token, created = Token.objects.get_or_create(user=user)
+        if not created:
+            token.created = timezone.now()
+            token.save()
 
-            # resolve_missing_record_key_entries(token.user, private_key)
-            # TODO: superuser?
-            if not token.user.is_superuser:
-                from backend.api.helpers import resolve_missing_rlc_keys_entries
+        # get the user's private key
+        private_key = user.get_private_key(password)
 
-                resolve_missing_rlc_keys_entries(token.user, private_key)
+        # build the response
+        data = {
+            "token": token.key,
+            "email": user.email,
+            "id": user.pk,
+            "users_private_key": private_key,
+        }
+        return Response(data, status=status.HTTP_200_OK)
 
-            return Response(LoginViewSet.get_login_data(token.key, private_key))
-        raise CustomError(ERROR__API__LOGIN__INVALID_CREDENTIALS)
-
-    def get(self, request):
-        token = request.META["HTTP_AUTHORIZATION"].split(" ")[1]
-        try:
-            Token.objects.get(key=token)
-        except:
-            raise CustomError(ERROR__API__NOT_AUTHENTICATED)
-
-        return Response(LoginViewSet.get_login_data(token))
-
-    @staticmethod
-    def get_login_data(token, private_key=None):
-        user = Token.objects.get(key=token).user
-        serialized_user = UserProfileSerializer(user).data
-        serialized_rlc = RlcSerializer(user.rlc).data
+    @action(detail=False, methods=["get"], url_path="statics/(?P<token>[^/.]+)")
+    def statics(self, request: Request, token=None, *args, **kwargs):
+        token = Token.objects.get(key=token)
+        user = token.user
 
         notifications = NotificationGroup.objects.filter(user=user, read=False).count()
-
-        statics = LoginViewSet.get_statics(user)
-        return_object = {
-            "token": token,
-            "user": serialized_user,
-            "rlc": serialized_rlc,
-            "notifications": notifications,
-        }
-        return_object.update(statics)
-        if private_key:
-            return_object.update({"users_private_key": private_key})
-
-        return return_object
-
-    @staticmethod
-    def get_statics(user):
         user_permissions = [
             model_to_dict(perm) for perm in user.get_all_user_permissions()
         ]
@@ -310,67 +205,171 @@ class LoginViewSet(viewsets.ViewSet):
         user_states_possible = UserProfile.user_states_possible
         user_record_states_possible = UserProfile.user_record_states_possible
 
-        return {
+        data = {
+            "user": OldUserSerializer(user).data,
+            "rlc": RlcSerializer(user.rlc).data,
+            "notifications": notifications,
             "permissions": user_permissions,
             "all_permissions": overall_permissions,
             "user_states": user_states_possible,
             "user_record_states": user_record_states_possible,
         }
 
-    @staticmethod
-    def check_if_user_active(user_email):
-        """
-        checks if user exists and if user is active
-        :param user_email: string, email of user
-        :return:
-        """
-        try:
-            user = UserProfile.objects.get(email=user_email)
-        except:
-            raise CustomError(ERROR__API__USER__NOT_FOUND)
-        if not user.is_active:
-            raise CustomError(ERROR__API__USER__INACTIVE)
+        return Response(data, status=status.HTTP_200_OK)
 
-
-class LogoutViewSet(APIView):
-    authentication_classes = ()
-    permission_classes = ()
-
-    def post(self, request):
+    @action(
+        detail=False, methods=["post"], authentication_classes=[], permission_classes=[]
+    )
+    def logout(self, request: Request, *args, **kwargs):
         if not request.user.is_authenticated:
-            return Response()
+            return Response(status=status.HTTP_204_NO_CONTENT)
         Token.objects.filter(user=request.user).delete()
-        return Response()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="activate/(?P<token>[^/.]+)",
+        permission_classes=[],
+        authentication_classes=[],
+    )
+    def activate(self, request, token, *args, **kwargs):
+        self.queryset = UserProfile.objects.all()
+        user = self.get_object()
 
-class InactiveUsersViewSet(APIView):
-    def get(self, request):
-        if not request.user.has_permission(
-            permissions.PERMISSION_ACTIVATE_INACTIVE_USERS_RLC, for_rlc=request.user.rlc
-        ):
-            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
-        inactive_users = UserProfile.objects.filter(
-            rlc=request.user.rlc, is_active=False
-        )
-        return Response(UserProfileSerializer(inactive_users, many=True).data)
-
-    def post(self, request):
-        if not request.user.has_permission(
-            permissions.PERMISSION_ACTIVATE_INACTIVE_USERS_RLC, for_rlc=request.user.rlc
-        ):
-            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
-        # method and user_id
-        if request.data["method"] == "activate":
-            try:
-                user = UserProfile.objects.get(pk=request.data["user_id"])
-            except:
-                raise CustomError(ERROR__API__USER__NOT_FOUND)
-
-            granting_users_private_key = get_private_key_from_request(request)
-            rlcs_aes_key = request.user.get_rlcs_aes_key(granting_users_private_key)
-            user.generate_rlc_keys_for_this_user(rlcs_aes_key)
-
-            user.is_active = True
+        if AccountActivationTokenGenerator().check_token(user, token):
+            user.email_confirmed = True
             user.save()
-            return Response(UserProfileSerializer(user).data)
-        raise CustomError(ERROR__API__ACTION_NOT_VALID)
+            return Response(status=status.HTTP_200_OK)
+        else:
+            data = {
+                "message": "The confirmation link is invalid, possibly because it has already been used."
+            }
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=["get", "post"])
+    def inactive(self, request: Request):
+        if request.method == "GET":
+            if not request.user.has_permission(
+                permissions.PERMISSION_ACTIVATE_INACTIVE_USERS_RLC,
+                for_rlc=request.user.rlc,
+            ):
+                raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+
+            inactive_users = UserProfile.objects.filter(
+                rlc=request.user.rlc, is_active=False
+            )
+            return Response(UserSerializer(inactive_users, many=True).data)
+
+        elif request.method == "POST":
+            if not request.user.has_permission(
+                permissions.PERMISSION_ACTIVATE_INACTIVE_USERS_RLC,
+                for_rlc=request.user.rlc,
+            ):
+                raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+            # method and user_id
+            if request.data["method"] == "activate":
+                try:
+                    user = UserProfile.objects.get(pk=request.data["user_id"])
+                except:
+                    raise CustomError(ERROR__API__USER__NOT_FOUND)
+
+                granting_users_private_key = get_private_key_from_request(request)
+                rlcs_aes_key = request.user.get_rlcs_aes_key(granting_users_private_key)
+                user.generate_rlc_keys_for_this_user(rlcs_aes_key)
+
+                user.is_active = True
+                user.save()
+                return Response(OldUserSerializer(user).data)
+            raise CustomError(ERROR__API__ACTION_NOT_VALID)
+
+        return Response({})
+
+    @action(
+        detail=False, methods=["POST"], authentication_classes=[], permission_classes=[]
+    )
+    def password_reset(self, request, *args, **kwargs):
+        # get the user
+        serializer = UserPasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user = UserProfile.objects.get(email=serializer.validated_data["email"])
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        # send the user activation link email
+        token = PasswordResetTokenGenerator().make_token(user)
+        link = "{}reset-password/{}/{}/".format(settings.FRONTEND_URL, user.id, token)
+        subject = "Law & Orga Account Password reset"
+        message = "Law & Orga - Reset your password here: {}".format(link)
+        html_message = loader.render_to_string(
+            "email_templates/reset_password.html", {"link": link}
+        )
+        send_mail(
+            subject=subject,
+            html_message=html_message,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+        )
+
+        # return the success response
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    @action(
+        detail=True, methods=["POST"], authentication_classes=[], permission_classes=[]
+    )
+    def password_reset_confirm(self, request, *args, **kwargs):
+        self.queryset = UserProfile.objects.all()
+        user: UserProfile = self.get_object()
+
+        serializer = UserPasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.validated_data["token"]
+        new_password = serializer.validated_data["new_password"]
+        if PasswordResetTokenGenerator().check_token(user, token):
+            user.set_password(new_password)
+            user.locked = True
+            user.save()
+            # generate new user private and public key based on the new password
+            user.encryption_keys.delete()
+            user.get_private_key(password_user=new_password)
+            # return
+            return Response(status=status.HTTP_200_OK)
+        else:
+            data = {
+                "message": "The password reset link is invalid, possibly because it has already been used."
+            }
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=["POST"])
+    def unlock(self, request, pk=None, *args, **kwargs):
+        """
+        when this api endpoint is called we assume that the public and private key of the submitted user is
+        valid and up to date. this means that his private key can be decrypted with the password that this
+         user has at the moment.
+        """
+        user = self.request.user
+        user_to_unlock = self.get_object()
+
+        if not request.user.has_permission(
+            PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc
+        ):
+            data = {
+                "message": "You need to have the view_records_full_detail permission in order to unlock this user."
+                "Because you need to be able to give this user all his encryption keys."
+            }
+            return Response(data)
+
+        # generate new rlc key
+        private_key_user = request.user.get_private_key(request=request)
+        request.user.generate_keys_for_user(private_key_user, user_to_unlock)
+
+        # unlock the user
+        user.locked = False
+        user.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)

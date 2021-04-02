@@ -13,11 +13,12 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from backend.api.management.commands.commands import populate_deploy_db
+from backend.api.tests import CreateFixtures
+from django.test import TransactionTestCase
 
-from django.test import SimpleTestCase
-from backend.api.management.commands._migrators import Migrators
 
-
-class MigratorsTest(SimpleTestCase):
-    def test_test(self):
-        pass
+class MigratorsTest(TransactionTestCase):
+    def setUp(self) -> None:
+        populate_deploy_db()
+        self.base_fixtures = CreateFixtures.create_base_fixtures()

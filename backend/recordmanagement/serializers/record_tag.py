@@ -16,20 +16,20 @@
 
 
 from rest_framework import serializers
-from backend.recordmanagement import models
+from backend.recordmanagement.models.record_tag import RecordTag
 
 
 class RecordTagSerializer(serializers.ModelSerializer):
-    tagged = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    e_tagged = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
-        model = models.RecordTag
+        model = RecordTag
         fields = "__all__"
 
 
 class RecordTagNameSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.RecordTag
+        model = RecordTag
         fields = (
             "id",
             "name",

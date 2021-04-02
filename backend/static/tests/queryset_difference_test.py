@@ -16,7 +16,6 @@
 
 
 from backend.api.models import UserProfile
-from backend.static.queryset_difference import QuerysetDifference, QuerySet
 from django.test import TransactionTestCase
 
 
@@ -71,12 +70,3 @@ class QuerysetDifferenceTest(TransactionTestCase):
             user7,
             user8,
         ]
-
-    def test_get_difference(self):
-        start: QuerySet = UserProfile.objects.filter(name__contains="test0")
-        queryset_difference = QuerysetDifference(start)
-        new_items = queryset_difference.get_new_items(
-            UserProfile.objects.filter(name__contains="prop0")
-        )
-        self.assertIn(self.users[1], new_items)
-        self.assertIn(self.users[2], new_items)
