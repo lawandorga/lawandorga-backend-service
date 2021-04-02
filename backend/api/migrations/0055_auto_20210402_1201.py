@@ -6,17 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0054_auto_20210330_1721'),
+        ("api", "0054_auto_20210330_1721"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='userprofile',
-            options={'ordering': ['name'], 'verbose_name': 'UserProfile', 'verbose_name_plural': 'UserProfiles'},
+            name="userprofile",
+            options={
+                "ordering": ["name"],
+                "verbose_name": "UserProfile",
+                "verbose_name_plural": "UserProfiles",
+            },
         ),
         migrations.AlterField(
-            model_name='group',
-            name='name',
-            field=models.CharField(max_length=200),
+            model_name="group", name="name", field=models.CharField(max_length=200),
         ),
     ]
