@@ -84,9 +84,12 @@ class UserViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
     def get_queryset(self):
-        return UserProfile.objects.filter(rlc=self.request.user.rlc).select_related(
-            "accepted"
-        )
+        if self.action == "activate":
+            return UserProfile.objects.all().select_related("accepted")
+        else:
+            return UserProfile.objects.filter(rlc=self.request.user.rlc).select_related(
+                "accepted"
+            )
 
     def create(self, request, *args, **kwargs):
         # create the user
@@ -234,8 +237,9 @@ class UserViewSet(viewsets.ModelViewSet):
         authentication_classes=[],
     )
     def activate(self, request, token, *args, **kwargs):
-        self.queryset = UserProfile.objects.all()
+        # localhost:4200/activate-account/1023/akoksc-f52702143fcf098155fb1b2c6b081f7a/
         user = self.get_object()
+        # user: UserProfile = UserProfile.objects.get(pk=kwargs["pk"])
 
         if AccountActivationTokenGenerator().check_token(user, token):
             user.email_confirmed = True

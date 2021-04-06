@@ -20,7 +20,6 @@ REST_FRAMEWORK = {
         "backend.api.authentication.ExpiringTokenAuthentication"
     ],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
-    "EXCEPTION_HANDLER": "backend.api.exception_handler.custom_exception_handler",
 }
 # This is used by the ExpiringTokenAuthentication which extends from rest's token authentication
 TIMEOUT_TIMEDELTA = timedelta(minutes=10)

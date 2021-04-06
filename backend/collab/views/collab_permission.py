@@ -14,12 +14,15 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from rest_framework import viewsets
+from rest_framework import mixins
+from rest_framework.viewsets import GenericViewSet
 
 from backend.collab.models import CollabPermission
 from backend.collab.serializers import CollabPermissionSerializer
 
 
-class CollabPermissionViewSet(viewsets.ModelViewSet):
+class CollabPermissionViewSet(mixins.ListModelMixin, GenericViewSet):
+    authentication_classes = ()
+    permission_classes = ()
     queryset = CollabPermission.objects.all()
     serializer_class = CollabPermissionSerializer
