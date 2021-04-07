@@ -3,7 +3,7 @@ from datetime import timedelta
 
 # Debug
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEBUG
-DEBUG = get_secret("DEBUG")
+DEBUG = False
 
 # Allowed Hosts
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
