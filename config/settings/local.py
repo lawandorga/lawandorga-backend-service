@@ -49,10 +49,10 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # https://pypi.org/project/django-cors-headers/
 CORS_ALLOW_ALL_ORIGINS = True
 
-# The standard password of the dummy user, this is used within get_private_key in UserProfile
-# This enables us to do a lot of cool stuff, for example: test the restframework api directly
-DUMMY_USER_PASSWORD = "qwe123"
-
 # Django Debug Toolbar
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#configuring-internal-ips
 INTERNAL_IPS = ["127.0.0.1"]
+
+# The standard password of the dummy user, this is used within get_private_key in UserProfile
+# This enables us to do a lot of cool stuff, for example: test the restframework api directly
+DUMMY_USER_PASSWORD = "qwe123"

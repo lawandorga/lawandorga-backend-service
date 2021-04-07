@@ -95,17 +95,6 @@ TEMPLATES = [
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-WSGI_APPLICATION
 WSGI_APPLICATION = "config.wsgi.application"
 
-# E-Mail
-# https://docs.djangoproject.com/en/dev/topics/email/#smtp-backend
-EMAIL_HOST = get_secret("EMAIL_HOST")
-DEFAULT_FROM_EMAIL = get_secret("EMAIL_ADDRESS")
-SERVER_EMAIL = get_secret("EMAIL_ADDRESS")
-EMAIL_PORT = get_secret("EMAIL_PORT")
-EMAIL_HOST_USER = get_secret("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = get_secret("EMAIL_HOST_PASSWORD")
-EMAIL_USER_TLS = get_secret("EMAIL_USER_TLS")
-EMAIL_USE_SSL = get_secret("EMAIL_USE_SSL")
-
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 LANGUAGE_CODE = "en-us"
@@ -117,12 +106,6 @@ USE_TZ = True
 # Authentication
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-AUTH_USER_MODEL
 AUTH_USER_MODEL = "api.UserProfile"
-
-
-# Secret keys for s3-storage to save files from 'files' and documents from records
-SCW_SECRET_KEY = get_secret("SCW_SECRET_KEY")
-SCW_ACCESS_KEY = get_secret("SCW_ACCESS_KEY")
-SCW_S3_BUCKET_NAME = get_secret("SCW_S3_BUCKET_NAME")
 
 # Static Files
 # https://docs.djangoproject.com/en/dev/howto/static-files/
@@ -144,6 +127,11 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
     "private-key",
 ]
+
+# Secret keys for s3-storage to save files from 'files' and documents from records
+SCW_SECRET_KEY = get_secret("SCW_SECRET_KEY")
+SCW_ACCESS_KEY = get_secret("SCW_ACCESS_KEY")
+SCW_S3_BUCKET_NAME = get_secret("SCW_S3_BUCKET_NAME")
 
 # This is used for links in activation emails and so on
 FRONTEND_URL = get_secret("FRONTEND_URL")
