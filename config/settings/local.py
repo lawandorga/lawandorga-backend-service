@@ -2,7 +2,7 @@ from config.settings.base import *
 
 # Debug
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEBUG
-DEBUG = False
+DEBUG = True
 
 # Allowed Hosts
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts

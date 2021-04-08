@@ -28,9 +28,10 @@ from backend.api.models import (
     UserActivityPath,
     UserSession,
     UserSessionPath,
-    Group,
+    Group, LoggedPath,
 )
 from django.contrib import admin
+
 
 admin.site.register(Group)
 admin.site.register(Permission)
@@ -47,3 +48,4 @@ admin.site.register(UserSession)
 admin.site.register(UserSessionPath)
 admin.site.register(UserProfile)
 admin.site.register(Notification)
+admin.site.register(LoggedPath)
