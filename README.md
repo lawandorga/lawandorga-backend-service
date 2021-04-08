@@ -95,10 +95,13 @@ docker exec -it f93 sh
 f93 is the beginning of the id
 
 
-
-
-
-
+## Setup server
+1. `cd /home`
+2. `git clone https://github.com/lawandorga/law-orga-backend.git`
+3. `cd law-orga-backend/`
+4. Connect `prod-api.law-orga.de` with the server IP
+5. `./setup.prod.sh`
+6. `./deploy.sh`
 
 
 
