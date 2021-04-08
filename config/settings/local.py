@@ -2,7 +2,7 @@ from config.settings.base import *
 
 # Debug
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEBUG
-DEBUG = True
+DEBUG = False
 
 # Allowed Hosts
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
@@ -27,7 +27,7 @@ MIDDLEWARE += [
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        "NAME": os.path.join(BASE_DIR, "tmp/db.sqlite3"),
     }
 }
 
@@ -36,7 +36,7 @@ DATABASES = {
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "backend.api.authentication.TokenAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
+        # "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
 }
