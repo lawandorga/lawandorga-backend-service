@@ -50,7 +50,8 @@ EMAIL_USE_SSL = get_secret("EMAIL_USE_SSL")
 
 # Installed app django-cors-headers
 # https://pypi.org/project/django-cors-headers/
-CORS_ALLOWED_ORIGINS = get_secret("CORS_ALLOWED_ORIGINS")
+# CORS_ALLOWED_ORIGINS = get_secret("CORS_ALLOWED_ORIGINS")
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Logging
 # https://docs.djangoproject.com/en/dev/topics/logging/
