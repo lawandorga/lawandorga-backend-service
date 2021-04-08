@@ -14,14 +14,11 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from backend.static.encryption import AESEncryption, EncryptedModelMixin
-from django_prometheus.models import ExportModelOperationsMixin
 from backend.api.models.rlc import Rlc
 from django.db import models
 
 
-class RlcEncryptionKeys(
-    ExportModelOperationsMixin("rlc_encryption_key"), EncryptedModelMixin, models.Model
-):
+class RlcEncryptionKeys(EncryptedModelMixin, models.Model):
     rlc = models.OneToOneField(
         Rlc, related_name="encryption_keys", on_delete=models.CASCADE
     )

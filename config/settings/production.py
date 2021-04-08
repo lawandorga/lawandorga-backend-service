@@ -28,7 +28,7 @@ TIMEOUT_TIMEDELTA = timedelta(minutes=10)
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 DATABASES = {
     "default": {
-        "ENGINE": "django_prometheus.db.backends.postgresql",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": get_secret("DB_NAME"),
         "USER": get_secret("DB_USER"),
         "PASSWORD": get_secret("DB_PASSWORD"),

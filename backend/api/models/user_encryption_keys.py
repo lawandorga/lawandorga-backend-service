@@ -14,14 +14,11 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from backend.static.encryption import AESEncryption
-from django_prometheus.models import ExportModelOperationsMixin
 from backend.api.models.user import UserProfile
 from django.db import models
 
 
-class UserEncryptionKeys(
-    ExportModelOperationsMixin("user_encryption_keys"), models.Model
-):
+class UserEncryptionKeys(models.Model):
     user = models.OneToOneField(
         UserProfile,
         related_name="encryption_keys",

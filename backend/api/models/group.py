@@ -15,7 +15,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from backend.api.models.has_permission import HasPermission
 from backend.api.models.permission import Permission
-from django_prometheus.models import ExportModelOperationsMixin
 from backend.api.models.user import UserProfile
 from django.db.models import Q
 from backend.static import permissions
@@ -40,7 +39,7 @@ class GroupQuerySet(models.QuerySet):
             return self.filter(Q(from_rlc=user.rlc, visible=True) | Q(id__in=permitted))
 
 
-class Group(ExportModelOperationsMixin("group"), models.Model):
+class Group(models.Model):
     creator = models.ForeignKey(
         UserProfile, related_name="group_created", on_delete=models.SET_NULL, null=True
     )

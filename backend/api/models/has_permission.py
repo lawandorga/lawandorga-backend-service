@@ -13,7 +13,6 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from django_prometheus.models import ExportModelOperationsMixin
 from django.db.models.query import QuerySet
 from django.db import models
 
@@ -35,7 +34,7 @@ class HasPermissionManager(models.Manager):
         return getattr(self.get_query_set(), item, *args)
 
 
-class HasPermission(ExportModelOperationsMixin("has_permission"), models.Model):
+class HasPermission(models.Model):
     permission = models.ForeignKey(
         Permission,
         related_name="in_has_permission",

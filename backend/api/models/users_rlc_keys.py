@@ -15,14 +15,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from backend.api.models.rlc import Rlc
 from backend.api.models.user import UserProfile
-from backend.static.encryption import EncryptedModelMixin, AESEncryption, RSAEncryption
-from django_prometheus.models import ExportModelOperationsMixin
+from backend.static.encryption import EncryptedModelMixin, RSAEncryption
 from django.db import models
 
 
-class UsersRlcKeys(
-    ExportModelOperationsMixin("users_rlc_keys"), EncryptedModelMixin, models.Model
-):
+class UsersRlcKeys(EncryptedModelMixin, models.Model):
     user = models.ForeignKey(
         UserProfile, related_name="users_rlc_keys", on_delete=models.CASCADE, null=False
     )

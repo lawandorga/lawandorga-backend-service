@@ -14,13 +14,12 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from backend.static.notification_enums import NotificationGroupType
-from django_prometheus.models import ExportModelOperationsMixin
 from backend.api.models.user import UserProfile
 from django.utils import timezone
 from django.db import models
 
 
-class NotificationGroup(ExportModelOperationsMixin("notification_group"), models.Model):
+class NotificationGroup(models.Model):
     user = models.ForeignKey(
         UserProfile, related_name="notification_groups", on_delete=models.CASCADE
     )

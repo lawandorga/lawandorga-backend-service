@@ -13,14 +13,11 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from django_prometheus.models import ExportModelOperationsMixin
 from backend.api.models import UserProfile
 from django.db import models
 
 
-class EncryptedRecordPermission(
-    ExportModelOperationsMixin("encrypted_record_permission"), models.Model
-):
+class EncryptedRecordPermission(models.Model):
     request_from = models.ForeignKey(
         UserProfile,
         related_name="e_record_permissions_requested",

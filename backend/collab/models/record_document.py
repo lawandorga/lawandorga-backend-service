@@ -13,12 +13,9 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
-from django_prometheus.models import ExportModelOperationsMixin
-
-from backend.collab.models import TextDocument
 from backend.recordmanagement.models import EncryptedRecord
+from backend.collab.models import TextDocument
+from django.db import models
 
 
 class RecordDocument(TextDocument):

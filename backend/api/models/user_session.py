@@ -16,8 +16,6 @@
 from django.db import models
 from django.utils import timezone
 from datetime import timedelta
-from django_prometheus.models import ExportModelOperationsMixin
-
 from backend.api.models.rlc import Rlc
 from backend.api.models.user import UserProfile
 from backend.static.logger import Logger
@@ -56,7 +54,7 @@ class UserSessionManager(models.Manager):
         UserSessionPath.objects.log_path(session=session, path=complete_path)
 
 
-class UserSession(ExportModelOperationsMixin("user_session"), models.Model):
+class UserSession(models.Model):
     user = models.CharField(
         max_length=255, null=False
     )  # no connection to user on purpose (for privacy)

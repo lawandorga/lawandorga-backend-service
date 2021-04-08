@@ -13,16 +13,11 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
-from django.utils import timezone
-from django.utils.crypto import get_random_string
-from django_prometheus.models import ExportModelOperationsMixin
-
 from backend.collab.models.text_document import TextDocument
-
-# from backend.static.string_generator import get_random_string
 from backend.static.encryption import AESEncryption
+from django.utils.crypto import get_random_string
+from django.utils import timezone
+from django.db import models
 
 
 def generate_room_id():

@@ -15,8 +15,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
-from django_prometheus.models import ExportModelOperationsMixin
-
 from backend.api.models import UserProfile
 from backend.api.models.notification import Notification
 from backend.recordmanagement.models.encrypted_record import EncryptedRecord
@@ -58,11 +56,7 @@ class EncryptedRecordMessageManager(models.Manager):
         return new_message, record_key
 
 
-class EncryptedRecordMessage(
-    ExportModelOperationsMixin("encrypted_record_message"),
-    EncryptedModelMixin,
-    models.Model,
-):
+class EncryptedRecordMessage(EncryptedModelMixin, models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     #
     sender = models.ForeignKey(

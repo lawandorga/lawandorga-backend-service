@@ -15,8 +15,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from django.db import models
-from django_prometheus.models import ExportModelOperationsMixin
-
 from backend.api.models import UserProfile
 from backend.api.models.rlc import Rlc
 from backend.files.models.folder_permission import FolderPermission
@@ -38,7 +36,7 @@ from backend.api.errors import CustomError
 from backend.static.logger import Logger
 
 
-class Folder(ExportModelOperationsMixin("folder"), models.Model):
+class Folder(models.Model):
     name = models.CharField(max_length=255)
 
     creator = models.ForeignKey(

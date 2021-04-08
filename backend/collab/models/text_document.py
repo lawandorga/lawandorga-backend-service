@@ -17,8 +17,6 @@
 from django.db import models
 from django.utils import timezone
 from model_utils.managers import InheritanceManager
-from django_prometheus.models import ExportModelOperationsMixin
-
 from backend.api.models import Rlc, UserProfile
 from backend.api.errors import CustomError
 from backend.static.error_codes import (

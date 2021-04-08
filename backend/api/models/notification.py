@@ -16,7 +16,6 @@
 from backend.api.models.new_user_request import NewUserRequest
 from backend.api.models.notification_group import NotificationGroup
 from backend.static.notification_enums import NotificationGroupType, NotificationType
-from django_prometheus.models import ExportModelOperationsMixin
 from backend.api.models.user import UserProfile
 from backend.static import permissions
 from django.utils import timezone
@@ -680,7 +679,7 @@ class NotificationManager(models.Manager):
         )
 
 
-class Notification(ExportModelOperationsMixin("notification"), models.Model):
+class Notification(models.Model):
     notification_group = models.ForeignKey(
         NotificationGroup,
         related_name="notifications",

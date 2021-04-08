@@ -13,15 +13,12 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db import models
-from django_prometheus.models import ExportModelOperationsMixin
-
-from backend.api.models import UserProfile
 from backend.recordmanagement.models.encrypted_record import EncryptedRecord
+from backend.api.models import UserProfile
+from django.db import models
 
 
-class PoolRecord(ExportModelOperationsMixin("pool_record"), models.Model):
+class PoolRecord(models.Model):
     record = models.ForeignKey(
         EncryptedRecord,
         related_name="e_record_pool_entry",

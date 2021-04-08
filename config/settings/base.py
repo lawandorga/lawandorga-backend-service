@@ -50,13 +50,11 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "storages",
     "corsheaders",
-    "django_prometheus",
 ]
 
 # Middleware
 # https://docs.djangoproject.com/en/dev/topics/http/middleware/
 MIDDLEWARE = [
-    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
@@ -66,7 +64,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # "backend.static.middleware.LoggingMiddleware",
-    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 # Url conf

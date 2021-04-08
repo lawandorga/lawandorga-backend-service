@@ -16,15 +16,12 @@
 from backend.recordmanagement.models import RecordTag
 from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 from backend.static.encryption import AESEncryption, EncryptedModelMixin
-from django_prometheus.models import ExportModelOperationsMixin
 from backend.api.models.rlc import Rlc
 from backend.api.models import UserProfile
 from django.db import models
 
 
-class EncryptedRecord(
-    ExportModelOperationsMixin("encrypted_record"), EncryptedModelMixin, models.Model
-):
+class EncryptedRecord(EncryptedModelMixin, models.Model):
     created_on = models.DateField(auto_now_add=True)
     last_edited = models.DateTimeField(auto_now_add=True)
 

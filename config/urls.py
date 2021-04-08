@@ -28,7 +28,6 @@ urlpatterns = [
     path("api/records/", include(record_urls)),
     path("api/files/", include(file_urls)),
     path("api/collab/", include(collab_urls)),
-    path("prometheus/", include("django_prometheus.urls")),
     path("", TemplateView.as_view(template_name="index.html")),
 ]
 

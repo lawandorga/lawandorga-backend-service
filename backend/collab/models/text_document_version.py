@@ -16,8 +16,6 @@
 
 from django.db import models
 from django.utils import timezone
-from django_prometheus.models import ExportModelOperationsMixin
-
 from backend.api.models import UserProfile
 from backend.collab.models import TextDocument
 from backend.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
