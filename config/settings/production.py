@@ -45,8 +45,8 @@ SERVER_EMAIL = get_secret("EMAIL_ADDRESS")
 EMAIL_PORT = get_secret("EMAIL_PORT")
 EMAIL_HOST_USER = get_secret("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = get_secret("EMAIL_HOST_PASSWORD")
-EMAIL_USER_TLS = get_secret("EMAIL_USER_TLS")
-EMAIL_USE_SSL = get_secret("EMAIL_USE_SSL")
+EMAIL_USER_TLS = True
+EMAIL_USE_SSL = True
 
 # Installed app django-cors-headers
 # https://pypi.org/project/django-cors-headers/
