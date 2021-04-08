@@ -101,7 +101,8 @@ f93 is the beginning of the id
 3. `cd law-orga-backend/`
 4. Connect `prod-api.law-orga.de` with the server IP
 5. `./setup.prod.sh`
-6. `./deploy.sh`
+6. Add content to `tmp/secrets.json`   
+7. `./deploy.sh`
 
 
 

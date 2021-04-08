@@ -149,7 +149,7 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = AuthTokenSerializer(
             data=request.data, context={"request": request}
         )
-        serializer.is_valid()
+        serializer.is_valid(raise_exception=True)
         user: UserProfile = serializer.validated_data["user"]
         password = serializer.validated_data["password"]
 
