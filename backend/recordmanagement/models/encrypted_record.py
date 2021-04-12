@@ -19,6 +19,7 @@ from backend.static.encryption import AESEncryption, EncryptedModelMixin
 from backend.api.models.rlc import Rlc
 from backend.api.models import UserProfile
 from django.db import models
+from backend.static.permissions import get_record_encryption_keys_permissions_strings
 
 
 class EncryptedRecord(EncryptedModelMixin, models.Model):
@@ -168,28 +169,27 @@ class EncryptedRecord(EncryptedModelMixin, models.Model):
             users.append(permission_request.request_from)
         return users
 
-    def get_users_with_decryption_keys(self) -> [UserProfile]:
-        # TODO: rename
+    def get_users_who_should_be_allowed_to_decrypt(self) -> [UserProfile]:
         from backend.api.models import UserProfile
-        from backend.static.permissions import (
-            get_record_encryption_keys_permissions_strings,
-        )
 
+        # users that are working on the record
         working_on_users = self.working_on_record.all()
+
+        # users that created a request to see the record and were allowed
         users_with_record_permission = UserProfile.objects.filter(
             e_record_permissions_requested__record=self,
             e_record_permissions_requested__state="gr",
         )
 
-        users_with_decryption_key_permissions = UserProfile.objects.get_users_with_special_permissions(
-            get_record_encryption_keys_permissions_strings(), for_rlc=self.from_rlc
-        )
+        # users that have the necessary permissions
+        rlc = self.working_on_record.first().rlc
+        users_with_permission = []
+        for user in list(rlc.rlc_members.all()):
+            if user.has_permissions(get_record_encryption_keys_permissions_strings()):
+                users_with_permission.append(user.id)
+        users_with_permission = UserProfile.objects.filter(pk__in=users_with_permission)
 
-        return (
-            working_on_users.union(users_with_record_permission)
-            .union(users_with_decryption_key_permissions)
-            .distinct()
-        )
+        return working_on_users | users_with_record_permission | users_with_permission
 
     def get_decryption_key(self, user: UserProfile, users_private_key: str) -> str:
         encryption = self.encryptions.get(user=user)

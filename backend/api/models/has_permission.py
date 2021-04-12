@@ -13,25 +13,8 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from django.db.models.query import QuerySet
-from django.db import models
-
 from backend.api.models.permission import Permission
-
-
-class HasPermissionQuerySet(QuerySet):
-    def check_if_already_existing(self, val):
-        return val
-
-
-class HasPermissionManager(models.Manager):
-    def get_query_set(self):
-        return super().get_queryset()
-
-    def __getattr__(self, item, *args):
-        if item.startwith("_"):
-            raise AttributeError
-        return getattr(self.get_query_set(), item, *args)
+from django.db import models
 
 
 class HasPermission(models.Model):
@@ -63,30 +46,6 @@ class HasPermission(models.Model):
         null=True,
     )
 
-    permission_for_user = models.ForeignKey(
-        "UserProfile",
-        related_name="permission_for_user",
-        blank=True,
-        on_delete=models.CASCADE,
-        null=True,
-    )
-    permission_for_group = models.ForeignKey(
-        "Group",
-        related_name="permission_for_group",
-        blank=True,
-        on_delete=models.CASCADE,
-        null=True,
-    )
-    permission_for_rlc = models.ForeignKey(
-        "Rlc",
-        related_name="permission_for_rlc",
-        blank=True,
-        on_delete=models.CASCADE,
-        null=True,
-    )
-
-    objects = HasPermissionManager
-
     class Meta:
         verbose_name = "HasPermission"
         verbose_name_plural = "HasPermissions"
@@ -101,9 +60,6 @@ class HasPermission(models.Model):
             user_has_permission=data.get("user_has_permission", None),
             group_has_permission=data.get("group_has_permission", None),
             rlc_has_permission=data.get("rlc_has_permission", None),
-            permission_for_user=data.get("permission_for_user", None),
-            permission_for_group=data.get("permission_for_group", None),
-            permission_for_rlc=data.get("permission_for_rlc", None),
         ).count()
         if entries == 0:
             return False
@@ -113,7 +69,6 @@ class HasPermission(models.Model):
     check if values which are in data can made to a valid get_as_user_permissions
     :returns True, if valid, False if invalid
     """
-
     @staticmethod
     def validate_values(data):
         if (
@@ -133,7 +88,6 @@ class HasPermission(models.Model):
     Checks if the key key is in the dict data and if it has a value other than '' and none
     :returns 0 if not there, '' or none, 1 if other
     """
-
     @staticmethod
     def _check_key_with_value_in_data(data, key):
         return int(key in data and data[key] != "" and data[key] is not None)

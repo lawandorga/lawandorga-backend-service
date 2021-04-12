@@ -193,7 +193,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
             record.tagged.add(item)
 
         # create encryption keys
-        for user in record.get_users_with_decryption_keys():
+        for user in record.get_users_who_should_be_allowed_to_decrypt().order_by():
             encryption = RecordEncryption(
                 user=user, record=record, encrypted_key=aes_key
             )

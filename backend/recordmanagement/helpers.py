@@ -24,7 +24,7 @@ def check_encryption_key_holders_and_grant(granting_user, granting_users_private
         record_key = record.get_decryption_key(
             granting_user, granting_users_private_key
         )
-        users_with_keys = record.get_users_with_decryption_keys()
+        users_with_keys = record.get_users_who_should_be_allowed_to_decrypt()
         for user in users_with_keys:
 
             if not RecordEncryption.objects.filter(user=user, record=record).exists():

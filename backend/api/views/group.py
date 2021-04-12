@@ -40,10 +40,9 @@ class GroupViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         # permission stuff
-        if not request.user.has_permission(
-            permissions.PERMISSION_MANAGE_GROUPS_RLC, for_rlc=request.user.rlc
-        ) and not request.user.has_permission(
-            permissions.PERMISSION_ADD_GROUP_RLC, for_rlc=request.user.rlc
+        if (
+            not request.user.has_permission(permissions.PERMISSION_MANAGE_GROUPS_RLC) and
+            not request.user.has_permission(permissions.PERMISSION_ADD_GROUP_RLC)
         ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 

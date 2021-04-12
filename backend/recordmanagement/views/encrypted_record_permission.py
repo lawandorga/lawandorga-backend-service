@@ -57,7 +57,6 @@ class EncryptedRecordPermissionProcessViewSet(APIView):
         user: UserProfile = request.user
         if not user.has_permission(
             permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
-            for_rlc=user.rlc,
         ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
         if "id" not in request.data:

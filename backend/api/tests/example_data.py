@@ -635,7 +635,7 @@ def create_records(
             created_record.tagged.add(tag)
         # secure the record
         aes_key = AESEncryption.generate_secure_key()
-        users_with_permission = created_record.get_users_with_decryption_keys()
+        users_with_permission = created_record.get_users_who_should_be_allowed_to_decrypt()
         for user in users_with_permission:
             record_encryption = RecordEncryption(
                 user=user, record=created_record, encrypted_key=aes_key

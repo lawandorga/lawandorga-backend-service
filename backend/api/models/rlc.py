@@ -13,6 +13,7 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from backend.api.models import Permission
 from backend.static.permissions import PERMISSION_CAN_CONSULT
 from backend.static.encryption import AESEncryption, RSAEncryption
 from backend.api.models.user import UserProfile
@@ -40,9 +41,12 @@ class Rlc(models.Model):
         gets all user from rlc with permission to consult
         :return:
         """
-        return UserProfile.objects.get_users_with_special_permission(
-            PERMISSION_CAN_CONSULT, for_rlc=self.id
-        )
+        users = self.rlc_members.all()
+        consultants = []
+        for user in list(users):
+            if user.has_permission(PERMISSION_CAN_CONSULT):
+                consultants.append(user.pk)
+        return UserProfile.objects.filter(pk__in=consultants)
 
     def get_public_key(self) -> bytes:
         # safety check

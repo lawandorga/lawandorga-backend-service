@@ -31,7 +31,7 @@ from backend.static.permissions import PERMISSION_CAN_CONSULT
 class RecordPoolViewSet(APIView):
     def get(self, request):
         user = request.user
-        if not user.has_permission(PERMISSION_CAN_CONSULT, for_rlc=user.rlc):
+        if not user.has_permission(PERMISSION_CAN_CONSULT):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
         queryset = PoolRecord.objects.filter(record__from_rlc=user.rlc)

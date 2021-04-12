@@ -35,31 +35,15 @@ from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 
 class UserProfileManager(BaseUserManager):
     @staticmethod
-    def get_users_with_special_permission(
-        permission, from_rlc=None, for_user=None, for_group=None, for_rlc=None,
-    ):
-        """
-        returns all users
-        :param permission:
-        :param from_rlc:
-        :param for_user:
-        :param for_group:
-        :param for_rlc:
-        :return:
-        """
-
+    def get_users_with_special_permission(permission, from_rlc=None):
         if isinstance(permission, str):
             permission = Permission.objects.get(name=permission).id
-        if for_user is not None and for_group is not None and for_rlc is not None:
-            raise AttributeError()
+
         users = (
             HasPermission.objects.filter(
                 permission=permission,
                 group_has_permission=None,
-                rlc_has_permission=None,
-                permission_for_user=for_user,
-                permission_for_group=for_group,
-                permission_for_rlc=for_rlc,
+                rlc_has_permission=None
             )
             .values("user_has_permission")
             .distinct()
@@ -73,10 +57,7 @@ class UserProfileManager(BaseUserManager):
         groups = HasPermission.objects.filter(
             permission=permission,
             user_has_permission=None,
-            rlc_has_permission=None,
-            permission_for_user=for_user,
-            permission_for_group=for_group,
-            permission_for_rlc=for_rlc,
+            rlc_has_permission=None
         ).values("group_has_permission")
         group_ids = [
             has_permission["group_has_permission"] for has_permission in groups
@@ -88,10 +69,7 @@ class UserProfileManager(BaseUserManager):
         rlcs = HasPermission.objects.filter(
             permission=permission,
             user_has_permission=None,
-            group_has_permission=None,
-            permission_for_user=for_user,
-            permission_for_group=for_group,
-            permission_for_rlc=for_rlc,
+            group_has_permission=None
         ).values("rlc_has_permission")
         rlc_ids = [has_permission["rlc_has_permission"] for has_permission in rlcs]
         result = result | UserProfile.objects.filter(rlc__in=rlc_ids).distinct()
@@ -105,7 +83,7 @@ class UserProfileManager(BaseUserManager):
         users = None
         for permission in permissions:
             users_to_add = UserProfileManager.get_users_with_special_permission(
-                permission, from_rlc, for_user, for_group, for_rlc
+                permission, from_rlc
             )
             if users is None:
                 users = users_to_add
@@ -224,76 +202,28 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             )
         )
 
-    def get_overall_special_permissions(self, permission):
-        if isinstance(permission, str):
-            permission = Permission.objects.get(name=permission).id
-        return (
-            self.__get_as_user_special_permissions(permission)
-            + self.__get_as_group_member_special_permissions(permission)
-            + self.__get_as_rlc_member_special_permissions(permission)
-        )
+    def __has_as_user_permission(self, permission):
+        return HasPermission.objects.filter(user_has_permission=self.pk, permission=permission).exists()
 
-    def __has_as_user_permission(
-        self, permission, for_user=None, for_group=None, for_rlc=None
-    ):
-        return (
-            HasPermission.objects.filter(
-                user_has_permission=self.pk, permission_id=permission,
-            ).count()
-            >= 1
-        )
+    def __has_as_group_member_permission(self, permission):
+        groups = [group.pk for group in self.group_members.all()]
+        return HasPermission.objects.filter(group_has_permission__pk__in=groups, permission=permission).exists()
 
-    def __has_as_group_member_permission(
-        self, permission, for_user=None, for_group=None, for_rlc=None
-    ):
-        groups = [groups["id"] for groups in list(self.group_members.values("id"))]
-        return (
-            HasPermission.objects.filter(
-                group_has_permission_id__in=groups, permission_id=permission,
-            ).count()
-            >= 1
-        )
-
-    def __has_as_rlc_member_permission(
-        self, permission, for_user=None, for_group=None, for_rlc=None
-    ):
-        if not self.rlc:
-            return False
-
-        return (
-            HasPermission.objects.filter(
-                rlc_has_permission_id=self.rlc.id, permission_id=permission,
-            ).count()
-            >= 1
-        )
+    def __has_as_rlc_member_permission(self, permission):
+        return HasPermission.objects.filter(rlc_has_permission=self.rlc, permission=permission).exists()
 
     def has_permission(self, permission, for_user=None, for_group=None, for_rlc=None):
-        """
-        Args:
-            permission: (int) permission_id or (str) exact name of permission
-            for_user: (int) user_id for which the permission is
-            for_group: (int) group_id for which the permission is
-            for_rlc: (int) rlc_id for which the permission is
-
-        Returns:
-            True if the user has the given permission for the given group or user
-            False if the user doesnt have the permission
-        """
         if isinstance(permission, str):
             permission, created = Permission.objects.get_or_create(name=permission)
-            permission = permission.id
-        if for_user is not None and for_group is not None and for_rlc is not None:
-            raise AttributeError()
 
         return (
-            self.__has_as_user_permission(permission, for_user, for_group, for_rlc)
-            or self.__has_as_group_member_permission(
-                permission, for_user, for_group, for_rlc
-            )
-            or self.__has_as_rlc_member_permission(
-                permission, for_user, for_group, for_rlc
-            )
+            self.__has_as_user_permission(permission) or
+            self.__has_as_group_member_permission(permission) or
+            self.__has_as_rlc_member_permission(permission)
         )
+
+    def has_permissions(self, permissions):
+        return any(map(lambda permission: self.has_permission(permission), permissions))
 
     def get_public_key(self) -> str:
         """
@@ -440,9 +370,3 @@ class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
         )
         additional_hash_value = str(user.email_confirmed)
         return super_make_hash_value + additional_hash_value
-
-
-account_activation_token = AccountActivationTokenGenerator()
-
-# this is used on password reset
-password_reset_token = PasswordResetTokenGenerator()

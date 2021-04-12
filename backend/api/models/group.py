@@ -23,16 +23,14 @@ from django.db import models
 
 class GroupQuerySet(models.QuerySet):
     def get_visible_groups_for_user(self, user):
-        if user.has_permission(
-            permissions.PERMISSION_MANAGE_GROUPS_RLC, for_rlc=user.rlc
-        ):
+        if user.has_permission(permissions.PERMISSION_MANAGE_GROUPS_RLC):
             return self.filter(from_rlc=user.rlc)
         else:
             invisible = list(Group.objects.filter(from_rlc=user.rlc, visible=False))
             permitted = []
             for gr in invisible:
                 if user.has_permission(
-                    permissions.PERMISSION_MANAGE_GROUP, for_group=gr
+                    permissions.PERMISSION_MANAGE_GROUP
                 ):
                     permitted.append(gr.id)
 

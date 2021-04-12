@@ -356,7 +356,6 @@ class CreateFixtures:
                 request_from=user,
                 request_processed=creator,
                 record=record,
-                can_edit=True,
                 state="gr",
             )
             permission.save()
