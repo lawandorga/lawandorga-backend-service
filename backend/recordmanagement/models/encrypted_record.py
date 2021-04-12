@@ -189,7 +189,7 @@ class EncryptedRecord(EncryptedModelMixin, models.Model):
                 users_with_permission.append(user.id)
         users_with_permission = UserProfile.objects.filter(pk__in=users_with_permission)
 
-        return working_on_users | users_with_record_permission | users_with_permission
+        return (working_on_users | users_with_record_permission | users_with_permission).distinct()
 
     def get_decryption_key(self, user: UserProfile, users_private_key: str) -> str:
         encryption = self.encryptions.get(user=user)
