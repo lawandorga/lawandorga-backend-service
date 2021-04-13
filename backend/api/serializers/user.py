@@ -40,7 +40,6 @@ class UserSerializer(serializers.ModelSerializer):
 class OldUserSerializer(UserSerializer):
     group_members = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     user_has_permission = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    permission_for_user = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
 
 class UserPasswordResetSerializer(serializers.Serializer):

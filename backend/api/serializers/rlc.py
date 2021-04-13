@@ -21,9 +21,6 @@ class RlcSerializer(serializers.ModelSerializer):
     rlc_has_permission = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True, required=False
     )
-    permission_for_rlc = serializers.PrimaryKeyRelatedField(
-        many=True, read_only=True, required=False,
-    )
     rlc_members = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True, required=False,
     )
