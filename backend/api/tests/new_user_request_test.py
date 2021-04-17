@@ -35,13 +35,13 @@ class NewUserRequestTest(TransactionTestCase):
         )
         has_permission: api_models.HasPermission = api_models.HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][0],
         )
         has_permission.save()
         has_permission: api_models.HasPermission = api_models.HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][2],
         )
         has_permission.save()

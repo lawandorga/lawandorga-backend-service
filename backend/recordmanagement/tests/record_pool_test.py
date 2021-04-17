@@ -77,7 +77,7 @@ class RecordPoolTests(TransactionTestCase):
         perm = Permission(name=PERMISSION_CAN_CONSULT)
         perm.save()
         has_perm = HasPermission(
-            permission=perm, permission_for_rlc=rlc, rlc_has_permission=rlc
+            permission=perm, rlc_has_permission=rlc
         )
         has_perm.save()
 

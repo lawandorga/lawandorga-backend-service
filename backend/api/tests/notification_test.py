@@ -187,7 +187,7 @@ class NotificationTest(TransactionTestCase):
         )
         has_permission: HasPermission = HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][0],
         )
         has_permission.save()
@@ -196,7 +196,7 @@ class NotificationTest(TransactionTestCase):
         )
         has_permission: HasPermission = HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][2],
         )
         has_permission.save()
@@ -244,7 +244,7 @@ class NotificationTest(TransactionTestCase):
         )
         has_permission: HasPermission = HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][0],
         )
         has_permission.save()
@@ -330,7 +330,7 @@ class NotificationTest(TransactionTestCase):
         )
         has_permission: HasPermission = HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][0],
         )
         has_permission.save()
@@ -405,7 +405,7 @@ class NotificationTest(TransactionTestCase):
         )
         has_permission: HasPermission = HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][0],
         )
         has_permission.save()
@@ -480,7 +480,7 @@ class NotificationTest(TransactionTestCase):
         )
         has_permission: HasPermission = HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][0],
         )
         has_permission.save()
@@ -540,7 +540,7 @@ class NotificationTest(TransactionTestCase):
         )
         has_permission: HasPermission = HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][0],
         )
         has_permission.save()
@@ -570,7 +570,7 @@ class NotificationTest(TransactionTestCase):
         )
         has_permission: HasPermission = HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][0],
         )
         has_permission.save()
@@ -604,7 +604,7 @@ class NotificationTest(TransactionTestCase):
         )
         has_permission: HasPermission = HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][0],
         )
         has_permission.save()
@@ -646,7 +646,7 @@ class NotificationTest(TransactionTestCase):
         )
         has_permission: HasPermission = HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][0],
         )
         has_permission.save()
@@ -810,7 +810,7 @@ class NotificationTest(TransactionTestCase):
         )
         has_permission: HasPermission = HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][0],
         )
         has_permission.save()
@@ -844,7 +844,7 @@ class NotificationTest(TransactionTestCase):
         )
         has_permission: HasPermission = HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][0],
         )
         has_permission.save()
@@ -880,7 +880,7 @@ class NotificationTest(TransactionTestCase):
         )
         has_permission: HasPermission = HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][0],
         )
         has_permission.save()

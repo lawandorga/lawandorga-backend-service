@@ -272,7 +272,6 @@ class Folder(models.Model):
 
         has_permissions_for_groups = HasPermission.objects.filter(
             group_has_permission__in=groups,
-            permission_for_rlc=self.rlc,
             permission__in=overall_permissions,
         )
 

@@ -76,10 +76,6 @@ class HasPermission(models.Model):
             + HasPermission._check_key_with_value_in_data(data, "group_has_permission")
             + HasPermission._check_key_with_value_in_data(data, "rlc_has_permission")
             == 1
-            and HasPermission._check_key_with_value_in_data(data, "permission_for_user")
-            + HasPermission._check_key_with_value_in_data(data, "permission_for_group")
-            + HasPermission._check_key_with_value_in_data(data, "permission_for_rlc")
-            == 1
         ):
             return True
         return False

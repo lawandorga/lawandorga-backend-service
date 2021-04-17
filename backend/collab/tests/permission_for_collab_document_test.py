@@ -86,7 +86,7 @@ class PermissionForCollabDocumentViewTest(TransactionTestCase):
                 name=PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC
             ),
             group_has_permission=self.base_fixtures["groups"][0],
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
 
         to_post = {
@@ -107,7 +107,7 @@ class PermissionForCollabDocumentViewTest(TransactionTestCase):
                 name=PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC
             ),
             group_has_permission=self.base_fixtures["groups"][0],
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
 
         to_post = {
@@ -149,7 +149,7 @@ class PermissionForCollabDocumentViewTest(TransactionTestCase):
                 name=PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC
             ),
             group_has_permission=self.base_fixtures["groups"][0],
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
 
         client: APIClient = self.base_fixtures["users"][0]["client"]

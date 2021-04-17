@@ -52,7 +52,7 @@ class EncryptedRecordTests(TransactionTestCase):
         has_perm = api_models.HasPermission(
             permission=add_record_permission,
             user_has_permission=self.base_fixtures["users"][0]["user"],
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
         has_perm.save()
 
@@ -63,7 +63,7 @@ class EncryptedRecordTests(TransactionTestCase):
         has_perm = api_models.HasPermission(
             permission=can_consult_permission,
             group_has_permission=self.base_fixtures["groups"][0],
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
         has_perm.save()
 

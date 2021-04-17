@@ -49,13 +49,13 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
         )
         has_permission: api_models.HasPermission = api_models.HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][0],
         )
         has_permission.save()
         has_permission: api_models.HasPermission = api_models.HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][1],
         )
         has_permission.save()
@@ -66,7 +66,7 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
         )
         has_permission: api_models.HasPermission = api_models.HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][0],
         )
         has_permission.save()
@@ -130,7 +130,7 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
         )
         has_permission: api_models.HasPermission = api_models.HasPermission(
             permission=permission,
-            permission_for_rlc=foreign_rlc_fixtures["rlc"],
+
             user_has_permission=user,
         )
         has_permission.save()
@@ -150,7 +150,7 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
         )
         has_permission: api_models.HasPermission = api_models.HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             user_has_permission=self.base_fixtures["users"][3]["user"],
         )
         has_permission.save()
@@ -575,7 +575,7 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
         )
         has_permission: api_models.HasPermission = api_models.HasPermission(
             permission=permission,
-            permission_for_rlc=foreign_rlc_fixtures["rlc"],
+
             user_has_permission=user,
         )
         has_permission.save()
@@ -584,7 +584,7 @@ class EncryptedRecordDeletionRequestTest(TransactionTestCase):
         )
         has_permission: api_models.HasPermission = api_models.HasPermission(
             permission=permission,
-            permission_for_rlc=foreign_rlc_fixtures["rlc"],
+
             user_has_permission=user,
         )
         has_permission.save()

@@ -231,7 +231,7 @@ class CollabDocumentModelTest(TransactionTestCase):
         HasPermission.objects.create(
             group_has_permission=self.base_fixtures["groups"][0],
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
         self.assertTrue(
             CollabDocument.user_has_permission_read(document_middle.path, user)
@@ -318,7 +318,7 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         HasPermission.objects.create(
             group_has_permission=self.base_fixtures["groups"][0],
             permission=self.full_write_permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
         response: Response = self.base_client.get(self.urls_collab_documents,)
         self.assertEqual(2, response.data.__len__())
@@ -483,7 +483,7 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         has_permission = HasPermission.objects.create(
             group_has_permission=self.base_fixtures["groups"][0],
             permission=self.full_write_permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
         response: Response = self.base_client.post(
             self.urls_collab_documents,
@@ -539,7 +539,7 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         HasPermission.objects.create(
             group_has_permission=self.base_fixtures["groups"][0],
             permission=self.full_write_permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
         response: Response = self.base_client.post(
             self.urls_collab_documents,
@@ -563,7 +563,7 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         HasPermission.objects.create(
             group_has_permission=self.base_fixtures["groups"][0],
             permission=self.full_write_permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
 
         CollabDocument.objects.create(
@@ -618,7 +618,7 @@ class CollabDocumentViewSetTest(TransactionTestCase):
         has_permission = HasPermission.objects.create(
             group_has_permission=self.base_fixtures["groups"][0],
             permission=self.full_write_permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
         response: Response = client.delete(url)
         self.assertEqual(3, CollabDocument.objects.count())
@@ -685,7 +685,7 @@ class CollabDocumentPermissionsViewSetTest(TransactionTestCase):
         self.has_manage_permission = HasPermission.objects.create(
             group_has_permission=self.base_fixtures["groups"][0],
             permission=manage_permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
 
     def test_get_permission_for_document(self):
@@ -707,7 +707,7 @@ class CollabDocumentPermissionsViewSetTest(TransactionTestCase):
                 name=PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC
             ),
             group_has_permission=self.base_fixtures["groups"][0],
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
 
         client: APIClient = self.base_fixtures["users"][0]["client"]
@@ -783,12 +783,12 @@ class CollabDocumentPermissionsViewSetTest(TransactionTestCase):
                 name=PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC
             ),
             group_has_permission=self.base_fixtures["groups"][0],
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
         unimportant_general_permission = HasPermission.objects.create(
             permission=Permission.objects.get(name=PERMISSION_MANAGE_GROUPS_RLC),
             group_has_permission=self.base_fixtures["groups"][0],
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
 
         client: APIClient = self.base_fixtures["users"][0]["client"]

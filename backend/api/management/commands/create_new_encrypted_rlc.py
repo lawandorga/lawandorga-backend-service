@@ -98,7 +98,6 @@ class Command(BaseCommand):
                 name=PERMISSION_MANAGE_PERMISSIONS_RLC
             ).first(),
             group_has_permission=admin_group,
-            permission_for_rlc=rlc,
         )
         manage_permissions_has_permission.save()
 
@@ -107,7 +106,6 @@ class Command(BaseCommand):
                 name=PERMISSION_VIEW_PERMISSIONS_RLC
             ).first(),
             group_has_permission=admin_group,
-            permission_for_rlc=rlc,
         )
         view_permission_has_permission.save()
 
@@ -116,6 +114,5 @@ class Command(BaseCommand):
                 name=PERMISSION_MANAGE_GROUPS_RLC
             ).first(),
             group_has_permission=admin_group,
-            permission_for_rlc=rlc,
         )
         manage_groups.save()

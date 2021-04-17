@@ -63,7 +63,7 @@ class FolderViewsTest(TransactionTestCase):
         has_access_permission: HasPermission = HasPermission(
             permission=access_permission,
             group_has_permission=self.fixtures["groups"][0],
-            permission_for_rlc=self.fixtures["rlc"],
+
         )
         has_access_permission.save()
         read_permission: Permission = Permission.objects.get(
@@ -72,7 +72,7 @@ class FolderViewsTest(TransactionTestCase):
         has_read_permission: HasPermission = HasPermission(
             permission=read_permission,
             group_has_permission=self.fixtures["groups"][0],
-            permission_for_rlc=self.fixtures["rlc"],
+
         )
         has_read_permission.save()
 
@@ -109,7 +109,7 @@ class FolderViewsTest(TransactionTestCase):
         has_permission = HasPermission(
             permission=access,
             group_has_permission=self.fixtures["groups"][0],
-            permission_for_rlc=self.fixtures["rlc"],
+
         )
         has_permission.save()
 

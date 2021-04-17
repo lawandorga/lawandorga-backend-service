@@ -369,7 +369,7 @@ class FolderModelTests(TransactionTestCase):
         overall_read = HasPermission(
             permission=p_all_read,
             user_has_permission=self.fixtures["users"][3]["user"],
-            permission_for_rlc=self.fixtures["rlc"],
+
         )
         overall_read.save()
         created_folders = self.create_many_test_folders()

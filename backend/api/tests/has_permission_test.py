@@ -49,7 +49,7 @@ class HasPermissionTest(TransactionTestCase):
         )
         has_permission: api_models.HasPermission = api_models.HasPermission(
             permission=permission,
-            permission_for_rlc=self.base_fixtures["rlc"],
+
             group_has_permission=self.base_fixtures["groups"][0],
         )
         has_permission.save()
@@ -60,7 +60,7 @@ class HasPermissionTest(TransactionTestCase):
             {
                 "permission": api_models.Permission.objects.first().id,
                 "group_has_permission": self.base_fixtures["groups"][0].id,
-                "permission_for_rlc": self.base_fixtures["rlc"].id,
+
             },
         )
         self.assertEqual(403, response.status_code)
@@ -76,7 +76,7 @@ class HasPermissionTest(TransactionTestCase):
             {
                 "permission": permission.id,
                 "group_has_permission": self.base_fixtures["groups"][0].id,
-                "permission_for_rlc": self.base_fixtures["rlc"].id,
+
             },
         )
         self.assertEqual(201, response.status_code)
@@ -102,7 +102,7 @@ class HasPermissionTest(TransactionTestCase):
             self.base_url,
             {
                 "permission": permission.id,
-                "permission_for_rlc": self.base_fixtures["rlc"].id,
+
             },
         )
         self.assertEqual(400, response.status_code)
@@ -111,7 +111,7 @@ class HasPermissionTest(TransactionTestCase):
             self.base_url,
             {
                 "group_has_permission": self.base_fixtures["groups"][0].id,
-                "permission_for_rlc": self.base_fixtures["rlc"].id,
+
             },
         )
         self.assertEqual(400, response.status_code)
@@ -124,7 +124,7 @@ class HasPermissionTest(TransactionTestCase):
             {
                 "permission": 234234,
                 "group_has_permission": self.base_fixtures["groups"][0].id,
-                "permission_for_rlc": self.base_fixtures["rlc"].id,
+
             },
         )
         self.assertEqual(400, response.status_code)
@@ -151,7 +151,7 @@ class HasPermissionTest(TransactionTestCase):
             {
                 "permission": permission.id,
                 "group_has_permission": foreign_rlc_fixtures["groups"][0].id,
-                "permission_for_rlc": self.base_fixtures["rlc"].id,
+
             },
             format="json",
             **{"HTTP_PRIVATE_KEY": foreign_rlc_fixtures["users"][0]["private"]},
@@ -169,7 +169,7 @@ class HasPermissionTest(TransactionTestCase):
             {
                 "permission": permission.id,
                 "group_has_permission": 1231241,
-                "permission_for_rlc": self.base_fixtures["rlc"].id,
+
             },
             format="json",
             **{"HTTP_PRIVATE_KEY": self.private},
@@ -211,7 +211,7 @@ class HasPermissionTest(TransactionTestCase):
             {
                 "permission": permission.id,
                 "group_has_permission": self.base_fixtures["groups"][0].id,
-                "permission_for_rlc": self.base_fixtures["rlc"].id,
+
             },
         )
         self.assertEqual(201, response.status_code)
@@ -221,7 +221,7 @@ class HasPermissionTest(TransactionTestCase):
             {
                 "permission": permission.id,
                 "group_has_permission": self.base_fixtures["groups"][0].id,
-                "permission_for_rlc": self.base_fixtures["rlc"].id,
+
             },
         )
         self.assertEqual(400, response.status_code)
@@ -246,7 +246,7 @@ class HasPermissionTest(TransactionTestCase):
             {
                 "permission": permission.id,
                 "group_has_permission": self.base_fixtures["groups"][2].id,
-                "permission_for_rlc": self.base_fixtures["rlc"].id,
+
             },
             format="json",
             **{"HTTP_PRIVATE_KEY": self.private},
@@ -267,7 +267,7 @@ class HasPermissionTest(TransactionTestCase):
             {
                 "permission": permission.id,
                 "group_has_permission": self.base_fixtures["groups"][2].id,
-                "permission_for_rlc": self.base_fixtures["rlc"].id,
+
             },
             format="json",
         )
@@ -284,7 +284,7 @@ class HasPermissionTest(TransactionTestCase):
         has_permission: api_models.HasPermission = api_models.HasPermission(
             permission=permission,
             group_has_permission=self.base_fixtures["groups"][1],
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
         has_permission.save()
         number_of_has_permissions_before: int = api_models.HasPermission.objects.count()
@@ -305,7 +305,7 @@ class HasPermissionTest(TransactionTestCase):
         has_permission: api_models.HasPermission = api_models.HasPermission(
             permission=permission,
             group_has_permission=self.base_fixtures["groups"][1],
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
         has_permission.save()
         number_of_has_permissions_before: int = api_models.HasPermission.objects.count()
@@ -329,7 +329,7 @@ class HasPermissionTest(TransactionTestCase):
         has_permission: api_models.HasPermission = api_models.HasPermission(
             permission=permission,
             group_has_permission=self.base_fixtures["groups"][1],
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
         has_permission.save()
         number_of_has_permissions_before: int = api_models.HasPermission.objects.count()
@@ -353,7 +353,7 @@ class HasPermissionTest(TransactionTestCase):
         has_permission_not_to_be_deleted: api_models.HasPermission = api_models.HasPermission(
             permission=permission,
             group_has_permission=self.base_fixtures["groups"][1],
-            permission_for_rlc=self.base_fixtures["rlc"],
+
         )
         has_permission_not_to_be_deleted.save()
 

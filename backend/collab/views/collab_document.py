@@ -159,7 +159,7 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
                 name__in=overall_permissions_strings
             )
             has_permissions_for_groups = HasPermission.objects.filter(
-                permission_for_rlc=request.user.rlc, permission__in=overall_permissions,
+                permission__in=overall_permissions,
             )
 
             return_object = {
