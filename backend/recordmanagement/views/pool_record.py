@@ -58,13 +58,13 @@ class PoolRecordViewSet(viewsets.ModelViewSet):
             new_consultant = entry.consultant
             entry.delete()
 
+            RecordEncryption.objects.filter(record=record, user=user).delete()
             new_keys = RecordEncryption(
                 user=new_consultant,
                 record=record,
                 encrypted_key=new_consultant.rsa_encrypt(record_decryption_key),
             )
             new_keys.save()
-            RecordEncryption.objects.filter(record=record, user=user).delete()
 
             record.working_on_record.remove(user)
             record.working_on_record.add(new_consultant)
