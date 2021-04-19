@@ -17,7 +17,8 @@ SECRET_KEY = get_secret("SECRET_KEY")
 # https://www.django-rest-framework.org/api-guide/settings/
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "backend.api.authentication.ExpiringTokenAuthentication"
+        "backend.api.authentication.ExpiringTokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
 }
