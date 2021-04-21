@@ -36,7 +36,7 @@ class NewUserRequestViewSet(
 
     def list(self, request, *args, **kwargs):
         if not request.user.has_permission(
-            PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=request.user.rlc
+            PERMISSION_ACCEPT_NEW_USERS_RLC
         ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
         queryset = NewUserRequest.objects.filter(request_from__rlc=request.user.rlc)

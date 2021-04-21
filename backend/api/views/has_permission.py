@@ -56,13 +56,8 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
         except:
             raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
 
-        if hasPermission.permission_for_rlc is not None:
-            rlc = hasPermission.permission_for_rlc
-        else:
-            rlc = request.user.rlc
-
         if not request.user.has_permission(
-            PERMISSION_MANAGE_PERMISSIONS_RLC, for_rlc=rlc
+            PERMISSION_MANAGE_PERMISSIONS_RLC
         ):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
