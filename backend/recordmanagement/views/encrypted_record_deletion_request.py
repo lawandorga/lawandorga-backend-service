@@ -60,7 +60,7 @@ class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
         if "record_id" not in request.data:
             raise CustomError(error_codes.ERROR__RECORD__RECORD__ID_NOT_PROVIDED)
 
-        e_record = EncryptedRecord.objects.get(int(request.data["record_id"]))
+        e_record = EncryptedRecord.objects.get(pk=int(request.data["record_id"]))
         if not e_record.user_has_permission(request.user):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
         if (
