@@ -84,7 +84,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
     def get_queryset(self):
-        if self.action == "activate":
+        if self.action == "activate" or self.action == 'password_reset_confirm':
             return UserProfile.objects.all().select_related("accepted")
         else:
             return UserProfile.objects.filter(rlc=self.request.user.rlc).select_related(
@@ -339,7 +339,8 @@ class UserViewSet(viewsets.ModelViewSet):
             user.locked = True
             user.save()
             # generate new user private and public key based on the new password
-            user.encryption_keys.delete()
+            if hasattr(user, 'encryption_keys'):
+                user.encryption_keys.delete()
             user.get_private_key(password_user=new_password)
             # return
             return Response(status=status.HTTP_200_OK)
@@ -373,7 +374,7 @@ class UserViewSet(viewsets.ModelViewSet):
         request.user.generate_keys_for_user(private_key_user, user_to_unlock)
 
         # unlock the user
-        user.locked = False
-        user.save()
+        user_to_unlock.locked = False
+        user_to_unlock.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
