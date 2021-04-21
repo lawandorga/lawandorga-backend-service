@@ -30,6 +30,7 @@ class Rlc(models.Model):
     note = models.CharField(max_length=4000, null=True, default="")
 
     class Meta:
+        ordering = ['name']
         verbose_name = "Rlc"
         verbose_name_plural = "Rlcs"
 
