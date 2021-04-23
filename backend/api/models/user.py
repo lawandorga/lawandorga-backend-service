@@ -65,6 +65,8 @@ class UserProfileManager(BaseUserManager):
         result = (
             result | UserProfile.objects.filter(group_members__in=group_ids).distinct()
         )
+        if from_rlc is not None:
+            result = result.filter(rlc=from_rlc)
 
         rlcs = HasPermission.objects.filter(
             permission=permission,
@@ -74,22 +76,10 @@ class UserProfileManager(BaseUserManager):
         rlc_ids = [has_permission["rlc_has_permission"] for has_permission in rlcs]
         result = result | UserProfile.objects.filter(rlc__in=rlc_ids).distinct()
 
-        return result
+        if from_rlc is not None:
+            result = result.filter(rlc=from_rlc)
 
-    @staticmethod
-    def get_users_with_special_permissions(
-        permissions, from_rlc=None, for_user=None, for_group=None, for_rlc=None,
-    ):
-        users = None
-        for permission in permissions:
-            users_to_add = UserProfileManager.get_users_with_special_permission(
-                permission, from_rlc
-            )
-            if users is None:
-                users = users_to_add
-            else:
-                users = users.union(users_to_add).distinct()
-        return users
+        return result
 
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):

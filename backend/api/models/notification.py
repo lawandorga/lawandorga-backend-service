@@ -91,8 +91,8 @@ class NotificationManager(models.Manager):
 
         users_with_permissions: [
             UserProfile
-        ] = UserProfile.objects.get_users_with_special_permissions(
-            permissions=[permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC],
+        ] = UserProfile.objects.get_users_with_special_permission(
+            permission=permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )
@@ -122,8 +122,8 @@ class NotificationManager(models.Manager):
     ):
         users_with_permissions: [
             UserProfile
-        ] = UserProfile.objects.get_users_with_special_permissions(
-            permissions=[permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC],
+        ] = UserProfile.objects.get_users_with_special_permission(
+            permissions=permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )
@@ -162,8 +162,8 @@ class NotificationManager(models.Manager):
         """
         users_with_permissions: [
             UserProfile
-        ] = UserProfile.objects.get_users_with_special_permissions(
-            permissions=[permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS],
+        ] = UserProfile.objects.get_users_with_special_permission(
+            permission=permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )
@@ -193,8 +193,8 @@ class NotificationManager(models.Manager):
         """
         users_with_permissions: [
             UserProfile
-        ] = UserProfile.objects.get_users_with_special_permissions(
-            permissions=[permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC],
+        ] = UserProfile.objects.get_users_with_special_permission(
+            permissions=permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )
@@ -225,8 +225,8 @@ class NotificationManager(models.Manager):
         """
         users_with_permissions: [
             UserProfile
-        ] = UserProfile.objects.get_users_with_special_permissions(
-            permissions=[permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS],
+        ] = UserProfile.objects.get_users_with_special_permission(
+            permissions=permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )
@@ -272,8 +272,8 @@ class NotificationManager(models.Manager):
         """
         users_with_permissions: [
             UserProfile
-        ] = UserProfile.objects.get_users_with_special_permissions(
-            permissions=[permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS],
+        ] = UserProfile.objects.get_users_with_special_permission(
+            permissions=permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )
@@ -487,8 +487,8 @@ class NotificationManager(models.Manager):
         """
         users_with_permissions: [
             UserProfile
-        ] = UserProfile.objects.get_users_with_special_permissions(
-            permissions=[permissions.PERMISSION_ACCEPT_NEW_USERS_RLC],
+        ] = UserProfile.objects.get_users_with_special_permission(
+            permissions=permissions.PERMISSION_ACCEPT_NEW_USERS_RLC,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )
@@ -506,10 +506,9 @@ class NotificationManager(models.Manager):
     def notify_new_user_accepted(
         source_user: UserProfile, new_user_request: NewUserRequest
     ):
-        users_with_permissions = UserProfile.objects.get_users_with_special_permissions(
-            permissions=[permissions.PERMISSION_ACCEPT_NEW_USERS_RLC],
-            from_rlc=source_user.rlc,
-            for_rlc=source_user.rlc,
+        users_with_permissions = UserProfile.objects.get_users_with_special_permission(
+            permissions=permissions.PERMISSION_ACCEPT_NEW_USERS_RLC,
+            from_rlc=source_user.rlc
         )
         for user in users_with_permissions:
             if user != source_user:
@@ -528,8 +527,8 @@ class NotificationManager(models.Manager):
     ):
         users_with_permissions: [
             UserProfile
-        ] = UserProfile.objects.get_users_with_special_permissions(
-            permissions=[permissions.PERMISSION_ACCEPT_NEW_USERS_RLC],
+        ] = UserProfile.objects.get_users_with_special_permission(
+            permissions=permissions.PERMISSION_ACCEPT_NEW_USERS_RLC,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )
@@ -560,10 +559,8 @@ class NotificationManager(models.Manager):
         """
         users_with_permissions: [
             UserProfile
-        ] = UserProfile.objects.get_users_with_special_permissions(
-            permissions=[
-                permissions.PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS
-            ],
+        ] = UserProfile.objects.get_users_with_special_permission(
+            permission=permissions.PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )
@@ -585,10 +582,8 @@ class NotificationManager(models.Manager):
     ):
         users_with_permissions: [
             UserProfile
-        ] = UserProfile.objects.get_users_with_special_permissions(
-            permissions=[
-                permissions.PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS
-            ],
+        ] = UserProfile.objects.get_users_with_special_permission(
+            permission=permissions.PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )
@@ -634,10 +629,8 @@ class NotificationManager(models.Manager):
 
         users_with_permissions: [
             UserProfile
-        ] = UserProfile.objects.get_users_with_special_permissions(
-            permissions=[
-                permissions.PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS
-            ],
+        ] = UserProfile.objects.get_users_with_special_permission(
+            permission=permissions.PERMISSION_PROCESS_RECORD_DOCUMENT_DELETION_REQUESTS,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )
