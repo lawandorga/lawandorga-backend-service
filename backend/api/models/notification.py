@@ -506,9 +506,7 @@ class NotificationManager(models.Manager):
     def notify_new_user_accepted(
         source_user: UserProfile, new_user_request: NewUserRequest
     ):
-        users_with_permissions: [
-            UserProfile
-        ] = UserProfile.objects.get_users_with_special_permissions(
+        users_with_permissions = UserProfile.objects.get_users_with_special_permissions(
             permissions=[permissions.PERMISSION_ACCEPT_NEW_USERS_RLC],
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,

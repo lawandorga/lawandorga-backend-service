@@ -34,7 +34,7 @@ from backend.static.error_codes import (
 
 
 class NotificationGroupViewSet(viewsets.ModelViewSet):
-    queryset = NotificationGroup.objects.all()
+    queryset = NotificationGroup.objects.none()
     serializer_class = NotificationGroupOrderedSerializer
     pagination_class = LimitOffsetPagination
 

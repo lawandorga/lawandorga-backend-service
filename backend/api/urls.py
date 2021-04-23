@@ -32,10 +32,8 @@ router.register(
     basename="user_encryption_keys",
 )
 router.register("users_rlc_keys", views.UsersRlcKeysViewSet, basename="users_rlc_keys")
-router.register("notifications", views.NotificationViewSet, basename="notifications")
-router.register(
-    "notification_groups", views.NotificationGroupViewSet, basename="notifications"
-)
+router.register("notifications", views.NotificationViewSet)
+router.register("notification_groups", views.NotificationGroupViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
