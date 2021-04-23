@@ -33,11 +33,11 @@ def get_storage_base_files_folder(rlc_id: int) -> str:
 
 
 def get_temp_storage_path(filename) -> str:
-    return os.path.join("temp", filename)
+    return os.path.join("tmp/media", filename)
 
 
 def get_temp_storage_folder() -> str:
-    return "temp"
+    return "tmp/media"
 
 
 def combine_s3_folder_with_filename(s3_folder, filename):
@@ -45,4 +45,4 @@ def combine_s3_folder_with_filename(s3_folder, filename):
 
 
 def get_filename_from_full_path(filepath: str) -> str:
-    return filepath[filepath.rindex("/") + 1 :]
+    return filepath[filepath.rindex("/") + 1:]

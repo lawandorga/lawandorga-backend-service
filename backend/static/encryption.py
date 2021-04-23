@@ -62,6 +62,8 @@ class AESEncryption:
         key = get_bytes_from_string_or_return_bytes(key)
         hashed_key_bytes = sha3_256(key).digest()
         cipher = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
+        if isinstance(msg, memoryview):
+            msg = bytes(msg)
         cipher_bytes = cipher.encrypt(pad(msg, AES.block_size))
         return cipher_bytes
 
