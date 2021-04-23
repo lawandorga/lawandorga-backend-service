@@ -35,7 +35,7 @@ from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 
 class UserProfileManager(BaseUserManager):
     @staticmethod
-    def get_users_with_special_permission(permission, from_rlc=None):
+    def get_users_with_special_permission(permission, from_rlc=None, for_rlc=None):
         if isinstance(permission, str):
             permission = Permission.objects.get(name=permission).id
 
