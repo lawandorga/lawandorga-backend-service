@@ -39,11 +39,7 @@ class NotificationGroupViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self) -> QuerySet:
-        if not self.request.user.is_superuser:
-            queryset = NotificationGroup.objects.filter(user=self.request.user)
-        else:
-            queryset = NotificationGroup.objects.all()
-
+        queryset = NotificationGroup.objects.filter(user=self.request.user)
         request: Request = self.request
         if "filter" in request.query_params and request.query_params["filter"] != "":
             parts = request.query_params["filter"].split("___")
