@@ -83,15 +83,19 @@ class GroupViewSet(viewsets.ModelViewSet):
                     EncryptedRecord.objects.filter(from_rlc=request.user.rlc)
                 )
                 for record in records:
-                    record_key = record.get_decryption_key(
-                        request.user, private_key_user
-                    )
-                    public_key_member = member.get_public_key()
-                    record_encryption = RecordEncryption(
-                        user=member, record=record, encrypted_key=record_key
-                    )
-                    record_encryption.encrypt(public_key_member)
-                    record_encryption.save()
+                    if not RecordEncryption.objects.filter(user=member, record=record).exists():
+                        try:
+                            record_key = record.get_decryption_key(
+                                request.user, private_key_user
+                            )
+                        except Exception:
+                            continue
+                        public_key_member = member.get_public_key()
+                        record_encryption = RecordEncryption(
+                            user=member, record=record, encrypted_key=record_key
+                        )
+                        record_encryption.encrypt(public_key_member)
+                        record_encryption.save()
             # notify
             Notification.objects.notify_group_member_added(request.user, member, group)
 

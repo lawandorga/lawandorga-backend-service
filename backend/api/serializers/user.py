@@ -97,6 +97,7 @@ class UserUpdateSerializer(UserSerializer):
     class Meta:
         model = UserProfile
         fields = [
+            "id",
             "name",
             "phone_number",
             "street",
@@ -107,3 +108,8 @@ class UserUpdateSerializer(UserSerializer):
             "email",
             "locked",
         ]
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'locked': {'read_only': True},
+            'email': {'read_only': True},
+        }

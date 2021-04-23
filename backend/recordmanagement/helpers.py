@@ -21,9 +21,13 @@ def check_encryption_key_holders_and_grant(granting_user, granting_users_private
     # TODO: refactor and check, maybe raise error?
     records = EncryptedRecord.objects.filter(from_rlc=granting_user.rlc)
     for record in records:
-        record_key = record.get_decryption_key(
-            granting_user, granting_users_private_key
-        )
+        try:
+            record_key = record.get_decryption_key(
+                granting_user, granting_users_private_key
+            )
+        # TODO: don't do this
+        except Exception:
+            continue
         users_with_keys = record.get_users_who_should_be_allowed_to_decrypt()
         for user in users_with_keys:
 

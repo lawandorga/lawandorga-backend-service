@@ -399,7 +399,7 @@ class CreateFixtures:
         if isinstance(permission, str):
             permission = Permission.objects.get(name=permission)
         has_permission: HasPermission = HasPermission(
-            permission=permission, user_has_permission=user, permission_for_rlc=user.rlc
+            permission=permission, user_has_permission=user
         )
         has_permission.save()
         return has_permission

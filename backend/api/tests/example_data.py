@@ -46,7 +46,6 @@ from random import randint, choice
 def add_permissions_to_group(group: Group, permission_name):
     HasPermission.objects.create(
         group_has_permission=group,
-        permission_for_rlc=group.from_rlc,
         permission=Permission.objects.get(name=permission_name),
     )
 

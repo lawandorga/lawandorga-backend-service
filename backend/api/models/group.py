@@ -73,7 +73,6 @@ class Group(models.Model):
         return (
             HasPermission.objects.filter(
                 group_has_permission=self,
-                permission_for_rlc=self.from_rlc,
                 permission=permission,
             ).count()
             >= 1

@@ -132,13 +132,13 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         if not request.user.has_permission(PERMISSION_MANAGE_USERS):
-            data = {"message": "You don't have the necessary permission to do this."}
+            data = {"detail": "You don't have the necessary permission to do this."}
             return Response(data, status=status.HTTP_403_FORBIDDEN)
         return super().destroy(request, *args, **kwargs)
 
     def update(self, request: Request, *args, **kwargs):
         if not request.user.has_permission(PERMISSION_MANAGE_USERS):
-            data = {"message": "You don't have the necessary permission to do this."}
+            data = {"detail": "You don't have the necessary permission to do this."}
             return Response(data, status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
 

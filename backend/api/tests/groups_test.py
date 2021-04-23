@@ -45,7 +45,7 @@ class GroupsTests(TransactionTestCase):
         group.save()
 
         hasperm1 = HasPermission(
-            group_has_permission=group, permission=perm1, permission_for_rlc=rlc
+            group_has_permission=group, permission=perm1
         )
         hasperm1.save()
         self.assertTrue(group.has_group_permission(perm1))
@@ -62,7 +62,7 @@ class GroupsTests(TransactionTestCase):
         group.save()
 
         hasperm1 = HasPermission(
-            group_has_permission=group, permission=perm1, permission_for_rlc=rlc
+            group_has_permission=group, permission=perm1
         )
         hasperm1.save()
         self.assertTrue(group.has_group_one_permission([perm1, perm2]))
@@ -78,7 +78,7 @@ class GroupsTests(TransactionTestCase):
         group.save()
 
         hasperm1 = HasPermission(
-            group_has_permission=group, permission=perm1, permission_for_rlc=rlc
+            group_has_permission=group, permission=perm1
         )
         hasperm1.save()
         self.assertTrue(not group.has_group_one_permission([perm2]))
