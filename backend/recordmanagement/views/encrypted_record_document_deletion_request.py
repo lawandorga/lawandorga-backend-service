@@ -42,12 +42,7 @@ class EncryptedRecordDocumentDeletionRequestViewSet(viewsets.ModelViewSet):
     queryset = EncryptedRecordDocumentDeletionRequest.objects.none()
 
     def get_queryset(self) -> QuerySet:
-        if self.request.user.is_superuser:
-            return EncryptedRecordDocumentDeletionRequest.objects.all()
-        else:
-            return EncryptedRecordDocumentDeletionRequest.objects.filter(
-                record__from_rlc=self.request.user.rlc
-            )
+        return EncryptedRecordDocumentDeletionRequest.objects.filter(record__from_rlc=self.request.user.rlc)
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         try:
