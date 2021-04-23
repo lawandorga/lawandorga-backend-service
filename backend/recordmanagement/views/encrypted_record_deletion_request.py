@@ -35,8 +35,6 @@ class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
     queryset = EncryptedRecordDeletionRequest.objects.none()
 
     def get_queryset(self) -> QuerySet:
-        if self.request.user.is_superuser:
-            return EncryptedRecordDeletionRequest.objects.all()
         return EncryptedRecordDeletionRequest.objects.filter(
             request_from__rlc=self.request.user.rlc
         )
