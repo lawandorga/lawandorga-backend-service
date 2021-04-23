@@ -32,7 +32,7 @@ from backend.static import error_codes, permissions
 
 class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.EncryptedRecordDeletionRequestSerializer
-    queryset = EncryptedRecordDeletionRequest.objects.all()
+    queryset = EncryptedRecordDeletionRequest.objects.none()
 
     def get_queryset(self) -> QuerySet:
         if self.request.user.is_superuser:
@@ -42,13 +42,8 @@ class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
         )
 
     def list(self, request, *args, **kwargs):
-        if (
-            not request.user.has_permission(
-                permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
-                for_rlc=request.user.rlc,
-            )
-            and not request.user.is_superuser
-        ):
+        if not request.user.has_permission(permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
+                                           for_rlc=request.user.rlc):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
         return Response(
             serializers.EncryptedRecordDeletionRequestSerializer(
