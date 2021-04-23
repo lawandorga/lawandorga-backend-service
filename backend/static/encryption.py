@@ -76,6 +76,8 @@ class AESEncryption:
         key = get_bytes_from_string_or_return_bytes(key)
         hashed_key_bytes = sha3_256(key).digest()
         cipher = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
+        if isinstance(encrypted, memoryview):
+            encrypted = bytes(encrypted)
         plaintext_bytes = unpad(cipher.decrypt(encrypted), AES.block_size)
         if output_type == OutputType.STRING:
             return get_string_from_bytes_or_return_string(plaintext_bytes)
