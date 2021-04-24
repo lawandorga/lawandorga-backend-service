@@ -200,6 +200,14 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
             encryption.encrypt(user.get_public_key())
             encryption.save()
 
+        # solve a bug when the user who creates the record is not allowed to see his own record
+        if not RecordEncryption.objects.filter(user=request.user, record=record).exists():
+            encryption = RecordEncryption(
+                user=request.user, record=record, encrypted_key=aes_key
+            )
+            encryption.encrypt(request.user.get_public_key())
+            encryption.save()
+
         # notify about the new record
         Notification.objects.notify_record_created(request.user, record)
         url = settings.FRONTEND_URL + "records/" + str(record.id)
