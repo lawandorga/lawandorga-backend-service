@@ -93,7 +93,6 @@ class UserCreateSerializer(UserSerializer):
 
 
 class UserUpdateSerializer(UserSerializer):
-    # TODO: make fields readonly
     class Meta:
         model = UserProfile
         fields = [

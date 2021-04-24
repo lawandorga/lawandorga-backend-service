@@ -242,9 +242,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                     and self.email == "dummy@rlcm.de"
                     and settings.DUMMY_USER_PASSWORD
                 ):
-                    return self.encryption_keys.decrypt_private_key(
-                        settings.DUMMY_USER_PASSWORD
-                    )
+                    return self.encryption_keys.decrypt_private_key(settings.DUMMY_USER_PASSWORD)
                 else:
                     raise CustomError(ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED)
             private_key = private_key.replace("\\n", "\n").replace("<linebreak>", "\n")

@@ -241,18 +241,16 @@ class RSAEncryption:
     @staticmethod
     def decrypt(ciphertext, pem_private_key, output_type=OutputType.STRING):
         pem_private_key = get_bytes_from_string_or_return_bytes(pem_private_key)
-        try:
-            private_key = serialization.load_pem_private_key(
-                pem_private_key, None, backend=default_backend()
-            )
-        except ValueError as valueError:
-            raise CustomError(ERROR__API__INVALID_PRIVATE_KEY)
+        private_key = serialization.load_pem_private_key(
+            pem_private_key, None, backend=default_backend()
+        )
 
         if not isinstance(ciphertext, bytes):
             try:
                 ciphertext = ciphertext.tobytes()
             except Exception as e:
                 raise Exception("error at decrypting, wrong type: ", e)
+
         plaintext = private_key.decrypt(
             ciphertext,
             asymmetric_padding.OAEP(

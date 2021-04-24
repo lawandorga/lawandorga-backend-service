@@ -13,7 +13,6 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from backend.api.models import Permission
 from backend.static.permissions import PERMISSION_CAN_CONSULT
 from backend.static.encryption import AESEncryption, RSAEncryption
 from backend.api.models.user import UserProfile
@@ -95,6 +94,7 @@ class Rlc(models.Model):
         from backend.api.models.rlc_encryption_keys import RlcEncryptionKeys
         from backend.api.models.users_rlc_keys import UsersRlcKeys
 
+        # safety return
         if hasattr(self, "encryption_keys"):
             return
         # generate some keys
@@ -109,8 +109,6 @@ class Rlc(models.Model):
         # the aes key is encrypted with the users public key, but only the user's private key can decrypt
         # the encrypted aes key
         for user in self.rlc_members.all():
-            encrypted_aes_key = RSAEncryption.encrypt(aes_key, user.get_public_key())
-            user_rlc_keys = UsersRlcKeys(
-                user=user, rlc=self, encrypted_key=encrypted_aes_key
-            )
+            user_rlc_keys = UsersRlcKeys(user=user, rlc=self, encrypted_key=aes_key)
+            user_rlc_keys.encrypt(user.get_public_key())
             user_rlc_keys.save()

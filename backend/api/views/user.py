@@ -17,6 +17,7 @@ from rest_framework.authtoken.serializers import AuthTokenSerializer
 from backend.api.models.notification import Notification
 from rest_framework.authtoken.models import Token
 from backend.api.models.permission import Permission
+from backend.static.encryption import RSAEncryption, AESEncryption
 from backend.static.permissions import (
     PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC,
     PERMISSION_MANAGE_USERS,
@@ -360,14 +361,18 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.request.user
         user_to_unlock = self.get_object()
 
-        if not request.user.has_permission(
-            PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc
-        ):
+        if user == user_to_unlock:
             data = {
-                "message": "You need to have the view_records_full_detail permission in order to unlock this user."
+                'detail': 'You can not unlock yourself. This does not work.'
+            }
+            return Response(data, status=status.HTTP_403_FORBIDDEN)
+
+        if not request.user.has_permission(PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC):
+            data = {
+                "detail": "You need to have the view_records_full_detail permission in order to unlock this user."
                 "Because you need to be able to give this user all his encryption keys."
             }
-            return Response(data)
+            return Response(data, status=status.HTTP_401_UNAUTHORIZED)
 
         # generate new rlc key
         private_key_user = request.user.get_private_key(request=request)
@@ -377,4 +382,4 @@ class UserViewSet(viewsets.ModelViewSet):
         user_to_unlock.locked = False
         user_to_unlock.save()
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(UserSerializer(user_to_unlock).data)
