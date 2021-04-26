@@ -23,7 +23,7 @@ from rest_framework.response import Response
 from backend.api.serializers import (
     GroupSerializer,
     GroupMembersSerializer,
-    GroupAddMemberSerializer,
+    GroupAddMemberSerializer, UserSerializer, HasPermissionSerializer,
 )
 from rest_framework.request import Request
 from backend.api.errors import CustomError
@@ -56,6 +56,18 @@ class GroupViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         self.serializer_class = GroupMembersSerializer
         return super().retrieve(request, *args, **kwargs)
+
+    @action(detail=True, methods=['get'])
+    def members(self, *args, **kwargs):
+        group = self.get_object()
+        members = group.group_members.all()
+        return Response(UserSerializer(members, many=True).data)
+
+    @action(detail=True, methods=['get'])
+    def permissions(self, *args, **kwargs):
+        group = self.get_object()
+        permissions = group.group_has_permission.all()
+        return Response(HasPermissionSerializer(permissions, many=True).data)
 
     @action(detail=True, methods=["post", "delete"])
     def member(self, request: Request, pk=None):
