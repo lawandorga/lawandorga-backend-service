@@ -23,13 +23,13 @@ from rest_framework.response import Response
 from backend.api.serializers import (
     GroupSerializer,
     GroupMembersSerializer,
-    GroupAddMemberSerializer, UserSerializer, HasPermissionSerializer,
+    GroupAddMemberSerializer, UserSerializer, HasPermissionSerializer, HasPermissionNameSerializer,
 )
 from rest_framework.request import Request
 from backend.api.errors import CustomError
 from backend.api.models import Group, UserProfile
 from backend.static import error_codes, permissions
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 
 
 class GroupViewSet(viewsets.ModelViewSet):
@@ -67,7 +67,28 @@ class GroupViewSet(viewsets.ModelViewSet):
     def permissions(self, *args, **kwargs):
         group = self.get_object()
         permissions = group.group_has_permission.all()
-        return Response(HasPermissionSerializer(permissions, many=True).data)
+        return Response(HasPermissionNameSerializer(permissions, many=True).data)
+
+    @action(detail=True, methods=['post'])
+    def remove(self, request, pk=None, *arsg, **kwargs):
+        if not request.user.has_permission(permissions.PERMISSION_MANAGE_GROUPS_RLC):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        # get the group
+        group = self.get_object()
+
+        # get the data
+        serializer = GroupAddMemberSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        member = UserProfile.objects.get(pk=serializer.validated_data["member"])
+
+        # remove the member
+        group.group_members.remove(member)
+        Notification.objects.notify_group_member_removed(
+            request.user, member, group
+        )
+
+        return Response(status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["post", "delete"])
     def member(self, request: Request, pk=None):

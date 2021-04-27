@@ -49,20 +49,10 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
         pass
 
     def destroy(self, request, *args, **kwargs):
-        if "pk" not in kwargs:
-            raise CustomError(error_codes.ERROR__API__ID_NOT_PROVIDED)
-        try:
-            hasPermission = HasPermission.objects.get(pk=kwargs["pk"])
-        except:
-            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
+        if not request.user.has_permission(PERMISSION_MANAGE_PERMISSIONS_RLC):
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
-        if not request.user.has_permission(
-            PERMISSION_MANAGE_PERMISSIONS_RLC
-        ):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-
-        hasPermission.delete()
-        return Response({"status": "success"})
+        return super().destroy(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         data = request.data

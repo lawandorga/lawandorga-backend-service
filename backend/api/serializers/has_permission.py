@@ -33,3 +33,14 @@ class HasPermissionSerializer(serializers.ModelSerializer):
         if HasPermission.already_existing(validated_data):
             raise EntryAlreadyExistingError("entry already exists")
         return super().create(validated_data)
+
+
+class HasPermissionNameSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField(method_name='get_name')
+
+    class Meta:
+        model = HasPermission
+        fields = '__all__'
+
+    def get_name(self, obj):
+        return obj.permission.name
