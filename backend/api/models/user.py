@@ -206,11 +206,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         if isinstance(permission, str):
             permission, created = Permission.objects.get_or_create(name=permission)
 
-        return (
-            self.__has_as_user_permission(permission) or
-            self.__has_as_group_member_permission(permission) or
-            self.__has_as_rlc_member_permission(permission)
-        )
+        as_user = self.__has_as_user_permission(permission)
+        as_group = self.__has_as_group_member_permission(permission)
+        as_rlc = self.__has_as_rlc_member_permission(permission)
+
+        return as_user or as_group or as_rlc
 
     def has_permissions(self, permissions):
         return any(map(lambda permission: self.has_permission(permission), permissions))
@@ -224,9 +224,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             self.generate_new_user_encryption_keys()
         return self.encryption_keys.public_key
 
-    def get_private_key(
-        self, password_user: str = None, request: Request = None
-    ) -> str:
+    def get_private_key(self, password_user: str = None, request: Request = None) -> str:
         if not hasattr(self, "encryption_keys"):
             self.generate_new_user_encryption_keys()
 

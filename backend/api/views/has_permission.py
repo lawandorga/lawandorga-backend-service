@@ -16,6 +16,7 @@
 
 from rest_framework import status
 from rest_framework import viewsets
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -34,7 +35,7 @@ from backend.api.models import UserProfile, Rlc
 from backend.api.serializers import (
     HasPermissionSerializer,
     UserProfileNameSerializer,
-    GroupSerializer,
+    GroupSerializer, HasPermissionNameSerializer,
 )
 from backend.recordmanagement.helpers import check_encryption_key_holders_and_grant
 from backend.static.middleware import get_private_key_from_request
@@ -55,45 +56,28 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        data = request.data
+        if not request.user.has_permission(PERMISSION_MANAGE_PERMISSIONS_RLC):
+            raise PermissionDenied()
 
-        if "permission_for_rlc" in data:
-            try:
-                rlc = Rlc.objects.get(pk=data["permission_for_rlc"])
-            except:
-                raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
-        else:
-            rlc = request.user.rlc
-
-        if not request.user.is_superuser and not request.user.has_permission(
-            PERMISSION_MANAGE_PERMISSIONS_RLC, for_rlc=rlc
-        ):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-
-        # can be removed?
-        if HasPermission.already_existing(data):
-            raise CustomError(error_codes.ERROR__API__HAS_PERMISSION__ALREADY_EXISTING)
-
-        serializer = self.get_serializer(data=data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        if not HasPermission.objects.filter(**serializer.validated_data).exists():
+            self.perform_create(serializer)
 
-        permission = Permission.objects.get(id=request.data["permission"])
+        permission = serializer.validated_data["permission"]
         if permission in get_record_encryption_keys_permissions():
-            granting_users_private_key = get_private_key_from_request(request)
-            check_encryption_key_holders_and_grant(
-                request.user, granting_users_private_key
-            )
+            granting_users_private_key = self.request.user.get_private_key(request=request)
+            check_encryption_key_holders_and_grant(request.user, granting_users_private_key)
         # check if permission in rec enc perms TODO: this would be more performant
         # get users private key
         # if rlc -> add rec enc for all rlc users
         # if group -> add for all group members
         # if user -> add for user
 
+        has_permission = HasPermission.objects.get(**serializer.validated_data)
         headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
+        return Response(HasPermissionNameSerializer(instance=has_permission).data, status=status.HTTP_201_CREATED,
+                        headers=headers)
 
 
 class HasPermissionStaticsViewSet(APIView):

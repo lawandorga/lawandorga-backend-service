@@ -13,6 +13,8 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from rest_framework.exceptions import PermissionDenied
+
 from backend.recordmanagement.models import (
     EncryptedRecord,
     RecordEncryption,
@@ -44,7 +46,7 @@ class GroupViewSet(viewsets.ModelViewSet):
             not request.user.has_permission(permissions.PERMISSION_MANAGE_GROUPS_RLC) and
             not request.user.has_permission(permissions.PERMISSION_ADD_GROUP_RLC)
         ):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+            raise PermissionDenied()
 
         # add data
         request.data["creator"] = request.user.pk
@@ -56,6 +58,17 @@ class GroupViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         self.serializer_class = GroupMembersSerializer
         return super().retrieve(request, *args, **kwargs)
+
+    def destroy(self, request: Request, *args, **kwargs):
+        # permission stuff
+        if (
+            not request.user.has_permission(permissions.PERMISSION_MANAGE_GROUPS_RLC) and
+            not request.user.has_permission(permissions.PERMISSION_ADD_GROUP_RLC)
+        ):
+            raise PermissionDenied()
+
+        # do the usual stuff
+        return super().destroy(request, *args, **kwargs)
 
     @action(detail=True, methods=['get'])
     def members(self, *args, **kwargs):
@@ -72,7 +85,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def remove(self, request, pk=None, *arsg, **kwargs):
         if not request.user.has_permission(permissions.PERMISSION_MANAGE_GROUPS_RLC):
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            raise PermissionDenied()
 
         # get the group
         group = self.get_object()
@@ -93,10 +106,8 @@ class GroupViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post", "delete"])
     def member(self, request: Request, pk=None):
         # permission stuff
-        if not request.user.has_permission(
-            permissions.PERMISSION_MANAGE_GROUPS_RLC, for_rlc=request.user.rlc
-        ):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+        if not request.user.has_permission(permissions.PERMISSION_MANAGE_GROUPS_RLC):
+            raise PermissionDenied()
 
         # get the group
         group = self.get_object()
@@ -132,6 +143,9 @@ class GroupViewSet(viewsets.ModelViewSet):
             # notify
             Notification.objects.notify_group_member_added(request.user, member, group)
 
+            # return the added user
+            return Response(UserSerializer(member).data, status=status.HTTP_200_OK)
+
         # remove member from group
         if request.method == "DELETE":
             group.group_members.remove(member)
@@ -140,4 +154,4 @@ class GroupViewSet(viewsets.ModelViewSet):
             )
 
         # return something
-        return Response(GroupMembersSerializer(group).data)
+        return Response(status.HTTP_204_NO_CONTENT)

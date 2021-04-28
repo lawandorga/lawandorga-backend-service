@@ -182,7 +182,10 @@ class EncryptedRecord(EncryptedModelMixin, models.Model):
         )
 
         # users that have the necessary permissions
-        rlc = self.working_on_record.first().rlc
+        some_user = self.working_on_record.first()
+        if not some_user:
+            return UserProfile.objects.none()
+        rlc = some_user.rlc
         users_with_permission = []
         for user in list(rlc.rlc_members.all()):
             if user.has_permissions(get_record_encryption_keys_permissions_strings()):
