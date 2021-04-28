@@ -63,7 +63,7 @@ class NewUserRequestViewSet(
         serializer.is_valid(raise_exception=True)
         new_member = user_request.request_from
 
-        if user_request.state == "gr":
+        if serializer.validated_data['state'] == "gr":
 
             # create the rlc encryption keys for new member
             private_key_user = request.user.get_private_key(request=request)
