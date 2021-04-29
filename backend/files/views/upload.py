@@ -31,7 +31,6 @@ from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 class UploadViewSet(APIView):
     def post(self, request):
         user = request.user
-
         root_folder = Folder.get_folder_from_path(
             "files/" + request.data["path"], user.rlc
         )
@@ -49,7 +48,7 @@ class UploadViewSet(APIView):
         s3_paths = []
         for file_info in file_information:
             folder = Folder.create_folders_for_file_path(
-                root_folder, file_info["local_file_path"][5:], user
+                root_folder, file_info["local_file_path"][10:], user
             )
             new_file = File(
                 name=file_info["file_name"],
