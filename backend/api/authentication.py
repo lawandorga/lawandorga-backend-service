@@ -18,27 +18,19 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from django.conf import settings
 from django.utils import timezone
-from datetime import datetime
-import pytz
 
 
 class ExpiringTokenAuthentication(TokenAuthentication):
     model = Token
 
     def authenticate_credentials(self, key):
-        try:
-            token = Token.objects.get(key=key)
-        except self.model.DoesNotExist:
-            raise AuthenticationFailed("Invalid token")
-
-        if not token.user.is_active:
-            raise AuthenticationFailed("User inactive or deleted")
+        user, token = super().authenticate_credentials(key)
 
         if token.created < (timezone.now() - settings.TIMEOUT_TIMEDELTA):
             token.delete()
-            raise AuthenticationFailed("Token has expired")
+            raise AuthenticationFailed("Token has expired.")
 
-        token.created = timezone.now()
-        token.user.last_login = timezone.now()
-        token.user.save()
-        return token.user, token
+        user.last_login = timezone.now()
+        user.save()
+
+        return user, token

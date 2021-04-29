@@ -13,6 +13,7 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from backend.api.models.notification import Notification
 from rest_framework.authtoken.models import Token
@@ -194,9 +195,10 @@ class UserViewSet(viewsets.ModelViewSet):
         }
         return Response(data, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=["get"], url_path="statics/(?P<token>[^/.]+)")
+    @action(detail=False, methods=["get"], url_path="statics/(?P<token>[^/.]+)", permission_classes=[],
+            authentication_classes=[])
     def statics(self, request: Request, token=None, *args, **kwargs):
-        token = Token.objects.get(key=token)
+        token = get_object_or_404(Token, key=token)
         user = token.user
 
         notifications = NotificationGroup.objects.filter(user=user, read=False).count()
@@ -370,7 +372,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if not request.user.has_permission(PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC):
             data = {
                 "detail": "You need to have the view_records_full_detail permission in order to unlock this user."
-                "Because you need to be able to give this user all his encryption keys."
+                          "Because you need to be able to give this user all his encryption keys."
             }
             return Response(data, status=status.HTTP_401_UNAUTHORIZED)
 
