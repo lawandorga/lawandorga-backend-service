@@ -14,6 +14,7 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from django.core.exceptions import ImproperlyConfigured
+from datetime import timedelta
 import json
 import os
 
@@ -124,6 +125,9 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
     "private-key",
 ]
+
+# This is used by the ExpiringTokenAuthentication which extends from rest's token authentication
+TIMEOUT_TIMEDELTA = timedelta(minutes=10)
 
 # Secret keys for s3-storage to save files from 'files' and documents from records
 SCW_SECRET_KEY = get_secret("SCW_SECRET_KEY")

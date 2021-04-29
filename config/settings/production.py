@@ -1,5 +1,4 @@
 from config.settings.base import *
-from datetime import timedelta
 
 # Debug
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEBUG
@@ -22,8 +21,6 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
 }
-# This is used by the ExpiringTokenAuthentication which extends from rest's token authentication
-TIMEOUT_TIMEDELTA = timedelta(minutes=10)
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
