@@ -19,7 +19,7 @@ from backend.api.models import UserProfile
 from rest_framework import serializers
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
     # make sure select_related('accepted') is set on the user queryset or else the queries will explode
     accepted = serializers.SerializerMethodField("get_accepted")
 
@@ -37,8 +37,8 @@ class UserSerializer(serializers.ModelSerializer):
         return False
 
 
-class OldUserSerializer(UserSerializer):
-    group_members = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+class OldUserProfileSerializer(UserProfileSerializer):
+    rlcgroups = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     user_has_permission = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
 
@@ -68,7 +68,7 @@ class UserProfileNameSerializer(serializers.ModelSerializer):
         extra_kwargs = {"password": {"write_only": True}}
 
 
-class UserCreateSerializer(UserSerializer):
+class UserCreateProfileSerializer(UserProfileSerializer):
     class Meta:
         model = UserProfile
         fields = [
@@ -93,7 +93,7 @@ class UserCreateSerializer(UserSerializer):
         return instance
 
 
-class UserUpdateSerializer(UserSerializer):
+class UserUpdateProfileSerializer(UserProfileSerializer):
     class Meta:
         model = UserProfile
         fields = [

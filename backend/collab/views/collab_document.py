@@ -23,7 +23,7 @@ from rest_framework.request import Request
 
 from backend.api.errors import CustomError
 from backend.api.models import Group, HasPermission, Permission
-from backend.api.serializers import HasPermissionSerializer
+from backend.api.serializers import OldHasPermissionSerializer
 from backend.collab.models import (
     CollabDocument,
     CollabPermission,
@@ -172,7 +172,7 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
                 "direct": PermissionForCollabDocumentNestedSerializer(
                     permissions_direct, many=True
                 ).data,
-                "general": HasPermissionSerializer(
+                "general": OldHasPermissionSerializer(
                     has_permissions_for_groups, many=True
                 ).data,
             }

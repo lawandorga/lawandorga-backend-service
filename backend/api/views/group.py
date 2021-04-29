@@ -25,7 +25,7 @@ from rest_framework.response import Response
 from backend.api.serializers import (
     GroupSerializer,
     GroupMembersSerializer,
-    GroupAddMemberSerializer, UserSerializer, HasPermissionSerializer, HasPermissionNameSerializer,
+    GroupAddMemberSerializer, UserProfileSerializer, OldHasPermissionSerializer, HasPermissionNameSerializer,
 )
 from rest_framework.request import Request
 from backend.api.errors import CustomError
@@ -74,7 +74,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     def members(self, *args, **kwargs):
         group = self.get_object()
         members = group.group_members.all()
-        return Response(UserSerializer(members, many=True).data)
+        return Response(UserProfileSerializer(members, many=True).data)
 
     @action(detail=True, methods=['get'])
     def permissions(self, *args, **kwargs):
@@ -144,7 +144,7 @@ class GroupViewSet(viewsets.ModelViewSet):
             Notification.objects.notify_group_member_added(request.user, member, group)
 
             # return the added user
-            return Response(UserSerializer(member).data, status=status.HTTP_200_OK)
+            return Response(UserProfileSerializer(member).data, status=status.HTTP_200_OK)
 
         # remove member from group
         if request.method == "DELETE":

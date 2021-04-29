@@ -1,25 +1,17 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
+from backend.api.models.has_permission import HasPermission
+from backend.api.serializers import PermissionNameSerializer, GroupNameSerializer, UserProfileNameSerializer, \
+    RlcNameSerializer
 from rest_framework import serializers
 from ..errors import EntryAlreadyExistingError
-from ..models.has_permission import HasPermission
 
 
 class HasPermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HasPermission
+        fields = '__all__'
+
+
+class OldHasPermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = HasPermission
         fields = "__all__"
@@ -35,12 +27,18 @@ class HasPermissionSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class HasPermissionNameSerializer(serializers.ModelSerializer):
+class HasPermissionNameSerializer(HasPermissionSerializer):
     name = serializers.SerializerMethodField(method_name='get_name')
 
-    class Meta:
-        model = HasPermission
-        fields = '__all__'
+    def get_name(self, obj):
+        return obj.permission.name
+
+
+class HasPermissionAllNamesSerializer(HasPermissionSerializer):
+    name = serializers.SerializerMethodField(method_name='get_name')
+    user_has_permission = UserProfileNameSerializer(read_only=True)
+    group_has_permission = GroupNameSerializer(read_only=True)
+    rlc_has_permission = RlcNameSerializer(read_only=True)
 
     def get_name(self, obj):
         return obj.permission.name

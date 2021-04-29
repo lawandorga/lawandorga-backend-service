@@ -18,7 +18,6 @@ from rest_framework.authtoken.serializers import AuthTokenSerializer
 from backend.api.models.notification import Notification
 from rest_framework.authtoken.models import Token
 from backend.api.models.permission import Permission
-from backend.static.encryption import RSAEncryption, AESEncryption
 from backend.static.permissions import (
     PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC,
     PERMISSION_MANAGE_USERS,
@@ -28,15 +27,14 @@ from backend.static.error_codes import *
 from backend.static.middleware import get_private_key_from_request
 from rest_framework.decorators import action
 from backend.api.serializers import (
-    OldUserSerializer,
-    UserCreateSerializer,
-    UserProfileNameSerializer,
+    OldUserProfileSerializer,
+    UserCreateProfileSerializer,
     RlcSerializer,
     UserProfileForeignSerializer,
-    UserSerializer,
-    UserUpdateSerializer,
+    UserProfileSerializer,
+    UserUpdateProfileSerializer,
     UserPasswordResetSerializer,
-    UserPasswordResetConfirmSerializer,
+    UserPasswordResetConfirmSerializer, HasPermissionNameSerializer, HasPermissionAllNamesSerializer,
 )
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
@@ -66,7 +64,7 @@ class SpecialPermission(IsAuthenticated):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    serializer_class = UserSerializer
+    serializer_class = UserProfileSerializer
     queryset = UserProfile.objects.none()
     filter_backends = [filters.SearchFilter]
     permission_classes = [SpecialPermission]
@@ -80,9 +78,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == "create":
-            return UserCreateSerializer
+            return UserCreateProfileSerializer
         elif self.action in ["update", "partial_update"]:
-            return UserUpdateSerializer
+            return UserUpdateProfileSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):
@@ -129,7 +127,10 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, pk=None, **kwargs):
         user = self.get_object()
-        serializer = UserProfileForeignSerializer(user)
+        if request.user.has_permission(PERMISSION_MANAGE_USERS) or user.pk == request.user.pk:
+            serializer = UserProfileSerializer(user)
+        else:
+            serializer = UserProfileForeignSerializer(user)
         return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
@@ -139,7 +140,8 @@ class UserViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
     def update(self, request: Request, *args, **kwargs):
-        if not request.user.has_permission(PERMISSION_MANAGE_USERS):
+        user = self.get_object()
+        if not request.user.has_permission(PERMISSION_MANAGE_USERS) and request.user.pk != user.pk:
             data = {"detail": "You don't have the necessary permission to do this."}
             return Response(data, status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
@@ -212,7 +214,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user_record_states_possible = UserProfile.user_record_states_possible
 
         data = {
-            "user": OldUserSerializer(user).data,
+            "user": OldUserProfileSerializer(user).data,
             "rlc": RlcSerializer(user.rlc).data,
             "notifications": notifications,
             "permissions": user_permissions,
@@ -266,7 +268,7 @@ class UserViewSet(viewsets.ModelViewSet):
             inactive_users = UserProfile.objects.filter(
                 rlc=request.user.rlc, is_active=False
             )
-            return Response(UserSerializer(inactive_users, many=True).data)
+            return Response(UserProfileSerializer(inactive_users, many=True).data)
 
         elif request.method == "POST":
             if not request.user.has_permission(
@@ -287,7 +289,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
                 user.is_active = True
                 user.save()
-                return Response(OldUserSerializer(user).data)
+                return Response(OldUserProfileSerializer(user).data)
             raise CustomError(ERROR__API__ACTION_NOT_VALID)
 
         return Response({})
@@ -384,4 +386,10 @@ class UserViewSet(viewsets.ModelViewSet):
         user_to_unlock.locked = False
         user_to_unlock.save()
 
-        return Response(UserSerializer(user_to_unlock).data)
+        return Response(UserProfileSerializer(user_to_unlock).data)
+
+    @action(detail=True, methods=['GET'])
+    def permissions(self, *args, **kwargs):
+        user = self.get_object()
+        user_permissions = user.get_permissions()
+        return Response(HasPermissionAllNamesSerializer(user_permissions, many=True).data)

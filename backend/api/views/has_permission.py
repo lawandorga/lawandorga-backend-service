@@ -33,9 +33,9 @@ from backend.static.permissions import (
 )
 from backend.api.models import UserProfile, Rlc
 from backend.api.serializers import (
-    HasPermissionSerializer,
+    OldHasPermissionSerializer,
     UserProfileNameSerializer,
-    GroupSerializer, HasPermissionNameSerializer,
+    GroupSerializer, HasPermissionNameSerializer, HasPermissionAllNamesSerializer,
 )
 from backend.recordmanagement.helpers import check_encryption_key_holders_and_grant
 from backend.static.middleware import get_private_key_from_request
@@ -43,7 +43,7 @@ from backend.static.middleware import get_private_key_from_request
 
 class HasPermissionViewSet(viewsets.ModelViewSet):
     queryset = HasPermission.objects.all()
-    serializer_class = HasPermissionSerializer
+    serializer_class = OldHasPermissionSerializer
     permission_classes = (IsAuthenticated,)
 
     def update(self, request, *args, **kwargs):
@@ -76,7 +76,7 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
 
         has_permission = HasPermission.objects.get(**serializer.validated_data)
         headers = self.get_success_headers(serializer.data)
-        return Response(HasPermissionNameSerializer(instance=has_permission).data, status=status.HTTP_201_CREATED,
+        return Response(HasPermissionAllNamesSerializer(instance=has_permission).data, status=status.HTTP_201_CREATED,
                         headers=headers)
 
 

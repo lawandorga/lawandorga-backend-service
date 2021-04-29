@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from backend.api.models.new_user_request import NewUserRequest
-from backend.api.serializers.user import UserProfileNameSerializer, OldUserSerializer
+from backend.api.serializers.user import UserProfileNameSerializer, OldUserProfileSerializer
 from rest_framework import serializers
 
 
@@ -25,5 +25,5 @@ class NewUserRequestSerializer(serializers.ModelSerializer):
 
 
 class OldNewUserRequestSerializer(NewUserRequestSerializer):
-    request_from = OldUserSerializer(many=False, read_only=True)
+    request_from = OldUserProfileSerializer(many=False, read_only=True)
     request_processed = UserProfileNameSerializer(many=False, read_only=True)

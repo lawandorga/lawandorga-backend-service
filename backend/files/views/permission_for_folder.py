@@ -20,7 +20,7 @@ from rest_framework.views import APIView
 
 from backend.api.errors import CustomError
 from backend.api.models.group import Group
-from backend.api.serializers import HasPermissionSerializer
+from backend.api.serializers import OldHasPermissionSerializer
 from backend.files.models.folder import Folder
 from backend.files.models.folder_permission import FolderPermission
 from backend.files.models.permission_for_folder import PermissionForFolder
@@ -122,7 +122,7 @@ class PermissionForFolderPerFolderViewSet(APIView):
             "folder_visible": PermissionForFolderNestedSerializer(
                 folder_visible, many=True
             ).data,
-            "general_permissions": HasPermissionSerializer(
+            "general_permissions": OldHasPermissionSerializer(
                 general_permissions, many=True
             ).data,
         }

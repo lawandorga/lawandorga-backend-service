@@ -142,7 +142,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         """
         Returns: all HasPermissions the groups in which the user is member of have as list
         """
-        groups = [groups["id"] for groups in list(self.group_members.values("id"))]
+        groups = [groups["id"] for groups in list(self.rlcgroups.values("id"))]
         return list(HasPermission.objects.filter(group_has_permission_id__in=groups))
 
     def __get_as_rlc_member_permissions(self):
@@ -196,7 +196,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return HasPermission.objects.filter(user_has_permission=self.pk, permission=permission).exists()
 
     def __has_as_group_member_permission(self, permission):
-        groups = [group.pk for group in self.group_members.all()]
+        groups = [group.pk for group in self.rlcgroups.all()]
         return HasPermission.objects.filter(group_has_permission__pk__in=groups, permission=permission).exists()
 
     def __has_as_rlc_member_permission(self, permission):
@@ -214,6 +214,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def has_permissions(self, permissions):
         return any(map(lambda permission: self.has_permission(permission), permissions))
+
+    def get_permissions(self):
+        user_permissions = HasPermission.objects.filter(user_has_permission=self)
+        user_groups = self.rlcgroups.all()
+        group_permissions = HasPermission.objects.filter(group_has_permission__in=user_groups)
+        rlc_permissions = HasPermission.objects.filter(rlc_has_permission=self.rlc)
+        return user_permissions | group_permissions | rlc_permissions
 
     def get_public_key(self) -> str:
         """

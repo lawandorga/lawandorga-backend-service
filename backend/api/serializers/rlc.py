@@ -30,7 +30,7 @@ class RlcSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class RlcSimpleSerializer(RlcSerializer):
+class RlcNameSerializer(RlcSerializer):
     class Meta:
         model = Rlc
         fields = ["id", "name"]

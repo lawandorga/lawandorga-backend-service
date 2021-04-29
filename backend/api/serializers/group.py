@@ -30,3 +30,9 @@ class GroupMembersSerializer(GroupSerializer):
 
 class GroupAddMemberSerializer(serializers.Serializer):
     member = serializers.IntegerField()
+
+
+class GroupNameSerializer(GroupSerializer):
+    class Meta:
+        model = Group
+        fields = ['name']

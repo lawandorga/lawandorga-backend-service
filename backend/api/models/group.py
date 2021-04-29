@@ -51,7 +51,7 @@ class Group(models.Model):
     name = models.CharField(max_length=200, null=False)
     visible = models.BooleanField(null=False, default=True)
     group_members = models.ManyToManyField(
-        UserProfile, related_name="group_members", blank=True
+        UserProfile, related_name="rlcgroups", blank=True
     )
     description = models.TextField(blank=True, null=True)
     note = models.TextField(blank=True, null=True)
