@@ -30,6 +30,7 @@ router.register("pool_consultants", PoolConsultantViewSet)
 router.register(
     "record_document_deletion_requests", EncryptedRecordDocumentDeletionRequestViewSet
 )
+router.register("consultants", ConsultantViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
