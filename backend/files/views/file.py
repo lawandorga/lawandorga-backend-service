@@ -23,7 +23,3 @@ from backend.files.serializers import FileSerializer
 class FileBaseViewSet(viewsets.ModelViewSet):
     queryset = File.objects.all()
     serializer_class = FileSerializer
-
-
-class FileViewSet(APIView):
-    pass

@@ -22,7 +22,7 @@ from django.conf import settings
 from backend.api.errors import CustomError
 from backend.static import error_codes
 from backend.static.encryption import AESEncryption
-from backend.static.storage_folders import combine_s3_folder_with_filename
+from backend.static.storage_folders import combine_s3_folder_with_filename, clean_filename
 from backend.static.logger import Logger
 
 
@@ -114,8 +114,9 @@ class EncryptedStorage:
         :param downloaded_file_name:
         :return:
         """
+        s3_key = clean_filename(s3_key)
         if not downloaded_file_name:
-            filename = s3_key[s3_key.rindex("/") + 1 :]
+            filename = s3_key[s3_key.rindex("/") + 1:]
             downloaded_file_name = os.path.join(local_folder, filename)
         # TODO: what happens to local_Folder if downloaded file name is given???
         EncryptedStorage.download_file_from_s3(s3_key, downloaded_file_name)

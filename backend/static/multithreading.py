@@ -81,13 +81,13 @@ class MultithreadedFileUploads:
                     combine_s3_folder_with_filename(s3_folders[i], encrypted_filename),
                 )
                 # check if download was successful now, if not, delete model
-                if not file_objects[i].exists_on_s3():
-                    Logger.error(
-                        "second upload of file failed, deleting model: "
-                        + file_objects[i].name
-                    )
-                    Notification.objects.notify_file_upload_error(file_objects[i])
-                    file_objects[i].delete()
+                # if not file_objects[i].exists_on_s3():
+                #     Logger.error(
+                #         "second upload of file failed, deleting model: "
+                #         + file_objects[i].name
+                #     )
+                #     Notification.objects.notify_file_upload_error(file_objects[i])
+                #     file_objects[i].delete()
 
         # if uploaded, delete local and check folders
         for file in local_files:

@@ -75,6 +75,7 @@ class File(models.Model):
 
     @receiver(pre_delete)
     def pre_deletion(sender, instance: "File", **kwargs) -> None:
+        print('pre delete')
         if sender == File:
             instance.delete_on_cloud()
             instance.folder.propagate_new_size_up(-instance.size)
@@ -89,14 +90,14 @@ class File(models.Model):
             instance.folder.save()
 
     def download(self, aes_key: str, local_destination_folder: str) -> None:
-        try:
-            EncryptedStorage.download_from_s3_and_decrypt_file(
-                self.get_encrypted_file_key(), aes_key, local_destination_folder
-            )
-        except Exception as e:
-            Notification.objects.notify_file_download_error(self.creator, self)
-            Logger.error("file couldn't be downloaded: " + self.get_file_key())
-            self.delete()
+        # try:
+        EncryptedStorage.download_from_s3_and_decrypt_file(
+            self.get_encrypted_file_key(), aes_key, local_destination_folder
+        )
+        # except Exception as e:
+        #     Notification.objects.notify_file_download_error(self.creator, self)
+        #     Logger.error("file couldn't be downloaded: " + self.get_file_key())
+        #     self.delete()
 
     def exists_on_s3(self) -> bool:
         return EncryptedStorage.file_exists(self.get_encrypted_file_key())

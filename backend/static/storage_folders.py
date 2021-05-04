@@ -19,6 +19,11 @@ import os
 
 # TODO refactor this into classes, 1 storage folders specific, 1 general filename manipulation
 
+def clean_filename(filename):
+    special_char_map = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('ß'): 'ss'}
+    filename = filename.translate(special_char_map)
+    return filename
+
 
 def get_storage_folder_record_document(rlc_id: int, record_id: int) -> str:
     return "rlcs/" + str(rlc_id) + "/records/" + str(record_id) + "/"
@@ -33,6 +38,7 @@ def get_storage_base_files_folder(rlc_id: int) -> str:
 
 
 def get_temp_storage_path(filename) -> str:
+    filename = clean_filename(filename)
     return os.path.join("tmp/media", filename)
 
 
@@ -41,6 +47,7 @@ def get_temp_storage_folder() -> str:
 
 
 def combine_s3_folder_with_filename(s3_folder, filename):
+    filename = clean_filename(filename)
     return os.path.join(s3_folder, filename)
 
 
