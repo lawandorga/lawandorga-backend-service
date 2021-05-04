@@ -75,7 +75,6 @@ class File(models.Model):
 
     @receiver(pre_delete)
     def pre_deletion(sender, instance: "File", **kwargs) -> None:
-        print('pre delete')
         if sender == File:
             instance.delete_on_cloud()
             instance.folder.propagate_new_size_up(-instance.size)

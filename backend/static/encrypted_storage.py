@@ -33,7 +33,7 @@ class EncryptedStorage:
         return session.client(
             service_name="s3",
             region_name="fr-par",
-            use_ssl=True,
+            endpoint_url="https://s3.fr-par.scw.cloud",
             aws_access_key_id=settings.SCW_ACCESS_KEY,
             aws_secret_access_key=settings.SCW_SECRET_KEY,
         )
