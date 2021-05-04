@@ -63,7 +63,7 @@ class UserProfileManager(BaseUserManager):
             has_permission["group_has_permission"] for has_permission in groups
         ]
         result = (
-            result | UserProfile.objects.filter(group_members__in=group_ids).distinct()
+            result | UserProfile.objects.filter(rlcgroups__in=group_ids).distinct()
         )
         if from_rlc is not None:
             result = result.filter(rlc=from_rlc)
