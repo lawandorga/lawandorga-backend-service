@@ -186,7 +186,7 @@ class UserViewSet(viewsets.ModelViewSet):
             token.save()
 
         # get the user's private key
-        private_key = user.get_private_key(password)
+        private_key = user.get_private_key(password_user=password)
 
         # build the response
         data = {

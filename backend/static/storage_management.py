@@ -90,7 +90,7 @@ class LocalStorageManager:
                 os.makedirs(os.path.dirname(local_file_path))
             except:
                 pass
-            file = open(local_file_path, "wb")
+            file = open(local_file_path.encode('utf-8'), "wb")
             if file_information.multiple_chunks():
                 for chunk in file_information.chunks():
                     file.write(chunk)
