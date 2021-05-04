@@ -13,6 +13,7 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from django.core import paginator
 from rest_framework.decorators import action
 
 from backend.recordmanagement.serializers import (
@@ -137,10 +138,10 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
         # set the client data
         client_data = map_values(
             {
-                "birthday": "client_birthday",
-                "name": "client_name",
-                "phone_number": "client_phone_number",
-                "note": "client_note",
+                "birthday": "birthday",
+                "name": "name",
+                "phone_number": "phone_number",
+                "note": "note",
                 "origin_country": "origin_country",
             },
             request.data,
@@ -160,9 +161,9 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
         record_data = map_values(
             {
                 "record_token": "record_token",
-                "note": "record_note",
-                "working_on_record": "consultants",
-                "tagged": "tags",
+                "first_contact_date": "first_contact_date",
+                "working_on_record": "working_on_record",
+                "tagged": "tagged",
             },
             request.data,
         )
