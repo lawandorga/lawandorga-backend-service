@@ -273,7 +273,7 @@ class EncryptedModelMixin(object):
     ) -> None:
         for field in self.encrypted_fields:
             data_in_field = getattr(self, field)
-            if data_in_field and not isinstance(data_in_field, bytes):
+            if data_in_field and not (isinstance(data_in_field, bytes) or isinstance(data_in_field, memoryview)):
                 raise ValueError(
                     "The field {} of object {} is not encrypted. "
                     "Do not save unencrypted data. "
