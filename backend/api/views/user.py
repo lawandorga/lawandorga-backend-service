@@ -346,12 +346,14 @@ class UserViewSet(viewsets.ModelViewSet):
             # generate new user private and public key based on the new password
             if hasattr(user, 'encryption_keys'):
                 user.encryption_keys.delete()
+            # get the user from db because the old encryption_keys might still be in this user
+            user = UserProfile.objects.get(pk=user.pk)
             user.get_private_key(password_user=new_password)
             # return
             return Response(status=status.HTTP_200_OK)
         else:
             data = {
-                "message": "The password reset link is invalid, possibly because it has already been used."
+                "detail": "The password reset link is invalid, possibly because it has already been used."
             }
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
