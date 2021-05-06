@@ -20,7 +20,7 @@ from backend.recordmanagement.models.encrypted_record_document_deletion_request 
     EncryptedRecordDocumentDeletionRequest,
 )
 from backend.recordmanagement.serializers import (
-    EncryptedRecordDocumentSerializer,
+    OldEncryptedRecordDocumentSerializer,
     EncryptedRecordDocumentNameSerializer,
     EncryptedRecordTokenSerializer,
 )
@@ -29,7 +29,7 @@ from backend.recordmanagement.serializers import (
 class EncryptedRecordDocumentDeletionRequestSerializer(serializers.ModelSerializer):
     request_from = UserProfileNameSerializer(many=False, read_only=True)
     request_processed = UserProfileNameSerializer(many=False, read_only=True)
-    document = EncryptedRecordDocumentSerializer(
+    document = OldEncryptedRecordDocumentSerializer(
         many=False, read_only=True, allow_null=True
     )
 

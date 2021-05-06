@@ -23,6 +23,12 @@ from backend.recordmanagement.serializers import RecordDocumentTagSerializer
 
 
 class EncryptedRecordDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EncryptedRecordDocument
+        fields = '__all__'
+
+
+class OldEncryptedRecordDocumentSerializer(serializers.ModelSerializer):
     tagged = RecordDocumentTagSerializer(many=True, read_only=True)
 
     class Meta:

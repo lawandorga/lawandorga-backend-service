@@ -59,5 +59,5 @@ class RecordDocumentTagByDocumentViewSet(APIView):
         for tag in tags:
             document.tagged.add(tag)
         document.save()
-        serializer = serializers.EncryptedRecordDocumentSerializer(document)
+        serializer = serializers.OldEncryptedRecordDocumentSerializer(document)
         return Response(serializer.data)

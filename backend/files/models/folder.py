@@ -139,7 +139,7 @@ class Folder(models.Model):
             return True
 
         relevant_folders = self.get_all_parents() + [self]
-        users_groups = user.group_members.all()
+        users_groups = user.rlcgroups.all()
         p_read = FolderPermission.objects.get(name=PERMISSION_READ_FOLDER)
         from backend.files.models.permission_for_folder import PermissionForFolder
 

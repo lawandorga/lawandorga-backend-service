@@ -42,7 +42,7 @@ from backend.static.storage_folders import get_temp_storage_folder
 
 class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
     queryset = EncryptedRecordDocument.objects.all()
-    serializer_class = serializers.EncryptedRecordDocumentSerializer
+    serializer_class = serializers.OldEncryptedRecordDocumentSerializer
 
     def post(self, request):
         pass
@@ -103,6 +103,9 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
             raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
 
         users_private_key: bytes = get_private_key_from_request(request)
+
+        a = 3
+
         files = request.FILES.getlist("files")
         if files.__len__() == 0:
             raise CustomError(error_codes.ERROR__FILES__NO_FILES_TO_UPLOAD)
@@ -146,7 +149,7 @@ class EncryptedRecordDocumentByRecordViewSet(APIView):
                 )
                 e_record_documents_handled.append(new_encrypted_record_document)
         return Response(
-            serializers.EncryptedRecordDocumentSerializer(
+            serializers.OldEncryptedRecordDocumentSerializer(
                 e_record_documents_handled, many=True
             ).data
         )

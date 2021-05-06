@@ -20,11 +20,11 @@ from backend.recordmanagement.serializers import (
     EncryptedRecordSerializer,
     OldEncryptedClientSerializer,
     OriginCountrySerializer,
-    EncryptedRecordDocumentSerializer,
+    OldEncryptedRecordDocumentSerializer,
     EncryptedRecordMessageDetailSerializer,
     EncryptedRecordListSerializer,
     EncryptedRecordMessageSerializer,
-    EncryptedRecordPermissionSerializer,
+    EncryptedRecordPermissionSerializer, EncryptedRecordDocumentSerializer,
 )
 from backend.recordmanagement.models import (
     EncryptedRecordPermission,
@@ -259,7 +259,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
                     "record": EncryptedRecordDetailSerializer(record).data,
                     "client": OldEncryptedClientSerializer(client).data,
                     "origin_country": OriginCountrySerializer(origin_country).data,
-                    "record_documents": EncryptedRecordDocumentSerializer(
+                    "record_documents": OldEncryptedRecordDocumentSerializer(
                         documents, many=True
                     ).data,
                     "record_messages": messages_data,
@@ -393,6 +393,12 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
             message.decrypt(user=request.user, private_key_user=self.private_key_user)
             messages_data.append(EncryptedRecordMessageDetailSerializer(message).data)
         return Response(messages_data)
+
+    @action(detail=True, methods=['get'])
+    def documents(self, request, *args, **kwargs):
+        record = self.get_object()
+        documents = record.e_record_documents.all()
+        return Response(EncryptedRecordDocumentSerializer(documents, many=True).data)
 
     @action(detail=True, methods=["post"])
     def add_message(self, request, pk=None):

@@ -137,7 +137,7 @@ class CollabDocument(TextDocument):
             current += part
             parents.append(current)
 
-        groups = user.group_members.all()
+        groups = user.rlcgroups.all()
         if PermissionForCollabDocument.objects.filter(
             permission__name=PERMISSION_WRITE_DOCUMENT,
             document__path__in=parents,
