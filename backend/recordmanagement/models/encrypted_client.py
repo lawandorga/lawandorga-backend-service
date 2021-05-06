@@ -52,9 +52,9 @@ class EncryptedClient(EncryptedModelMixin, models.Model):
     def __str__(self):
         return "client: {};".format(self.pk)
 
-    def encrypt(self, rlc_public_key: bytes) -> None:
+    def encrypt(self, public_key_rlc: bytes) -> None:
         key = AESEncryption.generate_secure_key()
-        self.encrypted_client_key = RSAEncryption.encrypt(key, rlc_public_key)
+        self.encrypted_client_key = RSAEncryption.encrypt(key, public_key_rlc)
         super().encrypt(key)
 
     def decrypt(self, private_key_rlc: str = None) -> None:

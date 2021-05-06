@@ -19,7 +19,7 @@ from rest_framework.decorators import action
 from backend.recordmanagement.serializers import (
     EncryptedRecordDetailSerializer,
     EncryptedRecordSerializer,
-    EncryptedClientSerializer,
+    OldEncryptedClientSerializer,
     OriginCountrySerializer,
     EncryptedRecordDocumentSerializer,
     EncryptedRecordMessageDetailSerializer,
@@ -148,7 +148,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
         )
 
         # validate the data
-        client_serializer = EncryptedClientSerializer(data=client_data)
+        client_serializer = OldEncryptedClientSerializer(data=client_data)
         client_serializer.is_valid(raise_exception=True)
         data = client_serializer.validated_data
 
@@ -258,7 +258,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
             return Response(
                 {
                     "record": EncryptedRecordDetailSerializer(record).data,
-                    "client": EncryptedClientSerializer(client).data,
+                    "client": OldEncryptedClientSerializer(client).data,
                     "origin_country": OriginCountrySerializer(origin_country).data,
                     "record_documents": EncryptedRecordDocumentSerializer(
                         documents, many=True
@@ -310,7 +310,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
         record_serializer.is_valid(raise_exception=True)
         if "client" not in request.data:
             request.data["client"] = {}
-        client_serializer = EncryptedClientSerializer(
+        client_serializer = OldEncryptedClientSerializer(
             client, data=request.data["client"], partial=partial
         )
         client_serializer.is_valid(raise_exception=True)
@@ -339,7 +339,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
         return Response(
             {
                 "record": self.get_serializer(record).data,
-                "client": EncryptedClientSerializer(client).data,
+                "client": OldEncryptedClientSerializer(client).data,
             }
         )
 
