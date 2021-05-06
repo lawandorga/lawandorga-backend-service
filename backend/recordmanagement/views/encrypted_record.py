@@ -13,7 +13,6 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from django.core import paginator
 from rest_framework.decorators import action
 
 from backend.recordmanagement.serializers import (
@@ -224,7 +223,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(record)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    def old_retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         record = self.get_object()
 
         if request.user.record_encryptions.filter(record=record).exists():
@@ -278,7 +277,25 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
                 state = permission_request.state
             return Response({"record": serializer.data, "request_state": state})
 
-    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    def get_object(self):
+        self.instance: EncryptedRecord = super().get_object()
+        self.private_key_user = self.request.user.get_private_key(request=self.request)
+        self.instance.decrypt(user=self.request.user, private_key_user=self.private_key_user)
+        return self.instance
+
+    def perform_update(self, serializer):
+        for attr, value in serializer.validated_data.items():
+            if attr == 'working_on_record':
+                pass
+            elif attr == 'tagged':
+                self.instance.tagged.set(value)
+            else:
+                setattr(self.instance, attr, value)
+        self.instance.encrypt(user=self.request.user, private_key_user=self.private_key_user)
+        self.instance.save()
+        self.instance.decrypt(user=self.request.user, private_key_user=self.private_key_user)
+
+    def old_update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # get the record to be updated
         record = self.get_object()
 
@@ -366,6 +383,16 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
         )
 
         return Response(EncryptedRecordPermissionSerializer(record_permission).data)
+
+    @action(detail=True, methods=['get'])
+    def messages(self, request, *args, **kwargs):
+        record = self.get_object()
+        messages = record.messages.all()
+        messages_data = []
+        for message in list(messages):
+            message.decrypt(user=request.user, private_key_user=self.private_key_user)
+            messages_data.append(EncryptedRecordMessageDetailSerializer(message).data)
+        return Response(messages_data)
 
     @action(detail=True, methods=["post"])
     def add_message(self, request, pk=None):

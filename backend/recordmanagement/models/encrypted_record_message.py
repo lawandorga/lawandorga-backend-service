@@ -78,6 +78,7 @@ class EncryptedRecordMessage(EncryptedModelMixin, models.Model):
     objects = EncryptedRecordMessageManager()
 
     class Meta:
+        ordering = ['created_on']
         verbose_name = "RecordMessage"
         verbose_name_plural = "RecordMessages"
 
