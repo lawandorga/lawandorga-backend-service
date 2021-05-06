@@ -139,7 +139,7 @@ class Folder(models.Model):
             return True
 
         relevant_folders = self.get_all_parents() + [self]
-        users_groups = user.group_members.all()
+        users_groups = user.rlcgroups.all()
         p_read = FolderPermission.objects.get(name=PERMISSION_READ_FOLDER)
         from backend.files.models.permission_for_folder import PermissionForFolder
 
@@ -167,7 +167,7 @@ class Folder(models.Model):
             return True
 
         relevant_folders = self.get_all_parents() + [self]
-        users_groups = user.group_members.all()
+        users_groups = user.rlcgroups.all()
         p_write = FolderPermission.objects.get(name=PERMISSION_WRITE_FOLDER)
         from backend.files.models.permission_for_folder import PermissionForFolder
 
@@ -189,7 +189,7 @@ class Folder(models.Model):
         if self.user_has_permission_read(user) or self.user_has_permission_write(user):
             return True
         children = self.get_all_children()
-        users_groups = user.group_members.all()
+        users_groups = user.rlcgroups.all()
         relevant_permissions = PermissionForFolder.objects.filter(
             folder__in=children, group_has_permission__in=users_groups
         )
