@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from rest_framework.decorators import action
-
+from rest_framework.exceptions import PermissionDenied
 from backend.recordmanagement.serializers import (
     EncryptedRecordDetailSerializer,
     EncryptedRecordSerializer,
@@ -53,8 +53,14 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     serializer_class = EncryptedRecordSerializer
 
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return EncryptedRecordListSerializer
+        return super().get_serializer_class()
+
     def get_queryset(self) -> QuerySet:
-        return EncryptedRecord.objects.filter(from_rlc=self.request.user.rlc)
+        return EncryptedRecord.objects.filter(from_rlc=self.request.user.rlc).prefetch_related('working_on_record',
+                                                                                               'tagged')
 
     def get_queryset_2(self) -> QuerySet:
         queryset = EncryptedRecord.objects.filter(from_rlc=self.request.user.rlc)
@@ -112,7 +118,18 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    def list(self, request: Request, **kwargs: Any):
+    def list(self, request, *args, **kwargs):
+        if (
+            not request.user.has_permission(permissions.PERMISSION_VIEW_RECORDS_RLC) and
+            not request.user.has_permission(permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC)
+        ):
+            raise PermissionDenied()
+
+        return super().list(request, *args, **kwargs)
+
+
+    @action(detail=False)
+    def old_list(self, request: Request, **kwargs: Any):
         user = request.user
 
         if not user.has_permission(

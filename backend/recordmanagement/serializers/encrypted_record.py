@@ -13,8 +13,8 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from backend.recordmanagement.serializers import RecordTagNameSerializer
-from backend.recordmanagement.models import EncryptedRecord
+from backend.recordmanagement.serializers import RecordTagNameSerializer, RecordEncryptionSerializer
+from backend.recordmanagement.models import EncryptedRecord, RecordEncryption
 from backend.api.serializers import UserProfileNameSerializer
 from rest_framework import serializers
 
@@ -39,7 +39,7 @@ class EncryptedRecordSerializer(serializers.ModelSerializer):
 
 
 class EncryptedRecordListSerializer(EncryptedRecordSerializer):
-    access = serializers.IntegerField()
+    access = serializers.SerializerMethodField('get_access')
     tagged = RecordTagNameSerializer(many=True, read_only=True)
     working_on_record = UserProfileNameSerializer(many=True, read_only=True)
 
@@ -55,6 +55,13 @@ class EncryptedRecordListSerializer(EncryptedRecordSerializer):
             "tagged",
             "access",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = self.context['request'].user
+
+    def get_access(self, obj):
+        return obj.encryptions.filter(user=self.user).exists()
 
 
 class EncryptedRecordDetailSerializer(EncryptedRecordSerializer):
