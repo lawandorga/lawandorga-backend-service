@@ -13,23 +13,20 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from datetime import datetime
-import base64
-import pytz
-import mimetypes
-from rest_framework import viewsets
-from rest_framework.parsers import FormParser, MultiPartParser
+from backend.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
+from backend.recordmanagement.models.encrypted_record import EncryptedRecord
 from rest_framework.response import Response
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.request import Request
 from rest_framework.views import APIView
+from rest_framework import viewsets
+from datetime import datetime
+import mimetypes
+import base64
+import pytz
 
 from backend.api.errors import CustomError
 from backend.api.models.notification import Notification
-from backend.recordmanagement.models.encrypted_record import EncryptedRecord
-from backend.recordmanagement.models.encrypted_record_document import (
-    EncryptedRecordDocument,
-)
 from backend.static.error_codes import ERROR__RECORD__DOCUMENT__ALL_MISSING
 from backend.recordmanagement import serializers
 from backend.static import error_codes, storage_folders, permissions
@@ -41,11 +38,11 @@ from backend.static.storage_folders import get_temp_storage_folder
 
 
 class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
-    queryset = EncryptedRecordDocument.objects.all()
+    queryset = EncryptedRecordDocument.objects.none()
     serializer_class = serializers.OldEncryptedRecordDocumentSerializer
 
-    def post(self, request):
-        pass
+    def get_queryset(self):
+        return EncryptedRecordDocument.objects.filter(record__from_rlc=self.request.user.rlc)
 
 
 class EncryptedRecordDocumentByRecordViewSet(APIView):

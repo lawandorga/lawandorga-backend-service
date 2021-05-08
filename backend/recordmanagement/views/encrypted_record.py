@@ -286,7 +286,13 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         for attr, value in serializer.validated_data.items():
             if attr == 'working_on_record':
-                pass
+                for consultant in value:
+                    if not RecordEncryption.objects.filter(user=consultant, record=self.instance).exists():
+                        key = self.instance.get_decryption_key(self.request.user, self.private_key_user)
+                        encryption = RecordEncryption(user=consultant, record=self.instance, encrypted_key=key)
+                        encryption.encrypt(consultant.get_public_key())
+                        encryption.save()
+                self.instance.working_on_record.set(value)
             elif attr == 'tagged':
                 self.instance.tagged.set(value)
             else:

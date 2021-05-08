@@ -27,10 +27,9 @@ router.register("records", EncryptedRecordViewSet)
 router.register("e_clients", EncryptedClientViewSet)
 router.register("pool_records", PoolRecordViewSet)
 router.register("pool_consultants", PoolConsultantViewSet)
-router.register(
-    "record_document_deletion_requests", EncryptedRecordDocumentDeletionRequestViewSet
-)
+router.register("record_document_deletion_requests", EncryptedRecordDocumentDeletionRequestViewSet)
 router.register("consultants", ConsultantViewSet)
+router.register('record_documents', EncryptedRecordDocumentViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
@@ -55,5 +54,5 @@ urlpatterns = [
         "process_record_document_deletion_request/",
         EncryptedRecordDocumentDeletionProcessViewSet.as_view(),
     ),
-    path("statistics/", RecordStatisticsViewSet.as_view(),),
+    path("statistics/", RecordStatisticsViewSet.as_view(), ),
 ]

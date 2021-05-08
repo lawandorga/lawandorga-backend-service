@@ -22,6 +22,7 @@ class RecordTag(models.Model):
     class Meta:
         verbose_name = "RecordTag"
         verbose_name_plural = "RecordTags"
+        ordering = ['name']
 
     def __str__(self):
         return "recordTag: {}; name: {};".format(self.pk, self.name)
