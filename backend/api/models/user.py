@@ -19,6 +19,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from rest_framework.request import Request
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -83,46 +84,24 @@ class UserProfileManager(BaseUserManager):
 
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
-    """ profile of users """
-
     email = models.EmailField(max_length=255, unique=True)
     email_confirmed = models.BooleanField(default=True)
     name = models.CharField(max_length=255)
     birthday = models.DateField(null=True, blank=True)
     phone_number = models.CharField(max_length=17, null=True, default=None, blank=True)
-
-    # address
     street = models.CharField(max_length=255, default=None, null=True, blank=True)
     city = models.CharField(max_length=255, default=None, null=True, blank=True)
     postal_code = models.CharField(max_length=255, default=None, null=True, blank=True)
-
-    is_active = models.BooleanField(default=False)
-    is_staff = models.BooleanField(default=False)
-
+    is_active = models.BooleanField(default=True)
     locked = models.BooleanField(default=False)
+    rlc = models.ForeignKey("Rlc", related_name="rlc_members", on_delete=models.PROTECT, blank=True, null=True)
 
-    rlc = models.ForeignKey("Rlc", related_name="rlc_members", on_delete=models.PROTECT)
+    # custom manager
     objects = UserProfileManager()
 
-    user_states_possible = (
-        ("ac", "active"),
-        ("ia", "inactive"),
-        ("ex", "exam"),
-        ("ab", "abroad"),
-    )
-    user_state = models.CharField(max_length=2, choices=user_states_possible)
-
-    user_record_states_possible = (
-        ("ac", "accepting"),
-        ("na", "not accepting"),
-        ("de", "depends"),
-    )
-    user_record_state = models.CharField(
-        max_length=2, choices=user_record_states_possible
-    )
-
+    # overwrites abstract base user
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["name"]  # email already in there, other are default
+    REQUIRED_FIELDS = ["name"]
 
     class Meta:
         verbose_name = "UserProfile"
@@ -132,6 +111,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return "user: {}; email: {};".format(self.pk, self.email)
 
+    # django intern stuff
+    @property
+    def is_staff(self):
+        print('hello')
+        return hasattr(self, 'internal_role')
+
+    # other stuff
     def __get_as_user_permissions(self):
         """
         Returns: all HasPermissions the user itself has as list
@@ -156,8 +142,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         Returns: all HasPermissions which the user has direct and
                     indirect (through membership in a group or rlc) as list
         """
-        if self.is_superuser:
-            return HasPermission.objects.all()
         return (
             self.__get_as_user_permissions()
             + self.__get_as_group_member_permissions()
@@ -348,6 +332,17 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             )
             new_keys.encrypt(user_to_unlock.get_public_key())
             new_keys.save()
+
+
+class RlcUser(models.Model):
+    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = 'RlcUser'
+        verbose_name_plural = 'RlcUsers'
+
+    def __str__(self):
+        return 'rlcUser: {};'.format(self.user.email)
 
 
 # this is used on signup

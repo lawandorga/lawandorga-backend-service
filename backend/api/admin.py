@@ -13,6 +13,8 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.utils.translation import gettext_lazy as _
 from backend.api.models import (
     UserProfile,
     Notification,
@@ -28,9 +30,26 @@ from backend.api.models import (
     UserActivityPath,
     UserSession,
     UserSessionPath,
-    Group, LoggedPath,
+    Group, LoggedPath, RlcUser,
 )
 from django.contrib import admin
+
+
+class UserAdmin(DjangoUserAdmin):
+    fieldsets = (
+        (None, {'fields': ('email', 'name', 'password')}),
+        (_('Important dates'), {'fields': ('last_login',)}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'name', 'password1', 'password2'),
+        }),
+    )
+    list_display = ('email', 'name')
+    search_fields = ('name', 'email')
+    ordering = ('email',)
+    list_filter = ()
 
 
 admin.site.register(Group)
@@ -46,6 +65,7 @@ admin.site.register(NotificationGroup)
 admin.site.register(UserActivityPath)
 admin.site.register(UserSession)
 admin.site.register(UserSessionPath)
-admin.site.register(UserProfile)
+admin.site.register(UserProfile, UserAdmin)
 admin.site.register(Notification)
 admin.site.register(LoggedPath)
+admin.site.register(RlcUser)

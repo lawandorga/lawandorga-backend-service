@@ -210,8 +210,6 @@ class UserViewSet(viewsets.ModelViewSet):
         overall_permissions = [
             model_to_dict(permission) for permission in Permission.objects.all()
         ]
-        user_states_possible = UserProfile.user_states_possible
-        user_record_states_possible = UserProfile.user_record_states_possible
 
         data = {
             "user": OldUserProfileSerializer(user).data,
@@ -219,8 +217,6 @@ class UserViewSet(viewsets.ModelViewSet):
             "notifications": notifications,
             "permissions": user_permissions,
             "all_permissions": overall_permissions,
-            "user_states": user_states_possible,
-            "user_record_states": user_record_states_possible,
         }
 
         return Response(data, status=status.HTTP_200_OK)

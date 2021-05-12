@@ -48,9 +48,11 @@ INSTALLED_APPS = [
     "backend.recordmanagement",
     "backend.files",
     "backend.collab",
+    "backend.internal",
     "rest_framework.authtoken",
     "storages",
     "corsheaders",
+
 ]
 
 # Middleware

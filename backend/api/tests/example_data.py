@@ -21,6 +21,7 @@ from backend.collab.models import CollabPermission
 from backend.collab.static.collab_permissions import get_all_collab_permission_strings
 from backend.files.models import FolderPermission
 from backend.files.static.folder_permissions import get_all_folder_permissions_strings
+from backend.internal.models import InternalUser
 from backend.recordmanagement.models import OriginCountry
 from backend.recordmanagement.models.encrypted_client import EncryptedClient
 from backend.recordmanagement.models.encrypted_record import EncryptedRecord
@@ -235,11 +236,11 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
         rlc=rlc,
         birthday="1995-1-1",
         is_superuser=True,
-        is_staff=True,
         is_active=True,
     )
     user.set_password(dummy_password)
     user.save()
+    InternalUser.objects.create(user=user)
     users.append(user)
 
     # other dummy users
