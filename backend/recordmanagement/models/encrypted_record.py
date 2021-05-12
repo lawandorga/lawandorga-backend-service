@@ -24,7 +24,7 @@ from backend.static.permissions import get_record_encryption_keys_permissions_st
 
 class EncryptedRecord(EncryptedModelMixin, models.Model):
     created_on = models.DateField(auto_now_add=True)
-    last_edited = models.DateTimeField(auto_now_add=True)
+    last_edited = models.DateTimeField(auto_now=True)
 
     creator = models.ForeignKey(
         UserProfile, related_name="encrypted_records", on_delete=models.CASCADE

@@ -20,18 +20,18 @@ from rest_framework import serializers
 
 
 class EncryptedRecordSerializer(serializers.ModelSerializer):
-    note = serializers.CharField(allow_blank=True)
-    consultant_team = serializers.CharField(allow_blank=True)
-    lawyer = serializers.CharField(allow_blank=True)
-    related_persons = serializers.CharField(allow_blank=True)
-    contact = serializers.CharField(allow_blank=True)
-    bamf_token = serializers.CharField(allow_blank=True)
-    foreign_token = serializers.CharField(allow_blank=True)
-    first_correspondence = serializers.CharField(allow_blank=True)
-    circumstances = serializers.CharField(allow_blank=True)
-    next_steps = serializers.CharField(allow_blank=True)
-    status_described = serializers.CharField(allow_blank=True)
-    additional_facts = serializers.CharField(allow_blank=True)
+    note = serializers.CharField(allow_blank=True, required=False)
+    consultant_team = serializers.CharField(allow_blank=True, required=False)
+    lawyer = serializers.CharField(allow_blank=True, required=False)
+    related_persons = serializers.CharField(allow_blank=True, required=False)
+    contact = serializers.CharField(allow_blank=True, required=False)
+    bamf_token = serializers.CharField(allow_blank=True, required=False)
+    foreign_token = serializers.CharField(allow_blank=True, required=False)
+    first_correspondence = serializers.CharField(allow_blank=True, required=False)
+    circumstances = serializers.CharField(allow_blank=True, required=False)
+    next_steps = serializers.CharField(allow_blank=True, required=False)
+    status_described = serializers.CharField(allow_blank=True, required=False)
+    additional_facts = serializers.CharField(allow_blank=True, required=False)
 
     class Meta:
         model = EncryptedRecord
@@ -47,13 +47,14 @@ class EncryptedRecordListSerializer(EncryptedRecordSerializer):
         model = EncryptedRecord
         fields = [
             "id",
-            "last_contact_date",
             "state",
             "official_note",
             "record_token",
             "working_on_record",
             "tagged",
             "access",
+            "created_on",
+            "last_edited"
         ]
 
     def __init__(self, *args, **kwargs):

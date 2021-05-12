@@ -189,7 +189,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
         record_data["client"] = client.pk
 
         # validate the record data
-        record_serializer = self.get_serializer(data=record_data)
+        record_serializer = EncryptedRecordSerializer(data=record_data)
         record_serializer.is_valid(raise_exception=True)
 
         # remove many to many because record needs a pk first
@@ -395,7 +395,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"])
     def request_permission(self, request, *args, **kwargs):
-        record = self.get_object()
+        record = super().get_object()
 
         record_permission = EncryptedRecordPermission.objects.create(
             request_from=request.user, record=record
