@@ -107,6 +107,7 @@ class EncryptedRecordPermissionProcessViewSet(APIView):
             )
         permission_request.request_processed = user
         permission_request.processed_on = datetime.utcnow().replace(tzinfo=pytz.utc)
+        permission_request.save()
 
         return Response(
             serializers.EncryptedRecordPermissionSerializer(permission_request).data

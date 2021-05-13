@@ -70,24 +70,6 @@ class EncryptedRecordDetailSerializer(EncryptedRecordSerializer):
     working_on_record = UserProfileNameSerializer(many=True, read_only=True)
 
 
-class EncryptedRecordNoDetailSerializer(serializers.ModelSerializer):
-    tagged = RecordTagNameSerializer(many=True, read_only=True)
-    working_on_record = UserProfileNameSerializer(many=True, read_only=True)
-    state = serializers.CharField()
-
-    class Meta:
-        model = EncryptedRecord
-        fields = (
-            "id",
-            "last_contact_date",
-            "state",
-            "official_note",
-            "record_token",
-            "working_on_record",
-            "tagged",
-        )
-
-
 class EncryptedRecordTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = EncryptedRecord

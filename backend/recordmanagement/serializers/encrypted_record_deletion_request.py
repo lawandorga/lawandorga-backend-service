@@ -19,13 +19,13 @@ from backend.api.serializers.user import UserProfileNameSerializer
 from backend.recordmanagement.models.encrypted_record_deletion_request import (
     EncryptedRecordDeletionRequest,
 )
-from backend.recordmanagement.serializers import EncryptedRecordNoDetailSerializer
+from backend.recordmanagement.serializers import EncryptedRecordTokenSerializer
 
 
 class EncryptedRecordDeletionRequestSerializer(serializers.ModelSerializer):
     request_from = UserProfileNameSerializer(many=False, read_only=True)
     request_processed = UserProfileNameSerializer(many=False, read_only=True)
-    record = EncryptedRecordNoDetailSerializer(
+    record = EncryptedRecordTokenSerializer(
         many=False, read_only=True, allow_null=True
     )
 

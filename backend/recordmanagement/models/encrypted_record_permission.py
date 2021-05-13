@@ -53,6 +53,7 @@ class EncryptedRecordPermission(models.Model):
     class Meta:
         verbose_name = "RecordPermission"
         verbose_name_plural = "RecordPermissions"
+        ordering = ['-state', '-requested']
 
     def __str__(self):
         return "recordPermission: {}; from: {};".format(

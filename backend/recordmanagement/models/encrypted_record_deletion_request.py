@@ -38,7 +38,7 @@ class EncryptedRecordDeletionRequest(
         null=True,
     )
     explanation = models.TextField(default="")
-    requested = models.DateTimeField(default=timezone.now)
+    requested = models.DateTimeField(auto_now_add=True)
     processed_on = models.DateTimeField(null=True)
 
     record_deletion_request_states_possible = (
@@ -54,3 +54,8 @@ class EncryptedRecordDeletionRequest(
         return "recordDeletionRequest: {}; requested: {};".format(
             self.pk, self.requested
         )
+
+    class Meta:
+        verbose_name = 'EncryptedRecordDeletionRequest'
+        verbose_name_plural = 'EncryptedRecordDeletionRequests'
+        ordering = ['-state', '-requested']
