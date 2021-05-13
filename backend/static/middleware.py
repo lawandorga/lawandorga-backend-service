@@ -33,7 +33,7 @@ class LoggingMiddleware:
         user = request.user
         if not request.user.is_authenticated:
             user = None
-        # LoggedPath.objects.create(user=user, path=request.path)
+        LoggedPath.objects.create(user=user, path=request.path)
 
         # return the response
         return response

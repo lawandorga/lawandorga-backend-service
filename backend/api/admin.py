@@ -27,9 +27,6 @@ from backend.api.models import (
     UsersRlcKeys,
     RlcSettings,
     NotificationGroup,
-    UserActivityPath,
-    UserSession,
-    UserSessionPath,
     Group, LoggedPath, RlcUser,
 )
 from django.contrib import admin
@@ -63,9 +60,6 @@ admin.site.register(RlcEncryptionKeys)
 admin.site.register(UsersRlcKeys)
 admin.site.register(RlcSettings)
 admin.site.register(NotificationGroup)
-admin.site.register(UserActivityPath)
-admin.site.register(UserSession)
-admin.site.register(UserSessionPath)
 admin.site.register(UserProfile, UserAdmin)
 admin.site.register(Notification)
 admin.site.register(LoggedPath)
