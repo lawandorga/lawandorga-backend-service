@@ -20,7 +20,8 @@ import os
 # TODO refactor this into classes, 1 storage folders specific, 1 general filename manipulation
 
 def clean_filename(filename):
-    special_char_map = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('ß'): 'ss'}
+    special_char_map = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('ß'): 'ss', ord('Ä'): 'AE', ord('Ö'): 'OE',
+                        ord('Ü'): 'UE', }
     filename = filename.translate(special_char_map)
     return filename
 

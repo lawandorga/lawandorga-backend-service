@@ -13,8 +13,10 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from rest_framework import viewsets
+from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from backend.api.errors import CustomError
@@ -33,32 +35,27 @@ class PoolRecordViewSet(viewsets.ModelViewSet):
     serializer_class = PoolRecordSerializer
 
     def create(self, request, *args, **kwargs):
-        user = request.user
-        private_key = get_private_key_from_request(request)
-        if "record" not in request.data:
-            raise CustomError(error_codes.ERROR__API__ID_NOT_PROVIDED)
-        try:
-            record = EncryptedRecord.objects.get(pk=request.data["record"])
-        except:
-            raise CustomError(error_codes.ERROR__RECORD__RECORD__NOT_EXISTING)
+        record = get_object_or_404(EncryptedRecord, pk=request.data['record'])
 
-        if PoolRecord.objects.filter(record=record, yielder=user).count() > 0:
-            raise CustomError(error_codes.ERROR__API__ALREADY_REQUESTED)
+        if PoolRecord.objects.filter(record=record, yielder=request.user).exists():
+            data = {'detail': 'This record is already in the record pool.'}
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            record.working_on_record.get(pk=user.id)
-        except:
-            raise CustomError(error_codes.ERROR__RECORD__PERMISSION__NOT_WORKING_ON)
-        record_decryption_key = record.get_decryption_key(user, private_key)
+        if not record.working_on_record.filter(pk=request.user.pk).exists():
+            data = {'detail': 'You need to be a consultant of this record in order to be able to yield it.'}
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
-        if PoolConsultant.objects.filter(consultant__rlc=user.rlc).count() >= 1:
-            entry = PoolConsultant.objects.filter(consultant__rlc=user.rlc).order_by(
+        private_key = request.user.get_private_key(request=request)
+        record_decryption_key = record.get_decryption_key(request.user, private_key)
+
+        if PoolConsultant.objects.filter(consultant__rlc=request.user.rlc).count() >= 1:
+            entry = PoolConsultant.objects.filter(consultant__rlc=request.user.rlc).order_by(
                 "enlisted"
             )[0]
             new_consultant = entry.consultant
             entry.delete()
 
-            RecordEncryption.objects.filter(record=record, user=user).delete()
+            RecordEncryption.objects.filter(record=record, user=request.user).delete()
             new_keys = RecordEncryption(
                 user=new_consultant,
                 record=record,
@@ -66,14 +63,14 @@ class PoolRecordViewSet(viewsets.ModelViewSet):
             )
             new_keys.save()
 
-            record.working_on_record.remove(user)
+            record.working_on_record.remove(request.user)
             record.working_on_record.add(new_consultant)
             record.save()
 
             return Response({"action": "matched"})
         else:
             pool_record = PoolRecord(
-                record=record, yielder=user, record_key=record_decryption_key
+                record=record, yielder=request.user, record_key=record_decryption_key
             )
             pool_record.save()
             return_val = PoolRecordSerializer(pool_record).data
@@ -81,9 +78,8 @@ class PoolRecordViewSet(viewsets.ModelViewSet):
             return Response(return_val)
 
     def list(self, request, *args, **kwargs):
-        user = request.user
-        if not user.has_permission(PERMISSION_CAN_CONSULT, for_rlc=user.rlc):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-        queryset = PoolRecord.objects.filter(record__from_rlc=user.rlc)
+        if not request.user.has_permission(PERMISSION_CAN_CONSULT, for_rlc=request.user.rlc):
+            raise PermissionDenied()
+        queryset = PoolRecord.objects.filter(record__from_rlc=request.user.rlc)
         data = PoolRecordSerializer(queryset, many=True).data
         return Response(data)
