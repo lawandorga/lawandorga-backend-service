@@ -29,6 +29,7 @@ urlpatterns = [
     path("api/files/", include(file_urls)),
     path("api/collab/", include(collab_urls)),
     path("", TemplateView.as_view(template_name="index.html")),
+    path('tinymce/', include('tinymce.urls')),
 ]
 
 if settings.DEBUG:

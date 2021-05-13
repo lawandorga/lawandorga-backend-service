@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "tinymce",
     "backend.api",
     "backend.recordmanagement",
     "backend.files",
