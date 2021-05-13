@@ -6,16 +6,14 @@ from django.db import models
 
 
 class InternalUser(models.Model):
-    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='internal_role')
-    is_active = True  # used for django internal permission stuff
-    is_anonymous = False  # used for django internal permission stuff
+    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='internal_user')
 
     class Meta:
         verbose_name = 'InternalUser'
         verbose_name_plural = 'InternalUsers'
 
     def __str__(self):
-        return 'internUser: {};'.format(self.user.email)
+        return 'internalUser: {};'.format(self.user.email)
 
 
 class Article(models.Model):

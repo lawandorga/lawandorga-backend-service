@@ -21,6 +21,8 @@ from django.contrib.auth.models import (
 )
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from rest_framework.request import Request
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from backend.api.errors import CustomError
@@ -85,8 +87,8 @@ class UserProfileManager(BaseUserManager):
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
-    email_confirmed = models.BooleanField(default=True)
     name = models.CharField(max_length=255)
+    email_confirmed = models.BooleanField(default=True)
     birthday = models.DateField(null=True, blank=True)
     phone_number = models.CharField(max_length=17, null=True, default=None, blank=True)
     street = models.CharField(max_length=255, default=None, null=True, blank=True)
@@ -114,8 +116,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # django intern stuff
     @property
     def is_staff(self):
-        print('hello')
-        return hasattr(self, 'internal_role')
+        return hasattr(self, 'internal_user')
 
     # other stuff
     def __get_as_user_permissions(self):
@@ -335,7 +336,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
 
 class RlcUser(models.Model):
-    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
+    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='rlc_user')
+    email_confirmed = models.BooleanField(default=True)
+    birthday = models.DateField(null=True, blank=True)
+    phone_number = models.CharField(max_length=17, null=True, default=None, blank=True)
+    street = models.CharField(max_length=255, default=None, null=True, blank=True)
+    city = models.CharField(max_length=255, default=None, null=True, blank=True)
+    postal_code = models.CharField(max_length=255, default=None, null=True, blank=True)
+    locked = models.BooleanField(default=False)
+    rlc = models.ForeignKey("Rlc", related_name="users", on_delete=models.PROTECT, blank=True, null=True)
 
     class Meta:
         verbose_name = 'RlcUser'
@@ -343,6 +352,22 @@ class RlcUser(models.Model):
 
     def __str__(self):
         return 'rlcUser: {};'.format(self.user.email)
+
+
+# create a rlc user when a normal user is saved
+@receiver(post_save, sender=UserProfile)
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    rlc_user, created = RlcUser.objects.get_or_create(user=instance)
+    if instance.rlc:
+        rlc_user.phone_number = instance.phone_number
+        rlc_user.birthday = instance.birthday
+        rlc_user.street = instance.street
+        rlc_user.city = instance.city
+        rlc_user.postal_code = instance.postal_code
+        rlc_user.email_confirmed = instance.email_confirmed
+        rlc_user.rlc = instance.rlc
+        rlc_user.locked = instance.locked
+    rlc_user.save()
 
 
 # this is used on signup
