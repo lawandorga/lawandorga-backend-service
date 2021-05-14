@@ -15,18 +15,17 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
 from backend.recordmanagement import serializers
 from backend.recordmanagement.models.origin_country import OriginCountry
 from backend.api.permissions import OriginCountryPermission
 
 
-class OriginCountryViewSet(viewsets.ModelViewSet):
+class OriginCountryViewSet(mixins.ListModelMixin, GenericViewSet):
     queryset = OriginCountry.objects.all()
     serializer_class = serializers.OriginCountrySerializer
-    permission_classes = (
-        IsAuthenticated,
-        OriginCountryPermission,
-    )
