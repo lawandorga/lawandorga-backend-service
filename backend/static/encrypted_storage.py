@@ -97,9 +97,10 @@ class EncryptedStorage:
         except:
             pass
         # try:
+        raise Exception('s3key: {}: filename: {}'.format(s3_key, filename))  # from e
         s3.download_file(settings.SCW_S3_BUCKET_NAME, s3_key, filename)
         # except Exception as e:
-        raise Exception('s3key: {}: filename: {}'.format(s3_key, filename)) # from e
+
 
     @staticmethod
     def download_from_s3_and_decrypt_file(
