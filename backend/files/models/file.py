@@ -62,7 +62,7 @@ class File(models.Model):
 
         :return: full file-key (absolute path on s3)
         """
-        return self.folder.get_file_key() + self.name
+        return self.folder.get_file_key() + clean_filename(self.name)
 
     def get_encrypted_file_key(self) -> str:
         """
@@ -91,9 +91,8 @@ class File(models.Model):
 
     def download(self, aes_key: str, local_destination_folder: str) -> None:
         # try:
-        key = clean_filename(self.get_encrypted_file_key())
         EncryptedStorage.download_from_s3_and_decrypt_file(
-            key, aes_key, local_destination_folder
+            self.get_encrypted_file_key(), aes_key, local_destination_folder
         )
         # except Exception as e:
         #     Notification.objects.notify_file_download_error(self.creator, self)
