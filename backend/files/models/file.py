@@ -25,6 +25,7 @@ from .folder import Folder
 from backend.static.logger import Logger
 from ...api.models.notification import Notification
 from ...api.models.user import UserProfile
+from ...static.storage_folders import clean_filename
 
 
 class File(models.Model):
@@ -90,8 +91,9 @@ class File(models.Model):
 
     def download(self, aes_key: str, local_destination_folder: str) -> None:
         # try:
+        key = clean_filename(self.get_encrypted_file_key())
         EncryptedStorage.download_from_s3_and_decrypt_file(
-            self.get_encrypted_file_key(), aes_key, local_destination_folder
+            key, aes_key, local_destination_folder
         )
         # except Exception as e:
         #     Notification.objects.notify_file_download_error(self.creator, self)
