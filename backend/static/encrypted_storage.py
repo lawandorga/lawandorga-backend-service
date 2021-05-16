@@ -100,7 +100,7 @@ class EncryptedStorage:
         except:
             pass
         # try:
-        s3.download_file(settings.SCW_S3_BUCKET_NAME, s3_key, filename)
+        s3.download_file(settings.SCW_S3_BUCKET_NAME, s3_key, 'test.pdf')
         # except Exception as e:
         logger.warning('s3key: {}, filename: {}'.format(s3_key, filename))
             # raise CustomError(error_codes.ERROR__API__DOWNLOAD__NO_SUCH_KEY)
