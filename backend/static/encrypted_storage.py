@@ -24,6 +24,9 @@ from backend.static import error_codes
 from backend.static.encryption import AESEncryption
 from backend.static.storage_folders import combine_s3_folder_with_filename, clean_filename
 from backend.static.logger import Logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class EncryptedStorage:
@@ -96,11 +99,11 @@ class EncryptedStorage:
             os.makedirs(filename[: filename.rindex("/") + 1])
         except:
             pass
-        # try:
-        raise Exception('s3key: {}: filename: {}'.format(s3_key, filename))  # from e
-        s3.download_file(settings.SCW_S3_BUCKET_NAME, s3_key, filename)
-        # except Exception as e:
-
+        try:
+            s3.download_file(settings.SCW_S3_BUCKET_NAME, s3_key, filename)
+        except Exception as e:
+            logger.warning('s3key: {}, filename: {}'.format(s3_key, filename))
+            raise CustomError(error_codes.ERROR__API__DOWNLOAD__NO_SUCH_KEY)
 
     @staticmethod
     def download_from_s3_and_decrypt_file(
