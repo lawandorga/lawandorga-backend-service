@@ -100,7 +100,7 @@ class EncryptedStorage:
         except:
             pass
         # try:
-        logger.warning('s3key: {}, filename: {}'.format(s3_key, filename))
+        Logger.error('s3key: {}, filename: {}'.format(s3_key, filename))
         s3.download_file(settings.SCW_S3_BUCKET_NAME, s3_key, clean_filename(filename))
         # except Exception as e:
 
