@@ -96,7 +96,10 @@ class EncryptedStorage:
             os.makedirs(filename[: filename.rindex("/") + 1])
         except:
             pass
-        s3.download_file(settings.SCW_S3_BUCKET_NAME, s3_key, filename)
+        try:
+            s3.download_file(settings.SCW_S3_BUCKET_NAME, s3_key, filename)
+        except Exception as e:
+            raise Exception('{}: s3key: {}: filename: {}'.format(e, s3_key, filename))
 
     @staticmethod
     def download_from_s3_and_decrypt_file(
