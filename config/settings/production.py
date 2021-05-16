@@ -60,7 +60,7 @@ LOGGING = {
     'handlers': {
         'file': {
             'class': 'logging.FileHandler',
-            'level': 'WARNING',
+            'level': 'DEBUG',
             'filename': os.path.join(LOGGING_DIR, 'django.log'),
         },
     },
@@ -68,7 +68,7 @@ LOGGING = {
         '': {
             'handlers': ['file'],
             'propagate': True,
-            'level': 'INFO',
+            'level': 'DEBUG',
         },
     }
 }
