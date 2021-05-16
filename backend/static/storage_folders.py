@@ -19,15 +19,13 @@ import os
 
 # TODO refactor this into classes, 1 storage folders specific, 1 general filename manipulation
 
-def clean_filename(filename):
+def clean_filename(key):
     special_char_map = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('ß'): 'ss', ord('Ä'): 'AE', ord('Ö'): 'OE',
                         ord('Ü'): 'UE', }
-    filename = filename.translate(special_char_map)
-    return filename
-
-
-def get_storage_folder_record_document(rlc_id: int, record_id: int) -> str:
-    return "rlcs/" + str(rlc_id) + "/records/" + str(record_id) + "/"
+    key_parts = key.split('/')
+    filename = key_parts[-1].translate(special_char_map)
+    key = '/'.join(key_parts[:-1] + [filename])
+    return key
 
 
 def get_storage_folder_encrypted_record_document(rlc_id: int, record_id: int) -> str:

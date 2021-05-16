@@ -25,6 +25,7 @@ from .folder import Folder
 from backend.static.logger import Logger
 from ...api.models.notification import Notification
 from ...api.models.user import UserProfile
+from ...static.storage_folders import clean_filename
 
 
 class File(models.Model):
@@ -61,7 +62,7 @@ class File(models.Model):
 
         :return: full file-key (absolute path on s3)
         """
-        return self.folder.get_file_key() + self.name
+        return self.folder.get_file_key() + clean_filename(self.name)
 
     def get_encrypted_file_key(self) -> str:
         """

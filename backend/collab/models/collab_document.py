@@ -73,7 +73,7 @@ class CollabDocument(TextDocument):
         """
         from backend.collab.models import PermissionForCollabDocument
 
-        groups = user.group_members.all()
+        groups = user.rlcgroups.all()
 
         permissions_direct = PermissionForCollabDocument.objects.filter(
             group_has_permission__in=groups, document__path=self.path
@@ -106,7 +106,7 @@ class CollabDocument(TextDocument):
             parents.append(current)
 
         permission_names = [PERMISSION_READ_DOCUMENT, PERMISSION_WRITE_DOCUMENT]
-        groups = user.group_members.all()
+        groups = user.rlcgroups.all()
         for permission_name in permission_names:
             if PermissionForCollabDocument.objects.filter(
                 permission__name=permission_name,
