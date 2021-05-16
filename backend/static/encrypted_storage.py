@@ -22,7 +22,7 @@ from django.conf import settings
 from backend.api.errors import CustomError
 from backend.static import error_codes
 from backend.static.encryption import AESEncryption
-from backend.static.storage_folders import combine_s3_folder_with_filename, clean_filename
+from backend.static.storage_folders import combine_s3_folder_with_filename, clean_filename, clean_string
 from backend.static.logger import Logger
 import logging
 
@@ -91,22 +91,20 @@ class EncryptedStorage:
 
     @staticmethod
     def download_file_from_s3(s3_key, filename=None):
+
         if not filename:
             filename = s3_key[s3_key.rindex("/") + 1 :]
         s3: BaseClient = EncryptedStorage.get_s3_client()
 
         try:
+            filename = clean_string(filename)
             os.makedirs(filename[: filename.rindex("/") + 1])
         except:
             pass
-        # try:
-        logger.error('#############TEST')
-        logger.error('s3key: %s, filename: ', str(filename))
-        logger.error('#############TEST2')
-        s3.download_file(settings.SCW_S3_BUCKET_NAME, s3_key, clean_filename(filename))
-        # except Exception as e:
-
-            # raise CustomError(error_codes.ERROR__API__DOWNLOAD__NO_SUCH_KEY)
+        try:
+            s3.download_file(settings.SCW_S3_BUCKET_NAME, s3_key, filename)
+        except Exception as e:
+            raise CustomError(error_codes.ERROR__API__DOWNLOAD__NO_SUCH_KEY)
 
     @staticmethod
     def download_from_s3_and_decrypt_file(
@@ -124,6 +122,7 @@ class EncryptedStorage:
         if not downloaded_file_name:
             filename = s3_key[s3_key.rindex("/") + 1:]
             downloaded_file_name = os.path.join(local_folder, filename)
+            downloaded_file_name = clean_string(downloaded_file_name)
         # TODO: what happens to local_Folder if downloaded file name is given???
         EncryptedStorage.download_file_from_s3(s3_key, downloaded_file_name)
         AESEncryption.decrypt_file(downloaded_file_name, encryption_key)

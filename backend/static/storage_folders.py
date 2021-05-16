@@ -19,11 +19,15 @@ import os
 
 # TODO refactor this into classes, 1 storage folders specific, 1 general filename manipulation
 
-def clean_filename(key):
+def clean_string(string):
     special_char_map = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('ß'): 'ss', ord('Ä'): 'AE', ord('Ö'): 'OE',
                         ord('Ü'): 'UE', }
+    return string.translate(special_char_map)
+
+
+def clean_filename(key):
     key_parts = key.split('/')
-    filename = key_parts[-1].translate(special_char_map)
+    filename = clean_string(key_parts[-1])
     key = '/'.join(key_parts[:-1] + [filename])
     return key
 

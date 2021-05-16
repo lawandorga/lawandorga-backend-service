@@ -21,7 +21,7 @@ from rest_framework.views import APIView
 from backend.api.errors import CustomError
 from backend.files.models.file import File
 from backend.files.models.folder import Folder
-from backend.static.storage_folders import get_temp_storage_folder
+from backend.static.storage_folders import get_temp_storage_folder, clean_string
 from backend.static.storage_management import LocalStorageManager
 from backend.static.middleware import get_private_key_from_request
 from backend.static.error_codes import ERROR__FILES__FOLDER__CONTENT_DIDNT_EXIST
@@ -49,6 +49,7 @@ class DownloadViewSet(APIView):
                 folder = Folder.objects.get(pk=entry["id"])
                 if folder.user_has_permission_read(request.user):
                     folder.download_folder(aes_key, root_folder_name)
+        root_folder_name = clean_string(root_folder_name)
         if LocalStorageManager.delete_folder_if_empty(root_folder_name):
             LocalStorageManager.delete_folder_if_empty(get_temp_storage_folder())
             raise CustomError(ERROR__FILES__FOLDER__CONTENT_DIDNT_EXIST)
