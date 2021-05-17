@@ -16,8 +16,10 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 from backend.api import views
+from backend.internal.urls import router as internal_router
 
 router = DefaultRouter()
+router.registry.extend(internal_router.registry)
 router.register("profiles", views.user.UserViewSet)
 router.register("groups", views.GroupViewSet, basename="groups")
 router.register("permissions", views.PermissionViewSet, basename="permissions")
