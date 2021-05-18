@@ -1,4 +1,4 @@
-# law-orga-backend
+# Law&Orga
 
 ## General
 
