@@ -49,12 +49,14 @@ class PoolConsultantViewSet(viewsets.ModelViewSet):
             record.save()
 
             RecordEncryption.objects.filter(record=record, user=entry.yielder).delete()
-            new_keys = RecordEncryption(
-                user=user,
-                record=record,
-                encrypted_key=user.rsa_encrypt(entry.record_key),
-            )
-            new_keys.save()
+
+            if not RecordEncryption.objects.filter(user=user, record=record).exists():
+                new_keys = RecordEncryption(
+                    user=user,
+                    record=record,
+                    encrypted_key=user.rsa_encrypt(entry.record_key),
+                )
+                new_keys.save()
 
             entry.delete()
             return Response({"action": "matched"})
