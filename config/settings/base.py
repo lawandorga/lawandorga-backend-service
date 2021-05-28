@@ -130,7 +130,7 @@ CORS_ALLOW_HEADERS = [
 ]
 
 # This is used by the ExpiringTokenAuthentication which extends from rest's token authentication
-TIMEOUT_TIMEDELTA = timedelta(minutes=10)
+TIMEOUT_TIMEDELTA = timedelta(minutes=30)
 
 # Secret keys for s3-storage to save files from 'files' and documents from records
 SCW_SECRET_KEY = get_secret("SCW_SECRET_KEY")
