@@ -43,49 +43,20 @@ class EncryptedStorage:
 
     @staticmethod
     def upload_file_to_s3(filename, key):
-        """
-
-        :param filename: file which should get uploaded
-        :param key: the key of the uploaded file
-        :return: -
-        """
-        s3: BaseClient = EncryptedStorage.get_s3_client()
-        s3.upload_file(filename, settings.SCW_S3_BUCKET_NAME, key)
+        EncryptedStorage.get_s3_client().upload_file(filename, settings.SCW_S3_BUCKET_NAME, key)
 
     @staticmethod
-    def encrypt_file_and_upload_to_s3(
-        local_filepath: str, aes_key: str, s3_folder: str
-    ) -> (str, str):
-        """
-        encrypts file on local filesystem and uploads it to s3
-        :param local_filepath: local filepath
-        :param aes_key: encryption key for encrypting the file
-        :param s3_folder: s3 folder to upload to
-        :return: encrypted filepath and encrypted filename
-        """
-
-        encrypted_filepath, encrypted_filename = AESEncryption.encrypt_file(
-            local_filepath, aes_key
-        )
-        Logger.debug("file encrypted: " + str(local_filepath))
-
-        EncryptedStorage.upload_file_to_s3(
-            encrypted_filepath,
-            combine_s3_folder_with_filename(s3_folder, encrypted_filename),
-        )
-        Logger.debug("file uploaded to: " + str(s3_folder) + str(encrypted_filename))
-        Logger.info("file encrypted and uploaded to s3: " + local_filepath)
-        return encrypted_filepath, encrypted_filename
+    def encrypt_file_and_upload_to_s3(local_filepath: str, aes_key: str, key: str) -> (str, str):
+        encrypted_file = AESEncryption.encrypt_file(local_filepath, aes_key)
+        encrypted_key = '{}.enc'.format(key)
+        EncryptedStorage.upload_file_to_s3(encrypted_file, encrypted_key)
+        return encrypted_file
 
     @staticmethod
-    def file_exists(s3_key: str) -> bool:
+    def file_exists(s3_key):
         try:
-            s3: BaseClient = EncryptedStorage.get_s3_client()
-            s3.get_object(
-                Bucket=settings.SCW_S3_BUCKET_NAME, Key=s3_key,
-            )
+            EncryptedStorage.get_s3_client().get_object(Bucket=settings.SCW_S3_BUCKET_NAME, Key=s3_key)
         except Exception as e:
-            Logger.info("file does not exist on s3: " + s3_key)
             return False
         return True
 

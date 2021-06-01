@@ -13,8 +13,3 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from .folder_model_test import *
-from .file_model_test import *
-from .folder_permission_model_test import *
-from .permission_for_folder_test import *

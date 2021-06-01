@@ -143,25 +143,16 @@ class AESEncryption:
 
     @staticmethod
     def encrypt_file(file, key):
-        """
-
-        :param file:
-        :param key:
-        :return: filepath to encrypted file AND filename of encrypted file
-        """
-        # TODO: refactor this, especiialy all those file_... vars
         chunk_size = 64 * 1024
         key = get_bytes_from_string_or_return_bytes(key)
         hashed_key_bytes = sha3_256(key).digest()
-        file_index = file.rindex("/")
-        file_path = file[:file_index]
-        file_to_write = file[file_index + 1:] + ".enc"
+        encrypted_file = '{}.enc'.format(file)
         file_size = os.path.getsize(file)
         iv = AESEncryption.generate_iv()
         encryptor = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
 
         with open(file, "rb") as infile:
-            with open(os.path.join(file_path, file_to_write), "wb") as outfile:
+            with open(encrypted_file, "wb") as outfile:
                 outfile.write(struct.pack("<Q", file_size))
                 outfile.write(iv)
 
@@ -172,7 +163,8 @@ class AESEncryption:
                     elif len(chunk) % 16 != 0:
                         chunk += b" " * (16 - len(chunk) % 16)
                     outfile.write(encryptor.encrypt(chunk))
-        return file + ".enc", file_to_write
+
+        return encrypted_file
 
     @staticmethod
     def decrypt_file(file, key, output_file_name=None):

@@ -13,15 +13,31 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
 from rest_framework import serializers
 from backend.api.serializers import UserProfileNameSerializer
 from backend.files.models.file import File
 
 
-class FileSerializer(serializers.ModelSerializer):
-    creator = UserProfileNameSerializer(many=False, read_only=True)
+class AddUserMixin:
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if 'creator' not in attrs:
+            attrs['creator'] = self.context['request'].user
+        return attrs
 
+
+class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
         fields = "__all__"
+
+
+class FileCreateSerializer(AddUserMixin, FileSerializer):
+    class Meta:
+        model = File
+        fields = ['folder']
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        attrs['name'] = self.context['request'].FILES['file'].name
+        return attrs

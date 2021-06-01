@@ -19,7 +19,7 @@ from django.urls import path, include
 
 router = DefaultRouter()
 router.register("folder_base", FolderBaseViewSet)
-router.register("file_base", FileBaseViewSet)
+router.register("file_base", FileViewSet)
 router.register("permission_for_folder", PermissionForFolderViewSet)
 router.register("folder_permission", FolderPermissionViewSet)
 
