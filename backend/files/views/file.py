@@ -1,7 +1,10 @@
 import base64
+import mimetypes
 import os
 
+from django.conf import settings
 from django.core.files.storage import default_storage
+from django.http import FileResponse
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
@@ -31,13 +34,13 @@ class FileViewSet(viewsets.ModelViewSet):
 
         private_key_user = request.user.get_private_key(request=request)
         aes_key = request.user.get_rlcs_aes_key(private_key_user)
-        instance.download(aes_key, instance.key)
+        instance.download(aes_key)
 
-        encoded_file = base64.b64encode(open(instance.key, "rb").read())
-        res = Response(encoded_file, content_type="application/zip")
-        res["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.name)
-        os.remove(instance.key)
-        return res
+        file = default_storage.open(instance.key)
+        response = FileResponse(file, content_type=mimetypes.guess_type(instance.key)[0])
+        response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.name)
+        # os.remove(instance.key)
+        return response
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
@@ -45,5 +48,6 @@ class FileViewSet(viewsets.ModelViewSet):
         aes_key = request.user.get_rlcs_aes_key(private_key_user)
         file = request.FILES['file']
         local_file = default_storage.save(self.instance.key, file)
-        EncryptedStorage.encrypt_file_and_upload_to_s3(local_file, aes_key, self.instance.key)
+        local_file_path = os.path.join(settings.MEDIA_ROOT, local_file)
+        EncryptedStorage.encrypt_file_and_upload_to_s3(local_file_path, aes_key, self.instance.key)
         return response

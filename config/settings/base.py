@@ -111,8 +111,10 @@ AUTH_USER_MODEL = "api.UserProfile"
 # Static Files
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static/dist/")]
-STATIC_URL = "/static/"
+STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "tmp/static/")
+MEDIA_URL = "media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "tmp/media/")
 
 # Installed app django-cors-headers
 # https://pypi.org/project/django-cors-headers/

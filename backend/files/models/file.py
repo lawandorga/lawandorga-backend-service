@@ -1,3 +1,7 @@
+import os
+
+from django.conf import settings
+
 from backend.static.encrypted_storage import EncryptedStorage
 from django.db.models.signals import post_save, pre_delete
 from backend.api.models.user import UserProfile
@@ -8,6 +12,8 @@ from .folder import Folder
 import unicodedata
 import pytz
 import re
+
+from ...static.encryption import AESEncryption
 
 
 class File(models.Model):
@@ -70,10 +76,14 @@ class File(models.Model):
         #     instance.folder.propagate_new_size_up(instance.size)
         #     instance.folder.save()
 
-    def download(self, aes_key: str, local_destination_folder: str) -> None:
-        EncryptedStorage.download_from_s3_and_decrypt_file(
-            self.get_encrypted_file_key(), aes_key, local_destination_folder
-        )
+    def download(self, aes_key: str):
+        key = self.get_encrypted_file_key()
+        downloaded_file_path = os.path.join(settings.MEDIA_ROOT, key)
+        folder_path = downloaded_file_path[:downloaded_file_path.rindex('/')]
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        EncryptedStorage.get_s3_client().download_file(settings.SCW_S3_BUCKET_NAME, key, downloaded_file_path)
+        AESEncryption.decrypt_file(downloaded_file_path, aes_key)
 
     def exists_on_s3(self) -> bool:
         return EncryptedStorage.file_exists(self.get_encrypted_file_key())
