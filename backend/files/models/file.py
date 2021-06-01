@@ -49,7 +49,7 @@ class File(models.Model):
         Folder, related_name="files_in_folder", on_delete=models.CASCADE, null=False
     )
     size = models.BigIntegerField(null=False)
-    key = models.SlugField(null=True, allow_unicode=True)
+    key = models.SlugField(null=True, allow_unicode=True, max_length=200, unique=True)
 
     class Meta:
         verbose_name = "File"
