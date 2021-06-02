@@ -1,19 +1,14 @@
-import os
-
-from django.conf import settings
-
 from backend.static.encrypted_storage import EncryptedStorage
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import pre_delete
 from backend.api.models.user import UserProfile
+from ...static.encryption import AESEncryption
 from django.dispatch import receiver
+from django.conf import settings
 from django.db import models
-from datetime import datetime
 from .folder import Folder
 import unicodedata
-import pytz
 import re
-
-from ...static.encryption import AESEncryption
+import os
 
 
 class File(models.Model):
@@ -73,15 +68,7 @@ class File(models.Model):
     def pre_deletion(sender, instance, **kwargs) -> None:
         if sender == File:
             instance.delete_on_cloud()
-            # instance.folder.propagate_new_size_up(-instance.size)
             instance.folder.save()
-
-    @receiver(post_save)
-    def post_save(sender, instance, **kwargs) -> None:
-        pass
-        # if sender == File:
-        #     instance.folder.propagate_new_size_up(instance.size)
-        #     instance.folder.save()
 
     def download(self, aes_key: str):
         key = self.get_encrypted_file_key()
@@ -89,55 +76,8 @@ class File(models.Model):
         folder_path = downloaded_file_path[:downloaded_file_path.rindex('/')]
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
-        print(settings.SCW_S3_BUCKET_NAME)
-        print(key)
-        print(downloaded_file_path)
         EncryptedStorage.get_s3_client().download_file(settings.SCW_S3_BUCKET_NAME, key, downloaded_file_path)
         AESEncryption.decrypt_file(downloaded_file_path, aes_key)
 
     def exists_on_s3(self) -> bool:
         return EncryptedStorage.file_exists(self.get_encrypted_file_key())
-
-    @staticmethod
-    def create_or_update(file: "File") -> "File":
-        """
-        creates file, or if file with name in parent folder is already existing updates
-        :param file:
-        :return:
-        """
-        try:
-            existing = File.objects.get(folder=file.folder, name=file.name)
-            existing.last_editor = file.last_editor
-            existing.last_edited = datetime.utcnow().replace(tzinfo=pytz.utc)
-            existing.size = file.size
-            existing.save()
-            return existing
-        except:
-            file.save()
-            return file
-
-    @staticmethod
-    def create_or_duplicate(file: "File") -> "File":
-        """
-        created file, check if file with same name already existing, if yes, create "file(x)"
-        :param file:
-        :return:
-        """
-        try:
-            File.objects.get(folder=file.folder, name=file.name)
-        except:
-            file.save()
-            return file
-        count = 1
-        extension_index = file.name.rindex(".")
-        base = file.name[:extension_index]
-        extension = file.name[extension_index:]
-        while True:
-            new_name = base + " (" + str(count) + ")" + extension
-            try:
-                File.objects.get(folder=file.folder, name=new_name)
-                count += 1
-            except:
-                file.name = new_name
-                file.save()
-                return file

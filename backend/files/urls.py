@@ -18,7 +18,6 @@ from backend.files.views import *
 from django.urls import path, include
 
 router = DefaultRouter()
-# router.register("folder_base", FolderBaseViewSet)
 router.register("file_base", FileViewSet)
 router.register("permission_for_folder", PermissionForFolderViewSet)
 router.register("folder_permission", FolderPermissionViewSet)
@@ -26,9 +25,4 @@ router.register("folder", FolderViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
-    # path("folder_download/", DownloadFolderViewSet.as_view()),
-    # path("upload/", UploadViewSet.as_view()),
-    # path("delete/", DeleteViewSet.as_view()),
-    # path("download/", DownloadViewSet.as_view()),
-    # path("folder_permissions/<int:id>/", PermissionForFolderPerFolderViewSet.as_view()),
 ]

@@ -52,7 +52,3 @@ def get_temp_storage_folder() -> str:
 def combine_s3_folder_with_filename(s3_folder, filename):
     filename = clean_filename(filename)
     return os.path.join(s3_folder, filename)
-
-
-def get_filename_from_full_path(filepath: str) -> str:
-    return filepath[filepath.rindex("/") + 1:]

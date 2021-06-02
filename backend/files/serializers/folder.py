@@ -1,5 +1,4 @@
 from backend.files.models.folder import Folder
-from backend.files.serializers import FileSerializer
 from rest_framework import serializers
 
 
@@ -23,15 +22,6 @@ class FolderCreateSerializer(FolderSerializer):
         return attrs
 
 
-class FolderNameSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Folder
-        fields = (
-            "id",
-            "name",
-        )
-
-
 class FolderSimpleSerializer(FolderSerializer):
     class Meta:
         model = Folder
@@ -48,21 +38,3 @@ class FolderPathSerializer(FolderSerializer):
 
     def get_path(self, obj):
         return self.get_parent(obj)
-
-
-class FolderNamePathSerializer(serializers.ModelSerializer):
-    path = serializers.SerializerMethodField()
-
-    def get_path(self, folder):
-        p = folder.get_file_key()
-        relevant = p[p.index("files") + 6:]
-
-        return relevant
-
-    class Meta:
-        model = Folder
-        fields = (
-            "id",
-            "name",
-            "path",
-        )

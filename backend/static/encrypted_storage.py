@@ -22,7 +22,7 @@ from django.conf import settings
 from backend.api.errors import CustomError
 from backend.static import error_codes
 from backend.static.encryption import AESEncryption
-from backend.static.storage_folders import combine_s3_folder_with_filename, clean_filename, clean_string
+from backend.static.storage_folders import clean_filename, clean_string
 from backend.static.logger import Logger
 import logging
 
