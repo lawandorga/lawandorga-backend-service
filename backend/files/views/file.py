@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from backend.static.encrypted_storage import EncryptedStorage
 from backend.files.serializers import FileSerializer, FileCreateSerializer
 from backend.files.models.file import File
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 
 
 class FileViewSet(viewsets.ModelViewSet):
@@ -39,7 +39,6 @@ class FileViewSet(viewsets.ModelViewSet):
         file = default_storage.open(instance.key)
         response = FileResponse(file, content_type=mimetypes.guess_type(instance.key)[0])
         response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.name)
-        # os.remove(instance.key)
         return response
 
     def create(self, request, *args, **kwargs):
@@ -51,3 +50,10 @@ class FileViewSet(viewsets.ModelViewSet):
         local_file_path = os.path.join(settings.MEDIA_ROOT, local_file)
         EncryptedStorage.encrypt_file_and_upload_to_s3(local_file_path, aes_key, self.instance.key)
         return response
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not instance.folder.user_has_permission_write(request.user):
+            raise PermissionDenied()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)

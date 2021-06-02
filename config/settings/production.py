@@ -12,17 +12,6 @@ ALLOWED_HOSTS = get_secret("ALLOWED_HOSTS")
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY
 SECRET_KEY = get_secret("SECRET_KEY")
 
-# Rest Framework
-# https://www.django-rest-framework.org/api-guide/settings/
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "backend.api.authentication.ExpiringTokenAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
-    ],
-    'DATE_INPUT_FORMATS': ["%d-%m-%Y", "%Y-%m-%d", "%Y-%m-%dT%H:%M:%S.%fZ"],
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
-}
-
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 DATABASES = {

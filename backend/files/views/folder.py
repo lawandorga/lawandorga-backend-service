@@ -13,21 +13,16 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from backend.api.errors import CustomError
 from backend.files.models.file import File
 from backend.files.models.folder import Folder
-from backend.files.serializers import FileSerializer, FolderSerializer
-from backend.static.error_codes import (
-    ERROR__API__ID_NOT_FOUND,
-    ERROR__API__MISSING_ARGUMENT,
-    ERROR__API__PERMISSION__INSUFFICIENT,
-    ERROR__FILES__FOLDER_NOT_EXISTING,
-)
+from backend.files.serializers import FileSerializer, FolderSerializer, FolderCreateSerializer, FolderPathSerializer
+from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 from backend.static.permissions import PERMISSION_ACCESS_TO_FILES_RLC
 from backend.static.storage_folders import get_temp_storage_path
 from backend.static.storage_management import LocalStorageManager
@@ -38,60 +33,71 @@ class FolderBaseViewSet(viewsets.ModelViewSet):
     serializer_class = FolderSerializer
 
 
-class FolderViewSet(APIView):
-    def get(self, request):
+class FolderViewSet(viewsets.ModelViewSet):
+    queryset = Folder.objects.none()
+    serializer_class = FolderSerializer
+
+    def get_queryset(self):
+        return Folder.objects.filter(rlc=self.request.user.rlc)
+
+    def get_serializer_class(self):
+        if self.action in ['create']:
+            return FolderCreateSerializer
+        elif self.action in ['retrieve', 'list']:
+            return FolderPathSerializer
+        return super().get_serializer_class()
+
+    def list(self, request, *args, **kwargs):
+        instance = Folder.objects.get(parent=None, rlc=request.user.rlc)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    @action(detail=True)
+    def items(self, request, *args, **kwargs):
+        instance = self.get_object()
         user = request.user
 
-        path = "files/" + request.query_params.get("path", "")
-        if path.endswith("//"):
-            path = path[:-2]
-        folder = Folder.get_folder_from_path(path, request.user.rlc)
-        if not folder:
-            raise CustomError(ERROR__FILES__FOLDER_NOT_EXISTING)
-            # return Response({'folders': [], 'files': [], 'current_folder': None})
+        folders = []
+        for folder in instance.child_folders.all():
+            if folder.user_can_see_folder(user):
+                folders.append(folder)
+        folder_data = FolderSerializer(folders, many=True).data
 
-        children_to_show = []
-
-        for child in folder.child_folders.all().order_by("name"):
-            if child.user_can_see_folder(user):
-                children_to_show.append(child)
-        return_obj = {"folders": FolderSerializer(children_to_show, many=True).data}
-
-        if folder.user_has_permission_read(user) or folder.user_has_permission_write(
-            user
-        ):
-            files = File.objects.filter(folder=folder)
+        files_data = []
+        if instance.user_has_permission_read(user) or instance.user_has_permission_write(user):
+            files = File.objects.filter(folder=instance)
             files_data = FileSerializer(files, many=True).data
-            return_obj.update({"files": files_data})
-        else:
-            return_obj.update({"files": []})
-        return_obj.update({"current_folder": FolderSerializer(folder).data})
 
-        return_obj.update({"write_permission": folder.user_has_permission_write(user)})
-        return Response(return_obj)
+        data = folder_data + files_data
+        return Response(data)
 
-    def post(self, request):
-        user = request.user
-        data = request.data
-        if "name" not in data or "parent_folder_id" not in data:
-            raise CustomError(ERROR__API__MISSING_ARGUMENT)
-        try:
-            parent_folder = Folder.objects.get(pk=data["parent_folder_id"])
-        except:
-            raise CustomError(ERROR__API__ID_NOT_FOUND)
-        if (
-            parent_folder.rlc != user.rlc
-            and not user.is_superuser
-            and not parent_folder.user_has_permission_write(user)
-        ):
-            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
-        folder = Folder(
-            name=data["name"], creator=user, parent=parent_folder, rlc=user.rlc
-        )
-        folder.save()
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        return Response(FolderSerializer(folder).data)
+        if not serializer.validated_data['parent'].user_has_permission_write(request.user):
+            raise PermissionDenied()
+
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.child_folders.exists() or instance.files_in_folder.exists():
+            data = {
+                'detail': 'There are still items in this folder. It can not be deleted.'
+            }
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        if not instance.user_has_permission_write(request.user):
+            raise PermissionDenied()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class DownloadFolderViewSet(APIView):

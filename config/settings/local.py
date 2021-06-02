@@ -31,17 +31,6 @@ DATABASES = {
     }
 }
 
-# Rest Framework
-# https://www.django-rest-framework.org/api-guide/settings/
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "backend.api.authentication.ExpiringTokenAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
-    ],
-    'DATE_INPUT_FORMATS': ["%d-%m-%Y", "%Y-%m-%d", "%Y-%m-%dT%H:%M:%S.%fZ"],
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
-}
-
 # E-Mail
 # https://docs.djangoproject.com/en/dev/topics/email/#smtp-backend
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

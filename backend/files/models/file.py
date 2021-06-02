@@ -44,14 +44,21 @@ class File(models.Model):
             self.key = self.slugify()
         super().save(*args, **kwargs)
 
-    def slugify(self):
+    def slugify(self, unique=None):
         key = '{}{}'.format(self.folder.get_file_key(), self.name)
+        if unique is not None:
+            key = '{}{}_{}'.format(self.folder.get_file_key(), unique, self.name)
         special_char_map = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('ß'): 'ss', ord('Ä'): 'AE',
                             ord('Ö'): 'OE', ord('Ü'): 'UE'}
         key = key.translate(special_char_map)
         unicodedata.normalize('NFKC', key).encode('ascii', 'ignore').decode('ascii')
         key = re.sub(r'[^/.\w\s-]', '', key.lower()).strip()
-        return re.sub(r'[-\s]+', '-', key)
+        key = re.sub(r'[-\s]+', '-', key)
+        if not File.objects.filter(key=key).exists():
+            return key
+        else:
+            unique = 1 if unique is None else unique + 1
+            return self.slugify(unique=unique)
 
     def get_file_key(self) -> str:
         return self.key
@@ -82,6 +89,9 @@ class File(models.Model):
         folder_path = downloaded_file_path[:downloaded_file_path.rindex('/')]
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
+        print(settings.SCW_S3_BUCKET_NAME)
+        print(key)
+        print(downloaded_file_path)
         EncryptedStorage.get_s3_client().download_file(settings.SCW_S3_BUCKET_NAME, key, downloaded_file_path)
         AESEncryption.decrypt_file(downloaded_file_path, aes_key)
 

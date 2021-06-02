@@ -61,7 +61,7 @@ class Folder(models.Model):
     )
     number_of_files = models.BigIntegerField(default=0)
     rlc = models.ForeignKey(
-        Rlc, related_name="folders", on_delete=models.CASCADE, null=False
+        Rlc, related_name="folders", on_delete=models.CASCADE, null=False, blank=True
     )
 
     class Meta:
@@ -109,18 +109,6 @@ class Folder(models.Model):
             children += child.get_all_children()
         return children
 
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ) -> None:
-        if (
-            Folder.objects.filter(parent=self.parent, name=self.name, rlc=self.rlc)
-            .exclude(pk=self.id)
-            .count()
-            > 0
-        ):
-            raise Exception("duplicate folder")
-        super().save(force_insert, force_update, using, update_fields)
-
     def user_has_permission_read(self, user: UserProfile) -> bool:
 
         if user.rlc != self.rlc:
@@ -130,11 +118,11 @@ class Folder(models.Model):
                 for_rlc=user.rlc, permission=PERMISSION_READ_ALL_FOLDERS_RLC
             )
             or user.has_permission(
-                for_rlc=user.rlc, permission=PERMISSION_WRITE_ALL_FOLDERS_RLC
-            )
+            for_rlc=user.rlc, permission=PERMISSION_WRITE_ALL_FOLDERS_RLC
+        )
             or user.has_permission(
-                for_rlc=user.rlc, permission=PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC
-            )
+            for_rlc=user.rlc, permission=PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC
+        )
         ):
             return True
 
@@ -190,10 +178,7 @@ class Folder(models.Model):
             return True
         children = self.get_all_children()
         users_groups = user.rlcgroups.all()
-        relevant_permissions = PermissionForFolder.objects.filter(
-            folder__in=children, group_has_permission__in=users_groups
-        )
-        if relevant_permissions.count() >= 1:
+        if PermissionForFolder.objects.filter(folder__in=children, group_has_permission__in=users_groups).exists():
             return True
         return False
 
