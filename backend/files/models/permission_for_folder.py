@@ -32,7 +32,7 @@ class PermissionForFolder(models.Model):
         Group,
         related_name="group_has_folder_permissions",
         on_delete=models.CASCADE,
-        blank=True,
+        blank=False,
         null=True,
     )
     folder = models.ForeignKey(

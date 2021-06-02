@@ -92,7 +92,7 @@ class Folder(models.Model):
         self.size = self.size - delta
         self.propagate_new_size_up(delta)
 
-    def get_all_parents(self) -> ["Folder"]:
+    def get_all_parents(self):
         if not self.parent:
             return []
         elif self.parent.parent:
@@ -100,7 +100,7 @@ class Folder(models.Model):
         else:
             return [self.parent]
 
-    def get_all_children(self) -> ["Folder"]:
+    def get_all_children(self):
         if not self.child_folders:
             return []
         children = []
@@ -227,9 +227,7 @@ class Folder(models.Model):
             return "SEE", relevant_permissions.first()
         return "", None
 
-    def get_all_groups_permissions(
-        self,
-    ) -> (["PermissionForFolder"], ["PermissionForFolder"], ["HasPermission"]):
+    def get_all_groups_permissions(self):
         from backend.api.models.group import Group
         from backend.files.models.permission_for_folder import PermissionForFolder
         from backend.static.permissions import (

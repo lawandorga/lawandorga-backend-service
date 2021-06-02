@@ -19,11 +19,14 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from backend.api.errors import CustomError
+from backend.api.models import Group
+from backend.files.models import PermissionForFolder
 from backend.files.models.file import File
 from backend.files.models.folder import Folder
-from backend.files.serializers import FileSerializer, FolderSerializer, FolderCreateSerializer, FolderPathSerializer
+from backend.files.serializers import FileSerializer, FolderSerializer, FolderCreateSerializer, FolderPathSerializer, \
+    PermissionForFolderNestedSerializer
 from backend.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
-from backend.static.permissions import PERMISSION_ACCESS_TO_FILES_RLC
+from backend.static.permissions import PERMISSION_ACCESS_TO_FILES_RLC, PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC
 from backend.static.storage_folders import get_temp_storage_path
 from backend.static.storage_management import LocalStorageManager
 
@@ -70,6 +73,37 @@ class FolderViewSet(viewsets.ModelViewSet):
 
         data = folder_data + files_data
         return Response(data)
+
+    @action(detail=True)
+    def permissions(self, request, *args, **kwargs):
+        if not request.user.has_permission(PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC):
+            raise PermissionDenied()
+
+        folder = self.get_object()
+
+        groups = Group.objects.filter(from_rlc=request.user.rlc)
+
+        parents = folder.get_all_parents()
+        children = folder.get_all_children()
+
+        from_above = PermissionForFolder.objects.filter(
+            folder__in=parents, group_has_permission__in=groups
+        )
+
+        normal = PermissionForFolder.objects.filter(
+            folder=folder, group_has_permission__in=groups
+        )
+
+        from_below = PermissionForFolder.objects.filter(
+            folder__in=children, group_has_permission__in=groups
+        )
+
+        permissions = []
+        permissions += PermissionForFolderNestedSerializer(from_above, from_direction='ABOVE', many=True).data
+        permissions += PermissionForFolderNestedSerializer(normal, many=True).data
+        permissions += PermissionForFolderNestedSerializer(from_below, from_direction='BELOW', many=True).data
+
+        return Response(permissions)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()

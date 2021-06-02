@@ -15,11 +15,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 from rest_framework import serializers
-from backend.api.serializers import GroupSerializer
+from backend.api.serializers import GroupSerializer, GroupNameSerializer
 from backend.files.models.permission_for_folder import PermissionForFolder
 from backend.files.serializers import (
     FolderPermissionSerializer,
-    FolderNamePathSerializer,
+    FolderNamePathSerializer, FolderSimpleSerializer,
 )
 from backend.api.errors import EntryAlreadyExistingError
 
@@ -29,31 +29,30 @@ class PermissionForFolderSerializer(serializers.ModelSerializer):
         model = PermissionForFolder
         fields = "__all__"
 
-    def validate(self, attrs):
-        if PermissionForFolder.validate_values(attrs):
-            return attrs
-        raise serializers.ValidationError(
-            "validation error at creating PermissionForFolder"
-        )
-
-    # def create(self, validated_data):
-    #     if PermissionForFolder.already_existing(validated_data):
-    #         raise EntryAlreadyExistingError("PermissionForFolder already exists")
-    #     permission_for_folder = PermissionForFolder.objects.create(
-    #         permission=validated_data.get('permission', None),
-    #         rlc_has_permission=validated_data.get('rlc_has_permission', None),
-    #         group_has_permission=validated_data.get('group_has_permission', None),
-    #         user_has_permission=validated_data.get('user_has_permission', None),
-    #         folder=validated_data.get('folder', None)
-    #     )
-    #     return permission_for_folder
-
 
 class PermissionForFolderNestedSerializer(serializers.ModelSerializer):
-    group_has_permission = GroupSerializer(many=False, read_only=True)
+    group_has_permission = GroupNameSerializer(many=False, read_only=True)
     permission = FolderPermissionSerializer(many=False, read_only=True)
-    folder = FolderNamePathSerializer(many=False, read_only=True)
+    folder = FolderSimpleSerializer(many=False, read_only=True)
+    type = serializers.SerializerMethodField('get_type')
+    source = serializers.SerializerMethodField('get_source')
 
     class Meta:
         model = PermissionForFolder
         fields = "__all__"
+
+    def __init__(self, instance=None, from_direction='', *args, **kwargs):
+        super().__init__(instance, *args, **kwargs)
+        self.from_direction = from_direction
+
+    def get_source(self, obj):
+        if self.from_direction == 'BELOW':
+            return 'BELOW'
+        elif self.from_direction == 'ABOVE':
+            return 'ABOVE'
+        return 'NORMAL'
+
+    def get_type(self, obj):
+        if self.from_direction in ['BELOW', 'ABOVE']:
+            return 'See'
+        return obj.permission.name

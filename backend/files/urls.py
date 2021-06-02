@@ -30,5 +30,5 @@ urlpatterns = [
     # path("upload/", UploadViewSet.as_view()),
     # path("delete/", DeleteViewSet.as_view()),
     # path("download/", DownloadViewSet.as_view()),
-    path("folder_permissions/<int:id>/", PermissionForFolderPerFolderViewSet.as_view()),
+    # path("folder_permissions/<int:id>/", PermissionForFolderPerFolderViewSet.as_view()),
 ]
