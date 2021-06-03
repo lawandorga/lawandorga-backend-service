@@ -24,7 +24,7 @@ from backend.recordmanagement.serializers import (
     EncryptedRecordMessageDetailSerializer,
     EncryptedRecordListSerializer,
     EncryptedRecordMessageSerializer,
-    EncryptedRecordPermissionSerializer, EncryptedRecordDocumentSerializer,
+    EncryptedRecordPermissionSerializer, RecordDocumentSerializer,
 )
 from backend.recordmanagement.models import (
     EncryptedRecordPermission,
@@ -62,62 +62,6 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
         return EncryptedRecord.objects.filter(from_rlc=self.request.user.rlc).prefetch_related('working_on_record',
                                                                                                'tagged')
 
-    def get_queryset_2(self) -> QuerySet:
-        queryset = EncryptedRecord.objects.filter(from_rlc=self.request.user.rlc)
-
-        request: Request = self.request
-        user: UserProfile = request.user
-        query_params = request.query_params
-
-        if "filter" in query_params and query_params["filter"] != "":
-            parts = query_params["filter"].split(" ")
-
-            for part in parts:
-                consultants = UserProfile.objects.filter(name__icontains=part)
-                queryset = queryset.filter(
-                    Q(tagged__name__icontains=part)
-                    | Q(note__icontains=part)
-                    | Q(working_on_record__in=consultants)
-                    | Q(record_token__icontains=part)
-                ).distinct()
-
-        if user.is_superuser or user.has_permission(
-            permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc
-        ):
-            queryset = queryset.annotate(access=Value(1, output_field=IntegerField()))
-        else:
-            record_ids = [single_record.id for single_record in list(queryset)]
-
-            record_ids_from_keys = [
-                key.record.id
-                for key in list(
-                    RecordEncryption.objects.filter(user=user, record__in=record_ids)
-                )
-            ]
-
-            queryset = queryset.annotate(
-                access=Case(
-                    When(id__in=record_ids_from_keys, then=Value(1)),
-                    default=Value(0),
-                    output_field=IntegerField(),
-                )
-            )
-
-        if "sort" in request.query_params:
-            if (
-                "sortdirection" in request.query_params
-                and request.query_params["sortdirection"] == "desc"
-            ):
-                to_sort = "-" + request.query_params["sort"]
-            else:
-                to_sort = request.query_params["sort"]
-        else:
-            to_sort = "-access"
-
-        queryset = queryset.order_by(to_sort)
-
-        return queryset
-
     def list(self, request, *args, **kwargs):
         if (
             not request.user.has_permission(permissions.PERMISSION_VIEW_RECORDS_RLC) and
@@ -126,23 +70,6 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
             raise PermissionDenied()
 
         return super().list(request, *args, **kwargs)
-
-
-    @action(detail=False)
-    def old_list(self, request: Request, **kwargs: Any):
-        user = request.user
-
-        if not user.has_permission(
-            permissions.PERMISSION_VIEW_RECORDS_RLC, for_rlc=user.rlc
-        ) and not user.has_permission(
-            permissions.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=user.rlc
-        ):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-
-        entries = self.get_queryset_2()
-        paginated = self.paginate_queryset(entries)
-        data = EncryptedRecordListSerializer(paginated, many=True).data
-        return self.get_paginated_response(data)
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # permission stuff
@@ -240,60 +167,6 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(record)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def old_retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        record = self.get_object()
-
-        if request.user.record_encryptions.filter(record=record).exists():
-            private_key_user = request.user.get_private_key(request=request)
-            private_key_rlc = request.user.rlc.get_private_key(
-                request.user, private_key_user
-            )
-
-            # decrypt record
-            record.decrypt(request.user, private_key_user)
-
-            # add client data
-            client = record.client
-            client.decrypt(private_key_rlc)
-
-            # add origin country
-            origin_country = client.origin_country
-
-            # add documents
-            documents = record.e_record_documents
-
-            # add messages
-            messages = record.messages.all()
-            messages_data = []
-            for message in list(messages):
-                message.decrypt(user=request.user, private_key_user=private_key_user)
-                messages_data.append(
-                    EncryptedRecordMessageDetailSerializer(message).data
-                )
-
-            return Response(
-                {
-                    "record": EncryptedRecordDetailSerializer(record).data,
-                    "client": OldEncryptedClientSerializer(client).data,
-                    "origin_country": OriginCountrySerializer(origin_country).data,
-                    "record_documents": OldEncryptedRecordDocumentSerializer(
-                        documents, many=True
-                    ).data,
-                    "record_messages": messages_data,
-                }
-            )
-        else:
-            record.reset_encrypted_fields()
-            serializer = self.get_serializer(record)
-            permission_request = EncryptedRecordPermission.objects.filter(
-                record=record, request_from=request.user, state="re"
-            ).first()
-            if not permission_request:
-                state = "nr"
-            else:
-                state = permission_request.state
-            return Response({"record": serializer.data, "request_state": state})
-
     def get_object(self):
         self.instance: EncryptedRecord = super().get_object()
         self.private_key_user = self.request.user.get_private_key(request=self.request)
@@ -317,71 +190,6 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
         self.instance.encrypt(user=self.request.user, private_key_user=self.private_key_user)
         self.instance.save()
         self.instance.decrypt(user=self.request.user, private_key_user=self.private_key_user)
-
-    def old_update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        # get the record to be updated
-        record = self.get_object()
-
-        # permission stuff
-        if not record.user_has_permission(request.user):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-
-        # get the private keys
-        private_key_user = request.user.get_private_key(request=request)
-        private_key_rlc = request.user.rlc.get_private_key(
-            request.user, private_key_user
-        )
-        public_key_rlc = request.user.rlc.get_public_key()
-
-        # decrypt the record
-        record.decrypt(user=request.user, private_key_user=private_key_user)
-
-        # get the client of the record
-        client = record.client
-        client.decrypt(private_key_rlc)
-
-        # check that the data is valid
-        partial = kwargs.pop("partial", False)
-        if "record" not in request.data:
-            request.data["record"] = {}
-        record_serializer = self.get_serializer(
-            record, data=request.data["record"], partial=partial
-        )
-        record_serializer.is_valid(raise_exception=True)
-        if "client" not in request.data:
-            request.data["client"] = {}
-        client_serializer = OldEncryptedClientSerializer(
-            client, data=request.data["client"], partial=partial
-        )
-        client_serializer.is_valid(raise_exception=True)
-
-        # update the client
-        for attr, value in client_serializer.validated_data.items():
-            setattr(client, attr, value)
-        client.encrypt(public_key_rlc)
-        client.save()
-
-        # update the record
-        for attr, value in record_serializer.validated_data.items():
-            setattr(record, attr, value)
-        record.encrypt(request.user, private_key_user)
-        record.save()
-
-        # create a notification about this change
-        notification_text = "{}, {}".format(record, client)
-        Notification.objects.notify_record_patched(
-            request.user, record, notification_text
-        )
-
-        # return valid data
-        record.decrypt(user=request.user, private_key_user=private_key_user)
-        client.decrypt(private_key_rlc=private_key_rlc)
-        return Response(
-            {
-                "record": self.get_serializer(record).data,
-                "client": OldEncryptedClientSerializer(client).data,
-            }
-        )
 
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         record = self.get_object()
@@ -421,7 +229,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
     def documents(self, request, *args, **kwargs):
         record = self.get_object()
         documents = record.e_record_documents.all()
-        return Response(EncryptedRecordDocumentSerializer(documents, many=True).data)
+        return Response(RecordDocumentSerializer(documents, many=True).data)
 
     @action(detail=True, methods=["post"])
     def add_message(self, request, pk=None):

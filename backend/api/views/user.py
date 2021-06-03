@@ -374,7 +374,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 "detail": "You need to have the view_records_full_detail permission in order to unlock this user."
                           "Because you need to be able to give this user all his encryption keys."
             }
-            return Response(data, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(data, status=status.HTTP_403_FORBIDDEN)
 
         # generate new rlc key
         private_key_user = request.user.get_private_key(request=request)
