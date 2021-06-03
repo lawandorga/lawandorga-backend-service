@@ -1,4 +1,5 @@
 from backend.static.encrypted_storage import EncryptedStorage
+from ...static.storage_folders import clean_filename
 from django.db.models.signals import pre_delete
 from backend.api.models.user import UserProfile
 from ...static.encryption import AESEncryption
@@ -57,6 +58,12 @@ class File(models.Model):
 
     def get_file_key(self) -> str:
         return self.key
+
+    def generate_key(self):
+        if self.key is None:
+            key = self.folder.get_file_key() + clean_filename(self.name)
+            self.key = key
+            self.save()
 
     def get_encrypted_file_key(self) -> str:
         return self.get_file_key() + ".enc"
