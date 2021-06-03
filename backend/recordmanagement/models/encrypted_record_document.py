@@ -1,29 +1,12 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2020  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
-import os
-
-from django.conf import settings
-
 from backend.static.encrypted_storage import EncryptedStorage
-from backend.static.encryption import AESEncryption
 from backend.static.storage_folders import get_storage_folder_encrypted_record_document
+from backend.static.encryption import AESEncryption
 from django.db.models.signals import pre_delete
-from backend.api.models import UserProfile, EncryptedModelMixin
+from backend.api.models import UserProfile
 from django.dispatch import receiver
+from django.conf import settings
 from django.db import models
+import os
 
 
 class EncryptedRecordDocument(models.Model):

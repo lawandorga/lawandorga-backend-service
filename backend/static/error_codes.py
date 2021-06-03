@@ -3,35 +3,10 @@ ERROR__API__DOWNLOAD__NO_SUCH_KEY = {
     "error_detail": "no such filekey to download",
 }
 
-ERROR__RECORD__RECORD__NOT_EXISTING = {
-    "error_detail": "the record with the given id does not exist",
-    "error_code": "record.record.not_existing",
-}
-
 ERROR__API__PERMISSION__INSUFFICIENT = {
     "error_detail": "insufficient permission to perform action",
     "error_code": "api.permissions.insufficient",
     "error_status_code": 403,
-}
-
-ERROR__RECORD__DOCUMENT__NOT_FOUND = {
-    "error_detail": "document not found",
-    "error_code": "record.document.not_found",
-}
-
-ERROR__RECORD__DOCUMENT__NO_LINKED_RECORD = {
-    "error_detail": "no linked record to the document",
-    "error_code": "record.document.no_linked_record",
-}
-
-ERROR__RECORD__DOCUMENT__NO_TAG_PROVIDED = {
-    "error_detail": "no tag provided",
-    "error_code": "record.document.no_tag_provided",
-}
-
-ERROR__RECORD__DOCUMENT__TAG_NOT_EXISTING = {
-    "error_detail": "provided tag does not exist",
-    "error_code": "record.document.tag_not_existing",
 }
 
 ERROR__RECORD__PERMISSION__ALREADY_WORKING_ON = {
@@ -109,11 +84,6 @@ ERROR__API__RLC__NO_PUBLIC_KEY_FOUND = {
     "error_code": "api.rlc.no_public_key_found",
 }
 
-ERROR__FILES__NO_FILES_TO_UPLOAD = {
-    "error_detail": "no files to upload found",
-    "error_code": "files.no_files_to_upload",
-}
-
 ERROR__API__WRONG_RLC = {"error_detail": "wrong rlc", "error_code": "api.wrong_rlc"}
 
 ERROR__API__RLC_SETTINGS__WRONG_COUNT = {
@@ -150,11 +120,6 @@ ERROR__API__INVALID_PRIVATE_KEY = {
 ERROR__API__ALREADY_REQUESTED = {
     "error_detail": "already requested",
     "error_code": "api.already_requested",
-}
-
-ERROR__RECORD__DOCUMENT__ALL_MISSING = {
-    "error_detail": "all records documents were missing",
-    "error_code": "record.document.all_missing",
 }
 
 ERROR__COLLAB__TYPE_NOT_EXISTING = {

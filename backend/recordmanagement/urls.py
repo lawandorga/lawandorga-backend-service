@@ -33,14 +33,7 @@ router.register('record_documents', EncryptedRecordDocumentViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
-    path(
-        "e_record/<int:id>/documents/", EncryptedRecordDocumentByRecordViewSet.as_view()
-    ),
-    path(
-        "e_record/documents/<int:id>/", EncryptedRecordDocumentDownloadViewSet.as_view()
-    ),
     path("statics/", StaticViewSet.as_view()),
-    path("documents/<int:id>/", RecordDocumentTagByDocumentViewSet.as_view()),
     path(
         "e_record_permission_requests/",
         EncryptedRecordPermissionProcessViewSet.as_view(),
