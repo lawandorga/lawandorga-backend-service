@@ -1,3 +1,5 @@
+from django.core.files.storage import default_storage
+
 from backend.static.encrypted_storage import EncryptedStorage
 from ...static.storage_folders import clean_filename
 from django.db.models.signals import pre_delete
@@ -77,14 +79,30 @@ class File(models.Model):
             instance.delete_on_cloud()
             instance.folder.save()
 
-    def download(self, aes_key: str):
+    def download(self, aes_key):
+        # get the key with which you can find the item on aws
         key = self.get_encrypted_file_key()
-        downloaded_file_path = os.path.join(settings.MEDIA_ROOT, key)
+        # generate a local file path on where to save the file
+        downloaded_file_path = ascii(os.path.join(settings.MEDIA_ROOT, key))
+        # check if the folder path exists and if not create it so that boto3 can save the file
         folder_path = downloaded_file_path[:downloaded_file_path.rindex('/')]
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
+        # download and decrypt the file
         EncryptedStorage.get_s3_client().download_file(settings.SCW_S3_BUCKET_NAME, key, downloaded_file_path)
         AESEncryption.decrypt_file(downloaded_file_path, aes_key)
+        # open the file to return it and delete the files from the media folder for safety reasons
+        file = default_storage.open(downloaded_file_path)
+        default_storage.delete(downloaded_file_path)
+        default_storage.delete(downloaded_file_path + '.enc')
+        return file
+
+    def upload(self, file, aes_key):
+        local_file = default_storage.save(self.key, file)
+        local_file_path = os.path.join(settings.MEDIA_ROOT, local_file)
+        EncryptedStorage.encrypt_file_and_upload_to_s3(local_file_path, aes_key, self.key)
+        default_storage.delete(self.key)
+        default_storage.delete(self.get_encrypted_file_key())
 
     def exists_on_s3(self) -> bool:
         return EncryptedStorage.file_exists(self.get_encrypted_file_key())

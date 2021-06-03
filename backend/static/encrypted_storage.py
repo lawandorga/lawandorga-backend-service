@@ -31,9 +31,8 @@ logger = logging.getLogger(__name__)
 
 class EncryptedStorage:
     @staticmethod
-    def get_s3_client() -> BaseClient:
-        session = boto3.session.Session()
-        return session.client(
+    def get_s3_client():
+        return boto3.session.Session().client(
             service_name="s3",
             region_name="fr-par",
             endpoint_url="https://s3.fr-par.scw.cloud",
@@ -42,20 +41,15 @@ class EncryptedStorage:
         )
 
     @staticmethod
-    def upload_file_to_s3(filename, key):
-        EncryptedStorage.get_s3_client().upload_file(filename, settings.SCW_S3_BUCKET_NAME, key)
-
-    @staticmethod
-    def encrypt_file_and_upload_to_s3(local_filepath: str, aes_key: str, key: str) -> (str, str):
+    def encrypt_file_and_upload_to_s3(local_filepath, aes_key, key):
         encrypted_file = AESEncryption.encrypt_file(local_filepath, aes_key)
         encrypted_key = '{}.enc'.format(key)
-        EncryptedStorage.upload_file_to_s3(encrypted_file, encrypted_key)
-        return encrypted_file
+        EncryptedStorage.get_s3_client().upload_file(encrypted_file, settings.SCW_S3_BUCKET_NAME, encrypted_key)
 
     @staticmethod
     def file_exists(s3_key):
         try:
-            EncryptedStorage.get_s3_client().get_object(Bucket=settings.SCW_S3_BUCKET_NAME, Key=s3_key)
+            EncryptedStorage.get_s3_client().get_object(bucket=settings.SCW_S3_BUCKET_NAME, key=s3_key)
         except Exception as e:
             return False
         return True

@@ -63,7 +63,7 @@ class Folder(models.Model):
         verbose_name_plural = "Folders"
 
     def __str__(self) -> str:
-        return "folder: ; name: {};".format(self.pk, self.name)
+        return "folder: {}; name: {};".format(self.pk, self.name)
 
     def get_file_key(self) -> str:
         if self.parent:
