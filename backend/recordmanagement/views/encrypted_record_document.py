@@ -40,6 +40,10 @@ class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
         file = default_storage.open(instance.get_key())
         response = FileResponse(file, content_type=mimetypes.guess_type(instance.get_file_key())[0])
         response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.name)
+
+        default_storage.delete(instance.get_key())
+        default_storage.delete(instance.get_file_key())
+
         return response
 
     def perform_create(self, serializer):

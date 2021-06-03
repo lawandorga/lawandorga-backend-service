@@ -36,6 +36,10 @@ class FileViewSet(viewsets.ModelViewSet):
         file = default_storage.open(instance.key)
         response = FileResponse(file, content_type=mimetypes.guess_type(instance.key)[0])
         response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.name)
+
+        default_storage.delete(instance.key)
+        default_storage.delete(instance.get_encrypted_file_key())
+
         return response
 
     def create(self, request, *args, **kwargs):
@@ -46,6 +50,8 @@ class FileViewSet(viewsets.ModelViewSet):
         local_file = default_storage.save(self.instance.key, file)
         local_file_path = os.path.join(settings.MEDIA_ROOT, local_file)
         EncryptedStorage.encrypt_file_and_upload_to_s3(local_file_path, aes_key, self.instance.key)
+        default_storage.delete(self.instance.key)
+        default_storage.delete(self.instance.get_encrypted_file_key())
         return response
 
     def destroy(self, request, *args, **kwargs):
