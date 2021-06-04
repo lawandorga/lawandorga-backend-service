@@ -47,12 +47,21 @@ class EncryptedStorage:
         EncryptedStorage.get_s3_client().upload_file(encrypted_file, settings.SCW_S3_BUCKET_NAME, encrypted_key)
 
     @staticmethod
-    def file_exists(s3_key):
-        try:
-            EncryptedStorage.get_s3_client().get_object(bucket=settings.SCW_S3_BUCKET_NAME, key=s3_key)
-        except Exception as e:
-            return False
-        return True
+    def file_exists(key):
+        response = EncryptedStorage.get_s3_client().list_objects_v2(
+            Bucket=settings.SCW_S3_BUCKET_NAME,
+            Prefix=key,
+        )
+        for obj in response.get('Contents', []):
+            if obj['Key'] == key:
+                return True
+        return False
+        #
+        # try:
+        #     EncryptedStorage.get_s3_client().get_object(Bucket=settings.SCW_S3_BUCKET_NAME, Key=s3_key)
+        # except Exception as e:
+        #     return False
+        # return True
 
     @staticmethod
     def download_file_from_s3(s3_key, filename=None):

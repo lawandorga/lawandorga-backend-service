@@ -32,6 +32,7 @@ class File(models.Model):
     folder = models.ForeignKey(Folder, related_name="files_in_folder", on_delete=models.CASCADE)
     size = models.BigIntegerField(null=True)
     key = models.SlugField(null=True, allow_unicode=True, max_length=200, unique=True)
+    exists = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = "File"
@@ -120,4 +121,6 @@ class File(models.Model):
         default_storage.delete(self.get_encrypted_file_key())
 
     def exists_on_s3(self) -> bool:
-        return EncryptedStorage.file_exists(self.get_encrypted_file_key())
+        self.exists = EncryptedStorage.file_exists(self.get_encrypted_file_key())
+        self.save()
+        return self.exists
