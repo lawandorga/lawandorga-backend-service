@@ -51,9 +51,6 @@ class FolderViewSet(viewsets.ModelViewSet):
 
     @action(detail=True)
     def permissions(self, request, *args, **kwargs):
-        if not request.user.has_permission(PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC):
-            raise PermissionDenied()
-
         folder = self.get_object()
 
         groups = Group.objects.filter(from_rlc=request.user.rlc)
