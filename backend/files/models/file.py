@@ -31,7 +31,7 @@ class File(models.Model):
     last_edited = models.DateTimeField(auto_now_add=True)
     folder = models.ForeignKey(Folder, related_name="files_in_folder", on_delete=models.CASCADE)
     size = models.BigIntegerField(null=True)
-    key = models.SlugField(null=True, allow_unicode=True, max_length=200, unique=True)
+    key = models.SlugField(null=True, allow_unicode=True, max_length=1000, unique=True)
     exists = models.BooleanField(default=True)
 
     class Meta:
