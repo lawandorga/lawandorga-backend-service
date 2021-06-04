@@ -15,6 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.serializers import AuthTokenSerializer
+from rest_framework.exceptions import ParseError
+
 from backend.api.models.notification import Notification
 from rest_framework.authtoken.models import Token
 from backend.api.models.permission import Permission
@@ -369,22 +371,24 @@ class UserViewSet(viewsets.ModelViewSet):
             }
             return Response(data, status=status.HTTP_403_FORBIDDEN)
 
-        if not request.user.has_permission(PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC):
-            data = {
-                "detail": "You need to have the view_records_full_detail permission in order to unlock this user."
-                          "Because you need to be able to give this user all his encryption keys."
-            }
-            return Response(data, status=status.HTTP_403_FORBIDDEN)
+        # if not request.user.has_permission(PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC):
+        #     data = {
+        #         "detail": "You need to have the view_records_full_detail permission in order to unlock this user."
+        #                   "Because you need to be able to give this user all his encryption keys."
+        #     }
+        #     return Response(data, status=status.HTTP_403_FORBIDDEN)
 
         # generate new rlc key
         private_key_user = request.user.get_private_key(request=request)
-        request.user.generate_keys_for_user(private_key_user, user_to_unlock)
+        success = request.user.generate_keys_for_user(private_key_user, user_to_unlock)
 
-        # unlock the user
-        user_to_unlock.locked = False
-        user_to_unlock.save()
-
-        return Response(UserProfileSerializer(user_to_unlock).data)
+        # unlock the user if all keys were generated
+        if success:
+            user_to_unlock.locked = False
+            user_to_unlock.save()
+            return Response(UserProfileSerializer(user_to_unlock).data)
+        else:
+            raise ParseError('Not all keys could be handed over. Please tell another admin to unlock this user.')
 
     @action(detail=True, methods=['GET'])
     def permissions(self, *args, **kwargs):
