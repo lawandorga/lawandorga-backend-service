@@ -31,10 +31,11 @@ class FileViewSet(viewsets.ModelViewSet):
 
         private_key_user = request.user.get_private_key(request=request)
         aes_key = request.user.get_rlcs_aes_key(private_key_user)
-        file = instance.download(aes_key)
+        file, delete = instance.download(aes_key)
 
         response = FileResponse(file, content_type=mimetypes.guess_type(instance.key)[0])
         response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.name)
+        delete()
         return response
 
     def create(self, request, *args, **kwargs):

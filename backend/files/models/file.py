@@ -1,4 +1,7 @@
+import botocore.exceptions
+from rest_framework.exceptions import ParseError, APIException
 from django.core.files.storage import default_storage
+from rest_framework import status
 
 from backend.static.encrypted_storage import EncryptedStorage
 from ...static.storage_folders import clean_filename
@@ -82,20 +85,32 @@ class File(models.Model):
     def download(self, aes_key):
         # get the key with which you can find the item on aws
         key = self.get_encrypted_file_key()
-        # generate a local file path on where to save the file
-        downloaded_file_path = ascii(os.path.join(settings.MEDIA_ROOT, key))
+        # generate a local file path on where to save the file and clean it up so nothing goes wrong
+        downloaded_file_path = os.path.join(settings.MEDIA_ROOT, key)
+        downloaded_file_path = ''.join([i if ord(i) < 128 else '?' for i in downloaded_file_path])
         # check if the folder path exists and if not create it so that boto3 can save the file
         folder_path = downloaded_file_path[:downloaded_file_path.rindex('/')]
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
         # download and decrypt the file
-        EncryptedStorage.get_s3_client().download_file(settings.SCW_S3_BUCKET_NAME, key, downloaded_file_path)
+        try:
+            EncryptedStorage.get_s3_client().download_file(settings.SCW_S3_BUCKET_NAME, key, downloaded_file_path)
+        except botocore.exceptions.ClientError:
+            raise ParseError(
+                'The file was not found. However, it is probably still encrypted on the server. '
+                'Please send an e-mail to it@law-orga.de to have the file restored.'
+            )
         AESEncryption.decrypt_file(downloaded_file_path, aes_key)
         # open the file to return it and delete the files from the media folder for safety reasons
-        file = default_storage.open(downloaded_file_path)
-        default_storage.delete(downloaded_file_path)
-        default_storage.delete(downloaded_file_path + '.enc')
-        return file
+        file = default_storage.open(downloaded_file_path[:-4])
+
+        # return a delete function so that the file can be deleted after it was used
+        def delete():
+            default_storage.delete(downloaded_file_path[:-4])
+            default_storage.delete(downloaded_file_path)
+
+        # return
+        return file, delete
 
     def upload(self, file, aes_key):
         local_file = default_storage.save(self.key, file)
