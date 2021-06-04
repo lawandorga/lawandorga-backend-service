@@ -37,6 +37,8 @@ class FolderViewSet(viewsets.ModelViewSet):
 
         folders = []
         for folder in instance.child_folders.all():
+            print(folder)
+            print(folder.user_can_see_folder(user))
             if folder.user_can_see_folder(user):
                 folders.append(folder)
         folder_data = FolderSerializer(folders, many=True).data

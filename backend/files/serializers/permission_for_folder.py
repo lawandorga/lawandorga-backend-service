@@ -33,6 +33,6 @@ class PermissionForFolderNestedSerializer(serializers.ModelSerializer):
         return 'NORMAL'
 
     def get_type(self, obj):
-        if self.from_direction in ['BELOW', 'ABOVE']:
+        if self.from_direction in ['BELOW']:
             return 'See'
         return obj.permission.name
