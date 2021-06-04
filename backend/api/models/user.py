@@ -307,9 +307,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         from backend.recordmanagement.models import RecordEncryption
 
         # assert that the self user has all possible keys
-        assert self.has_permission(PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC)
+        # assert self.has_permission(PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC)
 
-        # generate new rlc key
+        # this variable checks if all keys that the user needed were generated
+        keys_missing = False
+
+        # generate new rlc key - this works always
         user_to_unlock.users_rlc_keys.all().delete()
         aes_key_rlc = self.rlc.get_aes_key(user=self, private_key_user=private_key_self)
         new_keys = UsersRlcKeys(
@@ -320,19 +323,22 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         # generate new record encryption
         record_encryptions = user_to_unlock.record_encryptions.all()
-        record_encryptions_list = list(record_encryptions)
-        record_encryptions.delete()
 
-        for old_keys in record_encryptions_list:
-            encryption = RecordEncryption.objects.get(user=self, record=old_keys.record)
+        for old_keys in list(record_encryptions):
+            # check if the user has the needed keys if not just skip
+            try:
+                encryption = RecordEncryption.objects.get(user=self, record=old_keys.record)
+            except ObjectDoesNotExist:
+                keys_missing = True
+                continue
+            # change the keys to the new keys
             encryption.decrypt(private_key_user=private_key_self)
-            new_keys = RecordEncryption(
-                user=user_to_unlock,
-                record=old_keys.record,
-                encrypted_key=encryption.encrypted_key,
-            )
-            new_keys.encrypt(user_to_unlock.get_public_key())
-            new_keys.save()
+            old_keys.encrypted_key = encryption.encrypted_key
+            old_keys.encrypt(user_to_unlock.get_public_key())
+            old_keys.save()
+
+        # return true if everything worked as expected return false otherwise
+        return not keys_missing
 
 
 class RlcUser(models.Model):
