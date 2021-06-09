@@ -20,12 +20,10 @@ from django.db import models
 
 
 class Rlc(models.Model):
-    creator = models.ForeignKey(
-        UserProfile, related_name="rlc_created", on_delete=models.SET_NULL, null=True
-    )
     name = models.CharField(max_length=200, null=False)
     uni_tied = models.BooleanField(default=False)
     part_of_umbrella = models.BooleanField(default=True)
+    use_record_pool = models.BooleanField(default=False)
     note = models.CharField(max_length=4000, null=True, default="")
 
     class Meta:

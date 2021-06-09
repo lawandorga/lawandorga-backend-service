@@ -31,12 +31,12 @@ from rest_framework.decorators import action
 from backend.api.serializers import (
     OldUserProfileSerializer,
     UserCreateProfileSerializer,
-    RlcSerializer,
+    RlcVerboseSerializer,
     UserProfileForeignSerializer,
     UserProfileSerializer,
     UserUpdateProfileSerializer,
     UserPasswordResetSerializer,
-    UserPasswordResetConfirmSerializer, HasPermissionNameSerializer, HasPermissionAllNamesSerializer,
+    UserPasswordResetConfirmSerializer, HasPermissionNameSerializer, HasPermissionAllNamesSerializer, RlcSerializer,
 )
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist

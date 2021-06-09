@@ -25,7 +25,6 @@ from backend.api.models import (
     UserEncryptionKeys,
     RlcEncryptionKeys,
     UsersRlcKeys,
-    RlcSettings,
     NotificationGroup,
     Group, LoggedPath, RlcUser,
 )
@@ -64,7 +63,6 @@ admin.site.register(NewUserRequest)
 admin.site.register(UserEncryptionKeys)
 admin.site.register(RlcEncryptionKeys)
 admin.site.register(UsersRlcKeys)
-admin.site.register(RlcSettings)
 admin.site.register(NotificationGroup)
 admin.site.register(UserProfile, UserAdmin)
 admin.site.register(Notification)

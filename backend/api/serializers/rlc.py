@@ -18,6 +18,12 @@ from backend.api.models.rlc import Rlc
 
 
 class RlcSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rlc
+        fields = '__all__'
+
+
+class RlcVerboseSerializer(serializers.ModelSerializer):
     rlc_has_permission = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True, required=False
     )
@@ -30,7 +36,7 @@ class RlcSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class RlcNameSerializer(RlcSerializer):
+class RlcNameSerializer(RlcVerboseSerializer):
     class Meta:
         model = Rlc
         fields = ["id", "name"]
