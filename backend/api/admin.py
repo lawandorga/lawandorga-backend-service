@@ -33,7 +33,17 @@ from django.contrib import admin
 
 
 class UserAdmin(DjangoUserAdmin):
-    fieldsets = ()
+    fieldsets = (
+        (None, {'fields': ('email', )}),
+        (_('Personal info'), {'fields': ('name', )}),
+        (_('Permissions'), {
+            'fields': ('groups', ),
+        }),
+        (_('RLC Stuff'), {
+            'fields': ('is_active', 'locked', 'email_confirmed', ),
+        }),
+        (_('Important dates'), {'fields': ('last_login', )}),
+    )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
