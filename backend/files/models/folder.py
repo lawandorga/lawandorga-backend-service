@@ -32,31 +32,10 @@ from backend.static.storage_folders import get_storage_base_files_folder
 
 class Folder(models.Model):
     name = models.CharField(max_length=255)
-
-    creator = models.ForeignKey(
-        UserProfile,
-        related_name="folders_created",
-        on_delete=models.SET_NULL,
-        null=True,
-    )
     created = models.DateTimeField(auto_now_add=True)
-
-    last_editor = models.ForeignKey(
-        UserProfile,
-        related_name="last_edited_folders",
-        on_delete=models.SET_NULL,
-        null=True,
-    )
     last_edited = models.DateTimeField(auto_now_add=True)
-
-    size = models.BigIntegerField(default=0)
-    parent = models.ForeignKey(
-        "self", related_name="child_folders", null=True, on_delete=models.CASCADE
-    )
-    number_of_files = models.BigIntegerField(default=0)
-    rlc = models.ForeignKey(
-        Rlc, related_name="folders", on_delete=models.CASCADE, null=False, blank=True
-    )
+    parent = models.ForeignKey("self", related_name="child_folders", null=True, on_delete=models.CASCADE, blank=True)
+    rlc = models.ForeignKey(Rlc, related_name="folders", on_delete=models.CASCADE, null=False, blank=True)
 
     class Meta:
         verbose_name = "Folder"

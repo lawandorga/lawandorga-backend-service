@@ -1,9 +1,8 @@
 from backend.files.models.folder import Folder
-from backend.static.permissions import PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC
 from backend.files.serializers import FileSerializer, FolderSerializer, FolderCreateSerializer, FolderPathSerializer, \
     PermissionForFolderNestedSerializer
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError, ParseError
 from backend.files.models.file import File
 from rest_framework.response import Response
 from backend.files.models import PermissionForFolder
@@ -19,13 +18,29 @@ class FolderViewSet(viewsets.ModelViewSet):
         return Folder.objects.filter(rlc=self.request.user.rlc)
 
     def get_serializer_class(self):
-        if self.action in ['create']:
+        if self.action in ['create', 'update']:
             return FolderCreateSerializer
-        elif self.action in ['retrieve', 'list']:
+        elif self.action in ['retrieve', 'list', 'first']:
             return FolderPathSerializer
         return super().get_serializer_class()
 
-    def list(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        # if instance is the root folder block the request
+        if instance.parent is None:
+            raise ParseError('You can not edit the root folder.')
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        # check that there is no circular reference happening
+        if serializer.validated_data['parent'] in instance.get_all_children():
+            raise ParseError('You can not move a folder into one of its children.')
+        self.perform_update(serializer)
+
+        return Response(serializer.data)
+
+    @action(detail=False)
+    def first(self, request, *args, **kwargs):
         instance = Folder.objects.get(parent=None, rlc=request.user.rlc)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
@@ -37,8 +52,6 @@ class FolderViewSet(viewsets.ModelViewSet):
 
         folders = []
         for folder in instance.child_folders.all():
-            print(folder)
-            print(folder.user_can_see_folder(user))
             if folder.user_can_see_folder(user):
                 folders.append(folder)
         folder_data = FolderSerializer(folders, many=True).data

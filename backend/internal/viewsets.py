@@ -1,6 +1,8 @@
-from backend.internal.serializers import ArticleSerializer, ArticleDetailSerializer
+from rest_framework.response import Response
+
+from backend.internal.serializers import ArticleSerializer, ArticleDetailSerializer, IndexPageSerializer
 from rest_framework.viewsets import GenericViewSet
-from backend.internal.models import Article
+from backend.internal.models import Article, IndexPage
 from rest_framework import mixins
 
 
@@ -15,3 +17,14 @@ class ArticleViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericVi
             return ArticleDetailSerializer
         return super().get_serializer_class()
 
+
+class IndexPageViewSet(mixins.ListModelMixin, GenericViewSet):
+    queryset = IndexPage.objects.none()
+    serializer_class = IndexPageSerializer
+    permission_classes = []
+    authentication_classes = []
+
+    def list(self, request, *args, **kwargs):
+        instance = IndexPage.get_solo()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)

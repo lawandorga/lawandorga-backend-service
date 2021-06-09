@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
-from backend.internal.models import Article, InternalUser
+from backend.internal.models import Article, IndexPage
 
 
 class ArticleSerializer(ModelSerializer):
@@ -20,3 +20,9 @@ class ArticleDetailSerializer(ModelSerializer):
         if obj.author:
             return obj.author.user.name
         return None
+
+
+class IndexPageSerializer(ModelSerializer):
+    class Meta:
+        model = IndexPage
+        fields = '__all__'
