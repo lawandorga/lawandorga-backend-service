@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "storages",
     "corsheaders",
-
+    "solo",
 ]
 
 # Middleware

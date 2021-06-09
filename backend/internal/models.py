@@ -1,4 +1,6 @@
 from django.contrib.auth.models import AbstractUser, PermissionsMixin, _user_has_perm, _user_has_module_perms
+from solo.models import SingletonModel
+
 from backend.api.models import UserProfile
 from tinymce.models import HTMLField
 
@@ -14,6 +16,17 @@ class InternalUser(models.Model):
 
     def __str__(self):
         return 'internalUser: {};'.format(self.user.email)
+
+
+class IndexPage(SingletonModel):
+    content = HTMLField()
+
+    class Meta:
+        verbose_name = 'IndexPage'
+        verbose_name_plural = 'IndexPage'
+
+    def __str__(self):
+        return 'IndexPage'
 
 
 class Article(models.Model):
