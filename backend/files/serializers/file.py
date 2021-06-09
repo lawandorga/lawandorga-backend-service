@@ -29,10 +29,11 @@ class FileCreateSerializer(AddUserMixin, FileSerializer):
 
     class Meta:
         model = File
-        fields = ['folder', 'name', 'type', 'key', 'created', 'id']
+        fields = ['folder', 'name', 'type', 'key', 'created', 'id', 'exists']
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
+        attrs['exists'] = True
         if 'file' not in self.context['request'].FILES:
             raise ValidationError("A file is required to be submitted with the name 'file'.")
         attrs['name'] = self.context['request'].FILES['file'].name
