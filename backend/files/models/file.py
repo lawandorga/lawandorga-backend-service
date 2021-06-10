@@ -81,7 +81,6 @@ class File(models.Model):
     def pre_deletion(sender, instance, **kwargs) -> None:
         if sender == File:
             instance.delete_on_cloud()
-            instance.folder.save()
 
     def download(self, aes_key):
         # get the key with which you can find the item on aws

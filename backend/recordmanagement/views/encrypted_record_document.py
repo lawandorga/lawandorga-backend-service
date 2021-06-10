@@ -25,6 +25,7 @@ class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
         return EncryptedRecordDocument.objects.filter(record__from_rlc=self.request.user.rlc)
 
     def retrieve(self, request: Request, *args, **kwargs):
+        # permission stuff
         if not request.user.has_permission(permissions.PERMISSION_VIEW_RECORDS_RLC):
             raise PermissionDenied()
 
@@ -33,17 +34,19 @@ class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
         if not instance.record.user_has_permission(request.user):
             raise PermissionDenied()
 
+        # download the file
         private_key_user = request.user.get_private_key(request=request)
         record_key = instance.record.get_decryption_key(request.user, private_key_user)
-        instance.download(record_key)
+        file, delete = instance.download(record_key)
 
-        file = default_storage.open(instance.get_key())
+        # generate response
         response = FileResponse(file, content_type=mimetypes.guess_type(instance.get_file_key())[0])
         response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.name)
 
-        default_storage.delete(instance.get_key())
-        default_storage.delete(instance.get_file_key())
+        # delete the files from the server
+        delete()
 
+        # return
         return response
 
     def perform_create(self, serializer):
@@ -55,11 +58,9 @@ class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
 
         response = super().create(request, *args, **kwargs)
         file = request.FILES['file']
-        local_file = default_storage.save(self.instance.get_key(), file)
-        local_file_path = os.path.join(settings.MEDIA_ROOT, local_file)
         private_key_user = request.user.get_private_key(request=request)
         record_key = self.instance.record.get_decryption_key(request.user, private_key_user)
-        EncryptedStorage.encrypt_file_and_upload_to_s3(local_file_path, record_key, self.instance.get_key())
-        default_storage.delete(self.instance.get_key())
-        default_storage.delete(self.instance.get_file_key())
+        # upload the file to s3
+        self.instance.upload(file, record_key)
+        # return
         return response

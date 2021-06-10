@@ -1,14 +1,10 @@
-from backend.static.encrypted_storage import EncryptedStorage
-from django.core.files.storage import default_storage
 from rest_framework.exceptions import PermissionDenied
 from backend.files.serializers import FileSerializer, FileCreateSerializer
 from backend.files.models.file import File
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from django.http import FileResponse
-from django.conf import settings
 import mimetypes
-import os
 
 
 class FileViewSet(viewsets.ModelViewSet):

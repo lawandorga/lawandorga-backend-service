@@ -104,9 +104,8 @@ class EncryptedStorage:
 
     @staticmethod
     def delete_on_s3(s3_key):
-        s3: BaseClient = EncryptedStorage.get_s3_client()
         try:
-            s3.delete_object(Bucket=settings.SCW_S3_BUCKET_NAME, Key=s3_key)
+            EncryptedStorage.get_s3_client().delete_object(Bucket=settings.SCW_S3_BUCKET_NAME, Key=s3_key)
         except Exception as e:
             Logger.error("couldnt delete file from s3: " + s3_key)
             # raise CustomError(error_codes.ERROR__API__STORAGE__DELETE__NO_SUCH_KEY)
