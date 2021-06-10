@@ -13,6 +13,8 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from rest_framework.exceptions import PermissionDenied
+
 from backend.api.models.notification import Notification
 from backend.static.permissions import PERMISSION_ACCEPT_NEW_USERS_RLC
 from backend.api.serializers import (
@@ -47,10 +49,8 @@ class NewUserRequestViewSet(
 
         from backend.api.models import UsersRlcKeys
 
-        if not request.user.has_permission(
-            PERMISSION_ACCEPT_NEW_USERS_RLC, for_rlc=request.user.rlc
-        ):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+        if not request.user.has_permission(PERMISSION_ACCEPT_NEW_USERS_RLC):
+            raise PermissionDenied()
 
         data = {
             **request.data,

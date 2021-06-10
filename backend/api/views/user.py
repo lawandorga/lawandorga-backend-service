@@ -13,6 +13,7 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.exceptions import ParseError
@@ -47,7 +48,7 @@ from backend.api.models import (
     UserProfile,
     NotificationGroup,
     PasswordResetTokenGenerator,
-    AccountActivationTokenGenerator,
+    AccountActivationTokenGenerator, UsersRlcKeys,
 )
 from backend.api.errors import CustomError
 from django.core.mail import send_mail
@@ -68,9 +69,7 @@ class SpecialPermission(IsAuthenticated):
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserProfileSerializer
     queryset = UserProfile.objects.none()
-    filter_backends = [filters.SearchFilter]
     permission_classes = [SpecialPermission]
-    search_fields = ["name", "email"]
 
     def get_authenticators(self):
         # self.action == 'create' would be better here but self.action is not set yet
@@ -173,7 +172,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(
                 {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
             )
-        if hasattr(user, "accepted") and not user.accepted.state == "gr":
+        if not user.rlc_user.accepted:
             message = (
                 "You can not login, yet. Your RLC needs to accept you as a member."
             )
@@ -371,13 +370,6 @@ class UserViewSet(viewsets.ModelViewSet):
             }
             return Response(data, status=status.HTTP_403_FORBIDDEN)
 
-        # if not request.user.has_permission(PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC):
-        #     data = {
-        #         "detail": "You need to have the view_records_full_detail permission in order to unlock this user."
-        #                   "Because you need to be able to give this user all his encryption keys."
-        #     }
-        #     return Response(data, status=status.HTTP_403_FORBIDDEN)
-
         # generate new rlc key
         private_key_user = request.user.get_private_key(request=request)
         success = request.user.generate_keys_for_user(private_key_user, user_to_unlock)
@@ -395,3 +387,32 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.get_object()
         user_permissions = user.get_permissions()
         return Response(HasPermissionAllNamesSerializer(user_permissions, many=True).data)
+
+    @action(detail=True, methods=['GET'])
+    def accept(self, request, *args, **kwargs):
+        # get the new member
+        new_member = self.get_object()
+
+        # create the rlc encryption keys for new member
+        private_key_user = request.user.get_private_key(request=request)
+        aes_key_rlc = request.user.rlc.get_aes_key(
+            user=request.user, private_key_user=private_key_user
+        )
+
+        new_user_rlc_keys = UsersRlcKeys(
+            user=new_member, rlc=request.user.rlc, encrypted_key=aes_key_rlc,
+        )
+        public_key = new_member.get_public_key()
+        new_user_rlc_keys.encrypt(public_key)
+        try:
+            new_user_rlc_keys.save()
+        except IntegrityError:
+            # this happens when the keys exist already for whatever reason
+            pass
+
+        # set the user accept so that the user can login
+        new_member.rlc_user.accepted = True
+        new_member.rlc_user.save()
+
+        # return
+        return Response(UserProfileSerializer(instance=new_member).data)

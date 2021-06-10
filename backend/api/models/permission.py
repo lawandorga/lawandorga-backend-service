@@ -52,17 +52,3 @@ class Permission(models.Model):
         from backend.api.models import HasPermission
 
         return HasPermission.objects.filter(permission=self, rlc_has_permission=rlc)
-
-    def get_real_users_with_permission_for_rlc(self, rlc):
-        # TODO: add permission_for_rlc?
-        from backend.api.models import UserProfile, HasPermission
-
-        if HasPermission.objects.filter(rlc_has_permission=rlc, permission=self):
-            return UserProfile.objects.filter(rlc=rlc)
-        users = UserProfile.objects.filter(
-            user_has_permission__permission=self, rlc=rlc
-        )
-        group_users = UserProfile.objects.filter(
-            group_members__group_has_permission__permission=self, rlc=rlc
-        ).distinct()
-        return users.union(group_users).distinct()

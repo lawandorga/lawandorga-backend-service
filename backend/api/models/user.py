@@ -48,8 +48,8 @@ class UserProfileManager(BaseUserManager):
                 group_has_permission=None,
                 rlc_has_permission=None
             )
-            .values("user_has_permission")
-            .distinct()
+                .values("user_has_permission")
+                .distinct()
         )
 
         user_ids = [has_permission["user_has_permission"] for has_permission in users]
@@ -112,6 +112,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return "user: {}; email: {};".format(self.pk, self.email)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.get_rlc_user()
 
     # django intern stuff
     @property
@@ -199,6 +203,23 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def has_permissions(self, permissions):
         return any(map(lambda permission: self.has_permission(permission), permissions))
+
+    def get_rlc_user(self):
+        try:
+            return self.rlc_user
+        except ObjectDoesNotExist:
+            rlc_user = RlcUser.objects.create(
+                user=self,
+                email_confirmed=self.email_confirmed,
+                birthday=self.birthday,
+                phone_number=self.phone_number,
+                street=self.street,
+                city=self.city,
+                postal_code=self.postal_code,
+                locked=self.locked,
+                rlc=self.rlc,
+            )
+            return rlc_user
 
     def get_permissions(self):
         user_permissions = HasPermission.objects.filter(user_has_permission=self)
@@ -351,6 +372,7 @@ class RlcUser(models.Model):
     postal_code = models.CharField(max_length=255, default=None, null=True, blank=True)
     locked = models.BooleanField(default=False)
     rlc = models.ForeignKey("Rlc", related_name="users", on_delete=models.PROTECT, blank=True, null=True)
+    accepted = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = 'RlcUser'

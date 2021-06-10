@@ -29,12 +29,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         extra_kwargs = {"password": {"write_only": True}}
 
     def get_accepted(self, obj):
-        try:
-            if obj.accepted.state == "gr":
-                return True
-        except ObjectDoesNotExist:
-            return True
-        return False
+        return obj.get_rlc_user().accepted
 
 
 class OldUserProfileSerializer(UserProfileSerializer):
