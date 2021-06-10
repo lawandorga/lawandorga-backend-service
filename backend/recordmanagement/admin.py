@@ -26,7 +26,6 @@ from backend.recordmanagement.models import (
     EncryptedRecordDeletionRequest,
     PoolConsultant,
     PoolRecord,
-    EncryptedRecordDocumentDeletionRequest,
 )
 from django.contrib import admin
 
@@ -38,7 +37,6 @@ admin.site.register(EncryptedClient)
 admin.site.register(EncryptedRecordDocument)
 admin.site.register(EncryptedRecordMessage)
 admin.site.register(EncryptedRecordPermission)
-admin.site.register(EncryptedRecordDocumentDeletionRequest)
 admin.site.register(EncryptedRecordDeletionRequest)
 admin.site.register(PoolConsultant)
 admin.site.register(PoolRecord)

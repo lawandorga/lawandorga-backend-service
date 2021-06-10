@@ -17,19 +17,11 @@ class EncryptedRecordDocument(models.Model):
         on_delete=models.SET_NULL,
         null=True,
     )
-
-    record = models.ForeignKey(
-        "EncryptedRecord", related_name="e_record_documents", on_delete=models.CASCADE
-    )
-
+    record = models.ForeignKey("EncryptedRecord", related_name="e_record_documents", on_delete=models.CASCADE)
     created_on = models.DateTimeField(auto_now_add=True)
     last_edited = models.DateTimeField(auto_now_add=True)
-
     file_size = models.BigIntegerField(null=True)
-
-    tagged = models.ManyToManyField(
-        "RecordDocumentTag", related_name="e_tagged", blank=True
-    )
+    tagged = models.ManyToManyField("RecordDocumentTag", related_name="e_tagged", blank=True)
 
     class Meta:
         verbose_name = "RecordDocument"
