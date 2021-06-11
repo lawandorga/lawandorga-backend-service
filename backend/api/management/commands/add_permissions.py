@@ -16,6 +16,7 @@
 
 from django.core.management.base import BaseCommand
 from .commands import add_permissions
+from ...models import Permission
 
 
 class Command(BaseCommand):
@@ -25,4 +26,4 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        add_permissions()
+        permission_to_delete = [Permission.objects.get()]

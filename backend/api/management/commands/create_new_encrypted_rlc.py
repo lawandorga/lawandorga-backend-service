@@ -25,7 +25,6 @@ from backend.api.models import (
     RlcEncryptionKeys,
     UserEncryptionKeys,
     UsersRlcKeys,
-    RlcSettings,
 )
 from backend.static.encryption import RSAEncryption, AESEncryption
 from backend.static.permissions import (
@@ -61,8 +60,6 @@ class Command(BaseCommand):
 
         rlc = Rlc(name=options["rlc_name"])
         rlc.save()
-        settings = RlcSettings(rlc=rlc)
-        settings.save()
         admin_user = UserProfile(
             email=options["admin_email"], rlc=rlc, name=options["admin_name"]
         )

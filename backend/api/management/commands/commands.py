@@ -13,7 +13,6 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from backend.api.management.commands._migrators import OneTimeGenerators
 from backend.api.models import *
 from backend.recordmanagement.models import *
 from backend.api.management.commands.fixtures import Fixtures
@@ -49,10 +48,6 @@ def add_permissions():
     Fixtures.create_real_permissions_no_duplicates()
     Fixtures.create_real_folder_permissions_no_duplicate()
     Fixtures.create_real_collab_permissions()
-
-
-def migrate_to_rlc_settings():
-    OneTimeGenerators.generate_rlc_settings_for_rlc()
 
 
 def reset_db():
