@@ -21,22 +21,15 @@ class File(models.Model):
     name = models.CharField(max_length=255)
     creator = models.ForeignKey(UserProfile, related_name="files_created", on_delete=models.SET_NULL, null=True)
     created = models.DateTimeField(auto_now_add=True)
-    last_editor = models.ForeignKey(
-        UserProfile,
-        related_name="last_edited",
-        on_delete=models.SET_NULL,
-        null=True,
-        default=None,
-    )
     last_edited = models.DateTimeField(auto_now_add=True)
     folder = models.ForeignKey(Folder, related_name="files_in_folder", on_delete=models.CASCADE)
-    size = models.BigIntegerField(null=True)
-    key = models.SlugField(null=True, allow_unicode=True, max_length=1000, unique=True)
+    key = models.CharField(null=True, max_length=1000, unique=True)
     exists = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = "File"
         verbose_name_plural = "Files"
+        ordering = ['exists', '-created']
 
     def __str__(self):
         return "file: {}; fileKey: {};".format(self.pk, self.get_file_key())
@@ -44,6 +37,8 @@ class File(models.Model):
     def save(self, *args, **kwargs):
         if self.pk is None:
             self.key = self.slugify()
+        if not self.exists:
+            self.exists = EncryptedStorage.file_exists(self.get_encrypted_file_key())
         super().save(*args, **kwargs)
 
     def slugify(self, unique=None):
