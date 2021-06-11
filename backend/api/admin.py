@@ -55,9 +55,13 @@ class UserAdmin(DjangoUserAdmin):
     list_filter = ()
 
 
+class HasPermissionAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['user_has_permission']
+
+
 admin.site.register(Group)
 admin.site.register(Permission)
-admin.site.register(HasPermission)
+admin.site.register(HasPermission, HasPermissionAdmin)
 admin.site.register(Rlc)
 admin.site.register(NewUserRequest)
 admin.site.register(UserEncryptionKeys)
