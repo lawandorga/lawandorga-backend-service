@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
-from backend.static.permissions import PERMISSION_MANAGE_GROUP, PERMISSION_MANAGE_GROUPS_RLC
-from backend.api.models import Permission, HasPermission
+from backend.api.models import HasPermission
 
 
 class Command(BaseCommand):

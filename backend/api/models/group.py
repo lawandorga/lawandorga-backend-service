@@ -25,16 +25,7 @@ class GroupQuerySet(models.QuerySet):
     def get_visible_groups_for_user(self, user):
         if user.has_permission(permissions.PERMISSION_MANAGE_GROUPS_RLC):
             return self.filter(from_rlc=user.rlc)
-        else:
-            invisible = list(Group.objects.filter(from_rlc=user.rlc, visible=False))
-            permitted = []
-            for gr in invisible:
-                if user.has_permission(
-                    permissions.PERMISSION_MANAGE_GROUP
-                ):
-                    permitted.append(gr.id)
-
-            return self.filter(Q(from_rlc=user.rlc, visible=True) | Q(id__in=permitted))
+        return self.filter(from_rlc=user.rlc, visible=True)
 
 
 class Group(models.Model):

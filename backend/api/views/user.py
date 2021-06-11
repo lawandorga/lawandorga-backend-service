@@ -16,7 +16,7 @@
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import ParseError, PermissionDenied
 
 from backend.api.models.notification import Notification
 from rest_framework.authtoken.models import Token
@@ -256,11 +256,8 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get", "post"])
     def inactive(self, request: Request):
         if request.method == "GET":
-            if not request.user.has_permission(
-                permissions.PERMISSION_ACTIVATE_INACTIVE_USERS_RLC,
-                for_rlc=request.user.rlc,
-            ):
-                raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+            if not request.user.has_permission(permissions.PERMISSION_MANAGE_USERS):
+                raise PermissionDenied()
 
             inactive_users = UserProfile.objects.filter(
                 rlc=request.user.rlc, is_active=False
@@ -268,11 +265,9 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(UserProfileSerializer(inactive_users, many=True).data)
 
         elif request.method == "POST":
-            if not request.user.has_permission(
-                permissions.PERMISSION_ACTIVATE_INACTIVE_USERS_RLC,
-                for_rlc=request.user.rlc,
-            ):
-                raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+            if not request.user.has_permission(permissions.PERMISSION_MANAGE_USERS):
+                raise PermissionDenied()
+
             # method and user_id
             if request.data["method"] == "activate":
                 try:

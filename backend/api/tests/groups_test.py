@@ -21,7 +21,6 @@ from rest_framework.response import Response
 from backend.api.models import UserProfile, Group, HasPermission, Permission, Rlc
 from backend.api.tests.fixtures_encryption import CreateFixtures
 from backend.static.permissions import (
-    PERMISSION_ADD_GROUP_RLC,
     PERMISSION_MANAGE_GROUPS_RLC,
 )
 
@@ -84,10 +83,6 @@ class GroupsTests(TransactionTestCase):
         self.assertTrue(not group.has_group_one_permission([perm2]))
 
     def test_create_group_success(self):
-        has_permission = CreateFixtures.add_permission_for_user(
-            user=self.user, permission=PERMISSION_ADD_GROUP_RLC
-        )
-
         # with add group permission
         number_of_groups_before = Group.objects.count()
         response: Response = self.client.post(
@@ -110,7 +105,6 @@ class GroupsTests(TransactionTestCase):
         self.assertEquals(number_of_groups_before, Group.objects.count())
 
         # without permissions
-        has_permission.delete()
         response: Response = self.client.post(
             self.base_url, {"name": "the best new group", "visible": True}
         )
