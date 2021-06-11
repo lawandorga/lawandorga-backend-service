@@ -124,3 +124,8 @@ class EncryptedRecordDocument(models.Model):
     def pre_deletion(sender, instance, **kwargs):
         if sender == EncryptedRecordDocument:
             instance.delete_on_cloud()
+
+    def exists_on_s3(self) -> bool:
+        self.exists = EncryptedStorage.file_exists(self.get_file_key())
+        self.save()
+        return self.exists
