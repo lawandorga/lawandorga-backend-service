@@ -36,7 +36,7 @@ class Command(BaseCommand):
         except:
             pass
         # manage_groups_rlc / add_group
-        permission_to_delete = Permission.objects.get(name='add_group')
+        permission_to_delete = Permission.objects.get(name='add_group_rlc')
         permission_to_replace = Permission.objects.get(name='manage_groups_rlc')
         self.replace_permission(permission_to_delete, permission_to_replace)
         permission_to_delete.delete()
