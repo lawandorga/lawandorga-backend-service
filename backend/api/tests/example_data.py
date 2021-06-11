@@ -37,7 +37,7 @@ from backend.recordmanagement.models.record_tag import RecordTag
 from backend.static import permissions
 from backend.static.encryption import AESEncryption
 from backend.static.permissions import get_all_permissions_strings
-from backend.api.models import RlcSettings, UserProfile
+from backend.api.models import UserProfile
 from random import randint, choice
 
 
@@ -58,7 +58,6 @@ def create_rlc():
         note="This is a dummy rlc, just for showing how the system works.",
         id=3033,
     )
-    RlcSettings.objects.create(rlc=rlc)
     return rlc
 
 
