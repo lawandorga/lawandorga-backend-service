@@ -29,14 +29,10 @@ router.register("pool_records", PoolRecordViewSet)
 router.register("pool_consultants", PoolConsultantViewSet)
 router.register("consultants", ConsultantViewSet)
 router.register('record_documents', EncryptedRecordDocumentViewSet)
-
+router.register('record_permission_requests', EncryptedRecordPermissionProcessViewSet)
 urlpatterns = [
     path("", include(router.urls)),
     path("statics/", StaticViewSet.as_view()),
-    path(
-        "e_record_permission_requests/",
-        EncryptedRecordPermissionProcessViewSet.as_view(),
-    ),
     path(
         "process_record_deletion_request/",
         EncryptedRecordDeletionProcessViewSet.as_view(),

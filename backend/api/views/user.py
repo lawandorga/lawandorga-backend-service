@@ -172,7 +172,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(
                 {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
             )
-        if not user.rlc_user.accepted:
+        if not user.get_rlc_user().accepted:
             message = (
                 "You can not login, yet. Your RLC needs to accept you as a member."
             )

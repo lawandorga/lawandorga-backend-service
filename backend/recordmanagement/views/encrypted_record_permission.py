@@ -1,114 +1,54 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2020  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from backend.recordmanagement.models.encrypted_record_permission import (
-    EncryptedRecordPermission,
-)
+from backend.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
 from backend.recordmanagement.models.record_encryption import RecordEncryption
+from backend.recordmanagement.serializers import EncryptedRecordPermissionSerializer
 from backend.api.models.notification import Notification
-from backend.static.middleware import get_private_key_from_request
+from rest_framework.exceptions import PermissionDenied
 from backend.static.encryption import RSAEncryption
-from backend.recordmanagement import serializers
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from backend.api.errors import CustomError
-from backend.api.models import UserProfile
-from backend.static import error_codes, permissions
-from datetime import datetime
-import pytz
+from rest_framework import viewsets, mixins
+from backend.static import permissions
+from django.utils import timezone
 
 
-class EncryptedRecordPermissionProcessViewSet(APIView):
-    def get(self, request) -> Response:
-        """
-        used from admins to see which permission requests are for the own rlc in the system
-        :param request:
-        :return:
-        """
-        user = request.user
-        if not user.has_permission(
-            permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
-            for_rlc=user.rlc,
-        ):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-        requests = EncryptedRecordPermission.objects.filter(record__from_rlc=user.rlc)
-        return Response(
-            serializers.EncryptedRecordPermissionSerializer(requests, many=True).data
-        )
+class EncryptedRecordPermissionProcessViewSet(mixins.UpdateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
+    model = EncryptedRecordPermission
+    queryset = EncryptedRecordPermission.objects.none()
+    serializer_class = EncryptedRecordPermissionSerializer
 
-    def post(self, request) -> Response:
-        """
-        used to admit or decline a given permission request
-        :param request:
-        :return:
-        """
-        user: UserProfile = request.user
-        if not user.has_permission(
-            permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
-        ):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-        if "id" not in request.data:
-            raise CustomError(error_codes.ERROR__API__ID_NOT_PROVIDED)
-        try:
-            permission_request: EncryptedRecordPermission = EncryptedRecordPermission.objects.get(
-                pk=request.data["id"]
-            )
-        except Exception as e:
-            raise CustomError(error_codes.ERROR__API__ID_NOT_FOUND)
+    def get_queryset(self):
+        return EncryptedRecordPermission.objects.filter(record__from_rlc=self.request.user.rlc)
 
-        if permission_request.record.from_rlc != user.rlc:
-            raise CustomError(error_codes.ERROR__API__WRONG_RLC)
-        if "action" not in request.data:
-            raise CustomError(error_codes.ERROR__API__NO_ACTION_PROVIDED)
-        action = request.data["action"]
-        if action != "accept" and action != "decline":
-            raise CustomError(error_codes.ERROR__API__ACTION_NOT_VALID)
+    def list(self, request, *args, **kwargs):
+        if not request.user.has_permission(permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC):
+            raise PermissionDenied()
+        return super().list(request, *args, **kwargs)
 
-        if permission_request.state != "re":
-            raise CustomError(error_codes.ERROR__API__ALREADY_PROCESSED)
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.request_processed = request.user
+        instance.processed_on = timezone.now()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
 
-        if action == "accept":
-            users_private_key = get_private_key_from_request(request)
-            record_key = permission_request.record.get_decryption_key(
-                user, users_private_key
-            )
-            users_public_key = permission_request.request_from.get_public_key()
-            encrypted_record_key = RSAEncryption.encrypt(record_key, users_public_key)
-            record_encryption = RecordEncryption(
-                user=permission_request.request_from,
-                record=permission_request.record,
-                encrypted_key=encrypted_record_key,
-            )
-            record_encryption.save()
-
-            permission_request.state = "gr"
-            permission_request.save()
-
+        if serializer.validated_data['state'] == "gr":
+            private_key_user = request.user.get_private_key(request=request)
+            record_key = instance.record.get_decryption_key(request.user, private_key_user)
+            public_key_user = instance.request_from.get_public_key()
+            encrypted_record_key = RSAEncryption.encrypt(record_key, public_key_user)
+            data = {
+                'user': instance.request_from,
+                'record': instance.record,
+                'encrypted_key': encrypted_record_key,
+            }
+            if not RecordEncryption.objects.filter(**data).exists():
+                RecordEncryption.objects.create(**data)
             Notification.objects.notify_record_permission_accepted(
-                request.user, permission_request
+                request.user, instance
             )
-        else:
-            permission_request.state = "de"
-            permission_request.save()
-            Notification.objects.notify_record_permission_declined(
-                request.user, permission_request
-            )
-        permission_request.request_processed = user
-        permission_request.processed_on = datetime.utcnow().replace(tzinfo=pytz.utc)
-        permission_request.save()
+        elif serializer.validated_data['state'] == "de":
+            Notification.objects.notify_record_permission_declined(request.user, instance)
 
-        return Response(
-            serializers.EncryptedRecordPermissionSerializer(permission_request).data
-        )
+        serializer.save()
+        return Response(serializer.data)
+
