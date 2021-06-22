@@ -52,8 +52,15 @@ LOGGING = {
             'level': 'WARNING',
             'filename': os.path.join(LOGGING_DIR, 'django.log'),
         },
+        'null': {
+            'class': 'logging.NullHandler',
+        },
     },
     'loggers': {
+        'django.security.DisallowedHost': {
+            'handlers': ['null'],
+            'propagate': False,
+        },
         '': {
             'handlers': ['file'],
             'propagate': True,
