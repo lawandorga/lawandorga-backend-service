@@ -22,24 +22,23 @@ class EncryptedRecordPermission(models.Model):
         UserProfile,
         related_name="e_record_permissions_requested",
         on_delete=models.CASCADE,
-        null=False,
     )
     request_processed = models.ForeignKey(
         UserProfile,
         related_name="e_record_permissions_processed",
         on_delete=models.SET_NULL,
         null=True,
+        blank=True
     )
 
     record = models.ForeignKey(
         "EncryptedRecord",
         related_name="e_permissions_requested",
         on_delete=models.CASCADE,
-        null=False,
     )
 
     requested = models.DateTimeField(auto_now_add=True)
-    processed_on = models.DateTimeField(null=True)
+    processed_on = models.DateTimeField(null=True, blank=True)
 
     encrypted_record_permission_states_possible = (
         ("re", "requested"),

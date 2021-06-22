@@ -41,7 +41,7 @@ class EncryptedRecordPermissionProcessViewSet(mixins.UpdateModelMixin, mixins.Li
                 'record': instance.record,
                 'encrypted_key': encrypted_record_key,
             }
-            if not RecordEncryption.objects.filter(**data).exists():
+            if not RecordEncryption.objects.filter(user=data['user'], record=data['record']).exists():
                 RecordEncryption.objects.create(**data)
             Notification.objects.notify_record_permission_accepted(
                 request.user, instance

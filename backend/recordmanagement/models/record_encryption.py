@@ -14,12 +14,12 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from backend.recordmanagement.models.encrypted_record import EncryptedRecord
-from backend.static.encryption import RSAEncryption
+from backend.static.encryption import RSAEncryption, EncryptedModelMixin
 from backend.api.models import UserProfile
 from django.db import models
 
 
-class RecordEncryption(models.Model):
+class RecordEncryption(EncryptedModelMixin, models.Model):
     user = models.ForeignKey(
         UserProfile, related_name="record_encryptions", on_delete=models.CASCADE
     )
@@ -28,6 +28,7 @@ class RecordEncryption(models.Model):
     )
     encrypted_key = models.BinaryField()
 
+    encryption_class = RSAEncryption
     encrypted_fields = ["encrypted_key"]
 
     class Meta:
@@ -40,35 +41,12 @@ class RecordEncryption(models.Model):
             self.id, self.user.email, self.record.record_token
         )
 
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
-        for field in self.encrypted_fields:
-            data_in_field = getattr(self, field)
-            if data_in_field and not isinstance(data_in_field, bytes):
-                raise ValueError(
-                    "The field {} of object {} is not encrypted. Do not save unencrypted data.".format(
-                        field, self
-                    )
-                )
-        super().save(force_insert, force_update, using, update_fields)
-
-    def encrypt(self, public_key_user: bytes) -> None:
-        for field in self.encrypted_fields:
-            encrypted_field = RSAEncryption.encrypt(
-                getattr(self, field), public_key_user
-            )
-            setattr(self, field, encrypted_field)
-
     def decrypt(self, private_key_user: str = None) -> None:
         if private_key_user:
-            for field in self.encrypted_fields:
-                decrypted_field = RSAEncryption.decrypt(
-                    getattr(self, field), private_key_user
-                )
-                setattr(self, field, decrypted_field)
+            key = private_key_user
         else:
             raise ValueError("You need to pass (private_key_user).")
+        super().decrypt(key)
 
     def get_key(self, private_key_user: str) -> str:
         if not self.encrypted_key:
