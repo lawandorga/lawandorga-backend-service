@@ -57,7 +57,7 @@ class EncryptedRecordDocument(models.Model):
         if not EncryptedRecordDocument.objects.filter(key=key).exists():
             return key
         else:
-            unique = 1 if unique is None else unique + 1
+            unique = 1 if unique == '' else int(unique) + 1
             return self.slugify(unique=unique)
 
     def get_key(self):
