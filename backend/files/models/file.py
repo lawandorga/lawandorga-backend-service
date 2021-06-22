@@ -1,4 +1,5 @@
 import botocore.exceptions
+from django.utils import timezone
 from rest_framework.exceptions import ParseError, APIException
 from django.core.files.storage import default_storage
 from rest_framework import status
@@ -40,6 +41,12 @@ class File(models.Model):
         if not self.exists:
             self.exists = EncryptedStorage.file_exists(self.get_encrypted_file_key())
         super().save(*args, **kwargs)
+        for parent in self.get_parents():
+            parent.last_edited = timezone.now()
+            parent.save()
+
+    def get_parents(self):
+        return self.folder.get_all_parents() + [self.folder]
 
     def slugify(self, unique=None):
         key = '{}{}'.format(self.folder.get_file_key(), self.name)
