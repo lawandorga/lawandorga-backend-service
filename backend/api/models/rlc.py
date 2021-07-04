@@ -31,6 +31,13 @@ class Rlc(models.Model):
     def __str__(self):
         return "rlc: {}; name: {};".format(self.pk, self.name)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # create the root folder from files if it doesn't exist
+        from backend.files.models import Folder
+        if not Folder.objects.filter(rlc=self, parent=None).exists():
+            Folder.objects.create(rlc=self, parent=None, name='Files')
+
     def get_consultants(self):
         """
         gets all user from rlc with permission to consult
