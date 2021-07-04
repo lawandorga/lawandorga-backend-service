@@ -59,6 +59,10 @@ class HasPermissionAdmin(admin.ModelAdmin):
     autocomplete_fields = ['user_has_permission']
 
 
+class RlcUserAdmin(admin.ModelAdmin):
+    search_fields = ('user__email', 'user__name')
+
+
 admin.site.register(Group)
 admin.site.register(Permission)
 admin.site.register(HasPermission, HasPermissionAdmin)
@@ -71,4 +75,4 @@ admin.site.register(NotificationGroup)
 admin.site.register(UserProfile, UserAdmin)
 admin.site.register(Notification)
 admin.site.register(LoggedPath)
-admin.site.register(RlcUser)
+admin.site.register(RlcUser, RlcUserAdmin)

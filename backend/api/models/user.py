@@ -379,7 +379,7 @@ class RlcUser(models.Model):
         verbose_name_plural = 'RlcUsers'
 
     def __str__(self):
-        return 'rlcUser: {};'.format(self.user.email)
+        return 'rlcUser: {}; email: {};'.format(self.pk, self.user.email)
 
 
 # create a rlc user when a normal user is saved
