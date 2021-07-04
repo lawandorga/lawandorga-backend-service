@@ -4,7 +4,7 @@ from django.contrib import admin
 
 class FileAdmin(admin.ModelAdmin):
     model = File
-    list_display = ('name', 'exists', 'created')
+    list_display = ('name', 'key', 'exists', 'created')
 
     def get_form(self, request, obj=None, **kwargs):
         form = super(FileAdmin, self).get_form(request, obj, **kwargs)

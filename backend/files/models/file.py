@@ -1,18 +1,16 @@
-import botocore.exceptions
-from django.utils import timezone
-from rest_framework.exceptions import ParseError, APIException
-from django.core.files.storage import default_storage
-from rest_framework import status
-
 from backend.static.encrypted_storage import EncryptedStorage
+from django.core.files.storage import default_storage
 from ...static.storage_folders import clean_filename
+from rest_framework.exceptions import ParseError
 from django.db.models.signals import pre_delete
 from backend.api.models.user import UserProfile
 from ...static.encryption import AESEncryption
 from django.dispatch import receiver
+from django.utils import timezone
 from django.conf import settings
 from django.db import models
 from .folder import Folder
+import botocore.exceptions
 import unicodedata
 import re
 import os
