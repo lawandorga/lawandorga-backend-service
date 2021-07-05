@@ -13,6 +13,8 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from rest_framework.exceptions import ValidationError
+
 from backend.recordmanagement.serializers import RecordTagNameSerializer, RecordEncryptionSerializer
 from backend.recordmanagement.models import EncryptedRecord, RecordEncryption
 from backend.api.serializers import UserProfileNameSerializer
@@ -36,6 +38,13 @@ class EncryptedRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = EncryptedRecord
         fields = "__all__"
+
+    def validate(self, attrs):
+        token = attrs['record_token']
+        if 'from_rlc' in attrs and EncryptedRecord.objects.filter(record_token=token,
+                                                                  from_rlc=attrs['from_rlc']).exists():
+            raise ValidationError('The record token is already used. Please choose another record token.')
+        return attrs
 
 
 class EncryptedRecordListSerializer(EncryptedRecordSerializer):
