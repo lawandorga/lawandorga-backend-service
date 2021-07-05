@@ -4,3 +4,4 @@ from backend.internal import viewsets
 router = DefaultRouter()
 router.register("articles", viewsets.ArticleViewSet)
 router.register("pages/index", viewsets.IndexPageViewSet)
+router.register("roadmap-items", viewsets.RoadmapItemViewSet)

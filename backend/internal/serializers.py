@@ -1,6 +1,12 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
-from backend.internal.models import Article, IndexPage
+from backend.internal.models import Article, IndexPage, RoadmapItem
+
+
+class RoadmapItemSerializer(ModelSerializer):
+    class Meta:
+        model = RoadmapItem
+        fields = ['title', 'description', 'date', 'id']
 
 
 class ArticleSerializer(ModelSerializer):

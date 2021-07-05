@@ -1,9 +1,17 @@
 from rest_framework.response import Response
 
-from backend.internal.serializers import ArticleSerializer, ArticleDetailSerializer, IndexPageSerializer
+from backend.internal.serializers import ArticleSerializer, ArticleDetailSerializer, IndexPageSerializer, \
+    RoadmapItemSerializer
 from rest_framework.viewsets import GenericViewSet
-from backend.internal.models import Article, IndexPage
+from backend.internal.models import Article, IndexPage, RoadmapItem
 from rest_framework import mixins
+
+
+class RoadmapItemViewSet(mixins.ListModelMixin, GenericViewSet):
+    queryset = RoadmapItem.objects.all()
+    serializer_class = RoadmapItemSerializer
+    permission_classes = []
+    authentication_classes = []
 
 
 class ArticleViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
