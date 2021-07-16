@@ -60,6 +60,10 @@ class Rlc(models.Model):
     def get_aes_key(
         self, user: UserProfile = None, private_key_user: str = None
     ) -> str:
+        # safety check
+        if not hasattr(self, "encryption_keys"):
+            self.generate_keys()
+
         if user and private_key_user:
             # get the aes key that encrypted the rlc private key. this aes key is encrypted for every user with its
             # public key, therefore only its private key can unlock the aes key.
