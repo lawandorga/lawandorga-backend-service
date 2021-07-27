@@ -38,13 +38,6 @@ class HasPermission(models.Model):
         on_delete=models.CASCADE,
         null=True,
     )
-    rlc_has_permission = models.ForeignKey(
-        "Rlc",
-        related_name="rlc_has_permission",
-        blank=True,
-        on_delete=models.CASCADE,
-        null=True,
-    )
 
     class Meta:
         verbose_name = "HasPermission"
@@ -59,7 +52,6 @@ class HasPermission(models.Model):
             permission=data.get("permission", None),
             user_has_permission=data.get("user_has_permission", None),
             group_has_permission=data.get("group_has_permission", None),
-            rlc_has_permission=data.get("rlc_has_permission", None),
         ).count()
         if entries == 0:
             return False
@@ -74,7 +66,6 @@ class HasPermission(models.Model):
         if (
             HasPermission._check_key_with_value_in_data(data, "user_has_permission")
             + HasPermission._check_key_with_value_in_data(data, "group_has_permission")
-            + HasPermission._check_key_with_value_in_data(data, "rlc_has_permission")
             == 1
         ):
             return True

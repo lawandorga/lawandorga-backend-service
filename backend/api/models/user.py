@@ -46,7 +46,6 @@ class UserProfileManager(BaseUserManager):
             HasPermission.objects.filter(
                 permission=permission,
                 group_has_permission=None,
-                rlc_has_permission=None
             )
                 .values("user_has_permission")
                 .distinct()
@@ -60,7 +59,6 @@ class UserProfileManager(BaseUserManager):
         groups = HasPermission.objects.filter(
             permission=permission,
             user_has_permission=None,
-            rlc_has_permission=None
         ).values("group_has_permission")
         group_ids = [
             has_permission["group_has_permission"] for has_permission in groups
@@ -70,14 +68,6 @@ class UserProfileManager(BaseUserManager):
         )
         if from_rlc is not None:
             result = result.filter(rlc=from_rlc)
-
-        rlcs = HasPermission.objects.filter(
-            permission=permission,
-            user_has_permission=None,
-            group_has_permission=None
-        ).values("rlc_has_permission")
-        rlc_ids = [has_permission["rlc_has_permission"] for has_permission in rlcs]
-        result = result | UserProfile.objects.filter(rlc__in=rlc_ids).distinct()
 
         if from_rlc is not None:
             result = result.filter(rlc=from_rlc)
@@ -136,12 +126,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         groups = [groups["id"] for groups in list(self.rlcgroups.values("id"))]
         return list(HasPermission.objects.filter(group_has_permission_id__in=groups))
 
-    def __get_as_rlc_member_permissions(self):
-        """
-        Returns: all HasPermissions the groups in which the user is member of have as list
-        """
-        return list(HasPermission.objects.filter(rlc_has_permission_id=self.rlc.id))
-
     def get_all_user_permissions(self):
         """
         Returns: all HasPermissions which the user has direct and
@@ -150,7 +134,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return (
             self.__get_as_user_permissions()
             + self.__get_as_group_member_permissions()
-            + self.__get_as_rlc_member_permissions()
         )
 
     def __get_as_user_special_permissions(self, permission_id):
@@ -174,13 +157,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             )
         )
 
-    def __get_as_rlc_member_special_permissions(self, permission):
-        return list(
-            HasPermission.objects.filter(
-                rlc_has_permission_id=self.rlc.id, permission_id=permission
-            )
-        )
-
     def __has_as_user_permission(self, permission):
         return HasPermission.objects.filter(user_has_permission=self.pk, permission=permission).exists()
 
@@ -188,18 +164,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         groups = [group.pk for group in self.rlcgroups.all()]
         return HasPermission.objects.filter(group_has_permission__pk__in=groups, permission=permission).exists()
 
-    def __has_as_rlc_member_permission(self, permission):
-        return HasPermission.objects.filter(rlc_has_permission=self.rlc, permission=permission).exists()
-
     def has_permission(self, permission, for_user=None, for_group=None, for_rlc=None):
         if isinstance(permission, str):
             permission, created = Permission.objects.get_or_create(name=permission)
 
         as_user = self.__has_as_user_permission(permission)
         as_group = self.__has_as_group_member_permission(permission)
-        as_rlc = self.__has_as_rlc_member_permission(permission)
 
-        return as_user or as_group or as_rlc
+        return as_user or as_group
 
     def has_permissions(self, permissions):
         return any(map(lambda permission: self.has_permission(permission), permissions))
@@ -225,8 +197,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         user_permissions = HasPermission.objects.filter(user_has_permission=self)
         user_groups = self.rlcgroups.all()
         group_permissions = HasPermission.objects.filter(group_has_permission__in=user_groups)
-        rlc_permissions = HasPermission.objects.filter(rlc_has_permission=self.rlc)
-        return user_permissions | group_permissions | rlc_permissions
+        return user_permissions | group_permissions
 
     def get_public_key(self) -> str:
         """

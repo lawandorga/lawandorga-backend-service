@@ -38,7 +38,6 @@ class HasPermissionAllNamesSerializer(HasPermissionSerializer):
     name = serializers.SerializerMethodField(method_name='get_name')
     user_has_permission = UserProfileNameSerializer(read_only=True)
     group_has_permission = GroupNameSerializer(read_only=True)
-    rlc_has_permission = RlcNameSerializer(read_only=True)
 
     def get_name(self, obj):
         return obj.permission.name

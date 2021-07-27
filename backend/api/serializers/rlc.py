@@ -24,9 +24,6 @@ class RlcSerializer(serializers.ModelSerializer):
 
 
 class RlcVerboseSerializer(serializers.ModelSerializer):
-    rlc_has_permission = serializers.PrimaryKeyRelatedField(
-        many=True, read_only=True, required=False
-    )
     rlc_members = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True, required=False,
     )

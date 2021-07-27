@@ -47,8 +47,3 @@ class Permission(models.Model):
         return HasPermission.objects.filter(
             permission=self, user_has_permission__in=users.values_list("pk", flat=True)
         )
-
-    def get_rlc_permissions_with_special_permission(self, rlc):
-        from backend.api.models import HasPermission
-
-        return HasPermission.objects.filter(permission=self, rlc_has_permission=rlc)

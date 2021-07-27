@@ -57,17 +57,11 @@ class PermissionViewSet(viewsets.ModelViewSet):
                 request.user.rlc
             )
         ]
-        rlc_permissions = [
-            model_to_dict(has_permission)
-            for has_permission in permission.get_rlc_permissions_with_special_permission(
-                request.user.rlc
-            )
-        ]
 
         data = serializers.PermissionSerializer(permission).data
 
         data.update(
-            {"has_permissions": user_permissions + group_permissions + rlc_permissions}
+            {"has_permissions": user_permissions + group_permissions}
         )
         return Response(data)
 

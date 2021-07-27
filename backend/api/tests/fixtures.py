@@ -206,7 +206,6 @@ class CreateFixtures:
             permission_id=permission,
             user_has_permission_id=user_has,
             group_has_permission_id=group_has,
-            rlc_has_permission_id=rlc_has,
             permission_for_user_id=for_user,
             permission_for_group_id=for_group,
             permission_for_rlc_id=for_rlc,
