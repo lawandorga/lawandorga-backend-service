@@ -1,6 +1,6 @@
 from backend.files.models.folder import Folder
 from backend.files.serializers import FileSerializer, FolderSerializer, FolderCreateSerializer, FolderPathSerializer, \
-    PermissionForFolderNestedSerializer
+    PermissionForFolderNestedSerializer, FolderUpdateSerializer
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError, ParseError
 from backend.files.models.file import File
@@ -18,8 +18,10 @@ class FolderViewSet(viewsets.ModelViewSet):
         return Folder.objects.filter(rlc=self.request.user.rlc)
 
     def get_serializer_class(self):
-        if self.action in ['create', 'update']:
+        if self.action in ['create']:
             return FolderCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return FolderUpdateSerializer
         elif self.action in ['retrieve', 'list', 'first']:
             return FolderPathSerializer
         return super().get_serializer_class()

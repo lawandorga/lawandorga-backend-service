@@ -22,6 +22,10 @@ class FolderCreateSerializer(FolderSerializer):
         return attrs
 
 
+class FolderUpdateSerializer(FolderCreateSerializer):
+    pass
+
+
 class FolderSimpleSerializer(FolderSerializer):
     class Meta:
         model = Folder

@@ -36,6 +36,13 @@ class FileViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
+
+        # delete the file again if there was no permission to write to the folder
+        if not self.instance.folder.user_has_permission_write(request.user):
+            self.instance.delete()
+            raise PermissionDenied()
+
+        # upload the file
         private_key_user = request.user.get_private_key(request=request)
         aes_key = request.user.get_rlcs_aes_key(private_key_user)
         file = request.FILES['file']

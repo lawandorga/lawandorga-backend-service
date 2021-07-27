@@ -20,7 +20,7 @@ class File(models.Model):
     name = models.CharField(max_length=255)
     creator = models.ForeignKey(UserProfile, related_name="files_created", on_delete=models.SET_NULL, null=True)
     created = models.DateTimeField(auto_now_add=True)
-    last_edited = models.DateTimeField(auto_now_add=True)
+    last_edited = models.DateTimeField(auto_now=True)
     folder = models.ForeignKey(Folder, related_name="files_in_folder", on_delete=models.CASCADE)
     key = models.CharField(null=True, max_length=1000, unique=True)
     exists = models.BooleanField(default=True)
