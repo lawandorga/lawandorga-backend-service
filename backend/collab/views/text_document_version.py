@@ -48,7 +48,7 @@ class TextDocumentVersionModelViewSet(viewsets.ModelViewSet):
         version: TextDocumentVersion = self.get_object()
 
         users_private_key = get_private_key_from_request(request)
-        rlcs_aes_key = request.user.get_rlcs_aes_key(users_private_key)
+        rlcs_aes_key = request.user.get_rlc_aes_key(users_private_key)
 
         version.decrypt(rlcs_aes_key)
         return Response(TextDocumentVersionDetailSerializer(version).data)

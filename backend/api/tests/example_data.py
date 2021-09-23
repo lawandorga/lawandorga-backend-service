@@ -55,7 +55,6 @@ def add_permissions_to_group(group: Group, permission_name):
 def create_rlc():
     rlc = Rlc.objects.create(
         name="Dummy RLC",
-        note="This is a dummy rlc, just for showing how the system works.",
         id=3033,
     )
     return rlc

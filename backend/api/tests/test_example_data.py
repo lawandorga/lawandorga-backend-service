@@ -1,7 +1,7 @@
-from django.test import TestCase
-from backend.api.tests import example_data as ed
-from backend.recordmanagement.models import EncryptedRecord
 from backend.recordmanagement.models.encrypted_client import EncryptedClient
+from backend.recordmanagement.models import EncryptedRecord
+from backend.api.tests import example_data as ed
+from django.test import TestCase
 
 
 class ExampleDataTestCase(TestCase):
@@ -32,24 +32,25 @@ class ExampleDataTestCase(TestCase):
     def test_client_encrypt_and_decrypt_field(self):
         ed.create_clients(self.rlc)
         client = EncryptedClient.objects.first()
-        client.decrypt(self.dummy.get_rlcs_private_key(self.dummy_private_key))
+        private_key_rlc = self.dummy.rlc.get_private_key(user=self.dummy, private_key_user=self.dummy_private_key)
+        client.decrypt(private_key_rlc)
         note = client.note
         client.encrypt(self.rlc_public_key)
-        client.decrypt(self.dummy.get_rlcs_private_key(self.dummy_private_key))
+        client.decrypt(private_key_rlc)
         self.assertEqual(note, client.note)
 
     def test_client_error_on_save_unencrypted(self):
         client = self.clients[0]
-        client.decrypt(self.dummy.get_rlcs_private_key(self.dummy_private_key))
+        client.decrypt(self.dummy.rlc.get_private_key(self.dummy, self.dummy_private_key))
         with self.assertRaises(ValueError):
             client.save()
 
     def test_client_decrypt(self):
         ed.create_clients(self.rlc)
         client = EncryptedClient.objects.first()
-        client.decrypt(self.dummy.get_rlcs_private_key(self.dummy_private_key))
+        client.decrypt(self.dummy.rlc.get_private_key(self.dummy, self.dummy_private_key))
         same_client = EncryptedClient.objects.get(pk=client.pk)
-        same_client.decrypt(self.dummy.get_rlcs_private_key(self.dummy_private_key))
+        same_client.decrypt(self.dummy.rlc.get_private_key(self.dummy, self.dummy_private_key))
         self.assertEqual(client.note, same_client.note)
 
     def test_record_error_on_save_unencrypted(self):

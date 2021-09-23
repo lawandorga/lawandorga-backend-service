@@ -37,10 +37,12 @@ class RlcEncryptionKeys(EncryptedModelMixin, models.Model):
 
     def decrypt_private_key(self, key_to_encrypt):
         encrypted_private_key = self.encrypted_private_key
-        try:
-            encrypted_private_key = encrypted_private_key.tobytes()
-        except:
-            pass
+        # try:
+        encrypted_private_key = bytes(encrypted_private_key)
+        # except:
+        #     pass
+        print('here')
+        print(encrypted_private_key)
         return AESEncryption.decrypt(encrypted_private_key, key_to_encrypt)
 
     def decrypt(self, aes_key: str) -> None:

@@ -83,7 +83,7 @@ class TextDocumentModelTest(TransactionTestCase):
         document.save()
 
         user0: UserProfile = self.base_fixtures["users"][0]["user"]
-        rlcs_aes_key = user0.get_rlcs_aes_key(private_key)
+        rlcs_aes_key = user0.get_rlc_aes_key(private_key)
         timezone.now = mock_datetime_now(0, 0)
 
         version1: TextDocumentVersion = TextDocumentVersion.create(
@@ -134,7 +134,7 @@ class TextDocumentViewSetTest(TransactionTestCase):
     def test_get_text_document(self):
         private_key = self.base_fixtures["users"][0]["private"]
         user: UserProfile = self.base_fixtures["users"][0]["user"]
-        rlcs_aes: str = user.get_rlcs_aes_key(private_key)
+        rlcs_aes: str = user.get_rlc_aes_key(private_key)
         content = "hello there, in this document is important information"
         encrypted_content = AESEncryption.encrypt(content, rlcs_aes)
 
@@ -166,7 +166,7 @@ class TextDocumentViewSetTest(TransactionTestCase):
     def test_get_text_document_with_draft(self):
         private_key = self.base_fixtures["users"][0]["private"]
         user: UserProfile = self.base_fixtures["users"][0]["user"]
-        rlcs_aes: str = user.get_rlcs_aes_key(private_key)
+        rlcs_aes: str = user.get_rlc_aes_key(private_key)
         content = "hello there, in this document is important information"
         encrypted_content = AESEncryption.encrypt(content, rlcs_aes)
         draft_content = "this is a draft"

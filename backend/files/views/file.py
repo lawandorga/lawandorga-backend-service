@@ -26,7 +26,7 @@ class FileViewSet(viewsets.ModelViewSet):
             raise PermissionDenied()
 
         private_key_user = request.user.get_private_key(request=request)
-        aes_key = request.user.get_rlcs_aes_key(private_key_user)
+        aes_key = request.user.get_rlc_aes_key(private_key_user)
         file, delete = instance.download(aes_key)
 
         response = FileResponse(file, content_type=mimetypes.guess_type(instance.key)[0])
@@ -44,7 +44,7 @@ class FileViewSet(viewsets.ModelViewSet):
 
         # upload the file
         private_key_user = request.user.get_private_key(request=request)
-        aes_key = request.user.get_rlcs_aes_key(private_key_user)
+        aes_key = request.user.get_rlc_aes_key(private_key_user)
         file = request.FILES['file']
         self.instance.upload(file, aes_key)
         return response

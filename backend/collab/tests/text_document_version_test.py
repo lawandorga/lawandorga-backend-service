@@ -46,7 +46,7 @@ class TextDocumentVersionViewSetTest(TransactionTestCase):
 
     def test_get_single_text_document_version(self):
         private_key = self.base_fixtures["users"][0]["private"]
-        rlcs_aes_key = self.base_fixtures["users"][0]["user"].get_rlcs_aes_key(
+        rlcs_aes_key = self.base_fixtures["users"][0]["user"].get_rlc_aes_key(
             private_key
         )
         document = TextDocument(
@@ -344,7 +344,7 @@ class VersionsOfTextDocumentsViewSetTest(TransactionTestCase):
         document.save()
 
         user0: UserProfile = self.base_fixtures["users"][0]["user"]
-        rlcs_aes_key = user0.get_rlcs_aes_key(private_key)
+        rlcs_aes_key = user0.get_rlc_aes_key(private_key)
         timezone.now = mock_datetime_now(0, 0)
 
         version1: TextDocumentVersion = TextDocumentVersion.create(
@@ -398,7 +398,7 @@ class VersionsOfTextDocumentsViewSetTest(TransactionTestCase):
         document.save()
 
         user0: UserProfile = self.base_fixtures["users"][0]["user"]
-        rlcs_aes_key = user0.get_rlcs_aes_key(private_key)
+        rlcs_aes_key = user0.get_rlc_aes_key(private_key)
 
         content = "first content really interesting"
         version1: TextDocumentVersion = TextDocumentVersion.create(
@@ -424,7 +424,7 @@ class VersionsOfTextDocumentsViewSetTest(TransactionTestCase):
         document.save()
 
         user0: UserProfile = self.base_fixtures["users"][0]["user"]
-        rlcs_aes_key = user0.get_rlcs_aes_key(private_key)
+        rlcs_aes_key = user0.get_rlc_aes_key(private_key)
 
         content = "first content really interesting"
         version1: TextDocumentVersion = TextDocumentVersion.create(

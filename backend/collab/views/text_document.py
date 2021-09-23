@@ -56,7 +56,7 @@ class TextDocumentModelViewSet(
 
         users_private_key = get_private_key_from_request(request)
         user: UserProfile = request.user
-        key: str = user.get_rlcs_aes_key(users_private_key)
+        key: str = user.get_rlc_aes_key(users_private_key)
 
         data = TextDocumentSerializer(document).data
         last_version: TextDocumentVersion = document.get_last_published_version()
@@ -120,7 +120,7 @@ class TextDocumentModelViewSet(
         document: TextDocument = self.get_object()
         user: UserProfile = request.user
         users_private_key = get_private_key_from_request(request)
-        key: str = user.get_rlcs_aes_key(users_private_key)
+        key: str = user.get_rlc_aes_key(users_private_key)
 
         if request.method == "GET":
             versions = document.versions.all().order_by("-created")

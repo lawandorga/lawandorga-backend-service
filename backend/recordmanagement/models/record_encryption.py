@@ -41,6 +41,10 @@ class RecordEncryption(EncryptedModelMixin, models.Model):
             self.id, self.user.email, self.record.record_token
         )
 
+    def save(self, *args, **kwargs):
+        if not RecordEncryption.objects.filter(user=self.user, record=self.record).exists():
+            super().save(*args, **kwargs)
+
     def decrypt(self, private_key_user: str = None) -> None:
         if private_key_user:
             key = private_key_user

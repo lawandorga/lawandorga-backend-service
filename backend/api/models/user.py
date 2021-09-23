@@ -234,32 +234,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         return private_key
 
-    def get_rlcs_public_key(self):
-        return self.rlc.get_public_key()
+    def get_rlc_private_key(self, users_private_key):
+        return self.rlc.get_private_key(user=self, private_key_user=users_private_key)
 
-    def get_rlcs_private_key(self, users_private_key):
-        from backend.api.models.rlc_encryption_keys import RlcEncryptionKeys
-
-        try:
-            rlc_keys = RlcEncryptionKeys.objects.get(rlc=self.rlc)
-        except:
-            raise CustomError(ERROR__API__RLC__NO_PUBLIC_KEY_FOUND)
-        aes_rlc_key = self.get_rlcs_aes_key(users_private_key)
-        rlcs_private_key = rlc_keys.decrypt_private_key(aes_rlc_key)
-        return rlcs_private_key
-
-    def get_rlcs_aes_key(self, users_private_key):
-        from backend.api.models.users_rlc_keys import UsersRlcKeys
-
-        # check if there is only one usersRlcKey
-        keys = UsersRlcKeys.objects.filter(user=self)
-        users_rlc_keys = keys.first()
-        rlc_encrypted_key_for_user = users_rlc_keys.encrypted_key
-        try:
-            rlc_encrypted_key_for_user = rlc_encrypted_key_for_user.tobytes()
-        except:
-            pass
-        return RSAEncryption.decrypt(rlc_encrypted_key_for_user, users_private_key)
+    def get_rlc_aes_key(self, users_private_key):
+        return self.rlc.get_aes_key(user=self, private_key_user=users_private_key)
 
     def generate_new_user_encryption_keys(self):
 

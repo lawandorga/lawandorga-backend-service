@@ -276,7 +276,7 @@ class UserViewSet(viewsets.ModelViewSet):
                     raise CustomError(ERROR__API__USER__NOT_FOUND)
 
                 granting_users_private_key = get_private_key_from_request(request)
-                rlcs_aes_key = request.user.get_rlcs_aes_key(granting_users_private_key)
+                rlcs_aes_key = request.user.get_rlc_aes_key(granting_users_private_key)
                 user.generate_rlc_keys_for_this_user(rlcs_aes_key)
 
                 user.is_active = True
