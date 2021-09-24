@@ -45,11 +45,13 @@ tags = [
     "Studium",
     "Strafverfolgung",
     "Sonstiges",
+    "Geschwisternachzug",
     "Aufenthaltserlaubnis",
     "Aufenthaltsgestattung",
     "Niederlassungserlaubnis",
     "Einbürgerung",
     "Staatsbürgerschaft",
+    "Übungsfall",
 ]
 
 
@@ -57,6 +59,7 @@ class Command(BaseCommand):
     help = "adds the old tags"
 
     def handle(self, *args, **options):
+        print(len(tags))
         for rlc in Rlc.objects.all():
             for tag in tags:
                 if not Tag.objects.filter(rlc=rlc, name=tag).exists():
