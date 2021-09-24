@@ -185,6 +185,8 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
                 self.instance.working_on_record.set(value)
             elif attr == 'tagged':
                 self.instance.tagged.set(value)
+            elif attr == 'tags':
+                self.instance.tags.set(value)
             else:
                 setattr(self.instance, attr, value)
         self.instance.encrypt(user=self.request.user, private_key_user=self.private_key_user)

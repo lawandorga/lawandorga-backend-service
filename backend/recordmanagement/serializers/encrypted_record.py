@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from rest_framework.exceptions import ValidationError
 
-from backend.recordmanagement.serializers import RecordTagNameSerializer, RecordEncryptionSerializer
+from backend.recordmanagement.serializers import RecordTagNameSerializer, RecordEncryptionSerializer, TagSerializer
 from backend.recordmanagement.models import EncryptedRecord, RecordEncryption
 from backend.api.serializers import UserProfileNameSerializer
 from rest_framework import serializers
@@ -50,6 +50,7 @@ class EncryptedRecordSerializer(serializers.ModelSerializer):
 class EncryptedRecordListSerializer(EncryptedRecordSerializer):
     access = serializers.SerializerMethodField('get_access')
     tagged = RecordTagNameSerializer(many=True, read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
     working_on_record = UserProfileNameSerializer(many=True, read_only=True)
 
     class Meta:
@@ -61,6 +62,7 @@ class EncryptedRecordListSerializer(EncryptedRecordSerializer):
             "record_token",
             "working_on_record",
             "tagged",
+            'tags',
             "access",
             "created_on",
             "last_edited"

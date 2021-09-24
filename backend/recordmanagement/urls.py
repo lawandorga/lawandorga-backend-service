@@ -30,6 +30,8 @@ router.register("pool_consultants", PoolConsultantViewSet)
 router.register("consultants", ConsultantViewSet)
 router.register('record_documents', EncryptedRecordDocumentViewSet)
 router.register('record_permission_requests', EncryptedRecordPermissionProcessViewSet)
+router.register('tags', TagViewSet)
+
 urlpatterns = [
     path("", include(router.urls)),
     path("statics/", StaticViewSet.as_view()),
