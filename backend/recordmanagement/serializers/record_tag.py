@@ -7,6 +7,11 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = '__all__'
 
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        attrs['rlc'] = self.context['request'].user.rlc
+        return attrs
+
 
 class RecordTagSerializer(serializers.ModelSerializer):
     e_tagged = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
