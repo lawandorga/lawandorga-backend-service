@@ -60,7 +60,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self) -> QuerySet:
         return EncryptedRecord.objects.filter(from_rlc=self.request.user.rlc).prefetch_related('working_on_record',
-                                                                                               'tagged')
+                                                                                               'tagged', 'tags')
 
     def list(self, request, *args, **kwargs):
         if (
@@ -106,7 +106,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
                 "record_token": "record_token",
                 "first_contact_date": "first_contact_date",
                 "working_on_record": "working_on_record",
-                "tagged": "tagged",
+                "tags": "tags",
             },
             request.data,
         )
@@ -121,7 +121,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
 
         # remove many to many because record needs a pk first
         working_on_record = record_serializer.validated_data.pop("working_on_record")
-        tagged = record_serializer.validated_data.pop("tagged")
+        tags = record_serializer.validated_data.pop("tags")
         data = record_serializer.validated_data
 
         # create the record
@@ -133,8 +133,8 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
         # add many to many
         for item in working_on_record:
             record.working_on_record.add(item)
-        for item in tagged:
-            record.tagged.add(item)
+        for item in tags:
+            record.tags.add(item)
 
         # create encryption keys
         for user in record.get_users_who_should_be_allowed_to_decrypt().order_by():

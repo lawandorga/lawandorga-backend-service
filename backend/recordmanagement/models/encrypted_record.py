@@ -44,7 +44,7 @@ class EncryptedRecord(EncryptedModelMixin, models.Model):
     working_on_record = models.ManyToManyField(
         UserProfile, related_name="working_on_e_record"
     )
-    tagged = models.ManyToManyField(RecordTag, related_name="e_tagged")
+    tagged = models.ManyToManyField(RecordTag, related_name="e_tagged", blank=True)
     tags = models.ManyToManyField(Tag, related_name='records')
 
     record_states_possible = (
