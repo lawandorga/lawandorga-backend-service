@@ -205,9 +205,6 @@ class UserViewSet(viewsets.ModelViewSet):
         user = token.user
 
         notifications = NotificationGroup.objects.filter(user=user, read=False).count()
-        user_permissions = [
-            model_to_dict(perm) for perm in user.get_all_user_permissions()
-        ]
         overall_permissions = [
             model_to_dict(permission) for permission in Permission.objects.all()
         ]
@@ -216,7 +213,7 @@ class UserViewSet(viewsets.ModelViewSet):
             "user": OldUserProfileSerializer(user).data,
             "rlc": RlcSerializer(user.rlc).data,
             "notifications": notifications,
-            "permissions": user_permissions,
+            "permissions": user.get_all_user_permissions(),
             "all_permissions": overall_permissions,
         }
 

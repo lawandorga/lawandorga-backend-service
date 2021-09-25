@@ -117,14 +117,16 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         """
         Returns: all HasPermissions the user itself has as list
         """
-        return list(HasPermission.objects.filter(user_has_permission=self.pk))
+        return [has_permission.permission.name for has_permission in
+                HasPermission.objects.filter(user_has_permission=self.pk)]
 
     def __get_as_group_member_permissions(self):
         """
         Returns: all HasPermissions the groups in which the user is member of have as list
         """
         groups = [groups["id"] for groups in list(self.rlcgroups.values("id"))]
-        return list(HasPermission.objects.filter(group_has_permission_id__in=groups))
+        return [has_permission.permission.name for has_permission in
+                HasPermission.objects.filter(group_has_permission_id__in=groups)]
 
     def get_all_user_permissions(self):
         """
