@@ -14,6 +14,7 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from django.db import IntegrityError
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.exceptions import ParseError, PermissionDenied
@@ -21,6 +22,7 @@ from rest_framework.exceptions import ParseError, PermissionDenied
 from backend.api.models.notification import Notification
 from rest_framework.authtoken.models import Token
 from backend.api.models.permission import Permission
+from backend.recordmanagement.models import EncryptedRecordDeletionRequest, EncryptedRecordPermission
 from backend.static.permissions import (
     PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC,
     PERMISSION_MANAGE_USERS,
@@ -198,8 +200,20 @@ class UserViewSet(viewsets.ModelViewSet):
         }
         return Response(data, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=["get"], url_path="statics/(?P<token>[^/.]+)", permission_classes=[],
-            authentication_classes=[])
+    @action(detail=False, methods=['get'])
+    def admin(self, request, *args, **kwargs):
+        instance = request.user
+        data = {
+            'profiles': UserProfile.objects.filter(
+                Q(rlc=instance.rlc) & (Q(locked=True) | Q(rlc_user__accepted=False))).count(),
+            'record_deletion_requests': EncryptedRecordDeletionRequest.objects.filter(record__from_rlc=instance.rlc,
+                                                                                      state='re').count(),
+            'record_permit_requests': EncryptedRecordPermission.objects.filter(record__from_rlc=instance.rlc,
+                                                                               state='re').count()
+        }
+        return Response(data)
+
+    @action(detail=False, methods=["get"], url_path="statics/(?P<token>[^/.]+)")
     def statics(self, request: Request, token=None, *args, **kwargs):
         token = get_object_or_404(Token, key=token)
         user = token.user
