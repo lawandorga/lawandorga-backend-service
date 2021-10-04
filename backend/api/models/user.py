@@ -78,7 +78,6 @@ class UserProfileManager(BaseUserManager):
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    email_confirmed = models.BooleanField(default=True)
     birthday = models.DateField(null=True, blank=True)
     phone_number = models.CharField(max_length=17, null=True, default=None, blank=True)
     street = models.CharField(max_length=255, default=None, null=True, blank=True)
@@ -138,27 +137,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             + self.__get_as_group_member_permissions()
         )
 
-    def __get_as_user_special_permissions(self, permission_id):
-        """
-        Args:
-            permission_id: (int) permissionId with the queryset is filtered
-
-        Returns: all HasPermissions the user itself has with permission_id as permission as list
-        """
-        return list(
-            HasPermission.objects.filter(
-                user_has_permission=self.pk, permission_id=permission_id
-            )
-        )
-
-    def __get_as_group_member_special_permissions(self, permission):
-        groups = [groups["id"] for groups in list(self.group_members.values("id"))]
-        return list(
-            HasPermission.objects.filter(
-                group_has_permission_id__in=groups, permission_id=permission
-            )
-        )
-
     def __has_as_user_permission(self, permission):
         return HasPermission.objects.filter(user_has_permission=self.pk, permission=permission).exists()
 
@@ -184,7 +162,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         except ObjectDoesNotExist:
             rlc_user = RlcUser.objects.create(
                 user=self,
-                email_confirmed=self.email_confirmed,
+                email_confirmed=True,
                 birthday=self.birthday,
                 phone_number=self.phone_number,
                 street=self.street,
@@ -344,7 +322,7 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
         rlc_user.street = instance.street
         rlc_user.city = instance.city
         rlc_user.postal_code = instance.postal_code
-        rlc_user.email_confirmed = instance.email_confirmed
+        rlc_user.email_confirmed = False if created else True
         rlc_user.rlc = instance.rlc
         rlc_user.locked = instance.locked
     rlc_user.save()
@@ -361,5 +339,5 @@ class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
         super_make_hash_value = (
             str(user.pk) + user.password + str(login_timestamp) + str(timestamp)
         )
-        additional_hash_value = str(user.email_confirmed)
+        additional_hash_value = str(user.get_rlc_user().email_confirmed)
         return super_make_hash_value + additional_hash_value

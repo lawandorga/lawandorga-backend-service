@@ -161,7 +161,7 @@ class UserViewSet(viewsets.ModelViewSet):
         password = serializer.validated_data["password"]
 
         # check if user active and user accepted in rlc
-        if not user.email_confirmed:
+        if not user.get_rlc_user().email_confirmed:
             message = "You can not login, yet. Please confirm your email first."
             return Response(
                 {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
@@ -255,12 +255,13 @@ class UserViewSet(viewsets.ModelViewSet):
         # user: UserProfile = UserProfile.objects.get(pk=kwargs["pk"])
 
         if AccountActivationTokenGenerator().check_token(user, token):
-            user.email_confirmed = True
-            user.save()
+            rlc_user = user.get_rlc_user()
+            rlc_user.email_confirmed = True
+            rlc_user.save()
             return Response(status=status.HTTP_200_OK)
         else:
             data = {
-                "message": "The confirmation link is invalid, possibly because it has already been used."
+                "detail": "The confirmation link is invalid, possibly because it has already been used."
             }
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
