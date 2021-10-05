@@ -1,24 +1,5 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from django.conf import settings
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    BaseUserManager,
-    PermissionsMixin,
-)
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models.signals import post_save
@@ -29,11 +10,7 @@ from backend.api.errors import CustomError
 from backend.api.models.has_permission import HasPermission
 from backend.api.models.permission import Permission
 from backend.static.encryption import RSAEncryption
-from backend.static.error_codes import (
-    ERROR__API__RLC__NO_PUBLIC_KEY_FOUND,
-    ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED,
-)
-from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from backend.static.error_codes import ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED
 
 
 class UserProfileManager(BaseUserManager):
