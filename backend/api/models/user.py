@@ -1,9 +1,11 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import send_mail
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.template import loader
 from rest_framework.request import Request
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from backend.api.errors import CustomError
@@ -300,6 +302,29 @@ class RlcUser(models.Model):
     def __str__(self):
         return 'rlcUser: {}; email: {};'.format(self.pk, self.user.email)
 
+    def get_email_confirmation_token(self):
+        token = AccountActivationTokenGenerator().make_token(self)
+        return token
+
+    def get_email_confirmation_link(self):
+        token = self.get_email_confirmation_token()
+        link = "{}activate-account/{}/{}/".format(settings.FRONTEND_URL, self.id, token)
+        return link
+
+    def send_email_confirmation_email(self):
+        link = self.get_email_confirmation_link()
+        subject = "Law & Orga Registration"
+        message = "Law & Orga - Activate your account here: {}".format(link)
+        html_message = loader.render_to_string(
+            "email_templates/activate_account.html", {"url": link}
+        )
+        send_mail(
+            subject=subject,
+            html_message=html_message,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[self.user.email],
+        )
 
 # create a rlc user when a normal user is saved
 # @receiver(post_save, sender=UserProfile)
@@ -319,14 +344,14 @@ class RlcUser(models.Model):
 
 # this is used on signup
 class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
-    def _make_hash_value(self, user, timestamp):
+    def _make_hash_value(self, rlc_user, timestamp):
         login_timestamp = (
             ""
-            if user.last_login is None
-            else user.last_login.replace(microsecond=0, tzinfo=None)
+            if rlc_user.user.last_login is None
+            else rlc_user.user.last_login.replace(microsecond=0, tzinfo=None)
         )
         super_make_hash_value = (
-            str(user.pk) + user.password + str(login_timestamp) + str(timestamp)
+            str(rlc_user.pk) + rlc_user.user.password + str(login_timestamp) + str(timestamp)
         )
-        additional_hash_value = str(user.get_rlc_user().email_confirmed)
+        additional_hash_value = str(rlc_user.email_confirmed)
         return super_make_hash_value + additional_hash_value

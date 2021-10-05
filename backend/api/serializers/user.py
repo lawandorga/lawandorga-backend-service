@@ -1,7 +1,19 @@
-from backend.api.models import UserProfile
+from backend.api.models import UserProfile, RlcUser
 from rest_framework import serializers
 
 
+###
+# RlcUser
+###
+class RlcUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RlcUser
+        fields = '__all__'
+
+
+###
+# UserProfile
+###
 class UserProfileSerializer(serializers.ModelSerializer):
     # make sure select_related('accepted') is set on the user queryset or else the queries will explode
     accepted = serializers.SerializerMethodField("get_accepted")

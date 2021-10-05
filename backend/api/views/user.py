@@ -16,7 +16,7 @@ from backend.api.serializers import (
     UserProfileSerializer,
     UserUpdateProfileSerializer,
     UserPasswordResetSerializer,
-    UserPasswordResetConfirmSerializer, HasPermissionAllNamesSerializer, RlcSerializer,
+    UserPasswordResetConfirmSerializer, HasPermissionAllNamesSerializer, RlcSerializer, RlcUserSerializer,
 )
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
@@ -27,7 +27,7 @@ from backend.api.models import (
     UserProfile,
     NotificationGroup,
     PasswordResetTokenGenerator,
-    AccountActivationTokenGenerator, UsersRlcKeys,
+    AccountActivationTokenGenerator, UsersRlcKeys, RlcUser,
 )
 from backend.api.errors import CustomError
 from django.shortcuts import get_object_or_404
@@ -49,8 +49,8 @@ class SpecialPermission(IsAuthenticated):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    serializer_class = UserProfileSerializer
-    queryset = UserProfile.objects.none()
+    serializer_class = RlcUserSerializer
+    queryset = RlcUser.objects.none()
     permission_classes = [SpecialPermission]
 
     def get_authenticators(self):
@@ -67,7 +67,9 @@ class UserViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
     def get_queryset(self):
-        if self.action == "activate" or self.action == 'password_reset_confirm':
+        if self.action in ['activate']:
+            return RlcUser.objects.all()
+        elif self.action == 'password_reset_confirm':
             return UserProfile.objects.all().select_related("accepted")
         else:
             return UserProfile.objects.filter(rlc=self.request.user.rlc).select_related(
@@ -75,6 +77,13 @@ class UserViewSet(viewsets.ModelViewSet):
             )
 
     def create(self, request, *args, **kwargs):
+        serializer = UserCreateProfileSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        user.get_rlc_user().send_email_confirmation_email()
+        return Response(status=status.HTTP_201_CREATED)
+
+    def create_old(self, request, *args, **kwargs):
         # create the user
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -218,18 +227,16 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=["get"],
+        methods=["post"],
         url_path="activate/(?P<token>[^/.]+)",
         permission_classes=[],
         authentication_classes=[],
     )
     def activate(self, request, token, *args, **kwargs):
         # localhost:4200/activate-account/1023/akoksc-f52702143fcf098155fb1b2c6b081f7a/
-        user = self.get_object()
-        # user: UserProfile = UserProfile.objects.get(pk=kwargs["pk"])
+        rlc_user = self.get_object()
 
-        if AccountActivationTokenGenerator().check_token(user, token):
-            rlc_user = user.get_rlc_user()
+        if AccountActivationTokenGenerator().check_token(rlc_user, token):
             rlc_user.email_confirmed = True
             rlc_user.save()
             return Response(status=status.HTTP_200_OK)

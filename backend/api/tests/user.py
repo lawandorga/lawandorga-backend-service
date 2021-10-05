@@ -22,15 +22,10 @@ class UserViewSetTests(TestCase):
         response = view(request)
         self.assertNotEqual(response.status_code, 403)
 
-    def test_everybody_can_post_to_email_confirmation_token(self):
-        view = UserViewSet.as_view({'post': 'create'})
-        request = self.factory.post('/api/users/{}/confirm_email/'.format(99))
-        response = view(request, pk=99)
-        self.assertNotEqual(response.status_code, 403)
-
     def test_post_to_create_user_works(self):
         view = UserViewSet.as_view(actions={'post': 'create'})
         data = {
+            'name': 'Test',
             'email': 'test2@test.de',
             'password': 'test',
             'password_confirm': 'test',
@@ -38,34 +33,38 @@ class UserViewSetTests(TestCase):
         }
         request = self.factory.post('/api/users/', data)
         response = view(request)
-        print(response.data)
         self.assertEqual(response.status_code, 201)
         self.assertTrue(RlcUser.objects.exists())
 
+    def test_everybody_can_post_to_email_confirmation_token(self):
+        view = UserViewSet.as_view(actions={'post': 'activate'})
+        request = self.factory.post('/api/users/{}/activate/token-123/'.format(self.user.get_rlc_user().id))
+        response = view(request, pk=self.user.get_rlc_user().id, token='token-123')
+        self.assertNotEqual(response.status_code, 403)
+
     def test_email_confirmation_token_works(self):
-        view = UserViewSet.as_view({'post': 'confirm_email'})
-        shopping_user = ShoppingUser.objects.create(user=self.user)
-        context = shopping_user.send_email_confirmation_email()
-        data = {
-            'token': context['token']
-        }
-        url = '/api/users/{}/confirm_email/'.format(context['user'].pk)
-        request = self.factory.post(url, data)
-        response = view(request, pk=context['user'].pk)
+        view = UserViewSet.as_view(actions={'post': 'activate'})
+        rlc_user = self.user.get_rlc_user()
+        token = rlc_user.get_email_confirmation_token()
+        url = '/api/users/{}/activate/{}/'.format(rlc_user.id, token)
+        request = self.factory.post(url)
+        response = view(request, pk=rlc_user.id, token=token)
         self.assertEqual(response.status_code, 200)
 
+    # TODO
     def test_register_passwords_returns_correct_error_message_on_different_passwords(self):
-        view = UserViewSet.as_view({'post': 'create'})
+        view = UserViewSet.as_view(actions={'post': 'create'})
         data = {
+            'name': 'Test',
             'email': 'test2@test.de',
             'password': 'test1',
             'password_confirm': 'test2'
         }
         request = self.factory.post('/api/users/', data)
-        response: Response = view(request)
+        response = view(request)
+        print(response.data)
         self.assertContains(response, 'non_field_errors', status_code=400)
         self.assertEqual(response.status_code, 400)
-        self.assertFalse(ShoppingUser.objects.exists())
 
     def test_everybody_can_access_login(self):
         view = UserViewSet.as_view({'post': 'login'})
