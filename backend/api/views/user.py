@@ -1,45 +1,22 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from django.db import IntegrityError
-from django.db.models import Q
-from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.exceptions import ParseError, PermissionDenied
-
 from backend.api.models.notification import Notification
 from rest_framework.authtoken.models import Token
 from backend.api.models.permission import Permission
 from backend.recordmanagement.models import EncryptedRecordDeletionRequest, EncryptedRecordPermission
-from backend.static.permissions import (
-    PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC,
-    PERMISSION_MANAGE_USERS,
-)
+from backend.static.permissions import PERMISSION_MANAGE_USERS
 from rest_framework.permissions import IsAuthenticated
 from backend.static.error_codes import *
+from rest_framework.exceptions import ParseError, PermissionDenied
 from backend.static.middleware import get_private_key_from_request
 from rest_framework.decorators import action
 from backend.api.serializers import (
     OldUserProfileSerializer,
     UserCreateProfileSerializer,
-    RlcVerboseSerializer,
     UserProfileForeignSerializer,
     UserProfileSerializer,
     UserUpdateProfileSerializer,
     UserPasswordResetSerializer,
-    UserPasswordResetConfirmSerializer, HasPermissionNameSerializer, HasPermissionAllNamesSerializer, RlcSerializer,
+    UserPasswordResetConfirmSerializer, HasPermissionAllNamesSerializer, RlcSerializer,
 )
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
@@ -53,12 +30,15 @@ from backend.api.models import (
     AccountActivationTokenGenerator, UsersRlcKeys,
 )
 from backend.api.errors import CustomError
+from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
+from django.db.models import Q
 from django.template import loader
-from rest_framework import viewsets, filters, status
+from rest_framework import viewsets, status
 from backend.static import permissions
 from django.utils import timezone
 from django.conf import settings
+from django.db import IntegrityError
 
 
 class SpecialPermission(IsAuthenticated):
@@ -100,9 +80,6 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-        # new user request
-        user_request = NewUserRequest.objects.create(request_from=user)
-
         # send the user activation link email
         token = AccountActivationTokenGenerator().make_token(user)
         link = "{}activate-account/{}/{}/".format(settings.FRONTEND_URL, user.id, token)
@@ -118,9 +95,6 @@ class UserViewSet(viewsets.ModelViewSet):
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
         )
-
-        # notify about the new user
-        Notification.objects.notify_new_user_request(user, user_request)
 
         # return the success response
         headers = self.get_success_headers(serializer.data)

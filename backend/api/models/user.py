@@ -80,8 +80,20 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return "user: {}; email: {};".format(self.pk, self.email)
 
     def save(self, *args, **kwargs):
+        created = False if self.id else True
         super().save(*args, **kwargs)
-        self.get_rlc_user()
+        if created:
+            RlcUser.objects.create(
+                user=self,
+                email_confirmed=False,
+                birthday=self.birthday,
+                phone_number=self.phone_number,
+                street=self.street,
+                city=self.city,
+                postal_code=self.postal_code,
+                locked=self.locked,
+                rlc=self.rlc,
+            )
 
     # django intern stuff
     @property
@@ -290,19 +302,19 @@ class RlcUser(models.Model):
 
 
 # create a rlc user when a normal user is saved
-@receiver(post_save, sender=UserProfile)
-def create_or_update_user_profile(sender, instance, created, **kwargs):
-    rlc_user, created = RlcUser.objects.get_or_create(user=instance)
-    if instance.rlc:
-        rlc_user.phone_number = instance.phone_number
-        rlc_user.birthday = instance.birthday
-        rlc_user.street = instance.street
-        rlc_user.city = instance.city
-        rlc_user.postal_code = instance.postal_code
-        rlc_user.email_confirmed = False if created else True
-        rlc_user.rlc = instance.rlc
-        rlc_user.locked = instance.locked
-    rlc_user.save()
+# @receiver(post_save, sender=UserProfile)
+# def create_or_update_user_profile(sender, instance, created, **kwargs):
+#     rlc_user, created = RlcUser.objects.get_or_create(user=instance)
+#     if instance.rlc:
+#         rlc_user.phone_number = instance.phone_number
+#         rlc_user.birthday = instance.birthday
+#         rlc_user.street = instance.street
+#         rlc_user.city = instance.city
+#         rlc_user.postal_code = instance.postal_code
+#         rlc_user.email_confirmed = False if created else True
+#         rlc_user.rlc = instance.rlc
+#         rlc_user.locked = instance.locked
+#     rlc_user.save()
 
 
 # this is used on signup
