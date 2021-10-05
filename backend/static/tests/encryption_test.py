@@ -1,25 +1,6 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-import filecmp
-import os
-
-from django.test import SimpleTestCase
-
 from backend.static.encryption import AESEncryption, OutputType, RSAEncryption
+from django.test import SimpleTestCase
+import os
 
 
 class EncryptionTests(SimpleTestCase):
@@ -127,30 +108,6 @@ class EncryptionTests(SimpleTestCase):
         decrypted = AESEncryption.decrypt(encrypted, key)
 
         self.assertEqual(decrypted, msg)
-
-    def test_aes__wo_iv_en_decrypt_file(self):
-        key = "secret password"
-        AESEncryption.encrypt_file("test_files/test_file.png", key)
-        AESEncryption.decrypt_file(
-            "test_files/test_file.png.enc", key, "test_files/test_file_decrypted.png"
-        )
-        self.assertTrue(
-            filecmp.cmp(
-                "test_files/test_file.png", "test_files/test_file_decrypted.png"
-            )
-        )
-
-    def test_aes_wo_iv_en_decrypt_big_video(self):
-        key = "secret password!sdifu923"
-        AESEncryption.encrypt_file("test_files/big_video.mp4", key)
-        AESEncryption.decrypt_file(
-            "test_files/big_video.mp4.enc", key, "test_files/big_video_decrypted.mp4"
-        )
-        self.assertTrue(
-            filecmp.cmp(
-                "test_files/big_video.mp4", "test_files/big_video_decrypted.mp4"
-            )
-        )
 
     def test_encrypt_field(self):
         class ClassWithSecrets:
