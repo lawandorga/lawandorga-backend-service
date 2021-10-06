@@ -6,6 +6,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.template import loader
+from rest_framework.exceptions import ParseError
 from rest_framework.request import Request
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from backend.api.errors import CustomError
@@ -81,21 +82,21 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return "user: {}; email: {};".format(self.pk, self.email)
 
-    def save(self, *args, **kwargs):
-        created = False if self.id else True
-        super().save(*args, **kwargs)
-        if created:
-            RlcUser.objects.create(
-                user=self,
-                email_confirmed=False,
-                birthday=self.birthday,
-                phone_number=self.phone_number,
-                street=self.street,
-                city=self.city,
-                postal_code=self.postal_code,
-                locked=self.locked,
-                rlc=self.rlc,
-            )
+    # def save(self, *args, **kwargs):
+    #     created = False if self.id else True
+    #     super().save(*args, **kwargs)
+    #     if created:
+    #         RlcUser.objects.create(
+    #             user=self,
+    #             email_confirmed=False,
+    #             birthday=self.birthday,
+    #             phone_number=self.phone_number,
+    #             street=self.street,
+    #             city=self.city,
+    #             postal_code=self.postal_code,
+    #             locked=self.locked,
+    #             rlc=self.rlc,
+    #         )
 
     # django intern stuff
     @property
@@ -197,7 +198,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                 ):
                     return self.encryption_keys.decrypt_private_key(settings.DUMMY_USER_PASSWORD)
                 else:
-                    raise CustomError(ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED)
+                    raise ParseError('No private key provied within the request.')
             private_key = private_key.replace("\\n", "\n").replace("<linebreak>", "\n")
 
         else:
@@ -212,7 +213,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return self.rlc.get_aes_key(user=self, private_key_user=users_private_key)
 
     def generate_new_user_encryption_keys(self):
-
         from backend.api.models.user_encryption_keys import UserEncryptionKeys
 
         UserEncryptionKeys.objects.filter(user=self).delete()
@@ -325,6 +325,34 @@ class RlcUser(models.Model):
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[self.user.email],
         )
+
+    def get_password_reset_token(self):
+        token = PasswordResetTokenGenerator().make_token(self.user)
+        return token
+
+    def get_password_reset_link(self):
+        token = self.get_password_reset_token()
+        link = "{}reset-password/{}/{}/".format(settings.FRONTEND_URL, self.user.id, token)
+        return link
+
+    def send_password_reset_email(self):
+        link = self.get_password_reset_link()
+        subject = "Law & Orga Account Password reset"
+        message = "Law & Orga - Reset your password here: {}".format(link)
+        html_message = loader.render_to_string(
+            "email_templates/reset_password.html", {"link": link}
+        )
+        send_mail(
+            subject=subject,
+            html_message=html_message,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[self.user.email],
+        )
+
+    def grant_permission(self, permission_name):
+        permission = Permission.objects.get(name=permission_name)
+        HasPermission.objects.create(user_has_permission=self.user, permission=permission)
 
 # create a rlc user when a normal user is saved
 # @receiver(post_save, sender=UserProfile)
