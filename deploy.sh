@@ -6,3 +6,4 @@ tmp/venv/bin/python manage.py migrate
 tmp/venv/bin/python manage.py collectstatic --noinput
 ./permissions.sh
 systemctl restart apache2
+echo 'DEPLOYED'
