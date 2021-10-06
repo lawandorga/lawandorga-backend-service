@@ -26,9 +26,6 @@ router.register("permissions", views.PermissionViewSet, basename="permissions")
 router.register("has_permission", views.HasPermissionViewSet, basename="has_permission")
 router.register("rlcs", views.RlcViewSet, basename="rlcs")
 router.register(
-    "new_user_request", views.NewUserRequestViewSet, basename="new_user_request"
-)
-router.register(
     "user_encryption_keys",
     views.UserEncryptionKeysViewSet,
     basename="user_encryption_keys",

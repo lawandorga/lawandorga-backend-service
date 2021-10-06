@@ -13,7 +13,6 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from backend.api.models.new_user_request import NewUserRequest
 from backend.api.models.notification_group import NotificationGroup
 from backend.static.notification_enums import NotificationGroupType, NotificationType
 from backend.api.models.user import UserProfile
@@ -470,76 +469,6 @@ class NotificationManager(models.Manager):
                     ref_text=record.record_token,
                     notification_group_type=NotificationGroupType.RECORD,
                     notification_type=NotificationType.RECORD__CREATED,
-                )
-
-    @staticmethod
-    def notify_new_user_request(
-        source_user: UserProfile, new_user_request: NewUserRequest
-    ):
-        """
-        creates notifications after new user request (registering in rlc)
-
-        creates notifications for all users which have accept new users permission
-        (source user is not possible)
-        :param source_user:
-        :param new_user_request:
-        :return:
-        """
-        users_with_permissions: [
-            UserProfile
-        ] = UserProfile.objects.get_users_with_special_permission(
-            permission=permissions.PERMISSION_ACCEPT_NEW_USERS_RLC,
-            from_rlc=source_user.rlc,
-        )
-        for user in users_with_permissions:
-            Notification.objects.create_notification(
-                user=user,
-                source_user=source_user,
-                ref_id=str(new_user_request.request_from.id),
-                ref_text=new_user_request.request_from.name,
-                notification_group_type=NotificationGroupType.USER_REQUEST,
-                notification_type=NotificationType.USER_REQUEST__REQUESTED,
-            )
-
-    @staticmethod
-    def notify_new_user_accepted(
-        source_user: UserProfile, new_user_request: NewUserRequest
-    ):
-        users_with_permissions = UserProfile.objects.get_users_with_special_permission(
-            permission=permissions.PERMISSION_ACCEPT_NEW_USERS_RLC,
-            from_rlc=source_user.rlc
-        )
-        for user in users_with_permissions:
-            if user != source_user:
-                Notification.objects.create_notification(
-                    user=user,
-                    source_user=source_user,
-                    ref_id=str(new_user_request.request_from.id),
-                    ref_text=new_user_request.request_from.name,
-                    notification_group_type=NotificationGroupType.USER_REQUEST,
-                    notification_type=NotificationType.USER_REQUEST__ACCEPTED,
-                )
-
-    @staticmethod
-    def notify_new_user_declined(
-        source_user: UserProfile, new_user_request: NewUserRequest
-    ):
-        users_with_permissions: [
-            UserProfile
-        ] = UserProfile.objects.get_users_with_special_permission(
-            permission=permissions.PERMISSION_ACCEPT_NEW_USERS_RLC,
-            from_rlc=source_user.rlc,
-            for_rlc=source_user.rlc,
-        )
-        for user in users_with_permissions:
-            if user != source_user:
-                Notification.objects.create_notification(
-                    user=user,
-                    source_user=source_user,
-                    ref_id=str(new_user_request.request_from.id),
-                    ref_text=new_user_request.request_from.name,
-                    notification_group_type=NotificationGroupType.USER_REQUEST,
-                    notification_type=NotificationType.USER_REQUEST__DECLINED,
                 )
 
     @staticmethod
