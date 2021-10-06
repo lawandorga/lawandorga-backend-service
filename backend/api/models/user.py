@@ -332,7 +332,7 @@ class RlcUser(models.Model):
 
     def get_password_reset_link(self):
         token = self.get_password_reset_token()
-        link = "{}reset-password/{}/{}/".format(settings.FRONTEND_URL, self.user.id, token)
+        link = "{}reset-password/{}/{}/".format(settings.FRONTEND_URL, self.id, token)
         return link
 
     def send_password_reset_email(self):
@@ -350,7 +350,7 @@ class RlcUser(models.Model):
             recipient_list=[self.user.email],
         )
 
-    def grant_permission(self, permission_name):
+    def grant(self, permission_name):
         permission = Permission.objects.get(name=permission_name)
         HasPermission.objects.create(user_has_permission=self.user, permission=permission)
 

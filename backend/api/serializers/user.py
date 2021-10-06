@@ -88,7 +88,7 @@ class RlcUserCreateSerializer(UserProfileSerializer):
         user.set_password(password)
         with transaction.atomic():
             user.save()
-            rlc_user = RlcUser(user=user)
+            rlc_user = RlcUser(user=user, email_confirmed=False)
             rlc_user.save()
             rlc_user.send_email_confirmation_email()
         return user
@@ -108,11 +108,6 @@ class UserProfileNameSerializer(UserProfileSerializer):
 ###
 # Other
 ###
-class OldUserProfileSerializer(UserProfileSerializer):
-    rlcgroups = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    user_has_permission = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-
-
 class EmailSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
 

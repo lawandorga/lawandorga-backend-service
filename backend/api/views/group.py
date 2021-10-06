@@ -29,7 +29,7 @@ from backend.api.serializers import (
 )
 from rest_framework.request import Request
 from backend.api.errors import CustomError
-from backend.api.models import Group, UserProfile
+from backend.api.models import Group, UserProfile, RlcUser
 from backend.static import error_codes, permissions
 from rest_framework import viewsets, status
 
@@ -109,7 +109,7 @@ class GroupViewSet(viewsets.ModelViewSet):
         # get the data
         serializer = GroupAddMemberSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        member = UserProfile.objects.get(pk=serializer.validated_data["member"])
+        member = RlcUser.objects.get(pk=serializer.validated_data["member"]).user
 
         # add member to group
         if request.method == "POST":

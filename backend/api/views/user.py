@@ -34,7 +34,8 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = RlcUser.objects.none()
 
     def get_permissions(self):
-        if self.action in ['statics', 'create', 'logout', 'login', 'password_reset', 'password_reset_confirm', 'activate']:
+        if self.action in ['statics', 'create', 'logout', 'login', 'password_reset', 'password_reset_confirm',
+                           'activate']:
             return []
         return super().get_permissions()
 
@@ -50,7 +51,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if self.action in ['activate', 'password_reset_confirm']:
             return RlcUser.objects.all()
-        elif self.action in ['list', 'retrieve', 'accept', 'unlock']:
+        elif self.action in ['list', 'retrieve', 'accept', 'unlock', 'destroy']:
             return RlcUser.objects.filter(user__rlc=self.request.user.rlc)
         return RlcUser.objects.filter(pk=self.request.user.rlc_user.id)
 
@@ -131,7 +132,7 @@ class UserViewSet(viewsets.ModelViewSet):
         instance = request.user
         data = {
             'profiles': UserProfile.objects.filter(
-                Q(rlc=instance.rlc) & (Q(locked=True) | Q(rlc_user__accepted=False))).count(),
+                Q(rlc=instance.rlc) & (Q(rlc_user__locked=True) | Q(rlc_user__accepted=False))).count(),
             'record_deletion_requests': EncryptedRecordDeletionRequest.objects.filter(record__from_rlc=instance.rlc,
                                                                                       state='re').count(),
             'record_permit_requests': EncryptedRecordPermission.objects.filter(record__from_rlc=instance.rlc,
@@ -210,14 +211,15 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         token = serializer.validated_data["token"]
         new_password = serializer.validated_data["new_password"]
-        if PasswordResetTokenGenerator().check_token(rlc_user.user, token):
-            rlc_user.user.set_password(new_password)
-            rlc_user.user.save()
+        user = rlc_user.user
+        if PasswordResetTokenGenerator().check_token(user, token):
+            user.set_password(new_password)
+            user.save()
             rlc_user.locked = True
             rlc_user.save()
             # generate new user private and public key based on the new password
-            if hasattr(rlc_user, 'encryption_keys'):
-                rlc_user.encryption_keys.delete()
+            if hasattr(user, 'encryption_keys'):
+                user.encryption_keys.delete()
             # get the user from db because the old encryption_keys might still be in this user
             user = UserProfile.objects.get(pk=rlc_user.user.pk)
             user.get_private_key(password_user=new_password)
@@ -237,7 +239,8 @@ class UserViewSet(viewsets.ModelViewSet):
          user has at the moment.
         """
         user = self.request.user
-        user_to_unlock = self.get_object()
+        rlc_user = self.get_object()
+        user_to_unlock = rlc_user.user
 
         if user == user_to_unlock:
             data = {
@@ -251,9 +254,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
         # unlock the user if all keys were generated
         if success:
-            user_to_unlock.rlc_user.locked = False
-            user_to_unlock.rlc_user.save()
-            return Response(UserProfileSerializer(user_to_unlock).data)
+            rlc_user.locked = False
+            rlc_user.save()
+            return Response(RlcUserListSerializer(rlc_user).data)
         else:
             raise ParseError('Not all keys could be handed over. Please tell another admin to unlock this user.')
 

@@ -1,5 +1,6 @@
+from backend.static.permissions import PERMISSION_MANAGE_USERS, get_all_permissions_strings
 from rest_framework.test import APIRequestFactory, force_authenticate
-from backend.api.models import UserProfile, RlcUser, Rlc
+from backend.api.models import UserProfile, RlcUser, Rlc, Permission
 from backend.api.views import UserViewSet
 from django.test import TestCase
 
@@ -22,6 +23,10 @@ class UserViewSetWorkingTests(TestCase):
 
     def create_another_rlc_user(self):
         return RlcUser.objects.create(user=self.another_user, email_confirmed=True, accepted=True)
+
+    def create_permissions(self):
+        for perm in get_all_permissions_strings():
+            Permission.objects.create(name=perm)
 
     def test_create_works(self):
         view = UserViewSet.as_view(actions={'post': 'create'})
@@ -101,13 +106,24 @@ class UserViewSetWorkingTests(TestCase):
         response = view(request, pk=rlc_user.pk)
         self.assertEqual(response.status_code, 200)
 
-    def test_destroy_works(self):
+    def test_destroy_works_on_myself(self):
         view = UserViewSet.as_view(actions={'delete': 'destroy'})
         rlc_user = self.create_rlc_user()
         url = '/api/users/{}/'.format(rlc_user.pk)
         request = self.factory.delete(url)
         force_authenticate(request, rlc_user.user)
         response = view(request, pk=rlc_user.pk)
+        self.assertEqual(response.status_code, 204)
+
+    def test_destroy_works(self):
+        self.create_permissions()
+        view = UserViewSet.as_view(actions={'delete': 'destroy'})
+        rlc_user = self.create_rlc_user()
+        another_rlc_user = self.create_another_rlc_user()
+        rlc_user.grant(PERMISSION_MANAGE_USERS)
+        request = self.factory.delete('')
+        force_authenticate(request, rlc_user.user)
+        response = view(request, pk=another_rlc_user.pk)
         self.assertEqual(response.status_code, 204)
 
     def test_update_works(self):
@@ -130,100 +146,15 @@ class UserViewSetWorkingTests(TestCase):
         response = view(request, pk=another_rlc_user.pk)
         self.assertEqual(response.status_code, 200)
 
-    # def test_only_logged_in_user_can_change_email(self):
-    #     view = UserViewSet.as_view({'post': 'change_email'})
-    #     shopping_user = ShoppingUser.objects.create(user=self.user)
-    #     data = {
-    #         'new_email': 'neu@test.de',
-    #     }
-    #     url = '/api/users/{}/change_email/'.format(shopping_user.pk)
-    #     request = self.factory.post(url, data)
-    #     response = view(request, pk=shopping_user.pk)
-    #     self.assertEqual(response.status_code, 401)
-
-    # def set_new_email_on_user(self):
-    #     view = UserViewSet.as_view({'post': 'change_email'})
-    #     shopping_user = ShoppingUser.objects.create(user=self.user)
-    #     data = {
-    #         'password': 'test',
-    #         'new_email': 'neu@test.de',
-    #     }
-    #     url = '/api/users/{}/change_email/'.format(shopping_user.pk)
-    #     request = self.factory.post(url, data)
-    #     force_authenticate(request, self.user)
-    #     response = view(request, pk=shopping_user.pk)
-    #     self.assertEqual(response.status_code, 200)
-    #     return shopping_user
-
-    # def test_logged_in_user_can_change_email(self):
-    #     self.set_new_email_on_user()
-
-    # def confirm_email_change(self, shopping_user):
-    #     context = shopping_user.send_email_change_email()
-    #     view = UserViewSet.as_view({'post': 'confirm_email_change'})
-    #     url = '/api/users/{}/confirm_email_change/'.format(context['user'].pk)
-    #     data = {
-    #         'token': context['token']
-    #     }
-    #     request = self.factory.post(url, data)
-    #     response = view(request, pk=context['user'].pk)
-    #     return response
-
-    # def test_email_change_can_be_confirmed(self):
-    #     shopping_user = self.set_new_email_on_user()
-    #     response = self.confirm_email_change(shopping_user)
-    #     self.assertEqual(response.status_code, 200)
-
-    # def test_email_change_is_blocked_on_existing_email(self):
-    #     User.objects.create(email='neu@test.de', password='test', name='Neuer Dummy')
-    #     shopping_user = self.set_new_email_on_user()
-    #     response = self.confirm_email_change(shopping_user)
-    #     self.assertEqual(response.status_code, 400)
-
-    # def test_login_is_blocked_if_email_is_unconfirmed(self):
-    #     ShoppingUser.objects.create(user=self.user, email_confirmed=False)
-    #     view = UserViewSet.as_view({'post': 'login'})
-    #     data = {
-    #         'email': 'test@test.de',
-    #         'password': 'test',
-    #     }
-    #     request = self.factory.post('/api/users/login/', data)
-    #     response = view(request)
-    #     self.assertContains(response, 'non_field_errors', status_code=400)
-
-    # def test_user_can_change_information(self):
-    #     ShoppingUser.objects.create(user=self.user, pk=1)
-    #     view = UserViewSet.as_view({'patch': 'partial_update'})
-    #     data = {
-    #         'street': 'abc',
-    #     }
-    #     request = self.factory.patch('/api/users/1/', data)
-    #     force_authenticate(request, self.user)
-    #     response = view(request, pk=1)
-    #     self.assertContains(response, 'street', status_code=200)
-
-    # def test_user_can_only_change_own_information(self):
-    #     ShoppingUser.objects.create(user=self.user, pk=1)
-    #     ShoppingUser.objects.create(user=self.new_user, pk=2)
-    #     view = UserViewSet.as_view({'patch': 'partial_update'})
-    #     data = {
-    #         'street': 'abc',
-    #     }
-    #     request = self.factory.patch('/api/users/2/', data)
-    #     force_authenticate(request, self.user)
-    #     response = view(request, pk=2)
-    #     self.assertEqual(response.status_code, 404)
-
-    # def test_user_can_not_simply_change_email(self):
-    #     rlc_user = self.create_rlc_user()
-    #     view = UserViewSet.as_view(actions={'patch': 'partial_update'})
-    #     data = {
-    #         'email': 'abc@test.de',
-    #     }
-    #     request = self.factory.patch('/api/users/{}/'.format(rlc_user.id), data)
-    #     force_authenticate(request, self.user)
-    #     response = view(request, pk=rlc_user.id)
-    #     self.assertNotContains(response, 'abc@test.de', status_code=200)
+    def test_unlock_works(self):
+        view = UserViewSet.as_view(actions={'post': 'unlock'})
+        rlc_user = self.create_rlc_user()
+        another_rlc_user = RlcUser.objects.create(user=self.another_user, email_confirmed=True, locked=True,
+                                                  accepted=True)
+        request = self.factory.post('', HTTP_PRIVATE_KEY=self.private_key)
+        force_authenticate(request, rlc_user.user)
+        response = view(request, pk=another_rlc_user.pk)
+        self.assertEqual(response.status_code, 200)
 
 
 class UserViewSetErrorTests(TestCase):
