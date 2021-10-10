@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Q
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -36,8 +36,7 @@ class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self) -> QuerySet:
         return EncryptedRecordDeletionRequest.objects.filter(
-            request_from__rlc=self.request.user.rlc
-        )
+            Q(request_from__rlc=self.request.user.rlc) | Q(record__from_rlc=self.request.user.rlc))
 
     def list(self, request, *args, **kwargs):
         if not request.user.has_permission(permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
