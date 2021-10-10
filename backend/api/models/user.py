@@ -1,39 +1,19 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from django.conf import settings
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    BaseUserManager,
-    PermissionsMixin,
-)
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import send_mail
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.template import loader
+from rest_framework.exceptions import ParseError
 from rest_framework.request import Request
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from backend.api.errors import CustomError
 from backend.api.models.has_permission import HasPermission
 from backend.api.models.permission import Permission
 from backend.static.encryption import RSAEncryption
-from backend.static.error_codes import (
-    ERROR__API__RLC__NO_PUBLIC_KEY_FOUND,
-    ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED,
-)
-from backend.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from backend.static.error_codes import ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED
 
 
 class UserProfileManager(BaseUserManager):
@@ -78,7 +58,6 @@ class UserProfileManager(BaseUserManager):
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    email_confirmed = models.BooleanField(default=True)
     birthday = models.DateField(null=True, blank=True)
     phone_number = models.CharField(max_length=17, null=True, default=None, blank=True)
     street = models.CharField(max_length=255, default=None, null=True, blank=True)
@@ -103,9 +82,21 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return "user: {}; email: {};".format(self.pk, self.email)
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.get_rlc_user()
+    # def save(self, *args, **kwargs):
+    #     created = False if self.id else True
+    #     super().save(*args, **kwargs)
+    #     if created:
+    #         RlcUser.objects.create(
+    #             user=self,
+    #             email_confirmed=False,
+    #             birthday=self.birthday,
+    #             phone_number=self.phone_number,
+    #             street=self.street,
+    #             city=self.city,
+    #             postal_code=self.postal_code,
+    #             locked=self.locked,
+    #             rlc=self.rlc,
+    #         )
 
     # django intern stuff
     @property
@@ -117,14 +108,16 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         """
         Returns: all HasPermissions the user itself has as list
         """
-        return list(HasPermission.objects.filter(user_has_permission=self.pk))
+        return [has_permission.permission.name for has_permission in
+                HasPermission.objects.filter(user_has_permission=self.pk)]
 
     def __get_as_group_member_permissions(self):
         """
         Returns: all HasPermissions the groups in which the user is member of have as list
         """
         groups = [groups["id"] for groups in list(self.rlcgroups.values("id"))]
-        return list(HasPermission.objects.filter(group_has_permission_id__in=groups))
+        return [has_permission.permission.name for has_permission in
+                HasPermission.objects.filter(group_has_permission_id__in=groups)]
 
     def get_all_user_permissions(self):
         """
@@ -134,27 +127,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return (
             self.__get_as_user_permissions()
             + self.__get_as_group_member_permissions()
-        )
-
-    def __get_as_user_special_permissions(self, permission_id):
-        """
-        Args:
-            permission_id: (int) permissionId with the queryset is filtered
-
-        Returns: all HasPermissions the user itself has with permission_id as permission as list
-        """
-        return list(
-            HasPermission.objects.filter(
-                user_has_permission=self.pk, permission_id=permission_id
-            )
-        )
-
-    def __get_as_group_member_special_permissions(self, permission):
-        groups = [groups["id"] for groups in list(self.group_members.values("id"))]
-        return list(
-            HasPermission.objects.filter(
-                group_has_permission_id__in=groups, permission_id=permission
-            )
         )
 
     def __has_as_user_permission(self, permission):
@@ -182,7 +154,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         except ObjectDoesNotExist:
             rlc_user = RlcUser.objects.create(
                 user=self,
-                email_confirmed=self.email_confirmed,
+                email_confirmed=True,
                 birthday=self.birthday,
                 phone_number=self.phone_number,
                 street=self.street,
@@ -226,7 +198,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                 ):
                     return self.encryption_keys.decrypt_private_key(settings.DUMMY_USER_PASSWORD)
                 else:
-                    raise CustomError(ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED)
+                    raise ParseError('No private key provied within the request.')
             private_key = private_key.replace("\\n", "\n").replace("<linebreak>", "\n")
 
         else:
@@ -241,7 +213,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return self.rlc.get_aes_key(user=self, private_key_user=users_private_key)
 
     def generate_new_user_encryption_keys(self):
-
         from backend.api.models.user_encryption_keys import UserEncryptionKeys
 
         UserEncryptionKeys.objects.filter(user=self).delete()
@@ -331,33 +302,84 @@ class RlcUser(models.Model):
     def __str__(self):
         return 'rlcUser: {}; email: {};'.format(self.pk, self.user.email)
 
+    def get_email_confirmation_token(self):
+        token = AccountActivationTokenGenerator().make_token(self)
+        return token
+
+    def get_email_confirmation_link(self):
+        token = self.get_email_confirmation_token()
+        link = "{}activate-account/{}/{}/".format(settings.FRONTEND_URL, self.id, token)
+        return link
+
+    def send_email_confirmation_email(self):
+        link = self.get_email_confirmation_link()
+        subject = "Law & Orga Registration"
+        message = "Law & Orga - Activate your account here: {}".format(link)
+        html_message = loader.render_to_string(
+            "email_templates/activate_account.html", {"url": link}
+        )
+        send_mail(
+            subject=subject,
+            html_message=html_message,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[self.user.email],
+        )
+
+    def get_password_reset_token(self):
+        token = PasswordResetTokenGenerator().make_token(self.user)
+        return token
+
+    def get_password_reset_link(self):
+        token = self.get_password_reset_token()
+        link = "{}reset-password/{}/{}/".format(settings.FRONTEND_URL, self.id, token)
+        return link
+
+    def send_password_reset_email(self):
+        link = self.get_password_reset_link()
+        subject = "Law & Orga Account Password reset"
+        message = "Law & Orga - Reset your password here: {}".format(link)
+        html_message = loader.render_to_string(
+            "email_templates/reset_password.html", {"link": link}
+        )
+        send_mail(
+            subject=subject,
+            html_message=html_message,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[self.user.email],
+        )
+
+    def grant(self, permission_name):
+        permission = Permission.objects.get(name=permission_name)
+        HasPermission.objects.create(user_has_permission=self.user, permission=permission)
 
 # create a rlc user when a normal user is saved
-@receiver(post_save, sender=UserProfile)
-def create_or_update_user_profile(sender, instance, created, **kwargs):
-    rlc_user, created = RlcUser.objects.get_or_create(user=instance)
-    if instance.rlc:
-        rlc_user.phone_number = instance.phone_number
-        rlc_user.birthday = instance.birthday
-        rlc_user.street = instance.street
-        rlc_user.city = instance.city
-        rlc_user.postal_code = instance.postal_code
-        rlc_user.email_confirmed = instance.email_confirmed
-        rlc_user.rlc = instance.rlc
-        rlc_user.locked = instance.locked
-    rlc_user.save()
+# @receiver(post_save, sender=UserProfile)
+# def create_or_update_user_profile(sender, instance, created, **kwargs):
+#     rlc_user, created = RlcUser.objects.get_or_create(user=instance)
+#     if instance.rlc:
+#         rlc_user.phone_number = instance.phone_number
+#         rlc_user.birthday = instance.birthday
+#         rlc_user.street = instance.street
+#         rlc_user.city = instance.city
+#         rlc_user.postal_code = instance.postal_code
+#         rlc_user.email_confirmed = False if created else True
+#         rlc_user.rlc = instance.rlc
+#         rlc_user.locked = instance.locked
+#     rlc_user.save()
 
 
 # this is used on signup
 class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
-    def _make_hash_value(self, user, timestamp):
+    def _make_hash_value(self, rlc_user, timestamp):
         login_timestamp = (
             ""
-            if user.last_login is None
-            else user.last_login.replace(microsecond=0, tzinfo=None)
+            if rlc_user.user.last_login is None
+            else rlc_user.user.last_login.replace(microsecond=0, tzinfo=None)
         )
         super_make_hash_value = (
-            str(user.pk) + user.password + str(login_timestamp) + str(timestamp)
+            str(rlc_user.pk) + rlc_user.user.password + str(login_timestamp) + str(timestamp)
         )
-        additional_hash_value = str(user.email_confirmed)
+        additional_hash_value = str(rlc_user.email_confirmed)
         return super_make_hash_value + additional_hash_value

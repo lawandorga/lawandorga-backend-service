@@ -9,16 +9,6 @@ ERROR__API__PERMISSION__INSUFFICIENT = {
     "error_status_code": 403,
 }
 
-ERROR__RECORD__PERMISSION__ALREADY_WORKING_ON = {
-    "error_detail": "the user is already working on the record",
-    "error_code": "record.permission.already_working_on",
-}
-
-ERROR__RECORD__PERMISSION__ALREADY_REQUESTED = {
-    "error_detail": "already requested a permission for the record",
-    "error_code": "record.permission.already_requested",
-}
-
 ERROR__API__NO_ACTION_PROVIDED = {
     "error_detail": "no action in request.data provided",
     "error_code": "record.permission.no_action_provided",
@@ -54,11 +44,6 @@ ERROR__API__GROUP__GROUP_NOT_FOUND = {
     "error_code": "api.group.not_found",
 }
 
-ERROR__API__HAS_PERMISSION__ALREADY_EXISTING = {
-    "error_detail": "hasPermission already exists",
-    "error_code": "api.has_permission.already_existing",
-}
-
 ERROR__RECORD__ORIGIN_COUNTRY__NOT_FOUND = {
     "error_detail": "origin country not found",
     "error_code": "record.origin_country.not_found",
@@ -79,17 +64,7 @@ ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED = {
     "error_code": "api.user.no_private_key_provided",
 }
 
-ERROR__API__RLC__NO_PUBLIC_KEY_FOUND = {
-    "error_detail": "no public key found",
-    "error_code": "api.rlc.no_public_key_found",
-}
-
 ERROR__API__WRONG_RLC = {"error_detail": "wrong rlc", "error_code": "api.wrong_rlc"}
-
-ERROR__API__RLC_SETTINGS__WRONG_COUNT = {
-    "error_detail": "wrong count of rlc settings",
-    "error_code": "api.rlc_settings.wrong_count",
-}
 
 ERROR__API__NOTIFICATION__UPDATE_INVALID = {
     "error_detail": "update for notification is invalid",
@@ -110,11 +85,6 @@ ERROR__API__PARAMS_NOT_VALID = {
 ERROR__API__ALREADY_PROCESSED = {
     "error_detail": "already processed item",
     "error_code": "api.already_processed",
-}
-
-ERROR__API__INVALID_PRIVATE_KEY = {
-    "error_detail": "invalid private key",
-    "error_code": "api.private_key_invalid",
 }
 
 ERROR__API__ALREADY_REQUESTED = {

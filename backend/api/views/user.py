@@ -1,170 +1,99 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from django.db import IntegrityError
-from django.shortcuts import get_object_or_404
-from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.exceptions import ParseError, PermissionDenied
-
-from backend.api.models.notification import Notification
 from rest_framework.authtoken.models import Token
 from backend.api.models.permission import Permission
-from backend.static.permissions import (
-    PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC,
-    PERMISSION_MANAGE_USERS,
-)
-from rest_framework.permissions import IsAuthenticated
-from backend.static.error_codes import *
-from backend.static.middleware import get_private_key_from_request
+from backend.recordmanagement.models import EncryptedRecordDeletionRequest, EncryptedRecordPermission
+from backend.static.permissions import PERMISSION_MANAGE_USERS
+from rest_framework.exceptions import ParseError
 from rest_framework.decorators import action
 from backend.api.serializers import (
-    OldUserProfileSerializer,
-    UserCreateProfileSerializer,
-    RlcVerboseSerializer,
-    UserProfileForeignSerializer,
+    RlcUserCreateSerializer,
+    RlcUserForeignSerializer,
     UserProfileSerializer,
-    UserUpdateProfileSerializer,
-    UserPasswordResetSerializer,
-    UserPasswordResetConfirmSerializer, HasPermissionNameSerializer, HasPermissionAllNamesSerializer, RlcSerializer,
+    EmailSerializer,
+    UserPasswordResetConfirmSerializer, HasPermissionAllNamesSerializer, RlcSerializer, RlcUserSerializer,
+    AuthTokenSerializer, UserProfileNameSerializer, RlcUserListSerializer, RlcUserUpdateSerializer,
 )
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.request import Request
 from django.forms.models import model_to_dict
 from backend.api.models import (
-    NewUserRequest,
     UserProfile,
     NotificationGroup,
     PasswordResetTokenGenerator,
-    AccountActivationTokenGenerator, UsersRlcKeys,
+    AccountActivationTokenGenerator, UsersRlcKeys, RlcUser,
 )
-from backend.api.errors import CustomError
-from django.core.mail import send_mail
-from django.template import loader
-from rest_framework import viewsets, filters, status
-from backend.static import permissions
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
+from rest_framework import viewsets, status
 from django.utils import timezone
-from django.conf import settings
-
-
-class SpecialPermission(IsAuthenticated):
-    def has_permission(self, request, view):
-        if request.method == "POST":
-            return True
-        return super().has_permission(request, view)
+from django.db import IntegrityError
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    serializer_class = UserProfileSerializer
-    queryset = UserProfile.objects.none()
-    permission_classes = [SpecialPermission]
+    serializer_class = RlcUserSerializer
+    queryset = RlcUser.objects.none()
 
-    def get_authenticators(self):
-        # self.action == 'create' would be better here but self.action is not set yet
-        if self.request.path == "/api/profiles/" and self.request.method == "POST":
+    def get_permissions(self):
+        if self.action in ['statics', 'create', 'logout', 'login', 'password_reset', 'password_reset_confirm',
+                           'activate']:
             return []
-        return super().get_authenticators()
+        return super().get_permissions()
 
     def get_serializer_class(self):
-        if self.action == "create":
-            return UserCreateProfileSerializer
-        elif self.action in ["update", "partial_update"]:
-            return UserUpdateProfileSerializer
+        if self.action in ["create"]:
+            return RlcUserCreateSerializer
+        elif self.action in ['list']:
+            return RlcUserListSerializer
+        elif self.action in ['update', 'partial_update']:
+            return RlcUserUpdateSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):
-        if self.action == "activate" or self.action == 'password_reset_confirm':
-            return UserProfile.objects.all().select_related("accepted")
-        else:
-            return UserProfile.objects.filter(rlc=self.request.user.rlc).select_related(
-                "accepted"
-            )
-
-    def create(self, request, *args, **kwargs):
-        # create the user
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-
-        # new user request
-        user_request = NewUserRequest.objects.create(request_from=user)
-
-        # send the user activation link email
-        token = AccountActivationTokenGenerator().make_token(user)
-        link = "{}activate-account/{}/{}/".format(settings.FRONTEND_URL, user.id, token)
-        subject = "Law & Orga Registration"
-        message = "Law & Orga - Activate your account here: {}".format(link)
-        html_message = loader.render_to_string(
-            "email_templates/activate_account.html", {"url": link}
-        )
-        send_mail(
-            subject=subject,
-            html_message=html_message,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-        )
-
-        # notify about the new user
-        Notification.objects.notify_new_user_request(user, user_request)
-
-        # return the success response
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
+        if self.action in ['activate', 'password_reset_confirm']:
+            return RlcUser.objects.all()
+        elif self.action in ['list', 'retrieve', 'accept', 'unlock', 'destroy']:
+            return RlcUser.objects.filter(user__rlc=self.request.user.rlc)
+        return RlcUser.objects.filter(pk=self.request.user.rlc_user.id)
 
     def retrieve(self, request, pk=None, **kwargs):
-        user = self.get_object()
-        if request.user.has_permission(PERMISSION_MANAGE_USERS) or user.pk == request.user.pk:
-            serializer = UserProfileSerializer(user)
+        rlc_user = self.get_object()
+        if request.user.has_permission(PERMISSION_MANAGE_USERS) or rlc_user.pk == request.user.rlc_user.pk:
+            serializer = RlcUserListSerializer(rlc_user)
         else:
-            serializer = UserProfileForeignSerializer(user)
+            serializer = RlcUserForeignSerializer(rlc_user)
         return Response(serializer.data)
 
-    def destroy(self, request, *args, **kwargs):
-        if not request.user.has_permission(PERMISSION_MANAGE_USERS):
-            data = {"detail": "You don't have the necessary permission to do this."}
-            return Response(data, status=status.HTTP_403_FORBIDDEN)
-        return super().destroy(request, *args, **kwargs)
-
     def update(self, request: Request, *args, **kwargs):
-        user = self.get_object()
-        if not request.user.has_permission(PERMISSION_MANAGE_USERS) and request.user.pk != user.pk:
+        rlc_user = self.get_object()
+        if not request.user.has_permission(PERMISSION_MANAGE_USERS) and request.user.rlc_user.pk != rlc_user.pk:
             data = {"detail": "You don't have the necessary permission to do this."}
             return Response(data, status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        rlc_user = self.get_object()
+        if not request.user.has_permission(PERMISSION_MANAGE_USERS) and request.user.rlc_user.pk != rlc_user.pk:
+            data = {"detail": "You don't have the necessary permission to do this."}
+            return Response(data, status=status.HTTP_403_FORBIDDEN)
+        self.perform_destroy(rlc_user.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False, methods=["post"], permission_classes=[], authentication_classes=[]
     )
     def login(self, request: Request):
-        serializer = AuthTokenSerializer(
-            data=request.data, context={"request": request}
-        )
+        serializer = AuthTokenSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         user: UserProfile = serializer.validated_data["user"]
         password = serializer.validated_data["password"]
 
         # check if user active and user accepted in rlc
-        if not user.email_confirmed:
+        if not user.rlc_user.email_confirmed:
             message = "You can not login, yet. Please confirm your email first."
             return Response(
                 {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
             )
-        if user.locked:
+        if user.rlc_user.locked:
             message = (
                 "Your account is temporarily blocked, because your keys need to be recreated. "
                 "Please tell an admin to press the unlock button on your user."
@@ -172,7 +101,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(
                 {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
             )
-        if not user.get_rlc_user().accepted:
+        if not user.rlc_user.accepted:
             message = (
                 "You can not login, yet. Your RLC needs to accept you as a member."
             )
@@ -194,37 +123,44 @@ class UserViewSet(viewsets.ModelViewSet):
             "token": token.key,
             "email": user.email,
             "id": user.pk,
-            "users_private_key": private_key,
+            "private_key": private_key,
         }
         return Response(data, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=["get"], url_path="statics/(?P<token>[^/.]+)", permission_classes=[],
-            authentication_classes=[])
+    @action(detail=False, methods=['get'])
+    def admin(self, request, *args, **kwargs):
+        instance = request.user
+        data = {
+            'profiles': UserProfile.objects.filter(
+                Q(rlc=instance.rlc) & (Q(rlc_user__locked=True) | Q(rlc_user__accepted=False))).count(),
+            'record_deletion_requests': EncryptedRecordDeletionRequest.objects.filter(record__from_rlc=instance.rlc,
+                                                                                      state='re').count(),
+            'record_permit_requests': EncryptedRecordPermission.objects.filter(record__from_rlc=instance.rlc,
+                                                                               state='re').count()
+        }
+        return Response(data)
+
+    @action(detail=False, methods=["get"], url_path="statics/(?P<token>[^/.]+)")
     def statics(self, request: Request, token=None, *args, **kwargs):
         token = get_object_or_404(Token, key=token)
         user = token.user
 
         notifications = NotificationGroup.objects.filter(user=user, read=False).count()
-        user_permissions = [
-            model_to_dict(perm) for perm in user.get_all_user_permissions()
-        ]
         overall_permissions = [
             model_to_dict(permission) for permission in Permission.objects.all()
         ]
 
         data = {
-            "user": OldUserProfileSerializer(user).data,
+            "user": UserProfileNameSerializer(user).data,
             "rlc": RlcSerializer(user.rlc).data,
             "notifications": notifications,
-            "permissions": user_permissions,
+            "permissions": user.get_all_user_permissions(),
             "all_permissions": overall_permissions,
         }
 
         return Response(data, status=status.HTTP_200_OK)
 
-    @action(
-        detail=False, methods=["post"], authentication_classes=[], permission_classes=[]
-    )
+    @action(detail=False, methods=["post"])
     def logout(self, request: Request, *args, **kwargs):
         if not request.user.is_authenticated:
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -233,113 +169,59 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=["get"],
+        methods=["post"],
         url_path="activate/(?P<token>[^/.]+)",
         permission_classes=[],
         authentication_classes=[],
     )
     def activate(self, request, token, *args, **kwargs):
         # localhost:4200/activate-account/1023/akoksc-f52702143fcf098155fb1b2c6b081f7a/
-        user = self.get_object()
-        # user: UserProfile = UserProfile.objects.get(pk=kwargs["pk"])
+        rlc_user = self.get_object()
 
-        if AccountActivationTokenGenerator().check_token(user, token):
-            user.email_confirmed = True
-            user.save()
+        if AccountActivationTokenGenerator().check_token(rlc_user, token):
+            rlc_user.email_confirmed = True
+            rlc_user.save()
             return Response(status=status.HTTP_200_OK)
         else:
             data = {
-                "message": "The confirmation link is invalid, possibly because it has already been used."
+                "detail": "The confirmation link is invalid, possibly because it has already been used."
             }
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
-
-    @action(detail=False, methods=["get", "post"])
-    def inactive(self, request: Request):
-        if request.method == "GET":
-            if not request.user.has_permission(permissions.PERMISSION_MANAGE_USERS):
-                raise PermissionDenied()
-
-            inactive_users = UserProfile.objects.filter(
-                rlc=request.user.rlc, is_active=False
-            )
-            return Response(UserProfileSerializer(inactive_users, many=True).data)
-
-        elif request.method == "POST":
-            if not request.user.has_permission(permissions.PERMISSION_MANAGE_USERS):
-                raise PermissionDenied()
-
-            # method and user_id
-            if request.data["method"] == "activate":
-                try:
-                    user = UserProfile.objects.get(pk=request.data["user_id"])
-                except:
-                    raise CustomError(ERROR__API__USER__NOT_FOUND)
-
-                granting_users_private_key = get_private_key_from_request(request)
-                rlcs_aes_key = request.user.get_rlc_aes_key(granting_users_private_key)
-                user.generate_rlc_keys_for_this_user(rlcs_aes_key)
-
-                user.is_active = True
-                user.save()
-                return Response(OldUserProfileSerializer(user).data)
-            raise CustomError(ERROR__API__ACTION_NOT_VALID)
-
-        return Response({})
 
     @action(
         detail=False, methods=["POST"], authentication_classes=[], permission_classes=[]
     )
     def password_reset(self, request, *args, **kwargs):
-        # get the user
-        serializer = UserPasswordResetSerializer(data=request.data)
+        serializer = EmailSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
             user = UserProfile.objects.get(email=serializer.validated_data["email"])
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-
-        # send the user activation link email
-        token = PasswordResetTokenGenerator().make_token(user)
-        link = "{}reset-password/{}/{}/".format(settings.FRONTEND_URL, user.id, token)
-        subject = "Law & Orga Account Password reset"
-        message = "Law & Orga - Reset your password here: {}".format(link)
-        html_message = loader.render_to_string(
-            "email_templates/reset_password.html", {"link": link}
-        )
-        send_mail(
-            subject=subject,
-            html_message=html_message,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-        )
-
-        # return the success response
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
+        user.rlc_user.send_password_reset_email()
+        return Response()
 
     @action(
         detail=True, methods=["POST"], authentication_classes=[], permission_classes=[]
     )
     def password_reset_confirm(self, request, *args, **kwargs):
-        self.queryset = UserProfile.objects.all()
-        user: UserProfile = self.get_object()
+        rlc_user = self.get_object()
 
         serializer = UserPasswordResetConfirmSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         token = serializer.validated_data["token"]
         new_password = serializer.validated_data["new_password"]
+        user = rlc_user.user
         if PasswordResetTokenGenerator().check_token(user, token):
             user.set_password(new_password)
-            user.locked = True
             user.save()
+            rlc_user.locked = True
+            rlc_user.save()
             # generate new user private and public key based on the new password
             if hasattr(user, 'encryption_keys'):
                 user.encryption_keys.delete()
             # get the user from db because the old encryption_keys might still be in this user
-            user = UserProfile.objects.get(pk=user.pk)
+            user = UserProfile.objects.get(pk=rlc_user.user.pk)
             user.get_private_key(password_user=new_password)
             # return
             return Response(status=status.HTTP_200_OK)
@@ -357,7 +239,8 @@ class UserViewSet(viewsets.ModelViewSet):
          user has at the moment.
         """
         user = self.request.user
-        user_to_unlock = self.get_object()
+        rlc_user = self.get_object()
+        user_to_unlock = rlc_user.user
 
         if user == user_to_unlock:
             data = {
@@ -371,19 +254,19 @@ class UserViewSet(viewsets.ModelViewSet):
 
         # unlock the user if all keys were generated
         if success:
-            user_to_unlock.locked = False
-            user_to_unlock.save()
-            return Response(UserProfileSerializer(user_to_unlock).data)
+            rlc_user.locked = False
+            rlc_user.save()
+            return Response(RlcUserListSerializer(rlc_user).data)
         else:
             raise ParseError('Not all keys could be handed over. Please tell another admin to unlock this user.')
 
     @action(detail=True, methods=['GET'])
     def permissions(self, *args, **kwargs):
-        user = self.get_object()
-        user_permissions = user.get_permissions()
+        rlc_user = self.get_object()
+        user_permissions = rlc_user.user.get_permissions()
         return Response(HasPermissionAllNamesSerializer(user_permissions, many=True).data)
 
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=['post'])
     def accept(self, request, *args, **kwargs):
         # get the new member
         new_member = self.get_object()
@@ -393,21 +276,22 @@ class UserViewSet(viewsets.ModelViewSet):
         aes_key_rlc = request.user.rlc.get_aes_key(
             user=request.user, private_key_user=private_key_user
         )
-
         new_user_rlc_keys = UsersRlcKeys(
-            user=new_member, rlc=request.user.rlc, encrypted_key=aes_key_rlc,
+            user=new_member.user, rlc=request.user.rlc, encrypted_key=aes_key_rlc,
         )
-        public_key = new_member.get_public_key()
+        public_key = new_member.user.get_public_key()
         new_user_rlc_keys.encrypt(public_key)
+
+        # set the user accepted field so that the user can login
+        new_member.accepted = True
+        new_member.save()
+
+        # save the rlc keys this is here and not before the previous block so that test_accept_works doesnt complain
         try:
             new_user_rlc_keys.save()
         except IntegrityError:
             # this happens when the keys exist already for whatever reason
             pass
 
-        # set the user accept so that the user can login
-        new_member.rlc_user.accepted = True
-        new_member.rlc_user.save()
-
         # return
-        return Response(UserProfileSerializer(instance=new_member).data)
+        return Response(RlcUserListSerializer(instance=new_member).data)

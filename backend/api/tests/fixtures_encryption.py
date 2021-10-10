@@ -1,32 +1,12 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2020  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from datetime import datetime, date, timedelta
-import pytz
-from django.conf import settings
-
-from rest_framework.test import APIClient
-
 from backend.api.management.commands.fixtures import Fixtures as MainFixtures
+from backend.files.static.folder_permissions import get_all_folder_permissions_strings
+from backend.static.permissions import get_all_permissions_strings
+from backend.recordmanagement import models as record_models
+from rest_framework.test import APIClient
 from backend.api.models import *
 from backend.files import models as file_models
-from backend.files.static.folder_permissions import get_all_folder_permissions_strings
-from backend.recordmanagement import models as record_models
-from backend.static.encryption import AESEncryption, RSAEncryption
-from backend.static.permissions import get_all_permissions_strings
+from datetime import datetime, date, timedelta
+import pytz
 
 
 class CreateFixtures:

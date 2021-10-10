@@ -20,14 +20,11 @@ from backend.internal.urls import router as internal_router
 
 router = DefaultRouter()
 router.registry.extend(internal_router.registry)
-router.register("profiles", views.user.UserViewSet)
+router.register("profiles", views.user.UserViewSet, basename='profiles')
 router.register("groups", views.GroupViewSet, basename="groups")
 router.register("permissions", views.PermissionViewSet, basename="permissions")
 router.register("has_permission", views.HasPermissionViewSet, basename="has_permission")
 router.register("rlcs", views.RlcViewSet, basename="rlcs")
-router.register(
-    "new_user_request", views.NewUserRequestViewSet, basename="new_user_request"
-)
 router.register(
     "user_encryption_keys",
     views.UserEncryptionKeysViewSet,

@@ -18,7 +18,6 @@ from .has_permission import *
 from .user import *
 from .group import *
 from .rlc import *
-from .new_user_request import *
 from .user_encryption_keys import *
 from .rlc_encryption_keys import *
 from .users_rlc_keys import *

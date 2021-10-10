@@ -21,7 +21,6 @@ from backend.api.models import (
     Permission,
     HasPermission,
     Rlc,
-    NewUserRequest,
     UserEncryptionKeys,
     RlcEncryptionKeys,
     UsersRlcKeys,
@@ -67,7 +66,6 @@ admin.site.register(Group)
 admin.site.register(Permission)
 admin.site.register(HasPermission, HasPermissionAdmin)
 admin.site.register(Rlc)
-admin.site.register(NewUserRequest)
 admin.site.register(UserEncryptionKeys)
 admin.site.register(RlcEncryptionKeys)
 admin.site.register(UsersRlcKeys)

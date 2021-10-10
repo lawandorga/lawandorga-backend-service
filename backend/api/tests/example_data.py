@@ -1,49 +1,28 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2020  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from backend.api.models.group import Group
-from backend.api.models.has_permission import HasPermission
-from backend.api.models.permission import Permission
-from backend.api.models.rlc import Rlc
-from backend.collab.models import CollabPermission
-from backend.collab.static.collab_permissions import get_all_collab_permission_strings
-from backend.files.models import FolderPermission
-from backend.files.static.folder_permissions import get_all_folder_permissions_strings
-from backend.internal.models import InternalUser
-from backend.recordmanagement.models import OriginCountry
-from backend.recordmanagement.models.encrypted_client import EncryptedClient
-from backend.recordmanagement.models.encrypted_record import EncryptedRecord
-from backend.recordmanagement.models.encrypted_record_document import (
-    EncryptedRecordDocument,
-)
-from backend.recordmanagement.models.encrypted_record_message import (
-    EncryptedRecordMessage,
-)
+from backend.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
+from backend.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
 from backend.recordmanagement.models.record_document_tag import RecordDocumentTag
 from backend.recordmanagement.models.record_encryption import RecordEncryption
+from backend.recordmanagement.models.encrypted_client import EncryptedClient
+from backend.recordmanagement.models.encrypted_record import EncryptedRecord
 from backend.recordmanagement.models.record_tag import RecordTag
-from backend.static import permissions
-from backend.static.encryption import AESEncryption
+from backend.collab.static.collab_permissions import get_all_collab_permission_strings
+from backend.files.static.folder_permissions import get_all_folder_permissions_strings
+from backend.api.models.has_permission import HasPermission
+from backend.recordmanagement.models import OriginCountry
+from backend.api.models.permission import Permission
 from backend.static.permissions import get_all_permissions_strings
+from backend.static.encryption import AESEncryption
+from backend.api.models.group import Group
+from backend.internal.models import InternalUser
+from backend.api.models.rlc import Rlc
+from backend.collab.models import CollabPermission
+from backend.files.models import FolderPermission
 from backend.api.models import UserProfile
+from backend.static import permissions
 from random import randint, choice
 
 
 # helpers
-
-
 def add_permissions_to_group(group: Group, permission_name):
     HasPermission.objects.create(
         group_has_permission=group,
