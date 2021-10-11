@@ -42,7 +42,6 @@ def reset_db():
     HasPermission.objects.all().delete()
     Permission.objects.all().delete()
     Rlc.objects.all().delete()
-    RecordDocumentTag.objects.all().delete()
     File.objects.all().delete()
     Folder.objects.all().delete()
     FolderPermission.objects.all().delete()

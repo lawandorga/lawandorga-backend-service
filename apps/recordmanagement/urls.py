@@ -19,7 +19,6 @@ from django.urls import path, include
 
 router = DefaultRouter()
 router.register("origin_countries", OriginCountryViewSet)
-router.register("record_document_tags", RecordDocumentTagViewSet)
 router.register("record_deletion_requests", EncryptedRecordDeletionRequestViewSet)
 router.register("record_encryptions", RecordEncryptionViewSet)
 router.register("records", EncryptedRecordViewSet)

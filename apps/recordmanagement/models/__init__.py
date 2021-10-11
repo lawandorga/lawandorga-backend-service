@@ -15,7 +15,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from .origin_country import *
 from .tag import *
-from .record_document_tag import *
 from .encrypted_record import *
 from .record_encryption import *
 from .encrypted_client import *

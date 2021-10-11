@@ -1,6 +1,5 @@
 from apps.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
 from apps.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
-from apps.recordmanagement.models.record_document_tag import RecordDocumentTag
 from apps.recordmanagement.models.record_encryption import RecordEncryption
 from apps.recordmanagement.models.encrypted_client import EncryptedClient
 from apps.recordmanagement.models.encrypted_record import EncryptedRecord
@@ -621,8 +620,7 @@ def create_informative_record(
     users: [UserProfile],
     rlc: Rlc,
 ) -> EncryptedRecord:
-    tags = list(RecordTag.objects.all())
-    document_tags = list(RecordDocumentTag.objects.all())
+    tags = list(Tag.objects.all())
     users = [main_user] + users
 
     # create the informative record
@@ -684,7 +682,6 @@ def create_informative_record(
         file_size=18839,
         created_on="2019-1-7",
     )
-    document1.tagged.add(choice(document_tags))
     document2 = EncryptedRecordDocument.objects.create(
         name="3_10_18__geburtsurkunde.pdf",
         creator=main_user,
@@ -692,7 +689,6 @@ def create_informative_record(
         file_size=488383,
         created_on="2018-10-3",
     )
-    document2.tagged.add(choice(document_tags))
     document3 = EncryptedRecordDocument.objects.create(
         name="3_12_18__Ablehnungbescheid.pdf",
         creator=main_user,
@@ -700,7 +696,6 @@ def create_informative_record(
         file_size=343433,
         created_on="2018-12-3",
     )
-    document3.tagged.add(choice(document_tags))
     document4 = EncryptedRecordDocument.objects.create(
         name="1_1_19__Klageschrift.docx",
         creator=main_user,

@@ -28,7 +28,6 @@ class EncryptedRecordDocument(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     last_edited = models.DateTimeField(auto_now_add=True)
     file_size = models.BigIntegerField(null=True)
-    tagged = models.ManyToManyField("RecordDocumentTag", related_name="e_tagged", blank=True)
     key = models.SlugField(null=True, allow_unicode=True, max_length=1000, unique=True)
     exists = models.BooleanField(default=True)
 

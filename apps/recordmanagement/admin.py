@@ -1,10 +1,9 @@
-from apps.recordmanagement.models import OriginCountry, RecordDocumentTag, EncryptedRecord, RecordEncryption, \
+from apps.recordmanagement.models import OriginCountry, EncryptedRecord, RecordEncryption, \
     EncryptedClient, EncryptedRecordDocument, EncryptedRecordMessage, EncryptedRecordPermission, \
     EncryptedRecordDeletionRequest, PoolConsultant, PoolRecord
 from django.contrib import admin
 
 admin.site.register(OriginCountry)
-admin.site.register(RecordDocumentTag)
 admin.site.register(RecordEncryption)
 admin.site.register(EncryptedClient)
 admin.site.register(EncryptedRecordDocument)
