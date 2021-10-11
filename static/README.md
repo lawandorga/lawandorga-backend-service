@@ -1,5 +1,5 @@
 # static
-This folder contains the static assets used by the backend. Usually this folder will stay empty. But, for good purposes it exists and if at some time static assts need to be added, they can be added in src and be compiled into dist.
+This folder contains the static assets used by the apps. Usually this folder will stay empty. But, for good purposes it exists and if at some time static assts need to be added, they can be added in src and be compiled into dist.
 
 ## src
 This folder contains the raw files, for example .scss files.

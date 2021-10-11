@@ -1,5 +1,5 @@
 #  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+#  Copyright (C) 2020  Dominik Walser
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -13,28 +13,16 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from apps.recordmanagement import urls as record_urls
-from django.views.generic import TemplateView
-from django.contrib import admin
-from apps.files import urls as file_urls
-from apps.api import urls as api_urls
-from apps.collab import urls as collab_urls
+from rest_framework.routers import DefaultRouter
+from apps.files.views import *
 from django.urls import path, include
-from django.conf import settings
+
+router = DefaultRouter()
+router.register("file_base", FileViewSet)
+router.register("permission_for_folder", PermissionForFolderViewSet)
+router.register("folder_permission", FolderPermissionViewSet)
+router.register("folder", FolderViewSet)
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("api/", include(api_urls)),
-    path("api/records/", include(record_urls)),
-    path("api/files/", include(file_urls)),
-    path("api/collab/", include(collab_urls)),
-    path("", TemplateView.as_view(template_name="index.html")),
-    path('tinymce/', include('tinymce.urls')),
+    path("", include(router.urls)),
 ]
-
-if settings.DEBUG:
-    import debug_toolbar
-
-    urlpatterns += [
-        path("__debug__/", include(debug_toolbar.urls)),
-    ]

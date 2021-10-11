@@ -11,7 +11,7 @@ A project of Refugee Law Clinics Deutschland e.V. and Dominik Walser
 This project contains a backend based on Django-Rest-Framework. It uses Amazon S3 as file-storage.
 
 ## Local setup
-1. `git clone https://github.com/lawandorga/law-orga-backend.git`
+1. `git clone https://github.com/lawandorga/law-orga-apps.git`
 2. `cd law-orga-backend/`
 3. `python -m venv tmp/venv`
 4. Install all dependencies from `requirements.txt`
@@ -21,7 +21,7 @@ This project contains a backend based on Django-Rest-Framework. It uses Amazon S
 
 ## Server setup
 1. `cd /home`
-2. `git clone https://github.com/lawandorga/law-orga-backend.git`
+2. `git clone https://github.com/lawandorga/law-orga-apps.git`
 3. `cd law-orga-backend/`
 4. Connect `prod-api.law-orga.de` with the server IP
 5. `./setup.prod.sh`

@@ -45,11 +45,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "tinymce",
-    "backend.api",
-    "backend.recordmanagement",
-    "backend.files",
-    "backend.collab",
-    "backend.internal",
+    "apps.api",
+    "apps.recordmanagement",
+    "apps.files",
+    "apps.collab",
+    "apps.internal",
     "rest_framework.authtoken",
     "storages",
     "corsheaders",
@@ -67,7 +67,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "backend.static.middleware.LoggingMiddleware",
+    "apps.static.middleware.LoggingMiddleware",
 ]
 
 # Url conf
@@ -135,7 +135,7 @@ CORS_ALLOW_HEADERS = [
 # https://www.django-rest-framework.org/api-guide/settings/
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "backend.api.authentication.ExpiringTokenAuthentication",
+        "apps.api.authentication.ExpiringTokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
     'DATE_INPUT_FORMATS': ["%d-%m-%Y", "%Y-%m-%d", "%Y-%m-%dT%H:%M:%S.%fZ"],
