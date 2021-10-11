@@ -17,7 +17,7 @@ from apps.internal.models import InternalUser
 from apps.api.models.rlc import Rlc
 from apps.collab.models import CollabPermission
 from apps.files.models import FolderPermission
-from apps.api.models import UserProfile
+from apps.api.models import UserProfile, RlcUser
 from apps.static import permissions
 from random import randint, choice
 
@@ -182,20 +182,22 @@ def create_users(rlc):
     ]
 
     created_users = []
-    for user in users:
-        created_users.append(
-            UserProfile.objects.create(
-                email=user[0],
-                name=user[1],
-                phone_number=user[3],
-                street=user[4],
-                city=user[5],
-                postal_code=user[6],
-                birthday=user[2],
-                rlc=rlc,
-                is_active=True,
-            )
+    for user_data in users:
+        user = UserProfile.objects.create(
+            email=user_data[0],
+            name=user_data[1],
+            rlc=rlc,
+            is_active=True,
         )
+        RlcUser.objects.create(
+            user=user,
+            phone_number=user_data[3],
+            street=user_data[4],
+            city=user_data[5],
+            postal_code=user_data[6],
+            birthday=user_data[2]
+        )
+        created_users.append(user)
     return created_users
 
 
@@ -206,17 +208,12 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
     user = UserProfile.objects.create(
         name="Mr Dummy",
         email="dummy@rlcm.de",
-        phone_number="01666666666",
-        street="Dummyweg 12",
-        city="Dummycity",
-        postal_code="00000",
         rlc=rlc,
-        birthday="1995-1-1",
-        is_superuser=True,
         is_active=True,
     )
     user.set_password(dummy_password)
     user.save()
+    RlcUser.objects.create(user=user)
     InternalUser.objects.create(user=user)
     users.append(user)
 
@@ -224,23 +221,23 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
     user = UserProfile.objects.create(
         name="Tester 1",
         email="tester1@law-orga.de",
-        phone_number="123812382",
         rlc=rlc,
         is_active=True,
     )
     user.set_password("qwe123")
     user.save()
+    RlcUser.objects.create(user=user)
     users.append(user)
 
     user = UserProfile.objects.create(
         name="Tester 2",
         email="tester2@law-orga.de",
-        phone_number="123812383",
         rlc=rlc,
         is_active=True,
     )
     user.set_password("qwe123")
     user.save()
+    RlcUser.objects.create(user=user)
     users.append(user)
 
     # return
@@ -251,16 +248,12 @@ def create_inactive_user(rlc):
     user = UserProfile(
         name="Mr. Inactive",
         email="inactive@rlcm.de",
-        phone_number="1293283882",
-        street="Inaktive Strasse",
-        city="InAktiv",
-        postal_code="29292",
         rlc=rlc,
-        birthday="1950-1-1",
+        is_active=False
     )
     user.set_password("qwe123")
-    user.is_active = False
     user.save()
+    RlcUser.objects.create(user=user)
 
 
 def create_groups(rlc: Rlc, creator: UserProfile, users: [UserProfile]):
