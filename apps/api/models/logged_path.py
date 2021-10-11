@@ -8,7 +8,7 @@ class LoggedPath(models.Model):
     time = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['time']
+        ordering = ['-time']
         verbose_name = 'LoggedPath'
         verbose_name_plural = 'LoggedPaths'
 
