@@ -29,17 +29,19 @@ class EncryptedRecordDeletionRequest(
         related_name="deletions_requested",
         on_delete=models.SET_NULL,
         null=True,
+        blank=True
     )
-    request_from = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
+    request_from = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, blank=True)
     request_processed = models.ForeignKey(
         UserProfile,
         related_name="e_record_deletion_request_processed",
         on_delete=models.SET_NULL,
         null=True,
+        blank=True
     )
-    explanation = models.TextField(default="")
+    explanation = models.TextField(default="", blank=True)
     requested = models.DateTimeField(auto_now_add=True)
-    processed_on = models.DateTimeField(null=True)
+    processed_on = models.DateTimeField(null=True, blank=True)
 
     record_deletion_request_states_possible = (
         ("re", "requested"),
