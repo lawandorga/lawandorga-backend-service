@@ -45,11 +45,13 @@ tags = [
     "Studium",
     "Strafverfolgung",
     "Sonstiges",
+    "Geschwisternachzug",
     "Aufenthaltserlaubnis",
     "Aufenthaltsgestattung",
     "Niederlassungserlaubnis",
     "Einbürgerung",
     "Staatsbürgerschaft",
+    "Übungsfall",
 ]
 
 
@@ -57,10 +59,13 @@ class Command(BaseCommand):
     help = "adds the old tags"
 
     def handle(self, *args, **options):
+        print(len(tags))
         for rlc in Rlc.objects.all():
             for tag in tags:
                 if not Tag.objects.filter(rlc=rlc, name=tag).exists():
                     Tag.objects.create(rlc=rlc, name=tag)
-        for record in EncryptedRecord.objects.all():
+        print('tags finished')
+        for record in EncryptedRecord.objects.all().order_by('pk'):
+            print(record.id)
             for tag in record.tagged.all():
                 record.tags.add(Tag.objects.get(name=tag.name, rlc=record.from_rlc))
