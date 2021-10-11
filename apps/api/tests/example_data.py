@@ -37,17 +37,7 @@ def create_rlc():
     return rlc
 
 
-def create_fixtures():
-    # create countries
-    countries = ["Abchasien", "Afghanistan", "Ägypten", "Albanien", "Algerien"]
-    [OriginCountry.objects.create(name=country) for country in countries]
-
-    # create permissions
-    [
-        Permission.objects.get_or_create(name=permission)
-        for permission in get_all_permissions_strings()
-    ]
-
+def create_tags(rlc):
     # create record tags
     tags = [
         "Familiennachzug",
@@ -58,7 +48,19 @@ def create_fixtures():
         "Eheschließung",
         "Verlobung",
     ]
-    [Tag.objects.create(name=tag) for tag in tags]
+    [Tag.objects.create(name=tag, rlc=rlc) for tag in tags]
+
+
+def create_fixtures():
+    # create countries
+    countries = ["Abchasien", "Afghanistan", "Ägypten", "Albanien", "Algerien"]
+    [OriginCountry.objects.create(name=country) for country in countries]
+
+    # create permissions
+    [
+        Permission.objects.get_or_create(name=permission)
+        for permission in get_all_permissions_strings()
+    ]
 
     # create collab permissions
     [

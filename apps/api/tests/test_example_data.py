@@ -11,6 +11,7 @@ class ExampleDataTestCase(TestCase):
         ed.create_fixtures()
         # dummy
         self.rlc = ed.create_rlc()
+        self.tags = ed.create_tags(self.rlc)
         self.dummy = ed.create_dummy_users(self.rlc)[0]
         # keys
         self.dummy_private_key = self.dummy.get_private_key(dummy_password)
