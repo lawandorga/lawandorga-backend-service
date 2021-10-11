@@ -59,7 +59,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         extra_kwargs = {"password": {"write_only": True}}
 
     def get_accepted(self, obj):
-        return obj.get_rlc_user().accepted
+        return obj.rlc_user.accepted
 
 
 class RlcUserCreateSerializer(UserProfileSerializer):

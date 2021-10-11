@@ -3,17 +3,13 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.template import loader
 from rest_framework.exceptions import ParseError
 from rest_framework.request import Request
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from backend.api.errors import CustomError
 from backend.api.models.has_permission import HasPermission
 from backend.api.models.permission import Permission
 from backend.static.encryption import RSAEncryption
-from backend.static.error_codes import ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED
 
 
 class UserProfileManager(BaseUserManager):
@@ -58,13 +54,7 @@ class UserProfileManager(BaseUserManager):
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    birthday = models.DateField(null=True, blank=True)
-    phone_number = models.CharField(max_length=17, null=True, default=None, blank=True)
-    street = models.CharField(max_length=255, default=None, null=True, blank=True)
-    city = models.CharField(max_length=255, default=None, null=True, blank=True)
-    postal_code = models.CharField(max_length=255, default=None, null=True, blank=True)
     is_active = models.BooleanField(default=True)
-    locked = models.BooleanField(default=False)
     rlc = models.ForeignKey("Rlc", related_name="rlc_members", on_delete=models.PROTECT, blank=True, null=True)
 
     # custom manager
@@ -81,22 +71,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return "user: {}; email: {};".format(self.pk, self.email)
-
-    # def save(self, *args, **kwargs):
-    #     created = False if self.id else True
-    #     super().save(*args, **kwargs)
-    #     if created:
-    #         RlcUser.objects.create(
-    #             user=self,
-    #             email_confirmed=False,
-    #             birthday=self.birthday,
-    #             phone_number=self.phone_number,
-    #             street=self.street,
-    #             city=self.city,
-    #             postal_code=self.postal_code,
-    #             locked=self.locked,
-    #             rlc=self.rlc,
-    #         )
 
     # django intern stuff
     @property
@@ -147,23 +121,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def has_permissions(self, permissions):
         return any(map(lambda permission: self.has_permission(permission), permissions))
-
-    def get_rlc_user(self):
-        try:
-            return self.rlc_user
-        except ObjectDoesNotExist:
-            rlc_user = RlcUser.objects.create(
-                user=self,
-                email_confirmed=True,
-                birthday=self.birthday,
-                phone_number=self.phone_number,
-                street=self.street,
-                city=self.city,
-                postal_code=self.postal_code,
-                locked=self.locked,
-                rlc=self.rlc,
-            )
-            return rlc_user
 
     def get_permissions(self):
         user_permissions = HasPermission.objects.filter(user_has_permission=self)
@@ -353,21 +310,6 @@ class RlcUser(models.Model):
     def grant(self, permission_name):
         permission = Permission.objects.get(name=permission_name)
         HasPermission.objects.create(user_has_permission=self.user, permission=permission)
-
-# create a rlc user when a normal user is saved
-# @receiver(post_save, sender=UserProfile)
-# def create_or_update_user_profile(sender, instance, created, **kwargs):
-#     rlc_user, created = RlcUser.objects.get_or_create(user=instance)
-#     if instance.rlc:
-#         rlc_user.phone_number = instance.phone_number
-#         rlc_user.birthday = instance.birthday
-#         rlc_user.street = instance.street
-#         rlc_user.city = instance.city
-#         rlc_user.postal_code = instance.postal_code
-#         rlc_user.email_confirmed = False if created else True
-#         rlc_user.rlc = instance.rlc
-#         rlc_user.locked = instance.locked
-#     rlc_user.save()
 
 
 # this is used on signup

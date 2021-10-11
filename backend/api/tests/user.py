@@ -44,7 +44,7 @@ class UserViewSetWorkingTests(TestCase):
 
     def test_email_confirmation_token_works(self):
         view = UserViewSet.as_view(actions={'post': 'activate'})
-        rlc_user = self.user.get_rlc_user()
+        rlc_user = self.user.rlc_user
         token = rlc_user.get_email_confirmation_token()
         request = self.factory.post('')
         response = view(request, pk=rlc_user.id, token=token)
