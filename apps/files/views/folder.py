@@ -43,7 +43,10 @@ class FolderViewSet(viewsets.ModelViewSet):
 
     @action(detail=False)
     def first(self, request, *args, **kwargs):
-        instance = Folder.objects.get(parent=None, rlc=request.user.rlc)
+        instance, created = Folder.objects.get_or_create(parent=None, rlc=request.user.rlc)
+        if created:
+            instance.name = 'files'
+            instance.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
