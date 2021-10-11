@@ -19,7 +19,6 @@ from django.urls import path, include
 
 router = DefaultRouter()
 router.register("origin_countries", OriginCountryViewSet)
-router.register("record_tags", RecordTagViewSet)
 router.register("record_document_tags", RecordDocumentTagViewSet)
 router.register("record_deletion_requests", EncryptedRecordDeletionRequestViewSet)
 router.register("record_encryptions", RecordEncryptionViewSet)
@@ -34,7 +33,6 @@ router.register('tags', TagViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("statics/", StaticViewSet.as_view()),
     path(
         "process_record_deletion_request/",
         EncryptedRecordDeletionProcessViewSet.as_view(),

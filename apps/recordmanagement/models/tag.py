@@ -15,15 +15,3 @@ class Tag(models.Model):
 
     def __str__(self):
         return 'tag: {}; name: {}; rlc: {};'.format(self.pk, self.name, self.rlc)
-
-
-class RecordTag(models.Model):
-    name = models.CharField(max_length=200, unique=True)
-
-    class Meta:
-        verbose_name = "RecordTag"
-        verbose_name_plural = "RecordTags"
-        ordering = ['name']
-
-    def __str__(self):
-        return "recordTag: {}; name: {};".format(self.pk, self.name)

@@ -1,14 +1,9 @@
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 
-from apps.recordmanagement.models.record_tag import RecordTag, Tag
-from apps.recordmanagement.serializers import RecordTagSerializer, TagSerializer
+from apps.recordmanagement.models.tag import Tag
+from apps.recordmanagement.serializers import TagSerializer
 from rest_framework import viewsets, status
-
-
-class RecordTagViewSet(viewsets.ModelViewSet):
-    queryset = RecordTag.objects.all()
-    serializer_class = RecordTagSerializer
 
 
 class TagViewSet(viewsets.ModelViewSet):

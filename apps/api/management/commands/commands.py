@@ -1,18 +1,3 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2020  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from apps.api.models import *
 from apps.recordmanagement.models import *
 from apps.api.management.commands.fixtures import Fixtures
@@ -53,13 +38,11 @@ def add_permissions():
 def reset_db():
     UserProfile.objects.all().delete()
     OriginCountry.objects.all().delete()
-    RecordTag.objects.all().delete()
     Group.objects.all().delete()
     HasPermission.objects.all().delete()
     Permission.objects.all().delete()
     Rlc.objects.all().delete()
     RecordDocumentTag.objects.all().delete()
-    NewUserRequest.objects.all().delete()
     File.objects.all().delete()
     Folder.objects.all().delete()
     FolderPermission.objects.all().delete()
@@ -84,8 +67,6 @@ def reset_db_encrypted():
 
 
 def populate_deploy_db():
-    Fixtures.create_real_tags()
-    Fixtures.create_real_document_tags()
     Fixtures.create_real_origin_countries()
     add_permissions()
 

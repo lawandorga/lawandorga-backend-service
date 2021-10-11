@@ -4,11 +4,10 @@ from apps.recordmanagement.models.record_document_tag import RecordDocumentTag
 from apps.recordmanagement.models.record_encryption import RecordEncryption
 from apps.recordmanagement.models.encrypted_client import EncryptedClient
 from apps.recordmanagement.models.encrypted_record import EncryptedRecord
-from apps.recordmanagement.models.record_tag import RecordTag
 from apps.collab.static.collab_permissions import get_all_collab_permission_strings
 from apps.files.static.folder_permissions import get_all_folder_permissions_strings
 from apps.api.models.has_permission import HasPermission
-from apps.recordmanagement.models import OriginCountry
+from apps.recordmanagement.models import OriginCountry, Tag
 from apps.api.models.permission import Permission
 from apps.static.permissions import get_all_permissions_strings
 from apps.static.encryption import AESEncryption
@@ -60,11 +59,7 @@ def create_fixtures():
         "Eheschließung",
         "Verlobung",
     ]
-    [RecordTag.objects.create(name=tag) for tag in tags]
-
-    # create record document tags
-    tags = ["Official Document", "Pleading", "Proof", "Passport"]
-    [RecordDocumentTag.objects.create(name=tag) for tag in tags]
+    [Tag.objects.create(name=tag) for tag in tags]
 
     # create collab permissions
     [
@@ -436,7 +431,7 @@ def create_records(
     clients: [EncryptedClient], users: [UserProfile], rlc: Rlc
 ) -> [EncryptedRecord]:
     assert len(clients) > 9
-    tags = RecordTag.objects.all()
+    tags = list(Tag.objects.all())
 
     records = [
         (
@@ -602,7 +597,7 @@ def create_records(
         for user in record[9]:
             created_record.working_on_record.add(user)
         for tag in record[10]:
-            created_record.tagged.add(tag)
+            created_record.tags.add(tag)
         # secure the record
         aes_key = AESEncryption.generate_secure_key()
         users_with_permission = created_record.get_users_who_should_be_allowed_to_decrypt()
@@ -668,7 +663,7 @@ def create_informative_record(
     for user in record_users:
         record.working_on_record.add(user)
     for tag in [choice(tags), choice(tags)]:
-        record.tagged.add(tag)
+        record.tags.add(tag)
 
     # encrypt the record
     aes_key = AESEncryption.generate_secure_key()

@@ -60,7 +60,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self) -> QuerySet:
         return EncryptedRecord.objects.filter(from_rlc=self.request.user.rlc).prefetch_related('working_on_record',
-                                                                                               'tagged', 'tags')
+                                                                                               'tags')
 
     def list(self, request, *args, **kwargs):
         if (
@@ -183,8 +183,6 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
                         encryption.encrypt(consultant.get_public_key())
                         encryption.save()
                 self.instance.working_on_record.set(value)
-            elif attr == 'tagged':
-                self.instance.tagged.set(value)
             elif attr == 'tags':
                 self.instance.tags.set(value)
             else:

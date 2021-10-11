@@ -13,7 +13,7 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from apps.recordmanagement.models import RecordTag, Tag
+from apps.recordmanagement.models import Tag
 from apps.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
 from apps.api.models.rlc import Rlc
@@ -44,7 +44,6 @@ class EncryptedRecord(EncryptedModelMixin, models.Model):
     working_on_record = models.ManyToManyField(
         UserProfile, related_name="working_on_e_record"
     )
-    tagged = models.ManyToManyField(RecordTag, related_name="e_tagged", blank=True)
     tags = models.ManyToManyField(Tag, related_name='records')
 
     record_states_possible = (

@@ -1,27 +1,7 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
 from apps.api.models import *
 from apps.collab.models import CollabPermission
 from apps.collab.static.collab_permissions import get_all_collab_permission_strings
-from apps.recordmanagement.models import (
-    OriginCountry,
-    RecordDocumentTag,
-    RecordTag,
-)
+from apps.recordmanagement.models import OriginCountry
 from apps.static.permissions import get_all_permissions_strings
 from apps.files.models import FolderPermission
 from apps.files.static.folder_permissions import get_all_folder_permissions_strings
@@ -246,12 +226,6 @@ class Fixtures:
             AddMethods.add_country(country)
 
     @staticmethod
-    def create_real_permissions():
-        permissions = get_all_permissions_strings()
-        for permission in permissions:
-            AddMethods.add_permission(permission)
-
-    @staticmethod
     def create_real_permissions_no_duplicates():
         permissions = get_all_permissions_strings()
         for permission in permissions:
@@ -270,117 +244,6 @@ class Fixtures:
         collab_permissions = get_all_collab_permission_strings()
         for permission in collab_permissions:
             CollabPermission.objects.get_or_create(name=permission)
-
-    @staticmethod
-    def create_real_tags():
-        tags = [
-            ("Familiennachzug",),
-            ("Dublin IV",),
-            ("Arbeitserlaubnis",),
-            ("Flüchtlingseigenschaft",),
-            ("subsidiärer Schutz",),
-            ("Eheschließung",),
-            ("Verlobung",),
-            ("illegale Ausreise aus dem Bundesgebiet",),
-            ("Untertauchen",),
-            ("Kinder anerkennen",),
-            ("Ausbildung",),
-            ("Geburt ",),
-            ("Eines Kindes im Asylverfahren",),
-            ("Duldung",),
-            ("Ausbildungsduldung",),
-            ("Visum",),
-            ("Anhörung",),
-            ("Wechsel der Unterkunft",),
-            ("Wohnsitzauflage",),
-            ("Folgeantrag",),
-            ("Zweitantrag",),
-            ("Unterbringung im Asylverfahren",),
-            ("Widerruf der Asylberechtigung",),
-            ("Rücknahme der Asyberechtigung",),
-            ("Passbeschaffung",),
-            ("Mitwirkungspflichten",),
-            ("Nichtbetreiben des Verfahrens",),
-            ("Krankheit im Asylverfahren",),
-            ("Familienasyl",),
-            ("UmF",),
-            ("Familienzusammenführung nach Dublin III",),
-            ("Negativbescheid",),
-            ("Relocation",),
-            ("Resettlement",),
-            ("Asylbewerberleistungsgesetz",),
-            ("Kirchenasyl",),
-            ("Asylantrag",),
-            ("Abschiebung",),
-            ("Untätigkeitsklage",),
-            ("Studium",),
-            ("Strafverfolgung",),
-            ("Sonstiges",),
-            ("Aufenthaltserlaubnis",),
-            ("Aufenthaltsgestattung",),
-            ("Niederlassungserlaubnis",),
-            ("Einbürgerung",),
-            ("Staatsbürgerschaft",),
-        ]
-        for tag in tags:
-            AddMethods.add_record_tag(tag)
-
-    @staticmethod
-    def create_real_document_tags():
-        tags = [
-            ("Pass",),
-            ("Passersatzpapier",),
-            ("Geburtsurkunde",),
-            ("Heiratsurkunde",),
-            ("Ankunftsnachweis",),
-            ("Duldung",),
-            ("Aufenthaltsgestattung",),
-            ("Aufenthaltstitel",),
-            ("Bescheid (Ablehnung)",),
-            ("Bescheid (Flüchtling)",),
-            ("Bescheid (subsidiärer Schutz)",),
-            ("Bescheid (Abschiebeverbote)",),
-            ("Bescheid (Sozialleistungen)",),
-            ("Bescheid (Arbeiten)",),
-            ("Bescheid (Wohnen)",),
-            ("Widerspruch",),
-            ("Antwortschreiben",),
-            ("Erwiderung",),
-            ("Sachstandsanfrage",),
-            ("Klageschrift",),
-            ("Akteneinsicht",),
-            ("Anfrage",),
-            ("Terminvereinbarung",),
-            ("Attest",),
-            ("Verschwiegenheitserklärung",),
-            ("Datenschutzerklärung",),
-            ("Erklärung",),
-            ("Vertrag",),
-            ("Antrag",),
-            ("Zeugnis",),
-            ("Zertifikat",),
-            ("Vollmacht",),
-            ("Anhörungsvorbereitung",),
-            ("Haftbeschluss",),
-            ("Anzeige",),
-            ("Strafanzeige",),
-            ("Medizinischer Befund",),
-            ("Haftantrag",),
-            ("Haftaufhebung",),
-            ("Haftbeschwerde",),
-            ("Antwort an",),
-            ("Amtsgericht",),
-            ("Anwältin/Anwalt",),
-            ("Beratungsstelle",),
-            ("Korrespondenz",),
-            ("Supervisor*in",),
-            ("Dolmetscher*in",),
-            ("Sonstiges",),
-            ("Antwort von",),
-            ("Verwaltungsgericht",),
-        ]
-        for tag in tags:
-            AddMethods.add_record_document_tag(tag)
 
 
 class AddMethods:
@@ -410,42 +273,6 @@ class AddMethods:
         if isinstance(permission, str):
             permission = FolderPermission(name=permission)
         permission.save()
-
-    @staticmethod
-    def add_record_tag(tag):
-        """
-		creates tag in database
-		Args:
-			tag: (name of tag [String]) or
-				(id [number], name [String])
-
-		Returns:
-
-		"""
-        if tag.__len__() == 1:
-            t = RecordTag(name=tag[0])
-        elif tag.__len__() == 2:
-            t = RecordTag(id=tag[0], name=tag[1])
-        else:
-            raise AttributeError
-        try:
-            t.save()
-        except Exception as e:
-            print("error at saving record tag: " + str(tag))
-            pass
-
-    @staticmethod
-    def add_record_document_tag(tag):
-        if tag.__len__() == 1:
-            t = RecordDocumentTag(name=tag[0])
-        elif tag.__len__() == 2:
-            t = RecordDocumentTag(id=tag[0], name=tag[1])
-        else:
-            raise AttributeError
-        try:
-            t.save()
-        except:
-            pass
 
     @staticmethod
     def add_country(country):

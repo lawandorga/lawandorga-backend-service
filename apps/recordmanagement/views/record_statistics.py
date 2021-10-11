@@ -17,22 +17,23 @@
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
-from apps.recordmanagement import models
+
+from apps.recordmanagement.models import Tag, EncryptedRecord
 
 
 class RecordStatisticsViewSet(APIView):
     def get(self, request: Request):
-        record_tags = models.RecordTag.objects.all()
+        record_tags = Tag.objects.all()
         out_tags = []
         for tag in record_tags:
             out_tags.append(
                 {
                     "name": tag.name,
-                    "value": tag.e_tagged.filter(from_rlc=request.user.rlc).count(),
+                    "value": tag.records.filter(from_rlc=request.user.rlc).count(),
                 }
             )
 
-        rlc_records: [models.EncryptedRecord] = models.EncryptedRecord.objects.filter(
+        rlc_records: [EncryptedRecord] = EncryptedRecord.objects.filter(
             from_rlc=request.user.rlc
         )
         total_records = rlc_records.count()

@@ -1,4 +1,4 @@
-from apps.recordmanagement.serializers import RecordTagNameSerializer, TagSerializer
+from apps.recordmanagement.serializers import TagSerializer
 from apps.recordmanagement.models import EncryptedRecord
 from rest_framework.exceptions import ValidationError
 from apps.api.serializers import UserProfileNameSerializer
@@ -33,7 +33,6 @@ class EncryptedRecordSerializer(serializers.ModelSerializer):
 
 class EncryptedRecordListSerializer(EncryptedRecordSerializer):
     access = serializers.SerializerMethodField('get_access')
-    tagged = RecordTagNameSerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     working_on_record = UserProfileNameSerializer(many=True, read_only=True)
 
@@ -45,7 +44,6 @@ class EncryptedRecordListSerializer(EncryptedRecordSerializer):
             "official_note",
             "record_token",
             "working_on_record",
-            "tagged",
             'tags',
             "access",
             "created_on",
@@ -61,7 +59,6 @@ class EncryptedRecordListSerializer(EncryptedRecordSerializer):
 
 
 class EncryptedRecordDetailSerializer(EncryptedRecordSerializer):
-    tagged = RecordTagNameSerializer(many=True, read_only=True)
     working_on_record = UserProfileNameSerializer(many=True, read_only=True)
 
 
