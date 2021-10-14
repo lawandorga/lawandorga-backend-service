@@ -112,7 +112,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def has_permission(self, permission, for_user=None, for_group=None, for_rlc=None):
         if isinstance(permission, str):
-            permission, created = Permission.objects.get_or_create(name=permission)
+            try:
+                permission = Permission.objects.get(name=permission)
+            except ObjectDoesNotExist:
+                return False
 
         as_user = self.__has_as_user_permission(permission)
         as_group = self.__has_as_group_member_permission(permission)
@@ -249,6 +252,7 @@ class RlcUser(models.Model):
     city = models.CharField(max_length=255, default=None, null=True, blank=True)
     postal_code = models.CharField(max_length=255, default=None, null=True, blank=True)
     locked = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     rlc = models.ForeignKey("Rlc", related_name="users", on_delete=models.PROTECT, blank=True, null=True)
     accepted = models.BooleanField(default=False)
 

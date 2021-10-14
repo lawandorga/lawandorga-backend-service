@@ -1,4 +1,5 @@
-from apps.static.permissions import PERMISSION_MANAGE_USERS, get_all_permissions_strings
+from apps.static.permissions import PERMISSION_MANAGE_USERS, get_all_permissions_strings, \
+    PERMISSION_MANAGE_PERMISSIONS_RLC
 from rest_framework.test import APIRequestFactory, force_authenticate
 from apps.api.models import UserProfile, RlcUser, Rlc, Permission
 from apps.api.views import UserViewSet
@@ -12,11 +13,14 @@ class UserViewSetWorkingTests(TestCase):
         self.user = UserProfile.objects.create(email='test@test.de', name='Dummy 1', rlc=self.rlc)
         self.user.set_password('test')
         self.user.save()
+        self.rlc_user = RlcUser.objects.create(user=self.user, email_confirmed=True, accepted=True)
         self.another_user = UserProfile.objects.create(email='test_new@test.de', name='Dummy 2', rlc=self.rlc)
         self.another_user.set_password('test')
         self.another_user.save()
+        self.another_rlc_user = RlcUser.objects.create(user=self.another_user, email_confirmed=True, accepted=True)
         self.rlc.generate_keys()
         self.private_key = self.user.encryption_keys.private_key.decode('utf-8')
+        self.create_permissions()
 
     def create_rlc_user(self):
         return RlcUser.objects.create(user=self.user, email_confirmed=True, accepted=True)
@@ -44,7 +48,7 @@ class UserViewSetWorkingTests(TestCase):
 
     def test_email_confirmation_token_works(self):
         view = UserViewSet.as_view(actions={'post': 'activate'})
-        rlc_user = self.create_rlc_user()
+        rlc_user = self.rlc_user
         token = rlc_user.get_email_confirmation_token()
         request = self.factory.post('')
         response = view(request, pk=rlc_user.id, token=token)
@@ -99,7 +103,7 @@ class UserViewSetWorkingTests(TestCase):
 
     def test_retrieve_works(self):
         view = UserViewSet.as_view(actions={'get': 'retrieve'})
-        rlc_user = self.create_rlc_user()
+        rlc_user = self.rlc_user
         url = '/api/users/{}/'.format(rlc_user.pk)
         request = self.factory.get(url)
         force_authenticate(request, rlc_user.user)
@@ -108,7 +112,7 @@ class UserViewSetWorkingTests(TestCase):
 
     def test_destroy_works_on_myself(self):
         view = UserViewSet.as_view(actions={'delete': 'destroy'})
-        rlc_user = self.create_rlc_user()
+        rlc_user = self.rlc_user
         url = '/api/users/{}/'.format(rlc_user.pk)
         request = self.factory.delete(url)
         force_authenticate(request, rlc_user.user)
@@ -116,10 +120,9 @@ class UserViewSetWorkingTests(TestCase):
         self.assertEqual(response.status_code, 204)
 
     def test_destroy_works(self):
-        self.create_permissions()
         view = UserViewSet.as_view(actions={'delete': 'destroy'})
-        rlc_user = self.create_rlc_user()
-        another_rlc_user = self.create_another_rlc_user()
+        rlc_user = self.rlc_user
+        another_rlc_user = self.another_rlc_user
         rlc_user.grant(PERMISSION_MANAGE_USERS)
         request = self.factory.delete('')
         force_authenticate(request, rlc_user.user)
@@ -128,18 +131,27 @@ class UserViewSetWorkingTests(TestCase):
 
     def test_update_works(self):
         view = UserViewSet.as_view(actions={'patch': 'partial_update'})
-        rlc_user = self.create_rlc_user()
+        rlc_user = self.rlc_user
         data = {
             'phone': '3243214321',
         }
-        url = '/api/users/{}/'.format(rlc_user.pk)
-        request = self.factory.patch(url, data)
+        request = self.factory.patch('', data)
+        force_authenticate(request, self.user)
         response = view(request, pk=rlc_user.pk)
-        self.assertNotEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
+
+    def test_update_works_on_another_user(self):
+        self.rlc_user.grant(PERMISSION_MANAGE_USERS)
+        view = UserViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {'phone': '3243214321'}
+        request = self.factory.patch('', data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=self.another_rlc_user.pk)
+        self.assertEqual(response.status_code, 200)
 
     def test_accept_works(self):
         view = UserViewSet.as_view(actions={'post': 'accept'})
-        rlc_user = self.create_rlc_user()
+        rlc_user = self.rlc_user
         another_rlc_user = RlcUser.objects.create(user=self.another_user, email_confirmed=True, accepted=False)
         request = self.factory.post('', HTTP_PRIVATE_KEY=self.private_key)
         force_authenticate(request, rlc_user.user)
@@ -148,10 +160,21 @@ class UserViewSetWorkingTests(TestCase):
 
     def test_unlock_works(self):
         view = UserViewSet.as_view(actions={'post': 'unlock'})
-        rlc_user = self.create_rlc_user()
+        rlc_user = self.rlc_user
         another_rlc_user = RlcUser.objects.create(user=self.another_user, email_confirmed=True, locked=True,
                                                   accepted=True)
         request = self.factory.post('', HTTP_PRIVATE_KEY=self.private_key)
+        force_authenticate(request, rlc_user.user)
+        response = view(request, pk=another_rlc_user.pk)
+        self.assertEqual(response.status_code, 200)
+
+    def test_permissions_work(self):
+        view = UserViewSet.as_view(actions={'get': 'permissions'})
+        rlc_user = self.rlc_user
+        rlc_user.grant(PERMISSION_MANAGE_PERMISSIONS_RLC)
+        another_rlc_user = RlcUser.objects.create(user=self.another_user, email_confirmed=True, locked=True,
+                                                  accepted=True)
+        request = self.factory.get('')
         force_authenticate(request, rlc_user.user)
         response = view(request, pk=another_rlc_user.pk)
         self.assertEqual(response.status_code, 200)
@@ -223,6 +246,21 @@ class UserViewSetErrorTests(TestCase):
         request = self.factory.post('/api/users/login/', data)
         response = view(request)
         self.assertContains(response, 'non_field_errors', status_code=400)
+
+    def test_permissions_deny_access_without_permission(self):
+        view = UserViewSet.as_view(actions={'get': 'permissions'})
+        request = self.factory.get('')
+        force_authenticate(request, self.user)
+        response = view(request, pk=self.another_rlc_user.pk)
+        self.assertEqual(response.status_code, 403)
+
+    def test_update_denys_without_permission(self):
+        view = UserViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {'phone': '3243214321'}
+        request = self.factory.patch('', data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=self.another_rlc_user.pk)
+        self.assertEqual(response.status_code, 403)
 
 
 class UserViewSetAccessTests(TestCase):

@@ -31,12 +31,13 @@ class RlcUserUpdateSerializer(RlcUserSerializer):
 
     class Meta:
         model = RlcUser
-        fields = ['name', 'phone_number', 'birthday', 'street', 'city', 'postal_code']
+        fields = ['name', 'phone_number', 'birthday', 'street', 'city', 'postal_code', 'is_active']
 
     def update(self, instance, validated_data):
         instance = super().update(instance, validated_data)
-        instance.user.name = validated_data['name']
-        instance.user.save()
+        if 'name' in validated_data:
+            instance.user.name = validated_data['name']
+            instance.user.save()
         return instance
 
 

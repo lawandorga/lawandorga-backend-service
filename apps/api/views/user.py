@@ -1,13 +1,13 @@
 from rest_framework.authtoken.models import Token
 from apps.api.models.permission import Permission
 from apps.recordmanagement.models import EncryptedRecordDeletionRequest, EncryptedRecordPermission
-from apps.static.permissions import PERMISSION_MANAGE_USERS
-from rest_framework.exceptions import ParseError
+from apps.static.permissions import PERMISSION_MANAGE_USERS, PERMISSION_PROCESS_RECORD_DELETION_REQUESTS, \
+    PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC, PERMISSION_MANAGE_PERMISSIONS_RLC
+from rest_framework.exceptions import ParseError, PermissionDenied
 from rest_framework.decorators import action
 from apps.api.serializers import (
     RlcUserCreateSerializer,
     RlcUserForeignSerializer,
-    UserProfileSerializer,
     EmailSerializer,
     UserPasswordResetConfirmSerializer, HasPermissionAllNamesSerializer, RlcSerializer, RlcUserSerializer,
     AuthTokenSerializer, UserProfileNameSerializer, RlcUserListSerializer, RlcUserUpdateSerializer,
@@ -51,7 +51,8 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if self.action in ['activate', 'password_reset_confirm']:
             return RlcUser.objects.all()
-        elif self.action in ['list', 'retrieve', 'accept', 'unlock', 'destroy']:
+        elif self.action in ['list', 'retrieve', 'accept', 'unlock', 'destroy', 'permissions', 'update',
+                             'partial_update']:
             return RlcUser.objects.filter(user__rlc=self.request.user.rlc)
         return RlcUser.objects.filter(pk=self.request.user.rlc_user.id)
 
@@ -68,7 +69,10 @@ class UserViewSet(viewsets.ModelViewSet):
         if not request.user.has_permission(PERMISSION_MANAGE_USERS) and request.user.rlc_user.pk != rlc_user.pk:
             data = {"detail": "You don't have the necessary permission to do this."}
             return Response(data, status=status.HTTP_403_FORBIDDEN)
-        return super().update(request, *args, **kwargs)
+        serializer = self.get_serializer(rlc_user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(RlcUserListSerializer(rlc_user).data)
 
     def destroy(self, request, *args, **kwargs):
         rlc_user = self.get_object()
@@ -97,6 +101,13 @@ class UserViewSet(viewsets.ModelViewSet):
             message = (
                 "Your account is temporarily blocked, because your keys need to be recreated. "
                 "Please tell an admin to press the unlock button on your user."
+            )
+            return Response(
+                {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
+            )
+        if not user.rlc_user.is_active:
+            message = (
+                "You can not login. Your account was deactivated by one of your rlc admins."
             )
             return Response(
                 {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
@@ -130,13 +141,25 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def admin(self, request, *args, **kwargs):
         instance = request.user
+        if instance.has_permission(PERMISSION_MANAGE_USERS):
+            profiles = UserProfile.objects.filter(
+                Q(rlc=instance.rlc) & (Q(rlc_user__locked=True) | Q(rlc_user__accepted=False))).count()
+        else:
+            profiles = 0
+        if instance.has_permission(PERMISSION_PROCESS_RECORD_DELETION_REQUESTS):
+            record_deletion_requests = EncryptedRecordDeletionRequest.objects.filter(record__from_rlc=instance.rlc,
+                                                                                     state='re').count()
+        else:
+            record_deletion_requests = 0
+        if instance.has_permission(PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC):
+            record_permit_requests = EncryptedRecordPermission.objects.filter(record__from_rlc=instance.rlc,
+                                                                              state='re').count()
+        else:
+            record_permit_requests = 0
         data = {
-            'profiles': UserProfile.objects.filter(
-                Q(rlc=instance.rlc) & (Q(rlc_user__locked=True) | Q(rlc_user__accepted=False))).count(),
-            'record_deletion_requests': EncryptedRecordDeletionRequest.objects.filter(record__from_rlc=instance.rlc,
-                                                                                      state='re').count(),
-            'record_permit_requests': EncryptedRecordPermission.objects.filter(record__from_rlc=instance.rlc,
-                                                                               state='re').count()
+            'profiles': profiles,
+            'record_deletion_requests': record_deletion_requests,
+            'record_permit_requests': record_permit_requests
         }
         return Response(data)
 
@@ -261,9 +284,13 @@ class UserViewSet(viewsets.ModelViewSet):
             raise ParseError('Not all keys could be handed over. Please tell another admin to unlock this user.')
 
     @action(detail=True, methods=['GET'])
-    def permissions(self, *args, **kwargs):
+    def permissions(self, request, *args, **kwargs):
         rlc_user = self.get_object()
-        user_permissions = rlc_user.user.get_permissions()
+        if request.user.has_permission(PERMISSION_MANAGE_PERMISSIONS_RLC):
+            user_permissions = rlc_user.user.get_permissions()
+        else:
+            raise PermissionDenied(
+                "You need the permission 'manage_permissions_rlc' to see the permissions of this user")
         return Response(HasPermissionAllNamesSerializer(user_permissions, many=True).data)
 
     @action(detail=True, methods=['post'])
