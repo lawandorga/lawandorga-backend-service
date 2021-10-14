@@ -55,7 +55,6 @@ class UserViewSetWorkingTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_login_works(self):
-        RlcUser.objects.create(user=self.user, email_confirmed=True, accepted=True)
         view = UserViewSet.as_view(actions={'post': 'login'})
         data = {
             'email': 'test@test.de',
@@ -70,7 +69,6 @@ class UserViewSetWorkingTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_password_forgotten_works(self):
-        RlcUser.objects.create(user=self.user, email_confirmed=True, accepted=True)
         view = UserViewSet.as_view(actions={'post': 'password_reset'})
         data = {
             'email': 'test@test.de'
@@ -81,7 +79,7 @@ class UserViewSetWorkingTests(TestCase):
 
     def test_reset_password_works(self):
         view = UserViewSet.as_view(actions={'post': 'password_reset_confirm'})
-        rlc_user = RlcUser.objects.create(user=self.user, email_confirmed=True, accepted=True)
+        rlc_user = self.rlc_user
         data = {
             'token': rlc_user.get_password_reset_token(),
             'new_password': 'test1234',
@@ -152,31 +150,30 @@ class UserViewSetWorkingTests(TestCase):
     def test_accept_works(self):
         view = UserViewSet.as_view(actions={'post': 'accept'})
         rlc_user = self.rlc_user
-        another_rlc_user = RlcUser.objects.create(user=self.another_user, email_confirmed=True, accepted=False)
+        self.another_rlc_user.accepted = False
+        self.another_rlc_user.save()
         request = self.factory.post('', HTTP_PRIVATE_KEY=self.private_key)
         force_authenticate(request, rlc_user.user)
-        response = view(request, pk=another_rlc_user.pk)
+        response = view(request, pk=self.another_rlc_user.pk)
         self.assertEqual(response.status_code, 200)
 
     def test_unlock_works(self):
         view = UserViewSet.as_view(actions={'post': 'unlock'})
         rlc_user = self.rlc_user
-        another_rlc_user = RlcUser.objects.create(user=self.another_user, email_confirmed=True, locked=True,
-                                                  accepted=True)
+        self.another_rlc_user.locked = True
+        self.another_rlc_user.save()
         request = self.factory.post('', HTTP_PRIVATE_KEY=self.private_key)
         force_authenticate(request, rlc_user.user)
-        response = view(request, pk=another_rlc_user.pk)
+        response = view(request, pk=self.another_rlc_user.pk)
         self.assertEqual(response.status_code, 200)
 
     def test_permissions_work(self):
         view = UserViewSet.as_view(actions={'get': 'permissions'})
         rlc_user = self.rlc_user
         rlc_user.grant(PERMISSION_MANAGE_PERMISSIONS_RLC)
-        another_rlc_user = RlcUser.objects.create(user=self.another_user, email_confirmed=True, locked=True,
-                                                  accepted=True)
         request = self.factory.get('')
         force_authenticate(request, rlc_user.user)
-        response = view(request, pk=another_rlc_user.pk)
+        response = view(request, pk=self.another_rlc_user.pk)
         self.assertEqual(response.status_code, 200)
 
 
