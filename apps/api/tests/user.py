@@ -19,7 +19,7 @@ class UserViewSetWorkingTests(TestCase):
         self.another_user.save()
         self.another_rlc_user = RlcUser.objects.create(user=self.another_user, email_confirmed=True, accepted=True)
         self.rlc.generate_keys()
-        self.private_key = self.user.encryption_keys.private_key.decode('utf-8')
+        self.private_key = bytes(self.user.encryption_keys.private_key).decode('utf-8')
         self.create_permissions()
 
     def create_rlc_user(self):
