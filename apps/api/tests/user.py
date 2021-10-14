@@ -44,7 +44,7 @@ class UserViewSetWorkingTests(TestCase):
         request = self.factory.post('', data)
         response = view(request)
         self.assertEqual(response.status_code, 201)
-        self.assertTrue(RlcUser.objects.exists())
+        self.assertTrue(RlcUser.objects.filter(user__email='test2@test.de').exists())
 
     def test_email_confirmation_token_works(self):
         view = UserViewSet.as_view(actions={'post': 'activate'})

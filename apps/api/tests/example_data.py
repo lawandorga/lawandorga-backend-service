@@ -183,7 +183,6 @@ def create_users(rlc):
             email=user_data[0],
             name=user_data[1],
             rlc=rlc,
-            is_active=True,
         )
         RlcUser.objects.create(
             user=user,
@@ -205,7 +204,6 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
         name="Mr Dummy",
         email="dummy@rlcm.de",
         rlc=rlc,
-        is_active=True,
     )
     user.set_password(dummy_password)
     user.save()
@@ -218,7 +216,6 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
         name="Tester 1",
         email="tester1@law-orga.de",
         rlc=rlc,
-        is_active=True,
     )
     user.set_password("qwe123")
     user.save()
@@ -229,7 +226,6 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
         name="Tester 2",
         email="tester2@law-orga.de",
         rlc=rlc,
-        is_active=True,
     )
     user.set_password("qwe123")
     user.save()
@@ -245,7 +241,6 @@ def create_inactive_user(rlc):
         name="Mr. Inactive",
         email="inactive@rlcm.de",
         rlc=rlc,
-        is_active=False
     )
     user.set_password("qwe123")
     user.save()

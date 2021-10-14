@@ -65,7 +65,7 @@ class ExampleDataTestCase(TestCase):
         record2 = EncryptedRecord.objects.get(pk=record1.pk)
         self.assertNotEqual(record1.note, bytes())
         self.assertNotEqual(record2.note, bytes())
-        self.assertEqual(record1.note, record2.note)
+        self.assertEqual(record1.note, bytes(record2.note))
         record1.decrypt(self.dummy, self.dummy_private_key)
         record1.encrypt(self.dummy, self.dummy_private_key)
         record1.decrypt(self.dummy, self.dummy_private_key)
