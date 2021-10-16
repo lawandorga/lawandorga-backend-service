@@ -43,7 +43,6 @@ class UserViewSetWorkingTests(TestCase):
         }
         request = self.factory.post('', data)
         response = view(request)
-        print(response.data)
         self.assertEqual(response.status_code, 201)
         self.assertTrue(RlcUser.objects.filter(user__email='test2@test.de').exists())
 
