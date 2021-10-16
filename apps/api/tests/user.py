@@ -39,7 +39,7 @@ class UserViewSetWorkingTests(TestCase):
             'email': 'test2@test.de',
             'password': 'test',
             'password_confirm': 'test',
-            'rlc': 1
+            'rlc': self.rlc.id
         }
         request = self.factory.post('', data)
         response = view(request)
