@@ -1,44 +1,22 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.forms.models import model_to_dict
-
-from apps.api.errors import CustomError
 from apps.api.models.group import Group
 from apps.api.models.has_permission import HasPermission
-from apps.api.models.permission import Permission
-from apps.static import error_codes
 from apps.static.permissions import (
     PERMISSION_MANAGE_PERMISSIONS_RLC,
     get_record_encryption_keys_permissions,
 )
-from apps.api.models import UserProfile, Rlc
+from apps.api.models import UserProfile
 from apps.api.serializers import (
     OldHasPermissionSerializer,
     UserProfileNameSerializer,
-    GroupSerializer, HasPermissionNameSerializer, HasPermissionAllNamesSerializer,
+    GroupSerializer, HasPermissionAllNamesSerializer,
 )
 from apps.recordmanagement.helpers import check_encryption_key_holders_and_grant
-from apps.static.middleware import get_private_key_from_request
 
 
 class HasPermissionViewSet(viewsets.ModelViewSet):
@@ -93,11 +71,3 @@ class HasPermissionStaticsViewSet(APIView):
             "groups": GroupSerializer(groups, many=True).data,
         }
         return Response(data)
-
-
-class UserHasPermissionsViewSet(APIView):
-    def get(self, request):
-        user_permissions = [
-            model_to_dict(perm) for perm in request.user.get_all_user_permissions()
-        ]
-        return Response({"user_permissions": user_permissions})
