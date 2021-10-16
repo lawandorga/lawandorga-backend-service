@@ -244,6 +244,18 @@ class UserViewSetErrorTests(TestCase):
         response = view(request)
         self.assertContains(response, 'non_field_errors', status_code=400)
 
+    def test_inactive_user_can_not_login(self):
+        self.rlc_user.is_active = False
+        self.rlc_user.save()
+        view = UserViewSet.as_view(actions={'post': 'login'})
+        data = {
+            'email': 'test@test.de',
+            'password': 'test',
+        }
+        request = self.factory.post('/api/users/login/', data)
+        response = view(request)
+        self.assertContains(response, 'non_field_errors', status_code=400)
+
     def test_permissions_deny_access_without_permission(self):
         view = UserViewSet.as_view(actions={'get': 'permissions'})
         request = self.factory.get('')
