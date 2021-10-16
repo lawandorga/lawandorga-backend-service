@@ -15,5 +15,4 @@ router.register("notification_groups", views.NotificationGroupViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("has_permission_statics/", views.HasPermissionStaticsViewSet.as_view()),
 ]

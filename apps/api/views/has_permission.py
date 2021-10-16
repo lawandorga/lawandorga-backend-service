@@ -3,19 +3,9 @@ from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from apps.api.models.group import Group
 from apps.api.models.has_permission import HasPermission
-from apps.static.permissions import (
-    PERMISSION_MANAGE_PERMISSIONS_RLC,
-    get_record_encryption_keys_permissions,
-)
-from apps.api.models import UserProfile
-from apps.api.serializers import (
-    OldHasPermissionSerializer,
-    UserProfileNameSerializer,
-    GroupSerializer, HasPermissionAllNamesSerializer,
-)
+from apps.static.permissions import PERMISSION_MANAGE_PERMISSIONS_RLC, get_record_encryption_keys_permissions
+from apps.api.serializers import OldHasPermissionSerializer, HasPermissionAllNamesSerializer
 from apps.recordmanagement.helpers import check_encryption_key_holders_and_grant
 
 
@@ -56,18 +46,3 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(HasPermissionAllNamesSerializer(instance=has_permission).data, status=status.HTTP_201_CREATED,
                         headers=headers)
-
-
-class HasPermissionStaticsViewSet(APIView):
-    def get(self, response):
-        if response.user.is_superuser:
-            users = UserProfile.objects.all()
-            groups = Group.objects.all()
-        else:
-            users = UserProfile.objects.filter(rlc=response.user.rlc, is_active=True)
-            groups = Group.objects.filter(from_rlc=response.user.rlc)
-        data = {
-            "users": UserProfileNameSerializer(users, many=True).data,
-            "groups": GroupSerializer(groups, many=True).data,
-        }
-        return Response(data)
