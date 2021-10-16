@@ -1,6 +1,5 @@
 from .origin_country import *
 from .tag import *
-from .record_encryption import *
 from .encrypted_client import *
 from .encrypted_record import *
 from .encrypted_record_message import *
