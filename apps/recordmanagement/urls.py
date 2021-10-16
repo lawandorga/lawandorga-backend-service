@@ -1,6 +1,8 @@
+from apps.recordmanagement.views.questionnaire import QuestionnaireViewSet
 from apps.recordmanagement.views import *
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
+
 
 router = DefaultRouter()
 router.register("origin_countries", OriginCountryViewSet)
@@ -8,6 +10,7 @@ router.register("record_deletion_requests", EncryptedRecordDeletionRequestViewSe
 router.register("record_encryptions", RecordEncryptionViewSet)
 router.register("records", EncryptedRecordViewSet)
 router.register("e_clients", EncryptedClientViewSet)
+router.register('questionnaires', QuestionnaireViewSet)
 router.register("pool_records", PoolRecordViewSet)
 router.register("pool_consultants", PoolConsultantViewSet)
 router.register("consultants", ConsultantViewSet)
