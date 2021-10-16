@@ -10,11 +10,6 @@ router.register("groups", views.GroupViewSet, basename="groups")
 router.register("permissions", views.PermissionViewSet, basename="permissions")
 router.register("has_permission", views.HasPermissionViewSet, basename="has_permission")
 router.register("rlcs", views.RlcViewSet, basename="rlcs")
-router.register(
-    "user_encryption_keys",
-    views.UserEncryptionKeysViewSet,
-    basename="user_encryption_keys",
-)
 router.register("notifications", views.NotificationViewSet)
 router.register("notification_groups", views.NotificationGroupViewSet)
 
