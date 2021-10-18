@@ -28,7 +28,7 @@ class RecordQuestionnaire(models.Model):
     questionnaire = models.ForeignKey(Questionnaire, on_delete=models.PROTECT, related_name='record_questionnaires')
     answer = models.TextField(blank=True)
     answered = models.BooleanField(default=False)
-    code = models.SlugField(unique=True)
+    code = models.SlugField(unique=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
