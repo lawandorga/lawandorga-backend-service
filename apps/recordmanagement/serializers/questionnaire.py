@@ -29,3 +29,15 @@ class RecordQuestionnaireDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordQuestionnaire
         fields = '__all__'
+
+
+class RecordQuestionnaireUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecordQuestionnaire
+        fields = ['answer', 'answered']
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if attrs['answer']:
+            attrs['answered'] = True
+        return attrs
