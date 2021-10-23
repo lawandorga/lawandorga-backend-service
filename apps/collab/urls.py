@@ -18,7 +18,7 @@ from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
 
 from apps.collab.views import (
-    CollabDocumentListViewSet,
+    CollabDocumentViewSet,
     TextDocumentModelViewSet,
     TextDocumentVersionModelViewSet,
 )
@@ -28,9 +28,7 @@ from apps.collab.views.permission_for_collab_document import (
 )
 
 router = DefaultRouter()
-router.register(
-    "collab_documents", CollabDocumentListViewSet, basename="collab_documents"
-)
+router.register("collab_documents", CollabDocumentViewSet, basename="collab_documents")
 router.register("text_documents", TextDocumentModelViewSet, basename="text_documents")
 router.register(
     "text_document_version",

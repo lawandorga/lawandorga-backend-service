@@ -11,6 +11,7 @@ from apps.api.serializers import (
     EmailSerializer,
     UserPasswordResetConfirmSerializer, HasPermissionAllNamesSerializer, RlcSerializer, RlcUserSerializer,
     AuthTokenSerializer, UserProfileNameSerializer, RlcUserListSerializer, RlcUserUpdateSerializer,
+    UserProfileSerializer,
 )
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
@@ -132,9 +133,8 @@ class UserViewSet(viewsets.ModelViewSet):
         # build the response
         data = {
             "token": token.key,
-            "email": user.email,
-            "id": user.pk,
-            "private_key": private_key,
+            "key": private_key,
+            "user": UserProfileSerializer(user).data,
         }
         return Response(data, status=status.HTTP_200_OK)
 
@@ -174,7 +174,7 @@ class UserViewSet(viewsets.ModelViewSet):
         ]
 
         data = {
-            "user": UserProfileNameSerializer(user).data,
+            "user": UserProfileSerializer(user).data,
             "rlc": RlcSerializer(user.rlc).data,
             "notifications": notifications,
             "permissions": user.get_all_user_permissions(),

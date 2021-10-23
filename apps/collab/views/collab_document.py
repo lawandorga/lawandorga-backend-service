@@ -33,7 +33,7 @@ from apps.collab.serializers import (
     CollabDocumentSerializer,
     CollabDocumentTreeSerializer,
     PermissionForCollabDocumentNestedSerializer,
-    PermissionForCollabDocumentSerializer,
+    PermissionForCollabDocumentSerializer, TextDocumentVersionSerializer,
 )
 from apps.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 from apps.static.permissions import (
@@ -43,15 +43,12 @@ from apps.static.permissions import (
 )
 
 
-class CollabDocumentListViewSet(viewsets.ModelViewSet):
-    queryset = CollabDocument.objects.all()
+class CollabDocumentViewSet(viewsets.ModelViewSet):
+    queryset = CollabDocument.objects.none()
     serializer_class = CollabDocumentSerializer
 
     def get_queryset(self) -> QuerySet:
-        if self.request.user.is_superuser:
-            return self.queryset
-        else:
-            return self.queryset.filter(rlc=self.request.user.rlc)
+        return CollabDocument.objects.filter(rlc=self.request.user.rlc)
 
     def list(self, request: Request, **kwargs: Any) -> Response:
         user_has_overall_permission: bool = (
@@ -59,12 +56,12 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
                 PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC, for_rlc=request.user.rlc
             )
             or request.user.has_permission(
-                PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC, for_rlc=request.user.rlc
-            )
+            PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC, for_rlc=request.user.rlc
+        )
             or request.user.has_permission(
-                PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
-                for_rlc=request.user.rlc,
-            )
+            PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
+            for_rlc=request.user.rlc,
+        )
         )
         if user_has_overall_permission:
             queryset = self.get_queryset().exclude(path__contains="/").order_by("path")
@@ -112,6 +109,16 @@ class CollabDocumentListViewSet(viewsets.ModelViewSet):
         ):
             raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
         return super().destroy(request, *args, **kwargs)
+
+    @action(detail=True, methods=['get'])
+    def latest(self, request, *args, **kwargs):
+        instance = self.get_object()
+        versions = instance.versions.all()
+        latest_version = versions.order_by('created').first()
+        latest_version.decrypt(
+            request.user.rlc.get_aes_key(user=request.user,
+                                         private_key_user=request.user.get_private_key(request=request)))
+        return Response(TextDocumentVersionSerializer(latest_version).data)
 
     @action(detail=True, methods=["get", "post"])
     def permissions(self, request: Request, pk: int):

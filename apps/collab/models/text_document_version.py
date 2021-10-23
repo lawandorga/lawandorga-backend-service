@@ -64,9 +64,8 @@ class TextDocumentVersion(
     #
     #     return version
 
-    # def encrypt(self, rlc_aes_key: bytes) -> None:
-    #     super().encrypt(key)
+    def encrypt(self, rlc_aes_key: bytes) -> None:
+        super().encrypt(rlc_aes_key)
 
-    # def decrypt(self, private_key_rlc: str = None) -> None:
-    #     key = RSAEncryption.decrypt(self.encrypted_client_key, private_key_rlc)
-    #     super().decrypt(key)
+    def decrypt(self, private_key_rlc: str = None) -> None:
+        super().decrypt(private_key_rlc)

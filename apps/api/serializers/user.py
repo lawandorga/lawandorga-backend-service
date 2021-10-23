@@ -51,16 +51,10 @@ class RlcUserForeignSerializer(serializers.ModelSerializer):
 # UserProfile
 ###
 class UserProfileSerializer(serializers.ModelSerializer):
-    # make sure select_related('accepted') is set on the user queryset or else the queries will explode
-    accepted = serializers.SerializerMethodField("get_accepted")
-
     class Meta:
         model = UserProfile
         exclude = ["groups", "user_permissions"]
         extra_kwargs = {"password": {"write_only": True}}
-
-    def get_accepted(self, obj):
-        return obj.rlc_user.accepted
 
 
 class RlcUserCreateSerializer(UserProfileSerializer):
