@@ -161,6 +161,6 @@ class TextDocumentModelViewSet(
 
             version.decrypt(key)
             return Response(
-                TextDocumentVersionDetailSerializer(version).data,
+                TextDocumentVersionSerializer(version).data,
                 status=status.HTTP_201_CREATED,
             )

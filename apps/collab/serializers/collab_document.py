@@ -59,7 +59,8 @@ class CollabDocumentPermissionListSerializer(serializers.ModelSerializer):
 
 
 class CollabDocumentTreeSerializer(serializers.ModelSerializer):
-    child_pages = serializers.SerializerMethodField("get_sub_tree")
+    children = serializers.SerializerMethodField("get_sub_tree")
+    name = serializers.SerializerMethodField('get_name', read_only=True)
 
     def __init__(
         self,
@@ -82,8 +83,12 @@ class CollabDocumentTreeSerializer(serializers.ModelSerializer):
             "path",
             "created",
             "creator",
-            "child_pages",
+            "children",
+            "name"
         )
+
+    def get_name(self, document):
+        return document.path.split('/')[-1]
 
     def get_sub_tree(self, document: CollabDocument):
         child_documents = []

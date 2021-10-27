@@ -16,7 +16,7 @@
 
 from typing import Any
 from django.db.models import QuerySet
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -114,7 +114,9 @@ class CollabDocumentViewSet(viewsets.ModelViewSet):
     def latest(self, request, *args, **kwargs):
         instance = self.get_object()
         versions = instance.versions.all()
-        latest_version = versions.order_by('created').first()
+        latest_version = versions.order_by('-created').first()
+        if latest_version is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         latest_version.decrypt(
             request.user.rlc.get_aes_key(user=request.user,
                                          private_key_user=request.user.get_private_key(request=request)))
