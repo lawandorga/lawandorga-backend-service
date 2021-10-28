@@ -33,7 +33,8 @@ from apps.collab.serializers import (
     CollabDocumentSerializer,
     CollabDocumentTreeSerializer,
     PermissionForCollabDocumentNestedSerializer,
-    PermissionForCollabDocumentSerializer, TextDocumentVersionSerializer,
+    PermissionForCollabDocumentSerializer, TextDocumentVersionSerializer, CollabDocumentCreateSerializer,
+    CollabDocumentListSerializer,
 )
 from apps.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 from apps.static.permissions import (
@@ -47,61 +48,74 @@ class CollabDocumentViewSet(viewsets.ModelViewSet):
     queryset = CollabDocument.objects.none()
     serializer_class = CollabDocumentSerializer
 
-    def get_queryset(self) -> QuerySet:
-        return CollabDocument.objects.filter(rlc=self.request.user.rlc)
+    def get_serializer_class(self):
+        if self.action in ['create']:
+            return CollabDocumentCreateSerializer
+        elif self.action in ['list']:
+            return CollabDocumentListSerializer
+        return super().get_serializer_class()
 
-    def list(self, request: Request, **kwargs: Any) -> Response:
-        user_has_overall_permission: bool = (
-            request.user.has_permission(
-                PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC, for_rlc=request.user.rlc
-            )
-            or request.user.has_permission(
-            PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC, for_rlc=request.user.rlc
-        )
-            or request.user.has_permission(
-            PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
-            for_rlc=request.user.rlc,
-        )
-        )
-        if user_has_overall_permission:
-            queryset = self.get_queryset().exclude(path__contains="/").order_by("path")
-            data = CollabDocumentTreeSerializer(
-                instance=queryset,
-                user=request.user,
-                all_documents=self.get_queryset().order_by("path"),
-                overall_permission=user_has_overall_permission,
-                see_subfolders=False,
-                many=True,
-                context={request: request},
-            ).data
+    def get_queryset(self):
+        queryset = CollabDocument.objects.filter(rlc=self.request.user.rlc)
+        if (
+            self.request.user.has_permission(PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC)
+            or self.request.user.has_permission(PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC)
+            or self.request.user.has_permission(PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC)
+        ):
+            return queryset
         else:
-            queryset = self.get_queryset().exclude(path__contains="/").order_by("path")
-            data = []
-            for document in queryset:
-                see, direct = document.user_can_see(request.user)
-                if see:
-                    data.append(
-                        CollabDocumentTreeSerializer(
-                            instance=document,
-                            user=request.user,
-                            all_documents=self.get_queryset().order_by("path"),
-                            overall_permission=user_has_overall_permission,
-                            many=False,
-                            see_subfolders=direct,
-                            context={request: request},
-                        ).data
-                    )
-        return Response(data)
+            queryset = list(queryset)
+            permissions = list(self.request.user.get_collab_permissions())
 
-    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        path = request.data["path"]
-        if not CollabDocument.user_has_permission_write(path, request.user):
-            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+            def access(doc):
+                for permission in permissions:
+                    permission_path = permission.document.path
+                    if doc.path.startswith(permission_path):
+                        return True
+                return False
 
-        created_document = CollabDocument.objects.create(
-            rlc=request.user.rlc, path=path, creator=request.user,
-        )
-        return Response(CollabDocumentSerializer(created_document).data, status=201)
+            return [doc for doc in queryset if access(doc)]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    # def list(self, request: Request, **kwargs: Any) -> Response:
+    #     user_has_overall_permission: bool = (
+    #         request.user.has_permission(PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC)
+    #         or request.user.has_permission(PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC)
+    #         or request.user.has_permission(PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC)
+    #     )
+    #     if user_has_overall_permission:
+    #         queryset = self.get_queryset().exclude(path__contains="/").order_by("path")
+    #         data = CollabDocumentTreeSerializer(
+    #             instance=queryset,
+    #             user=request.user,
+    #             all_documents=self.get_queryset().order_by("path"),
+    #             overall_permission=user_has_overall_permission,
+    #             see_subfolders=False,
+    #             many=True,
+    #             context={request: request},
+    #         ).data
+    #     else:
+    #         queryset = self.get_queryset().exclude(path__contains="/").order_by("path")
+    #         data = []
+    #         for document in queryset:
+    #             see, direct = document.user_can_see(request.user)
+    #             if see:
+    #                 data.append(
+    #                     CollabDocumentTreeSerializer(
+    #                         instance=document,
+    #                         user=request.user,
+    #                         all_documents=self.get_queryset().order_by("path"),
+    #                         overall_permission=user_has_overall_permission,
+    #                         many=False,
+    #                         see_subfolders=direct,
+    #                         context={request: request},
+    #                     ).data
+    #                 )
+    #     return Response(data)
 
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         if not CollabDocument.user_has_permission_write(

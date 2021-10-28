@@ -17,6 +17,14 @@ from apps.static.permissions import (
 class CollabDocument(TextDocument):
     path = models.CharField(max_length=4096, null=False, blank=False)
 
+    @property
+    def name(self):
+        return self.path.split('/')[-1]
+
+    @property
+    def root(self):
+        return self.path.count('/') == 0
+
     def save(self, *args, **kwargs) -> None:
         if "/" in self.path:
             parent_doc = "/".join(self.path.split("/")[0:-1])

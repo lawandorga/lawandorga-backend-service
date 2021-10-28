@@ -26,10 +26,7 @@ from apps.static.error_codes import (
 
 
 class TextDocument(models.Model):
-    rlc = models.ForeignKey(
-        Rlc, related_name="text_documents", null=False, on_delete=models.CASCADE
-    )
-
+    rlc = models.ForeignKey(Rlc, related_name="text_documents", null=False, on_delete=models.CASCADE, blank=True)
     created = models.DateTimeField(default=timezone.now)
     creator = models.ForeignKey(
         UserProfile,

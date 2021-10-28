@@ -130,6 +130,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         group_permissions = HasPermission.objects.filter(group_has_permission__in=user_groups)
         return user_permissions | group_permissions
 
+    def get_collab_permissions(self):
+        from apps.collab.models import PermissionForCollabDocument
+        groups = self.rlcgroups.all()
+        return PermissionForCollabDocument.objects.filter(group_has_permission__in=groups).select_related('document')
+
     def get_public_key(self) -> str:
         """
         gets the public key of the user from the database
