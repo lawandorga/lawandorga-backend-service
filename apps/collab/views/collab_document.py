@@ -97,6 +97,16 @@ class CollabDocumentViewSet(viewsets.ModelViewSet):
         # return
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @action(detail=True, methods=['get'])
+    def versions(self, request, *args, **kwargs):
+        instance = self.get_object()
+        aes_key_rlc = request.user.get_rlc_aes_key(private_key_user=request.user.get_private_key(request=request))
+        versions = list(instance.versions.all())
+        for version in versions:
+            version.decrypt(aes_key_rlc)
+        serializer = TextDocumentVersionSerializer(versions, many=True)
+        return Response(serializer.data)
+
     @action(detail=True, methods=["get", "post"])
     def permissions(self, request: Request, pk: int):
         document = self.get_object()
