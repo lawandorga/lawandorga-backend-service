@@ -19,8 +19,8 @@ class CollabDocumentCreateSerializer(CollabDocumentSerializer):
         attrs = super().validate(attrs)
         if not CollabDocument.user_has_permission_write(attrs['path'], self.context['request'].user):
             raise ValidationError("You don't have the necessary permission to create a document in this place.")
-        attrs['path'] = '' if attrs['path'] == '/' else attrs['path']
-        if attrs['path'] != '' and not CollabDocument.objects.filter(path=attrs['path']).exists():
+        if attrs['path'] != '/' and not CollabDocument.objects.filter(rlc=self.context['request'].user.rlc,
+                                                                      path=attrs['path'][:-1]).exists():
             raise ValidationError('This path does not exist.')
         attrs['path'] = attrs['path'] + attrs['name']
         attrs['creator'] = self.context['request'].user

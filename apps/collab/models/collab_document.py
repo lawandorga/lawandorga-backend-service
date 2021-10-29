@@ -23,15 +23,9 @@ class CollabDocument(TextDocument):
 
     @property
     def root(self):
-        return self.path.count('/') == 0
+        return self.path[1:].count('/') == 0
 
     def save(self, *args, **kwargs) -> None:
-        if "/" in self.path:
-            parent_doc = "/".join(self.path.split("/")[0:-1])
-            if not CollabDocument.objects.filter(path=parent_doc).exists():
-                # raise ValueError("parent document doesn't exist")
-                raise CustomError("parent document doesn't exist")
-
         if CollabDocument.objects.filter(path=self.path).exists():
             count = 1
             org_path = self.path

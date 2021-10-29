@@ -173,8 +173,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def get_rlc_private_key(self, users_private_key):
         return self.rlc.get_private_key(user=self, private_key_user=users_private_key)
 
-    def get_rlc_aes_key(self, users_private_key):
-        return self.rlc.get_aes_key(user=self, private_key_user=users_private_key)
+    def get_rlc_aes_key(self, private_key_user=None):
+        if private_key_user:
+            return self.rlc.get_aes_key(user=self, private_key_user=private_key_user)
+        else:
+            raise ValueError('You need to set (private_key_user).')
 
     def generate_new_user_encryption_keys(self):
         from apps.api.models.user_encryption_keys import UserEncryptionKeys

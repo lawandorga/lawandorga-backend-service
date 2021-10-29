@@ -1,17 +1,18 @@
 from typing import Any
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.request import Request
 from apps.api.errors import CustomError
 from apps.api.models import HasPermission, Permission
 from apps.api.serializers import OldHasPermissionSerializer
-from apps.collab.models import CollabDocument,PermissionForCollabDocument
+from apps.collab.models import CollabDocument, PermissionForCollabDocument, TextDocumentVersion
 from apps.collab.serializers import (
     CollabDocumentSerializer,
     PermissionForCollabDocumentNestedSerializer,
     PermissionForCollabDocumentSerializer, TextDocumentVersionSerializer, CollabDocumentCreateSerializer,
-    CollabDocumentListSerializer,
+    CollabDocumentListSerializer, TextDocumentVersionCreateSerializer,
 )
 from apps.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 from apps.static.permissions import (
@@ -69,6 +70,32 @@ class CollabDocumentViewSet(viewsets.ModelViewSet):
             request.user.rlc.get_aes_key(user=request.user,
                                          private_key_user=request.user.get_private_key(request=request)))
         return Response(TextDocumentVersionSerializer(latest_version).data)
+
+    @action(detail=True, methods=['post'])
+    def create_version(self, request, *args, **kwargs):
+        # get the collab document
+        instance = self.get_object()
+
+        # check permissions
+        if not CollabDocument.user_has_permission_write(instance.path, request.user):
+            raise PermissionDenied()
+
+        # check if data is valid
+        serializer = TextDocumentVersionCreateSerializer(
+            data={'content': request.data['content'], 'quill': False, 'document': instance.pk})
+        serializer.is_valid(raise_exception=True)
+
+        # get the keys
+        private_key_user = request.user.get_private_key(request=request)
+        aes_key_rlc = request.user.get_rlc_aes_key(private_key_user=private_key_user)
+
+        # encrypt and save
+        version = TextDocumentVersion(**serializer.validated_data)
+        version.encrypt(aes_key_rlc)
+        version.save()
+
+        # return
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["get", "post"])
     def permissions(self, request: Request, pk: int):

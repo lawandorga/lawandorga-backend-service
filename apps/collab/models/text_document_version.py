@@ -7,11 +7,11 @@ from django.db import models
 class TextDocumentVersion(EncryptedModelMixin, models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    document = models.ForeignKey(TextDocument, related_name="versions", null=False, on_delete=models.CASCADE)
+    document = models.ForeignKey(TextDocument, related_name="versions", on_delete=models.CASCADE)
     creator = models.ForeignKey(UserProfile, related_name="text_document_versions_created", on_delete=models.SET_NULL,
-                                null=True)
+                                null=True, blank=True)
     is_draft = models.BooleanField(default=True)
-    content = models.BinaryField()
+    content = models.BinaryField(blank=True)
     quill = models.BooleanField(default=True)
 
     encrypted_fields = ["content"]

@@ -24,11 +24,17 @@ from apps.collab.serializers import TextDocumentSerializer
 
 
 class TextDocumentVersionSerializer(serializers.ModelSerializer):
-    content = serializers.CharField()
+    content = serializers.CharField(allow_blank=True)
 
     class Meta:
         model = TextDocumentVersion
         fields = "__all__"
+
+
+class TextDocumentVersionCreateSerializer(TextDocumentVersionSerializer):
+    class Meta:
+        model = TextDocumentVersion
+        fields = ['document', 'content', 'quill']
 
 
 class TextDocumentVersionDetailSerializer(TextDocumentVersionSerializer):
