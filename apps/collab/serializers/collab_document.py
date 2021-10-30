@@ -12,6 +12,12 @@ class CollabDocumentSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class CollabDocumentPathSerializer(CollabDocumentSerializer):
+    class Meta:
+        model = CollabDocument
+        fields = ['path']
+
+
 class CollabDocumentCreateSerializer(CollabDocumentSerializer):
     children = serializers.SerializerMethodField(read_only=True)
 

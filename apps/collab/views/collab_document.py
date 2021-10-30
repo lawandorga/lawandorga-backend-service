@@ -1,24 +1,27 @@
 from typing import Any
+
+from django.db.models import Q
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.request import Request
 from apps.api.errors import CustomError
-from apps.api.models import HasPermission, Permission
-from apps.api.serializers import OldHasPermissionSerializer
+from apps.api.models import HasPermission, Permission, Group
+from apps.api.serializers import OldHasPermissionSerializer, GroupSerializer, GroupNameSerializer, \
+    HasPermissionAllNamesSerializer, HasPermissionNameSerializer
 from apps.collab.models import CollabDocument, PermissionForCollabDocument, TextDocumentVersion
 from apps.collab.serializers import (
     CollabDocumentSerializer,
     PermissionForCollabDocumentNestedSerializer,
     PermissionForCollabDocumentSerializer, TextDocumentVersionSerializer, CollabDocumentCreateSerializer,
-    CollabDocumentListSerializer, TextDocumentVersionCreateSerializer,
+    CollabDocumentListSerializer, TextDocumentVersionCreateSerializer, PermissionForCollabDocumentAllNamesSerializer,
 )
 from apps.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 from apps.static.permissions import (
     PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
     PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC,
-    PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
+    PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC, get_all_collab_permissions,
 )
 
 
@@ -107,8 +110,32 @@ class CollabDocumentViewSet(viewsets.ModelViewSet):
         serializer = TextDocumentVersionSerializer(versions, many=True)
         return Response(serializer.data)
 
+    @action(detail=True, methods=['get'])
+    def permissions(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        collab_permission = []
+        for permission in PermissionForCollabDocument.objects \
+            .filter(group_has_permission__in=request.user.rlc.group_from_rlc.all()) \
+            .select_related('group_has_permission', 'document'):
+            if permission.document.path.startswith(instance.path):
+                collab_permission.append(permission)
+
+        # get those general permission into their own view
+        general_permissions = HasPermission.objects \
+            .filter(permission__in=Permission.objects.filter(name__in=get_all_collab_permissions())) \
+            .filter(Q(user_has_permission__in=request.user.rlc.rlc_members.all()) |
+                    Q(group_has_permission__in=request.user.rlc.group_from_rlc.all())) \
+            .select_related('user_has_permission', 'group_has_permission', 'permission')
+
+        data = {
+            'general': HasPermissionNameSerializer(general_permissions, many=True).data,
+            'collab': PermissionForCollabDocumentAllNamesSerializer(collab_permission, many=True).data,
+        }
+        return Response(data)
+
     @action(detail=True, methods=["get", "post"])
-    def permissions(self, request: Request, pk: int):
+    def permissions_old(self, request: Request, pk: int):
         document = self.get_object()
 
         if not request.user.has_permission(

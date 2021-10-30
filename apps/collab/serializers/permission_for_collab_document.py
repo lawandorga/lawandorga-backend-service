@@ -16,9 +16,10 @@
 
 from rest_framework import serializers
 
-from apps.api.serializers import GroupSerializer
+from apps.api.serializers import GroupSerializer, GroupNameSerializer
 from apps.collab.models import PermissionForCollabDocument
-from apps.collab.serializers import CollabDocumentSerializer
+from apps.collab.serializers import CollabDocumentSerializer, CollabDocumentPathSerializer, \
+    CollabPermissionNameSerializer
 
 
 class PermissionForCollabDocumentSerializer(serializers.ModelSerializer):
@@ -34,3 +35,9 @@ class PermissionForCollabDocumentNestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = PermissionForCollabDocument
         fields = "__all__"
+
+
+class PermissionForCollabDocumentAllNamesSerializer(PermissionForCollabDocumentSerializer):
+    group_has_permission = GroupNameSerializer(read_only=True)
+    document = CollabDocumentPathSerializer(read_only=True)
+    permission = CollabPermissionNameSerializer(read_only=True)

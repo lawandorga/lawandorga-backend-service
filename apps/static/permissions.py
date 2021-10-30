@@ -63,6 +63,14 @@ def get_all_permissions_strings():
     ]
 
 
+def get_all_collab_permissions():
+    return [
+        PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
+        PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
+        PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC,
+    ]
+
+
 def get_record_encryption_keys_permissions_strings():
     return [
         PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC,
