@@ -15,13 +15,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from typing import Any
 from django.db.models import QuerySet
-from rest_framework import mixins, status, viewsets
+from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.request import Request
-from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
-
 from apps.api.models import UserProfile
 from apps.collab.models import EditingRoom, TextDocument, TextDocumentVersion
 from apps.collab.serializers import (
@@ -35,7 +33,6 @@ from apps.collab.serializers import (
 from apps.api.errors import CustomError
 from apps.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 from apps.static.middleware import get_private_key_from_request
-from apps.static.serializers import map_values
 
 
 class TextDocumentModelViewSet(

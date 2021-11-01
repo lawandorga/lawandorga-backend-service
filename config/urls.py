@@ -16,21 +16,19 @@
 from apps.recordmanagement import urls as record_urls
 from django.views.generic import TemplateView
 from django.contrib import admin
-from apps.files import urls as file_urls
-from apps.api import urls as api_urls
-from apps.collab import urls as collab_urls
 from django.urls import path, include
 from django.conf import settings
+from apps.api import urls as api_urls
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include(api_urls)),
     path("api/records/", include(record_urls)),
-    path("api/files/", include(file_urls)),
-    path("api/collab/", include(collab_urls)),
     path("", TemplateView.as_view(template_name="index.html")),
     path('tinymce/', include('tinymce.urls')),
 ]
+
 
 if settings.DEBUG:
     import debug_toolbar

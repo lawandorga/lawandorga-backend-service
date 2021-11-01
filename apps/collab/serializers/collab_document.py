@@ -15,7 +15,7 @@ class CollabDocumentSerializer(serializers.ModelSerializer):
 class CollabDocumentPathSerializer(CollabDocumentSerializer):
     class Meta:
         model = CollabDocument
-        fields = ['path']
+        fields = ['path', 'id']
 
 
 class CollabDocumentCreateSerializer(CollabDocumentSerializer):
