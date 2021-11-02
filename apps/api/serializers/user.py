@@ -41,10 +41,11 @@ class RlcUserUpdateSerializer(RlcUserSerializer):
         return instance
 
 
-class RlcUserForeignSerializer(serializers.ModelSerializer):
+class RlcUserForeignSerializer(RlcUserListSerializer):
     class Meta:
         model = RlcUser
-        fields = ("user", "id", "name", "email", "name", "phone_number")
+        fields = ("user", "id", "phone_number", 'name', 'email')
+
 
 
 ###

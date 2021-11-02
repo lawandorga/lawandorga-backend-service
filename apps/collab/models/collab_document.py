@@ -16,8 +16,6 @@
 from typing import Any, Dict, Tuple
 
 from django.db import models
-from django_prometheus.models import ExportModelOperationsMixin
-
 from apps.api.errors import CustomError
 from apps.api.models import UserProfile
 from apps.collab.models import TextDocument

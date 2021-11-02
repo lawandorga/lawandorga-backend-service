@@ -88,7 +88,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def login(self, request: Request):
         serializer = AuthTokenSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        user: UserProfile = serializer.validated_data["user"]
+        user = serializer.validated_data["user"]
         password = serializer.validated_data["password"]
 
         # check if user active and user accepted in rlc

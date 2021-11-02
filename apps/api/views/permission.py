@@ -1,30 +1,10 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
+from apps.static.permissions import PERMISSION_VIEW_PERMISSIONS_RLC
 from django.forms.models import model_to_dict
 from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework.views import APIView
-
 from apps.api.errors import CustomError
 from apps.static import error_codes
-from apps.static.permissions import PERMISSION_VIEW_PERMISSIONS_RLC
 from .. import serializers
-from apps.api.models.group import Group
-from apps.api.models.has_permission import HasPermission
 from apps.api.models.permission import Permission
 
 
@@ -63,26 +43,4 @@ class PermissionViewSet(viewsets.ModelViewSet):
         data.update(
             {"has_permissions": user_permissions + group_permissions}
         )
-        return Response(data)
-
-
-class PermissionsForGroupViewSet(APIView):
-    def get(self, request, pk):
-        try:
-            group = Group.objects.get(pk=pk)
-        except:
-            raise CustomError(error_codes.ERROR__API__GROUP__GROUP_NOT_FOUND)
-
-        if not request.user.has_permission(
-            PERMISSION_VIEW_PERMISSIONS_RLC, for_rlc=request.user.rlc
-        ):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-
-        data = [
-            model_to_dict(has_permission)
-            for has_permission in HasPermission.objects.filter(
-                group_has_permission=group
-            )
-        ]
-
         return Response(data)

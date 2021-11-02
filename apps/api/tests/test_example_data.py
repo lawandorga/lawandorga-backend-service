@@ -10,7 +10,7 @@ class ExampleDataTestCase(TestCase):
         # fixtures
         ed.create_fixtures()
         # dummy
-        self.rlc = ed.create_rlc()
+        self.rlc, self.another_rlc = ed.create_rlcs()
         self.tags = ed.create_tags(self.rlc)
         self.dummy = ed.create_dummy_users(self.rlc)[0]
         # keys
@@ -21,7 +21,7 @@ class ExampleDataTestCase(TestCase):
         )
         # data
         self.clients = ed.create_clients(self.rlc)
-        self.users = ed.create_users(self.rlc)
+        self.users = ed.create_users(self.rlc, self.another_rlc)
         self.inactive_user = ed.create_inactive_user(self.rlc)
         self.groups = ed.create_groups(self.rlc, self.dummy, self.users)
         self.records = ed.create_records(self.clients, self.users, self.rlc)

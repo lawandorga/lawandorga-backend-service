@@ -1,3 +1,5 @@
+import random
+
 from apps.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
 from apps.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
 from apps.recordmanagement.models.record_encryption import RecordEncryption
@@ -29,12 +31,16 @@ def add_permissions_to_group(group: Group, permission_name):
 
 
 # create
-def create_rlc():
-    rlc = Rlc.objects.create(
+def create_rlcs():
+    rlc1 = Rlc.objects.create(
         name="Dummy RLC",
         id=3033,
     )
-    return rlc
+    rlc2 = Rlc.objects.create(
+        name="Neighbourhood RLC",
+        id=1,
+    )
+    return [rlc1, rlc2]
 
 
 def create_tags(rlc):
@@ -74,7 +80,7 @@ def create_fixtures():
     ]
 
 
-def create_users(rlc):
+def create_users(rlc1, rlc2):
     users = [
         (
             "ludwig.maximilian@outlook.de",
@@ -182,7 +188,7 @@ def create_users(rlc):
         user = UserProfile.objects.create(
             email=user_data[0],
             name=user_data[1],
-            rlc=rlc,
+            rlc=random.choice([rlc1, rlc2]),
         )
         RlcUser.objects.create(
             user=user,
@@ -207,7 +213,7 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
     )
     user.set_password(dummy_password)
     user.save()
-    RlcUser.objects.create(user=user)
+    RlcUser.objects.create(user=user, accepted=True, pk=999)
     InternalUser.objects.create(user=user)
     users.append(user)
 
@@ -219,7 +225,7 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
     )
     user.set_password("qwe123")
     user.save()
-    RlcUser.objects.create(user=user)
+    RlcUser.objects.create(user=user, accepted=True, pk=1000)
     users.append(user)
 
     user = UserProfile.objects.create(
@@ -229,7 +235,7 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
     )
     user.set_password("qwe123")
     user.save()
-    RlcUser.objects.create(user=user)
+    RlcUser.objects.create(user=user, pk=1001, accepted=True)
     users.append(user)
 
     # return
@@ -745,13 +751,14 @@ def create() -> None:
     # fixtures
     create_fixtures()
     # dummy
-    rlc = create_rlc()
-    dummy = create_dummy_users(rlc)[0]
+    rlc1, rlc2 = create_rlcs()
+    dummy = create_dummy_users(rlc1)[0]
     # data
-    clients = create_clients(rlc)
-    users = create_users(rlc)
-    create_inactive_user(rlc)
-    create_groups(rlc, dummy, users)
-    create_admin_group(rlc, dummy)
-    create_records(clients, users, rlc)
-    create_informative_record(dummy, dummy_password, clients, users, rlc)
+    tags = create_tags(rlc1)
+    clients = create_clients(rlc1)
+    users = create_users(rlc1, rlc2)
+    create_inactive_user(rlc1)
+    create_groups(rlc1, dummy, users)
+    create_admin_group(rlc1, dummy)
+    create_records(clients, users, rlc1)
+    create_informative_record(dummy, dummy_password, clients, users, rlc1)

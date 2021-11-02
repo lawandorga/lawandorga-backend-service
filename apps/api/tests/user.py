@@ -43,7 +43,6 @@ class UserViewSetWorkingTests(TestCase):
         }
         request = self.factory.post('', data)
         response = view(request)
-        print(response.data)
         self.assertEqual(response.status_code, 201)
         self.assertTrue(RlcUser.objects.filter(user__email='test2@test.de').exists())
 
@@ -240,6 +239,18 @@ class UserViewSetErrorTests(TestCase):
         data = {
             'email': 'falsch',
             'password': 'falsch',
+        }
+        request = self.factory.post('/api/users/login/', data)
+        response = view(request)
+        self.assertContains(response, 'non_field_errors', status_code=400)
+
+    def test_inactive_user_can_not_login(self):
+        self.rlc_user.is_active = False
+        self.rlc_user.save()
+        view = UserViewSet.as_view(actions={'post': 'login'})
+        data = {
+            'email': 'test@test.de',
+            'password': 'test',
         }
         request = self.factory.post('/api/users/login/', data)
         response = view(request)

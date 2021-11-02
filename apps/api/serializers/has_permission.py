@@ -16,6 +16,11 @@ class OldHasPermissionSerializer(serializers.ModelSerializer):
         model = HasPermission
         fields = "__all__"
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['user_has_permission'].queryset = self.context['request'].user.rlc.rlc_members.all()
+        self.fields['group_has_permission'].queryset = self.context['request'].user.rlc.group_from_rlc.all()
+
     def validate(self, data):
         if HasPermission.validate_values(data):
             return data
