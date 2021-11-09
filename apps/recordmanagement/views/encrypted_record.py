@@ -147,7 +147,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
             user=request.user,
             private_key_user=request.user.get_private_key(request=request),
         )
-        serializer = self.get_serializer(record)
+        serializer = EncryptedRecordListSerializer(record, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_object(self):
