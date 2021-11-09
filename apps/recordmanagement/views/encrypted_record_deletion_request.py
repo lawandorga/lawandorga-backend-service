@@ -1,82 +1,36 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2020  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-from django.db.models import QuerySet, Q
-from rest_framework import viewsets
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from django.utils import timezone
-
-from apps.api.errors import CustomError
+from apps.recordmanagement.models.encrypted_record_deletion_request import EncryptedRecordDeletionRequest
+from apps.recordmanagement.serializers import DeletionRequestListSerializer, DeletionRequestCreateSerializer
 from apps.api.models.notification import Notification
-from apps.recordmanagement import models, serializers
-from apps.recordmanagement.models.encrypted_record import EncryptedRecord
-from apps.recordmanagement.models.encrypted_record_deletion_request import (
-    EncryptedRecordDeletionRequest,
-)
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
+from apps.recordmanagement import serializers
+from rest_framework.views import APIView
+from django.db.models import QuerySet, Q
+from apps.api.errors import CustomError
+from rest_framework import viewsets
+from django.utils import timezone
 from apps.static import error_codes, permissions
 
 
 class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
-    serializer_class = serializers.EncryptedRecordDeletionRequestSerializer
+    serializer_class = DeletionRequestListSerializer
     queryset = EncryptedRecordDeletionRequest.objects.none()
+
+    def get_serializer_class(self):
+        if self.action in ['create']:
+            return DeletionRequestCreateSerializer
+        return self.get_serializer_class()
 
     def get_queryset(self) -> QuerySet:
         return EncryptedRecordDeletionRequest.objects.filter(
-            Q(request_from__rlc=self.request.user.rlc) | Q(record__from_rlc=self.request.user.rlc))
+            Q(request_from__rlc=self.request.user.rlc) |
+            Q(record__from_rlc=self.request.user.rlc)
+        )
 
     def list(self, request, *args, **kwargs):
-        if not request.user.has_permission(permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
-                                           for_rlc=request.user.rlc):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-        return Response(
-            serializers.EncryptedRecordDeletionRequestSerializer(
-                self.get_queryset(), many=True
-            ).data
-        )
-
-    def create(self, request, **kwargs):
-        if "record_id" not in request.data:
-            raise CustomError(error_codes.ERROR__RECORD__RECORD__ID_NOT_PROVIDED)
-
-        e_record = EncryptedRecord.objects.get(pk=int(request.data["record_id"]))
-        if not e_record.user_has_permission(request.user):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
-        if (
-            EncryptedRecordDeletionRequest.objects.filter(
-                record=e_record, state="re", request_from=request.user
-            ).count()
-            >= 1
-        ):
-            raise CustomError(error_codes.ERROR__API__ALREADY_REQUESTED)
-        deletion_request = EncryptedRecordDeletionRequest(
-            request_from=request.user, record=e_record,
-        )
-        if "explanation" in request.data:
-            deletion_request.explanation = request.data["explanation"]
-        deletion_request.save()
-
-        Notification.objects.notify_record_deletion_requested(
-            request.user, deletion_request
-        )
-
-        return Response(
-            serializers.EncryptedRecordDeletionRequestSerializer(deletion_request).data,
-            status=201,
-        )
+        if not request.user.has_permission(permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS):
+            raise PermissionDenied()
+        return super().list(request, *args, **kwargs)
 
 
 class EncryptedRecordDeletionProcessViewSet(APIView):
@@ -142,5 +96,5 @@ class EncryptedRecordDeletionProcessViewSet(APIView):
             pk=record_deletion_request.id
         )
         return Response(
-            serializers.EncryptedRecordDeletionRequestSerializer(response_request).data
+            serializers.DeletionRequestListSerializer(response_request).data
         )

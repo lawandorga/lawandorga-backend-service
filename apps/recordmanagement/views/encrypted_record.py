@@ -42,8 +42,8 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
     def get_queryset(self) -> QuerySet:
-        return EncryptedRecord.objects.filter(from_rlc=self.request.user.rlc).prefetch_related('working_on_record',
-                                                                                               'tags')
+        return EncryptedRecord.objects.filter(from_rlc=self.request.user.rlc) \
+            .prefetch_related('working_on_record', 'tags', 'deletions_requested')
 
     def list(self, request, *args, **kwargs):
         if (

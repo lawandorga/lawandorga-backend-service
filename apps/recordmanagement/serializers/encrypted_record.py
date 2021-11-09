@@ -33,6 +33,7 @@ class EncryptedRecordSerializer(serializers.ModelSerializer):
 
 class EncryptedRecordListSerializer(EncryptedRecordSerializer):
     access = serializers.SerializerMethodField('get_access')
+    delete = serializers.SerializerMethodField()
     tags = TagSerializer(many=True, read_only=True)
     working_on_record = UserProfileNameSerializer(many=True, read_only=True)
 
@@ -46,6 +47,7 @@ class EncryptedRecordListSerializer(EncryptedRecordSerializer):
             "working_on_record",
             'tags',
             "access",
+            "delete",
             "created_on",
             "last_edited"
         ]
@@ -56,6 +58,9 @@ class EncryptedRecordListSerializer(EncryptedRecordSerializer):
 
     def get_access(self, obj):
         return obj.encryptions.filter(user=self.user).exists()
+
+    def get_delete(self, obj):
+        return obj.deletions_requested.filter(state='re').exists()
 
 
 class EncryptedRecordDetailSerializer(EncryptedRecordSerializer):
