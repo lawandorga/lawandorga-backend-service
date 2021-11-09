@@ -25,8 +25,8 @@ class EncryptedRecordSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         token = attrs['record_token']
-        if 'from_rlc' in attrs and EncryptedRecord.objects.filter(record_token=token,
-                                                                  from_rlc=attrs['from_rlc']).exists():
+        if not self.instance and EncryptedRecord.objects.filter(record_token=token,
+                                                                from_rlc=attrs['from_rlc']).exists():
             raise ValidationError('The record token is already used. Please choose another record token.')
         return attrs
 
