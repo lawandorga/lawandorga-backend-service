@@ -35,10 +35,12 @@ class FolderSimpleSerializer(FolderSerializer):
 class FolderPathSerializer(FolderSerializer):
     path = serializers.SerializerMethodField('get_path')
 
-    def get_parent(self, parent):
-        if parent.parent:
-            return self.get_parent(parent.parent) + [FolderSimpleSerializer(parent).data]
-        return [FolderSimpleSerializer(parent).data]
+    def get_parent(self, folder):
+        if folder.parent:
+            parent_path = self.get_parent(folder.parent)
+            folder_path = [FolderSimpleSerializer(folder).data]
+            return parent_path + folder_path if parent_path else folder_path
+        return []
 
     def get_path(self, obj):
         return self.get_parent(obj)
