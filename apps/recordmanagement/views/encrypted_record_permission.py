@@ -1,17 +1,18 @@
+from django.core.exceptions import ObjectDoesNotExist
+
 from apps.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
 from apps.recordmanagement.models.record_encryption import RecordEncryption
 from apps.recordmanagement.serializers import EncryptedRecordPermissionSerializer
 from apps.api.models.notification import Notification
-from rest_framework.exceptions import PermissionDenied
-from apps.static.encryption import RSAEncryption
-from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied, ParseError
 from rest_framework.response import Response
+from apps.static.encryption import RSAEncryption
 from rest_framework import viewsets, mixins
-from apps.static import permissions
 from django.utils import timezone
+from apps.static import permissions
 
 
-class EncryptedRecordPermissionProcessViewSet(mixins.UpdateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
+class RecordPermissionRequestViewSet(mixins.UpdateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     model = EncryptedRecordPermission
     queryset = EncryptedRecordPermission.objects.none()
     serializer_class = EncryptedRecordPermissionSerializer
@@ -33,7 +34,11 @@ class EncryptedRecordPermissionProcessViewSet(mixins.UpdateModelMixin, mixins.Li
 
         if serializer.validated_data['state'] == "gr":
             private_key_user = request.user.get_private_key(request=request)
-            record_key = instance.record.get_decryption_key(request.user, private_key_user)
+            try:
+                record_key = instance.record.get_decryption_key(request.user, private_key_user)
+            except ObjectDoesNotExist:
+                raise PermissionDenied(
+                    'You have no access to this record. Therefore you can not allow anyone else to see this record.')
             public_key_user = instance.request_from.get_public_key()
             encrypted_record_key = RSAEncryption.encrypt(record_key, public_key_user)
             data = {
@@ -51,4 +56,3 @@ class EncryptedRecordPermissionProcessViewSet(mixins.UpdateModelMixin, mixins.Li
 
         serializer.save()
         return Response(serializer.data)
-

@@ -19,18 +19,24 @@ class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ['create']:
             return DeletionRequestCreateSerializer
-        return self.get_serializer_class()
+        return super().get_serializer_class()
 
     def get_queryset(self) -> QuerySet:
         return EncryptedRecordDeletionRequest.objects.filter(
             Q(request_from__rlc=self.request.user.rlc) |
-            Q(record__from_rlc=self.request.user.rlc)
+            Q(record__from_rlc=self.request.user.rlc) |
+            Q(rlc=self.request.user.rlc)
         )
 
     def list(self, request, *args, **kwargs):
         if not request.user.has_permission(permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS):
             raise PermissionDenied()
         return super().list(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        if not request.user.has_permission(permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS):
+            raise PermissionDenied()
+        return super().update(request, *args, **kwargs)
 
 
 class EncryptedRecordDeletionProcessViewSet(APIView):

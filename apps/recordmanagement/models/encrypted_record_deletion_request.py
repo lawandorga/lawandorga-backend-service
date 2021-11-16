@@ -1,8 +1,11 @@
-from apps.api.models import UserProfile
+from django.utils import timezone
+
+from apps.api.models import UserProfile, Rlc
 from django.db import models
 
 
 class EncryptedRecordDeletionRequest(models.Model):
+    rlc = models.ForeignKey(Rlc, related_name='deletion_requests', on_delete=models.CASCADE, null=True, blank=True)  # remove null=True in the future
     record = models.ForeignKey(
         "EncryptedRecord",
         related_name="deletions_requested",
@@ -40,3 +43,16 @@ class EncryptedRecordDeletionRequest(models.Model):
         verbose_name = 'EncryptedRecordDeletionRequest'
         verbose_name_plural = 'EncryptedRecordDeletionRequests'
         ordering = ['-state', '-requested']
+
+    def save(self, *args, **kwargs):
+        if self.rlc is None and self.request_from:
+            self.rlc = self.request_from.rlc
+        elif self.rlc is None and self.record:
+            self.rlc = self.record.from_rlc
+        super().save(*args, **kwargs)
+        if self.state == 'gr' and self.record:
+            EncryptedRecordDeletionRequest.objects.filter(record=self.record, state="re") \
+                .update(state='gr', processed_on=timezone.now())
+            self.processed_on = timezone.now()
+            super().save()
+            self.record.delete()
