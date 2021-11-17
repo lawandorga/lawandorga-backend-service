@@ -110,6 +110,13 @@ class EmailSerializer(serializers.Serializer):
 class UserPasswordResetConfirmSerializer(serializers.Serializer):
     token = serializers.CharField()
     new_password = serializers.CharField()
+    new_password_confirm = serializers.CharField()
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if attrs['new_password'] != attrs['new_password_confirm']:
+            raise ValidationError('The passwords do not match.')
+        return attrs
 
 
 ###

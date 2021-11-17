@@ -276,7 +276,7 @@ class RlcUser(models.Model):
 
     def get_email_confirmation_link(self):
         token = self.get_email_confirmation_token()
-        link = "{}activate-account/{}/{}/".format(settings.FRONTEND_URL, self.id, token)
+        link = "{}user/email-confirm/{}/{}/".format(settings.FRONTEND_URL, self.id, token)
         return link
 
     def send_email_confirmation_email(self):
@@ -300,7 +300,7 @@ class RlcUser(models.Model):
 
     def get_password_reset_link(self):
         token = self.get_password_reset_token()
-        link = "{}reset-password/{}/{}/".format(settings.FRONTEND_URL, self.id, token)
+        link = "{}user/password-reset-confirm/{}/{}/".format(settings.FRONTEND_URL, self.id, token)
         return link
 
     def send_password_reset_email(self):
