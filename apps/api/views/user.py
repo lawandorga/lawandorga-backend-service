@@ -10,21 +10,16 @@ from apps.api.serializers import (
     RlcUserForeignSerializer,
     EmailSerializer,
     UserPasswordResetConfirmSerializer, HasPermissionAllNamesSerializer, RlcSerializer, RlcUserSerializer,
-    AuthTokenSerializer, UserProfileNameSerializer, RlcUserListSerializer, RlcUserUpdateSerializer,
+    AuthTokenSerializer, RlcUserListSerializer, RlcUserUpdateSerializer,
     UserProfileSerializer,
 )
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.request import Request
 from django.forms.models import model_to_dict
-from apps.api.models import (
-    UserProfile,
-    NotificationGroup,
-    PasswordResetTokenGenerator,
-    AccountActivationTokenGenerator, UsersRlcKeys, RlcUser,
-)
-from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from apps.api.models import UserProfile, NotificationGroup, PasswordResetTokenGenerator, \
+    AccountActivationTokenGenerator, UsersRlcKeys, RlcUser
 from rest_framework import viewsets, status
 from django.utils import timezone
 from django.db import IntegrityError
