@@ -41,19 +41,26 @@ class CollabDocumentViewSet(viewsets.ModelViewSet):
                 for permission in permissions:
                     permission_path = permission.document.path
                     if doc.path.startswith(permission_path):
+                        # this means the user can 'access' the document and its content
+                        return True
+                    if permission.document.path.startswith(doc.path):
+                        # this means the user can 'see' the document but not its content
                         return True
                 return False
 
-            return [doc for doc in queryset if access(doc)]
+            return CollabDocument.objects.filter(pk__in=[doc for doc in queryset if access(doc)])
 
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        if not CollabDocument.user_has_permission_write(self.get_object().path, request.user):
-            raise CustomError(ERROR__API__PERMISSION__INSUFFICIENT)
+        instance = self.get_object()
+        if not instance.user_can_write(request.user):
+            raise PermissionDenied()
         return super().destroy(request, *args, **kwargs)
 
     @action(detail=True, methods=['get'])
     def latest(self, request, *args, **kwargs):
         instance = self.get_object()
+        if not instance.user_can_read(request.user):
+            raise PermissionDenied()
         versions = instance.versions.all()
         latest_version = versions.order_by('-created').first()
         if latest_version is None:
@@ -69,7 +76,7 @@ class CollabDocumentViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
 
         # check permissions
-        if not CollabDocument.user_has_permission_write(instance.path, request.user):
+        if not instance.user_can_write(request.user):
             raise PermissionDenied()
 
         # check if data is valid
@@ -103,11 +110,24 @@ class CollabDocumentViewSet(viewsets.ModelViewSet):
     def permissions(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        collab_permission = []
+        normal = []
+        from_below = []
+        from_above = []
         for permission in PermissionForCollabDocument.objects \
             .filter(group_has_permission__in=request.user.rlc.group_from_rlc.all()) \
             .select_related('group_has_permission', 'document'):
-            if instance.path.startswith(permission.document.path):
-                collab_permission.append(permission)
+            permission_path = permission.document.path
+            if instance.has_permission_from_parent(permission_path):
+                from_above.append(permission)
+            if instance.has_permission_direct(permission_path):
+                normal.append(permission)
+            if instance.has_permission_from_below(permission_path):
+                from_below.append(permission)
 
-        return Response(PermissionForCollabDocumentAllNamesSerializer(collab_permission, many=True).data)
+        permissions = []
+        permissions += PermissionForCollabDocumentAllNamesSerializer(normal, from_direction='NORMAL', many=True).data
+        permissions += PermissionForCollabDocumentAllNamesSerializer(from_below, from_direction='BELOW', many=True).data
+        permissions += PermissionForCollabDocumentAllNamesSerializer(from_above, from_direction='ABOVE',
+                                                                     many=True).data
+
+        return Response(permissions)

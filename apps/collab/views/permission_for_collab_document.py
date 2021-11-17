@@ -1,10 +1,9 @@
-from rest_framework.response import Response
-
 from apps.collab.serializers.permission_for_collab_document import PermissionForCollabDocumentSerializer, \
     PermissionForCollabDocumentAllNamesSerializer
 from rest_framework.exceptions import PermissionDenied
 from apps.static.permissions import PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC
 from rest_framework.viewsets import GenericViewSet
+from rest_framework.response import Response
 from apps.collab.models import PermissionForCollabDocument
 from rest_framework import mixins, status
 

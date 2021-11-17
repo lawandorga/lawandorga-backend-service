@@ -65,23 +65,3 @@ class TextDocument(models.Model):
 
     def get_draft(self) -> "TextDocumentVersion":
         return self.versions.filter(is_draft=True).first()
-
-    def user_has_permission_write(self, user: UserProfile):
-        from apps.collab.models import CollabDocument
-
-        if self.collabdocument:
-            return CollabDocument.user_has_permission_write(
-                self.collabdocument.path, user
-            )
-        else:
-            raise CustomError(ERROR__NOT__IMPLEMENTEND)
-
-    def user_has_permission_read(self, user: UserProfile):
-        from apps.collab.models import CollabDocument
-
-        if self.collabdocument:
-            return CollabDocument.user_has_permission_read(
-                self.collabdocument.path, user
-            )
-        else:
-            raise CustomError(ERROR__NOT__IMPLEMENTEND)

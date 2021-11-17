@@ -5,7 +5,5 @@ from rest_framework import mixins
 
 
 class CollabPermissionViewSet(mixins.ListModelMixin, GenericViewSet):
-    authentication_classes = ()
-    permission_classes = ()
     queryset = CollabPermission.objects.all()
     serializer_class = CollabPermissionSerializer
