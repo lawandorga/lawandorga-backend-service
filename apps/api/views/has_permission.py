@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.decorators import action
 from apps.static.permissions import PERMISSION_MANAGE_PERMISSIONS_RLC, get_record_encryption_keys_permissions, \
-    get_all_collab_permissions
+    get_all_collab_permissions, get_all_files_permissions, get_all_records_permissions
 from rest_framework.response import Response
 from apps.api.serializers import OldHasPermissionSerializer, HasPermissionAllNamesSerializer, \
     HasPermissionNameSerializer
@@ -59,4 +59,22 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
             .filter(Q(user_has_permission__in=request.user.rlc.rlc_members.all()) |
                     Q(group_has_permission__in=request.user.rlc.group_from_rlc.all())) \
             .select_related('user_has_permission', 'group_has_permission', 'permission')
-        return Response(HasPermissionNameSerializer(general_permissions, many=True).data,)
+        return Response(HasPermissionNameSerializer(general_permissions, many=True).data)
+
+    @action(detail=False, methods=['get'])
+    def files(self, request, *args, **kwargs):
+        general_permissions = HasPermission.objects \
+            .filter(permission__in=Permission.objects.filter(name__in=get_all_files_permissions())) \
+            .filter(Q(user_has_permission__in=request.user.rlc.rlc_members.all()) |
+                    Q(group_has_permission__in=request.user.rlc.group_from_rlc.all())) \
+            .select_related('user_has_permission', 'group_has_permission', 'permission')
+        return Response(HasPermissionNameSerializer(general_permissions, many=True).data)
+
+    @action(detail=False, methods=['get'])
+    def records(self, request, *args, **kwargs):
+        general_permissions = HasPermission.objects \
+            .filter(permission__in=Permission.objects.filter(name__in=get_all_records_permissions())) \
+            .filter(Q(user_has_permission__in=request.user.rlc.rlc_members.all()) |
+                    Q(group_has_permission__in=request.user.rlc.group_from_rlc.all())) \
+            .select_related('user_has_permission', 'group_has_permission', 'permission')
+        return Response(HasPermissionNameSerializer(general_permissions, many=True).data)
