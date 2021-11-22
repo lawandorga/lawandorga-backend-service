@@ -1,6 +1,5 @@
 from apps.recordmanagement.serializers.questionnaire import QuestionnaireSerializer, RecordQuestionnaireSerializer, \
-    RecordQuestionnaireDetailSerializer, CodeSerializer, RecordQuestionnaireUpdateSerializer, \
-    QuestionnaireAnswerCreateSerializer
+    RecordQuestionnaireDetailSerializer, CodeSerializer, QuestionnaireAnswerCreateSerializer
 from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire
 from rest_framework.decorators import action
 from rest_framework.response import Response

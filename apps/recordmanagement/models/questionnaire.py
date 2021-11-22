@@ -12,8 +12,6 @@ class Questionnaire(models.Model):
     name = models.CharField(max_length=100)
     rlc = models.ForeignKey(Rlc, related_name='questionnaires', on_delete=models.CASCADE, blank=True)
     notes = models.TextField(blank=True)
-    questionnaire = models.TextField()
-    allow_file_upload = models.BooleanField(default=True)
     records = models.ManyToManyField(EncryptedRecord, through='RecordQuestionnaire')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

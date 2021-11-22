@@ -15,7 +15,8 @@ from apps.recordmanagement.models import (
     EncryptedRecord,
     EncryptedRecordMessage,
 )
-from apps.recordmanagement.serializers.questionnaire import RecordQuestionnaireDetailSerializer
+from apps.recordmanagement.serializers.questionnaire import RecordQuestionnaireDetailSerializer, \
+    RecordQuestionnaireListSerializer
 from apps.static.serializers import map_values
 from apps.static.encryption import AESEncryption
 from rest_framework.pagination import LimitOffsetPagination
@@ -218,7 +219,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
     def record_questionnaires(self, request, *args, **kwargs):
         record = self.get_object()
         questionnaires = record.questionnaires.all()
-        return Response(RecordQuestionnaireDetailSerializer(questionnaires, many=True).data)
+        return Response(RecordQuestionnaireListSerializer(questionnaires, many=True).data)
 
     @action(detail=True, methods=["post"])
     def add_message(self, request, pk=None):

@@ -2,10 +2,27 @@ from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire, Que
 from rest_framework import serializers
 
 
+###
+# Other
+###
 class CodeSerializer(serializers.Serializer):
     code = serializers.CharField()
 
 
+###
+# Questionnaire Field
+###
+class QuestionnaireFieldSerializer(serializers.ModelSerializer):
+    name = serializers.CharField()
+
+    class Meta:
+        model = QuestionnaireField
+        fields = '__all__'
+
+
+###
+# Questionnaire
+###
 class QuestionnaireSerializer(serializers.ModelSerializer):
     class Meta:
         model = Questionnaire
@@ -17,46 +34,43 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class QuestionnaireFieldSerializer(serializers.ModelSerializer):
-    name = serializers.CharField()
+###
+# QuestionnaireAnswer
+###
+class QuestionnaireAnswerSerializer(serializers.ModelSerializer):
+    field = QuestionnaireFieldSerializer(read_only=True)
 
     class Meta:
-        model = QuestionnaireField
+        model = QuestionnaireAnswer
         fields = '__all__'
-
-
-class QuestionnaireDetailSerializer(QuestionnaireSerializer):
-    fields = QuestionnaireFieldSerializer(many=True, read_only=True)
-
-
-class RecordQuestionnaireSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RecordQuestionnaire
-        fields = '__all__'
-
-
-class RecordQuestionnaireDetailSerializer(serializers.ModelSerializer):
-    questionnaire = QuestionnaireDetailSerializer(read_only=True)
-    fields = serializers.SerializerMethodField(method_name='get_questionnaire_fields')
-
-    class Meta:
-        model = RecordQuestionnaire
-        fields = '__all__'
-
-    def get_questionnaire_fields(self, obj):
-        fields = list(obj.questionnaire.fields.all())
-        answers = list(obj.answers.values_list('field', flat=True))
-        fields = list(filter(lambda field: field.id not in answers, fields))
-        return QuestionnaireFieldSerializer(fields, many=True).data
-
-
-class RecordQuestionnaireUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RecordQuestionnaire
-        fields = []
 
 
 class QuestionnaireAnswerCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionnaireAnswer
         exclude = ['data']
+
+
+###
+# RecordQuestionnaire
+###
+class RecordQuestionnaireSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecordQuestionnaire
+        fields = '__all__'
+
+
+class RecordQuestionnaireListSerializer(RecordQuestionnaireSerializer):
+    questionnaire = QuestionnaireSerializer(read_only=True)
+    answers = QuestionnaireAnswerSerializer(many=True, read_only=True)
+
+
+class RecordQuestionnaireDetailSerializer(RecordQuestionnaireSerializer):
+    questionnaire = QuestionnaireSerializer(read_only=True)
+    fields = serializers.SerializerMethodField(method_name='get_questionnaire_fields')
+
+    def get_questionnaire_fields(self, obj):
+        fields = list(obj.questionnaire.fields.all())
+        answers = list(obj.answers.values_list('field', flat=True))
+        fields = list(filter(lambda field: field.id not in answers, fields))
+        return QuestionnaireFieldSerializer(fields, many=True).data
