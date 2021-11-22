@@ -37,22 +37,23 @@ class RecordQuestionnaireSerializer(serializers.ModelSerializer):
 
 class RecordQuestionnaireDetailSerializer(serializers.ModelSerializer):
     questionnaire = QuestionnaireDetailSerializer(read_only=True)
+    fields = serializers.SerializerMethodField(method_name='get_questionnaire_fields')
 
     class Meta:
         model = RecordQuestionnaire
         fields = '__all__'
 
+    def get_questionnaire_fields(self, obj):
+        fields = list(obj.questionnaire.fields.all())
+        answers = list(obj.answers.values_list('field', flat=True))
+        fields = list(filter(lambda field: field.id not in answers, fields))
+        return QuestionnaireFieldSerializer(fields, many=True).data
+
 
 class RecordQuestionnaireUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordQuestionnaire
-        fields = ['answer', 'answered']
-
-    def validate(self, attrs):
-        attrs = super().validate(attrs)
-        if attrs['answer']:
-            attrs['answered'] = True
-        return attrs
+        fields = []
 
 
 class QuestionnaireAnswerCreateSerializer(serializers.ModelSerializer):

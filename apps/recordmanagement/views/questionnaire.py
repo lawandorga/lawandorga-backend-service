@@ -1,6 +1,6 @@
 from apps.recordmanagement.serializers.questionnaire import QuestionnaireSerializer, RecordQuestionnaireSerializer, \
     RecordQuestionnaireDetailSerializer, CodeSerializer, RecordQuestionnaireUpdateSerializer, \
-    QuestionnaireFieldSerializer, QuestionnaireAnswerCreateSerializer
+    QuestionnaireAnswerCreateSerializer
 from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -52,9 +52,7 @@ class RecordQuestionnaireViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMi
         return RecordQuestionnaire.objects.filter(questionnaire__rlc=self.request.user.rlc)
 
     def get_serializer_class(self):
-        if self.action in ['partial_update']:
-            return RecordQuestionnaireUpdateSerializer
-        elif self.action in ['retrieve']:
+        if self.action in ['retrieve', 'partial_update']:
             return RecordQuestionnaireDetailSerializer
         return super().get_serializer_class()
 
@@ -65,9 +63,6 @@ class RecordQuestionnaireViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMi
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
         # save the fields
         for field in list(instance.questionnaire.fields.all()):
             if field.name in request.data:
@@ -77,4 +72,5 @@ class RecordQuestionnaireViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMi
                 answer = answer_serializer.save()
                 answer.set_data(request.data[field.name])
         # return
+        serializer = self.get_serializer(instance)
         return Response(serializer.data)

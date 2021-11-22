@@ -1,15 +1,11 @@
-import mimetypes
-import os
-
-from django.conf import settings
-from django.core.files.storage import default_storage
-
+from apps.static.encrypted_storage import EncryptedStorage
 from apps.recordmanagement.models import EncryptedRecord
+from django.core.files.storage import default_storage
 from apps.api.models import Rlc
+from django.conf import settings
 from django.db import models
 import uuid
-
-from apps.static.encrypted_storage import EncryptedStorage
+import os
 
 
 class Questionnaire(models.Model):
@@ -34,6 +30,7 @@ class QuestionnaireField(models.Model):
     questionnaire = models.ForeignKey(Questionnaire, related_name='fields', on_delete=models.CASCADE)
     TYPE_CHOICES = (
         ('FILE', 'File'),
+        ('TEXTAREA', 'Text'),
     )
     question = models.CharField(max_length=100)
     type = models.CharField(choices=TYPE_CHOICES, max_length=20)
@@ -55,8 +52,6 @@ class QuestionnaireField(models.Model):
 class RecordQuestionnaire(models.Model):
     record = models.ForeignKey(EncryptedRecord, on_delete=models.CASCADE, related_name='questionnaires')
     questionnaire = models.ForeignKey(Questionnaire, on_delete=models.PROTECT, related_name='record_questionnaires')
-    answer = models.TextField(blank=True)
-    answered = models.BooleanField(default=False)
     code = models.SlugField(unique=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -109,3 +104,6 @@ class QuestionnaireAnswer(models.Model):
             self.data = '{}/{}'.format(self.slugify(), file.name)
             self.save()
             self.upload_file(file)
+        if self.field.type == 'TEXTAREA':
+            self.data = data
+            self.save()
