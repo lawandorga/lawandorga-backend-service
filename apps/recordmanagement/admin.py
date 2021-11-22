@@ -1,6 +1,7 @@
 from apps.recordmanagement.models import OriginCountry, EncryptedRecord, RecordEncryption, \
     EncryptedClient, EncryptedRecordDocument, EncryptedRecordMessage, EncryptedRecordPermission, \
-    EncryptedRecordDeletionRequest, PoolConsultant, PoolRecord, RecordQuestionnaire, Questionnaire
+    EncryptedRecordDeletionRequest, PoolConsultant, PoolRecord, RecordQuestionnaire, Questionnaire, \
+    QuestionnaireField, QuestionnaireAnswer
 from django.contrib import admin
 
 admin.site.register(OriginCountry)
@@ -15,3 +16,5 @@ admin.site.register(PoolRecord)
 admin.site.register(EncryptedRecord)
 admin.site.register(Questionnaire)
 admin.site.register(RecordQuestionnaire)
+admin.site.register(QuestionnaireField)
+admin.site.register(QuestionnaireAnswer)

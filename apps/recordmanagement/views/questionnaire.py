@@ -1,7 +1,6 @@
-from django.core.exceptions import ObjectDoesNotExist
-
 from apps.recordmanagement.serializers.questionnaire import QuestionnaireSerializer, RecordQuestionnaireSerializer, \
-    RecordQuestionnaireDetailSerializer, CodeSerializer, RecordQuestionnaireUpdateSerializer
+    RecordQuestionnaireDetailSerializer, CodeSerializer, RecordQuestionnaireUpdateSerializer, \
+    QuestionnaireFieldSerializer, QuestionnaireAnswerCreateSerializer
 from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -63,3 +62,19 @@ class RecordQuestionnaireViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMi
         self.lookup_url_kwarg = 'pk'
         self.lookup_field = 'code'
         return super().retrieve(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        # save the fields
+        for field in list(instance.questionnaire.fields.all()):
+            if field.name in request.data:
+                data = {'record_questionnaire': instance.pk, 'field': field.pk}
+                answer_serializer = QuestionnaireAnswerCreateSerializer(data=data)
+                answer_serializer.is_valid(raise_exception=True)
+                answer = answer_serializer.save()
+                answer.set_data(request.data[field.name])
+        # return
+        return Response(serializer.data)

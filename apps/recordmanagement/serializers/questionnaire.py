@@ -1,4 +1,4 @@
-from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire
+from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire, QuestionnaireField, QuestionnaireAnswer
 from rest_framework import serializers
 
 
@@ -17,6 +17,18 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class QuestionnaireFieldSerializer(serializers.ModelSerializer):
+    name = serializers.CharField()
+
+    class Meta:
+        model = QuestionnaireField
+        fields = '__all__'
+
+
+class QuestionnaireDetailSerializer(QuestionnaireSerializer):
+    fields = QuestionnaireFieldSerializer(many=True, read_only=True)
+
+
 class RecordQuestionnaireSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordQuestionnaire
@@ -24,7 +36,7 @@ class RecordQuestionnaireSerializer(serializers.ModelSerializer):
 
 
 class RecordQuestionnaireDetailSerializer(serializers.ModelSerializer):
-    questionnaire = QuestionnaireSerializer(read_only=True)
+    questionnaire = QuestionnaireDetailSerializer(read_only=True)
 
     class Meta:
         model = RecordQuestionnaire
@@ -41,3 +53,9 @@ class RecordQuestionnaireUpdateSerializer(serializers.ModelSerializer):
         if attrs['answer']:
             attrs['answered'] = True
         return attrs
+
+
+class QuestionnaireAnswerCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuestionnaireAnswer
+        exclude = ['data']

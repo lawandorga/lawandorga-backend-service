@@ -41,6 +41,10 @@ class EncryptedStorage:
         )
 
     @staticmethod
+    def upload_to_s3(local_filepath, filename):
+        EncryptedStorage.get_s3_client().upload_file(local_filepath, settings.SCW_S3_BUCKET_NAME, filename)
+
+    @staticmethod
     def encrypt_file_and_upload_to_s3(local_filepath, aes_key, key):
         encrypted_file = AESEncryption.encrypt_file(local_filepath, aes_key)
         encrypted_key = '{}.enc'.format(key)
