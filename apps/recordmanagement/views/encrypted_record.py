@@ -1,3 +1,4 @@
+from apps.recordmanagement.serializers.questionnaire import RecordQuestionnaireListSerializer
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from apps.recordmanagement.serializers import (
@@ -15,8 +16,6 @@ from apps.recordmanagement.models import (
     EncryptedRecord,
     EncryptedRecordMessage,
 )
-from apps.recordmanagement.serializers.questionnaire import RecordQuestionnaireDetailSerializer, \
-    RecordQuestionnaireListSerializer
 from apps.static.serializers import map_values
 from apps.static.encryption import AESEncryption
 from rest_framework.pagination import LimitOffsetPagination

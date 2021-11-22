@@ -8,7 +8,6 @@ import mimetypes
 
 
 class FileViewSet(viewsets.ModelViewSet):
-    instance: File
     queryset = File.objects.all()
     serializer_class = FileSerializer
 

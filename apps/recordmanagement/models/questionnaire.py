@@ -1,9 +1,11 @@
 from apps.static.encrypted_storage import EncryptedStorage
 from apps.recordmanagement.models import EncryptedRecord
 from django.core.files.storage import default_storage
+from rest_framework.exceptions import ParseError
 from apps.api.models import Rlc
 from django.conf import settings
 from django.db import models
+import botocore.exceptions
 import uuid
 import os
 
@@ -89,6 +91,29 @@ class QuestionnaireAnswer(models.Model):
         else:
             unique = unique + 1
             return self.slugify(unique=unique)
+
+    def download_file(self):
+        # generate a local file path on where to save the file and clean it up so nothing goes wrong
+        downloaded_file_path = os.path.join(settings.MEDIA_ROOT, self.data)
+        downloaded_file_path = ''.join([i if ord(i) < 128 else '?' for i in downloaded_file_path])
+        # check if the folder path exists and if not create it so that boto3 can save the file
+        folder_path = downloaded_file_path[:downloaded_file_path.rindex('/')]
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        # download the file
+        try:
+            EncryptedStorage.get_s3_client().download_file(settings.SCW_S3_BUCKET_NAME, self.data, downloaded_file_path)
+        except botocore.exceptions.ClientError:
+            raise ParseError('The file was not found.')
+        # open the file to return it and delete the files from the media folder for safety reasons
+        file = default_storage.open(downloaded_file_path)
+
+        # return a delete function so that the file can be deleted after it was used
+        def delete():
+            default_storage.delete(downloaded_file_path)
+
+        # return
+        return file, delete
 
     def upload_file(self, file):
         local_file_path = default_storage.save(self.data, file)
