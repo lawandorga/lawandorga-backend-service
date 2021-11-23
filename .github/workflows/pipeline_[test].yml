@@ -41,28 +41,28 @@ jobs:
 #    needs: [test]
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-
-    - name: Create secrets.json for Django
-      id: create-json
-      uses: jsdaniell/create-json@1.1.2
-      with:
-        name: "secrets.json"
-        json: ${{ secrets.SECRETS_TEST }}
-        dir: 'tmp/'
-
-    - name: Login to docker
-      uses: docker/login-action@v1
-      with:
-          registry: ${{ secrets.DOCKER_REGISTRY_TEST }}
-          username: ${{ secrets.DOCKER_USERNAME_TEST }}
-          password: ${{ secrets.DOCKER_TOKEN_TEST }}
-
-    - name: Build the container
-      run: |
-        docker build -t ${{ secrets.DOCKER_REGISTRY_TEST }}/lawandorga-backend-test:latest .
-        docker push ${{ secrets.DOCKER_REGISTRY_TEST }}/lawandorga-backend-test:latest
+#    - name: Checkout
+#      uses: actions/checkout@v2
+#
+#    - name: Create secrets.json for Django
+#      id: create-json
+#      uses: jsdaniell/create-json@1.1.2
+#      with:
+#        name: "secrets.json"
+#        json: ${{ secrets.SECRETS_TEST }}
+#        dir: 'tmp/'
+#
+#    - name: Login to docker
+#      uses: docker/login-action@v1
+#      with:
+#          registry: ${{ secrets.DOCKER_REGISTRY_TEST }}
+#          username: ${{ secrets.DOCKER_USERNAME_TEST }}
+#          password: ${{ secrets.DOCKER_TOKEN_TEST }}
+#
+#    - name: Build the container
+#      run: |
+#        docker build -t ${{ secrets.DOCKER_REGISTRY_TEST }}/lawandorga-backend-test:latest .
+#        docker push ${{ secrets.DOCKER_REGISTRY_TEST }}/lawandorga-backend-test:latest
 
     - name: Trigger a redeploy
       uses: wei/curl@v1
@@ -72,4 +72,4 @@ jobs:
             https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/${{ secrets.CONTAINER_TEST }} \
             -H 'X-Auth-Token: ${{ secrets.DOCKER_TOKEN_TEST }}' \
             -H 'Content-Type: application/json' \
-            -d '{ "redeploy": true }'
+            -d '\{ "redeploy": true \}'
