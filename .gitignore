@@ -4,7 +4,7 @@
 tmp/static
 tmp/media
 tmp/venv
-tmp/logs
+*.log
 
 # compiled output
 /out-tsc
