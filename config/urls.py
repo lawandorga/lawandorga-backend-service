@@ -25,7 +25,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include(api_urls)),
     path("api/records/", include(record_urls)),
-    path("", TemplateView.as_view(template_name="index.html")),
+    path("", TemplateView.as_view(template_name="index.html", extra_context={'RUNTIME': settings.RUNTIME})),
     path('tinymce/', include('tinymce.urls')),
 ]
 
