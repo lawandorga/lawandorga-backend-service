@@ -61,8 +61,8 @@ jobs:
 
     - name: Build the container
       run: |
-        docker build -t ${{ secrets.DOCKER_REGISTRY_TEST }}/lawandorga-backend-test:${{ github.sha }} .
-        docker push ${{ secrets.DOCKER_REGISTRY_TEST }}/lawandorga-backend-test:${{ github.sha }}
+        docker build -t ${{ secrets.DOCKER_REGISTRY_TEST }}/lawandorga-backend-test:latest .
+        docker push ${{ secrets.DOCKER_REGISTRY_TEST }}/lawandorga-backend-test:latest
 
 #    - name: Deploy to Azure
 #      uses: azure/webapps-deploy@v2
