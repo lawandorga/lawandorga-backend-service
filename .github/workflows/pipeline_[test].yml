@@ -64,10 +64,12 @@ jobs:
         docker build -t ${{ secrets.DOCKER_REGISTRY_TEST }}/lawandorga-backend-test:latest .
         docker push ${{ secrets.DOCKER_REGISTRY_TEST }}/lawandorga-backend-test:latest
 
-#    - name: Deploy to Azure
-#      uses: azure/webapps-deploy@v2
-#      with:
-#        app-name: 'govradar-backend'
-#        publish-profile: ${{ secrets.PUBLISH_PROFILE_PRODUCTION }}
-#        images: '${{ secrets.REGISTRY_LOGIN_SERVER }}/govradar-backend-master:${{ github.sha }}'
-
+    - name: Trigger a redeploy
+      uses: wei/curl@v1
+      with:
+        args: |
+          -X PATCH \
+            https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/${{ secrets.CONTAINER_TEST }} \
+            -H 'X-Auth-Token: ${{ secrets.DOCKER_TOKEN_TEST }}' \
+            -H 'Content-Type: application/json' \
+            -d '{ "redeploy": true }'
