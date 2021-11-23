@@ -207,7 +207,7 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
     )
     user.set_password(dummy_password)
     user.save()
-    RlcUser.objects.create(user=user)
+    RlcUser.objects.create(user=user, accepted=True, email_confirmed=True)
     InternalUser.objects.create(user=user)
     users.append(user)
 
