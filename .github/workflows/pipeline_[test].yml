@@ -70,3 +70,4 @@ jobs:
 #        app-name: 'govradar-backend'
 #        publish-profile: ${{ secrets.PUBLISH_PROFILE_PRODUCTION }}
 #        images: '${{ secrets.REGISTRY_LOGIN_SERVER }}/govradar-backend-master:${{ github.sha }}'
+
