@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from apps.api.models import HasPermission, Group
+from apps.api.models import Group
 
 
 class Command(BaseCommand):
