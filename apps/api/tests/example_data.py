@@ -427,7 +427,7 @@ def create_records(
     clients: [EncryptedClient], users: [UserProfile], rlc: Rlc
 ) -> [EncryptedRecord]:
     assert len(clients) > 9
-    tags = list(Tag.objects.all())
+    tags = list(Tag.objects.filter(rlc=rlc))
 
     records = [
         (
@@ -746,6 +746,7 @@ def create() -> None:
     create_fixtures()
     # dummy
     rlc = create_rlc()
+    create_tags(rlc)
     dummy = create_dummy_users(rlc)[0]
     # data
     clients = create_clients(rlc)
