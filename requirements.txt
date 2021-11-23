@@ -1,5 +1,4 @@
 asgiref==3.4.1
-attrs==21.2.0
 autopep8==1.6.0
 boto==2.49.0
 boto3==1.20.11
@@ -15,7 +14,6 @@ django-tinymce==3.3.0
 djangorestframework==3.12.4
 pep8==1.7.1
 psycopg2==2.9.2
-python-dateutil==2.8.2
 pytz==2021.3
 s3transfer==0.5.0
 six==1.16.0
