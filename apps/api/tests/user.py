@@ -64,7 +64,7 @@ class UserViewSetWorkingTests(TestCase):
         response = view(request)
         self.assertContains(response, 'token')
         self.assertContains(response, 'id')
-        self.assertContains(response, 'private_key')
+        self.assertContains(response, 'key')
         self.assertContains(response, 'email')
         self.assertEqual(response.status_code, 200)
 
@@ -88,6 +88,7 @@ class UserViewSetWorkingTests(TestCase):
         url = '/api/users/{}/password_reset_confirm/'.format(rlc_user.pk)
         request = self.factory.post(url, data)
         response = view(request, pk=rlc_user.pk)
+        print(response)
         self.assertEqual(response.status_code, 200)
         view = UserViewSet.as_view(actions={'post': 'login'})
         data = {
@@ -329,7 +330,7 @@ class UserViewSetAccessTests(TestCase):
         view = UserViewSet.as_view(actions={'get': 'statics'})
         request = self.factory.get('/api/users/statics/token-123/')
         response = view(request)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 401)
 
     def test_everybody_can_hit_logout(self):
         view = UserViewSet.as_view(actions={'post': 'logout'})

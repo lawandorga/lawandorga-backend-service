@@ -44,6 +44,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Create secrets.json for Django
+      id: create-json
+      uses: jsdaniell/create-json@1.1.2
+      with:
+        name: "secrets.json"
+        json: ${{ secrets.SECRETS_TEST }}
+        dir: 'tmp/'
+
     - name: Login to docker
       uses: docker/login-action@v1
       with:
