@@ -83,12 +83,11 @@ class UserViewSetWorkingTests(TestCase):
         data = {
             'token': rlc_user.get_password_reset_token(),
             'new_password': 'test1234',
-            'password_confirm': 'test1234'
+            'new_password_confirm': 'test1234'
         }
         url = '/api/users/{}/password_reset_confirm/'.format(rlc_user.pk)
         request = self.factory.post(url, data)
         response = view(request, pk=rlc_user.pk)
-        print(response)
         self.assertEqual(response.status_code, 200)
         view = UserViewSet.as_view(actions={'post': 'login'})
         data = {
