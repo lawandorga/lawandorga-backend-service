@@ -34,10 +34,12 @@ class QuestionnaireField(models.Model):
     )
     question = models.CharField(max_length=100)
     type = models.CharField(choices=TYPE_CHOICES, max_length=20)
+    order = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ['order']
         verbose_name = 'QuestionnaireField'
         verbose_name_plural = 'QuestionnaireFields'
 

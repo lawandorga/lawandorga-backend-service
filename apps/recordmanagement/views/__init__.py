@@ -11,3 +11,4 @@ from .pool_record import *
 from .record_pool import *
 from .record_statistics import *
 from .questionnaire_answers import *
+from .questionnaire_fields import *

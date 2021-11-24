@@ -1,5 +1,6 @@
 from apps.recordmanagement.serializers.questionnaire import QuestionnaireSerializer, RecordQuestionnaireSerializer, \
-    RecordQuestionnaireDetailSerializer, CodeSerializer, QuestionnaireAnswerCreateSerializer
+    RecordQuestionnaireDetailSerializer, CodeSerializer, QuestionnaireAnswerCreateSerializer, \
+    QuestionnaireFieldSerializer
 from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -15,6 +16,13 @@ class QuestionnaireViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         return serializer.save()
+
+    @action(detail=True, methods=['get'])
+    def fields(self, request, *args, **kwargs):
+        instance = self.get_object()
+        queryset = instance.fields.all()
+        serializer = QuestionnaireFieldSerializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(detail=False, methods=['post'], permission_classes=[])
     def code(self, request, *args, **kwargs):
@@ -64,7 +72,7 @@ class RecordQuestionnaireViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMi
         instance = self.get_object()
         # save the fields
         for field in list(instance.questionnaire.fields.all()):
-            if field.name in request.data:
+            if field.name in request.data and request.data[field.name]:
                 data = {'record_questionnaire': instance.pk, 'field': field.pk}
                 answer_serializer = QuestionnaireAnswerCreateSerializer(data=data)
                 answer_serializer.is_valid(raise_exception=True)
