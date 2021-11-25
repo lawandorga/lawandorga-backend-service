@@ -55,6 +55,10 @@ LOGGING = {
             'level': 'WARNING',
             'filename': os.path.join(LOGGING_DIR, 'django.log'),
         },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'WARNING',
+        },
         'null': {
             'class': 'logging.NullHandler',
         },
@@ -65,9 +69,9 @@ LOGGING = {
             'propagate': False,
         },
         '': {
-            'handlers': ['file'],
+            'handlers': ['console', 'file'],
             'propagate': True,
-            'level': 'INFO',
+            'level': 'DEBUG',
         },
     }
 }
