@@ -52,16 +52,16 @@ LOGGING = {
     'handlers': {
         'file': {
             'class': 'logging.FileHandler',
-            'level': 'WARNING',
+            'level': 'ERROR',
             'filename': os.path.join(LOGGING_DIR, 'django.log'),
         },
         'console': {
             'class': 'logging.StreamHandler',
-            'level': 'WARNING',
+            'level': 'ERROR',
         },
         'mail_admins': {
             'class': 'django.utils.log.AdminEmailHandler',
-            'level': 'WARNING',
+            'level': 'ERROR',
         },
         'null': {
             'class': 'logging.NullHandler',
