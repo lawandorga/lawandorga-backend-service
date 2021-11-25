@@ -13,7 +13,7 @@ class CodeSerializer(serializers.Serializer):
 # Questionnaire Field
 ###
 class QuestionnaireFieldSerializer(serializers.ModelSerializer):
-    name = serializers.CharField()  # used on forms populated from the property
+    name = serializers.CharField(read_only=True)  # used on forms populated from the property
 
     class Meta:
         model = QuestionnaireField
