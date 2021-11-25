@@ -59,6 +59,10 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'level': 'WARNING',
         },
+        'mail_admins': {
+            'class': 'django.utils.log.AdminEmailHandler',
+            'level': 'WARNING',
+        },
         'null': {
             'class': 'logging.NullHandler',
         },
@@ -69,9 +73,13 @@ LOGGING = {
             'propagate': False,
         },
         '': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'file', 'mail_admins'],
             'propagate': True,
-            'level': 'DEBUG',
+            'level': 'INFO',
         },
     }
 }
+
+# mail errors to the admins
+# See: https://docs.djangoproject.com/en/3.2/ref/settings/#admins
+ADMINS = [('Daniel Mössner', 'it@law-orga.de')]

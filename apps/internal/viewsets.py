@@ -21,7 +21,6 @@ class ArticleViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericVi
     authentication_classes = []
 
     def get_serializer_class(self):
-        raise Exception()
         if self.action == 'retrieve':
             return ArticleDetailSerializer
         return super().get_serializer_class()
