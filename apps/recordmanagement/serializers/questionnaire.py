@@ -9,6 +9,14 @@ class CodeSerializer(serializers.Serializer):
     code = serializers.CharField()
 
 
+class DataFileSerializer(serializers.Serializer):
+    data = serializers.FileField()
+
+
+class DataTextSerializer(serializers.Serializer):
+    data = serializers.CharField()
+
+
 ###
 # Questionnaire Field
 ###
@@ -48,7 +56,20 @@ class QuestionnaireAnswerSerializer(serializers.ModelSerializer):
 class QuestionnaireAnswerCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionnaireAnswer
-        exclude = ['data']
+        fields = '__all__'
+
+
+class QuestionnaireAnswerCreateFileSerializer(QuestionnaireAnswerCreateSerializer):
+    data = serializers.FileField()
+
+    def save(self, **kwargs):
+        instance = super().save(**kwargs)
+        instance.set_data(self.validated_data['data'])
+        return instance
+
+
+class QuestionnaireAnswerCreateTextSerializer(QuestionnaireAnswerCreateSerializer):
+    data = serializers.CharField()
 
 
 ###

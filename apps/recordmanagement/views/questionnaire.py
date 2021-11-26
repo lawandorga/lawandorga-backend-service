@@ -1,6 +1,8 @@
+from rest_framework.exceptions import ParseError
+
 from apps.recordmanagement.serializers.questionnaire import QuestionnaireSerializer, RecordQuestionnaireSerializer, \
-    RecordQuestionnaireDetailSerializer, CodeSerializer, QuestionnaireAnswerCreateSerializer, \
-    QuestionnaireFieldSerializer
+    RecordQuestionnaireDetailSerializer, CodeSerializer, \
+    QuestionnaireFieldSerializer, QuestionnaireAnswerCreateFileSerializer, QuestionnaireAnswerCreateTextSerializer
 from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -73,11 +75,15 @@ class RecordQuestionnaireViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMi
         # save the fields
         for field in list(instance.questionnaire.fields.all()):
             if field.name in request.data and request.data[field.name]:
-                data = {'record_questionnaire': instance.pk, 'field': field.pk}
-                answer_serializer = QuestionnaireAnswerCreateSerializer(data=data)
-                answer_serializer.is_valid(raise_exception=True)
-                answer = answer_serializer.save()
-                answer.set_data(request.data[field.name])
+                data = {'record_questionnaire': instance.pk, 'field': field.pk, 'data': request.data[field.name]}
+                if field.type == 'FILE':
+                    answer_serializer = QuestionnaireAnswerCreateFileSerializer(data=data)
+                else:
+                    answer_serializer = QuestionnaireAnswerCreateTextSerializer(data=data)
+                if answer_serializer.is_valid(raise_exception=False):
+                    answer_serializer.save()
+                else:
+                    raise ParseError({field.name: answer_serializer.errors['data']})
         # return
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
