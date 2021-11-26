@@ -1,3 +1,5 @@
+from rest_framework.exceptions import APIException
+
 from apps.recordmanagement.models import QuestionnaireAnswer
 from rest_framework.decorators import action
 from rest_framework import viewsets
@@ -14,6 +16,8 @@ class QuestionnaireAnswersViewSet(viewsets.GenericViewSet):
     @action(detail=True)
     def download_file(self, request, *args, **kwargs):
         instance = self.get_object()
+        if instance.data is None:
+            raise APIException('This file does not exist.')
         file, delete = instance.download_file()
         response = FileResponse(file, content_type=mimetypes.guess_type(instance.data)[0])
         response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.data.split('/')[-1])

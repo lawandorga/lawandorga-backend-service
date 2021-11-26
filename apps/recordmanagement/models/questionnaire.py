@@ -74,7 +74,7 @@ class RecordQuestionnaire(models.Model):
 class QuestionnaireAnswer(models.Model):
     record_questionnaire = models.ForeignKey(RecordQuestionnaire, on_delete=models.CASCADE, related_name='answers')
     field = models.ForeignKey(QuestionnaireField, on_delete=models.CASCADE, related_name='answers')
-    data = models.TextField(null=True)
+    data = models.TextField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
