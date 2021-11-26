@@ -50,7 +50,11 @@ class QuestionnaireAnswerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = QuestionnaireAnswer
-        fields = '__all__'
+        exclude = ['aes_key']
+
+
+class QuestionnaireAnswerRetrieveSerializer(QuestionnaireAnswerSerializer):
+    data = serializers.CharField()
 
 
 class QuestionnaireAnswerCreateSerializer(serializers.ModelSerializer):
@@ -58,13 +62,16 @@ class QuestionnaireAnswerCreateSerializer(serializers.ModelSerializer):
         model = QuestionnaireAnswer
         fields = '__all__'
 
+    def get_instance(self):
+        return QuestionnaireAnswer(**self.validated_data)
+
 
 class QuestionnaireAnswerCreateFileSerializer(QuestionnaireAnswerCreateSerializer):
     data = serializers.FileField()
 
-    def save(self, **kwargs):
-        instance = super().save(**kwargs)
-        instance.set_data(self.validated_data['data'])
+    def get_instance(self):
+        instance = super().get_instance()
+        instance.upload_file(self.validated_data['data'])
         return instance
 
 
@@ -83,7 +90,7 @@ class RecordQuestionnaireSerializer(serializers.ModelSerializer):
 
 class RecordQuestionnaireListSerializer(RecordQuestionnaireSerializer):
     questionnaire = QuestionnaireSerializer(read_only=True)
-    answers = QuestionnaireAnswerSerializer(many=True, read_only=True)
+    # answers = QuestionnaireAnswerSerializer(many=True, read_only=True)
 
 
 class RecordQuestionnaireDetailSerializer(RecordQuestionnaireSerializer):

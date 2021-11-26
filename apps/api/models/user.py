@@ -170,8 +170,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         return private_key
 
-    def get_rlc_private_key(self, users_private_key):
-        return self.rlc.get_private_key(user=self, private_key_user=users_private_key)
+    def get_private_key_rlc(self, private_key_user=None, request=None):
+        if private_key_user:
+            pass
+        elif request:
+            private_key_user = self.get_private_key(request=request)
+        else:
+            raise ValueError("You need to pass (private_key_user) or (request).")
+
+        return self.rlc.get_private_key(user=self, private_key_user=private_key_user)
 
     def get_rlc_aes_key(self, private_key_user=None):
         if private_key_user:

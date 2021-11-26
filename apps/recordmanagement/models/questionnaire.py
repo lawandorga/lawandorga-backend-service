@@ -9,6 +9,8 @@ import botocore.exceptions
 import uuid
 import os
 
+from apps.static.encryption import EncryptedModelMixin, RSAEncryption, AESEncryption
+
 
 class Questionnaire(models.Model):
     name = models.CharField(max_length=100)
@@ -71,12 +73,15 @@ class RecordQuestionnaire(models.Model):
         super().save(*args, **kwargs)
 
 
-class QuestionnaireAnswer(models.Model):
+class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
     record_questionnaire = models.ForeignKey(RecordQuestionnaire, on_delete=models.CASCADE, related_name='answers')
     field = models.ForeignKey(QuestionnaireField, on_delete=models.CASCADE, related_name='answers')
-    data = models.TextField(null=True, blank=True)
+    data = models.BinaryField()
+    aes_key = models.BinaryField(default=b'')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    encrypted_fields = ['data', 'aes_key']
+    encryption_class = RSAEncryption
 
     class Meta:
         verbose_name = 'QuestionnaireAnswer'
@@ -85,50 +90,33 @@ class QuestionnaireAnswer(models.Model):
     def __str__(self):
         return 'questionnaireAnswer: {};'.format(self.pk)
 
-    def slugify(self, unique=0):
-        key = 'rlcs/{}/record_questionnaires/{}/{}-{}'.format(self.record_questionnaire.questionnaire.rlc.pk,
-                                                              self.record_questionnaire.id, self.field.id, unique)
-        if not QuestionnaireAnswer.objects.filter(data=key).exists():
-            return key
+    def encrypt(self, *args):
+        key = self.record_questionnaire.questionnaire.rlc.get_public_key()
+        super().encrypt(key)
+
+    def decrypt(self, private_key_rlc=None, user=None, private_key_user=None):
+        if user and private_key_user:
+            private_key_rlc = self.record_questionnaire.questionnaire.rlc \
+                .get_private_key(user=user, private_key_user=private_key_user)
+        elif private_key_rlc:
+            pass
         else:
-            unique = unique + 1
-            return self.slugify(unique=unique)
+            raise ValueError("You have to set (private_key_rlc) or (user and private_key_user).")
+        super().decrypt(private_key_rlc)
 
-    def download_file(self):
-        # generate a local file path on where to save the file and clean it up so nothing goes wrong
-        downloaded_file_path = os.path.join(settings.MEDIA_ROOT, self.data)
-        downloaded_file_path = ''.join([i if ord(i) < 128 else '?' for i in downloaded_file_path])
-        # check if the folder path exists and if not create it so that boto3 can save the file
-        folder_path = downloaded_file_path[:downloaded_file_path.rindex('/')]
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-        # download the file
-        try:
-            EncryptedStorage.get_s3_client().download_file(settings.SCW_S3_BUCKET_NAME, self.data, downloaded_file_path)
-        except botocore.exceptions.ClientError:
-            raise ParseError('The file was not found.')
-        # open the file to return it and delete the files from the media folder for safety reasons
-        file = default_storage.open(downloaded_file_path)
+    def generate_key(self):
+        key = 'rlcs/{}/record_questionnaires/{}/{}'.format(self.record_questionnaire.questionnaire.rlc.pk,
+                                                           self.record_questionnaire.id, self.field.id)
+        return key
 
-        # return a delete function so that the file can be deleted after it was used
-        def delete():
-            default_storage.delete(downloaded_file_path)
-
-        # return
-        return file, delete
+    def download_file(self, aes_key):
+        file_key = '{}.enc'.format(self.data)
+        return EncryptedStorage.download_file(file_key, aes_key)
 
     def upload_file(self, file):
+        self.aes_key = AESEncryption.generate_secure_key()
+        self.data = '{}/{}'.format(self.generate_key(), file.name)
         local_file_path = default_storage.save(self.data, file)
         global_file_path = os.path.join(settings.MEDIA_ROOT, local_file_path)
-        EncryptedStorage.upload_to_s3(global_file_path, self.data)
+        EncryptedStorage.encrypt_file_and_upload_to_s3(global_file_path, self.aes_key, self.data)
         default_storage.delete(self.data)
-
-    def set_data(self, data, *args):
-        if self.field.type == 'FILE':
-            file = data
-            self.data = '{}/{}'.format(self.slugify(), file.name)
-            self.save()
-            self.upload_file(file)
-        if self.field.type == 'TEXTAREA':
-            self.data = data
-            self.save()

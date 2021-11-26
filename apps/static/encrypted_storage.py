@@ -1,32 +1,15 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2020  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-import os
-import boto3
-from botocore.client import BaseClient
-from django.conf import settings
-
-from apps.api.errors import CustomError
-from apps.static import error_codes
-from apps.static.encryption import AESEncryption
 from apps.static.storage_folders import clean_filename, clean_string
+from rest_framework.exceptions import ParseError
+from django.core.files.storage import default_storage
+from apps.static.encryption import AESEncryption
 from apps.static.logger import Logger
-import logging
-
-logger = logging.getLogger(__name__)
+from apps.api.errors import CustomError
+from botocore.client import BaseClient
+from apps.static import error_codes
+from django.conf import settings
+import botocore.exceptions
+import boto3
+import os
 
 
 class EncryptedStorage:
@@ -60,16 +43,9 @@ class EncryptedStorage:
             if obj['Key'] == key:
                 return True
         return False
-        #
-        # try:
-        #     EncryptedStorage.get_s3_client().get_object(Bucket=settings.SCW_S3_BUCKET_NAME, Key=s3_key)
-        # except Exception as e:
-        #     return False
-        # return True
 
     @staticmethod
     def download_file_from_s3(s3_key, filename=None):
-
         if not filename:
             filename = s3_key[s3_key.rindex("/") + 1 :]
         s3: BaseClient = EncryptedStorage.get_s3_client()
@@ -113,3 +89,34 @@ class EncryptedStorage:
         except Exception as e:
             Logger.error("couldnt delete file from s3: " + s3_key)
             # raise CustomError(error_codes.ERROR__API__STORAGE__DELETE__NO_SUCH_KEY)
+
+    @staticmethod
+    def download_file(file_key, aes_key):
+        # get the key with which you can find the item on aws
+        key = file_key
+        # generate a local file path on where to save the file and clean it up so nothing goes wrong
+        downloaded_file_path = os.path.join(settings.MEDIA_ROOT, key)
+        downloaded_file_path = ''.join([i if ord(i) < 128 else '?' for i in downloaded_file_path])
+        # check if the folder path exists and if not create it so that boto3 can save the file
+        folder_path = downloaded_file_path[:downloaded_file_path.rindex('/')]
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        # download and decrypt the file
+        try:
+            EncryptedStorage.get_s3_client().download_file(settings.SCW_S3_BUCKET_NAME, key, downloaded_file_path)
+        except botocore.exceptions.ClientError:
+            raise ParseError(
+                'The file was not found. However, it is probably still encrypted on the server. '
+                'Please send an e-mail to it@law-orga.de to have the file restored.'
+            )
+        AESEncryption.decrypt_file(downloaded_file_path, aes_key)
+        # open the file to return it and delete the files from the media folder for safety reasons
+        file = default_storage.open(downloaded_file_path[:-4])
+
+        # return a delete function so that the file can be deleted after it was used
+        def delete():
+            default_storage.delete(downloaded_file_path[:-4])
+            default_storage.delete(downloaded_file_path)
+
+        # return
+        return file, delete

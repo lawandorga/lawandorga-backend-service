@@ -1,9 +1,8 @@
-from rest_framework.exceptions import ParseError
-
 from apps.recordmanagement.serializers.questionnaire import QuestionnaireSerializer, RecordQuestionnaireSerializer, \
     RecordQuestionnaireDetailSerializer, CodeSerializer, \
     QuestionnaireFieldSerializer, QuestionnaireAnswerCreateFileSerializer, QuestionnaireAnswerCreateTextSerializer
 from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire
+from rest_framework.exceptions import ParseError
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import viewsets, status, mixins
@@ -81,7 +80,9 @@ class RecordQuestionnaireViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMi
                 else:
                     answer_serializer = QuestionnaireAnswerCreateTextSerializer(data=data)
                 if answer_serializer.is_valid(raise_exception=False):
-                    answer_serializer.save()
+                    answer = answer_serializer.get_instance()
+                    answer.encrypt()
+                    answer.save()
                 else:
                     raise ParseError({field.name: answer_serializer.errors['data']})
         # return
