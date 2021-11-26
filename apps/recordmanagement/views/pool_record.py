@@ -38,11 +38,11 @@ class PoolRecordViewSet(viewsets.ModelViewSet):
         record = get_object_or_404(EncryptedRecord, pk=request.data['record'])
 
         if PoolRecord.objects.filter(record=record, yielder=request.user).exists():
-            data = {'detail': 'This record is already in the record pool.'}
+            data = {'non_field_errors': ['This record is already in the record pool.']}
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
         if not record.working_on_record.filter(pk=request.user.pk).exists():
-            data = {'detail': 'You need to be a consultant of this record in order to be able to yield it.'}
+            data = {'non_field_errors': ['You need to be a consultant of this record in order to be able to yield it.']}
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
         private_key = request.user.get_private_key(request=request)

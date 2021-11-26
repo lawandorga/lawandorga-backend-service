@@ -25,14 +25,15 @@ class EncryptedRecordSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         token = attrs['record_token']
-        if 'from_rlc' in attrs and EncryptedRecord.objects.filter(record_token=token,
-                                                                  from_rlc=attrs['from_rlc']).exists():
+        if not self.instance and EncryptedRecord.objects.filter(record_token=token,
+                                                                from_rlc=attrs['from_rlc']).exists():
             raise ValidationError('The record token is already used. Please choose another record token.')
         return attrs
 
 
 class EncryptedRecordListSerializer(EncryptedRecordSerializer):
     access = serializers.SerializerMethodField('get_access')
+    delete = serializers.SerializerMethodField()
     tags = TagSerializer(many=True, read_only=True)
     working_on_record = UserProfileNameSerializer(many=True, read_only=True)
 
@@ -46,6 +47,7 @@ class EncryptedRecordListSerializer(EncryptedRecordSerializer):
             "working_on_record",
             'tags',
             "access",
+            "delete",
             "created_on",
             "last_edited"
         ]
@@ -56,6 +58,9 @@ class EncryptedRecordListSerializer(EncryptedRecordSerializer):
 
     def get_access(self, obj):
         return obj.encryptions.filter(user=self.user).exists()
+
+    def get_delete(self, obj):
+        return obj.deletions_requested.filter(state='re').exists()
 
 
 class EncryptedRecordDetailSerializer(EncryptedRecordSerializer):

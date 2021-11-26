@@ -52,16 +52,10 @@ class RlcUserForeignSerializer(RlcUserListSerializer):
 # UserProfile
 ###
 class UserProfileSerializer(serializers.ModelSerializer):
-    # make sure select_related('accepted') is set on the user queryset or else the queries will explode
-    accepted = serializers.SerializerMethodField("get_accepted")
-
     class Meta:
         model = UserProfile
         exclude = ["groups", "user_permissions"]
         extra_kwargs = {"password": {"write_only": True}}
-
-    def get_accepted(self, obj):
-        return obj.rlc_user.accepted
 
 
 class RlcUserCreateSerializer(UserProfileSerializer):
@@ -117,6 +111,13 @@ class EmailSerializer(serializers.Serializer):
 class UserPasswordResetConfirmSerializer(serializers.Serializer):
     token = serializers.CharField()
     new_password = serializers.CharField()
+    new_password_confirm = serializers.CharField()
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if attrs['new_password'] != attrs['new_password_confirm']:
+            raise ValidationError('The passwords do not match.')
+        return attrs
 
 
 ###

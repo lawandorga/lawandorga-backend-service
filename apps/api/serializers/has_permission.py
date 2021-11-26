@@ -1,6 +1,5 @@
 from apps.api.models.has_permission import HasPermission
-from apps.api.serializers import PermissionNameSerializer, GroupNameSerializer, UserProfileNameSerializer, \
-    RlcNameSerializer
+from apps.api.serializers import GroupNameSerializer, UserProfileNameSerializer, PermissionNameSerializer
 from rest_framework import serializers
 from ..errors import EntryAlreadyExistingError
 
@@ -32,7 +31,7 @@ class OldHasPermissionSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class HasPermissionNameSerializer(HasPermissionSerializer):
+class OldHasPermissionNameSerializer(HasPermissionSerializer):
     name = serializers.SerializerMethodField(method_name='get_name')
 
     def get_name(self, obj):
@@ -46,3 +45,9 @@ class HasPermissionAllNamesSerializer(HasPermissionSerializer):
 
     def get_name(self, obj):
         return obj.permission.name
+
+
+class HasPermissionNameSerializer(HasPermissionSerializer):
+    user_has_permission = UserProfileNameSerializer(read_only=True)
+    group_has_permission = GroupNameSerializer(read_only=True)
+    permission = PermissionNameSerializer(read_only=True)

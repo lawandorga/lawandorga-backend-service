@@ -90,7 +90,7 @@ class EncryptedRecordMessage(EncryptedModelMixin, models.Model):
     def encrypt(
         self,
         user: UserProfile = None,
-        private_key_user: bytes = None,
+        private_key_user: str = None,
         aes_key: str = None,
     ) -> None:
         if user and private_key_user:

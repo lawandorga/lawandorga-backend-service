@@ -29,6 +29,17 @@ class IndexPage(SingletonModel):
         return 'IndexPage'
 
 
+class ImprintPage(SingletonModel):
+    content = HTMLField()
+
+    class Meta:
+        verbose_name = 'ImprintPage'
+        verbose_name_plural = 'ImprintPage'
+
+    def __str__(self):
+        return 'ImprintPage'
+
+
 class Article(models.Model):
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)

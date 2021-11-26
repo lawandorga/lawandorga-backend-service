@@ -1,8 +1,14 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
+**secrets**
+tmp/static
+tmp/media
+tmp/venv
+*.log
+
 # compiled output
-/tmp
 /out-tsc
+db.sqlite3
 
 # dependencies
 /node_modules
@@ -51,5 +57,4 @@ Thumbs.db
 backend/static/tests/test_files/
 backend/static/tests/test_file.png
 
-temp/
 data/

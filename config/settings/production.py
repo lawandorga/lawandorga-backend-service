@@ -22,6 +22,9 @@ DATABASES = {
         "PASSWORD": get_secret("DB_PASSWORD"),
         "HOST": get_secret("DB_HOST"),
         "PORT": get_secret("DB_PORT"),
+        "TEST": {
+            "NAME": 'test_{}'.format(RUNTIME)
+        }
     }
 }
 
@@ -49,8 +52,16 @@ LOGGING = {
     'handlers': {
         'file': {
             'class': 'logging.FileHandler',
-            'level': 'WARNING',
+            'level': 'ERROR',
             'filename': os.path.join(LOGGING_DIR, 'django.log'),
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'ERROR',
+        },
+        'mail_admins': {
+            'class': 'django.utils.log.AdminEmailHandler',
+            'level': 'ERROR',
         },
         'null': {
             'class': 'logging.NullHandler',
@@ -62,9 +73,13 @@ LOGGING = {
             'propagate': False,
         },
         '': {
-            'handlers': ['file'],
+            'handlers': ['console', 'file', 'mail_admins'],
             'propagate': True,
             'level': 'INFO',
         },
     }
 }
+
+# mail errors to the admins
+# See: https://docs.djangoproject.com/en/3.2/ref/settings/#admins
+ADMINS = [('Daniel Mössner', 'it@law-orga.de')]

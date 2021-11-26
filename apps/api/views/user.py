@@ -3,27 +3,23 @@ from apps.api.models.permission import Permission
 from apps.recordmanagement.models import EncryptedRecordDeletionRequest, EncryptedRecordPermission
 from apps.static.permissions import PERMISSION_MANAGE_USERS, PERMISSION_PROCESS_RECORD_DELETION_REQUESTS, \
     PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC, PERMISSION_MANAGE_PERMISSIONS_RLC
-from rest_framework.exceptions import ParseError, PermissionDenied
+from rest_framework.exceptions import ParseError, PermissionDenied, AuthenticationFailed
 from rest_framework.decorators import action
 from apps.api.serializers import (
     RlcUserCreateSerializer,
     RlcUserForeignSerializer,
     EmailSerializer,
     UserPasswordResetConfirmSerializer, HasPermissionAllNamesSerializer, RlcSerializer, RlcUserSerializer,
-    AuthTokenSerializer, UserProfileNameSerializer, RlcUserListSerializer, RlcUserUpdateSerializer,
+    AuthTokenSerializer, RlcUserListSerializer, RlcUserUpdateSerializer,
+    UserProfileSerializer,
 )
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.request import Request
 from django.forms.models import model_to_dict
-from apps.api.models import (
-    UserProfile,
-    NotificationGroup,
-    PasswordResetTokenGenerator,
-    AccountActivationTokenGenerator, UsersRlcKeys, RlcUser,
-)
-from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from apps.api.models import UserProfile, NotificationGroup, PasswordResetTokenGenerator, \
+    AccountActivationTokenGenerator, UsersRlcKeys, RlcUser
 from rest_framework import viewsets, status
 from django.utils import timezone
 from django.db import IntegrityError
@@ -132,9 +128,8 @@ class UserViewSet(viewsets.ModelViewSet):
         # build the response
         data = {
             "token": token.key,
-            "email": user.email,
-            "id": user.pk,
-            "private_key": private_key,
+            "key": private_key,
+            "user": UserProfileSerializer(user).data,
         }
         return Response(data, status=status.HTTP_200_OK)
 
@@ -165,7 +160,10 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="statics/(?P<token>[^/.]+)")
     def statics(self, request: Request, token=None, *args, **kwargs):
-        token = get_object_or_404(Token, key=token)
+        try:
+            token = Token.objects.get(key=token)
+        except ObjectDoesNotExist:
+            raise AuthenticationFailed("Your token doesn't exist, please login again.")
         user = token.user
 
         notifications = NotificationGroup.objects.filter(user=user, read=False).count()
@@ -174,7 +172,7 @@ class UserViewSet(viewsets.ModelViewSet):
         ]
 
         data = {
-            "user": UserProfileNameSerializer(user).data,
+            "user": UserProfileSerializer(user).data,
             "rlc": RlcSerializer(user.rlc).data,
             "notifications": notifications,
             "permissions": user.get_all_user_permissions(),

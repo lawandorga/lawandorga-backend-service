@@ -1,5 +1,3 @@
-import random
-
 from apps.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
 from apps.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
 from apps.recordmanagement.models.record_encryption import RecordEncryption
@@ -188,7 +186,7 @@ def create_users(rlc1, rlc2):
         user = UserProfile.objects.create(
             email=user_data[0],
             name=user_data[1],
-            rlc=random.choice([rlc1, rlc2]),
+            rlc=choice([rlc1, rlc2]),
         )
         RlcUser.objects.create(
             user=user,
@@ -213,7 +211,7 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
     )
     user.set_password(dummy_password)
     user.save()
-    RlcUser.objects.create(user=user, accepted=True, pk=999)
+    RlcUser.objects.create(user=user, accepted=True, pk=999, email_confirmed=True)
     InternalUser.objects.create(user=user)
     users.append(user)
 
@@ -433,7 +431,7 @@ def create_records(
     clients: [EncryptedClient], users: [UserProfile], rlc: Rlc
 ) -> [EncryptedRecord]:
     assert len(clients) > 9
-    tags = list(Tag.objects.all())
+    tags = list(Tag.objects.filter(rlc=rlc))
 
     records = [
         (

@@ -38,7 +38,7 @@ class UserAdmin(DjangoUserAdmin):
             'fields': ('groups', ),
         }),
         (_('RLC Stuff'), {
-            'fields': ('is_active', 'locked', 'email_confirmed', 'rlc', ),
+            'fields': ('rlc', ),
         }),
         (_('Important dates'), {'fields': ('last_login', )}),
     )

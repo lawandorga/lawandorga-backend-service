@@ -1,8 +1,8 @@
-from django.core.exceptions import ObjectDoesNotExist
-
 from apps.recordmanagement.serializers.questionnaire import QuestionnaireSerializer, RecordQuestionnaireSerializer, \
-    RecordQuestionnaireDetailSerializer, CodeSerializer, RecordQuestionnaireUpdateSerializer
+    RecordQuestionnaireDetailSerializer, CodeSerializer, \
+    QuestionnaireFieldSerializer, QuestionnaireAnswerCreateFileSerializer, QuestionnaireAnswerCreateTextSerializer
 from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire
+from rest_framework.exceptions import ParseError
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import viewsets, status, mixins
@@ -17,6 +17,13 @@ class QuestionnaireViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         return serializer.save()
+
+    @action(detail=True, methods=['get'])
+    def fields(self, request, *args, **kwargs):
+        instance = self.get_object()
+        queryset = instance.fields.all()
+        serializer = QuestionnaireFieldSerializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(detail=False, methods=['post'], permission_classes=[])
     def code(self, request, *args, **kwargs):
@@ -53,9 +60,7 @@ class RecordQuestionnaireViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMi
         return RecordQuestionnaire.objects.filter(questionnaire__rlc=self.request.user.rlc)
 
     def get_serializer_class(self):
-        if self.action in ['partial_update']:
-            return RecordQuestionnaireUpdateSerializer
-        elif self.action in ['retrieve']:
+        if self.action in ['retrieve', 'partial_update']:
             return RecordQuestionnaireDetailSerializer
         return super().get_serializer_class()
 
@@ -63,3 +68,23 @@ class RecordQuestionnaireViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMi
         self.lookup_url_kwarg = 'pk'
         self.lookup_field = 'code'
         return super().retrieve(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # save the fields
+        for field in list(instance.questionnaire.fields.all()):
+            if field.name in request.data and request.data[field.name]:
+                data = {'record_questionnaire': instance.pk, 'field': field.pk, 'data': request.data[field.name]}
+                if field.type == 'FILE':
+                    answer_serializer = QuestionnaireAnswerCreateFileSerializer(data=data)
+                else:
+                    answer_serializer = QuestionnaireAnswerCreateTextSerializer(data=data)
+                if answer_serializer.is_valid(raise_exception=False):
+                    answer = answer_serializer.get_instance()
+                    answer.encrypt()
+                    answer.save()
+                else:
+                    raise ParseError({field.name: answer_serializer.errors['data']})
+        # return
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)

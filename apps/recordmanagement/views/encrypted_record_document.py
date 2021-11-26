@@ -1,15 +1,11 @@
 from apps.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
 from apps.recordmanagement.serializers import RecordDocumentSerializer, RecordDocumentCreateSerializer
-from apps.static.encrypted_storage import EncryptedStorage
 from rest_framework.exceptions import PermissionDenied
-from django.core.files.storage import default_storage
 from rest_framework.request import Request
 from rest_framework import viewsets
 from apps.static import permissions
-from django.conf import settings
 from django.http import FileResponse
 import mimetypes
-import os
 
 
 class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):

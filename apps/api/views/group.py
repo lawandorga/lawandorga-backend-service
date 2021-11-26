@@ -25,7 +25,7 @@ from rest_framework.response import Response
 from apps.api.serializers import (
     GroupSerializer,
     GroupMembersSerializer,
-    GroupAddMemberSerializer, UserProfileSerializer, OldHasPermissionSerializer, HasPermissionNameSerializer,
+    GroupAddMemberSerializer, UserProfileSerializer, OldHasPermissionSerializer, OldHasPermissionNameSerializer,
 )
 from rest_framework.request import Request
 from apps.api.errors import CustomError
@@ -74,7 +74,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     def permissions(self, *args, **kwargs):
         group = self.get_object()
         permissions = group.group_has_permission.all()
-        return Response(HasPermissionNameSerializer(permissions, many=True).data)
+        return Response(OldHasPermissionNameSerializer(permissions, many=True).data)
 
     @action(detail=True, methods=['post'])
     def remove(self, request, pk=None, *arsg, **kwargs):

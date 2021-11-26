@@ -130,6 +130,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         group_permissions = HasPermission.objects.filter(group_has_permission__in=user_groups)
         return user_permissions | group_permissions
 
+    def get_collab_permissions(self):
+        from apps.collab.models import PermissionForCollabDocument
+        groups = self.rlcgroups.all()
+        return PermissionForCollabDocument.objects.filter(group_has_permission__in=groups).select_related('document')
+
     def get_public_key(self) -> str:
         """
         gets the public key of the user from the database
@@ -165,11 +170,21 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         return private_key
 
-    def get_rlc_private_key(self, users_private_key):
-        return self.rlc.get_private_key(user=self, private_key_user=users_private_key)
+    def get_private_key_rlc(self, private_key_user=None, request=None):
+        if private_key_user:
+            pass
+        elif request:
+            private_key_user = self.get_private_key(request=request)
+        else:
+            raise ValueError("You need to pass (private_key_user) or (request).")
 
-    def get_rlc_aes_key(self, users_private_key):
-        return self.rlc.get_aes_key(user=self, private_key_user=users_private_key)
+        return self.rlc.get_private_key(user=self, private_key_user=private_key_user)
+
+    def get_rlc_aes_key(self, private_key_user=None):
+        if private_key_user:
+            return self.rlc.get_aes_key(user=self, private_key_user=private_key_user)
+        else:
+            raise ValueError('You need to set (private_key_user).')
 
     def generate_new_user_encryption_keys(self):
         from apps.api.models.user_encryption_keys import UserEncryptionKeys
@@ -268,7 +283,7 @@ class RlcUser(models.Model):
 
     def get_email_confirmation_link(self):
         token = self.get_email_confirmation_token()
-        link = "{}activate-account/{}/{}/".format(settings.FRONTEND_URL, self.id, token)
+        link = "{}user/email-confirm/{}/{}/".format(settings.FRONTEND_URL, self.id, token)
         return link
 
     def send_email_confirmation_email(self):
@@ -292,7 +307,7 @@ class RlcUser(models.Model):
 
     def get_password_reset_link(self):
         token = self.get_password_reset_token()
-        link = "{}reset-password/{}/{}/".format(settings.FRONTEND_URL, self.id, token)
+        link = "{}user/password-reset-confirm/{}/{}/".format(settings.FRONTEND_URL, self.id, token)
         return link
 
     def send_password_reset_email(self):

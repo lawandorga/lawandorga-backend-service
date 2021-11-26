@@ -1,3 +1,5 @@
+from apps.recordmanagement.serializers.questionnaire import RecordQuestionnaireListSerializer, \
+    QuestionnaireAnswerRetrieveSerializer
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from apps.recordmanagement.serializers import (
@@ -15,7 +17,6 @@ from apps.recordmanagement.models import (
     EncryptedRecord,
     EncryptedRecordMessage,
 )
-from apps.recordmanagement.serializers.questionnaire import RecordQuestionnaireDetailSerializer
 from apps.static.serializers import map_values
 from apps.static.encryption import AESEncryption
 from rest_framework.pagination import LimitOffsetPagination
@@ -42,8 +43,8 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
     def get_queryset(self) -> QuerySet:
-        return EncryptedRecord.objects.filter(from_rlc=self.request.user.rlc).prefetch_related('working_on_record',
-                                                                                               'tags')
+        return EncryptedRecord.objects.filter(from_rlc=self.request.user.rlc) \
+            .prefetch_related('working_on_record', 'tags', 'deletions_requested')
 
     def list(self, request, *args, **kwargs):
         if (
@@ -147,7 +148,7 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
             user=request.user,
             private_key_user=request.user.get_private_key(request=request),
         )
-        serializer = self.get_serializer(record)
+        serializer = EncryptedRecordListSerializer(record, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_object(self):
@@ -217,8 +218,14 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def record_questionnaires(self, request, *args, **kwargs):
         record = self.get_object()
-        questionnaires = record.questionnaires.all()
-        return Response(RecordQuestionnaireDetailSerializer(questionnaires, many=True).data)
+        questionnaires = record.questionnaires.prefetch_related('answers')
+        data = RecordQuestionnaireListSerializer(questionnaires, many=True).data
+        private_key_rlc = request.user.get_private_key_rlc(request=request)
+        for index, questionnaire in enumerate(questionnaires):
+            answers = questionnaire.answers.all()
+            [answer.decrypt(private_key_rlc) for answer in answers]
+            data[index]['answers'] = QuestionnaireAnswerRetrieveSerializer(answers, many=True).data
+        return Response(data)
 
     @action(detail=True, methods=["post"])
     def add_message(self, request, pk=None):

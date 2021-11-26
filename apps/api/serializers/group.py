@@ -35,4 +35,4 @@ class GroupAddMemberSerializer(serializers.Serializer):
 class GroupNameSerializer(GroupSerializer):
     class Meta:
         model = Group
-        fields = ['name']
+        fields = ['name', 'id']

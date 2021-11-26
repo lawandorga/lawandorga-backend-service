@@ -26,10 +26,7 @@ from apps.static.error_codes import (
 
 
 class TextDocument(models.Model):
-    rlc = models.ForeignKey(
-        Rlc, related_name="text_documents", null=False, on_delete=models.CASCADE
-    )
-
+    rlc = models.ForeignKey(Rlc, related_name="text_documents", null=False, on_delete=models.CASCADE, blank=True)
     created = models.DateTimeField(default=timezone.now)
     creator = models.ForeignKey(
         UserProfile,
@@ -68,23 +65,3 @@ class TextDocument(models.Model):
 
     def get_draft(self) -> "TextDocumentVersion":
         return self.versions.filter(is_draft=True).first()
-
-    def user_has_permission_write(self, user: UserProfile):
-        from apps.collab.models import CollabDocument
-
-        if self.collabdocument:
-            return CollabDocument.user_has_permission_write(
-                self.collabdocument.path, user
-            )
-        else:
-            raise CustomError(ERROR__NOT__IMPLEMENTEND)
-
-    def user_has_permission_read(self, user: UserProfile):
-        from apps.collab.models import CollabDocument
-
-        if self.collabdocument:
-            return CollabDocument.user_has_permission_read(
-                self.collabdocument.path, user
-            )
-        else:
-            raise CustomError(ERROR__NOT__IMPLEMENTEND)
