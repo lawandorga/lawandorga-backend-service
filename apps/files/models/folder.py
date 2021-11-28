@@ -69,54 +69,45 @@ class Folder(models.Model):
         return children
 
     def user_has_permission_read(self, user: UserProfile) -> bool:
+        from apps.files.models.permission_for_folder import PermissionForFolder
 
         if user.rlc != self.rlc:
             return False
+
         if (
-            user.has_permission(
-                for_rlc=user.rlc, permission=PERMISSION_READ_ALL_FOLDERS_RLC
-            )
-            or user.has_permission(
-            for_rlc=user.rlc, permission=PERMISSION_WRITE_ALL_FOLDERS_RLC
-        )
-            or user.has_permission(
-            for_rlc=user.rlc, permission=PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC
-        )
+            user.has_permission(PERMISSION_READ_ALL_FOLDERS_RLC)
+            or user.has_permission(PERMISSION_WRITE_ALL_FOLDERS_RLC)
+            or user.has_permission(PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC)
         ):
             return True
 
         relevant_folders = self.get_all_parents() + [self]
         users_groups = user.rlcgroups.all()
         p_read = FolderPermission.objects.get(name=PERMISSION_READ_FOLDER)
-        from apps.files.models.permission_for_folder import PermissionForFolder
-
-        relevant_permissions = PermissionForFolder.objects.filter(
+        if PermissionForFolder.objects.filter(
             folder__in=relevant_folders,
             group_has_permission__in=users_groups,
             permission=p_read,
-        )
-        if relevant_permissions.count() >= 1:
+        ).exists():
             return True
 
         return False
 
     def user_has_permission_write(self, user: UserProfile) -> bool:
+        from apps.files.models.permission_for_folder import PermissionForFolder
 
         if user.rlc != self.rlc:
             return False
 
-        # TODO: manage_folder_permissions here too? -> is for writing?
-        if user.has_permission(
-            for_rlc=user.rlc, permission=PERMISSION_WRITE_ALL_FOLDERS_RLC
-        ) or user.has_permission(
-            for_rlc=user.rlc, permission=PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC
+        if (
+            user.has_permission(PERMISSION_WRITE_ALL_FOLDERS_RLC) or
+            user.has_permission(PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC)
         ):
             return True
 
         relevant_folders = self.get_all_parents() + [self]
         users_groups = user.rlcgroups.all()
         p_write = FolderPermission.objects.get(name=PERMISSION_WRITE_FOLDER)
-        from apps.files.models.permission_for_folder import PermissionForFolder
 
         relevant_permissions = PermissionForFolder.objects.filter(
             folder__in=relevant_folders,
@@ -130,13 +121,8 @@ class Folder(models.Model):
 
     def user_can_see_folder(self, user: UserProfile) -> bool:
         from apps.files.models.permission_for_folder import PermissionForFolder
-
-        if user.rlc != self.rlc:
-            return False
-        if self.user_has_permission_read(user) or self.user_has_permission_write(user):
-            return True
-        children = self.get_all_children()
+        folders = self.get_all_parents() + [self] + self.get_all_children()
         users_groups = user.rlcgroups.all()
-        if PermissionForFolder.objects.filter(folder__in=children, group_has_permission__in=users_groups).exists():
+        if PermissionForFolder.objects.filter(folder__in=folders, group_has_permission__in=users_groups).exists():
             return True
         return False
