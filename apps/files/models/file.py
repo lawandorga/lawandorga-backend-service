@@ -102,6 +102,7 @@ class File(models.Model):
             )
         AESEncryption.decrypt_file(downloaded_file_path, aes_key)
         # open the file to return it and delete the files from the media folder for safety reasons
+        print(downloaded_file_path)
         file = default_storage.open(downloaded_file_path[:-4])
 
         # return a delete function so that the file can be deleted after it was used

@@ -1,15 +1,12 @@
 from apps.static.encrypted_storage import EncryptedStorage
 from apps.recordmanagement.models import EncryptedRecord
 from django.core.files.storage import default_storage
-from rest_framework.exceptions import ParseError
+from apps.static.encryption import EncryptedModelMixin, RSAEncryption, AESEncryption
 from apps.api.models import Rlc
 from django.conf import settings
 from django.db import models
-import botocore.exceptions
 import uuid
 import os
-
-from apps.static.encryption import EncryptedModelMixin, RSAEncryption, AESEncryption
 
 
 class Questionnaire(models.Model):
@@ -26,6 +23,21 @@ class Questionnaire(models.Model):
 
     def __str__(self):
         return 'questionnaire: {}; rlc: {};'.format(self.name, self.rlc.name)
+
+
+class QuestionnaireFile(models.Model):
+    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE, related_name='files')
+    name = models.CharField(max_length=100)
+    file = models.FileField(upload_to='questionnairefile/')
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'QuestionnaireFile'
+        verbose_name_plural = 'QuestionnaireFiles'
+
+    def __str__(self):
+        return 'questionnaireFile: {}; questionnaire: {};'.format(self.name, self.questionnaire.name)
 
 
 class QuestionnaireField(models.Model):
