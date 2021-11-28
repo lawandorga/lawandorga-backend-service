@@ -17,6 +17,15 @@ class FolderViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Folder.objects.filter(rlc=self.request.user.rlc)
 
+    def list(self, request, *args, **kwargs):
+        folders = []
+        queryset = list(self.get_queryset())
+        for item in queryset:
+            if item.user_can_see_folder(request.user):
+                folders.append(item)
+        serializer = self.get_serializer(folders, many=True)
+        return Response(serializer.data)
+
     def get_serializer_class(self):
         if self.action in ['create']:
             return FolderCreateSerializer
