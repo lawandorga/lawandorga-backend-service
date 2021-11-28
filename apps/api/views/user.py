@@ -130,6 +130,8 @@ class UserViewSet(viewsets.ModelViewSet):
             "token": token.key,
             "key": private_key,
             "user": UserProfileSerializer(user).data,
+            "rlc": RlcSerializer(user.rlc).data,
+            "permissions": user.get_all_user_permissions(),
         }
         return Response(data, status=status.HTTP_200_OK)
 
@@ -174,9 +176,9 @@ class UserViewSet(viewsets.ModelViewSet):
         data = {
             "user": UserProfileSerializer(user).data,
             "rlc": RlcSerializer(user.rlc).data,
-            "notifications": notifications,
+            # "notifications": notifications,
             "permissions": user.get_all_user_permissions(),
-            "all_permissions": overall_permissions,
+            # "all_permissions": overall_permissions,
         }
 
         return Response(data, status=status.HTTP_200_OK)
