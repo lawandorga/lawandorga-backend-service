@@ -7,7 +7,6 @@ from apps.api.errors import CustomError
 from botocore.client import BaseClient
 from apps.static import error_codes
 from django.conf import settings
-import botocore.exceptions
 import boto3
 import os
 
@@ -47,7 +46,7 @@ class EncryptedStorage:
     @staticmethod
     def download_file_from_s3(s3_key, filename=None):
         if not filename:
-            filename = s3_key[s3_key.rindex("/") + 1 :]
+            filename = s3_key[s3_key.rindex("/") + 1:]
         s3: BaseClient = EncryptedStorage.get_s3_client()
 
         try:
@@ -91,32 +90,14 @@ class EncryptedStorage:
             # raise CustomError(error_codes.ERROR__API__STORAGE__DELETE__NO_SUCH_KEY)
 
     @staticmethod
-    def download_file(file_key, aes_key):
-        # get the key with which you can find the item on aws
-        key = file_key
-        # generate a local file path on where to save the file and clean it up so nothing goes wrong
-        downloaded_file_path = os.path.join(settings.MEDIA_ROOT, key)
-        downloaded_file_path = ''.join([i if ord(i) < 128 else '?' for i in downloaded_file_path])
-        # check if the folder path exists and if not create it so that boto3 can save the file
-        folder_path = downloaded_file_path[:downloaded_file_path.rindex('/')]
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-        # download and decrypt the file
+    def download_encrypted_file(file_key, aes_key):
+        # open the file
         try:
-            EncryptedStorage.get_s3_client().download_file(settings.SCW_S3_BUCKET_NAME, key, downloaded_file_path)
-        except botocore.exceptions.ClientError:
-            raise ParseError(
-                'The file was not found. However, it is probably still encrypted on the server. '
-                'Please send an e-mail to it@law-orga.de to have the file restored.'
-            )
-        AESEncryption.decrypt_file(downloaded_file_path, aes_key)
-        # open the file to return it and delete the files from the media folder for safety reasons
-        file = default_storage.open(downloaded_file_path[:-4])
-
-        # return a delete function so that the file can be deleted after it was used
-        def delete():
-            default_storage.delete(downloaded_file_path[:-4])
-            default_storage.delete(downloaded_file_path)
-
+            file = default_storage.open(file_key)
+        except FileNotFoundError:
+            raise ParseError('The file was not found.')
+        # decrypt the file
+        file = AESEncryption.decrypt_bytes_file(file, aes_key)
+        file.seek(0)
         # return
-        return file, delete
+        return file

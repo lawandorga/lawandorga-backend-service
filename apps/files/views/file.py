@@ -1,7 +1,7 @@
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
 from apps.files.serializers import FileSerializer, FileCreateSerializer
 from apps.files.models.file import File
-from rest_framework.response import Response
 from rest_framework import viewsets, status
 from django.http import FileResponse
 import mimetypes
@@ -26,11 +26,10 @@ class FileViewSet(viewsets.ModelViewSet):
 
         private_key_user = request.user.get_private_key(request=request)
         aes_key = request.user.get_rlc_aes_key(private_key_user)
-        file, delete = instance.download(aes_key)
+        file = instance.download(aes_key)
 
         response = FileResponse(file, content_type=mimetypes.guess_type(instance.key)[0])
         response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.name)
-        delete()
         return response
 
     def create(self, request, *args, **kwargs):
@@ -43,8 +42,8 @@ class FileViewSet(viewsets.ModelViewSet):
 
         # upload the file
         private_key_user = request.user.get_private_key(request=request)
-        aes_key = request.user.get_rlc_aes_key(private_key_user)
-        file = request.FILES['file']
+        aes_key = request.user.get_rlc_aes_key(private_key_user=private_key_user)
+        file = request.FILES.get('file')
         self.instance.upload(file, aes_key)
         return response
 

@@ -1,6 +1,12 @@
-from storages.backends.s3boto3 import S3Boto3Storage
 from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 
 
-class FilesStorage(S3Boto3Storage):
-    bucket_name = settings.SCW_S3_BUCKET_NAME
+class InstanceStorage(FileSystemStorage):
+    def __init__(self, **kwargs):
+        kwargs.pop('location', None)
+        location = settings.MEDIA_ROOT
+        super().__init__(location=location, **kwargs)
+
+
+instance_storage = InstanceStorage()

@@ -123,7 +123,7 @@ class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
 
     def download_file(self, aes_key):
         file_key = '{}.enc'.format(self.data)
-        return EncryptedStorage.download_file(file_key, aes_key)
+        return EncryptedStorage.download_encrypted_file(file_key, aes_key)
 
     def upload_file(self, file):
         self.aes_key = AESEncryption.generate_secure_key()

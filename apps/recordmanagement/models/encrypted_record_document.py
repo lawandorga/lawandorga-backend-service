@@ -72,59 +72,18 @@ class EncryptedRecordDocument(models.Model):
         return '{}.enc'.format(self.get_key())
 
     def upload(self, file, record_key):
-        local_file = default_storage.save(self.key, file)
-        local_file_path = os.path.join(settings.MEDIA_ROOT, local_file)
-        EncryptedStorage.encrypt_file_and_upload_to_s3(local_file_path, record_key, self.key)
-        default_storage.delete(self.key)
-        default_storage.delete(self.get_file_key())
+        file = AESEncryption.encrypt_in_memory_file(file, record_key)
+        key = self.get_file_key()
+        default_storage.save(key, file)
 
     def download(self, record_key):
-        # get the key with which you can find the item on aws
         key = self.get_file_key()
-        # generate a local file path on where to save the file and clean it up so nothing goes wrong
-        downloaded_file_path = os.path.join(settings.MEDIA_ROOT, key)
-        downloaded_file_path = ''.join([i if ord(i) < 128 else '?' for i in downloaded_file_path])
-        # check if the folder path exists and if not create it so that boto3 can save the file
-        folder_path = downloaded_file_path[:downloaded_file_path.rindex('/')]
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-        # download and decrypt the file
-        try:
-            EncryptedStorage.get_s3_client().download_file(settings.SCW_S3_BUCKET_NAME, key, downloaded_file_path)
-        except botocore.exceptions.ClientError:
-            raise ParseError(
-                'The file was not found. However, it is probably still encrypted on the server. '
-                'Please send an e-mail to it@law-orga.de to have the file restored.'
-            )
-        AESEncryption.decrypt_file(downloaded_file_path, record_key)
-        # open the file to return it and delete the files from the media folder for safety reasons
-        file = default_storage.open(downloaded_file_path[:-4])
-
-        # return a delete function so that the file can be deleted after it was used
-        def delete():
-            default_storage.delete(downloaded_file_path[:-4])
-            default_storage.delete(downloaded_file_path)
-
-        # return
-        return file, delete
-
-        # key = self.get_file_key()
-        # downloaded_file_path = os.path.join(settings.MEDIA_ROOT, key)
-        # folder_path = downloaded_file_path[:downloaded_file_path.rindex('/')]
-        # if not os.path.exists(folder_path):
-        #     os.makedirs(folder_path)
-        # EncryptedStorage.get_s3_client().download_file(settings.SCW_S3_BUCKET_NAME, key, downloaded_file_path)
-        # AESEncryption.decrypt_file(downloaded_file_path, record_key)
+        return EncryptedStorage.download_encrypted_file(key, record_key)
 
     def delete_on_cloud(self):
-        EncryptedStorage.delete_on_s3(self.get_file_key())
+        key = self.get_file_key()
+        default_storage.delete(key)
 
-    @receiver(pre_delete)
-    def pre_deletion(sender, instance, **kwargs):
-        if sender == EncryptedRecordDocument:
-            instance.delete_on_cloud()
-
-    def exists_on_s3(self) -> bool:
-        self.exists = EncryptedStorage.file_exists(self.get_file_key())
-        self.save()
-        return self.exists
+    def exists_on_s3(self):
+        key = self.get_file_key()
+        return default_storage.exists(key)

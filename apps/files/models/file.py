@@ -1,16 +1,14 @@
-from apps.static.encrypted_storage import EncryptedStorage
 from django.core.files.storage import default_storage
-from ...static.storage_folders import clean_filename
-from rest_framework.exceptions import ParseError
-from django.db.models.signals import pre_delete
-from apps.api.models.user import UserProfile
+
+from apps.static.encrypted_storage import EncryptedStorage
+from config.storage import instance_storage
 from ...static.encryption import AESEncryption
-from django.dispatch import receiver
+from ...static.storage_folders import clean_filename
+from apps.api.models.user import UserProfile
 from django.utils import timezone
 from django.conf import settings
 from django.db import models
 from .folder import Folder
-import botocore.exceptions
 import unicodedata
 import re
 import os
@@ -43,6 +41,10 @@ class File(models.Model):
             parent.last_edited = timezone.now()
             parent.save()
 
+    def delete(self, *args, **kwargs):
+        self.delete_on_cloud()
+        super().delete(*args, **kwargs)
+
     def get_parents(self):
         return self.folder.get_all_parents() + [self.folder]
 
@@ -71,56 +73,21 @@ class File(models.Model):
             self.key = key
             self.save()
 
-    def get_encrypted_file_key(self) -> str:
+    def get_encrypted_file_key(self):
         return self.get_file_key() + ".enc"
 
     def delete_on_cloud(self) -> None:
-        EncryptedStorage.delete_on_s3(self.get_encrypted_file_key())
-
-    @receiver(pre_delete)
-    def pre_deletion(sender, instance, **kwargs) -> None:
-        if sender == File:
-            instance.delete_on_cloud()
+        key = self.get_encrypted_file_key()
+        default_storage.delete(key)
 
     def download(self, aes_key):
-        # get the key with which you can find the item on aws
         key = self.get_encrypted_file_key()
-        # generate a local file path on where to save the file and clean it up so nothing goes wrong
-        downloaded_file_path = os.path.join(settings.MEDIA_ROOT, key)
-        downloaded_file_path = ''.join([i if ord(i) < 128 else '?' for i in downloaded_file_path])
-        # check if the folder path exists and if not create it so that boto3 can save the file
-        folder_path = downloaded_file_path[:downloaded_file_path.rindex('/')]
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-        # download and decrypt the file
-        try:
-            EncryptedStorage.get_s3_client().download_file(settings.SCW_S3_BUCKET_NAME, key, downloaded_file_path)
-        except botocore.exceptions.ClientError:
-            raise ParseError(
-                'The file was not found. However, it is probably still encrypted on the server. '
-                'Please send an e-mail to it@law-orga.de to have the file restored.'
-            )
-        AESEncryption.decrypt_file(downloaded_file_path, aes_key)
-        # open the file to return it and delete the files from the media folder for safety reasons
-        print(downloaded_file_path)
-        file = default_storage.open(downloaded_file_path[:-4])
-
-        # return a delete function so that the file can be deleted after it was used
-        def delete():
-            default_storage.delete(downloaded_file_path[:-4])
-            default_storage.delete(downloaded_file_path)
-
-        # return
-        return file, delete
+        return EncryptedStorage.download_encrypted_file(key, aes_key)
 
     def upload(self, file, aes_key):
-        local_file = default_storage.save(self.key, file)
-        local_file_path = os.path.join(settings.MEDIA_ROOT, local_file)
-        EncryptedStorage.encrypt_file_and_upload_to_s3(local_file_path, aes_key, self.key)
-        default_storage.delete(self.key)
-        default_storage.delete(self.get_encrypted_file_key())
+        file = AESEncryption.encrypt_in_memory_file(file, aes_key)
+        key = self.get_encrypted_file_key()
+        default_storage.save(key, file)
 
-    def exists_on_s3(self) -> bool:
-        self.exists = EncryptedStorage.file_exists(self.get_encrypted_file_key())
-        self.save()
-        return self.exists
+    def exists_on_s3(self):
+        return default_storage.exists(self.get_encrypted_file_key())
