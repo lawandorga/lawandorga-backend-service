@@ -1,12 +1,10 @@
-from apps.static.encrypted_storage import EncryptedStorage
 from apps.recordmanagement.models import EncryptedRecord
 from django.core.files.storage import default_storage
 from apps.static.encryption import EncryptedModelMixin, RSAEncryption, AESEncryption
+from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
 from apps.api.models import Rlc
-from django.conf import settings
 from django.db import models
 import uuid
-import os
 
 
 class Questionnaire(models.Model):
@@ -123,11 +121,10 @@ class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
 
     def download_file(self, aes_key):
         file_key = '{}.enc'.format(self.data)
-        return EncryptedStorage.download_encrypted_file(file_key, aes_key)
+        return download_and_decrypt_file(file_key, aes_key)
 
     def upload_file(self, file):
         self.aes_key = AESEncryption.generate_secure_key()
         self.data = '{}/{}'.format(self.generate_key(), file.name)
-        file = AESEncryption.encrypt_in_memory_file(file, self.aes_key)
         key = '{}.enc'.format(self.data)
-        default_storage.save(key, file)
+        encrypt_and_upload_file(file, key, self.aes_key)

@@ -1,19 +1,11 @@
-import re
-import unicodedata
-
-import botocore.exceptions
-from django.core.files.storage import default_storage
-from rest_framework.exceptions import ParseError
-
-from apps.static.encrypted_storage import EncryptedStorage
 from apps.static.storage_folders import get_storage_folder_encrypted_record_document
+from django.core.files.storage import default_storage
 from apps.static.encryption import AESEncryption
-from django.db.models.signals import pre_delete
+from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
 from apps.api.models import UserProfile
-from django.dispatch import receiver
-from django.conf import settings
 from django.db import models
-import os
+import unicodedata
+import re
 
 
 class EncryptedRecordDocument(models.Model):
@@ -72,13 +64,12 @@ class EncryptedRecordDocument(models.Model):
         return '{}.enc'.format(self.get_key())
 
     def upload(self, file, record_key):
-        file = AESEncryption.encrypt_in_memory_file(file, record_key)
         key = self.get_file_key()
-        default_storage.save(key, file)
+        encrypt_and_upload_file(file, key, record_key)
 
     def download(self, record_key):
         key = self.get_file_key()
-        return EncryptedStorage.download_encrypted_file(key, record_key)
+        return download_and_decrypt_file(key, record_key)
 
     def delete_on_cloud(self):
         key = self.get_file_key()

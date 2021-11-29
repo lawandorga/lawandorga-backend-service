@@ -1,8 +1,8 @@
-from apps.static.encrypted_storage import EncryptedStorage
 from apps.static.storage_folders import clean_filename
 from django.core.files.storage import default_storage
 from apps.static.encryption import AESEncryption
 from apps.api.models.user import UserProfile
+from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
 from django.utils import timezone
 from django.db import models
 from .folder import Folder
@@ -78,12 +78,11 @@ class File(models.Model):
 
     def download(self, aes_key):
         key = self.get_encrypted_file_key()
-        return EncryptedStorage.download_encrypted_file(key, aes_key)
+        return download_and_decrypt_file(key, aes_key)
 
     def upload(self, file, aes_key):
-        file = AESEncryption.encrypt_in_memory_file(file, aes_key)
-        key = self.get_encrypted_file_key()
-        default_storage.save(key, file)
+        key = self.get_file_key()
+        encrypt_and_upload_file(file, key, aes_key)
 
     def exists_on_s3(self):
         return default_storage.exists(self.get_encrypted_file_key())
