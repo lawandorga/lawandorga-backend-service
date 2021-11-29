@@ -5,6 +5,7 @@ from Crypto.Util.Padding import pad, unpad
 from Crypto.Cipher import AES
 from hashlib import sha3_256
 from enum import Enum
+import tempfile
 import secrets
 import string
 import struct
@@ -16,10 +17,10 @@ class OutputType(Enum):
     BYTES = 2
 
 
-def get_bytes_from_string_or_return_bytes(pot_string):
-    if isinstance(pot_string, str):
-        return bytes(pot_string, "utf-8")
-    return pot_string
+def get_bytes_from_string_or_return_bytes(key):
+    if isinstance(key, str):
+        return bytes(key, "utf-8")
+    return key
 
 
 def get_string_from_bytes_or_return_string(pot_bytes):
@@ -87,89 +88,52 @@ class AESEncryption:
         return plain
 
     @staticmethod
-    def encrypt_field(source, destination, field_name, key):
-        """
-        reads field field_name from source, AES encrypts it with key and saves it with the same name to destination
-        does nothing if field_name in source is none
-        :param source:
-        :param destination:
-        :param field_name:
-        :param key:
-        :return:
-        """
-        if isinstance(source, dict):
-            pass
-        attr = getattr(source, field_name, None)
-        if attr:
-            setattr(destination, field_name, AESEncryption.encrypt(attr, key))
-
-    @staticmethod
-    def decrypt_field(source, destination, field_name, key):
-        """
-        reads field field_name from source, AES decrypts it with key and saves it with the same name to destination
-        does nothing if field_name not in source
-        :param source:
-        :param destination:
-        :param field_name:
-        :param key:
-        :return:
-        """
-        if isinstance(source, dict):
-            if field_name in source:
-                destination[field_name] = AESEncryption.decrypt(source[field_name], key)
-        else:
-            attr = getattr(source, field_name, None)
-            if attr:
-                # destination[field_name] = AESEncryption.decrypt(source[field_name], key)
-                setattr(destination, field_name, AESEncryption.decrypt(attr, key))
-
-    @staticmethod
-    def encrypt_file(file, key):
+    def encrypt_in_memory_file(file, aes_key):
+        # fix the aes key
+        aes_key = get_bytes_from_string_or_return_bytes(aes_key)
+        # stuff needed
         chunk_size = 64 * 1024
-        key = get_bytes_from_string_or_return_bytes(key)
-        hashed_key_bytes = sha3_256(key).digest()
-        encrypted_file = '{}.enc'.format(file)
-        file_size = os.path.getsize(file)
+        hashed_key_bytes = sha3_256(aes_key).digest()
         iv = AESEncryption.generate_iv()
         encryptor = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
-
-        with open(file, "rb") as infile:
-            with open(encrypted_file, "wb") as outfile:
-                outfile.write(struct.pack("<Q", file_size))
-                outfile.write(iv)
-
-                while True:
-                    chunk = infile.read(chunk_size)
-                    if len(chunk) == 0:
-                        break
-                    elif len(chunk) % 16 != 0:
-                        chunk += b" " * (16 - len(chunk) % 16)
-                    outfile.write(encryptor.encrypt(chunk))
-
+        # encrypt the file
+        encrypted_file = tempfile.TemporaryFile('wb+')
+        encrypted_file.write(struct.pack("<Q", file.size))
+        encrypted_file.write(iv)
+        while True:
+            chunk = file.read(chunk_size)
+            if len(chunk) == 0:
+                break
+            elif len(chunk) % 16 != 0:
+                chunk += b" " * (16 - len(chunk) % 16)
+            encrypted_file.write(encryptor.encrypt(chunk))
+        # fix the file
+        encrypted_file.seek(0)
+        # return
         return encrypted_file
 
     @staticmethod
-    def decrypt_file(file, key, output_file_name=None):
+    def decrypt_bytes_file(file, aes_key):
+        # fix the aes key
+        aes_key = get_bytes_from_string_or_return_bytes(aes_key)
+        # stuff needed
         chunk_size = 64 * 1024
-        key = get_bytes_from_string_or_return_bytes(key)
-        hashed_key_bytes = sha3_256(key).digest()
-
-        if not output_file_name:
-            output_file_name = os.path.splitext(file)[0]  # removes .enc extension
-
-        with open(file, "rb") as infile:
-            org_size = struct.unpack("<Q", infile.read(struct.calcsize("Q")))[0]
-            iv = infile.read(16)
-            decryptor = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
-
-            with open(output_file_name, "wb") as outfile:
-                while True:
-                    chunk = infile.read(chunk_size)
-                    if len(chunk) == 0:
-                        break
-                    outfile.write(decryptor.decrypt(chunk))
-
-                outfile.truncate(org_size)
+        hashed_key_bytes = sha3_256(aes_key).digest()
+        org_size = struct.unpack("<Q", file.read(struct.calcsize("Q")))[0]
+        iv = file.read(16)
+        decryptor = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
+        # decrypt
+        outfile = tempfile.TemporaryFile('wb+')
+        while True:
+            chunk = file.read(chunk_size)
+            if len(chunk) == 0:
+                break
+            outfile.write(decryptor.decrypt(chunk))
+        # improve the file
+        outfile.truncate(org_size)
+        outfile.seek(0)
+        # return
+        return outfile
 
 
 class RSAEncryption:

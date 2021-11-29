@@ -1,8 +1,3 @@
-ERROR__API__DOWNLOAD__NO_SUCH_KEY = {
-    "error_code": "api.download.no_such_key",
-    "error_detail": "no such filekey to download",
-}
-
 ERROR__API__PERMISSION__INSUFFICIENT = {
     "error_detail": "insufficient permission to perform action",
     "error_code": "api.permissions.insufficient",
@@ -12,11 +7,6 @@ ERROR__API__PERMISSION__INSUFFICIENT = {
 ERROR__API__NO_ACTION_PROVIDED = {
     "error_detail": "no action in request.data provided",
     "error_code": "record.permission.no_action_provided",
-}
-
-ERROR__API__USER__NOT_FOUND = {
-    "error_detail": "specified user not found",
-    "error_code": "api.user.user_nof_found",
 }
 
 ERROR__API__PERMISSION__NOT_FOUND = {
@@ -39,29 +29,14 @@ ERROR__API__ACTION_NOT_VALID = {
     "error_code": "api.action_not_valid",
 }
 
-ERROR__API__GROUP__GROUP_NOT_FOUND = {
-    "error_detail": "no group with this id",
-    "error_code": "api.group.not_found",
-}
-
 ERROR__RECORD__ORIGIN_COUNTRY__NOT_FOUND = {
     "error_detail": "origin country not found",
     "error_code": "record.origin_country.not_found",
 }
 
-ERROR__RECORD__RECORD__ID_NOT_PROVIDED = {
-    "error_detail": "record id not provided",
-    "error_code": "record.record.id_not_provided",
-}
-
 ERROR__API__ID_NOT_PROVIDED = {
     "error_detail": "id not provided",
     "error_code": "api.id_not_provided",
-}
-
-ERROR__API__USER__NO_PRIVATE_KEY_PROVIDED = {
-    "error_detail": "no private key provided",
-    "error_code": "api.user.no_private_key_provided",
 }
 
 ERROR__API__WRONG_RLC = {"error_detail": "wrong rlc", "error_code": "api.wrong_rlc"}
@@ -85,11 +60,6 @@ ERROR__API__PARAMS_NOT_VALID = {
 ERROR__API__ALREADY_PROCESSED = {
     "error_detail": "already processed item",
     "error_code": "api.already_processed",
-}
-
-ERROR__API__ALREADY_REQUESTED = {
-    "error_detail": "already requested",
-    "error_code": "api.already_requested",
 }
 
 ERROR__COLLAB__TYPE_NOT_EXISTING = {

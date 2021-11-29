@@ -1,6 +1,3 @@
-# TODO refactor this into classes, 1 storage folders specific, 1 general filename manipulation
-
-
 def clean_string(string):
     special_char_map = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('ß'): 'ss', ord('Ä'): 'AE', ord('Ö'): 'OE',
                         ord('Ü'): 'UE', }

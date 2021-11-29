@@ -57,10 +57,8 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # permission stuff
-        if not request.user.has_permission(
-            permissions.PERMISSION_CAN_ADD_RECORD_RLC, for_rlc=request.user.rlc
-        ):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+        if not request.user.has_permission(permissions.PERMISSION_CAN_ADD_RECORD_RLC):
+            raise PermissionDenied()
 
         # set the client data
         client_data = map_values(
@@ -177,12 +175,9 @@ class EncryptedRecordViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         record = self.get_object()
-        if request.user.has_permission(
-            permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
-            for_rlc=request.user.rlc,
-        ):
-            record.delete()
-
+        if not request.user.has_permission(permissions.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS):
+            raise PermissionDenied()
+        record.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["post"])

@@ -1,15 +1,9 @@
-from apps.static.encrypted_storage import EncryptedStorage
 from apps.recordmanagement.models import EncryptedRecord
-from django.core.files.storage import default_storage
-from rest_framework.exceptions import ParseError
-from apps.api.models import Rlc
-from django.conf import settings
-from django.db import models
-import botocore.exceptions
-import uuid
-import os
-
 from apps.static.encryption import EncryptedModelMixin, RSAEncryption, AESEncryption
+from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
+from apps.api.models import Rlc
+from django.db import models
+import uuid
 
 
 class Questionnaire(models.Model):
@@ -26,6 +20,21 @@ class Questionnaire(models.Model):
 
     def __str__(self):
         return 'questionnaire: {}; rlc: {};'.format(self.name, self.rlc.name)
+
+
+class QuestionnaireFile(models.Model):
+    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE, related_name='files')
+    name = models.CharField(max_length=100)
+    file = models.FileField(upload_to='questionnairefile/')
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'QuestionnaireFile'
+        verbose_name_plural = 'QuestionnaireFiles'
+
+    def __str__(self):
+        return 'questionnaireFile: {}; questionnaire: {};'.format(self.name, self.questionnaire.name)
 
 
 class QuestionnaireField(models.Model):
@@ -111,12 +120,10 @@ class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
 
     def download_file(self, aes_key):
         file_key = '{}.enc'.format(self.data)
-        return EncryptedStorage.download_file(file_key, aes_key)
+        return download_and_decrypt_file(file_key, aes_key)
 
     def upload_file(self, file):
         self.aes_key = AESEncryption.generate_secure_key()
         self.data = '{}/{}'.format(self.generate_key(), file.name)
-        local_file_path = default_storage.save(self.data, file)
-        global_file_path = os.path.join(settings.MEDIA_ROOT, local_file_path)
-        EncryptedStorage.encrypt_file_and_upload_to_s3(global_file_path, self.aes_key, self.data)
-        default_storage.delete(self.data)
+        key = '{}.enc'.format(self.data)
+        encrypt_and_upload_file(file, key, self.aes_key)

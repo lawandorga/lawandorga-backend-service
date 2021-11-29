@@ -94,6 +94,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-AUTH_USER_MODEL
 AUTH_USER_MODEL = "api.UserProfile"
 
+# Storage
+# https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_S3_SECRET_ACCESS_KEY = get_secret("SCW_SECRET_KEY")
+AWS_S3_ACCESS_KEY_ID = get_secret("SCW_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = get_secret("SCW_S3_BUCKET_NAME")
+AWS_S3_REGION_NAME = "fr-par"
+AWS_S3_ENDPOINT_URL = "https://s3.fr-par.scw.cloud"
+
 # Static Files
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static/dist/")]

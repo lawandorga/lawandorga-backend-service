@@ -21,26 +21,21 @@ class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
         return EncryptedRecordDocument.objects.filter(record__from_rlc=self.request.user.rlc)
 
     def retrieve(self, request: Request, *args, **kwargs):
-        # permission stuff
-        if not request.user.has_permission(permissions.PERMISSION_VIEW_RECORDS_RLC):
-            raise PermissionDenied()
-
+        # instance
         instance = self.get_object()
 
+        # check permission
         if not instance.record.user_has_permission(request.user):
             raise PermissionDenied()
 
         # download the file
         private_key_user = request.user.get_private_key(request=request)
         record_key = instance.record.get_decryption_key(request.user, private_key_user)
-        file, delete = instance.download(record_key)
+        file = instance.download(record_key)
 
         # generate response
         response = FileResponse(file, content_type=mimetypes.guess_type(instance.get_file_key())[0])
         response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.name)
-
-        # delete the files from the server
-        delete()
 
         # return
         return response
@@ -49,9 +44,6 @@ class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
         self.instance = serializer.save()
 
     def create(self, request, *args, **kwargs):
-        if not request.user.has_permission(permissions.PERMISSION_VIEW_RECORDS_RLC):
-            raise PermissionDenied()
-
         response = super().create(request, *args, **kwargs)
         file = request.FILES['file']
         private_key_user = request.user.get_private_key(request=request)

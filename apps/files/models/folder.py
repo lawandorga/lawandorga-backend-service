@@ -121,6 +121,13 @@ class Folder(models.Model):
 
     def user_can_see_folder(self, user: UserProfile) -> bool:
         from apps.files.models.permission_for_folder import PermissionForFolder
+
+        if (
+            user.has_permission(PERMISSION_WRITE_ALL_FOLDERS_RLC) or
+            user.has_permission(PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC)
+        ):
+            return True
+
         folders = self.get_all_parents() + [self] + self.get_all_children()
         users_groups = user.rlcgroups.all()
         if PermissionForFolder.objects.filter(folder__in=folders, group_has_permission__in=users_groups).exists():
