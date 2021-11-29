@@ -1,5 +1,4 @@
 from apps.recordmanagement.models import EncryptedRecord
-from django.core.files.storage import default_storage
 from apps.static.encryption import EncryptedModelMixin, RSAEncryption, AESEncryption
 from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
 from apps.api.models import Rlc
