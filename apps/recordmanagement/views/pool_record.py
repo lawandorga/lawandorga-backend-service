@@ -1,33 +1,13 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2020  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.response import Response
-
-from apps.api.errors import CustomError
+from apps.recordmanagement.models.record_encryption import RecordEncryption
 from apps.recordmanagement.models.encrypted_record import EncryptedRecord
 from apps.recordmanagement.models.pool_consultant import PoolConsultant
 from apps.recordmanagement.models.pool_record import PoolRecord
-from apps.recordmanagement.models.record_encryption import RecordEncryption
 from apps.recordmanagement.serializers import PoolRecordSerializer
-from apps.static import error_codes
-from apps.static.middleware import get_private_key_from_request
+from rest_framework.exceptions import PermissionDenied
 from apps.static.permissions import PERMISSION_CAN_CONSULT
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, status
 
 
 class PoolRecordViewSet(viewsets.ModelViewSet):
