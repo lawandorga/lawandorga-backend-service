@@ -128,7 +128,6 @@ class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
     def upload_file(self, file):
         self.aes_key = AESEncryption.generate_secure_key()
         self.data = '{}/{}'.format(self.generate_key(), file.name)
-        local_file_path = default_storage.save(self.data, file)
-        global_file_path = os.path.join(settings.MEDIA_ROOT, local_file_path)
-        EncryptedStorage.encrypt_file_and_upload_to_s3(global_file_path, self.aes_key, self.data)
-        default_storage.delete(self.data)
+        file = AESEncryption.encrypt_in_memory_file(file, self.aes_key)
+        key = '{}.enc'.format(self.data)
+        default_storage.save(key, file)

@@ -113,29 +113,6 @@ class AESEncryption:
         return encrypted_file
 
     @staticmethod
-    def decrypt_file(file, key, output_file_name=None):
-        chunk_size = 64 * 1024
-        key = get_bytes_from_string_or_return_bytes(key)
-        hashed_key_bytes = sha3_256(key).digest()
-
-        if not output_file_name:
-            output_file_name = os.path.splitext(file)[0]  # removes .enc extension
-
-        with open(file, "rb") as infile:
-            org_size = struct.unpack("<Q", infile.read(struct.calcsize("Q")))[0]
-            iv = infile.read(16)
-            decryptor = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
-
-            with open(output_file_name, "wb") as outfile:
-                while True:
-                    chunk = infile.read(chunk_size)
-                    if len(chunk) == 0:
-                        break
-                    outfile.write(decryptor.decrypt(chunk))
-
-                outfile.truncate(org_size)
-
-    @staticmethod
     def encrypt_in_memory_file(file, aes_key):
         # fix the aes key
         aes_key = get_bytes_from_string_or_return_bytes(aes_key)

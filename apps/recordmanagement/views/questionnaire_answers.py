@@ -19,8 +19,7 @@ class QuestionnaireAnswersViewSet(viewsets.GenericViewSet):
         instance.decrypt(private_key_rlc=request.user.get_private_key_rlc(request=request))
         if instance.data is None:
             raise APIException('This file does not exist.')
-        file, delete = instance.download_encrypted_file(instance.aes_key)
+        file = instance.download_file(instance.aes_key)
         response = FileResponse(file, content_type=mimetypes.guess_type(instance.data)[0])
         response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.data.split('/')[-1])
-        delete()
         return response

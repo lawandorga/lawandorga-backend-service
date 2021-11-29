@@ -1,17 +1,13 @@
-from django.core.files.storage import default_storage
-
 from apps.static.encrypted_storage import EncryptedStorage
-from config.storage import instance_storage
-from ...static.encryption import AESEncryption
-from ...static.storage_folders import clean_filename
+from apps.static.storage_folders import clean_filename
+from django.core.files.storage import default_storage
+from apps.static.encryption import AESEncryption
 from apps.api.models.user import UserProfile
 from django.utils import timezone
-from django.conf import settings
 from django.db import models
 from .folder import Folder
 import unicodedata
 import re
-import os
 
 
 class File(models.Model):
@@ -35,7 +31,7 @@ class File(models.Model):
         if self.pk is None:
             self.key = self.slugify()
         if not self.exists:
-            self.exists = EncryptedStorage.file_exists(self.get_encrypted_file_key())
+            self.exists = default_storage.exists(self.get_encrypted_file_key())
         super().save(*args, **kwargs)
         for parent in self.get_parents():
             parent.last_edited = timezone.now()
