@@ -90,20 +90,6 @@ class EncryptedClient(EncryptedModelMixin, models.Model):
         self.save()
         return patched
 
-    def get_decrypted(self, rlc_private_key) -> dict:
-        aes_key = RSAEncryption.decrypt(self.encrypted_client_key, rlc_private_key)
-        return_dict = {
-            "name": AESEncryption.decrypt(self.name, aes_key),
-            "birthday": self.birthday,
-            "from_rlc": self.from_rlc,
-            "created_on": self.created_on,
-            "last_edited": self.last_edited,
-            "origin_country": self.origin_country,
-            "note": AESEncryption.decrypt(self.note, aes_key),
-            "phone_number": AESEncryption.decrypt(self.phone_number, aes_key),
-        }
-        return return_dict
-
     @staticmethod
     def allowed_fields():
         return (

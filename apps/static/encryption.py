@@ -88,31 +88,6 @@ class AESEncryption:
         return plain
 
     @staticmethod
-    def encrypt_file(file, key):
-        chunk_size = 64 * 1024
-        key = get_bytes_from_string_or_return_bytes(key)
-        hashed_key_bytes = sha3_256(key).digest()
-        encrypted_file = '{}.enc'.format(file)
-        file_size = os.path.getsize(file)
-        iv = AESEncryption.generate_iv()
-        encryptor = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
-
-        with open(file, "rb") as infile:
-            with open(encrypted_file, "wb") as outfile:
-                outfile.write(struct.pack("<Q", file_size))
-                outfile.write(iv)
-
-                while True:
-                    chunk = infile.read(chunk_size)
-                    if len(chunk) == 0:
-                        break
-                    elif len(chunk) % 16 != 0:
-                        chunk += b" " * (16 - len(chunk) % 16)
-                    outfile.write(encryptor.encrypt(chunk))
-
-        return encrypted_file
-
-    @staticmethod
     def encrypt_in_memory_file(file, aes_key):
         # fix the aes key
         aes_key = get_bytes_from_string_or_return_bytes(aes_key)
