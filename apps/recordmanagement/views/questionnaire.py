@@ -1,6 +1,7 @@
 from apps.recordmanagement.serializers.questionnaire import QuestionnaireSerializer, RecordQuestionnaireSerializer, \
     RecordQuestionnaireDetailSerializer, CodeSerializer, \
-    QuestionnaireFieldSerializer, QuestionnaireAnswerCreateFileSerializer, QuestionnaireAnswerCreateTextSerializer
+    QuestionnaireFieldSerializer, QuestionnaireAnswerCreateFileSerializer, QuestionnaireAnswerCreateTextSerializer, \
+    QuestionnaireFileSerializer
 from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire
 from rest_framework.exceptions import ParseError
 from rest_framework.decorators import action
@@ -23,6 +24,13 @@ class QuestionnaireViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         queryset = instance.fields.all()
         serializer = QuestionnaireFieldSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def files(self, request, *args, **kwargs):
+        instance = self.get_object()
+        queryset = instance.files.all()
+        serializer = QuestionnaireFileSerializer(queryset, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['post'], permission_classes=[])

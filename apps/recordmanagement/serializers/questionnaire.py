@@ -1,4 +1,5 @@
-from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire, QuestionnaireField, QuestionnaireAnswer
+from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire, QuestionnaireField, QuestionnaireAnswer, \
+    QuestionnaireFile
 from rest_framework import serializers
 
 
@@ -77,6 +78,15 @@ class QuestionnaireAnswerCreateFileSerializer(QuestionnaireAnswerCreateSerialize
 
 class QuestionnaireAnswerCreateTextSerializer(QuestionnaireAnswerCreateSerializer):
     data = serializers.CharField()
+
+
+###
+# QuestionnaireFile
+###
+class QuestionnaireFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuestionnaireFile
+        fields = '__all__'
 
 
 ###
