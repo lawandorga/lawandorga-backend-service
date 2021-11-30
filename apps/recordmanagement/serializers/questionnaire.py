@@ -1,4 +1,5 @@
-from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire, QuestionnaireField, QuestionnaireAnswer
+from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire, QuestionnaireField, QuestionnaireAnswer, \
+    QuestionnaireFile
 from rest_framework import serializers
 
 
@@ -29,6 +30,15 @@ class QuestionnaireFieldSerializer(serializers.ModelSerializer):
 
 
 ###
+# QuestionnaireFile
+###
+class QuestionnaireFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuestionnaireFile
+        fields = '__all__'
+
+
+###
 # Questionnaire
 ###
 class QuestionnaireSerializer(serializers.ModelSerializer):
@@ -40,6 +50,10 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
         attrs = super().validate(attrs)
         attrs['rlc'] = self.context['request'].user.rlc
         return attrs
+
+
+class QuestionnaireFilesSerializer(QuestionnaireSerializer):
+    files = QuestionnaireFileSerializer(many=True, read_only=True)
 
 
 ###
@@ -94,7 +108,7 @@ class RecordQuestionnaireListSerializer(RecordQuestionnaireSerializer):
 
 
 class RecordQuestionnaireDetailSerializer(RecordQuestionnaireSerializer):
-    questionnaire = QuestionnaireSerializer(read_only=True)
+    questionnaire = QuestionnaireFilesSerializer(read_only=True)
     fields = serializers.SerializerMethodField(method_name='get_questionnaire_fields')
 
     def get_questionnaire_fields(self, obj):

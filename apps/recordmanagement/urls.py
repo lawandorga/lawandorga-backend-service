@@ -1,4 +1,3 @@
-from apps.recordmanagement.views.questionnaire import QuestionnaireViewSet, RecordQuestionnaireViewSet
 from apps.recordmanagement.views import *
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
@@ -13,6 +12,7 @@ router.register('questionnaires', QuestionnaireViewSet)
 router.register('record_questionnaires', RecordQuestionnaireViewSet)
 router.register('questionnaire_answers', QuestionnaireAnswersViewSet)
 router.register('questionnaire_fields', QuestionnaireFieldsViewSet)
+router.register('questionnaire_files', QuestionnaireFilesViewSet)
 router.register("pool_records", PoolRecordViewSet)
 router.register("pool_consultants", PoolConsultantViewSet)
 router.register("consultants", ConsultantViewSet)
