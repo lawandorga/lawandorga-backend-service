@@ -9,7 +9,14 @@ class QuestionnaireFilesViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixi
     queryset = QuestionnaireFile.objects.none()
     serializer_class = QuestionnaireFileSerializer
 
+    def get_permissions(self):
+        if self.action in ['retrieve']:
+            return []
+        return super().get_permissions()
+
     def get_queryset(self):
+        if self.action in ['retrieve']:
+            return QuestionnaireFile.objects.all()
         return QuestionnaireFile.objects.filter(questionnaire__rlc=self.request.user.rlc)
 
     def retrieve(self, request, *args, **kwargs):
