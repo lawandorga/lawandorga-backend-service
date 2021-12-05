@@ -29,3 +29,9 @@ This project contains a backend based on Django-Rest-Framework. It uses Amazon S
 7. `./deploy.sh`
 
 ## Secrets dev
+
+`
+{
+
+}
+`
