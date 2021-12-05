@@ -1,4 +1,4 @@
-from apps.recordmanagement.models.record import RecordTemplate, RecordField, RecordTextField, Record
+from apps.recordmanagement.models.record import RecordTemplate, RecordField, RecordTextField, Record, RecordTextEntry
 from rest_framework import serializers
 
 
@@ -37,4 +37,15 @@ class RecordTextFieldSerializer(serializers.ModelSerializer):
 class RecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Record
+        fields = '__all__'
+
+
+###
+# Entries
+###
+class RecordTextEntrySerializer(serializers.ModelSerializer):
+    text = serializers.CharField()
+
+    class Meta:
+        model = RecordTextEntry
         fields = '__all__'

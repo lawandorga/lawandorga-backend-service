@@ -123,7 +123,7 @@ class GroupViewSet(viewsets.ModelViewSet):
                 for record in records:
                     if not RecordEncryption.objects.filter(user=member, record=record).exists():
                         try:
-                            record_key = record.get_decryption_key(
+                            record_key = record.get_aes_key(
                                 request.user, private_key_user
                             )
                         except Exception:

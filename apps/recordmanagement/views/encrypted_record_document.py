@@ -30,7 +30,7 @@ class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
 
         # download the file
         private_key_user = request.user.get_private_key(request=request)
-        record_key = instance.record.get_decryption_key(request.user, private_key_user)
+        record_key = instance.record.get_aes_key(request.user, private_key_user)
         file = instance.download(record_key)
 
         # generate response
@@ -47,7 +47,7 @@ class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
         response = super().create(request, *args, **kwargs)
         file = request.FILES['file']
         private_key_user = request.user.get_private_key(request=request)
-        record_key = self.instance.record.get_decryption_key(request.user, private_key_user)
+        record_key = self.instance.record.get_aes_key(request.user, private_key_user)
         # upload the file to s3
         self.instance.upload(file, record_key)
         # return

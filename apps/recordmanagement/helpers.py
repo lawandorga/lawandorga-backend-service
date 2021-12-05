@@ -22,7 +22,7 @@ def check_encryption_key_holders_and_grant(granting_user, granting_users_private
     records = EncryptedRecord.objects.filter(from_rlc=granting_user.rlc)
     for record in records:
         try:
-            record_key = record.get_decryption_key(
+            record_key = record.get_aes_key(
                 granting_user, granting_users_private_key
             )
         # TODO: don't do this

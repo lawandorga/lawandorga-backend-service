@@ -1,9 +1,11 @@
 from apps.recordmanagement.serializers.record import RecordTemplateSerializer, RecordTextFieldSerializer, \
-    RecordFieldSerializer, RecordSerializer
-from apps.recordmanagement.models.record import RecordTemplate, RecordField, RecordTextField, Record
+    RecordFieldSerializer, RecordSerializer, RecordTextEntrySerializer
+from apps.recordmanagement.models.record import RecordTemplate, RecordTextField, Record, \
+    RecordEncryptionNew, RecordTextEntry
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import viewsets
+from apps.static.encryption import AESEncryption
+from rest_framework import viewsets, status
 
 
 ###
@@ -44,3 +46,50 @@ class RecordViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Record.objects.filter(template__rlc=self.request.user.rlc)
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        created_record = Record.objects.get(pk=response.data['id'])
+        aes_key = AESEncryption.generate_secure_key()
+        public_key_user = request.user.get_public_key()
+        encryption = RecordEncryptionNew(record=created_record, user=request.user, key=aes_key)
+        encryption.encrypt(public_key_user=public_key_user)
+        encryption.save()
+        return response
+
+
+###
+# Entry
+###
+class RecordTextEntryViewSet(viewsets.ModelViewSet):
+    queryset = RecordTextEntry.objects.none()
+    serializer_class = RecordTextEntrySerializer
+
+    def get_queryset(self):
+        # every field returned because they will be encrypted by default
+        return RecordTextEntry.objects.filter(record__template__rlc=self.request.user.rlc)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        private_key_user = request.user.get_private_key(request=request)
+        record = serializer.validated_data['record']
+        aes_key_record = record.get_aes_key(request.user, private_key_user)
+        entry = RecordTextEntry(**serializer.validated_data)
+        entry.encrypt(aes_key_record)
+        entry.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def get_object(self):
+        self.instance = super().get_object()
+        return self.instance
+
+    def perform_update(self, serializer):
+        for attr, value in serializer.validated_data.items():
+            setattr(self.instance, attr, value)
+        private_key_user = self.request.user.get_private_key(request=self.request)
+        aes_key_record = self.instance.record.get_aes_key(user=self.request.user, private_key_user=private_key_user)
+        self.instance.encrypt(aes_key_record=aes_key_record)
+        self.instance.save()
+        self.instance.decrypt(user=self.request.user, aes_key_record=aes_key_record)
