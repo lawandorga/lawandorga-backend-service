@@ -1,4 +1,3 @@
-from apps.recordmanagement.models.encrypted_record import EncryptedRecord
 from apps.static.encryption import EncryptedModelMixin, AESEncryption, RSAEncryption
 from apps.api.models import Rlc, UserProfile
 from django.db import models
@@ -15,7 +14,6 @@ class RecordTemplate(models.Model):
 
 class RecordField(models.Model):
     name = models.CharField(max_length=200)
-    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='fields')
 
     class Meta:
         abstract = True
@@ -26,6 +24,8 @@ class RecordField(models.Model):
 
 
 class RecordFileField(RecordField):
+    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='file_fields')
+
     class Meta:
         verbose_name = 'RecordFileField'
         verbose_name_plural = 'RecordFileFields'
@@ -36,11 +36,12 @@ class RecordFileField(RecordField):
 
 
 class RecordTextField(RecordField):
+    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='text_fields')
     TYPE_CHOICES = (
-        ('textarea', 'Multi Line'),
-        ('text', 'Single Line')
+        ('TEXTAREA', 'Multi Line'),
+        ('TEXT', 'Single Line')
     )
-    type = models.CharField(choices=TYPE_CHOICES, max_length=20)
+    field_type = models.CharField(choices=TYPE_CHOICES, max_length=20)
 
     class Meta:
         verbose_name = 'RecordTextField'
@@ -48,7 +49,7 @@ class RecordTextField(RecordField):
 
     @property
     def type(self):
-        return self.type
+        return self.field_type.lower()
 
 
 class Record(models.Model):
@@ -66,14 +67,13 @@ class Record(models.Model):
 
 
 class RecordFieldEntry(models.Model):
-    field = models.ForeignKey(RecordField, related_name='entries', on_delete=models.PROTECT)
-    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='entries')
-
     class Meta:
         abstract = True
 
 
 class RecordTextFieldEntry(EncryptedModelMixin, RecordFieldEntry):
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='text_entries')
+    field = models.ForeignKey(RecordTextField, related_name='entries', on_delete=models.PROTECT)
     text = models.BinaryField()
 
     # encryption
@@ -93,6 +93,8 @@ class RecordTextFieldEntry(EncryptedModelMixin, RecordFieldEntry):
 
 
 class RecordFileFieldEntry(RecordFieldEntry):
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='file_entries')
+    field = models.ForeignKey(RecordFileField, related_name='entries', on_delete=models.PROTECT)
     file = models.FileField(upload_to='recordfilefield/')
 
     class Meta:
@@ -101,9 +103,9 @@ class RecordFileFieldEntry(RecordFieldEntry):
 
 
 # encryption
-class RecordEncryption(EncryptedModelMixin, models.Model):
+class RecordEncryptionNew(EncryptedModelMixin, models.Model):
     user = models.ForeignKey(UserProfile, related_name="recordencryptions", on_delete=models.CASCADE)
-    record = models.ForeignKey(EncryptedRecord, related_name="encryptions", on_delete=models.CASCADE)
+    record = models.ForeignKey(Record, related_name="encryptions", on_delete=models.CASCADE)
     key = models.BinaryField()
     encryption_class = RSAEncryption
     encrypted_fields = ["key"]
@@ -114,7 +116,7 @@ class RecordEncryption(EncryptedModelMixin, models.Model):
         verbose_name_plural = "RecordEncryptions"
 
     def __str__(self):
-        return "recordEncryption: {}; user: {}; record: {};".format(self.id, self.user.email, self.record.record_token)
+        return "recordEncryption: {}; user: {}; record: {};".format(self.pk, self.user.email, self.record.pk)
 
     def decrypt(self, private_key_user=None):
         if private_key_user:

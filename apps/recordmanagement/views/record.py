@@ -1,6 +1,6 @@
 from apps.recordmanagement.serializers.record import RecordTemplateSerializer, RecordTextFieldSerializer, \
-    RecordFieldSerializer
-from apps.recordmanagement.models.record import RecordTemplate, RecordField
+    RecordFieldSerializer, RecordSerializer
+from apps.recordmanagement.models.record import RecordTemplate, RecordField, RecordTextField, Record
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import viewsets
@@ -28,8 +28,19 @@ class RecordTemplateViewSet(viewsets.ModelViewSet):
 # Fields
 ###
 class RecordTextFieldViewSet(viewsets.ModelViewSet):
-    queryset = RecordField.objects.none()
+    queryset = RecordTextField.objects.none()
     serializer_class = RecordTextFieldSerializer
 
     def get_queryset(self):
-        return RecordField.objects.filter(template__rlc=self.request.user.rlc)
+        return RecordTextField.objects.filter(template__rlc=self.request.user.rlc)
+
+
+###
+# Record
+###
+class RecordViewSet(viewsets.ModelViewSet):
+    queryset = Record.objects.none()
+    serializer_class = RecordSerializer
+
+    def get_queryset(self):
+        return Record.objects.filter(template__rlc=self.request.user.rlc)
