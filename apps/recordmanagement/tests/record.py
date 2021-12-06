@@ -113,6 +113,10 @@ class RecordTextFieldViewSetWorking(RecordViewSetsWorking):
         self.assertEqual(RecordTextField.objects.filter(name='TextField 235').count(), 1)
 
 
+class RecordMetaFieldViewSetWorking(RecordViewSetsWorking):
+    pass
+
+
 ###
 # Record
 ###

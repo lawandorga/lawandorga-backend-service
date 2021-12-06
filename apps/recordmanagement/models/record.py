@@ -3,6 +3,9 @@ from apps.api.models import Rlc, UserProfile
 from django.db import models
 
 
+###
+# RecordTemplate
+###
 class RecordTemplate(models.Model):
     name = models.CharField(max_length=200)
     rlc = models.ForeignKey(Rlc, related_name='recordtemplates', on_delete=models.CASCADE, blank=True)
@@ -12,6 +15,9 @@ class RecordTemplate(models.Model):
         verbose_name_plural = 'RecordTemplates'
 
 
+###
+# RecordField
+###
 class RecordField(models.Model):
     name = models.CharField(max_length=200)
 
@@ -35,6 +41,18 @@ class RecordFileField(RecordField):
         return 'file'
 
 
+class RecordMetaField(RecordField):
+    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='meta_fields')
+
+    class Meta:
+        verbose_name = 'RecordMetaField'
+        verbose_name_plural = 'RecordMetaFields'
+
+    @property
+    def type(self):
+        return 'text'
+
+
 class RecordTextField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='text_fields')
     TYPE_CHOICES = (
@@ -52,6 +70,9 @@ class RecordTextField(RecordField):
         return self.field_type.lower()
 
 
+###
+# Record
+###
 class Record(models.Model):
     template = models.ForeignKey(RecordTemplate, related_name='records', on_delete=models.PROTECT)
 
@@ -66,9 +87,23 @@ class Record(models.Model):
         return key
 
 
+###
+# RecordEntry
+###
 class RecordEntry(models.Model):
     class Meta:
         abstract = True
+
+
+class RecordMetaEntry(RecordEntry):
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='meta_entries')
+    field = models.ForeignKey(RecordMetaField, related_name='entries', on_delete=models.PROTECT)
+    text = models.CharField(max_length=500)
+
+    class Meta:
+        unique_together = ['record', 'field']
+        verbose_name = 'RecordMetaEntry'
+        verbose_name_plural = 'RecordMetaEntries'
 
 
 class RecordTextEntry(EncryptedModelMixin, RecordEntry):
@@ -114,7 +149,9 @@ class RecordFileEntry(RecordEntry):
         verbose_name_plural = 'RecordFileFieldEntries'
 
 
-# encryption
+###
+# RecordEncryption
+###
 class RecordEncryptionNew(EncryptedModelMixin, models.Model):
     user = models.ForeignKey(UserProfile, related_name="recordencryptions", on_delete=models.CASCADE)
     record = models.ForeignKey(Record, related_name="encryptions", on_delete=models.CASCADE)
