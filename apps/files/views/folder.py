@@ -46,6 +46,8 @@ class FolderViewSet(viewsets.ModelViewSet):
         # check that there is no circular reference happening
         if serializer.validated_data['parent'] in instance.get_all_children():
             raise ParseError('You can not move a folder into one of its children.')
+        if serializer.validated_data['parent'] == instance:
+            raise ParseError('You can not move a folder into itself.')
         self.perform_update(serializer)
 
         return Response(serializer.data)
