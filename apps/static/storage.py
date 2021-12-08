@@ -5,7 +5,6 @@ from apps.static.encryption import AESEncryption
 
 def encrypt_and_upload_file(file, key, aes_key):
     file = AESEncryption.encrypt_in_memory_file(file, aes_key)
-    print(key)
     file = default_storage.save(key, file)
     return file
 
