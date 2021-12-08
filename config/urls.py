@@ -14,11 +14,13 @@ class EmailView(APIView):
         return []
 
     def get(self, request, *args, **kwargs):
+        print([a[1] for a in settings.ADMINS])
         send_mail(
             'Test Mail',
             'Test Body',
             'no-reply@law-orga.de',
             [a[1] for a in settings.ADMINS],
+            fail_silently=False
         )
         return Response({'status': 'email sent'})
 

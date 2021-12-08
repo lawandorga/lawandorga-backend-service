@@ -80,7 +80,3 @@ LOGGING = {
         },
     }
 }
-
-# mail errors to the admins
-# See: https://docs.djangoproject.com/en/3.2/ref/settings/#admins
-ADMINS = [('Daniel Mössner', 'it@law-orga.de')]

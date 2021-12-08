@@ -142,6 +142,10 @@ REST_FRAMEWORK = {
 # https://docs.djangoproject.com/en/3.2/releases/3.2/#customizing-type-of-auto-created-primary-keys
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
+# mail errors to the admins
+# See: https://docs.djangoproject.com/en/3.2/ref/settings/#admins
+ADMINS = [('Daniel Mössner', 'it@law-orga.de')]
+
 # This is used by the ExpiringTokenAuthentication which extends from rest's token authentication
 TIMEOUT_TIMEDELTA = timedelta(minutes=30)
 
