@@ -1,8 +1,9 @@
 from django.conf import settings
 
-from apps.recordmanagement.models import RecordTemplate, RecordTextField, Record, RecordEncryptionNew, RecordTextEntry
+from apps.recordmanagement.models import RecordTemplate, RecordTextField, Record, RecordEncryptionNew, RecordTextEntry, \
+    RecordMetaField, RecordMetaEntry
 from apps.recordmanagement.views import RecordTemplateViewSet, RecordTextFieldViewSet, RecordViewSet, \
-    RecordTextEntryViewSet
+    RecordTextEntryViewSet, RecordMetaEntryViewSet
 from rest_framework.test import APIRequestFactory, force_authenticate
 from apps.api.models import Rlc, UserProfile, RlcUser
 from django.test import TestCase
@@ -151,19 +152,60 @@ class RecordViewSetWorking(RecordViewSetsWorking):
 
 
 ###
-# RecordTextEntry
+# RecordEntry
 ###
-class RecordTextEntryViewSetWorking(RecordViewSetsWorking):
+class RecordEntryViewSetWorking(RecordViewSetsWorking):
     def setUp(self):
         super().setUp()
         self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
-        self.field = RecordTextField.objects.create(template=self.template)
         self.record = Record.objects.create(template=self.template)
         aes_key = AESEncryption.generate_secure_key()
         public_key_user = self.user.get_public_key()
         encryption = RecordEncryptionNew(record=self.record, user=self.user, key=aes_key)
         encryption.encrypt(public_key_user=public_key_user)
         encryption.save()
+
+
+class RecordMetaEntryViewSetWorking(RecordEntryViewSetWorking):
+    def setUp(self):
+        super().setUp()
+        self.field = RecordMetaField.objects.create(template=self.template)
+
+    def setup_entry(self):
+        self.entry = RecordMetaEntry.objects.create(record=self.record, field=self.field, text='test text')
+
+    def test_entry_create(self):
+        view = RecordMetaEntryViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'record': self.record.pk,
+            'field': self.field.pk,
+            'text': 'Hallo'
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        respone = view(request)
+        self.assertEqual(respone.status_code, 201)
+        self.assertTrue(RecordMetaEntry.objects.count(), 1)
+        self.assertEqual(RecordMetaEntry.objects.first().text, 'Hallo')
+
+    def test_entry_update(self):
+        self.setup_entry()
+        view = RecordTextEntryViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {
+            'text': 'Hallo 2'
+        }
+        request = self.factory.patch('', data=data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+        entry = RecordTextEntry.objects.first()
+        self.assertEqual(entry.text, 'Hallo 2')
+
+
+class RecordTextEntryViewSetWorking(RecordEntryViewSetWorking):
+    def setUp(self):
+        super().setUp()
+        self.field = RecordTextField.objects.create(template=self.template)
 
     def setup_entry(self):
         self.entry = RecordTextEntry.objects.create(record=self.record, field=self.field, text=b'')
