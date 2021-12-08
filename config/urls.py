@@ -1,13 +1,31 @@
+from rest_framework.response import Response
 from apps.recordmanagement import urls as record_urls
 from django.views.generic import TemplateView
+from rest_framework.views import APIView
+from django.core.mail import send_mail
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from apps.api import urls as api_urls
 
 
+class EmailView(APIView):
+    def get_permissions(self):
+        return []
+
+    def get(self, request, *args, **kwargs):
+        send_mail(
+            'Test Mail',
+            'Test Body',
+            'no-reply@law-orga.de',
+            [a[1] for a in settings.ADMINS],
+        )
+        return Response({'status': 'email sent'})
+
+
 urlpatterns = [
     path('error/', TemplateView.as_view(template_name='')),
+    path('email/', EmailView.as_view()),
     path("admin/", admin.site.urls),
     path("api/", include(api_urls)),
     path("api/records/", include(record_urls)),
