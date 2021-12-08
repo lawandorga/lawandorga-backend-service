@@ -1,6 +1,5 @@
 from apps.static.storage_folders import clean_filename
 from django.core.files.storage import default_storage
-from apps.static.encryption import AESEncryption
 from apps.api.models.user import UserProfile
 from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
 from django.utils import timezone
@@ -60,7 +59,7 @@ class File(models.Model):
             unique = 1 if unique is None else unique + 1
             return self.slugify(unique=unique)
 
-    def get_file_key(self) -> str:
+    def get_file_key(self):
         return self.key
 
     def generate_key(self):
@@ -81,7 +80,7 @@ class File(models.Model):
         return download_and_decrypt_file(key, aes_key)
 
     def upload(self, file, aes_key):
-        key = self.get_file_key()
+        key = self.get_encrypted_file_key()
         encrypt_and_upload_file(file, key, aes_key)
 
     def exists_on_s3(self):

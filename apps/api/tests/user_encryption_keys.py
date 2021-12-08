@@ -1,5 +1,5 @@
 from apps.api.tests.statics import StaticTestMethods
-from apps.static.encryption import RSAEncryption, get_bytes_from_string_or_return_bytes
+from apps.static.encryption import RSAEncryption
 from apps.api.models import UserEncryptionKeys
 from django.test import TransactionTestCase
 
