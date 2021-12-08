@@ -1,0 +1,21 @@
+name: Backup Files
+
+on:
+    push:
+        branches:
+            - test
+
+jobs:
+    backup:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Install Dependencies
+                run: pip3 install awscli awscli-plugin-endpoint
+
+            -   name: Configure AWS Cli
+                run: |
+                    echo ${{ secrets.AWS_CONFIG }} > ~/.aws/config
+                    echo ${{ secrets.AWS_CREDENTIALS }} > ~/.aws/credentials
+
+            -   name: Backup
+                run: aws s3 sync s3://law-orga-prod-files s3://lawandorga-backup
