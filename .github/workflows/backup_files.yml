@@ -14,12 +14,12 @@ jobs:
 
             -   name: Configure AWS Cli
                 run: |
-                    echo >~/.aws/config <<EOL
-                    ${{ secrets.AWS_CONFIG }}
-                    EOL
-                    echo >~/.aws/credentials <<EOL
-                    ${{ secrets.AWS_CREDENTIALS }}
-                    EOL
+                    aws configure set plugins.endpoint awscli_plugin_endpoint
+                    aws configure << EOF
+                    ${{ secrets.AWS_ACCESS_KEY_ID }}
+                    ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                    fr-par
+                    EOF
 
             -   name: Backup
                 run: aws s3 sync s3://law-orga-prod-files s3://lawandorga-backup
