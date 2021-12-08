@@ -14,7 +14,6 @@ class EmailView(APIView):
         return []
 
     def get(self, request, *args, **kwargs):
-        print([a[1] for a in settings.ADMINS])
         send_mail(
             'Test Mail',
             'Test Body',
