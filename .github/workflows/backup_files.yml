@@ -23,4 +23,4 @@ jobs:
                     EOF
 
             -   name: Backup
-                run: aws s3 sync s3://law-orga-prod-files s3://lawandorga-backup
+                run: aws s3 sync s3://law-orga-prod-files s3://lawandorga-backup --endpoint-url https://s3.fr-par.scw.cloud --region fr-par
