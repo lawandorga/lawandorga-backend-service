@@ -1,7 +1,8 @@
 from apps.recordmanagement.serializers.record import RecordTemplateSerializer, RecordTextFieldSerializer, \
-    RecordFieldSerializer, RecordSerializer, RecordTextEntrySerializer, RecordMetaEntrySerializer
+    RecordFieldSerializer, RecordSerializer, RecordTextEntrySerializer, RecordMetaEntrySerializer, \
+    RecordFileEntrySerializer
 from apps.recordmanagement.models.record import RecordTemplate, RecordTextField, Record, \
-    RecordEncryptionNew, RecordTextEntry, RecordMetaEntry
+    RecordEncryptionNew, RecordTextEntry, RecordMetaEntry, RecordFileEntry
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from apps.static.encryption import AESEncryption
@@ -61,6 +62,15 @@ class RecordViewSet(viewsets.ModelViewSet):
 ###
 # Entry
 ###
+class RecordFileEntryViewSet(viewsets.ModelViewSet):
+    queryset = RecordFileEntry.objects.none()
+    serializer_class = RecordFileEntrySerializer
+
+    def get_queryset(self):
+        # every field returned because they will be encrypted by default
+        return RecordFileEntry.objects.filter(record__template__rlc=self.request.user.rlc)
+
+
 class RecordMetaEntryViewSet(viewsets.ModelViewSet):
     queryset = RecordMetaEntry.objects.none()
     serializer_class = RecordMetaEntrySerializer

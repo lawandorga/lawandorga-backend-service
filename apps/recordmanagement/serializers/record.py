@@ -1,5 +1,5 @@
 from apps.recordmanagement.models.record import RecordTemplate, RecordField, RecordTextField, Record, RecordTextEntry, \
-    RecordMetaEntry
+    RecordMetaEntry, RecordFileEntry
 from rest_framework import serializers
 
 
@@ -44,6 +44,12 @@ class RecordSerializer(serializers.ModelSerializer):
 ###
 # Entries
 ###
+class RecordFileEntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecordFileEntry
+        fields = '__all__'
+
+
 class RecordMetaEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordMetaEntry

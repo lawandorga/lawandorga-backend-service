@@ -6,6 +6,9 @@ from django.db import models
 ###
 # RecordTemplate
 ###
+from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
+
+
 class RecordTemplate(models.Model):
     name = models.CharField(max_length=200)
     rlc = models.ForeignKey(Rlc, related_name='recordtemplates', on_delete=models.CASCADE, blank=True)
@@ -95,6 +98,36 @@ class RecordEntry(models.Model):
         abstract = True
 
 
+class RecordFileEntry(RecordEntry):
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='file_entries')
+    field = models.ForeignKey(RecordFileField, related_name='entries', on_delete=models.PROTECT)
+    file = models.FileField(upload_to='recordfileentry/')
+
+    class Meta:
+        unique_together = ['record', 'field']
+        verbose_name = 'RecordFileEntry'
+        verbose_name_plural = 'RecordFileEntries'
+
+    def __str__(self):
+        return 'recordFileEntry: {};'.format(self.pk)
+
+    def download_file(self, aes_key):
+        file = AESEncryption.decrypt_bytes_file(self.file, aes_key)
+        file.seek(0)
+        return file
+
+    def upload_file(self, file, user=None, private_key_user=None, aes_key_record=None):
+        if user and private_key_user:
+            key = self.record.get_aes_key(user=user, private_key_user=private_key_user)
+        elif aes_key_record:
+            key = aes_key_record
+        else:
+            raise ValueError("You have to set (aes_key_record) or (user and private_key_user).")
+        file = AESEncryption.encrypt_in_memory_file(file, key)
+        name = '{}.enc'.format(file.name)
+        self.file.save(name, file)
+
+
 class RecordMetaEntry(RecordEntry):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='meta_entries')
     field = models.ForeignKey(RecordMetaField, related_name='entries', on_delete=models.PROTECT)
@@ -104,6 +137,9 @@ class RecordMetaEntry(RecordEntry):
         unique_together = ['record', 'field']
         verbose_name = 'RecordMetaEntry'
         verbose_name_plural = 'RecordMetaEntries'
+
+    def __str__(self):
+        return 'recordMetaEntry: {};'.format(self.pk)
 
 
 class RecordTextEntry(EncryptedModelMixin, RecordEntry):
@@ -119,6 +155,9 @@ class RecordTextEntry(EncryptedModelMixin, RecordEntry):
         unique_together = ['record', 'field']
         verbose_name = 'RecordTextFieldEntry'
         verbose_name_plural = 'RecordTextFieldEntries'
+
+    def __str__(self):
+        return 'recordTextEntry: {};'.format(self.pk)
 
     def encrypt(self, user=None, private_key_user=None, aes_key_record=None):
         if user and private_key_user:
@@ -137,16 +176,6 @@ class RecordTextEntry(EncryptedModelMixin, RecordEntry):
         else:
             raise ValueError("You have to set (aes_key_record) or (user and private_key_user).")
         super().decrypt(key)
-
-
-class RecordFileEntry(RecordEntry):
-    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='file_entries')
-    field = models.ForeignKey(RecordFileField, related_name='entries', on_delete=models.PROTECT)
-    file = models.FileField(upload_to='recordfilefield/')
-
-    class Meta:
-        verbose_name = 'RecordFileFieldEntry'
-        verbose_name_plural = 'RecordFileFieldEntries'
 
 
 ###
