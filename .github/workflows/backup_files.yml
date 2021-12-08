@@ -1,9 +1,8 @@
 name: Backup Files
 
 on:
-    push:
-        branches:
-            - test
+  schedule:
+    - cron:  '5 2 * * *'
 
 jobs:
     backup:
