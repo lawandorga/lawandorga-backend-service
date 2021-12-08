@@ -30,6 +30,7 @@ DATABASES = {
 
 # E-Mail
 # https://docs.djangoproject.com/en/dev/topics/email/#smtp-backend
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = get_secret("EMAIL_HOST")
 DEFAULT_FROM_EMAIL = get_secret("EMAIL_ADDRESS")
 SERVER_EMAIL = get_secret("EMAIL_ADDRESS")
