@@ -15,13 +15,15 @@ class FileAdmin(admin.ModelAdmin):
 class FolderAdmin(admin.ModelAdmin):
     model = Folder
     list_display = ('name', 'parent_name', 'same_parent', 'rlc')
+    search_fields = ('rlc__pk', 'rlc__name')
+    list_per_page = 200
 
     def parent_name(self, obj):
         return obj.parent.name if obj.parent else ''
 
     @admin.display(boolean=True)
     def same_parent(self, obj):
-        return obj == obj.parent
+        return obj.pk == obj.parent_id
 
 
 admin.site.register(File, FileAdmin)
