@@ -12,7 +12,19 @@ class FileAdmin(admin.ModelAdmin):
         return form
 
 
+class FolderAdmin(admin.ModelAdmin):
+    model = Folder
+    list_display = ('name', 'parent_name', 'same_parent', 'rlc')
+
+    def parent_name(self, obj):
+        return obj.parent.name if obj.parent else ''
+
+    @admin.display(boolean=True)
+    def same_parent(self, obj):
+        return obj == obj.parent
+
+
 admin.site.register(File, FileAdmin)
-admin.site.register(Folder)
+admin.site.register(Folder, FolderAdmin)
 admin.site.register(FolderPermission)
 admin.site.register(PermissionForFolder)
