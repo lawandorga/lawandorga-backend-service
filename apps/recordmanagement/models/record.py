@@ -32,6 +32,20 @@ class RecordField(models.Model):
         raise NotImplemented('This property needs to be implemented.')
 
 
+class RecordSelectField(RecordField):
+    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='select_fields')
+    multiple = models.BooleanField(default=False)
+    options = models.JSONField()
+
+    class Meta:
+        verbose_name = 'RecordSelectField'
+        verbose_name_plural = 'RecordSelectFields'
+
+    @property
+    def type(self):
+        return 'select'
+
+
 class RecordFileField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='file_fields')
 
@@ -98,6 +112,45 @@ class RecordEntry(models.Model):
         abstract = True
 
 
+class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
+    encryption_class = AESEncryption
+
+    def encrypt(self, user=None, private_key_user=None, aes_key_record=None):
+        if user and private_key_user:
+            key = self.record.get_aes_key(user=user, private_key_user=private_key_user)
+        elif aes_key_record:
+            key = aes_key_record
+        else:
+            raise ValueError("You have to set (aes_key_record) or (user and private_key_user).")
+        super().encrypt(key)
+
+    def decrypt(self, user=None, private_key_user=None, aes_key_record=None):
+        if user and private_key_user:
+            key = self.record.get_aes_key(user=user, private_key_user=private_key_user)
+        elif aes_key_record:
+            key = aes_key_record
+        else:
+            raise ValueError("You have to set (aes_key_record) or (user and private_key_user).")
+        super().decrypt(key)
+
+
+class RecordSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='select_entries')
+    field = models.ForeignKey(RecordSelectField, related_name='entries', on_delete=models.PROTECT)
+    value = models.BinaryField()
+
+    # encryption
+    encrypted_fields = ['value']
+
+    class Meta:
+        unique_together = ['record', 'field']
+        verbose_name = 'RecordSelectEntry'
+        verbose_name_plural = 'RecordSelectEntries'
+
+    def __str__(self):
+        return 'recordSelectEntry: {};'.format(self.pk)
+
+
 class RecordFileEntry(RecordEntry):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='file_entries')
     field = models.ForeignKey(RecordFileField, related_name='entries', on_delete=models.PROTECT)
@@ -152,7 +205,7 @@ class RecordMetaEntry(RecordEntry):
         return 'recordMetaEntry: {};'.format(self.pk)
 
 
-class RecordTextEntry(EncryptedModelMixin, RecordEntry):
+class RecordTextEntry(RecordEntryEncryptedModelMixin, RecordEntry):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='text_entries')
     field = models.ForeignKey(RecordTextField, related_name='entries', on_delete=models.PROTECT)
     text = models.BinaryField()
@@ -168,24 +221,6 @@ class RecordTextEntry(EncryptedModelMixin, RecordEntry):
 
     def __str__(self):
         return 'recordTextEntry: {};'.format(self.pk)
-
-    def encrypt(self, user=None, private_key_user=None, aes_key_record=None):
-        if user and private_key_user:
-            key = self.record.get_aes_key(user=user, private_key_user=private_key_user)
-        elif aes_key_record:
-            key = aes_key_record
-        else:
-            raise ValueError("You have to set (aes_key_record) or (user and private_key_user).")
-        super().encrypt(key)
-
-    def decrypt(self, user=None, private_key_user=None, aes_key_record=None):
-        if user and private_key_user:
-            key = self.record.get_aes_key(user=user, private_key_user=private_key_user)
-        elif aes_key_record:
-            key = aes_key_record
-        else:
-            raise ValueError("You have to set (aes_key_record) or (user and private_key_user).")
-        super().decrypt(key)
 
 
 ###
