@@ -17,6 +17,7 @@ class FolderAdmin(admin.ModelAdmin):
     list_display = ('name', 'parent_name', 'same_parent', 'rlc')
     search_fields = ('name', 'pk', 'rlc__pk', 'rlc__name')
     list_per_page = 200
+    autocomplete_fields = ('name',)
 
     def parent_name(self, obj):
         return obj.parent.name if obj.parent else ''
