@@ -1,20 +1,23 @@
-from django.conf import settings
+import io
+import sys
+
+from django.core.files import File
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from apps.recordmanagement.models import RecordTemplate, RecordTextField, Record, RecordEncryptionNew, RecordTextEntry, \
-    RecordMetaField, RecordMetaEntry
+    RecordMetaField, RecordMetaEntry, RecordFileField, RecordFileEntry
 from apps.recordmanagement.views import RecordTemplateViewSet, RecordTextFieldViewSet, RecordViewSet, \
-    RecordTextEntryViewSet, RecordMetaEntryViewSet
+    RecordTextEntryViewSet, RecordMetaEntryViewSet, RecordFileEntryViewSet
+from apps.static.encryption import AESEncryption
 from rest_framework.test import APIRequestFactory, force_authenticate
 from apps.api.models import Rlc, UserProfile, RlcUser
+from django.conf import settings
 from django.test import TestCase
 
 
 ###
 # General
 ###
-from apps.static.encryption import AESEncryption
-
-
 class RecordViewSetsWorking(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
@@ -159,11 +162,64 @@ class RecordEntryViewSetWorking(RecordViewSetsWorking):
         super().setUp()
         self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
         self.record = Record.objects.create(template=self.template)
-        aes_key = AESEncryption.generate_secure_key()
+        self.aes_key_record = AESEncryption.generate_secure_key()
         public_key_user = self.user.get_public_key()
-        encryption = RecordEncryptionNew(record=self.record, user=self.user, key=aes_key)
+        encryption = RecordEncryptionNew(record=self.record, user=self.user, key=self.aes_key_record)
         encryption.encrypt(public_key_user=public_key_user)
         encryption.save()
+
+
+class RecordFileEntryViewSetWorking(RecordEntryViewSetWorking):
+    def setUp(self):
+        super().setUp()
+        self.field = RecordFileField.objects.create(template=self.template)
+        settings.DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+    def setup_entry(self):
+        self.entry = RecordFileEntry.objects.create(record=self.record, field=self.field, file=self.get_file())
+
+    def get_file(self, text='test string'):
+        file = io.StringIO(text)
+        file = InMemoryUploadedFile(file, 'FileField', 'test.txt', 'text/plain', sys.getsizeof(file), None)
+        return file
+
+    def test_entry_create(self):
+        view = RecordFileEntryViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'record': self.record.pk,
+            'field': self.field.pk,
+            'file': self.get_file('test-string')
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        respone = view(request)
+        self.assertEqual(respone.status_code, 201)
+        self.assertTrue(RecordFileEntry.objects.count(), 1)
+        entry = RecordFileEntry.objects.first()
+        self.assertNotEqual(entry.file.read(), 'test-string')
+        entry.file.seek(0)
+        file = entry.decrypt_file(aes_key_record=self.aes_key_record)
+        self.assertEqual(b'test-string', file.read())
+        # clean up the after the tests
+        entry.delete()
+
+    def test_entry_update(self):
+        self.setup_entry()
+        view = RecordFileEntryViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {
+            'file': self.get_file('new text')
+        }
+        request = self.factory.patch('', data=data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+        entry = RecordFileEntry.objects.first()
+        self.assertNotEqual(entry.file.read(), 'new text')
+        entry.file.seek(0)
+        file = entry.decrypt_file(aes_key_record=self.aes_key_record)
+        self.assertEqual(b'new text', file.read())
+        # clean up after the tests
+        entry.delete()
 
 
 class RecordMetaEntryViewSetWorking(RecordEntryViewSetWorking):

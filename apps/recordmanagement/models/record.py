@@ -111,21 +111,31 @@ class RecordFileEntry(RecordEntry):
     def __str__(self):
         return 'recordFileEntry: {};'.format(self.pk)
 
-    def download_file(self, aes_key):
-        file = AESEncryption.decrypt_bytes_file(self.file, aes_key)
-        file.seek(0)
+    def delete(self, *args, **kwargs):
+        self.file.delete()
+        super().delete(*args, **kwargs)
+
+    @staticmethod
+    def encrypt_file(file, record, user=None, private_key_user=None, aes_key_record=None):
+        if user and private_key_user:
+            key = record.get_aes_key(user=user, private_key_user=private_key_user)
+        elif aes_key_record:
+            key = aes_key_record
+        else:
+            raise ValueError("You have to set (aes_key_record) or (user and private_key_user).")
+        file = AESEncryption.encrypt_in_memory_file(file, key)
         return file
 
-    def upload_file(self, file, user=None, private_key_user=None, aes_key_record=None):
+    def decrypt_file(self, user=None, private_key_user=None, aes_key_record=None):
         if user and private_key_user:
             key = self.record.get_aes_key(user=user, private_key_user=private_key_user)
         elif aes_key_record:
             key = aes_key_record
         else:
             raise ValueError("You have to set (aes_key_record) or (user and private_key_user).")
-        file = AESEncryption.encrypt_in_memory_file(file, key)
-        name = '{}.enc'.format(file.name)
-        self.file.save(name, file)
+        file = AESEncryption.decrypt_bytes_file(self.file, key)
+        file.seek(0)
+        return file
 
 
 class RecordMetaEntry(RecordEntry):

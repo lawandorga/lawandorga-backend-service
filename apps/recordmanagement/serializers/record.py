@@ -1,3 +1,6 @@
+from django.core.files import File
+from rest_framework.exceptions import ValidationError
+
 from apps.recordmanagement.models.record import RecordTemplate, RecordField, RecordTextField, Record, RecordTextEntry, \
     RecordMetaEntry, RecordFileEntry
 from rest_framework import serializers
@@ -48,6 +51,25 @@ class RecordFileEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordFileEntry
         fields = '__all__'
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if 'file' in attrs:
+            file = attrs['file']
+        else:
+            raise ValidationError('A file needs to be submitted.')
+        user = self.context['request'].user
+        if self.instance:
+            record = self.instance.record
+        else:
+            if 'record' in attrs:
+                record = attrs['record']
+            else:
+                raise ValidationError('A record needs to be set.')
+        private_key_user = user.get_private_key(request=self.context['request'])
+        attrs['file'] = File(RecordFileEntry.encrypt_file(file, record, user=user, private_key_user=private_key_user),
+                             name='{}.enc'.format(file.name))
+        return attrs
 
 
 class RecordMetaEntrySerializer(serializers.ModelSerializer):
