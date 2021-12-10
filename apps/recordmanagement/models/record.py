@@ -1,14 +1,12 @@
 from apps.static.encryption import EncryptedModelMixin, AESEncryption, RSAEncryption
 from apps.api.models import Rlc, UserProfile
 from django.db import models
+import json
 
 
 ###
 # RecordTemplate
 ###
-from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
-
-
 class RecordTemplate(models.Model):
     name = models.CharField(max_length=200)
     rlc = models.ForeignKey(Rlc, related_name='recordtemplates', on_delete=models.CASCADE, blank=True)
@@ -149,6 +147,14 @@ class RecordSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
 
     def __str__(self):
         return 'recordSelectEntry: {};'.format(self.pk)
+
+    def encrypt(self, *args, **kwargs):
+        self.value = json.dumps(self.value)
+        super().encrypt(*args, **kwargs)
+
+    def decrypt(self, *args, **kwargs):
+        super().decrypt(*args, **kwargs)
+        self.value = json.loads(self.value)
 
 
 class RecordFileEntry(RecordEntry):

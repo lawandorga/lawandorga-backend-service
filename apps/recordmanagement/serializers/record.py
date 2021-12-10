@@ -105,6 +105,22 @@ class RecordTextEntrySerializer(serializers.ModelSerializer):
 
 
 class RecordSelectEntrySerializer(serializers.ModelSerializer):
+    value = serializers.JSONField()
+
     class Meta:
         model = RecordSelectEntry
         fields = '__all__'
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if self.instance:
+            field = self.instance.field
+        elif 'field' in attrs:
+            field = attrs['field']
+        else:
+            raise ValidationError('Field needs to be set.')
+        if field.multiple is False and len(attrs['value']) > 1:
+            raise ValidationError('Too many values selected.')
+        if not (set(attrs['value']) <= set(field.options)):
+            raise ValidationError('The selected values contain not allowed values.')
+        return attrs

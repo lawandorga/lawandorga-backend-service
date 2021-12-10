@@ -4,7 +4,7 @@ from apps.recordmanagement.models import RecordTemplate, RecordTextField, Record
     RecordSelectEntry
 from apps.recordmanagement.views import RecordTemplateViewSet, RecordTextFieldViewSet, RecordViewSet, \
     RecordTextEntryViewSet, RecordMetaEntryViewSet, RecordFileEntryViewSet, RecordMetaFieldViewSet, \
-    RecordFileFieldViewSet, RecordSelectFieldViewSet
+    RecordFileFieldViewSet, RecordSelectFieldViewSet, RecordSelectEntryViewSet
 from apps.static.encryption import AESEncryption
 from rest_framework.test import APIRequestFactory, force_authenticate
 from apps.api.models import Rlc, UserProfile, RlcUser
@@ -430,8 +430,45 @@ class RecordTextEntryViewSetWorking(RecordEntryViewSetWorking):
 class RecordSelectEntryViewSetWorking(RecordEntryViewSetWorking):
     def setUp(self):
         super().setUp()
-        self.field = RecordSelectField.objects.create(template=self.template)
+        self.field = RecordSelectField.objects.create(template=self.template, options=['Option 1', 'Option 2'])
 
     def setup_entry(self):
-        self.entry = RecordSelectEntry.objects.create(record=self.record, field=self.field,
-                                                      options=['Option 1', 'Option 2'])
+        entry = RecordSelectEntry(record=self.record, field=self.field, value=json.dumps(['Option 1']))
+        entry.encrypt(aes_key_record=self.aes_key_record)
+        entry.save()
+        self.entry = RecordSelectEntry.objects.first()
+
+    def test_entry_create(self):
+        view = RecordSelectEntryViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'record': self.record.pk,
+            'field': self.field.pk,
+            'value': json.dumps(['Option 1']),
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        response = view(request)
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(RecordSelectEntry.objects.count(), 1)
+        entry = RecordSelectEntry.objects.first()
+        self.assertNotEqual(entry.value, ["Option 1"])
+        private_key_user = self.user.get_private_key(password_user=settings.DUMMY_USER_PASSWORD)
+        entry.decrypt(user=self.user, private_key_user=private_key_user)
+        self.assertEqual(entry.value, ["Option 1"])
+
+    def test_entry_update(self):
+        self.setup_entry()
+        view = RecordSelectEntryViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {
+            'value': json.dumps(['Option 2']),
+        }
+        request = self.factory.patch('', data=data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(RecordSelectEntry.objects.count(), 1)
+        entry = RecordSelectEntry.objects.first()
+        self.assertNotEqual(entry.value, ["Option 2"])
+        private_key_user = self.user.get_private_key(password_user=settings.DUMMY_USER_PASSWORD)
+        entry.decrypt(user=self.user, private_key_user=private_key_user)
+        self.assertEqual(entry.value, ["Option 2"])

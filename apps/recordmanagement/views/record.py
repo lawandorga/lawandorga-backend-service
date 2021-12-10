@@ -6,15 +6,17 @@ from apps.recordmanagement.models.record import RecordTemplate, RecordTextField,
     RecordEncryptionNew, RecordTextEntry, RecordMetaEntry, RecordFileEntry, RecordMetaField, RecordFileField, \
     RecordSelectField, RecordSelectEntry
 from rest_framework.decorators import action
+from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 from apps.static.encryption import AESEncryption
-from rest_framework import viewsets, status
+from rest_framework import status, mixins
 
 
 ###
 # Template
 ###
-class RecordTemplateViewSet(viewsets.ModelViewSet):
+class RecordTemplateViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                            mixins.ListModelMixin, GenericViewSet):
     queryset = RecordTemplate.objects.none()
     serializer_class = RecordTemplateSerializer
 
@@ -32,7 +34,8 @@ class RecordTemplateViewSet(viewsets.ModelViewSet):
 ###
 # Fields
 ###
-class RecordTextFieldViewSet(viewsets.ModelViewSet):
+class RecordTextFieldViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                             GenericViewSet):
     queryset = RecordTextField.objects.none()
     serializer_class = RecordTextFieldSerializer
 
@@ -40,7 +43,8 @@ class RecordTextFieldViewSet(viewsets.ModelViewSet):
         return RecordTextField.objects.filter(template__rlc=self.request.user.rlc)
 
 
-class RecordMetaFieldViewSet(viewsets.ModelViewSet):
+class RecordMetaFieldViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                             GenericViewSet):
     queryset = RecordMetaField.objects.none()
     serializer_class = RecordMetaFieldSerializer
 
@@ -48,7 +52,8 @@ class RecordMetaFieldViewSet(viewsets.ModelViewSet):
         return RecordMetaField.objects.filter(template__rlc=self.request.user.rlc)
 
 
-class RecordFileFieldViewSet(viewsets.ModelViewSet):
+class RecordFileFieldViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                             GenericViewSet):
     queryset = RecordFileField.objects.none()
     serializer_class = RecordFileFieldSerializer
 
@@ -56,7 +61,8 @@ class RecordFileFieldViewSet(viewsets.ModelViewSet):
         return RecordFileField.objects.filter(template__rlc=self.request.user.rlc)
 
 
-class RecordSelectFieldViewSet(viewsets.ModelViewSet):
+class RecordSelectFieldViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                               GenericViewSet):
     queryset = RecordSelectField.objects.none()
     serializer_class = RecordSelectFieldSerializer
 
@@ -67,7 +73,7 @@ class RecordSelectFieldViewSet(viewsets.ModelViewSet):
 ###
 # Record
 ###
-class RecordViewSet(viewsets.ModelViewSet):
+class RecordViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin, mixins.ListModelMixin, GenericViewSet):
     queryset = Record.objects.none()
     serializer_class = RecordSerializer
 
@@ -88,7 +94,8 @@ class RecordViewSet(viewsets.ModelViewSet):
 ###
 # Entry
 ###
-class RecordSelectEntryViewSet(viewsets.ModelViewSet):
+class RecordSelectEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                               GenericViewSet):
     queryset = RecordSelectEntry.objects.none()
     serializer_class = RecordSelectEntrySerializer
 
@@ -119,7 +126,8 @@ class RecordSelectEntryViewSet(viewsets.ModelViewSet):
         self.instance.decrypt(user=self.request.user, private_key_user=private_key_user)
 
 
-class RecordFileEntryViewSet(viewsets.ModelViewSet):
+class RecordFileEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                             GenericViewSet):
     queryset = RecordFileEntry.objects.none()
     serializer_class = RecordFileEntrySerializer
 
@@ -128,7 +136,8 @@ class RecordFileEntryViewSet(viewsets.ModelViewSet):
         return RecordFileEntry.objects.filter(record__template__rlc=self.request.user.rlc)
 
 
-class RecordMetaEntryViewSet(viewsets.ModelViewSet):
+class RecordMetaEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                             GenericViewSet):
     queryset = RecordMetaEntry.objects.none()
     serializer_class = RecordMetaEntrySerializer
 
@@ -137,7 +146,8 @@ class RecordMetaEntryViewSet(viewsets.ModelViewSet):
         return RecordMetaEntry.objects.filter(record__template__rlc=self.request.user.rlc)
 
 
-class RecordTextEntryViewSet(viewsets.ModelViewSet):
+class RecordTextEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                             GenericViewSet):
     queryset = RecordTextEntry.objects.none()
     serializer_class = RecordTextEntrySerializer
 
