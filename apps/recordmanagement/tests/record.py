@@ -284,6 +284,8 @@ class RecordViewSetWorking(RecordViewSetsWorking):
 # RecordEntry
 ###
 class RecordEntryViewSetWorking(RecordViewSetsWorking):
+    view = None
+
     def setUp(self):
         super().setUp()
         self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
@@ -294,8 +296,21 @@ class RecordEntryViewSetWorking(RecordViewSetsWorking):
         encryption.encrypt(public_key_user=public_key_user)
         encryption.save()
 
+    def setup_entry(self):
+        raise NotImplementedError('Needs to be implemented.')
+
+    def test_entry_delete(self):
+        self.setup_entry()
+        view = self.view.as_view(actions={'delete': 'destroy'})
+        request = self.factory.delete('')
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 204)
+
 
 class RecordFileEntryViewSetWorking(RecordEntryViewSetWorking):
+    view = RecordFileEntryViewSet
+
     def setUp(self):
         super().setUp()
         self.field = RecordFileField.objects.create(template=self.template)
@@ -349,6 +364,8 @@ class RecordFileEntryViewSetWorking(RecordEntryViewSetWorking):
 
 
 class RecordMetaEntryViewSetWorking(RecordEntryViewSetWorking):
+    view = RecordMetaEntryViewSet
+
     def setUp(self):
         super().setUp()
         self.field = RecordMetaField.objects.create(template=self.template)
@@ -385,6 +402,8 @@ class RecordMetaEntryViewSetWorking(RecordEntryViewSetWorking):
 
 
 class RecordTextEntryViewSetWorking(RecordEntryViewSetWorking):
+    view = RecordTextEntryViewSet
+
     def setUp(self):
         super().setUp()
         self.field = RecordTextField.objects.create(template=self.template)
@@ -428,6 +447,8 @@ class RecordTextEntryViewSetWorking(RecordEntryViewSetWorking):
 
 
 class RecordSelectEntryViewSetWorking(RecordEntryViewSetWorking):
+    view = RecordSelectEntryViewSet
+
     def setUp(self):
         super().setUp()
         self.field = RecordSelectField.objects.create(template=self.template, options=['Option 1', 'Option 2'])
