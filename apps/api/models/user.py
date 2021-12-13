@@ -157,7 +157,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                 # enable direct testing of the rest framework
                 if (
                     settings.DEBUG
-                    and self.email == "dummy@rlcm.de"
+                    and self.email == "dummy@law-orga.de"
                     and settings.DUMMY_USER_PASSWORD
                 ):
                     return self.encryption_keys.decrypt_private_key(settings.DUMMY_USER_PASSWORD)
