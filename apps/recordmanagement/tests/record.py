@@ -1,10 +1,11 @@
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from apps.recordmanagement.models import RecordTemplate, RecordTextField, Record, RecordEncryptionNew, \
     RecordTextEntry, RecordMetaField, RecordMetaEntry, RecordFileField, RecordFileEntry, RecordSelectField, \
-    RecordSelectEntry
+    RecordSelectEntry, RecordUsersField, RecordUsersEntry
 from apps.recordmanagement.views import RecordTemplateViewSet, RecordTextFieldViewSet, RecordViewSet, \
     RecordTextEntryViewSet, RecordMetaEntryViewSet, RecordFileEntryViewSet, RecordMetaFieldViewSet, \
-    RecordFileFieldViewSet, RecordSelectFieldViewSet, RecordSelectEntryViewSet
+    RecordFileFieldViewSet, RecordSelectFieldViewSet, RecordSelectEntryViewSet, RecordUsersFieldViewSet, \
+    RecordUsersEntryViewSet
 from apps.static.encryption import AESEncryption
 from rest_framework.test import APIRequestFactory, force_authenticate
 from apps.api.models import Rlc, UserProfile, RlcUser
@@ -157,6 +158,48 @@ class RecordMetaFieldViewSetWorking(RecordViewSetsWorking):
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(RecordMetaField.objects.filter(name='Field 235').count(), 1)
+
+
+class RecordUsersFieldViewSetWorking(RecordViewSetsWorking):
+    def setUp(self):
+        super().setUp()
+        self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
+
+    def setup_field(self):
+        self.field = RecordUsersField.objects.create(name='Field 234', template=self.template)
+
+    def test_field_create(self):
+        view = RecordUsersFieldViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'name': 'Field 234',
+            'template': self.template.pk,
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        response = view(request)
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(RecordUsersField.objects.count(), 1)
+
+    def test_field_delete(self):
+        self.setup_field()
+        view = RecordUsersFieldViewSet.as_view(actions={'delete': 'destroy'})
+        request = self.factory.delete('')
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(RecordUsersField.objects.count(), 0)
+
+    def test_field_update(self):
+        self.setup_field()
+        view = RecordUsersFieldViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {
+            'name': 'Field 235'
+        }
+        request = self.factory.patch('', data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(RecordUsersField.objects.filter(name='Field 235').count(), 1)
 
 
 class RecordFileFieldViewSetWorking(RecordViewSetsWorking):
@@ -399,6 +442,48 @@ class RecordMetaEntryViewSetWorking(RecordEntryViewSetWorking):
         self.assertEqual(response.status_code, 200)
         entry = RecordMetaEntry.objects.first()
         self.assertEqual(entry.text, 'Hallo 2')
+
+
+class RecordUsersEntryViewSetWorking(RecordEntryViewSetWorking):
+    view = RecordUsersEntryViewSet
+
+    def setUp(self):
+        super().setUp()
+        self.field = RecordUsersField.objects.create(template=self.template)
+
+    def setup_entry(self):
+        self.entry = RecordUsersEntry.objects.create(record=self.record, field=self.field)
+        self.entry.users.set(UserProfile.objects.all())
+
+    def test_entry_create(self):
+        view = RecordUsersEntryViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'record': self.record.pk,
+            'field': self.field.pk,
+            'users': [u.pk for u in UserProfile.objects.all()]
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        response = view(request)
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(RecordUsersEntry.objects.count(), 1)
+        self.assertEqual(
+            list(RecordUsersEntry.objects.first().users.values_list('pk', flat=True)),
+            list(UserProfile.objects.all().values_list('pk', flat=True))
+        )
+
+    def test_entry_update(self):
+        self.setup_entry()
+        view = RecordUsersEntryViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {
+            'users': []
+        }
+        request = self.factory.patch('', data=data, format='json')
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+        entry = RecordUsersEntry.objects.first()
+        self.assertEqual(entry.users.all().count(), UserProfile.objects.none().count())
 
 
 class RecordTextEntryViewSetWorking(RecordEntryViewSetWorking):

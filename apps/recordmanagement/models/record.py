@@ -31,6 +31,18 @@ class RecordField(models.Model):
         raise NotImplemented('This property needs to be implemented.')
 
 
+class RecordUsersField(RecordField):
+    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='users_fields')
+
+    class Meta:
+        verbose_name = 'RecordUsersField'
+        verbose_name_plural = 'RecordUsersFields'
+
+    @property
+    def type(self):
+        return 'select'
+
+
 class RecordSelectField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='select_fields')
     multiple = models.BooleanField(default=False)
@@ -80,7 +92,8 @@ class RecordTextField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='text_fields')
     TYPE_CHOICES = (
         ('TEXTAREA', 'Multi Line'),
-        ('TEXT', 'Single Line')
+        ('TEXT', 'Single Line'),
+        ('DATE', 'Date')
     )
     field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default='TEXT')
 
@@ -138,6 +151,20 @@ class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
         else:
             raise ValueError("You have to set (aes_key_record) or (user and private_key_user).")
         super().decrypt(key)
+
+
+class RecordUsersEntry(RecordEntry):
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='users_entries')
+    field = models.ForeignKey(RecordUsersField, related_name='entries', on_delete=models.PROTECT)
+    users = models.ManyToManyField(UserProfile, blank=True)
+
+    class Meta:
+        unique_together = ['record', 'field']
+        verbose_name = 'RecordUsersEntry'
+        verbose_name_plural = 'RecordUsersEntries'
+
+    def __str__(self):
+        return 'recordUsersEntry: {};'.format(self.pk)
 
 
 class RecordSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):

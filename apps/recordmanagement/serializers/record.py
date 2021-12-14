@@ -2,7 +2,8 @@ from django.core.files import File
 from rest_framework.exceptions import ValidationError
 
 from apps.recordmanagement.models.record import RecordTemplate, RecordField, RecordTextField, Record, RecordTextEntry, \
-    RecordMetaEntry, RecordFileEntry, RecordMetaField, RecordFileField, RecordSelectField, RecordSelectEntry
+    RecordMetaEntry, RecordFileEntry, RecordMetaField, RecordFileField, RecordSelectField, RecordSelectEntry, \
+    RecordUsersField, RecordUsersEntry
 from rest_framework import serializers
 
 
@@ -38,6 +39,12 @@ class RecordTextFieldSerializer(serializers.ModelSerializer):
 class RecordMetaFieldSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordMetaField
+        fields = '__all__'
+
+
+class RecordUsersFieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecordUsersField
         fields = '__all__'
 
 
@@ -93,6 +100,12 @@ class RecordFileEntrySerializer(serializers.ModelSerializer):
 class RecordMetaEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordMetaEntry
+        fields = '__all__'
+
+
+class RecordUsersEntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecordUsersEntry
         fields = '__all__'
 
 
