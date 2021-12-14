@@ -21,6 +21,7 @@ class RecordTemplate(models.Model):
 ###
 class RecordField(models.Model):
     name = models.CharField(max_length=200)
+    order = models.IntegerField(default=0)
 
     class Meta:
         abstract = True
@@ -58,6 +59,13 @@ class RecordFileField(RecordField):
 
 class RecordMetaField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='meta_fields')
+    TYPE_CHOICES = (
+        ('TEXTAREA', 'Multi Line'),
+        ('TEXT', 'Single Line'),
+        ('DATETIME-LOCAL', 'Date and Time'),
+        ('DATE', 'Date')
+    )
+    field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default='TEXT')
 
     class Meta:
         verbose_name = 'RecordMetaField'
@@ -65,7 +73,7 @@ class RecordMetaField(RecordField):
 
     @property
     def type(self):
-        return 'text'
+        return self.field_type.lower()
 
 
 class RecordTextField(RecordField):
@@ -74,7 +82,7 @@ class RecordTextField(RecordField):
         ('TEXTAREA', 'Multi Line'),
         ('TEXT', 'Single Line')
     )
-    field_type = models.CharField(choices=TYPE_CHOICES, max_length=20)
+    field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default='TEXT')
 
     class Meta:
         verbose_name = 'RecordTextField'
