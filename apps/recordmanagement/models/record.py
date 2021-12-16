@@ -1,3 +1,4 @@
+from apps.recordmanagement.models import EncryptedRecord
 from apps.static.encryption import EncryptedModelMixin, AESEncryption, RSAEncryption
 from apps.api.models import Rlc, UserProfile
 from django.db import models
@@ -124,6 +125,8 @@ class RecordTextField(RecordField):
 ###
 class Record(models.Model):
     template = models.ForeignKey(RecordTemplate, related_name='records', on_delete=models.PROTECT)
+    old_record = models.OneToOneField(EncryptedRecord, related_name='record', on_delete=models.SET_NULL, null=True,
+                                      blank=True)
 
     class Meta:
         verbose_name = 'Record'
