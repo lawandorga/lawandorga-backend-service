@@ -269,6 +269,7 @@ class RlcUser(models.Model):
     class Meta:
         verbose_name = 'RlcUser'
         verbose_name_plural = 'RlcUsers'
+        ordering = ['user__name']
 
     def __str__(self):
         return 'rlcUser: {}; email: {};'.format(self.pk, self.user.email)
