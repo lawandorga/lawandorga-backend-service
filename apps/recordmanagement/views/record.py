@@ -1,10 +1,11 @@
 from apps.recordmanagement.serializers.record import RecordTemplateSerializer, RecordTextFieldSerializer, \
     RecordFieldSerializer, RecordSerializer, RecordTextEntrySerializer, RecordMetaEntrySerializer, \
     RecordFileEntrySerializer, RecordMetaFieldSerializer, RecordFileFieldSerializer, RecordSelectFieldSerializer, \
-    RecordSelectEntrySerializer, RecordUsersFieldSerializer, RecordUsersEntrySerializer
+    RecordSelectEntrySerializer, RecordUsersFieldSerializer, RecordUsersEntrySerializer, RecordStateFieldSerializer, \
+    RecordStateEntrySerializer
 from apps.recordmanagement.models.record import RecordTemplate, RecordTextField, Record, \
     RecordEncryptionNew, RecordTextEntry, RecordMetaEntry, RecordFileEntry, RecordMetaField, RecordFileField, \
-    RecordSelectField, RecordSelectEntry, RecordUsersField, RecordUsersEntry
+    RecordSelectField, RecordSelectEntry, RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
@@ -34,6 +35,15 @@ class RecordTemplateViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mi
 ###
 # Fields
 ###
+class RecordStateFieldViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                             GenericViewSet):
+    queryset = RecordStateField.objects.none()
+    serializer_class = RecordStateFieldSerializer
+
+    def get_queryset(self):
+        return RecordStateField.objects.filter(template__rlc=self.request.user.rlc)
+
+
 class RecordTextFieldViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
                              GenericViewSet):
     queryset = RecordTextField.objects.none()
@@ -153,6 +163,16 @@ class RecordMetaEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, m
     def get_queryset(self):
         # every field returned because they are supposed to be seen by everybody
         return RecordMetaEntry.objects.filter(record__template__rlc=self.request.user.rlc)
+
+
+class RecordStateEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                              GenericViewSet):
+    queryset = RecordStateEntry.objects.none()
+    serializer_class = RecordStateEntrySerializer
+
+    def get_queryset(self):
+        # every field returned because they are supposed to be seen by everybody
+        return RecordStateEntry.objects.filter(record__template__rlc=self.request.user.rlc)
 
 
 class RecordUsersEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,

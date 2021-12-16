@@ -31,6 +31,19 @@ class RecordField(models.Model):
         raise NotImplemented('This property needs to be implemented.')
 
 
+class RecordStateField(RecordField):
+    template = models.OneToOneField(RecordTemplate, on_delete=models.CASCADE, related_name='state_fields')
+    states = models.JSONField()
+
+    class Meta:
+        verbose_name = 'RecordStateField'
+        verbose_name_plural = 'RecordStateFields'
+
+    @property
+    def type(self):
+        return 'select'
+
+
 class RecordUsersField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='users_fields')
 
@@ -151,6 +164,20 @@ class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
         else:
             raise ValueError("You have to set (aes_key_record) or (user and private_key_user).")
         super().decrypt(key)
+
+
+class RecordStateEntry(RecordEntry):
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='state_entries')
+    field = models.ForeignKey(RecordStateField, related_name='entries', on_delete=models.PROTECT)
+    state = models.CharField(max_length=1000)
+
+    class Meta:
+        unique_together = ['record', 'field']
+        verbose_name = 'RecordStateEntry'
+        verbose_name_plural = 'RecordStateEntries'
+
+    def __str__(self):
+        return 'recordStateEntry: {};'.format(self.pk)
 
 
 class RecordUsersEntry(RecordEntry):

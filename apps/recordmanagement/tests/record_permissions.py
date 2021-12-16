@@ -1,6 +1,7 @@
 from apps.recordmanagement.views import RecordSelectEntryViewSet, RecordViewSet, RecordTemplateViewSet, \
     RecordTextFieldViewSet, RecordFileEntryViewSet, RecordMetaEntryViewSet, RecordTextEntryViewSet, \
-    RecordMetaFieldViewSet, RecordFileFieldViewSet, RecordSelectFieldViewSet
+    RecordMetaFieldViewSet, RecordFileFieldViewSet, RecordSelectFieldViewSet, RecordUsersEntryViewSet, \
+    RecordStateEntryViewSet, RecordStateFieldViewSet, RecordUsersFieldViewSet
 from rest_framework.test import APIRequestFactory
 from apps.api.models import Rlc, UserProfile, RlcUser
 from django.test import TestCase
@@ -16,6 +17,8 @@ class RecordViewSetsPermissions(TestCase):
         (RecordMetaFieldViewSet, 'create', 'partial_update', 'update', 'destroy'),
         (RecordFileFieldViewSet, 'create', 'partial_update', 'update', 'destroy'),
         (RecordSelectFieldViewSet, 'create', 'partial_update', 'update', 'destroy'),
+        (RecordStateFieldViewSet, 'create', 'partial_update', 'update', 'destroy'),
+        (RecordUsersFieldViewSet, 'create', 'partial_update', 'update', 'destroy'),
         # record
         (RecordViewSet, 'create', 'destroy', 'list'),
         # entry
@@ -23,6 +26,8 @@ class RecordViewSetsPermissions(TestCase):
         (RecordFileEntryViewSet, 'create', 'partial_update', 'update', 'destroy'),
         (RecordMetaEntryViewSet, 'create', 'partial_update', 'update', 'destroy'),
         (RecordTextEntryViewSet, 'create', 'partial_update', 'update', 'destroy'),
+        (RecordUsersEntryViewSet, 'create', 'partial_update', 'update', 'destroy'),
+        (RecordStateEntryViewSet, 'create', 'partial_update', 'update', 'destroy')
     ]
 
     action_mapper = {

@@ -1,0 +1,263 @@
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from apps.recordmanagement.models import RecordTemplate, RecordTextField, Record, RecordEncryptionNew, \
+    RecordTextEntry, RecordMetaField, RecordMetaEntry, RecordFileField, RecordFileEntry, \
+    RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry
+from apps.recordmanagement.tests import RecordViewSetsWorking
+from apps.recordmanagement.views import RecordTextEntryViewSet, RecordMetaEntryViewSet, RecordFileEntryViewSet, \
+    RecordUsersEntryViewSet, RecordStateEntryViewSet
+from apps.static.encryption import AESEncryption
+from rest_framework.test import force_authenticate
+from apps.api.models import UserProfile
+from django.conf import settings
+import sys
+import io
+
+
+###
+# RecordEntry
+###
+class RecordEntryViewSetWorkingBase(RecordViewSetsWorking):
+    def setUp(self):
+        super().setUp()
+        self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
+        self.record = Record.objects.create(template=self.template)
+        self.aes_key_record = AESEncryption.generate_secure_key()
+        public_key_user = self.user.get_public_key()
+        encryption = RecordEncryptionNew(record=self.record, user=self.user, key=self.aes_key_record)
+        encryption.encrypt(public_key_user=public_key_user)
+        encryption.save()
+
+
+class RecordEntryViewSetWorking(RecordEntryViewSetWorkingBase):
+    view = None
+
+    def setup_entry(self):
+        raise NotImplementedError('Needs to be implemented.')
+
+    def test_entry_delete(self):
+        self.setup_entry()
+        view = self.view.as_view(actions={'delete': 'destroy'})
+        request = self.factory.delete('')
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 204)
+
+
+class RecordFileEntryViewSetWorking(RecordEntryViewSetWorking):
+    view = RecordFileEntryViewSet
+
+    def setUp(self):
+        super().setUp()
+        self.field = RecordFileField.objects.create(template=self.template)
+        settings.DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+    def setup_entry(self):
+        self.entry = RecordFileEntry.objects.create(record=self.record, field=self.field, file=self.get_file())
+
+    def get_file(self, text='test string'):
+        file = io.BytesIO(bytes(text, 'utf-8'))
+        file = InMemoryUploadedFile(file, 'FileField', 'test.txt', 'text/plain', sys.getsizeof(file), None)
+        return file
+
+    def test_entry_create(self):
+        view = RecordFileEntryViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'record': self.record.pk,
+            'field': self.field.pk,
+            'file': self.get_file('test-string')
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        respone = view(request)
+        self.assertEqual(respone.status_code, 201)
+        self.assertTrue(RecordFileEntry.objects.count(), 1)
+        entry = RecordFileEntry.objects.first()
+        self.assertNotEqual(entry.file.read(), 'test-string')
+        entry.file.seek(0)
+        file = entry.decrypt_file(aes_key_record=self.aes_key_record)
+        self.assertEqual(b'test-string', file.read())
+        # clean up the after the tests
+        entry.delete()
+
+    def test_entry_update(self):
+        self.setup_entry()
+        view = RecordFileEntryViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {
+            'file': self.get_file('new text')
+        }
+        request = self.factory.patch('', data=data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+        entry = RecordFileEntry.objects.first()
+        self.assertNotEqual(entry.file.read(), 'new text')
+        entry.file.seek(0)
+        file = entry.decrypt_file(aes_key_record=self.aes_key_record)
+        self.assertEqual(b'new text', file.read())
+        # clean up after the tests
+        entry.delete()
+
+
+class RecordMetaEntryViewSetWorking(RecordEntryViewSetWorking):
+    view = RecordMetaEntryViewSet
+
+    def setUp(self):
+        super().setUp()
+        self.field = RecordMetaField.objects.create(template=self.template)
+
+    def setup_entry(self):
+        self.entry = RecordMetaEntry.objects.create(record=self.record, field=self.field, text='test text')
+
+    def test_entry_create(self):
+        view = RecordMetaEntryViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'record': self.record.pk,
+            'field': self.field.pk,
+            'text': 'Hallo'
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        respone = view(request)
+        self.assertEqual(respone.status_code, 201)
+        self.assertTrue(RecordMetaEntry.objects.count(), 1)
+        self.assertEqual(RecordMetaEntry.objects.first().text, 'Hallo')
+
+    def test_entry_update(self):
+        self.setup_entry()
+        view = RecordMetaEntryViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {
+            'text': 'Hallo 2'
+        }
+        request = self.factory.patch('', data=data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+        entry = RecordMetaEntry.objects.first()
+        self.assertEqual(entry.text, 'Hallo 2')
+
+
+class RecordUsersEntryViewSetWorking(RecordEntryViewSetWorking):
+    view = RecordUsersEntryViewSet
+
+    def setUp(self):
+        super().setUp()
+        self.field = RecordUsersField.objects.create(template=self.template)
+
+    def setup_entry(self):
+        self.entry = RecordUsersEntry.objects.create(record=self.record, field=self.field)
+        self.entry.users.set(UserProfile.objects.all())
+
+    def test_entry_create(self):
+        view = RecordUsersEntryViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'record': self.record.pk,
+            'field': self.field.pk,
+            'users': [u.pk for u in UserProfile.objects.all()]
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        response = view(request)
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(RecordUsersEntry.objects.count(), 1)
+        self.assertEqual(
+            list(RecordUsersEntry.objects.first().users.values_list('pk', flat=True)),
+            list(UserProfile.objects.all().values_list('pk', flat=True))
+        )
+
+    def test_entry_update(self):
+        self.setup_entry()
+        view = RecordUsersEntryViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {
+            'users': []
+        }
+        request = self.factory.patch('', data=data, format='json')
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+        entry = RecordUsersEntry.objects.first()
+        self.assertEqual(entry.users.all().count(), UserProfile.objects.none().count())
+
+
+class RecordTextEntryViewSetWorking(RecordEntryViewSetWorking):
+    view = RecordTextEntryViewSet
+
+    def setUp(self):
+        super().setUp()
+        self.field = RecordTextField.objects.create(template=self.template)
+
+    def setup_entry(self):
+        self.entry = RecordTextEntry.objects.create(record=self.record, field=self.field, text=b'')
+
+    def test_entry_create(self):
+        view = RecordTextEntryViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'record': self.record.pk,
+            'field': self.field.pk,
+            'text': 'Hallo',
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        response = view(request)
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(RecordTextEntry.objects.count(), 1)
+        entry = RecordTextEntry.objects.first()
+        self.assertNotEqual(entry.text, 'Hallo')
+        private_key_user = self.user.get_private_key(password_user=settings.DUMMY_USER_PASSWORD)
+        entry.decrypt(user=self.user, private_key_user=private_key_user)
+        self.assertEqual(entry.text, 'Hallo')
+
+    def test_entry_update(self):
+        self.setup_entry()
+        view = RecordTextEntryViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {
+            'text': 'Hallo 2'
+        }
+        request = self.factory.patch('', data=data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+        entry = RecordTextEntry.objects.first()
+        self.assertNotEqual(entry.text, 'Hallo 2')
+        private_key_user = self.user.get_private_key(password_user=settings.DUMMY_USER_PASSWORD)
+        entry.decrypt(user=self.user, private_key_user=private_key_user)
+        self.assertEqual(entry.text, 'Hallo 2')
+
+
+class RecordStateEntryViewSetWorking(RecordEntryViewSetWorking):
+    view = RecordStateEntryViewSet
+
+    def setUp(self):
+        super().setUp()
+        self.field = RecordStateField.objects.create(template=self.template, states=['Closed', 'Option 2'])
+
+    def setup_entry(self):
+        self.entry = RecordStateEntry.objects.create(record=self.record, field=self.field, state='Option 1')
+
+    def test_entry_create(self):
+        view = RecordStateEntryViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'record': self.record.pk,
+            'field': self.field.pk,
+            'state': 'Option 1',
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        response = view(request)
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(RecordStateEntry.objects.count(), 1)
+        entry = RecordStateEntry.objects.first()
+        self.assertEqual(entry.state, "Option 1")
+
+    def test_entry_update(self):
+        self.setup_entry()
+        view = RecordStateEntryViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {
+            'state': 'Closed',
+        }
+        request = self.factory.patch('', data=data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(RecordStateEntry.objects.count(), 1)
+        entry = RecordStateEntry.objects.first()
+        self.assertEqual(entry.state, "Closed")

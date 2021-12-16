@@ -1,9 +1,8 @@
-from django.core.files import File
-from rest_framework.exceptions import ValidationError
-
 from apps.recordmanagement.models.record import RecordTemplate, RecordField, RecordTextField, Record, RecordTextEntry, \
     RecordMetaEntry, RecordFileEntry, RecordMetaField, RecordFileField, RecordSelectField, RecordSelectEntry, \
-    RecordUsersField, RecordUsersEntry
+    RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry
+from rest_framework.exceptions import ValidationError
+from django.core.files import File
 from rest_framework import serializers
 
 
@@ -28,6 +27,17 @@ class RecordFieldSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordField
         fields = '__all__'
+
+
+class RecordStateFieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecordStateField
+        fields = '__all__'
+
+    def validate_states(self, states):
+        if 'Closed' not in states:
+            raise ValidationError('Closed needs to be added to states.')
+        return states
 
 
 class RecordTextFieldSerializer(serializers.ModelSerializer):
@@ -107,6 +117,24 @@ class RecordUsersEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordUsersEntry
         fields = '__all__'
+
+
+class RecordStateEntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecordStateEntry
+        fields = '__all__'
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if self.instance:
+            field = self.instance.field
+        elif 'field' in attrs:
+            field = attrs['field']
+        else:
+            raise ValidationError('Field needs to be set.')
+        if not attrs['state'] in field.states:
+            raise ValidationError('The selected state is not allowed.')
+        return attrs
 
 
 class RecordTextEntrySerializer(serializers.ModelSerializer):
