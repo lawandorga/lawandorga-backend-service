@@ -1,19 +1,19 @@
 from apps.recordmanagement.models import RecordTemplate, RecordMetaField, RecordSelectField, RecordTextField, \
-    OriginCountry, RecordUsersField
+    OriginCountry, RecordUsersField, RecordStateField
 
 
 def create_default_record_template(rlc):
-    template = RecordTemplate.objects.create(name='Default Record Template')
+    template = RecordTemplate.objects.create(name='Default Record Template', rlc=rlc)
     RecordMetaField.objects.create(template=template, order=10, name='Token')
-    RecordMetaField.objects.create(template=template, order=20, name='First contact date', type='DATE')
-    RecordMetaField.objects.create(template=template, order=20, name='Last contact date', type='DATETIME-LOCAL')
-    RecordMetaField.objects.create(template=template, order=20, name='First consultation', type='DATETIME-LOCAL')
+    RecordMetaField.objects.create(template=template, order=20, name='First contact date', field_type='DATE')
+    RecordMetaField.objects.create(template=template, order=20, name='Last contact date', field_type='DATETIME-LOCAL')
+    RecordMetaField.objects.create(template=template, order=20, name='First consultation', field_type='DATETIME-LOCAL')
     RecordMetaField.objects.create(template=template, order=50, name='Official Note')
     RecordUsersField.objects.create(template=template, order=60, name='Consultants')
     options = rlc.tags.values_list('name', flat=True)
     RecordSelectField.objects.create(template=template, order=70, name='Tags', multiple=True, options=options)
-    # todo: state field 80
     options = ['Open', 'Closed', 'Waiting', 'Working']
+    RecordStateField.objects.create(template=template, order=80, name='State', states=options)
     RecordTextField.objects.create(template=template, order=90, name='Note')
     RecordTextField.objects.create(template=template, order=100, name='Consultant Team')
     RecordTextField.objects.create(template=template, order=110, name='Lawyer')
@@ -25,7 +25,7 @@ def create_default_record_template(rlc):
     RecordTextField.objects.create(template=template, order=170, name='Status described')
     RecordTextField.objects.create(template=template, order=180, name='Additional facts')
     RecordTextField.objects.create(template=template, order=190, name='Client name')
-    RecordTextField.objects.create(template=template, order=200, name='Birthday', type='DATE')
+    RecordTextField.objects.create(template=template, order=200, name='Birthday', field_type='DATE')
     options = OriginCountry.objects.values_list('name', flat=True)
     RecordSelectField.objects.create(template=template, order=210, name='Origin County', options=options)
     RecordTextField.objects.create(template=template, order=220, name='Phone')
