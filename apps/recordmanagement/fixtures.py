@@ -1,32 +1,39 @@
-from apps.recordmanagement.models import RecordTemplate, RecordMetaField, RecordSelectField, RecordTextField, \
-    OriginCountry, RecordUsersField, RecordStateField
+from apps.recordmanagement.models import RecordTemplate, RecordStandardField, RecordEncryptedSelectField, RecordEncryptedStandardField, \
+    OriginCountry, RecordUsersField, RecordStateField, RecordSelectField
+from django.db import transaction
 
 
 def create_default_record_template(rlc):
-    template = RecordTemplate.objects.create(name='Default Record Template', rlc=rlc)
-    RecordMetaField.objects.create(template=template, order=10, name='Token')
-    RecordMetaField.objects.create(template=template, order=20, name='First contact date', field_type='DATE')
-    RecordMetaField.objects.create(template=template, order=20, name='Last contact date', field_type='DATETIME-LOCAL')
-    RecordMetaField.objects.create(template=template, order=20, name='First consultation', field_type='DATETIME-LOCAL')
-    RecordMetaField.objects.create(template=template, order=50, name='Official Note')
-    RecordUsersField.objects.create(template=template, order=60, name='Consultants')
-    options = rlc.tags.values_list('name', flat=True)
-    RecordSelectField.objects.create(template=template, order=70, name='Tags', multiple=True, options=options)
-    options = ['Open', 'Closed', 'Waiting', 'Working']
-    RecordStateField.objects.create(template=template, order=80, name='State', states=options)
-    RecordTextField.objects.create(template=template, order=90, name='Note')
-    RecordTextField.objects.create(template=template, order=100, name='Consultant Team')
-    RecordTextField.objects.create(template=template, order=110, name='Lawyer')
-    RecordTextField.objects.create(template=template, order=120, name='Related Persons')
-    RecordTextField.objects.create(template=template, order=130, name='Contact')
-    RecordTextField.objects.create(template=template, order=140, name='BAMF Token')
-    RecordTextField.objects.create(template=template, order=150, name='First Correspondence')
-    RecordTextField.objects.create(template=template, order=160, name='Next Steps')
-    RecordTextField.objects.create(template=template, order=170, name='Status described')
-    RecordTextField.objects.create(template=template, order=180, name='Additional facts')
-    RecordTextField.objects.create(template=template, order=190, name='Client name')
-    RecordTextField.objects.create(template=template, order=200, name='Birthday', field_type='DATE')
-    options = OriginCountry.objects.values_list('name', flat=True)
-    RecordSelectField.objects.create(template=template, order=210, name='Origin County', options=options)
-    RecordTextField.objects.create(template=template, order=220, name='Phone')
-    RecordTextField.objects.create(template=template, order=230, name='Client Note')
+    with transaction.atomic():
+        template = RecordTemplate.objects.create(name='Default Record Template', rlc=rlc)
+        RecordStandardField.objects.create(template=template, order=10, name='Token')
+        RecordStandardField.objects.create(template=template, order=20, name='First contact date', field_type='DATE')
+        RecordStandardField.objects.create(template=template, order=20, name='Last contact date', field_type='DATETIME-LOCAL')
+        RecordStandardField.objects.create(template=template, order=20, name='First consultation', field_type='DATETIME-LOCAL')
+        RecordStandardField.objects.create(template=template, order=50, name='Official Note')
+        RecordUsersField.objects.create(template=template, order=60, name='Consultants')
+        options = list(rlc.tags.values_list('name', flat=True))
+        if not options:
+            options = []
+        RecordSelectField.objects.create(template=template, order=70, name='Tags', options=options)
+        options = ['Open', 'Closed', 'Waiting', 'Working']
+        RecordStateField.objects.create(template=template, order=80, name='State', states=options)
+        RecordEncryptedStandardField.objects.create(template=template, order=90, name='Note')
+        RecordEncryptedStandardField.objects.create(template=template, order=100, name='Consultant Team')
+        RecordEncryptedStandardField.objects.create(template=template, order=110, name='Lawyer')
+        RecordEncryptedStandardField.objects.create(template=template, order=120, name='Related Persons')
+        RecordEncryptedStandardField.objects.create(template=template, order=130, name='Contact')
+        RecordEncryptedStandardField.objects.create(template=template, order=140, name='BAMF Token')
+        RecordEncryptedStandardField.objects.create(template=template, order=145, name='Circumstances')
+        RecordEncryptedStandardField.objects.create(template=template, order=150, name='First Correspondence')
+        RecordEncryptedStandardField.objects.create(template=template, order=160, name='Next Steps')
+        RecordEncryptedStandardField.objects.create(template=template, order=170, name='Status described')
+        RecordEncryptedStandardField.objects.create(template=template, order=180, name='Additional facts')
+        RecordEncryptedStandardField.objects.create(template=template, order=190, name='Client name')
+        RecordStandardField.objects.create(template=template, order=200, name='Birthday', field_type='DATE')
+        options = list(OriginCountry.objects.values_list('name', flat=True))
+        if not options:
+            options = []
+        RecordSelectField.objects.create(template=template, order=210, name='Origin Country', options=options)
+        RecordEncryptedStandardField.objects.create(template=template, order=220, name='Phone')
+        RecordEncryptedStandardField.objects.create(template=template, order=230, name='Client Note')

@@ -1,14 +1,14 @@
-from apps.recordmanagement.models import RecordTemplate, RecordTextField, RecordMetaField, RecordFileField, \
-    RecordSelectField, RecordUsersField, RecordStateField
-from apps.recordmanagement.views import RecordTextFieldViewSet, RecordMetaFieldViewSet, RecordFileFieldViewSet, \
-    RecordSelectFieldViewSet, RecordUsersFieldViewSet, RecordStateFieldViewSet
+from apps.recordmanagement.models import RecordTemplate, RecordEncryptedStandardField, RecordStandardField, RecordEncryptedFileField, \
+    RecordEncryptedSelectField, RecordUsersField, RecordStateField, RecordSelectField
+from apps.recordmanagement.views import RecordEncryptedStandardFieldViewSet, RecordStandardFieldViewSet, RecordEncryptedFileFieldViewSet, \
+    RecordEncryptedSelectFieldViewSet, RecordUsersFieldViewSet, RecordStateFieldViewSet, RecordSelectFieldViewSet
 from apps.recordmanagement.tests import RecordViewSetsWorking
 from rest_framework.test import force_authenticate
 import json
 
 
 ###
-# Fields
+# Base
 ###
 class RecordFieldViewSetWorking(RecordViewSetsWorking):
     view = None
@@ -70,17 +70,62 @@ class RecordFieldViewSetWorking(RecordViewSetsWorking):
         self.assertEqual(self.model.objects.count(), 0)
 
 
-class RecordTextFieldViewSetWorking(RecordViewSetsWorking):
+###
+# Fields
+###
+class RecordStandardFieldViewSetWorking(RecordViewSetsWorking):
     def setUp(self):
         super().setUp()
         self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
 
     def setup_field(self):
-        self.text_field = RecordTextField.objects.create(name='TextField 234', field_type='TEXT',
-                                                         template=self.template)
+        self.field = RecordStandardField.objects.create(name='TextField 234', template=self.template)
+
+    def test_field_create(self):
+        view = RecordStandardFieldViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'name': 'Field 234',
+            'template': self.template.pk,
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        response = view(request)
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(RecordStandardField.objects.count(), 1)
+
+    def test_field_delete(self):
+        self.setup_field()
+        view = RecordStandardFieldViewSet.as_view(actions={'delete': 'destroy'})
+        request = self.factory.delete('')
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(RecordStandardField.objects.count(), 0)
+
+    def test_field_update(self):
+        self.setup_field()
+        view = RecordStandardFieldViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {
+            'name': 'Field 235'
+        }
+        request = self.factory.patch('', data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(RecordStandardField.objects.filter(name='Field 235').count(), 1)
+
+
+class RecordEncryptedStandardFieldViewSetWorking(RecordViewSetsWorking):
+    def setUp(self):
+        super().setUp()
+        self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
+
+    def setup_field(self):
+        self.text_field = RecordEncryptedStandardField.objects.create(name='TextField 234', field_type='TEXT',
+                                                                      template=self.template)
 
     def test_text_field_create(self):
-        view = RecordTextFieldViewSet.as_view(actions={'post': 'create'})
+        view = RecordEncryptedStandardFieldViewSet.as_view(actions={'post': 'create'})
         data = {
             'name': 'Field 234',
             'field_type': 'TEXT',
@@ -90,20 +135,20 @@ class RecordTextFieldViewSetWorking(RecordViewSetsWorking):
         force_authenticate(request, self.user)
         response = view(request)
         self.assertEqual(response.status_code, 201)
-        self.assertTrue(RecordTextField.objects.count(), 1)
+        self.assertTrue(RecordEncryptedStandardField.objects.count(), 1)
 
     def test_text_field_delete(self):
         self.setup_field()
-        view = RecordTextFieldViewSet.as_view(actions={'delete': 'destroy'})
+        view = RecordEncryptedStandardFieldViewSet.as_view(actions={'delete': 'destroy'})
         request = self.factory.delete('')
         force_authenticate(request, self.user)
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(RecordTextField.objects.count(), 0)
+        self.assertEqual(RecordEncryptedStandardField.objects.count(), 0)
 
     def test_text_field_update(self):
         self.setup_field()
-        view = RecordTextFieldViewSet.as_view(actions={'patch': 'partial_update'})
+        view = RecordEncryptedStandardFieldViewSet.as_view(actions={'patch': 'partial_update'})
         data = {
             'name': 'Field 235'
         }
@@ -111,49 +156,7 @@ class RecordTextFieldViewSetWorking(RecordViewSetsWorking):
         force_authenticate(request, self.user)
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(RecordTextField.objects.filter(name='Field 235').count(), 1)
-
-
-class RecordMetaFieldViewSetWorking(RecordViewSetsWorking):
-    def setUp(self):
-        super().setUp()
-        self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
-
-    def setup_field(self):
-        self.field = RecordMetaField.objects.create(name='TextField 234', template=self.template)
-
-    def test_field_create(self):
-        view = RecordMetaFieldViewSet.as_view(actions={'post': 'create'})
-        data = {
-            'name': 'Field 234',
-            'template': self.template.pk,
-        }
-        request = self.factory.post('', data)
-        force_authenticate(request, self.user)
-        response = view(request)
-        self.assertEqual(response.status_code, 201)
-        self.assertTrue(RecordMetaField.objects.count(), 1)
-
-    def test_field_delete(self):
-        self.setup_field()
-        view = RecordMetaFieldViewSet.as_view(actions={'delete': 'destroy'})
-        request = self.factory.delete('')
-        force_authenticate(request, self.user)
-        response = view(request, pk=1)
-        self.assertEqual(response.status_code, 204)
-        self.assertEqual(RecordMetaField.objects.count(), 0)
-
-    def test_field_update(self):
-        self.setup_field()
-        view = RecordMetaFieldViewSet.as_view(actions={'patch': 'partial_update'})
-        data = {
-            'name': 'Field 235'
-        }
-        request = self.factory.patch('', data)
-        force_authenticate(request, self.user)
-        response = view(request, pk=1)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(RecordMetaField.objects.filter(name='Field 235').count(), 1)
+        self.assertEqual(RecordEncryptedStandardField.objects.filter(name='Field 235').count(), 1)
 
 
 class RecordUsersFieldViewSetWorking(RecordViewSetsWorking):
@@ -198,16 +201,16 @@ class RecordUsersFieldViewSetWorking(RecordViewSetsWorking):
         self.assertEqual(RecordUsersField.objects.filter(name='Field 235').count(), 1)
 
 
-class RecordFileFieldViewSetWorking(RecordViewSetsWorking):
+class RecordEncryptedFileFieldViewSetWorking(RecordViewSetsWorking):
     def setUp(self):
         super().setUp()
         self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
 
     def setup_field(self):
-        self.field = RecordFileField.objects.create(name='Field 234', template=self.template)
+        self.field = RecordEncryptedFileField.objects.create(name='Field 234', template=self.template)
 
     def test_field_create(self):
-        view = RecordFileFieldViewSet.as_view(actions={'post': 'create'})
+        view = RecordEncryptedFileFieldViewSet.as_view(actions={'post': 'create'})
         data = {
             'name': 'Field 234',
             'template': self.template.pk,
@@ -216,20 +219,20 @@ class RecordFileFieldViewSetWorking(RecordViewSetsWorking):
         force_authenticate(request, self.user)
         response = view(request)
         self.assertEqual(response.status_code, 201)
-        self.assertTrue(RecordFileField.objects.count(), 1)
+        self.assertTrue(RecordEncryptedFileField.objects.count(), 1)
 
     def test_field_delete(self):
         self.setup_field()
-        view = RecordFileFieldViewSet.as_view(actions={'delete': 'destroy'})
+        view = RecordEncryptedFileFieldViewSet.as_view(actions={'delete': 'destroy'})
         request = self.factory.delete('')
         force_authenticate(request, self.user)
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(RecordFileField.objects.count(), 0)
+        self.assertEqual(RecordEncryptedFileField.objects.count(), 0)
 
     def test_field_update(self):
         self.setup_field()
-        view = RecordFileFieldViewSet.as_view(actions={'patch': 'partial_update'})
+        view = RecordEncryptedFileFieldViewSet.as_view(actions={'patch': 'partial_update'})
         data = {
             'name': 'Field 235'
         }
@@ -237,20 +240,20 @@ class RecordFileFieldViewSetWorking(RecordViewSetsWorking):
         force_authenticate(request, self.user)
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(RecordFileField.objects.filter(name='Field 235').count(), 1)
+        self.assertEqual(RecordEncryptedFileField.objects.filter(name='Field 235').count(), 1)
 
 
-class RecordSelectFieldViewSetWorking(RecordViewSetsWorking):
+class RecordEncryptedSelectFieldViewSetWorking(RecordViewSetsWorking):
     def setUp(self):
         super().setUp()
         self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
 
     def setup_field(self):
-        self.field = RecordSelectField.objects.create(name='Field 234', template=self.template,
-                                                      options=['Option 1', 'Option 3'])
+        self.field = RecordEncryptedSelectField.objects.create(name='Field 234', template=self.template,
+                                                               options=['Option 1', 'Option 3'])
 
     def test_field_create(self):
-        view = RecordSelectFieldViewSet.as_view(actions={'post': 'create'})
+        view = RecordEncryptedSelectFieldViewSet.as_view(actions={'post': 'create'})
         data = {
             'name': 'Field 234',
             'template': self.template.pk,
@@ -260,20 +263,20 @@ class RecordSelectFieldViewSetWorking(RecordViewSetsWorking):
         force_authenticate(request, self.user)
         response = view(request)
         self.assertEqual(response.status_code, 201)
-        self.assertTrue(RecordSelectField.objects.count(), 1)
+        self.assertTrue(RecordEncryptedSelectField.objects.count(), 1)
 
     def test_field_delete(self):
         self.setup_field()
-        view = RecordSelectFieldViewSet.as_view(actions={'delete': 'destroy'})
+        view = RecordEncryptedSelectFieldViewSet.as_view(actions={'delete': 'destroy'})
         request = self.factory.delete('')
         force_authenticate(request, self.user)
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(RecordSelectField.objects.count(), 0)
+        self.assertEqual(RecordEncryptedSelectField.objects.count(), 0)
 
     def test_field_update(self):
         self.setup_field()
-        view = RecordSelectFieldViewSet.as_view(actions={'patch': 'partial_update'})
+        view = RecordEncryptedSelectFieldViewSet.as_view(actions={'patch': 'partial_update'})
         data = {
             'name': 'Field 235',
             'options': json.dumps(['Option 3', 'Option 4'])
@@ -282,8 +285,8 @@ class RecordSelectFieldViewSetWorking(RecordViewSetsWorking):
         force_authenticate(request, self.user)
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(RecordSelectField.objects.filter(name='Field 235').count(), 1)
-        self.assertEqual(RecordSelectField.objects.last().options, ['Option 3', 'Option 4'])
+        self.assertEqual(RecordEncryptedSelectField.objects.filter(name='Field 235').count(), 1)
+        self.assertEqual(RecordEncryptedSelectField.objects.last().options, ['Option 3', 'Option 4'])
 
 
 class RecordStateFieldViewSetWorking(RecordFieldViewSetWorking):
@@ -311,4 +314,32 @@ class RecordStateFieldViewSetWorking(RecordFieldViewSetWorking):
             'name': 'Field 234',
             'template': self.template.pk,
             'states': json.dumps(self.create_states)
+        }
+
+
+class RecordSelectFieldViewSetWorking(RecordFieldViewSetWorking):
+    model = RecordSelectField
+    view = RecordSelectFieldViewSet
+    # create
+    create_options = ['Option 1', 'Option 2']
+    create_test = {
+        'options': create_options
+    }
+    # update
+    update_options = ['Closed', 'Option 4']
+    update_data = {
+        'options': json.dumps(update_options),
+    }
+    update_test = {
+        'options': update_options
+    }
+
+    def setup_field(self):
+        self.field = RecordStateField.objects.create(template=self.template, states=['Option 5', 'Option 4'])
+
+    def get_create_data(self):
+        return {
+            'name': 'Field',
+            'template': self.template.pk,
+            'states': json.dumps(self.create_options)
         }

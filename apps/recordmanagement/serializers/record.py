@@ -1,6 +1,6 @@
-from apps.recordmanagement.models.record import RecordTemplate, RecordField, RecordTextField, Record, RecordTextEntry, \
-    RecordMetaEntry, RecordFileEntry, RecordMetaField, RecordFileField, RecordSelectField, RecordSelectEntry, \
-    RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry
+from apps.recordmanagement.models.record import RecordTemplate, RecordField, RecordEncryptedStandardField, Record, RecordEncryptedStandardEntry, \
+    RecordStandardEntry, RecordEncryptedFileEntry, RecordStandardField, RecordEncryptedFileField, RecordEncryptedSelectField, RecordEncryptedSelectEntry, \
+    RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry, RecordSelectEntry, RecordSelectField
 from rest_framework.exceptions import ValidationError
 from django.core.files import File
 from rest_framework import serializers
@@ -35,20 +35,33 @@ class RecordStateFieldSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate_states(self, states):
+        if type(states) != list or any([type(s) is not str for s in states]):
+            raise ValidationError('States need to be a list of strings.')
         if 'Closed' not in states:
             raise ValidationError('Closed needs to be added to states.')
         return states
 
 
-class RecordTextFieldSerializer(serializers.ModelSerializer):
+class RecordSelectFieldSerializer(serializers.ModelSerializer):
     class Meta:
-        model = RecordTextField
+        model = RecordSelectField
+        fields = '__all__'
+
+    def validate_options(self, options):
+        if type(options) != list or any([type(o) is not str for o in options]):
+            raise ValidationError('Options need to be a list of strings.')
+        return options
+
+
+class RecordEncryptedStandardFieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecordEncryptedStandardField
         fields = '__all__'
 
 
-class RecordMetaFieldSerializer(serializers.ModelSerializer):
+class RecordStandardFieldSerializer(serializers.ModelSerializer):
     class Meta:
-        model = RecordMetaField
+        model = RecordStandardField
         fields = '__all__'
 
 
@@ -58,16 +71,21 @@ class RecordUsersFieldSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class RecordFileFieldSerializer(serializers.ModelSerializer):
+class RecordEncryptedFileFieldSerializer(serializers.ModelSerializer):
     class Meta:
-        model = RecordFileField
+        model = RecordEncryptedFileField
         fields = '__all__'
 
 
-class RecordSelectFieldSerializer(serializers.ModelSerializer):
+class RecordEncryptedSelectFieldSerializer(serializers.ModelSerializer):
     class Meta:
-        model = RecordSelectField
+        model = RecordEncryptedSelectField
         fields = '__all__'
+
+    def validate_options(self, options):
+        if type(options) != list or any([type(o) is not str for o in options]):
+            raise ValidationError('Options need to be a list of strings.')
+        return options
 
 
 ###
@@ -82,9 +100,9 @@ class RecordSerializer(serializers.ModelSerializer):
 ###
 # Entries
 ###
-class RecordFileEntrySerializer(serializers.ModelSerializer):
+class RecordEncryptedFileEntrySerializer(serializers.ModelSerializer):
     class Meta:
-        model = RecordFileEntry
+        model = RecordEncryptedFileEntry
         fields = '__all__'
 
     def validate(self, attrs):
@@ -102,14 +120,14 @@ class RecordFileEntrySerializer(serializers.ModelSerializer):
             else:
                 raise ValidationError('A record needs to be set.')
         private_key_user = user.get_private_key(request=self.context['request'])
-        attrs['file'] = File(RecordFileEntry.encrypt_file(file, record, user=user, private_key_user=private_key_user),
+        attrs['file'] = File(RecordEncryptedFileEntry.encrypt_file(file, record, user=user, private_key_user=private_key_user),
                              name='{}.enc'.format(file.name))
         return attrs
 
 
-class RecordMetaEntrySerializer(serializers.ModelSerializer):
+class RecordStandardEntrySerializer(serializers.ModelSerializer):
     class Meta:
-        model = RecordMetaEntry
+        model = RecordStandardEntry
         fields = '__all__'
 
 
@@ -137,17 +155,37 @@ class RecordStateEntrySerializer(serializers.ModelSerializer):
         return attrs
 
 
-class RecordTextEntrySerializer(serializers.ModelSerializer):
+class RecordEncryptedStandardEntrySerializer(serializers.ModelSerializer):
     text = serializers.CharField()
 
     class Meta:
-        model = RecordTextEntry
+        model = RecordEncryptedStandardEntry
         fields = '__all__'
 
 
-class RecordSelectEntrySerializer(serializers.ModelSerializer):
+class RecordEncryptedSelectEntrySerializer(serializers.ModelSerializer):
     value = serializers.JSONField()
 
+    class Meta:
+        model = RecordEncryptedSelectEntry
+        fields = '__all__'
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if self.instance:
+            field = self.instance.field
+        elif 'field' in attrs:
+            field = attrs['field']
+        else:
+            raise ValidationError('Field needs to be set.')
+        if field.multiple is False and len(attrs['value']) > 1:
+            raise ValidationError('Too many values selected.')
+        if not (set(attrs['value']) <= set(field.options)):
+            raise ValidationError('The selected values contain not allowed values.')
+        return attrs
+
+
+class RecordSelectEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordSelectEntry
         fields = '__all__'

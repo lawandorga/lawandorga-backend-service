@@ -11,10 +11,15 @@ import json
 class RecordTemplate(models.Model):
     name = models.CharField(max_length=200)
     rlc = models.ForeignKey(Rlc, related_name='recordtemplates', on_delete=models.CASCADE, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = 'RecordTemplate'
         verbose_name_plural = 'RecordTemplates'
+
+    def __str__(self):
+        return 'recordTemplate: {}; rlc: {};'.format(self.pk, self.rlc)
 
 
 ###
@@ -23,6 +28,8 @@ class RecordTemplate(models.Model):
 class RecordField(models.Model):
     name = models.CharField(max_length=200)
     order = models.IntegerField(default=0)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
@@ -58,9 +65,9 @@ class RecordUsersField(RecordField):
 
 
 class RecordSelectField(RecordField):
-    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='select_fields')
-    multiple = models.BooleanField(default=False)
+    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='multiple_fields')
     options = models.JSONField()
+    multiple = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = 'RecordSelectField'
@@ -68,41 +75,55 @@ class RecordSelectField(RecordField):
 
     @property
     def type(self):
+        return 'multiple'
+
+
+class RecordEncryptedSelectField(RecordField):
+    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='select_fields')
+    multiple = models.BooleanField(default=False)
+    options = models.JSONField()
+
+    class Meta:
+        verbose_name = 'RecordEncryptedSelectField'
+        verbose_name_plural = 'RecordEncryptedSelectFields'
+
+    @property
+    def type(self):
         return 'select'
 
 
-class RecordFileField(RecordField):
+class RecordEncryptedFileField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='file_fields')
 
     class Meta:
-        verbose_name = 'RecordFileField'
-        verbose_name_plural = 'RecordFileFields'
+        verbose_name = 'RecordEncryptedFileField'
+        verbose_name_plural = 'RecordEncryptedFileFields'
 
     @property
     def type(self):
         return 'file'
 
 
-class RecordMetaField(RecordField):
+class RecordStandardField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='meta_fields')
     TYPE_CHOICES = (
         ('TEXTAREA', 'Multi Line'),
         ('TEXT', 'Single Line'),
         ('DATETIME-LOCAL', 'Date and Time'),
-        ('DATE', 'Date')
+        ('DATE', 'Date'),
     )
     field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default='TEXT')
 
     class Meta:
-        verbose_name = 'RecordMetaField'
-        verbose_name_plural = 'RecordMetaFields'
+        verbose_name = 'RecordStandardField'
+        verbose_name_plural = 'RecordStandardFields'
 
     @property
     def type(self):
         return self.field_type.lower()
 
 
-class RecordTextField(RecordField):
+class RecordEncryptedStandardField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='text_fields')
     TYPE_CHOICES = (
         ('TEXTAREA', 'Multi Line'),
@@ -112,8 +133,8 @@ class RecordTextField(RecordField):
     field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default='TEXT')
 
     class Meta:
-        verbose_name = 'RecordTextField'
-        verbose_name_plural = 'RecordTextFields'
+        verbose_name = 'RecordEncryptedStandardField'
+        verbose_name_plural = 'RecordEncryptedStandardFields'
 
     @property
     def type(self):
@@ -127,6 +148,8 @@ class Record(models.Model):
     template = models.ForeignKey(RecordTemplate, related_name='records', on_delete=models.PROTECT)
     old_record = models.OneToOneField(EncryptedRecord, related_name='record', on_delete=models.SET_NULL, null=True,
                                       blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = 'Record'
@@ -143,6 +166,9 @@ class Record(models.Model):
 # RecordEntry
 ###
 class RecordEntry(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
     class Meta:
         abstract = True
 
@@ -197,9 +223,23 @@ class RecordUsersEntry(RecordEntry):
         return 'recordUsersEntry: {};'.format(self.pk)
 
 
-class RecordSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
-    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='select_entries')
+class RecordSelectEntry(RecordEntry):
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='multiple_entries')
     field = models.ForeignKey(RecordSelectField, related_name='entries', on_delete=models.PROTECT)
+    value = models.JSONField()
+
+    class Meta:
+        unique_together = ['record', 'field']
+        verbose_name = 'RecordSelectEntry'
+        verbose_name_plural = 'RecordSelectEntries'
+
+    def __str__(self):
+        return 'recordSelectEntry: {};'.format(self.pk)
+
+
+class RecordEncryptedSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='select_entries')
+    field = models.ForeignKey(RecordEncryptedSelectField, related_name='entries', on_delete=models.PROTECT)
     value = models.BinaryField()
 
     # encryption
@@ -207,8 +247,8 @@ class RecordSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
 
     class Meta:
         unique_together = ['record', 'field']
-        verbose_name = 'RecordSelectEntry'
-        verbose_name_plural = 'RecordSelectEntries'
+        verbose_name = 'RecordEncryptedSelectEntry'
+        verbose_name_plural = 'RecordEncryptedSelectEntries'
 
     def __str__(self):
         return 'recordSelectEntry: {};'.format(self.pk)
@@ -222,15 +262,15 @@ class RecordSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
         self.value = json.loads(self.value)
 
 
-class RecordFileEntry(RecordEntry):
+class RecordEncryptedFileEntry(RecordEntry):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='file_entries')
-    field = models.ForeignKey(RecordFileField, related_name='entries', on_delete=models.PROTECT)
+    field = models.ForeignKey(RecordEncryptedFileField, related_name='entries', on_delete=models.PROTECT)
     file = models.FileField(upload_to='recordfileentry/')
 
     class Meta:
         unique_together = ['record', 'field']
-        verbose_name = 'RecordFileEntry'
-        verbose_name_plural = 'RecordFileEntries'
+        verbose_name = 'RecordEncryptedFileEntry'
+        verbose_name_plural = 'RecordEncryptedFileEntries'
 
     def __str__(self):
         return 'recordFileEntry: {};'.format(self.pk)
@@ -262,23 +302,23 @@ class RecordFileEntry(RecordEntry):
         return file
 
 
-class RecordMetaEntry(RecordEntry):
+class RecordStandardEntry(RecordEntry):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='meta_entries')
-    field = models.ForeignKey(RecordMetaField, related_name='entries', on_delete=models.PROTECT)
+    field = models.ForeignKey(RecordStandardField, related_name='entries', on_delete=models.PROTECT)
     text = models.CharField(max_length=500)
 
     class Meta:
         unique_together = ['record', 'field']
-        verbose_name = 'RecordMetaEntry'
-        verbose_name_plural = 'RecordMetaEntries'
+        verbose_name = 'RecordStandardEntry'
+        verbose_name_plural = 'RecordStandardEntries'
 
     def __str__(self):
-        return 'recordMetaEntry: {};'.format(self.pk)
+        return 'recordStandardEntry: {};'.format(self.pk)
 
 
-class RecordTextEntry(RecordEntryEncryptedModelMixin, RecordEntry):
+class RecordEncryptedStandardEntry(RecordEntryEncryptedModelMixin, RecordEntry):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='text_entries')
-    field = models.ForeignKey(RecordTextField, related_name='entries', on_delete=models.PROTECT)
+    field = models.ForeignKey(RecordEncryptedStandardField, related_name='entries', on_delete=models.PROTECT)
     text = models.BinaryField()
 
     # encryption
@@ -287,11 +327,11 @@ class RecordTextEntry(RecordEntryEncryptedModelMixin, RecordEntry):
 
     class Meta:
         unique_together = ['record', 'field']
-        verbose_name = 'RecordTextFieldEntry'
-        verbose_name_plural = 'RecordTextFieldEntries'
+        verbose_name = 'RecordStandardEntry'
+        verbose_name_plural = 'RecordStandardEntries'
 
     def __str__(self):
-        return 'recordTextEntry: {};'.format(self.pk)
+        return 'recordStandardEntry: {};'.format(self.pk)
 
 
 ###
@@ -301,6 +341,8 @@ class RecordEncryptionNew(EncryptedModelMixin, models.Model):
     user = models.ForeignKey(UserProfile, related_name="recordencryptions", on_delete=models.CASCADE)
     record = models.ForeignKey(Record, related_name="encryptions", on_delete=models.CASCADE)
     key = models.BinaryField()
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
     encryption_class = RSAEncryption
     encrypted_fields = ["key"]
 
