@@ -65,7 +65,7 @@ class RecordUsersField(RecordField):
 
 
 class RecordSelectField(RecordField):
-    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='multiple_fields')
+    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='select_fields')
     options = models.JSONField()
     multiple = models.BooleanField(default=False)
 
@@ -79,7 +79,7 @@ class RecordSelectField(RecordField):
 
 
 class RecordEncryptedSelectField(RecordField):
-    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='select_fields')
+    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='encrypted_select_fields')
     multiple = models.BooleanField(default=False)
     options = models.JSONField()
 
@@ -93,7 +93,7 @@ class RecordEncryptedSelectField(RecordField):
 
 
 class RecordEncryptedFileField(RecordField):
-    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='file_fields')
+    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='encrypted_file_fields')
 
     class Meta:
         verbose_name = 'RecordEncryptedFileField'
@@ -105,7 +105,7 @@ class RecordEncryptedFileField(RecordField):
 
 
 class RecordStandardField(RecordField):
-    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='meta_fields')
+    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='standard_fields')
     TYPE_CHOICES = (
         ('TEXTAREA', 'Multi Line'),
         ('TEXT', 'Single Line'),
@@ -124,7 +124,7 @@ class RecordStandardField(RecordField):
 
 
 class RecordEncryptedStandardField(RecordField):
-    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='text_fields')
+    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='encrypted_standard_fields')
     TYPE_CHOICES = (
         ('TEXTAREA', 'Multi Line'),
         ('TEXT', 'Single Line'),
@@ -160,6 +160,23 @@ class Record(models.Model):
         encryption.decrypt(private_key_user)
         key = encryption.key
         return key
+
+    def get_unencrypted_entries(self):
+        # this might look weird, but i've done it this way to optimize performance
+        # with prefetch related
+        # and watch out this expects a self from a query which has prefetched
+        # all the relevant unencrypted entries otherwise the queries explode
+        entries = []
+        entry_types = ['state_entries', 'standard_entries', 'select_entries', 'users_entries']
+        for entry_type in entry_types:
+            for entry in getattr(self, entry_type).all():
+                data = {
+                    'name': entry.field.name,
+                    'order': entry.field.order,
+                    'value': entry.value,
+                }
+                entries.append(data)
+        return entries
 
 
 ###
@@ -228,11 +245,16 @@ class RecordUsersEntry(RecordEntry):
 
     @property
     def value(self):
-        return list(self.users.values_list('pk', flat=True))
+        # this might look weird, but i've done it this way to optimize performance
+        # with prefetch related
+        pks = []
+        for user in getattr(self, 'users').all():
+            pks.append(user.pk)
+        return pks
 
 
 class RecordSelectEntry(RecordEntry):
-    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='multiple_entries')
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='select_entries')
     field = models.ForeignKey(RecordSelectField, related_name='entries', on_delete=models.PROTECT)
     value = models.JSONField()
 
@@ -246,7 +268,7 @@ class RecordSelectEntry(RecordEntry):
 
 
 class RecordEncryptedSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
-    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='select_entries')
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='encrypted_select_entries')
     field = models.ForeignKey(RecordEncryptedSelectField, related_name='entries', on_delete=models.PROTECT)
     value = models.BinaryField()
 
@@ -271,7 +293,7 @@ class RecordEncryptedSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
 
 
 class RecordEncryptedFileEntry(RecordEntry):
-    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='file_entries')
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='encrypted_file_entries')
     field = models.ForeignKey(RecordEncryptedFileField, related_name='entries', on_delete=models.PROTECT)
     file = models.FileField(upload_to='recordfileentry/')
 
@@ -315,7 +337,7 @@ class RecordEncryptedFileEntry(RecordEntry):
 
 
 class RecordStandardEntry(RecordEntry):
-    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='meta_entries')
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='standard_entries')
     field = models.ForeignKey(RecordStandardField, related_name='entries', on_delete=models.PROTECT)
     text = models.CharField(max_length=500)
 
@@ -333,7 +355,7 @@ class RecordStandardEntry(RecordEntry):
 
 
 class RecordEncryptedStandardEntry(RecordEntryEncryptedModelMixin, RecordEntry):
-    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='text_entries')
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='encrypted_standard_entries')
     field = models.ForeignKey(RecordEncryptedStandardField, related_name='entries', on_delete=models.PROTECT)
     text = models.BinaryField()
 

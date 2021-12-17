@@ -1,7 +1,10 @@
 from apps.recordmanagement.views import RecordEncryptedSelectEntryViewSet, RecordViewSet, RecordTemplateViewSet, \
-    RecordEncryptedStandardFieldViewSet, RecordEncryptedFileEntryViewSet, RecordStandardEntryViewSet, RecordEncryptedStandardEntryViewSet, \
-    RecordStandardFieldViewSet, RecordEncryptedFileFieldViewSet, RecordEncryptedSelectFieldViewSet, RecordUsersEntryViewSet, \
-    RecordStateEntryViewSet, RecordStateFieldViewSet, RecordUsersFieldViewSet
+    RecordEncryptedStandardFieldViewSet, RecordEncryptedFileEntryViewSet, RecordStandardEntryViewSet, \
+    RecordEncryptedStandardEntryViewSet, \
+    RecordStandardFieldViewSet, RecordEncryptedFileFieldViewSet, RecordEncryptedSelectFieldViewSet, \
+    RecordUsersEntryViewSet, \
+    RecordStateEntryViewSet, RecordStateFieldViewSet, RecordUsersFieldViewSet, RecordSelectFieldViewSet, \
+    RecordSelectEntryViewSet
 from rest_framework.test import APIRequestFactory
 from apps.api.models import Rlc, UserProfile, RlcUser
 from django.test import TestCase
@@ -16,13 +19,15 @@ class RecordViewSetsPermissions(TestCase):
         (RecordEncryptedStandardFieldViewSet, 'create', 'partial_update', 'update', 'destroy'),
         (RecordStandardFieldViewSet, 'create', 'partial_update', 'update', 'destroy'),
         (RecordEncryptedFileFieldViewSet, 'create', 'partial_update', 'update', 'destroy'),
+        (RecordSelectFieldViewSet, 'create', 'partial_update', 'update', 'destroy'),
         (RecordEncryptedSelectFieldViewSet, 'create', 'partial_update', 'update', 'destroy'),
         (RecordStateFieldViewSet, 'create', 'partial_update', 'update', 'destroy'),
         (RecordUsersFieldViewSet, 'create', 'partial_update', 'update', 'destroy'),
         # record
-        (RecordViewSet, 'create', 'destroy', 'list'),
+        (RecordViewSet, 'create', 'retrieve', 'destroy', 'list'),
         # entry
         (RecordEncryptedSelectEntryViewSet, 'create', 'partial_update', 'update', 'destroy'),
+        (RecordSelectEntryViewSet, 'create', 'partial_update', 'update', 'destroy'),
         (RecordEncryptedFileEntryViewSet, 'create', 'partial_update', 'update', 'destroy'),
         (RecordStandardEntryViewSet, 'create', 'partial_update', 'update', 'destroy'),
         (RecordEncryptedStandardEntryViewSet, 'create', 'partial_update', 'update', 'destroy'),

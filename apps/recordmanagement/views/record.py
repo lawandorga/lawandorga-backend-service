@@ -1,8 +1,12 @@
+from django.db.models import Prefetch
+
 from apps.recordmanagement.serializers.record import RecordTemplateSerializer, RecordEncryptedStandardFieldSerializer, \
     RecordFieldSerializer, RecordSerializer, RecordEncryptedStandardEntrySerializer, RecordStandardEntrySerializer, \
-    RecordEncryptedFileEntrySerializer, RecordStandardFieldSerializer, RecordEncryptedFileFieldSerializer, RecordEncryptedSelectFieldSerializer, \
-    RecordEncryptedSelectEntrySerializer, RecordUsersFieldSerializer, RecordUsersEntrySerializer, RecordStateFieldSerializer, \
-    RecordStateEntrySerializer, RecordSelectEntrySerializer, RecordSelectFieldSerializer
+    RecordEncryptedFileEntrySerializer, RecordStandardFieldSerializer, RecordEncryptedFileFieldSerializer, \
+    RecordEncryptedSelectFieldSerializer, \
+    RecordEncryptedSelectEntrySerializer, RecordUsersFieldSerializer, RecordUsersEntrySerializer, \
+    RecordStateFieldSerializer, \
+    RecordStateEntrySerializer, RecordSelectEntrySerializer, RecordSelectFieldSerializer, RecordListSerializer
 from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedStandardField, Record, \
     RecordEncryptionNew, RecordEncryptedStandardEntry, RecordStandardEntry, RecordEncryptedFileEntry, RecordStandardField, RecordEncryptedFileField, \
     RecordEncryptedSelectField, RecordEncryptedSelectEntry, RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry, \
@@ -102,11 +106,24 @@ class RecordUsersFieldViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, 
 ###
 # Record
 ###
-class RecordViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin, mixins.ListModelMixin, GenericViewSet):
+class RecordViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin, mixins.ListModelMixin,
+                    GenericViewSet):
     queryset = Record.objects.none()
     serializer_class = RecordSerializer
 
+    def get_serializer_class(self):
+        if self.action in ['list']:
+            return RecordListSerializer
+        return super().get_serializer_class()
+
     def get_queryset(self):
+        if self.action in ['list']:
+            return Record.objects.filter(template__rlc=self.request.user.rlc).prefetch_related(
+                # Prefetch('state_entries', queryset=RecordStateEntry.objects.all())
+                'state_entries', 'select_entries', 'standard_entries', 'users_entries',
+                'state_entries__field', 'select_entries__field', 'standard_entries__field', 'users_entries__field',
+                'users_entries__users'
+            )
         return Record.objects.filter(template__rlc=self.request.user.rlc)
 
     def create(self, request, *args, **kwargs):

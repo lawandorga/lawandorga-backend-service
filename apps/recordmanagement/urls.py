@@ -6,7 +6,7 @@ from django.urls import path, include
 router = DefaultRouter()
 router.register("origin_countries", OriginCountryViewSet)
 router.register("record_deletion_requests", EncryptedRecordDeletionRequestViewSet)
-router.register("records", EncryptedRecordViewSet)
+router.register("oldrecords", EncryptedRecordViewSet)
 router.register("e_clients", EncryptedClientViewSet)
 router.register('questionnaires', QuestionnaireViewSet)
 router.register('record_questionnaires', RecordQuestionnaireViewSet)
@@ -19,6 +19,27 @@ router.register("consultants", ConsultantViewSet)
 router.register('record_documents', EncryptedRecordDocumentViewSet)
 router.register('record_permission_requests', RecordPermissionRequestViewSet)
 router.register('tags', TagViewSet)
+# new
+router.register('recordtemplates', RecordTemplateViewSet)
+router.register('records', RecordViewSet)
+# fields
+router.register('recordstatefields', RecordStateFieldViewSet)
+router.register('recordusersfields', RecordUsersFieldViewSet)
+router.register('recordselectfields', RecordSelectFieldViewSet)
+router.register('recordstandardfield', RecordStandardFieldViewSet)
+# encrypted
+router.register('recordencryptedselectfield', RecordEncryptedSelectFieldViewSet)
+router.register('recordencryptedfilefield', RecordEncryptedFileFieldViewSet)
+router.register('recordencryptedstandardfield', RecordEncryptedStandardFieldViewSet)
+# entries
+router.register('recordstateentries', RecordStateEntryViewSet)
+router.register('recordusersentries', RecordUsersEntryViewSet)
+router.register('recordselectentries', RecordSelectEntryViewSet)
+router.register('recordstandardentries', RecordStandardEntryViewSet)
+# encrypted
+router.register('recordencryptedselectentries', RecordEncryptedSelectEntryViewSet)
+router.register('recordencryptedfileentries', RecordEncryptedFileEntryViewSet)
+router.register('recordencryptedstandardentries', RecordEncryptedStandardEntryViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),

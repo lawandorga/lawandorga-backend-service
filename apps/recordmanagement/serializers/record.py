@@ -89,15 +89,6 @@ class RecordEncryptedSelectFieldSerializer(serializers.ModelSerializer):
 
 
 ###
-# Record
-###
-class RecordSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Record
-        fields = '__all__'
-
-
-###
 # Entries
 ###
 class RecordEncryptedFileEntrySerializer(serializers.ModelSerializer):
@@ -203,3 +194,21 @@ class RecordSelectEntrySerializer(serializers.ModelSerializer):
         if not (set(attrs['value']) <= set(field.options)):
             raise ValidationError('The selected values contain not allowed values.')
         return attrs
+
+
+###
+# Record
+###
+class RecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Record
+        fields = '__all__'
+
+
+class RecordListSerializer(RecordSerializer):
+    standard_entries = RecordStandardEntrySerializer(many=True)
+    entries = serializers.SerializerMethodField()
+    state_entries = RecordStateEntrySerializer(many=True)
+
+    def get_entries(self, obj):
+        return obj.get_unencrypted_entries()
