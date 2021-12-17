@@ -208,6 +208,10 @@ class RecordStateEntry(RecordEntry):
     def __str__(self):
         return 'recordStateEntry: {};'.format(self.pk)
 
+    @property
+    def value(self):
+        return self.state
+
 
 class RecordUsersEntry(RecordEntry):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='users_entries')
@@ -221,6 +225,10 @@ class RecordUsersEntry(RecordEntry):
 
     def __str__(self):
         return 'recordUsersEntry: {};'.format(self.pk)
+
+    @property
+    def value(self):
+        return list(self.users.values_list('pk', flat=True))
 
 
 class RecordSelectEntry(RecordEntry):
@@ -275,6 +283,10 @@ class RecordEncryptedFileEntry(RecordEntry):
     def __str__(self):
         return 'recordFileEntry: {};'.format(self.pk)
 
+    @property
+    def value(self):
+        return self.file.name
+
     def delete(self, *args, **kwargs):
         self.file.delete()
         super().delete(*args, **kwargs)
@@ -315,6 +327,10 @@ class RecordStandardEntry(RecordEntry):
     def __str__(self):
         return 'recordStandardEntry: {};'.format(self.pk)
 
+    @property
+    def value(self):
+        return self.text
+
 
 class RecordEncryptedStandardEntry(RecordEntryEncryptedModelMixin, RecordEntry):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='text_entries')
@@ -332,6 +348,10 @@ class RecordEncryptedStandardEntry(RecordEntryEncryptedModelMixin, RecordEntry):
 
     def __str__(self):
         return 'recordStandardEntry: {};'.format(self.pk)
+
+    @property
+    def value(self):
+        return self.text
 
 
 ###
