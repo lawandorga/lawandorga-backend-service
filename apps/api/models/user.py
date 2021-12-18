@@ -144,7 +144,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             self.generate_new_user_encryption_keys()
         return self.encryption_keys.public_key
 
-    def get_private_key(self, password_user: str = None, request: Request = None) -> str:
+    def get_private_key(self, password_user=None, request=None):
         if not hasattr(self, "encryption_keys"):
             self.generate_new_user_encryption_keys()
 
@@ -155,7 +155,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             private_key = request.META.get("HTTP_PRIVATE_KEY")
             if not private_key:
                 # enable direct testing of the rest framework
-                if self.email == "dummy@rlcm.de" and settings.DUMMY_USER_PASSWORD:
+                if self.email == "dummy@law-orga.de" and settings.DUMMY_USER_PASSWORD:
                     return self.encryption_keys.decrypt_private_key(settings.DUMMY_USER_PASSWORD)
                 else:
                     raise ParseError('No private key provied within the request.')

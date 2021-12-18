@@ -4,7 +4,7 @@ from apps.recordmanagement.models import Record, RecordStandardEntry, RecordStan
     RecordStateField, \
     RecordEncryptedStandardField, RecordUsersEntry, RecordStateEntry, RecordEncryptedSelectField, \
     RecordEncryptedSelectEntry, RecordSelectField, \
-    RecordSelectEntry, RecordEncryptedStandardEntry, EncryptedRecord
+    RecordSelectEntry, RecordEncryptedStandardEntry, EncryptedRecord, RecordEncryption, RecordEncryptionNew
 from django.core.management.base import BaseCommand
 
 
@@ -18,10 +18,21 @@ class Command(BaseCommand):
             test_record(record)
 
 
+def move_encryptions(old_record, new_record):
+    for enc in RecordEncryption.objects.filter(record=old_record):
+        RecordEncryptionNew.objects.create(
+            user=enc.user,
+            record=new_record,
+            key=enc.encrypted_key,
+        )
+
+
 def move_record(old_record):
     with transaction.atomic():
         template = old_record.from_rlc.recordtemplates.first()
         record = Record.objects.create(template=template, old_record=old_record)
+        # create new encryption
+        move_encryptions(old_record, record)
         # record entries
         #
         field = RecordStandardField.objects.get(template=template, name='First contact date')
@@ -102,27 +113,29 @@ def move_record(old_record):
         if old_record.additional_facts:
             RecordEncryptedStandardEntry.objects.create(record=record, field=field, text=old_record.additional_facts)
         # client entries
+        record.old_client = old_record.client
+        record.save()
         #
-        field = RecordEncryptedStandardField.objects.get(template=template, name='Client name')
-        if old_record.client.name:
-            RecordEncryptedStandardEntry.objects.create(record=record, field=field, text=old_record.client.name)
-        #
-        field = RecordStandardField.objects.get(template=template, name='Birthday')
-        if old_record.client.birthday:
-            RecordStandardEntry.objects.create(record=record, field=field, text=old_record.client.birthday)
-        #
-        field = RecordSelectField.objects.get(template=template, name='Origin Country')
-        if old_record.client.origin_country:
-            value = [old_record.client.origin_country.name]
-            RecordSelectEntry.objects.create(record=record, field=field, value=value)
-        #
-        field = RecordEncryptedStandardField.objects.get(template=template, name='Phone')
-        if old_record.client.phone_number:
-            RecordEncryptedStandardEntry.objects.create(record=record, field=field, text=old_record.client.phone_number)
-        #
-        field = RecordEncryptedStandardField.objects.get(template=template, name='Client Note')
-        if old_record.client.note:
-            RecordEncryptedStandardEntry.objects.create(record=record, field=field, text=old_record.client.note)
+        # field = RecordEncryptedStandardField.objects.get(template=template, name='Client name')
+        # if old_record.client.name:
+        #     RecordEncryptedStandardEntry.objects.create(record=record, field=field, text=old_record.client.name)
+        # #
+        # field = RecordStandardField.objects.get(template=template, name='Birthday')
+        # if old_record.client.birthday:
+        #     RecordStandardEntry.objects.create(record=record, field=field, text=old_record.client.birthday)
+        # #
+        # field = RecordSelectField.objects.get(template=template, name='Origin Country')
+        # if old_record.client.origin_country:
+        #     value = [old_record.client.origin_country.name]
+        #     RecordSelectEntry.objects.create(record=record, field=field, value=value)
+        # #
+        # field = RecordEncryptedStandardField.objects.get(template=template, name='Phone')
+        # if old_record.client.phone_number:
+        #     RecordEncryptedStandardEntry.objects.create(record=record, field=field, text=old_record.client.phone_number)
+        # #
+        # field = RecordEncryptedStandardField.objects.get(template=template, name='Client Note')
+        # if old_record.client.note:
+        #     RecordEncryptedStandardEntry.objects.create(record=record, field=field, text=old_record.client.note)
 
 
 def test_record(record):
@@ -132,31 +145,31 @@ def test_record(record):
     field = RecordStandardField.objects.get(template=template, name='First contact date')
     if old_record.first_contact_date:
         entry = RecordStandardEntry.objects.get(record=new_record, field=field)
-        assert str(old_record.first_contact_date) == entry.value, '{} != {}'.format(old_record.first_contact_date,
-                                                                                    entry.value)
+        assert str(old_record.first_contact_date) == entry.text, '{} != {}'.format(old_record.first_contact_date,
+                                                                                   entry.text)
     #
     field = RecordStandardField.objects.get(template=template, name='Last contact date')
     if old_record.last_contact_date:
         entry = RecordStandardEntry.objects.get(record=new_record, field=field)
-        assert str(old_record.last_contact_date) == entry.value, '{} != {}'.format(old_record.last_contact_date,
-                                                                                   entry.value)
+        assert str(old_record.last_contact_date) == entry.text, '{} != {}'.format(old_record.last_contact_date,
+                                                                                  entry.text)
     #
     field = RecordStandardField.objects.get(template=template, name='First consultation')
     if old_record.first_consultation:
         entry = RecordStandardEntry.objects.get(record=new_record, field=field)
-        assert str(old_record.first_consultation) == entry.value, '{} != {}'.format(old_record.first_consultation,
-                                                                                    entry.value)
+        assert str(old_record.first_consultation) == entry.text, '{} != {}'.format(old_record.first_consultation,
+                                                                                   entry.text)
     #
     field = RecordStandardField.objects.get(template=template, name='Official Note')
     if old_record.official_note:
         entry = RecordStandardEntry.objects.get(record=new_record, field=field)
-        assert str(old_record.official_note) == entry.value, '{} != {}'.format(old_record.official_note, entry.value)
+        assert str(old_record.official_note) == entry.text, '{} != {}'.format(old_record.official_note, entry.text)
     #
     field = RecordUsersField.objects.get(template=template, name='Consultants')
     if old_record.working_on_record:
         entry = RecordUsersEntry.objects.get(record=new_record, field=field)
-        assert list(old_record.working_on_record.values_list('pk', flat=True)) == entry.value, \
-            '{} != {}'.format(list(old_record.working_on_record.values_list('pk', flat=True)), list(entry.value))
+        assert list(old_record.working_on_record.values_list('pk', flat=True)) == entry.get_value(), \
+            '{} != {}'.format(list(old_record.working_on_record.values_list('pk', flat=True)), entry.get_value())
     #
     field = RecordSelectField.objects.get(template=template, name='Tags')
     if old_record.tags.values_list('name', flat=True):
@@ -167,94 +180,95 @@ def test_record(record):
     field = RecordStateField.objects.get(template=template, name='State')
     if old_record.get_state_display().capitalize():
         entry = RecordStateEntry.objects.get(record=new_record, field=field)
-        assert str(old_record.get_state_display().capitalize()) == entry.value, '{} != {}'.format(
-            old_record.get_state_display, entry.value)
+        assert str(old_record.get_state_display().capitalize()) == entry.state, '{} != {}'.format(
+            old_record.get_state_display, entry.state)
     #
     field = RecordEncryptedStandardField.objects.get(template=template, name='Note')
     if old_record.note:
         entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
-        assert old_record.note == entry.value, '{} != {}'.format(old_record.note, entry.value)
+        assert old_record.note == entry.text, '{} != {}'.format(old_record.note, entry.text)
     #
     field = RecordEncryptedStandardField.objects.get(template=template, name='Consultant Team')
     if old_record.consultant_team:
         entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
-        assert old_record.consultant_team == entry.value, '{} != {}'.format(old_record.consultant_team,
-                                                                                 entry.value)
+        assert old_record.consultant_team == entry.text, '{} != {}'.format(old_record.consultant_team,
+                                                                           entry.text)
     #
     field = RecordEncryptedStandardField.objects.get(template=template, name='Lawyer')
     if old_record.lawyer:
         entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
-        assert old_record.lawyer == entry.value, '{} != {}'.format(old_record.lawyer, entry.value)
+        assert old_record.lawyer == entry.text, '{} != {}'.format(old_record.lawyer, entry.text)
     #
     field = RecordEncryptedStandardField.objects.get(template=template, name='Related Persons')
     if old_record.related_persons:
         entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
-        assert old_record.related_persons == entry.value, '{} != {}'.format(old_record.related_persons,
-                                                                                 entry.value)
+        assert old_record.related_persons == entry.text, '{} != {}'.format(old_record.related_persons,
+                                                                           entry.text)
     #
     field = RecordEncryptedStandardField.objects.get(template=template, name='Contact')
     if old_record.contact:
         entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
-        assert (old_record.contact) == entry.value, '{} != {}'.format(old_record.contact, entry.value)
+        assert (old_record.contact) == entry.text, '{} != {}'.format(old_record.contact, entry.text)
     #
     field = RecordEncryptedStandardField.objects.get(template=template, name='BAMF Token')
     if old_record.bamf_token:
         entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
-        assert (old_record.bamf_token) == entry.value, '{} != {}'.format(old_record.bamf_token, entry.value)
+        assert (old_record.bamf_token) == entry.text, '{} != {}'.format(old_record.bamf_token, entry.text)
     #
     field = RecordEncryptedStandardField.objects.get(template=template, name='First Correspondence')
     if old_record.first_correspondence:
         entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
-        assert (old_record.first_correspondence) == entry.value, '{} != {}'.format(old_record.first_correspondence,
-                                                                                      entry.value)
+        assert (old_record.first_correspondence) == entry.text, '{} != {}'.format(old_record.first_correspondence,
+                                                                                  entry.text)
     #
     field = RecordEncryptedStandardField.objects.get(template=template, name='Circumstances')
     if old_record.circumstances:
         entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
-        assert (old_record.circumstances) == entry.value, '{} != {}'.format(old_record.circumstances, entry.value)
+        assert (old_record.circumstances) == entry.text, '{} != {}'.format(old_record.circumstances, entry.text)
     #
     field = RecordEncryptedStandardField.objects.get(template=template, name='Next Steps')
     if old_record.next_steps:
         entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
-        assert (old_record.next_steps) == entry.value, '{} != {}'.format(old_record.next_steps, entry.value)
+        assert (old_record.next_steps) == entry.text, '{} != {}'.format(old_record.next_steps, entry.text)
     #
     field = RecordEncryptedStandardField.objects.get(template=template, name='Status described')
     if old_record.status_described:
         entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
-        assert (old_record.status_described) == entry.value, '{} != {}'.format(old_record.status_described,
-                                                                                  entry.value)
+        assert (old_record.status_described) == entry.text, '{} != {}'.format(old_record.status_described,
+                                                                              entry.text)
     #
     field = RecordEncryptedStandardField.objects.get(template=template, name='Additional facts')
     if old_record.additional_facts:
         entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
-        assert (old_record.additional_facts) == entry.value, '{} != {}'.format(old_record.additional_facts,
-                                                                                  entry.value)
+        assert (old_record.additional_facts) == entry.text, '{} != {}'.format(old_record.additional_facts,
+                                                                              entry.text)
     # client entries
+    assert new_record.old_client == old_record.client, '{} != {}'.format(record.old_client.pk, old_record.client.pk)
     #
-    field = RecordEncryptedStandardField.objects.get(template=template, name='Client name')
-    if old_record.client.name:
-        entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
-        assert old_record.client.name == entry.value, '{} != {}'.format(old_record.client.name, entry.value)
-    #
-    field = RecordStandardField.objects.get(template=template, name='Birthday')
-    if old_record.client.birthday:
-        entry = RecordStandardEntry.objects.get(record=new_record, field=field)
-        assert str(old_record.client.birthday) == entry.value, '{} != {}'.format(old_record.client.birthday,
-                                                                                 entry.value)
-    #
-    field = RecordSelectField.objects.get(template=template, name='Origin Country')
-    if old_record.client.origin_country:
-        entry = RecordSelectEntry.objects.get(record=new_record, field=field)
-        assert [str(old_record.client.origin_country.name)] == entry.value, \
-            '{} != {}'.format(old_record.client.origin_country, entry.value)
-    #
-    field = RecordEncryptedStandardField.objects.get(template=template, name='Phone')
-    if old_record.client.phone_number:
-        entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
-        assert old_record.client.phone_number == entry.value, '{} != {}'.format(old_record.client.phone_number,
-                                                                                entry.value)
-    #
-    field = RecordEncryptedStandardField.objects.get(template=template, name='Client Note')
-    if old_record.client.note:
-        entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
-        assert old_record.client.note == entry.value, '{} != {}'.format(old_record.client.note, entry.value)
+    # field = RecordEncryptedStandardField.objects.get(template=template, name='Client name')
+    # if old_record.client.name:
+    #     entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
+    #     assert old_record.client.name == entry.text, '{} != {}'.format(old_record.client.name, entry.text)
+    # #
+    # field = RecordStandardField.objects.get(template=template, name='Birthday')
+    # if old_record.client.birthday:
+    #     entry = RecordStandardEntry.objects.get(record=new_record, field=field)
+    #     assert str(old_record.client.birthday) == entry.text, '{} != {}'.format(old_record.client.birthday,
+    #                                                                              entry.text)
+    # #
+    # field = RecordSelectField.objects.get(template=template, name='Origin Country')
+    # if old_record.client.origin_country:
+    #     entry = RecordSelectEntry.objects.get(record=new_record, field=field)
+    #     assert [str(old_record.client.origin_country.name)] == entry.value, \
+    #         '{} != {}'.format(old_record.client.origin_country, entry.value)
+    # #
+    # field = RecordEncryptedStandardField.objects.get(template=template, name='Phone')
+    # if old_record.client.phone_number:
+    #     entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
+    #     assert old_record.client.phone_number == entry.text, '{} != {}'.format(old_record.client.phone_number,
+    #                                                                             entry.text)
+    # #
+    # field = RecordEncryptedStandardField.objects.get(template=template, name='Client Note')
+    # if old_record.client.note:
+    #     entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
+    #     assert old_record.client.note == entry.text, '{} != {}'.format(old_record.client.note, entry.text)

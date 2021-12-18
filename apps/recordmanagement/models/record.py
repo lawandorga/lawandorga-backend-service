@@ -1,4 +1,4 @@
-from apps.recordmanagement.models import EncryptedRecord
+from apps.recordmanagement.models import EncryptedRecord, EncryptedClient
 from apps.static.encryption import EncryptedModelMixin, AESEncryption, RSAEncryption
 from apps.api.models import Rlc, UserProfile
 from django.db import models
@@ -21,6 +21,30 @@ class RecordTemplate(models.Model):
     def __str__(self):
         return 'recordTemplate: {}; rlc: {};'.format(self.pk, self.rlc)
 
+    def get_field_types(self):
+        return ['standard_fields', 'state_fields', 'users_fields', 'select_fields',
+                'encrypted_standard_fields', 'encrypted_select_fields', 'encrypted_file_fields']
+
+    def get_fields(self):
+        # this might look weird, but i've done it this way to optimize performance
+        # with prefetch related
+        # and watch out this expects a self from a query which has prefetched
+        # all the relevant unencrypted entries otherwise the queries explode
+        fields = []
+        for field_type in self.get_field_types():
+            for field in getattr(self, field_type).all():
+                data = {
+                    'label': field.name,
+                    'name': field.name,
+                    'order': field.order,
+                    'type': field.type,
+                    'options': getattr(field, 'options', None)
+                }
+                fields.append(data)
+        fields = list(sorted(fields, key=lambda i: i['order']))
+        return fields
+
+
 
 ###
 # RecordField
@@ -40,7 +64,7 @@ class RecordField(models.Model):
 
 
 class RecordStateField(RecordField):
-    template = models.OneToOneField(RecordTemplate, on_delete=models.CASCADE, related_name='state_fields')
+    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='state_fields')
     states = models.JSONField()
 
     class Meta:
@@ -50,6 +74,13 @@ class RecordStateField(RecordField):
     @property
     def type(self):
         return 'select'
+
+    def __str__(self):
+        return 'recordStateField: {}; name: {};'.format(self.pk, self.name)
+
+    @property
+    def options(self):
+        return self.states
 
 
 class RecordUsersField(RecordField):
@@ -62,6 +93,13 @@ class RecordUsersField(RecordField):
     @property
     def type(self):
         return 'select'
+
+    def __str__(self):
+        return 'recordUsersField: {}; name: {};'.format(self.pk, self.name)
+
+    @property
+    def options(self):
+        return [{'name': i[0], 'value': i[1]} for i in self.template.rlc.rlc_members.values_list('name', 'pk')]
 
 
 class RecordSelectField(RecordField):
@@ -77,6 +115,9 @@ class RecordSelectField(RecordField):
     def type(self):
         return 'multiple'
 
+    def __str__(self):
+        return 'recordSelectField: {}; name: {};'.format(self.pk, self.name)
+
 
 class RecordEncryptedSelectField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='encrypted_select_fields')
@@ -91,6 +132,9 @@ class RecordEncryptedSelectField(RecordField):
     def type(self):
         return 'select'
 
+    def __str__(self):
+        return 'recordEncryptedSelectField: {}; name: {};'.format(self.pk, self.name)
+
 
 class RecordEncryptedFileField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='encrypted_file_fields')
@@ -102,6 +146,9 @@ class RecordEncryptedFileField(RecordField):
     @property
     def type(self):
         return 'file'
+
+    def __str__(self):
+        return 'recordEncryptedFileField: {}; name: {};'.format(self.pk, self.name)
 
 
 class RecordStandardField(RecordField):
@@ -122,6 +169,9 @@ class RecordStandardField(RecordField):
     def type(self):
         return self.field_type.lower()
 
+    def __str__(self):
+        return 'recordStandardField: {}; name: {};'.format(self.pk, self.name)
+
 
 class RecordEncryptedStandardField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='encrypted_standard_fields')
@@ -140,6 +190,9 @@ class RecordEncryptedStandardField(RecordField):
     def type(self):
         return self.field_type.lower()
 
+    def __str__(self):
+        return 'recordEncryptedStandardField: {}; name: {};'.format(self.pk, self.name)
+
 
 ###
 # Record
@@ -148,6 +201,8 @@ class Record(models.Model):
     template = models.ForeignKey(RecordTemplate, related_name='records', on_delete=models.PROTECT)
     old_record = models.OneToOneField(EncryptedRecord, related_name='record', on_delete=models.SET_NULL, null=True,
                                       blank=True)
+    old_client = models.ForeignKey(EncryptedClient, related_name='records', on_delete=models.SET_NULL, null=True,
+                                   blank=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -156,27 +211,45 @@ class Record(models.Model):
         verbose_name_plural = 'Records'
 
     def get_aes_key(self, user, private_key_user):
-        encryption = self.encryptions.get(user=user, record=self)
+        encryption = self.encryptions.get(user=user)
         encryption.decrypt(private_key_user)
         key = encryption.key
         return key
 
-    def get_unencrypted_entries(self):
+    def get_unencrypted_entry_types(self):
+        return ['state_entries', 'standard_entries', 'select_entries', 'users_entries']
+
+    def get_encrypted_entry_types(self):
+        return ['encrypted_select_entries', 'encrypted_file_entries', 'encrypted_standard_entries']
+
+    def get_all_entry_types(self):
+        return self.get_unencrypted_entry_types() + self.get_encrypted_entry_types()
+
+    def get_entries(self, entry_types, *args, **kwargs):
         # this might look weird, but i've done it this way to optimize performance
         # with prefetch related
         # and watch out this expects a self from a query which has prefetched
         # all the relevant unencrypted entries otherwise the queries explode
         entries = []
-        entry_types = ['state_entries', 'standard_entries', 'select_entries', 'users_entries']
         for entry_type in entry_types:
             for entry in getattr(self, entry_type).all():
                 data = {
+                    'id': entry.pk,
                     'name': entry.field.name,
                     'order': entry.field.order,
-                    'value': entry.value,
+                    'value': entry.get_value(*args, **kwargs),
                 }
                 entries.append(data)
         return entries
+
+    def get_unencrypted_entries(self):
+        return self.get_entries(self.get_unencrypted_entry_types())
+
+    def get_encrypted_entries(self):
+        return self.get_entries(self.get_encrypted_entry_types())
+
+    def get_all_entries(self, *args, **kwargs):
+        return self.get_entries(self.get_all_entry_types(), *args, **kwargs)
 
 
 ###
@@ -188,6 +261,9 @@ class RecordEntry(models.Model):
 
     class Meta:
         abstract = True
+
+    def get_value(self, *args, **kwargs):
+        raise NotImplementedError('This method needs to be implemented')
 
 
 class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
@@ -225,8 +301,7 @@ class RecordStateEntry(RecordEntry):
     def __str__(self):
         return 'recordStateEntry: {};'.format(self.pk)
 
-    @property
-    def value(self):
+    def get_value(self, *args, **kwargs):
         return self.state
 
 
@@ -243,8 +318,7 @@ class RecordUsersEntry(RecordEntry):
     def __str__(self):
         return 'recordUsersEntry: {};'.format(self.pk)
 
-    @property
-    def value(self):
+    def get_value(self, *args, **kwargs):
         # this might look weird, but i've done it this way to optimize performance
         # with prefetch related
         pks = []
@@ -266,6 +340,9 @@ class RecordSelectEntry(RecordEntry):
     def __str__(self):
         return 'recordSelectEntry: {};'.format(self.pk)
 
+    def get_value(self, *args, **kwargs):
+        return self.value
+
 
 class RecordEncryptedSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='encrypted_select_entries')
@@ -281,7 +358,12 @@ class RecordEncryptedSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
         verbose_name_plural = 'RecordEncryptedSelectEntries'
 
     def __str__(self):
-        return 'recordSelectEntry: {};'.format(self.pk)
+        return 'recordEncryptedSelectEntry: {};'.format(self.pk)
+
+    def get_value(self, *args, **kwargs):
+        if self.encryption_status == 'ENCRYPTED':
+            self.decrypt(*args, **kwargs)
+        return self.value
 
     def encrypt(self, *args, **kwargs):
         self.value = json.dumps(self.value)
@@ -303,10 +385,9 @@ class RecordEncryptedFileEntry(RecordEntry):
         verbose_name_plural = 'RecordEncryptedFileEntries'
 
     def __str__(self):
-        return 'recordFileEntry: {};'.format(self.pk)
+        return 'recordEncryptedFileEntry: {};'.format(self.pk)
 
-    @property
-    def value(self):
+    def get_value(self, *args, **kwargs):
         return self.file.name
 
     def delete(self, *args, **kwargs):
@@ -349,8 +430,7 @@ class RecordStandardEntry(RecordEntry):
     def __str__(self):
         return 'recordStandardEntry: {};'.format(self.pk)
 
-    @property
-    def value(self):
+    def get_value(self, *args, **kwargs):
         return self.text
 
 
@@ -369,10 +449,14 @@ class RecordEncryptedStandardEntry(RecordEntryEncryptedModelMixin, RecordEntry):
         verbose_name_plural = 'RecordStandardEntries'
 
     def __str__(self):
-        return 'recordStandardEntry: {};'.format(self.pk)
+        return 'recordEncryptedStandardEntry: {};'.format(self.pk)
 
-    @property
-    def value(self):
+    def get_value(self, *args, **kwargs):
+        print(kwargs)
+        print(self)
+        print(self.text)
+        if self.encryption_status == 'ENCRYPTED':
+            self.decrypt(*args, **kwargs)
         return self.text
 
 

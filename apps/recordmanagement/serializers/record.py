@@ -1,7 +1,9 @@
+from django.core.exceptions import ObjectDoesNotExist
+
 from apps.recordmanagement.models.record import RecordTemplate, RecordField, RecordEncryptedStandardField, Record, RecordEncryptedStandardEntry, \
     RecordStandardEntry, RecordEncryptedFileEntry, RecordStandardField, RecordEncryptedFileField, RecordEncryptedSelectField, RecordEncryptedSelectEntry, \
     RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry, RecordSelectEntry, RecordSelectField
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, ParseError
 from django.core.files import File
 from rest_framework import serializers
 
@@ -206,9 +208,26 @@ class RecordSerializer(serializers.ModelSerializer):
 
 
 class RecordListSerializer(RecordSerializer):
-    standard_entries = RecordStandardEntrySerializer(many=True)
     entries = serializers.SerializerMethodField()
-    state_entries = RecordStateEntrySerializer(many=True)
 
     def get_entries(self, obj):
         return obj.get_unencrypted_entries()
+
+
+class RecordDetailSerializer(RecordSerializer):
+    entries = serializers.SerializerMethodField()
+    form = serializers.SerializerMethodField()
+
+    def get_entries(self, obj):
+        request = self.context['request']
+        user = request.user
+        private_key_user = user.get_private_key(request=request)
+        try:
+            aes_key_record = self.instance.get_aes_key(user=request.user, private_key_user=private_key_user)
+        except ObjectDoesNotExist:
+            raise ParseError('No encryption keys were found to decrypt this record.')
+        return obj.get_all_entries(aes_key_record=aes_key_record)
+
+    def get_form(self, obj):
+        template = obj.template
+        return template.get_fields()

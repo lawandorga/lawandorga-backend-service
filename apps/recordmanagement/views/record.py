@@ -6,10 +6,13 @@ from apps.recordmanagement.serializers.record import RecordTemplateSerializer, R
     RecordEncryptedSelectFieldSerializer, \
     RecordEncryptedSelectEntrySerializer, RecordUsersFieldSerializer, RecordUsersEntrySerializer, \
     RecordStateFieldSerializer, \
-    RecordStateEntrySerializer, RecordSelectEntrySerializer, RecordSelectFieldSerializer, RecordListSerializer
+    RecordStateEntrySerializer, RecordSelectEntrySerializer, RecordSelectFieldSerializer, RecordListSerializer, \
+    RecordDetailSerializer
 from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedStandardField, Record, \
-    RecordEncryptionNew, RecordEncryptedStandardEntry, RecordStandardEntry, RecordEncryptedFileEntry, RecordStandardField, RecordEncryptedFileField, \
-    RecordEncryptedSelectField, RecordEncryptedSelectEntry, RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry, \
+    RecordEncryptionNew, RecordEncryptedStandardEntry, RecordStandardEntry, RecordEncryptedFileEntry, \
+    RecordStandardField, RecordEncryptedFileField, \
+    RecordEncryptedSelectField, RecordEncryptedSelectEntry, RecordUsersField, RecordUsersEntry, RecordStateField, \
+    RecordStateEntry, \
     RecordSelectEntry, RecordSelectField
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
@@ -114,15 +117,34 @@ class RecordViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.D
     def get_serializer_class(self):
         if self.action in ['list']:
             return RecordListSerializer
+        elif self.action in ['retrieve']:
+            return RecordDetailSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):
         if self.action in ['list']:
             return Record.objects.filter(template__rlc=self.request.user.rlc).prefetch_related(
-                # Prefetch('state_entries', queryset=RecordStateEntry.objects.all())
                 'state_entries', 'select_entries', 'standard_entries', 'users_entries',
                 'state_entries__field', 'select_entries__field', 'standard_entries__field', 'users_entries__field',
                 'users_entries__users'
+            )
+        elif self.action in ['retrieve']:
+            return Record.objects.filter(template__rlc=self.request.user.rlc).prefetch_related(
+                'state_entries', 'state_entries__field',
+                'select_entries', 'select_entries__field',
+                'standard_entries', 'standard_entries__field',
+                'users_entries', 'users_entries__field', 'users_entries__users',
+                'encrypted_select_entries', 'encrypted_select_entries__field',
+                'encrypted_standard_entries', 'encrypted_standard_entries__field',
+                'encrypted_file_entries', 'encrypted_file_entries__field',
+                'template',
+                'template__standard_fields',
+                'template__select_fields',
+                'template__users_fields',
+                'template__state_fields',
+                'template__encrypted_file_fields',
+                'template__encrypted_select_fields',
+                'template__encrypted_standard_fields',
             )
         return Record.objects.filter(template__rlc=self.request.user.rlc)
 
