@@ -11,6 +11,9 @@ from rest_framework import serializers
 ###
 # RecordTemplate
 ###
+from apps.recordmanagement.serializers import EncryptedClientSerializer
+
+
 class RecordTemplateSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordTemplate
@@ -209,21 +212,33 @@ class RecordSerializer(serializers.ModelSerializer):
 
 class RecordListSerializer(RecordSerializer):
     entries = serializers.SerializerMethodField()
+    access = serializers.SerializerMethodField()
 
     def get_entries(self, obj):
         return obj.get_unencrypted_entries()
+
+    def get_access(self, obj):
+        for enc in getattr(obj, 'encryptions').all():
+            if enc.user_id == self.context['request'].user.id:
+                return True
+        return False
 
 
 class RecordDetailSerializer(RecordSerializer):
     entries = serializers.SerializerMethodField()
     form = serializers.SerializerMethodField()
+    client = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context['request']
+        self.user = request.user
+        self.private_key_user = self.user.get_private_key(request=request)
+        self.private_key_rlc = self.user.rlc.get_private_key(user=self.user, private_key_user=self.private_key_user)
 
     def get_entries(self, obj):
-        request = self.context['request']
-        user = request.user
-        private_key_user = user.get_private_key(request=request)
         try:
-            aes_key_record = self.instance.get_aes_key(user=request.user, private_key_user=private_key_user)
+            aes_key_record = self.instance.get_aes_key(user=self.user, private_key_user=self.private_key_user)
         except ObjectDoesNotExist:
             raise ParseError('No encryption keys were found to decrypt this record.')
         return obj.get_all_entries(aes_key_record=aes_key_record)
@@ -231,3 +246,7 @@ class RecordDetailSerializer(RecordSerializer):
     def get_form(self, obj):
         template = obj.template
         return template.get_fields()
+
+    def get_client(self, obj):
+        obj.old_client.decrypt(private_key_rlc=self.private_key_rlc)
+        return EncryptedClientSerializer(instance=obj.old_client).data

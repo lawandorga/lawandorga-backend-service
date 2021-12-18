@@ -126,7 +126,7 @@ class RecordViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.D
             return Record.objects.filter(template__rlc=self.request.user.rlc).prefetch_related(
                 'state_entries', 'select_entries', 'standard_entries', 'users_entries',
                 'state_entries__field', 'select_entries__field', 'standard_entries__field', 'users_entries__field',
-                'users_entries__users'
+                'users_entries__users', 'encryptions'
             )
         elif self.action in ['retrieve']:
             return Record.objects.filter(template__rlc=self.request.user.rlc).prefetch_related(
@@ -145,7 +145,7 @@ class RecordViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.D
                 'template__encrypted_file_fields',
                 'template__encrypted_select_fields',
                 'template__encrypted_standard_fields',
-            )
+            ).select_related('old_client')
         return Record.objects.filter(template__rlc=self.request.user.rlc)
 
     def create(self, request, *args, **kwargs):

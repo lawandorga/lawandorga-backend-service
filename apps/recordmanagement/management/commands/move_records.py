@@ -119,16 +119,16 @@ def move_record(old_record):
         # field = RecordEncryptedStandardField.objects.get(template=template, name='Client name')
         # if old_record.client.name:
         #     RecordEncryptedStandardEntry.objects.create(record=record, field=field, text=old_record.client.name)
-        # #
-        # field = RecordStandardField.objects.get(template=template, name='Birthday')
-        # if old_record.client.birthday:
-        #     RecordStandardEntry.objects.create(record=record, field=field, text=old_record.client.birthday)
-        # #
-        # field = RecordSelectField.objects.get(template=template, name='Origin Country')
-        # if old_record.client.origin_country:
-        #     value = [old_record.client.origin_country.name]
-        #     RecordSelectEntry.objects.create(record=record, field=field, value=value)
-        # #
+        #
+        field = RecordStandardField.objects.get(template=template, name='Birthday')
+        if old_record.client.birthday:
+            RecordStandardEntry.objects.create(record=record, field=field, text=old_record.client.birthday)
+        #
+        field = RecordSelectField.objects.get(template=template, name='Origin Country')
+        if old_record.client.origin_country:
+            value = [old_record.client.origin_country.name]
+            RecordSelectEntry.objects.create(record=record, field=field, value=value)
+        #
         # field = RecordEncryptedStandardField.objects.get(template=template, name='Phone')
         # if old_record.client.phone_number:
         #     RecordEncryptedStandardEntry.objects.create(record=record, field=field, text=old_record.client.phone_number)
@@ -250,17 +250,17 @@ def test_record(record):
     #     entry = RecordEncryptedStandardEntry.objects.get(record=new_record, field=field)
     #     assert old_record.client.name == entry.text, '{} != {}'.format(old_record.client.name, entry.text)
     # #
-    # field = RecordStandardField.objects.get(template=template, name='Birthday')
-    # if old_record.client.birthday:
-    #     entry = RecordStandardEntry.objects.get(record=new_record, field=field)
-    #     assert str(old_record.client.birthday) == entry.text, '{} != {}'.format(old_record.client.birthday,
-    #                                                                              entry.text)
+    field = RecordStandardField.objects.get(template=template, name='Birthday')
+    if old_record.client.birthday:
+        entry = RecordStandardEntry.objects.get(record=new_record, field=field)
+        assert str(old_record.client.birthday) == entry.text, '{} != {}'.format(old_record.client.birthday,
+                                                                                 entry.text)
     # #
-    # field = RecordSelectField.objects.get(template=template, name='Origin Country')
-    # if old_record.client.origin_country:
-    #     entry = RecordSelectEntry.objects.get(record=new_record, field=field)
-    #     assert [str(old_record.client.origin_country.name)] == entry.value, \
-    #         '{} != {}'.format(old_record.client.origin_country, entry.value)
+    field = RecordSelectField.objects.get(template=template, name='Origin Country')
+    if old_record.client.origin_country:
+        entry = RecordSelectEntry.objects.get(record=new_record, field=field)
+        assert [str(old_record.client.origin_country.name)] == entry.value, \
+            '{} != {}'.format(old_record.client.origin_country, entry.value)
     # #
     # field = RecordEncryptedStandardField.objects.get(template=template, name='Phone')
     # if old_record.client.phone_number:

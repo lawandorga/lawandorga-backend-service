@@ -238,6 +238,8 @@ class Record(models.Model):
                     'name': entry.field.name,
                     'order': entry.field.order,
                     'value': entry.get_value(*args, **kwargs),
+                    'field': entry.field.id,
+                    'field_type': entry.field.type
                 }
                 entries.append(data)
         return entries
@@ -321,10 +323,10 @@ class RecordUsersEntry(RecordEntry):
     def get_value(self, *args, **kwargs):
         # this might look weird, but i've done it this way to optimize performance
         # with prefetch related
-        pks = []
+        users = []
         for user in getattr(self, 'users').all():
-            pks.append(user.pk)
-        return pks
+            users.append(user.name)
+        return users
 
 
 class RecordSelectEntry(RecordEntry):
@@ -452,9 +454,6 @@ class RecordEncryptedStandardEntry(RecordEntryEncryptedModelMixin, RecordEntry):
         return 'recordEncryptedStandardEntry: {};'.format(self.pk)
 
     def get_value(self, *args, **kwargs):
-        print(kwargs)
-        print(self)
-        print(self.text)
         if self.encryption_status == 'ENCRYPTED':
             self.decrypt(*args, **kwargs)
         return self.text
