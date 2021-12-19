@@ -1,11 +1,8 @@
-from django.db import transaction
-
 from apps.recordmanagement.models import Record, RecordStandardEntry, RecordStandardField, RecordUsersField, \
-    RecordStateField, \
-    RecordEncryptedStandardField, RecordUsersEntry, RecordStateEntry, RecordEncryptedSelectField, \
-    RecordEncryptedSelectEntry, RecordSelectField, \
+    RecordStateField, RecordEncryptedStandardField, RecordUsersEntry, RecordStateEntry, RecordSelectField, \
     RecordSelectEntry, RecordEncryptedStandardEntry, EncryptedRecord, RecordEncryption, RecordEncryptionNew
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
 
 class Command(BaseCommand):
@@ -34,6 +31,10 @@ def move_record(old_record):
         # create new encryption
         move_encryptions(old_record, record)
         # record entries
+        #
+        field = RecordStandardField.objects.get(template=template, name='Token')
+        if old_record.record_token:
+            RecordStandardEntry.objects.create(record=record, field=field, text=old_record.record_token)
         #
         field = RecordStandardField.objects.get(template=template, name='First contact date')
         if old_record.first_contact_date:
@@ -168,8 +169,10 @@ def test_record(record):
     field = RecordUsersField.objects.get(template=template, name='Consultants')
     if old_record.working_on_record:
         entry = RecordUsersEntry.objects.get(record=new_record, field=field)
-        assert list(old_record.working_on_record.values_list('pk', flat=True)) == entry.get_value(), \
-            '{} != {}'.format(list(old_record.working_on_record.values_list('pk', flat=True)), entry.get_value())
+        assert list(old_record.working_on_record.values_list('pk', flat=True)) == list(
+            entry.users.values_list('pk', flat=True)), \
+            '{} != {}'.format(list(old_record.working_on_record.values_list('pk', flat=True)),
+                              list(entry.users.values_list('pk', flat=True)))
     #
     field = RecordSelectField.objects.get(template=template, name='Tags')
     if old_record.tags.values_list('name', flat=True):
@@ -254,7 +257,7 @@ def test_record(record):
     if old_record.client.birthday:
         entry = RecordStandardEntry.objects.get(record=new_record, field=field)
         assert str(old_record.client.birthday) == entry.text, '{} != {}'.format(old_record.client.birthday,
-                                                                                 entry.text)
+                                                                                entry.text)
     # #
     field = RecordSelectField.objects.get(template=template, name='Origin Country')
     if old_record.client.origin_country:

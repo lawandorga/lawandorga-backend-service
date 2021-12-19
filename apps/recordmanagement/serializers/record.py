@@ -213,6 +213,7 @@ class RecordSerializer(serializers.ModelSerializer):
 class RecordListSerializer(RecordSerializer):
     entries = serializers.SerializerMethodField()
     access = serializers.SerializerMethodField()
+    show = serializers.SerializerMethodField()
 
     def get_entries(self, obj):
         return obj.get_unencrypted_entries()
@@ -222,6 +223,9 @@ class RecordListSerializer(RecordSerializer):
             if enc.user_id == self.context['request'].user.id:
                 return True
         return False
+
+    def get_show(self, obj):
+        return obj.template.show
 
 
 class RecordDetailSerializer(RecordSerializer):

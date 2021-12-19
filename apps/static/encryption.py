@@ -205,7 +205,7 @@ class RSAEncryption:
 class EncryptedModelMixin(object):
     encrypted_fields = []
     encryption_class = RSAEncryption
-    encryption_status = 'ENCRYPTED'
+    encryption_status = None
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None

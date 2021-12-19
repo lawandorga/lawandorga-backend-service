@@ -268,7 +268,7 @@ class RecordStateEntryViewSetWorking(RecordEntryViewSetWorking):
         self.assertEqual(entry.state, "Closed")
 
 
-class RecordMultipleEntryViewSetWorking(RecordEntryViewSetWorking):
+class RecordSelectEntryViewSetWorking(RecordEntryViewSetWorking):
     view = RecordSelectEntryViewSet
     model = RecordSelectEntry
     field = RecordSelectField
@@ -310,7 +310,7 @@ class RecordMultipleEntryViewSetWorking(RecordEntryViewSetWorking):
         self.assertEqual(entry.value, ["Option 2"])
 
 
-class RecordSelectEntryViewSetWorking(RecordEntryViewSetWorking):
+class RecordEncryptedSelectEntryViewSetWorking(RecordEntryViewSetWorking):
     view = RecordEncryptedSelectEntryViewSet
 
     def setUp(self):

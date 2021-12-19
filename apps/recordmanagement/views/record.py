@@ -1,19 +1,15 @@
-from django.db.models import Prefetch
-
 from apps.recordmanagement.serializers.record import RecordTemplateSerializer, RecordEncryptedStandardFieldSerializer, \
     RecordFieldSerializer, RecordSerializer, RecordEncryptedStandardEntrySerializer, RecordStandardEntrySerializer, \
     RecordEncryptedFileEntrySerializer, RecordStandardFieldSerializer, RecordEncryptedFileFieldSerializer, \
-    RecordEncryptedSelectFieldSerializer, \
-    RecordEncryptedSelectEntrySerializer, RecordUsersFieldSerializer, RecordUsersEntrySerializer, \
-    RecordStateFieldSerializer, \
+    RecordEncryptedSelectFieldSerializer, RecordEncryptedSelectEntrySerializer, RecordUsersFieldSerializer, \
+    RecordUsersEntrySerializer, RecordStateFieldSerializer, \
     RecordStateEntrySerializer, RecordSelectEntrySerializer, RecordSelectFieldSerializer, RecordListSerializer, \
     RecordDetailSerializer
 from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedStandardField, Record, \
     RecordEncryptionNew, RecordEncryptedStandardEntry, RecordStandardEntry, RecordEncryptedFileEntry, \
     RecordStandardField, RecordEncryptedFileField, \
     RecordEncryptedSelectField, RecordEncryptedSelectEntry, RecordUsersField, RecordUsersEntry, RecordStateField, \
-    RecordStateEntry, \
-    RecordSelectEntry, RecordSelectField
+    RecordStateEntry, RecordSelectEntry, RecordSelectField
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
@@ -127,7 +123,7 @@ class RecordViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.D
                 'state_entries', 'select_entries', 'standard_entries', 'users_entries',
                 'state_entries__field', 'select_entries__field', 'standard_entries__field', 'users_entries__field',
                 'users_entries__users', 'encryptions'
-            )
+            ).select_related('template')
         elif self.action in ['retrieve']:
             return Record.objects.filter(template__rlc=self.request.user.rlc).prefetch_related(
                 'state_entries', 'state_entries__field',

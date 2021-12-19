@@ -1,5 +1,5 @@
-from apps.recordmanagement.models import RecordTemplate, RecordStandardField, RecordEncryptedSelectField, RecordEncryptedStandardField, \
-    OriginCountry, RecordUsersField, RecordStateField, RecordSelectField
+from apps.recordmanagement.models import RecordTemplate, RecordStandardField, \
+    RecordEncryptedStandardField, OriginCountry, RecordUsersField, RecordStateField, RecordSelectField
 from django.db import transaction
 
 
@@ -8,14 +8,16 @@ def create_default_record_template(rlc):
         template = RecordTemplate.objects.create(name='Default Record Template', rlc=rlc)
         RecordStandardField.objects.create(template=template, order=10, name='Token')
         RecordStandardField.objects.create(template=template, order=20, name='First contact date', field_type='DATE')
-        RecordStandardField.objects.create(template=template, order=30, name='Last contact date', field_type='DATETIME-LOCAL')
-        RecordStandardField.objects.create(template=template, order=40, name='First consultation', field_type='DATETIME-LOCAL')
+        RecordStandardField.objects.create(template=template, order=30, name='Last contact date',
+                                           field_type='DATETIME-LOCAL')
+        RecordStandardField.objects.create(template=template, order=40, name='First consultation',
+                                           field_type='DATETIME-LOCAL')
         RecordStandardField.objects.create(template=template, order=50, name='Official Note')
         RecordUsersField.objects.create(template=template, order=60, name='Consultants')
         options = list(rlc.tags.values_list('name', flat=True))
         if not options:
             options = []
-        RecordSelectField.objects.create(template=template, order=70, name='Tags', options=options)
+        RecordSelectField.objects.create(template=template, order=70, name='Tags', options=options, multiple=True)
         options = ['Open', 'Closed', 'Waiting', 'Working']
         RecordStateField.objects.create(template=template, order=80, name='State', states=options)
         RecordEncryptedStandardField.objects.create(template=template, order=90, name='Note')
@@ -34,6 +36,7 @@ def create_default_record_template(rlc):
         options = list(OriginCountry.objects.values_list('name', flat=True))
         if not options:
             options = []
-        RecordSelectField.objects.create(template=template, order=210, name='Origin Country', options=options)
+        RecordSelectField.objects.create(template=template, order=210, name='Origin Country', options=options,
+                                         multiple=False)
         RecordEncryptedStandardField.objects.create(template=template, order=220, name='Phone')
         RecordEncryptedStandardField.objects.create(template=template, order=230, name='Client Note')

@@ -8,11 +8,16 @@ import json
 ###
 # RecordTemplate
 ###
+def get_default_show():
+    return ['Token', 'State', 'Consultants', 'Tags', 'Official Note']
+
+
 class RecordTemplate(models.Model):
     name = models.CharField(max_length=200)
     rlc = models.ForeignKey(Rlc, related_name='recordtemplates', on_delete=models.CASCADE, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    show = models.JSONField(default=get_default_show)
 
     class Meta:
         verbose_name = 'RecordTemplate'
@@ -43,7 +48,6 @@ class RecordTemplate(models.Model):
                 fields.append(data)
         fields = list(sorted(fields, key=lambda i: i['order']))
         return fields
-
 
 
 ###
@@ -92,7 +96,7 @@ class RecordUsersField(RecordField):
 
     @property
     def type(self):
-        return 'select'
+        return 'multiple'
 
     def __str__(self):
         return 'recordUsersField: {}; name: {};'.format(self.pk, self.name)
@@ -113,7 +117,9 @@ class RecordSelectField(RecordField):
 
     @property
     def type(self):
-        return 'multiple'
+        if self.multiple:
+            return 'multiple'
+        return 'select'
 
     def __str__(self):
         return 'recordSelectField: {}; name: {};'.format(self.pk, self.name)
@@ -130,6 +136,8 @@ class RecordEncryptedSelectField(RecordField):
 
     @property
     def type(self):
+        if self.multiple:
+            return 'multiple'
         return 'select'
 
     def __str__(self):
@@ -230,7 +238,7 @@ class Record(models.Model):
         # with prefetch related
         # and watch out this expects a self from a query which has prefetched
         # all the relevant unencrypted entries otherwise the queries explode
-        entries = []
+        entries = {}
         for entry_type in entry_types:
             for entry in getattr(self, entry_type).all():
                 data = {
@@ -241,7 +249,8 @@ class Record(models.Model):
                     'field': entry.field.id,
                     'field_type': entry.field.type
                 }
-                entries.append(data)
+                entries[entry.field.name] = data
+        entries = dict(sorted(entries.items(), key=lambda item: item[1]['order']))
         return entries
 
     def get_unencrypted_entries(self):
@@ -343,6 +352,9 @@ class RecordSelectEntry(RecordEntry):
         return 'recordSelectEntry: {};'.format(self.pk)
 
     def get_value(self, *args, **kwargs):
+        print(self.field.multiple)
+        if not self.field.multiple:
+            return self.value[0]
         return self.value
 
 
