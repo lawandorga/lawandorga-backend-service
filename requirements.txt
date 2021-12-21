@@ -1,7 +1,7 @@
 asgiref==3.4.1
 autopep8==1.6.0
 cryptography==36.0.1
-Django==3.2.9
+Django==3.2.10
 django-cors-headers==3.10.1
 django-debug-toolbar==3.2.4
 django-model-utils==4.2.0
