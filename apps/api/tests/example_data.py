@@ -206,7 +206,7 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
     # main user
     user = UserProfile.objects.create(
         name="Mr Dummy",
-        email="dummy@rlcm.de",
+        email="dummy@law-orga.de",
         rlc=rlc,
     )
     user.set_password(dummy_password)
@@ -243,7 +243,7 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
 def create_inactive_user(rlc):
     user = UserProfile(
         name="Mr. Inactive",
-        email="inactive@rlcm.de",
+        email="inactive@law-orga.de",
         rlc=rlc,
     )
     user.set_password("qwe123")
