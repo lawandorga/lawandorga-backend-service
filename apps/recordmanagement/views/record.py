@@ -4,7 +4,7 @@ from apps.recordmanagement.serializers.record import RecordTemplateSerializer, R
     RecordEncryptedSelectFieldSerializer, RecordEncryptedSelectEntrySerializer, RecordUsersFieldSerializer, \
     RecordUsersEntrySerializer, RecordStateFieldSerializer, \
     RecordStateEntrySerializer, RecordSelectEntrySerializer, RecordSelectFieldSerializer, RecordListSerializer, \
-    RecordDetailSerializer
+    RecordDetailSerializer, RecordCreateSerializer
 from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedStandardField, Record, \
     RecordEncryptionNew, RecordEncryptedStandardEntry, RecordStandardEntry, RecordEncryptedFileEntry, \
     RecordStandardField, RecordEncryptedFileField, \
@@ -115,6 +115,8 @@ class RecordViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.D
             return RecordListSerializer
         elif self.action in ['retrieve']:
             return RecordDetailSerializer
+        elif self.action in ['create']:
+            return RecordCreateSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):

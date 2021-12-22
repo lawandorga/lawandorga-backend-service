@@ -228,10 +228,15 @@ class RecordListSerializer(RecordSerializer):
         return obj.template.show
 
 
+class RecordCreateSerializer(RecordListSerializer):
+    pass
+
+
 class RecordDetailSerializer(RecordSerializer):
     entries = serializers.SerializerMethodField()
     form = serializers.SerializerMethodField()
     client = serializers.SerializerMethodField()
+    url = serializers.HyperlinkedIdentityField(view_name='record-detail')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

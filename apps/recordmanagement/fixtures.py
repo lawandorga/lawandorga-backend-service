@@ -20,17 +20,21 @@ def create_default_record_template(rlc):
         RecordSelectField.objects.create(template=template, order=70, name='Tags', options=options, multiple=True)
         options = ['Open', 'Closed', 'Waiting', 'Working']
         RecordStateField.objects.create(template=template, order=80, name='State', states=options)
-        RecordEncryptedStandardField.objects.create(template=template, order=90, name='Note')
+        RecordEncryptedStandardField.objects.create(template=template, order=90, name='Note', field_type='TEXTAREA')
         RecordEncryptedStandardField.objects.create(template=template, order=100, name='Consultant Team')
         RecordEncryptedStandardField.objects.create(template=template, order=110, name='Lawyer')
         RecordEncryptedStandardField.objects.create(template=template, order=120, name='Related Persons')
         RecordEncryptedStandardField.objects.create(template=template, order=130, name='Contact')
         RecordEncryptedStandardField.objects.create(template=template, order=140, name='BAMF Token')
         RecordEncryptedStandardField.objects.create(template=template, order=145, name='Circumstances')
-        RecordEncryptedStandardField.objects.create(template=template, order=150, name='First Correspondence')
-        RecordEncryptedStandardField.objects.create(template=template, order=160, name='Next Steps')
-        RecordEncryptedStandardField.objects.create(template=template, order=170, name='Status described')
-        RecordEncryptedStandardField.objects.create(template=template, order=180, name='Additional facts')
+        RecordEncryptedStandardField.objects.create(template=template, order=150, name='First Correspondence',
+                                                    field_type='TEXTAREA')
+        RecordEncryptedStandardField.objects.create(template=template, order=160, name='Next Steps',
+                                                    field_type='TEXTAREA')
+        RecordEncryptedStandardField.objects.create(template=template, order=170, name='Status described',
+                                                    field_type='TEXTAREA')
+        RecordEncryptedStandardField.objects.create(template=template, order=180, name='Additional facts',
+                                                    field_type='TEXTAREA')
         RecordEncryptedStandardField.objects.create(template=template, order=190, name='Client name')
         RecordStandardField.objects.create(template=template, order=200, name='Birthday', field_type='DATE')
         options = list(OriginCountry.objects.values_list('name', flat=True))

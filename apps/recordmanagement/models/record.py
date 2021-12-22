@@ -1,5 +1,6 @@
 from apps.recordmanagement.models import EncryptedRecord, EncryptedClient
 from apps.static.encryption import EncryptedModelMixin, AESEncryption, RSAEncryption
+from rest_framework.reverse import reverse
 from apps.api.models import Rlc, UserProfile
 from django.db import models
 import json
@@ -43,7 +44,10 @@ class RecordTemplate(models.Model):
                     'name': field.name,
                     'order': field.order,
                     'type': field.type,
-                    'options': getattr(field, 'options', None)
+                    'options': getattr(field, 'options', None),
+                    'url': reverse('record{}-list'.format(
+                        field_type.replace('_', '').replace('fields', 'entry'))
+                    ).replace('/api', '')
                 }
                 fields.append(data)
         fields = list(sorted(fields, key=lambda i: i['order']))
@@ -103,7 +107,7 @@ class RecordUsersField(RecordField):
 
     @property
     def options(self):
-        return [{'name': i[0], 'value': i[1]} for i in self.template.rlc.rlc_members.values_list('name', 'pk')]
+        return [{'name': i[0], 'id': i[1]} for i in self.template.rlc.rlc_members.values_list('name', 'pk')]
 
 
 class RecordSelectField(RecordField):
@@ -247,7 +251,9 @@ class Record(models.Model):
                     'order': entry.field.order,
                     'value': entry.get_value(*args, **kwargs),
                     'field': entry.field.id,
-                    'field_type': entry.field.type
+                    'field_type': entry.field.type,
+                    'url': reverse('record{}-detail'.format(entry_type.replace('_', '').replace('entries', 'entry')),
+                                   args=[entry.pk]).replace('/api', '')
                 }
                 entries[entry.field.name] = data
         entries = dict(sorted(entries.items(), key=lambda item: item[1]['order']))
@@ -352,7 +358,6 @@ class RecordSelectEntry(RecordEntry):
         return 'recordSelectEntry: {};'.format(self.pk)
 
     def get_value(self, *args, **kwargs):
-        print(self.field.multiple)
         if not self.field.multiple:
             return self.value[0]
         return self.value
@@ -466,7 +471,7 @@ class RecordEncryptedStandardEntry(RecordEntryEncryptedModelMixin, RecordEntry):
         return 'recordEncryptedStandardEntry: {};'.format(self.pk)
 
     def get_value(self, *args, **kwargs):
-        if self.encryption_status == 'ENCRYPTED':
+        if self.encryption_status == 'ENCRYPTED' or self.encryption_status is None:
             self.decrypt(*args, **kwargs)
         return self.text
 
