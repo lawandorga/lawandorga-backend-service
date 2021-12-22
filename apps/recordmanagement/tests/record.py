@@ -9,21 +9,25 @@ from django.test import TestCase
 ###
 # General
 ###
-class RecordViewSetsWorking(TestCase):
+class BaseRecord:
     def setUp(self):
         self.factory = APIRequestFactory()
         self.rlc = Rlc.objects.create(name="Test RLC")
-        self.user = UserProfile.objects.create(email='dummy@rlcm.de', name='Dummy 1', rlc=self.rlc)
+        self.user = UserProfile.objects.create(email='dummy@law-orga.de', name='Dummy 1', rlc=self.rlc)
         self.user.set_password(settings.DUMMY_USER_PASSWORD)
         self.user.save()
         self.rlc_user = RlcUser.objects.create(user=self.user, email_confirmed=True, accepted=True)
+        self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
 
 
 ###
 # Template
 ###
-class RecordTemplateViewSetWorking(RecordViewSetsWorking):
+class RecordTemplateViewSetWorking(BaseRecord, TestCase):
     def setup_record_template(self):
+        self.record_template = RecordTemplate.objects.create(name='RecordTemplate 121', rlc=self.rlc)
+
+    def test_record_template_create(self):
         view = RecordTemplateViewSet.as_view(actions={'post': 'create'})
         data = {
             'name': 'RecordTemplate 121',
@@ -31,11 +35,6 @@ class RecordTemplateViewSetWorking(RecordViewSetsWorking):
         request = self.factory.post('', data)
         force_authenticate(request, self.user)
         response = view(request)
-        self.record_template = RecordTemplate.objects.get(name='RecordTemplate 121')
-        return response
-
-    def test_record_template_create(self):
-        response = self.setup_record_template()
         self.assertEqual(response.status_code, 201)
         self.assertGreater(RecordTemplate.objects.count(), 0)
 
@@ -44,9 +43,9 @@ class RecordTemplateViewSetWorking(RecordViewSetsWorking):
         view = RecordTemplateViewSet.as_view(actions={'delete': 'destroy'})
         request = self.factory.delete('')
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.record_template.pk)
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(RecordTemplate.objects.count(), 0)
+        self.assertEqual(RecordTemplate.objects.filter(name='RecordTemplate 121').count(), 0)
 
     def test_record_template_update(self):
         self.setup_record_template()
@@ -56,7 +55,7 @@ class RecordTemplateViewSetWorking(RecordViewSetsWorking):
         }
         request = self.factory.patch('', data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.record_template.pk)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(RecordTemplate.objects.filter(name='RecordTemplate 145').count(), 1)
 
@@ -70,7 +69,7 @@ pass
 ###
 # Record
 ###
-class RecordViewSetWorking(RecordViewSetsWorking):
+class RecordViewSetWorking(BaseRecord, TestCase):
     def setUp(self):
         super().setUp()
         self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')

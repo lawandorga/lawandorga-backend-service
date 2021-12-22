@@ -2,15 +2,20 @@ from apps.recordmanagement.models import RecordTemplate, RecordEncryptedStandard
     RecordEncryptedSelectField, RecordUsersField, RecordStateField, RecordSelectField
 from apps.recordmanagement.views import RecordEncryptedStandardFieldViewSet, RecordStandardFieldViewSet, RecordEncryptedFileFieldViewSet, \
     RecordEncryptedSelectFieldViewSet, RecordUsersFieldViewSet, RecordStateFieldViewSet, RecordSelectFieldViewSet
-from apps.recordmanagement.tests import RecordViewSetsWorking
+from apps.recordmanagement.tests import BaseRecord
 from rest_framework.test import force_authenticate
+from django.test import TestCase
 import json
 
 
 ###
 # Base
 ###
-class RecordFieldViewSetWorking(RecordViewSetsWorking):
+class BaseRecordField(BaseRecord):
+    pass
+
+
+class GenericRecordField(BaseRecordField):
     view = None
     model = None
     # create
@@ -73,11 +78,7 @@ class RecordFieldViewSetWorking(RecordViewSetsWorking):
 ###
 # Fields
 ###
-class RecordStandardFieldViewSetWorking(RecordViewSetsWorking):
-    def setUp(self):
-        super().setUp()
-        self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
-
+class RecordStandardFieldViewSetWorking(BaseRecordField, TestCase):
     def setup_field(self):
         self.field = RecordStandardField.objects.create(name='TextField 234', template=self.template)
 
@@ -115,11 +116,7 @@ class RecordStandardFieldViewSetWorking(RecordViewSetsWorking):
         self.assertEqual(RecordStandardField.objects.filter(name='Field 235').count(), 1)
 
 
-class RecordEncryptedStandardFieldViewSetWorking(RecordViewSetsWorking):
-    def setUp(self):
-        super().setUp()
-        self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
-
+class RecordEncryptedStandardFieldViewSetWorking(BaseRecordField, TestCase):
     def setup_field(self):
         self.text_field = RecordEncryptedStandardField.objects.create(name='TextField 234', field_type='TEXT',
                                                                       template=self.template)
@@ -159,11 +156,7 @@ class RecordEncryptedStandardFieldViewSetWorking(RecordViewSetsWorking):
         self.assertEqual(RecordEncryptedStandardField.objects.filter(name='Field 235').count(), 1)
 
 
-class RecordUsersFieldViewSetWorking(RecordViewSetsWorking):
-    def setUp(self):
-        super().setUp()
-        self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
-
+class RecordUsersFieldViewSetWorking(BaseRecordField, TestCase):
     def setup_field(self):
         self.field = RecordUsersField.objects.create(name='Field 234', template=self.template)
 
@@ -201,11 +194,7 @@ class RecordUsersFieldViewSetWorking(RecordViewSetsWorking):
         self.assertEqual(RecordUsersField.objects.filter(name='Field 235').count(), 1)
 
 
-class RecordEncryptedFileFieldViewSetWorking(RecordViewSetsWorking):
-    def setUp(self):
-        super().setUp()
-        self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
-
+class RecordEncryptedFileFieldViewSetWorking(BaseRecordField, TestCase):
     def setup_field(self):
         self.field = RecordEncryptedFileField.objects.create(name='Field 234', template=self.template)
 
@@ -243,11 +232,7 @@ class RecordEncryptedFileFieldViewSetWorking(RecordViewSetsWorking):
         self.assertEqual(RecordEncryptedFileField.objects.filter(name='Field 235').count(), 1)
 
 
-class RecordEncryptedSelectFieldViewSetWorking(RecordViewSetsWorking):
-    def setUp(self):
-        super().setUp()
-        self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
-
+class RecordEncryptedSelectFieldViewSetWorking(BaseRecordField, TestCase):
     def setup_field(self):
         self.field = RecordEncryptedSelectField.objects.create(name='Field 234', template=self.template,
                                                                options=['Option 1', 'Option 3'])
@@ -289,7 +274,7 @@ class RecordEncryptedSelectFieldViewSetWorking(RecordViewSetsWorking):
         self.assertEqual(RecordEncryptedSelectField.objects.last().options, ['Option 3', 'Option 4'])
 
 
-class RecordStateFieldViewSetWorking(RecordFieldViewSetWorking):
+class RecordStateFieldViewSetWorking(GenericRecordField, TestCase):
     model = RecordStateField
     view = RecordStateFieldViewSet
     # create
@@ -317,7 +302,7 @@ class RecordStateFieldViewSetWorking(RecordFieldViewSetWorking):
         }
 
 
-class RecordSelectFieldViewSetWorking(RecordFieldViewSetWorking):
+class RecordSelectFieldViewSetWorking(GenericRecordField, TestCase):
     model = RecordSelectField
     view = RecordSelectFieldViewSet
     # create
@@ -335,11 +320,11 @@ class RecordSelectFieldViewSetWorking(RecordFieldViewSetWorking):
     }
 
     def setup_field(self):
-        self.field = RecordStateField.objects.create(template=self.template, states=['Option 5', 'Option 4'])
+        self.field = RecordSelectField.objects.create(template=self.template, options=['Option 5', 'Option 4'])
 
     def get_create_data(self):
         return {
             'name': 'Field',
             'template': self.template.pk,
-            'states': json.dumps(self.create_options)
+            'options': json.dumps(self.create_options)
         }

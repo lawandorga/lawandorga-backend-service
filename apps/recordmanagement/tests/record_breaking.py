@@ -1,17 +1,20 @@
-from apps.recordmanagement.tests.record_entries import RecordEntryViewSetWorkingBase
-from apps.recordmanagement.tests.record import RecordViewSetWorking
-from apps.recordmanagement.models import RecordEncryptedSelectField, RecordEncryptedSelectEntry, RecordStateField, RecordStateEntry, \
-    RecordSelectField, RecordSelectEntry
-from apps.recordmanagement.views import RecordEncryptedSelectEntryViewSet, RecordStateFieldViewSet, RecordStateEntryViewSet, \
-    RecordSelectEntryViewSet
+from apps.recordmanagement.tests.record_entries import BaseRecordEntry
+from apps.recordmanagement.tests.record import BaseRecord
+from apps.recordmanagement.models import RecordEncryptedSelectField, RecordEncryptedSelectEntry, RecordStateField, \
+    RecordStateEntry, \
+    RecordSelectField, RecordSelectEntry, RecordEncryptedStandardField, RecordEncryptedStandardEntry
+from apps.recordmanagement.views import RecordEncryptedSelectEntryViewSet, RecordStateFieldViewSet, \
+    RecordStateEntryViewSet, \
+    RecordSelectEntryViewSet, RecordEncryptedStandardEntryViewSet
 from rest_framework.test import force_authenticate
+from django.test import TestCase
 import json
 
 
 ###
 # Fields
 ###
-class RecordStateFieldViewSetErrors(RecordViewSetWorking):
+class RecordStateFieldViewSetErrors(BaseRecord, TestCase):
     def setup_field(self):
         self.field = RecordStateField.objects.create(template=self.template, states=['Closed', 'Option 2'])
 
@@ -44,9 +47,10 @@ class RecordStateFieldViewSetErrors(RecordViewSetWorking):
 ###
 # Entries
 ###
-class RecordeStateEntryViewSetErrors(RecordEntryViewSetWorkingBase):
+class RecordStateEntryViewSetErrors(BaseRecordEntry, TestCase):
     def setUp(self):
         super().setUp()
+        RecordStateField.objects.all().delete()
         self.field = RecordStateField.objects.create(template=self.template, states=['Closed', 'Option 1'])
 
     def setup_entry(self):
@@ -64,7 +68,34 @@ class RecordeStateEntryViewSetErrors(RecordEntryViewSetWorkingBase):
         self.assertContains(response, 'state', status_code=400)
 
 
-class RecordeSelectEntryViewSetErrors(RecordEntryViewSetWorkingBase):
+class RecordEncryptedStandardEntryViewSetErrors(BaseRecordEntry, TestCase):
+    def setUp(self):
+        super().setUp()
+        self.field = RecordEncryptedStandardField.objects.create(template=self.template)
+
+    def setup_entry(self):
+        self.entry = RecordEncryptedStandardEntry(record=self.record, field=self.field, value='Test Text')
+        self.entry.encrypt(aes_key_record=self.aes_key_record)
+        self.entry.save()
+        self.entry.decrypt(aes_key_record=self.aes_key_record)
+
+    def test_weird_values_work_on_update(self):
+        self.setup_entry()
+        view = RecordEncryptedStandardEntryViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {
+            'url': 'whatever should be ignored',
+            'value': json.dumps({"isTrusted": True}),
+        }
+        request = self.factory.patch('', data=data, format='json')
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+        entry = RecordEncryptedStandardEntry.objects.first()
+        entry.decrypt(aes_key_record=self.aes_key_record)
+        self.assertEqual(entry.value, json.dumps({"isTrusted": True}))
+
+
+class RecordeSelectEntryViewSetErrors(BaseRecordEntry, TestCase):
     def setUp(self):
         super().setUp()
         self.field = RecordSelectField.objects.create(template=self.template, options=['Option 2', 'Option 1'])
@@ -121,7 +152,7 @@ class RecordeSelectEntryViewSetErrors(RecordEntryViewSetWorkingBase):
         self.assertEqual(response.status_code, 200)
 
 
-class RecordEncryptedSelectEntryViewSetErrors(RecordEntryViewSetWorkingBase):
+class RecordEncryptedSelectEntryViewSetErrors(BaseRecordEntry, TestCase):
     def setUp(self):
         super().setUp()
         self.field = RecordEncryptedSelectField.objects.create(template=self.template, options=['Option 1', 'Option 2'])

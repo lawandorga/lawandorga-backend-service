@@ -3,13 +3,14 @@ from apps.recordmanagement.models import RecordTemplate, RecordEncryptedStandard
     RecordEncryptedStandardEntry, RecordStandardField, RecordStandardEntry, RecordEncryptedFileField, RecordEncryptedFileEntry, \
     RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry, RecordSelectField, RecordSelectEntry, \
     RecordEncryptedSelectEntry, RecordEncryptedSelectField
-from apps.recordmanagement.tests import RecordViewSetsWorking
+from apps.recordmanagement.tests import BaseRecord
 from apps.recordmanagement.views import RecordEncryptedStandardEntryViewSet, RecordStandardEntryViewSet, RecordEncryptedFileEntryViewSet, \
     RecordUsersEntryViewSet, RecordStateEntryViewSet, RecordSelectEntryViewSet, RecordEncryptedSelectEntryViewSet
 from apps.static.encryption import AESEncryption
 from rest_framework.test import force_authenticate
 from apps.api.models import UserProfile
 from django.conf import settings
+from django.test import TestCase
 import json
 import sys
 import io
@@ -18,7 +19,7 @@ import io
 ###
 # Base
 ###
-class RecordEntryViewSetWorkingBase(RecordViewSetsWorking):
+class BaseRecordEntry(BaseRecord):
     def setUp(self):
         super().setUp()
         self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
@@ -30,7 +31,7 @@ class RecordEntryViewSetWorkingBase(RecordViewSetsWorking):
         encryption.save()
 
 
-class RecordEntryViewSetWorking(RecordEntryViewSetWorkingBase):
+class GenericRecordEntry(BaseRecordEntry):
     view = None
 
     def setup_entry(self):
@@ -48,7 +49,7 @@ class RecordEntryViewSetWorking(RecordEntryViewSetWorkingBase):
 ###
 # Entries
 ###
-class RecordFileEntryViewSetWorking(RecordEntryViewSetWorking):
+class RecordFileEntryViewSetWorking(GenericRecordEntry, TestCase):
     view = RecordEncryptedFileEntryViewSet
 
     def setUp(self):
@@ -103,7 +104,7 @@ class RecordFileEntryViewSetWorking(RecordEntryViewSetWorking):
         entry.delete()
 
 
-class RecordMetaEntryViewSetWorking(RecordEntryViewSetWorking):
+class RecordMetaEntryViewSetWorking(GenericRecordEntry, TestCase):
     view = RecordStandardEntryViewSet
 
     def setUp(self):
@@ -141,7 +142,7 @@ class RecordMetaEntryViewSetWorking(RecordEntryViewSetWorking):
         self.assertEqual(entry.text, 'Hallo 2')
 
 
-class RecordUsersEntryViewSetWorking(RecordEntryViewSetWorking):
+class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
     view = RecordUsersEntryViewSet
 
     def setUp(self):
@@ -183,7 +184,7 @@ class RecordUsersEntryViewSetWorking(RecordEntryViewSetWorking):
         self.assertEqual(entry.users.all().count(), UserProfile.objects.none().count())
 
 
-class RecordTextEntryViewSetWorking(RecordEntryViewSetWorking):
+class RecordEncryptedStandardEntryViewSetWorking(GenericRecordEntry, TestCase):
     view = RecordEncryptedStandardEntryViewSet
 
     def setUp(self):
@@ -191,14 +192,14 @@ class RecordTextEntryViewSetWorking(RecordEntryViewSetWorking):
         self.field = RecordEncryptedStandardField.objects.create(template=self.template)
 
     def setup_entry(self):
-        self.entry = RecordEncryptedStandardEntry.objects.create(record=self.record, field=self.field, text=b'')
+        self.entry = RecordEncryptedStandardEntry.objects.create(record=self.record, field=self.field, value=b'')
 
     def test_entry_create(self):
         view = RecordEncryptedStandardEntryViewSet.as_view(actions={'post': 'create'})
         data = {
             'record': self.record.pk,
             'field': self.field.pk,
-            'text': 'Hallo',
+            'value': 'Hallo',
         }
         request = self.factory.post('', data)
         force_authenticate(request, self.user)
@@ -206,29 +207,29 @@ class RecordTextEntryViewSetWorking(RecordEntryViewSetWorking):
         self.assertEqual(response.status_code, 201)
         self.assertTrue(RecordEncryptedStandardEntry.objects.count(), 1)
         entry = RecordEncryptedStandardEntry.objects.first()
-        self.assertNotEqual(entry.text, 'Hallo')
+        self.assertNotEqual(entry.value, 'Hallo')
         private_key_user = self.user.get_private_key(password_user=settings.DUMMY_USER_PASSWORD)
         entry.decrypt(user=self.user, private_key_user=private_key_user)
-        self.assertEqual(entry.text, 'Hallo')
+        self.assertEqual(entry.value, 'Hallo')
 
     def test_entry_update(self):
         self.setup_entry()
         view = RecordEncryptedStandardEntryViewSet.as_view(actions={'patch': 'partial_update'})
         data = {
-            'text': 'Hallo 2'
+            'value': 'Hallo 2'
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 200)
         entry = RecordEncryptedStandardEntry.objects.first()
-        self.assertNotEqual(entry.text, 'Hallo 2')
+        self.assertNotEqual(entry.value, 'Hallo 2')
         private_key_user = self.user.get_private_key(password_user=settings.DUMMY_USER_PASSWORD)
         entry.decrypt(user=self.user, private_key_user=private_key_user)
-        self.assertEqual(entry.text, 'Hallo 2')
+        self.assertEqual(entry.value, 'Hallo 2')
 
 
-class RecordStateEntryViewSetWorking(RecordEntryViewSetWorking):
+class RecordStateEntryViewSetWorking(GenericRecordEntry, TestCase):
     view = RecordStateEntryViewSet
 
     def setUp(self):
@@ -243,7 +244,7 @@ class RecordStateEntryViewSetWorking(RecordEntryViewSetWorking):
         data = {
             'record': self.record.pk,
             'field': self.field.pk,
-            'state': 'Option 1',
+            'state': 'Option 2',
         }
         request = self.factory.post('', data)
         force_authenticate(request, self.user)
@@ -251,7 +252,7 @@ class RecordStateEntryViewSetWorking(RecordEntryViewSetWorking):
         self.assertEqual(response.status_code, 201)
         self.assertTrue(RecordStateEntry.objects.count(), 1)
         entry = RecordStateEntry.objects.first()
-        self.assertEqual(entry.state, "Option 1")
+        self.assertEqual(entry.state, "Option 2")
 
     def test_entry_update(self):
         self.setup_entry()
@@ -268,7 +269,7 @@ class RecordStateEntryViewSetWorking(RecordEntryViewSetWorking):
         self.assertEqual(entry.state, "Closed")
 
 
-class RecordSelectEntryViewSetWorking(RecordEntryViewSetWorking):
+class RecordSelectEntryViewSetWorking(GenericRecordEntry, TestCase):
     view = RecordSelectEntryViewSet
     model = RecordSelectEntry
     field = RecordSelectField
@@ -310,7 +311,7 @@ class RecordSelectEntryViewSetWorking(RecordEntryViewSetWorking):
         self.assertEqual(entry.value, ["Option 2"])
 
 
-class RecordEncryptedSelectEntryViewSetWorking(RecordEntryViewSetWorking):
+class RecordEncryptedSelectEntryViewSetWorking(GenericRecordEntry, TestCase):
     view = RecordEncryptedSelectEntryViewSet
 
     def setUp(self):

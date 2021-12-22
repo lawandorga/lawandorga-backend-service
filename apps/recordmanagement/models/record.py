@@ -456,11 +456,11 @@ class RecordStandardEntry(RecordEntry):
 class RecordEncryptedStandardEntry(RecordEntryEncryptedModelMixin, RecordEntry):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='encrypted_standard_entries')
     field = models.ForeignKey(RecordEncryptedStandardField, related_name='entries', on_delete=models.PROTECT)
-    text = models.BinaryField()
+    value = models.BinaryField()
 
     # encryption
     encryption_class = AESEncryption
-    encrypted_fields = ['text']
+    encrypted_fields = ['value']
 
     class Meta:
         unique_together = ['record', 'field']
@@ -473,7 +473,7 @@ class RecordEncryptedStandardEntry(RecordEntryEncryptedModelMixin, RecordEntry):
     def get_value(self, *args, **kwargs):
         if self.encryption_status == 'ENCRYPTED' or self.encryption_status is None:
             self.decrypt(*args, **kwargs)
-        return self.text
+        return self.value
 
 
 ###

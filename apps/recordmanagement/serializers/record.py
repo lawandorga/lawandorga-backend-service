@@ -152,7 +152,7 @@ class RecordStateEntrySerializer(serializers.ModelSerializer):
 
 
 class RecordEncryptedStandardEntrySerializer(serializers.ModelSerializer):
-    text = serializers.CharField()
+    value = serializers.CharField()
 
     class Meta:
         model = RecordEncryptedStandardEntry
@@ -234,7 +234,7 @@ class RecordCreateSerializer(RecordListSerializer):
 
 class RecordDetailSerializer(RecordSerializer):
     entries = serializers.SerializerMethodField()
-    form = serializers.SerializerMethodField()
+    fields = serializers.SerializerMethodField(method_name='get_form_fields')
     client = serializers.SerializerMethodField()
     url = serializers.HyperlinkedIdentityField(view_name='record-detail')
 
@@ -252,7 +252,7 @@ class RecordDetailSerializer(RecordSerializer):
             raise ParseError('No encryption keys were found to decrypt this record.')
         return obj.get_all_entries(aes_key_record=aes_key_record)
 
-    def get_form(self, obj):
+    def get_form_fields(self, obj):
         template = obj.template
         return template.get_fields()
 
