@@ -96,6 +96,17 @@ class RecordEncryptedSelectFieldSerializer(serializers.ModelSerializer):
 ###
 # Entries
 ###
+class RecordEntrySerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    type = serializers.SerializerMethodField()
+
+    def get_name(self, obj):
+        return obj.field.name
+
+    def get_type(self, obj):
+        return obj.field.type
+
+
 class RecordEncryptedFileEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordEncryptedFileEntry
@@ -151,8 +162,9 @@ class RecordStateEntrySerializer(serializers.ModelSerializer):
         return attrs
 
 
-class RecordEncryptedStandardEntrySerializer(serializers.ModelSerializer):
+class RecordEncryptedStandardEntrySerializer(RecordEntrySerializer):
     value = serializers.CharField()
+    url = serializers.HyperlinkedIdentityField(view_name='recordencryptedstandardentry-detail')
 
     class Meta:
         model = RecordEncryptedStandardEntry

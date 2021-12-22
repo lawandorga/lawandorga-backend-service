@@ -238,6 +238,7 @@ class Record(models.Model):
         return self.get_unencrypted_entry_types() + self.get_encrypted_entry_types()
 
     def get_entries(self, entry_types, *args, **kwargs):
+        from apps.recordmanagement.serializers import RecordEncryptedStandardEntrySerializer
         # this might look weird, but i've done it this way to optimize performance
         # with prefetch related
         # and watch out this expects a self from a query which has prefetched
@@ -245,16 +246,20 @@ class Record(models.Model):
         entries = {}
         for entry_type in entry_types:
             for entry in getattr(self, entry_type).all():
-                data = {
-                    'id': entry.pk,
-                    'name': entry.field.name,
-                    'order': entry.field.order,
-                    'value': entry.get_value(*args, **kwargs),
-                    'field': entry.field.id,
-                    'field_type': entry.field.type,
-                    'url': reverse('record{}-detail'.format(entry_type.replace('_', '').replace('entries', 'entry')),
-                                   args=[entry.pk]).replace('/api', '')
-                }
+                if entry_type == 'encrypted_standard_entries':
+                    entry.decrypt(*args, **kwargs)
+                    data = RecordEncryptedStandardEntrySerializer(instance=entry).data
+                else:
+                    data = {
+                        'id': entry.pk,
+                        'name': entry.field.name,
+                        'order': entry.field.order,
+                        'value': entry.get_value(*args, **kwargs),
+                        'field': entry.field.id,
+                        'field_type': entry.field.type,
+                        'url': reverse('record{}-detail'.format(entry_type.replace('_', '').replace('entries', 'entry')),
+                                       args=[entry.pk]).replace('/api', '')
+                    }
                 entries[entry.field.name] = data
         entries = dict(sorted(entries.items(), key=lambda item: item[1]['order']))
         return entries
