@@ -20,7 +20,7 @@ def create_default_record_template(rlc):
             options = []
         RecordMultipleField.objects.create(template=template, order=70, name='Tags', options=options)
         options = ['Open', 'Closed', 'Waiting', 'Working']
-        RecordStateField.objects.create(template=template, order=80, name='State', states=options)
+        RecordStateField.objects.create(template=template, order=80, name='State', options=options)
         RecordEncryptedStandardField.objects.create(template=template, order=90, name='Note', field_type='TEXTAREA')
         RecordEncryptedStandardField.objects.create(template=template, order=100, name='Consultant Team')
         RecordEncryptedStandardField.objects.create(template=template, order=110, name='Lawyer')
@@ -43,4 +43,5 @@ def create_default_record_template(rlc):
             options = []
         RecordSelectField.objects.create(template=template, order=210, name='Origin Country', options=options)
         RecordEncryptedStandardField.objects.create(template=template, order=220, name='Phone')
-        RecordEncryptedStandardField.objects.create(template=template, order=230, name='Client Note')
+        RecordEncryptedStandardField.objects.create(template=template, order=230, name='Client Note',
+                                                    field_type='TEXTAREA')
