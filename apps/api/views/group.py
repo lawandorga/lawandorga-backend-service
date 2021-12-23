@@ -14,23 +14,20 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from rest_framework.exceptions import PermissionDenied
-
 from apps.recordmanagement.models import (
     EncryptedRecord,
     RecordEncryption,
-    Notification,
 )
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from apps.api.serializers import (
     GroupSerializer,
     GroupMembersSerializer,
-    GroupAddMemberSerializer, UserProfileSerializer, OldHasPermissionSerializer, OldHasPermissionNameSerializer,
+    GroupAddMemberSerializer, UserProfileSerializer, OldHasPermissionNameSerializer,
 )
 from rest_framework.request import Request
-from apps.api.errors import CustomError
 from apps.api.models import Group, UserProfile, RlcUser
-from apps.static import error_codes, permissions
+from apps.static import permissions
 from rest_framework import viewsets, status
 
 
@@ -91,9 +88,6 @@ class GroupViewSet(viewsets.ModelViewSet):
 
         # remove the member
         group.group_members.remove(member)
-        Notification.objects.notify_group_member_removed(
-            request.user, member, group
-        )
 
         return Response(status.HTTP_204_NO_CONTENT)
 

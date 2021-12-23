@@ -9,6 +9,7 @@ router.register("record_deletion_requests", EncryptedRecordDeletionRequestViewSe
 router.register("oldrecords", EncryptedRecordViewSet)
 router.register("e_clients", EncryptedClientViewSet)
 router.register('questionnaires', QuestionnaireViewSet)
+router.register('messages', MessageViewSet)
 router.register('record_questionnaires', RecordQuestionnaireViewSet)
 router.register('questionnaire_answers', QuestionnaireAnswersViewSet)
 router.register('questionnaire_fields', QuestionnaireFieldsViewSet)

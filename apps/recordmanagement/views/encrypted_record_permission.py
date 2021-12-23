@@ -1,11 +1,10 @@
-from django.core.exceptions import ObjectDoesNotExist
-
 from apps.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
 from apps.recordmanagement.models.record_encryption import RecordEncryption
 from apps.recordmanagement.serializers import EncryptedRecordPermissionSerializer
 from apps.api.models.notification import Notification
-from rest_framework.exceptions import PermissionDenied, ParseError
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from django.core.exceptions import ObjectDoesNotExist
 from apps.static.encryption import RSAEncryption
 from rest_framework import viewsets, mixins
 from django.utils import timezone
