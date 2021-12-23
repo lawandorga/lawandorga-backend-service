@@ -1,7 +1,10 @@
-from apps.recordmanagement.models import RecordTemplate, RecordEncryptedStandardField, RecordStandardField, RecordEncryptedFileField, \
-    RecordEncryptedSelectField, RecordUsersField, RecordStateField, RecordSelectField
-from apps.recordmanagement.views import RecordEncryptedStandardFieldViewSet, RecordStandardFieldViewSet, RecordEncryptedFileFieldViewSet, \
-    RecordEncryptedSelectFieldViewSet, RecordUsersFieldViewSet, RecordStateFieldViewSet, RecordSelectFieldViewSet
+from apps.recordmanagement.models import RecordTemplate, RecordEncryptedStandardField, RecordStandardField, \
+    RecordEncryptedFileField, \
+    RecordEncryptedSelectField, RecordUsersField, RecordStateField, RecordSelectField, RecordMultipleField
+from apps.recordmanagement.views import RecordEncryptedStandardFieldViewSet, RecordStandardFieldViewSet, \
+    RecordEncryptedFileFieldViewSet, \
+    RecordEncryptedSelectFieldViewSet, RecordUsersFieldViewSet, RecordStateFieldViewSet, RecordSelectFieldViewSet, \
+    RecordMultipleFieldViewSet
 from apps.recordmanagement.tests import BaseRecord
 from rest_framework.test import force_authenticate
 from django.test import TestCase
@@ -321,6 +324,34 @@ class RecordSelectFieldViewSetWorking(GenericRecordField, TestCase):
 
     def setup_field(self):
         self.field = RecordSelectField.objects.create(template=self.template, options=['Option 5', 'Option 4'])
+
+    def get_create_data(self):
+        return {
+            'name': 'Field',
+            'template': self.template.pk,
+            'options': json.dumps(self.create_options)
+        }
+
+
+class RecordMultipleFieldViewSetWorking(GenericRecordField, TestCase):
+    model = RecordMultipleField
+    view = RecordMultipleFieldViewSet
+    # create
+    create_options = ['Option 1', 'Option 2']
+    create_test = {
+        'options': create_options
+    }
+    # update
+    update_options = ['Closed', 'Option 4']
+    update_data = {
+        'options': json.dumps(update_options),
+    }
+    update_test = {
+        'options': update_options
+    }
+
+    def setup_field(self):
+        self.field = RecordMultipleField.objects.create(template=self.template, options=['Option 5', 'Option 4'])
 
     def get_create_data(self):
         return {

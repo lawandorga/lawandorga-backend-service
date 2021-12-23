@@ -2,10 +2,11 @@ from apps.recordmanagement.tests.record_entries import BaseRecordEntry
 from apps.recordmanagement.tests.record import BaseRecord
 from apps.recordmanagement.models import RecordEncryptedSelectField, RecordEncryptedSelectEntry, RecordStateField, \
     RecordStateEntry, \
-    RecordSelectField, RecordSelectEntry, RecordEncryptedStandardField, RecordEncryptedStandardEntry
+    RecordSelectField, RecordSelectEntry, RecordEncryptedStandardField, RecordEncryptedStandardEntry, \
+    RecordMultipleEntry, RecordMultipleField
 from apps.recordmanagement.views import RecordEncryptedSelectEntryViewSet, RecordStateFieldViewSet, \
     RecordStateEntryViewSet, \
-    RecordSelectEntryViewSet, RecordEncryptedStandardEntryViewSet
+    RecordSelectEntryViewSet, RecordEncryptedStandardEntryViewSet, RecordMultipleEntryViewSet
 from rest_framework.test import force_authenticate
 from django.test import TestCase
 import json
@@ -107,7 +108,7 @@ class RecordeSelectEntryViewSetErrors(BaseRecordEntry, TestCase):
         self.setup_entry()
         view = RecordSelectEntryViewSet.as_view(actions={'patch': 'partial_update'})
         data = {
-            'value': json.dumps(['Option 3']),
+            'value': 'Option 3',
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
@@ -125,24 +126,20 @@ class RecordeSelectEntryViewSetErrors(BaseRecordEntry, TestCase):
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 400)
 
-    def test_values_must_be_in_options(self):
-        self.field.multiple = True
-        self.field.save()
-        self.setup_entry()
-        view = RecordSelectEntryViewSet.as_view(actions={'patch': 'partial_update'})
-        data = {
-            'value': json.dumps(['Option 2', 'Option 3']),
-        }
-        request = self.factory.patch('', data=data)
-        force_authenticate(request, self.user)
-        response = view(request, pk=1)
-        self.assertEqual(response.status_code, 400)
+
+class RecordMultipleEntryViewSetErrors(BaseRecordEntry, TestCase):
+    def setUp(self):
+        super().setUp()
+        self.field = RecordMultipleField.objects.create(template=self.template, options=['Option 2', 'Option 1'])
+
+    def setup_entry(self):
+        self.entry = RecordMultipleEntry.objects.create(record=self.record, field=self.field, value=['Option 1'])
 
     def test_multiple_values_can_be_selected(self):
         self.field.multiple = True
         self.field.save()
         self.setup_entry()
-        view = RecordSelectEntryViewSet.as_view(actions={'patch': 'partial_update'})
+        view = RecordMultipleEntryViewSet.as_view(actions={'patch': 'partial_update'})
         data = {
             'value': json.dumps(['Option 1', 'Option 2']),
         }
@@ -150,6 +147,19 @@ class RecordeSelectEntryViewSetErrors(BaseRecordEntry, TestCase):
         force_authenticate(request, self.user)
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 200)
+
+    def test_values_must_be_in_options(self):
+        self.field.multiple = True
+        self.field.save()
+        self.setup_entry()
+        view = RecordMultipleEntryViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {
+            'value': json.dumps(['Option 2', 'Option 3']),
+        }
+        request = self.factory.patch('', data=data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 400)
 
 
 class RecordEncryptedSelectEntryViewSetErrors(BaseRecordEntry, TestCase):
@@ -167,7 +177,7 @@ class RecordEncryptedSelectEntryViewSetErrors(BaseRecordEntry, TestCase):
         self.setup_entry()
         view = RecordEncryptedSelectEntryViewSet.as_view(actions={'patch': 'partial_update'})
         data = {
-            'value': json.dumps(['Option 3']),
+            'value': 'Option 3',
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
@@ -184,29 +194,3 @@ class RecordEncryptedSelectEntryViewSetErrors(BaseRecordEntry, TestCase):
         force_authenticate(request, self.user)
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 400)
-
-    def test_multiple_values_must_be_in_options(self):
-        self.field.multiple = True
-        self.field.save()
-        self.setup_entry()
-        view = RecordEncryptedSelectEntryViewSet.as_view(actions={'patch': 'partial_update'})
-        data = {
-            'value': json.dumps(['Option 2', 'Option 3']),
-        }
-        request = self.factory.patch('', data=data)
-        force_authenticate(request, self.user)
-        response = view(request, pk=1)
-        self.assertEqual(response.status_code, 400)
-
-    def test_multiple_values_can_be_selected(self):
-        self.field.multiple = True
-        self.field.save()
-        self.setup_entry()
-        view = RecordEncryptedSelectEntryViewSet.as_view(actions={'patch': 'partial_update'})
-        data = {
-            'value': json.dumps(['Option 1', 'Option 2']),
-        }
-        request = self.factory.patch('', data=data)
-        force_authenticate(request, self.user)
-        response = view(request, pk=1)
-        self.assertEqual(response.status_code, 200)

@@ -1,6 +1,7 @@
 from apps.recordmanagement.models import Record, RecordStandardEntry, RecordStandardField, RecordUsersField, \
     RecordStateField, RecordEncryptedStandardField, RecordUsersEntry, RecordStateEntry, RecordSelectField, \
-    RecordSelectEntry, RecordEncryptedStandardEntry, EncryptedRecord, RecordEncryption, RecordEncryptionNew
+    RecordSelectEntry, RecordEncryptedStandardEntry, EncryptedRecord, RecordEncryption, RecordEncryptionNew, \
+    RecordMultipleField, RecordMultipleEntry
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
@@ -57,12 +58,12 @@ def move_record(old_record):
             entry = RecordUsersEntry.objects.create(record=record, field=field)
             entry.value.set(old_record.working_on_record.all())
         #
-        field = RecordSelectField.objects.get(template=template, name='Tags')
+        field = RecordMultipleField.objects.get(template=template, name='Tags')
         if old_record.tags.values_list('name', flat=True):
             tags = list(old_record.tags.values_list('name', flat=True))
             if not tags:
                 tags = []
-            RecordSelectEntry.objects.create(record=record, field=field, value=tags)
+            RecordMultipleEntry.objects.create(record=record, field=field, value=tags)
         #
         field = RecordStateField.objects.get(template=template, name='State')
         if old_record.get_state_display().capitalize():
@@ -127,7 +128,7 @@ def move_record(old_record):
         #
         field = RecordSelectField.objects.get(template=template, name='Origin Country')
         if old_record.client.origin_country:
-            value = [old_record.client.origin_country.name]
+            value = old_record.client.origin_country.name
             RecordSelectEntry.objects.create(record=record, field=field, value=value)
         #
         # field = RecordEncryptedStandardField.objects.get(template=template, name='Phone')
@@ -174,9 +175,9 @@ def test_record(record):
             '{} != {}'.format(list(old_record.working_on_record.values_list('pk', flat=True)),
                               list(entry.value.values_list('pk', flat=True)))
     #
-    field = RecordSelectField.objects.get(template=template, name='Tags')
+    field = RecordMultipleField.objects.get(template=template, name='Tags')
     if old_record.tags.values_list('name', flat=True):
-        entry = RecordSelectEntry.objects.get(record=new_record, field=field)
+        entry = RecordMultipleEntry.objects.get(record=new_record, field=field)
         assert list(old_record.tags.values_list('name', flat=True)) == entry.value, \
             '{} != {}'.format(list(old_record.tags.values_list('name', flat=True)), entry.value)
     #
@@ -262,8 +263,8 @@ def test_record(record):
     field = RecordSelectField.objects.get(template=template, name='Origin Country')
     if old_record.client.origin_country:
         entry = RecordSelectEntry.objects.get(record=new_record, field=field)
-        assert [str(old_record.client.origin_country.name)] == entry.value, \
-            '{} != {}'.format(old_record.client.origin_country, entry.value)
+        assert str(old_record.client.origin_country.name) == entry.value, \
+            '{} != {}'.format(old_record.client.origin_country.name, entry.value)
     # #
     # field = RecordEncryptedStandardField.objects.get(template=template, name='Phone')
     # if old_record.client.phone_number:

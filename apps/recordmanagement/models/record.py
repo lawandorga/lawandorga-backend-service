@@ -28,7 +28,7 @@ class RecordTemplate(models.Model):
         return 'recordTemplate: {}; rlc: {};'.format(self.pk, self.rlc)
 
     def get_field_types(self):
-        return ['standard_fields', 'state_fields', 'users_fields', 'select_fields',
+        return ['standard_fields', 'state_fields', 'users_fields', 'select_fields', 'multiple_fields',
                 'encrypted_standard_fields', 'encrypted_select_fields', 'encrypted_file_fields']
 
     def get_fields(self):
@@ -113,7 +113,6 @@ class RecordUsersField(RecordField):
 class RecordSelectField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='select_fields')
     options = models.JSONField()
-    multiple = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = 'RecordSelectField'
@@ -121,17 +120,30 @@ class RecordSelectField(RecordField):
 
     @property
     def type(self):
-        if self.multiple:
-            return 'multiple'
         return 'select'
 
     def __str__(self):
         return 'recordSelectField: {}; name: {};'.format(self.pk, self.name)
 
 
+class RecordMultipleField(RecordField):
+    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='multiple_fields')
+    options = models.JSONField()
+
+    class Meta:
+        verbose_name = 'RecordMultipleField'
+        verbose_name_plural = 'RecordMultipleFields'
+
+    @property
+    def type(self):
+        return 'multiple'
+
+    def __str__(self):
+        return 'recordMultipleField: {}; name: {};'.format(self.pk, self.name)
+
+
 class RecordEncryptedSelectField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='encrypted_select_fields')
-    multiple = models.BooleanField(default=False)
     options = models.JSONField()
 
     class Meta:
@@ -140,8 +152,6 @@ class RecordEncryptedSelectField(RecordField):
 
     @property
     def type(self):
-        if self.multiple:
-            return 'multiple'
         return 'select'
 
     def __str__(self):
@@ -350,7 +360,7 @@ class RecordUsersEntry(RecordEntry):
         # this might look weird, but i've done it this way to optimize performance
         # with prefetch related
         users = []
-        for user in getattr(self, 'users').all():
+        for user in getattr(self, 'value').all():
             users.append(user.name)
         return users
 
@@ -358,7 +368,7 @@ class RecordUsersEntry(RecordEntry):
 class RecordSelectEntry(RecordEntry):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='select_entries')
     field = models.ForeignKey(RecordSelectField, related_name='entries', on_delete=models.PROTECT)
-    value = models.JSONField()
+    value = models.CharField(max_length=200)
 
     class Meta:
         unique_together = ['record', 'field']
@@ -369,9 +379,21 @@ class RecordSelectEntry(RecordEntry):
         return 'recordSelectEntry: {};'.format(self.pk)
 
     def get_value(self, *args, **kwargs):
-        if not self.field.multiple:
-            return self.value[0]
         return self.value
+
+
+class RecordMultipleEntry(RecordEntry):
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='multiple_entries')
+    field = models.ForeignKey(RecordMultipleField, related_name='entries', on_delete=models.PROTECT)
+    value = models.JSONField()
+
+    class Meta:
+        unique_together = ['record', 'field']
+        verbose_name = 'RecordMultipleEntry'
+        verbose_name_plural = 'RecordMultipleEntries'
+
+    def __str__(self):
+        return 'recordMultipleEntry: {}'.format(self.pk)
 
 
 class RecordEncryptedSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):

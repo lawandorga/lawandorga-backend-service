@@ -4,12 +4,12 @@ from apps.recordmanagement.serializers.record import RecordTemplateSerializer, R
     RecordEncryptedSelectFieldSerializer, RecordEncryptedSelectEntrySerializer, RecordUsersFieldSerializer, \
     RecordUsersEntrySerializer, RecordStateFieldSerializer, \
     RecordStateEntrySerializer, RecordSelectEntrySerializer, RecordSelectFieldSerializer, RecordListSerializer, \
-    RecordDetailSerializer, RecordCreateSerializer
+    RecordDetailSerializer, RecordCreateSerializer, RecordMultipleEntrySerializer, RecordMultipleFieldSerializer
 from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedStandardField, Record, \
     RecordEncryptionNew, RecordEncryptedStandardEntry, RecordStandardEntry, RecordEncryptedFileEntry, \
     RecordStandardField, RecordEncryptedFileField, \
     RecordEncryptedSelectField, RecordEncryptedSelectEntry, RecordUsersField, RecordUsersEntry, RecordStateField, \
-    RecordStateEntry, RecordSelectEntry, RecordSelectField
+    RecordStateEntry, RecordSelectEntry, RecordSelectField, RecordMultipleEntry, RecordMultipleField
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
@@ -75,6 +75,15 @@ class RecordSelectFieldViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin,
         return RecordSelectField.objects.filter(template__rlc=self.request.user.rlc)
 
 
+class RecordMultipleFieldViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                                 GenericViewSet):
+    queryset = RecordMultipleField.objects.none()
+    serializer_class = RecordMultipleFieldSerializer
+
+    def get_queryset(self):
+        return RecordMultipleField.objects.filter(template__rlc=self.request.user.rlc)
+
+
 class RecordEncryptedFileFieldViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
                                       GenericViewSet):
     queryset = RecordEncryptedFileField.objects.none()
@@ -122,15 +131,19 @@ class RecordViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.D
     def get_queryset(self):
         if self.action in ['list']:
             return Record.objects.filter(template__rlc=self.request.user.rlc).prefetch_related(
-                'state_entries', 'select_entries', 'standard_entries', 'users_entries',
-                'state_entries__field', 'select_entries__field', 'standard_entries__field', 'users_entries__field',
-                'users_entries__value', 'encryptions'
+                'state_entries', 'state_entries__field',
+                'select_entries', 'select_entries__field',
+                'standard_entries', 'standard_entries__field',
+                'users_entries', 'users_entries__value', 'users_entries__field',
+                'multiple_entries', 'multiple_entries__field',
+                'encryptions'
             ).select_related('template')
         elif self.action in ['retrieve']:
             return Record.objects.filter(template__rlc=self.request.user.rlc).prefetch_related(
                 'state_entries', 'state_entries__field',
                 'select_entries', 'select_entries__field',
                 'standard_entries', 'standard_entries__field',
+                'multiple_entries', 'multiple_entries__field',
                 'users_entries', 'users_entries__field', 'users_entries__value',
                 'encrypted_select_entries', 'encrypted_select_entries__field',
                 'encrypted_standard_entries', 'encrypted_standard_entries__field',
@@ -221,6 +234,16 @@ class RecordSelectEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin,
     def get_queryset(self):
         # every field returned because they are supposed to be seen by everybody
         return RecordSelectEntry.objects.filter(record__template__rlc=self.request.user.rlc)
+
+
+class RecordMultipleEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                                 GenericViewSet):
+    queryset = RecordMultipleEntry.objects.none()
+    serializer_class = RecordMultipleEntrySerializer
+
+    def get_queryset(self):
+        # every field returned because they are supposed to be seen by everybody
+        return RecordMultipleEntry.objects.filter(record__template__rlc=self.request.user.rlc)
 
 
 class RecordStateEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,

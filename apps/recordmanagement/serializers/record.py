@@ -1,12 +1,12 @@
-from django.core.exceptions import ObjectDoesNotExist
-
-from apps.api.serializers import UserProfileSmallSerializer
 from apps.recordmanagement.models.record import RecordTemplate, RecordField, RecordEncryptedStandardField, Record, \
     RecordEncryptedStandardEntry, \
     RecordStandardEntry, RecordEncryptedFileEntry, RecordStandardField, RecordEncryptedFileField, \
     RecordEncryptedSelectField, RecordEncryptedSelectEntry, \
-    RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry, RecordSelectEntry, RecordSelectField
+    RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry, RecordSelectEntry, RecordSelectField, \
+    RecordMultipleEntry, RecordMultipleField
 from rest_framework.exceptions import ValidationError, ParseError
+from django.core.exceptions import ObjectDoesNotExist
+from apps.api.serializers import UserProfileSmallSerializer
 from django.core.files import File
 from rest_framework import serializers
 
@@ -52,6 +52,17 @@ class RecordStateFieldSerializer(serializers.ModelSerializer):
 class RecordSelectFieldSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordSelectField
+        fields = '__all__'
+
+    def validate_options(self, options):
+        if type(options) != list or any([type(o) is not str for o in options]):
+            raise ValidationError('Options need to be a list of strings.')
+        return options
+
+
+class RecordMultipleFieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecordMultipleField
         fields = '__all__'
 
     def validate_options(self, options):
@@ -146,11 +157,16 @@ class RecordStandardEntrySerializer(RecordEntrySerializer):
 
 
 class RecordUsersEntrySerializer(RecordEntrySerializer):
-    value = UserProfileSmallSerializer(many=True)
-
     class Meta:
         model = RecordUsersEntry
         fields = '__all__'
+
+
+class RecordUsersEntryDetailSerializer(RecordUsersEntrySerializer):
+    value = serializers.SerializerMethodField()
+
+    def get_value(self, obj):
+        return obj.get_value()
 
 
 class RecordStateEntrySerializer(RecordEntrySerializer):
@@ -181,7 +197,7 @@ class RecordEncryptedStandardEntrySerializer(RecordEntrySerializer):
 
 
 class RecordEncryptedSelectEntrySerializer(RecordEntrySerializer):
-    value = serializers.JSONField()
+    value = serializers.CharField()
 
     class Meta:
         model = RecordEncryptedSelectEntry
@@ -195,10 +211,8 @@ class RecordEncryptedSelectEntrySerializer(RecordEntrySerializer):
             field = attrs['field']
         else:
             raise ValidationError('Field needs to be set.')
-        if field.multiple is False and len(attrs['value']) > 1:
-            raise ValidationError('Too many values selected.')
-        if not (set(attrs['value']) <= set(field.options)):
-            raise ValidationError('The selected values contain not allowed values.')
+        if attrs['value'] not in set(field.options):
+            raise ValidationError('The selected value is not a valid choice.')
         return attrs
 
 
@@ -215,8 +229,24 @@ class RecordSelectEntrySerializer(RecordEntrySerializer):
             field = attrs['field']
         else:
             raise ValidationError('Field needs to be set.')
-        if field.multiple is False and len(attrs['value']) > 1:
-            raise ValidationError('Too many values selected.')
+        if attrs['value'] not in set(field.options):
+            raise ValidationError('The selected value is not a valid choice.')
+        return attrs
+
+
+class RecordMultipleEntrySerializer(RecordEntrySerializer):
+    class Meta:
+        model = RecordMultipleEntry
+        fields = '__all__'
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if self.instance:
+            field = self.instance.field
+        elif 'field' in attrs:
+            field = attrs['field']
+        else:
+            raise ValidationError('Field needs to be set.')
         if not (set(attrs['value']) <= set(field.options)):
             raise ValidationError('The selected values contain not allowed values.')
         return attrs
@@ -246,7 +276,8 @@ class RecordListSerializer(RecordSerializer):
             ('state_entries', RecordStateEntrySerializer),
             ('standard_entries', RecordStandardEntrySerializer),
             ('select_entries', RecordSelectEntrySerializer),
-            ('users_entries', RecordUsersEntrySerializer),
+            ('multiple_entries', RecordMultipleEntrySerializer),
+            ('users_entries', RecordUsersEntryDetailSerializer),
         ]
         return obj.get_entries(entry_types, request=self.context['request'])
 
@@ -286,6 +317,7 @@ class RecordDetailSerializer(RecordSerializer):
             ('state_entries', RecordStateEntrySerializer),
             ('standard_entries', RecordStandardEntrySerializer),
             ('select_entries', RecordSelectEntrySerializer),
+            ('multiple_entries', RecordMultipleEntrySerializer),
             ('users_entries', RecordUsersEntrySerializer),
             ('encrypted_select_entries', RecordEncryptedSelectEntrySerializer),
             ('encrypted_file_entries', RecordEncryptedFileEntrySerializer),

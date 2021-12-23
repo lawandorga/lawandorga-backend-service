@@ -1,5 +1,6 @@
 from apps.recordmanagement.models import RecordTemplate, RecordStandardField, \
-    RecordEncryptedStandardField, OriginCountry, RecordUsersField, RecordStateField, RecordSelectField
+    RecordEncryptedStandardField, OriginCountry, RecordUsersField, RecordStateField, RecordSelectField, \
+    RecordMultipleField
 from django.db import transaction
 
 
@@ -17,7 +18,7 @@ def create_default_record_template(rlc):
         options = list(rlc.tags.values_list('name', flat=True))
         if not options:
             options = []
-        RecordSelectField.objects.create(template=template, order=70, name='Tags', options=options, multiple=True)
+        RecordMultipleField.objects.create(template=template, order=70, name='Tags', options=options)
         options = ['Open', 'Closed', 'Waiting', 'Working']
         RecordStateField.objects.create(template=template, order=80, name='State', states=options)
         RecordEncryptedStandardField.objects.create(template=template, order=90, name='Note', field_type='TEXTAREA')
@@ -40,7 +41,6 @@ def create_default_record_template(rlc):
         options = list(OriginCountry.objects.values_list('name', flat=True))
         if not options:
             options = []
-        RecordSelectField.objects.create(template=template, order=210, name='Origin Country', options=options,
-                                         multiple=False)
+        RecordSelectField.objects.create(template=template, order=210, name='Origin Country', options=options)
         RecordEncryptedStandardField.objects.create(template=template, order=220, name='Phone')
         RecordEncryptedStandardField.objects.create(template=template, order=230, name='Client Note')
