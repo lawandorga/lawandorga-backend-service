@@ -1,3 +1,5 @@
+from rest_framework.exceptions import ValidationError
+
 from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire, QuestionnaireField, QuestionnaireAnswer, \
     QuestionnaireFile
 from rest_framework import serializers
@@ -91,6 +93,12 @@ class QuestionnaireAnswerCreateFileSerializer(QuestionnaireAnswerCreateSerialize
 
 class QuestionnaireAnswerCreateTextSerializer(QuestionnaireAnswerCreateSerializer):
     data = serializers.CharField()
+
+    def validate_data(self, data):
+        if len(data) > 190:
+            raise ValidationError('The message can only be 190 characters long, because of encryption issues. '
+                                  'Your message is {} characters long.'.format(len(data)))
+        return data
 
 
 ###

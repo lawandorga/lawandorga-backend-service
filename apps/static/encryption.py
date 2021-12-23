@@ -230,10 +230,8 @@ class EncryptedModelMixin(object):
     def encrypt(self, key: str or bytes) -> None:
         if getattr(self, 'encryption_status', '') != 'ENCRYPTED':
             for field in self.encrypted_fields:
-                value = getattr(self, field)
-                if type(value) != bytes:
-                    encrypted_field = self.encryption_class.encrypt(value, key)
-                    setattr(self, field, encrypted_field)
+                encrypted_field = self.encryption_class.encrypt(getattr(self, field), key)
+                setattr(self, field, encrypted_field)
         setattr(self, 'encryption_status', 'ENCRYPTED')
 
     def reset_encrypted_fields(self):
