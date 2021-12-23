@@ -31,25 +31,15 @@ class RecordTemplate(models.Model):
         return ['standard_fields', 'state_fields', 'users_fields', 'select_fields', 'multiple_fields',
                 'encrypted_standard_fields', 'encrypted_select_fields', 'encrypted_file_fields']
 
-    def get_fields(self):
+    def get_fields(self, entry_types_and_serializers, request=None):
         # this might look weird, but i've done it this way to optimize performance
         # with prefetch related
         # and watch out this expects a self from a query which has prefetched
         # all the relevant unencrypted entries otherwise the queries explode
         fields = []
-        for field_type in self.get_field_types():
+        for (field_type, serializer) in entry_types_and_serializers:
             for field in getattr(self, field_type).all():
-                data = {
-                    'label': field.name,
-                    'name': field.name,
-                    'order': field.order,
-                    'type': field.type,
-                    'options': getattr(field, 'options', None),
-                    'url': reverse('record{}-list'.format(
-                        field_type.replace('_', '').replace('fields', 'entry'))
-                    ).replace('/api', '')
-                }
-                fields.append(data)
+                fields.append(serializer(instance=field, context={'request': request}).data)
         fields = list(sorted(fields, key=lambda i: i['order']))
         return fields
 
@@ -258,19 +248,6 @@ class Record(models.Model):
                 if entry.encrypted_entry:
                     entry.decrypt(aes_key_record=aes_key_record)
                 entries[entry.field.name] = serializer(instance=entry, context={'request': request}).data
-
-                # data = {
-                #     'id': entry.pk,
-                #     'name': entry.field.name,
-                #     'order': entry.field.order,
-                #     'value': entry.get_value(*args, **kwargs),
-                #     'field': entry.field.id,
-                #     'field_type': entry.field.type,
-                #     'url': reverse('record{}-detail'.format(entry_type.replace('_', '').replace('entries', 'entry')),
-                #                    args=[entry.pk]).replace('/api', '')
-                # }
-
-                # entries[entry.field.name] = data
         entries = dict(sorted(entries.items(), key=lambda item: item[1]['order']))
         return entries
 

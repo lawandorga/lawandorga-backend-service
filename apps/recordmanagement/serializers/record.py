@@ -1,14 +1,14 @@
-from apps.recordmanagement.models.record import RecordTemplate, RecordField, RecordEncryptedStandardField, Record, \
-    RecordEncryptedStandardEntry, \
-    RecordStandardEntry, RecordEncryptedFileEntry, RecordStandardField, RecordEncryptedFileField, \
-    RecordEncryptedSelectField, RecordEncryptedSelectEntry, \
+from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedStandardField, Record, \
+    RecordEncryptedStandardEntry, RecordStandardEntry, RecordEncryptedFileEntry, RecordStandardField, \
+    RecordEncryptedFileField, RecordEncryptedSelectField, RecordEncryptedSelectEntry, \
     RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry, RecordSelectEntry, RecordSelectField, \
     RecordMultipleEntry, RecordMultipleField
 from rest_framework.exceptions import ValidationError, ParseError
 from django.core.exceptions import ObjectDoesNotExist
-from apps.api.serializers import UserProfileSmallSerializer
+from rest_framework.reverse import reverse
 from django.core.files import File
 from rest_framework import serializers
+
 
 ###
 # RecordTemplate
@@ -31,12 +31,16 @@ class RecordTemplateSerializer(serializers.ModelSerializer):
 # Fields
 ###
 class RecordFieldSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RecordField
-        fields = '__all__'
+    url = serializers.SerializerMethodField(read_only=True)
+    entry_view_name = None
+
+    def get_url(self, obj):
+        return reverse(self.entry_view_name, request=self.context['request'])
 
 
-class RecordStateFieldSerializer(serializers.ModelSerializer):
+class RecordStateFieldSerializer(RecordFieldSerializer):
+    entry_view_name = 'recordstateentry-list'
+
     class Meta:
         model = RecordStateField
         fields = '__all__'
@@ -49,7 +53,9 @@ class RecordStateFieldSerializer(serializers.ModelSerializer):
         return states
 
 
-class RecordSelectFieldSerializer(serializers.ModelSerializer):
+class RecordSelectFieldSerializer(RecordFieldSerializer):
+    entry_view_name = 'recordselectentry-list'
+
     class Meta:
         model = RecordSelectField
         fields = '__all__'
@@ -60,7 +66,9 @@ class RecordSelectFieldSerializer(serializers.ModelSerializer):
         return options
 
 
-class RecordMultipleFieldSerializer(serializers.ModelSerializer):
+class RecordMultipleFieldSerializer(RecordFieldSerializer):
+    entry_view_name = 'recordmultipleentry-list'
+
     class Meta:
         model = RecordMultipleField
         fields = '__all__'
@@ -71,31 +79,41 @@ class RecordMultipleFieldSerializer(serializers.ModelSerializer):
         return options
 
 
-class RecordEncryptedStandardFieldSerializer(serializers.ModelSerializer):
+class RecordEncryptedStandardFieldSerializer(RecordFieldSerializer):
+    entry_view_name = 'recordencryptedstandardentry-list'
+
     class Meta:
         model = RecordEncryptedStandardField
         fields = '__all__'
 
 
-class RecordStandardFieldSerializer(serializers.ModelSerializer):
+class RecordStandardFieldSerializer(RecordFieldSerializer):
+    entry_view_name = 'recordstandardentry-list'
+
     class Meta:
         model = RecordStandardField
         fields = '__all__'
 
 
 class RecordUsersFieldSerializer(serializers.ModelSerializer):
+    entry_view_name = 'recordusersentry-list'
+
     class Meta:
         model = RecordUsersField
         fields = '__all__'
 
 
 class RecordEncryptedFileFieldSerializer(serializers.ModelSerializer):
+    entry_view_name = 'recordencryptedfileentry-list'
+
     class Meta:
         model = RecordEncryptedFileField
         fields = '__all__'
 
 
 class RecordEncryptedSelectFieldSerializer(serializers.ModelSerializer):
+    entry_view_name = 'recordencryptedselectentry-list'
+
     class Meta:
         model = RecordEncryptedSelectField
         fields = '__all__'
@@ -125,6 +143,8 @@ class RecordEntrySerializer(serializers.ModelSerializer):
 
 
 class RecordEncryptedFileEntrySerializer(RecordEntrySerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='recordencryptedfileentry-detail')
+
     class Meta:
         model = RecordEncryptedFileEntry
         fields = '__all__'
@@ -151,18 +171,23 @@ class RecordEncryptedFileEntrySerializer(RecordEntrySerializer):
 
 
 class RecordStandardEntrySerializer(RecordEntrySerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='recordstandardentry-detail')
+
     class Meta:
         model = RecordStandardEntry
         fields = '__all__'
 
 
 class RecordUsersEntrySerializer(RecordEntrySerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='recordusersentry-detail')
+
     class Meta:
         model = RecordUsersEntry
         fields = '__all__'
 
 
 class RecordUsersEntryDetailSerializer(RecordUsersEntrySerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='recordusersentry-detail')
     value = serializers.SerializerMethodField()
 
     def get_value(self, obj):
@@ -170,6 +195,8 @@ class RecordUsersEntryDetailSerializer(RecordUsersEntrySerializer):
 
 
 class RecordStateEntrySerializer(RecordEntrySerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='recordstateentry-detail')
+
     class Meta:
         model = RecordStateEntry
         fields = '__all__'
@@ -197,6 +224,7 @@ class RecordEncryptedStandardEntrySerializer(RecordEntrySerializer):
 
 
 class RecordEncryptedSelectEntrySerializer(RecordEntrySerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='recordencryptedselectentry-detail')
     value = serializers.CharField()
 
     class Meta:
@@ -217,6 +245,8 @@ class RecordEncryptedSelectEntrySerializer(RecordEntrySerializer):
 
 
 class RecordSelectEntrySerializer(RecordEntrySerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='recordselectentry-detail')
+
     class Meta:
         model = RecordSelectEntry
         fields = '__all__'
@@ -235,6 +265,8 @@ class RecordSelectEntrySerializer(RecordEntrySerializer):
 
 
 class RecordMultipleEntrySerializer(RecordEntrySerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='recordmultipleentry-detail')
+
     class Meta:
         model = RecordMultipleEntry
         fields = '__all__'
@@ -313,7 +345,7 @@ class RecordDetailSerializer(RecordSerializer):
             aes_key_record = self.instance.get_aes_key(user=self.user, private_key_user=self.private_key_user)
         except ObjectDoesNotExist:
             raise ParseError('No encryption keys were found to decrypt this record.')
-        entry_types = [
+        entry_types_and_serializers = [
             ('state_entries', RecordStateEntrySerializer),
             ('standard_entries', RecordStandardEntrySerializer),
             ('select_entries', RecordSelectEntrySerializer),
@@ -323,11 +355,20 @@ class RecordDetailSerializer(RecordSerializer):
             ('encrypted_file_entries', RecordEncryptedFileEntrySerializer),
             ('encrypted_standard_entries', RecordEncryptedStandardEntrySerializer)
         ]
-        return obj.get_entries(entry_types, aes_key_record=aes_key_record, request=self.context['request'])
+        return obj.get_entries(entry_types_and_serializers, aes_key_record=aes_key_record, request=self.context['request'])
 
     def get_form_fields(self, obj):
-        template = obj.template
-        return template.get_fields()
+        field_types_and_serializers = [
+            ('state_fields', RecordStateFieldSerializer),
+            ('standard_fields', RecordStandardFieldSerializer),
+            ('select_fields', RecordSelectFieldSerializer),
+            ('multiple_fields', RecordMultipleFieldSerializer),
+            ('users_fields', RecordUsersFieldSerializer),
+            ('encrypted_standard_fields', RecordEncryptedStandardFieldSerializer),
+            ('encrypted_select_fields', RecordEncryptedSelectFieldSerializer),
+            ('encrypted_file_fields', RecordEncryptedFileFieldSerializer)
+        ]
+        return obj.template.get_fields(field_types_and_serializers, request=self.context['request'])
 
     def get_client(self, obj):
         obj.old_client.decrypt(private_key_rlc=self.private_key_rlc)
