@@ -112,34 +112,34 @@ class RecordMetaEntryViewSetWorking(GenericRecordEntry, TestCase):
         self.field = RecordStandardField.objects.create(template=self.template)
 
     def setup_entry(self):
-        self.entry = RecordStandardEntry.objects.create(record=self.record, field=self.field, text='test text')
+        self.entry = RecordStandardEntry.objects.create(record=self.record, field=self.field, value='test text')
 
     def test_entry_create(self):
         view = RecordStandardEntryViewSet.as_view(actions={'post': 'create'})
         data = {
             'record': self.record.pk,
             'field': self.field.pk,
-            'text': 'Hallo'
+            'value': 'Hallo'
         }
         request = self.factory.post('', data)
         force_authenticate(request, self.user)
         respone = view(request)
         self.assertEqual(respone.status_code, 201)
         self.assertTrue(RecordStandardEntry.objects.count(), 1)
-        self.assertEqual(RecordStandardEntry.objects.first().text, 'Hallo')
+        self.assertEqual(RecordStandardEntry.objects.first().value, 'Hallo')
 
     def test_entry_update(self):
         self.setup_entry()
         view = RecordStandardEntryViewSet.as_view(actions={'patch': 'partial_update'})
         data = {
-            'text': 'Hallo 2'
+            'value': 'Hallo 2'
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 200)
         entry = RecordStandardEntry.objects.first()
-        self.assertEqual(entry.text, 'Hallo 2')
+        self.assertEqual(entry.value, 'Hallo 2')
 
 
 class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
@@ -151,14 +151,14 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
 
     def setup_entry(self):
         self.entry = RecordUsersEntry.objects.create(record=self.record, field=self.field)
-        self.entry.users.set(UserProfile.objects.all())
+        self.entry.value.set(UserProfile.objects.all())
 
     def test_entry_create(self):
         view = RecordUsersEntryViewSet.as_view(actions={'post': 'create'})
         data = {
             'record': self.record.pk,
             'field': self.field.pk,
-            'users': [u.pk for u in UserProfile.objects.all()]
+            'value': [u.pk for u in UserProfile.objects.all()]
         }
         request = self.factory.post('', data)
         force_authenticate(request, self.user)
@@ -166,7 +166,7 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertTrue(RecordUsersEntry.objects.count(), 1)
         self.assertEqual(
-            list(RecordUsersEntry.objects.first().users.values_list('pk', flat=True)),
+            list(RecordUsersEntry.objects.first().value.values_list('pk', flat=True)),
             list(UserProfile.objects.all().values_list('pk', flat=True))
         )
 
@@ -174,14 +174,14 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
         self.setup_entry()
         view = RecordUsersEntryViewSet.as_view(actions={'patch': 'partial_update'})
         data = {
-            'users': []
+            'value': []
         }
         request = self.factory.patch('', data=data, format='json')
         force_authenticate(request, self.user)
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 200)
         entry = RecordUsersEntry.objects.first()
-        self.assertEqual(entry.users.all().count(), UserProfile.objects.none().count())
+        self.assertEqual(entry.value.all().count(), UserProfile.objects.none().count())
 
 
 class RecordEncryptedStandardEntryViewSetWorking(GenericRecordEntry, TestCase):
@@ -237,14 +237,14 @@ class RecordStateEntryViewSetWorking(GenericRecordEntry, TestCase):
         self.field = RecordStateField.objects.create(template=self.template, states=['Closed', 'Option 2'])
 
     def setup_entry(self):
-        self.entry = RecordStateEntry.objects.create(record=self.record, field=self.field, state='Option 1')
+        self.entry = RecordStateEntry.objects.create(record=self.record, field=self.field, value='Option 1')
 
     def test_entry_create(self):
         view = RecordStateEntryViewSet.as_view(actions={'post': 'create'})
         data = {
             'record': self.record.pk,
             'field': self.field.pk,
-            'state': 'Option 2',
+            'value': 'Option 2',
         }
         request = self.factory.post('', data)
         force_authenticate(request, self.user)
@@ -252,13 +252,13 @@ class RecordStateEntryViewSetWorking(GenericRecordEntry, TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertTrue(RecordStateEntry.objects.count(), 1)
         entry = RecordStateEntry.objects.first()
-        self.assertEqual(entry.state, "Option 2")
+        self.assertEqual(entry.value, "Option 2")
 
     def test_entry_update(self):
         self.setup_entry()
         view = RecordStateEntryViewSet.as_view(actions={'patch': 'partial_update'})
         data = {
-            'state': 'Closed',
+            'value': 'Closed',
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
@@ -266,7 +266,7 @@ class RecordStateEntryViewSetWorking(GenericRecordEntry, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(RecordStateEntry.objects.count(), 1)
         entry = RecordStateEntry.objects.first()
-        self.assertEqual(entry.state, "Closed")
+        self.assertEqual(entry.value, "Closed")
 
 
 class RecordSelectEntryViewSetWorking(GenericRecordEntry, TestCase):

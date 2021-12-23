@@ -58,6 +58,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
         extra_kwargs = {"password": {"write_only": True}}
 
 
+class UserProfileSmallSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['name', 'id']
+
+
 class RlcUserCreateSerializer(UserProfileSerializer):
     password_confirm = serializers.CharField(write_only=True)
 

@@ -1,12 +1,14 @@
 from django.core.exceptions import ObjectDoesNotExist
 
-from apps.recordmanagement.models.record import RecordTemplate, RecordField, RecordEncryptedStandardField, Record, RecordEncryptedStandardEntry, \
-    RecordStandardEntry, RecordEncryptedFileEntry, RecordStandardField, RecordEncryptedFileField, RecordEncryptedSelectField, RecordEncryptedSelectEntry, \
+from apps.api.serializers import UserProfileSmallSerializer
+from apps.recordmanagement.models.record import RecordTemplate, RecordField, RecordEncryptedStandardField, Record, \
+    RecordEncryptedStandardEntry, \
+    RecordStandardEntry, RecordEncryptedFileEntry, RecordStandardField, RecordEncryptedFileField, \
+    RecordEncryptedSelectField, RecordEncryptedSelectEntry, \
     RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry, RecordSelectEntry, RecordSelectField
 from rest_framework.exceptions import ValidationError, ParseError
 from django.core.files import File
 from rest_framework import serializers
-
 
 ###
 # RecordTemplate
@@ -97,8 +99,12 @@ class RecordEncryptedSelectFieldSerializer(serializers.ModelSerializer):
 # Entries
 ###
 class RecordEntrySerializer(serializers.ModelSerializer):
-    name = serializers.SerializerMethodField()
-    type = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField(read_only=True)
+    type = serializers.SerializerMethodField(read_only=True)
+    order = serializers.SerializerMethodField(read_only=True)
+
+    def get_order(self, obj):
+        return obj.field.order
 
     def get_name(self, obj):
         return obj.field.name
@@ -107,7 +113,7 @@ class RecordEntrySerializer(serializers.ModelSerializer):
         return obj.field.type
 
 
-class RecordEncryptedFileEntrySerializer(serializers.ModelSerializer):
+class RecordEncryptedFileEntrySerializer(RecordEntrySerializer):
     class Meta:
         model = RecordEncryptedFileEntry
         fields = '__all__'
@@ -127,24 +133,27 @@ class RecordEncryptedFileEntrySerializer(serializers.ModelSerializer):
             else:
                 raise ValidationError('A record needs to be set.')
         private_key_user = user.get_private_key(request=self.context['request'])
-        attrs['file'] = File(RecordEncryptedFileEntry.encrypt_file(file, record, user=user, private_key_user=private_key_user),
-                             name='{}.enc'.format(file.name))
+        attrs['file'] = File(
+            RecordEncryptedFileEntry.encrypt_file(file, record, user=user, private_key_user=private_key_user),
+            name='{}.enc'.format(file.name))
         return attrs
 
 
-class RecordStandardEntrySerializer(serializers.ModelSerializer):
+class RecordStandardEntrySerializer(RecordEntrySerializer):
     class Meta:
         model = RecordStandardEntry
         fields = '__all__'
 
 
-class RecordUsersEntrySerializer(serializers.ModelSerializer):
+class RecordUsersEntrySerializer(RecordEntrySerializer):
+    value = UserProfileSmallSerializer(many=True)
+
     class Meta:
         model = RecordUsersEntry
         fields = '__all__'
 
 
-class RecordStateEntrySerializer(serializers.ModelSerializer):
+class RecordStateEntrySerializer(RecordEntrySerializer):
     class Meta:
         model = RecordStateEntry
         fields = '__all__'
@@ -157,7 +166,7 @@ class RecordStateEntrySerializer(serializers.ModelSerializer):
             field = attrs['field']
         else:
             raise ValidationError('Field needs to be set.')
-        if not attrs['state'] in field.states:
+        if not attrs['value'] in field.states:
             raise ValidationError('The selected state is not allowed.')
         return attrs
 
@@ -171,7 +180,7 @@ class RecordEncryptedStandardEntrySerializer(RecordEntrySerializer):
         fields = '__all__'
 
 
-class RecordEncryptedSelectEntrySerializer(serializers.ModelSerializer):
+class RecordEncryptedSelectEntrySerializer(RecordEntrySerializer):
     value = serializers.JSONField()
 
     class Meta:
@@ -193,7 +202,7 @@ class RecordEncryptedSelectEntrySerializer(serializers.ModelSerializer):
         return attrs
 
 
-class RecordSelectEntrySerializer(serializers.ModelSerializer):
+class RecordSelectEntrySerializer(RecordEntrySerializer):
     class Meta:
         model = RecordSelectEntry
         fields = '__all__'
@@ -217,9 +226,14 @@ class RecordSelectEntrySerializer(serializers.ModelSerializer):
 # Record
 ###
 class RecordSerializer(serializers.ModelSerializer):
+    # delete = serializers.SerializerMethodField()
+
     class Meta:
         model = Record
         fields = '__all__'
+
+    # def get_delete(self, obj):
+    #     return obj.deletions_requested.filter(state='re').exists()
 
 
 class RecordListSerializer(RecordSerializer):
@@ -228,7 +242,13 @@ class RecordListSerializer(RecordSerializer):
     show = serializers.SerializerMethodField()
 
     def get_entries(self, obj):
-        return obj.get_unencrypted_entries()
+        entry_types = [
+            ('state_entries', RecordStateEntrySerializer),
+            ('standard_entries', RecordStandardEntrySerializer),
+            ('select_entries', RecordSelectEntrySerializer),
+            ('users_entries', RecordUsersEntrySerializer),
+        ]
+        return obj.get_entries(entry_types, request=self.context['request'])
 
     def get_access(self, obj):
         for enc in getattr(obj, 'encryptions').all():
@@ -262,7 +282,16 @@ class RecordDetailSerializer(RecordSerializer):
             aes_key_record = self.instance.get_aes_key(user=self.user, private_key_user=self.private_key_user)
         except ObjectDoesNotExist:
             raise ParseError('No encryption keys were found to decrypt this record.')
-        return obj.get_all_entries(aes_key_record=aes_key_record)
+        entry_types = [
+            ('state_entries', RecordStateEntrySerializer),
+            ('standard_entries', RecordStandardEntrySerializer),
+            ('select_entries', RecordSelectEntrySerializer),
+            ('users_entries', RecordUsersEntrySerializer),
+            ('encrypted_select_entries', RecordEncryptedSelectEntrySerializer),
+            ('encrypted_file_entries', RecordEncryptedFileEntrySerializer),
+            ('encrypted_standard_entries', RecordEncryptedStandardEntrySerializer)
+        ]
+        return obj.get_entries(entry_types, aes_key_record=aes_key_record, request=self.context['request'])
 
     def get_form_fields(self, obj):
         template = obj.template

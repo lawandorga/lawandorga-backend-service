@@ -124,14 +124,14 @@ class RecordViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.D
             return Record.objects.filter(template__rlc=self.request.user.rlc).prefetch_related(
                 'state_entries', 'select_entries', 'standard_entries', 'users_entries',
                 'state_entries__field', 'select_entries__field', 'standard_entries__field', 'users_entries__field',
-                'users_entries__users', 'encryptions'
+                'users_entries__value', 'encryptions'
             ).select_related('template')
         elif self.action in ['retrieve']:
             return Record.objects.filter(template__rlc=self.request.user.rlc).prefetch_related(
                 'state_entries', 'state_entries__field',
                 'select_entries', 'select_entries__field',
                 'standard_entries', 'standard_entries__field',
-                'users_entries', 'users_entries__field', 'users_entries__users',
+                'users_entries', 'users_entries__field', 'users_entries__value',
                 'encrypted_select_entries', 'encrypted_select_entries__field',
                 'encrypted_standard_entries', 'encrypted_standard_entries__field',
                 'encrypted_file_entries', 'encrypted_file_entries__field',
@@ -176,6 +176,7 @@ class RecordEncryptedSelectEntryViewSet(mixins.CreateModelMixin, mixins.UpdateMo
         entry = RecordEncryptedSelectEntry(**serializer.validated_data)
         entry.encrypt(user=request.user, private_key_user=private_key_user)
         entry.save()
+        serializer = self.get_serializer(instance=entry, context={'request': request})
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -260,6 +261,7 @@ class RecordEncryptedStandardEntryViewSet(mixins.CreateModelMixin, mixins.Update
         entry = RecordEncryptedStandardEntry(**serializer.validated_data)
         entry.encrypt(aes_key_record=aes_key_record)
         entry.save()
+        serializer = self.get_serializer(instance=entry, context={'request': request})
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 

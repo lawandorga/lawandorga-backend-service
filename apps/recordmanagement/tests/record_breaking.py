@@ -54,13 +54,13 @@ class RecordStateEntryViewSetErrors(BaseRecordEntry, TestCase):
         self.field = RecordStateField.objects.create(template=self.template, states=['Closed', 'Option 1'])
 
     def setup_entry(self):
-        self.entry = RecordStateEntry.objects.create(record=self.record, field=self.field, state='Option 1')
+        self.entry = RecordStateEntry.objects.create(record=self.record, field=self.field, value='Option 1')
 
     def test_value_must_be_in_options(self):
         self.setup_entry()
         view = RecordStateEntryViewSet.as_view(actions={'patch': 'partial_update'})
         data = {
-            'state': json.dumps(['Option 3']),
+            'value': json.dumps(['Option 3']),
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)

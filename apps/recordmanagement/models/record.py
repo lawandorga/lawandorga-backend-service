@@ -237,30 +237,30 @@ class Record(models.Model):
     def get_all_entry_types(self):
         return self.get_unencrypted_entry_types() + self.get_encrypted_entry_types()
 
-    def get_entries(self, entry_types, *args, **kwargs):
-        from apps.recordmanagement.serializers import RecordEncryptedStandardEntrySerializer
+    def get_entries(self, entry_types_and_serializers, aes_key_record=None, request=None):
         # this might look weird, but i've done it this way to optimize performance
         # with prefetch related
         # and watch out this expects a self from a query which has prefetched
         # all the relevant unencrypted entries otherwise the queries explode
         entries = {}
-        for entry_type in entry_types:
+        for (entry_type, serializer) in entry_types_and_serializers:
             for entry in getattr(self, entry_type).all():
-                if entry_type == 'encrypted_standard_entries':
-                    entry.decrypt(*args, **kwargs)
-                    data = RecordEncryptedStandardEntrySerializer(instance=entry).data
-                else:
-                    data = {
-                        'id': entry.pk,
-                        'name': entry.field.name,
-                        'order': entry.field.order,
-                        'value': entry.get_value(*args, **kwargs),
-                        'field': entry.field.id,
-                        'field_type': entry.field.type,
-                        'url': reverse('record{}-detail'.format(entry_type.replace('_', '').replace('entries', 'entry')),
-                                       args=[entry.pk]).replace('/api', '')
-                    }
-                entries[entry.field.name] = data
+                if entry.encrypted_entry:
+                    entry.decrypt(aes_key_record=aes_key_record)
+                entries[entry.field.name] = serializer(instance=entry, context={'request': request}).data
+
+                # data = {
+                #     'id': entry.pk,
+                #     'name': entry.field.name,
+                #     'order': entry.field.order,
+                #     'value': entry.get_value(*args, **kwargs),
+                #     'field': entry.field.id,
+                #     'field_type': entry.field.type,
+                #     'url': reverse('record{}-detail'.format(entry_type.replace('_', '').replace('entries', 'entry')),
+                #                    args=[entry.pk]).replace('/api', '')
+                # }
+
+                # entries[entry.field.name] = data
         entries = dict(sorted(entries.items(), key=lambda item: item[1]['order']))
         return entries
 
@@ -281,6 +281,9 @@ class RecordEntry(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+    # used in record for get_entries
+    encrypted_entry = False
+
     class Meta:
         abstract = True
 
@@ -290,6 +293,9 @@ class RecordEntry(models.Model):
 
 class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
     encryption_class = AESEncryption
+
+    # used in record for get entries
+    encrypted_entry = True
 
     def encrypt(self, user=None, private_key_user=None, aes_key_record=None):
         if user and private_key_user:
@@ -313,7 +319,7 @@ class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
 class RecordStateEntry(RecordEntry):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='state_entries')
     field = models.ForeignKey(RecordStateField, related_name='entries', on_delete=models.PROTECT)
-    state = models.CharField(max_length=1000)
+    value = models.CharField(max_length=1000)
 
     class Meta:
         unique_together = ['record', 'field']
@@ -324,13 +330,13 @@ class RecordStateEntry(RecordEntry):
         return 'recordStateEntry: {};'.format(self.pk)
 
     def get_value(self, *args, **kwargs):
-        return self.state
+        return self.value
 
 
 class RecordUsersEntry(RecordEntry):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='users_entries')
     field = models.ForeignKey(RecordUsersField, related_name='entries', on_delete=models.PROTECT)
-    users = models.ManyToManyField(UserProfile, blank=True)
+    value = models.ManyToManyField(UserProfile, blank=True)
 
     class Meta:
         unique_together = ['record', 'field']
@@ -444,7 +450,7 @@ class RecordEncryptedFileEntry(RecordEntry):
 class RecordStandardEntry(RecordEntry):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='standard_entries')
     field = models.ForeignKey(RecordStandardField, related_name='entries', on_delete=models.PROTECT)
-    text = models.CharField(max_length=500)
+    value = models.CharField(max_length=500)
 
     class Meta:
         unique_together = ['record', 'field']
@@ -455,7 +461,7 @@ class RecordStandardEntry(RecordEntry):
         return 'recordStandardEntry: {};'.format(self.pk)
 
     def get_value(self, *args, **kwargs):
-        return self.text
+        return self.value
 
 
 class RecordEncryptedStandardEntry(RecordEntryEncryptedModelMixin, RecordEntry):
