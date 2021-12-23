@@ -17,19 +17,19 @@ import json
 ###
 class RecordStateFieldViewSetErrors(BaseRecord, TestCase):
     def setup_field(self):
-        self.field = RecordStateField.objects.create(template=self.template, states=['Closed', 'Option 2'])
+        self.field = RecordStateField.objects.create(template=self.template, options=['Closed', 'Option 2'])
 
     def test_field_can_not_be_created_without_closed(self):
         view = RecordStateFieldViewSet.as_view(actions={'post': 'create'})
         data = {
             'name': 'Field',
             'template': self.template.pk,
-            'states': json.dumps(['Option 1', 'Option 2'])
+            'options': json.dumps(['Option 1', 'Option 2'])
         }
         request = self.factory.post('', data)
         force_authenticate(request, self.user)
         response = view(request)
-        self.assertContains(response, 'states', status_code=400)
+        self.assertContains(response, 'options', status_code=400)
 
     def test_field_can_not_be_updated_without_closed(self):
         self.setup_field()
@@ -37,12 +37,12 @@ class RecordStateFieldViewSetErrors(BaseRecord, TestCase):
         data = {
             'name': 'Field',
             'template': self.template.pk,
-            'states': json.dumps(['Option 1', 'Option 2'])
+            'options': json.dumps(['Option 1', 'Option 2'])
         }
         request = self.factory.patch('', data)
         force_authenticate(request, self.user)
         response = view(request, pk=1)
-        self.assertContains(response, 'states', status_code=400)
+        self.assertContains(response, 'options', status_code=400)
 
 
 ###
@@ -52,7 +52,7 @@ class RecordStateEntryViewSetErrors(BaseRecordEntry, TestCase):
     def setUp(self):
         super().setUp()
         RecordStateField.objects.all().delete()
-        self.field = RecordStateField.objects.create(template=self.template, states=['Closed', 'Option 1'])
+        self.field = RecordStateField.objects.create(template=self.template, options=['Closed', 'Option 1'])
 
     def setup_entry(self):
         self.entry = RecordStateEntry.objects.create(record=self.record, field=self.field, value='Option 1')

@@ -63,7 +63,7 @@ class RecordField(models.Model):
 
 class RecordStateField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='state_fields')
-    states = models.JSONField()
+    options = models.JSONField()
 
     class Meta:
         verbose_name = 'RecordStateField'
@@ -75,10 +75,6 @@ class RecordStateField(RecordField):
 
     def __str__(self):
         return 'recordStateField: {}; name: {};'.format(self.pk, self.name)
-
-    @property
-    def options(self):
-        return self.states
 
 
 class RecordUsersField(RecordField):

@@ -31,11 +31,19 @@ class RecordTemplateSerializer(serializers.ModelSerializer):
 # Fields
 ###
 class RecordFieldSerializer(serializers.ModelSerializer):
-    url = serializers.SerializerMethodField(read_only=True)
+    url = serializers.SerializerMethodField()
+    type = serializers.SerializerMethodField()
+    label = serializers.SerializerMethodField()
     entry_view_name = None
 
     def get_url(self, obj):
         return reverse(self.entry_view_name, request=self.context['request'])
+
+    def get_type(self, obj):
+        return obj.type
+
+    def get_label(self, obj):
+        return obj.name
 
 
 class RecordStateFieldSerializer(RecordFieldSerializer):
@@ -45,12 +53,12 @@ class RecordStateFieldSerializer(RecordFieldSerializer):
         model = RecordStateField
         fields = '__all__'
 
-    def validate_states(self, states):
-        if type(states) != list or any([type(s) is not str for s in states]):
+    def validate_options(self, options):
+        if type(options) != list or any([type(s) is not str for s in options]):
             raise ValidationError('States need to be a list of strings.')
-        if 'Closed' not in states:
+        if 'Closed' not in options:
             raise ValidationError('Closed needs to be added to states.')
-        return states
+        return options
 
 
 class RecordSelectFieldSerializer(RecordFieldSerializer):
@@ -95,15 +103,16 @@ class RecordStandardFieldSerializer(RecordFieldSerializer):
         fields = '__all__'
 
 
-class RecordUsersFieldSerializer(serializers.ModelSerializer):
+class RecordUsersFieldSerializer(RecordFieldSerializer):
     entry_view_name = 'recordusersentry-list'
+    options = serializers.JSONField(read_only=True)
 
     class Meta:
         model = RecordUsersField
         fields = '__all__'
 
 
-class RecordEncryptedFileFieldSerializer(serializers.ModelSerializer):
+class RecordEncryptedFileFieldSerializer(RecordFieldSerializer):
     entry_view_name = 'recordencryptedfileentry-list'
 
     class Meta:
@@ -111,7 +120,7 @@ class RecordEncryptedFileFieldSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class RecordEncryptedSelectFieldSerializer(serializers.ModelSerializer):
+class RecordEncryptedSelectFieldSerializer(RecordFieldSerializer):
     entry_view_name = 'recordencryptedselectentry-list'
 
     class Meta:
@@ -209,7 +218,7 @@ class RecordStateEntrySerializer(RecordEntrySerializer):
             field = attrs['field']
         else:
             raise ValidationError('Field needs to be set.')
-        if not attrs['value'] in field.states:
+        if not attrs['value'] in field.options:
             raise ValidationError('The selected state is not allowed.')
         return attrs
 

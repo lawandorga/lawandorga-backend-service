@@ -283,25 +283,25 @@ class RecordStateFieldViewSetWorking(GenericRecordField, TestCase):
     # create
     create_states = ['Closed', 'Option 1', 'Option 2']
     create_test = {
-        'states': create_states
+        'options': create_states
     }
     # update
     update_states = ['Closed', 'Option 4']
     update_data = {
-        'states': json.dumps(update_states),
+        'options': json.dumps(update_states),
     }
     update_test = {
-        'states': update_states
+        'options': update_states
     }
 
     def setup_field(self):
-        self.field = RecordStateField.objects.create(template=self.template, states=['Closed', 'Option 4'])
+        self.field = RecordStateField.objects.create(template=self.template, options=['Closed', 'Option 4'])
 
     def get_create_data(self):
         return {
             'name': 'Field 234',
             'template': self.template.pk,
-            'states': json.dumps(self.create_states)
+            'options': json.dumps(self.create_states)
         }
 
 

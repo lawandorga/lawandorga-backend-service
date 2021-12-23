@@ -284,6 +284,7 @@ class RecordEncryptedStandardEntryViewSet(mixins.CreateModelMixin, mixins.Update
         entry = RecordEncryptedStandardEntry(**serializer.validated_data)
         entry.encrypt(aes_key_record=aes_key_record)
         entry.save()
+        entry.decrypt(aes_key_record=aes_key_record)
         serializer = self.get_serializer(instance=entry, context={'request': request})
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

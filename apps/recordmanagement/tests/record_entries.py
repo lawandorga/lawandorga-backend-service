@@ -237,7 +237,7 @@ class RecordStateEntryViewSetWorking(GenericRecordEntry, TestCase):
 
     def setUp(self):
         super().setUp()
-        self.field = RecordStateField.objects.create(template=self.template, states=['Closed', 'Option 2'])
+        self.field = RecordStateField.objects.create(template=self.template, options=['Closed', 'Option 2'])
 
     def setup_entry(self):
         self.entry = RecordStateEntry.objects.create(record=self.record, field=self.field, value='Option 1')
