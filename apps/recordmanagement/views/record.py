@@ -159,15 +159,13 @@ class RecordViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.D
             ).select_related('old_client')
         return Record.objects.filter(template__rlc=self.request.user.rlc)
 
-    def create(self, request, *args, **kwargs):
-        response = super().create(request, *args, **kwargs)
-        created_record = Record.objects.get(pk=response.data['id'])
+    def perform_create(self, serializer):
+        record = serializer.save()
         aes_key = AESEncryption.generate_secure_key()
-        public_key_user = request.user.get_public_key()
-        encryption = RecordEncryptionNew(record=created_record, user=request.user, key=aes_key)
+        public_key_user = self.request.user.get_public_key()
+        encryption = RecordEncryptionNew(record=record, user=self.request.user, key=aes_key)
         encryption.encrypt(public_key_user=public_key_user)
         encryption.save()
-        return response
 
 
 ###

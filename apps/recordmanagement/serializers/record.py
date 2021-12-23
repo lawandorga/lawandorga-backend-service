@@ -380,5 +380,7 @@ class RecordDetailSerializer(RecordSerializer):
         return obj.template.get_fields(field_types_and_serializers, request=self.context['request'])
 
     def get_client(self, obj):
+        if obj.old_client is None:
+            return {}
         obj.old_client.decrypt(private_key_rlc=self.private_key_rlc)
         return EncryptedClientSerializer(instance=obj.old_client).data
