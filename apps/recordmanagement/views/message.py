@@ -10,10 +10,6 @@ class MessageViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, GenericView
     serializer_class = EncryptedRecordMessageSerializer
 
     def get_queryset(self):
-        """
-        Optionally restricts the returned purchases to a given user,
-        by filtering against a `username` query parameter in the URL.
-        """
         queryset = self.queryset
         record = self.request.query_params.get('record')
         if record is not None:
