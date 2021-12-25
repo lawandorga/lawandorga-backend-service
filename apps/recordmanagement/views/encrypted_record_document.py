@@ -18,19 +18,19 @@ class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
     def get_queryset(self):
-        return EncryptedRecordDocument.objects.filter(record__from_rlc=self.request.user.rlc)
+        return EncryptedRecordDocument.objects.filter(record__template__rlc=self.request.user.rlc)
 
     def retrieve(self, request: Request, *args, **kwargs):
         # instance
         instance = self.get_object()
 
         # check permission
-        if not instance.record.user_has_permission(request.user):
+        if not instance.record.encryptions.filter(user=request.user).exists():
             raise PermissionDenied()
 
         # download the file
         private_key_user = request.user.get_private_key(request=request)
-        record_key = instance.record.get_decryption_key(request.user, private_key_user)
+        record_key = instance.record.get_aes_key(request.user, private_key_user)
         file = instance.download(record_key)
 
         # generate response
@@ -47,7 +47,7 @@ class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
         response = super().create(request, *args, **kwargs)
         file = request.FILES['file']
         private_key_user = request.user.get_private_key(request=request)
-        record_key = self.instance.record.get_decryption_key(request.user, private_key_user)
+        record_key = self.instance.record.get_aes_key(request.user, private_key_user)
         # upload the file to s3
         self.instance.upload(file, record_key)
         # return

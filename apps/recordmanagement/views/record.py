@@ -1,3 +1,4 @@
+from apps.recordmanagement.serializers import RecordDocumentSerializer
 from apps.recordmanagement.serializers.record import RecordTemplateSerializer, RecordEncryptedStandardFieldSerializer, \
     RecordFieldSerializer, RecordSerializer, RecordEncryptedStandardEntrySerializer, RecordStandardEntrySerializer, \
     RecordEncryptedFileEntrySerializer, RecordStandardFieldSerializer, RecordEncryptedFileFieldSerializer, \
@@ -166,6 +167,12 @@ class RecordViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.D
         encryption = RecordEncryptionNew(record=record, user=self.request.user, key=aes_key)
         encryption.encrypt(public_key_user=public_key_user)
         encryption.save()
+
+    @action(detail=True, methods=['get'])
+    def documents(self, request, *args, **kwargs):
+        record = self.get_object()
+        documents = record.documents.all()
+        return Response(RecordDocumentSerializer(documents, many=True).data)
 
 
 ###

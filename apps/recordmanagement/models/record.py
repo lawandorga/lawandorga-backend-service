@@ -218,10 +218,13 @@ class Record(models.Model):
         verbose_name = 'Record'
         verbose_name_plural = 'Records'
 
-    def get_aes_key(self, user, private_key_user):
-        encryption = self.encryptions.get(user=user)
-        encryption.decrypt(private_key_user)
-        key = encryption.key
+    def get_aes_key(self, user=None, private_key_user=None):
+        if user and private_key_user:
+            encryption = self.encryptions.get(user=user)
+            encryption.decrypt(private_key_user)
+            key = encryption.key
+        else:
+            raise ValueError('You need to pass (user and private_key_user).')
         return key
 
     def get_unencrypted_entry_types(self):
