@@ -1,11 +1,10 @@
-from django.core.exceptions import ObjectDoesNotExist
-
 from apps.recordmanagement.models.encrypted_record_permission import EncryptedRecordPermission
 from apps.recordmanagement.models.record_encryption import RecordEncryption
 from apps.recordmanagement.serializers import EncryptedRecordPermissionSerializer
 from apps.api.models.notification import Notification
-from rest_framework.exceptions import PermissionDenied, ParseError
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from django.core.exceptions import ObjectDoesNotExist
 from apps.static.encryption import RSAEncryption
 from rest_framework import viewsets, mixins
 from django.utils import timezone
@@ -35,7 +34,7 @@ class RecordPermissionRequestViewSet(mixins.UpdateModelMixin, mixins.ListModelMi
         if serializer.validated_data['state'] == "gr":
             private_key_user = request.user.get_private_key(request=request)
             try:
-                record_key = instance.record.get_decryption_key(request.user, private_key_user)
+                record_key = instance.record.get_aes_key(request.user, private_key_user)
             except ObjectDoesNotExist:
                 raise PermissionDenied(
                     'You have no access to this record. Therefore you can not allow anyone else to see this record.')

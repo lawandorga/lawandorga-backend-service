@@ -1,5 +1,6 @@
-from apps.recordmanagement.models import Questionnaire, RecordQuestionnaire, QuestionnaireField, QuestionnaireAnswer, \
-    QuestionnaireFile
+from apps.recordmanagement.models import QuestionnaireTemplate, Questionnaire, QuestionnaireQuestion, \
+    QuestionnaireAnswer, QuestionnaireTemplateFile
+from rest_framework.exceptions import ValidationError
 from rest_framework import serializers
 
 
@@ -19,31 +20,31 @@ class DataTextSerializer(serializers.Serializer):
 
 
 ###
-# Questionnaire Field
+# QuestionnaireQuestion
 ###
-class QuestionnaireFieldSerializer(serializers.ModelSerializer):
+class QuestionnaireQuestionSerializer(serializers.ModelSerializer):
     name = serializers.CharField(read_only=True)  # used on forms populated from the property
 
     class Meta:
-        model = QuestionnaireField
+        model = QuestionnaireQuestion
         fields = '__all__'
 
 
 ###
 # QuestionnaireFile
 ###
-class QuestionnaireFileSerializer(serializers.ModelSerializer):
+class QuestionnaireTemplateFileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = QuestionnaireFile
+        model = QuestionnaireTemplateFile
         fields = '__all__'
 
 
 ###
-# Questionnaire
+# QuestionnaireTemplate
 ###
-class QuestionnaireSerializer(serializers.ModelSerializer):
+class QuestionnaireTemplateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Questionnaire
+        model = QuestionnaireTemplate
         fields = '__all__'
 
     def validate(self, attrs):
@@ -52,15 +53,15 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class QuestionnaireFilesSerializer(QuestionnaireSerializer):
-    files = QuestionnaireFileSerializer(many=True, read_only=True)
+class QuestionnaireTemplateFilesSerializer(QuestionnaireTemplateSerializer):
+    files = QuestionnaireTemplateFileSerializer(many=True, read_only=True)
 
 
 ###
 # QuestionnaireAnswer
 ###
 class QuestionnaireAnswerSerializer(serializers.ModelSerializer):
-    field = QuestionnaireFieldSerializer(read_only=True)
+    field = QuestionnaireQuestionSerializer(read_only=True)
 
     class Meta:
         model = QuestionnaireAnswer
@@ -80,7 +81,7 @@ class QuestionnaireAnswerCreateSerializer(serializers.ModelSerializer):
         return QuestionnaireAnswer(**self.validated_data)
 
 
-class QuestionnaireAnswerCreateFileSerializer(QuestionnaireAnswerCreateSerializer):
+class QuestionnaireFileAnswerSerializer(QuestionnaireAnswerCreateSerializer):
     data = serializers.FileField()
 
     def get_instance(self):
@@ -89,30 +90,36 @@ class QuestionnaireAnswerCreateFileSerializer(QuestionnaireAnswerCreateSerialize
         return instance
 
 
-class QuestionnaireAnswerCreateTextSerializer(QuestionnaireAnswerCreateSerializer):
+class QuestionnaireTextAnswerSerializer(QuestionnaireAnswerCreateSerializer):
     data = serializers.CharField()
+
+    def validate_data(self, data):
+        if len(data) > 190:
+            raise ValidationError('The message can only be 190 characters long, because of encryption issues. '
+                                  'Your message is {} characters long.'.format(len(data)))
+        return data
 
 
 ###
 # RecordQuestionnaire
 ###
-class RecordQuestionnaireSerializer(serializers.ModelSerializer):
+class QuestionnaireSerializer(serializers.ModelSerializer):
     class Meta:
-        model = RecordQuestionnaire
+        model = Questionnaire
         fields = '__all__'
 
 
-class RecordQuestionnaireListSerializer(RecordQuestionnaireSerializer):
-    questionnaire = QuestionnaireSerializer(read_only=True)
+class QuestionnaireListSerializer(QuestionnaireSerializer):
+    template = QuestionnaireTemplateSerializer(read_only=True)
     # answers = QuestionnaireAnswerSerializer(many=True, read_only=True)
 
 
-class RecordQuestionnaireDetailSerializer(RecordQuestionnaireSerializer):
-    questionnaire = QuestionnaireFilesSerializer(read_only=True)
+class RecordQuestionnaireDetailSerializer(QuestionnaireSerializer):
+    template = QuestionnaireTemplateFilesSerializer(read_only=True)
     fields = serializers.SerializerMethodField(method_name='get_questionnaire_fields')
 
     def get_questionnaire_fields(self, obj):
-        fields = list(obj.questionnaire.fields.all())
+        fields = list(obj.template.fields.all())
         answers = list(obj.answers.values_list('field', flat=True))
         fields = list(filter(lambda field: field.id not in answers, fields))
-        return QuestionnaireFieldSerializer(fields, many=True).data
+        return QuestionnaireQuestionSerializer(fields, many=True).data

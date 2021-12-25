@@ -10,3 +10,4 @@ from .encrypted_record_deletion_request import *
 from .pool_consultant import *
 from .pool_record import *
 from .questionnaire import *
+from .record import *

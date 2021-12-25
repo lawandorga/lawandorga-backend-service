@@ -14,3 +14,5 @@ from .questionnaire_answers import *
 from .questionnaire_fields import *
 from .questionnaire_files import *
 from .questionnaire import *
+from .record import *
+from .message import *

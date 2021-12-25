@@ -1,6 +1,6 @@
+from apps.recordmanagement.models.record import Record
 from apps.static.storage_folders import get_storage_folder_encrypted_record_document
 from django.core.files.storage import default_storage
-from apps.static.encryption import AESEncryption
 from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
 from apps.api.models import UserProfile
 from django.db import models
@@ -16,7 +16,9 @@ class EncryptedRecordDocument(models.Model):
         on_delete=models.SET_NULL,
         null=True,
     )
-    record = models.ForeignKey("EncryptedRecord", related_name="e_record_documents", on_delete=models.CASCADE)
+    old_record = models.ForeignKey("EncryptedRecord", related_name="e_record_documents", on_delete=models.CASCADE,
+                                   blank=True, null=True)
+    record = models.ForeignKey(Record, related_name='documents', on_delete=models.CASCADE, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
     last_edited = models.DateTimeField(auto_now_add=True)
     file_size = models.BigIntegerField(null=True)
@@ -29,7 +31,7 @@ class EncryptedRecordDocument(models.Model):
 
     def __str__(self):
         return "recordDocument: {}; name: {}; creator: {}; record: {};".format(
-            self.pk, self.name, self.creator.email, self.record.record_token
+            self.pk, self.name, self.creator.email, self.record.id
         )
 
     def save(self, *args, **kwargs):
@@ -38,7 +40,7 @@ class EncryptedRecordDocument(models.Model):
         super().save(*args, **kwargs)
 
     def slugify(self, unique=''):
-        key = 'rlcs/{}/encrypted_records/{}/{}_{}'.format(self.record.from_rlc.pk, self.record.id, unique, self.name)
+        key = 'rlcs/{}/encrypted_records/{}/{}_{}'.format(self.record.template.rlc.pk, self.record.id, unique, self.name)
         special_char_map = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('ß'): 'ss', ord('Ä'): 'AE',
                             ord('Ö'): 'OE', ord('Ü'): 'UE'}
         key = key.translate(special_char_map)

@@ -1,4 +1,4 @@
-from apps.recordmanagement.models import EncryptedRecord
+from apps.recordmanagement.models import EncryptedRecord, Record
 from apps.static.encryption import EncryptedModelMixin, RSAEncryption, AESEncryption
 from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
 from apps.api.models import Rlc
@@ -6,11 +6,11 @@ from django.db import models
 import uuid
 
 
-class Questionnaire(models.Model):
+class QuestionnaireTemplate(models.Model):
     name = models.CharField(max_length=100)
     rlc = models.ForeignKey(Rlc, related_name='questionnaires', on_delete=models.CASCADE, blank=True)
     notes = models.TextField(blank=True)
-    records = models.ManyToManyField(EncryptedRecord, through='RecordQuestionnaire')
+    records = models.ManyToManyField(EncryptedRecord, through='Questionnaire')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -22,8 +22,8 @@ class Questionnaire(models.Model):
         return 'questionnaire: {}; rlc: {};'.format(self.name, self.rlc.name)
 
 
-class QuestionnaireFile(models.Model):
-    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE, related_name='files')
+class QuestionnaireTemplateFile(models.Model):
+    questionnaire = models.ForeignKey(QuestionnaireTemplate, on_delete=models.CASCADE, related_name='files')
     name = models.CharField(max_length=100)
     file = models.FileField(upload_to='questionnairefile/')
     created = models.DateTimeField(auto_now_add=True)
@@ -37,8 +37,8 @@ class QuestionnaireFile(models.Model):
         return 'questionnaireFile: {}; questionnaire: {};'.format(self.name, self.questionnaire.name)
 
 
-class QuestionnaireField(models.Model):
-    questionnaire = models.ForeignKey(Questionnaire, related_name='fields', on_delete=models.CASCADE)
+class QuestionnaireQuestion(models.Model):
+    questionnaire = models.ForeignKey(QuestionnaireTemplate, related_name='fields', on_delete=models.CASCADE)
     TYPE_CHOICES = (
         ('FILE', 'File'),
         ('TEXTAREA', 'Text'),
@@ -62,9 +62,11 @@ class QuestionnaireField(models.Model):
         return '{}_{}'.format(self.type.lower(), self.id)
 
 
-class RecordQuestionnaire(models.Model):
-    record = models.ForeignKey(EncryptedRecord, on_delete=models.CASCADE, related_name='questionnaires')
-    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.PROTECT, related_name='record_questionnaires')
+class Questionnaire(models.Model):
+    old_record = models.ForeignKey(EncryptedRecord, on_delete=models.CASCADE, related_name='questionnaires', null=True)
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='questionnaires',
+                               null=True, blank=True)
+    template = models.ForeignKey(QuestionnaireTemplate, on_delete=models.PROTECT, related_name='questionnaires')
     code = models.SlugField(unique=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -83,8 +85,8 @@ class RecordQuestionnaire(models.Model):
 
 
 class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
-    record_questionnaire = models.ForeignKey(RecordQuestionnaire, on_delete=models.CASCADE, related_name='answers')
-    field = models.ForeignKey(QuestionnaireField, on_delete=models.CASCADE, related_name='answers')
+    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE, related_name='answers')
+    field = models.ForeignKey(QuestionnaireQuestion, on_delete=models.CASCADE, related_name='answers')
     data = models.BinaryField()
     aes_key = models.BinaryField(default=b'')
     created = models.DateTimeField(auto_now_add=True)
@@ -100,13 +102,13 @@ class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
         return 'questionnaireAnswer: {};'.format(self.pk)
 
     def encrypt(self, *args):
-        key = self.record_questionnaire.questionnaire.rlc.get_public_key()
+        key = self.questionnaire.template.rlc.get_public_key()
         super().encrypt(key)
 
     def decrypt(self, private_key_rlc=None, user=None, private_key_user=None):
         if user and private_key_user:
-            private_key_rlc = self.record_questionnaire.questionnaire.rlc \
-                .get_private_key(user=user, private_key_user=private_key_user)
+            private_key_rlc = self.questionnaire.template.rlc.get_private_key(user=user,
+                                                                              private_key_user=private_key_user)
         elif private_key_rlc:
             pass
         else:
@@ -114,8 +116,9 @@ class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
         super().decrypt(private_key_rlc)
 
     def generate_key(self):
-        key = 'rlcs/{}/record_questionnaires/{}/{}'.format(self.record_questionnaire.questionnaire.rlc.pk,
-                                                           self.record_questionnaire.id, self.field.id)
+        key = 'rlcs/{}/record_questionnaires/{}/{}'.format(self.questionnaire.template.rlc.pk,
+                                                           self.questionnaire.template.id,
+                                                           self.field.id)
         return key
 
     def download_file(self, aes_key):
