@@ -27,3 +27,11 @@ This project contains a backend based on Django-Rest-Framework. It uses Amazon S
 5. `./setup.prod.sh`
 6. Add content to `tmp/secrets.json`   
 7. `./deploy.sh`
+
+## Secrets dev
+
+`
+{
+
+}
+`

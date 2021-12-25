@@ -3,7 +3,7 @@ from django.db import models
 
 
 class Tag(models.Model):
-    rlc = models.ForeignKey(Rlc, on_delete=models.CASCADE, blank=True)
+    rlc = models.ForeignKey(Rlc, on_delete=models.CASCADE, blank=True, related_name='tags')
     name = models.CharField(max_length=200)
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)

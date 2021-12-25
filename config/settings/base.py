@@ -159,3 +159,7 @@ FRONTEND_URL = get_secret("FRONTEND_URL")
 
 # Run time is set when django starts
 RUNTIME = datetime.now(pytz.timezone('Europe/Berlin')).isoformat()
+
+# The standard password of the dummy user, this is used within get_private_key in UserProfile
+# This enables us to do a lot of cool stuff, for example: test the restframework api directly
+DUMMY_USER_PASSWORD = "qwe123"

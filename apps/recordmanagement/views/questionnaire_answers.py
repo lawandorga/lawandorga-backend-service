@@ -1,6 +1,5 @@
-from rest_framework.exceptions import APIException
-
 from apps.recordmanagement.models import QuestionnaireAnswer
+from rest_framework.exceptions import APIException
 from rest_framework.decorators import action
 from rest_framework import viewsets
 from django.http import FileResponse
@@ -11,7 +10,7 @@ class QuestionnaireAnswersViewSet(viewsets.GenericViewSet):
     queryset = QuestionnaireAnswer.objects.none()
 
     def get_queryset(self):
-        return QuestionnaireAnswer.objects.filter(record_questionnaire__questionnaire__rlc=self.request.user.rlc)
+        return QuestionnaireAnswer.objects.filter(questionnaire__template__rlc=self.request.user.rlc)
 
     @action(detail=True)
     def download_file(self, request, *args, **kwargs):

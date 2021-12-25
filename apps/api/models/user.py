@@ -144,7 +144,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             self.generate_new_user_encryption_keys()
         return self.encryption_keys.public_key
 
-    def get_private_key(self, password_user: str = None, request: Request = None) -> str:
+    def get_private_key(self, password_user=None, request=None):
         if not hasattr(self, "encryption_keys"):
             self.generate_new_user_encryption_keys()
 
@@ -273,6 +273,7 @@ class RlcUser(models.Model):
     class Meta:
         verbose_name = 'RlcUser'
         verbose_name_plural = 'RlcUsers'
+        ordering = ['user__name']
 
     def __str__(self):
         return 'rlcUser: {}; email: {};'.format(self.pk, self.user.email)
