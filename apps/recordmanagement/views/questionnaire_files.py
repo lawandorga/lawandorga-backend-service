@@ -1,13 +1,13 @@
-from apps.recordmanagement.serializers.questionnaire import QuestionnaireFileSerializer
-from apps.recordmanagement.models import QuestionnaireFile
+from apps.recordmanagement.serializers.questionnaire import QuestionnaireTemplateFileSerializer
+from apps.recordmanagement.models import QuestionnaireTemplateFile
 from rest_framework import viewsets, mixins
 from django.http import FileResponse
 import mimetypes
 
 
 class QuestionnaireFilesViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    queryset = QuestionnaireFile.objects.none()
-    serializer_class = QuestionnaireFileSerializer
+    queryset = QuestionnaireTemplateFile.objects.none()
+    serializer_class = QuestionnaireTemplateFileSerializer
 
     def get_permissions(self):
         if self.action in ['retrieve']:
@@ -16,8 +16,8 @@ class QuestionnaireFilesViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixi
 
     def get_queryset(self):
         if self.action in ['retrieve']:
-            return QuestionnaireFile.objects.all()
-        return QuestionnaireFile.objects.filter(questionnaire__rlc=self.request.user.rlc)
+            return QuestionnaireTemplateFile.objects.all()
+        return QuestionnaireTemplateFile.objects.filter(questionnaire__rlc=self.request.user.rlc)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
