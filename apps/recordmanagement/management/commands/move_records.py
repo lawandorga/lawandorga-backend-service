@@ -171,8 +171,8 @@ def test_record(record):
     field = RecordUsersField.objects.get(template=template, name='Consultants')
     if old_record.working_on_record:
         entry = RecordUsersEntry.objects.get(record=new_record, field=field)
-        assert list(old_record.working_on_record.values_list('pk', flat=True)) == list(
-            entry.value.values_list('pk', flat=True)), \
+        assert set(list(old_record.working_on_record.values_list('pk', flat=True))) == set(list(
+            entry.value.values_list('pk', flat=True))), \
             '{} != {}'.format(list(old_record.working_on_record.values_list('pk', flat=True)),
                               list(entry.value.values_list('pk', flat=True)))
     #
