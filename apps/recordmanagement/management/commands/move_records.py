@@ -10,7 +10,8 @@ class Command(BaseCommand):
     help = "Moves the records to the new format."
 
     def handle(self, *args, **options):
-        for record in EncryptedRecord.objects.all():
+        for record in EncryptedRecord.objects.all().order_by('id'):
+            print(record.id)
             if not hasattr(record, 'record'):
                 move_record(record)
             test_record(record)
