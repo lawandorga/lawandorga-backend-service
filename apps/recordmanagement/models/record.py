@@ -448,7 +448,7 @@ class RecordEncryptedFileEntry(RecordEntry):
 class RecordStandardEntry(RecordEntry):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='standard_entries')
     field = models.ForeignKey(RecordStandardField, related_name='entries', on_delete=models.PROTECT)
-    value = models.CharField(max_length=500)
+    value = models.CharField(max_length=1000)
 
     class Meta:
         unique_together = ['record', 'field']
