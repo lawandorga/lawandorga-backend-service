@@ -129,7 +129,7 @@ class GroupViewSet(viewsets.ModelViewSet):
                         record_encryption.encrypt(public_key_member)
                         record_encryption.save()
             # notify
-            Notification.objects.notify_group_member_added(request.user, member, group)
+            # Notification.objects.notify_group_member_added(request.user, member, group)
 
             # return the added user
             return Response(UserProfileSerializer(member).data, status=status.HTTP_200_OK)
@@ -137,9 +137,9 @@ class GroupViewSet(viewsets.ModelViewSet):
         # remove member from group
         if request.method == "DELETE":
             group.group_members.remove(member)
-            Notification.objects.notify_group_member_removed(
-                request.user, member, group
-            )
+            # Notification.objects.notify_group_member_removed(
+            #     request.user, member, group
+            # )
 
         # return something
         return Response(status.HTTP_204_NO_CONTENT)
