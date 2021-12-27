@@ -41,20 +41,6 @@ def create_rlcs():
     return [rlc1, rlc2]
 
 
-def create_tags(rlc):
-    # create record tags
-    tags = [
-        "Familiennachzug",
-        "Dublin IV",
-        "Arbeitserlaubnis",
-        "Flüchtlingseigenschaft",
-        "subsidiärer Schutz",
-        "Eheschließung",
-        "Verlobung",
-    ]
-    [Tag.objects.create(name=tag, rlc=rlc) for tag in tags]
-
-
 def create_fixtures():
     # create countries
     countries = ["Abchasien", "Afghanistan", "Ägypten", "Albanien", "Algerien"]
@@ -313,132 +299,13 @@ def create_admin_group(rlc: Rlc, main_user: UserProfile):
     return admin_group
 
 
-def create_clients(rlc: Rlc) -> [EncryptedClient]:
-    origin_countries = OriginCountry.objects.all()
-    clients = [
-        (
-            "2018-7-12",  # created_on
-            "2018-8-28T21:3:0",  # last_edited
-            "Bibi Aisha",  # name
-            "auf Flucht von Ehemann getrennt worden",  # note
-            "01793456542",  # phone number
-            "1990-5-1",  # birthday
-            choice(origin_countries),  # origin country id
-        ),
-        (
-            (2017, 3, 17),
-            "2017-12-24T12:2:0",
-            "Mustafa Kubi",
-            "möchte eine Ausbildung beginnen",
-            None,
-            "1998-12-3",
-            choice(origin_countries),
-        ),
-        (
-            "2018-1-1",
-            "2018-3-3T14:5:0",
-            "Ali Baba",
-            "fragt wie er seine deutsche Freundin heiraten kann",
-            "",
-            "1985-6-27",
-            choice(origin_countries),
-        ),
-        (
-            "2018-8-1",
-            "2018-8-2T16:3:0",
-            "Kamila Iman",
-            "möchte zu ihrer Schwester in eine andere Aufnahmeeinrichtung ziehen",
-            "01562736778",
-            "1956-4-3",
-            choice(origin_countries),
-        ),
-        (
-            "2017-9-10",
-            "2017-10-2T15:3:0",
-            "Junis Haddad",
-            "Informationen zum Asylverfahren",
-            "013345736778",
-            "1998-6-2",
-            choice(origin_countries),
-        ),
-        (
-            "2017-9-10",
-            "2018-9-2T16:3:0",
-            "Nael Mousa",
-            "Informationen zum Asylverfahren",
-            "01444436778",
-            "1997-6-4",
-            choice(origin_countries),
-        ),
-        (
-            "2017-9-10",
-            "2018-1-12T16:3:0",
-            "Amir Hamdan",
-            "Informationen zum Asylverfahren",
-            "01457636778",
-            "1996-6-8",
-            choice(origin_countries),
-        ),
-        (
-            "2017-9-10",
-            "2018-1-2T16:3:0",
-            "Amar Yousef",
-            "Informationen zum Asylverfahren",
-            "01566546778",
-            "1995-5-10",
-            choice(origin_countries),
-        ),
-        (
-            "2017-9-10",
-            "2017-12-2T16:3:0",
-            "Tarek Habib",
-            "Informationen zum Asylverfahren",
-            "013564736778",
-            "1994-5-12",
-            choice(origin_countries),
-        ),
-        (
-            "2017-9-10",
-            "2018-10-2T16:3:0",
-            "Kaya Yousif",
-            "Informationen zum Asylverfahren",
-            "01564586778",
-            "1993-4-14",
-            choice(origin_countries),
-        ),
-    ]
-    created_clients = []
-
-    for client in clients:
-        created_client = EncryptedClient(
-            name=client[2],
-            from_rlc=rlc,
-            created_on=client[0],
-            last_edited=client[1],
-            birthday=client[5],
-            origin_country=client[6],
-            note=client[3],
-            phone_number=client[4],
-        )
-        created_client.encrypt(rlc.get_public_key())
-        created_client.save()
-        created_clients.append(created_client)
-
-    return created_clients
-
-
-def create_records(
-    clients: [EncryptedClient], users: [UserProfile], rlc: Rlc
-) -> [EncryptedRecord]:
-    assert len(clients) > 9
-    tags = list(Tag.objects.filter(rlc=rlc))
+def create_records(users, rlc):
 
     records = [
         (
             choice(users),  # creator id
             "2018-7-12",  # created
             "2018-8-29T13:54:0+00:00",  # last edited
-            clients[0],  # client
             "2018-7-10",  # first contact
             "2018-8-14T17:30:0+00:00",  # last contact
             "AZ-123/18",  # record token
@@ -617,7 +484,6 @@ def create_records(
 def create_informative_record(
     main_user: UserProfile,
     main_user_password: str,
-    clients: [EncryptedClient],
     users: [UserProfile],
     rlc: Rlc,
 ) -> EncryptedRecord:
@@ -752,11 +618,9 @@ def create() -> None:
     rlc1, rlc2 = create_rlcs()
     dummy = create_dummy_users(rlc1)[0]
     # data
-    tags = create_tags(rlc1)
-    clients = create_clients(rlc1)
     users = create_users(rlc1, rlc2)
     create_inactive_user(rlc1)
     create_groups(rlc1, dummy, users)
     create_admin_group(rlc1, dummy)
-    create_records(clients, users, rlc1)
-    create_informative_record(dummy, dummy_password, clients, users, rlc1)
+    create_records(users, rlc1)
+    create_informative_record(dummy, dummy_password, users, rlc1)
