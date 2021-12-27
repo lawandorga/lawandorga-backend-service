@@ -1,6 +1,5 @@
 from apps.api.models.has_permission import HasPermission
 from apps.recordmanagement.helpers import check_encryption_key_holders_and_grant
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.decorators import action
 from apps.static.permissions import PERMISSION_MANAGE_PERMISSIONS_RLC, get_record_encryption_keys_permissions, \

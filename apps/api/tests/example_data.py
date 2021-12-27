@@ -1,12 +1,13 @@
 from apps.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
 from apps.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
-from apps.recordmanagement.models.record_encryption import RecordEncryption
-from apps.recordmanagement.models.encrypted_client import EncryptedClient
-from apps.recordmanagement.models.encrypted_record import EncryptedRecord
 from apps.collab.static.collab_permissions import get_all_collab_permission_strings
 from apps.files.static.folder_permissions import get_all_folder_permissions_strings
+from apps.recordmanagement.fixtures import create_default_record_template
 from apps.api.models.has_permission import HasPermission
-from apps.recordmanagement.models import OriginCountry, Tag
+from apps.recordmanagement.models import RecordSelectField, RecordTemplate, Record, RecordStandardField, \
+    RecordStandardEntry, RecordUsersEntry, RecordMultipleField, RecordMultipleEntry, RecordStateField, \
+    RecordStateEntry, RecordEncryptionNew, RecordEncryptedStandardField, RecordSelectEntry, \
+    RecordEncryptedStandardEntry, RecordUsersField
 from apps.api.models.permission import Permission
 from apps.static.permissions import get_all_permissions_strings
 from apps.static.encryption import AESEncryption
@@ -42,10 +43,6 @@ def create_rlcs():
 
 
 def create_fixtures():
-    # create countries
-    countries = ["Abchasien", "Afghanistan", "Ägypten", "Albanien", "Algerien"]
-    [OriginCountry.objects.create(name=country) for country in countries]
-
     # create permissions
     [
         Permission.objects.get_or_create(name=permission)
@@ -300,283 +297,326 @@ def create_admin_group(rlc: Rlc, main_user: UserProfile):
 
 
 def create_records(users, rlc):
-
+    tags = RecordSelectField.objects.filter(template__rlc=rlc).first().options
     records = [
         (
-            choice(users),  # creator id
-            "2018-7-12",  # created
-            "2018-8-29T13:54:0+00:00",  # last edited
-            "2018-7-10",  # first contact
-            "2018-8-14T17:30:0+00:00",  # last contact
-            "AZ-123/18",  # record token
+            "2018-7-12",
+            "2018-8-29T13:54:0+00:00",
+            "AZ-123/18",
             "informationen zum asylrecht",
-            "cl",  # status, cl wa op
-            [choice(users), choice(users)],  # working on
-            [choice(tags), choice(tags)],  # tags
+            "Closed",
+            [choice(users), choice(users)],
+            [choice(tags), choice(tags)],
         ),
         (
-            choice(users),
-            "2018-6-23",
-            "2018-8-22T23:3:0+00:00",
-            clients[1],
             "2018-6-20",
             "2018-7-10T17:30:0+00:00",
             "AZ-124/18",
             "nicht abgeschlossen",
-            "op",
+            "Open",
             [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(users),
-            "2018-8-24",
-            "2018-8-31T1:2:0+00:00",
-            clients[2],
             "2018-8-22",
             "2018-8-22T18:30:0+00:00",
             "AZ-125/18",
             "auf Bescheid wartend",
-            "wa",
+            "Waiting",
             [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(users),
-            "2018-3-10",
-            "2018-4-30T19:22:0+00:00",
-            clients[3],
             "2018-3-9",
             "2018-3-24T15:54:0+00:00",
             "AZ-126/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
-            "cl",
+            "Closed",
             [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(users),
-            "2017-9-10",
-            "2017-10-2T15:3:0+00:00",
-            clients[4],
             "2017-9-10",
             "2017-10-2T15:3:0+00:00",
             "AZ-127/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
-            "cl",
+            "Closed",
             [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(users),
-            "2017-9-10",
-            "2018-9-2T16:3:0+00:00",
-            clients[5],
             "2017-9-10",
             "2018-9-2T16:3:0+00:00",
             "AZ-128/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
-            "wa",
+            "Waiting",
             [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(users),
-            "2017-9-10",
-            "2018-1-12T16:3:0+00:00",
-            clients[6],
             "2017-9-10",
             "2018-1-12T16:3:0+00:00",
             "AZ-129/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
-            "op",
+            "Open",
             [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(users),
-            "2017-9-10",
-            "2018-1-2T16:3:0+00:00",
-            clients[7],
             "2017-9-10",
             "2018-1-2T16:3:0+00:00",
             "AZ-130/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
-            "cl",
+            "Closed",
             [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(users),
-            "2017-9-10",
-            "2018-12-2T16:3:0+00:00",
-            clients[8],
             "2017-9-10",
             "2018-12-2T16:3:0+00:00",
             "AZ-131/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
-            "wa",
+            "Waiting",
             [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(users),
-            "2017-9-10",
-            "2018-10-2T16:3:0+00:00",
-            clients[9],
             "2017-9-10",
             "2018-10-2T16:3:0+00:00",
             "AZ-132/18",
             "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
-            "op",
+            "Open",
             [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
         (
-            choice(users),
-            "2017-9-10",
-            "2018-10-2T16:3:0+00:00",
-            clients[0],
             "2017-9-10",
             "2018-10-2T16:3:0+00:00",
             "AZ-139/18",
             "zweite akte von client 0",
-            "op",
+            "Open",
             [choice(users), choice(users)],
             [choice(tags), choice(tags)],
         ),
     ]
 
+    # 0 first contact date
+    # 1 last contact date
+    # 2 token
+    # 3 official note
+    # 4 state
+    # 5 users
+    # 6 tags
+
+    template = RecordTemplate.objects.first()
     created_records = []
     for record in records:
-        created_record = EncryptedRecord(
-            from_rlc=rlc,
-            creator=record[0],
-            client=record[3],
-            record_token=record[6],
-            official_note=record[7],
-            state=record[8],
-            created_on=record[1],
-            first_contact_date=record[4],
-            last_edited=record[2],
-            last_contact_date=record[5],
-        )
-        created_record.save()
-        for user in record[9]:
-            created_record.working_on_record.add(user)
-        for tag in record[10]:
-            created_record.tags.add(tag)
+        # create
+        created_record = Record.objects.create(template=template)
+        # first contact date
+        field = RecordStandardField.objects.get(template=template, name='First contact date')
+        RecordStandardEntry.objects.create(record=created_record, field=field, value=record[0])
+        # last contact date
+        field = RecordStandardField.objects.get(template=template, name='Last contact date')
+        RecordStandardEntry.objects.create(record=created_record, field=field, value=record[1])
+        # token
+        field = RecordStandardField.objects.get(template=template, name='Token')
+        RecordStandardEntry.objects.create(record=created_record, field=field, value=record[2])
+        # official note
+        field = RecordStandardField.objects.get(template=template, name='Official Note')
+        RecordStandardEntry.objects.create(record=created_record, field=field, value=record[3])
+        # state
+        field = RecordStateField.objects.get(template=template, name='State')
+        RecordStateEntry.objects.create(record=created_record, field=field, value=record[4])
+        # consultants
+        field = RecordUsersField.objects.get(template=template, name='Consultants')
+        entry = RecordUsersEntry.objects.create(record=created_record, field=field)
+        entry.value.set(record[5])
+        # tags
+        field = RecordMultipleField.objects.get(template=template, name='Tags')
+        RecordMultipleEntry.objects.create(record=created_record, field=field, value=record[6])
+
         # secure the record
         aes_key = AESEncryption.generate_secure_key()
-        users_with_permission = created_record.get_users_who_should_be_allowed_to_decrypt()
-        for user in users_with_permission:
-            record_encryption = RecordEncryption(
-                user=user, record=created_record, encrypted_key=aes_key
-            )
+        for user in set(record[5]):
+            record_encryption = RecordEncryptionNew(user=user, record=created_record, key=aes_key)
             record_encryption.encrypt(user.get_public_key())
             record_encryption.save()
 
-        created_record.encrypt(aes_key=aes_key)
-        created_record.save()
+        # append to return
         created_records.append(created_record)
+
+    # return
     return created_records
 
 
-def create_informative_record(
-    main_user: UserProfile,
-    main_user_password: str,
-    users: [UserProfile],
-    rlc: Rlc,
-) -> EncryptedRecord:
-    tags = list(Tag.objects.all())
+def create_informative_record(main_user, main_user_password, users, rlc):
     users = [main_user] + users
 
     # create the informative record
-    record = EncryptedRecord(
-        from_rlc=rlc,
-        creator=main_user,
-        client=clients[0],
-        record_token="AZ-001/18",
-        official_note="best record ever",
-        state="op",
-        created_on="2018-1-3",
-        first_contact_date="2018-1-3",
-        last_edited="2019-3-11T9:32:21+00:00",
-        last_contact_date="2019-2-28T17:33:0+00:00",
-        first_consultation="2018-1-2T23:55:0+00:00",
-    )
-    record.save()
-
-    # add encrypted data
-    record.note = "Mandant moechte dass wir ihn vor Gericht vertreten. Das duerfen wir aber nicht. #RDG"
-    record.consultant_team = "Taskforce 417"
-    record.lawyer = "RA Guenther-Klaus, Kiesweg 3"
-    record.related_persons = "Sozialarbeiter Apfel (Direkt in der Unterkunft)"
-    record.contact = "Mail: asksk1@beispiel.de,\n Telefon: 0800 444 55 444"
-    record.bamf_token = "QRS-232/2018"
-    record.foreign_token = "Vor Gericht: FA93932-1320"
-    record.first_correspondence = (
-        "Hallo Liebes Team der RLC,\n ich habe folgendes Problem.\nKoennt ihr mir "
-        "helfen?\n Vielen Dank"
-    )
-    record.circumstances = "Kam ueber die Balkanroute, Bruder auf dem Weg verloren, wenig Kontakt zu Familie."
-    record.next_steps = "Klage einreichen und gewinnen!"
-    record.status_described = "Auf Antwort wartend, anschliessend weitere Bearbeitung."
-    record.additional_facts = "Hat noch nie ne Schweinshaxe gegessen."
-
-    # add relations
+    template = RecordTemplate.objects.filter(rlc=rlc).first()
+    record = Record.objects.create(template=template)
     record_users = [choice(users), main_user]
-    for user in record_users:
-        record.working_on_record.add(user)
-    for tag in [choice(tags), choice(tags)]:
-        record.tags.add(tag)
-
-    # encrypt the record
     aes_key = AESEncryption.generate_secure_key()
     for user in record_users:
-        record_encryption = RecordEncryption(
-            user=user, record=record, encrypted_key=aes_key
-        )
+        record_encryption = RecordEncryptionNew(user=user, record=record, key=aes_key)
         record_encryption.encrypt(user.get_public_key())
         record_encryption.save()
-    record.encrypt(aes_key=aes_key)
-    record.save()
+    # first contact date
+    field = RecordStandardField.objects.get(template=template, name='First contact date')
+    RecordStandardEntry.objects.create(record=record, field=field, value='2018-01-03')
+    # last contact date
+    field = RecordStandardField.objects.get(template=template, name='Last contact date')
+    RecordStandardEntry.objects.create(record=record, field=field, value='2019-3-11T09:32:21')
+    # token
+    field = RecordStandardField.objects.get(template=template, name='Token')
+    RecordStandardEntry.objects.create(field=field, record=record, value="AZ-001/18")
+    # state
+    field = RecordStateField.objects.get(template=template, name='State')
+    RecordStateEntry.objects.create(field=field, record=record, value='Open')
+    # official note
+    field = RecordStandardField.objects.get(template=template, name='Official Note')
+    RecordStandardEntry.objects.create(field=field, record=record, value='Best record ever created.')
+    # client name
+    field = RecordEncryptedStandardField.objects.get(template=template, name='Client name')
+    entry = RecordEncryptedStandardEntry(field=field, record=record, value="Bibi Aisha")
+    entry.encrypt(aes_key_record=aes_key)
+    entry.save()
+    entry.encrypt(aes_key_record=aes_key)
+    entry.save()
+    # client note
+    field = RecordEncryptedStandardField.objects.get(template=template, name='Client Note')
+    entry = RecordEncryptedStandardEntry(field=field, record=record,
+                                         value="Auf der Flucht von Ehemann getrennt worden.")
+    entry.encrypt(aes_key_record=aes_key)
+    entry.save()
+    # client phone
+    field = RecordEncryptedStandardField.objects.get(template=template, name='Phone')
+    entry = RecordEncryptedStandardEntry(field=field, record=record, value='01793456542')
+    entry.encrypt(aes_key_record=aes_key)
+    entry.save()
+    # client birthday
+    field = RecordStandardField.objects.get(template=template, name='Birthday')
+    RecordStandardEntry.objects.create(field=field, record=record, value="1990-05-01")
+    # client origin country
+    field = RecordSelectField.objects.get(template=template, name='Origin Country')
+    RecordSelectEntry.objects.create(record=record, field=field, value='Afghanistan')
+    # note
+    field = RecordEncryptedStandardField.objects.get(template=template, name='Note')
+    entry = RecordEncryptedStandardEntry(field=field, record=record,
+                                         value="Mandant moechte dass wir ihn vor Gericht vertreten. "
+                                               "Das duerfen wir aber nicht. #RDG")
+    entry.encrypt(aes_key_record=aes_key)
+    entry.save()
+    # consultant team
+    field = RecordEncryptedStandardField.objects.get(template=template, name='Consultant Team')
+    entry = RecordEncryptedStandardEntry(field=field, record=record, value="Taskforce 417")
+    entry.encrypt(aes_key_record=aes_key)
+    entry.save()
+    # lawyer
+    field = RecordEncryptedStandardField.objects.get(template=template, name='Lawyer')
+    entry = RecordEncryptedStandardEntry(field=field, record=record,
+                                         value="RA Guenther-Klaus, Kiesweg 3")
+    entry.encrypt(aes_key_record=aes_key)
+    entry.save()
+    # related persons
+    field = RecordEncryptedStandardField.objects.get(template=template, name='Related Persons')
+    entry = RecordEncryptedStandardEntry(field=field, record=record,
+                                         value="Sozialarbeiter Apfel (Direkt in der Unterkunft)")
+    entry.encrypt(aes_key_record=aes_key)
+    entry.save()
+    # contact
+    field = RecordEncryptedStandardField.objects.get(template=template, name='Contact')
+    entry = RecordEncryptedStandardEntry(field=field, record=record,
+                                         value="Mail: asksk1@beispiel.de,\n Telefon: 0800 444 55 444")
+    entry.encrypt(aes_key_record=aes_key)
+    entry.save()
+    # bamf token
+    field = RecordEncryptedStandardField.objects.get(template=template, name='BAMF Token')
+    entry = RecordEncryptedStandardEntry(field=field, record=record, value="QRS-232/2018")
+    entry.encrypt(aes_key_record=aes_key)
+    entry.save()
+    # foreign token
+    field = RecordEncryptedStandardField.objects.get(template=template, name='Foreign Token')
+    entry = RecordEncryptedStandardEntry(field=field, record=record, value="Vor Gericht: FA93932-1320")
+    entry.encrypt(aes_key_record=aes_key)
+    entry.save()
+    # first correspondence
+    field = RecordEncryptedStandardField.objects.get(template=template, name='First Correspondence')
+    entry = RecordEncryptedStandardEntry(field=field, record=record,
+                                         value="Hallo Liebes Team der RLC,\n ich habe folgendes Problem."
+                                               "\nKoennt ihr mir helfen?\n Vielen Dank")
+    entry.encrypt(aes_key_record=aes_key)
+    entry.save()
+    # circumstances
+    field = RecordEncryptedStandardField.objects.get(template=template, name='Circumstances')
+    entry = RecordEncryptedStandardEntry(field=field, record=record,
+                                         value="Kam ueber die Balkanroute, Bruder auf dem Weg verloren, "
+                                               "wenig Kontakt zu Familie.")
+    entry.encrypt(aes_key_record=aes_key)
+    entry.save()
+    # next steps
+    field = RecordEncryptedStandardField.objects.get(template=template, name='Next Steps')
+    entry = RecordEncryptedStandardEntry(field=field, record=record,
+                                         value="Klage einreichen und gewinnen!")
+    entry.encrypt(aes_key_record=aes_key)
+    entry.save()
+    # status described
+    field = RecordEncryptedStandardField.objects.get(template=template, name='Status described')
+    entry = RecordEncryptedStandardEntry(field=field, record=record,
+                                         value="Auf Antwort wartend, anschliessend weitere Bearbeitung.")
+    entry.encrypt(aes_key_record=aes_key)
+    entry.save()
+    # additional facts
+    field = RecordEncryptedStandardField.objects.get(template=template, name='Additional facts')
+    entry = RecordEncryptedStandardEntry(field=field, record=record,
+                                         value="Hat noch nie ne Schweinshaxe gegessen.")
+    entry.encrypt(aes_key_record=aes_key)
+    entry.save()
+    # tags
+    field = RecordMultipleField.objects.get(template=template, name='Tags')
+    RecordMultipleEntry.objects.create(record=record, field=field,
+                                       value=[choice(field.options), choice(field.options)])
+    # consultants
+    field = RecordUsersField.objects.get(template=template, name='Consultants')
+    entry = RecordUsersEntry.objects.create(record=record, field=field)
+    entry.value.set(record_users)
 
     # add some documents
-    document1 = EncryptedRecordDocument.objects.create(
+    EncryptedRecordDocument.objects.create(
         name="7_1_19__pass.jpg",
         creator=main_user,
         record=record,
         file_size=18839,
         created_on="2019-1-7",
     )
-    document2 = EncryptedRecordDocument.objects.create(
+    EncryptedRecordDocument.objects.create(
         name="3_10_18__geburtsurkunde.pdf",
         creator=main_user,
         record=record,
         file_size=488383,
         created_on="2018-10-3",
     )
-    document3 = EncryptedRecordDocument.objects.create(
+    EncryptedRecordDocument.objects.create(
         name="3_12_18__Ablehnungbescheid.pdf",
         creator=main_user,
         record=record,
         file_size=343433,
         created_on="2018-12-3",
     )
-    document4 = EncryptedRecordDocument.objects.create(
+    EncryptedRecordDocument.objects.create(
         name="1_1_19__Klageschrift.docx",
         creator=main_user,
         record=record,
         file_size=444444,
         created_on="2019-1-1",
     )
-    document4.save()
 
     # add some messages
     message1 = EncryptedRecordMessage(
         sender=main_user,
         record=record,
-        created_on="2019-3-11T10:12:21+00:00",
+        created="2019-3-11T10:12:21+00:00",
         message="Bitte dringend die Kontaktdaten des Mandanten eintragen.",
     )
     message1.encrypt(main_user, main_user.get_private_key(main_user_password))
@@ -584,7 +624,7 @@ def create_informative_record(
     message2 = EncryptedRecordMessage(
         sender=choice(users),
         record=record,
-        created_on="2019-3-12T9:32:21",
+        created="2019-3-12T9:32:21",
         message="Ist erledigt! Koennen wir uns morgen treffen um das zu besprechen?",
     )
     message2.encrypt(main_user, main_user.get_private_key(main_user_password))
@@ -592,7 +632,7 @@ def create_informative_record(
     message3 = EncryptedRecordMessage(
         sender=main_user,
         record=record,
-        created_on="2019-3-12T14:7:21",
+        created="2019-3-12T14:7:21",
         message="Klar, einfach direkt in der Mittagspause in der Mensa.",
     )
     message3.encrypt(main_user, main_user.get_private_key(main_user_password))
@@ -600,7 +640,7 @@ def create_informative_record(
     message4 = EncryptedRecordMessage(
         sender=choice(users),
         record=record,
-        created_on="2019-3-13T18:7:21",
+        created="2019-3-13T18:7:21",
         message="Gut, jetzt faellt mir aber auch nichts mehr ein.",
     )
     message4.encrypt(main_user, main_user.get_private_key(main_user_password))
@@ -612,15 +652,18 @@ def create_informative_record(
 
 def create() -> None:
     dummy_password = "qwe123"
-    # fixtures
+    # general fixtures
     create_fixtures()
-    # dummy
+    # rlcs and fixtures
     rlc1, rlc2 = create_rlcs()
-    dummy = create_dummy_users(rlc1)[0]
-    # data
+    create_default_record_template(rlc1)
+    # users
+    dummy, *other_dummies = create_dummy_users(rlc1)
     users = create_users(rlc1, rlc2)
     create_inactive_user(rlc1)
+    # groups
     create_groups(rlc1, dummy, users)
     create_admin_group(rlc1, dummy)
-    create_records(users, rlc1)
+    # records
+    create_records(list(users) + [dummy], rlc1)
     create_informative_record(dummy, dummy_password, users, rlc1)
