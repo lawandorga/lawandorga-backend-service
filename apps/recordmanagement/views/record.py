@@ -1,3 +1,6 @@
+from django.db.models import ProtectedError
+from rest_framework.exceptions import ParseError
+
 from apps.recordmanagement.serializers import RecordDocumentSerializer
 from apps.recordmanagement.serializers.record import RecordTemplateSerializer, RecordEncryptedStandardFieldSerializer, \
     RecordFieldSerializer, RecordSerializer, RecordEncryptedStandardEntrySerializer, RecordStandardEntrySerializer, \
@@ -22,7 +25,7 @@ from rest_framework import status, mixins
 # Template
 ###
 class RecordTemplateViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
-                            mixins.ListModelMixin, GenericViewSet):
+                            mixins.ListModelMixin, mixins.RetrieveModelMixin, GenericViewSet):
     queryset = RecordTemplate.objects.none()
     serializer_class = RecordTemplateSerializer
 
@@ -35,6 +38,13 @@ class RecordTemplateViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mi
         queryset = instance.fields.all()
         serializer = RecordFieldSerializer(queryset, many=True)
         return Response(serializer.data)
+
+    def perform_destroy(self, instance):
+        try:
+            instance.delete()
+        except ProtectedError:
+            raise ParseError('There are records that use this template. '
+                             'You can only delete templates that are not used.')
 
 
 ###

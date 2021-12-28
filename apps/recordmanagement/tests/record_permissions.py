@@ -14,7 +14,7 @@ from django.conf import settings
 class RecordViewSetsPermissions(TestCase):
     views = [
         # template
-        (RecordTemplateViewSet, 'create', 'partial_update', 'update', 'destroy', 'list'),
+        (RecordTemplateViewSet, 'create', 'partial_update', 'update', 'destroy', 'list', 'retrieve'),
         # fields
         (RecordEncryptedStandardFieldViewSet, 'create', 'partial_update', 'update', 'destroy'),
         (RecordStandardFieldViewSet, 'create', 'partial_update', 'update', 'destroy'),
