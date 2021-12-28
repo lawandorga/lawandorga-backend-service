@@ -3,6 +3,7 @@ from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedS
     RecordEncryptedFileField, RecordEncryptedSelectField, RecordEncryptedSelectEntry, \
     RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry, RecordSelectEntry, RecordSelectField, \
     RecordMultipleEntry, RecordMultipleField
+from apps.recordmanagement.serializers import EncryptedClientSerializer
 from rest_framework.exceptions import ValidationError, ParseError
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.reverse import reverse
@@ -11,32 +12,21 @@ from rest_framework import serializers
 
 
 ###
-# RecordTemplate
-###
-from apps.recordmanagement.serializers import EncryptedClientSerializer
-
-
-class RecordTemplateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RecordTemplate
-        fields = '__all__'
-
-    def validate(self, attrs):
-        attrs = super().validate(attrs)
-        attrs['rlc'] = self.context['request'].user.rlc
-        return attrs
-
-
-###
 # Fields
 ###
 class RecordFieldSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
+    entry_url = serializers.SerializerMethodField()
     type = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
+    encrypted = serializers.SerializerMethodField()
     entry_view_name = None
+    view_name = None
 
     def get_url(self, obj):
+        return reverse(self.view_name, args=[obj.pk], request=self.context['request'])
+
+    def get_entry_url(self, obj):
         return reverse(self.entry_view_name, request=self.context['request'])
 
     def get_type(self, obj):
@@ -45,9 +35,15 @@ class RecordFieldSerializer(serializers.ModelSerializer):
     def get_label(self, obj):
         return obj.name
 
+    def get_encrypted(self, obj):
+        if 'encrypted' in type(obj).__name__.lower():
+            return 'Yes'
+        return 'No'
+
 
 class RecordStateFieldSerializer(RecordFieldSerializer):
     entry_view_name = 'recordstateentry-list'
+    view_name = 'recordstatefield-detail'
 
     class Meta:
         model = RecordStateField
@@ -63,6 +59,7 @@ class RecordStateFieldSerializer(RecordFieldSerializer):
 
 class RecordSelectFieldSerializer(RecordFieldSerializer):
     entry_view_name = 'recordselectentry-list'
+    view_name = 'recordselectfield-detail'
 
     class Meta:
         model = RecordSelectField
@@ -76,6 +73,7 @@ class RecordSelectFieldSerializer(RecordFieldSerializer):
 
 class RecordMultipleFieldSerializer(RecordFieldSerializer):
     entry_view_name = 'recordmultipleentry-list'
+    view_name = 'recordmultiplefield-detail'
 
     class Meta:
         model = RecordMultipleField
@@ -89,6 +87,7 @@ class RecordMultipleFieldSerializer(RecordFieldSerializer):
 
 class RecordEncryptedStandardFieldSerializer(RecordFieldSerializer):
     entry_view_name = 'recordencryptedstandardentry-list'
+    view_name = 'recordencryptedstandardfield-detail'
 
     class Meta:
         model = RecordEncryptedStandardField
@@ -97,6 +96,7 @@ class RecordEncryptedStandardFieldSerializer(RecordFieldSerializer):
 
 class RecordStandardFieldSerializer(RecordFieldSerializer):
     entry_view_name = 'recordstandardentry-list'
+    view_name = 'recordstandardfield-detail'
 
     class Meta:
         model = RecordStandardField
@@ -105,6 +105,7 @@ class RecordStandardFieldSerializer(RecordFieldSerializer):
 
 class RecordUsersFieldSerializer(RecordFieldSerializer):
     entry_view_name = 'recordusersentry-list'
+    view_name = 'recordusersfield-detail'
     options = serializers.JSONField(read_only=True)
 
     class Meta:
@@ -114,6 +115,7 @@ class RecordUsersFieldSerializer(RecordFieldSerializer):
 
 class RecordEncryptedFileFieldSerializer(RecordFieldSerializer):
     entry_view_name = 'recordencryptedfileentry-list'
+    view_name = 'recordencryptedfilefield-detail'
 
     class Meta:
         model = RecordEncryptedFileField
@@ -122,6 +124,7 @@ class RecordEncryptedFileFieldSerializer(RecordFieldSerializer):
 
 class RecordEncryptedSelectFieldSerializer(RecordFieldSerializer):
     entry_view_name = 'recordencryptedselectentry-list'
+    view_name = 'recordencryptedselectfield-detail'
 
     class Meta:
         model = RecordEncryptedSelectField
@@ -294,6 +297,21 @@ class RecordMultipleEntrySerializer(RecordEntrySerializer):
 
 
 ###
+# CONSTANTS
+###
+FIELD_TYPES_AND_SERIALIZERS = [
+    ('state_fields', RecordStateFieldSerializer),
+    ('standard_fields', RecordStandardFieldSerializer),
+    ('select_fields', RecordSelectFieldSerializer),
+    ('multiple_fields', RecordMultipleFieldSerializer),
+    ('users_fields', RecordUsersFieldSerializer),
+    ('encrypted_standard_fields', RecordEncryptedStandardFieldSerializer),
+    ('encrypted_select_fields', RecordEncryptedSelectFieldSerializer),
+    ('encrypted_file_fields', RecordEncryptedFileFieldSerializer)
+]
+
+
+###
 # Record
 ###
 class RecordSerializer(serializers.ModelSerializer):
@@ -367,20 +385,31 @@ class RecordDetailSerializer(RecordSerializer):
         return obj.get_entries(entry_types_and_serializers, aes_key_record=aes_key_record, request=self.context['request'])
 
     def get_form_fields(self, obj):
-        field_types_and_serializers = [
-            ('state_fields', RecordStateFieldSerializer),
-            ('standard_fields', RecordStandardFieldSerializer),
-            ('select_fields', RecordSelectFieldSerializer),
-            ('multiple_fields', RecordMultipleFieldSerializer),
-            ('users_fields', RecordUsersFieldSerializer),
-            ('encrypted_standard_fields', RecordEncryptedStandardFieldSerializer),
-            ('encrypted_select_fields', RecordEncryptedSelectFieldSerializer),
-            ('encrypted_file_fields', RecordEncryptedFileFieldSerializer)
-        ]
-        return obj.template.get_fields(field_types_and_serializers, request=self.context['request'])
+        return obj.template.get_fields(FIELD_TYPES_AND_SERIALIZERS, request=self.context['request'])
 
     def get_client(self, obj):
         if obj.old_client is None:
             return {}
         obj.old_client.decrypt(private_key_rlc=self.private_key_rlc)
         return EncryptedClientSerializer(instance=obj.old_client).data
+
+
+###
+# RecordTemplate
+###
+class RecordTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecordTemplate
+        fields = '__all__'
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        attrs['rlc'] = self.context['request'].user.rlc
+        return attrs
+
+
+class RecordTemplateDetailSerializer(RecordTemplateSerializer):
+    fields = serializers.SerializerMethodField(method_name='get_form_fields')
+
+    def get_form_fields(self, obj):
+        return obj.get_fields(FIELD_TYPES_AND_SERIALIZERS, request=self.context['request'])

@@ -63,7 +63,7 @@ class RecordField(models.Model):
 
 class RecordStateField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='state_fields')
-    options = models.JSONField()
+    options = models.JSONField(default=list)
 
     class Meta:
         verbose_name = 'RecordStateField'
@@ -98,7 +98,7 @@ class RecordUsersField(RecordField):
 
 class RecordSelectField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='select_fields')
-    options = models.JSONField()
+    options = models.JSONField(default=list)
 
     class Meta:
         verbose_name = 'RecordSelectField'
@@ -114,7 +114,7 @@ class RecordSelectField(RecordField):
 
 class RecordMultipleField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='multiple_fields')
-    options = models.JSONField()
+    options = models.JSONField(default=list)
 
     class Meta:
         verbose_name = 'RecordMultipleField'
@@ -130,7 +130,7 @@ class RecordMultipleField(RecordField):
 
 class RecordEncryptedSelectField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='encrypted_select_fields')
-    options = models.JSONField()
+    options = models.JSONField(default=list)
 
     class Meta:
         verbose_name = 'RecordEncryptedSelectField'
