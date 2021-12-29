@@ -3,7 +3,6 @@ from apps.recordmanagement.serializers import RecordDocumentSerializer, RecordDo
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 from rest_framework import viewsets
-from apps.static import permissions
 from django.http import FileResponse
 import mimetypes
 
@@ -34,7 +33,7 @@ class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
         file = instance.download(record_key)
 
         # generate response
-        response = FileResponse(file, content_type=mimetypes.guess_type(instance.get_file_key())[0])
+        response = FileResponse(file, content_type=mimetypes.guess_type(instance.get_key())[0])
         response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.name)
 
         # return
