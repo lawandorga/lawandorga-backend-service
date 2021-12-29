@@ -1,4 +1,6 @@
 from django.core.files.uploadedfile import InMemoryUploadedFile
+
+from apps.files.models import File
 from apps.recordmanagement.models import RecordTemplate, RecordEncryptedStandardField, Record, RecordEncryptionNew, \
     RecordEncryptedStandardEntry, RecordStandardField, RecordStandardEntry, RecordEncryptedFileField, \
     RecordEncryptedFileEntry, \
@@ -403,3 +405,46 @@ class RecordEncryptedSelectEntryViewSetWorking(GenericRecordEntry, TestCase):
         private_key_user = self.user.get_private_key(password_user=settings.DUMMY_USER_PASSWORD)
         entry.decrypt(user=self.user, private_key_user=private_key_user)
         self.assertEqual(entry.value, "Option 2")
+
+
+class RecordEncryptedFileEntryViewSetWorking(GenericRecordEntry, TestCase):
+    view = RecordEncryptedFileEntryViewSet
+
+    def setUp(self):
+        super().setUp()
+        self.field = RecordEncryptedFileField.objects.create(template=self.template)
+        settings.DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+    def setup_entry(self):
+        entry = RecordEncryptedFileEntry(record=self.record, field=self.field)
+        file = io.BytesIO(b'test string')
+        file = InMemoryUploadedFile(file, 'FileField', 'test.txt', 'text/plain', sys.getsizeof(file), None)
+        entry.file = RecordEncryptedFileEntry.encrypt_file(file, self.record, aes_key_record=self.aes_key_record)
+        entry.save()
+        self.entry = RecordEncryptedFileEntry.objects.first()
+
+    def test_upload(self):
+        view = self.view.as_view(actions={'post': 'create'})
+        file = io.BytesIO(b'test string')
+        file = InMemoryUploadedFile(file, 'FileField', 'test.txt', 'text/plain', sys.getsizeof(file), None)
+        data = {
+            'record': self.record.id,
+            'field': self.field.id,
+            'file': file
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertContains(response, 'test.txt', status_code=201)
+        entry = RecordEncryptedFileEntry.objects.first()
+        self.assertFalse(b'test string' in entry.file.read())
+        entry.file.delete()  # clean up
+
+    def test_download(self):
+        self.setup_entry()
+        view = self.view.as_view(actions={'get': 'download'})
+        request = self.factory.get('')
+        force_authenticate(request, self.user)
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(b'test string' in b''.join(response.streaming_content))
