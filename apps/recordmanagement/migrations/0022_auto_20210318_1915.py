@@ -81,6 +81,7 @@ class Migration(migrations.Migration):
             model_name="encryptedrecordmessage",
             name="record",
             field=models.ForeignKey(
+                db_index=False,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="messages",
                 to="recordmanagement.EncryptedRecord",

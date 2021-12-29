@@ -47,4 +47,10 @@ class Migration(migrations.Migration):
                 'unique_together': {('record', 'field')},
             },
         ),
+        migrations.AlterField(
+            model_name='encryptedrecorddocument',
+            name='record',
+            field=models.ForeignKey(db_index=False, null=True, on_delete=django.db.models.deletion.CASCADE,
+                                    related_name='documents', to='recordmanagement.record'),
+        ),
     ]
