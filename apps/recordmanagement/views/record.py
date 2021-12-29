@@ -1,5 +1,9 @@
+import mimetypes
+
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import ProtectedError
-from rest_framework.exceptions import ParseError
+from django.http import FileResponse
+from rest_framework.exceptions import ParseError, APIException
 
 from apps.recordmanagement.serializers import RecordDocumentSerializer
 from apps.recordmanagement.serializers.record import RecordTemplateSerializer, RecordEncryptedStandardFieldSerializer, \
@@ -220,6 +224,15 @@ class RecordEncryptedFileEntryViewSet(mixins.CreateModelMixin, mixins.UpdateMode
     def get_queryset(self):
         # every field returned because they will be encrypted by default
         return RecordEncryptedFileEntry.objects.filter(record__template__rlc=self.request.user.rlc)
+
+    @action(detail=True, methods=['get'])
+    def download(self, request, *args, **kwargs):
+        instance = self.get_object()
+        private_key_user = request.user.get_private_key(request=request)
+        file = instance.decrypt_file(private_key_user=private_key_user, user=request.user)
+        response = FileResponse(file, content_type=mimetypes.guess_type(instance.get_value())[0])
+        response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.get_value())
+        return response
 
 
 class RecordStandardEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,

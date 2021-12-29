@@ -156,6 +156,7 @@ class RecordEntrySerializer(serializers.ModelSerializer):
 
 class RecordEncryptedFileEntrySerializer(RecordEntrySerializer):
     url = serializers.HyperlinkedIdentityField(view_name='recordencryptedfileentry-detail')
+    value = serializers.SerializerMethodField()
 
     class Meta:
         model = RecordEncryptedFileEntry
@@ -176,10 +177,12 @@ class RecordEncryptedFileEntrySerializer(RecordEntrySerializer):
             else:
                 raise ValidationError('A record needs to be set.')
         private_key_user = user.get_private_key(request=self.context['request'])
-        attrs['file'] = File(
-            RecordEncryptedFileEntry.encrypt_file(file, record, user=user, private_key_user=private_key_user),
-            name='{}.enc'.format(file.name))
+        attrs['file'] = RecordEncryptedFileEntry.encrypt_file(file, record, user=user,
+                                                              private_key_user=private_key_user)
         return attrs
+
+    def get_value(self, obj):
+        return obj.get_value()
 
 
 class RecordStandardEntrySerializer(RecordEntrySerializer):

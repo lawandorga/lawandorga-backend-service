@@ -3,7 +3,6 @@ from apps.recordmanagement.serializers import RecordDocumentSerializer, RecordDo
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 from rest_framework import viewsets
-from apps.static import permissions
 from django.http import FileResponse
 import mimetypes
 

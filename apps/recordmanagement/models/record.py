@@ -1,3 +1,5 @@
+from django.core.files import File
+
 from apps.recordmanagement.models import EncryptedRecord, EncryptedClient
 from apps.static.encryption import EncryptedModelMixin, AESEncryption, RSAEncryption
 from rest_framework.reverse import reverse
@@ -416,7 +418,7 @@ class RecordEncryptedFileEntry(RecordEntry):
         return 'recordEncryptedFileEntry: {};'.format(self.pk)
 
     def get_value(self, *args, **kwargs):
-        return self.file.name
+        return self.file.name.split('/')[-1].replace('.enc', '')
 
     def delete(self, *args, **kwargs):
         self.file.delete()
@@ -430,7 +432,9 @@ class RecordEncryptedFileEntry(RecordEntry):
             key = aes_key_record
         else:
             raise ValueError("You have to set (aes_key_record) or (user and private_key_user).")
+        name = file.name
         file = AESEncryption.encrypt_in_memory_file(file, key)
+        file = File(file, name='{}.enc'.format(name))
         return file
 
     def decrypt_file(self, user=None, private_key_user=None, aes_key_record=None):
