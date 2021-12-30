@@ -36,16 +36,17 @@ class RecordTemplateViewSetWorking(BaseRecord, TestCase):
         force_authenticate(request, self.user)
         response = view(request)
         self.assertEqual(response.status_code, 201)
-        self.assertGreater(RecordTemplate.objects.count(), 0)
+        self.assertGreater(RecordTemplate.objects.filter(pk=response.data['id']).count(), 0)
 
     def test_record_template_delete(self):
         self.setup_record_template()
         view = RecordTemplateViewSet.as_view(actions={'delete': 'destroy'})
         request = self.factory.delete('')
         force_authenticate(request, self.user)
-        response = view(request, pk=self.record_template.pk)
+        pk = self.record_template.pk
+        response = view(request, pk=pk)
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(RecordTemplate.objects.filter(name='RecordTemplate 121').count(), 0)
+        self.assertEqual(RecordTemplate.objects.filter(pk=pk).count(), 0)
 
     def test_record_template_update(self):
         self.setup_record_template()
@@ -86,7 +87,7 @@ class RecordViewSetWorking(BaseRecord, TestCase):
         force_authenticate(request, self.user)
         response = view(request)
         self.assertEqual(response.status_code, 201)
-        self.assertTrue(Record.objects.count(), 1)
+        self.assertTrue(Record.objects.filter(template=self.template.pk).count(), 1)
         self.assertTrue(RecordEncryptionNew.objects.count(), 1)
 
     def test_record_delete(self):
@@ -94,9 +95,9 @@ class RecordViewSetWorking(BaseRecord, TestCase):
         view = RecordViewSet.as_view(actions={'delete': 'destroy'})
         request = self.factory.delete('')
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.record.pk)
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(Record.objects.count(), 0)
+        self.assertEqual(Record.objects.filter(pk=self.record.pk).count(), 0)
 
 
 ###

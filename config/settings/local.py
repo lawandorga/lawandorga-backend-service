@@ -24,10 +24,23 @@ MIDDLEWARE += [
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": os.path.join(BASE_DIR, "tmp/db.sqlite3"),
+#     }
+# }
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "tmp/db.sqlite3"),
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": get_secret("DB_NAME"),
+        "USER": get_secret("DB_USER"),
+        "PASSWORD": get_secret("DB_PASSWORD"),
+        "HOST": get_secret("DB_HOST"),
+        "PORT": get_secret("DB_PORT"),
+        "TEST": {
+            "NAME": 'test_{}'.format(RUNTIME)
+        }
     }
 }
 

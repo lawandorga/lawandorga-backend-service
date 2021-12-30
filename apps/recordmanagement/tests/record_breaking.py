@@ -1,12 +1,10 @@
 from apps.recordmanagement.tests.record_entries import BaseRecordEntry
 from apps.recordmanagement.tests.record import BaseRecord
 from apps.recordmanagement.models import RecordEncryptedSelectField, RecordEncryptedSelectEntry, RecordStateField, \
-    RecordStateEntry, \
-    RecordSelectField, RecordSelectEntry, RecordEncryptedStandardField, RecordEncryptedStandardEntry, \
-    RecordMultipleEntry, RecordMultipleField
+    RecordStateEntry, RecordSelectField, RecordSelectEntry, RecordEncryptedStandardField, \
+    RecordEncryptedStandardEntry, RecordMultipleEntry, RecordMultipleField
 from apps.recordmanagement.views import RecordEncryptedSelectEntryViewSet, RecordStateFieldViewSet, \
-    RecordStateEntryViewSet, \
-    RecordSelectEntryViewSet, RecordEncryptedStandardEntryViewSet, RecordMultipleEntryViewSet
+    RecordStateEntryViewSet, RecordSelectEntryViewSet, RecordEncryptedStandardEntryViewSet, RecordMultipleEntryViewSet
 from rest_framework.test import force_authenticate
 from django.test import TestCase
 import json
@@ -41,7 +39,7 @@ class RecordStateFieldViewSetErrors(BaseRecord, TestCase):
         }
         request = self.factory.patch('', data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.field.pk)
         self.assertContains(response, 'options', status_code=400)
 
 
@@ -65,7 +63,7 @@ class RecordStateEntryViewSetErrors(BaseRecordEntry, TestCase):
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertContains(response, 'state', status_code=400)
 
 
@@ -89,14 +87,14 @@ class RecordEncryptedStandardEntryViewSetErrors(BaseRecordEntry, TestCase):
         }
         request = self.factory.patch('', data=data, format='json')
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 200)
         entry = RecordEncryptedStandardEntry.objects.first()
         entry.decrypt(aes_key_record=self.aes_key_record)
         self.assertEqual(entry.value, json.dumps({"isTrusted": True}))
 
 
-class RecordeSelectEntryViewSetErrors(BaseRecordEntry, TestCase):
+class RecordSelectEntryViewSetErrors(BaseRecordEntry, TestCase):
     def setUp(self):
         super().setUp()
         self.field = RecordSelectField.objects.create(template=self.template, options=['Option 2', 'Option 1'])
@@ -112,7 +110,7 @@ class RecordeSelectEntryViewSetErrors(BaseRecordEntry, TestCase):
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertContains(response, 'value', status_code=400)
 
     def test_only_one_value_can_be_selected(self):
@@ -123,7 +121,7 @@ class RecordeSelectEntryViewSetErrors(BaseRecordEntry, TestCase):
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 400)
 
 
@@ -145,7 +143,7 @@ class RecordMultipleEntryViewSetErrors(BaseRecordEntry, TestCase):
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 200)
 
     def test_values_must_be_in_options(self):
@@ -158,7 +156,7 @@ class RecordMultipleEntryViewSetErrors(BaseRecordEntry, TestCase):
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 400)
 
 
@@ -181,7 +179,7 @@ class RecordEncryptedSelectEntryViewSetErrors(BaseRecordEntry, TestCase):
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 400)
 
     def test_only_one_value_can_be_selected(self):
@@ -192,5 +190,5 @@ class RecordEncryptedSelectEntryViewSetErrors(BaseRecordEntry, TestCase):
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 400)
