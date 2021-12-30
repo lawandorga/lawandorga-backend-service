@@ -35,6 +35,7 @@ class GenericRecordField(BaseRecordField):
             self.create_data = self.get_create_data()
         if self.update_data is None:
             self.update_data = self.get_update_data()
+        self.field = None
 
     def setup_field(self):
         raise NotImplementedError('This method needs to be implemented.')
@@ -61,7 +62,7 @@ class GenericRecordField(BaseRecordField):
         view = self.view.as_view(actions={'patch': 'partial_update'})
         request = self.factory.patch('', self.update_data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.field.pk)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.model.objects.count(), 1)
         field = self.model.objects.first()
@@ -73,7 +74,7 @@ class GenericRecordField(BaseRecordField):
         view = self.view.as_view(actions={'delete': 'destroy'})
         request = self.factory.delete('')
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.field.pk)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(self.model.objects.count(), 0)
 
@@ -102,7 +103,7 @@ class RecordStandardFieldViewSetWorking(BaseRecordField, TestCase):
         view = RecordStandardFieldViewSet.as_view(actions={'delete': 'destroy'})
         request = self.factory.delete('')
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.field.pk)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(RecordStandardField.objects.count(), 0)
 
@@ -114,15 +115,15 @@ class RecordStandardFieldViewSetWorking(BaseRecordField, TestCase):
         }
         request = self.factory.patch('', data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.field.pk)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(RecordStandardField.objects.filter(name='Field 235').count(), 1)
 
 
 class RecordEncryptedStandardFieldViewSetWorking(BaseRecordField, TestCase):
     def setup_field(self):
-        self.text_field = RecordEncryptedStandardField.objects.create(name='TextField 234', field_type='TEXT',
-                                                                      template=self.template)
+        self.field = RecordEncryptedStandardField.objects.create(name='TextField 234', field_type='TEXT',
+                                                                 template=self.template)
 
     def test_text_field_create(self):
         view = RecordEncryptedStandardFieldViewSet.as_view(actions={'post': 'create'})
@@ -142,7 +143,7 @@ class RecordEncryptedStandardFieldViewSetWorking(BaseRecordField, TestCase):
         view = RecordEncryptedStandardFieldViewSet.as_view(actions={'delete': 'destroy'})
         request = self.factory.delete('')
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.field.pk)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(RecordEncryptedStandardField.objects.count(), 0)
 
@@ -154,7 +155,7 @@ class RecordEncryptedStandardFieldViewSetWorking(BaseRecordField, TestCase):
         }
         request = self.factory.patch('', data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.field.pk)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(RecordEncryptedStandardField.objects.filter(name='Field 235').count(), 1)
 
@@ -180,7 +181,7 @@ class RecordUsersFieldViewSetWorking(BaseRecordField, TestCase):
         view = RecordUsersFieldViewSet.as_view(actions={'delete': 'destroy'})
         request = self.factory.delete('')
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.field.pk)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(RecordUsersField.objects.count(), 0)
 
@@ -192,7 +193,7 @@ class RecordUsersFieldViewSetWorking(BaseRecordField, TestCase):
         }
         request = self.factory.patch('', data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.field.pk)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(RecordUsersField.objects.filter(name='Field 235').count(), 1)
 
@@ -218,7 +219,7 @@ class RecordEncryptedFileFieldViewSetWorking(BaseRecordField, TestCase):
         view = RecordEncryptedFileFieldViewSet.as_view(actions={'delete': 'destroy'})
         request = self.factory.delete('')
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.field.pk)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(RecordEncryptedFileField.objects.count(), 0)
 
@@ -230,7 +231,7 @@ class RecordEncryptedFileFieldViewSetWorking(BaseRecordField, TestCase):
         }
         request = self.factory.patch('', data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.field.pk)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(RecordEncryptedFileField.objects.filter(name='Field 235').count(), 1)
 
@@ -258,7 +259,7 @@ class RecordEncryptedSelectFieldViewSetWorking(BaseRecordField, TestCase):
         view = RecordEncryptedSelectFieldViewSet.as_view(actions={'delete': 'destroy'})
         request = self.factory.delete('')
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.field.pk)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(RecordEncryptedSelectField.objects.count(), 0)
 
@@ -271,7 +272,7 @@ class RecordEncryptedSelectFieldViewSetWorking(BaseRecordField, TestCase):
         }
         request = self.factory.patch('', data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.field.pk)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(RecordEncryptedSelectField.objects.filter(name='Field 235').count(), 1)
         self.assertEqual(RecordEncryptedSelectField.objects.last().options, ['Option 3', 'Option 4'])

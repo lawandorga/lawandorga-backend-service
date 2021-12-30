@@ -39,6 +39,10 @@ class BaseRecordEntry(BaseRecord):
 class GenericRecordEntry(BaseRecordEntry):
     view = None
 
+    def setUp(self):
+        super().setUp()
+        self.entry = None
+
     def setup_entry(self):
         raise NotImplementedError('Needs to be implemented.')
 
@@ -47,7 +51,7 @@ class GenericRecordEntry(BaseRecordEntry):
         view = self.view.as_view(actions={'delete': 'destroy'})
         request = self.factory.delete('')
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 204)
 
 
@@ -98,7 +102,7 @@ class RecordFileEntryViewSetWorking(GenericRecordEntry, TestCase):
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 200)
         entry = RecordEncryptedFileEntry.objects.first()
         self.assertNotEqual(entry.file.read(), 'new text')
@@ -141,7 +145,7 @@ class RecordStandardEntryViewSetWorking(GenericRecordEntry, TestCase):
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 200)
         entry = RecordStandardEntry.objects.first()
         self.assertEqual(entry.value, 'Hallo 2')
@@ -183,7 +187,7 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
         }
         request = self.factory.patch('', data=data, format='json')
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 200)
         entry = RecordUsersEntry.objects.first()
         self.assertEqual(entry.value.all().count(), UserProfile.objects.none().count())
@@ -225,7 +229,7 @@ class RecordEncryptedStandardEntryViewSetWorking(GenericRecordEntry, TestCase):
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 200)
         entry = RecordEncryptedStandardEntry.objects.first()
         self.assertNotEqual(entry.value, 'Hallo 2')
@@ -267,7 +271,7 @@ class RecordStateEntryViewSetWorking(GenericRecordEntry, TestCase):
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(RecordStateEntry.objects.count(), 1)
         entry = RecordStateEntry.objects.first()
@@ -309,7 +313,7 @@ class RecordSelectEntryViewSetWorking(GenericRecordEntry, TestCase):
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(self.model.objects.count(), 1)
         entry = self.model.objects.first()
@@ -351,7 +355,7 @@ class RecordMultipleEntryViewSetWorking(GenericRecordEntry, TestCase):
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(self.model.objects.count(), 1)
         entry = self.model.objects.first()
@@ -397,7 +401,7 @@ class RecordEncryptedSelectEntryViewSetWorking(GenericRecordEntry, TestCase):
         }
         request = self.factory.patch('', data=data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(RecordEncryptedSelectEntry.objects.count(), 1)
         entry = RecordEncryptedSelectEntry.objects.first()
@@ -434,7 +438,7 @@ class RecordEncryptedFileEntryViewSetWorking(GenericRecordEntry, TestCase):
         }
         request = self.factory.post('', data)
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request)
         self.assertContains(response, 'test.txt', status_code=201)
         entry = RecordEncryptedFileEntry.objects.first()
         self.assertFalse(b'test string' in entry.file.read())
@@ -445,6 +449,6 @@ class RecordEncryptedFileEntryViewSetWorking(GenericRecordEntry, TestCase):
         view = self.view.as_view(actions={'get': 'download'})
         request = self.factory.get('')
         force_authenticate(request, self.user)
-        response = view(request, pk=1)
+        response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(b'test string' in b''.join(response.streaming_content))
