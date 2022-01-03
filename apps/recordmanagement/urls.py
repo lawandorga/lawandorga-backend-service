@@ -14,7 +14,6 @@ router.register('questionnaire_fields', QuestionnaireFieldsViewSet)
 router.register('questionnaire_files', QuestionnaireFilesViewSet)
 router.register("pool_records", PoolRecordViewSet)
 router.register("pool_consultants", PoolConsultantViewSet)
-router.register("consultants", ConsultantViewSet)
 router.register('record_documents', EncryptedRecordDocumentViewSet)
 router.register('record_permission_requests', RecordPermissionRequestViewSet)
 # new

@@ -1,4 +1,3 @@
-from .consultant import *
 from .encrypted_record_permission import *
 from .encrypted_record import *
 from .encrypted_record_document import *
