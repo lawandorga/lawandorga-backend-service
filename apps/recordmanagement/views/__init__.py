@@ -1,5 +1,4 @@
 from .consultant import *
-from .tag import *
 from .encrypted_record_permission import *
 from .encrypted_record import *
 from .encrypted_record_document import *

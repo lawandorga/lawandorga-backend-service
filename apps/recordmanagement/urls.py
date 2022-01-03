@@ -17,7 +17,6 @@ router.register("pool_consultants", PoolConsultantViewSet)
 router.register("consultants", ConsultantViewSet)
 router.register('record_documents', EncryptedRecordDocumentViewSet)
 router.register('record_permission_requests', RecordPermissionRequestViewSet)
-router.register('tags', TagViewSet)
 # new
 router.register('recordtemplates', RecordTemplateViewSet)
 router.register('records', RecordViewSet)
