@@ -1,11 +1,3 @@
-import mimetypes
-
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import ProtectedError
-from django.http import FileResponse
-from rest_framework.exceptions import ParseError, APIException
-
-from apps.recordmanagement.serializers import RecordDocumentSerializer
 from apps.recordmanagement.serializers.record import RecordTemplateSerializer, RecordEncryptedStandardFieldSerializer, \
     RecordSerializer, RecordEncryptedStandardEntrySerializer, RecordStandardEntrySerializer, \
     RecordEncryptedFileEntrySerializer, RecordStandardFieldSerializer, RecordEncryptedFileFieldSerializer, \
@@ -19,11 +11,16 @@ from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedS
     RecordStandardField, RecordEncryptedFileField, \
     RecordEncryptedSelectField, RecordEncryptedSelectEntry, RecordUsersField, RecordUsersEntry, RecordStateField, \
     RecordStateEntry, RecordSelectEntry, RecordSelectField, RecordMultipleEntry, RecordMultipleField
+from apps.recordmanagement.serializers import RecordDocumentSerializer
+from rest_framework.exceptions import ParseError
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 from apps.static.encryption import AESEncryption
+from django.db.models import ProtectedError
 from rest_framework import status, mixins
+from django.http import FileResponse
+import mimetypes
 
 
 ###

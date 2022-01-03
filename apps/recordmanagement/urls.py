@@ -43,5 +43,4 @@ router.register('recordencryptedstandardentries', RecordEncryptedStandardEntryVi
 urlpatterns = [
     path("", include(router.urls)),
     path("record_pool/", RecordPoolViewSet.as_view()),
-    path("statistics/", RecordStatisticsViewSet.as_view(), ),
 ]
