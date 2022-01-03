@@ -5,18 +5,18 @@ from django.urls import path, include
 
 router = DefaultRouter()
 router.register("deletions", RecordDeletionViewSet)
-router.register("oldrecords", EncryptedRecordViewSet)
-router.register('questionnairetemplates', QuestionnaireTemplateViewSet)
 router.register('messages', MessageViewSet)
-router.register('questionnaires', QuestionnaireViewSet)
-router.register('questionnaire_answers', QuestionnaireAnswersViewSet)
-router.register('questionnaire_fields', QuestionnaireFieldsViewSet)
-router.register('questionnaire_files', QuestionnaireFilesViewSet)
 router.register("pool_records", PoolRecordViewSet)
 router.register("pool_consultants", PoolConsultantViewSet)
 router.register('record_documents', EncryptedRecordDocumentViewSet)
 router.register('record_permission_requests', RecordPermissionRequestViewSet)
-# new
+# questionnaires
+router.register('questionnairetemplates', QuestionnaireTemplateViewSet)
+router.register('questionnaires', QuestionnaireViewSet)
+router.register('questionnaire_answers', QuestionnaireAnswersViewSet)
+router.register('questionnaire_fields', QuestionnaireFieldsViewSet)
+router.register('questionnaire_files', QuestionnaireFilesViewSet)
+# records
 router.register('recordtemplates', RecordTemplateViewSet)
 router.register('records', RecordViewSet)
 # fields
