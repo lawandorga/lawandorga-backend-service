@@ -1,5 +1,4 @@
 from .consultant import *
-from .origin_country import *
 from .tag import *
 from .encrypted_record_permission import *
 from .encrypted_record import *

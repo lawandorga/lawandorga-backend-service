@@ -4,7 +4,6 @@ from django.urls import path, include
 
 
 router = DefaultRouter()
-router.register("origin_countries", OriginCountryViewSet)
 router.register("deletions", RecordDeletionViewSet)
 router.register("oldrecords", EncryptedRecordViewSet)
 router.register('questionnairetemplates', QuestionnaireTemplateViewSet)

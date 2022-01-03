@@ -1,4 +1,3 @@
-from .origin_country import *
 from .tag import *
 from .encrypted_record import *
 from .encrypted_record_message import *
