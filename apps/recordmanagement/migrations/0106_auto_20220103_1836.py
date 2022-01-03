@@ -29,9 +29,4 @@ class Migration(migrations.Migration):
             name='request_processed',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='processedrecorddeletions', to=settings.AUTH_USER_MODEL),
         ),
-        migrations.AlterField(
-            model_name='encryptedrecorddeletionrequest',
-            name='rlc',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='deletion_requests', to='api.rlc'),
-        ),
     ]

@@ -5,7 +5,6 @@ from django.db import models
 
 
 class EncryptedRecordDeletionRequest(models.Model):
-    rlc = models.ForeignKey(Rlc, related_name='deletion_requests', on_delete=models.CASCADE)
     old_record = models.ForeignKey("EncryptedRecord", on_delete=models.SET_NULL, null=True, blank=True, db_index=False)
     record = models.ForeignKey(Record, related_name='deletions', on_delete=models.CASCADE, null=True)
     request_from = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, blank=True,
