@@ -142,7 +142,8 @@ class RecordViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.D
                 'standard_entries', 'standard_entries__field',
                 'users_entries', 'users_entries__value', 'users_entries__field',
                 'multiple_entries', 'multiple_entries__field',
-                'encryptions'
+                'encryptions',
+                'deletions'
             ).select_related('template')
         elif self.action in ['retrieve']:
             return Record.objects.filter(template__rlc=self.request.user.rlc).prefetch_related(

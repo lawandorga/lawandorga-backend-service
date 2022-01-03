@@ -332,6 +332,7 @@ class RecordListSerializer(RecordSerializer):
     entries = serializers.SerializerMethodField()
     access = serializers.SerializerMethodField()
     show = serializers.SerializerMethodField()
+    delete = serializers.SerializerMethodField()
 
     def get_entries(self, obj):
         entry_types = [
@@ -351,6 +352,9 @@ class RecordListSerializer(RecordSerializer):
 
     def get_show(self, obj):
         return obj.template.show
+
+    def get_delete(self, obj):
+        return obj.deletions.filter(state='re').exists()
 
 
 class RecordCreateSerializer(RecordListSerializer):

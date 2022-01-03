@@ -220,6 +220,13 @@ class Record(models.Model):
         verbose_name = 'Record'
         verbose_name_plural = 'Records'
 
+    @property
+    def identifier(self):
+        first_standard_entry = self.standard_entries.order_by('field__order').first()
+        if first_standard_entry:
+            return first_standard_entry.value
+        return None
+
     def get_aes_key(self, user=None, private_key_user=None):
         if user and private_key_user:
             encryption = self.encryptions.get(user=user)

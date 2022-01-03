@@ -1,5 +1,6 @@
-from apps.recordmanagement.models.encrypted_record_deletion_request import EncryptedRecordDeletionRequest
-from apps.recordmanagement.serializers import DeletionRequestListSerializer, DeletionRequestCreateSerializer
+from apps.recordmanagement.models.deletion import RecordDeletion
+from apps.recordmanagement.serializers import DeletionRequestListSerializer, DeletionRequestCreateSerializer, \
+    RecordDeletionSerializer
 from apps.api.models.notification import Notification
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
@@ -12,20 +13,15 @@ from django.utils import timezone
 from apps.static import error_codes, permissions
 
 
-class EncryptedRecordDeletionRequestViewSet(viewsets.ModelViewSet):
-    serializer_class = DeletionRequestListSerializer
-    queryset = EncryptedRecordDeletionRequest.objects.none()
+class RecordDeletionViewSet(viewsets.ModelViewSet):
+    serializer_class = RecordDeletionSerializer
+    queryset = RecordDeletion.objects.none()
 
-    def get_serializer_class(self):
-        if self.action in ['create']:
-            return DeletionRequestCreateSerializer
-        return super().get_serializer_class()
-
-    def get_queryset(self) -> QuerySet:
-        return EncryptedRecordDeletionRequest.objects.filter(
-            Q(request_from__rlc=self.request.user.rlc) |
-            Q(record__from_rlc=self.request.user.rlc) |
-            Q(rlc=self.request.user.rlc)
+    def get_queryset(self):
+        return RecordDeletion.objects.filter(
+            Q(requested_by__rlc=self.request.user.rlc) |
+            Q(processed_by__rlc=self.request.user.rlc) |
+            Q(record__template__rlc=self.request.user.rlc)
         )
 
     def list(self, request, *args, **kwargs):
@@ -50,7 +46,7 @@ class EncryptedRecordDeletionProcessViewSet(APIView):
         if "request_id" not in request.data:
             raise CustomError(error_codes.ERROR__API__ID_NOT_PROVIDED)
         try:
-            record_deletion_request = EncryptedRecordDeletionRequest.objects.get(
+            record_deletion_request = RecordDeletion.objects.get(
                 pk=request.data["request_id"]
             )
         except:
@@ -77,8 +73,8 @@ class EncryptedRecordDeletionProcessViewSet(APIView):
             record_deletion_request.save()
 
             other_deletion_requests_of_same_record: [
-                EncryptedRecordDeletionRequest
-            ] = EncryptedRecordDeletionRequest.objects.filter(
+                RecordDeletion
+            ] = RecordDeletion.objects.filter(
                 record=record_deletion_request.record, state="re"
             )
             for other_request in other_deletion_requests_of_same_record:
@@ -98,7 +94,7 @@ class EncryptedRecordDeletionProcessViewSet(APIView):
                 request.user, record_deletion_request
             )
 
-        response_request = EncryptedRecordDeletionRequest.objects.get(
+        response_request = RecordDeletion.objects.get(
             pk=record_deletion_request.id
         )
         return Response(

@@ -5,7 +5,7 @@ from django.urls import path, include
 
 router = DefaultRouter()
 router.register("origin_countries", OriginCountryViewSet)
-router.register("record_deletion_requests", EncryptedRecordDeletionRequestViewSet)
+router.register("deletions", RecordDeletionViewSet)
 router.register("oldrecords", EncryptedRecordViewSet)
 router.register("e_clients", EncryptedClientViewSet)
 router.register('questionnairetemplates', QuestionnaireTemplateViewSet)
@@ -46,10 +46,6 @@ router.register('recordencryptedstandardentries', RecordEncryptedStandardEntryVi
 
 urlpatterns = [
     path("", include(router.urls)),
-    path(
-        "process_record_deletion_request/",
-        EncryptedRecordDeletionProcessViewSet.as_view(),
-    ),
     path("record_pool/", RecordPoolViewSet.as_view()),
     path("statistics/", RecordStatisticsViewSet.as_view(), ),
 ]
