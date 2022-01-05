@@ -26,6 +26,9 @@ import mimetypes
 ###
 # Template
 ###
+from apps.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+
+
 class RecordTemplateViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
                             mixins.ListModelMixin, mixins.RetrieveModelMixin, GenericViewSet):
     queryset = RecordTemplate.objects.none()
@@ -166,10 +169,16 @@ class RecordViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.D
     def perform_create(self, serializer):
         record = serializer.save()
         aes_key = AESEncryption.generate_secure_key()
-        public_key_user = self.request.user.get_public_key()
-        encryption = RecordEncryptionNew(record=record, user=self.request.user, key=aes_key)
-        encryption.encrypt(public_key_user=public_key_user)
-        encryption.save()
+        users_with_permissions = [self.request.user]
+        for user in list(self.request.user.rlc.rlc_members.all()):
+            if user.has_permission(PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC):
+                users_with_permissions.append(user)
+        for user in users_with_permissions:
+            if not RecordEncryptionNew.objects.filter(record=record, user=user).exists():
+                encryption = RecordEncryptionNew(record=record, user=user, key=aes_key)
+                public_key_user = user.get_public_key()
+                encryption.encrypt(public_key_user=public_key_user)
+                encryption.save()
 
     @action(detail=True, methods=['get'])
     def documents(self, request, *args, **kwargs):

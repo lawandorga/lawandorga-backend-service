@@ -1,13 +1,12 @@
+from apps.recordmanagement.models import EncryptedClient
 from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedStandardField, Record, \
     RecordEncryptedStandardEntry, RecordStandardEntry, RecordEncryptedFileEntry, RecordStandardField, \
     RecordEncryptedFileField, RecordEncryptedSelectField, RecordEncryptedSelectEntry, \
     RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry, RecordSelectEntry, RecordSelectField, \
     RecordMultipleEntry, RecordMultipleField
-from apps.recordmanagement.serializers import EncryptedClientSerializer
 from rest_framework.exceptions import ValidationError, ParseError
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.reverse import reverse
-from django.core.files import File
 from rest_framework import serializers
 
 
@@ -361,6 +360,16 @@ class RecordCreateSerializer(RecordListSerializer):
     pass
 
 
+class ClientSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(allow_blank=True)
+    note = serializers.CharField(allow_blank=True)
+    phone_number = serializers.CharField(allow_blank=True)
+
+    class Meta:
+        model = EncryptedClient
+        exclude = ['encrypted_client_key']
+
+
 class RecordDetailSerializer(RecordSerializer):
     entries = serializers.SerializerMethodField()
     fields = serializers.SerializerMethodField(method_name='get_form_fields')
@@ -398,7 +407,7 @@ class RecordDetailSerializer(RecordSerializer):
         if obj.old_client is None:
             return {}
         obj.old_client.decrypt(private_key_rlc=self.private_key_rlc)
-        return EncryptedClientSerializer(instance=obj.old_client).data
+        return ClientSerializer(instance=obj.old_client).data
 
 
 ###
