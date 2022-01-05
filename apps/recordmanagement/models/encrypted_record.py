@@ -111,12 +111,12 @@ class EncryptedRecord(EncryptedModelMixin, models.Model):
         :return: boolean, true if the user has permission
         """
         from apps.recordmanagement.models.encrypted_record_permission import (
-            EncryptedRecordPermission,
+            RecordAccess,
         )
 
         return (
             self.working_on_record.filter(id=user.id).count() == 1
-            or EncryptedRecordPermission.objects.filter(
+            or RecordAccess.objects.filter(
                 record=self, request_from=user, state="gr"
             ).count()
             == 1
@@ -130,11 +130,11 @@ class EncryptedRecord(EncryptedModelMixin, models.Model):
         for user in list(self.working_on_record.all()):
             emails.append(user.email)
         from apps.recordmanagement.models.encrypted_record_permission import (
-            EncryptedRecordPermission,
+            RecordAccess,
         )
 
         for permission_request in list(
-            EncryptedRecordPermission.objects.filter(record=self, state="gr")
+            RecordAccess.objects.filter(record=self, state="gr")
         ):
             emails.append(permission_request.request_from.email)
         return emails
@@ -145,10 +145,10 @@ class EncryptedRecord(EncryptedModelMixin, models.Model):
         for user in list(self.working_on_record.all()):
             users.append(user)
         from apps.recordmanagement.models.encrypted_record_permission import (
-            EncryptedRecordPermission,
+            RecordAccess,
         )
 
-        for permission_request in EncryptedRecordPermission.objects.filter(
+        for permission_request in RecordAccess.objects.filter(
             record=self, state="gr"
         ):
             users.append(permission_request.request_from)

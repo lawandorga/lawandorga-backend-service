@@ -9,7 +9,7 @@ router.register('messages', MessageViewSet)
 router.register("pool_records", PoolRecordViewSet)
 router.register("pool_consultants", PoolConsultantViewSet)
 router.register('record_documents', EncryptedRecordDocumentViewSet)
-router.register('record_permission_requests', RecordPermissionRequestViewSet)
+router.register('accesses', RecordAccessViewSet)
 # questionnaires
 router.register('questionnairetemplates', QuestionnaireTemplateViewSet)
 router.register('questionnaires', QuestionnaireViewSet)

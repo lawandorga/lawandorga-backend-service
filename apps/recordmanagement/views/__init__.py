@@ -1,4 +1,4 @@
-from .encrypted_record_permission import *
+from .record_access import *
 from .encrypted_record_document import *
 from .deletions import *
 from .pool_consultant import *

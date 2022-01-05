@@ -1,6 +1,6 @@
 from rest_framework.authtoken.models import Token
 from apps.api.models.permission import Permission
-from apps.recordmanagement.models import RecordDeletion, EncryptedRecordPermission
+from apps.recordmanagement.models import RecordDeletion, RecordAccess
 from apps.static.permissions import PERMISSION_MANAGE_USERS, PERMISSION_PROCESS_RECORD_DELETION_REQUESTS, \
     PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC, PERMISSION_MANAGE_PERMISSIONS_RLC
 from rest_framework.exceptions import ParseError, PermissionDenied, AuthenticationFailed
@@ -149,8 +149,8 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             record_deletion_requests = 0
         if instance.has_permission(PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC):
-            record_permit_requests = EncryptedRecordPermission.objects.filter(record__from_rlc=instance.rlc,
-                                                                              state='re').count()
+            record_permit_requests = RecordAccess.objects.filter(record__template__rlc=instance.rlc,
+                                                                 state='re').count()
         else:
             record_permit_requests = 0
         data = {

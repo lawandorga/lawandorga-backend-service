@@ -5,7 +5,7 @@ from .record_encryption import *
 from .encrypted_client import *
 from .encrypted_record_document import *
 from .encrypted_record_message import *
-from .encrypted_record_permission import *
+from .record_access import *
 from .record_deletion import *
 from .pool_consultant import *
 from .pool_record import *
