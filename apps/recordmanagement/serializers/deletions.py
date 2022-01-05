@@ -1,4 +1,4 @@
-from apps.recordmanagement.models.deletion import RecordDeletion
+from apps.recordmanagement.models.record_deletion import RecordDeletion
 from rest_framework import serializers
 
 

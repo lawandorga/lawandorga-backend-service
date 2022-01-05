@@ -1,4 +1,4 @@
-from apps.recordmanagement.models.deletion import RecordDeletion
+from apps.recordmanagement.models.record_deletion import RecordDeletion
 from apps.recordmanagement.serializers import RecordDeletionSerializer
 from rest_framework.exceptions import PermissionDenied
 from django.db.models import Q
