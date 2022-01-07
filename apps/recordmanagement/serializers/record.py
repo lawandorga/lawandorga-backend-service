@@ -3,7 +3,7 @@ from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedS
     RecordEncryptedStandardEntry, RecordStandardEntry, RecordEncryptedFileEntry, RecordStandardField, \
     RecordEncryptedFileField, RecordEncryptedSelectField, RecordEncryptedSelectEntry, \
     RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry, RecordSelectEntry, RecordSelectField, \
-    RecordMultipleEntry, RecordMultipleField
+    RecordMultipleEntry, RecordMultipleField, RecordEncryptionNew
 from rest_framework.exceptions import ValidationError, ParseError
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.reverse import reverse
@@ -370,11 +370,23 @@ class ClientSerializer(serializers.ModelSerializer):
         exclude = ['encrypted_client_key']
 
 
+class RecordEncryptionNewSerializer(serializers.ModelSerializer):
+    user_detail = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RecordEncryptionNew
+        fields = ['created', 'user', 'user_detail']
+
+    def get_user_detail(self, obj):
+        return obj.user.name
+
+
 class RecordDetailSerializer(RecordSerializer):
     entries = serializers.SerializerMethodField()
     fields = serializers.SerializerMethodField(method_name='get_form_fields')
     client = serializers.SerializerMethodField()
     url = serializers.HyperlinkedIdentityField(view_name='record-detail')
+    encryptions = RecordEncryptionNewSerializer(many=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

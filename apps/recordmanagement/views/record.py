@@ -163,6 +163,7 @@ class RecordViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.D
                 'template__encrypted_file_fields',
                 'template__encrypted_select_fields',
                 'template__encrypted_standard_fields',
+                'encryptions', 'encryptions__user'
             ).select_related('old_client')
         return Record.objects.filter(template__rlc=self.request.user.rlc)
 
