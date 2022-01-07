@@ -4,9 +4,7 @@ from django.db import models
 
 
 class RlcEncryptionKeys(EncryptedModelMixin, models.Model):
-    rlc = models.OneToOneField(
-        Rlc, related_name="encryption_keys", on_delete=models.CASCADE
-    )
+    rlc = models.OneToOneField(Rlc, related_name="encryption_keys", on_delete=models.CASCADE)
     public_key = models.BinaryField()
     encrypted_private_key = models.BinaryField()
 
@@ -20,8 +18,8 @@ class RlcEncryptionKeys(EncryptedModelMixin, models.Model):
     def __str__(self):
         return "rlcEncryptionKey: {}; rlc: {};".format(self.pk, self.rlc.name)
 
-    def decrypt(self, aes_key: str) -> None:
+    def decrypt(self, aes_key):
         super().decrypt(aes_key)
 
-    def encrypt(self, aes_key: str) -> None:
+    def encrypt(self, aes_key):
         super().encrypt(aes_key)

@@ -381,7 +381,6 @@ class RecordDetailSerializer(RecordSerializer):
         request = self.context['request']
         self.user = request.user
         self.private_key_user = self.user.get_private_key(request=request)
-        self.private_key_rlc = self.user.rlc.get_private_key(user=self.user, private_key_user=self.private_key_user)
 
     def get_entries(self, obj):
         try:
@@ -406,7 +405,8 @@ class RecordDetailSerializer(RecordSerializer):
     def get_client(self, obj):
         if obj.old_client is None:
             return {}
-        obj.old_client.decrypt(private_key_rlc=self.private_key_rlc)
+        private_key_rlc = self.user.rlc.get_private_key(user=self.user, private_key_user=self.private_key_user)
+        obj.old_client.decrypt(private_key_rlc=private_key_rlc)
         return ClientSerializer(instance=obj.old_client).data
 
 

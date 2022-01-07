@@ -86,20 +86,21 @@ class Rlc(models.Model):
         from apps.api.models.users_rlc_keys import UsersRlcKeys
 
         # safety return
-        if hasattr(self, "encryption_keys"):
+        if RlcEncryptionKeys.objects.filter(rlc__pk=self.pk).exists():
             return
+
         # generate some keys
         aes_key = AESEncryption.generate_secure_key()
         private, public = RSAEncryption.generate_keys()
-        encrypted_private = AESEncryption.encrypt(private, aes_key)
         # create encryption key for rlc
-        RlcEncryptionKeys.objects.create(
-            rlc=self, encrypted_private_key=encrypted_private, public_key=public
-        )
+        rlc_encryption_keys = RlcEncryptionKeys(rlc=self, encrypted_private_key=private, public_key=public)
+        rlc_encryption_keys.encrypt(aes_key)
+        rlc_encryption_keys.save()
         # create encryption keys for users to be able to decrypt rlc private key with users private key
         # the aes key is encrypted with the users public key, but only the user's private key can decrypt
         # the encrypted aes key
         for user in self.rlc_members.all():
+            UsersRlcKeys.objects.filter(user=user, rlc=self).delete()
             user_rlc_keys = UsersRlcKeys(user=user, rlc=self, encrypted_key=aes_key)
             user_rlc_keys.encrypt(user.get_public_key())
             user_rlc_keys.save()
