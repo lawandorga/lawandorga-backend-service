@@ -7,7 +7,7 @@ from apps.api.models.has_permission import HasPermission
 from apps.recordmanagement.models import RecordSelectField, RecordTemplate, Record, RecordStandardField, \
     RecordStandardEntry, RecordUsersEntry, RecordMultipleField, RecordMultipleEntry, RecordStateField, \
     RecordStateEntry, RecordEncryptionNew, RecordEncryptedStandardField, RecordSelectEntry, \
-    RecordEncryptedStandardEntry, RecordUsersField
+    RecordEncryptedStandardEntry, RecordUsersField, QuestionnaireTemplate, QuestionnaireQuestion
 from apps.api.models.permission import Permission
 from apps.static.permissions import get_all_permissions_strings
 from apps.static.encryption import AESEncryption
@@ -651,6 +651,13 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     return record
 
 
+def create_questionnaire_templates(rlc):
+    template = QuestionnaireTemplate.objects.create(name='Standard Questionnaire', rlc=rlc, notes='Just the usual.')
+    QuestionnaireQuestion.objects.create(questionnaire=template, question='How old are you?', type='TEXTAREA')
+    QuestionnaireQuestion.objects.create(questionnaire=template, question='Please sign the pdf.', type='FILE')
+    QuestionnaireQuestion.objects.create(questionnaire=template, question='How tall are you?', type='TEXTAREA')
+
+
 def create() -> None:
     dummy_password = "qwe123"
     # general fixtures
@@ -668,3 +675,5 @@ def create() -> None:
     # records
     create_records(list(users) + [dummy], rlc1)
     create_informative_record(dummy, dummy_password, users, rlc1)
+    # questionnaire templates
+    create_questionnaire_templates(rlc1)
