@@ -1,5 +1,3 @@
-from django.db.models import ProtectedError
-
 from apps.recordmanagement.serializers.questionnaire import QuestionnaireTemplateSerializer, QuestionnaireSerializer, \
     RecordQuestionnaireDetailSerializer, CodeSerializer, \
     QuestionnaireQuestionSerializer, QuestionnaireFileAnswerSerializer, QuestionnaireTextAnswerSerializer, \
@@ -8,6 +6,7 @@ from apps.recordmanagement.models import QuestionnaireTemplate, Questionnaire
 from rest_framework.exceptions import ParseError
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.db.models import ProtectedError
 from rest_framework import viewsets, status, mixins
 
 

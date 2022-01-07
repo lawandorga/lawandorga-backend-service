@@ -220,6 +220,9 @@ class Record(models.Model):
         verbose_name = 'Record'
         verbose_name_plural = 'Records'
 
+    def __str__(self):
+        return 'record: {}; rlc: {};'.format(self.pk, self.template.rlc.name)
+
     @property
     def identifier(self):
         first_standard_entry = self.standard_entries.order_by('field__order').first()

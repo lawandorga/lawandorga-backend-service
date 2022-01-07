@@ -7,7 +7,6 @@ from .encrypted_record_document import *
 from .encrypted_record_message import *
 from .record_access import *
 from .record_deletion import *
-from .pool_consultant import *
-from .pool_record import *
+from .pool import *
 from .questionnaire import *
 from .record import *
