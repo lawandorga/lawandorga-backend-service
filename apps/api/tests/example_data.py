@@ -188,9 +188,10 @@ def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile
 
     # main user
     user = UserProfile.objects.create(
-        name="Mr Dummy",
+        name="Mr. Dummy",
         email="dummy@law-orga.de",
         rlc=rlc,
+        is_superuser=True
     )
     user.set_password(dummy_password)
     user.save()
