@@ -4,11 +4,13 @@ from django.urls import path, include
 
 
 router = DefaultRouter()
-router.register("deletions", RecordDeletionViewSet)
+
 router.register('messages', MessageViewSet)
 router.register("pool_records", PoolRecordViewSet)
 router.register("pool_consultants", PoolConsultantViewSet)
 router.register('record_documents', EncryptedRecordDocumentViewSet)
+# record access and deletion
+router.register("deletions", RecordDeletionViewSet)
 router.register('accesses', RecordAccessViewSet)
 # questionnaires
 router.register('questionnairetemplates', QuestionnaireTemplateViewSet)
@@ -25,7 +27,7 @@ router.register('recordusersfields', RecordUsersFieldViewSet)
 router.register('recordselectfields', RecordSelectFieldViewSet)
 router.register('recordstandardfields', RecordStandardFieldViewSet)
 router.register('recordmultiplefields', RecordMultipleFieldViewSet)
-# encrypted
+# fields encrypted
 router.register('recordencryptedselectfields', RecordEncryptedSelectFieldViewSet)
 router.register('recordencryptedfilefields', RecordEncryptedFileFieldViewSet)
 router.register('recordencryptedstandardfields', RecordEncryptedStandardFieldViewSet)
@@ -35,7 +37,7 @@ router.register('recordusersentries', RecordUsersEntryViewSet)
 router.register('recordselectentries', RecordSelectEntryViewSet)
 router.register('recordstandardentries', RecordStandardEntryViewSet)
 router.register('recordmultipleentries', RecordMultipleEntryViewSet)
-# encrypted
+# entries encrypted
 router.register('recordencryptedselectentries', RecordEncryptedSelectEntryViewSet)
 router.register('recordencryptedfileentries', RecordEncryptedFileEntryViewSet)
 router.register('recordencryptedstandardentries', RecordEncryptedStandardEntryViewSet)

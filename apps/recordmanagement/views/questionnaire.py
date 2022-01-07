@@ -1,3 +1,5 @@
+from django.db.models import ProtectedError
+
 from apps.recordmanagement.serializers.questionnaire import QuestionnaireTemplateSerializer, QuestionnaireSerializer, \
     RecordQuestionnaireDetailSerializer, CodeSerializer, \
     QuestionnaireQuestionSerializer, QuestionnaireFileAnswerSerializer, QuestionnaireTextAnswerSerializer, \
@@ -18,6 +20,13 @@ class QuestionnaireTemplateViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         return serializer.save()
+
+    def perform_destroy(self, instance):
+        try:
+            instance.delete()
+        except ProtectedError:
+            raise ParseError('This questionnaire template can not be deleted, because there are questionnaires '
+                             'within records that use it.')
 
     @action(detail=True, methods=['get'])
     def fields(self, request, *args, **kwargs):
