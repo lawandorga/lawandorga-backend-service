@@ -1,5 +1,4 @@
 from rest_framework.response import Response
-from apps.recordmanagement import urls as record_urls
 from django.views.generic import TemplateView
 from rest_framework.views import APIView
 from django.core.mail import send_mail
@@ -29,7 +28,6 @@ urlpatterns = [
     path('email/', EmailView.as_view()),
     path("admin/", admin.site.urls),
     path("api/", include(api_urls)),
-    path("api/records/", include(record_urls)),
     path("", TemplateView.as_view(template_name="index.html", extra_context={'RUNTIME': settings.RUNTIME, 'PORT': settings.EMAIL_PORT})),
     path('tinymce/', include('tinymce.urls')),
 ]

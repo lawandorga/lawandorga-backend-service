@@ -1,47 +1,41 @@
 from apps.recordmanagement.views import *
 from rest_framework.routers import DefaultRouter
-from django.urls import path, include
-
 
 router = DefaultRouter()
 
-router.register('messages', MessageViewSet)
-router.register("pool_records", PoolRecordViewSet)
-router.register("pool_consultants", PoolConsultantViewSet)
-router.register('record_documents', EncryptedRecordDocumentViewSet)
+router.register('records/messages', MessageViewSet)
+router.register("records/pool_records", PoolRecordViewSet)
+router.register("records/pool_consultants", PoolConsultantViewSet)
+router.register('records/record_documents', EncryptedRecordDocumentViewSet)
 # record access and deletion
 router.register("deletions", RecordDeletionViewSet)
-router.register('accesses', RecordAccessViewSet)
+router.register('records/accesses', RecordAccessViewSet)
 # questionnaires
-router.register('questionnairetemplates', QuestionnaireTemplateViewSet)
-router.register('questionnaires', QuestionnaireViewSet)
-router.register('questionnaire_answers', QuestionnaireAnswersViewSet)
-router.register('questionnaire_fields', QuestionnaireFieldsViewSet)
-router.register('questionnaire_files', QuestionnaireFilesViewSet)
+router.register('records/questionnairetemplates', QuestionnaireTemplateViewSet)
+router.register('records/questionnaires', QuestionnaireViewSet)
+router.register('records/questionnaire_answers', QuestionnaireAnswersViewSet)
+router.register('records/questionnaire_fields', QuestionnaireFieldsViewSet)
+router.register('records/questionnaire_files', QuestionnaireFilesViewSet)
 # records
-router.register('recordtemplates', RecordTemplateViewSet)
-router.register('records', RecordViewSet)
+router.register('records/recordtemplates', RecordTemplateViewSet)
+router.register('records/records', RecordViewSet)
 # fields
-router.register('recordstatefields', RecordStateFieldViewSet)
-router.register('recordusersfields', RecordUsersFieldViewSet)
-router.register('recordselectfields', RecordSelectFieldViewSet)
-router.register('recordstandardfields', RecordStandardFieldViewSet)
-router.register('recordmultiplefields', RecordMultipleFieldViewSet)
+router.register('records/recordstatefields', RecordStateFieldViewSet)
+router.register('records/recordusersfields', RecordUsersFieldViewSet)
+router.register('records/recordselectfields', RecordSelectFieldViewSet)
+router.register('records/recordstandardfields', RecordStandardFieldViewSet)
+router.register('records/recordmultiplefields', RecordMultipleFieldViewSet)
 # fields encrypted
-router.register('recordencryptedselectfields', RecordEncryptedSelectFieldViewSet)
-router.register('recordencryptedfilefields', RecordEncryptedFileFieldViewSet)
-router.register('recordencryptedstandardfields', RecordEncryptedStandardFieldViewSet)
+router.register('records/recordencryptedselectfields', RecordEncryptedSelectFieldViewSet)
+router.register('records/recordencryptedfilefields', RecordEncryptedFileFieldViewSet)
+router.register('records/recordencryptedstandardfields', RecordEncryptedStandardFieldViewSet)
 # entries
-router.register('recordstateentries', RecordStateEntryViewSet)
-router.register('recordusersentries', RecordUsersEntryViewSet)
-router.register('recordselectentries', RecordSelectEntryViewSet)
-router.register('recordstandardentries', RecordStandardEntryViewSet)
-router.register('recordmultipleentries', RecordMultipleEntryViewSet)
+router.register('records/recordstateentries', RecordStateEntryViewSet)
+router.register('records/recordusersentries', RecordUsersEntryViewSet)
+router.register('records/recordselectentries', RecordSelectEntryViewSet)
+router.register('records/recordstandardentries', RecordStandardEntryViewSet)
+router.register('records/recordmultipleentries', RecordMultipleEntryViewSet)
 # entries encrypted
-router.register('recordencryptedselectentries', RecordEncryptedSelectEntryViewSet)
-router.register('recordencryptedfileentries', RecordEncryptedFileEntryViewSet)
-router.register('recordencryptedstandardentries', RecordEncryptedStandardEntryViewSet)
-
-urlpatterns = [
-    path("", include(router.urls)),
-]
+router.register('records/recordencryptedselectentries', RecordEncryptedSelectEntryViewSet)
+router.register('records/recordencryptedfileentries', RecordEncryptedFileEntryViewSet)
+router.register('records/recordencryptedstandardentries', RecordEncryptedStandardEntryViewSet)
