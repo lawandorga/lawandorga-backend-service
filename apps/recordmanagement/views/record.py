@@ -14,6 +14,7 @@ from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedS
 from apps.recordmanagement.serializers import RecordDocumentSerializer
 from rest_framework.exceptions import ParseError
 from rest_framework.decorators import action
+from apps.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 from apps.static.encryption import AESEncryption
@@ -26,9 +27,6 @@ import mimetypes
 ###
 # Template
 ###
-from apps.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
-
-
 class RecordTemplateViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
                             mixins.ListModelMixin, mixins.RetrieveModelMixin, GenericViewSet):
     queryset = RecordTemplate.objects.none()
