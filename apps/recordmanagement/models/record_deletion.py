@@ -21,11 +21,11 @@ class RecordDeletion(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "recordDeletionRequest: {}; requested: {};".format(self.pk, self.state)
+        return "recordDeletion: {}; state: {};".format(self.pk, self.state)
 
     class Meta:
-        verbose_name = 'EncryptedRecordDeletionRequest'
-        verbose_name_plural = 'EncryptedRecordDeletionRequests'
+        verbose_name = 'RecordDeletion'
+        verbose_name_plural = 'RecordDeletions'
         ordering = ['-state', '-created']
 
     def save(self, *args, **kwargs):

@@ -30,8 +30,8 @@ class EncryptedRecordDocument(models.Model):
         verbose_name_plural = "RecordDocuments"
 
     def __str__(self):
-        return "recordDocument: {}; name: {}; creator: {}; record: {};".format(
-            self.pk, self.name, self.creator.email, self.record.id
+        return "recordDocument: {}; name: {}; record: {};".format(
+            self.pk, self.name, self.record.id
         )
 
     def save(self, *args, **kwargs):
