@@ -1,9 +1,12 @@
+from datetime import timedelta
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import models
 from django.template import loader
+from django.utils import timezone
 from rest_framework.exceptions import ParseError
 from rest_framework.request import Request
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -55,6 +58,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     rlc = models.ForeignKey("Rlc", related_name="rlc_members", on_delete=models.PROTECT, blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     # custom manager
     objects = UserProfileManager()
@@ -135,6 +140,39 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         groups = self.rlcgroups.all()
         return PermissionForCollabDocument.objects.filter(group_has_permission__in=groups).select_related('document')
 
+    def get_information(self):
+        # records
+        from apps.recordmanagement.models.record import Record
+        records = Record.objects.filter(template__rlc=self.rlc).prefetch_related('state_entries', 'users_entries',
+                                                                                 'users_entries__value')
+        records_data = []
+        for record in list(records):
+            state_entries = list(record.state_entries.all())
+            users_entries = list(record.users_entries.all())
+            if len(users_entries) <= 0 or len(state_entries) <= 0:
+                continue
+            users = list(users_entries[0].value.all())
+            if self.id not in map(lambda x: x.id, users):
+                continue
+            state = state_entries[0].value
+            if state == 'Closed':
+                continue
+            records_data.append({
+                'id': record.id,
+                'identifier': record.identifier,
+                'state': state,
+            })
+        # members
+        users = UserProfile.objects\
+            .filter(rlc=self.rlc, created__gt=timezone.now() - timedelta(days=14))\
+            .select_related('rlc_user')
+        members_data = [{'name': user.name, 'id': user.id, 'rlcuserid': user.rlc_user.id} for user in list(users)]
+        return {
+            'records': records_data,
+            'members': members_data,
+            'questionnaires': []
+        }
+
     def get_public_key(self) -> str:
         """
         gets the public key of the user from the database
@@ -187,29 +225,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         UserEncryptionKeys.objects.filter(user=self).delete()
         private, public = RSAEncryption.generate_keys()
-        user_keys = UserEncryptionKeys(
-            user=self, private_key=private, public_key=public
-        )
+        user_keys = UserEncryptionKeys(user=self, private_key=private, public_key=public)
         user_keys.save()
-
-    def generate_rlc_keys_for_this_user(self, rlcs_aes_key):
-
-        # delete (maybe) old existing rlc keys
-        from apps.api.models.users_rlc_keys import UsersRlcKeys
-
-        UsersRlcKeys.objects.filter(user=self, rlc=self.rlc).delete()
-
-        own_public_key = self.get_public_key()
-        encrypted_key = RSAEncryption.encrypt(rlcs_aes_key, own_public_key)
-        users_rlc_keys = UsersRlcKeys(
-            user=self, rlc=self.rlc, encrypted_key=encrypted_key
-        )
-        users_rlc_keys.save()
-
-    def rsa_encrypt(self, plain):
-        from apps.static.encryption import RSAEncryption
-
-        return RSAEncryption.encrypt(plain, self.get_public_key())
 
     def generate_keys_for_user(self, private_key_self, user_to_unlock):
         """
@@ -265,6 +282,8 @@ class RlcUser(models.Model):
     is_active = models.BooleanField(default=True)
     rlc = models.ForeignKey("Rlc", related_name="users", on_delete=models.PROTECT, blank=True, null=True)
     accepted = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = 'RlcUser'

@@ -136,6 +136,11 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'])
+    def dashboard(self, request, *args, **kwargs):
+        user = request.user
+        return Response(user.get_information())
+
+    @action(detail=False, methods=['get'])
     def admin(self, request, *args, **kwargs):
         instance = request.user
         if instance.has_permission(PERMISSION_MANAGE_USERS):
@@ -168,17 +173,10 @@ class UserViewSet(viewsets.ModelViewSet):
             raise AuthenticationFailed("Your token doesn't exist, please login again.")
         user = token.user
 
-        notifications = NotificationGroup.objects.filter(user=user, read=False).count()
-        overall_permissions = [
-            model_to_dict(permission) for permission in Permission.objects.all()
-        ]
-
         data = {
             "user": UserProfileSerializer(user).data,
             "rlc": RlcSerializer(user.rlc).data,
-            # "notifications": notifications,
             "permissions": user.get_all_user_permissions(),
-            # "all_permissions": overall_permissions,
         }
 
         return Response(data, status=status.HTTP_200_OK)
