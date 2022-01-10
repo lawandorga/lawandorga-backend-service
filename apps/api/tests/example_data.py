@@ -460,9 +460,10 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     record_users = [choice(users), main_user]
     aes_key = AESEncryption.generate_secure_key()
     for user in record_users:
-        record_encryption = RecordEncryptionNew(user=user, record=record, key=aes_key)
-        record_encryption.encrypt(user.get_public_key())
-        record_encryption.save()
+        if not RecordEncryptionNew.objects.filter(user=user, record=record).exists():
+            record_encryption = RecordEncryptionNew(user=user, record=record, key=aes_key)
+            record_encryption.encrypt(user.get_public_key())
+            record_encryption.save()
     # first contact date
     field = RecordStandardField.objects.get(template=template, name='First contact date')
     RecordStandardEntry.objects.create(record=record, field=field, value='2018-01-03')
