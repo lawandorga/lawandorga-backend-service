@@ -63,7 +63,7 @@ class RlcUserAdmin(admin.ModelAdmin):
 
 
 class LoggedPathAdmin(admin.ModelAdmin):
-    search_fields = ('path', )
+    search_fields = ('path', 'user__email')
 
 
 admin.site.register(Group)

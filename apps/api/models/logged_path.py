@@ -13,4 +13,5 @@ class LoggedPath(models.Model):
         verbose_name_plural = 'LoggedPaths'
 
     def __str__(self):
-        return 'loggedPath: {}; path: \'{}\';'.format(self.time.strftime('%Y-%m-%d'), self.path)
+        return 'loggedPath: {}; path: \'{}\'; user: {};'.format(self.time.strftime('%Y-%m-%d'), self.path,
+                                                                self.user.email)
