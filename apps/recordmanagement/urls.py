@@ -8,7 +8,7 @@ router.register("records/pool_records", PoolRecordViewSet)
 router.register("records/pool_consultants", PoolConsultantViewSet)
 router.register('records/record_documents', EncryptedRecordDocumentViewSet)
 # record access and deletion
-router.register("deletions", RecordDeletionViewSet)
+router.register("records/deletions", RecordDeletionViewSet)
 router.register('records/accesses', RecordAccessViewSet)
 # questionnaires
 router.register('records/questionnairetemplates', QuestionnaireTemplateViewSet)
