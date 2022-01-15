@@ -1,3 +1,5 @@
+from rest_framework.exceptions import PermissionDenied
+
 from apps.recordmanagement.models.record import Record, RecordEncryptionNew
 from apps.recordmanagement.serializers import PoolConsultantSerializer, PoolRecordSerializer
 from apps.recordmanagement.models.pool import PoolConsultant, PoolRecord
@@ -18,7 +20,7 @@ class PoolConsultantViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
         # check permissions (can consult)
         user = request.user
         if not user.has_permission(PERMISSION_CAN_CONSULT, for_rlc=user.rlc):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+            raise PermissionDenied()
 
         if PoolRecord.objects.filter(record__template__rlc=user.rlc).count() >= 1:
             entry = PoolRecord.objects.filter(record__template__rlc=user.rlc).first()
@@ -85,7 +87,7 @@ class PoolRecordViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     def status(self, request):
         user = request.user
         if not user.has_permission(PERMISSION_CAN_CONSULT):
-            raise CustomError(error_codes.ERROR__API__PERMISSION__INSUFFICIENT)
+            raise PermissionDenied()
 
         queryset = PoolRecord.objects.filter(record__template__rlc=user.rlc)
         if queryset.count() > 0:

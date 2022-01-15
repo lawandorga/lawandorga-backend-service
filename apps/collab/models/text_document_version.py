@@ -17,8 +17,23 @@ class TextDocumentVersion(EncryptedModelMixin, models.Model):
     encrypted_fields = ["content"]
     encryption_class = AESEncryption
 
-    def encrypt(self, aes_key_rlc: bytes) -> None:
-        super().encrypt(aes_key_rlc)
+    class Meta:
+        verbose_name = 'TextDocumentVersion'
+        verbose_name_plural = 'TextDocumentVersions'
 
-    def decrypt(self, aes_key_rlc: str = None) -> None:
-        super().decrypt(aes_key_rlc)
+    def __str__(self):
+        return 'textDocumentVersion: {}; document: {};'.format(self.id, self.document.id)
+
+    def encrypt(self, aes_key_rlc=None):
+        if aes_key_rlc:
+            key = aes_key_rlc
+        else:
+            raise ValueError('You need to pass (aes_key_rlc).')
+        super().encrypt(key)
+
+    def decrypt(self, aes_key_rlc=None):
+        if aes_key_rlc:
+            key = aes_key_rlc
+        else:
+            raise ValueError('You need to pass (aes_key_rlc).')
+        super().decrypt(key)

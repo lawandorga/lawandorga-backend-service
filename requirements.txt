@@ -6,7 +6,7 @@ djangorestframework==3.13.1
 # database production
 psycopg2==2.9.3
 # cors
-django-cors-headers==3.10.1
+django-cors-headers==3.11.0
 # development
 pep8==1.7.1
 autopep8==1.6.0
@@ -21,7 +21,4 @@ django-storages==1.12.3
 django-tinymce==3.4.0
 # unknown
 pycryptodome==3.12.0
-boto3==1.20.26
-# remove in code
-django-model-utils==4.2.0
-
+boto3==1.20.37

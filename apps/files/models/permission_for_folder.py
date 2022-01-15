@@ -30,6 +30,5 @@ class PermissionForFolder(models.Model):
         verbose_name_plural = "PermissionsForFolders"
 
     def __str__(self):
-        return "permissionForFolder: {}; folder: {}; permission: {};".format(
-            self.pk, self.folder.name, self.permission.name
-        )
+        return "permissionForFolder: {}; folder: {}; permission: {};".format(self.pk, self.folder.name,
+                                                                             self.permission.name)

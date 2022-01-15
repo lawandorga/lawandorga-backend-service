@@ -1,6 +1,5 @@
 from .user import *
 from .group import *
-from .permission import *
 from .has_permission import *
 from .rlc import *
 from .other import *

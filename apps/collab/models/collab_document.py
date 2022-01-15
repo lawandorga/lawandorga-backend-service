@@ -1,21 +1,19 @@
-from typing import Dict, Tuple
-from django.db import models
-from apps.api.errors import CustomError
-from apps.api.models import UserProfile
+from apps.collab.static.collab_permissions import PERMISSION_WRITE_DOCUMENT
+from apps.static.permissions import PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC, PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC
 from apps.collab.models import TextDocument
-from apps.collab.static.collab_permissions import (
-    PERMISSION_READ_DOCUMENT,
-    PERMISSION_WRITE_DOCUMENT,
-)
-from apps.static.permissions import (
-    PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC,
-    PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC,
-    PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC,
-)
+from django.db import models
+from typing import Dict, Tuple
 
 
 class CollabDocument(TextDocument):
     path = models.CharField(max_length=4096, null=False, blank=False)
+
+    class Meta:
+        verbose_name = 'CollabDocument'
+        verbose_name_plural = 'CollabDocuments'
+
+    def __str__(self):
+        return 'collabDocument: {}; name: {};'.format(self.pk, self.name)
 
     @property
     def name(self):

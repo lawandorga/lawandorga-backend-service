@@ -3,13 +3,11 @@ from rest_framework.exceptions import PermissionDenied
 from apps.collab.serializers import CollabDocumentSerializer, \
     TextDocumentVersionSerializer, CollabDocumentCreateSerializer, \
     CollabDocumentListSerializer, TextDocumentVersionCreateSerializer, PermissionForCollabDocumentAllNamesSerializer
-from apps.static.error_codes import ERROR__API__PERMISSION__INSUFFICIENT
 from apps.static.permissions import PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC, \
     PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC, PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC
 from rest_framework.response import Response
 from rest_framework.request import Request
 from apps.collab.models import CollabDocument, PermissionForCollabDocument, TextDocumentVersion
-from apps.api.errors import CustomError
 from rest_framework import viewsets, status
 from typing import Any
 
