@@ -28,8 +28,9 @@ class PoolConsultantViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
             record.save()
 
             if not RecordEncryptionNew.objects.filter(user=user, record=record).exists():
-                new_keys = RecordEncryptionNew(user=user, record=record, encrypted_key=entry.record_key)
+                new_keys = RecordEncryptionNew(user=user, record=record, key=entry.record_key)
                 new_keys.encrypt(user.get_public_key())
+
                 new_keys.save()
 
             entry.delete()
