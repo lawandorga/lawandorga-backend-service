@@ -1,5 +1,5 @@
 from apps.api.models.has_permission import HasPermission
-from apps.api.serializers import GroupNameSerializer, UserProfileNameSerializer, PermissionNameSerializer
+from apps.api.serializers import GroupNameSerializer, UserProfileNameSerializer, PermissionSerializer
 from rest_framework import serializers
 from ..errors import EntryAlreadyExistingError
 
@@ -50,4 +50,4 @@ class HasPermissionAllNamesSerializer(HasPermissionSerializer):
 class HasPermissionNameSerializer(HasPermissionSerializer):
     user_has_permission = UserProfileNameSerializer(read_only=True)
     group_has_permission = GroupNameSerializer(read_only=True)
-    permission = PermissionNameSerializer(read_only=True)
+    permission = PermissionSerializer(read_only=True)

@@ -13,6 +13,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from apps.api.models.has_permission import HasPermission
 from apps.api.models.permission import Permission
 from apps.static.encryption import RSAEncryption
+from apps.static.permissions import PERMISSION_MANAGE_USERS
 
 
 class UserProfileManager(BaseUserManager):
@@ -141,6 +142,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return PermissionForCollabDocument.objects.filter(group_has_permission__in=groups).select_related('document')
 
     def get_information(self):
+        return_dict = {}
         # records
         from apps.recordmanagement.models.record import Record
         records = Record.objects.filter(template__rlc=self.rlc).prefetch_related('state_entries', 'users_entries',
@@ -162,16 +164,16 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                 'identifier': record.identifier,
                 'state': state,
             })
+        return_dict['records'] = records_data
         # members
-        users = UserProfile.objects\
-            .filter(rlc=self.rlc, created__gt=timezone.now() - timedelta(days=14))\
-            .select_related('rlc_user')
-        members_data = [{'name': user.name, 'id': user.id, 'rlcuserid': user.rlc_user.id} for user in list(users)]
-        return {
-            'records': records_data,
-            'members': members_data,
-            'questionnaires': []
-        }
+        if self.has_permission(PERMISSION_MANAGE_USERS):
+            users = UserProfile.objects\
+                .filter(rlc=self.rlc, rlc_user__created__gt=timezone.now() - timedelta(days=14))\
+                .select_related('rlc_user')
+            members_data = [{'name': user.name, 'id': user.id, 'rlcuserid': user.rlc_user.id} for user in list(users)]
+            return_dict['members'] = members_data
+        # return
+        return return_dict
 
     def get_public_key(self) -> str:
         """
@@ -278,6 +280,7 @@ class RlcUser(models.Model):
     street = models.CharField(max_length=255, default=None, null=True, blank=True)
     city = models.CharField(max_length=255, default=None, null=True, blank=True)
     postal_code = models.CharField(max_length=255, default=None, null=True, blank=True)
+    note = models.TextField()
     locked = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     rlc = models.ForeignKey("Rlc", related_name="users", on_delete=models.PROTECT, blank=True, null=True)

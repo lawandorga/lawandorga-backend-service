@@ -290,6 +290,23 @@ class RecordUsersEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, 
         # every field returned because they are supposed to be seen by everybody
         return RecordUsersEntry.objects.filter(record__template__rlc=self.request.user.rlc)
 
+    def create_encryptions(self, record, users):
+        aes_key_record = record.get_aes_key(user=self.request.user,
+                                            private_key_user=self.request.user.get_private_key(request=self.request))
+        for user in users:
+            if not RecordEncryptionNew.objects.filter(user=user, record=record).exists():
+                encryption = RecordEncryptionNew(user=user, record=record, key=aes_key_record)
+                encryption.encrypt(user.get_public_key())
+                encryption.save()
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        self.create_encryptions(instance.record, list(instance.value.all()))
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        self.create_encryptions(instance.record, list(instance.value.all()))
+
 
 class RecordEncryptedStandardEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
                                           GenericViewSet):

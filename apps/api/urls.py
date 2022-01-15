@@ -16,6 +16,7 @@ router.register("groups", views.GroupViewSet, basename="groups")
 router.register("has_permission", views.HasPermissionViewSet, basename="has_permission")
 router.register("rlcs", views.RlcViewSet, basename="rlcs")
 router.register("notifications", views.NotificationViewSet)
+router.register('permissions', views.PermissionViewSet)
 router.register("notification_groups", views.NotificationGroupViewSet)
 
 urlpatterns = [path("", include(router.urls))]

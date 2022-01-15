@@ -31,7 +31,7 @@ class RlcUserUpdateSerializer(RlcUserSerializer):
 
     class Meta:
         model = RlcUser
-        fields = ['name', 'phone_number', 'birthday', 'street', 'city', 'postal_code', 'is_active']
+        fields = ['name', 'phone_number', 'birthday', 'street', 'city', 'postal_code', 'is_active', 'note']
 
     def update(self, instance, validated_data):
         instance = super().update(instance, validated_data)
@@ -44,18 +44,22 @@ class RlcUserUpdateSerializer(RlcUserSerializer):
 class RlcUserForeignSerializer(RlcUserListSerializer):
     class Meta:
         model = RlcUser
-        fields = ("user", "id", "phone_number", 'name', 'email')
-
+        fields = ("user", "id", "phone_number", 'name', 'email', 'note')
 
 
 ###
 # UserProfile
 ###
 class UserProfileSerializer(serializers.ModelSerializer):
+    rlcuserid = serializers.SerializerMethodField()
+
     class Meta:
         model = UserProfile
         exclude = ["groups", "user_permissions"]
         extra_kwargs = {"password": {"write_only": True}}
+
+    def get_rlcuserid(self, obj):
+        return obj.rlc_user.id
 
 
 class UserProfileSmallSerializer(serializers.ModelSerializer):
