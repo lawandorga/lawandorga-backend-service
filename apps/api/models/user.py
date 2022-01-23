@@ -157,13 +157,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             if self.id not in map(lambda x: x.id, users):
                 continue
             state = state_entries[0].value
-            if state == 'Closed':
-                continue
-            records_data.append({
-                'id': record.id,
-                'identifier': record.identifier,
-                'state': state,
-            })
+            if state == 'Open':
+                records_data.append({
+                    'id': record.id,
+                    'identifier': record.identifier,
+                    'state': state,
+                })
         return_dict['records'] = records_data
         # members
         if self.has_permission(PERMISSION_MANAGE_USERS):

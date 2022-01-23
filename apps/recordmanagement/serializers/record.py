@@ -53,6 +53,8 @@ class RecordStateFieldSerializer(RecordFieldSerializer):
             raise ValidationError('States need to be a list of strings.')
         if 'Closed' not in options:
             raise ValidationError('Closed needs to be added to states.')
+        if 'Open' not in options:
+            raise ValidationError('Open needs to be added to states.')
         return options
 
 

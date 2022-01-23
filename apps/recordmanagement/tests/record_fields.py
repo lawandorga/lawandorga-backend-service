@@ -282,12 +282,12 @@ class RecordStateFieldViewSetWorking(GenericRecordField, TestCase):
     model = RecordStateField
     view = RecordStateFieldViewSet
     # create
-    create_states = ['Closed', 'Option 1', 'Option 2']
+    create_states = ['Closed', 'Option 1', 'Option 2', 'Open']
     create_test = {
         'options': create_states
     }
     # update
-    update_states = ['Closed', 'Option 4']
+    update_states = ['Closed', 'Option 4', 'Open']
     update_data = {
         'options': json.dumps(update_states),
     }
