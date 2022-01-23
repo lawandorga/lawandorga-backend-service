@@ -1,3 +1,5 @@
+from rest_framework.exceptions import ValidationError
+
 from apps.api.models.has_permission import HasPermission
 from apps.api.serializers import GroupNameSerializer, UserProfileNameSerializer, PermissionSerializer
 from rest_framework import serializers
@@ -21,14 +23,20 @@ class OldHasPermissionSerializer(serializers.ModelSerializer):
         self.fields['group_has_permission'].queryset = self.context['request'].user.rlc.group_from_rlc.all()
 
     def validate(self, data):
-        if HasPermission.validate_values(data):
-            return data
-        raise serializers.ValidationError("validationError at creating has_permission")
+        user = data['user_has_permission'] if 'user_has_permission' in data else None
+        group = data['group_has_permission'] if 'group_has_permission' in data else None
+        permission = data['permission'] if 'permission' in data else None
 
-    def create(self, validated_data):
-        if HasPermission.already_existing(validated_data):
-            raise EntryAlreadyExistingError("entry already exists")
-        return super().create(validated_data)
+        if user is None and group is None:
+            raise ValidationError('A permission needs an user or a group.')
+
+        if (
+            (user and HasPermission.objects.filter(user_has_permission=user, permission=permission).exists()) or
+            (group and HasPermission.objects.filter(group_has_permission=group, permission=permission).exists())
+        ):
+            raise ValidationError('This permission exists already.')
+
+        return data
 
 
 class OldHasPermissionNameSerializer(HasPermissionSerializer):

@@ -1,6 +1,6 @@
 from apps.api.models.has_permission import HasPermission
 from apps.recordmanagement.helpers import check_encryption_key_holders_and_grant
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ParseError
 from rest_framework.decorators import action
 from apps.static.permissions import PERMISSION_MANAGE_PERMISSIONS_RLC, get_record_encryption_keys_permissions, \
     get_all_collab_permissions, get_all_files_permissions, get_all_records_permissions
@@ -32,18 +32,7 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        if not HasPermission.objects.filter(**serializer.validated_data).exists():
-            self.perform_create(serializer)
-
-        permission = serializer.validated_data["permission"]
-        if permission in get_record_encryption_keys_permissions():
-            granting_users_private_key = self.request.user.get_private_key(request=request)
-            check_encryption_key_holders_and_grant(request.user, granting_users_private_key)
-        # check if permission in rec enc perms TODO: this would be more performant
-        # get users private key
-        # if rlc -> add rec enc for all rlc users
-        # if group -> add for all group members
-        # if user -> add for user
+        self.perform_create(serializer)
 
         has_permission = HasPermission.objects.get(**serializer.validated_data)
         headers = self.get_success_headers(serializer.data)
