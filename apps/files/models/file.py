@@ -1,7 +1,9 @@
 from apps.static.storage_folders import clean_filename
 from django.core.files.storage import default_storage
+from apps.static.encryption import AESEncryption
 from apps.api.models.user import UserProfile
 from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
+from django.core.files import File as DjangoFile
 from django.utils import timezone
 from django.db import models
 from .folder import Folder
@@ -16,6 +18,7 @@ class File(models.Model):
     last_edited = models.DateTimeField(auto_now=True)
     folder = models.ForeignKey(Folder, related_name="files_in_folder", on_delete=models.CASCADE)
     key = models.CharField(null=True, max_length=1000, unique=True)
+    file = models.FileField(upload_to='files/file/', blank=True, null=True)
     exists = models.BooleanField(default=True)
 
     class Meta:
@@ -70,6 +73,26 @@ class File(models.Model):
 
     def get_encrypted_file_key(self):
         return self.get_file_key() + ".enc"
+
+    @staticmethod
+    def encrypt_file(file, aes_key_rlc=None):
+        if aes_key_rlc:
+            key = aes_key_rlc
+        else:
+            raise ValueError("You need to pass (aes_key_rlc).")
+        name = file.name
+        file = AESEncryption.encrypt_in_memory_file(file, key)
+        file = DjangoFile(file, name='{}.enc'.format(name))
+        return file
+
+    def decrypt_file(self, aes_key_rlc=None):
+        if aes_key_rlc:
+            key = aes_key_rlc
+        else:
+            raise ValueError("You need to pass (aes_key_rlc).")
+        file = AESEncryption.decrypt_bytes_file(self.file, key)
+        file.seek(0)
+        return file
 
     def delete_on_cloud(self) -> None:
         key = self.get_encrypted_file_key()

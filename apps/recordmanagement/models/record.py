@@ -417,7 +417,7 @@ class RecordEncryptedSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
 class RecordEncryptedFileEntry(RecordEntry):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='encrypted_file_entries')
     field = models.ForeignKey(RecordEncryptedFileField, related_name='entries', on_delete=models.PROTECT)
-    file = models.FileField(upload_to='recordfileentry/')
+    file = models.FileField(upload_to='recordmanagement/recordencryptedfileentry/')
 
     class Meta:
         unique_together = ['record', 'field']
