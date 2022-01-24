@@ -53,3 +53,9 @@ class FileViewSet(viewsets.ModelViewSet):
             raise PermissionDenied()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not instance.folder.user_has_permission_write(request.user):
+            raise PermissionDenied()
+        return super().update(request, *args, **kwargs)

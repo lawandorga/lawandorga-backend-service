@@ -22,6 +22,14 @@ class FileSerializer(serializers.ModelSerializer):
     def get_type(self, obj):
         return 'FILE'
 
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        file_type = attrs['key'].split('.')[-1]
+        print(file_type)
+        if len(attrs['name']) <= len(file_type) or attrs['name'][-len(file_type):] != file_type:
+            attrs['name'] = '{}.{}'.format(attrs['name'], file_type)
+        return attrs
+
 
 class FileCreateSerializer(AddUserMixin, FileSerializer):
     name = serializers.CharField(required=False)
