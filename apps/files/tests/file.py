@@ -1,7 +1,11 @@
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from apps.static.encryption import AESEncryption
+from apps.static.permissions import PERMISSION_WRITE_ALL_FOLDERS_RLC
+from rest_framework.test import force_authenticate, APIRequestFactory
+from apps.files.fixtures import create_folder_permissions
+from apps.api.fixtures import create_permissions
 from apps.files.models import File, Folder
-from apps.api.models import Rlc
+from apps.files.views import FileViewSet
+from apps.api.models import Rlc, UserProfile, RlcUser, HasPermission, Permission
 from django.conf import settings
 from django.test import TestCase
 import sys
@@ -13,17 +17,69 @@ settings.DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 class FileTests(TestCase):
     def setUp(self):
+        create_folder_permissions()
+        create_permissions()
+        self.factory = APIRequestFactory()
         self.rlc = Rlc.objects.create(name='Test RLC')
-        self.folder = Folder.objects.create(name='files', rlc=self.rlc)
+        self.user = UserProfile.objects.create(email='dummy@law-orga.de', name='Dummy 1', rlc=self.rlc)
+        self.user.set_password(settings.DUMMY_USER_PASSWORD)
+        self.user.save()
+        self.rlc_user = RlcUser.objects.create(user=self.user, email_confirmed=True, accepted=True)
+        self.folder = Folder.objects.get(parent=None, rlc=self.rlc)
+        self.private_key_user = self.user.get_private_key(password_user=settings.DUMMY_USER_PASSWORD)
+        self.aes_key_rlc = self.user.rlc.get_aes_key(user=self.user, private_key_user=self.private_key_user)
+        HasPermission.objects.create(user_has_permission=self.user,
+                                     permission=Permission.objects.get(name=PERMISSION_WRITE_ALL_FOLDERS_RLC))
 
-    def test_upload_and_delete_file(self):
-        file = File.objects.create(name='test-file.txt', folder=self.folder)
-        file.key = 'tests/test-file.txt'
-        file.save()
-        key = AESEncryption.generate_secure_key()
-        txt_file = io.BytesIO(b'test string')
-        txt_file = InMemoryUploadedFile(txt_file, 'FileField', 'test.txt', 'text/plain', sys.getsizeof(txt_file), None)
-        file.upload(txt_file, key)
-        self.assertTrue(file.exists_on_s3())
-        file.delete_on_cloud()
-        self.assertFalse(file.exists_on_s3())
+    def setup_file(self):
+        file = File.encrypt_file(self.get_file(), self.aes_key_rlc)
+        self.file = File.objects.create(name='test.txt', folder=self.folder, file=file)
+
+    def get_file(self, text='test text inside the file'):
+        file = io.BytesIO(bytes(text, 'utf-8'))
+        file = InMemoryUploadedFile(file, 'FileField', 'test.txt', 'text/plain', sys.getsizeof(file), None)
+        return file
+
+    def test_create_file(self):
+        view = FileViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'file': self.get_file(),
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        response = view(request)
+        self.assertContains(response, 'test.txt', status_code=201)
+        file = File.objects.get(pk=response.data['id'])
+        self.assertEqual('test.txt', file.name)
+        self.assertNotEqual(file.file.read(), b'test text inside the file')
+        file.file.seek(0)
+        f = file.decrypt_file(aes_key_rlc=self.aes_key_rlc)
+        self.assertEqual(f.read(), b'test text inside the file')
+        # clean up
+        file.file.delete()
+
+    def test_update_file(self):
+        self.setup_file()
+        new_folder = Folder.objects.create(name='Test', parent=self.folder, rlc=self.rlc)
+        view = FileViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {
+            'name': 'Neuer Name.txt',
+            'folder': new_folder.pk
+        }
+        request = self.factory.patch('', data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=self.file.pk)
+        file = File.objects.get(pk=response.data['id'])
+        self.assertEqual('Neuer Name.txt', file.name)
+        self.assertEqual('Test', file.folder.name)
+        # clean up
+        file.file.delete()
+
+    def test_delete_file(self):
+        self.setup_file()
+        view = FileViewSet.as_view(actions={'delete': 'destroy'})
+        request = self.factory.delete('')
+        force_authenticate(request, self.user)
+        response = view(request, pk=self.file.pk)
+        self.assertEqual(File.objects.filter(pk=self.file.pk).count(), 0)
+        self.assertEqual(response.status_code, 204)

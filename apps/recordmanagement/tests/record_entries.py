@@ -1,6 +1,4 @@
 from django.core.files.uploadedfile import InMemoryUploadedFile
-
-from apps.files.models import File
 from apps.recordmanagement.models import RecordTemplate, RecordEncryptedStandardField, Record, RecordEncryptionNew, \
     RecordEncryptedStandardEntry, RecordStandardField, RecordStandardEntry, RecordEncryptedFileField, \
     RecordEncryptedFileEntry, \

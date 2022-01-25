@@ -7,5 +7,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         Fixtures.create_real_permissions_no_duplicates()
-        Fixtures.create_real_folder_permissions_no_duplicate()
         Fixtures.create_real_collab_permissions()

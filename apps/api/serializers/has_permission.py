@@ -1,9 +1,7 @@
-from rest_framework.exceptions import ValidationError
-
 from apps.api.models.has_permission import HasPermission
+from rest_framework.exceptions import ValidationError
 from apps.api.serializers import GroupNameSerializer, UserProfileNameSerializer, PermissionSerializer
 from rest_framework import serializers
-from ..errors import EntryAlreadyExistingError
 
 
 class HasPermissionSerializer(serializers.ModelSerializer):

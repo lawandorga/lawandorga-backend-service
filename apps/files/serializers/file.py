@@ -44,6 +44,14 @@ class FileCreateSerializer(AddUserMixin, FileSerializer):
         model = File
         fields = ['folder', 'name', 'file']
 
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if 'name' not in attrs:
+            attrs['name'] = self.validate_name('')
+        if 'folder' not in attrs:
+            attrs['folder'] = self.validate_folder(None)
+        return attrs
+
     def validate_file(self, file):
         # check file was submitted
         if file is None:
@@ -57,17 +65,16 @@ class FileCreateSerializer(AddUserMixin, FileSerializer):
         return file
 
     def validate_name(self, name):
-        print('hello in here')
         name = self.context['request'].FILES['file'].name
         return name
 
     def validate_folder(self, folder):
-        # whatever
-        if folder.rlc != self.context['request'].user.rlc:
-            raise ValidationError('The folder needs to be in your RLC.')
         # set folder
         if folder is None:
             folder = Folder.objects.get(parent=None, rlc=self.context['request'].user.rlc)
+        # whatever
+        if folder.rlc != self.context['request'].user.rlc:
+            raise ValidationError('The folder needs to be in your RLC.')
         # check permissions
         if not folder.user_has_permission_write(self.context['request'].user):
             raise PermissionDenied()

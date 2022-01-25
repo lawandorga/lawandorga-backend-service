@@ -14,13 +14,6 @@ class Fixtures:
             Permission.objects.get_or_create(name=permission)
 
     @staticmethod
-    def create_real_folder_permissions_no_duplicate():
-        permissions = get_all_folder_permissions_strings()
-        for permission in permissions:
-            FolderPermission.objects.get_or_create(name=permission)
-
-
-    @staticmethod
     def create_real_collab_permissions():
         permissions = get_all_collab_permission_strings()
         for permission in permissions:

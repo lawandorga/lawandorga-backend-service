@@ -1,13 +1,15 @@
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 from apps.files.serializers import FileSerializer, FileCreateSerializer, FileUpdateSerializer
 from apps.files.models.file import File
-from rest_framework import viewsets, status
+from rest_framework import status, mixins
 from django.http import FileResponse
 import mimetypes
 
 
-class FileViewSet(viewsets.ModelViewSet):
+class FileViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                  GenericViewSet):
     queryset = File.objects.all()
     serializer_class = FileSerializer
 
@@ -17,9 +19,6 @@ class FileViewSet(viewsets.ModelViewSet):
         elif self.action in ['partial_update']:
             return FileUpdateSerializer
         return super().get_serializer_class()
-
-    def perform_create(self, serializer):
-        self.instance = serializer.save()
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -34,6 +33,9 @@ class FileViewSet(viewsets.ModelViewSet):
         response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.name)
         return response
 
+    def perform_create(self, serializer):
+        self.instance = serializer.save()
+
     def create(self, request, *args, **kwargs):
         # create
         serializer = self.get_serializer(data=request.data)
@@ -43,13 +45,6 @@ class FileViewSet(viewsets.ModelViewSet):
         serializer = FileSerializer(instance=File.objects.get(pk=self.instance.pk))
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if not instance.folder.user_has_permission_write(request.user):
-            raise PermissionDenied()
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def update(self, request, *args, **kwargs):
         # get the file
@@ -64,3 +59,10 @@ class FileViewSet(viewsets.ModelViewSet):
         # return standard data
         serializer = FileSerializer(instance=File.objects.get(pk=instance.pk))
         return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not instance.folder.user_has_permission_write(request.user):
+            raise PermissionDenied()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
