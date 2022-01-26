@@ -1,5 +1,5 @@
 from rest_framework.exceptions import ValidationError
-from apps.collab.models import CollabDocument
+from apps.collab.models import CollabDocument, TextDocumentVersion
 from rest_framework import serializers
 
 
@@ -36,6 +36,18 @@ class CollabDocumentCreateSerializer(CollabDocumentSerializer):
 
     def get_children(self, _):
         return []
+
+    def save(self, **kwargs):
+        instance = super().save(**kwargs)
+        # create a text document
+        user = self.context['request'].user
+        private_key_user = user.get_private_key(request=self.context['request'])
+        aes_key_rlc = user.get_rlc_aes_key(private_key_user=private_key_user)
+        version = TextDocumentVersion(quill=False, document=instance, creator=user, content='')
+        version.encrypt(aes_key_rlc)
+        version.save()
+        # return
+        return instance
 
 
 class CollabDocumentListSerializer(CollabDocumentSerializer):

@@ -4,7 +4,7 @@ from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedS
     RecordEncryptedFileField, RecordEncryptedSelectField, RecordEncryptedSelectEntry, \
     RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry, RecordSelectEntry, RecordSelectField, \
     RecordMultipleEntry, RecordMultipleField, RecordEncryptionNew
-from rest_framework.exceptions import ValidationError, ParseError
+from rest_framework.exceptions import ValidationError, ParseError, PermissionDenied
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.reverse import reverse
 from rest_framework import serializers
@@ -400,7 +400,7 @@ class RecordDetailSerializer(RecordSerializer):
         try:
             aes_key_record = self.instance.get_aes_key(user=self.user, private_key_user=self.private_key_user)
         except ObjectDoesNotExist:
-            raise ParseError('No encryption keys were found to decrypt this record.')
+            raise PermissionDenied('No encryption keys were found to decrypt this record.')
         entry_types_and_serializers = [
             ('state_entries', RecordStateEntrySerializer),
             ('standard_entries', RecordStandardEntrySerializer),
