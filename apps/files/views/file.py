@@ -1,4 +1,4 @@
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, NotFound
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from apps.files.serializers import FileSerializer, FileCreateSerializer, FileUpdateSerializer
@@ -27,7 +27,13 @@ class FileViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.Upd
 
         private_key_user = request.user.get_private_key(request=request)
         aes_key = request.user.get_rlc_aes_key(private_key_user)
-        file = instance.decrypt_file(aes_key)
+        try:
+            file = instance.decrypt_file(aes_key)
+        except FileNotFoundError:
+            instance.exists = False
+            instance.save()
+            raise NotFound('The file could not be found on the server. Please delete it or contact it@law-orga.de '
+                           'to have it recovered.')
 
         response = FileResponse(file, content_type=instance.mimetype)
         response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.name)
