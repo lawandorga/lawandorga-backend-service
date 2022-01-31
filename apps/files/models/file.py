@@ -1,3 +1,5 @@
+import mimetypes
+
 from apps.static.storage_folders import clean_filename
 from django.core.files.storage import default_storage
 from apps.static.encryption import AESEncryption
@@ -28,6 +30,11 @@ class File(models.Model):
 
     def __str__(self):
         return "file: {}; fileKey: {};".format(self.pk, self.get_file_key())
+
+    @property
+    def mimetype(self):
+        mimetype = mimetypes.guess_type(self.file.name.replace('.enc', ''))[0]
+        return mimetype
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

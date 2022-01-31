@@ -29,7 +29,7 @@ class FileViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.Upd
         aes_key = request.user.get_rlc_aes_key(private_key_user)
         file = instance.decrypt_file(aes_key)
 
-        response = FileResponse(file, content_type=mimetypes.guess_type(instance.key)[0])
+        response = FileResponse(file, content_type=instance.mimetype)
         response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.name)
         return response
 
