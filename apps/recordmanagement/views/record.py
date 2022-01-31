@@ -1,3 +1,5 @@
+from django.db import IntegrityError
+
 from apps.recordmanagement.serializers.record import RecordTemplateSerializer, RecordEncryptedStandardFieldSerializer, \
     RecordSerializer, RecordEncryptedStandardEntrySerializer, RecordStandardEntrySerializer, \
     RecordEncryptedFileEntrySerializer, RecordStandardFieldSerializer, RecordEncryptedFileFieldSerializer, \
@@ -189,8 +191,18 @@ class RecordViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.D
 ###
 # Entry
 ###
-class RecordEncryptedSelectEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
-                                        GenericViewSet):
+class RecordEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                         GenericViewSet):
+    EXISTS_ERROR_MESSAGE = 'Somebody has already filled this entry with data. Please reload the page.'
+
+    def perform_create(self, serializer):
+        try:
+            serializer.save()
+        except IntegrityError:
+            raise ParseError(self.EXISTS_ERROR_MESSAGE)
+
+
+class RecordEncryptedSelectEntryViewSet(RecordEntryViewSet):
     queryset = RecordEncryptedSelectEntry.objects.none()
     serializer_class = RecordEncryptedSelectEntrySerializer
 
@@ -204,7 +216,10 @@ class RecordEncryptedSelectEntryViewSet(mixins.CreateModelMixin, mixins.UpdateMo
         private_key_user = request.user.get_private_key(request=request)
         entry = RecordEncryptedSelectEntry(**serializer.validated_data)
         entry.encrypt(user=request.user, private_key_user=private_key_user)
-        entry.save()
+        try:
+            entry.save()
+        except IntegrityError:
+            raise ParseError(self.EXISTS_ERROR_MESSAGE)
         serializer = self.get_serializer(instance=entry, context={'request': request})
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -222,8 +237,7 @@ class RecordEncryptedSelectEntryViewSet(mixins.CreateModelMixin, mixins.UpdateMo
         self.instance.decrypt(user=self.request.user, private_key_user=private_key_user)
 
 
-class RecordEncryptedFileEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
-                                      GenericViewSet):
+class RecordEncryptedFileEntryViewSet(RecordEntryViewSet):
     queryset = RecordEncryptedFileEntry.objects.none()
     serializer_class = RecordEncryptedFileEntrySerializer
 
@@ -241,8 +255,7 @@ class RecordEncryptedFileEntryViewSet(mixins.CreateModelMixin, mixins.UpdateMode
         return response
 
 
-class RecordStandardEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
-                                 GenericViewSet):
+class RecordStandardEntryViewSet(RecordEntryViewSet):
     queryset = RecordStandardEntry.objects.none()
     serializer_class = RecordStandardEntrySerializer
 
@@ -251,8 +264,7 @@ class RecordStandardEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixi
         return RecordStandardEntry.objects.filter(record__template__rlc=self.request.user.rlc)
 
 
-class RecordSelectEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
-                               GenericViewSet):
+class RecordSelectEntryViewSet(RecordEntryViewSet):
     queryset = RecordSelectEntry.objects.none()
     serializer_class = RecordSelectEntrySerializer
 
@@ -261,8 +273,7 @@ class RecordSelectEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin,
         return RecordSelectEntry.objects.filter(record__template__rlc=self.request.user.rlc)
 
 
-class RecordMultipleEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
-                                 GenericViewSet):
+class RecordMultipleEntryViewSet(RecordEntryViewSet):
     queryset = RecordMultipleEntry.objects.none()
     serializer_class = RecordMultipleEntrySerializer
 
@@ -271,8 +282,7 @@ class RecordMultipleEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixi
         return RecordMultipleEntry.objects.filter(record__template__rlc=self.request.user.rlc)
 
 
-class RecordStateEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
-                              GenericViewSet):
+class RecordStateEntryViewSet(RecordEntryViewSet):
     queryset = RecordStateEntry.objects.none()
     serializer_class = RecordStateEntrySerializer
 
@@ -281,8 +291,7 @@ class RecordStateEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, 
         return RecordStateEntry.objects.filter(record__template__rlc=self.request.user.rlc)
 
 
-class RecordUsersEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
-                              GenericViewSet):
+class RecordUsersEntryViewSet(RecordEntryViewSet):
     queryset = RecordUsersEntry.objects.none()
     serializer_class = RecordUsersEntrySerializer
 
@@ -308,8 +317,7 @@ class RecordUsersEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, 
         self.create_encryptions(instance.record, list(instance.value.all()))
 
 
-class RecordEncryptedStandardEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
-                                          GenericViewSet):
+class RecordEncryptedStandardEntryViewSet(RecordEntryViewSet):
     queryset = RecordEncryptedStandardEntry.objects.none()
     serializer_class = RecordEncryptedStandardEntrySerializer
 
@@ -325,7 +333,10 @@ class RecordEncryptedStandardEntryViewSet(mixins.CreateModelMixin, mixins.Update
         aes_key_record = record.get_aes_key(request.user, private_key_user)
         entry = RecordEncryptedStandardEntry(**serializer.validated_data)
         entry.encrypt(aes_key_record=aes_key_record)
-        entry.save()
+        try:
+            entry.save()
+        except IntegrityError:
+            raise ParseError(self.EXISTS_ERROR_MESSAGE)
         entry.decrypt(aes_key_record=aes_key_record)
         serializer = self.get_serializer(instance=entry, context={'request': request})
         headers = self.get_success_headers(serializer.data)
