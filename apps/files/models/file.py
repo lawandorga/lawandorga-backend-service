@@ -1,16 +1,10 @@
-import mimetypes
-
-from apps.static.storage_folders import clean_filename
-from django.core.files.storage import default_storage
 from apps.static.encryption import AESEncryption
 from apps.api.models.user import UserProfile
-from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
 from django.core.files import File as DjangoFile
 from django.utils import timezone
 from django.db import models
 from .folder import Folder
-import unicodedata
-import re
+import mimetypes
 
 
 class File(models.Model):

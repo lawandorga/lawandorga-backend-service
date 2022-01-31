@@ -5,7 +5,6 @@ from apps.files.serializers import FileSerializer, FileCreateSerializer, FileUpd
 from apps.files.models.file import File
 from rest_framework import status, mixins
 from django.http import FileResponse
-import mimetypes
 
 
 class FileViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
@@ -27,6 +26,13 @@ class FileViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.Upd
 
         private_key_user = request.user.get_private_key(request=request)
         aes_key = request.user.get_rlc_aes_key(private_key_user)
+
+        # error handling if the file can not be found
+        if not instance.file.name:
+            instance.exists = False
+            instance.save()
+            raise NotFound('The file could not be found. Please delete it or contact it@law-orga.de '
+                           'to have it recovered.')
         try:
             file = instance.decrypt_file(aes_key)
         except FileNotFoundError:

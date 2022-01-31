@@ -15,7 +15,7 @@ import io
 settings.DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 
-class FileTests(TestCase):
+class FileTestsBase:
     def setUp(self):
         create_folder_permissions()
         create_permissions()
@@ -40,6 +40,8 @@ class FileTests(TestCase):
         file = InMemoryUploadedFile(file, 'FileField', 'test.txt', 'text/plain', sys.getsizeof(file), None)
         return file
 
+
+class FileTests(FileTestsBase, TestCase):
     def test_create_file(self):
         view = FileViewSet.as_view(actions={'post': 'create'})
         data = {
