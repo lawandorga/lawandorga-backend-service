@@ -141,9 +141,22 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         groups = self.rlcgroups.all()
         return PermissionForCollabDocument.objects.filter(group_has_permission__in=groups).select_related('document')
 
-    def get_information(self):
-        return_dict = {}
-        # records
+    def get_own_records(self):
+        from apps.recordmanagement.models.record import Record
+        records = Record.objects.filter(template__rlc=self.rlc).prefetch_related('users_entries',
+                                                                                 'users_entries__value')
+        record_pks = []
+        for record in list(records):
+            users_entries = list(record.users_entries.all())
+            if len(users_entries) <= 0 :
+                continue
+            users = list(users_entries[0].value.all())
+            if self.id in map(lambda x: x.id, users):
+                record_pks.append(record.id)
+
+        return Record.objects.filter(pk__in=record_pks)
+
+    def get_records_information(self):
         from apps.recordmanagement.models.record import Record
         records = Record.objects.filter(template__rlc=self.rlc).prefetch_related('state_entries', 'users_entries',
                                                                                  'users_entries__value')
@@ -163,14 +176,52 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                     'identifier': record.identifier,
                     'state': state,
                 })
-        return_dict['records'] = records_data
-        # members
+        return records_data
+
+    def get_members_information(self):
         if self.has_permission(PERMISSION_MANAGE_USERS):
-            users = UserProfile.objects\
-                .filter(rlc=self.rlc, rlc_user__created__gt=timezone.now() - timedelta(days=14))\
+            members_data = []
+            users = UserProfile.objects \
+                .filter(rlc=self.rlc, rlc_user__created__gt=timezone.now() - timedelta(days=14)) \
                 .select_related('rlc_user')
-            members_data = [{'name': user.name, 'id': user.id, 'rlcuserid': user.rlc_user.id} for user in list(users)]
+            for user in list(users):
+                if user.rlcgroups.all().count() == 0:
+                    members_data.append({'name': user.name, 'id': user.id, 'rlcuserid': user.rlc_user.id})
+            return members_data
+        return None
+
+    def get_questionnaire_information(self):
+        from apps.recordmanagement.models.questionnaire import Questionnaire
+
+        questionnaires = Questionnaire.objects.filter(record__in=self.get_own_records())\
+            .select_related('template', 'record')
+
+        questionnaire_data = []
+
+        for questionnaire in list(questionnaires):
+            if not questionnaire.answered:
+                questionnaire_data.append({
+                    'name': questionnaire.template.name,
+                    'record': questionnaire.record.identifier,
+                    'record_id': questionnaire.record.id,
+                })
+
+        return questionnaire_data
+
+    def get_information(self):
+        return_dict = {}
+        # records
+        records_data = self.get_records_information()
+        if records_data:
+            return_dict['records'] = records_data
+        # members
+        members_data = self.get_members_information()
+        if members_data:
             return_dict['members'] = members_data
+        # questionnaires
+        questionnaire_data = self.get_questionnaire_information()
+        if questionnaire_data:
+            return_dict['questionnaires'] = questionnaire_data
         # return
         return return_dict
 

@@ -83,6 +83,10 @@ class Questionnaire(models.Model):
             self.code = str(uuid.uuid4())[:6].upper()
         super().save(*args, **kwargs)
 
+    @property
+    def answered(self):
+        return self.answers.all().count() - self.template.fields.all().count() == 0
+
 
 class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
     questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE, related_name='answers')
