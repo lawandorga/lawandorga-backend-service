@@ -148,7 +148,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         record_pks = []
         for record in list(records):
             users_entries = list(record.users_entries.all())
-            if len(users_entries) <= 0 :
+            if len(users_entries) <= 0:
                 continue
             users = list(users_entries[0].value.all())
             if self.id in map(lambda x: x.id, users):
@@ -193,7 +193,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def get_questionnaire_information(self):
         from apps.recordmanagement.models.questionnaire import Questionnaire
 
-        questionnaires = Questionnaire.objects.filter(record__in=self.get_own_records())\
+        questionnaires = Questionnaire.objects.filter(record__in=self.get_own_records()) \
             .select_related('template', 'record')
 
         questionnaire_data = []
@@ -207,6 +207,17 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                 })
 
         return questionnaire_data
+
+    def get_changed_records_information(self):
+        records = self.get_own_records().filter(updated__gt=timezone.now() - timedelta(days=10))
+        changed_records_data = []
+        for record in list(records):
+            changed_records_data.append({
+                'id': record.id,
+                'identifier': record.identifier,
+                'updated': record.updated
+            })
+        return changed_records_data
 
     def get_information(self):
         return_dict = {}
@@ -222,7 +233,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         questionnaire_data = self.get_questionnaire_information()
         if questionnaire_data:
             return_dict['questionnaires'] = questionnaire_data
-        # return
+        # changed records
+        changed_records_data = self.get_changed_records_information()
+        if changed_records_data:
+            return_dict['changed_records'] = changed_records_data
+            # return
         return return_dict
 
     def get_public_key(self) -> str:
