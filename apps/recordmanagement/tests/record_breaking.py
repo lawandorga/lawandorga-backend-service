@@ -1,8 +1,12 @@
+from datetime import timedelta
+
+from django.utils import timezone
+
 from apps.recordmanagement.tests.record_entries import BaseRecordEntry
 from apps.recordmanagement.tests.record import BaseRecord
 from apps.recordmanagement.models import RecordEncryptedSelectField, RecordEncryptedSelectEntry, RecordStateField, \
     RecordStateEntry, RecordSelectField, RecordSelectEntry, RecordEncryptedStandardField, \
-    RecordEncryptedStandardEntry, RecordMultipleEntry, RecordMultipleField
+    RecordEncryptedStandardEntry, RecordMultipleEntry, RecordMultipleField, Record
 from apps.recordmanagement.views import RecordEncryptedSelectEntryViewSet, RecordStateFieldViewSet, \
     RecordStateEntryViewSet, RecordSelectEntryViewSet, RecordEncryptedStandardEntryViewSet, RecordMultipleEntryViewSet
 from rest_framework.test import force_authenticate
@@ -217,3 +221,44 @@ class RecordEncryptedSelectEntryViewSetErrors(BaseRecordEntry, TestCase):
         force_authenticate(request, self.user)
         response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 400)
+
+
+class RecordTimeUpdateOnEntryUpdateOrCreate(BaseRecordEntry, TestCase):
+    def setUp(self):
+        super().setUp()
+        self.field = RecordEncryptedStandardField.objects.create(template=self.template, name='Test')
+
+    def setup_entry(self):
+        entry = RecordEncryptedStandardEntry(record=self.record, field=self.field, value='Test')
+        entry.encrypt(aes_key_record=self.aes_key_record)
+        entry.save()
+        self.entry = RecordEncryptedStandardEntry.objects.first()
+
+    def test_time_updated_on_create(self):
+        self.record.updated = timezone.now() - timedelta(days=2)
+        self.record.save()
+        view = RecordEncryptedStandardEntryViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'record': self.record.pk,
+            'field': self.field.pk,
+            'value': 'Hallo',
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        view(request)
+        record = Record.objects.get(pk=self.record.pk)
+        self.assertGreater(record.updated, timezone.now() - timedelta(days=1))
+
+    def test_time_updated_on_update(self):
+        self.record.updated = timezone.now() - timedelta(days=2)
+        self.record.save()
+        self.setup_entry()
+        view = RecordEncryptedStandardEntryViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {
+            'value': 'Test',
+        }
+        request = self.factory.patch('', data=data)
+        force_authenticate(request, self.user)
+        view(request, pk=self.entry.pk)
+        record = Record.objects.get(pk=self.record.pk)
+        self.assertGreater(record.updated, timezone.now() - timedelta(days=1))

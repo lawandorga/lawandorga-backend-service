@@ -197,9 +197,16 @@ class RecordEntryViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixin
 
     def perform_create(self, serializer):
         try:
-            serializer.save()
+            instance = serializer.save()
         except IntegrityError:
             raise ParseError(self.EXISTS_ERROR_MESSAGE)
+        instance.record.save()  # update record updated field
+        return instance
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        instance.record.save()  # update record updated field
+        return instance
 
 
 class RecordEncryptedSelectEntryViewSet(RecordEntryViewSet):
@@ -209,32 +216,6 @@ class RecordEncryptedSelectEntryViewSet(RecordEntryViewSet):
     def get_queryset(self):
         # every field returned because they will be encrypted by default
         return RecordEncryptedSelectEntry.objects.filter(record__template__rlc=self.request.user.rlc)
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        private_key_user = request.user.get_private_key(request=request)
-        entry = RecordEncryptedSelectEntry(**serializer.validated_data)
-        entry.encrypt(user=request.user, private_key_user=private_key_user)
-        try:
-            entry.save()
-        except IntegrityError:
-            raise ParseError(self.EXISTS_ERROR_MESSAGE)
-        serializer = self.get_serializer(instance=entry, context={'request': request})
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    def get_object(self):
-        self.instance = super().get_object()
-        return self.instance
-
-    def perform_update(self, serializer):
-        for attr, value in serializer.validated_data.items():
-            setattr(self.instance, attr, value)
-        private_key_user = self.request.user.get_private_key(request=self.request)
-        self.instance.encrypt(user=self.request.user, private_key_user=private_key_user)
-        self.instance.save()
-        self.instance.decrypt(user=self.request.user, private_key_user=private_key_user)
 
 
 class RecordEncryptedFileEntryViewSet(RecordEntryViewSet):
@@ -309,11 +290,11 @@ class RecordUsersEntryViewSet(RecordEntryViewSet):
                 encryption.save()
 
     def perform_create(self, serializer):
-        instance = serializer.save()
+        instance = super().perform_create(serializer)
         self.create_encryptions(instance.record, list(instance.value.all()))
 
     def perform_update(self, serializer):
-        instance = serializer.save()
+        instance = super().perform_update(serializer)
         self.create_encryptions(instance.record, list(instance.value.all()))
 
 
@@ -324,33 +305,3 @@ class RecordEncryptedStandardEntryViewSet(RecordEntryViewSet):
     def get_queryset(self):
         # every field returned because they will be encrypted by default
         return RecordEncryptedStandardEntry.objects.filter(record__template__rlc=self.request.user.rlc)
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        private_key_user = request.user.get_private_key(request=request)
-        record = serializer.validated_data['record']
-        aes_key_record = record.get_aes_key(request.user, private_key_user)
-        entry = RecordEncryptedStandardEntry(**serializer.validated_data)
-        entry.encrypt(aes_key_record=aes_key_record)
-        try:
-            entry.save()
-        except IntegrityError:
-            raise ParseError(self.EXISTS_ERROR_MESSAGE)
-        entry.decrypt(aes_key_record=aes_key_record)
-        serializer = self.get_serializer(instance=entry, context={'request': request})
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    def get_object(self):
-        self.instance = super().get_object()
-        return self.instance
-
-    def perform_update(self, serializer):
-        for attr, value in serializer.validated_data.items():
-            setattr(self.instance, attr, value)
-        private_key_user = self.request.user.get_private_key(request=self.request)
-        aes_key_record = self.instance.record.get_aes_key(user=self.request.user, private_key_user=private_key_user)
-        self.instance.encrypt(aes_key_record=aes_key_record)
-        self.instance.save()
-        self.instance.decrypt(user=self.request.user, aes_key_record=aes_key_record)

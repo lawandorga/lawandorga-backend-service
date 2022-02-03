@@ -1,3 +1,5 @@
+from django.db import IntegrityError
+
 from apps.recordmanagement.models import EncryptedClient
 from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedStandardField, Record, \
     RecordEncryptedStandardEntry, RecordStandardEntry, RecordEncryptedFileEntry, RecordStandardField, \
@@ -238,6 +240,28 @@ class RecordEncryptedStandardEntrySerializer(RecordEntrySerializer):
         model = RecordEncryptedStandardEntry
         fields = '__all__'
 
+    def create(self, validated_data):
+        request = self.context['request']
+        private_key_user = request.user.get_private_key(request=request)
+        record = validated_data['record']
+        aes_key_record = record.get_aes_key(request.user, private_key_user)
+        entry = RecordEncryptedStandardEntry(**validated_data)
+        entry.encrypt(aes_key_record=aes_key_record)
+        entry.save()
+        entry.decrypt(aes_key_record=aes_key_record)
+        return entry
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        request = self.context['request']
+        private_key_user = request.user.get_private_key(request=request)
+        aes_key_record = instance.record.get_aes_key(user=request.user, private_key_user=private_key_user)
+        instance.encrypt(aes_key_record=aes_key_record)
+        instance.save()
+        instance.decrypt(aes_key_record=aes_key_record)
+        return instance
+
 
 class RecordEncryptedSelectEntrySerializer(RecordEntrySerializer):
     url = serializers.HyperlinkedIdentityField(view_name='recordencryptedselectentry-detail')
@@ -258,6 +282,28 @@ class RecordEncryptedSelectEntrySerializer(RecordEntrySerializer):
         if attrs['value'] not in set(field.options):
             raise ValidationError('The selected value is not a valid choice.')
         return attrs
+
+    def create(self, validated_data):
+        request = self.context['request']
+        private_key_user = request.user.get_private_key(request=request)
+        record = validated_data['record']
+        aes_key_record = record.get_aes_key(request.user, private_key_user)
+        entry = RecordEncryptedSelectEntry(**validated_data)
+        entry.encrypt(aes_key_record=aes_key_record)
+        entry.save()
+        entry.decrypt(aes_key_record=aes_key_record)
+        return entry
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        request = self.context['request']
+        private_key_user = request.user.get_private_key(request=request)
+        aes_key_record = instance.record.get_aes_key(user=request.user, private_key_user=private_key_user)
+        instance.encrypt(aes_key_record=aes_key_record)
+        instance.save()
+        instance.decrypt(aes_key_record=aes_key_record)
+        return instance
 
 
 class RecordSelectEntrySerializer(RecordEntrySerializer):
