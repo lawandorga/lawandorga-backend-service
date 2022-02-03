@@ -279,7 +279,7 @@ class RlcUser(models.Model):
     street = models.CharField(max_length=255, default=None, null=True, blank=True)
     city = models.CharField(max_length=255, default=None, null=True, blank=True)
     postal_code = models.CharField(max_length=255, default=None, null=True, blank=True)
-    note = models.TextField()
+    note = models.TextField(blank=True)
     locked = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     rlc = models.ForeignKey("Rlc", related_name="users", on_delete=models.PROTECT, blank=True, null=True)
