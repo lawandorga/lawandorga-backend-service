@@ -41,3 +41,32 @@ class FileTestsBreaking(FileTestsBase, TestCase):
         self.assertEqual(file.exists, False)
         # clean up
         file.file.delete()
+
+    def test_file_with_same_name_does_not_overwrite_another(self):
+        view = FileViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'file': self.get_file('1'),
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        response = view(request)
+        self.assertEqual(response.status_code, 201)
+        file1 = File.objects.get(pk=response.data['id'])
+        file1.file.seek(0)
+        f = file1.decrypt_file(aes_key_rlc=self.aes_key_rlc)
+        self.assertEqual(f.read(), b'1')
+        # upload the same file and check for the content of the first to still be 1
+        data = {
+            'file': self.get_file('2'),
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        response = view(request)
+        file2 = File.objects.get(pk=response.data['id'])
+        self.assertEqual(response.status_code, 201)
+        file1 = File.objects.get(pk=file1.pk)
+        f = file1.decrypt_file(aes_key_rlc=self.aes_key_rlc)
+        self.assertEqual(f.read(), b'1')
+        # clean up
+        file1.file.delete()
+        file2.file.delete()
