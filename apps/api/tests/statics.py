@@ -7,7 +7,7 @@ class StaticTestMethods:
     @staticmethod
     def force_authentication_superuser():
         """
-        creates a superuser with a static email and returns the forced authenticated apiClient
+        creates a superuser with a static.py email and returns the forced authenticated apiClient
         :return: the forced APIClient
         """
         UserProfile.objects.create(

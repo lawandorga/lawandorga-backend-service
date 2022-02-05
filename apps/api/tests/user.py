@@ -1,4 +1,4 @@
-from apps.static.permissions import PERMISSION_MANAGE_USERS, get_all_permissions_strings, \
+from apps.api.static import PERMISSION_MANAGE_USERS, get_all_permissions_strings, \
     PERMISSION_MANAGE_PERMISSIONS_RLC
 from rest_framework.test import APIRequestFactory, force_authenticate
 from apps.api.models import UserProfile, RlcUser, Rlc, Permission

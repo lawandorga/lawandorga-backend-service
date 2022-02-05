@@ -4,12 +4,10 @@ from apps.recordmanagement.models.record import Record, RecordEncryptionNew
 from apps.recordmanagement.serializers import PoolConsultantSerializer, PoolRecordSerializer
 from apps.recordmanagement.models.pool import PoolConsultant, PoolRecord
 from rest_framework.decorators import action
-from apps.static.permissions import PERMISSION_CAN_CONSULT
+from apps.api.static import PERMISSION_CAN_CONSULT
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from apps.api.errors import CustomError
 from rest_framework import viewsets, status, mixins
-from apps.static import error_codes
 
 
 class PoolConsultantViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):

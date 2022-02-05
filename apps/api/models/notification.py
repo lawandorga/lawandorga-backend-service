@@ -16,7 +16,7 @@
 from apps.api.models.notification_group import NotificationGroup
 from apps.static.notification_enums import NotificationGroupType, NotificationType
 from apps.api.models.user import UserProfile
-from apps.static import permissions
+from apps.api import static
 from django.utils import timezone
 from django.db import models
 
@@ -24,7 +24,7 @@ from django.db import models
 class NotificationManager(models.Manager):
     """
     Manager for Notifications
-    provides methods for whole query table and 'static' class methods
+    provides methods for whole query table and 'static.py' class methods
     """
 
     @staticmethod

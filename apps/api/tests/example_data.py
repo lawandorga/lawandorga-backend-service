@@ -9,7 +9,7 @@ from apps.recordmanagement.models import RecordSelectField, RecordTemplate, Reco
     RecordStateEntry, RecordEncryptionNew, RecordEncryptedStandardField, RecordSelectEntry, \
     RecordEncryptedStandardEntry, RecordUsersField, QuestionnaireTemplate, QuestionnaireQuestion
 from apps.api.models.permission import Permission
-from apps.static.permissions import get_all_permissions_strings
+from apps.api.static import get_all_permissions_strings
 from apps.static.encryption import AESEncryption
 from apps.api.models.group import Group
 from apps.internal.models import InternalUser
@@ -17,7 +17,7 @@ from apps.api.models.rlc import Rlc
 from apps.collab.models import CollabPermission
 from apps.files.models import FolderPermission
 from apps.api.models import UserProfile, RlcUser
-from apps.static import permissions
+from apps.api import static
 from random import randint, choice
 
 

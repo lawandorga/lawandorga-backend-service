@@ -1,5 +1,5 @@
 from apps.recordmanagement.models import Tag
-from apps.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from apps.api.static import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
 from apps.api.models.rlc import Rlc
 from apps.api.models import UserProfile

@@ -1,4 +1,4 @@
-from apps.static.permissions import PERMISSION_CAN_CONSULT
+from apps.api.static import PERMISSION_CAN_CONSULT
 from apps.static.encryption import AESEncryption, RSAEncryption
 from apps.api.models.user import UserProfile
 from django.db import models

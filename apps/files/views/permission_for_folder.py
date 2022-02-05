@@ -1,5 +1,5 @@
 from apps.files.models.permission_for_folder import PermissionForFolder
-from apps.static.permissions import PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC
+from apps.api.static import PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC
 from apps.files.serializers import PermissionForFolderSerializer, PermissionForFolderNestedSerializer
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response

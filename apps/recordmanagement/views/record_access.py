@@ -7,7 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from apps.static.encryption import RSAEncryption
 from rest_framework import viewsets, mixins
 from django.utils import timezone
-from apps.static import permissions
+from apps.api import static
 
 
 class RecordAccessViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.ListModelMixin,

@@ -1,5 +1,5 @@
 from apps.collab.static.collab_permissions import get_all_collab_permission_strings
-from apps.static.permissions import get_all_permissions_strings
+from apps.api.static import get_all_permissions_strings
 from apps.collab.models import CollabPermission
 from apps.api.models import Permission
 

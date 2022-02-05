@@ -5,7 +5,7 @@ from apps.api.serializers import GroupSerializer, GroupMembersSerializer, GroupA
     UserProfileSerializer, OldHasPermissionNameSerializer
 from rest_framework.request import Request
 from apps.api.models import Group, UserProfile, RlcUser
-from apps.static import permissions
+from apps.api import static
 from rest_framework import viewsets, status
 
 

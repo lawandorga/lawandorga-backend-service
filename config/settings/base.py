@@ -107,8 +107,8 @@ AWS_S3_FILE_OVERWRITE = False
 # Static Files
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static/dist/")]
-STATIC_URL = "static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "tmp/static/")
+STATIC_URL = "static.py/"
+STATIC_ROOT = os.path.join(BASE_DIR, "tmp/static.py/")
 MEDIA_URL = "media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "tmp/media/")
 

@@ -1,7 +1,6 @@
 from rest_framework.authtoken.models import Token
-from apps.api.models.permission import Permission
 from apps.recordmanagement.models import RecordDeletion, RecordAccess
-from apps.static.permissions import PERMISSION_MANAGE_USERS, PERMISSION_PROCESS_RECORD_DELETION_REQUESTS, \
+from apps.api.static import PERMISSION_MANAGE_USERS, PERMISSION_PROCESS_RECORD_DELETION_REQUESTS, \
     PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC, PERMISSION_MANAGE_PERMISSIONS_RLC
 from rest_framework.exceptions import ParseError, PermissionDenied, AuthenticationFailed
 from rest_framework.decorators import action
@@ -16,9 +15,8 @@ from apps.api.serializers import (
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.request import Request
-from django.forms.models import model_to_dict
 from django.db.models import Q
-from apps.api.models import UserProfile, NotificationGroup, PasswordResetTokenGenerator, \
+from apps.api.models import UserProfile, PasswordResetTokenGenerator, \
     AccountActivationTokenGenerator, UsersRlcKeys, RlcUser
 from rest_framework import viewsets, status
 from django.utils import timezone

@@ -1,4 +1,4 @@
-from apps.static.permissions import get_all_permissions_strings
+from apps.api.static import get_all_permissions_strings
 from apps.api.models import Permission
 
 

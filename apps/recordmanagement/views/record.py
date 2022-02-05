@@ -16,12 +16,12 @@ from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedS
 from apps.recordmanagement.serializers import RecordDocumentSerializer
 from rest_framework.exceptions import ParseError
 from rest_framework.decorators import action
-from apps.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from apps.api.static import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 from apps.static.encryption import AESEncryption
 from django.db.models import ProtectedError
-from rest_framework import status, mixins
+from rest_framework import mixins
 from django.http import FileResponse
 import mimetypes
 

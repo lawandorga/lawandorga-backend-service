@@ -3,7 +3,7 @@ from apps.recordmanagement.serializers import RecordDeletionSerializer
 from rest_framework.exceptions import PermissionDenied
 from django.db.models import Q
 from rest_framework import viewsets
-from apps.static import permissions
+from apps.api import static
 
 
 class RecordDeletionViewSet(viewsets.ModelViewSet):

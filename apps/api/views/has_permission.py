@@ -1,7 +1,7 @@
 from apps.api.models.has_permission import HasPermission
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.decorators import action
-from apps.static.permissions import PERMISSION_MANAGE_PERMISSIONS_RLC, \
+from apps.api.static import PERMISSION_MANAGE_PERMISSIONS_RLC, \
     get_all_collab_permissions, get_all_files_permissions, get_all_records_permissions
 from rest_framework.response import Response
 from apps.api.serializers import OldHasPermissionSerializer, HasPermissionAllNamesSerializer, \

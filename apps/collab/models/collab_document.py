@@ -1,5 +1,5 @@
-from apps.collab.static.collab_permissions import PERMISSION_WRITE_DOCUMENT
-from apps.static.permissions import PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC, PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC
+from apps.api.static import PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC, PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC
+from apps.collab.static import PERMISSION_WRITE_DOCUMENT
 from apps.api.models import Rlc, UserProfile
 from django.db import models
 from typing import Dict, Tuple

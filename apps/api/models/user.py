@@ -8,12 +8,11 @@ from django.db import models
 from django.template import loader
 from django.utils import timezone
 from rest_framework.exceptions import ParseError
-from rest_framework.request import Request
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from apps.api.models.has_permission import HasPermission
 from apps.api.models.permission import Permission
 from apps.static.encryption import RSAEncryption
-from apps.static.permissions import PERMISSION_MANAGE_USERS
+from apps.api.static import PERMISSION_MANAGE_USERS
 
 
 class UserProfileManager(BaseUserManager):

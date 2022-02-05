@@ -1,5 +1,5 @@
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from apps.static.permissions import PERMISSION_WRITE_ALL_FOLDERS_RLC
+from apps.api.static import PERMISSION_WRITE_ALL_FOLDERS_RLC
 from rest_framework.test import force_authenticate, APIRequestFactory
 from apps.files.fixtures import create_folder_permissions
 from apps.api.fixtures import create_permissions

@@ -1,7 +1,5 @@
-from apps.api.models.has_permission import HasPermission
-from apps.api.models.permission import Permission
 from apps.api.models.user import UserProfile
-from apps.static import permissions
+from apps.api import static
 from django.db import models
 
 
