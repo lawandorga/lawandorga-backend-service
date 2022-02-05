@@ -1,30 +1,8 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from rest_framework.exceptions import PermissionDenied
-from apps.recordmanagement.models import (
-    EncryptedRecord,
-    RecordEncryption,
-)
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from apps.api.serializers import (
-    GroupSerializer,
-    GroupMembersSerializer,
-    GroupAddMemberSerializer, UserProfileSerializer, OldHasPermissionNameSerializer,
-)
+from apps.api.serializers import GroupSerializer, GroupMembersSerializer, GroupAddMemberSerializer, \
+    UserProfileSerializer, OldHasPermissionNameSerializer
 from rest_framework.request import Request
 from apps.api.models import Group, UserProfile, RlcUser
 from apps.static import permissions
@@ -109,25 +87,25 @@ class GroupViewSet(viewsets.ModelViewSet):
         if request.method == "POST":
             group.group_members.add(member)
             # check if group can see encrypted data and add keys for the new member if so
-            if group.group_has_record_encryption_keys_permission():
-                private_key_user = request.user.get_private_key(request=request)
-                records = list(
-                    EncryptedRecord.objects.filter(from_rlc=request.user.rlc)
-                )
-                for record in records:
-                    if not RecordEncryption.objects.filter(user=member, record=record).exists():
-                        try:
-                            record_key = record.get_aes_key(
-                                request.user, private_key_user
-                            )
-                        except Exception:
-                            continue
-                        public_key_member = member.get_public_key()
-                        record_encryption = RecordEncryption(
-                            user=member, record=record, encrypted_key=record_key
-                        )
-                        record_encryption.encrypt(public_key_member)
-                        record_encryption.save()
+            # if group.group_has_record_encryption_keys_permission():
+            #     private_key_user = request.user.get_private_key(request=request)
+            #     records = list(
+            #         EncryptedRecord.objects.filter(from_rlc=request.user.rlc)
+            #     )
+            #     for record in records:
+            #         if not RecordEncryption.objects.filter(user=member, record=record).exists():
+            #             try:
+            #                 record_key = record.get_aes_key(
+            #                     request.user, private_key_user
+            #                 )
+            #             except Exception:
+            #                 continue
+            #             public_key_member = member.get_public_key()
+            #             record_encryption = RecordEncryption(
+            #                 user=member, record=record, encrypted_key=record_key
+            #             )
+            #             record_encryption.encrypt(public_key_member)
+            #             record_encryption.save()
             # notify
             # Notification.objects.notify_group_member_added(request.user, member, group)
 

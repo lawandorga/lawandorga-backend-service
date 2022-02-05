@@ -1,5 +1,4 @@
 from apps.recordmanagement.models import Tag
-from apps.static.permissions import get_record_encryption_keys_permissions_strings
 from apps.static.permissions import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
 from apps.api.models.rlc import Rlc
@@ -153,31 +152,6 @@ class EncryptedRecord(EncryptedModelMixin, models.Model):
         ):
             users.append(permission_request.request_from)
         return users
-
-    def get_users_who_should_be_allowed_to_decrypt(self) -> [UserProfile]:
-        from apps.api.models import UserProfile
-
-        # users that are working on the record
-        working_on_users = self.working_on_record.all()
-
-        # users that created a request to see the record and were allowed
-        users_with_record_permission = UserProfile.objects.filter(
-            e_record_permissions_requested__record=self,
-            e_record_permissions_requested__state="gr",
-        )
-
-        # users that have the necessary permissions
-        some_user = self.working_on_record.first()
-        if not some_user:
-            return UserProfile.objects.none()
-        rlc = some_user.rlc
-        users_with_permission = []
-        for user in list(rlc.rlc_members.all()):
-            if user.has_permissions(get_record_encryption_keys_permissions_strings()):
-                users_with_permission.append(user.id)
-        users_with_permission = UserProfile.objects.filter(pk__in=users_with_permission)
-
-        return (working_on_users | users_with_record_permission | users_with_permission).distinct()
 
     def get_decryption_key(self, user: UserProfile, users_private_key: str) -> str:
         encryption = self.encryptions.get(user=user)

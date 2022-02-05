@@ -13,21 +13,12 @@ class GroupQuerySet(models.QuerySet):
 
 
 class Group(models.Model):
-    creator = models.ForeignKey(
-        UserProfile, related_name="group_created", on_delete=models.SET_NULL, null=True
-    )
-    from_rlc = models.ForeignKey(
-        "Rlc",
-        related_name="group_from_rlc",
-        on_delete=models.SET_NULL,
-        null=True,
-        default=None,
-    )
+    creator = models.ForeignKey(UserProfile, related_name="group_created", on_delete=models.SET_NULL, null=True)
+    from_rlc = models.ForeignKey("Rlc", related_name="group_from_rlc", on_delete=models.SET_NULL, null=True,
+                                 default=None)
     name = models.CharField(max_length=200, null=False)
     visible = models.BooleanField(null=False, default=True)
-    group_members = models.ManyToManyField(
-        UserProfile, related_name="rlcgroups", blank=True
-    )
+    group_members = models.ManyToManyField(UserProfile, related_name="rlcgroups", blank=True)
     description = models.TextField(blank=True, null=True)
     note = models.TextField(blank=True, null=True)
 
@@ -38,29 +29,4 @@ class Group(models.Model):
         verbose_name_plural = "Groups"
 
     def __str__(self):
-        return "group: {}; name: {}; rlc: {};".format(
-            self.id, self.name, self.from_rlc.name
-        )
-
-    def has_group_permission(self, permission):
-        if isinstance(permission, str):
-            permission = Permission.objects.get(name=permission)
-        return (
-            HasPermission.objects.filter(
-                group_has_permission=self,
-                permission=permission,
-            ).count()
-            >= 1
-        )
-
-    def has_group_one_permission(self, permissions_to_check):
-        for permission in permissions_to_check:
-            if self.has_group_permission(permission):
-                return True
-        return False
-
-    def group_has_record_encryption_keys_permission(self):
-        record_encryption_keys_permissions = (
-            permissions.get_record_encryption_keys_permissions()
-        )
-        return self.has_group_one_permission(record_encryption_keys_permissions)
+        return "group: {}; name: {}; rlc: {};".format(self.id, self.name, self.from_rlc.name)

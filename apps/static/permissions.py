@@ -1,3 +1,4 @@
+# general
 PERMISSION_CAN_CONSULT = "can_consult"
 PERMISSION_VIEW_RECORDS_RLC = "view_records_rlc"
 PERMISSION_CAN_ADD_RECORD_RLC = "add_record_rlc"
@@ -67,21 +68,3 @@ def get_all_files_permissions():
         PERMISSION_WRITE_ALL_FOLDERS_RLC,
         PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC,
     ]
-
-
-def get_record_encryption_keys_permissions_strings():
-    return [
-        PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC,
-        PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
-        PERMISSION_MANAGE_PERMISSIONS_RLC,
-        PERMISSION_MANAGE_GROUPS_RLC,
-    ]
-
-
-def get_record_encryption_keys_permissions():
-    from apps.api.models.permission import Permission
-
-    permissions = []
-    for permission_string in get_record_encryption_keys_permissions_strings():
-        permissions.append(Permission.objects.get(name=permission_string))
-    return permissions
