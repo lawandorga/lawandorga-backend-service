@@ -1,11 +1,22 @@
 from apps.collab.static.collab_permissions import PERMISSION_WRITE_DOCUMENT
 from apps.static.permissions import PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC, PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC
 from apps.collab.models import TextDocument
+from apps.api.models import Rlc, UserProfile
+from django.utils import timezone
 from django.db import models
 from typing import Dict, Tuple
 
 
 class CollabDocument(TextDocument):
+    new_rlc = models.ForeignKey(Rlc, related_name="collab_documents", null=True, on_delete=models.CASCADE, blank=True)
+    new_created = models.DateTimeField(null=True) #default=timezone.now)
+    new_creator = models.ForeignKey(UserProfile, related_name="collab_documents", on_delete=models.SET_NULL,
+                                    null=True)
+    # rlc = models.ForeignKey(Rlc, related_name="text_documents", null=True, on_delete=models.CASCADE, blank=True)
+    # created = models.DateTimeField(auto_created=True)
+    # updated = models.DateTimeField(auto_now=True)
+    # creator = models.ForeignKey(UserProfile, related_name="text_documents_created", on_delete=models.SET_NULL,
+    #                             null=True, blank=True)
     path = models.CharField(max_length=4096, null=False, blank=False)
 
     class Meta:
