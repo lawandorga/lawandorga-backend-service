@@ -37,7 +37,7 @@ class CollabDocument(models.Model):
         return self.path[1:].count('/') == 0
 
     def save(self, *args, **kwargs) -> None:
-        if CollabDocument.objects.filter(path=self.path).exists():
+        if CollabDocument.objects.exclude(pk=self.pk).filter(path=self.path).exists():
             count = 1
             org_path = self.path
             while True:

@@ -1,5 +1,5 @@
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
-from apps.collab.models import TextDocument
+from apps.collab.models.collab_document import CollabDocument
 from apps.api.models import UserProfile
 from django.db import models
 
@@ -7,7 +7,7 @@ from django.db import models
 class TextDocumentVersion(EncryptedModelMixin, models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    document = models.ForeignKey(TextDocument, related_name="versions", on_delete=models.CASCADE)
+    document = models.ForeignKey(CollabDocument, related_name="versions", on_delete=models.CASCADE)
     creator = models.ForeignKey(UserProfile, related_name="text_document_versions_created", on_delete=models.SET_NULL,
                                 null=True, blank=True)
     is_draft = models.BooleanField(default=True)
