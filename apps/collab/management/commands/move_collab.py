@@ -11,4 +11,5 @@ class Command(BaseCommand):
             cb.new_rlc = cb.rlc
             cb.new_created = cb.created
             cb.new_creator = cb.creator
+            cb.new_id = cb.id
             cb.save()

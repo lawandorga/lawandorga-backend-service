@@ -81,7 +81,6 @@ class Migration(migrations.Migration):
                 ),
                 ("path", models.CharField(max_length=4096)),
             ],
-            bases=("collab.textdocument",),
         ),
         migrations.CreateModel(
             name="TextDocumentVersion",
@@ -182,7 +181,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            bases=("collab.textdocument",),
         ),
         migrations.CreateModel(
             name="PermissionForCollabDocument",
