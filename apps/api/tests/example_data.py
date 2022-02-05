@@ -1,7 +1,7 @@
 from apps.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
 from apps.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
 from apps.collab.static.collab_permissions import get_all_collab_permission_strings
-from apps.files.static.folder_permissions import get_all_folder_permissions_strings
+from apps.files.static import get_all_files_permission_strings
 from apps.recordmanagement.fixtures import create_default_record_template
 from apps.api.models.has_permission import HasPermission
 from apps.recordmanagement.models import RecordSelectField, RecordTemplate, Record, RecordStandardField, \
@@ -57,7 +57,7 @@ def create_fixtures():
     # create folder permissions
     [
         FolderPermission.objects.get_or_create(name=permission)
-        for permission in get_all_folder_permissions_strings()
+        for permission in get_all_files_permission_strings()
     ]
 
 

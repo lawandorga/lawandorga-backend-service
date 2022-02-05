@@ -1,4 +1,4 @@
-from apps.files.static.folder_permissions import PERMISSION_READ_FOLDER, PERMISSION_WRITE_FOLDER
+from apps.files.static import PERMISSION_READ_FOLDER, PERMISSION_WRITE_FOLDER
 from apps.files.models.folder_permission import FolderPermission
 from apps.static.storage_folders import get_storage_base_files_folder
 from apps.static.permissions import PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC, PERMISSION_READ_ALL_FOLDERS_RLC, \

@@ -1,8 +1,6 @@
 from apps.collab.static.collab_permissions import get_all_collab_permission_strings
-from apps.files.static.folder_permissions import get_all_folder_permissions_strings
 from apps.static.permissions import get_all_permissions_strings
 from apps.collab.models import CollabPermission
-from apps.files.models import FolderPermission
 from apps.api.models import Permission
 
 
