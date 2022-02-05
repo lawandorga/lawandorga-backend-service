@@ -4,12 +4,11 @@ from django.db import models
 
 
 class TextDocumentVersion(EncryptedModelMixin, models.Model):
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
     document = models.ForeignKey(CollabDocument, related_name="versions", on_delete=models.CASCADE)
-    is_draft = models.BooleanField(default=True)
     content = models.BinaryField(blank=True)
     quill = models.BooleanField(default=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     encrypted_fields = ["content"]
     encryption_class = AESEncryption

@@ -1,13 +1,11 @@
-from apps.api.static import PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC, PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC
 from apps.collab.static import PERMISSION_WRITE_DOCUMENT
-from apps.api.models import Rlc, UserProfile
+from apps.api.static import PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC, PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC
+from apps.api.models import Rlc
 from django.db import models
-from typing import Dict, Tuple
 
 
 class CollabDocument(models.Model):
     rlc = models.ForeignKey(Rlc, related_name="collab_documents", on_delete=models.CASCADE, blank=True)
-    creator = models.ForeignKey(UserProfile, related_name="collab_documents", on_delete=models.SET_NULL, null=True)
     path = models.CharField(max_length=4096, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -42,7 +40,7 @@ class CollabDocument(models.Model):
 
         return super().save(*args, **kwargs)
 
-    def delete(self, *args, **kwargs) -> Tuple[int, Dict[str, int]]:
+    def delete(self, *args, **kwargs):
         CollabDocument.objects.exclude(path=self.path).filter(path__startswith="{}/".format(self.path)).delete()
         return super().delete(*args, **kwargs)
 

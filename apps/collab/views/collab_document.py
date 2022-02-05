@@ -14,7 +14,7 @@ from typing import Any
 
 
 class CollabDocumentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
-                            mixins.CreateModelMixin, viewsets.GenericViewSet):
+                            mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = CollabDocument.objects.none()
     serializer_class = CollabDocumentSerializer
 

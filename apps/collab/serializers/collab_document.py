@@ -30,7 +30,6 @@ class CollabDocumentCreateSerializer(CollabDocumentSerializer):
                                                                       path=attrs['path'][:-1]).exists():
             raise ValidationError('This path does not exist.')
         attrs['path'] = attrs['path'] + attrs['name']
-        attrs['creator'] = self.context['request'].user
         attrs['rlc'] = self.context['request'].user.rlc
         del attrs['name']
         return attrs
