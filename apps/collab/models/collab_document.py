@@ -6,7 +6,7 @@ from typing import Dict, Tuple
 
 
 class CollabDocument(models.Model):
-    rlc = models.ForeignKey(Rlc, related_name="collab_documents", on_delete=models.CASCADE)
+    rlc = models.ForeignKey(Rlc, related_name="collab_documents", on_delete=models.CASCADE, blank=True)
     creator = models.ForeignKey(UserProfile, related_name="collab_documents", on_delete=models.SET_NULL, null=True)
     path = models.CharField(max_length=4096, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)

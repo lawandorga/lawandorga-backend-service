@@ -19,7 +19,7 @@ class RecordAccessViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixi
         return RecordAccess.objects.filter(record__template__rlc=self.request.user.rlc)
 
     def list(self, request, *args, **kwargs):
-        if not request.user.has_permission(permissions.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC):
+        if not request.user.has_permission(static.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC):
             raise PermissionDenied()
         return super().list(request, *args, **kwargs)
 

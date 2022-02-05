@@ -58,7 +58,7 @@ class Rlc(models.Model):
             return aes_key
 
         else:
-            raise ValueError("You need to set (user and private_key_user).")
+            raise ValueError("You need to pass (user and private_key_user).")
 
     def get_private_key(
         self, user: UserProfile = None, private_key_user: str = None

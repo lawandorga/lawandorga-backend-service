@@ -2,23 +2,29 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from apps.collab.serializers import CollabDocumentSerializer, \
     TextDocumentVersionSerializer, CollabDocumentCreateSerializer, \
-    CollabDocumentListSerializer, TextDocumentVersionCreateSerializer, PermissionForCollabDocumentAllNamesSerializer
+    CollabDocumentListSerializer, TextDocumentVersionCreateSerializer, PermissionForCollabDocumentAllNamesSerializer, \
+    CollabDocumentRetrieveSerializer, CollabDocumentUpdateSerializer
 from apps.api.static import PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC, \
     PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC, PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC
 from rest_framework.response import Response
 from rest_framework.request import Request
 from apps.collab.models import CollabDocument, PermissionForCollabDocument, TextDocumentVersion
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from typing import Any
 
 
-class CollabDocumentViewSet(viewsets.ModelViewSet):
+class CollabDocumentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
+                            mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = CollabDocument.objects.none()
     serializer_class = CollabDocumentSerializer
 
     def get_serializer_class(self):
         if self.action in ['create']:
             return CollabDocumentCreateSerializer
+        elif self.action in ['retrieve']:
+            return CollabDocumentRetrieveSerializer
+        elif self.action in ['update', 'partial_update']:
+            return CollabDocumentUpdateSerializer
         elif self.action in ['list']:
             return CollabDocumentListSerializer
         return super().get_serializer_class()
@@ -54,22 +60,13 @@ class CollabDocumentViewSet(viewsets.ModelViewSet):
             raise PermissionDenied()
         return super().destroy(request, *args, **kwargs)
 
-    @action(detail=True, methods=['get'])
-    def latest(self, request, *args, **kwargs):
+    def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         if not instance.user_can_read(request.user):
             raise PermissionDenied()
-        versions = instance.versions.all()
-        latest_version = versions.order_by('-created').first()
-        if latest_version is None:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        latest_version.decrypt(
-            request.user.rlc.get_aes_key(user=request.user,
-                                         private_key_user=request.user.get_private_key(request=request)))
-        return Response(TextDocumentVersionSerializer(latest_version).data)
+        return super().retrieve(request, *args, **kwargs)
 
-    @action(detail=True, methods=['post'])
-    def create_version(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         # get the collab document
         instance = self.get_object()
 
@@ -77,22 +74,7 @@ class CollabDocumentViewSet(viewsets.ModelViewSet):
         if not instance.user_can_write(request.user):
             raise PermissionDenied()
 
-        # check if data is valid
-        serializer = TextDocumentVersionCreateSerializer(
-            data={'content': request.data['content'], 'quill': False, 'document': instance.pk})
-        serializer.is_valid(raise_exception=True)
-
-        # get the keys
-        private_key_user = request.user.get_private_key(request=request)
-        aes_key_rlc = request.user.get_rlc_aes_key(private_key_user=private_key_user)
-
-        # encrypt and save
-        version = TextDocumentVersion(**serializer.validated_data)
-        version.encrypt(aes_key_rlc)
-        version.save()
-
-        # return
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return super().update(request, *args, **kwargs)
 
     @action(detail=True, methods=['get'])
     def versions(self, request, *args, **kwargs):

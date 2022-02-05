@@ -1,4 +1,5 @@
-from rest_framework.exceptions import ValidationError
+from django.utils import timezone
+from rest_framework.exceptions import ValidationError, NotFound
 from apps.collab.models import CollabDocument, TextDocumentVersion
 from rest_framework import serializers
 
@@ -37,16 +38,51 @@ class CollabDocumentCreateSerializer(CollabDocumentSerializer):
     def get_children(self, _):
         return []
 
-    def save(self, **kwargs):
-        instance = super().save(**kwargs)
+    def create(self, validated_data):
+        data = {'rlc': self.context['request'].user.rlc, **validated_data}
+        instance = super().create(data)
         # create a text document
-        user = self.context['request'].user
-        private_key_user = user.get_private_key(request=self.context['request'])
-        aes_key_rlc = user.get_rlc_aes_key(private_key_user=private_key_user)
-        version = TextDocumentVersion(quill=False, document=instance, creator=user, content='')
-        version.encrypt(aes_key_rlc)
+        version = TextDocumentVersion(quill=False, document=instance, content='')
+        version.encrypt(request=self.context['request'])
         version.save()
         # return
+        return instance
+
+
+class CollabDocumentRetrieveSerializer(CollabDocumentSerializer):
+    content = serializers.SerializerMethodField()
+    quill = serializers.SerializerMethodField()
+
+    def get_latest_version(self, obj):
+        if not hasattr(self, 'latest_version'):
+            self.latest_version = obj.versions.order_by('-created').first()
+            if self.latest_version is None:
+                raise NotFound()
+        return self.latest_version
+
+    def get_content(self, obj):
+        latest_version = self.get_latest_version(obj)
+        latest_version.decrypt(request=self.context['request'])
+        return latest_version.content
+
+    def get_quill(self, obj):
+        latest_version = self.get_latest_version(obj)
+        return latest_version.quill
+
+
+class CollabDocumentUpdateSerializer(CollabDocumentSerializer):
+    content = serializers.CharField(write_only=True)
+
+    def update(self, instance, validated_data):
+        latest_version = instance.versions.order_by('-created').first()
+        if latest_version is not None and latest_version.created.date() == timezone.now().date():
+            version = latest_version
+            version.content = validated_data['content']
+            version.quill = False
+        else:
+            version = TextDocumentVersion(content=validated_data['content'], document=instance, quill=False)
+        version.encrypt(request=self.context['request'])
+        version.save()
         return instance
 
 
