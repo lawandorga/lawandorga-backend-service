@@ -12,6 +12,7 @@ class HasPermission(models.Model):
     class Meta:
         verbose_name = "HasPermission"
         verbose_name_plural = "HasPermissions"
+        unique_together = ('permission', 'user_has_permission', 'group_has_permission')
 
     def __str__(self):
         return "hasPermission: {}; name: {};".format(self.pk, self.permission.name)
