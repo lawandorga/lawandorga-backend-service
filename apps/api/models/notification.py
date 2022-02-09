@@ -24,7 +24,7 @@ from django.db import models
 class NotificationManager(models.Manager):
     """
     Manager for Notifications
-    provides methods for whole query table and 'static.py' class methods
+    provides methods for whole query table and 'static' class methods
     """
 
     @staticmethod

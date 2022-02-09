@@ -1,5 +1,5 @@
 from rest_framework.authtoken.serializers import AuthTokenSerializer as DRFAuthTokenSerializer
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, ParseError
 from django.contrib.auth import authenticate
 from apps.api.models import UserProfile, RlcUser
 from rest_framework import serializers
@@ -32,6 +32,12 @@ class RlcUserUpdateSerializer(RlcUserSerializer):
     class Meta:
         model = RlcUser
         fields = ['name', 'phone_number', 'birthday', 'street', 'city', 'postal_code', 'is_active', 'note']
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if self.instance.pk == self.context['request'].user.rlc_user.pk and attrs['is_active'] is False:
+            raise ParseError('You can not deactivate yourself.')
+        return attrs
 
     def update(self, instance, validated_data):
         instance = super().update(instance, validated_data)

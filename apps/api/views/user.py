@@ -1,23 +1,18 @@
 from rest_framework.authtoken.models import Token
 from apps.recordmanagement.models import RecordDeletion, RecordAccess
-from apps.api.static import PERMISSION_MANAGE_USERS, PERMISSION_PROCESS_RECORD_DELETION_REQUESTS, \
-    PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC, PERMISSION_MANAGE_PERMISSIONS_RLC
 from rest_framework.exceptions import ParseError, PermissionDenied, AuthenticationFailed
 from rest_framework.decorators import action
-from apps.api.serializers import (
-    RlcUserCreateSerializer,
-    RlcUserForeignSerializer,
-    EmailSerializer,
-    UserPasswordResetConfirmSerializer, HasPermissionAllNamesSerializer, RlcSerializer, RlcUserSerializer,
-    AuthTokenSerializer, RlcUserListSerializer, RlcUserUpdateSerializer,
-    UserProfileSerializer,
-)
+from apps.api.serializers import RlcUserCreateSerializer, RlcUserForeignSerializer, EmailSerializer, \
+    UserPasswordResetConfirmSerializer, HasPermissionAllNamesSerializer, RlcSerializer, RlcUserSerializer, \
+    AuthTokenSerializer, RlcUserListSerializer, RlcUserUpdateSerializer, UserProfileSerializer
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.request import Request
 from django.db.models import Q
-from apps.api.models import UserProfile, PasswordResetTokenGenerator, \
-    AccountActivationTokenGenerator, UsersRlcKeys, RlcUser
+from apps.api.static import PERMISSION_MANAGE_USERS, PERMISSION_PROCESS_RECORD_DELETION_REQUESTS, \
+    PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC, PERMISSION_MANAGE_PERMISSIONS_RLC
+from apps.api.models import UserProfile, PasswordResetTokenGenerator, AccountActivationTokenGenerator, UsersRlcKeys, \
+    RlcUser
 from rest_framework import viewsets, status
 from django.utils import timezone
 from django.db import IntegrityError
@@ -76,9 +71,7 @@ class UserViewSet(viewsets.ModelViewSet):
         self.perform_destroy(rlc_user.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(
-        detail=False, methods=["post"], permission_classes=[], authentication_classes=[]
-    )
+    @action(detail=False, methods=["post"], permission_classes=[], authentication_classes=[])
     def login(self, request: Request):
         serializer = AuthTokenSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
@@ -101,14 +94,14 @@ class UserViewSet(viewsets.ModelViewSet):
             )
         if not user.rlc_user.is_active:
             message = (
-                "You can not login. Your account was deactivated by one of your rlc admins."
+                "You can not login. Your account was deactivated by one of your admins."
             )
             return Response(
                 {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
             )
         if not user.rlc_user.accepted:
             message = (
-                "You can not login, yet. Your RLC needs to accept you as a member."
+                "You can not login, yet. You need to be accepted as member by one of your admins."
             )
             return Response(
                 {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
@@ -291,6 +284,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def accept(self, request, *args, **kwargs):
+        if not request.user.has_permission(PERMISSION_MANAGE_USERS):
+            return Response(
+                {"detail": "You don't have the necessary permission '{}' to do this.".format(PERMISSION_MANAGE_USERS)},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         # get the new member
         new_member = self.get_object()
 

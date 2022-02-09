@@ -107,8 +107,8 @@ AWS_S3_FILE_OVERWRITE = False
 # Static Files
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static/dist/")]
-STATIC_URL = "static.py/"
-STATIC_ROOT = os.path.join(BASE_DIR, "tmp/static.py/")
+STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "tmp/static/")
 MEDIA_URL = "media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "tmp/media/")
 
@@ -131,12 +131,12 @@ CORS_ALLOW_HEADERS = [
 # https://www.django-rest-framework.org/api-guide/settings/
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "apps.api.authentication.ExpiringTokenAuthentication",
+        "config.authentication.ExpiringTokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
     'DATE_INPUT_FORMATS': ["%d-%m-%Y", "%Y-%m-%d", "%Y-%m-%dT%H:%M:%S.%fZ"],
     'DATETIME_FORMAT': "%Y-%m-%dT%H:%M",
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_PERMISSION_CLASSES": ["config.authentication.IsAuthenticatedAndActive"],
 }
 
 # Necessary in django 3.2

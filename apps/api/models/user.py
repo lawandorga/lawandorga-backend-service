@@ -16,6 +16,9 @@ from apps.api.static import PERMISSION_MANAGE_USERS
 
 
 class UserProfileManager(BaseUserManager):
+    def get_queryset(self):
+        return super().get_queryset().select_related('rlc_user')
+
     @staticmethod
     def get_users_with_special_permission(permission, from_rlc=None, for_rlc=None):
         if isinstance(permission, str):
@@ -355,7 +358,7 @@ class RlcUser(models.Model):
     class Meta:
         verbose_name = 'RlcUser'
         verbose_name_plural = 'RlcUsers'
-        ordering = ['user__name']
+        ordering = ['is_active', 'accepted', 'locked', 'user__name']
 
     def __str__(self):
         return 'rlcUser: {}; email: {};'.format(self.pk, self.user.email)
