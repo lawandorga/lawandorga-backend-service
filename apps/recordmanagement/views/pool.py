@@ -1,10 +1,7 @@
-from rest_framework.exceptions import PermissionDenied
-
 from apps.recordmanagement.models.record import Record, RecordEncryptionNew
 from apps.recordmanagement.serializers import PoolConsultantSerializer, PoolRecordSerializer
 from apps.recordmanagement.models.pool import PoolConsultant, PoolRecord
 from rest_framework.decorators import action
-from apps.api.static import PERMISSION_CAN_CONSULT
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status, mixins
@@ -17,8 +14,6 @@ class PoolConsultantViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     def create(self, request, *args, **kwargs):
         # check permissions (can consult)
         user = request.user
-        if not user.has_permission(PERMISSION_CAN_CONSULT, for_rlc=user.rlc):
-            raise PermissionDenied()
 
         if PoolRecord.objects.filter(record__template__rlc=user.rlc).count() >= 1:
             entry = PoolRecord.objects.filter(record__template__rlc=user.rlc).first()
@@ -85,8 +80,6 @@ class PoolRecordViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     @action(detail=False, methods=['get'])
     def status(self, request):
         user = request.user
-        if not user.has_permission(PERMISSION_CAN_CONSULT):
-            raise PermissionDenied()
 
         queryset = PoolRecord.objects.filter(record__template__rlc=user.rlc)
         if queryset.count() > 0:

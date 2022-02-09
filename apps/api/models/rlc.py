@@ -1,4 +1,3 @@
-from apps.api.static import PERMISSION_CAN_CONSULT
 from apps.static.encryption import AESEncryption, RSAEncryption
 from apps.api.models.user import UserProfile
 from django.db import models
@@ -22,18 +21,6 @@ class Rlc(models.Model):
         from apps.files.models import Folder
         if not Folder.objects.filter(rlc=self, parent=None).exists():
             Folder.objects.create(rlc=self, parent=None, name='Files')
-
-    def get_consultants(self):
-        """
-        gets all user from rlc with permission to consult
-        :return:
-        """
-        users = self.rlc_members.all()
-        consultants = []
-        for user in list(users):
-            if user.has_permission(PERMISSION_CAN_CONSULT):
-                consultants.append(user.pk)
-        return UserProfile.objects.filter(pk__in=consultants)
 
     def get_public_key(self) -> bytes:
         # safety check

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 # https://docs.djangoproject.com/en/dev/topics/http/middleware/
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -103,6 +104,10 @@ AWS_STORAGE_BUCKET_NAME = get_secret("SCW_S3_BUCKET_NAME")
 AWS_S3_REGION_NAME = "fr-par"
 AWS_S3_ENDPOINT_URL = "https://s3.fr-par.scw.cloud"
 AWS_S3_FILE_OVERWRITE = False
+
+# Static Files Storage
+# http://whitenoise.evans.io/en/stable/
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Static Files
 # https://docs.djangoproject.com/en/dev/howto/static-files/

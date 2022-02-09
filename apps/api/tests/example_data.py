@@ -1,6 +1,6 @@
 from apps.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
 from apps.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
-from apps.collab.static.collab_permissions import get_all_collab_permission_strings
+from apps.collab.static import get_all_collab_permission_strings
 from apps.files.static import get_all_files_permission_strings
 from apps.recordmanagement.fixtures import create_default_record_template
 from apps.api.models.has_permission import HasPermission
@@ -249,9 +249,6 @@ def create_groups(rlc: Rlc, creator: UserProfile, users: [UserProfile]):
     for i in range(0, randint(0, len(users))):
         users_group.group_members.add(users[i])
 
-    add_permissions_to_group(users_group, static.PERMISSION_CAN_CONSULT)
-    add_permissions_to_group(users_group, static.PERMISSION_VIEW_RECORDS_RLC)
-
     # create ag group
     ag_group = Group.objects.create(
         creator=users[0],
@@ -281,17 +278,14 @@ def create_admin_group(rlc: Rlc, main_user: UserProfile):
     )
     admin_group.group_members.add(main_user)
 
-    add_permissions_to_group(admin_group, static.PERMISSION_VIEW_PERMISSIONS_RLC)
     add_permissions_to_group(admin_group, static.PERMISSION_MANAGE_PERMISSIONS_RLC)
     add_permissions_to_group(admin_group, static.PERMISSION_MANAGE_GROUPS_RLC)
-    add_permissions_to_group(admin_group, static.PERMISSION_ACCEPT_NEW_USERS_RLC)
     add_permissions_to_group(
         admin_group, static.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC
     )
     add_permissions_to_group(
         admin_group, static.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
     )
-    add_permissions_to_group(admin_group, static.PERMISSION_VIEW_RECORDS_RLC)
 
     # return
     return admin_group
