@@ -1,7 +1,7 @@
 from apps.api.static import PERMISSION_MANAGE_USERS, get_all_permissions_strings, \
     PERMISSION_MANAGE_PERMISSIONS_RLC
 from rest_framework.test import APIRequestFactory, force_authenticate
-from apps.api.models import UserProfile, RlcUser, Rlc, Permission
+from apps.api.models import UserProfile, RlcUser, Rlc, Permission, HasPermission
 from apps.api.views import UserViewSet
 from django.test import TestCase
 
@@ -148,6 +148,8 @@ class UserViewSetWorkingTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_accept_works(self):
+        HasPermission.objects.create(permission=Permission.objects.get(name=PERMISSION_MANAGE_USERS),
+                                     user_has_permission=self.user)
         view = UserViewSet.as_view(actions={'post': 'accept'})
         rlc_user = self.rlc_user
         self.another_rlc_user.accepted = False

@@ -29,6 +29,7 @@ class FileTestsBreaking(FileTestsBase, TestCase):
     def test_retrieve_file_with_no_name(self):
         # setup and unset file name to equal reality
         self.setup_file()
+        self.file.file.delete()
         self.file.file.name = ''
         self.file.save()
         # test case
@@ -41,6 +42,7 @@ class FileTestsBreaking(FileTestsBase, TestCase):
         self.assertEqual(file.exists, False)
         # clean up
         file.file.delete()
+
 
     def test_file_with_same_name_does_not_overwrite_another(self):
         view = FileViewSet.as_view(actions={'post': 'create'})

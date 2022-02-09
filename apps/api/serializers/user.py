@@ -35,7 +35,11 @@ class RlcUserUpdateSerializer(RlcUserSerializer):
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
-        if self.instance.pk == self.context['request'].user.rlc_user.pk and attrs['is_active'] is False:
+        if (
+            'is_active' in attrs and
+            self.instance.pk == self.context['request'].user.rlc_user.pk and
+            attrs['is_active'] is False
+        ):
             raise ParseError('You can not deactivate yourself.')
         return attrs
 
