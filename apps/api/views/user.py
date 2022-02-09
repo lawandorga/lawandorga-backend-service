@@ -279,7 +279,8 @@ class UserViewSet(viewsets.ModelViewSet):
             user_permissions = rlc_user.user.get_permissions()
         else:
             raise PermissionDenied(
-                "You need the permission 'manage_permissions_rlc' to see the permissions of this user")
+                "You need the permission '{}' to see the permissions of this user.".format(
+                    PERMISSION_MANAGE_PERMISSIONS_RLC))
         return Response(HasPermissionAllNamesSerializer(user_permissions, many=True).data)
 
     @action(detail=True, methods=['post'])
