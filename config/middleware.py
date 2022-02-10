@@ -16,7 +16,7 @@ class LoggingMiddleware:
         data = {
             'user': request.user if request.user.is_authenticated else None,
             'path': request.path if request.path else '',
-            'status': response.status_code if request.status_code else 0,
+            'status': response.status_code if response.status_code else 0,
             'method': request.method if request.method else 'UNKNOWN'
         }
         if response.status_code == 500 and request.method == 'POST':
