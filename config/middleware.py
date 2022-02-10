@@ -1,5 +1,3 @@
-from rest_framework.response import Response
-from rest_framework.request import Request
 from apps.api.models import LoggedPath
 
 
@@ -7,9 +5,12 @@ class LoggingMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
-    def __call__(self, request: Request):
+    def __call__(self, request):
+        # save the body for 500 errors now because it will not be available after get_response
+        body = request.body
+
         # get the response
-        response: Response = self.get_response(request)
+        response = self.get_response(request)
 
         # set the data
         data = {
@@ -19,7 +20,7 @@ class LoggingMiddleware:
             'method': request.method
         }
         if response.status_code == 500 and request.method == 'POST':
-            data.update({'data': request.data})
+            data.update({'data': body.decode('utf-8')})
 
         # create the logged path
         LoggedPath.objects.create(**data)

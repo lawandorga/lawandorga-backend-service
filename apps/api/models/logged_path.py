@@ -1,4 +1,5 @@
 from apps.api.models import UserProfile
+from django.utils import timezone
 from django.db import models
 
 
@@ -16,5 +17,5 @@ class LoggedPath(models.Model):
         verbose_name_plural = 'LoggedPaths'
 
     def __str__(self):
-        return 'loggedPath: {}; path: \'{}\'; user: {};'.format(self.time.strftime('%Y-%m-%d'), self.path,
-                                                                self.user.email)
+        return 'loggedPath: {}; path: {} \'{}\'; user: {};'.format(
+            timezone.localtime(self.time).strftime('%Y-%m-%d %H:%M'), self.method, self.path, self.user.email)
