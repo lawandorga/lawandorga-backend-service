@@ -15,9 +15,9 @@ class LoggingMiddleware:
         # set the data
         data = {
             'user': request.user if request.user.is_authenticated else None,
-            'path': request.path,
-            'status': response.status_code,
-            'method': request.method
+            'path': request.path if request.path else '',
+            'status': response.status_code if request.status_code else 0,
+            'method': request.method if request.method else 'UNKNOWN'
         }
         if response.status_code == 500 and request.method == 'POST':
             data.update({'data': body.decode('utf-8')})
