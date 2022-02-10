@@ -7,6 +7,8 @@ class LoggedPath(models.Model):
     user = models.ForeignKey(UserProfile, null=True, blank=True, on_delete=models.CASCADE, related_name='logged_paths')
     time = models.DateTimeField(auto_now_add=True)
     status = models.IntegerField(default=0)
+    method = models.CharField(default='UNKNOWN', max_length=20)
+    data = models.TextField(blank=True)
 
     class Meta:
         ordering = ['-time']
