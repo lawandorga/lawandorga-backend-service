@@ -50,6 +50,16 @@ LOGGING_DIR = os.path.join(BASE_DIR, 'tmp/logs')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'file': {
             'class': 'logging.FileHandler',
@@ -63,6 +73,7 @@ LOGGING = {
         'mail_admins': {
             'class': 'django.utils.log.AdminEmailHandler',
             'level': 'ERROR',
+            'formatter': 'verbose'
         },
         'null': {
             'class': 'logging.NullHandler',
