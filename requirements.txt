@@ -1,7 +1,7 @@
 # wheel
 wheel==0.37.1
 # django
-Django==3.2.11
+Django==3.2.12
 djangorestframework==3.13.1
 # database production
 psycopg2==2.9.3
