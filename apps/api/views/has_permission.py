@@ -1,23 +1,23 @@
 from apps.api.models.has_permission import HasPermission
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.decorators import action
-from apps.api.static import PERMISSION_MANAGE_PERMISSIONS_RLC, \
-    get_all_collab_permissions, get_all_files_permissions, get_all_records_permissions
+from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 from apps.api.serializers import OldHasPermissionSerializer, HasPermissionAllNamesSerializer, \
     HasPermissionNameSerializer
 from django.db.models import Q
+from apps.api.static import PERMISSION_MANAGE_PERMISSIONS_RLC, \
+    get_all_collab_permissions, get_all_files_permissions, get_all_records_permissions
 from apps.api.models import Permission
-from rest_framework import status
-from rest_framework import viewsets
+from rest_framework import status, mixins
 
 
-class HasPermissionViewSet(viewsets.ModelViewSet):
+class HasPermissionViewSet(mixins.CreateModelMixin,
+                           mixins.DestroyModelMixin,
+                           mixins.ListModelMixin,
+                           GenericViewSet):
     queryset = HasPermission.objects.all()
     serializer_class = OldHasPermissionSerializer
-
-    def update(self, request, *args, **kwargs):
-        pass
 
     def destroy(self, request, *args, **kwargs):
         if not request.user.has_permission(PERMISSION_MANAGE_PERMISSIONS_RLC):
@@ -29,6 +29,10 @@ class HasPermissionViewSet(viewsets.ModelViewSet):
         if not request.user.has_permission(PERMISSION_MANAGE_PERMISSIONS_RLC):
             raise PermissionDenied()
 
+        if 'group_has_permission' not in request.data:
+            request.data.update({'group_has_permission': None})
+        if 'user_has_permission' not in request.data:
+            request.data.update({'user_has_permission': None})
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
