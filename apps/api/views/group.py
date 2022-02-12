@@ -1,43 +1,32 @@
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import ParseError
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from apps.api.serializers import GroupSerializer, GroupMembersSerializer, GroupAddMemberSerializer, \
-    UserProfileSerializer, OldHasPermissionNameSerializer
+from apps.static.permission import CheckPermissionWall
 from rest_framework.request import Request
-from apps.api.models import Group, UserProfile, RlcUser
-from apps.api import static
+from apps.api.serializers import GroupSerializer, MemberIntegerSerializer, UserProfileSerializer, \
+    OldHasPermissionNameSerializer, GroupCreateSerializer
+from apps.api.static import PERMISSION_ADMIN_MANAGE_GROUPS
+from apps.api.models import Group, RlcUser
 from rest_framework import viewsets, status
 
 
-class GroupViewSet(viewsets.ModelViewSet):
+class GroupViewSet(CheckPermissionWall, viewsets.ModelViewSet):
     serializer_class = GroupSerializer
+    permission_wall = {
+        'create': PERMISSION_ADMIN_MANAGE_GROUPS,
+        'update': PERMISSION_ADMIN_MANAGE_GROUPS,
+        'partial_update': PERMISSION_ADMIN_MANAGE_GROUPS,
+        'destroy': PERMISSION_ADMIN_MANAGE_GROUPS,
+        'member': PERMISSION_ADMIN_MANAGE_GROUPS,
+    }
 
     def get_queryset(self):
-        return Group.objects.get_visible_groups_for_user(self.request.user)
+        return Group.objects.filter(from_rlc=self.request.user.rlc)
 
-    def create(self, request, *args, **kwargs):
-        # permission stuff
-        if not request.user.has_permission(static.PERMISSION_ADMIN_MANAGE_GROUPS):
-            raise PermissionDenied()
-
-        # add data
-        request.data["creator"] = request.user.pk
-        request.data["from_rlc"] = request.user.rlc.pk
-
-        # do the usual stuff
-        return super().create(request, *args, **kwargs)
-
-    def retrieve(self, request, *args, **kwargs):
-        self.serializer_class = GroupMembersSerializer
-        return super().retrieve(request, *args, **kwargs)
-
-    def destroy(self, request: Request, *args, **kwargs):
-        # permission stuff
-        if not request.user.has_permission(static.PERMISSION_ADMIN_MANAGE_GROUPS):
-            raise PermissionDenied()
-
-        # do the usual stuff
-        return super().destroy(request, *args, **kwargs)
+    def get_serializer_class(self):
+        if self.action in ['create']:
+            return GroupCreateSerializer
+        return super().get_serializer_class()
 
     @action(detail=True, methods=['get'])
     def members(self, *args, **kwargs):
@@ -51,73 +40,25 @@ class GroupViewSet(viewsets.ModelViewSet):
         permissions = group.group_has_permission.all()
         return Response(OldHasPermissionNameSerializer(permissions, many=True).data)
 
-    @action(detail=True, methods=['post'])
-    def remove(self, request, pk=None, *arsg, **kwargs):
-        if not request.user.has_permission(static.PERMISSION_ADMIN_MANAGE_GROUPS):
-            raise PermissionDenied()
-
-        # get the group
-        group = self.get_object()
-
-        # get the data
-        serializer = GroupAddMemberSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        member = UserProfile.objects.get(pk=serializer.validated_data["member"])
-
-        # remove the member
-        group.group_members.remove(member)
-
-        return Response(status.HTTP_204_NO_CONTENT)
-
     @action(detail=True, methods=["post", "delete"])
     def member(self, request: Request, pk=None):
-        # permission stuff
-        if not request.user.has_permission(static.PERMISSION_ADMIN_MANAGE_GROUPS):
-            raise PermissionDenied()
-
         # get the group
         group = self.get_object()
 
         # get the data
-        serializer = GroupAddMemberSerializer(data=request.data)
+        serializer = MemberIntegerSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         member = RlcUser.objects.get(pk=serializer.validated_data["member"]).user
 
         # add member to group
         if request.method == "POST":
             group.group_members.add(member)
-            # check if group can see encrypted data and add keys for the new member if so
-            # if group.group_has_record_encryption_keys_permission():
-            #     private_key_user = request.user.get_private_key(request=request)
-            #     records = list(
-            #         EncryptedRecord.objects.filter(from_rlc=request.user.rlc)
-            #     )
-            #     for record in records:
-            #         if not RecordEncryption.objects.filter(user=member, record=record).exists():
-            #             try:
-            #                 record_key = record.get_aes_key(
-            #                     request.user, private_key_user
-            #                 )
-            #             except Exception:
-            #                 continue
-            #             public_key_member = member.get_public_key()
-            #             record_encryption = RecordEncryption(
-            #                 user=member, record=record, encrypted_key=record_key
-            #             )
-            #             record_encryption.encrypt(public_key_member)
-            #             record_encryption.save()
-            # notify
-            # Notification.objects.notify_group_member_added(request.user, member, group)
-
-            # return the added user
             return Response(UserProfileSerializer(member).data, status=status.HTTP_200_OK)
 
         # remove member from group
         if request.method == "DELETE":
             group.group_members.remove(member)
-            # Notification.objects.notify_group_member_removed(
-            #     request.user, member, group
-            # )
+            return Response(status.HTTP_200_OK)
 
         # return something
-        return Response(status.HTTP_204_NO_CONTENT)
+        raise ParseError('This request needs to be POST or DELETE.')

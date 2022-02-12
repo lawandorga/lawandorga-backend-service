@@ -1,6 +1,5 @@
 # records
 PERMISSION_RECORDS_ADD_RECORD = "records__add_record"
-
 PERMISSION_RECORDS_ACCESS_ALL_RECORDS = "records__access_all_records"
 # files
 PERMISSION_FILES_READ_ALL_FOLDERS = "files__read_all_folders"
@@ -11,6 +10,7 @@ PERMISSION_COLLAB_READ_ALL_DOCUMENTS = "collab__read_all_documents"
 PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS = "collab__write_all_documents"
 PERMISSION_COLLAB_MANAGE_PERMISSIONS = "collab__manage_permissions"
 # admin
+
 PERMISSION_ADMIN_MANAGE_GROUPS = "admin__manage_groups"
 PERMISSION_ADMIN_MANAGE_USERS = "admin__manage_users"
 PERMISSION_ADMIN_MANAGE_PERMISSIONS = "admin__manage_permissions"

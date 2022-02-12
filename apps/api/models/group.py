@@ -1,26 +1,14 @@
 from apps.api.models.user import UserProfile
-from apps.api import static
+from apps.api.models.rlc import Rlc
 from django.db import models
 
 
-class GroupQuerySet(models.QuerySet):
-    def get_visible_groups_for_user(self, user):
-        if user.has_permission(static.PERMISSION_ADMIN_MANAGE_GROUPS):
-            return self.filter(from_rlc=user.rlc)
-        return self.filter(from_rlc=user.rlc, visible=True)
-
-
 class Group(models.Model):
-    creator = models.ForeignKey(UserProfile, related_name="group_created", on_delete=models.SET_NULL, null=True)
-    from_rlc = models.ForeignKey("Rlc", related_name="group_from_rlc", on_delete=models.SET_NULL, null=True,
-                                 default=None)
+    from_rlc = models.ForeignKey(Rlc, related_name="group_from_rlc", on_delete=models.CASCADE, blank=True)
     name = models.CharField(max_length=200, null=False)
     visible = models.BooleanField(null=False, default=True)
     group_members = models.ManyToManyField(UserProfile, related_name="rlcgroups", blank=True)
     description = models.TextField(blank=True, null=True)
-    note = models.TextField(blank=True, null=True)
-
-    objects = GroupQuerySet.as_manager()
 
     class Meta:
         verbose_name = "Group"
