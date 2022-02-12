@@ -1,5 +1,3 @@
-from django.db import IntegrityError
-
 from apps.recordmanagement.serializers.record import RecordTemplateSerializer, RecordEncryptedStandardFieldSerializer, \
     RecordSerializer, RecordEncryptedStandardEntrySerializer, RecordStandardEntrySerializer, \
     RecordEncryptedFileEntrySerializer, RecordStandardFieldSerializer, RecordEncryptedFileFieldSerializer, \
@@ -16,21 +14,34 @@ from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedS
 from apps.recordmanagement.serializers import RecordDocumentSerializer
 from rest_framework.exceptions import ParseError
 from rest_framework.decorators import action
-from apps.api.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 from apps.static.encryption import AESEncryption
 from django.db.models import ProtectedError
+from apps.api.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS, PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
 from rest_framework import mixins
 from django.http import FileResponse
+from django.db import IntegrityError
 import mimetypes
+
+
+###
+# Mixins
+###
+class ManageRecordTemplatesPermission:
+    def check_permissions(self, request):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            if not request.user.has_permission(PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES):
+                message = "You need the permission '{}' to do this.".format(PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES)
+                self.permission_denied(request, message, 403)
+        return super().check_permissions(request)
 
 
 ###
 # Template
 ###
-class RecordTemplateViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
-                            mixins.ListModelMixin, mixins.RetrieveModelMixin, GenericViewSet):
+class RecordTemplateViewSet(ManageRecordTemplatesPermission, mixins.CreateModelMixin, mixins.UpdateModelMixin,
+                            mixins.DestroyModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, GenericViewSet):
     queryset = RecordTemplate.objects.none()
     serializer_class = RecordTemplateSerializer
 
@@ -54,8 +65,8 @@ class RecordTemplateViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mi
 ###
 # Fields
 ###
-class RecordFieldViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
-                         GenericViewSet):
+class RecordFieldViewSet(ManageRecordTemplatesPermission, mixins.CreateModelMixin, mixins.UpdateModelMixin,
+                         mixins.DestroyModelMixin, GenericViewSet):
     model = None
 
     def get_queryset(self):
