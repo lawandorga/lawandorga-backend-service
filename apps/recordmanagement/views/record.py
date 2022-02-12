@@ -16,9 +16,11 @@ from rest_framework.exceptions import ParseError
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
+from apps.static.permission import CheckPermissionWall
 from apps.static.encryption import AESEncryption
 from django.db.models import ProtectedError
-from apps.api.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS, PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
+from apps.api.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS, PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES, \
+    PERMISSION_RECORDS_ADD_RECORD
 from rest_framework import mixins
 from django.http import FileResponse
 from django.db import IntegrityError
@@ -26,24 +28,18 @@ import mimetypes
 
 
 ###
-# Mixins
-###
-class ManageRecordTemplatesPermission:
-    def check_permissions(self, request):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            if not request.user.has_permission(PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES):
-                message = "You need the permission '{}' to do this.".format(PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES)
-                self.permission_denied(request, message, 403)
-        return super().check_permissions(request)
-
-
-###
 # Template
 ###
-class RecordTemplateViewSet(ManageRecordTemplatesPermission, mixins.CreateModelMixin, mixins.UpdateModelMixin,
+class RecordTemplateViewSet(CheckPermissionWall, mixins.CreateModelMixin, mixins.UpdateModelMixin,
                             mixins.DestroyModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, GenericViewSet):
     queryset = RecordTemplate.objects.none()
     serializer_class = RecordTemplateSerializer
+    permission_wall = {
+        'create': PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
+        'partial_update': PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
+        'update': PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
+        'destroy': PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
+    }
 
     def get_queryset(self):
         return RecordTemplate.objects.filter(rlc=self.request.user.rlc)
@@ -65,8 +61,14 @@ class RecordTemplateViewSet(ManageRecordTemplatesPermission, mixins.CreateModelM
 ###
 # Fields
 ###
-class RecordFieldViewSet(ManageRecordTemplatesPermission, mixins.CreateModelMixin, mixins.UpdateModelMixin,
+class RecordFieldViewSet(CheckPermissionWall, mixins.CreateModelMixin, mixins.UpdateModelMixin,
                          mixins.DestroyModelMixin, GenericViewSet):
+    permission_wall = {
+        'create': PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
+        'partial_update': PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
+        'update': PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
+        'destroy': PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
+    }
     model = None
 
     def get_queryset(self):
@@ -131,10 +133,13 @@ class RecordUsersFieldViewSet(RecordFieldViewSet):
 ###
 # Record
 ###
-class RecordViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin, mixins.ListModelMixin,
-                    GenericViewSet):
+class RecordViewSet(CheckPermissionWall, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin,
+                    mixins.ListModelMixin, GenericViewSet):
     queryset = Record.objects.none()
     serializer_class = RecordSerializer
+    permission_wall = {
+        'create': PERMISSION_RECORDS_ADD_RECORD
+    }
 
     def get_serializer_class(self):
         if self.action in ['list']:

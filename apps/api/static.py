@@ -1,6 +1,6 @@
 # records
-
 PERMISSION_RECORDS_ADD_RECORD = "records__add_record"
+
 PERMISSION_RECORDS_ACCESS_ALL_RECORDS = "records__access_all_records"
 # files
 PERMISSION_FILES_READ_ALL_FOLDERS = "files__read_all_folders"
