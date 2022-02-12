@@ -17,10 +17,16 @@ from rest_framework import viewsets, status
 from django.utils import timezone
 from django.db import IntegrityError
 
+from apps.static.permission import CheckPermissionWall
 
-class UserViewSet(viewsets.ModelViewSet):
+
+class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
     serializer_class = RlcUserSerializer
     queryset = RlcUser.objects.none()
+    permission_wall = {
+        'destroy': PERMISSION_ADMIN_MANAGE_USERS,
+        'accept': PERMISSION_ADMIN_MANAGE_USERS,
+    }
 
     def get_permissions(self):
         if self.action in ['statics', 'create', 'logout', 'login', 'password_reset', 'password_reset_confirm',
@@ -55,21 +61,13 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def update(self, request: Request, *args, **kwargs):
         rlc_user = self.get_object()
-        if not request.user.has_permission(PERMISSION_ADMIN_MANAGE_USERS) and request.user.rlc_user.pk != rlc_user.pk:
-            data = {"detail": "You don't have the necessary permission to do this."}
+        if request.user.rlc_user.pk != rlc_user.pk and not request.user.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
+            data = {"detail": "You need the permission {} to do this.".format(PERMISSION_ADMIN_MANAGE_USERS)}
             return Response(data, status=status.HTTP_403_FORBIDDEN)
         serializer = self.get_serializer(rlc_user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(RlcUserListSerializer(rlc_user).data)
-
-    def destroy(self, request, *args, **kwargs):
-        rlc_user = self.get_object()
-        if not request.user.has_permission(PERMISSION_ADMIN_MANAGE_USERS) and request.user.rlc_user.pk != rlc_user.pk:
-            data = {"detail": "You don't have the necessary permission to do this."}
-            return Response(data, status=status.HTTP_403_FORBIDDEN)
-        self.perform_destroy(rlc_user.user)
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=["post"], permission_classes=[], authentication_classes=[])
     def login(self, request: Request):
