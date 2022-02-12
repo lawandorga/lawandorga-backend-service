@@ -12,7 +12,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from apps.api.models.has_permission import HasPermission
 from apps.api.models.permission import Permission
 from apps.static.encryption import RSAEncryption
-from apps.api.static import PERMISSION_MANAGE_USERS
+from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS
 
 
 class UserProfileManager(BaseUserManager):
@@ -181,7 +181,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return records_data
 
     def get_members_information(self):
-        if self.has_permission(PERMISSION_MANAGE_USERS):
+        if self.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
             members_data = []
             users = UserProfile.objects \
                 .filter(rlc=self.rlc, rlc_user__created__gt=timezone.now() - timedelta(days=14)) \

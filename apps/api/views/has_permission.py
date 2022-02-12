@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from apps.api.serializers import OldHasPermissionSerializer, HasPermissionAllNamesSerializer, \
     HasPermissionNameSerializer
 from django.db.models import Q
-from apps.api.static import PERMISSION_MANAGE_PERMISSIONS_RLC, \
+from apps.api.static import PERMISSION_ADMIN_MANAGE_PERMISSIONS, \
     get_all_collab_permissions, get_all_files_permissions, get_all_records_permissions
 from apps.api.models import Permission
 from rest_framework import status, mixins
@@ -20,13 +20,13 @@ class HasPermissionViewSet(mixins.CreateModelMixin,
     serializer_class = OldHasPermissionSerializer
 
     def destroy(self, request, *args, **kwargs):
-        if not request.user.has_permission(PERMISSION_MANAGE_PERMISSIONS_RLC):
+        if not request.user.has_permission(PERMISSION_ADMIN_MANAGE_PERMISSIONS):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         return super().destroy(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        if not request.user.has_permission(PERMISSION_MANAGE_PERMISSIONS_RLC):
+        if not request.user.has_permission(PERMISSION_ADMIN_MANAGE_PERMISSIONS):
             raise PermissionDenied()
 
         if 'group_has_permission' not in request.data:

@@ -9,8 +9,8 @@ from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.request import Request
 from django.db.models import Q
-from apps.api.static import PERMISSION_MANAGE_USERS, PERMISSION_PROCESS_RECORD_DELETION_REQUESTS, \
-    PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC, PERMISSION_MANAGE_PERMISSIONS_RLC
+from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS, PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS, \
+    PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS, PERMISSION_ADMIN_MANAGE_PERMISSIONS
 from apps.api.models import UserProfile, PasswordResetTokenGenerator, AccountActivationTokenGenerator, UsersRlcKeys, \
     RlcUser
 from rest_framework import viewsets, status
@@ -47,7 +47,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, pk=None, **kwargs):
         rlc_user = self.get_object()
-        if request.user.has_permission(PERMISSION_MANAGE_USERS) or rlc_user.pk == request.user.rlc_user.pk:
+        if request.user.has_permission(PERMISSION_ADMIN_MANAGE_USERS) or rlc_user.pk == request.user.rlc_user.pk:
             serializer = RlcUserListSerializer(rlc_user)
         else:
             serializer = RlcUserForeignSerializer(rlc_user)
@@ -55,7 +55,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def update(self, request: Request, *args, **kwargs):
         rlc_user = self.get_object()
-        if not request.user.has_permission(PERMISSION_MANAGE_USERS) and request.user.rlc_user.pk != rlc_user.pk:
+        if not request.user.has_permission(PERMISSION_ADMIN_MANAGE_USERS) and request.user.rlc_user.pk != rlc_user.pk:
             data = {"detail": "You don't have the necessary permission to do this."}
             return Response(data, status=status.HTTP_403_FORBIDDEN)
         serializer = self.get_serializer(rlc_user, data=request.data, partial=True)
@@ -65,7 +65,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         rlc_user = self.get_object()
-        if not request.user.has_permission(PERMISSION_MANAGE_USERS) and request.user.rlc_user.pk != rlc_user.pk:
+        if not request.user.has_permission(PERMISSION_ADMIN_MANAGE_USERS) and request.user.rlc_user.pk != rlc_user.pk:
             data = {"detail": "You don't have the necessary permission to do this."}
             return Response(data, status=status.HTTP_403_FORBIDDEN)
         self.perform_destroy(rlc_user.user)
@@ -134,17 +134,17 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def admin(self, request, *args, **kwargs):
         instance = request.user
-        if instance.has_permission(PERMISSION_MANAGE_USERS):
+        if instance.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
             profiles = UserProfile.objects.filter(
                 Q(rlc=instance.rlc) & (Q(rlc_user__locked=True) | Q(rlc_user__accepted=False))).count()
         else:
             profiles = 0
-        if instance.has_permission(PERMISSION_PROCESS_RECORD_DELETION_REQUESTS):
+        if instance.has_permission(PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS):
             record_deletion_requests = RecordDeletion.objects.filter(record__template__rlc=instance.rlc,
                                                                      state='re').count()
         else:
             record_deletion_requests = 0
-        if instance.has_permission(PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC):
+        if instance.has_permission(PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS):
             record_permit_requests = RecordAccess.objects.filter(record__template__rlc=instance.rlc,
                                                                  state='re').count()
         else:
@@ -275,19 +275,19 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['GET'])
     def permissions(self, request, *args, **kwargs):
         rlc_user = self.get_object()
-        if request.user.has_permission(PERMISSION_MANAGE_PERMISSIONS_RLC):
+        if request.user.has_permission(PERMISSION_ADMIN_MANAGE_PERMISSIONS):
             user_permissions = rlc_user.user.get_permissions()
         else:
             raise PermissionDenied(
                 "You need the permission '{}' to see the permissions of this user.".format(
-                    PERMISSION_MANAGE_PERMISSIONS_RLC))
+                    PERMISSION_ADMIN_MANAGE_PERMISSIONS))
         return Response(HasPermissionAllNamesSerializer(user_permissions, many=True).data)
 
     @action(detail=True, methods=['post'])
     def accept(self, request, *args, **kwargs):
-        if not request.user.has_permission(PERMISSION_MANAGE_USERS):
+        if not request.user.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
             return Response(
-                {"detail": "You don't have the necessary permission '{}' to do this.".format(PERMISSION_MANAGE_USERS)},
+                {"detail": "You don't have the necessary permission '{}' to do this.".format(PERMISSION_ADMIN_MANAGE_USERS)},
                 status=status.HTTP_403_FORBIDDEN
             )
 

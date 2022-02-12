@@ -6,8 +6,8 @@ from apps.collab.serializers import CollabDocumentSerializer, TextDocumentVersio
 from rest_framework.response import Response
 from rest_framework.request import Request
 from apps.collab.models import CollabDocument, PermissionForCollabDocument
-from apps.api.static import PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC, \
-    PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC, PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC
+from apps.api.static import PERMISSION_COLLAB_MANAGE_PERMISSIONS, \
+    PERMISSION_COLLAB_READ_ALL_DOCUMENTS, PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS
 from rest_framework import viewsets, mixins
 from typing import Any
 
@@ -31,9 +31,9 @@ class CollabDocumentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mi
     def get_queryset(self):
         queryset = CollabDocument.objects.filter(rlc=self.request.user.rlc)
         if (
-            self.request.user.has_permission(PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC)
-            or self.request.user.has_permission(PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC)
-            or self.request.user.has_permission(PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC)
+            self.request.user.has_permission(PERMISSION_COLLAB_READ_ALL_DOCUMENTS)
+            or self.request.user.has_permission(PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS)
+            or self.request.user.has_permission(PERMISSION_COLLAB_MANAGE_PERMISSIONS)
         ):
             return queryset
         else:

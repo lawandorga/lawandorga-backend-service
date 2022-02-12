@@ -17,7 +17,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         # permission stuff
-        if not request.user.has_permission(static.PERMISSION_MANAGE_GROUPS_RLC):
+        if not request.user.has_permission(static.PERMISSION_ADMIN_MANAGE_GROUPS):
             raise PermissionDenied()
 
         # add data
@@ -33,7 +33,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request: Request, *args, **kwargs):
         # permission stuff
-        if not request.user.has_permission(static.PERMISSION_MANAGE_GROUPS_RLC):
+        if not request.user.has_permission(static.PERMISSION_ADMIN_MANAGE_GROUPS):
             raise PermissionDenied()
 
         # do the usual stuff
@@ -53,7 +53,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def remove(self, request, pk=None, *arsg, **kwargs):
-        if not request.user.has_permission(static.PERMISSION_MANAGE_GROUPS_RLC):
+        if not request.user.has_permission(static.PERMISSION_ADMIN_MANAGE_GROUPS):
             raise PermissionDenied()
 
         # get the group
@@ -72,7 +72,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post", "delete"])
     def member(self, request: Request, pk=None):
         # permission stuff
-        if not request.user.has_permission(static.PERMISSION_MANAGE_GROUPS_RLC):
+        if not request.user.has_permission(static.PERMISSION_ADMIN_MANAGE_GROUPS):
             raise PermissionDenied()
 
         # get the group

@@ -5,7 +5,7 @@ from django.db import models
 
 class GroupQuerySet(models.QuerySet):
     def get_visible_groups_for_user(self, user):
-        if user.has_permission(static.PERMISSION_MANAGE_GROUPS_RLC):
+        if user.has_permission(static.PERMISSION_ADMIN_MANAGE_GROUPS):
             return self.filter(from_rlc=user.rlc)
         return self.filter(from_rlc=user.rlc, visible=True)
 

@@ -91,7 +91,7 @@ class NotificationManager(models.Manager):
         users_with_permissions: [
             UserProfile
         ] = UserProfile.objects.get_users_with_special_permission(
-            permission=static.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
+            permission=static.PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )
@@ -122,7 +122,7 @@ class NotificationManager(models.Manager):
         users_with_permissions: [
             UserProfile
         ] = UserProfile.objects.get_users_with_special_permission(
-            permission=static.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
+            permission=static.PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )
@@ -162,7 +162,7 @@ class NotificationManager(models.Manager):
         users_with_permissions: [
             UserProfile
         ] = UserProfile.objects.get_users_with_special_permission(
-            permission=static.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
+            permission=static.PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )
@@ -193,7 +193,7 @@ class NotificationManager(models.Manager):
         users_with_permissions: [
             UserProfile
         ] = UserProfile.objects.get_users_with_special_permission(
-            permission=static.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC,
+            permission=static.PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )
@@ -225,7 +225,7 @@ class NotificationManager(models.Manager):
         users_with_permissions: [
             UserProfile
         ] = UserProfile.objects.get_users_with_special_permission(
-            permission=static.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
+            permission=static.PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )
@@ -272,7 +272,7 @@ class NotificationManager(models.Manager):
         users_with_permissions: [
             UserProfile
         ] = UserProfile.objects.get_users_with_special_permission(
-            permission=static.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS,
+            permission=static.PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
             from_rlc=source_user.rlc,
             for_rlc=source_user.rlc,
         )

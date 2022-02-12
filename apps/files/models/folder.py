@@ -1,8 +1,8 @@
 from apps.files.static import PERMISSION_READ_FOLDER, PERMISSION_WRITE_FOLDER
 from apps.files.models.folder_permission import FolderPermission
 from apps.static.storage_folders import get_storage_base_files_folder
-from apps.api.static import PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC, PERMISSION_READ_ALL_FOLDERS_RLC, \
-    PERMISSION_WRITE_ALL_FOLDERS_RLC
+from apps.api.static import PERMISSION_FILES_MANAGE_PERMISSIONS, PERMISSION_FILES_READ_ALL_FOLDERS, \
+    PERMISSION_FILES_WRITE_ALL_FOLDERS
 from apps.api.models.rlc import Rlc
 from apps.api.models import UserProfile
 from django.db import models
@@ -53,9 +53,9 @@ class Folder(models.Model):
             return False
 
         if (
-            user.has_permission(PERMISSION_READ_ALL_FOLDERS_RLC)
-            or user.has_permission(PERMISSION_WRITE_ALL_FOLDERS_RLC)
-            or user.has_permission(PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC)
+            user.has_permission(PERMISSION_FILES_READ_ALL_FOLDERS)
+            or user.has_permission(PERMISSION_FILES_WRITE_ALL_FOLDERS)
+            or user.has_permission(PERMISSION_FILES_MANAGE_PERMISSIONS)
         ):
             return True
 
@@ -78,8 +78,8 @@ class Folder(models.Model):
             return False
 
         if (
-            user.has_permission(PERMISSION_WRITE_ALL_FOLDERS_RLC) or
-            user.has_permission(PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC)
+            user.has_permission(PERMISSION_FILES_WRITE_ALL_FOLDERS) or
+            user.has_permission(PERMISSION_FILES_MANAGE_PERMISSIONS)
         ):
             return True
 
@@ -101,8 +101,8 @@ class Folder(models.Model):
         from apps.files.models.permission_for_folder import PermissionForFolder
 
         if (
-            user.has_permission(PERMISSION_WRITE_ALL_FOLDERS_RLC) or
-            user.has_permission(PERMISSION_MANAGE_FOLDER_PERMISSIONS_RLC)
+            user.has_permission(PERMISSION_FILES_WRITE_ALL_FOLDERS) or
+            user.has_permission(PERMISSION_FILES_MANAGE_PERMISSIONS)
         ):
             return True
 

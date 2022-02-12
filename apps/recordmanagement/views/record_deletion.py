@@ -18,11 +18,11 @@ class RecordDeletionViewSet(viewsets.ModelViewSet):
         )
 
     def list(self, request, *args, **kwargs):
-        if not request.user.has_permission(static.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS):
+        if not request.user.has_permission(static.PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS):
             raise PermissionDenied()
         return super().list(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
-        if not request.user.has_permission(static.PERMISSION_PROCESS_RECORD_DELETION_REQUESTS):
+        if not request.user.has_permission(static.PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS):
             raise PermissionDenied()
         return super().update(request, *args, **kwargs)

@@ -16,7 +16,7 @@ from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedS
 from apps.recordmanagement.serializers import RecordDocumentSerializer
 from rest_framework.exceptions import ParseError
 from rest_framework.decorators import action
-from apps.api.static import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from apps.api.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 from apps.static.encryption import AESEncryption
@@ -172,7 +172,7 @@ class RecordViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.D
         aes_key = AESEncryption.generate_secure_key()
         users_with_permissions = [self.request.user]
         for user in list(self.request.user.rlc.rlc_members.all()):
-            if user.has_permission(PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC):
+            if user.has_permission(PERMISSION_RECORDS_ACCESS_ALL_RECORDS):
                 users_with_permissions.append(user)
         for user in users_with_permissions:
             if not RecordEncryptionNew.objects.filter(record=record, user=user).exists():

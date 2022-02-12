@@ -19,11 +19,14 @@ class RecordAccessViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixi
         return RecordAccess.objects.filter(record__template__rlc=self.request.user.rlc)
 
     def list(self, request, *args, **kwargs):
-        if not request.user.has_permission(static.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC):
+        if not request.user.has_permission(static.PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS):
             raise PermissionDenied()
         return super().list(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
+        if not request.user.has_permission(static.PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS):
+            raise PermissionDenied()
+
         instance = self.get_object()
         data = {**request.data, 'processed_by': request.user.id, 'processed_on': timezone.now()}
         serializer = self.get_serializer(instance, data=data, partial=True)

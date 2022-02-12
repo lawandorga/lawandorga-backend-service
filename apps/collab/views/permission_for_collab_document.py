@@ -1,7 +1,7 @@
 from apps.collab.serializers.permission_for_collab_document import PermissionForCollabDocumentSerializer, \
     PermissionForCollabDocumentAllNamesSerializer
 from rest_framework.exceptions import PermissionDenied
-from apps.api.static import PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC
+from apps.api.static import PERMISSION_COLLAB_MANAGE_PERMISSIONS
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 from apps.collab.models import PermissionForCollabDocument
@@ -13,7 +13,7 @@ class PermissionForCollabDocumentViewSet(mixins.CreateModelMixin, mixins.Destroy
     serializer_class = PermissionForCollabDocumentSerializer
 
     def create(self, request, *args, **kwargs):
-        if not request.user.has_permission(PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC):
+        if not request.user.has_permission(PERMISSION_COLLAB_MANAGE_PERMISSIONS):
             raise PermissionDenied()
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -25,6 +25,6 @@ class PermissionForCollabDocumentViewSet(mixins.CreateModelMixin, mixins.Destroy
                         status=status.HTTP_201_CREATED, headers=headers)
 
     def destroy(self, request, *args, **kwargs):
-        if not request.user.has_permission(PERMISSION_MANAGE_COLLAB_DOCUMENT_PERMISSIONS_RLC):
+        if not request.user.has_permission(PERMISSION_COLLAB_MANAGE_PERMISSIONS):
             raise PermissionDenied()
         return super().destroy(request, *args, **kwargs)

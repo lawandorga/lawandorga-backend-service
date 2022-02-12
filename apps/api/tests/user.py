@@ -1,5 +1,5 @@
-from apps.api.static import PERMISSION_MANAGE_USERS, get_all_permissions_strings, \
-    PERMISSION_MANAGE_PERMISSIONS_RLC
+from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS, get_all_permissions_strings, \
+    PERMISSION_ADMIN_MANAGE_PERMISSIONS
 from rest_framework.test import APIRequestFactory, force_authenticate
 from apps.api.models import UserProfile, RlcUser, Rlc, Permission, HasPermission
 from apps.api.views import UserViewSet
@@ -121,7 +121,7 @@ class UserViewSetWorkingTests(TestCase):
         view = UserViewSet.as_view(actions={'delete': 'destroy'})
         rlc_user = self.rlc_user
         another_rlc_user = self.another_rlc_user
-        rlc_user.grant(PERMISSION_MANAGE_USERS)
+        rlc_user.grant(PERMISSION_ADMIN_MANAGE_USERS)
         request = self.factory.delete('')
         force_authenticate(request, rlc_user.user)
         response = view(request, pk=another_rlc_user.pk)
@@ -139,7 +139,7 @@ class UserViewSetWorkingTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_update_works_on_another_user(self):
-        self.rlc_user.grant(PERMISSION_MANAGE_USERS)
+        self.rlc_user.grant(PERMISSION_ADMIN_MANAGE_USERS)
         view = UserViewSet.as_view(actions={'patch': 'partial_update'})
         data = {'phone': '3243214321'}
         request = self.factory.patch('', data)
@@ -148,7 +148,7 @@ class UserViewSetWorkingTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_accept_works(self):
-        HasPermission.objects.create(permission=Permission.objects.get(name=PERMISSION_MANAGE_USERS),
+        HasPermission.objects.create(permission=Permission.objects.get(name=PERMISSION_ADMIN_MANAGE_USERS),
                                      user_has_permission=self.user)
         view = UserViewSet.as_view(actions={'post': 'accept'})
         rlc_user = self.rlc_user
@@ -172,7 +172,7 @@ class UserViewSetWorkingTests(TestCase):
     def test_permissions_work(self):
         view = UserViewSet.as_view(actions={'get': 'permissions'})
         rlc_user = self.rlc_user
-        rlc_user.grant(PERMISSION_MANAGE_PERMISSIONS_RLC)
+        rlc_user.grant(PERMISSION_ADMIN_MANAGE_PERMISSIONS)
         request = self.factory.get('')
         force_authenticate(request, rlc_user.user)
         response = view(request, pk=self.another_rlc_user.pk)

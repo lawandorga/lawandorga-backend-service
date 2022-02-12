@@ -1,5 +1,5 @@
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from apps.api.static import PERMISSION_WRITE_ALL_FOLDERS_RLC
+from apps.api.static import PERMISSION_FILES_WRITE_ALL_FOLDERS
 from rest_framework.test import force_authenticate, APIRequestFactory
 from apps.files.fixtures import create_folder_permissions
 from apps.api.fixtures import create_permissions
@@ -29,7 +29,7 @@ class FileTestsBase:
         self.private_key_user = self.user.get_private_key(password_user=settings.DUMMY_USER_PASSWORD)
         self.aes_key_rlc = self.user.rlc.get_aes_key(user=self.user, private_key_user=self.private_key_user)
         HasPermission.objects.create(user_has_permission=self.user,
-                                     permission=Permission.objects.get(name=PERMISSION_WRITE_ALL_FOLDERS_RLC))
+                                     permission=Permission.objects.get(name=PERMISSION_FILES_WRITE_ALL_FOLDERS))
 
     def setup_file(self):
         file = File.encrypt_file(self.get_file(), self.aes_key_rlc)

@@ -1,5 +1,5 @@
 from apps.recordmanagement.models import Tag
-from apps.api.static import PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+from apps.api.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
 from apps.api.models.rlc import Rlc
 from apps.api.models import UserProfile
@@ -120,7 +120,7 @@ class EncryptedRecord(EncryptedModelMixin, models.Model):
             ).count()
             == 1
             or user.has_permission(
-                PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC, for_rlc=self.from_rlc
+                PERMISSION_RECORDS_ACCESS_ALL_RECORDS, for_rlc=self.from_rlc
             )
         )
 

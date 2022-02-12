@@ -1,5 +1,5 @@
 from apps.collab.static import PERMISSION_WRITE_DOCUMENT
-from apps.api.static import PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC, PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC
+from apps.api.static import PERMISSION_COLLAB_READ_ALL_DOCUMENTS, PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS
 from apps.api.models import Rlc
 from django.db import models
 
@@ -46,8 +46,8 @@ class CollabDocument(models.Model):
 
     def user_can_read(self, user):
         if (
-            user.has_permission(PERMISSION_READ_ALL_COLLAB_DOCUMENTS_RLC)
-            or user.has_permission(PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC)
+            user.has_permission(PERMISSION_COLLAB_READ_ALL_DOCUMENTS)
+            or user.has_permission(PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS)
         ):
             return True
 
@@ -65,7 +65,7 @@ class CollabDocument(models.Model):
         return False
 
     def user_can_write(self, user):
-        if user.has_permission(PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC):
+        if user.has_permission(PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS):
             return True
 
         permissions = list(user.get_collab_permissions().filter(permission__name=PERMISSION_WRITE_DOCUMENT))
@@ -79,7 +79,7 @@ class CollabDocument(models.Model):
 
     @staticmethod
     def user_has_permission_write(path, user):
-        if user.has_permission(PERMISSION_WRITE_ALL_COLLAB_DOCUMENTS_RLC):
+        if user.has_permission(PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS):
             return True
 
         permissions = list(user.get_collab_permissions().filter(permission__name=PERMISSION_WRITE_DOCUMENT))

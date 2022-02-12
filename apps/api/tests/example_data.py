@@ -278,13 +278,13 @@ def create_admin_group(rlc: Rlc, main_user: UserProfile):
     )
     admin_group.group_members.add(main_user)
 
-    add_permissions_to_group(admin_group, static.PERMISSION_MANAGE_PERMISSIONS_RLC)
-    add_permissions_to_group(admin_group, static.PERMISSION_MANAGE_GROUPS_RLC)
+    add_permissions_to_group(admin_group, static.PERMISSION_ADMIN_MANAGE_PERMISSIONS)
+    add_permissions_to_group(admin_group, static.PERMISSION_ADMIN_MANAGE_GROUPS)
     add_permissions_to_group(
-        admin_group, static.PERMISSION_PERMIT_RECORD_PERMISSION_REQUESTS_RLC
+        admin_group, static.PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
     )
     add_permissions_to_group(
-        admin_group, static.PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC
+        admin_group, static.PERMISSION_RECORDS_ACCESS_ALL_RECORDS
     )
 
     # return
