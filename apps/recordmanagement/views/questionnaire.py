@@ -2,17 +2,31 @@ from apps.recordmanagement.serializers.questionnaire import QuestionnaireTemplat
     RecordQuestionnaireDetailSerializer, CodeSerializer, \
     QuestionnaireQuestionSerializer, QuestionnaireFileAnswerSerializer, QuestionnaireTextAnswerSerializer, \
     QuestionnaireTemplateFileSerializer, QuestionnaireListSerializer, QuestionnaireAnswerRetrieveSerializer
-from apps.recordmanagement.models import QuestionnaireTemplate, Questionnaire
-from rest_framework.exceptions import ParseError
+from apps.recordmanagement.models import QuestionnaireTemplate, Questionnaire, QuestionnaireTemplateFile, \
+    QuestionnaireQuestion, QuestionnaireAnswer
+from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from apps.static.permission import CheckPermissionWall
 from django.db.models import ProtectedError
+from apps.api.static import PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES
 from rest_framework import viewsets, status, mixins
+from django.http import FileResponse
+import mimetypes
 
 
-class QuestionnaireTemplateViewSet(viewsets.ModelViewSet):
+###
+# QuestionnaireTemplate
+###
+class QuestionnaireTemplateViewSet(CheckPermissionWall, viewsets.ModelViewSet):
     queryset = QuestionnaireTemplate.objects.none()
     serializer_class = QuestionnaireTemplateSerializer
+    permission_wall = {
+        'create': PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
+        'partial_update': PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
+        'update': PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
+        'destroy': PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
+    }
 
     def get_queryset(self):
         return QuestionnaireTemplate.objects.filter(rlc=self.request.user.rlc)
@@ -60,6 +74,56 @@ class QuestionnaireTemplateViewSet(viewsets.ModelViewSet):
                         headers=headers)
 
 
+###
+# QuestionnaireFile
+###
+class QuestionnaireFilesViewSet(CheckPermissionWall, mixins.CreateModelMixin, mixins.DestroyModelMixin,
+                                viewsets.GenericViewSet):
+    queryset = QuestionnaireTemplateFile.objects.none()
+    serializer_class = QuestionnaireTemplateFileSerializer
+    permission_wall = {
+        'create': PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
+        'destroy': PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
+    }
+
+    def get_permissions(self):
+        if self.action in ['retrieve']:
+            return []
+        return super().get_permissions()
+
+    def get_queryset(self):
+        if self.action in ['retrieve']:
+            return QuestionnaireTemplateFile.objects.all()
+        return QuestionnaireTemplateFile.objects.filter(questionnaire__rlc=self.request.user.rlc)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        response = FileResponse(instance.file, content_type=mimetypes.guess_type(instance.file.name)[0])
+        response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.name)
+        return response
+
+
+###
+# QuestionnaireField
+###
+class QuestionnaireFieldsViewSet(CheckPermissionWall, mixins.CreateModelMixin, mixins.UpdateModelMixin,
+                                 mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = QuestionnaireQuestion.objects.none()
+    serializer_class = QuestionnaireQuestionSerializer
+    permission_wall = {
+        'create': PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
+        'partial_update': PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
+        'update': PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
+        'destroy': PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
+    }
+
+    def get_queryset(self):
+        return QuestionnaireQuestion.objects.filter(questionnaire__rlc=self.request.user.rlc)
+
+
+###
+# Questionnaire
+###
 class QuestionnaireViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
                            mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Questionnaire.objects.none()
@@ -119,3 +183,24 @@ class QuestionnaireViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, m
             [answer.decrypt(private_key_rlc) for answer in answers]
             data[index]['answers'] = QuestionnaireAnswerRetrieveSerializer(answers, many=True).data
         return Response(data)
+
+
+###
+# QuestionnaireAnswer
+###
+class QuestionnaireAnswersViewSet(viewsets.GenericViewSet):
+    queryset = QuestionnaireAnswer.objects.none()
+
+    def get_queryset(self):
+        return QuestionnaireAnswer.objects.filter(questionnaire__template__rlc=self.request.user.rlc)
+
+    @action(detail=True)
+    def download_file(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.decrypt(private_key_rlc=request.user.get_private_key_rlc(request=request))
+        if instance.data is None:
+            raise NotFound('This file does not exist.')
+        file = instance.download_file(instance.aes_key)
+        response = FileResponse(file, content_type=mimetypes.guess_type(instance.data)[0])
+        response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.data.split('/')[-1])
+        return response
