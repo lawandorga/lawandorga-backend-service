@@ -1,32 +1,30 @@
+from apps.api.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
 from apps.recordmanagement.models.record_access import RecordAccess
 from apps.recordmanagement.serializers import RecordAccessSerializer
 from apps.recordmanagement.models import RecordEncryptionNew
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from apps.static.permission import CheckPermissionWall
 from django.core.exceptions import ObjectDoesNotExist
 from apps.static.encryption import RSAEncryption
 from rest_framework import viewsets, mixins
 from django.utils import timezone
-from apps.api import static
 
 
-class RecordAccessViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.ListModelMixin,
+class RecordAccessViewSet(CheckPermissionWall, mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.ListModelMixin,
                           viewsets.GenericViewSet):
     queryset = RecordAccess.objects.none()
     serializer_class = RecordAccessSerializer
+    permission_wall = {
+        'list': PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
+        'update': PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
+        'partial_update': PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
+    }
 
     def get_queryset(self):
         return RecordAccess.objects.filter(record__template__rlc=self.request.user.rlc)
 
-    def list(self, request, *args, **kwargs):
-        if not request.user.has_permission(static.PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS):
-            raise PermissionDenied()
-        return super().list(request, *args, **kwargs)
-
     def update(self, request, *args, **kwargs):
-        if not request.user.has_permission(static.PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS):
-            raise PermissionDenied()
-
         instance = self.get_object()
         data = {**request.data, 'processed_by': request.user.id, 'processed_on': timezone.now()}
         serializer = self.get_serializer(instance, data=data, partial=True)

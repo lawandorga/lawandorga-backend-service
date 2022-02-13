@@ -1,14 +1,20 @@
 from apps.recordmanagement.models.record_deletion import RecordDeletion
 from apps.recordmanagement.serializers import RecordDeletionSerializer
-from rest_framework.exceptions import PermissionDenied
+from apps.static.permission import CheckPermissionWall
 from django.db.models import Q
-from rest_framework import viewsets
-from apps.api import static
+from apps.api.static import PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS
+from rest_framework import viewsets, mixins
 
 
-class RecordDeletionViewSet(viewsets.ModelViewSet):
+class RecordDeletionViewSet(CheckPermissionWall, mixins.CreateModelMixin, mixins.UpdateModelMixin,
+                            mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = RecordDeletionSerializer
     queryset = RecordDeletion.objects.none()
+    permission_wall = {
+        'list': PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
+        'update': PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
+        'partial_update': PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
+    }
 
     def get_queryset(self):
         return RecordDeletion.objects.filter(
@@ -16,13 +22,3 @@ class RecordDeletionViewSet(viewsets.ModelViewSet):
             Q(processed_by__rlc=self.request.user.rlc) |
             Q(record__template__rlc=self.request.user.rlc)
         )
-
-    def list(self, request, *args, **kwargs):
-        if not request.user.has_permission(static.PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS):
-            raise PermissionDenied()
-        return super().list(request, *args, **kwargs)
-
-    def update(self, request, *args, **kwargs):
-        if not request.user.has_permission(static.PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS):
-            raise PermissionDenied()
-        return super().update(request, *args, **kwargs)
