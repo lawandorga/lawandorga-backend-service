@@ -166,11 +166,17 @@ class RecordEncryptedFileEntrySerializer(RecordEntrySerializer):
         fields = '__all__'
 
     def validate(self, attrs):
+        # super
         attrs = super().validate(attrs)
+        # check file was submitted
         if 'file' in attrs:
             file = attrs['file']
         else:
             raise ValidationError('A file needs to be submitted.')
+        # check file size is less than 10 MB
+        if file.size > 10000000:
+            raise ValidationError({'file': 'The size of the file needs to be less than 10 MB.'})
+        # encrypt file
         user = self.context['request'].user
         if self.instance:
             record = self.instance.record
@@ -178,10 +184,11 @@ class RecordEncryptedFileEntrySerializer(RecordEntrySerializer):
             if 'record' in attrs:
                 record = attrs['record']
             else:
-                raise ValidationError('A record needs to be set.')
+                raise ValueError('A record needs to be set.')
         private_key_user = user.get_private_key(request=self.context['request'])
         attrs['file'] = RecordEncryptedFileEntry.encrypt_file(file, record, user=user,
                                                               private_key_user=private_key_user)
+        # return
         return attrs
 
     def get_value(self, obj):

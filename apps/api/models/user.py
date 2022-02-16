@@ -358,7 +358,7 @@ class RlcUser(models.Model):
     class Meta:
         verbose_name = 'RlcUser'
         verbose_name_plural = 'RlcUsers'
-        ordering = ['is_active', 'accepted', 'locked', 'user__name']
+        ordering = ['accepted', 'locked', 'is_active', 'user__name']
 
     def __str__(self):
         return 'rlcUser: {}; email: {};'.format(self.pk, self.user.email)

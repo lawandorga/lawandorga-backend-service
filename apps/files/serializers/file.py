@@ -56,6 +56,9 @@ class FileCreateSerializer(AddUserMixin, FileSerializer):
         # check file was submitted
         if file is None:
             raise ValidationError('A file needs to be submitted.')
+        # check file size is less than 10 MB
+        if file.size > 10000000:
+            raise ValidationError('The size of the file needs to be less than 10 MB.')
         # encrypt file
         user = self.context['request'].user
         private_key_user = user.get_private_key(request=self.context['request'])

@@ -1,3 +1,5 @@
+from django.core.exceptions import RequestDataTooBig
+
 from apps.api.models import LoggedPath
 
 
@@ -7,7 +9,10 @@ class LoggingMiddleware:
 
     def __call__(self, request):
         # save the body for 500 errors now because it will not be available after get_response
-        body = request.body
+        try:
+            body = request.body
+        except RequestDataTooBig:
+            body = b'LoggingMiddleware Exception: RequestDateTooBig'
 
         # get the response
         response = self.get_response(request)
