@@ -238,12 +238,10 @@ def create_inactive_user(rlc):
 def create_groups(rlc: Rlc, creator: UserProfile, users: [UserProfile]):
     # create users group
     users_group = Group.objects.create(
-        creator=creator,
         from_rlc=rlc,
         name="Berater",
         visible=False,
         description="all users",
-        note="only add users",
     )
 
     for i in range(0, randint(0, len(users))):
@@ -251,12 +249,10 @@ def create_groups(rlc: Rlc, creator: UserProfile, users: [UserProfile]):
 
     # create ag group
     ag_group = Group.objects.create(
-        creator=users[0],
         from_rlc=rlc,
         name="AG Datenschutz",
         visible=True,
         description="DSGVO",
-        note="bitte mithelfen",
     )
 
     for i in range(0, randint(0, int(len(users) / 2))):
@@ -269,12 +265,10 @@ def create_groups(rlc: Rlc, creator: UserProfile, users: [UserProfile]):
 def create_admin_group(rlc: Rlc, main_user: UserProfile):
     # create admin group
     admin_group = Group.objects.create(
-        creator=main_user,
         from_rlc=rlc,
         name="Administratoren",
         visible=False,
         description="haben alle Berechtigungen",
-        note="IT ressort",
     )
     admin_group.group_members.add(main_user)
 

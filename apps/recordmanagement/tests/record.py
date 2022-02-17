@@ -1,10 +1,11 @@
+from apps.api.static import PERMISSION_RECORDS_ADD_RECORD, PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
 from apps.recordmanagement.models import RecordTemplate, Record, RecordEncryptionNew
 from apps.recordmanagement.views import RecordTemplateViewSet, RecordViewSet
 from rest_framework.test import APIRequestFactory, force_authenticate
-from apps.api.models import Rlc, UserProfile, RlcUser
+from apps.api.models import Rlc, UserProfile, RlcUser, HasPermission, Permission
 from django.conf import settings
 from django.test import TestCase
-
+from apps.api.fixtures import create_permissions
 
 ###
 # General
@@ -18,6 +19,13 @@ class BaseRecord:
         self.user.save()
         self.rlc_user = RlcUser.objects.create(user=self.user, email_confirmed=True, accepted=True)
         self.template = RecordTemplate.objects.create(rlc=self.rlc, name='Record Template')
+        # permissions
+        create_permissions()
+        permission = Permission.objects.get(name=PERMISSION_RECORDS_ADD_RECORD)
+        HasPermission.objects.create(user_has_permission=self.user, permission=permission)
+        permission = Permission.objects.get(name=PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES)
+        HasPermission.objects.create(user_has_permission=self.user, permission=permission)
+        # HasPermission.objects.create(user_has_permission=self.user, permission=)
 
 
 ###

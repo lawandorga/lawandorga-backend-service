@@ -108,14 +108,14 @@ class UserViewSetWorkingTests(TestCase):
         response = view(request, pk=rlc_user.pk)
         self.assertEqual(response.status_code, 200)
 
-    def test_destroy_works_on_myself(self):
-        view = UserViewSet.as_view(actions={'delete': 'destroy'})
-        rlc_user = self.rlc_user
-        url = '/api/users/{}/'.format(rlc_user.pk)
-        request = self.factory.delete(url)
-        force_authenticate(request, rlc_user.user)
-        response = view(request, pk=rlc_user.pk)
-        self.assertEqual(response.status_code, 204)
+    # def test_destroy_works_on_myself(self):
+    #     view = UserViewSet.as_view(actions={'delete': 'destroy'})
+    #     rlc_user = self.rlc_user
+    #     url = '/api/users/{}/'.format(rlc_user.pk)
+    #     request = self.factory.delete(url)
+    #     force_authenticate(request, rlc_user.user)
+    #     response = view(request, pk=rlc_user.pk)
+    #     self.assertEqual(response.status_code, 204)
 
     def test_destroy_works(self):
         view = UserViewSet.as_view(actions={'delete': 'destroy'})

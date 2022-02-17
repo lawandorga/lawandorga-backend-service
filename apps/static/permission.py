@@ -18,6 +18,8 @@ class CheckPermissionWall:
     permission_wall = None
 
     def check_permissions(self, request):
+        check = super().check_permissions(request)
+
         if self.permission_wall is None:
             raise ValueError('You need to implement the permission_wall.')
 
@@ -27,4 +29,4 @@ class CheckPermissionWall:
                 message = "You need the permission '{}' to do this.".format(permission)
                 self.permission_denied(request, message, 403)
 
-        return super().check_permissions(request)
+        return check
