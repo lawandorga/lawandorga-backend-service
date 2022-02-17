@@ -1,16 +1,16 @@
 from rest_framework.authtoken.models import Token
 from apps.recordmanagement.models import RecordDeletion, RecordAccess
-from rest_framework.exceptions import ParseError, PermissionDenied, AuthenticationFailed
+from rest_framework.exceptions import ParseError, AuthenticationFailed
 from rest_framework.decorators import action
 from apps.api.serializers import RlcUserCreateSerializer, RlcUserForeignSerializer, EmailSerializer, \
-    UserPasswordResetConfirmSerializer, HasPermissionAllNamesSerializer, RlcSerializer, RlcUserSerializer, \
+    UserPasswordResetConfirmSerializer, RlcSerializer, RlcUserSerializer, \
     AuthTokenSerializer, RlcUserListSerializer, RlcUserUpdateSerializer, UserProfileSerializer
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.request import Request
 from django.db.models import Q
 from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS, PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS, \
-    PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS, PERMISSION_ADMIN_MANAGE_PERMISSIONS
+    PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
 from apps.api.models import UserProfile, PasswordResetTokenGenerator, AccountActivationTokenGenerator, UsersRlcKeys, \
     RlcUser
 from rest_framework import viewsets, status
@@ -269,17 +269,6 @@ class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
             return Response(RlcUserListSerializer(rlc_user).data)
         else:
             raise ParseError('Not all keys could be handed over. Please tell another admin to unlock this user.')
-
-    @action(detail=True, methods=['GET'])
-    def permissions(self, request, *args, **kwargs):
-        rlc_user = self.get_object()
-        if request.user.has_permission(PERMISSION_ADMIN_MANAGE_PERMISSIONS):
-            user_permissions = rlc_user.user.get_permissions()
-        else:
-            raise PermissionDenied(
-                "You need the permission '{}' to see the permissions of this user.".format(
-                    PERMISSION_ADMIN_MANAGE_PERMISSIONS))
-        return Response(HasPermissionAllNamesSerializer(user_permissions, many=True).data)
 
     @action(detail=True, methods=['post'])
     def accept(self, request, *args, **kwargs):

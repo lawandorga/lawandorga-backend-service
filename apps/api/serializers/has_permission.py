@@ -1,20 +1,29 @@
 from apps.api.models.has_permission import HasPermission
 from rest_framework.exceptions import ValidationError
-from apps.api.serializers import GroupNameSerializer, UserProfileNameSerializer, PermissionSerializer
+from apps.api.serializers import GroupNameSerializer, UserProfileNameSerializer, PermissionSerializer, \
+    PermissionNameSerializer
 from rest_framework import serializers
 
 
 class HasPermissionSerializer(serializers.ModelSerializer):
+    source = serializers.SerializerMethodField()
+    permission_object = PermissionNameSerializer(read_only=True, source='permission')
+    user_object = UserProfileNameSerializer(read_only=True, source='user_has_permission')
+    group_object = GroupNameSerializer(read_only=True, source='group_has_permission')
+
     class Meta:
         model = HasPermission
         fields = '__all__'
 
+    def get_source(self, obj):
+        if obj.user_has_permission and not obj.group_has_permission:
+            return 'USER'
+        if not obj.user_has_permission and obj.group_has_permission:
+            return 'GROUP'
+        return 'ERROR'
 
-class OldHasPermissionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = HasPermission
-        fields = "__all__"
 
+class HasPermissionCreateSerializer(HasPermissionSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['user_has_permission'].queryset = self.context['request'].user.rlc.rlc_members.all()
@@ -37,17 +46,12 @@ class OldHasPermissionSerializer(serializers.ModelSerializer):
         return data
 
 
+class HasPermissionListSerializer(HasPermissionSerializer):
+    pass
+
+
 class OldHasPermissionNameSerializer(HasPermissionSerializer):
     name = serializers.SerializerMethodField(method_name='get_name')
-
-    def get_name(self, obj):
-        return obj.permission.name
-
-
-class HasPermissionAllNamesSerializer(HasPermissionSerializer):
-    name = serializers.SerializerMethodField(method_name='get_name')
-    user_has_permission = UserProfileNameSerializer(read_only=True)
-    group_has_permission = GroupNameSerializer(read_only=True)
 
     def get_name(self, obj):
         return obj.permission.name

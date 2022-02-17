@@ -6,3 +6,9 @@ class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
         fields = '__all__'
+
+
+class PermissionNameSerializer(PermissionSerializer):
+    class Meta:
+        model = Permission
+        fields = ['id', 'name']
