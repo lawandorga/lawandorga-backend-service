@@ -3,8 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 from apps.static.permission import CheckPermissionWall
-from apps.api.serializers import HasPermissionCreateSerializer, \
-    HasPermissionNameSerializer, HasPermissionListSerializer, HasPermissionSerializer
+from apps.api.serializers import HasPermissionCreateSerializer, HasPermissionSerializer
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from apps.api.static import PERMISSION_ADMIN_MANAGE_PERMISSIONS, \
@@ -24,9 +23,7 @@ class HasPermissionViewSet(CheckPermissionWall, mixins.CreateModelMixin, mixins.
     }
 
     def get_serializer_class(self):
-        if self.action in ['list']:
-            return HasPermissionListSerializer
-        elif self.action in ['create']:
+        if self.action in ['create']:
             return HasPermissionCreateSerializer
         return super().get_serializer_class()
 
@@ -59,7 +56,7 @@ class HasPermissionViewSet(CheckPermissionWall, mixins.CreateModelMixin, mixins.
             .filter(Q(user_has_permission__in=request.user.rlc.rlc_members.all()) |
                     Q(group_has_permission__in=request.user.rlc.group_from_rlc.all())) \
             .select_related('user_has_permission', 'group_has_permission', 'permission')
-        return Response(HasPermissionNameSerializer(general_permissions, many=True).data)
+        return Response(HasPermissionSerializer(general_permissions, many=True).data)
 
     @action(detail=False, methods=['get'])
     def collab(self, request, *args, **kwargs):

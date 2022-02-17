@@ -1,7 +1,6 @@
 from apps.api.models.has_permission import HasPermission
 from rest_framework.exceptions import ValidationError
-from apps.api.serializers import GroupNameSerializer, UserProfileNameSerializer, PermissionSerializer, \
-    PermissionNameSerializer
+from apps.api.serializers import GroupNameSerializer, UserProfileNameSerializer, PermissionNameSerializer
 from rest_framework import serializers
 
 
@@ -44,20 +43,3 @@ class HasPermissionCreateSerializer(HasPermissionSerializer):
             raise ValidationError('This permission exists already.')
 
         return data
-
-
-class HasPermissionListSerializer(HasPermissionSerializer):
-    pass
-
-
-class OldHasPermissionNameSerializer(HasPermissionSerializer):
-    name = serializers.SerializerMethodField(method_name='get_name')
-
-    def get_name(self, obj):
-        return obj.permission.name
-
-
-class HasPermissionNameSerializer(HasPermissionSerializer):
-    user_has_permission = UserProfileNameSerializer(read_only=True)
-    group_has_permission = GroupNameSerializer(read_only=True)
-    permission = PermissionSerializer(read_only=True)
