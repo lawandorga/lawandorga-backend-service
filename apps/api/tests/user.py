@@ -169,15 +169,6 @@ class UserViewSetWorkingTests(TestCase):
         response = view(request, pk=self.another_rlc_user.pk)
         self.assertEqual(response.status_code, 200)
 
-    def test_permissions_work(self):
-        view = UserViewSet.as_view(actions={'get': 'permissions'})
-        rlc_user = self.rlc_user
-        rlc_user.grant(PERMISSION_ADMIN_MANAGE_PERMISSIONS)
-        request = self.factory.get('')
-        force_authenticate(request, rlc_user.user)
-        response = view(request, pk=self.another_rlc_user.pk)
-        self.assertEqual(response.status_code, 200)
-
 
 class UserViewSetErrorTests(TestCase):
     def setUp(self):
@@ -257,13 +248,6 @@ class UserViewSetErrorTests(TestCase):
         request = self.factory.post('/api/users/login/', data)
         response = view(request)
         self.assertContains(response, 'non_field_errors', status_code=400)
-
-    def test_permissions_deny_access_without_permission(self):
-        view = UserViewSet.as_view(actions={'get': 'permissions'})
-        request = self.factory.get('')
-        force_authenticate(request, self.user)
-        response = view(request, pk=self.another_rlc_user.pk)
-        self.assertEqual(response.status_code, 403)
 
     def test_update_denys_without_permission(self):
         view = UserViewSet.as_view(actions={'patch': 'partial_update'})
@@ -363,12 +347,6 @@ class UserViewSetAccessTests(TestCase):
     def test_not_everybody_can_hit_unlock(self):
         view = UserViewSet.as_view(actions={'post': 'unlock'})
         request = self.factory.post('/api/users/1/unlock/')
-        response = view(request, pk=1)
-        self.assertEqual(response.status_code, 401)
-
-    def test_not_everybody_can_hit_permissions(self):
-        view = UserViewSet.as_view(actions={'get': 'permissions'})
-        request = self.factory.post('/api/users/1/permissions/')
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 401)
 
