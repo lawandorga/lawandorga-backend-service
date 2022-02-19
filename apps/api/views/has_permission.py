@@ -40,7 +40,7 @@ class HasPermissionViewSet(CheckPermissionWall, mixins.CreateModelMixin, mixins.
         # group param like ?group=3
         group = self.request.query_params.get('group', None)
         if group is not None:
-            queryset = queryset.filter(group_has_permission=group)
+            queryset = queryset.filter(group_has_permission__pk=group)
         return queryset
 
     def create(self, request, *args, **kwargs):
