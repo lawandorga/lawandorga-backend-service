@@ -350,7 +350,7 @@ class RlcUser(models.Model):
     note = models.TextField(blank=True)
     locked = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    rlc = models.ForeignKey("Rlc", related_name="users", on_delete=models.PROTECT, blank=True, null=True)
+    # rlc = models.ForeignKey("Rlc", related_name="users", on_delete=models.PROTECT, blank=True, null=True)
     accepted = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
