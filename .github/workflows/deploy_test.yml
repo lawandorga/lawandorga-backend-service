@@ -32,7 +32,7 @@ jobs:
                     pip install -r requirements.txt
 
             -   name: Run Tests
-                run: python local_manage.py test
+                run: python manage.py test
 
     deploy:
         runs-on: ubuntu-latest

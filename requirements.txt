@@ -1,5 +1,7 @@
 # wheel
 wheel==0.37.1
+# docker container setup
+gunicorn==20.1.0
 # django
 Django==3.2.12
 djangorestframework==3.13.1
@@ -23,4 +25,4 @@ whitenoise==6.0.0
 django-tinymce==3.4.0
 # unknown
 pycryptodome==3.14.1
-boto3==1.21.1
+boto3==1.21.3
