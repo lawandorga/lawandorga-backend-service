@@ -18,5 +18,6 @@ router.register("rlcs", views.RlcViewSet, basename="rlcs")
 router.register("notifications", views.NotificationViewSet)
 router.register('permissions', views.PermissionViewSet)
 router.register("notification_groups", views.NotificationGroupViewSet)
+router.register('notes', views.NoteViewSet)
 
 urlpatterns = [path("", include(router.urls))]

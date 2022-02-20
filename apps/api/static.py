@@ -17,6 +17,7 @@ PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES = "admin__manage_record_templates"
 PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES = 'admin__manage_record_questionnaires'
 PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS = "admin__manage_record_deletion_requests"
 PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS = "admin__manage_record_access_requests"
+PERMISSION_ADMIN_MANAGE_NOTES = 'admin__manage_notes'
 
 
 def get_all_permissions_strings():
@@ -40,6 +41,7 @@ def get_all_permissions_strings():
         PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
         PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
         PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
+        PERMISSION_ADMIN_MANAGE_NOTES,
     ]
 
 

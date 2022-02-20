@@ -1,12 +1,11 @@
-from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS, get_all_permissions_strings, \
-    PERMISSION_ADMIN_MANAGE_PERMISSIONS
 from rest_framework.test import APIRequestFactory, force_authenticate
+from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS, get_all_permissions_strings
 from apps.api.models import UserProfile, RlcUser, Rlc, Permission, HasPermission
 from apps.api.views import UserViewSet
 from django.test import TestCase
 
 
-class UserViewSetWorkingTests(TestCase):
+class UserBase:
     def setUp(self):
         self.factory = APIRequestFactory()
         self.rlc = Rlc.objects.create(name="Test RLC")
@@ -14,13 +13,23 @@ class UserViewSetWorkingTests(TestCase):
         self.user.set_password('test')
         self.user.save()
         self.rlc_user = RlcUser.objects.create(user=self.user, email_confirmed=True, accepted=True)
+        self.rlc.generate_keys()
+        self.private_key = bytes(self.user.encryption_keys.private_key).decode('utf-8')
+        self.create_permissions()
+
+    def create_permissions(self):
+        for perm in get_all_permissions_strings():
+            Permission.objects.create(name=perm)
+
+
+class UserViewSetWorkingTests(UserBase, TestCase):
+    def setUp(self):
+        super().setUp()
         self.another_user = UserProfile.objects.create(email='test_new@test.de', name='Dummy 2', rlc=self.rlc)
         self.another_user.set_password('test')
         self.another_user.save()
         self.another_rlc_user = RlcUser.objects.create(user=self.another_user, email_confirmed=True, accepted=True)
-        self.rlc.generate_keys()
-        self.private_key = bytes(self.user.encryption_keys.private_key).decode('utf-8')
-        self.create_permissions()
+        self.user.generate_keys_for_user(self.private_key, self.another_user)
 
     def create_rlc_user(self):
         return RlcUser.objects.create(user=self.user, email_confirmed=True, accepted=True)
