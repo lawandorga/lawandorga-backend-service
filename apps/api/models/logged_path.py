@@ -18,4 +18,9 @@ class LoggedPath(models.Model):
 
     def __str__(self):
         return 'loggedPath: {}; path: {} \'{}\'; user: {};'.format(
-            timezone.localtime(self.time).strftime('%Y-%m-%d %H:%M'), self.method, self.path, self.user.email)
+            timezone.localtime(self.time).strftime('%Y-%m-%d %H:%M'), self.method, self.path, self.get_email())
+
+    def get_email(self):
+        if self.user:
+            return self.user.email
+        return None

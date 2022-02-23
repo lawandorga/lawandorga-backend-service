@@ -13,6 +13,7 @@ class CollabDocument(models.Model):
     class Meta:
         verbose_name = 'CollabDocument'
         verbose_name_plural = 'CollabDocuments'
+        unique_together = ('rlc', 'path')
 
     def __str__(self):
         return 'collabDocument: {}; name: {};'.format(self.pk, self.name)
@@ -24,21 +25,6 @@ class CollabDocument(models.Model):
     @property
     def root(self):
         return self.path[1:].count('/') == 0
-
-    def save(self, *args, **kwargs) -> None:
-        if CollabDocument.objects.exclude(pk=self.pk).filter(path=self.path).exists():
-            count = 1
-            org_path = self.path
-            while True:
-                new_path = "{}({})".format(org_path, count)
-                if CollabDocument.objects.filter(path=new_path).exists():
-                    count += 1
-                    continue
-                else:
-                    self.path = new_path
-                    return super().save(*args, **kwargs)
-
-        return super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         CollabDocument.objects.exclude(path=self.path).filter(path__startswith="{}/".format(self.path)).delete()

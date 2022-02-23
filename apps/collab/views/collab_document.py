@@ -28,6 +28,10 @@ class CollabDocumentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mi
             return CollabDocumentListSerializer
         return super().get_serializer_class()
 
+    def create(self, *args, **kwargs):
+        return super().create(*args, **kwargs)
+
+
     def get_queryset(self):
         queryset = CollabDocument.objects.filter(rlc=self.request.user.rlc)
         if (

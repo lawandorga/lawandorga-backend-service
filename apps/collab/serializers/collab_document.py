@@ -1,7 +1,8 @@
-from django.utils import timezone
 from rest_framework.exceptions import ValidationError, NotFound
+from rest_framework.fields import empty
 from apps.collab.models import CollabDocument, TextDocumentVersion
 from rest_framework import serializers
+from django.utils import timezone
 
 
 class CollabDocumentSerializer(serializers.ModelSerializer):
@@ -23,16 +24,28 @@ class CollabDocumentCreateSerializer(CollabDocumentSerializer):
     children = serializers.SerializerMethodField(read_only=True)
 
     def validate(self, attrs):
+        # super
         attrs = super().validate(attrs)
+        # permission
         if not CollabDocument.user_has_permission_write(attrs['path'], self.context['request'].user):
             raise ValidationError("You don't have the necessary permission to create a document in this place.")
-        if attrs['path'] != '/' and not CollabDocument.objects.filter(rlc=self.context['request'].user.rlc,
+        # check path exists
+        if attrs['path'] != '/' and not CollabDocument.objects.filter(rlc=attrs['rlc'],
                                                                       path=attrs['path'][:-1]).exists():
-            raise ValidationError('This path does not exist.')
+            raise ValidationError({'path': 'This path does not exist.'})
+        # set new path
         attrs['path'] = attrs['path'] + attrs['name']
-        attrs['rlc'] = self.context['request'].user.rlc
         del attrs['name']
+        # check path is not a duplicate
+        if CollabDocument.objects.filter(rlc=attrs['rlc'], path=attrs['path']).exists():
+            raise ValidationError({'name': 'A document with this name exists already.'})
+        # return
         return attrs
+
+    def run_validation(self, data=empty):
+        if data is not empty:
+            data['rlc'] = self.context['request'].user.rlc.pk
+        return super().run_validation(data)
 
     def get_children(self, _):
         return []
