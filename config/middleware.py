@@ -1,5 +1,4 @@
 from django.core.exceptions import RequestDataTooBig
-
 from apps.api.models import LoggedPath
 
 
@@ -24,7 +23,7 @@ class LoggingMiddleware:
             'status': response.status_code if response.status_code else 0,
             'method': request.method if request.method else 'UNKNOWN'
         }
-        if response.status_code == 500 and request.method == 'POST':
+        if response.status_code == 500:
             data.update({'data': body.decode('utf-8')})
 
         # create the logged path
