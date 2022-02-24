@@ -50,16 +50,6 @@ LOGGING_DIR = os.path.join(BASE_DIR, 'tmp/logs')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    # 'formatters': {
-    #     'verbose': {
-    #         'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-    #         'style': '{',
-    #     },
-    #     'simple': {
-    #         'format': '{levelname} {message}',
-    #         'style': '{',
-    #     },
-    # },
     'handlers': {
         'file': {
             'class': 'logging.FileHandler',
@@ -83,9 +73,9 @@ LOGGING = {
             'handlers': ['null'],
             'propagate': False,
         },
-        '': {
+        'django': {
             'handlers': ['console', 'file', 'mail_admins'],
-            'propagate': True,
+            'propagate': False,
             'level': 'INFO',
         },
     }
