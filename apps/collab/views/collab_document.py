@@ -54,7 +54,7 @@ class CollabDocumentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mi
                         return True
                 return False
 
-            return CollabDocument.objects.filter(pk__in=[doc for doc in queryset if access(doc)])
+            return CollabDocument.objects.filter(pk__in=[doc.pk for doc in queryset if access(doc)])
 
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         instance = self.get_object()
