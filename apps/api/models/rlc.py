@@ -91,3 +91,12 @@ class Rlc(models.Model):
             user_rlc_keys = UsersRlcKeys(user=user, rlc=self, encrypted_key=aes_key)
             user_rlc_keys.encrypt(user.get_public_key())
             user_rlc_keys.save()
+
+    def get_meta_information(self):
+        return {
+            'id': self.id,
+            'rlc': self.name,
+            'records': sum([template.records.count() for template in self.recordtemplates.all()]),
+            'files': sum([folder.files_in_folder.count() for folder in self.folders.all()]),
+            'collab': self.collab_documents.count()
+        }
