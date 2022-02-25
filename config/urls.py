@@ -28,7 +28,8 @@ urlpatterns = [
     path('email/', EmailView.as_view()),
     path("admin/", admin.site.urls),
     path("api/", include(api_urls)),
-    path("", TemplateView.as_view(template_name="index.html", extra_context={'RUNTIME': settings.RUNTIME, 'PORT': settings.EMAIL_PORT})),
+    path("", TemplateView.as_view(template_name="index.html", extra_context={'RUNTIME': settings.RUNTIME,
+                                                                             'PORT': settings.EMAIL_PORT})),
     path('tinymce/', include('tinymce.urls')),
 ]
 

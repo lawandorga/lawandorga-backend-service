@@ -3,7 +3,7 @@ from django.db import models
 
 
 class Note(models.Model):
-    rlc = models.ForeignKey(Rlc, on_delete=models.CASCADE, related_name='notes')
+    rlc = models.ForeignKey(Rlc, on_delete=models.CASCADE, related_name='notes', blank=True)
     title = models.CharField(max_length=200)
     note = models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)

@@ -17,13 +17,13 @@ class NoteViewSetWorking(UserBase, TestCase):
     def test_create_works(self):
         view = NoteViewSet.as_view(actions={'post': 'create'})
         data = {
-            'title': 'Update Neu',
-            'rlc': self.rlc.id
+            'title': 'My Note',
+            'note': 'My awesome text within this note.'
         }
         request = self.factory.post('', data)
         force_authenticate(request, self.user)
         response = view(request)
-        self.assertContains(response, 'Update Neu', status_code=201)
+        self.assertContains(response, 'My Note', status_code=201)
 
     def test_update_works(self):
         view = NoteViewSet.as_view(actions={'patch': 'partial_update'})
