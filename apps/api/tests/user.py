@@ -1,5 +1,5 @@
 from rest_framework.test import APIRequestFactory, force_authenticate
-from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS, get_all_permissions_strings
+from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS, get_all_permission_strings
 from apps.api.models import UserProfile, RlcUser, Rlc, Permission, HasPermission
 from apps.api.views import UserViewSet
 from django.test import TestCase
@@ -18,7 +18,7 @@ class UserBase:
         self.create_permissions()
 
     def create_permissions(self):
-        for perm in get_all_permissions_strings():
+        for perm in get_all_permission_strings():
             Permission.objects.create(name=perm)
 
 
@@ -38,7 +38,7 @@ class UserViewSetWorkingTests(UserBase, TestCase):
         return RlcUser.objects.create(user=self.another_user, email_confirmed=True, accepted=True)
 
     def create_permissions(self):
-        for perm in get_all_permissions_strings():
+        for perm in get_all_permission_strings():
             Permission.objects.create(name=perm)
 
     def test_create_works(self):

@@ -9,7 +9,7 @@ from apps.recordmanagement.models import RecordSelectField, RecordTemplate, Reco
     RecordStateEntry, RecordEncryptionNew, RecordEncryptedStandardField, RecordSelectEntry, \
     RecordEncryptedStandardEntry, RecordUsersField, QuestionnaireTemplate, QuestionnaireQuestion
 from apps.api.models.permission import Permission
-from apps.api.static import get_all_permissions_strings
+from apps.api.static import get_all_permission_strings
 from apps.static.encryption import AESEncryption
 from apps.api.models.group import Group
 from apps.internal.models import InternalUser
@@ -46,7 +46,7 @@ def create_fixtures():
     # create permissions
     [
         Permission.objects.get_or_create(name=permission)
-        for permission in get_all_permissions_strings()
+        for permission in get_all_permission_strings()
     ]
 
     # create collab permissions

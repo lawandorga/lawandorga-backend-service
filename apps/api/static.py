@@ -21,7 +21,7 @@ PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS = "admin__manage_record_access_re
 PERMISSION_DASHBOARD_MANAGE_NOTES = 'dashboard__manage_notes'
 
 
-def get_all_permissions_strings():
+def get_all_permission_strings():
     return [
         # records
         PERMISSION_RECORDS_ADD_RECORD,

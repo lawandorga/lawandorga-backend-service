@@ -1,5 +1,7 @@
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.translation import gettext_lazy as _
+
+from apps.api.forms import RlcAdminForm
 from apps.api.models import UserProfile, Notification, Permission, HasPermission, Rlc, UserEncryptionKeys, \
     RlcEncryptionKeys, UsersRlcKeys, NotificationGroup, Group, LoggedPath, RlcUser
 from django.contrib import admin
@@ -7,15 +9,15 @@ from django.contrib import admin
 
 class UserAdmin(DjangoUserAdmin):
     fieldsets = (
-        (None, {'fields': ('email', )}),
-        (_('Personal info'), {'fields': ('name', )}),
+        (None, {'fields': ('email',)}),
+        (_('Personal info'), {'fields': ('name',)}),
         (_('Permissions'), {
-            'fields': ('groups', ),
+            'fields': ('groups',),
         }),
         (_('RLC Stuff'), {
-            'fields': ('rlc', ),
+            'fields': ('rlc',),
         }),
-        (_('Important dates'), {'fields': ('last_login', )}),
+        (_('Important dates'), {'fields': ('last_login',)}),
     )
     add_fieldsets = (
         (None, {
@@ -45,10 +47,30 @@ class UsersRlcKeysAdmin(admin.ModelAdmin):
     search_fields = ('rlc__name', 'user__email')
 
 
+class RlcAdmin(admin.ModelAdmin):
+    def get_fieldsets(self, request, obj=None):
+        if obj is None:
+            return (
+                ('LC', {'fields': ('name',)}),
+                ('Admin', {'fields': ('user_name', 'user_email', 'user_password')}),
+            )
+        return super().get_fieldsets(request, obj)
+
+    def get_form(self, request, obj=None, **kwargs):
+        """
+        Use special form during creation
+        """
+        defaults = {}
+        if obj is None:
+            defaults['form'] = RlcAdminForm
+        defaults.update(kwargs)
+        return super().get_form(request, obj, **defaults)
+
+
 admin.site.register(Group)
 admin.site.register(Permission)
 admin.site.register(HasPermission, HasPermissionAdmin)
-admin.site.register(Rlc)
+admin.site.register(Rlc, RlcAdmin)
 admin.site.register(UserEncryptionKeys)
 admin.site.register(RlcEncryptionKeys)
 admin.site.register(UsersRlcKeys, UsersRlcKeysAdmin)
