@@ -1,12 +1,13 @@
 from rest_framework.viewsets import GenericViewSet
+from apps.static.permission import CheckPermissionWall
 from apps.api.serializers import NoteSerializer
 from apps.api.static import PERMISSION_ADMIN_MANAGE_NOTES
 from apps.api.models import Note
 from rest_framework import mixins
 
 
-class NoteViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.ListModelMixin,
-                  GenericViewSet):
+class NoteViewSet(CheckPermissionWall, mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                  mixins.ListModelMixin, GenericViewSet):
     serializer_class = NoteSerializer
     permission_wall = {
         'create': PERMISSION_ADMIN_MANAGE_NOTES,
