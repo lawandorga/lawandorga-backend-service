@@ -41,13 +41,17 @@ class LoggedPathAdmin(admin.ModelAdmin):
     search_fields = ('path', 'user__email')
 
 
+class UsersRlcKeysAdmin(admin.ModelAdmin):
+    search_fields = ('rlc__name', 'user__email')
+
+
 admin.site.register(Group)
 admin.site.register(Permission)
 admin.site.register(HasPermission, HasPermissionAdmin)
 admin.site.register(Rlc)
 admin.site.register(UserEncryptionKeys)
 admin.site.register(RlcEncryptionKeys)
-admin.site.register(UsersRlcKeys)
+admin.site.register(UsersRlcKeys, UsersRlcKeysAdmin)
 admin.site.register(NotificationGroup)
 admin.site.register(UserProfile, UserAdmin)
 admin.site.register(Notification)
