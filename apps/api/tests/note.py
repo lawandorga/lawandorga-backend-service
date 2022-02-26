@@ -1,6 +1,6 @@
 from rest_framework.test import force_authenticate
 from apps.api.tests.user import UserBase
-from apps.api.static import PERMISSION_ADMIN_MANAGE_NOTES
+from apps.api.static import PERMISSION_DASHBOARD_MANAGE_NOTES
 from apps.api.models import Note
 from apps.api.views import NoteViewSet
 from django.test import TestCase
@@ -9,7 +9,7 @@ from django.test import TestCase
 class NoteViewSetWorking(UserBase, TestCase):
     def setUp(self):
         super().setUp()
-        self.rlc_user.grant(PERMISSION_ADMIN_MANAGE_NOTES)
+        self.rlc_user.grant(PERMISSION_DASHBOARD_MANAGE_NOTES)
 
     def create_note(self):
         self.note = Note.objects.create(rlc=self.rlc, title='Update 2022')
