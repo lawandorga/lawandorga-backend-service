@@ -341,17 +341,20 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
 class RlcUser(models.Model):
     user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='rlc_user')
+    # rlc = models.ForeignKey("Rlc", related_name="users", on_delete=models.PROTECT, blank=True, null=True)
+    # blocker
     email_confirmed = models.BooleanField(default=True)
+    accepted = models.BooleanField(default=False)
+    locked = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    # more info
+    note = models.TextField(blank=True)
     birthday = models.DateField(null=True, blank=True)
     phone_number = models.CharField(max_length=17, null=True, default=None, blank=True)
     street = models.CharField(max_length=255, default=None, null=True, blank=True)
     city = models.CharField(max_length=255, default=None, null=True, blank=True)
     postal_code = models.CharField(max_length=255, default=None, null=True, blank=True)
-    note = models.TextField(blank=True)
-    locked = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    # rlc = models.ForeignKey("Rlc", related_name="users", on_delete=models.PROTECT, blank=True, null=True)
-    accepted = models.BooleanField(default=False)
+    # other
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
