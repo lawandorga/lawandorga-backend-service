@@ -95,8 +95,27 @@ class Rlc(models.Model):
     def get_meta_information(self):
         return {
             'id': self.id,
-            'rlc': self.name,
+            'name': self.name,
             'records': sum([template.records.count() for template in self.recordtemplates.all()]),
             'files': sum([folder.files_in_folder.count() for folder in self.folders.all()]),
             'collab': self.collab_documents.count()
         }
+
+    def force_delete(self):
+        from apps.recordmanagement.models.record import Record
+        from apps.files.models.file import File
+
+        # delete records
+        for r in Record.objects.filter(template__in=self.recordtemplates.all()):
+            r.delete()
+        # delete files
+        for f in File.objects.filter(folder__in=self.folders.all()):
+            f.delete()
+        # delete collab
+        for c in self.collab_documents.all():
+            c.delete()
+        # delete users
+        for u in self.rlc_members.all():
+            u.delete()
+        # delete self
+        self.delete()
