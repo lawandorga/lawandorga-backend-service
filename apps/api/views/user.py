@@ -6,6 +6,7 @@ from apps.api.serializers import RlcUserCreateSerializer, RlcUserForeignSerializ
     UserPasswordResetConfirmSerializer, RlcSerializer, RlcUserSerializer, \
     AuthTokenSerializer, RlcUserListSerializer, RlcUserUpdateSerializer, UserProfileSerializer
 from rest_framework.response import Response
+from apps.static.permission import CheckPermissionWall
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.request import Request
 from django.db.models import Q
@@ -16,8 +17,6 @@ from apps.api.models import UserProfile, PasswordResetTokenGenerator, AccountAct
 from rest_framework import viewsets, status
 from django.utils import timezone
 from django.db import IntegrityError
-
-from apps.static.permission import CheckPermissionWall
 
 
 class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):

@@ -366,6 +366,11 @@ class RlcUser(models.Model):
     def __str__(self):
         return 'rlcUser: {}; email: {};'.format(self.pk, self.user.email)
 
+    def delete(self, *args, **kwargs):
+        user = self.user
+        super().delete(*args, **kwargs)
+        user.delete()
+
     def get_email_confirmation_token(self):
         token = AccountActivationTokenGenerator().make_token(self)
         return token

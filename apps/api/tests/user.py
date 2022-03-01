@@ -127,6 +127,8 @@ class UserViewSetWorkingTests(UserBase, TestCase):
     #     self.assertEqual(response.status_code, 204)
 
     def test_destroy_works(self):
+        rlc_users = RlcUser.objects.count()
+        user_profiles = UserProfile.objects.count()
         view = UserViewSet.as_view(actions={'delete': 'destroy'})
         rlc_user = self.rlc_user
         another_rlc_user = self.another_rlc_user
@@ -135,6 +137,8 @@ class UserViewSetWorkingTests(UserBase, TestCase):
         force_authenticate(request, rlc_user.user)
         response = view(request, pk=another_rlc_user.pk)
         self.assertEqual(response.status_code, 204)
+        self.assertEqual(RlcUser.objects.count(), rlc_users - 1)
+        self.assertEqual(UserProfile.objects.count(), user_profiles - 1)
 
     def test_update_works(self):
         view = UserViewSet.as_view(actions={'patch': 'partial_update'})
