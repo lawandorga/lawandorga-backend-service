@@ -4,3 +4,4 @@ from .record_access import *
 from .record_deletion import *
 from .pool import *
 from .record import *
+from .encryption import *

@@ -19,6 +19,8 @@ router.register('records/questionnaire_files', QuestionnaireFilesViewSet)
 # records
 router.register('records/recordtemplates', RecordTemplateViewSet)
 router.register('records/records', RecordViewSet)
+# encryptions
+router.register('records/encryptions', RecordEncryptionNewViewSet)
 # fields
 router.register('records/recordstatefields', RecordStateFieldViewSet)
 router.register('records/recordusersfields', RecordUsersFieldViewSet)

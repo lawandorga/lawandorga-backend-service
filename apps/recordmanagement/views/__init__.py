@@ -5,3 +5,4 @@ from .pool import *
 from .questionnaire import *
 from .record import *
 from .message import *
+from .encryption import *

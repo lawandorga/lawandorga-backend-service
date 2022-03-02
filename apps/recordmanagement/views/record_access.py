@@ -2,17 +2,17 @@ from apps.api.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
 from apps.recordmanagement.models.record_access import RecordAccess
 from apps.recordmanagement.serializers import RecordAccessSerializer
 from apps.recordmanagement.models import RecordEncryptionNew
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ParseError
 from rest_framework.response import Response
 from apps.static.permission import CheckPermissionWall
 from django.core.exceptions import ObjectDoesNotExist
 from apps.static.encryption import RSAEncryption
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, status
 from django.utils import timezone
 
 
 class RecordAccessViewSet(CheckPermissionWall, mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.ListModelMixin,
-                          viewsets.GenericViewSet):
+                          mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = RecordAccess.objects.none()
     serializer_class = RecordAccessSerializer
     permission_wall = {
