@@ -27,12 +27,6 @@ class GroupViewSet(CheckPermissionWall, viewsets.ModelViewSet):
             return GroupCreateSerializer
         return super().get_serializer_class()
 
-    @action(detail=True, methods=['get'])
-    def members(self, *args, **kwargs):
-        group = self.get_object()
-        members = group.group_members.all()
-        return Response(UserProfileSerializer(members, many=True).data)
-
     @action(detail=True, methods=["post", "delete"])
     def member(self, request: Request, pk=None):
         # get the group

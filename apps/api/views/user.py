@@ -14,7 +14,7 @@ from django.db.models import Q
 from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS, PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS, \
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
 from apps.api.models import UserProfile, PasswordResetTokenGenerator, AccountActivationTokenGenerator, UsersRlcKeys, \
-    RlcUser
+    RlcUser, Group
 from rest_framework import viewsets, status
 from django.utils import timezone
 from django.db import IntegrityError
@@ -53,11 +53,18 @@ class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
 
     def get_queryset(self):
         if self.action in ['activate', 'password_reset_confirm']:
-            return RlcUser.objects.all()
+            queryset = RlcUser.objects.all()
         elif self.action in ['list', 'retrieve', 'accept', 'unlock', 'destroy', 'permissions', 'update',
-                             'partial_update']:
-            return RlcUser.objects.filter(user__rlc=self.request.user.rlc)
-        return RlcUser.objects.filter(pk=self.request.user.rlc_user.id)
+                             'partial_update', 'change_password']:
+            queryset = RlcUser.objects.filter(user__rlc=self.request.user.rlc)
+        else:
+            queryset = RlcUser.objects.filter(pk=self.request.user.rlc_user.id)
+        group = self.request.query_params.get('group', None)
+        if group:
+            group = self.request.user.rlc.group_from_rlc.get(pk=group).group_members.values_list('rlc_user__pk',
+                                                                                                 flat=True)
+            queryset = queryset.filter(pk__in=group)
+        return queryset
 
     def retrieve(self, request, pk=None, **kwargs):
         rlc_user = self.get_object()
