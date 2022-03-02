@@ -371,6 +371,13 @@ class RlcUser(models.Model):
         super().delete(*args, **kwargs)
         user.delete()
 
+    def check_delete_is_safe(self):
+        from apps.recordmanagement.models import RecordEncryptionNew
+        for encryption in self.user.recordencryptions.all():
+            if RecordEncryptionNew.objects.filter(record=encryption.record).count() <= 2:
+                return False
+        return True
+
     def get_email_confirmation_token(self):
         token = AccountActivationTokenGenerator().make_token(self)
         return token

@@ -27,6 +27,14 @@ class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
         'accept': PERMISSION_ADMIN_MANAGE_USERS,
     }
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not instance.check_delete_is_safe():
+            raise ParseError('You can not delete this user right now, because you could loose access to one or '
+                             'more records. This user is one of the two only persons with access to those records.')
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     def get_permissions(self):
         if self.action in ['statics', 'create', 'logout', 'login', 'password_reset', 'password_reset_confirm',
                            'activate']:
@@ -273,7 +281,8 @@ class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
     def accept(self, request, *args, **kwargs):
         if not request.user.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
             return Response(
-                {"detail": "You don't have the necessary permission '{}' to do this.".format(PERMISSION_ADMIN_MANAGE_USERS)},
+                {"detail": "You don't have the necessary permission '{}' to do this.".format(
+                    PERMISSION_ADMIN_MANAGE_USERS)},
                 status=status.HTTP_403_FORBIDDEN
             )
 
