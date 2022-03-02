@@ -4,7 +4,8 @@ from rest_framework.exceptions import ParseError, AuthenticationFailed
 from rest_framework.decorators import action
 from apps.api.serializers import RlcUserCreateSerializer, RlcUserForeignSerializer, EmailSerializer, \
     UserPasswordResetConfirmSerializer, RlcSerializer, RlcUserSerializer, \
-    AuthTokenSerializer, RlcUserListSerializer, RlcUserUpdateSerializer, UserProfileSerializer
+    AuthTokenSerializer, RlcUserListSerializer, RlcUserUpdateSerializer, UserProfileSerializer, \
+    UserProfileChangePasswordSerializer
 from rest_framework.response import Response
 from apps.static.permission import CheckPermissionWall
 from django.core.exceptions import ObjectDoesNotExist
@@ -75,6 +76,14 @@ class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(RlcUserListSerializer(rlc_user).data)
+
+    @action(detail=False, methods=["post"])
+    def change_password(self, request: Request):
+        user = self.request.user
+        serializer = UserProfileChangePasswordSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user.change_password(serializer.validated_data['current_password'], serializer.validated_data['new_password'])
+        return Response(RlcUserListSerializer(user.rlc_user).data)
 
     @action(detail=False, methods=["post"], permission_classes=[], authentication_classes=[])
     def login(self, request: Request):

@@ -1,3 +1,4 @@
+from django.contrib.auth.password_validation import validate_password
 from rest_framework.authtoken.serializers import AuthTokenSerializer as DRFAuthTokenSerializer
 from rest_framework.exceptions import ValidationError, ParseError
 from django.contrib.auth import authenticate
@@ -70,6 +71,28 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_rlcuserid(self, obj):
         return obj.rlc_user.id
+
+
+class UserProfileChangePasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField()
+    new_password = serializers.CharField()
+    new_password_confirm = serializers.CharField()
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if attrs['new_password'] != attrs['new_password_confirm']:
+            raise ValidationError('The two new passwords are not equal.')
+        return attrs
+
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value
+
+    def validate_current_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise ValidationError('The password is not correct.')
+        return value
 
 
 class UserProfileSmallSerializer(serializers.ModelSerializer):

@@ -5,15 +5,8 @@ from django.db import models
 
 
 class UsersRlcKeys(EncryptedModelMixin, models.Model):
-    user = models.ForeignKey(
-        UserProfile, related_name="users_rlc_keys", on_delete=models.CASCADE, null=False
-    )
-    rlc = models.ForeignKey(
-        Rlc,
-        related_name="encrypted_users_rlc_keys",
-        on_delete=models.CASCADE,
-        null=False,
-    )
+    user = models.ForeignKey(UserProfile, related_name="users_rlc_keys", on_delete=models.CASCADE, null=False)
+    rlc = models.ForeignKey(Rlc, related_name="encrypted_users_rlc_keys", on_delete=models.CASCADE, null=False)
     encrypted_key = models.BinaryField()
 
     encryption_class = RSAEncryption
@@ -25,12 +18,10 @@ class UsersRlcKeys(EncryptedModelMixin, models.Model):
         unique_together = ("user", "rlc")
 
     def __str__(self):
-        return "userRlcKeys: {}; user: {}; rlc: {};".format(
-            self.pk, self.user.email, self.rlc.name
-        )
+        return "userRlcKeys: {}; user: {}; rlc: {};".format(self.pk, self.user.email, self.rlc.name)
 
-    def decrypt(self, private_key_user: str) -> None:
+    def decrypt(self, private_key_user):
         super().decrypt(private_key_user)
 
-    def encrypt(self, public_key_user: str) -> None:
+    def encrypt(self, public_key_user):
         super().encrypt(public_key_user)

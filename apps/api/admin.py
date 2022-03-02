@@ -1,9 +1,8 @@
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.translation import gettext_lazy as _
-
-from apps.api.forms import RlcAdminForm
 from apps.api.models import UserProfile, Notification, Permission, HasPermission, Rlc, UserEncryptionKeys, \
     RlcEncryptionKeys, UsersRlcKeys, NotificationGroup, Group, LoggedPath, RlcUser
+from apps.api.forms import RlcAdminForm
 from django.contrib import admin
 
 

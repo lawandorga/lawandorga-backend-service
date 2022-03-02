@@ -1,6 +1,6 @@
 from rest_framework.test import APIRequestFactory, force_authenticate
 from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS, get_all_permission_strings
-from apps.api.models import UserProfile, RlcUser, Rlc, Permission, HasPermission
+from apps.api.models import UserProfile, RlcUser, Rlc, Permission, HasPermission, UserEncryptionKeys
 from apps.api.views import UserViewSet
 from django.test import TestCase
 
@@ -116,6 +116,23 @@ class UserViewSetWorkingTests(UserBase, TestCase):
         force_authenticate(request, rlc_user.user)
         response = view(request, pk=rlc_user.pk)
         self.assertEqual(response.status_code, 200)
+
+    def test_change_password_works(self):
+        view = UserViewSet.as_view(actions={'post': 'change_password'})
+        self.user.encryption_keys.decrypt('qwe123')
+        private_key = self.user.encryption_keys.private_key
+        data = {
+            'current_password': 'test',
+            'new_password': 'pass1234!',
+            'new_password_confirm': 'pass1234!',
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
+        keys = UserEncryptionKeys.objects.get(user__pk=self.user.pk)
+        keys.decrypt('pass1234!')
+        self.assertEqual(private_key, keys.private_key)
 
     # def test_destroy_works_on_myself(self):
     #     view = UserViewSet.as_view(actions={'delete': 'destroy'})

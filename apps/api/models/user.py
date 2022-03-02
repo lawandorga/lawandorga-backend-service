@@ -1,18 +1,17 @@
-from datetime import timedelta
-
-from django.conf import settings
+from apps.api.models.has_permission import HasPermission
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from apps.api.models.permission import Permission
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from rest_framework.exceptions import ParseError
 from django.core.exceptions import ObjectDoesNotExist
+from apps.static.encryption import RSAEncryption
 from django.core.mail import send_mail
-from django.db import models
+from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS
 from django.template import loader
 from django.utils import timezone
-from rest_framework.exceptions import ParseError
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from apps.api.models.has_permission import HasPermission
-from apps.api.models.permission import Permission
-from apps.static.encryption import RSAEncryption
-from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS
+from django.conf import settings
+from django.db import models, transaction
+from datetime import timedelta
 
 
 class UserProfileManager(BaseUserManager):
@@ -85,6 +84,17 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return hasattr(self, 'internal_user')
 
     # other stuff
+    def change_password(self, old_password, new_password):
+        if not self.check_password(old_password):
+            raise ParseError('The password is not correct.')
+        keys = self.encryption_keys
+        keys.decrypt(old_password)
+        keys.encrypt(new_password)
+        self.set_password(new_password)
+        with transaction.atomic():
+            keys.save()
+            self.save()
+
     def __get_as_user_permissions(self):
         """
         Returns: all HasPermissions the user itself has as list
@@ -128,15 +138,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         as_group = self.__has_as_group_member_permission(permission)
 
         return as_user or as_group
-
-    def has_permissions(self, permissions):
-        return any(map(lambda permission: self.has_permission(permission), permissions))
-
-    def get_permissions(self):
-        user_permissions = HasPermission.objects.filter(user_has_permission=self)
-        user_groups = self.rlcgroups.all()
-        group_permissions = HasPermission.objects.filter(group_has_permission__in=user_groups)
-        return user_permissions | group_permissions
 
     def get_collab_permissions(self):
         from apps.collab.models import PermissionForCollabDocument
@@ -256,14 +257,16 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             self.generate_new_user_encryption_keys()
 
         if password_user and not request:
-            private_key = self.encryption_keys.decrypt_private_key(password_user)
+            self.encryption_keys.decrypt(password_user)
+            private_key = self.encryption_keys.private_key
 
         elif request and not password_user:
             private_key = request.META.get("HTTP_PRIVATE_KEY")
             if not private_key:
                 # enable direct testing of the rest framework
                 if self.email == "dummy@law-orga.de" and settings.DUMMY_USER_PASSWORD:
-                    return self.encryption_keys.decrypt_private_key(settings.DUMMY_USER_PASSWORD)
+                    self.encryption_keys.decrypt(settings.DUMMY_USER_PASSWORD)
+                    return self.encryption_keys.private_key
                 else:
                     raise ParseError('No private key provied within the request.')
             private_key = private_key.replace("\\n", "\n").replace("<linebreak>", "\n")
@@ -303,9 +306,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         """
         from apps.api.models import UsersRlcKeys
         from apps.recordmanagement.models import RecordEncryption
-
-        # assert that the self user has all possible keys
-        # assert self.has_permission(PERMISSION_VIEW_RECORDS_FULL_DETAIL_RLC)
 
         # this variable checks if all keys that the user needed were generated
         keys_missing = False

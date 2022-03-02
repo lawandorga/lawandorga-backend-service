@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for record in EncryptedRecord.objects.all().order_by('id'):
-            print(record.id)
+            self.stdout.write(record.id)
             if not hasattr(record, 'record'):
                 move_record(record)
             test_record(record)
