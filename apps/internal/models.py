@@ -40,6 +40,17 @@ class ImprintPage(SingletonModel):
         return 'ImprintPage'
 
 
+class TomsPage(SingletonModel):
+    content = HTMLField()
+
+    class Meta:
+        verbose_name = 'TomsPage'
+        verbose_name_plural = 'TomsPage'
+
+    def __str__(self):
+        return 'TomsPage'
+
+
 class Article(models.Model):
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)

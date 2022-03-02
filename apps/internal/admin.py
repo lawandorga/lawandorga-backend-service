@@ -1,4 +1,4 @@
-from apps.internal.models import Article, InternalUser, IndexPage, RoadmapItem, ImprintPage
+from apps.internal.models import Article, InternalUser, IndexPage, RoadmapItem, ImprintPage, TomsPage
 from django.contrib import admin
 from solo.admin import SingletonModelAdmin
 
@@ -10,5 +10,6 @@ class InternalUserAdmin(admin.ModelAdmin):
 admin.site.register(InternalUser, InternalUserAdmin)
 admin.site.register(IndexPage, SingletonModelAdmin)
 admin.site.register(ImprintPage, SingletonModelAdmin)
+admin.site.register(TomsPage, SingletonModelAdmin)
 admin.site.register(RoadmapItem)
 admin.site.register(Article)
