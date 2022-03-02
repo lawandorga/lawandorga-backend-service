@@ -27,6 +27,12 @@ class BaseRecord:
         HasPermission.objects.create(user_has_permission=self.user, permission=permission)
         # HasPermission.objects.create(user_has_permission=self.user, permission=)
 
+    def create_user(self, email, name):
+        user = UserProfile.objects.create(email=email, name=name, rlc=self.rlc)
+        user.set_password('pass1234')
+        user.save()
+        RlcUser.objects.create(user=user, accepted=True, locked=False, email_confirmed=True, is_active=True)
+
 
 ###
 # Template

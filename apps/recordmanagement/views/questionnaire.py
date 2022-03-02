@@ -168,7 +168,6 @@ class QuestionnaireViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, m
                     answer.encrypt()
                     answer.save()
                 else:
-                    print(answer_serializer.errors)
                     raise ParseError({field.name: answer_serializer.errors['data']})
         # return
         serializer = self.get_serializer(instance)

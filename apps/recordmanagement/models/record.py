@@ -3,7 +3,7 @@ from django.core.files import File
 from apps.recordmanagement.models import EncryptedRecord, EncryptedClient
 from apps.static.encryption import EncryptedModelMixin, AESEncryption, RSAEncryption
 from rest_framework.reverse import reverse
-from apps.api.models import Rlc, UserProfile
+from apps.api.models import Rlc, UserProfile, Group
 from django.db import models
 import json
 
@@ -81,6 +81,8 @@ class RecordStateField(RecordField):
 
 class RecordUsersField(RecordField):
     template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='users_fields')
+    share_keys = models.BooleanField(default=True)
+    group = models.ForeignKey(Group, blank=True, null=True, default=None, on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = 'RecordUsersField'
@@ -95,7 +97,11 @@ class RecordUsersField(RecordField):
 
     @property
     def options(self):
-        return [{'name': i[0], 'id': i[1]} for i in self.template.rlc.rlc_members.values_list('name', 'pk')]
+        if self.group:
+            users = self.group.group_members.all()
+        else:
+            users = self.template.rlc.rlc_members.all()
+        return [{'name': i[0], 'id': i[1]} for i in users.values_list('name', 'pk')]
 
 
 class RecordSelectField(RecordField):

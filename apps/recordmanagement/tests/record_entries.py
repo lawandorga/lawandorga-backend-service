@@ -11,7 +11,7 @@ from apps.recordmanagement.views import RecordEncryptedStandardEntryViewSet, Rec
     RecordMultipleEntryViewSet
 from apps.static.encryption import AESEncryption
 from rest_framework.test import force_authenticate
-from apps.api.models import UserProfile
+from apps.api.models import UserProfile, RlcUser
 from django.conf import settings
 from django.test import TestCase
 import json
@@ -155,10 +155,15 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
     def setUp(self):
         super().setUp()
         self.field = RecordUsersField.objects.create(template=self.template)
+        self.create_users()
 
     def setup_entry(self):
         self.entry = RecordUsersEntry.objects.create(record=self.record, field=self.field)
         self.entry.value.set(UserProfile.objects.all())
+
+    def create_users(self):
+        self.create_user(email='tester1@law-orga.de', name='Tester1')
+        self.create_user(email='tester2@law-orga.de', name='Tester2')
 
     def test_entry_create(self):
         view = RecordUsersEntryViewSet.as_view(actions={'post': 'create'})
@@ -189,6 +194,46 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
         self.assertEqual(response.status_code, 200)
         entry = RecordUsersEntry.objects.first()
         self.assertEqual(entry.value.all().count(), UserProfile.objects.none().count())
+
+    def test_entry_with_share_keys_true(self):
+        field = RecordUsersField.objects.create(template=self.template, order=10, share_keys=True)
+        view = RecordUsersEntryViewSet.as_view(actions={'post': 'create', 'patch': 'partial_update'})
+        users = UserProfile.objects.exclude(pk=self.user.pk)[:2]
+        RecordEncryptionNew.objects.filter(record=self.record, user__in=users).delete()
+        data = {
+            'record': self.record.pk,
+            'field': field.pk,
+            'value': [u.pk for u in users[:1]]
+        }
+        request = self.factory.post('', data=data, format='json')
+        force_authenticate(request, self.user)
+        response = view(request)
+        self.assertContains(response, self.record.pk, status_code=201)
+        self.assertEqual(RecordEncryptionNew.objects.filter(record=self.record, user__in=users).count(), 1)
+        data = {
+            'value': [u.pk for u in users]
+        }
+        request = self.factory.patch('', data=data, format='json')
+        force_authenticate(request, self.user)
+        response = view(request, pk=response.data['id'])
+        self.assertContains(response, self.record.pk, status_code=200)
+        self.assertEqual(RecordEncryptionNew.objects.filter(record=self.record, user__in=users).count(), users.count())
+
+    def test_entry_with_share_keys_false(self):
+        field = RecordUsersField.objects.create(template=self.template, order=10, share_keys=False)
+        view = RecordUsersEntryViewSet.as_view(actions={'post': 'create', 'patch': 'partial_update'})
+        users = UserProfile.objects.exclude(pk=self.user.pk)[:2]
+        RecordEncryptionNew.objects.filter(record=self.record, user__in=users).delete()
+        data = {
+            'record': self.record.pk,
+            'field': field.pk,
+            'value': [u.pk for u in users]
+        }
+        request = self.factory.post('', data=data, format='json')
+        force_authenticate(request, self.user)
+        response = view(request)
+        self.assertContains(response, self.record.pk, status_code=201)
+        self.assertEqual(RecordEncryptionNew.objects.filter(record=self.record, user__in=users).count(), 0)
 
 
 class RecordEncryptedStandardEntryViewSetWorking(GenericRecordEntry, TestCase):

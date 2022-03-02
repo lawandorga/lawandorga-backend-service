@@ -6,7 +6,7 @@ from apps.recordmanagement.tests.record_entries import BaseRecordEntry
 from apps.recordmanagement.tests.record import BaseRecord
 from apps.recordmanagement.models import RecordEncryptedSelectField, RecordEncryptedSelectEntry, RecordStateField, \
     RecordStateEntry, RecordSelectField, RecordSelectEntry, RecordEncryptedStandardField, \
-    RecordEncryptedStandardEntry, RecordMultipleEntry, RecordMultipleField, Record
+    RecordEncryptedStandardEntry, RecordMultipleEntry, RecordMultipleField, Record, RecordUsersField
 from apps.recordmanagement.views import RecordEncryptedSelectEntryViewSet, RecordStateFieldViewSet, \
     RecordStateEntryViewSet, RecordSelectEntryViewSet, RecordEncryptedStandardEntryViewSet, RecordMultipleEntryViewSet
 from rest_framework.test import force_authenticate

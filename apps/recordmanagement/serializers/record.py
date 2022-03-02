@@ -19,6 +19,7 @@ class RecordFieldSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
     entry_url = serializers.SerializerMethodField()
     type = serializers.SerializerMethodField()
+    kind = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
     encrypted = serializers.SerializerMethodField()
     entry_view_name = None
@@ -35,6 +36,9 @@ class RecordFieldSerializer(serializers.ModelSerializer):
 
     def get_label(self, obj):
         return obj.name
+
+    def get_kind(self, obj):
+        return None
 
     def get_encrypted(self, obj):
         if 'encrypted' in type(obj).__name__.lower():
@@ -59,6 +63,9 @@ class RecordStateFieldSerializer(RecordFieldSerializer):
             raise ValidationError('Open needs to be added to states.')
         return options
 
+    def get_kind(self, obj):
+        return 'State'
+
 
 class RecordSelectFieldSerializer(RecordFieldSerializer):
     entry_view_name = 'recordselectentry-list'
@@ -72,6 +79,9 @@ class RecordSelectFieldSerializer(RecordFieldSerializer):
         if type(options) != list or any([type(o) is not str for o in options]):
             raise ValidationError('Options need to be a list of strings.')
         return options
+
+    def get_kind(self, obj):
+        return 'Select'
 
 
 class RecordMultipleFieldSerializer(RecordFieldSerializer):
@@ -87,6 +97,9 @@ class RecordMultipleFieldSerializer(RecordFieldSerializer):
             raise ValidationError('Options need to be a list of strings.')
         return options
 
+    def get_kind(self, obj):
+        return 'Multiple'
+
 
 class RecordEncryptedStandardFieldSerializer(RecordFieldSerializer):
     entry_view_name = 'recordencryptedstandardentry-list'
@@ -96,6 +109,9 @@ class RecordEncryptedStandardFieldSerializer(RecordFieldSerializer):
         model = RecordEncryptedStandardField
         fields = '__all__'
 
+    def get_kind(self, obj):
+        return 'Encrypted Standard'
+
 
 class RecordStandardFieldSerializer(RecordFieldSerializer):
     entry_view_name = 'recordstandardentry-list'
@@ -104,6 +120,9 @@ class RecordStandardFieldSerializer(RecordFieldSerializer):
     class Meta:
         model = RecordStandardField
         fields = '__all__'
+
+    def get_kind(self, obj):
+        return 'Standard'
 
 
 class RecordUsersFieldSerializer(RecordFieldSerializer):
@@ -115,6 +134,9 @@ class RecordUsersFieldSerializer(RecordFieldSerializer):
         model = RecordUsersField
         fields = '__all__'
 
+    def get_kind(self, obj):
+        return 'Users'
+
 
 class RecordEncryptedFileFieldSerializer(RecordFieldSerializer):
     entry_view_name = 'recordencryptedfileentry-list'
@@ -123,6 +145,9 @@ class RecordEncryptedFileFieldSerializer(RecordFieldSerializer):
     class Meta:
         model = RecordEncryptedFileField
         fields = '__all__'
+
+    def get_kind(self, obj):
+        return 'Encrypted File'
 
 
 class RecordEncryptedSelectFieldSerializer(RecordFieldSerializer):
@@ -137,6 +162,9 @@ class RecordEncryptedSelectFieldSerializer(RecordFieldSerializer):
         if type(options) != list or any([type(o) is not str for o in options]):
             raise ValidationError('Options need to be a list of strings.')
         return options
+
+    def get_kind(self, obj):
+        return 'Encrypted Select'
 
 
 ###
