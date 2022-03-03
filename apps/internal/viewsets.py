@@ -1,10 +1,16 @@
-from rest_framework.response import Response
-
 from apps.internal.serializers import ArticleSerializer, ArticleDetailSerializer, IndexPageSerializer, \
-    RoadmapItemSerializer
+    RoadmapItemSerializer, TomsPageSerializer, HelpPageSerializer
 from rest_framework.viewsets import GenericViewSet
-from apps.internal.models import Article, IndexPage, RoadmapItem, ImprintPage, TomsPage
+from rest_framework.response import Response
+from apps.internal.models import Article, IndexPage, RoadmapItem, ImprintPage, TomsPage, HelpPage
 from rest_framework import mixins
+
+
+class PageViewSet(mixins.ListModelMixin, GenericViewSet):
+    def list(self, request, *args, **kwargs):
+        instance = self.get_queryset().model.get_solo()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class RoadmapItemViewSet(mixins.ListModelMixin, GenericViewSet):
@@ -26,37 +32,29 @@ class ArticleViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericVi
         return super().get_serializer_class()
 
 
-class IndexPageViewSet(mixins.ListModelMixin, GenericViewSet):
+class IndexPageViewSet(PageViewSet):
     queryset = IndexPage.objects.none()
     serializer_class = IndexPageSerializer
     permission_classes = []
     authentication_classes = []
 
-    def list(self, request, *args, **kwargs):
-        instance = IndexPage.get_solo()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
 
-
-class ImprintPageViewSet(mixins.ListModelMixin, GenericViewSet):
+class ImprintPageViewSet(PageViewSet):
     queryset = ImprintPage.objects.none()
     serializer_class = IndexPageSerializer
     permission_classes = []
     authentication_classes = []
 
-    def list(self, request, *args, **kwargs):
-        instance = ImprintPage.get_solo()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
 
-
-class TomsPageViewSet(mixins.ListModelMixin, GenericViewSet):
+class TomsPageViewSet(PageViewSet):
     queryset = TomsPage.objects.none()
-    serializer_class = IndexPageSerializer
+    serializer_class = TomsPageSerializer
     permission_classes = []
     authentication_classes = []
 
-    def list(self, request, *args, **kwargs):
-        instance = TomsPage.get_solo()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+
+class HelpPageViewSet(PageViewSet):
+    queryset = HelpPage.objects.none()
+    serializer_class = HelpPageSerializer
+    permission_classes = []
+    authentication_classes = []

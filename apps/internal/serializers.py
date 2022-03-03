@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
-from apps.internal.models import Article, IndexPage, RoadmapItem
+from apps.internal.models import Article, IndexPage, RoadmapItem, TomsPage, HelpPage
 
 
 class RoadmapItemSerializer(ModelSerializer):
@@ -31,4 +31,16 @@ class ArticleDetailSerializer(ModelSerializer):
 class IndexPageSerializer(ModelSerializer):
     class Meta:
         model = IndexPage
+        fields = '__all__'
+
+
+class TomsPageSerializer(ModelSerializer):
+    class Meta:
+        model = TomsPage
+        fields = '__all__'
+
+
+class HelpPageSerializer(ModelSerializer):
+    class Meta:
+        model = HelpPage
         fields = '__all__'

@@ -51,6 +51,17 @@ class TomsPage(SingletonModel):
         return 'TomsPage'
 
 
+class HelpPage(SingletonModel):
+    manual = models.FileField('Manual', upload_to='internal/helppage/manual/')
+
+    class Meta:
+        verbose_name = 'HelpPage'
+        verbose_name_plural = 'HelpPage'
+
+    def __str__(self):
+        return 'HelpPage'
+
+
 class Article(models.Model):
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
