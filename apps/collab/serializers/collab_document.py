@@ -13,6 +13,11 @@ class CollabDocumentSerializer(serializers.ModelSerializer):
         model = CollabDocument
         fields = "__all__"
 
+    def clean_name(self, value):
+        if '/' in value:
+            raise ValidationError('Special characters are not allowed.')
+        return value
+
 
 class CollabDocumentPathSerializer(CollabDocumentSerializer):
     class Meta:
@@ -62,7 +67,7 @@ class CollabDocumentCreateSerializer(CollabDocumentSerializer):
 
 
 class CollabDocumentRetrieveSerializer(CollabDocumentSerializer):
-    content = serializers.SerializerMethodField()
+    content_html = serializers.SerializerMethodField()
     quill = serializers.SerializerMethodField()
 
     def get_latest_version(self, obj):
@@ -72,7 +77,7 @@ class CollabDocumentRetrieveSerializer(CollabDocumentSerializer):
                 raise NotFound()
         return self.latest_version
 
-    def get_content(self, obj):
+    def get_content_html(self, obj):
         latest_version = self.get_latest_version(obj)
         latest_version.decrypt(request=self.context['request'])
         return latest_version.content
@@ -82,10 +87,14 @@ class CollabDocumentRetrieveSerializer(CollabDocumentSerializer):
         return latest_version.quill
 
 
-class CollabDocumentUpdateSerializer(CollabDocumentSerializer):
+class CollabDocumentUpdateSerializer(CollabDocumentRetrieveSerializer):
     content = serializers.CharField(write_only=True)
 
     def update(self, instance, validated_data):
+        # change name if different
+        if instance.name != validated_data['name']:
+            instance = instance.change_name_and_save(validated_data['name'])
+        # save the latest instance
         latest_version = instance.versions.order_by('-created').first()
         if latest_version is not None and latest_version.created.date() == timezone.now().date():
             version = latest_version
@@ -95,6 +104,7 @@ class CollabDocumentUpdateSerializer(CollabDocumentSerializer):
             version = TextDocumentVersion(content=validated_data['content'], document=instance, quill=False)
         version.encrypt(request=self.context['request'])
         version.save()
+        # return
         return instance
 
 

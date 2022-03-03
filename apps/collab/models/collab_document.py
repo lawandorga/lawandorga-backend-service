@@ -26,8 +26,17 @@ class CollabDocument(models.Model):
     def root(self):
         return self.path[1:].count('/') == 0
 
+    def change_name_and_save(self, new_name):
+        old_path = self.path
+        new_path = '{}/{}'.format('/'.join(self.path.split('/')[:-1]), new_name)
+        for doc in CollabDocument.objects.filter(path__startswith=old_path):
+            doc.path = doc.path.replace(old_path, new_path)
+            doc.save()
+        return CollabDocument.objects.get(pk=self.pk)
+
     def delete(self, *args, **kwargs):
-        CollabDocument.objects.exclude(path=self.path).filter(path__startswith="{}/".format(self.path)).delete()
+        path = "{}/".format(self.path)
+        CollabDocument.objects.exclude(path=self.path).filter(path__startswith=path, rlc=self.rlc).delete()
         return super().delete(*args, **kwargs)
 
     def user_can_read(self, user):
