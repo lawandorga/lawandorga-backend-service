@@ -21,8 +21,7 @@ class PermissionForCollabDocumentViewSet(mixins.CreateModelMixin, mixins.Destroy
         headers = self.get_success_headers(serializer.data)
         instance = PermissionForCollabDocument.objects.get(pk=serializer.data['id'])
         data = PermissionForCollabDocumentAllNamesSerializer(instance).data
-        return Response(data=data,
-                        status=status.HTTP_201_CREATED, headers=headers)
+        return Response(data=data, status=status.HTTP_201_CREATED, headers=headers)
 
     def destroy(self, request, *args, **kwargs):
         if not request.user.has_permission(PERMISSION_COLLAB_MANAGE_PERMISSIONS):

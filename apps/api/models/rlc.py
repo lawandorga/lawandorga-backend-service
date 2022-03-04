@@ -29,9 +29,7 @@ class Rlc(models.Model):
         # return the public key
         return self.encryption_keys.public_key
 
-    def get_aes_key(
-        self, user: UserProfile = None, private_key_user: str = None
-    ) -> str:
+    def get_aes_key(self, user=None, private_key_user=None):
         # safety check
         if not hasattr(self, "encryption_keys"):
             self.generate_keys()

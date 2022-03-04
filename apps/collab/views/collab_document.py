@@ -1,5 +1,5 @@
-from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.decorators import action
 from apps.collab.serializers import CollabDocumentSerializer, TextDocumentVersionSerializer, \
     CollabDocumentCreateSerializer, CollabDocumentListSerializer, PermissionForCollabDocumentAllNamesSerializer, \
     CollabDocumentRetrieveSerializer, CollabDocumentUpdateSerializer
@@ -66,7 +66,8 @@ class CollabDocumentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mi
         instance = self.get_object()
         if not instance.user_can_read(request.user):
             raise PermissionDenied()
-        return super().retrieve(request, *args, **kwargs)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
         # get the collab document

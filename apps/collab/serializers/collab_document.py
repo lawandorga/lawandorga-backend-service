@@ -49,6 +49,7 @@ class CollabDocumentCreateSerializer(CollabDocumentSerializer):
 
     def run_validation(self, data=empty):
         if data is not empty:
+            data = data.copy()
             data['rlc'] = self.context['request'].user.rlc.pk
         return super().run_validation(data)
 
@@ -95,6 +96,8 @@ class CollabDocumentUpdateSerializer(CollabDocumentRetrieveSerializer):
         if instance.name != validated_data['name']:
             instance = instance.change_name_and_save(validated_data['name'])
         # save the latest instance
+        if 'content' not in validated_data:
+            return instance
         latest_version = instance.versions.order_by('-created').first()
         if latest_version is not None and latest_version.created.date() == timezone.now().date():
             version = latest_version
