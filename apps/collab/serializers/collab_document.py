@@ -13,9 +13,10 @@ class CollabDocumentSerializer(serializers.ModelSerializer):
         model = CollabDocument
         fields = "__all__"
 
-    def clean_name(self, value):
-        if '/' in value:
-            raise ValidationError('Special characters are not allowed.')
+    def validate_name(self, value):
+        print(value)
+        value = ''.join(e for e in value if e.isalnum() or e == ' ')
+        print(value)
         return value
 
 
