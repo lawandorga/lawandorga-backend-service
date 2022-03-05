@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from apps.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
 from apps.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
 from apps.collab.static import get_all_collab_permission_strings
@@ -14,7 +16,7 @@ from apps.static.encryption import AESEncryption
 from apps.api.models.group import Group
 from apps.internal.models import InternalUser
 from apps.api.models.rlc import Rlc
-from apps.collab.models import CollabPermission
+from apps.collab.models import CollabPermission, CollabDocument, TextDocumentVersion
 from apps.files.models import FolderPermission
 from apps.api.models import UserProfile, RlcUser
 from apps.api import static
@@ -647,8 +649,24 @@ def create_questionnaire_templates(rlc):
     QuestionnaireQuestion.objects.create(questionnaire=template, question='How tall are you?', type='TEXTAREA')
 
 
+def create_collab_document(user, rlc, path='/Document', content='<h1>Collab Document</h1>'):
+    cd = CollabDocument.objects.create(path=path, rlc=rlc, )
+    tv = TextDocumentVersion(document=cd, content=content, quill=False)
+    private_key_user = user.get_private_key(password_user=settings.DUMMY_USER_PASSWORD)
+    aes_key_rlc = rlc.get_aes_key(user=user, private_key_user=private_key_user)
+    tv.encrypt(aes_key_rlc=aes_key_rlc)
+    tv.save()
+
+
+def create_collab_documents(user, rlc):
+    create_collab_document(user, rlc, path='Document 1')
+    create_collab_document(user, rlc, path='Document 1/Document 1.1')
+    create_collab_document(user, rlc, path='Document 1/Document 1.2')
+    create_collab_document(user, rlc, path='Document 2')
+
+
 def create() -> None:
-    dummy_password = "qwe123"
+    dummy_password = settings.DUMMY_USER_PASSWORD
     # general fixtures
     create_fixtures()
     # rlcs and fixtures
@@ -666,3 +684,5 @@ def create() -> None:
     create_informative_record(dummy, dummy_password, users, rlc1)
     # questionnaire templates
     create_questionnaire_templates(rlc1)
+    # collab
+    create_collab_documents(dummy, rlc1)
