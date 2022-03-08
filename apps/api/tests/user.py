@@ -1,16 +1,19 @@
+from django.conf import settings
 from rest_framework.test import APIRequestFactory, force_authenticate
 from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS, get_all_permission_strings
 from apps.api.models import UserProfile, RlcUser, Rlc, Permission, HasPermission, UserEncryptionKeys
 from apps.api.views import UserViewSet
 from django.test import TestCase
 
+from config.authentication import RefreshPrivateKeyToken
+
 
 class UserBase:
     def setUp(self):
         self.factory = APIRequestFactory()
         self.rlc = Rlc.objects.create(name="Test RLC")
-        self.user = UserProfile.objects.create(email='test@test.de', name='Dummy 1', rlc=self.rlc)
-        self.user.set_password('test')
+        self.user = UserProfile.objects.create(email='dummy@law-orga.de', name='Dummy 1', rlc=self.rlc)
+        self.user.set_password(settings.DUMMY_USER_PASSWORD)
         self.user.save()
         self.rlc_user = RlcUser.objects.create(user=self.user, email_confirmed=True, accepted=True)
         self.rlc.generate_keys()
@@ -66,15 +69,16 @@ class UserViewSetWorkingTests(UserBase, TestCase):
     def test_login_works(self):
         view = UserViewSet.as_view(actions={'post': 'login'})
         data = {
-            'email': 'test@test.de',
-            'password': 'test',
+            'email': 'dummy@law-orga.de',
+            'password': settings.DUMMY_USER_PASSWORD,
         }
         request = self.factory.post('/api/users/login/', data)
         response = view(request)
-        self.assertContains(response, 'token')
-        self.assertContains(response, 'id')
-        self.assertContains(response, 'key')
-        self.assertContains(response, 'email')
+        self.assertContains(response, 'access')
+        self.assertContains(response, 'refresh')
+        self.assertContains(response, 'user')
+        self.assertContains(response, 'rlc')
+        self.assertContains(response, 'permissions')
         self.assertEqual(response.status_code, 200)
 
     def test_password_forgotten_works(self):
@@ -119,10 +123,10 @@ class UserViewSetWorkingTests(UserBase, TestCase):
 
     def test_change_password_works(self):
         view = UserViewSet.as_view(actions={'post': 'change_password'})
-        self.user.encryption_keys.decrypt('qwe123')
+        self.user.encryption_keys.decrypt(settings.DUMMY_USER_PASSWORD)
         private_key = self.user.encryption_keys.private_key
         data = {
-            'current_password': 'test',
+            'current_password': settings.DUMMY_USER_PASSWORD,
             'new_password': 'pass1234!',
             'new_password_confirm': 'pass1234!',
         }
@@ -184,7 +188,7 @@ class UserViewSetWorkingTests(UserBase, TestCase):
         rlc_user = self.rlc_user
         self.another_rlc_user.accepted = False
         self.another_rlc_user.save()
-        request = self.factory.post('', HTTP_PRIVATE_KEY=self.private_key)
+        request = self.factory.post('')
         force_authenticate(request, rlc_user.user)
         response = view(request, pk=self.another_rlc_user.pk)
         self.assertEqual(response.status_code, 200)
@@ -194,7 +198,7 @@ class UserViewSetWorkingTests(UserBase, TestCase):
         rlc_user = self.rlc_user
         self.another_rlc_user.locked = True
         self.another_rlc_user.save()
-        request = self.factory.post('', HTTP_PRIVATE_KEY=self.private_key)
+        request = self.factory.post('')
         force_authenticate(request, rlc_user.user)
         response = view(request, pk=self.another_rlc_user.pk)
         self.assertEqual(response.status_code, 200)
@@ -343,9 +347,10 @@ class UserViewSetAccessTests(TestCase):
 
     def test_everybody_can_hit_statics(self):
         view = UserViewSet.as_view(actions={'get': 'statics'})
-        request = self.factory.get('/api/users/statics/token-123/')
+        request = self.factory.get('/api/users/statics/')
         response = view(request)
-        self.assertEqual(response.status_code, 401)
+        self.assertNotEqual(response.status_code, 401)
+        self.assertNotEqual(response.status_code, 403)
 
     def test_everybody_can_hit_logout(self):
         view = UserViewSet.as_view(actions={'post': 'logout'})

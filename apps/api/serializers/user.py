@@ -11,10 +11,12 @@ from apps.api.models import UserProfile, RlcUser
 from rest_framework import serializers
 from django.db import transaction
 
-
 ###
 # RlcUser
 ###
+from config.authentication import RefreshPrivateKeyToken
+
+
 class RlcUserSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField('get_name')
     email = serializers.SerializerMethodField('get_email')
@@ -199,13 +201,10 @@ class AuthTokenSerializer(DRFAuthTokenSerializer):
 # JWT
 ###
 class JWTSerializer(TokenObtainSerializer):
-    token_class = RefreshToken
+    token_class = RefreshPrivateKeyToken
 
     def get_token(self, user):
-        token = super().get_token(user)
-        password_user = self.initial_data['password']
-        token['key'] = user.get_private_key(password_user=password_user)
-        return token
+        return self.token_class.for_user(user, password_user=self.initial_data['password'])
 
     def validate(self, attrs):
         data = super().validate(attrs)

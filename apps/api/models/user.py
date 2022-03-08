@@ -270,7 +270,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                     self.encryption_keys.decrypt(settings.DUMMY_USER_PASSWORD)
                     return self.encryption_keys.private_key
                 else:
-                    raise AuthenticationFailed('No private key within the token.')
+                    raise AuthenticationFailed('No token or no private key provided within the token.')
             # private_key = private_key.replace("\\n", "\n").replace("<linebreak>", "\n")
 
         else:

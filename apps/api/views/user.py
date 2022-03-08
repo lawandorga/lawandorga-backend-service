@@ -204,7 +204,11 @@ class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def statics(self, request):
-        user = UserProfile.objects.get(pk=request.auth.payload['django_user'])
+        try:
+            payload = request.auth.payload
+        except AttributeError:
+            raise ParseError('Token was not set within the request.')
+        user = UserProfile.objects.get(pk=payload['django_user'])
 
         data = {
             "user": RlcUserSerializer(user.rlc_user).data,
