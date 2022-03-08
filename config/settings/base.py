@@ -153,12 +153,24 @@ CORS_ALLOW_HEADERS = [
 # https://www.django-rest-framework.org/api-guide/settings/
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         "config.authentication.ExpiringTokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
     'DATE_INPUT_FORMATS': ["%d-%m-%Y", "%Y-%m-%d", "%Y-%m-%dT%H:%M:%S.%fZ"],
     'DATETIME_FORMAT': "%Y-%m-%dT%H:%M",
     "DEFAULT_PERMISSION_CLASSES": ["config.authentication.IsAuthenticatedAndActive"],
+}
+
+# JWT Token
+# See: https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
+SIMPLE_JWT = {
+    'UPDATE_LAST_LOGIN': True,
+    'SIGNING_KEY': get_secret('JWT_SIGNING_KEY'),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=20),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=20),
+    'USER_ID_CLAIM': 'django_user',
+    'ROTATE_REFRESH_TOKENS': True,
 }
 
 # Necessary in django 3.2

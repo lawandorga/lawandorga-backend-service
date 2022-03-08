@@ -2,7 +2,7 @@ from apps.api.models.has_permission import HasPermission
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from apps.api.models.permission import Permission
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import ParseError, AuthenticationFailed
 from django.core.exceptions import ObjectDoesNotExist
 from apps.static.encryption import RSAEncryption
 from django.core.mail import send_mail
@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.conf import settings
 from django.db import models, transaction
 from datetime import timedelta
+import jwt
 
 
 class UserProfileManager(BaseUserManager):
@@ -261,15 +262,16 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             private_key = self.encryption_keys.private_key
 
         elif request and not password_user:
-            private_key = request.META.get("HTTP_PRIVATE_KEY")
-            if not private_key:
+            try:
+                private_key = request.auth.payload['key']
+            except AttributeError:
                 # enable direct testing of the rest framework
                 if self.email == "dummy@law-orga.de" and settings.DUMMY_USER_PASSWORD:
                     self.encryption_keys.decrypt(settings.DUMMY_USER_PASSWORD)
                     return self.encryption_keys.private_key
                 else:
-                    raise ParseError('No private key provied within the request.')
-            private_key = private_key.replace("\\n", "\n").replace("<linebreak>", "\n")
+                    raise AuthenticationFailed('No private key within the token.')
+            # private_key = private_key.replace("\\n", "\n").replace("<linebreak>", "\n")
 
         else:
             raise ValueError("You need to pass (password_user) or (request).")

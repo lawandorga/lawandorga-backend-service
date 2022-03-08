@@ -1,22 +1,22 @@
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework.authtoken.models import Token
 from apps.recordmanagement.models import RecordDeletion, RecordAccess
 from rest_framework.exceptions import ParseError, AuthenticationFailed
 from rest_framework.decorators import action
-from apps.api.serializers import RlcUserCreateSerializer, RlcUserForeignSerializer, EmailSerializer, \
-    UserPasswordResetConfirmSerializer, RlcSerializer, RlcUserSerializer, \
-    AuthTokenSerializer, RlcUserListSerializer, RlcUserUpdateSerializer, UserProfileSerializer, \
-    UserProfileChangePasswordSerializer
 from rest_framework.response import Response
 from apps.static.permission import CheckPermissionWall
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.request import Request
+from apps.api.serializers import RlcUserCreateSerializer, RlcUserForeignSerializer, EmailSerializer, \
+    UserPasswordResetConfirmSerializer, RlcSerializer, RlcUserSerializer, \
+    RlcUserUpdateSerializer, UserProfileChangePasswordSerializer, JWTSerializer
 from django.db.models import Q
 from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS, PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS, \
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
 from apps.api.models import UserProfile, PasswordResetTokenGenerator, AccountActivationTokenGenerator, UsersRlcKeys, \
-    RlcUser, Group
+    RlcUser
 from rest_framework import viewsets, status
-from django.utils import timezone
 from django.db import IntegrityError
 
 
@@ -36,9 +36,15 @@ class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    def perform_authentication(self, request):
+        if self.action in ['login', 'refresh']:
+            pass
+        else:
+            super().perform_authentication(request)
+
     def get_permissions(self):
         if self.action in ['statics', 'create', 'logout', 'login', 'password_reset', 'password_reset_confirm',
-                           'activate']:
+                           'activate', 'refresh']:
             return []
         return super().get_permissions()
 
@@ -46,7 +52,7 @@ class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
         if self.action in ["create"]:
             return RlcUserCreateSerializer
         elif self.action in ['list']:
-            return RlcUserListSerializer
+            return RlcUserSerializer
         elif self.action in ['update', 'partial_update']:
             return RlcUserUpdateSerializer
         return super().get_serializer_class()
@@ -69,7 +75,7 @@ class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
     def retrieve(self, request, pk=None, **kwargs):
         rlc_user = self.get_object()
         if request.user.has_permission(PERMISSION_ADMIN_MANAGE_USERS) or rlc_user.pk == request.user.rlc_user.pk:
-            serializer = RlcUserListSerializer(rlc_user)
+            serializer = RlcUserSerializer(rlc_user)
         else:
             serializer = RlcUserForeignSerializer(rlc_user)
         return Response(serializer.data)
@@ -82,7 +88,7 @@ class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
         serializer = self.get_serializer(rlc_user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        return Response(RlcUserListSerializer(rlc_user).data)
+        return Response(RlcUserSerializer(rlc_user).data)
 
     @action(detail=False, methods=["post"])
     def change_password(self, request: Request):
@@ -90,14 +96,33 @@ class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
         serializer = UserProfileChangePasswordSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user.change_password(serializer.validated_data['current_password'], serializer.validated_data['new_password'])
-        return Response(RlcUserListSerializer(user.rlc_user).data)
+        return Response(RlcUserSerializer(user.rlc_user).data)
 
-    @action(detail=False, methods=["post"], permission_classes=[], authentication_classes=[])
+    @action(detail=False, methods=['post'])
+    def refresh(self, request):
+        serializer = TokenRefreshSerializer(data=request.data, context={'request': request})
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as e:
+            raise InvalidToken(e.args[0])
+
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["post"])
     def login(self, request: Request):
-        serializer = AuthTokenSerializer(data=request.data, context={"request": request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data["user"]
-        password = serializer.validated_data["password"]
+        serializer = JWTSerializer(data=request.data, context={"request": request})
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as e:
+            raise InvalidToken(e.args[0])
+        except AuthenticationFailed:
+            raise ParseError({
+                'non_field_errors': ["This e-mail doesn't exist or the password is wrong."]
+            })
+        user = serializer.user
+        # password = serializer.validated_data["password"]
 
         # check if user active and user accepted in rlc
         if not user.rlc_user.email_confirmed:
@@ -129,23 +154,23 @@ class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
             )
 
         # create the token and set the time if not created to keep it valid
-        token, created = Token.objects.get_or_create(user=user)
-        if not created:
-            token.created = timezone.now()
-            token.save()
+        # token, created = Token.objects.get_or_create(user=user)
+        # if not created:
+        #     token.created = timezone.now()
+        #     token.save()
 
         # get the user's private key
-        private_key = user.get_private_key(password_user=password)
+        # private_key = user.get_private_key(password_user=password)
 
         # build the response
-        data = {
-            "token": token.key,
-            "key": private_key,
-            "user": UserProfileSerializer(user).data,
-            "rlc": RlcSerializer(user.rlc).data,
-            "permissions": user.get_all_user_permissions(),
-        }
-        return Response(data, status=status.HTTP_200_OK)
+        # data = {
+        #     "token": token.key,
+        #     "key": private_key,
+        #     "user": UserProfileSerializer(user).data,
+        #     "rlc": RlcSerializer(user.rlc).data,
+        #     "permissions": user.get_all_user_permissions(),
+        # }
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'])
     def dashboard(self, request, *args, **kwargs):
@@ -177,16 +202,12 @@ class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
         }
         return Response(data)
 
-    @action(detail=False, methods=["get"], url_path="statics/(?P<token>[^/.]+)")
-    def statics(self, request: Request, token=None, *args, **kwargs):
-        try:
-            token = Token.objects.get(key=token)
-        except ObjectDoesNotExist:
-            raise AuthenticationFailed("Your token doesn't exist, please login again.")
-        user = token.user
+    @action(detail=False, methods=["get"])
+    def statics(self, request):
+        user = UserProfile.objects.get(pk=request.auth.payload['django_user'])
 
         data = {
-            "user": UserProfileSerializer(user).data,
+            "user": RlcUserSerializer(user.rlc_user).data,
             "rlc": RlcSerializer(user.rlc).data,
             "permissions": user.get_all_user_permissions(),
         }
@@ -289,7 +310,7 @@ class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
         if success:
             rlc_user.locked = False
             rlc_user.save()
-            return Response(RlcUserListSerializer(rlc_user).data)
+            return Response(RlcUserSerializer(rlc_user).data)
         else:
             raise ParseError('Not all keys could be handed over. Please tell another admin to unlock this user.')
 
@@ -328,4 +349,4 @@ class UserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
             pass
 
         # return
-        return Response(RlcUserListSerializer(instance=new_member).data)
+        return Response(RlcUserSerializer(instance=new_member).data)
