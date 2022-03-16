@@ -36,7 +36,6 @@ INSTALLED_APPS = [
     "apps.files",
     "apps.collab",
     "apps.internal",
-    "rest_framework.authtoken",
     "storages",
     "corsheaders",
     "solo",
