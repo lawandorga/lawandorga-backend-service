@@ -1,5 +1,3 @@
-from django.conf import settings
-
 from apps.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
 from apps.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
 from apps.collab.static import get_all_collab_permission_strings
@@ -19,6 +17,7 @@ from apps.api.models.rlc import Rlc
 from apps.collab.models import CollabPermission, CollabDocument, TextDocumentVersion
 from apps.files.models import FolderPermission
 from apps.api.models import UserProfile, RlcUser
+from django.conf import settings
 from apps.api import static
 from random import randint, choice
 

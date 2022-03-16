@@ -184,6 +184,13 @@ class RecordEntrySerializer(serializers.ModelSerializer):
     def get_type(self, obj):
         return obj.field.type
 
+    def get_fields(self, *args, **kwargs):
+        fields = super().get_fields(*args, **kwargs)
+        request = self.context.get('request', None)
+        if request and getattr(request, 'method', None) == "PATCH":
+            fields['value'].required = True
+        return fields
+
 
 class RecordEncryptedFileEntrySerializer(RecordEntrySerializer):
     url = serializers.HyperlinkedIdentityField(view_name='recordencryptedfileentry-detail')
@@ -248,6 +255,7 @@ class RecordUsersEntryDetailSerializer(RecordUsersEntrySerializer):
 
 
 class RecordStateEntrySerializer(RecordEntrySerializer):
+    value = serializers.CharField(allow_null=False)
     url = serializers.HyperlinkedIdentityField(view_name='recordstateentry-detail')
 
     class Meta:
@@ -262,7 +270,7 @@ class RecordStateEntrySerializer(RecordEntrySerializer):
             field = attrs['field']
         else:
             raise ValidationError('Field needs to be set.')
-        if not attrs['value'] in field.options:
+        if 'value' in attrs and not attrs['value'] in field.options:
             raise ValidationError('The selected state is not allowed.')
         return attrs
 
@@ -287,11 +295,14 @@ class RecordEncryptedStandardEntrySerializer(RecordEntrySerializer):
         return entry
 
     def update(self, instance, validated_data):
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+        # get the keys
         request = self.context['request']
         private_key_user = request.user.get_private_key(request=request)
         aes_key_record = instance.record.get_aes_key(user=request.user, private_key_user=private_key_user)
+        # update the instance
+        instance.decrypt(aes_key_record=aes_key_record)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
         instance.encrypt(aes_key_record=aes_key_record)
         instance.save()
         instance.decrypt(aes_key_record=aes_key_record)

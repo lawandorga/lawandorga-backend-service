@@ -1,16 +1,15 @@
-from datetime import timedelta
-
-from django.utils import timezone
-
 from apps.recordmanagement.tests.record_entries import BaseRecordEntry
 from apps.recordmanagement.tests.record import BaseRecord
 from apps.recordmanagement.models import RecordEncryptedSelectField, RecordEncryptedSelectEntry, RecordStateField, \
     RecordStateEntry, RecordSelectField, RecordSelectEntry, RecordEncryptedStandardField, \
-    RecordEncryptedStandardEntry, RecordMultipleEntry, RecordMultipleField, Record, RecordUsersField
+    RecordEncryptedStandardEntry, RecordMultipleEntry, RecordMultipleField, Record, RecordStandardField
 from apps.recordmanagement.views import RecordEncryptedSelectEntryViewSet, RecordStateFieldViewSet, \
-    RecordStateEntryViewSet, RecordSelectEntryViewSet, RecordEncryptedStandardEntryViewSet, RecordMultipleEntryViewSet
+    RecordStateEntryViewSet, RecordSelectEntryViewSet, RecordEncryptedStandardEntryViewSet, \
+    RecordMultipleEntryViewSet, RecordStandardEntryViewSet
 from rest_framework.test import force_authenticate
+from django.utils import timezone
 from django.test import TestCase
+from datetime import timedelta
 import json
 
 
@@ -95,6 +94,43 @@ class RecordStateEntryViewSetErrors(BaseRecordEntry, TestCase):
         response = view(request, pk=self.entry.pk)
         self.assertContains(response, 'state', status_code=400)
 
+    def test_no_500_on_create_with_value_missing(self):
+        view = RecordStateEntryViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'record': self.record.pk,
+            'field': self.field.pk,
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        response = view(request)
+        self.assertEqual(response.status_code, 400)
+
+    def test_no_500_on_update_with_value_missing(self):
+        self.setup_entry()
+        view = RecordStateEntryViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {}
+        request = self.factory.patch('', data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=self.entry.pk)
+        self.assertEqual(response.status_code, 200)
+
+
+class RecordStandardEntryViewSetErrors(BaseRecordEntry, TestCase):
+    def setUp(self):
+        super().setUp()
+        self.field = RecordStandardField.objects.create(template=self.template)
+
+    def test_no_500_on_create_with_value_missing(self):
+        view = RecordStandardEntryViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'record': self.record.pk,
+            'field': self.field.pk,
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        response = view(request)
+        self.assertEqual(response.status_code, 400)
+
 
 class RecordEncryptedStandardEntryViewSetErrors(BaseRecordEntry, TestCase):
     def setUp(self):
@@ -121,6 +157,26 @@ class RecordEncryptedStandardEntryViewSetErrors(BaseRecordEntry, TestCase):
         entry = RecordEncryptedStandardEntry.objects.first()
         entry.decrypt(aes_key_record=self.aes_key_record)
         self.assertEqual(entry.value, json.dumps({"isTrusted": True}))
+
+    def test_no_500_on_create_with_value_missing(self):
+        view = RecordEncryptedStandardEntryViewSet.as_view(actions={'post': 'create'})
+        data = {
+            'record': self.record.pk,
+            'field': self.field.pk,
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        response = view(request)
+        self.assertEqual(response.status_code, 400)
+
+    def test_no_500_on_update_with_value_missing(self):
+        self.setup_entry()
+        view = RecordEncryptedStandardEntryViewSet.as_view(actions={'patch': 'partial_update'})
+        data = {}
+        request = self.factory.patch('', data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=self.entry.pk)
+        self.assertEqual(response.status_code, 200)
 
 
 class RecordSelectEntryViewSetErrors(BaseRecordEntry, TestCase):
