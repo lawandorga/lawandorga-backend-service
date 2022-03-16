@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from apps.recordmanagement.serializers.record import RecordTemplateSerializer, RecordEncryptedStandardFieldSerializer, \
     RecordSerializer, RecordEncryptedStandardEntrySerializer, RecordStandardEntrySerializer, \
     RecordEncryptedFileEntrySerializer, RecordStandardFieldSerializer, RecordEncryptedFileFieldSerializer, \
@@ -78,8 +80,12 @@ class RecordFieldViewSet(CheckPermissionWall, mixins.CreateModelMixin, mixins.Up
         try:
             instance.delete()
         except ProtectedError:
+            entries = self.model.get_entry_model().objects.filter(field=instance).select_related('record')
+            records = [e.record for e in entries]
+            record_urls = ['{}records/{}/'.format(settings.FRONTEND_URL, record.pk) for record in records]
+            record_text = '\n'.join(record_urls)
             raise ParseError('This field has associated data from one or more records. '
-                             'At the moment there is no way to delete this field.')
+                             'Please empty this field in the following records:\n{}'.format(record_text))
 
 
 class RecordStateFieldViewSet(RecordFieldViewSet):

@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.core.files import File
 
 from apps.recordmanagement.models import EncryptedRecord, EncryptedClient
@@ -61,6 +62,14 @@ class RecordField(models.Model):
     @property
     def type(self):
         raise NotImplemented('This property needs to be implemented.')
+
+    @classmethod
+    def get_entry_model(cls):
+        name = cls.__name__.replace('Field', 'Entry')
+        print(name)
+        model = apps.get_model('recordmanagement', name)
+        print(model)
+        return model
 
 
 class RecordStateField(RecordField):
