@@ -459,7 +459,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     RecordStandardEntry.objects.create(record=record, field=field, value='2018-01-03')
     # last contact date
     field = RecordStandardField.objects.get(template=template, name='Last contact date')
-    RecordStandardEntry.objects.create(record=record, field=field, value='2019-3-11T09:32:21')
+    RecordStandardEntry.objects.create(record=record, field=field, value='2019-03-11T09:32:21')
     # token
     field = RecordStandardField.objects.get(template=template, name='Token')
     RecordStandardEntry.objects.create(field=field, record=record, value="AZ-001/18")
