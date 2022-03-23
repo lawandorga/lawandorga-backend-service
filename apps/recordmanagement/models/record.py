@@ -546,8 +546,3 @@ class RecordEncryptionNew(EncryptedModelMixin, models.Model):
         else:
             raise ValueError('You need to pass (public_key_user).')
         super().encrypt(key)
-
-    def get_key(self, private_key_user):
-        if not self.key:
-            raise ValueError("This RecordEncryption does not have an encrypted key.")
-        return RSAEncryption.decrypt(self.key, private_key_user)

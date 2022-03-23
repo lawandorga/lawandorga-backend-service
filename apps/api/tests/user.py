@@ -5,12 +5,9 @@ from apps.api.models import UserProfile, RlcUser, Rlc, Permission, HasPermission
 from apps.api.views import UserViewSet
 from django.test import TestCase
 
-from config.authentication import RefreshPrivateKeyToken
-
 
 class UserBase:
     def setUp(self):
-        self.factory = APIRequestFactory()
         self.rlc = Rlc.objects.create(name="Test RLC")
         self.user = UserProfile.objects.create(email='dummy@law-orga.de', name='Dummy 1', rlc=self.rlc)
         self.user.set_password(settings.DUMMY_USER_PASSWORD)
@@ -25,7 +22,12 @@ class UserBase:
             Permission.objects.create(name=perm)
 
 
-class UserViewSetWorkingTests(UserBase, TestCase):
+class UserViewSetBase(UserBase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+
+
+class UserViewSetWorkingTests(UserViewSetBase, TestCase):
     def setUp(self):
         super().setUp()
         self.another_user = UserProfile.objects.create(email='test_new@test.de', name='Dummy 2', rlc=self.rlc)

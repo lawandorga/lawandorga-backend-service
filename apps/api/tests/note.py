@@ -1,12 +1,12 @@
 from rest_framework.test import force_authenticate
-from apps.api.tests.user import UserBase
+from apps.api.tests.user import UserViewSetBase
 from apps.api.static import PERMISSION_DASHBOARD_MANAGE_NOTES
 from apps.api.models import Note
 from apps.api.views import NoteViewSet
 from django.test import TestCase
 
 
-class NoteViewSetWorking(UserBase, TestCase):
+class NoteViewSetWorking(UserViewSetBase, TestCase):
     def setUp(self):
         super().setUp()
         self.rlc_user.grant(PERMISSION_DASHBOARD_MANAGE_NOTES)

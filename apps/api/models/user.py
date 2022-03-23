@@ -307,38 +307,34 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         this method assumes that a valid public key exists for user_to_unlock
         """
         from apps.api.models import UsersRlcKeys
-        from apps.recordmanagement.models import RecordEncryption
+        from apps.recordmanagement.models import RecordEncryptionNew
 
-        # this variable checks if all keys that the user needed were generated
-        keys_missing = False
+        # safety check if all keys can be handed over
+        record_encryptions = user_to_unlock.recordencryptions.all()
+        for old_keys in list(record_encryptions):
+            try:
+                RecordEncryptionNew.objects.get(user=self, record=old_keys.record)
+            except ObjectDoesNotExist:
+                return False
 
-        # generate new rlc key - this works always
+        # generate new rlc key - this always works
         user_to_unlock.users_rlc_keys.all().delete()
         aes_key_rlc = self.rlc.get_aes_key(user=self, private_key_user=private_key_self)
-        new_keys = UsersRlcKeys(
-            user=user_to_unlock, rlc=user_to_unlock.rlc, encrypted_key=aes_key_rlc
-        )
+        new_keys = UsersRlcKeys(user=user_to_unlock, rlc=user_to_unlock.rlc, encrypted_key=aes_key_rlc)
         new_keys.encrypt(user_to_unlock.get_public_key())
         new_keys.save()
 
         # generate new record encryption
-        record_encryptions = user_to_unlock.record_encryptions.all()
-
         for old_keys in list(record_encryptions):
-            # check if the user has the needed keys if not just skip
-            try:
-                encryption = RecordEncryption.objects.get(user=self, record=old_keys.record)
-            except ObjectDoesNotExist:
-                keys_missing = True
-                continue
             # change the keys to the new keys
+            encryption = RecordEncryptionNew.objects.get(user=self, record=old_keys.record)
             encryption.decrypt(private_key_user=private_key_self)
-            old_keys.encrypted_key = encryption.encrypted_key
+            old_keys.key = encryption.key
             old_keys.encrypt(user_to_unlock.get_public_key())
             old_keys.save()
 
         # return true if everything worked as expected return false otherwise
-        return not keys_missing
+        return True
 
 
 class RlcUser(models.Model):
