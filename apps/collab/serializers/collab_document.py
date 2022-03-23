@@ -14,7 +14,7 @@ class CollabDocumentSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def validate_name(self, value):
-        value = ''.join(e for e in value if e.isalnum() or e == ' ' or e == '.')
+        value = ''.join(e for e in value if e.isalnum() or e in [' ', '.', ':', '*', '(', ')', '[', ']'])
         return value
 
 
