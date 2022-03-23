@@ -66,9 +66,7 @@ class RecordField(models.Model):
     @classmethod
     def get_entry_model(cls):
         name = cls.__name__.replace('Field', 'Entry')
-        print(name)
         model = apps.get_model('recordmanagement', name)
-        print(model)
         return model
 
 

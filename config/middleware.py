@@ -17,7 +17,6 @@ class LoggingMiddleware:
         response = self.get_response(request)
 
         # set the data
-        print(request.get_full_path())
         data = {
             'user': request.user if request.user.is_authenticated else None,
             'path': request.get_full_path(),
