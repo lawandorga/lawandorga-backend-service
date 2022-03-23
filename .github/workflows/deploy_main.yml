@@ -17,4 +17,3 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.KEY }}
         script: /home/law-orga-backend/deploy.sh
-        script_stop: true
