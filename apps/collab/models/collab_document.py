@@ -14,6 +14,7 @@ class CollabDocument(models.Model):
         verbose_name = 'CollabDocument'
         verbose_name_plural = 'CollabDocuments'
         unique_together = ('rlc', 'path')
+        ordering = ['path']
 
     def __str__(self):
         return 'collabDocument: {}; name: {};'.format(self.pk, self.name)
