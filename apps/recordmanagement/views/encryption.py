@@ -2,6 +2,7 @@ from apps.recordmanagement.serializers import RecordEncryptionNewSerializer
 from apps.recordmanagement.models import RecordEncryptionNew
 from rest_framework.exceptions import PermissionDenied, ParseError
 from rest_framework.response import Response
+from apps.api.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from rest_framework import viewsets, mixins, status
 
 
@@ -16,6 +17,9 @@ class RecordEncryptionNewViewSet(mixins.ListModelMixin, mixins.DestroyModelMixin
         if RecordEncryptionNew.objects.filter(record=instance.record).count() <= 2:
             raise ParseError('You can not delete these encryption keys. There need to be at least 2 persons who '
                              'have access to this record.')
+        if instance.user.has_permission(PERMISSION_RECORDS_ACCESS_ALL_RECORDS):
+            raise ParseError('You can not delete the encryption keys of this person, because he or she has '
+                             'the permission to access all records.')
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
