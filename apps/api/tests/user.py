@@ -24,6 +24,7 @@ class UserBase:
 
 class UserViewSetBase(UserBase):
     def setUp(self):
+        super().setUp()
         self.factory = APIRequestFactory()
 
 

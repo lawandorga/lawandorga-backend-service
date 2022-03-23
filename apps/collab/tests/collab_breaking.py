@@ -38,7 +38,7 @@ class CollabDocumentViewSetWorking(BaseCollab, TestCase):
         request = self.factory.patch('', data)
         force_authenticate(request, self.user)
         response = view(request, pk=collab_document.pk)
-        self.assertContains(response, 'MyDocumentTest', status_code=200)
+        self.assertContains(response, 'My.DocumentTest', status_code=200)
         collab_document = self.create_collab_document('/MyDocumentTest/Document 2')
         view = CollabDocumentViewSet.as_view(actions={'patch': 'partial_update'})
         data = {
