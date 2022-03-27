@@ -7,7 +7,8 @@ from django.db import models
 class RecordDeletion(models.Model):
     record = models.ForeignKey(Record, related_name='deletions', on_delete=models.SET_NULL, null=True)
     explanation = models.TextField()
-    requested_by = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='requestedrecorddeletions')
+    requested_by = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='requestedrecorddeletions',
+                                     blank=True)
     processed_by = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='processedrecorddeletions',
                                      null=True)
     processed = models.DateTimeField(null=True, blank=True)
