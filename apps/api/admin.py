@@ -66,6 +66,10 @@ class RlcAdmin(admin.ModelAdmin):
         return super().get_form(request, obj, **defaults)
 
 
+class StatisticUserAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['user']
+
+
 admin.site.register(Group)
 admin.site.register(Permission)
 admin.site.register(HasPermission, HasPermissionAdmin)
@@ -78,4 +82,4 @@ admin.site.register(UserProfile, UserAdmin)
 admin.site.register(Notification)
 admin.site.register(LoggedPath, LoggedPathAdmin)
 admin.site.register(RlcUser, RlcUserAdmin)
-admin.site.register(StatisticUser)
+admin.site.register(StatisticUser, StatisticUserAdmin)

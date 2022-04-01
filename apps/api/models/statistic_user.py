@@ -13,6 +13,9 @@ class StatisticUser(models.Model):
         verbose_name_plural = 'StatisticUsers'
         ordering = ['user__name']
 
+    def __str__(self):
+        return 'statisticUser: {}; email: {};'.format(self.pk, self.user.email)
+
     def change_password(self, old_password, new_password):
         if not self.user.check_password(old_password):
             raise ValueError('The password is not correct.')
