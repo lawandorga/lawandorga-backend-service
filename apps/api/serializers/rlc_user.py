@@ -105,6 +105,9 @@ class RlcUserJWTSerializer(TokenObtainSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
 
+        if not hasattr(self.user, 'rlc_user'):
+            raise ValidationError("You don't have the necessary role to be able to login here.")
+
         refresh = self.get_token(self.user)
 
         data["refresh"] = str(refresh)

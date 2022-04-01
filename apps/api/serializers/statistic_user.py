@@ -1,3 +1,4 @@
+from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.serializers import TokenObtainSerializer
 from rest_framework_simplejwt.settings import api_settings
 from django.contrib.auth.models import update_last_login
@@ -35,6 +36,9 @@ class StatisticUserJWTSerializer(TokenObtainSerializer):
 
     def validate(self, attrs):
         data = super().validate(attrs)
+
+        if not hasattr(self.user, 'statistic_user'):
+            raise ValidationError("You don't have the necessary role to be able to login here.")
 
         refresh = self.get_token(self.user)
 

@@ -72,6 +72,13 @@ class StatisticsUserViewSetTests(UserBase, TestCase):
         response = self.login(password='pass1234!')
         self.assertEqual(response.status_code, 200)
 
+    def test_login_blocked_without_statistic_user(self):
+        user = UserProfile.objects.create(email='tester@law-orga.de', name='Tester')
+        user.set_password(settings.DUMMY_USER_PASSWORD)
+        user.save()
+        response = self.login(email=user.email)
+        self.assertContains(response, 'non_field_errors', status_code=400)
+
     def test_change_password_blocked_with_rlc_user_existing(self):
         RlcUser.objects.create(user=self.user, accepted=True, email_confirmed=True, locked=False, is_active=True)
         view = StatisticsUserViewSet.as_view(actions={'post': 'change_password'})
