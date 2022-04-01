@@ -7,13 +7,28 @@ class IsAuthenticatedAndEverything(permissions.IsAuthenticated):
               'account should not be locked and you should be accepted as a lc member.'
 
     def has_permission(self, request, view):
-        return (
-            super().has_permission(request, view) and
-            request.user.rlc_user.is_active and
-            request.user.rlc_user.email_confirmed and
-            not request.user.rlc_user.locked and
-            request.user.rlc_user.accepted
-        )
+        if not super().has_permission(request, view):
+            return False
+
+        # get the user
+        user = request.user
+
+        # rlc user
+        if hasattr(user, 'rlc_user'):
+            rlc_user = user.rlc_user
+            if (not rlc_user.is_active or
+                not rlc_user.email_confirmed or
+                not user.rlc_user.accepted or
+                user.rlc_user.locked
+            ):
+                return False
+
+        # statistic user
+        if hasattr(user, 'statistic_user'):
+            pass
+
+        # default
+        return True
 
 
 class RefreshPrivateKeyToken(RefreshToken):

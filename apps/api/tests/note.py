@@ -1,5 +1,5 @@
 from rest_framework.test import force_authenticate
-from apps.api.tests.user import UserViewSetBase
+from apps.api.tests.rlc_user import UserViewSetBase
 from apps.api.static import PERMISSION_DASHBOARD_MANAGE_NOTES
 from apps.api.models import Note
 from apps.api.views import NoteViewSet

@@ -1,9 +1,9 @@
-from django.conf import settings
 from rest_framework.test import APIRequestFactory, force_authenticate
 from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS, get_all_permission_strings
 from apps.api.models import UserProfile, RlcUser, Rlc, Permission, HasPermission, UserEncryptionKeys
-from apps.api.views import UserViewSet
+from apps.api.views import RlcUserViewSet
 from django.test import TestCase
+from django.conf import settings
 
 
 class UserBase:
@@ -48,7 +48,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
             Permission.objects.create(name=perm)
 
     def test_create_works(self):
-        view = UserViewSet.as_view(actions={'post': 'create'})
+        view = RlcUserViewSet.as_view(actions={'post': 'create'})
         data = {
             'name': 'Test',
             'email': 'test2@test.de',
@@ -62,7 +62,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         self.assertTrue(RlcUser.objects.filter(user__email='test2@test.de').exists())
 
     def test_email_confirmation_token_works(self):
-        view = UserViewSet.as_view(actions={'post': 'activate'})
+        view = RlcUserViewSet.as_view(actions={'post': 'activate'})
         rlc_user = self.rlc_user
         token = rlc_user.get_email_confirmation_token()
         request = self.factory.post('')
@@ -70,7 +70,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_login_works(self):
-        view = UserViewSet.as_view(actions={'post': 'login'})
+        view = RlcUserViewSet.as_view(actions={'post': 'login'})
         data = {
             'email': 'dummy@law-orga.de',
             'password': settings.DUMMY_USER_PASSWORD,
@@ -85,7 +85,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_password_forgotten_works(self):
-        view = UserViewSet.as_view(actions={'post': 'password_reset'})
+        view = RlcUserViewSet.as_view(actions={'post': 'password_reset'})
         data = {
             'email': 'test@test.de'
         }
@@ -94,7 +94,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         self.assertNotEqual(response.status_code, 403)
 
     def test_reset_password_works(self):
-        view = UserViewSet.as_view(actions={'post': 'password_reset_confirm'})
+        view = RlcUserViewSet.as_view(actions={'post': 'password_reset_confirm'})
         rlc_user = self.rlc_user
         data = {
             'token': rlc_user.get_password_reset_token(),
@@ -105,7 +105,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         request = self.factory.post(url, data)
         response = view(request, pk=rlc_user.pk)
         self.assertEqual(response.status_code, 200)
-        view = UserViewSet.as_view(actions={'post': 'login'})
+        view = RlcUserViewSet.as_view(actions={'post': 'login'})
         data = {
             'email': 'test@test.de',
             'password': 'test1234',
@@ -116,7 +116,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         self.assertContains(response, 'non_field_errors', status_code=400)
 
     def test_retrieve_works(self):
-        view = UserViewSet.as_view(actions={'get': 'retrieve'})
+        view = RlcUserViewSet.as_view(actions={'get': 'retrieve'})
         rlc_user = self.rlc_user
         url = '/api/users/{}/'.format(rlc_user.pk)
         request = self.factory.get(url)
@@ -125,7 +125,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_change_password_works(self):
-        view = UserViewSet.as_view(actions={'post': 'change_password'})
+        view = RlcUserViewSet.as_view(actions={'post': 'change_password'})
         self.user.encryption_keys.decrypt(settings.DUMMY_USER_PASSWORD)
         private_key = self.user.encryption_keys.private_key
         data = {
@@ -153,7 +153,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
     def test_destroy_works(self):
         rlc_users = RlcUser.objects.count()
         user_profiles = UserProfile.objects.count()
-        view = UserViewSet.as_view(actions={'delete': 'destroy'})
+        view = RlcUserViewSet.as_view(actions={'delete': 'destroy'})
         rlc_user = self.rlc_user
         another_rlc_user = self.another_rlc_user
         rlc_user.grant(PERMISSION_ADMIN_MANAGE_USERS)
@@ -165,7 +165,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         self.assertEqual(UserProfile.objects.count(), user_profiles - 1)
 
     def test_update_works(self):
-        view = UserViewSet.as_view(actions={'patch': 'partial_update'})
+        view = RlcUserViewSet.as_view(actions={'patch': 'partial_update'})
         rlc_user = self.rlc_user
         data = {
             'phone': '3243214321',
@@ -177,7 +177,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
 
     def test_update_works_on_another_user(self):
         self.rlc_user.grant(PERMISSION_ADMIN_MANAGE_USERS)
-        view = UserViewSet.as_view(actions={'patch': 'partial_update'})
+        view = RlcUserViewSet.as_view(actions={'patch': 'partial_update'})
         data = {'phone': '3243214321'}
         request = self.factory.patch('', data)
         force_authenticate(request, self.user)
@@ -187,7 +187,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
     def test_accept_works(self):
         HasPermission.objects.create(permission=Permission.objects.get(name=PERMISSION_ADMIN_MANAGE_USERS),
                                      user_has_permission=self.user)
-        view = UserViewSet.as_view(actions={'post': 'accept'})
+        view = RlcUserViewSet.as_view(actions={'post': 'accept'})
         rlc_user = self.rlc_user
         self.another_rlc_user.accepted = False
         self.another_rlc_user.save()
@@ -197,7 +197,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_unlock_works(self):
-        view = UserViewSet.as_view(actions={'post': 'unlock'})
+        view = RlcUserViewSet.as_view(actions={'post': 'unlock'})
         rlc_user = self.rlc_user
         self.another_rlc_user.locked = True
         self.another_rlc_user.save()
@@ -221,7 +221,7 @@ class UserViewSetErrorTests(TestCase):
         self.another_rlc_user = RlcUser.objects.create(user=self.another_user, email_confirmed=True, accepted=True)
 
     def test_create_returns_error_message_on_different_passwords(self):
-        view = UserViewSet.as_view(actions={'post': 'create'})
+        view = RlcUserViewSet.as_view(actions={'post': 'create'})
         data = {
             'name': 'Test',
             'email': 'test2@test.de',
@@ -234,7 +234,7 @@ class UserViewSetErrorTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_user_can_not_delete_someone_else(self):
-        view = UserViewSet.as_view(actions={'delete': 'destroy'})
+        view = RlcUserViewSet.as_view(actions={'delete': 'destroy'})
         url = '/api/users/{}/'.format(self.another_rlc_user.pk)
         request = self.factory.delete(url)
         force_authenticate(request, self.rlc_user.user)
@@ -242,7 +242,7 @@ class UserViewSetErrorTests(TestCase):
         self.assertNotEqual(response.status_code, 204)
 
     def test_password_forgotten_fails_on_wrong_token(self):
-        view = UserViewSet.as_view(actions={'post': 'password_reset_confirm'})
+        view = RlcUserViewSet.as_view(actions={'post': 'password_reset_confirm'})
         self.rlc_user.send_password_reset_email()
         data = {
             'token': 'ar9qt9-1606b5f4f0ee279d23863eb22c34f0b3',
@@ -255,7 +255,7 @@ class UserViewSetErrorTests(TestCase):
         self.assertNotEqual(response.status_code, 200)
 
     def test_login_returns_correct_password_wrong_error(self):
-        view = UserViewSet.as_view(actions={'post': 'login'})
+        view = RlcUserViewSet.as_view(actions={'post': 'login'})
         data = {
             'email': 'test@test.de',
             'password': 'falsch',
@@ -265,7 +265,7 @@ class UserViewSetErrorTests(TestCase):
         self.assertContains(response, 'non_field_errors', status_code=400)
 
     def test_login_returns_correct_email_wrong_message(self):
-        view = UserViewSet.as_view(actions={'post': 'login'})
+        view = RlcUserViewSet.as_view(actions={'post': 'login'})
         data = {
             'email': 'falsch',
             'password': 'falsch',
@@ -277,7 +277,7 @@ class UserViewSetErrorTests(TestCase):
     def test_inactive_user_can_not_login(self):
         self.rlc_user.is_active = False
         self.rlc_user.save()
-        view = UserViewSet.as_view(actions={'post': 'login'})
+        view = RlcUserViewSet.as_view(actions={'post': 'login'})
         data = {
             'email': 'test@test.de',
             'password': 'test',
@@ -287,7 +287,7 @@ class UserViewSetErrorTests(TestCase):
         self.assertContains(response, 'non_field_errors', status_code=400)
 
     def test_update_denys_without_permission(self):
-        view = UserViewSet.as_view(actions={'patch': 'partial_update'})
+        view = RlcUserViewSet.as_view(actions={'patch': 'partial_update'})
         data = {'phone': '3243214321'}
         request = self.factory.patch('', data)
         force_authenticate(request, self.user)
@@ -305,91 +305,85 @@ class UserViewSetAccessTests(TestCase):
         self.rlc_user = RlcUser.objects.create(pk=1, user=self.user, email_confirmed=True, accepted=True)
 
     def test_everybody_can_post_to_user_create(self):
-        view = UserViewSet.as_view(actions={'post': 'create'})
+        view = RlcUserViewSet.as_view(actions={'post': 'create'})
         request = self.factory.post('/api/users/')
         response = view(request)
         self.assertNotEqual(response.status_code, 403)
         self.assertNotEqual(response.status_code, 401)
 
     def test_not_everytbody_can_hit_retrieve(self):
-        view = UserViewSet.as_view(actions={'get': 'retrieve'})
+        view = RlcUserViewSet.as_view(actions={'get': 'retrieve'})
         request = self.factory.get('/api/users/1/')
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 401)
 
     def test_not_everybody_can_hit_update(self):
-        view = UserViewSet.as_view(actions={'patch': 'update'})
+        view = RlcUserViewSet.as_view(actions={'patch': 'update'})
         request = self.factory.patch('/api/users/1/', {})
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 401)
 
     def test_not_everytbody_can_hit_destroy(self):
-        view = UserViewSet.as_view(actions={'delete': 'destroy'})
+        view = RlcUserViewSet.as_view(actions={'delete': 'destroy'})
         request = self.factory.delete('/api/users/1/')
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 401)
 
     def test_not_everytbody_can_hit_list(self):
-        view = UserViewSet.as_view(actions={'get': 'list'})
+        view = RlcUserViewSet.as_view(actions={'get': 'list'})
         request = self.factory.delete('/api/users/')
         response = view(request)
         self.assertEqual(response.status_code, 401)
 
     def test_everybody_can_hit_login(self):
-        view = UserViewSet.as_view(actions={'post': 'login'})
+        view = RlcUserViewSet.as_view(actions={'post': 'login'})
         request = self.factory.post('/api/users/login/')
         response = view(request)
         self.assertNotEqual(response.status_code, 403)
         self.assertNotEqual(response.status_code, 401)
 
     def test_not_everybody_can_hit_admin(self):
-        view = UserViewSet.as_view(actions={'get': 'admin'})
+        view = RlcUserViewSet.as_view(actions={'get': 'admin'})
         request = self.factory.get('/api/users/admin/')
         response = view(request)
         self.assertEqual(response.status_code, 401)
 
     def test_everybody_can_hit_statics(self):
-        view = UserViewSet.as_view(actions={'get': 'statics'})
+        view = RlcUserViewSet.as_view(actions={'get': 'statics'})
         request = self.factory.get('/api/users/statics/')
         response = view(request)
         self.assertNotEqual(response.status_code, 401)
         self.assertNotEqual(response.status_code, 403)
 
-    def test_everybody_can_hit_logout(self):
-        view = UserViewSet.as_view(actions={'post': 'logout'})
-        request = self.factory.post('/api/users/logout/')
-        response = view(request)
-        self.assertEqual(response.status_code, 204)
-
     def test_everybody_can_hit_activate(self):
-        view = UserViewSet.as_view(actions={'post': 'activate'})
+        view = RlcUserViewSet.as_view(actions={'post': 'activate'})
         request = self.factory.post('/api/users/1/activate/token-123/')
         response = view(request, pk=1, token='token-123')
         self.assertNotEqual(response.status_code, 403)
         self.assertNotEqual(response.status_code, 401)
 
     def test_everybody_can_hit_password_reset(self):
-        view = UserViewSet.as_view(actions={'post': 'password_reset'})
+        view = RlcUserViewSet.as_view(actions={'post': 'password_reset'})
         request = self.factory.post('/api/users/password_reset/')
         response = view(request)
         self.assertNotEqual(response.status_code, 403)
         self.assertNotEqual(response.status_code, 401)
 
     def test_everybody_can_hit_password_reset_confirm(self):
-        view = UserViewSet.as_view(actions={'post': 'password_reset_confirm'})
+        view = RlcUserViewSet.as_view(actions={'post': 'password_reset_confirm'})
         request = self.factory.post('/api/users/1/password_reset_confirm/')
         response = view(request, pk=1)
         self.assertNotEqual(response.status_code, 403)
         self.assertNotEqual(response.status_code, 401)
 
     def test_not_everybody_can_hit_unlock(self):
-        view = UserViewSet.as_view(actions={'post': 'unlock'})
+        view = RlcUserViewSet.as_view(actions={'post': 'unlock'})
         request = self.factory.post('/api/users/1/unlock/')
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 401)
 
     def test_not_everybody_can_hit_accept(self):
-        view = UserViewSet.as_view(actions={'get': 'accept'})
+        view = RlcUserViewSet.as_view(actions={'get': 'accept'})
         request = self.factory.post('/api/users/1/accept/')
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 401)

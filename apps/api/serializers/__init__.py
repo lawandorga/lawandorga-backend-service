@@ -8,3 +8,5 @@ from .users_rlc_keys import *
 from .notification import *
 from .notification_group import *
 from .note import *
+from .rlc_user import *
+from .statistic_user import *

@@ -1,9 +1,7 @@
-from django.contrib.auth.models import AbstractUser, PermissionsMixin, _user_has_perm, _user_has_module_perms
-from solo.models import SingletonModel
-
+from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from apps.api.models import UserProfile
 from tinymce.models import HTMLField
-
+from solo.models import SingletonModel
 from django.db import models
 
 

@@ -1,11 +1,10 @@
-from django.conf import settings
-from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS, get_all_permission_strings
-from apps.api.models import UserProfile, RlcUser, Rlc, Permission, HasPermission, UserEncryptionKeys
-from apps.api.views import UserViewSet
-from django.test import TestCase
 from apps.recordmanagement.fixtures import create_default_record_template
 from apps.recordmanagement.models import Record, RecordTemplate, RecordEncryptionNew
 from apps.static.encryption import AESEncryption
+from apps.api.models import UserProfile, RlcUser, Rlc, Permission
+from apps.api.static import get_all_permission_strings
+from django.test import TestCase
+from django.conf import settings
 
 
 class UserBase:

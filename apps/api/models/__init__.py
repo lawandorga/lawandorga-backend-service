@@ -10,3 +10,5 @@ from .notification_group import *
 from .notification import *
 from .logged_path import *
 from .note import *
+from .rlc_user import *
+from .statistic_user import *

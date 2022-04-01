@@ -3,7 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from apps.static.permission import CheckPermissionWall
 from rest_framework.request import Request
-from apps.api.serializers import GroupSerializer, MemberIntegerSerializer, UserProfileSerializer, GroupCreateSerializer
+from apps.api.serializers import GroupSerializer, MemberIntegerSerializer, GroupCreateSerializer, \
+    RlcUserForeignSerializer
 from apps.api.static import PERMISSION_ADMIN_MANAGE_GROUPS
 from apps.api.models import Group, RlcUser
 from rest_framework import viewsets, status
@@ -40,7 +41,7 @@ class GroupViewSet(CheckPermissionWall, viewsets.ModelViewSet):
         # add member to group
         if request.method == "POST":
             group.group_members.add(member)
-            return Response(UserProfileSerializer(member).data, status=status.HTTP_200_OK)
+            return Response(RlcUserForeignSerializer(member).data, status=status.HTTP_200_OK)
 
         # remove member from group
         if request.method == "DELETE":
