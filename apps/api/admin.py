@@ -1,7 +1,7 @@
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.translation import gettext_lazy as _
 from apps.api.models import UserProfile, Notification, Permission, HasPermission, Rlc, UserEncryptionKeys, \
-    RlcEncryptionKeys, UsersRlcKeys, NotificationGroup, Group, LoggedPath, RlcUser
+    RlcEncryptionKeys, UsersRlcKeys, NotificationGroup, Group, LoggedPath, RlcUser, StatisticUser
 from apps.api.forms import RlcAdminForm
 from django.contrib import admin
 
@@ -78,3 +78,4 @@ admin.site.register(UserProfile, UserAdmin)
 admin.site.register(Notification)
 admin.site.register(LoggedPath, LoggedPathAdmin)
 admin.site.register(RlcUser, RlcUserAdmin)
+admin.site.register(StatisticUser)
