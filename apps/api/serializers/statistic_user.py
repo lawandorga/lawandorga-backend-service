@@ -1,8 +1,8 @@
-from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.serializers import TokenObtainSerializer
 from rest_framework_simplejwt.settings import api_settings
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import update_last_login
-from config.authentication import RefreshPrivateKeyToken
+from rest_framework.exceptions import ValidationError
 from apps.api.models import StatisticUser
 from rest_framework import serializers
 
@@ -29,10 +29,7 @@ class StatisticUserSerializer(serializers.ModelSerializer):
 # JWT
 ###
 class StatisticUserJWTSerializer(TokenObtainSerializer):
-    token_class = RefreshPrivateKeyToken
-
-    def get_token(self, user):
-        return self.token_class.for_user(user, password_user=self.initial_data['password'])
+    token_class = RefreshToken
 
     def validate(self, attrs):
         data = super().validate(attrs)
