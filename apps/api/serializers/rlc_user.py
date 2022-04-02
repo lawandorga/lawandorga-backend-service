@@ -7,6 +7,7 @@ from apps.api.serializers import RlcSerializer
 from apps.api.models import RlcUser, UserProfile
 from rest_framework import serializers
 from django.db import transaction
+from smtplib import SMTPRecipientsRefused
 
 
 ###
@@ -40,7 +41,12 @@ class RlcUserCreateSerializer(serializers.ModelSerializer):
             user.save()
             rlc_user = RlcUser(user=user, email_confirmed=False)
             rlc_user.save()
+        try:
             rlc_user.send_email_confirmation_email()
+        except SMTPRecipientsRefused:
+            user.delete()
+            raise ValidationError({'email': ["We could not send a confirmation email to this address. "
+                                             "Please check if this email is correct."]})
         return user
 
 
