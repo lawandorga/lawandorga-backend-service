@@ -1,3 +1,5 @@
+from django.core.exceptions import ValidationError
+
 from apps.recordmanagement.fixtures import create_default_record_template
 from apps.api.static import get_all_permission_strings
 from apps.api.models import UserProfile, RlcUser
@@ -11,6 +13,11 @@ class RlcAdminForm(forms.ModelForm):
 
     class Meta:
         fields = ['name', 'user_name', 'user_email', 'user_password']
+
+    def clean_user_email(self):
+        email = self.cleaned_data['user_email']
+        if UserProfile.objects.filter(email=email).exists():
+            raise ValidationError('A user with this email exists already. Choose another email.')
 
     def save(self, commit=True):
         # save
