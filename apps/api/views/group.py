@@ -41,7 +41,7 @@ class GroupViewSet(CheckPermissionWall, viewsets.ModelViewSet):
         # add member to group
         if request.method == "POST":
             group.group_members.add(member)
-            return Response(RlcUserForeignSerializer(member).data, status=status.HTTP_200_OK)
+            return Response(RlcUserForeignSerializer(member.rlc_user).data, status=status.HTTP_200_OK)
 
         # remove member from group
         if request.method == "DELETE":
