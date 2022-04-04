@@ -96,7 +96,7 @@ class RlcUserUpdateSerializer(RlcUserSerializer):
 class RlcUserForeignSerializer(RlcUserSerializer):
     class Meta:
         model = RlcUser
-        fields = ["user", "id", "phone_number", 'name', 'email']
+        fields = ["user", "id", "phone_number", 'name', 'email', 'accepted', 'email_confirmed', 'locked', 'is_active']
 
 
 ###

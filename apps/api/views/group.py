@@ -40,6 +40,8 @@ class GroupViewSet(CheckPermissionWall, viewsets.ModelViewSet):
 
         # add member to group
         if request.method == "POST":
+            if member in group.group_members.all():
+                raise ParseError({'member': ['This user is already part of the group.']})
             group.group_members.add(member)
             return Response(RlcUserForeignSerializer(member.rlc_user).data, status=status.HTTP_200_OK)
 
