@@ -4,7 +4,7 @@ from rest_framework import permissions
 
 class IsAuthenticatedAndEverything(permissions.IsAuthenticated):
     message = 'You need to be logged in, your account needs to be active, your email needs to be confirmed, your' \
-              'account should not be locked and you should be accepted as a lc member.'
+              'account should not be locked and you should be accepted as a member of your law clinic.'
 
     def has_permission(self, request, view):
         if not super().has_permission(request, view):
