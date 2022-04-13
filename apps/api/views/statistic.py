@@ -117,3 +117,27 @@ class StatisticViewSet(viewsets.GenericViewSet):
         data = self.execute_statement(statement)
         data = map(lambda x: {'date': x[0], 'logins': x[1]}, data)
         return Response(data)
+
+    @action(detail=False)
+    def user_logins_month(self, request, *args, **kwargs):
+        if settings.DEBUG:
+            statement = """
+            select strftime('%Y/%m', time) as month, count(*) as logins
+            from api_loggedpath as path
+            where path.path like '%login%'
+            and (path.status = 200 or path.status = 0)
+            group by strftime('%Y/%m', time)
+            order by date(time) desc;
+            """
+        else:
+            statement = """
+            select to_char(time, 'YYYY/MM') as month, count(*) as logins
+            from api_loggedpath as path
+            where path.path like '%login%'
+            and (path.status = 200 or path.status = 0)
+            group by to_char(time, 'YYYY/MM')
+            order by to_char(time, 'YYYY/MM') desc;
+            """
+        data = self.execute_statement(statement)
+        data = map(lambda x: {'month': x[0], 'logins': x[1]}, data)
+        return Response(data)
