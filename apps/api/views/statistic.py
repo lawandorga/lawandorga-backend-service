@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework.permissions import BasePermission
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -75,4 +76,44 @@ class StatisticViewSet(viewsets.GenericViewSet):
         """
         data = self.execute_statement(statement)
         data = map(lambda x: {'lc': x[0], 'records': x[1], 'files': x[2], 'documents': x[3]}, data)
+        return Response(data)
+
+    @action(detail=False)
+    def user_actions_month(self, request, *args, **kwargs):
+        if settings.DEBUG:
+            statement = """
+            select u.email as email, count(*) as actions
+            from api_userprofile as u
+            left join api_loggedpath path on u.id = path.user_id
+            where user_id is not null
+            and path.time > date('now', '-1 month')
+            group by u.email
+            order by count(*) desc;
+            """
+        else:
+            statement = """
+            select u.email as email, count(*) as actions
+            from api_userprofile as u
+            left join api_loggedpath path on u.id = path.user_id
+            where user_id is not null
+            and path.time > date_trunc('day', NOW() - interval '1 month')
+            group by u.email
+            order by count(*) desc;
+            """
+        data = self.execute_statement(statement)
+        data = map(lambda x: {'email': x[0], 'actions': x[1]}, data)
+        return Response(data)
+
+    @action(detail=False)
+    def user_logins(self, request, *args, **kwargs):
+        statement = """
+        select date(time) as date, count(*) as logins
+        from api_loggedpath as path
+        where path.path like '%login%'
+        and (path.status = 200 or path.status = 0)
+        group by date(time)
+        order by date(time) desc;
+        """
+        data = self.execute_statement(statement)
+        data = map(lambda x: {'date': x[0], 'logins': x[1]}, data)
         return Response(data)
