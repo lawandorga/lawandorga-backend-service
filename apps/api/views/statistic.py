@@ -112,7 +112,7 @@ class StatisticViewSet(viewsets.GenericViewSet):
         where path.path like '%login%'
         and (path.status = 200 or path.status = 0)
         group by date(time)
-        order by date(time) desc;
+        order by date(time) asc;
         """
         data = self.execute_statement(statement)
         data = map(lambda x: {'date': x[0], 'logins': x[1]}, data)
@@ -127,7 +127,7 @@ class StatisticViewSet(viewsets.GenericViewSet):
             where path.path like '%login%'
             and (path.status = 200 or path.status = 0)
             group by strftime('%Y/%m', time)
-            order by date(time) desc;
+            order by date(time) asc;
             """
         else:
             statement = """
@@ -136,7 +136,7 @@ class StatisticViewSet(viewsets.GenericViewSet):
             where path.path like '%login%'
             and (path.status = 200 or path.status = 0)
             group by to_char(time, 'YYYY/MM')
-            order by to_char(time, 'YYYY/MM') desc;
+            order by to_char(time, 'YYYY/MM') asc;
             """
         data = self.execute_statement(statement)
         data = map(lambda x: {'month': x[0], 'logins': x[1]}, data)
