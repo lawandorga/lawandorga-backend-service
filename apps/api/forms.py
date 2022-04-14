@@ -18,6 +18,7 @@ class RlcAdminForm(forms.ModelForm):
         email = self.cleaned_data['user_email']
         if UserProfile.objects.filter(email=email).exists():
             raise ValidationError('A user with this email exists already. Choose another email.')
+        return email
 
     def save(self, commit=True):
         # save
