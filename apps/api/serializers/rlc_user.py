@@ -4,7 +4,7 @@ from django.contrib.auth.models import update_last_login
 from rest_framework.exceptions import ParseError, ValidationError
 from config.authentication import RefreshPrivateKeyToken
 from apps.api.serializers import RlcSerializer
-from apps.api.models import RlcUser, UserProfile
+from apps.api.models import RlcUser, UserProfile, Rlc
 from rest_framework import serializers
 from django.db import transaction
 from smtplib import SMTPRecipientsRefused
@@ -15,6 +15,7 @@ from smtplib import SMTPRecipientsRefused
 ###
 class RlcUserCreateSerializer(serializers.ModelSerializer):
     password_confirm = serializers.CharField(write_only=True)
+    rlc = serializers.PrimaryKeyRelatedField(queryset=Rlc.objects.all(), required=True)
 
     class Meta:
         model = UserProfile
