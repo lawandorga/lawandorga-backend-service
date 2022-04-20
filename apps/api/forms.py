@@ -1,6 +1,5 @@
-from django.core.exceptions import ValidationError
-
 from apps.recordmanagement.fixtures import create_default_record_template
+from django.core.exceptions import ValidationError
 from apps.api.static import get_all_permission_strings
 from apps.api.models import UserProfile, RlcUser
 from django import forms

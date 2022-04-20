@@ -19,6 +19,6 @@ class RecordDocumentCreateSerializer(RecordDocumentSerializer):
     def validate(self, attrs):
         attrs = super().validate(attrs)
         if 'file' not in self.context['request'].FILES:
-            raise ValidationError("A file is required to be submitted with the name 'file'.")
+            raise ValidationError({'file': "There seems to be no file. Please choose a file."})
         attrs['name'] = self.context['request'].FILES['file'].name
         return attrs

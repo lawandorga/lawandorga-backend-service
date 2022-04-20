@@ -120,9 +120,9 @@ class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
         super().decrypt(private_key_rlc)
 
     def generate_key(self):
-        key = 'rlcs/{}/record_questionnaires/{}/{}'.format(self.questionnaire.template.rlc.pk,
-                                                           self.questionnaire.template.id,
-                                                           self.field.id)
+        key = 'rlcs/{}/record_questionnaires/{}/{}/{}'.format(self.questionnaire.template.rlc.pk,
+                                                              self.questionnaire.template.id,
+                                                              self.field.id, self.id)
         return key
 
     def download_file(self, aes_key):
