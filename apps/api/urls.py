@@ -20,5 +20,5 @@ router.register("notifications", views.NotificationViewSet)
 router.register('permissions', views.PermissionViewSet)
 router.register("notification_groups", views.NotificationGroupViewSet)
 router.register('notes', views.NoteViewSet)
-
+router.register('statistic', views.StatisticViewSet, basename='statistic')
 urlpatterns = [path("", include(router.urls))]

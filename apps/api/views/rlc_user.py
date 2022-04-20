@@ -1,6 +1,5 @@
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework.authtoken.models import Token
 from apps.recordmanagement.models import RecordDeletion, RecordAccess
 from rest_framework.exceptions import ParseError, AuthenticationFailed
 from rest_framework.decorators import action
