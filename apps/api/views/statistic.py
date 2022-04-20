@@ -169,3 +169,35 @@ class StatisticViewSet(viewsets.GenericViewSet):
         data = self.execute_statement(statement)
         data = map(lambda x: {'status': x[0], 'path': x[1], 'count': x[2]}, data)
         return Response(data)
+
+    @action(detail=False)
+    def errors_user(self, request, *args, **kwargs):
+        statement = """
+        select
+        email,
+        rlckeys.id is not null as rlckeys,
+        userkeys.id is not null as userkeys,
+        rlcuser.accepted,
+        rlcuser.locked
+        from api_userprofile baseuser
+        inner join api_rlcuser rlcuser on baseuser.id = rlcuser.user_id
+        left join api_usersrlckeys rlckeys on baseuser.id = rlckeys.user_id
+        left join api_userencryptionkeys userkeys on baseuser.id = userkeys.user_id
+        where rlckeys.id is null or userkeys.id is null
+        """
+        data = self.execute_statement(statement)
+        data = map(lambda x: {'email': x[0], 'rlckeys': x[1], 'userkeys': x[2], 'accepted': x[3], 'locked': x[4]}, data)
+        return Response(data)
+
+    @action(detail=False)
+    def raw_numbers(self, request, *args, **kwargs):
+        statement = """
+        select
+        (select count(*) as records from recordmanagement_record) as records,
+        (select count(*) as files from files_file) as files,
+        (select count(*) as collab from collab_collabdocument as collab),
+        (select count(*) as users from api_rlcuser as users)
+        """
+        data = self.execute_statement(statement)
+        data = list(map(lambda x: {'records': x[0], 'files': x[1], 'collabs': x[2], 'users': x[3]}, data))
+        return Response(data[0])
