@@ -3,7 +3,7 @@ wheel==0.37.1
 # docker container setup
 gunicorn==20.1.0
 # django
-Django==3.2.12
+Django==3.2.13
 djangorestframework==3.13.1
 # jwts
 djangorestframework-simplejwt==5.1.0
