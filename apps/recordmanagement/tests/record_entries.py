@@ -3,12 +3,13 @@ from apps.recordmanagement.models import RecordTemplate, RecordEncryptedStandard
     RecordEncryptedStandardEntry, RecordStandardField, RecordStandardEntry, RecordEncryptedFileField, \
     RecordEncryptedFileEntry, \
     RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry, RecordSelectField, RecordSelectEntry, \
-    RecordEncryptedSelectEntry, RecordEncryptedSelectField, RecordMultipleEntry, RecordMultipleField
+    RecordEncryptedSelectEntry, RecordEncryptedSelectField, RecordMultipleEntry, RecordMultipleField, \
+    RecordStatisticEntry, RecordStatisticField
 from apps.recordmanagement.tests import BaseRecord
 from apps.recordmanagement.views import RecordEncryptedStandardEntryViewSet, RecordStandardEntryViewSet, \
     RecordEncryptedFileEntryViewSet, \
     RecordUsersEntryViewSet, RecordStateEntryViewSet, RecordSelectEntryViewSet, RecordEncryptedSelectEntryViewSet, \
-    RecordMultipleEntryViewSet
+    RecordMultipleEntryViewSet, RecordStatisticEntryViewSet
 from apps.static.encryption import AESEncryption
 from rest_framework.test import force_authenticate
 from apps.api.models import UserProfile, RlcUser
@@ -495,3 +496,45 @@ class RecordEncryptedFileEntryViewSetWorking(GenericRecordEntry, TestCase):
         response = view(request, pk=self.entry.pk)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(b'test string' in b''.join(response.streaming_content))
+
+
+class RecordStatisticEntryViewSetWorking(GenericRecordEntry, TestCase):
+    view = RecordStatisticEntryViewSet
+    model = RecordStatisticEntry
+    field = RecordStatisticField
+
+    def setUp(self):
+        super().setUp()
+        self.field = self.field.objects.create(template=self.template, options=['Option 1', 'Option 2'])
+
+    def setup_entry(self):
+        self.entry = self.model.objects.create(record=self.record, field=self.field, value=['Option 1', 'Option 2'])
+
+    def test_entry_create(self):
+        view = self.view.as_view(actions={'post': 'create'})
+        data = {
+            'record': self.record.pk,
+            'field': self.field.pk,
+            'value': 'Option 1',
+        }
+        request = self.factory.post('', data)
+        force_authenticate(request, self.user)
+        response = view(request)
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(self.model.objects.count(), 1)
+        entry = self.model.objects.first()
+        self.assertEqual(entry.value, "Option 1")
+
+    def test_entry_update(self):
+        self.setup_entry()
+        view = self.view.as_view(actions={'patch': 'partial_update'})
+        data = {
+            'value': 'Option 2',
+        }
+        request = self.factory.patch('', data=data)
+        force_authenticate(request, self.user)
+        response = view(request, pk=self.entry.pk)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(self.model.objects.count(), 1)
+        entry = self.model.objects.first()
+        self.assertEqual(entry.value, "Option 2")

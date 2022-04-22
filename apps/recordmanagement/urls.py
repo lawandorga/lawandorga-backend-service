@@ -41,3 +41,5 @@ router.register('records/recordmultipleentries', RecordMultipleEntryViewSet)
 router.register('records/recordencryptedselectentries', RecordEncryptedSelectEntryViewSet)
 router.register('records/recordencryptedfileentries', RecordEncryptedFileEntryViewSet)
 router.register('records/recordencryptedstandardentries', RecordEncryptedStandardEntryViewSet)
+# statistic
+router.register('records/recordstatisticentries', RecordStatisticEntryViewSet)

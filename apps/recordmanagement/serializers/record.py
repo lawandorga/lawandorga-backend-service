@@ -5,7 +5,7 @@ from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedS
     RecordEncryptedStandardEntry, RecordStandardEntry, RecordEncryptedFileEntry, RecordStandardField, \
     RecordEncryptedFileField, RecordEncryptedSelectField, RecordEncryptedSelectEntry, \
     RecordUsersField, RecordUsersEntry, RecordStateField, RecordStateEntry, RecordSelectEntry, RecordSelectField, \
-    RecordMultipleEntry, RecordMultipleField, RecordEncryptionNew
+    RecordMultipleEntry, RecordMultipleField, RecordEncryptionNew, RecordStatisticEntry
 from rest_framework.exceptions import ValidationError, ParseError, PermissionDenied
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.reverse import reverse
@@ -165,6 +165,21 @@ class RecordEncryptedSelectFieldSerializer(RecordFieldSerializer):
 
     def get_kind(self, obj):
         return 'Encrypted Select'
+
+
+class RecordStatisticFieldSerializer(RecordFieldSerializer):
+    entry_view_name = 'recordstatisticentry-list'
+    view_name = 'recordstatisticfield-detail'
+
+    class Meta:
+        model = RecordSelectField
+        fields = '__all__'
+
+    def get_kind(self, obj):
+        return 'Statistic'
+
+    def get_url(self, obj):
+        return None
 
 
 ###
@@ -392,6 +407,26 @@ class RecordMultipleEntrySerializer(RecordEntrySerializer):
         return attrs
 
 
+class RecordStatisticEntrySerializer(RecordEntrySerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='recordstatisticentry-detail')
+
+    class Meta:
+        model = RecordStatisticEntry
+        fields = '__all__'
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if self.instance:
+            field = self.instance.field
+        elif 'field' in attrs:
+            field = attrs['field']
+        else:
+            raise ValidationError('Field needs to be set.')
+        if attrs['value'] not in set(field.options):
+            raise ValidationError('The selected value is not a valid choice.')
+        return attrs
+
+
 ###
 # CONSTANTS
 ###
@@ -403,7 +438,8 @@ FIELD_TYPES_AND_SERIALIZERS = [
     ('users_fields', RecordUsersFieldSerializer),
     ('encrypted_standard_fields', RecordEncryptedStandardFieldSerializer),
     ('encrypted_select_fields', RecordEncryptedSelectFieldSerializer),
-    ('encrypted_file_fields', RecordEncryptedFileFieldSerializer)
+    ('encrypted_file_fields', RecordEncryptedFileFieldSerializer),
+    ('statistic_fields', RecordStatisticFieldSerializer)
 ]
 
 
@@ -411,14 +447,9 @@ FIELD_TYPES_AND_SERIALIZERS = [
 # Record
 ###
 class RecordSerializer(serializers.ModelSerializer):
-    # delete = serializers.SerializerMethodField()
-
     class Meta:
         model = Record
         fields = '__all__'
-
-    # def get_delete(self, obj):
-    #     return obj.deletions_requested.filter(state='re').exists()
 
 
 class RecordListSerializer(RecordSerializer):
@@ -501,7 +532,8 @@ class RecordDetailSerializer(RecordSerializer):
             ('users_entries', RecordUsersEntrySerializer),
             ('encrypted_select_entries', RecordEncryptedSelectEntrySerializer),
             ('encrypted_file_entries', RecordEncryptedFileEntrySerializer),
-            ('encrypted_standard_entries', RecordEncryptedStandardEntrySerializer)
+            ('encrypted_standard_entries', RecordEncryptedStandardEntrySerializer),
+            ('statistic_entries', RecordStatisticEntrySerializer)
         ]
         return obj.get_entries(entry_types_and_serializers, aes_key_record=aes_key_record, request=self.context['request'])
 

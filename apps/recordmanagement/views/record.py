@@ -1,5 +1,3 @@
-from django.conf import settings
-
 from apps.recordmanagement.serializers.record import RecordTemplateSerializer, RecordEncryptedStandardFieldSerializer, \
     RecordSerializer, RecordEncryptedStandardEntrySerializer, RecordStandardEntrySerializer, \
     RecordEncryptedFileEntrySerializer, RecordStandardFieldSerializer, RecordEncryptedFileFieldSerializer, \
@@ -7,12 +5,13 @@ from apps.recordmanagement.serializers.record import RecordTemplateSerializer, R
     RecordUsersEntrySerializer, RecordStateFieldSerializer, \
     RecordStateEntrySerializer, RecordSelectEntrySerializer, RecordSelectFieldSerializer, RecordListSerializer, \
     RecordDetailSerializer, RecordCreateSerializer, RecordMultipleEntrySerializer, RecordMultipleFieldSerializer, \
-    FIELD_TYPES_AND_SERIALIZERS
+    FIELD_TYPES_AND_SERIALIZERS, RecordStatisticEntrySerializer
 from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedStandardField, Record, \
     RecordEncryptionNew, RecordEncryptedStandardEntry, RecordStandardEntry, RecordEncryptedFileEntry, \
     RecordStandardField, RecordEncryptedFileField, \
     RecordEncryptedSelectField, RecordEncryptedSelectEntry, RecordUsersField, RecordUsersEntry, RecordStateField, \
-    RecordStateEntry, RecordSelectEntry, RecordSelectField, RecordMultipleEntry, RecordMultipleField
+    RecordStateEntry, RecordSelectEntry, RecordSelectField, RecordMultipleEntry, RecordMultipleField, \
+    RecordStatisticEntry
 from apps.recordmanagement.serializers import RecordDocumentSerializer
 from rest_framework.exceptions import ParseError
 from rest_framework.decorators import action
@@ -25,6 +24,7 @@ from apps.api.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS, PERMISSION_AD
     PERMISSION_RECORDS_ADD_RECORD
 from rest_framework import mixins
 from django.http import FileResponse
+from django.conf import settings
 from django.db import IntegrityError
 import mimetypes
 
@@ -177,6 +177,7 @@ class RecordViewSet(CheckPermissionWall, mixins.CreateModelMixin, mixins.Retriev
                 'encrypted_select_entries', 'encrypted_select_entries__field',
                 'encrypted_standard_entries', 'encrypted_standard_entries__field',
                 'encrypted_file_entries', 'encrypted_file_entries__field',
+                'statistic_entries', 'statistic_entries__field',
                 'template',
                 'template__standard_fields',
                 'template__select_fields',
@@ -328,3 +329,12 @@ class RecordEncryptedStandardEntryViewSet(RecordEntryViewSet):
     def get_queryset(self):
         # every field returned because they will be encrypted by default
         return RecordEncryptedStandardEntry.objects.filter(record__template__rlc=self.request.user.rlc)
+
+
+class RecordStatisticEntryViewSet(RecordEntryViewSet):
+    queryset = RecordStatisticEntry.objects.none()
+    serializer_class = RecordStatisticEntrySerializer
+
+    def get_queryset(self):
+        # every field returned because they are supposed to be seen by everybody
+        return RecordStatisticEntry.objects.filter(record__template__rlc=self.request.user.rlc)

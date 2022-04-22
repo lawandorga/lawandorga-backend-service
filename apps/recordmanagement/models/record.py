@@ -1,10 +1,8 @@
-from django.apps import apps
-from django.core.files import File
-
 from apps.recordmanagement.models import EncryptedRecord, EncryptedClient
 from apps.static.encryption import EncryptedModelMixin, AESEncryption, RSAEncryption
-from rest_framework.reverse import reverse
+from django.core.files import File
 from apps.api.models import Rlc, UserProfile, Group
+from django.apps import apps
 from django.db import models
 import json
 
@@ -45,6 +43,42 @@ class RecordTemplate(models.Model):
                 fields.append(serializer(instance=field, context={'request': request}).data)
         fields = list(sorted(fields, key=lambda i: i['order']))
         return fields
+
+    def get_statistic_fields_meta(self):
+        return [
+            {
+                'name': 'Main topic of the consultation',
+                'options': ['todo'],
+                'order': 99100,
+                'helptext': ''
+            },
+            {
+                'name': 'Age in years',
+                'options': ['0-10', '11-20', '21-30', '31-40', '41-50', '51-60', '61-70', '71-80', '81-90', '90+',
+                            'Unknown'],
+                'order': 99200,
+                'helptext': ''
+            },
+            {
+                'name': 'Sex',
+                'options': ['Male', 'Female', 'Other', 'Unknown'],
+                'order': 99300,
+                'helptext': ''
+            },
+            {
+                'name': 'Migration Background',
+                'options': ['Yes', 'No', 'Unknown'],
+                'order': 99400,
+                'helptext': 'A person has migration background if one or both parents were not '
+                            'born with a German citizenship. (Source: Statistisches Bundesamt)'
+            }
+        ]
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        for field in self.get_statistic_fields_meta():
+            if not RecordStatisticField.objects.filter(name=field['name'], template=self).exists():
+                RecordStatisticField.objects.create(template=self, **field)
 
 
 ###
@@ -215,6 +249,23 @@ class RecordEncryptedStandardField(RecordField):
 
     def __str__(self):
         return 'recordEncryptedStandardField: {}; name: {};'.format(self.pk, self.name)
+
+
+class RecordStatisticField(RecordField):
+    template = models.ForeignKey(RecordTemplate, on_delete=models.CASCADE, related_name='statistic_fields')
+    options = models.JSONField(default=list)
+    helptext = models.CharField(max_length=1000)
+
+    class Meta:
+        verbose_name = 'RecordStatisticField'
+        verbose_name_plural = 'RecordStatisticFields'
+
+    @property
+    def type(self):
+        return 'select'
+
+    def __str__(self):
+        return 'recordStatisticField: {}; name: {};'.format(self.pk, self.name)
 
 
 ###
@@ -510,6 +561,23 @@ class RecordEncryptedStandardEntry(RecordEntryEncryptedModelMixin, RecordEntry):
     def get_value(self, *args, **kwargs):
         if self.encryption_status == 'ENCRYPTED' or self.encryption_status is None:
             self.decrypt(*args, **kwargs)
+        return self.value
+
+
+class RecordStatisticEntry(RecordEntry):
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='statistic_entries')
+    field = models.ForeignKey(RecordStatisticField, related_name='entries', on_delete=models.PROTECT)
+    value = models.CharField(max_length=200)
+
+    class Meta:
+        unique_together = ['record', 'field']
+        verbose_name = 'RecordStatisticEntry'
+        verbose_name_plural = 'RecordStatisticEntries'
+
+    def __str__(self):
+        return 'recordStatisticEntry: {};'.format(self.pk)
+
+    def get_value(self, *args, **kwargs):
         return self.value
 
 
