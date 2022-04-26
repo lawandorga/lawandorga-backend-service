@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from config.authentication import IsAuthenticatedAndEverything
 from apps.api.models import LoggedPath
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from django.db import connection
 
 
@@ -201,3 +201,44 @@ class StatisticViewSet(viewsets.GenericViewSet):
         data = self.execute_statement(statement)
         data = list(map(lambda x: {'records': x[0], 'files': x[1], 'collabs': x[2], 'users': x[3]}, data))
         return Response(data[0])
+
+    @action(detail=False)
+    def tag_stats(self, request, *args, **kwargs):
+        if settings.DEBUG:
+            return Response({'detail': 'Not available'}, status=status.HTTP_501_NOT_IMPLEMENTED)
+        statement = """
+        select tag, count(*) as count from (
+        select json_array_elements(value::json)::varchar as tag
+        from recordmanagement_recordmultipleentry entry
+        left join recordmanagement_recordmultiplefield field on entry.field_id = field.id
+        where field.name='Tags'
+        ) tmp
+        group by tag
+        order by count(*) desc
+        """
+        ret = {}
+        data = self.execute_statement(statement)
+        data = list(map(lambda x: {'tag': x[0].replace(' "', '').replace('"', ''), 'count': x[1]}, data))
+        ret['tags'] = data
+        statement = """
+        select name, count(*) as existing
+        from (
+        select case when name like '%Tags%' then 'Tags' else 'Unknown' end as name
+        from (
+        select string_agg(name, ' ') as name
+        from (
+        select record.id,
+        case when field.name = 'Tags' then 'Tags' else 'Unknown' end as name
+        from recordmanagement_record record
+        left join recordmanagement_recordtemplate template on record.template_id = template.id
+        left join recordmanagement_recordmultiplefield field on template.id = field.template_id
+        ) tmp1
+        group by id
+        ) tmp2
+        ) tmp3
+        group by name
+        """
+        data = self.execute_statement(statement)
+        data = list(map(lambda x: {'name': x[0], 'existing': x[1]}, data))
+        ret['existing'] = data
+        return Response(ret)
