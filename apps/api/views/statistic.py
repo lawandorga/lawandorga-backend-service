@@ -242,3 +242,19 @@ class StatisticViewSet(viewsets.GenericViewSet):
         data = list(map(lambda x: {'name': x[0], 'existing': x[1]}, data))
         ret['existing'] = data
         return Response(ret)
+
+    @action(detail=False)
+    def record_sex(self, request, *args, **kwargs):
+        statement = """
+        select
+        case when entry.id is null then 'Unknown' else entry.value end as value,
+        count(*) as count
+        from recordmanagement_record record
+        left join recordmanagement_recordstatisticentry entry on record.id = entry.record_id
+        left join recordmanagement_recordstatisticfield field on entry.field_id = field.id
+        where field.name='Sex' or field.name is null
+        group by value
+        """
+        data = self.execute_statement(statement)
+        data = map(lambda x: {'value': x[0], 'count': x[1]}, data)
+        return Response(data)
