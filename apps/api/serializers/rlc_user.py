@@ -57,6 +57,7 @@ class RlcUserCreateSerializer(serializers.ModelSerializer):
 class RlcUserSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField('get_name')
     email = serializers.SerializerMethodField('get_email')
+    speciality_of_study_display = serializers.SerializerMethodField('get_study')
 
     class Meta:
         model = RlcUser
@@ -68,13 +69,17 @@ class RlcUserSerializer(serializers.ModelSerializer):
     def get_email(self, obj):
         return obj.user.email
 
+    def get_study(self, obj):
+        return obj.get_speciality_of_study_display()
+
 
 class RlcUserUpdateSerializer(RlcUserSerializer):
     name = serializers.CharField(required=True)
 
     class Meta:
         model = RlcUser
-        fields = ['name', 'phone_number', 'birthday', 'street', 'city', 'postal_code', 'is_active', 'note']
+        fields = ['name', 'phone_number', 'birthday', 'street', 'city', 'postal_code', 'is_active', 'note',
+                  'speciality_of_study']
 
     def validate(self, attrs):
         attrs = super().validate(attrs)

@@ -4,7 +4,27 @@ from django.db import models
 
 
 class Rlc(models.Model):
+    FEDERAL_STATE_CHOICES = (
+        ('BW', 'Baden-Württemberg'),
+        ('BY', 'Bayern (Freistaat)'),
+        ('BE', 'Berlin'),
+        ('BB', 'Brandenburg'),
+        ('HB', 'Bremen (Hansestadt)'),
+        ('HH', 'Hamburg (Hansestadt)'),
+        ('HE', 'Hessen'),
+        ('MV', 'Mecklenburg-Vorpommern'),
+        ('NI', 'Niedersachsen'),
+        ('NW', 'Nordrhein-Westfalen'),
+        ('RP', 'Rheinland-Pfalz'),
+        ('SL', 'Saarland'),
+        ('SN', 'Sachsen (Freistaat)'),
+        ('ST', 'Sachsen-Anhalt'),
+        ('SH', 'Schleswig-Holstein'),
+        ('TH', 'Thüringen (Freistaat)'),
+        ('OTHER', 'Ausland'),
+    )
     name = models.CharField(max_length=200, null=False)
+    federal_state = models.CharField(choices=FEDERAL_STATE_CHOICES, max_length=100, blank=True, null=True)
     use_record_pool = models.BooleanField(default=False)
 
     class Meta:

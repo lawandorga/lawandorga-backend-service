@@ -142,6 +142,8 @@ class StatisticViewSet(viewsets.GenericViewSet):
         data = map(lambda x: {'month': x[0], 'logins': x[1]}, data)
         return Response(data)
 
+    # unique users month
+
     @action(detail=False)
     def errors_month(self, request, *args, **kwargs):
         if settings.DEBUG:
@@ -205,7 +207,11 @@ class StatisticViewSet(viewsets.GenericViewSet):
     @action(detail=False)
     def tag_stats(self, request, *args, **kwargs):
         if settings.DEBUG:
-            return Response({'detail': 'Not available'}, status=status.HTTP_501_NOT_IMPLEMENTED)
+            example_data = {
+                'tags': [{'tag': 'Duldung', 'count': 10}, {'tag': 'Abschiebung', 'count': 5}],
+                'state': [{'state': 'Set', 'count': 10}, {'state': 'Not-Existing', 'count': 5}]
+            }
+            return Response(example_data)
         statement = """
         select tag, count(*) as count from (
         select json_array_elements(value::json)::varchar as tag
@@ -239,8 +245,8 @@ class StatisticViewSet(viewsets.GenericViewSet):
         group by name
         """
         data = self.execute_statement(statement)
-        data = list(map(lambda x: {'name': x[0], 'existing': x[1]}, data))
-        ret['existing'] = data
+        data = list(map(lambda x: {'state': x[0], 'count': x[1]}, data))
+        ret['state'] = data
         return Response(ret)
 
     @action(detail=False)

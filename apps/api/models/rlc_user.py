@@ -9,6 +9,18 @@ from .user import UserProfile
 
 
 class RlcUser(models.Model):
+    STUDY_CHOICES = (
+        ('LAW', 'Law Sciences'),
+        ('PSYCH', 'Psychology'),
+        ('POL', 'Political Science'),
+        ('SOC', 'Social Sciences'),
+        ('ECO', 'Economics'),
+        ('MED', 'Medicine / Medical Psychology'),
+        ('PHA', 'Pharmacy'),
+        ('CUL', 'Cultural Studies'),
+        ('OTHER', 'Other'),
+        ('NONE', 'None')
+    )
     user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='rlc_user')
     # rlc = models.ForeignKey("Rlc", related_name="users", on_delete=models.PROTECT, blank=True, null=True)
     # blocker
@@ -23,6 +35,7 @@ class RlcUser(models.Model):
     street = models.CharField(max_length=255, default=None, null=True, blank=True)
     city = models.CharField(max_length=255, default=None, null=True, blank=True)
     postal_code = models.CharField(max_length=255, default=None, null=True, blank=True)
+    speciality_of_study = models.CharField(choices=STUDY_CHOICES, max_length=100, blank=True, null=True)
     # other
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

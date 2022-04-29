@@ -50,7 +50,7 @@ class RlcAdmin(admin.ModelAdmin):
     def get_fieldsets(self, request, obj=None):
         if obj is None:
             return (
-                ('LC', {'fields': ('name',)}),
+                ('LC', {'fields': ('name', 'federal_state')}),
                 ('Admin', {'fields': ('user_name', 'user_email', 'user_password')}),
             )
         return super().get_fieldsets(request, obj)
