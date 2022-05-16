@@ -223,6 +223,7 @@ class UserViewSetErrorTests(TestCase):
     def test_create_returns_error_message_on_different_passwords(self):
         view = RlcUserViewSet.as_view(actions={'post': 'create'})
         data = {
+            'rlc': self.rlc.pk,
             'name': 'Test',
             'email': 'test2@test.de',
             'password': 'test1',
