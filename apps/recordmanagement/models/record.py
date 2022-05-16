@@ -109,7 +109,7 @@ class RecordTemplate(models.Model):
                 'helptext': ''
             },
             {
-                'name': 'Current Status of the client',
+                'name': 'Current status of the client',
                 'options': ['Employed', 'University Student', 'Apprentice', 'Unemployed', 'Pensioner', 'Other',
                             'Unknown'],
                 'order': 99400,
