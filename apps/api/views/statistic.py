@@ -217,10 +217,11 @@ class StatisticViewSet(viewsets.GenericViewSet):
         (select count(*) as records from recordmanagement_record) as records,
         (select count(*) as files from files_file) as files,
         (select count(*) as collab from collab_collabdocument as collab),
-        (select count(*) as users from api_rlcuser as users)
+        (select count(*) as users from api_rlcuser as users),
+        (select count(*) as lcs from api_rlc as lcs)
         """
         data = self.execute_statement(statement)
-        data = list(map(lambda x: {'records': x[0], 'files': x[1], 'collabs': x[2], 'users': x[3]}, data))
+        data = list(map(lambda x: {'records': x[0], 'files': x[1], 'collabs': x[2], 'users': x[3], 'lcs': x[4]}, data))
         return Response(data[0])
 
     @action(detail=False)
