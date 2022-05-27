@@ -42,7 +42,7 @@ class FileCreateSerializer(AddUserMixin, FileSerializer):
 
     class Meta:
         model = File
-        fields = ['folder', 'name', 'file']
+        fields = ['folder', 'file', 'name']
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
