@@ -191,7 +191,7 @@ SCW_S3_BUCKET_NAME = get_secret("SCW_S3_BUCKET_NAME")
 FRONTEND_URL = get_secret("FRONTEND_URL")
 
 # Run time is set when django starts
-RUNTIME = datetime.now(pytz.timezone('Europe/Berlin')).isoformat()
+RUNTIME = datetime.now(pytz.timezone('Europe/Berlin')).strftime('%Y-%m-%d--%H:%M:%S')
 
 # The standard password of the dummy user, this is used within get_private_key in UserProfile
 # This enables us to do a lot of cool stuff, for example: test the restframework api directly
