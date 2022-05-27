@@ -273,7 +273,7 @@ class StatisticViewSet(viewsets.GenericViewSet):
     def record_client_sex(self, request, *args, **kwargs):
         statement = """
         select
-        case when entry.id is null then 'Unknown' else entry.value end as value,
+        case when entry.value is null then 'Unknown' else entry.value end as value,
         count(*) as count
         from recordmanagement_record record
         left join recordmanagement_recordstatisticentry entry on record.id = entry.record_id
@@ -288,15 +288,15 @@ class StatisticViewSet(viewsets.GenericViewSet):
     @action(detail=False)
     def record_client_nationality(self, request, *args, **kwargs):
         statement = """
-            select
-            case when entry.id is null then 'Unknown' else entry.value end as value,
-            count(*) as count
-            from recordmanagement_record record
-            left join recordmanagement_recordstatisticentry entry on record.id = entry.record_id
-            left join recordmanagement_recordstatisticfield field on entry.field_id = field.id
-            where field.name='Nationality of the client' or field.name is null
-            group by value
-            """
+        select
+        case when entry.value is null then 'Unknown' else entry.value end as value,
+        count(*) as count
+        from recordmanagement_record record
+        left join recordmanagement_recordstatisticentry entry on record.id = entry.record_id
+        left join recordmanagement_recordstatisticfield field on entry.field_id = field.id
+        where field.name='Nationality of the client' or field.name is null
+        group by value
+        """
         data = self.execute_statement(statement)
         data = map(lambda x: {'value': x[0], 'count': x[1]}, data)
         return Response(data)
@@ -304,15 +304,15 @@ class StatisticViewSet(viewsets.GenericViewSet):
     @action(detail=False)
     def record_client_age(self, request, *args, **kwargs):
         statement = """
-            select
-            case when entry.id is null then 'Unknown' else entry.value end as value,
-            count(*) as count
-            from recordmanagement_record record
-            left join recordmanagement_recordstatisticentry entry on record.id = entry.record_id
-            left join recordmanagement_recordstatisticfield field on entry.field_id = field.id
-            where field.name='Age in years of the client' or field.name is null
-            group by value
-            """
+        select
+        case when entry.value is null then 'Unknown' else entry.value end as value,
+        count(*) as count
+        from recordmanagement_record record
+        left join recordmanagement_recordstatisticentry entry on record.id = entry.record_id
+        left join recordmanagement_recordstatisticfield field on entry.field_id = field.id
+        where field.name='Age in years of the client' or field.name is null
+        group by value
+        """
         data = self.execute_statement(statement)
         data = map(lambda x: {'value': x[0], 'count': x[1]}, data)
         return Response(data)
@@ -320,15 +320,15 @@ class StatisticViewSet(viewsets.GenericViewSet):
     @action(detail=False)
     def record_client_state(self, request, *args, **kwargs):
         statement = """
-                select
-                case when entry.id is null then 'Unknown' else entry.value end as value,
-                count(*) as count
-                from recordmanagement_record record
-                left join recordmanagement_recordstatisticentry entry on record.id = entry.record_id
-                left join recordmanagement_recordstatisticfield field on entry.field_id = field.id
-                where field.name='Current Status of the client' or field.name is null
-                group by value
-                """
+        select
+        case when entry.value is null then 'Unknown' else entry.value end as value,
+        count(*) as count
+        from recordmanagement_record record
+        left join recordmanagement_recordstatisticentry entry on record.id = entry.record_id
+        left join recordmanagement_recordstatisticfield field on entry.field_id = field.id
+        where field.name='Current status of the client' or field.name is null
+        group by value
+        """
         data = self.execute_statement(statement)
         data = map(lambda x: {'value': x[0], 'count': x[1]}, data)
         return Response(data)
