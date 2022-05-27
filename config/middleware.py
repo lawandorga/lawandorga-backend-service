@@ -19,7 +19,7 @@ class LoggingMiddleware:
         # set the data
         data = {
             'user': request.user if request.user.is_authenticated else None,
-            'path': request.get_full_path(),
+            'path': request.get_full_path()[:200],
             'status': response.status_code if response.status_code else 0,
             'method': request.method if request.method else 'UNKNOWN'
         }
