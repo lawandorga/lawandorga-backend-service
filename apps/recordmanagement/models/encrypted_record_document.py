@@ -56,7 +56,7 @@ class EncryptedRecordDocument(models.Model):
     def get_key(self):
         if not self.key:
             self.key = '{}{}'.format(
-                get_storage_folder_encrypted_record_document(self.record.from_rlc.pk, self.record.id),
+                get_storage_folder_encrypted_record_document(self.record.template.rlc.pk, self.record.id),
                 self.name
             )
             self.save()
