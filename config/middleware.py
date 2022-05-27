@@ -1,5 +1,6 @@
 from django.core.exceptions import RequestDataTooBig
 from apps.api.models import LoggedPath
+from django.http import UnreadablePostError
 
 
 class LoggingMiddleware:
@@ -12,6 +13,8 @@ class LoggingMiddleware:
             body = request.body
         except RequestDataTooBig:
             body = b'LoggingMiddleware Exception: RequestDateTooBig'
+        except UnreadablePostError:
+            body = b'LoggingMiddleware Exception: UnreadablePostError'
 
         # get the response
         response = self.get_response(request)
