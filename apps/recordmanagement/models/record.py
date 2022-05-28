@@ -357,7 +357,7 @@ class Record(models.Model):
     def get_all_entry_types(self):
         return self.get_unencrypted_entry_types() + self.get_encrypted_entry_types()
 
-    def get_entries(self, entry_types_and_serializers, aes_key_record=None, request=None):
+    def get_entries(self, entry_types_and_serializers, aes_key_record=None, request=None, sort=False):
         # this might look weird, but i've done it this way to optimize performance
         # with prefetch related
         # and watch out this expects a self from a query which has prefetched
@@ -368,17 +368,9 @@ class Record(models.Model):
                 if entry.encrypted_entry:
                     entry.decrypt(aes_key_record=aes_key_record)
                 entries[entry.field.name] = serializer(instance=entry, context={'request': request}).data
-        entries = dict(sorted(entries.items(), key=lambda item: item[1]['order']))
+        if sort:
+            entries = dict(sorted(entries.items(), key=lambda item: item[1]['order']))
         return entries
-
-    def get_unencrypted_entries(self):
-        return self.get_entries(self.get_unencrypted_entry_types())
-
-    def get_encrypted_entries(self):
-        return self.get_entries(self.get_encrypted_entry_types())
-
-    def get_all_entries(self, *args, **kwargs):
-        return self.get_entries(self.get_all_entry_types(), *args, **kwargs)
 
 
 ###

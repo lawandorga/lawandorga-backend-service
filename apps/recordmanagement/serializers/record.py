@@ -1,4 +1,6 @@
 from django.db import IntegrityError
+from django.utils import timezone
+from django.utils.timezone import localtime
 
 from apps.recordmanagement.models import EncryptedClient
 from apps.recordmanagement.models.record import RecordTemplate, RecordEncryptedStandardField, Record, \
@@ -466,7 +468,18 @@ class RecordListSerializer(RecordSerializer):
             ('multiple_entries', RecordMultipleEntrySerializer),
             ('users_entries', RecordUsersEntryDetailSerializer),
         ]
-        return obj.get_entries(entry_types, request=self.context['request'])
+        dict_of_entries = obj.get_entries(entry_types, request=self.context['request'])
+        dict_of_entries['Created'] = {
+            'name': 'Created',
+            'value': localtime(obj.created),
+            'type': 'datetime-local'
+        }
+        dict_of_entries['Updated'] = {
+            'name': 'Updated',
+            'value': localtime(obj.updated),
+            'type': 'datetime-local'
+        }
+        return dict_of_entries
 
     def get_access(self, obj):
         for enc in getattr(obj, 'encryptions').all():
@@ -535,7 +548,8 @@ class RecordDetailSerializer(RecordSerializer):
             ('encrypted_standard_entries', RecordEncryptedStandardEntrySerializer),
             ('statistic_entries', RecordStatisticEntrySerializer)
         ]
-        return obj.get_entries(entry_types_and_serializers, aes_key_record=aes_key_record, request=self.context['request'])
+        return obj.get_entries(entry_types_and_serializers, aes_key_record=aes_key_record,
+                               request=self.context['request'], sort=True)
 
     def get_form_fields(self, obj):
         return obj.template.get_fields(FIELD_TYPES_AND_SERIALIZERS, request=self.context['request'])
