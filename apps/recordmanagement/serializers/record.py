@@ -575,6 +575,22 @@ class RecordTemplateSerializer(serializers.ModelSerializer):
         attrs['rlc'] = self.context['request'].user.rlc
         return attrs
 
+    def validate_show(self, val):
+        if self.instance:
+            fields = self.instance.get_fields(FIELD_TYPES_AND_SERIALIZERS, request=self.context['request'])
+            possible_names = list(map(lambda f: f['name'], fields))
+            possible_names.append('Created')
+            possible_names.append('Updated')
+            for name in val:
+                if name not in possible_names:
+                    raise ValidationError(
+                        "The value '{}' is not contained within the possible fields. "
+                        "Please check upper or lower case and whitespaces.\n"
+                        "Possible fields: \n{}".format(name, possible_names))
+        else:
+            val = []
+        return val
+
 
 class RecordTemplateDetailSerializer(RecordTemplateSerializer):
     fields = serializers.SerializerMethodField(method_name='get_form_fields')
