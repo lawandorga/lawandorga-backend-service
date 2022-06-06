@@ -8,3 +8,4 @@ from .permissions import *
 from .note import *
 from .statistic_user import *
 from .statistic import *
+from .rlc_statistic import *
