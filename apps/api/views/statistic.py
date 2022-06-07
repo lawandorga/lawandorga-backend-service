@@ -13,7 +13,7 @@ class StatisticUserExists(BasePermission):
         return hasattr(request.user, 'statistic_user')
 
 
-class StatisticViewSet(viewsets.GenericViewSet):
+class StatisticsViewSet(viewsets.GenericViewSet):
     permission_classes = [StatisticUserExists, IsAuthenticatedAndEverything]
     queryset = LoggedPath.objects.none()
 
@@ -82,22 +82,22 @@ class StatisticViewSet(viewsets.GenericViewSet):
     def user_actions_month(self, request, *args, **kwargs):
         if settings.DEBUG:
             statement = """
-            select u.email as email, count(*) as actions
+            select u.id as email, count(*) as actions
             from api_userprofile as u
             left join api_loggedpath path on u.id = path.user_id
             where user_id is not null
             and path.time > date('now', '-1 month')
-            group by u.email
+            group by u.email, u.id
             order by count(*) desc;
             """
         else:
             statement = """
-            select u.email as email, count(*) as actions
+            select u.id as email, count(*) as actions
             from api_userprofile as u
             left join api_loggedpath path on u.id = path.user_id
             where user_id is not null
             and path.time > date_trunc('day', NOW() - interval '1 month')
-            group by u.email
+            group by u.email, u.id
             order by count(*) desc;
             """
         data = self.execute_statement(statement)
@@ -195,7 +195,7 @@ class StatisticViewSet(viewsets.GenericViewSet):
     def errors_user(self, request, *args, **kwargs):
         statement = """
         select
-        email,
+        baseuser.id,
         rlckeys.id is not null as rlckeys,
         userkeys.id is not null as userkeys,
         rlcuser.accepted,

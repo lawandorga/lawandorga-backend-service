@@ -20,6 +20,6 @@ router.register("notifications", views.NotificationViewSet)
 router.register('permissions', views.PermissionViewSet)
 router.register("notification_groups", views.NotificationGroupViewSet)
 router.register('notes', views.NoteViewSet)
-router.register('statistic', views.StatisticViewSet, basename='statistic')
-router.register('rlc_statistic', views.RlcStatisticViewSet, basename='rlc_statistic')
+router.register('statistics', views.StatisticsViewSet, basename='statistic')
+router.register('rlc_statistics', views.RlcStatisticsViewSet, basename='rlc_statistic')
 urlpatterns = [path("", include(router.urls))]
