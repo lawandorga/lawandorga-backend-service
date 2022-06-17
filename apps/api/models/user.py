@@ -1,4 +1,5 @@
 from apps.api.models.has_permission import HasPermission
+from apps.recordmanagement.models import RecordEncryptionNew
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from apps.api.models.permission import Permission
 from rest_framework.exceptions import ParseError, AuthenticationFailed
@@ -289,6 +290,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             return self.rlc.get_aes_key(user=self, private_key_user=private_key_user)
         else:
             raise ValueError('You need to set (private_key_user).')
+
+    def test_all_keys(self, private_key_user):
+        for key in RecordEncryptionNew.objects.filter(user=self):
+            key.test(private_key_user)
+        self.users_rlc_keys.first().test()
 
     def generate_new_user_encryption_keys(self):
         from apps.api.models.user_encryption_keys import UserEncryptionKeys

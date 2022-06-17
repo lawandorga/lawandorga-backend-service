@@ -624,6 +624,7 @@ class RecordEncryptionNew(EncryptedModelMixin, models.Model):
     user = models.ForeignKey(UserProfile, related_name="recordencryptions", on_delete=models.CASCADE)
     record = models.ForeignKey(Record, related_name="encryptions", on_delete=models.CASCADE)
     key = models.BinaryField()
+    correct = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     encryption_class = RSAEncryption
@@ -637,12 +638,30 @@ class RecordEncryptionNew(EncryptedModelMixin, models.Model):
     def __str__(self):
         return "recordEncryption: {}; user: {}; record: {};".format(self.pk, self.user.email, self.record.pk)
 
+    def set_correct(self, value):
+        key = RecordEncryptionNew.objects.get(pk=self.pk)
+        key.correct = value
+        key.save()
+        self.correct = value
+
+    def test(self, private_key_user):
+        try:
+            super().decrypt(private_key_user)
+            self.set_correct(True)
+        except ValueError as e:
+            if 'Encryption/decryption failed.' in e.__str__():
+                self.set_correct(False)
+
     def decrypt(self, private_key_user=None):
         if private_key_user:
             key = private_key_user
         else:
             raise ValueError("You need to pass (private_key_user).")
-        super().decrypt(key)
+        try:
+            super().decrypt(key)
+        except Exception as e:
+            self.test(private_key_user)
+            raise e
 
     def encrypt(self, public_key_user=None):
         if public_key_user:
