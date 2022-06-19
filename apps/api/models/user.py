@@ -1,5 +1,4 @@
 from apps.api.models.has_permission import HasPermission
-from apps.recordmanagement.models import RecordEncryptionNew
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from apps.api.models.permission import Permission
 from rest_framework.exceptions import ParseError, AuthenticationFailed
@@ -292,9 +291,44 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             raise ValueError('You need to set (private_key_user).')
 
     def test_all_keys(self, private_key_user):
+        from apps.recordmanagement.models import RecordEncryptionNew
+
         for key in RecordEncryptionNew.objects.filter(user=self):
             key.test(private_key_user)
-        self.users_rlc_keys.first().test()
+        self.users_rlc_keys.first().test(private_key_user)
+
+    def __get_all_keys_raw(self):
+        from apps.recordmanagement.models import RecordEncryptionNew
+
+        ret = {
+            'record_keys': list(RecordEncryptionNew.objects.filter(user=self).select_related('record')),
+            'rlc_keys': self.users_rlc_keys.select_related('rlc').all()
+        }
+
+        return ret
+
+    def get_all_keys(self):
+        keys = self.__get_all_keys_raw()
+        all_keys = []
+
+        for key in keys['record_keys']:
+            d = {
+                'id': key.id,
+                'correct': key.correct,
+                'source': 'RECORD',
+                'information': '{}'.format(key.record.identifier)
+            }
+            all_keys.append(d)
+        for key in keys['rlc_keys']:
+            d = {
+                'id': key.id,
+                'correct': key.correct,
+                'source': 'RLC',
+                'information': '{}'.format(key.rlc.name)
+            }
+            all_keys.append(d)
+
+        return all_keys
 
     def generate_new_user_encryption_keys(self):
         from apps.api.models.user_encryption_keys import UserEncryptionKeys

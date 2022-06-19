@@ -28,3 +28,5 @@ django-tinymce==3.4.0
 # unknown
 pycryptodome==3.14.1
 boto3==1.21.3
+# validation
+pydantic~=1.9.1

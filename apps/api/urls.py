@@ -4,7 +4,7 @@ from apps.internal.urls import router as internal_router
 from apps.collab.urls import router as collab_router
 from apps.files.urls import router as files_router
 from django.urls import path, include
-from apps.api import views
+from apps.api import views, views2
 
 router = DefaultRouter()
 router.registry.extend(internal_router.registry)
@@ -22,4 +22,9 @@ router.register("notification_groups", views.NotificationGroupViewSet)
 router.register('notes', views.NoteViewSet)
 router.register('statistics', views.StatisticsViewSet, basename='statistic')
 router.register('rlc_statistics', views.RlcStatisticsViewSet, basename='rlc_statistic')
-urlpatterns = [path("", include(router.urls))]
+urlpatterns = [
+    path("", include(router.urls)),
+    path('keys/', views2.keys),
+    path('keys/<int:id>/', views2.keys),
+    path('keys/test/', views2.keys),
+]
