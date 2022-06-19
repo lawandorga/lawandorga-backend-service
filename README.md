@@ -1,4 +1,5 @@
 ![Codecov branch](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/wiki/lawandorga/lawandorga-backend/python-coverage-comment-action-badge.json)
+[![codecov](https://codecov.io/gh/lawandorga/lawandorga-backend/branch/main/graph/badge.svg?token=3YGIYK0I70)](https://codecov.io/gh/lawandorga/lawandorga-backend)
 
 # Law&Orga
 
