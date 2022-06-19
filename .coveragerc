@@ -5,3 +5,5 @@ relative_files = true
 omit =
     config/*
     */tests/*
+    manage.py
+    production_manage.py
