@@ -35,7 +35,7 @@ jobs:
             -   name: Run Tests
                 run: coverage run --source='.' manage.py test
 
-            -   name: Coverage comment
+            -   name: Coverage Comment
                 id: coverage_comment
                 uses: ewjoachim/python-coverage-comment-action@v2
                 with:
