@@ -30,3 +30,5 @@ pycryptodome==3.14.1
 boto3==1.21.3
 # validation
 pydantic~=1.9.1
+# tests
+coverage==6.4.1
