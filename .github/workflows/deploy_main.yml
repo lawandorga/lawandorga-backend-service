@@ -7,13 +7,14 @@ on:
 
 jobs:
     test:
+        name: 'Test'
         runs-on: ubuntu-latest
 
         steps:
             -   name: Checkout
                 uses: actions/checkout@v2
 
-            -   name: Set up Python
+            -   name: Set Up Python
                 uses: actions/setup-python@v2
                 with:
                     python-version: 3.9
@@ -40,7 +41,7 @@ jobs:
                 with:
                     GITHUB_TOKEN: ${{ github.token }}
 
-            -   name: Store Pull Request comment to be posted
+            -   name: Store Pull Request Comment To Be Posted
                 uses: actions/upload-artifact@v2
                 if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
                 with:
@@ -50,11 +51,11 @@ jobs:
                     path: python-coverage-comment-action.txt
 
     build:
-        name: Run deploy script
+        name: Run Deploy Script
         runs-on: ubuntu-latest
         needs: [ "test" ]
         steps:
-            -   name: Login to the remote server
+            -   name: Login To The Remote Server
                 uses: appleboy/ssh-action@master
                 with:
                     host: ${{ secrets.HOST }}
