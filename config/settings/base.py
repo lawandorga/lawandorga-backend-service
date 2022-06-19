@@ -111,16 +111,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-AUTH_USER_MODEL
 AUTH_USER_MODEL = "api.UserProfile"
 
-# Storage
-# https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
-DEFAULT_FILE_STORAGE = 'config.storage.CustomS3Boto3Storage'
-AWS_S3_SECRET_ACCESS_KEY = get_secret("SCW_SECRET_KEY")
-AWS_S3_ACCESS_KEY_ID = get_secret("SCW_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = get_secret("SCW_S3_BUCKET_NAME")
-AWS_S3_REGION_NAME = "fr-par"
-AWS_S3_ENDPOINT_URL = "https://s3.fr-par.scw.cloud"
-AWS_S3_FILE_OVERWRITE = False
-
 # Static Files Storage
 # http://whitenoise.evans.io/en/stable/
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -181,11 +171,6 @@ ADMINS = [('Daniel Mössner', 'it@law-orga.de')]
 
 # This is used by the ExpiringTokenAuthentication which extends from rest's token authentication
 TIMEOUT_TIMEDELTA = timedelta(minutes=30)
-
-# Secret keys for s3-storage to save files from 'files' and documents from records
-SCW_SECRET_KEY = get_secret("SCW_SECRET_KEY")
-SCW_ACCESS_KEY = get_secret("SCW_ACCESS_KEY")
-SCW_S3_BUCKET_NAME = get_secret("SCW_S3_BUCKET_NAME")
 
 # This is used for links in activation emails and so on
 FRONTEND_URL = get_secret("FRONTEND_URL")

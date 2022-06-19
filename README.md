@@ -32,6 +32,8 @@ This project contains a backend based on Django-Rest-Framework. It uses Amazon S
 
 `
 {
-
+    "SECRET_KEY": "nosecret",
+    "FRONTEND_URL": "http://localhost:4200/",
+    "JWT_SIGNING_KEY": "nosecret"
 }
 `
