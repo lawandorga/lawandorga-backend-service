@@ -8,32 +8,41 @@ from django.test import TestCase
 from rest_framework.test import force_authenticate
 
 from apps.api.models import RlcUser, UserProfile
-from apps.recordmanagement.models import (Record, RecordEncryptedFileEntry,
-                                          RecordEncryptedFileField,
-                                          RecordEncryptedSelectEntry,
-                                          RecordEncryptedSelectField,
-                                          RecordEncryptedStandardEntry,
-                                          RecordEncryptedStandardField,
-                                          RecordEncryptionNew,
-                                          RecordMultipleEntry,
-                                          RecordMultipleField,
-                                          RecordSelectEntry, RecordSelectField,
-                                          RecordStandardEntry,
-                                          RecordStandardField,
-                                          RecordStateEntry, RecordStateField,
-                                          RecordStatisticEntry,
-                                          RecordStatisticField, RecordTemplate,
-                                          RecordUsersEntry, RecordUsersField)
+from apps.recordmanagement.models import (
+    Record,
+    RecordEncryptedFileEntry,
+    RecordEncryptedFileField,
+    RecordEncryptedSelectEntry,
+    RecordEncryptedSelectField,
+    RecordEncryptedStandardEntry,
+    RecordEncryptedStandardField,
+    RecordEncryptionNew,
+    RecordMultipleEntry,
+    RecordMultipleField,
+    RecordSelectEntry,
+    RecordSelectField,
+    RecordStandardEntry,
+    RecordStandardField,
+    RecordStateEntry,
+    RecordStateField,
+    RecordStatisticEntry,
+    RecordStatisticField,
+    RecordTemplate,
+    RecordUsersEntry,
+    RecordUsersField,
+)
 from apps.recordmanagement.tests import BaseRecord
-from apps.recordmanagement.views import (RecordEncryptedFileEntryViewSet,
-                                         RecordEncryptedSelectEntryViewSet,
-                                         RecordEncryptedStandardEntryViewSet,
-                                         RecordMultipleEntryViewSet,
-                                         RecordSelectEntryViewSet,
-                                         RecordStandardEntryViewSet,
-                                         RecordStateEntryViewSet,
-                                         RecordStatisticEntryViewSet,
-                                         RecordUsersEntryViewSet)
+from apps.recordmanagement.views import (
+    RecordEncryptedFileEntryViewSet,
+    RecordEncryptedSelectEntryViewSet,
+    RecordEncryptedStandardEntryViewSet,
+    RecordMultipleEntryViewSet,
+    RecordSelectEntryViewSet,
+    RecordStandardEntryViewSet,
+    RecordStateEntryViewSet,
+    RecordStatisticEntryViewSet,
+    RecordUsersEntryViewSet,
+)
 from apps.static.encryption import AESEncryption
 
 

@@ -1,8 +1,7 @@
 from rest_framework import serializers
 
 from apps.api.serializers.user import UserProfileNameSerializer
-from apps.recordmanagement.models.encrypted_record_message import \
-    EncryptedRecordMessage
+from apps.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
 
 
 class EncryptedRecordMessageSerializer(serializers.ModelSerializer):

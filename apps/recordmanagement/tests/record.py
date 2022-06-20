@@ -3,12 +3,12 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from apps.api.fixtures import create_permissions
-from apps.api.models import (HasPermission, Permission, Rlc, RlcUser,
-                             UserProfile)
-from apps.api.static import (PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
-                             PERMISSION_RECORDS_ADD_RECORD)
-from apps.recordmanagement.models import (Record, RecordEncryptionNew,
-                                          RecordTemplate)
+from apps.api.models import HasPermission, Permission, Rlc, RlcUser, UserProfile
+from apps.api.static import (
+    PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
+    PERMISSION_RECORDS_ADD_RECORD,
+)
+from apps.recordmanagement.models import Record, RecordEncryptionNew, RecordTemplate
 from apps.recordmanagement.views import RecordTemplateViewSet, RecordViewSet
 
 

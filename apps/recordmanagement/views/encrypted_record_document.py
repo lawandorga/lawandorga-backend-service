@@ -5,10 +5,13 @@ from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 
-from apps.recordmanagement.models.encrypted_record_document import \
-    EncryptedRecordDocument
-from apps.recordmanagement.serializers import (RecordDocumentCreateSerializer,
-                                               RecordDocumentSerializer)
+from apps.recordmanagement.models.encrypted_record_document import (
+    EncryptedRecordDocument,
+)
+from apps.recordmanagement.serializers import (
+    RecordDocumentCreateSerializer,
+    RecordDocumentSerializer,
+)
 
 
 class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):

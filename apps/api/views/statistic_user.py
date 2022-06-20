@@ -7,9 +7,11 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 from apps.api.models import StatisticUser
-from apps.api.serializers import (ChangePasswordSerializer,
-                                  StatisticUserJWTSerializer,
-                                  StatisticUserSerializer)
+from apps.api.serializers import (
+    ChangePasswordSerializer,
+    StatisticUserJWTSerializer,
+    StatisticUserSerializer,
+)
 
 
 class StatisticsUserViewSet(viewsets.GenericViewSet):

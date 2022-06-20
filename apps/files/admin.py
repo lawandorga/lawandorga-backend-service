@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from apps.files.models import (File, Folder, FolderPermission,
-                               PermissionForFolder)
+from apps.files.models import File, Folder, FolderPermission, PermissionForFolder
 
 
 class FileAdmin(admin.ModelAdmin):

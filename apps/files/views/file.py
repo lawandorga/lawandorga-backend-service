@@ -5,8 +5,11 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from apps.files.models.file import File
-from apps.files.serializers import (FileCreateSerializer, FileSerializer,
-                                    FileUpdateSerializer)
+from apps.files.serializers import (
+    FileCreateSerializer,
+    FileSerializer,
+    FileUpdateSerializer,
+)
 
 
 class FileViewSet(

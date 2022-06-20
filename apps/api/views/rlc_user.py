@@ -9,18 +9,29 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
-from apps.api.models import (AccountActivationTokenGenerator,
-                             PasswordResetTokenGenerator, RlcUser, UserProfile,
-                             UsersRlcKeys)
-from apps.api.serializers import (ChangePasswordSerializer, EmailSerializer,
-                                  RlcSerializer, RlcUserCreateSerializer,
-                                  RlcUserForeignSerializer,
-                                  RlcUserJWTSerializer, RlcUserSerializer,
-                                  RlcUserUpdateSerializer,
-                                  UserPasswordResetConfirmSerializer)
-from apps.api.static import (PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
-                             PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
-                             PERMISSION_ADMIN_MANAGE_USERS)
+from apps.api.models import (
+    AccountActivationTokenGenerator,
+    PasswordResetTokenGenerator,
+    RlcUser,
+    UserProfile,
+    UsersRlcKeys,
+)
+from apps.api.serializers import (
+    ChangePasswordSerializer,
+    EmailSerializer,
+    RlcSerializer,
+    RlcUserCreateSerializer,
+    RlcUserForeignSerializer,
+    RlcUserJWTSerializer,
+    RlcUserSerializer,
+    RlcUserUpdateSerializer,
+    UserPasswordResetConfirmSerializer,
+)
+from apps.api.static import (
+    PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
+    PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
+    PERMISSION_ADMIN_MANAGE_USERS,
+)
 from apps.recordmanagement.models import RecordAccess, RecordDeletion
 from apps.static.permission import CheckPermissionWall
 

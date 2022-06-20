@@ -3,8 +3,10 @@ from rest_framework.response import Response
 
 from apps.api.static import PERMISSION_FILES_MANAGE_PERMISSIONS
 from apps.files.models.permission_for_folder import PermissionForFolder
-from apps.files.serializers import (PermissionForFolderNestedSerializer,
-                                    PermissionForFolderSerializer)
+from apps.files.serializers import (
+    PermissionForFolderNestedSerializer,
+    PermissionForFolderSerializer,
+)
 from apps.static.permission import CheckPermissionWall
 
 

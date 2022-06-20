@@ -1,8 +1,15 @@
 from django.contrib import admin
 from solo.admin import SingletonModelAdmin
 
-from apps.internal.models import (Article, HelpPage, ImprintPage, IndexPage,
-                                  InternalUser, RoadmapItem, TomsPage)
+from apps.internal.models import (
+    Article,
+    HelpPage,
+    ImprintPage,
+    IndexPage,
+    InternalUser,
+    RoadmapItem,
+    TomsPage,
+)
 
 
 class InternalUserAdmin(admin.ModelAdmin):

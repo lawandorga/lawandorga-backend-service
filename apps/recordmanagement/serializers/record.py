@@ -3,31 +3,32 @@ from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.timezone import localtime
 from rest_framework import serializers
-from rest_framework.exceptions import (ParseError, PermissionDenied,
-                                       ValidationError)
+from rest_framework.exceptions import ParseError, PermissionDenied, ValidationError
 from rest_framework.reverse import reverse
 
 from apps.recordmanagement.models import EncryptedClient
-from apps.recordmanagement.models.record import (Record,
-                                                 RecordEncryptedFileEntry,
-                                                 RecordEncryptedFileField,
-                                                 RecordEncryptedSelectEntry,
-                                                 RecordEncryptedSelectField,
-                                                 RecordEncryptedStandardEntry,
-                                                 RecordEncryptedStandardField,
-                                                 RecordEncryptionNew,
-                                                 RecordMultipleEntry,
-                                                 RecordMultipleField,
-                                                 RecordSelectEntry,
-                                                 RecordSelectField,
-                                                 RecordStandardEntry,
-                                                 RecordStandardField,
-                                                 RecordStateEntry,
-                                                 RecordStateField,
-                                                 RecordStatisticEntry,
-                                                 RecordTemplate,
-                                                 RecordUsersEntry,
-                                                 RecordUsersField)
+from apps.recordmanagement.models.record import (
+    Record,
+    RecordEncryptedFileEntry,
+    RecordEncryptedFileField,
+    RecordEncryptedSelectEntry,
+    RecordEncryptedSelectField,
+    RecordEncryptedStandardEntry,
+    RecordEncryptedStandardField,
+    RecordEncryptionNew,
+    RecordMultipleEntry,
+    RecordMultipleField,
+    RecordSelectEntry,
+    RecordSelectField,
+    RecordStandardEntry,
+    RecordStandardField,
+    RecordStateEntry,
+    RecordStateField,
+    RecordStatisticEntry,
+    RecordTemplate,
+    RecordUsersEntry,
+    RecordUsersField,
+)
 
 
 ###

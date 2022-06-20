@@ -6,8 +6,7 @@ from django.db import models
 
 from apps.api.models import Group, Rlc, UserProfile
 from apps.recordmanagement.models import EncryptedClient, EncryptedRecord
-from apps.static.encryption import (AESEncryption, EncryptedModelMixin,
-                                    RSAEncryption)
+from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 
 ###

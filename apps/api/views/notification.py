@@ -26,10 +26,12 @@ from apps.api.errors import CustomError
 from apps.api.models import NotificationGroup
 from apps.api.models.notification import Notification
 from apps.api.serializers import NotificationSerializer
-from apps.static.error_codes import (ERROR__API__ID_NOT_FOUND,
-                                     ERROR__API__ID_NOT_PROVIDED,
-                                     ERROR__API__NOTIFICATION__UPDATE_INVALID,
-                                     ERROR__API__USER__NO_OWNERSHIP)
+from apps.static.error_codes import (
+    ERROR__API__ID_NOT_FOUND,
+    ERROR__API__ID_NOT_PROVIDED,
+    ERROR__API__NOTIFICATION__UPDATE_INVALID,
+    ERROR__API__USER__NO_OWNERSHIP,
+)
 
 
 class NotificationViewSet(viewsets.ModelViewSet):

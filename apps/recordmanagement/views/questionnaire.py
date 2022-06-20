@@ -8,16 +8,25 @@ from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.response import Response
 
 from apps.api.static import PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES
-from apps.recordmanagement.models import (Questionnaire, QuestionnaireAnswer,
-                                          QuestionnaireQuestion,
-                                          QuestionnaireTemplate,
-                                          QuestionnaireTemplateFile)
+from apps.recordmanagement.models import (
+    Questionnaire,
+    QuestionnaireAnswer,
+    QuestionnaireQuestion,
+    QuestionnaireTemplate,
+    QuestionnaireTemplateFile,
+)
 from apps.recordmanagement.serializers.questionnaire import (
-    CodeSerializer, QuestionnaireAnswerRetrieveSerializer,
-    QuestionnaireFileAnswerSerializer, QuestionnaireListSerializer,
-    QuestionnaireQuestionSerializer, QuestionnaireSerializer,
-    QuestionnaireTemplateFileSerializer, QuestionnaireTemplateSerializer,
-    QuestionnaireTextAnswerSerializer, RecordQuestionnaireDetailSerializer)
+    CodeSerializer,
+    QuestionnaireAnswerRetrieveSerializer,
+    QuestionnaireFileAnswerSerializer,
+    QuestionnaireListSerializer,
+    QuestionnaireQuestionSerializer,
+    QuestionnaireSerializer,
+    QuestionnaireTemplateFileSerializer,
+    QuestionnaireTemplateSerializer,
+    QuestionnaireTextAnswerSerializer,
+    RecordQuestionnaireDetailSerializer,
+)
 from apps.static.permission import CheckPermissionWall
 
 

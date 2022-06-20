@@ -2,8 +2,7 @@ from django.conf import settings
 from rest_framework.test import APIRequestFactory
 
 from apps.api.fixtures import create_permissions
-from apps.api.models import (HasPermission, Permission, Rlc, RlcUser,
-                             UserProfile)
+from apps.api.models import HasPermission, Permission, Rlc, RlcUser, UserProfile
 from apps.api.static import PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS
 from apps.collab.models import CollabDocument, TextDocumentVersion
 

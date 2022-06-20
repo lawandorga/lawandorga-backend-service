@@ -7,8 +7,7 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from apps.api.fixtures import create_permissions
-from apps.api.models import (HasPermission, Permission, Rlc, RlcUser,
-                             UserProfile)
+from apps.api.models import HasPermission, Permission, Rlc, RlcUser, UserProfile
 from apps.api.static import PERMISSION_FILES_WRITE_ALL_FOLDERS
 from apps.files.fixtures import create_folder_permissions
 from apps.files.models import File, Folder

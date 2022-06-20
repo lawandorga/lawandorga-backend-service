@@ -2,13 +2,22 @@ from rest_framework import mixins
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from apps.internal.models import (Article, HelpPage, ImprintPage, IndexPage,
-                                  RoadmapItem, TomsPage)
-from apps.internal.serializers import (ArticleDetailSerializer,
-                                       ArticleSerializer, HelpPageSerializer,
-                                       IndexPageSerializer,
-                                       RoadmapItemSerializer,
-                                       TomsPageSerializer)
+from apps.internal.models import (
+    Article,
+    HelpPage,
+    ImprintPage,
+    IndexPage,
+    RoadmapItem,
+    TomsPage,
+)
+from apps.internal.serializers import (
+    ArticleDetailSerializer,
+    ArticleSerializer,
+    HelpPageSerializer,
+    IndexPageSerializer,
+    RoadmapItemSerializer,
+    TomsPageSerializer,
+)
 
 
 class PageViewSet(mixins.ListModelMixin, GenericViewSet):

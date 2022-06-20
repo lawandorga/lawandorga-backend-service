@@ -2,10 +2,15 @@ from django.conf import settings
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from apps.api.models import (HasPermission, Permission, Rlc, RlcUser,
-                             UserEncryptionKeys, UserProfile)
-from apps.api.static import (PERMISSION_ADMIN_MANAGE_USERS,
-                             get_all_permission_strings)
+from apps.api.models import (
+    HasPermission,
+    Permission,
+    Rlc,
+    RlcUser,
+    UserEncryptionKeys,
+    UserProfile,
+)
+from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS, get_all_permission_strings
 from apps.api.views import RlcUserViewSet
 
 

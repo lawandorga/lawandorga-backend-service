@@ -5,8 +5,10 @@ from rest_framework.response import Response
 
 from apps.recordmanagement.models.pool import PoolConsultant, PoolRecord
 from apps.recordmanagement.models.record import Record, RecordEncryptionNew
-from apps.recordmanagement.serializers import (PoolConsultantSerializer,
-                                               PoolRecordSerializer)
+from apps.recordmanagement.serializers import (
+    PoolConsultantSerializer,
+    PoolRecordSerializer,
+)
 
 
 class PoolConsultantViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):

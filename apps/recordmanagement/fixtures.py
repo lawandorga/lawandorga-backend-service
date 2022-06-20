@@ -1,11 +1,14 @@
 from django.db import transaction
 
-from apps.recordmanagement.models import (RecordEncryptedStandardField,
-                                          RecordMultipleField,
-                                          RecordSelectField,
-                                          RecordStandardField,
-                                          RecordStateField, RecordTemplate,
-                                          RecordUsersField)
+from apps.recordmanagement.models import (
+    RecordEncryptedStandardField,
+    RecordMultipleField,
+    RecordSelectField,
+    RecordStandardField,
+    RecordStateField,
+    RecordTemplate,
+    RecordUsersField,
+)
 
 
 def create_default_record_template(rlc):

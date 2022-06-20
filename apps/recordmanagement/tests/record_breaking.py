@@ -5,24 +5,31 @@ from django.test import TestCase
 from django.utils import timezone
 from rest_framework.test import force_authenticate
 
-from apps.recordmanagement.models import (Record, RecordEncryptedSelectEntry,
-                                          RecordEncryptedSelectField,
-                                          RecordEncryptedStandardEntry,
-                                          RecordEncryptedStandardField,
-                                          RecordMultipleEntry,
-                                          RecordMultipleField,
-                                          RecordSelectEntry, RecordSelectField,
-                                          RecordStandardField,
-                                          RecordStateEntry, RecordStateField)
+from apps.recordmanagement.models import (
+    Record,
+    RecordEncryptedSelectEntry,
+    RecordEncryptedSelectField,
+    RecordEncryptedStandardEntry,
+    RecordEncryptedStandardField,
+    RecordMultipleEntry,
+    RecordMultipleField,
+    RecordSelectEntry,
+    RecordSelectField,
+    RecordStandardField,
+    RecordStateEntry,
+    RecordStateField,
+)
 from apps.recordmanagement.tests.record import BaseRecord
 from apps.recordmanagement.tests.record_entries import BaseRecordEntry
-from apps.recordmanagement.views import (RecordEncryptedSelectEntryViewSet,
-                                         RecordEncryptedStandardEntryViewSet,
-                                         RecordMultipleEntryViewSet,
-                                         RecordSelectEntryViewSet,
-                                         RecordStandardEntryViewSet,
-                                         RecordStateEntryViewSet,
-                                         RecordStateFieldViewSet)
+from apps.recordmanagement.views import (
+    RecordEncryptedSelectEntryViewSet,
+    RecordEncryptedStandardEntryViewSet,
+    RecordMultipleEntryViewSet,
+    RecordSelectEntryViewSet,
+    RecordStandardEntryViewSet,
+    RecordStateEntryViewSet,
+    RecordStateFieldViewSet,
+)
 
 
 ###

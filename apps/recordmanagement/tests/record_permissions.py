@@ -3,22 +3,24 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
 from apps.api.models import Rlc, RlcUser, UserProfile
-from apps.recordmanagement.views import (RecordEncryptedFileEntryViewSet,
-                                         RecordEncryptedFileFieldViewSet,
-                                         RecordEncryptedSelectEntryViewSet,
-                                         RecordEncryptedSelectFieldViewSet,
-                                         RecordEncryptedStandardEntryViewSet,
-                                         RecordEncryptedStandardFieldViewSet,
-                                         RecordSelectEntryViewSet,
-                                         RecordSelectFieldViewSet,
-                                         RecordStandardEntryViewSet,
-                                         RecordStandardFieldViewSet,
-                                         RecordStateEntryViewSet,
-                                         RecordStateFieldViewSet,
-                                         RecordTemplateViewSet,
-                                         RecordUsersEntryViewSet,
-                                         RecordUsersFieldViewSet,
-                                         RecordViewSet)
+from apps.recordmanagement.views import (
+    RecordEncryptedFileEntryViewSet,
+    RecordEncryptedFileFieldViewSet,
+    RecordEncryptedSelectEntryViewSet,
+    RecordEncryptedSelectFieldViewSet,
+    RecordEncryptedStandardEntryViewSet,
+    RecordEncryptedStandardFieldViewSet,
+    RecordSelectEntryViewSet,
+    RecordSelectFieldViewSet,
+    RecordStandardEntryViewSet,
+    RecordStandardFieldViewSet,
+    RecordStateEntryViewSet,
+    RecordStateFieldViewSet,
+    RecordTemplateViewSet,
+    RecordUsersEntryViewSet,
+    RecordUsersFieldViewSet,
+    RecordViewSet,
+)
 
 
 class RecordViewSetsPermissions(TestCase):

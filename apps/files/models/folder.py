@@ -2,9 +2,11 @@ from django.db import models
 
 from apps.api.models import UserProfile
 from apps.api.models.rlc import Rlc
-from apps.api.static import (PERMISSION_FILES_MANAGE_PERMISSIONS,
-                             PERMISSION_FILES_READ_ALL_FOLDERS,
-                             PERMISSION_FILES_WRITE_ALL_FOLDERS)
+from apps.api.static import (
+    PERMISSION_FILES_MANAGE_PERMISSIONS,
+    PERMISSION_FILES_READ_ALL_FOLDERS,
+    PERMISSION_FILES_WRITE_ALL_FOLDERS,
+)
 from apps.files.models.folder_permission import FolderPermission
 from apps.files.static import PERMISSION_READ_FOLDER, PERMISSION_WRITE_FOLDER
 from apps.static.storage_folders import get_storage_base_files_folder

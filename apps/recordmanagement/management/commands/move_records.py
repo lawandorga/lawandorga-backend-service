@@ -1,18 +1,24 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from apps.recordmanagement.models import (EncryptedRecord, Record,
-                                          RecordEncryptedStandardEntry,
-                                          RecordEncryptedStandardField,
-                                          RecordEncryption,
-                                          RecordEncryptionNew,
-                                          RecordMultipleEntry,
-                                          RecordMultipleField,
-                                          RecordSelectEntry, RecordSelectField,
-                                          RecordStandardEntry,
-                                          RecordStandardField,
-                                          RecordStateEntry, RecordStateField,
-                                          RecordUsersEntry, RecordUsersField)
+from apps.recordmanagement.models import (
+    EncryptedRecord,
+    Record,
+    RecordEncryptedStandardEntry,
+    RecordEncryptedStandardField,
+    RecordEncryption,
+    RecordEncryptionNew,
+    RecordMultipleEntry,
+    RecordMultipleField,
+    RecordSelectEntry,
+    RecordSelectField,
+    RecordStandardEntry,
+    RecordStandardField,
+    RecordStateEntry,
+    RecordStateField,
+    RecordUsersEntry,
+    RecordUsersField,
+)
 
 
 class Command(BaseCommand):

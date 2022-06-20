@@ -5,9 +5,12 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from apps.api.models import Group, RlcUser
-from apps.api.serializers import (GroupCreateSerializer, GroupSerializer,
-                                  MemberIntegerSerializer,
-                                  RlcUserForeignSerializer)
+from apps.api.serializers import (
+    GroupCreateSerializer,
+    GroupSerializer,
+    MemberIntegerSerializer,
+    RlcUserForeignSerializer,
+)
 from apps.api.static import PERMISSION_ADMIN_MANAGE_GROUPS
 from apps.static.permission import CheckPermissionWall
 

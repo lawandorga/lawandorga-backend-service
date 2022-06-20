@@ -1,25 +1,31 @@
 import json
+from typing import Dict, List
 
 from django.test import TestCase
 from rest_framework.test import force_authenticate
 
-from apps.recordmanagement.models import (RecordEncryptedFileField,
-                                          RecordEncryptedSelectField,
-                                          RecordEncryptedStandardField,
-                                          RecordMultipleField,
-                                          RecordSelectField,
-                                          RecordStandardField,
-                                          RecordStateField, RecordTemplate,
-                                          RecordUsersField)
+from apps.recordmanagement.models import (
+    RecordEncryptedFileField,
+    RecordEncryptedSelectField,
+    RecordEncryptedStandardField,
+    RecordMultipleField,
+    RecordSelectField,
+    RecordStandardField,
+    RecordStateField,
+    RecordTemplate,
+    RecordUsersField,
+)
 from apps.recordmanagement.tests import BaseRecord
-from apps.recordmanagement.views import (RecordEncryptedFileFieldViewSet,
-                                         RecordEncryptedSelectFieldViewSet,
-                                         RecordEncryptedStandardFieldViewSet,
-                                         RecordMultipleFieldViewSet,
-                                         RecordSelectFieldViewSet,
-                                         RecordStandardFieldViewSet,
-                                         RecordStateFieldViewSet,
-                                         RecordUsersFieldViewSet)
+from apps.recordmanagement.views import (
+    RecordEncryptedFileFieldViewSet,
+    RecordEncryptedSelectFieldViewSet,
+    RecordEncryptedStandardFieldViewSet,
+    RecordMultipleFieldViewSet,
+    RecordSelectFieldViewSet,
+    RecordStandardFieldViewSet,
+    RecordStateFieldViewSet,
+    RecordUsersFieldViewSet,
+)
 
 
 ###
@@ -343,7 +349,7 @@ class RecordSelectFieldViewSetWorking(GenericRecordField, TestCase):
     update_data = {
         "options": json.dumps(update_options),
     }
-    update_test = {"options": update_options}
+    update_test: Dict[str, List[str]] = {"options": update_options}
 
     def setup_field(self):
         self.field = RecordSelectField.objects.create(

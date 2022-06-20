@@ -7,13 +7,14 @@ from rest_framework.viewsets import GenericViewSet
 
 from apps.api.models import Permission, UserProfile
 from apps.api.models.has_permission import HasPermission
-from apps.api.serializers import (HasPermissionCreateSerializer,
-                                  HasPermissionSerializer)
-from apps.api.static import (PERMISSION_ADMIN_MANAGE_PERMISSIONS,
-                             get_all_admin_permissions,
-                             get_all_collab_permissions,
-                             get_all_files_permissions,
-                             get_all_records_permissions)
+from apps.api.serializers import HasPermissionCreateSerializer, HasPermissionSerializer
+from apps.api.static import (
+    PERMISSION_ADMIN_MANAGE_PERMISSIONS,
+    get_all_admin_permissions,
+    get_all_collab_permissions,
+    get_all_files_permissions,
+    get_all_records_permissions,
+)
 from apps.static.permission import CheckPermissionWall
 
 

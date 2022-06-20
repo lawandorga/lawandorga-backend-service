@@ -14,18 +14,13 @@ repos:
         hooks:
             -   id: isort
                 name: isort (python)
+                args: ["--profile", "black"]
     -   repo: https://github.com/pre-commit/mirrors-mypy
         rev: 'v0.961'
         hooks:
             -   id: mypy
                 language: system
                 exclude: "[a-zA-Z]*/(migrations)/(.)*"
-                additional_dependencies: [
-                    # mypy dependencies
-                    djangorestframework-stubs,
-                    django-stubs,
-                    # runtime dependencies
-                ]
     -   repo: https://github.com/pycqa/flake8
         rev: '4.0.1'
         hooks:

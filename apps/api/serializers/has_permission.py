@@ -2,9 +2,10 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.api.models.has_permission import HasPermission
-from apps.api.serializers import (GroupNameSerializer,
-                                  PermissionNameSerializer,
-                                  UserProfileNameSerializer)
+
+from .group import GroupNameSerializer
+from .permission import PermissionNameSerializer
+from .user import UserProfileNameSerializer
 
 
 class HasPermissionSerializer(serializers.ModelSerializer):

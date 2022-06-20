@@ -7,8 +7,7 @@ class RecordmanagementConfig(AppConfig):
 
     def ready(self):
         from apps.api.models import Rlc
-        from apps.recordmanagement.fixtures import \
-            create_default_record_template
+        from apps.recordmanagement.fixtures import create_default_record_template
 
         # from apps.recordmanagement.models import RecordTemplate, RecordStandardField, RecordEncryptedStandardField, \
         #     OriginCountry, RecordUsersField, RecordStateField, RecordSelectField, RecordMultipleField

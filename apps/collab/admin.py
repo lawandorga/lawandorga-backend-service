@@ -1,8 +1,11 @@
 from django.contrib import admin
 
-from apps.collab.models import (CollabDocument, CollabPermission,
-                                PermissionForCollabDocument,
-                                TextDocumentVersion)
+from apps.collab.models import (
+    CollabDocument,
+    CollabPermission,
+    PermissionForCollabDocument,
+    TextDocumentVersion,
+)
 
 admin.site.register(CollabDocument)
 admin.site.register(CollabPermission)

@@ -9,30 +9,35 @@ from apps.api.models.has_permission import HasPermission
 from apps.api.models.permission import Permission
 from apps.api.models.rlc import Rlc
 from apps.api.static import get_all_permission_strings
-from apps.collab.models import (CollabDocument, CollabPermission,
-                                TextDocumentVersion)
+from apps.collab.models import CollabDocument, CollabPermission, TextDocumentVersion
 from apps.collab.static import get_all_collab_permission_strings
 from apps.files.models import FolderPermission
 from apps.files.static import get_all_files_permission_strings
 from apps.internal.models import InternalUser
 from apps.recordmanagement.fixtures import create_default_record_template
-from apps.recordmanagement.models import (QuestionnaireQuestion,
-                                          QuestionnaireTemplate, Record,
-                                          RecordEncryptedStandardEntry,
-                                          RecordEncryptedStandardField,
-                                          RecordEncryptionNew,
-                                          RecordMultipleEntry,
-                                          RecordMultipleField,
-                                          RecordSelectEntry, RecordSelectField,
-                                          RecordStandardEntry,
-                                          RecordStandardField,
-                                          RecordStateEntry, RecordStateField,
-                                          RecordTemplate, RecordUsersEntry,
-                                          RecordUsersField)
-from apps.recordmanagement.models.encrypted_record_document import \
-    EncryptedRecordDocument
-from apps.recordmanagement.models.encrypted_record_message import \
-    EncryptedRecordMessage
+from apps.recordmanagement.models import (
+    QuestionnaireQuestion,
+    QuestionnaireTemplate,
+    Record,
+    RecordEncryptedStandardEntry,
+    RecordEncryptedStandardField,
+    RecordEncryptionNew,
+    RecordMultipleEntry,
+    RecordMultipleField,
+    RecordSelectEntry,
+    RecordSelectField,
+    RecordStandardEntry,
+    RecordStandardField,
+    RecordStateEntry,
+    RecordStateField,
+    RecordTemplate,
+    RecordUsersEntry,
+    RecordUsersField,
+)
+from apps.recordmanagement.models.encrypted_record_document import (
+    EncryptedRecordDocument,
+)
+from apps.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
 from apps.static.encryption import AESEncryption
 
 

@@ -7,7 +7,8 @@ from apps.api.static import PERMISSION_COLLAB_MANAGE_PERMISSIONS
 from apps.collab.models import PermissionForCollabDocument
 from apps.collab.serializers.permission_for_collab_document import (
     PermissionForCollabDocumentAllNamesSerializer,
-    PermissionForCollabDocumentSerializer)
+    PermissionForCollabDocumentSerializer,
+)
 
 
 class PermissionForCollabDocumentViewSet(

@@ -4,10 +4,8 @@ from django.db import models
 
 from apps.api.models import Rlc
 from apps.recordmanagement.models import EncryptedRecord, Record
-from apps.static.encryption import (AESEncryption, EncryptedModelMixin,
-                                    RSAEncryption)
-from apps.static.storage import (download_and_decrypt_file,
-                                 encrypt_and_upload_file)
+from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
+from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
 
 
 class QuestionnaireTemplate(models.Model):

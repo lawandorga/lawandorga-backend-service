@@ -1,17 +1,20 @@
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import (ParseError, PermissionDenied,
-                                       ValidationError)
+from rest_framework.exceptions import ParseError, PermissionDenied, ValidationError
 from rest_framework.response import Response
 
 from apps.api.models import Group
 from apps.files.models import PermissionForFolder
 from apps.files.models.file import File
 from apps.files.models.folder import Folder
-from apps.files.serializers import (FileSerializer, FolderCreateSerializer,
-                                    FolderPathSerializer, FolderSerializer,
-                                    FolderUpdateSerializer,
-                                    PermissionForFolderNestedSerializer)
+from apps.files.serializers import (
+    FileSerializer,
+    FolderCreateSerializer,
+    FolderPathSerializer,
+    FolderSerializer,
+    FolderUpdateSerializer,
+    PermissionForFolderNestedSerializer,
+)
 
 
 class FolderViewSet(viewsets.ModelViewSet):

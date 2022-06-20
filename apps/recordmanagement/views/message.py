@@ -4,7 +4,9 @@ from rest_framework.viewsets import GenericViewSet
 
 from apps.recordmanagement.models import EncryptedRecordMessage
 from apps.recordmanagement.serializers import (
-    EncryptedRecordMessageDetailSerializer, EncryptedRecordMessageSerializer)
+    EncryptedRecordMessageDetailSerializer,
+    EncryptedRecordMessageSerializer,
+)
 
 
 class MessageViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, GenericViewSet):

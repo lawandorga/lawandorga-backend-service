@@ -3,8 +3,9 @@ from django.db import models
 from apps.api.models import UserProfile
 from apps.api.models.rlc import Rlc
 from apps.api.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
-from apps.recordmanagement.models import Tag
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
+
+from .tag import Tag
 
 
 class EncryptedRecord(EncryptedModelMixin, models.Model):
@@ -110,8 +111,9 @@ class EncryptedRecord(EncryptedModelMixin, models.Model):
         :param user: user object, the user to check
         :return: boolean, true if the user has permission
         """
-        from apps.recordmanagement.models.encrypted_record_permission import \
-            RecordAccess
+        from apps.recordmanagement.models.encrypted_record_permission import (
+            RecordAccess,
+        )
 
         return (
             self.working_on_record.filter(id=user.id).count() == 1
@@ -128,8 +130,9 @@ class EncryptedRecord(EncryptedModelMixin, models.Model):
         emails = []
         for user in list(self.working_on_record.all()):
             emails.append(user.email)
-        from apps.recordmanagement.models.encrypted_record_permission import \
-            RecordAccess
+        from apps.recordmanagement.models.encrypted_record_permission import (
+            RecordAccess,
+        )
 
         for permission_request in list(
             RecordAccess.objects.filter(record=self, state="gr")
@@ -142,8 +145,9 @@ class EncryptedRecord(EncryptedModelMixin, models.Model):
         users = []
         for user in list(self.working_on_record.all()):
             users.append(user)
-        from apps.recordmanagement.models.encrypted_record_permission import \
-            RecordAccess
+        from apps.recordmanagement.models.encrypted_record_permission import (
+            RecordAccess,
+        )
 
         for permission_request in RecordAccess.objects.filter(record=self, state="gr"):
             users.append(permission_request.request_from)

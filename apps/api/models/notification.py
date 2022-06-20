@@ -19,8 +19,7 @@ from django.utils import timezone
 from apps.api import static
 from apps.api.models.notification_group import NotificationGroup
 from apps.api.models.user import UserProfile
-from apps.static.notification_enums import (NotificationGroupType,
-                                            NotificationType)
+from apps.static.notification_enums import NotificationGroupType, NotificationType
 
 
 class NotificationManager(models.Manager):
