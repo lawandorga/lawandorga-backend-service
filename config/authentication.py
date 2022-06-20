@@ -35,11 +35,11 @@ class RefreshPrivateKeyToken(RefreshToken):
     @classmethod
     def for_user(cls, user, password_user=None, private_key=None):
         if password_user:
-            private_key = user.get_private_key(password_user=password_user)
+            key = user.get_private_key(password_user=password_user)
         elif private_key:
-            private_key = private_key
+            key = private_key
         else:
             raise ValueError('You need to pass (password_user) or (private_key).')
         token = super().for_user(user)
-        token['key'] = private_key
+        token['key'] = key
         return token

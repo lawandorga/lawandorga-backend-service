@@ -67,13 +67,13 @@ class FileCreateSerializer(AddUserMixin, FileSerializer):
         # return
         return file
 
-    def validate_name(self, name):
+    def validate_name(self, _):
         # check file was submitted
         if 'file' not in self.context['request'].FILES:
             raise ValidationError({'file': 'A file needs to be submitted.'})
         #
-        name = self.context['request'].FILES['file'].name
-        return name
+        value = self.context['request'].FILES['file'].name
+        return value
 
     def validate_folder(self, folder):
         # set folder

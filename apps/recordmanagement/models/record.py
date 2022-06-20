@@ -139,7 +139,7 @@ class RecordField(models.Model):
 
     @property
     def type(self):
-        raise NotImplemented('This property needs to be implemented.')
+        raise NotImplementedError('This property needs to be implemented.')
 
     @classmethod
     def get_entry_model(cls):
