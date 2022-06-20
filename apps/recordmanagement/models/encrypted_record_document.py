@@ -44,7 +44,7 @@ class EncryptedRecordDocument(models.Model):
         special_char_map = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('ß'): 'ss', ord('Ä'): 'AE',
                             ord('Ö'): 'OE', ord('Ü'): 'UE'}
         key = key.translate(special_char_map)
-        unicodedata.normalize('NFKC', key).encode('ascii', 'ignore').decode('ascii')
+        key = unicodedata.normalize('NFKC', key).encode('ascii', 'ignore').decode('ascii')
         key = re.sub(r'[^/.\w\s-]', '', key.lower()).strip()
         key = re.sub(r'[-\s]+', '-', key)
         if not EncryptedRecordDocument.objects.filter(key=key).exists():
