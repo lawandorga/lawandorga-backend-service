@@ -36,6 +36,7 @@ jobs:
                 run: |
                     coverage run --source='.' manage.py test
                     coverage xml
+                    coverage report
 
             -   name: Coverage Comment
                 id: coverage_comment
