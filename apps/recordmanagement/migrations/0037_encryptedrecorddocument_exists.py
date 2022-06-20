@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0036_encryptedrecorddocument_key'),
+        ("recordmanagement", "0036_encryptedrecorddocument_key"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='encryptedrecorddocument',
-            name='exists',
+            model_name="encryptedrecorddocument",
+            name="exists",
             field=models.BooleanField(default=True),
         ),
     ]

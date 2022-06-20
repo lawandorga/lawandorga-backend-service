@@ -6,16 +6,20 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0089_alter_group_from_rlc'),
+        ("api", "0089_alter_group_from_rlc"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='rlcuser',
-            options={'ordering': ['accepted', 'locked', 'is_active', 'user__name'], 'verbose_name': 'RlcUser', 'verbose_name_plural': 'RlcUsers'},
+            name="rlcuser",
+            options={
+                "ordering": ["accepted", "locked", "is_active", "user__name"],
+                "verbose_name": "RlcUser",
+                "verbose_name_plural": "RlcUsers",
+            },
         ),
         migrations.RemoveField(
-            model_name='rlcuser',
-            name='rlc',
+            model_name="rlcuser",
+            name="rlc",
         ),
     ]

@@ -10,8 +10,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(model_name="notification", name="event",),
-        migrations.RemoveField(model_name="notification", name="sub_type",),
+        migrations.RemoveField(
+            model_name="notification",
+            name="event",
+        ),
+        migrations.RemoveField(
+            model_name="notification",
+            name="sub_type",
+        ),
         migrations.AddField(
             model_name="notification",
             name="type",

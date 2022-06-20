@@ -1,14 +1,20 @@
-from apps.static.encryption import AESEncryption, RSAEncryption, EncryptedModelMixin
-from apps.api.models.rlc import Rlc
 from django.db import models
+
+from apps.api.models.rlc import Rlc
+from apps.static.encryption import (AESEncryption, EncryptedModelMixin,
+                                    RSAEncryption)
 
 
 class EncryptedClient(EncryptedModelMixin, models.Model):
-    from_rlc = models.ForeignKey(Rlc, related_name="e_client_from_rlc", on_delete=models.SET_NULL, null=True)
+    from_rlc = models.ForeignKey(
+        Rlc, related_name="e_client_from_rlc", on_delete=models.SET_NULL, null=True
+    )
     created_on = models.DateField(auto_now_add=True)
     last_edited = models.DateTimeField(auto_now_add=True)
     birthday = models.DateField(null=True, blank=True)
-    origin_country = models.ForeignKey("OriginCountry", related_name="e_clients", on_delete=models.SET_NULL, null=True)
+    origin_country = models.ForeignKey(
+        "OriginCountry", related_name="e_clients", on_delete=models.SET_NULL, null=True
+    )
     # encrypted
     name = models.BinaryField(null=True)
     note = models.BinaryField(null=True)

@@ -1,12 +1,14 @@
-from apps.recordmanagement.models.encrypted_record_document import EncryptedRecordDocument
-from rest_framework.exceptions import ValidationError
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
+from apps.recordmanagement.models.encrypted_record_document import \
+    EncryptedRecordDocument
 
 
 class RecordDocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = EncryptedRecordDocument
-        fields = '__all__'
+        fields = "__all__"
 
 
 class RecordDocumentCreateSerializer(RecordDocumentSerializer):
@@ -14,11 +16,13 @@ class RecordDocumentCreateSerializer(RecordDocumentSerializer):
 
     class Meta:
         model = EncryptedRecordDocument
-        fields = ['id', 'name', 'record', 'creator', 'created_on']
+        fields = ["id", "name", "record", "creator", "created_on"]
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
-        if 'file' not in self.context['request'].FILES:
-            raise ValidationError({'file': "There seems to be no file. Please choose a file."})
-        attrs['name'] = self.context['request'].FILES['file'].name
+        if "file" not in self.context["request"].FILES:
+            raise ValidationError(
+                {"file": "There seems to be no file. Please choose a file."}
+            )
+        attrs["name"] = self.context["request"].FILES["file"].name
         return attrs

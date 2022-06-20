@@ -6,13 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0097_rename_record_questionnaire_questionnaireanswer_questionnaire'),
+        (
+            "recordmanagement",
+            "0097_rename_record_questionnaire_questionnaireanswer_questionnaire",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='recordstandardentry',
-            name='value',
+            model_name="recordstandardentry",
+            name="value",
             field=models.CharField(max_length=1000),
         ),
     ]

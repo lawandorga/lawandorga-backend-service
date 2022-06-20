@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0082_alter_haspermission_unique_together'),
+        ("api", "0082_alter_haspermission_unique_together"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='loggedpath',
-            name='data',
+            model_name="loggedpath",
+            name="data",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='loggedpath',
-            name='method',
-            field=models.CharField(default='UNKNOWN', max_length=20),
+            model_name="loggedpath",
+            name="method",
+            field=models.CharField(default="UNKNOWN", max_length=20),
         ),
     ]

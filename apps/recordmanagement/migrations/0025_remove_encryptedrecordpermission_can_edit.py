@@ -11,6 +11,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RemoveField(
-            model_name="encryptedrecordpermission", name="can_edit",
+            model_name="encryptedrecordpermission",
+            name="can_edit",
         ),
     ]

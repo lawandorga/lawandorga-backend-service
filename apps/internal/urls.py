@@ -1,4 +1,5 @@
 from rest_framework.routers import DefaultRouter
+
 from apps.internal import viewsets
 
 router = DefaultRouter()

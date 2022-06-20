@@ -6,12 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internal', '0006_roadmapitem'),
+        ("internal", "0006_roadmapitem"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='roadmapitem',
-            options={'ordering': ['-date'], 'verbose_name': 'RoadmapItem', 'verbose_name_plural': 'RoadmapItems'},
+            name="roadmapitem",
+            options={
+                "ordering": ["-date"],
+                "verbose_name": "RoadmapItem",
+                "verbose_name_plural": "RoadmapItems",
+            },
         ),
     ]

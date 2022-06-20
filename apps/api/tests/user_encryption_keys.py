@@ -1,7 +1,8 @@
+from django.test import TransactionTestCase
+
+from apps.api.models import UserEncryptionKeys
 from apps.api.tests.statics import StaticTestMethods
 from apps.static.encryption import RSAEncryption
-from apps.api.models import UserEncryptionKeys
-from django.test import TransactionTestCase
 
 
 class UserEncryptionKeysTests(TransactionTestCase):
@@ -28,4 +29,3 @@ class UserEncryptionKeysTests(TransactionTestCase):
         decrypted = RSAEncryption.decrypt(encrypted, keys.private_key)
 
         self.assertEqual(message, decrypted)
-

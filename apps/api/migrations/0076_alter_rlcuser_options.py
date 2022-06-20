@@ -6,12 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0075_remove_userprofile_is_active'),
+        ("api", "0075_remove_userprofile_is_active"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='rlcuser',
-            options={'ordering': ['user__name'], 'verbose_name': 'RlcUser', 'verbose_name_plural': 'RlcUsers'},
+            name="rlcuser",
+            options={
+                "ordering": ["user__name"],
+                "verbose_name": "RlcUser",
+                "verbose_name_plural": "RlcUsers",
+            },
         ),
     ]

@@ -6,14 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0084_permission_description'),
+        ("api", "0084_permission_description"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='permission',
-            name='recommended_for',
-            field=models.CharField(default='', max_length=200),
+            model_name="permission",
+            name="recommended_for",
+            field=models.CharField(default="", max_length=200),
             preserve_default=False,
         ),
     ]

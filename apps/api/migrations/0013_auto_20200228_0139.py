@@ -11,6 +11,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name="group", name="visible", field=models.BooleanField(default=True),
+            model_name="group",
+            name="visible",
+            field=models.BooleanField(default=True),
         ),
     ]

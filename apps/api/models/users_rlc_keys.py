@@ -1,12 +1,20 @@
-from apps.static.encryption import EncryptedModelMixin, RSAEncryption
-from apps.api.models.user import UserProfile
-from apps.api.models.rlc import Rlc
 from django.db import models
+
+from apps.api.models.rlc import Rlc
+from apps.api.models.user import UserProfile
+from apps.static.encryption import EncryptedModelMixin, RSAEncryption
 
 
 class UsersRlcKeys(EncryptedModelMixin, models.Model):
-    user = models.ForeignKey(UserProfile, related_name="users_rlc_keys", on_delete=models.CASCADE, null=False)
-    rlc = models.ForeignKey(Rlc, related_name="encrypted_users_rlc_keys", on_delete=models.CASCADE, null=False)
+    user = models.ForeignKey(
+        UserProfile, related_name="users_rlc_keys", on_delete=models.CASCADE, null=False
+    )
+    rlc = models.ForeignKey(
+        Rlc,
+        related_name="encrypted_users_rlc_keys",
+        on_delete=models.CASCADE,
+        null=False,
+    )
     encrypted_key = models.BinaryField()
     correct = models.BooleanField(default=True)
 
@@ -19,7 +27,9 @@ class UsersRlcKeys(EncryptedModelMixin, models.Model):
         unique_together = ("user", "rlc")
 
     def __str__(self):
-        return "userRlcKeys: {}; user: {}; rlc: {};".format(self.pk, self.user.email, self.rlc.name)
+        return "userRlcKeys: {}; user: {}; rlc: {};".format(
+            self.pk, self.user.email, self.rlc.name
+        )
 
     def set_correct(self, value):
         key = UsersRlcKeys.objects.get(pk=self.pk)
@@ -32,7 +42,7 @@ class UsersRlcKeys(EncryptedModelMixin, models.Model):
             super().decrypt(private_key_user)
             self.set_correct(True)
         except ValueError as e:
-            if 'Encryption/decryption failed.' in e.__str__():
+            if "Encryption/decryption failed." in e.__str__():
                 self.set_correct(False)
 
     def decrypt(self, private_key_user):

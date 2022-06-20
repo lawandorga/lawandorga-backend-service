@@ -7,13 +7,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0058_auto_20210423_1731'),
+        ("api", "0058_auto_20210423_1731"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='group',
-            name='group_members',
-            field=models.ManyToManyField(blank=True, related_name='rlcgroups', to=settings.AUTH_USER_MODEL),
+            model_name="group",
+            name="group_members",
+            field=models.ManyToManyField(
+                blank=True, related_name="rlcgroups", to=settings.AUTH_USER_MODEL
+            ),
         ),
     ]

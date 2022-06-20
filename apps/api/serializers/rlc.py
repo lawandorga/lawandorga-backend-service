@@ -14,18 +14,21 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from rest_framework import serializers
+
 from apps.api.models.rlc import Rlc
 
 
 class RlcSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rlc
-        fields = '__all__'
+        fields = "__all__"
 
 
 class RlcVerboseSerializer(serializers.ModelSerializer):
     rlc_members = serializers.PrimaryKeyRelatedField(
-        many=True, read_only=True, required=False,
+        many=True,
+        read_only=True,
+        required=False,
     )
 
     class Meta:

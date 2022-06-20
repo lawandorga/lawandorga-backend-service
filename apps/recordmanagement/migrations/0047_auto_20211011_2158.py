@@ -6,15 +6,15 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0046_auto_20211011_2145'),
+        ("recordmanagement", "0046_auto_20211011_2145"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='encryptedrecorddocument',
-            name='tagged',
+            model_name="encryptedrecorddocument",
+            name="tagged",
         ),
         migrations.DeleteModel(
-            name='RecordDocumentTag',
+            name="RecordDocumentTag",
         ),
     ]

@@ -10,12 +10,19 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(model_name="missingrlckey", name="user",),
+        migrations.RemoveField(
+            model_name="missingrlckey",
+            name="user",
+        ),
         migrations.AddField(
             model_name="newuserrequest",
             name="after_password_forgotten",
             field=models.BooleanField(default=False),
         ),
-        migrations.DeleteModel(name="ForgotPasswordLinks",),
-        migrations.DeleteModel(name="MissingRlcKey",),
+        migrations.DeleteModel(
+            name="ForgotPasswordLinks",
+        ),
+        migrations.DeleteModel(
+            name="MissingRlcKey",
+        ),
     ]

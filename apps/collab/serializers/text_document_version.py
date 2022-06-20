@@ -1,5 +1,6 @@
-from apps.collab.models import TextDocumentVersion
 from rest_framework import serializers
+
+from apps.collab.models import TextDocumentVersion
 
 
 class TextDocumentVersionSerializer(serializers.ModelSerializer):
@@ -13,4 +14,4 @@ class TextDocumentVersionSerializer(serializers.ModelSerializer):
 class TextDocumentVersionCreateSerializer(TextDocumentVersionSerializer):
     class Meta:
         model = TextDocumentVersion
-        fields = ['document', 'content', 'quill']
+        fields = ["document", "content", "quill"]

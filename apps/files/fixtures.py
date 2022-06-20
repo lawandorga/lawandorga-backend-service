@@ -1,5 +1,5 @@
-from apps.files.static import get_all_files_permission_strings
 from apps.files.models import FolderPermission
+from apps.files.static import get_all_files_permission_strings
 
 
 def create_folder_permissions():

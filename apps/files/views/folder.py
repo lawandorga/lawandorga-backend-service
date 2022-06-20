@@ -1,13 +1,17 @@
-from apps.files.models.folder import Folder
-from apps.files.serializers import FileSerializer, FolderSerializer, FolderCreateSerializer, FolderPathSerializer, \
-    PermissionForFolderNestedSerializer, FolderUpdateSerializer
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied, ValidationError, ParseError
-from apps.files.models.file import File
+from rest_framework.exceptions import (ParseError, PermissionDenied,
+                                       ValidationError)
 from rest_framework.response import Response
-from apps.files.models import PermissionForFolder
+
 from apps.api.models import Group
-from rest_framework import viewsets, status
+from apps.files.models import PermissionForFolder
+from apps.files.models.file import File
+from apps.files.models.folder import Folder
+from apps.files.serializers import (FileSerializer, FolderCreateSerializer,
+                                    FolderPathSerializer, FolderSerializer,
+                                    FolderUpdateSerializer,
+                                    PermissionForFolderNestedSerializer)
 
 
 class FolderViewSet(viewsets.ModelViewSet):
@@ -27,36 +31,38 @@ class FolderViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def get_serializer_class(self):
-        if self.action in ['create']:
+        if self.action in ["create"]:
             return FolderCreateSerializer
-        elif self.action in ['update', 'partial_update']:
+        elif self.action in ["update", "partial_update"]:
             return FolderUpdateSerializer
-        elif self.action in ['retrieve', 'list', 'first']:
+        elif self.action in ["retrieve", "list", "first"]:
             return FolderPathSerializer
         return super().get_serializer_class()
 
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
+        partial = kwargs.pop("partial", False)
         instance = self.get_object()
         # if instance is the root folder block the request
         if instance.parent is None:
-            raise ParseError('You can not edit the root folder.')
+            raise ParseError("You can not edit the root folder.")
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         # check that there is no circular reference happening
-        if serializer.validated_data['parent'] in instance.get_all_children():
-            raise ParseError('You can not move a folder into one of its children.')
-        if serializer.validated_data['parent'] == instance:
-            raise ParseError('You can not move a folder into itself.')
+        if serializer.validated_data["parent"] in instance.get_all_children():
+            raise ParseError("You can not move a folder into one of its children.")
+        if serializer.validated_data["parent"] == instance:
+            raise ParseError("You can not move a folder into itself.")
         self.perform_update(serializer)
 
         return Response(serializer.data)
 
     @action(detail=False)
     def first(self, request, *args, **kwargs):
-        instance, created = Folder.objects.get_or_create(parent=None, rlc=request.user.rlc)
+        instance, created = Folder.objects.get_or_create(
+            parent=None, rlc=request.user.rlc
+        )
         if created:
-            instance.name = 'files'
+            instance.name = "files"
             instance.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
@@ -73,7 +79,9 @@ class FolderViewSet(viewsets.ModelViewSet):
         folder_data = FolderSerializer(folders, many=True).data
 
         files_data = []
-        if instance.user_has_permission_read(user) or instance.user_has_permission_write(user):
+        if instance.user_has_permission_read(
+            user
+        ) or instance.user_has_permission_write(user):
             files = File.objects.filter(folder=instance)
             files_data = FileSerializer(files, many=True).data
 
@@ -102,9 +110,13 @@ class FolderViewSet(viewsets.ModelViewSet):
         )
 
         permissions = []
-        permissions += PermissionForFolderNestedSerializer(from_above, from_direction='ABOVE', many=True).data
+        permissions += PermissionForFolderNestedSerializer(
+            from_above, from_direction="ABOVE", many=True
+        ).data
         permissions += PermissionForFolderNestedSerializer(normal, many=True).data
-        permissions += PermissionForFolderNestedSerializer(from_below, from_direction='BELOW', many=True).data
+        permissions += PermissionForFolderNestedSerializer(
+            from_below, from_direction="BELOW", many=True
+        ).data
 
         return Response(permissions)
 
@@ -117,18 +129,22 @@ class FolderViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        if not serializer.validated_data['parent'].user_has_permission_write(request.user):
+        if not serializer.validated_data["parent"].user_has_permission_write(
+            request.user
+        ):
             raise PermissionDenied()
 
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.child_folders.exists() or instance.files_in_folder.exists():
             data = {
-                'detail': 'There are still items in this folder. It can not be deleted.'
+                "detail": "There are still items in this folder. It can not be deleted."
             }
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
         if not instance.user_has_permission_write(request.user):

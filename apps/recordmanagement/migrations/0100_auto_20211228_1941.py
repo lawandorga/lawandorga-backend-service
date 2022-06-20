@@ -6,28 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0099_alter_recordstandardentry_value'),
+        ("recordmanagement", "0099_alter_recordstandardentry_value"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='recordencryptedselectfield',
-            name='options',
+            model_name="recordencryptedselectfield",
+            name="options",
             field=models.JSONField(default=list),
         ),
         migrations.AlterField(
-            model_name='recordmultiplefield',
-            name='options',
+            model_name="recordmultiplefield",
+            name="options",
             field=models.JSONField(default=list),
         ),
         migrations.AlterField(
-            model_name='recordselectfield',
-            name='options',
+            model_name="recordselectfield",
+            name="options",
             field=models.JSONField(default=list),
         ),
         migrations.AlterField(
-            model_name='recordstatefield',
-            name='options',
+            model_name="recordstatefield",
+            name="options",
             field=models.JSONField(default=list),
         ),
     ]

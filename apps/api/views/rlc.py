@@ -1,11 +1,13 @@
-from apps.api.serializers import RlcNameSerializer, RlcSerializer
-from apps.api.models.rlc import Rlc
 from django.db.models import QuerySet
-from rest_framework import viewsets
-from rest_framework import mixins
+from rest_framework import mixins, viewsets
+
+from apps.api.models.rlc import Rlc
+from apps.api.serializers import RlcNameSerializer, RlcSerializer
 
 
-class RlcViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class RlcViewSet(
+    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
+):
     queryset = Rlc.objects.all()
     serializer_class = RlcSerializer
 
@@ -20,11 +22,11 @@ class RlcViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.Gene
         return super().get_authenticators()
 
     def get_permissions(self):
-        if self.action == 'list':
+        if self.action == "list":
             return []
         return super().get_permissions()
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action == "list":
             return RlcNameSerializer
         return super().get_serializer_class()

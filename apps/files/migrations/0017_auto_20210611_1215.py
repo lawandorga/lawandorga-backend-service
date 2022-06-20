@@ -6,12 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('files', '0016_auto_20210611_1212'),
+        ("files", "0016_auto_20210611_1212"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='file',
-            options={'ordering': ['-exists', '-created'], 'verbose_name': 'File', 'verbose_name_plural': 'Files'},
+            name="file",
+            options={
+                "ordering": ["-exists", "-created"],
+                "verbose_name": "File",
+                "verbose_name_plural": "Files",
+            },
         ),
     ]

@@ -6,12 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0080_loggedpath_status'),
+        ("api", "0080_loggedpath_status"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='rlcuser',
-            options={'ordering': ['is_active', 'accepted', 'locked', 'user__name'], 'verbose_name': 'RlcUser', 'verbose_name_plural': 'RlcUsers'},
+            name="rlcuser",
+            options={
+                "ordering": ["is_active", "accepted", "locked", "user__name"],
+                "verbose_name": "RlcUser",
+                "verbose_name_plural": "RlcUsers",
+            },
         ),
     ]

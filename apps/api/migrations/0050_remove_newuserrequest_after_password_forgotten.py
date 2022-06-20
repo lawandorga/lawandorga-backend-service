@@ -11,6 +11,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RemoveField(
-            model_name="newuserrequest", name="after_password_forgotten",
+            model_name="newuserrequest",
+            name="after_password_forgotten",
         ),
     ]

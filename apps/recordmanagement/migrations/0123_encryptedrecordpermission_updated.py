@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0122_auto_20220105_1623'),
+        ("recordmanagement", "0122_auto_20220105_1623"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='encryptedrecordpermission',
-            name='updated',
+            model_name="encryptedrecordpermission",
+            name="updated",
             field=models.DateTimeField(auto_now=True),
         ),
     ]

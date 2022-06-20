@@ -6,12 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('collab', '0009_alter_collabdocument_unique_together'),
+        ("collab", "0009_alter_collabdocument_unique_together"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='collabdocument',
-            options={'ordering': ['path'], 'verbose_name': 'CollabDocument', 'verbose_name_plural': 'CollabDocuments'},
+            name="collabdocument",
+            options={
+                "ordering": ["path"],
+                "verbose_name": "CollabDocument",
+                "verbose_name_plural": "CollabDocuments",
+            },
         ),
     ]

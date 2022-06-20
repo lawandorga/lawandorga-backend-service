@@ -6,14 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0135_recordstatisticentry_recordstatisticfield'),
+        ("recordmanagement", "0135_recordstatisticentry_recordstatisticfield"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='recordstatisticfield',
-            name='helptext',
-            field=models.CharField(default='', max_length=1000),
+            model_name="recordstatisticfield",
+            name="helptext",
+            field=models.CharField(default="", max_length=1000),
             preserve_default=False,
         ),
     ]

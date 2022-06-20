@@ -1,6 +1,8 @@
-from apps.static.encryption import AESEncryption, OutputType, RSAEncryption
-from django.test import SimpleTestCase
 import os
+
+from django.test import SimpleTestCase
+
+from apps.static.encryption import AESEncryption, OutputType, RSAEncryption
 
 
 class EncryptionTests(SimpleTestCase):

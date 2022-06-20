@@ -1,8 +1,10 @@
-from apps.recordmanagement.serializers import EncryptedRecordMessageSerializer, EncryptedRecordMessageDetailSerializer
-from apps.recordmanagement.models import EncryptedRecordMessage
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.response import Response
 from rest_framework import mixins, status
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
+
+from apps.recordmanagement.models import EncryptedRecordMessage
+from apps.recordmanagement.serializers import (
+    EncryptedRecordMessageDetailSerializer, EncryptedRecordMessageSerializer)
 
 
 class MessageViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, GenericViewSet):
@@ -11,10 +13,11 @@ class MessageViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, GenericView
 
     def get_queryset(self):
         queryset = self.queryset
-        record = self.request.query_params.get('record')
+        record = self.request.query_params.get("record")
         if record is not None:
-            queryset = EncryptedRecordMessage.objects.filter(record__template__rlc=self.request.user.rlc,
-                                                             record_id=record)
+            queryset = EncryptedRecordMessage.objects.filter(
+                record__template__rlc=self.request.user.rlc, record_id=record
+            )
         return queryset
 
     def create(self, request, *args, **kwargs):
@@ -25,9 +28,13 @@ class MessageViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, GenericView
         message.encrypt(user=request.user, private_key_user=private_key_user)
         message.save()
         message.decrypt(user=request.user, private_key_user=private_key_user)
-        serializer = EncryptedRecordMessageDetailSerializer(instance=message, context={'request': request})
+        serializer = EncryptedRecordMessageDetailSerializer(
+            instance=message, context={"request": request}
+        )
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
     def list(self, request, *args, **kwargs):
         private_key_user = request.user.get_private_key(request=request)

@@ -11,9 +11,11 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RemoveField(
-            model_name="permissionforfolder", name="rlc_has_permission",
+            model_name="permissionforfolder",
+            name="rlc_has_permission",
         ),
         migrations.RemoveField(
-            model_name="permissionforfolder", name="user_has_permission",
+            model_name="permissionforfolder",
+            name="user_has_permission",
         ),
     ]

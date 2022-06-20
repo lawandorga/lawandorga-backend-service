@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0068_auto_20210622_1659'),
+        ("api", "0068_auto_20210622_1659"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='haspermission',
-            name='rlc_has_permission',
+            model_name="haspermission",
+            name="rlc_has_permission",
         ),
     ]

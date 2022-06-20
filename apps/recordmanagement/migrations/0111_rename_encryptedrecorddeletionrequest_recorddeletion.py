@@ -8,12 +8,12 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('recordmanagement', '0110_remove_encryptedrecorddeletionrequest_old_record'),
+        ("recordmanagement", "0110_remove_encryptedrecorddeletionrequest_old_record"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='EncryptedRecordDeletionRequest',
-            new_name='RecordDeletion',
+            old_name="EncryptedRecordDeletionRequest",
+            new_name="RecordDeletion",
         ),
     ]

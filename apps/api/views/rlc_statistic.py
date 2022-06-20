@@ -1,8 +1,8 @@
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework import viewsets
 from django.conf import settings
 from django.db import connection
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 
 class RlcStatisticsViewSet(viewsets.GenericViewSet):
@@ -25,7 +25,9 @@ class RlcStatisticsViewSet(viewsets.GenericViewSet):
                 and u.rlc_id = {}
                 group by u.email
                 order by count(*) desc;
-                """.format(request.user.rlc.id)
+                """.format(
+                request.user.rlc.id
+            )
         else:
             statement = """
                 select u.email as email, count(*) as actions
@@ -36,9 +38,11 @@ class RlcStatisticsViewSet(viewsets.GenericViewSet):
                 and u.rlc_id = {}
                 group by u.email
                 order by count(*) desc;
-                """.format(request.user.rlc.id)
+                """.format(
+                request.user.rlc.id
+            )
         data = self.execute_statement(statement)
-        data = map(lambda x: {'email': x[0], 'actions': x[1]}, data)
+        data = map(lambda x: {"email": x[0], "actions": x[1]}, data)
         return Response(data)
 
     @action(detail=False)
@@ -59,17 +63,25 @@ class RlcStatisticsViewSet(viewsets.GenericViewSet):
              group by record.id, state.record_id, state.value
          ) as tmp
          group by state
-         """.format(request.user.rlc.id)
+         """.format(
+            request.user.rlc.id
+        )
         data = self.execute_statement(statement)
-        data = map(lambda x: {'state': x[0], 'amount': x[1]}, data)
+        data = map(lambda x: {"state": x[0], "amount": x[1]}, data)
         return Response(data)
 
     @action(detail=False)
     def tag_stats(self, request, *args, **kwargs):
         if settings.DEBUG:
             example_data = {
-                'tags': [{'tag': 'Duldung', 'count': 10}, {'tag': 'Abschiebung', 'count': 5}],
-                'state': [{'state': 'Set', 'count': 10}, {'state': 'Not-Existing', 'count': 5}]
+                "tags": [
+                    {"tag": "Duldung", "count": 10},
+                    {"tag": "Abschiebung", "count": 5},
+                ],
+                "state": [
+                    {"state": "Set", "count": 10},
+                    {"state": "Not-Existing", "count": 5},
+                ],
             }
             return Response(example_data)
         statement = """
@@ -83,11 +95,21 @@ class RlcStatisticsViewSet(viewsets.GenericViewSet):
             ) tmp
             group by tag
             order by count(*) desc
-            """.format(request.user.rlc.id)
+            """.format(
+            request.user.rlc.id
+        )
         ret = {}
         data = self.execute_statement(statement)
-        data = list(map(lambda x: {'tag': x[0].replace(' "', '').replace('"', ''), 'count': x[1]}, data))
-        ret['tags'] = data
+        data = list(
+            map(
+                lambda x: {
+                    "tag": x[0].replace(' "', "").replace('"', ""),
+                    "count": x[1],
+                },
+                data,
+            )
+        )
+        ret["tags"] = data
         statement = """
             select name, count(*) as existing
             from (
@@ -106,10 +128,12 @@ class RlcStatisticsViewSet(viewsets.GenericViewSet):
             ) tmp2
             ) tmp3
             group by name
-            """.format(request.user.rlc.id)
+            """.format(
+            request.user.rlc.id
+        )
         data = self.execute_statement(statement)
-        data = list(map(lambda x: {'state': x[0], 'count': x[1]}, data))
-        ret['state'] = data
+        data = list(map(lambda x: {"state": x[0], "count": x[1]}, data))
+        ret["state"] = data
         return Response(ret)
 
     @action(detail=False)
@@ -124,9 +148,11 @@ class RlcStatisticsViewSet(viewsets.GenericViewSet):
             left join recordmanagement_recordtemplate as template on template.id = field.template_id
             where (field.name='Sex of the client' or field.name is null) and template.rlc_id = {}
             group by value
-            """.format(request.user.rlc.id)
+            """.format(
+            request.user.rlc.id
+        )
         data = self.execute_statement(statement)
-        data = map(lambda x: {'value': x[0], 'count': x[1]}, data)
+        data = map(lambda x: {"value": x[0], "count": x[1]}, data)
         return Response(data)
 
     @action(detail=False)
@@ -141,9 +167,11 @@ class RlcStatisticsViewSet(viewsets.GenericViewSet):
             left join recordmanagement_recordtemplate as template on template.id = field.template_id
             where (field.name='Nationality of the client' or field.name is null) and template.rlc_id = {}
             group by value
-            """.format(request.user.rlc.id)
+            """.format(
+            request.user.rlc.id
+        )
         data = self.execute_statement(statement)
-        data = map(lambda x: {'value': x[0], 'count': x[1]}, data)
+        data = map(lambda x: {"value": x[0], "count": x[1]}, data)
         return Response(data)
 
     @action(detail=False)
@@ -158,9 +186,11 @@ class RlcStatisticsViewSet(viewsets.GenericViewSet):
             left join recordmanagement_recordtemplate as template on template.id = field.template_id
             where (field.name='Age in years of the client' or field.name is null) and template.rlc_id = {}
             group by value
-            """.format(request.user.rlc.id)
+            """.format(
+            request.user.rlc.id
+        )
         data = self.execute_statement(statement)
-        data = map(lambda x: {'value': x[0], 'count': x[1]}, data)
+        data = map(lambda x: {"value": x[0], "count": x[1]}, data)
         return Response(data)
 
     @action(detail=False)
@@ -175,7 +205,9 @@ class RlcStatisticsViewSet(viewsets.GenericViewSet):
             left join recordmanagement_recordtemplate as template on template.id = field.template_id
             where (field.name='Current status of the client' or field.name is null) and template.rlc_id = {}
             group by value
-            """.format(request.user.rlc.id)
+            """.format(
+            request.user.rlc.id
+        )
         data = self.execute_statement(statement)
-        data = map(lambda x: {'value': x[0], 'count': x[1]}, data)
+        data = map(lambda x: {"value": x[0], "count": x[1]}, data)
         return Response(data)

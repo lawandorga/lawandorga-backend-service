@@ -13,10 +13,11 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from apps.static.notification_enums import NotificationGroupType
-from apps.api.models.user import UserProfile
-from django.utils import timezone
 from django.db import models
+from django.utils import timezone
+
+from apps.api.models.user import UserProfile
+from apps.static.notification_enums import NotificationGroupType
 
 
 class NotificationGroup(models.Model):

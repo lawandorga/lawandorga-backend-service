@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('collab', '0007_remove_collabdocument_creator'),
+        ("collab", "0007_remove_collabdocument_creator"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='textdocumentversion',
-            name='is_draft',
+            model_name="textdocumentversion",
+            name="is_draft",
         ),
     ]

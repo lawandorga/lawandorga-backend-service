@@ -1,6 +1,7 @@
-from apps.static.encryption import RSAEncryption
 from rest_framework.test import APIClient
-from apps.api.models import UserProfile, UserEncryptionKeys
+
+from apps.api.models import UserEncryptionKeys, UserProfile
+from apps.static.encryption import RSAEncryption
 
 
 class StaticTestMethods:

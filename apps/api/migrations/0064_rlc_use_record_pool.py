@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0063_auto_20210513_1441'),
+        ("api", "0063_auto_20210513_1441"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='rlc',
-            name='use_record_pool',
+            model_name="rlc",
+            name="use_record_pool",
             field=models.BooleanField(default=False),
         ),
     ]

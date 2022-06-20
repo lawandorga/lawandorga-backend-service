@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0079_alter_rlcuser_note'),
+        ("api", "0079_alter_rlcuser_note"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='loggedpath',
-            name='status',
+            model_name="loggedpath",
+            name="status",
             field=models.IntegerField(default=0),
         ),
     ]

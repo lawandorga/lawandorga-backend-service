@@ -14,11 +14,13 @@ PERMISSION_ADMIN_MANAGE_GROUPS = "admin__manage_groups"
 PERMISSION_ADMIN_MANAGE_USERS = "admin__manage_users"
 PERMISSION_ADMIN_MANAGE_PERMISSIONS = "admin__manage_permissions"
 PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES = "admin__manage_record_templates"
-PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES = 'admin__manage_record_questionnaires'
-PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS = "admin__manage_record_deletion_requests"
+PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES = "admin__manage_record_questionnaires"
+PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS = (
+    "admin__manage_record_deletion_requests"
+)
 PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS = "admin__manage_record_access_requests"
 # dashboard
-PERMISSION_DASHBOARD_MANAGE_NOTES = 'dashboard__manage_notes'
+PERMISSION_DASHBOARD_MANAGE_NOTES = "dashboard__manage_notes"
 
 
 def get_all_permission_strings():

@@ -6,12 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0085_permission_recommended_for'),
+        ("api", "0085_permission_recommended_for"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='permission',
-            options={'ordering': ['name'], 'verbose_name': 'Permission', 'verbose_name_plural': 'Permissions'},
+            name="permission",
+            options={
+                "ordering": ["name"],
+                "verbose_name": "Permission",
+                "verbose_name_plural": "Permissions",
+            },
         ),
     ]

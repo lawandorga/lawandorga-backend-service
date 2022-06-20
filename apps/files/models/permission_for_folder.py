@@ -1,7 +1,8 @@
-from apps.files.models.folder_permission import FolderPermission
-from apps.files.models.folder import Folder
-from apps.api.models.group import Group
 from django.db import models
+
+from apps.api.models.group import Group
+from apps.files.models.folder import Folder
+from apps.files.models.folder_permission import FolderPermission
 
 
 class PermissionForFolder(models.Model):
@@ -30,5 +31,6 @@ class PermissionForFolder(models.Model):
         verbose_name_plural = "PermissionsForFolders"
 
     def __str__(self):
-        return "permissionForFolder: {}; folder: {}; permission: {};".format(self.pk, self.folder.name,
-                                                                             self.permission.name)
+        return "permissionForFolder: {}; folder: {}; permission: {};".format(
+            self.pk, self.folder.name, self.permission.name
+        )

@@ -8,6 +8,7 @@ class ApiConfig(AppConfig):
     def ready(self):
         from apps.api.fixtures import create_permissions
         from apps.api.models import Permission
+
         try:
             Permission.objects.first()
         except (OperationalError, ProgrammingError):

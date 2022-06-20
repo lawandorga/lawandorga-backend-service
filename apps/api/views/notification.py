@@ -13,23 +13,23 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from apps.api.models.notification import Notification
-from apps.static.error_codes import (
-    ERROR__API__ID_NOT_PROVIDED,
-    ERROR__API__NOTIFICATION__UPDATE_INVALID,
-    ERROR__API__USER__NO_OWNERSHIP,
-    ERROR__API__ID_NOT_FOUND,
-)
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.decorators import action
-from apps.api.serializers import NotificationSerializer
-from rest_framework.response import Response
-from rest_framework.request import Request
-from apps.api.models import NotificationGroup
-from apps.api.errors import CustomError
+from typing import Any
+
 from django.db.models import QuerySet
 from rest_framework import viewsets
-from typing import Any
+from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.request import Request
+from rest_framework.response import Response
+
+from apps.api.errors import CustomError
+from apps.api.models import NotificationGroup
+from apps.api.models.notification import Notification
+from apps.api.serializers import NotificationSerializer
+from apps.static.error_codes import (ERROR__API__ID_NOT_FOUND,
+                                     ERROR__API__ID_NOT_PROVIDED,
+                                     ERROR__API__NOTIFICATION__UPDATE_INVALID,
+                                     ERROR__API__USER__NO_OWNERSHIP)
 
 
 class NotificationViewSet(viewsets.ModelViewSet):

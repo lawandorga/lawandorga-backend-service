@@ -1,6 +1,7 @@
 from django.core.exceptions import RequestDataTooBig
-from apps.api.models import LoggedPath
 from django.http import UnreadablePostError
+
+from apps.api.models import LoggedPath
 
 
 class LoggingMiddleware:
@@ -12,22 +13,22 @@ class LoggingMiddleware:
         try:
             body = request.body
         except RequestDataTooBig:
-            body = b'LoggingMiddleware Exception: RequestDateTooBig'
+            body = b"LoggingMiddleware Exception: RequestDateTooBig"
         except UnreadablePostError:
-            body = b'LoggingMiddleware Exception: UnreadablePostError'
+            body = b"LoggingMiddleware Exception: UnreadablePostError"
 
         # get the response
         response = self.get_response(request)
 
         # set the data
         data = {
-            'user': request.user if request.user.is_authenticated else None,
-            'path': request.get_full_path()[:200],
-            'status': response.status_code if response.status_code else 0,
-            'method': request.method if request.method else 'UNKNOWN'
+            "user": request.user if request.user.is_authenticated else None,
+            "path": request.get_full_path()[:200],
+            "status": response.status_code if response.status_code else 0,
+            "method": request.method if request.method else "UNKNOWN",
         }
         if response.status_code == 500:
-            data.update({'data': body.decode('utf-8')})
+            data.update({"data": body.decode("utf-8")})
 
         # create the logged path
         LoggedPath.objects.create(**data)

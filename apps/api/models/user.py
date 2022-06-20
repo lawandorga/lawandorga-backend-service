@@ -1,19 +1,22 @@
-from apps.api.models.has_permission import HasPermission
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from apps.api.models.permission import Permission
-from rest_framework.exceptions import ParseError, AuthenticationFailed
-from django.core.exceptions import ObjectDoesNotExist
-from apps.static.encryption import RSAEncryption
-from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS
-from django.utils import timezone
-from django.conf import settings
-from django.db import models, transaction
 from datetime import timedelta
+
+from django.conf import settings
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
+                                        PermissionsMixin)
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import models, transaction
+from django.utils import timezone
+from rest_framework.exceptions import AuthenticationFailed, ParseError
+
+from apps.api.models.has_permission import HasPermission
+from apps.api.models.permission import Permission
+from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS
+from apps.static.encryption import RSAEncryption
 
 
 class UserProfileManager(BaseUserManager):
     def get_queryset(self):
-        return super().get_queryset().select_related('rlc_user')
+        return super().get_queryset().select_related("rlc_user")
 
     @staticmethod
     def get_users_with_special_permission(permission, from_rlc=None, for_rlc=None):
@@ -25,8 +28,8 @@ class UserProfileManager(BaseUserManager):
                 permission=permission,
                 group_has_permission=None,
             )
-                .values("user_has_permission")
-                .distinct()
+            .values("user_has_permission")
+            .distinct()
         )
 
         user_ids = [has_permission["user_has_permission"] for has_permission in users]
@@ -41,9 +44,7 @@ class UserProfileManager(BaseUserManager):
         group_ids = [
             has_permission["group_has_permission"] for has_permission in groups
         ]
-        result = (
-            result | UserProfile.objects.filter(rlcgroups__in=group_ids).distinct()
-        )
+        result = result | UserProfile.objects.filter(rlcgroups__in=group_ids).distinct()
         if from_rlc is not None:
             result = result.filter(rlc=from_rlc)
 
@@ -56,7 +57,13 @@ class UserProfileManager(BaseUserManager):
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    rlc = models.ForeignKey("Rlc", related_name="rlc_members", on_delete=models.PROTECT, blank=True, null=True)
+    rlc = models.ForeignKey(
+        "Rlc",
+        related_name="rlc_members",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+    )
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -78,12 +85,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # django intern stuff
     @property
     def is_staff(self):
-        return hasattr(self, 'internal_user')
+        return hasattr(self, "internal_user")
 
     # other stuff
     def change_password(self, old_password, new_password):
         if not self.check_password(old_password):
-            raise ParseError('The password is not correct.')
+            raise ParseError("The password is not correct.")
         keys = self.encryption_keys
         keys.decrypt(old_password)
         keys.encrypt(new_password)
@@ -96,16 +103,24 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         """
         Returns: all HasPermissions the user itself has as list
         """
-        return [has_permission.permission.name for has_permission in
-                HasPermission.objects.filter(user_has_permission=self.pk)]
+        return [
+            has_permission.permission.name
+            for has_permission in HasPermission.objects.filter(
+                user_has_permission=self.pk
+            )
+        ]
 
     def __get_as_group_member_permissions(self):
         """
         Returns: all HasPermissions the groups in which the user is member of have as list
         """
         groups = [groups["id"] for groups in list(self.rlcgroups.values("id"))]
-        return [has_permission.permission.name for has_permission in
-                HasPermission.objects.filter(group_has_permission_id__in=groups)]
+        return [
+            has_permission.permission.name
+            for has_permission in HasPermission.objects.filter(
+                group_has_permission_id__in=groups
+            )
+        ]
 
     def get_all_user_permissions(self):
         """
@@ -113,16 +128,19 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                     indirect (through membership in a group or rlc) as list
         """
         return (
-            self.__get_as_user_permissions()
-            + self.__get_as_group_member_permissions()
+            self.__get_as_user_permissions() + self.__get_as_group_member_permissions()
         )
 
     def __has_as_user_permission(self, permission):
-        return HasPermission.objects.filter(user_has_permission=self.pk, permission=permission).exists()
+        return HasPermission.objects.filter(
+            user_has_permission=self.pk, permission=permission
+        ).exists()
 
     def __has_as_group_member_permission(self, permission):
         groups = [group.pk for group in self.rlcgroups.all()]
-        return HasPermission.objects.filter(group_has_permission__pk__in=groups, permission=permission).exists()
+        return HasPermission.objects.filter(
+            group_has_permission__pk__in=groups, permission=permission
+        ).exists()
 
     def has_permission(self, permission, for_user=None, for_group=None, for_rlc=None):
         if isinstance(permission, str):
@@ -138,13 +156,18 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def get_collab_permissions(self):
         from apps.collab.models import PermissionForCollabDocument
+
         groups = self.rlcgroups.all()
-        return PermissionForCollabDocument.objects.filter(group_has_permission__in=groups).select_related('document')
+        return PermissionForCollabDocument.objects.filter(
+            group_has_permission__in=groups
+        ).select_related("document")
 
     def get_own_records(self):
         from apps.recordmanagement.models.record import Record
-        records = Record.objects.filter(template__rlc=self.rlc).prefetch_related('users_entries',
-                                                                                 'users_entries__value')
+
+        records = Record.objects.filter(template__rlc=self.rlc).prefetch_related(
+            "users_entries", "users_entries__value"
+        )
         record_pks = []
         for record in list(records):
             users_entries = list(record.users_entries.all())
@@ -158,8 +181,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def get_records_information(self):
         from apps.recordmanagement.models.record import Record
-        records = Record.objects.filter(template__rlc=self.rlc).prefetch_related('state_entries', 'users_entries',
-                                                                                 'users_entries__value')
+
+        records = Record.objects.filter(template__rlc=self.rlc).prefetch_related(
+            "state_entries", "users_entries", "users_entries__value"
+        )
         records_data = []
         for record in list(records):
             state_entries = list(record.state_entries.all())
@@ -170,53 +195,68 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             if self.id not in map(lambda x: x.id, users):
                 continue
             state = state_entries[0].value
-            if state == 'Open':
-                records_data.append({
-                    'id': record.id,
-                    'identifier': record.identifier,
-                    'state': state,
-                })
+            if state == "Open":
+                records_data.append(
+                    {
+                        "id": record.id,
+                        "identifier": record.identifier,
+                        "state": state,
+                    }
+                )
         return records_data
 
     def get_members_information(self):
         if self.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
             members_data = []
-            users = UserProfile.objects \
-                .filter(rlc=self.rlc, rlc_user__created__gt=timezone.now() - timedelta(days=14)) \
-                .select_related('rlc_user')
+            users = UserProfile.objects.filter(
+                rlc=self.rlc, rlc_user__created__gt=timezone.now() - timedelta(days=14)
+            ).select_related("rlc_user")
             for user in list(users):
                 if user.rlcgroups.all().count() == 0:
-                    members_data.append({'name': user.name, 'id': user.id, 'rlcuserid': user.rlc_user.id})
+                    members_data.append(
+                        {
+                            "name": user.name,
+                            "id": user.id,
+                            "rlcuserid": user.rlc_user.id,
+                        }
+                    )
             return members_data
         return None
 
     def get_questionnaire_information(self):
         from apps.recordmanagement.models.questionnaire import Questionnaire
 
-        questionnaires = Questionnaire.objects.filter(record__in=self.get_own_records()) \
-            .select_related('template', 'record')
+        questionnaires = Questionnaire.objects.filter(
+            record__in=self.get_own_records()
+        ).select_related("template", "record")
 
         questionnaire_data = []
 
         for questionnaire in list(questionnaires):
             if not questionnaire.answered:
-                questionnaire_data.append({
-                    'name': questionnaire.template.name,
-                    'record': questionnaire.record.identifier,
-                    'record_id': questionnaire.record.id,
-                })
+                questionnaire_data.append(
+                    {
+                        "name": questionnaire.template.name,
+                        "record": questionnaire.record.identifier,
+                        "record_id": questionnaire.record.id,
+                    }
+                )
 
         return questionnaire_data
 
     def get_changed_records_information(self):
-        records = self.get_own_records().filter(updated__gt=timezone.now() - timedelta(days=10))
+        records = self.get_own_records().filter(
+            updated__gt=timezone.now() - timedelta(days=10)
+        )
         changed_records_data = []
         for record in list(records):
-            changed_records_data.append({
-                'id': record.id,
-                'identifier': record.identifier,
-                'updated': record.updated
-            })
+            changed_records_data.append(
+                {
+                    "id": record.id,
+                    "identifier": record.identifier,
+                    "updated": record.updated,
+                }
+            )
         return changed_records_data
 
     def get_information(self):
@@ -224,19 +264,19 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         # records
         records_data = self.get_records_information()
         if records_data:
-            return_dict['records'] = records_data
+            return_dict["records"] = records_data
         # members
         members_data = self.get_members_information()
         if members_data:
-            return_dict['members'] = members_data
+            return_dict["members"] = members_data
         # questionnaires
         questionnaire_data = self.get_questionnaire_information()
         if questionnaire_data:
-            return_dict['questionnaires'] = questionnaire_data
+            return_dict["questionnaires"] = questionnaire_data
         # changed records
         changed_records_data = self.get_changed_records_information()
         if changed_records_data:
-            return_dict['changed_records'] = changed_records_data
+            return_dict["changed_records"] = changed_records_data
             # return
         return return_dict
 
@@ -259,14 +299,16 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         elif request and not password_user:
             try:
-                private_key = request.auth.payload['key']
+                private_key = request.auth.payload["key"]
             except AttributeError:
                 # enable direct testing of the rest framework
                 if self.email == "dummy@law-orga.de" and settings.DUMMY_USER_PASSWORD:
                     self.encryption_keys.decrypt(settings.DUMMY_USER_PASSWORD)
                     return self.encryption_keys.private_key
                 else:
-                    raise AuthenticationFailed('No token or no private key provided within the token.')
+                    raise AuthenticationFailed(
+                        "No token or no private key provided within the token."
+                    )
             # private_key = private_key.replace("\\n", "\n").replace("<linebreak>", "\n")
 
         else:
@@ -288,7 +330,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         if private_key_user:
             return self.rlc.get_aes_key(user=self, private_key_user=private_key_user)
         else:
-            raise ValueError('You need to set (private_key_user).')
+            raise ValueError("You need to set (private_key_user).")
 
     def test_all_keys(self, private_key_user):
         from apps.recordmanagement.models import RecordEncryptionNew
@@ -301,8 +343,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         from apps.recordmanagement.models import RecordEncryptionNew
 
         ret = {
-            'record_keys': list(RecordEncryptionNew.objects.filter(user=self).select_related('record')),
-            'rlc_keys': self.users_rlc_keys.select_related('rlc').all()
+            "record_keys": list(
+                RecordEncryptionNew.objects.filter(user=self).select_related("record")
+            ),
+            "rlc_keys": self.users_rlc_keys.select_related("rlc").all(),
         }
 
         return ret
@@ -311,20 +355,20 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         keys = self.__get_all_keys_raw()
         all_keys = []
 
-        for key in keys['record_keys']:
+        for key in keys["record_keys"]:
             d = {
-                'id': key.id,
-                'correct': key.correct,
-                'source': 'RECORD',
-                'information': '{}'.format(key.record.identifier)
+                "id": key.id,
+                "correct": key.correct,
+                "source": "RECORD",
+                "information": "{}".format(key.record.identifier),
             }
             all_keys.append(d)
-        for key in keys['rlc_keys']:
+        for key in keys["rlc_keys"]:
             d = {
-                'id': key.id,
-                'correct': key.correct,
-                'source': 'RLC',
-                'information': '{}'.format(key.rlc.name)
+                "id": key.id,
+                "correct": key.correct,
+                "source": "RLC",
+                "information": "{}".format(key.rlc.name),
             }
             all_keys.append(d)
 
@@ -335,7 +379,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         UserEncryptionKeys.objects.filter(user=self).delete()
         private, public = RSAEncryption.generate_keys()
-        user_keys = UserEncryptionKeys(user=self, private_key=private, public_key=public)
+        user_keys = UserEncryptionKeys(
+            user=self, private_key=private, public_key=public
+        )
         user_keys.save()
 
     def generate_keys_for_user(self, private_key_self, user_to_unlock):
@@ -356,14 +402,18 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         # generate new rlc key - this always works
         user_to_unlock.users_rlc_keys.all().delete()
         aes_key_rlc = self.rlc.get_aes_key(user=self, private_key_user=private_key_self)
-        new_keys = UsersRlcKeys(user=user_to_unlock, rlc=user_to_unlock.rlc, encrypted_key=aes_key_rlc)
+        new_keys = UsersRlcKeys(
+            user=user_to_unlock, rlc=user_to_unlock.rlc, encrypted_key=aes_key_rlc
+        )
         new_keys.encrypt(user_to_unlock.get_public_key())
         new_keys.save()
 
         # generate new record encryption
         for old_keys in list(record_encryptions):
             # change the keys to the new keys
-            encryption = RecordEncryptionNew.objects.get(user=self, record=old_keys.record)
+            encryption = RecordEncryptionNew.objects.get(
+                user=self, record=old_keys.record
+            )
             encryption.decrypt(private_key_user=private_key_self)
             old_keys.key = encryption.key
             old_keys.encrypt(user_to_unlock.get_public_key())

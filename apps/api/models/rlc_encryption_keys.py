@@ -1,10 +1,13 @@
-from apps.static.encryption import AESEncryption, EncryptedModelMixin
-from apps.api.models.rlc import Rlc
 from django.db import models
+
+from apps.api.models.rlc import Rlc
+from apps.static.encryption import AESEncryption, EncryptedModelMixin
 
 
 class RlcEncryptionKeys(EncryptedModelMixin, models.Model):
-    rlc = models.OneToOneField(Rlc, related_name="encryption_keys", on_delete=models.CASCADE)
+    rlc = models.OneToOneField(
+        Rlc, related_name="encryption_keys", on_delete=models.CASCADE
+    )
     public_key = models.BinaryField()
     encrypted_private_key = models.BinaryField()
 

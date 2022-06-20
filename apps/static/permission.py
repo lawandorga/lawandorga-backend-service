@@ -21,7 +21,7 @@ class CheckPermissionWall:
         check = super().check_permissions(request)
 
         if self.permission_wall is None:
-            raise ValueError('You need to implement the permission_wall.')
+            raise ValueError("You need to implement the permission_wall.")
 
         if self.action in self.permission_wall:
             permission = self.permission_wall[self.action]

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0113_rename_request_from_recorddeletion_requested_from'),
+        ("recordmanagement", "0113_rename_request_from_recorddeletion_requested_from"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='recorddeletion',
-            name='explanation',
+            model_name="recorddeletion",
+            name="explanation",
             field=models.TextField(),
         ),
     ]

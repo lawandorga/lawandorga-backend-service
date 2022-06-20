@@ -6,20 +6,20 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0067_rlcuser_accepted'),
+        ("api", "0067_rlcuser_accepted"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='rlc',
-            name='note',
+            model_name="rlc",
+            name="note",
         ),
         migrations.RemoveField(
-            model_name='rlc',
-            name='part_of_umbrella',
+            model_name="rlc",
+            name="part_of_umbrella",
         ),
         migrations.RemoveField(
-            model_name='rlc',
-            name='uni_tied',
+            model_name="rlc",
+            name="uni_tied",
         ),
     ]

@@ -6,17 +6,21 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0061_questionnairefield_ordering'),
+        ("recordmanagement", "0061_questionnairefield_ordering"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='questionnairefield',
-            options={'ordering': ['order'], 'verbose_name': 'QuestionnaireField', 'verbose_name_plural': 'QuestionnaireFields'},
+            name="questionnairefield",
+            options={
+                "ordering": ["order"],
+                "verbose_name": "QuestionnaireField",
+                "verbose_name_plural": "QuestionnaireFields",
+            },
         ),
         migrations.RenameField(
-            model_name='questionnairefield',
-            old_name='ordering',
-            new_name='order',
+            model_name="questionnairefield",
+            old_name="ordering",
+            new_name="order",
         ),
     ]

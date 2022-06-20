@@ -1,10 +1,13 @@
+from django.db import models
+
 from apps.collab.models.collab_document import CollabDocument
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
-from django.db import models
 
 
 class TextDocumentVersion(EncryptedModelMixin, models.Model):
-    document = models.ForeignKey(CollabDocument, related_name="versions", on_delete=models.CASCADE)
+    document = models.ForeignKey(
+        CollabDocument, related_name="versions", on_delete=models.CASCADE
+    )
     content = models.BinaryField(blank=True)
     quill = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -14,11 +17,13 @@ class TextDocumentVersion(EncryptedModelMixin, models.Model):
     encryption_class = AESEncryption
 
     class Meta:
-        verbose_name = 'TextDocumentVersion'
-        verbose_name_plural = 'TextDocumentVersions'
+        verbose_name = "TextDocumentVersion"
+        verbose_name_plural = "TextDocumentVersions"
 
     def __str__(self):
-        return 'textDocumentVersion: {}; document: {};'.format(self.id, self.document.id)
+        return "textDocumentVersion: {}; document: {};".format(
+            self.id, self.document.id
+        )
 
     def encrypt(self, aes_key_rlc=None, request=None):
         if aes_key_rlc:
@@ -28,7 +33,7 @@ class TextDocumentVersion(EncryptedModelMixin, models.Model):
             private_key_user = user.get_private_key(request=request)
             key = user.rlc.get_aes_key(user=user, private_key_user=private_key_user)
         else:
-            raise ValueError('You need to pass (aes_key_rlc) or (request).')
+            raise ValueError("You need to pass (aes_key_rlc) or (request).")
         super().encrypt(key)
 
     def decrypt(self, aes_key_rlc=None, user=None, private_key_user=None, request=None):
@@ -41,5 +46,7 @@ class TextDocumentVersion(EncryptedModelMixin, models.Model):
             private_key_user = user.get_private_key(request=request)
             key = user.rlc.get_aes_key(user=user, private_key_user=private_key_user)
         else:
-            raise ValueError('You need to pass (aes_key_rlc) or (user and private_key_user) or (request).')
+            raise ValueError(
+                "You need to pass (aes_key_rlc) or (user and private_key_user) or (request)."
+            )
         super().decrypt(key)

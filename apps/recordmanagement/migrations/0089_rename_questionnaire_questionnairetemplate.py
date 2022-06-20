@@ -6,13 +6,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0076_alter_rlcuser_options'),
-        ('recordmanagement', '0088_alter_encryptedrecorddocument_old_record'),
+        ("api", "0076_alter_rlcuser_options"),
+        ("recordmanagement", "0088_alter_encryptedrecorddocument_old_record"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='Questionnaire',
-            new_name='QuestionnaireTemplate',
+            old_name="Questionnaire",
+            new_name="QuestionnaireTemplate",
         ),
     ]

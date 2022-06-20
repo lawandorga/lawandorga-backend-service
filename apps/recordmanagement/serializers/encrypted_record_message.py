@@ -1,6 +1,8 @@
-from apps.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
-from apps.api.serializers.user import UserProfileNameSerializer
 from rest_framework import serializers
+
+from apps.api.serializers.user import UserProfileNameSerializer
+from apps.recordmanagement.models.encrypted_record_message import \
+    EncryptedRecordMessage
 
 
 class EncryptedRecordMessageSerializer(serializers.ModelSerializer):
@@ -12,7 +14,7 @@ class EncryptedRecordMessageSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
-        attrs['sender'] = self.context['request'].user
+        attrs["sender"] = self.context["request"].user
         return attrs
 
 

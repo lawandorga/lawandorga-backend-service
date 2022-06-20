@@ -13,9 +13,10 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from rest_framework import serializers
+
 from apps.api.models.notification_group import NotificationGroup
 from apps.api.serializers import NotificationSerializer
-from rest_framework import serializers
 
 
 class NotificationGroupOrderedSerializer(serializers.ModelSerializer):

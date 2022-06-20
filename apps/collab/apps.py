@@ -8,6 +8,7 @@ class CollabConfig(AppConfig):
     def ready(self):
         from apps.collab.fixtures import create_collab_permissions
         from apps.collab.models import CollabPermission
+
         try:
             CollabPermission.objects.first()
         except (OperationalError, ProgrammingError):

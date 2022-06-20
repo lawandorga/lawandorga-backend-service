@@ -6,12 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0129_auto_20220107_1808'),
+        ("recordmanagement", "0129_auto_20220107_1808"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='recorddeletion',
-            options={'ordering': ['-state', '-created'], 'verbose_name': 'RecordDeletion', 'verbose_name_plural': 'RecordDeletions'},
+            name="recorddeletion",
+            options={
+                "ordering": ["-state", "-created"],
+                "verbose_name": "RecordDeletion",
+                "verbose_name_plural": "RecordDeletions",
+            },
         ),
     ]

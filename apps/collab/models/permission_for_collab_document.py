@@ -1,6 +1,7 @@
-from apps.collab.models import CollabPermission, CollabDocument
-from apps.api.models import Group
 from django.db import models
+
+from apps.api.models import Group
+from apps.collab.models import CollabDocument, CollabPermission
 
 
 class PermissionForCollabDocument(models.Model):

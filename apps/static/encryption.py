@@ -1,15 +1,18 @@
-from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padding, rsa
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.backends import default_backend
-from Crypto.Util.Padding import pad, unpad
-from Crypto.Cipher import AES
-from hashlib import sha3_256
-from enum import Enum
-import tempfile
+import os
 import secrets
 import string
 import struct
-import os
+import tempfile
+from enum import Enum
+from hashlib import sha3_256
+
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import \
+    padding as asymmetric_padding
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 
 class OutputType(Enum):
@@ -97,7 +100,7 @@ class AESEncryption:
         iv = AESEncryption.generate_iv()
         encryptor = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
         # encrypt the file
-        encrypted_file = tempfile.TemporaryFile('wb+')
+        encrypted_file = tempfile.TemporaryFile("wb+")
         encrypted_file.write(struct.pack("<Q", file.size))
         encrypted_file.write(iv)
         while True:
@@ -123,7 +126,7 @@ class AESEncryption:
         iv = file.read(16)
         decryptor = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
         # decrypt
-        outfile = tempfile.TemporaryFile('wb+')
+        outfile = tempfile.TemporaryFile("wb+")
         while True:
             chunk = file.read(chunk_size)
             if len(chunk) == 0:
@@ -212,7 +215,10 @@ class EncryptedModelMixin(object):
     ) -> None:
         for field in self.encrypted_fields:
             data_in_field = getattr(self, field)
-            if data_in_field and not (isinstance(data_in_field, bytes) or isinstance(data_in_field, memoryview)):
+            if data_in_field and not (
+                isinstance(data_in_field, bytes)
+                or isinstance(data_in_field, memoryview)
+            ):
                 raise ValueError(
                     "The field {} of object {} is not encrypted. "
                     "Do not save unencrypted data. "
@@ -221,18 +227,22 @@ class EncryptedModelMixin(object):
         super().save(force_insert, force_update, using, update_fields)
 
     def decrypt(self, key: str or bytes) -> None:
-        if getattr(self, 'encryption_status', '') != 'DECRYPTED':
+        if getattr(self, "encryption_status", "") != "DECRYPTED":
             for field in self.encrypted_fields:
-                decrypted_field = self.encryption_class.decrypt(getattr(self, field), key)
+                decrypted_field = self.encryption_class.decrypt(
+                    getattr(self, field), key
+                )
                 setattr(self, field, decrypted_field)
-        setattr(self, 'encryption_status', 'DECRYPTED')
+        setattr(self, "encryption_status", "DECRYPTED")
 
     def encrypt(self, key: str or bytes) -> None:
-        if getattr(self, 'encryption_status', '') != 'ENCRYPTED':
+        if getattr(self, "encryption_status", "") != "ENCRYPTED":
             for field in self.encrypted_fields:
-                encrypted_field = self.encryption_class.encrypt(getattr(self, field), key)
+                encrypted_field = self.encryption_class.encrypt(
+                    getattr(self, field), key
+                )
                 setattr(self, field, encrypted_field)
-        setattr(self, 'encryption_status', 'ENCRYPTED')
+        setattr(self, "encryption_status", "ENCRYPTED")
 
     def reset_encrypted_fields(self):
         for field in self.encrypted_fields:

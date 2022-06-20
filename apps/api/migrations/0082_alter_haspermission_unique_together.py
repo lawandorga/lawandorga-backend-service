@@ -6,12 +6,14 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0081_alter_rlcuser_options'),
+        ("api", "0081_alter_rlcuser_options"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='haspermission',
-            unique_together={('permission', 'user_has_permission', 'group_has_permission')},
+            name="haspermission",
+            unique_together={
+                ("permission", "user_has_permission", "group_has_permission")
+            },
         ),
     ]

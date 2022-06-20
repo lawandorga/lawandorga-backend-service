@@ -1,5 +1,5 @@
-from apps.api.static import get_all_permission_strings
 from apps.api.models import Permission
+from apps.api.static import get_all_permission_strings
 
 
 def create_permissions():

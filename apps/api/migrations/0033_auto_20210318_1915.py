@@ -10,8 +10,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.DeleteModel(name="Language",),
+        migrations.DeleteModel(
+            name="Language",
+        ),
         migrations.AlterUniqueTogether(
-            name="usersrlckeys", unique_together={("user", "rlc")},
+            name="usersrlckeys",
+            unique_together={("user", "rlc")},
         ),
     ]

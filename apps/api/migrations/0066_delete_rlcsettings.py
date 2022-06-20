@@ -6,11 +6,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0065_remove_rlc_creator'),
+        ("api", "0065_remove_rlc_creator"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='RlcSettings',
+            name="RlcSettings",
         ),
     ]

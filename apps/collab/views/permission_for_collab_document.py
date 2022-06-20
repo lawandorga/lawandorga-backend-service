@@ -1,14 +1,18 @@
-from apps.collab.serializers.permission_for_collab_document import PermissionForCollabDocumentSerializer, \
-    PermissionForCollabDocumentAllNamesSerializer
-from rest_framework.exceptions import PermissionDenied
-from apps.api.static import PERMISSION_COLLAB_MANAGE_PERMISSIONS
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.response import Response
-from apps.collab.models import PermissionForCollabDocument
 from rest_framework import mixins, status
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
+
+from apps.api.static import PERMISSION_COLLAB_MANAGE_PERMISSIONS
+from apps.collab.models import PermissionForCollabDocument
+from apps.collab.serializers.permission_for_collab_document import (
+    PermissionForCollabDocumentAllNamesSerializer,
+    PermissionForCollabDocumentSerializer)
 
 
-class PermissionForCollabDocumentViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin, GenericViewSet):
+class PermissionForCollabDocumentViewSet(
+    mixins.CreateModelMixin, mixins.DestroyModelMixin, GenericViewSet
+):
     queryset = PermissionForCollabDocument.objects.all()
     serializer_class = PermissionForCollabDocumentSerializer
 
@@ -19,7 +23,7 @@ class PermissionForCollabDocumentViewSet(mixins.CreateModelMixin, mixins.Destroy
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        instance = PermissionForCollabDocument.objects.get(pk=serializer.data['id'])
+        instance = PermissionForCollabDocument.objects.get(pk=serializer.data["id"])
         data = PermissionForCollabDocumentAllNamesSerializer(instance).data
         return Response(data=data, status=status.HTTP_201_CREATED, headers=headers)
 

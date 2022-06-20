@@ -1,6 +1,7 @@
-from apps.recordmanagement.models.record import Record
-from apps.api.models import UserProfile
 from django.db import models
+
+from apps.api.models import UserProfile
+from apps.recordmanagement.models.record import Record
 
 
 class PoolConsultant(models.Model):
@@ -13,7 +14,9 @@ class PoolConsultant(models.Model):
         verbose_name_plural = "PoolConsultants"
 
     def __str__(self):
-        return "poolConsultant: {}; consultant: {};".format(self.pk, self.consultant.email)
+        return "poolConsultant: {}; consultant: {};".format(
+            self.pk, self.consultant.email
+        )
 
 
 class PoolRecord(models.Model):

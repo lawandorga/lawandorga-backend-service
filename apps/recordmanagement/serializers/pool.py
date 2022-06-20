@@ -1,5 +1,6 @@
-from apps.recordmanagement.models.pool import PoolConsultant, PoolRecord
 from rest_framework import serializers
+
+from apps.recordmanagement.models.pool import PoolConsultant, PoolRecord
 
 
 class PoolConsultantSerializer(serializers.ModelSerializer):

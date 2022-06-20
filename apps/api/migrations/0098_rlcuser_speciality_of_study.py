@@ -6,13 +6,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0097_rlc_federal_state'),
+        ("api", "0097_rlc_federal_state"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='rlcuser',
-            name='speciality_of_study',
-            field=models.CharField(blank=True, choices=[('LAW', 'Law Sciences'), ('PSYCH', 'Psychology'), ('POL', 'Political Science'), ('SOC', 'Social Sciences'), ('ECO', 'Economics'), ('MED', 'Medicine / Medical Psychology'), ('PHA', 'Pharmacy'), ('CUL', 'Cultural Studies'), ('OTHER', 'Other'), ('NONE', 'None')], max_length=100, null=True),
+            model_name="rlcuser",
+            name="speciality_of_study",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("LAW", "Law Sciences"),
+                    ("PSYCH", "Psychology"),
+                    ("POL", "Political Science"),
+                    ("SOC", "Social Sciences"),
+                    ("ECO", "Economics"),
+                    ("MED", "Medicine / Medical Psychology"),
+                    ("PHA", "Pharmacy"),
+                    ("CUL", "Cultural Studies"),
+                    ("OTHER", "Other"),
+                    ("NONE", "None"),
+                ],
+                max_length=100,
+                null=True,
+            ),
         ),
     ]

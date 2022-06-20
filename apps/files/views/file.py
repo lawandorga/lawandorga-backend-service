@@ -1,21 +1,28 @@
-from rest_framework.exceptions import PermissionDenied, NotFound
+from django.http import FileResponse
+from rest_framework import mixins, status
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from apps.files.serializers import FileSerializer, FileCreateSerializer, FileUpdateSerializer
+
 from apps.files.models.file import File
-from rest_framework import status, mixins
-from django.http import FileResponse
+from apps.files.serializers import (FileCreateSerializer, FileSerializer,
+                                    FileUpdateSerializer)
 
 
-class FileViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
-                  GenericViewSet):
+class FileViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet,
+):
     queryset = File.objects.all()
     serializer_class = FileSerializer
 
     def get_serializer_class(self):
-        if self.action in ['create']:
+        if self.action in ["create"]:
             return FileCreateSerializer
-        elif self.action in ['partial_update']:
+        elif self.action in ["partial_update"]:
             return FileUpdateSerializer
         return super().get_serializer_class()
 
@@ -31,18 +38,24 @@ class FileViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.Upd
         if not instance.file.name:
             instance.exists = False
             instance.save()
-            raise NotFound('The file could not be found. Please delete it or contact it@law-orga.de '
-                           'to have it recovered.')
+            raise NotFound(
+                "The file could not be found. Please delete it or contact it@law-orga.de "
+                "to have it recovered."
+            )
         try:
             file = instance.decrypt_file(aes_key)
         except FileNotFoundError:
             instance.exists = False
             instance.save()
-            raise NotFound('The file could not be found on the server. Please delete it or contact it@law-orga.de '
-                           'to have it recovered.')
+            raise NotFound(
+                "The file could not be found on the server. Please delete it or contact it@law-orga.de "
+                "to have it recovered."
+            )
 
         response = FileResponse(file, content_type=instance.mimetype)
-        response["Content-Disposition"] = 'attachment; filename="{}"'.format(instance.name)
+        response["Content-Disposition"] = 'attachment; filename="{}"'.format(
+            instance.name
+        )
         return response
 
     def perform_create(self, serializer):
@@ -56,7 +69,9 @@ class FileViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.Upd
         # return standard data
         serializer = FileSerializer(instance=File.objects.get(pk=self.instance.pk))
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
     def update(self, request, *args, **kwargs):
         # get the file

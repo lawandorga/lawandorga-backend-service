@@ -22,15 +22,13 @@ DATABASES = {
         "PASSWORD": get_secret("DB_PASSWORD"),
         "HOST": get_secret("DB_HOST"),
         "PORT": get_secret("DB_PORT"),
-        "TEST": {
-            "NAME": 'test_{}'.format(RUNTIME)
-        }
+        "TEST": {"NAME": "test_{}".format(RUNTIME)},
     }
 }
 
 # E-Mail
 # https://docs.djangoproject.com/en/dev/topics/email/#smtp-backend
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = get_secret("EMAIL_HOST")
 DEFAULT_FROM_EMAIL = get_secret("EMAIL_ADDRESS")
 SERVER_EMAIL = get_secret("EMAIL_ADDRESS")
@@ -46,7 +44,7 @@ CORS_ALLOWED_ORIGINS = get_secret("CORS_ALLOWED_ORIGINS")
 
 # Storage
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
-DEFAULT_FILE_STORAGE = 'config.storage.CustomS3Boto3Storage'
+DEFAULT_FILE_STORAGE = "config.storage.CustomS3Boto3Storage"
 AWS_S3_SECRET_ACCESS_KEY = get_secret("SCW_SECRET_KEY")
 AWS_S3_ACCESS_KEY_ID = get_secret("SCW_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = get_secret("SCW_S3_BUCKET_NAME")
@@ -56,37 +54,37 @@ AWS_S3_FILE_OVERWRITE = False
 
 # Logging
 # https://docs.djangoproject.com/en/dev/topics/logging/
-LOGGING_DIR = os.path.join(BASE_DIR, 'tmp/logs')
+LOGGING_DIR = os.path.join(BASE_DIR, "tmp/logs")
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'class': 'logging.FileHandler',
-            'level': 'ERROR',
-            'filename': os.path.join(LOGGING_DIR, 'django.log'),
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "class": "logging.FileHandler",
+            "level": "ERROR",
+            "filename": os.path.join(LOGGING_DIR, "django.log"),
         },
-        'console': {
-            'class': 'logging.StreamHandler',
-            'level': 'ERROR',
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "ERROR",
         },
-        'mail_admins': {
-            'class': 'django.utils.log.AdminEmailHandler',
-            'level': 'ERROR',
+        "mail_admins": {
+            "class": "django.utils.log.AdminEmailHandler",
+            "level": "ERROR",
         },
-        'null': {
-            'class': 'logging.NullHandler',
+        "null": {
+            "class": "logging.NullHandler",
         },
     },
-    'loggers': {
-        'django.security.DisallowedHost': {
-            'handlers': ['null'],
-            'propagate': False,
+    "loggers": {
+        "django.security.DisallowedHost": {
+            "handlers": ["null"],
+            "propagate": False,
         },
-        'django': {
-            'handlers': ['console', 'file', 'mail_admins'],
-            'propagate': False,
-            'level': 'INFO',
+        "django": {
+            "handlers": ["console", "file", "mail_admins"],
+            "propagate": False,
+            "level": "INFO",
         },
-    }
+    },
 }

@@ -1,5 +1,6 @@
-from apps.api.tests import example_data as ed
 from django.test import TestCase
+
+from apps.api.tests import example_data as ed
 
 
 class ExampleDataTestCase(TestCase):

@@ -6,17 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0030_auto_20210512_1147'),
+        ("recordmanagement", "0030_auto_20210512_1147"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='encryptedrecorddeletionrequest',
-            options={'ordering': ['-state', '-requested'], 'verbose_name': 'EncryptedRecordDeletionRequests'},
+            name="encryptedrecorddeletionrequest",
+            options={
+                "ordering": ["-state", "-requested"],
+                "verbose_name": "EncryptedRecordDeletionRequests",
+            },
         ),
         migrations.AlterField(
-            model_name='encryptedrecorddeletionrequest',
-            name='requested',
+            model_name="encryptedrecorddeletionrequest",
+            name="requested",
             field=models.DateTimeField(auto_now_add=True),
         ),
     ]

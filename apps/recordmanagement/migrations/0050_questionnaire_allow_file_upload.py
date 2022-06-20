@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0049_recordquestionnaire_answered'),
+        ("recordmanagement", "0049_recordquestionnaire_answered"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='questionnaire',
-            name='allow_file_upload',
+            model_name="questionnaire",
+            name="allow_file_upload",
             field=models.BooleanField(default=True),
         ),
     ]

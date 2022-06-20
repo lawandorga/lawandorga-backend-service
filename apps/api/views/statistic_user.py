@@ -1,12 +1,15 @@
-from rest_framework_simplejwt.serializers import TokenRefreshSerializer
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework.exceptions import ParseError, AuthenticationFailed
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.response import Response
+from rest_framework.exceptions import AuthenticationFailed, ParseError
 from rest_framework.request import Request
-from apps.api.serializers import ChangePasswordSerializer, StatisticUserSerializer, StatisticUserJWTSerializer
+from rest_framework.response import Response
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+
 from apps.api.models import StatisticUser
-from rest_framework import viewsets, status
+from apps.api.serializers import (ChangePasswordSerializer,
+                                  StatisticUserJWTSerializer,
+                                  StatisticUserSerializer)
 
 
 class StatisticsUserViewSet(viewsets.GenericViewSet):
@@ -14,14 +17,22 @@ class StatisticsUserViewSet(viewsets.GenericViewSet):
     queryset = StatisticUser.objects.none()
 
     def perform_authentication(self, request):
-        if self.action in ['login', 'refresh']:
+        if self.action in ["login", "refresh"]:
             pass
         else:
             super().perform_authentication(request)
 
     def get_permissions(self):
-        if self.action in ['statics', 'create', 'logout', 'login', 'password_reset', 'password_reset_confirm',
-                           'activate', 'refresh']:
+        if self.action in [
+            "statics",
+            "create",
+            "logout",
+            "login",
+            "password_reset",
+            "password_reset_confirm",
+            "activate",
+            "refresh",
+        ]:
             return []
         return super().get_permissions()
 
@@ -32,20 +43,26 @@ class StatisticsUserViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["post"])
     def login(self, request: Request):
         # check login
-        serializer = StatisticUserJWTSerializer(data=request.data, context={"request": request})
+        serializer = StatisticUserJWTSerializer(
+            data=request.data, context={"request": request}
+        )
 
         try:
             serializer.is_valid(raise_exception=True)
         except TokenError as e:
             raise InvalidToken(e.args[0])
         except AuthenticationFailed:
-            raise ParseError({
-                'non_field_errors': ["This e-mail doesn't exist or the password is wrong."]
-            })
+            raise ParseError(
+                {
+                    "non_field_errors": [
+                        "This e-mail doesn't exist or the password is wrong."
+                    ]
+                }
+            )
         user = serializer.user
 
         # check if user active and user accepted in rlc
-        if not hasattr(user, 'statistic_user'):
+        if not hasattr(user, "statistic_user"):
             message = "You are not allowed to login here. You need to have the statistics user role."
             return Response(
                 {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
@@ -54,9 +71,11 @@ class StatisticsUserViewSet(viewsets.GenericViewSet):
         # return
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def refresh(self, request):
-        serializer = TokenRefreshSerializer(data=request.data, context={'request': request})
+        serializer = TokenRefreshSerializer(
+            data=request.data, context={"request": request}
+        )
 
         try:
             serializer.is_valid(raise_exception=True)
@@ -78,11 +97,15 @@ class StatisticsUserViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["post"])
     def change_password(self, request: Request):
         user = self.request.user
-        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+        serializer = ChangePasswordSerializer(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         try:
-            user.statistic_user.change_password(serializer.validated_data['current_password'],
-                                                serializer.validated_data['new_password'])
+            user.statistic_user.change_password(
+                serializer.validated_data["current_password"],
+                serializer.validated_data["new_password"],
+            )
         except ValueError as e:
             raise ParseError(e)
         return Response(StatisticUserSerializer(user.statistic_user).data)

@@ -8,6 +8,7 @@ class FilesConfig(AppConfig):
     def ready(self):
         from apps.files.fixtures import create_folder_permissions
         from apps.files.models import FolderPermission
+
         try:
             FolderPermission.objects.first()
         except (OperationalError, ProgrammingError):

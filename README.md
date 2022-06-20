@@ -19,7 +19,7 @@ This project contains a backend based on Django-Rest-Framework. It uses Amazon S
 3. `python -m venv tmp/venv`
 4. Install all dependencies from `requirements.txt`
 5. Create `tmp/media/`, `tmp/static/`, `tmp/logs` and `tmp/secrets.json`
-6. Add relevant content into `secrets.json`   
+6. Add relevant content into `secrets.json`
 6. Run `python local_manage.py runserver`
 
 ## Server Setup
@@ -28,7 +28,7 @@ This project contains a backend based on Django-Rest-Framework. It uses Amazon S
 3. `cd law-orga-backend/`
 4. Connect `prod-api.law-orga.de` with the server IP
 5. `./setup.prod.sh`
-6. Add content to `tmp/secrets.json`   
+6. Add content to `tmp/secrets.json`
 7. `./deploy.sh`
 
 ## Secrets Local

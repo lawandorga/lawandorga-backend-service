@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0033_auto_20210517_2242'),
+        ("recordmanagement", "0033_auto_20210517_2242"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='encryptedrecorddocument',
-            name='file_size',
+            model_name="encryptedrecorddocument",
+            name="file_size",
             field=models.BigIntegerField(null=True),
         ),
     ]

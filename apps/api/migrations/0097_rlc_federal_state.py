@@ -6,13 +6,36 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0096_auto_20220401_1116'),
+        ("api", "0096_auto_20220401_1116"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='rlc',
-            name='federal_state',
-            field=models.CharField(blank=True, choices=[('BW', 'Baden-Württemberg'), ('BY', 'Bayern (Freistaat)'), ('BE', 'Berlin'), ('BB', 'Brandenburg'), ('HB', 'Bremen (Hansestadt)'), ('HH', 'Hamburg (Hansestadt)'), ('HE', 'Hessen'), ('MV', 'Mecklenburg-Vorpommern'), ('NI', 'Niedersachsen'), ('NW', 'Nordrhein-Westfalen'), ('RP', 'Rheinland-Pfalz'), ('SL', 'Saarland'), ('SN', 'Sachsen (Freistaat)'), ('ST', 'Sachsen-Anhalt'), ('SH', 'Schleswig-Holstein'), ('TH', 'Thüringen (Freistaat)'), ('OTHER', 'Ausland')], max_length=100, null=True),
+            model_name="rlc",
+            name="federal_state",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("BW", "Baden-Württemberg"),
+                    ("BY", "Bayern (Freistaat)"),
+                    ("BE", "Berlin"),
+                    ("BB", "Brandenburg"),
+                    ("HB", "Bremen (Hansestadt)"),
+                    ("HH", "Hamburg (Hansestadt)"),
+                    ("HE", "Hessen"),
+                    ("MV", "Mecklenburg-Vorpommern"),
+                    ("NI", "Niedersachsen"),
+                    ("NW", "Nordrhein-Westfalen"),
+                    ("RP", "Rheinland-Pfalz"),
+                    ("SL", "Saarland"),
+                    ("SN", "Sachsen (Freistaat)"),
+                    ("ST", "Sachsen-Anhalt"),
+                    ("SH", "Schleswig-Holstein"),
+                    ("TH", "Thüringen (Freistaat)"),
+                    ("OTHER", "Ausland"),
+                ],
+                max_length=100,
+                null=True,
+            ),
         ),
     ]

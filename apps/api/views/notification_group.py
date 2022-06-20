@@ -16,7 +16,7 @@
 
 from typing import Any
 
-from django.db.models import QuerySet, Q
+from django.db.models import Q, QuerySet
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.request import Request
@@ -25,12 +25,10 @@ from rest_framework.response import Response
 from apps.api.errors import CustomError
 from apps.api.models import NotificationGroup
 from apps.api.serializers import NotificationGroupOrderedSerializer
-from apps.static.error_codes import (
-    ERROR__API__ID_NOT_PROVIDED,
-    ERROR__API__USER__NO_OWNERSHIP,
-    ERROR__API__ID_NOT_FOUND,
-    ERROR__API__PARAMS_NOT_VALID,
-)
+from apps.static.error_codes import (ERROR__API__ID_NOT_FOUND,
+                                     ERROR__API__ID_NOT_PROVIDED,
+                                     ERROR__API__PARAMS_NOT_VALID,
+                                     ERROR__API__USER__NO_OWNERSHIP)
 
 
 class NotificationGroupViewSet(viewsets.ModelViewSet):

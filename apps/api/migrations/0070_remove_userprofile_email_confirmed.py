@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0069_remove_haspermission_rlc_has_permission'),
+        ("api", "0069_remove_haspermission_rlc_has_permission"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='userprofile',
-            name='email_confirmed',
+            model_name="userprofile",
+            name="email_confirmed",
         ),
     ]

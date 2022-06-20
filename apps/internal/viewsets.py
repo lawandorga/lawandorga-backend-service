@@ -1,9 +1,14 @@
-from apps.internal.serializers import ArticleSerializer, ArticleDetailSerializer, IndexPageSerializer, \
-    RoadmapItemSerializer, TomsPageSerializer, HelpPageSerializer
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.response import Response
-from apps.internal.models import Article, IndexPage, RoadmapItem, ImprintPage, TomsPage, HelpPage
 from rest_framework import mixins
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
+
+from apps.internal.models import (Article, HelpPage, ImprintPage, IndexPage,
+                                  RoadmapItem, TomsPage)
+from apps.internal.serializers import (ArticleDetailSerializer,
+                                       ArticleSerializer, HelpPageSerializer,
+                                       IndexPageSerializer,
+                                       RoadmapItemSerializer,
+                                       TomsPageSerializer)
 
 
 class PageViewSet(mixins.ListModelMixin, GenericViewSet):
@@ -27,7 +32,7 @@ class ArticleViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericVi
     authentication_classes = []
 
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action == "retrieve":
             return ArticleDetailSerializer
         return super().get_serializer_class()
 

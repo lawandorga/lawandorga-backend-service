@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('files', '0011_auto_20210602_1942'),
+        ("files", "0011_auto_20210602_1942"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='file',
-            name='exists',
+            model_name="file",
+            name="exists",
             field=models.BooleanField(default=True),
         ),
     ]

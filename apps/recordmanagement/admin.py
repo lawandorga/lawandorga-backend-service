@@ -1,12 +1,31 @@
-from apps.recordmanagement.models import OriginCountry, EncryptedRecord, RecordEncryption, \
-    EncryptedClient, EncryptedRecordDocument, EncryptedRecordMessage, RecordAccess, \
-    RecordDeletion, PoolConsultant, PoolRecord, Questionnaire, QuestionnaireTemplate, \
-    QuestionnaireQuestion, QuestionnaireAnswer, QuestionnaireTemplateFile, Record, RecordSelectField, \
-    RecordStandardField, RecordTemplate, RecordUsersField, RecordStateField, RecordMultipleField, \
-    RecordEncryptedSelectField, RecordEncryptedFileField, RecordEncryptedStandardField, RecordStandardEntry, \
-    RecordStateEntry, RecordSelectEntry, RecordUsersEntry, RecordMultipleEntry, RecordEncryptedSelectEntry, \
-    RecordEncryptedFileEntry, RecordEncryptedStandardEntry, RecordEncryptionNew
 from django.contrib import admin
+
+from apps.recordmanagement.models import (EncryptedClient, EncryptedRecord,
+                                          EncryptedRecordDocument,
+                                          EncryptedRecordMessage,
+                                          OriginCountry, PoolConsultant,
+                                          PoolRecord, Questionnaire,
+                                          QuestionnaireAnswer,
+                                          QuestionnaireQuestion,
+                                          QuestionnaireTemplate,
+                                          QuestionnaireTemplateFile, Record,
+                                          RecordAccess, RecordDeletion,
+                                          RecordEncryptedFileEntry,
+                                          RecordEncryptedFileField,
+                                          RecordEncryptedSelectEntry,
+                                          RecordEncryptedSelectField,
+                                          RecordEncryptedStandardEntry,
+                                          RecordEncryptedStandardField,
+                                          RecordEncryption,
+                                          RecordEncryptionNew,
+                                          RecordMultipleEntry,
+                                          RecordMultipleField,
+                                          RecordSelectEntry, RecordSelectField,
+                                          RecordStandardEntry,
+                                          RecordStandardField,
+                                          RecordStateEntry, RecordStateField,
+                                          RecordTemplate, RecordUsersEntry,
+                                          RecordUsersField)
 
 admin.site.register(OriginCountry)
 admin.site.register(RecordEncryption)

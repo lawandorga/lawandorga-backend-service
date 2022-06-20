@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0098_rlcuser_speciality_of_study'),
+        ("api", "0098_rlcuser_speciality_of_study"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='usersrlckeys',
-            name='correct',
+            model_name="usersrlckeys",
+            name="correct",
             field=models.BooleanField(default=True),
         ),
     ]

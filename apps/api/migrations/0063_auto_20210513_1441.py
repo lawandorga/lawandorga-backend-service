@@ -6,29 +6,29 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0062_auto_20210513_1349'),
+        ("api", "0062_auto_20210513_1349"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='usersession',
-            name='rlc',
+            model_name="usersession",
+            name="rlc",
         ),
         migrations.RemoveField(
-            model_name='usersessionpath',
-            name='path',
+            model_name="usersessionpath",
+            name="path",
         ),
         migrations.RemoveField(
-            model_name='usersessionpath',
-            name='session',
+            model_name="usersessionpath",
+            name="session",
         ),
         migrations.DeleteModel(
-            name='UserActivityPath',
+            name="UserActivityPath",
         ),
         migrations.DeleteModel(
-            name='UserSession',
+            name="UserSession",
         ),
         migrations.DeleteModel(
-            name='UserSessionPath',
+            name="UserSessionPath",
         ),
     ]

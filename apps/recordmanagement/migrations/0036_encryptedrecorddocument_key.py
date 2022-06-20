@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0035_delete_encryptedrecorddocumentdeletionrequest'),
+        ("recordmanagement", "0035_delete_encryptedrecorddocumentdeletionrequest"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='encryptedrecorddocument',
-            name='key',
-            field=models.SlugField(allow_unicode=True, max_length=1000, null=True, unique=True),
+            model_name="encryptedrecorddocument",
+            name="key",
+            field=models.SlugField(
+                allow_unicode=True, max_length=1000, null=True, unique=True
+            ),
         ),
     ]

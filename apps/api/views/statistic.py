@@ -1,16 +1,17 @@
 from django.conf import settings
-from rest_framework.permissions import BasePermission
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from config.authentication import IsAuthenticatedAndEverything
-from apps.api.models import LoggedPath
-from rest_framework import viewsets, status
 from django.db import connection
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import BasePermission
+from rest_framework.response import Response
+
+from apps.api.models import LoggedPath
+from config.authentication import IsAuthenticatedAndEverything
 
 
 class StatisticUserExists(BasePermission):
     def has_permission(self, request, view):
-        return hasattr(request.user, 'statistic_user')
+        return hasattr(request.user, "statistic_user")
 
 
 class StatisticsViewSet(viewsets.GenericViewSet):
@@ -34,7 +35,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         group by api_userprofile.rlc_id, api_rlc.name;
         """
         data = self.execute_statement(statement)
-        data = map(lambda x: {'name': x[0], 'amount': x[1]}, data)
+        data = map(lambda x: {"name": x[0], "amount": x[1]}, data)
         return Response(data)
 
     @action(detail=False)
@@ -55,7 +56,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         group by state
         """
         data = self.execute_statement(statement)
-        data = map(lambda x: {'state': x[0], 'amount': x[1]}, data)
+        data = map(lambda x: {"state": x[0], "amount": x[1]}, data)
         return Response(data)
 
     @action(detail=False)
@@ -75,7 +76,10 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         group by rlc.id, rlc.name;
         """
         data = self.execute_statement(statement)
-        data = map(lambda x: {'lc': x[0], 'records': x[1], 'files': x[2], 'documents': x[3]}, data)
+        data = map(
+            lambda x: {"lc": x[0], "records": x[1], "files": x[2], "documents": x[3]},
+            data,
+        )
         return Response(data)
 
     @action(detail=False)
@@ -101,7 +105,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
             order by count(*) desc;
             """
         data = self.execute_statement(statement)
-        data = map(lambda x: {'email': x[0], 'actions': x[1]}, data)
+        data = map(lambda x: {"email": x[0], "actions": x[1]}, data)
         return Response(data)
 
     @action(detail=False)
@@ -115,7 +119,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         order by date(time) asc;
         """
         data = self.execute_statement(statement)
-        data = map(lambda x: {'date': x[0], 'logins': x[1]}, data)
+        data = map(lambda x: {"date": x[0], "logins": x[1]}, data)
         return Response(data)
 
     @action(detail=False)
@@ -139,7 +143,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
             order by to_char(time, 'YYYY/MM') asc;
             """
         data = self.execute_statement(statement)
-        data = map(lambda x: {'month': x[0], 'logins': x[1]}, data)
+        data = map(lambda x: {"month": x[0], "logins": x[1]}, data)
         return Response(data)
 
     # unique users month
@@ -160,7 +164,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
             order by to_char(time, 'YYYY/MM') asc;
             """
         data = self.execute_statement(statement)
-        data = map(lambda x: {'month': x[0], 'logins': x[1]}, data)
+        data = map(lambda x: {"month": x[0], "logins": x[1]}, data)
         return Response(data)
 
     @action(detail=False)
@@ -188,7 +192,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
             limit 20
             """
         data = self.execute_statement(statement)
-        data = map(lambda x: {'status': x[0], 'path': x[1], 'count': x[2]}, data)
+        data = map(lambda x: {"status": x[0], "path": x[1], "count": x[2]}, data)
         return Response(data)
 
     @action(detail=False)
@@ -207,7 +211,16 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         where rlckeys.id is null or userkeys.id is null
         """
         data = self.execute_statement(statement)
-        data = map(lambda x: {'email': x[0], 'rlckeys': x[1], 'userkeys': x[2], 'accepted': x[3], 'locked': x[4]}, data)
+        data = map(
+            lambda x: {
+                "email": x[0],
+                "rlckeys": x[1],
+                "userkeys": x[2],
+                "accepted": x[3],
+                "locked": x[4],
+            },
+            data,
+        )
         return Response(data)
 
     @action(detail=False)
@@ -221,15 +234,32 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         (select count(*) as lcs from api_rlc as lcs)
         """
         data = self.execute_statement(statement)
-        data = list(map(lambda x: {'records': x[0], 'files': x[1], 'collabs': x[2], 'users': x[3], 'lcs': x[4]}, data))
+        data = list(
+            map(
+                lambda x: {
+                    "records": x[0],
+                    "files": x[1],
+                    "collabs": x[2],
+                    "users": x[3],
+                    "lcs": x[4],
+                },
+                data,
+            )
+        )
         return Response(data[0])
 
     @action(detail=False)
     def tag_stats(self, request, *args, **kwargs):
         if settings.DEBUG:
             example_data = {
-                'tags': [{'tag': 'Duldung', 'count': 10}, {'tag': 'Abschiebung', 'count': 5}],
-                'state': [{'state': 'Set', 'count': 10}, {'state': 'Not-Existing', 'count': 5}]
+                "tags": [
+                    {"tag": "Duldung", "count": 10},
+                    {"tag": "Abschiebung", "count": 5},
+                ],
+                "state": [
+                    {"state": "Set", "count": 10},
+                    {"state": "Not-Existing", "count": 5},
+                ],
             }
             return Response(example_data)
         statement = """
@@ -244,8 +274,16 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         """
         ret = {}
         data = self.execute_statement(statement)
-        data = list(map(lambda x: {'tag': x[0].replace(' "', '').replace('"', ''), 'count': x[1]}, data))
-        ret['tags'] = data
+        data = list(
+            map(
+                lambda x: {
+                    "tag": x[0].replace(' "', "").replace('"', ""),
+                    "count": x[1],
+                },
+                data,
+            )
+        )
+        ret["tags"] = data
         statement = """
         select name, count(*) as existing
         from (
@@ -265,8 +303,8 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         group by name
         """
         data = self.execute_statement(statement)
-        data = list(map(lambda x: {'state': x[0], 'count': x[1]}, data))
-        ret['state'] = data
+        data = list(map(lambda x: {"state": x[0], "count": x[1]}, data))
+        ret["state"] = data
         return Response(ret)
 
     @action(detail=False)
@@ -282,7 +320,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         group by value
         """
         data = self.execute_statement(statement)
-        data = map(lambda x: {'value': x[0], 'count': x[1]}, data)
+        data = map(lambda x: {"value": x[0], "count": x[1]}, data)
         return Response(data)
 
     @action(detail=False)
@@ -298,7 +336,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         group by value
         """
         data = self.execute_statement(statement)
-        data = map(lambda x: {'value': x[0], 'count': x[1]}, data)
+        data = map(lambda x: {"value": x[0], "count": x[1]}, data)
         return Response(data)
 
     @action(detail=False)
@@ -314,7 +352,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         group by value
         """
         data = self.execute_statement(statement)
-        data = map(lambda x: {'value': x[0], 'count': x[1]}, data)
+        data = map(lambda x: {"value": x[0], "count": x[1]}, data)
         return Response(data)
 
     @action(detail=False)
@@ -330,6 +368,5 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         group by value
         """
         data = self.execute_statement(statement)
-        data = map(lambda x: {'value': x[0], 'count': x[1]}, data)
+        data = map(lambda x: {"value": x[0], "count": x[1]}, data)
         return Response(data)
-

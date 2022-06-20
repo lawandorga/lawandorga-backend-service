@@ -13,12 +13,14 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
-from apps.api.models.notification_group import NotificationGroup
-from apps.static.notification_enums import NotificationGroupType, NotificationType
-from apps.api.models.user import UserProfile
-from apps.api import static
-from django.utils import timezone
 from django.db import models
+from django.utils import timezone
+
+from apps.api import static
+from apps.api.models.notification_group import NotificationGroup
+from apps.api.models.user import UserProfile
+from apps.static.notification_enums import (NotificationGroupType,
+                                            NotificationType)
 
 
 class NotificationManager(models.Manager):
@@ -472,7 +474,9 @@ class NotificationManager(models.Manager):
                 )
 
     @staticmethod
-    def notify_file_upload_error(file: "File",):
+    def notify_file_upload_error(
+        file: "File",
+    ):
         Notification.objects.create_notification(
             user=file.creator,
             source_user=file.creator,

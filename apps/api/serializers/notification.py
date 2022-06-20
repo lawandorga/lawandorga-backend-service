@@ -13,9 +13,10 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
+from rest_framework import serializers
+
 from apps.api.models.notification import Notification
 from apps.api.serializers import UserProfileNameSerializer
-from rest_framework import serializers
 
 
 class NotificationSerializer(serializers.ModelSerializer):

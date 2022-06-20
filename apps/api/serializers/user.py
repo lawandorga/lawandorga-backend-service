@@ -1,7 +1,8 @@
 from django.contrib.auth.password_validation import validate_password
-from rest_framework.exceptions import ValidationError
-from apps.api.models import UserProfile
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
+from apps.api.models import UserProfile
 
 
 ###
@@ -14,8 +15,8 @@ class ChangePasswordSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
-        if attrs['new_password'] != attrs['new_password_confirm']:
-            raise ValidationError('The two new passwords are not equal.')
+        if attrs["new_password"] != attrs["new_password_confirm"]:
+            raise ValidationError("The two new passwords are not equal.")
         return attrs
 
     def validate_new_password(self, value):
@@ -23,9 +24,9 @@ class ChangePasswordSerializer(serializers.Serializer):
         return value
 
     def validate_current_password(self, value):
-        user = self.context['request'].user
+        user = self.context["request"].user
         if not user.check_password(value):
-            raise ValidationError('The password is not correct.')
+            raise ValidationError("The password is not correct.")
         return value
 
 
@@ -47,9 +48,4 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class UserProfileNameSerializer(UserProfileSerializer):
     class Meta:
         model = UserProfile
-        fields = (
-            "id",
-            'rlc_user',
-            "name",
-            'email'
-        )
+        fields = ("id", "rlc_user", "name", "email")

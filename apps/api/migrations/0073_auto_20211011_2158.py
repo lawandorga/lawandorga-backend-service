@@ -6,12 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0072_auto_20211011_2056'),
+        ("api", "0072_auto_20211011_2056"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='loggedpath',
-            options={'ordering': ['-time'], 'verbose_name': 'LoggedPath', 'verbose_name_plural': 'LoggedPaths'},
+            name="loggedpath",
+            options={
+                "ordering": ["-time"],
+                "verbose_name": "LoggedPath",
+                "verbose_name_plural": "LoggedPaths",
+            },
         ),
     ]

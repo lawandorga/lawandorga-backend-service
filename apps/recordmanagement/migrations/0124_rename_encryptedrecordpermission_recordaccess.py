@@ -8,12 +8,12 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('recordmanagement', '0123_encryptedrecordpermission_updated'),
+        ("recordmanagement", "0123_encryptedrecordpermission_updated"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='EncryptedRecordPermission',
-            new_name='RecordAccess',
+            old_name="EncryptedRecordPermission",
+            new_name="RecordAccess",
         ),
     ]

@@ -1,5 +1,6 @@
-from apps.collab.models import CollabPermission
 from rest_framework import serializers
+
+from apps.collab.models import CollabPermission
 
 
 class CollabPermissionSerializer(serializers.ModelSerializer):
@@ -11,4 +12,4 @@ class CollabPermissionSerializer(serializers.ModelSerializer):
 class CollabPermissionNameSerializer(CollabPermissionSerializer):
     class Meta:
         model = CollabPermission
-        fields = ['name', 'id']
+        fields = ["name", "id"]

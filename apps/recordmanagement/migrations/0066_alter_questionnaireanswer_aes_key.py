@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0065_questionnaireanswer_aes_key'),
+        ("recordmanagement", "0065_questionnaireanswer_aes_key"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='questionnaireanswer',
-            name='aes_key',
-            field=models.BinaryField(default=b''),
+            model_name="questionnaireanswer",
+            name="aes_key",
+            field=models.BinaryField(default=b""),
         ),
     ]

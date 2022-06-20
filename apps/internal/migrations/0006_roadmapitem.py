@@ -6,24 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internal', '0005_indexpage'),
+        ("internal", "0005_indexpage"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='RoadmapItem',
+            name="RoadmapItem",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('updated', models.DateTimeField(auto_now=True)),
-                ('created', models.DateTimeField(auto_now_add=True)),
-                ('title', models.CharField(max_length=100)),
-                ('description', models.TextField()),
-                ('date', models.DateField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("updated", models.DateTimeField(auto_now=True)),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("title", models.CharField(max_length=100)),
+                ("description", models.TextField()),
+                ("date", models.DateField()),
             ],
             options={
-                'verbose_name': 'Roadmap Item',
-                'verbose_name_plural': 'Roadmap Items',
-                'ordering': ['-date'],
+                "verbose_name": "Roadmap Item",
+                "verbose_name_plural": "Roadmap Items",
+                "ordering": ["-date"],
             },
         ),
     ]

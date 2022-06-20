@@ -1,9 +1,10 @@
-from apps.static.service_layer import ServiceResult
-from apps.api.models import UserProfile
-from django.http import HttpRequest, JsonResponse
-from pydantic import BaseModel, ValidationError, create_model, BaseConfig
+from typing import Callable, Dict, List, Optional, Type
 
-from typing import Type, List, Dict, Optional, Callable
+from django.http import HttpRequest, JsonResponse
+from pydantic import BaseConfig, BaseModel, ValidationError, create_model
+
+from apps.api.models import UserProfile
+from apps.static.service_layer import ServiceResult
 
 
 class Config(BaseConfig):
@@ -21,7 +22,7 @@ def validation_error_handler(validation_error: ValidationError):
                 field_errors[name] = [error["msg"]]
 
     form_error = {"non_field_errors": [], "field_errors": field_errors}
-    return {'data': form_error, 'context': validation_error.errors()}
+    return {"data": form_error, "context": validation_error.errors()}
 
 
 def validate(request: HttpRequest, schema: Type[BaseModel]):
@@ -35,7 +36,7 @@ def validate(request: HttpRequest, schema: Type[BaseModel]):
 class ErrorResponse:
     def __init__(self, status=None, data=None):
         self.status = status
-        self.data = {'data': data}
+        self.data = {"data": data}
         assert self.data is not None and self.status is not None
 
     @property
@@ -49,22 +50,30 @@ class API:
         def decorator(request: HttpRequest, *args, **kwargs) -> JsonResponse:
             split_obj: Dict[str, Dict[str, Callable[..., JsonResponse]]] = func()
             if request.method not in split_obj:
-                return JsonResponse({'data': 'Method not allowed.'}, status=405)
+                return JsonResponse({"data": "Method not allowed."}, status=405)
             else:
                 for key, action in split_obj[request.method].items():
                     if request.resolver_match.route.endswith(key):
                         result = action(request, *args, _allow=True, **kwargs)
                         return result
-                return JsonResponse({'data': 'Method not allowed.'}, status=405)
+                return JsonResponse({"data": "Method not allowed."}, status=405)
 
         return decorator
 
     @staticmethod
-    def api(input_schema: Optional[Type[BaseModel]] = None, output_schema: Type = None, auth=False,
-            error_dict: Optional[Dict[str, ErrorResponse]] = None):
+    def api(
+        input_schema: Optional[Type[BaseModel]] = None,
+        output_schema: Type = None,
+        auth=False,
+        error_dict: Optional[Dict[str, ErrorResponse]] = None,
+    ):
         def decorator(service_func) -> Callable[..., JsonResponse]:
-            def wrapper(request: HttpRequest, *args, _allow=False, **kwargs) -> JsonResponse:
-                assert _allow, 'Do not use @API.api in urlpatterns directly, use @API.split instead.'
+            def wrapper(
+                request: HttpRequest, *args, _allow=False, **kwargs
+            ) -> JsonResponse:
+                assert (
+                    _allow
+                ), "Do not use @API.api in urlpatterns directly, use @API.split instead."
 
                 # set up input
                 service_func_kwargs = {}
@@ -73,27 +82,35 @@ class API:
                 # handle auth
                 if auth:
                     if not request.user.is_authenticated:
-                        return JsonResponse({'data': "You need to be logged in."}, status=401)
+                        return JsonResponse(
+                            {"data": "You need to be logged in."}, status=401
+                        )
 
                     user: UserProfile = request.user  # type: ignore
 
-                    if not hasattr(user, 'rlc_user'):
-                        return JsonResponse({'data': 'You need to have the rlc user role.'}, status=403)
+                    if not hasattr(user, "rlc_user"):
+                        return JsonResponse(
+                            {"data": "You need to have the rlc user role."}, status=403
+                        )
 
-                    if 'user' in service_func_input:
-                        service_func_kwargs['user'] = user
-                    if 'private_key_user' in service_func_input:
-                        service_func_kwargs['private_key_user'] = user.get_private_key(request=request)
+                    if "user" in service_func_input:
+                        service_func_kwargs["user"] = user
+                    if "private_key_user" in service_func_input:
+                        service_func_kwargs["private_key_user"] = user.get_private_key(
+                            request=request
+                        )
 
                 # validate the input
                 if input_schema:
                     try:
                         data = validate(request, input_schema)
                     except ValidationError as e:
-                        return JsonResponse(validation_error_handler(e), status=422, safe=False)
+                        return JsonResponse(
+                            validation_error_handler(e), status=422, safe=False
+                        )
 
-                    if 'data' in service_func_input:
-                        service_func_kwargs['data'] = data
+                    if "data" in service_func_input:
+                        service_func_kwargs["data"] = data
 
                 # service layer next step
                 result: ServiceResult = service_func(**service_func_kwargs)
@@ -109,13 +126,15 @@ class API:
                 if not result.success:
                     if error_dict and result.message in error_dict:
                         return error_dict[result.message].value
-                    return JsonResponse({'data': result.value}, status=400)
+                    return JsonResponse({"data": result.value}, status=400)
 
                 # validate the output
                 if output_schema:
-                    model = create_model('Output', __root__=(output_schema, ...), __config__=Config)
+                    model = create_model(
+                        "Output", __root__=(output_schema, ...), __config__=Config
+                    )
                     output_data = model.from_orm(result.value)
-                    return JsonResponse(output_data.dict()['__root__'], safe=False)
+                    return JsonResponse(output_data.dict()["__root__"], safe=False)
 
                 # default
                 return JsonResponse({})

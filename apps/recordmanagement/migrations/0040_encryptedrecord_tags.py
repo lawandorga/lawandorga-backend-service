@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0039_tag'),
+        ("recordmanagement", "0039_tag"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='encryptedrecord',
-            name='tags',
-            field=models.ManyToManyField(related_name='records', to='recordmanagement.Tag'),
+            model_name="encryptedrecord",
+            name="tags",
+            field=models.ManyToManyField(
+                related_name="records", to="recordmanagement.Tag"
+            ),
         ),
     ]

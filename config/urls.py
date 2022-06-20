@@ -1,10 +1,11 @@
-from rest_framework.response import Response
-from django.views.generic import TemplateView
-from rest_framework.views import APIView
-from django.core.mail import send_mail
-from django.contrib import admin
-from django.urls import path, include
 from django.conf import settings
+from django.contrib import admin
+from django.core.mail import send_mail
+from django.urls import include, path
+from django.views.generic import TemplateView
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from apps.api import urls as api_urls
 
 
@@ -14,23 +15,28 @@ class EmailView(APIView):
 
     def get(self, request, *args, **kwargs):
         send_mail(
-            'Test Mail',
-            'Test Body',
-            'no-reply@law-orga.de',
+            "Test Mail",
+            "Test Body",
+            "no-reply@law-orga.de",
             [a[1] for a in settings.ADMINS],
-            fail_silently=False
+            fail_silently=False,
         )
-        return Response({'status': 'email sent'})
+        return Response({"status": "email sent"})
 
 
 urlpatterns = [
-    path('error/', TemplateView.as_view(template_name='')),
-    path('email/', EmailView.as_view()),
+    path("error/", TemplateView.as_view(template_name="")),
+    path("email/", EmailView.as_view()),
     path("admin/", admin.site.urls),
     path("api/", include(api_urls)),
-    path("", TemplateView.as_view(template_name="index.html", extra_context={'RUNTIME': settings.RUNTIME,
-                                                                             'PORT': settings.EMAIL_PORT})),
-    path('tinymce/', include('tinymce.urls')),
+    path(
+        "",
+        TemplateView.as_view(
+            template_name="index.html",
+            extra_context={"RUNTIME": settings.RUNTIME, "PORT": settings.EMAIL_PORT},
+        ),
+    ),
+    path("tinymce/", include("tinymce.urls")),
 ]
 
 

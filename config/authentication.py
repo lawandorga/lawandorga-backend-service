@@ -1,10 +1,12 @@
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import permissions
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class IsAuthenticatedAndEverything(permissions.IsAuthenticated):
-    message = 'You need to be logged in, your account needs to be active, your email needs to be confirmed, your' \
-              'account should not be locked and you should be accepted as a member of your law clinic.'
+    message = (
+        "You need to be logged in, your account needs to be active, your email needs to be confirmed, your"
+        "account should not be locked and you should be accepted as a member of your law clinic."
+    )
 
     def has_permission(self, request, view):
         if not super().has_permission(request, view):
@@ -14,17 +16,18 @@ class IsAuthenticatedAndEverything(permissions.IsAuthenticated):
         user = request.user
 
         # rlc user
-        if hasattr(user, 'rlc_user'):
+        if hasattr(user, "rlc_user"):
             rlc_user = user.rlc_user
-            if (not rlc_user.is_active or
-                not rlc_user.email_confirmed or
-                not user.rlc_user.accepted or
-                user.rlc_user.locked
+            if (
+                not rlc_user.is_active
+                or not rlc_user.email_confirmed
+                or not user.rlc_user.accepted
+                or user.rlc_user.locked
             ):
                 return False
 
         # statistic user
-        if hasattr(user, 'statistic_user'):
+        if hasattr(user, "statistic_user"):
             pass
 
         # default
@@ -39,7 +42,7 @@ class RefreshPrivateKeyToken(RefreshToken):
         elif private_key:
             key = private_key
         else:
-            raise ValueError('You need to pass (password_user) or (private_key).')
+            raise ValueError("You need to pass (password_user) or (private_key).")
         token = super().for_user(user)
-        token['key'] = key
+        token["key"] = key
         return token

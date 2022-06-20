@@ -6,11 +6,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0034_auto_20210603_1619'),
+        ("recordmanagement", "0034_auto_20210603_1619"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='EncryptedRecordDocumentDeletionRequest',
+            name="EncryptedRecordDocumentDeletionRequest",
         ),
     ]

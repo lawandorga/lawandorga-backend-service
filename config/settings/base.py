@@ -1,8 +1,9 @@
-from django.core.exceptions import ImproperlyConfigured
-from datetime import timedelta, datetime
-import pytz
 import json
 import os
+from datetime import datetime, timedelta
+
+import pytz
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -45,16 +46,16 @@ INSTALLED_APPS = [
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -62,7 +63,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/dev/topics/http/middleware/
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -113,7 +114,7 @@ AUTH_USER_MODEL = "api.UserProfile"
 
 # Static Files Storage
 # http://whitenoise.evans.io/en/stable/
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Static Files
 # https://docs.djangoproject.com/en/dev/howto/static-files/
@@ -142,32 +143,34 @@ CORS_ALLOW_HEADERS = [
 # https://www.django-rest-framework.org/api-guide/settings/
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
-    'DATE_INPUT_FORMATS': ["%d-%m-%Y", "%Y-%m-%d", "%Y-%m-%dT%H:%M:%S.%fZ"],
-    'DATETIME_FORMAT': "%Y-%m-%dT%H:%M",
-    "DEFAULT_PERMISSION_CLASSES": ["config.authentication.IsAuthenticatedAndEverything"],
+    "DATE_INPUT_FORMATS": ["%d-%m-%Y", "%Y-%m-%d", "%Y-%m-%dT%H:%M:%S.%fZ"],
+    "DATETIME_FORMAT": "%Y-%m-%dT%H:%M",
+    "DEFAULT_PERMISSION_CLASSES": [
+        "config.authentication.IsAuthenticatedAndEverything"
+    ],
 }
 
 # JWT Token
 # See: https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
 SIMPLE_JWT = {
-    'UPDATE_LAST_LOGIN': True,
-    'SIGNING_KEY': get_secret('JWT_SIGNING_KEY'),
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=20),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=20),
-    'USER_ID_CLAIM': 'django_user',
-    'ROTATE_REFRESH_TOKENS': True,
+    "UPDATE_LAST_LOGIN": True,
+    "SIGNING_KEY": get_secret("JWT_SIGNING_KEY"),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
+    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=20),
+    "USER_ID_CLAIM": "django_user",
+    "ROTATE_REFRESH_TOKENS": True,
 }
 
 # Necessary in django 3.2
 # https://docs.djangoproject.com/en/3.2/releases/3.2/#customizing-type-of-auto-created-primary-keys
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # mail errors to the admins
 # See: https://docs.djangoproject.com/en/3.2/ref/settings/#admins
-ADMINS = [('Daniel Mössner', 'it@law-orga.de')]
+ADMINS = [("Daniel Mössner", "it@law-orga.de")]
 
 # This is used by the ExpiringTokenAuthentication which extends from rest's token authentication
 TIMEOUT_TIMEDELTA = timedelta(minutes=30)
@@ -176,7 +179,7 @@ TIMEOUT_TIMEDELTA = timedelta(minutes=30)
 FRONTEND_URL = get_secret("FRONTEND_URL")
 
 # Run time is set when django starts
-RUNTIME = datetime.now(pytz.timezone('Europe/Berlin')).strftime('%Y-%m-%d--%H:%M:%S')
+RUNTIME = datetime.now(pytz.timezone("Europe/Berlin")).strftime("%Y-%m-%d--%H:%M:%S")
 
 # The standard password of the dummy user, this is used within get_private_key in UserProfile
 # This enables us to do a lot of cool stuff, for example: test the restframework api directly

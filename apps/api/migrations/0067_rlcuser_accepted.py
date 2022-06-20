@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0066_delete_rlcsettings'),
+        ("api", "0066_delete_rlcsettings"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='rlcuser',
-            name='accepted',
+            model_name="rlcuser",
+            name="accepted",
             field=models.BooleanField(default=False),
         ),
     ]

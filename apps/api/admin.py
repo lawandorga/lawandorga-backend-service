@@ -1,57 +1,69 @@
+from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.translation import gettext_lazy as _
-from apps.api.models import UserProfile, Notification, Permission, HasPermission, Rlc, UserEncryptionKeys, \
-    RlcEncryptionKeys, UsersRlcKeys, NotificationGroup, Group, LoggedPath, RlcUser, StatisticUser
+
 from apps.api.forms import RlcAdminForm
-from django.contrib import admin
+from apps.api.models import (Group, HasPermission, LoggedPath, Notification,
+                             NotificationGroup, Permission, Rlc,
+                             RlcEncryptionKeys, RlcUser, StatisticUser,
+                             UserEncryptionKeys, UserProfile, UsersRlcKeys)
 
 
 class UserAdmin(DjangoUserAdmin):
     fieldsets = (
-        (None, {'fields': ('email',)}),
-        (_('Personal info'), {'fields': ('name',)}),
-        (_('Permissions'), {
-            'fields': ('groups',),
-        }),
-        (_('RLC Stuff'), {
-            'fields': ('rlc',),
-        }),
-        (_('Important dates'), {'fields': ('last_login',)}),
+        (None, {"fields": ("email",)}),
+        (_("Personal info"), {"fields": ("name",)}),
+        (
+            _("Permissions"),
+            {
+                "fields": ("groups",),
+            },
+        ),
+        (
+            _("RLC Stuff"),
+            {
+                "fields": ("rlc",),
+            },
+        ),
+        (_("Important dates"), {"fields": ("last_login",)}),
     )
     add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('email', 'name', 'password1', 'password2'),
-        }),
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": ("email", "name", "password1", "password2"),
+            },
+        ),
     )
-    list_display = ('email', 'name')
-    search_fields = ('name', 'email')
-    ordering = ('email',)
+    list_display = ("email", "name")
+    search_fields = ("name", "email")
+    ordering = ("email",)
     list_filter = ()
 
 
 class HasPermissionAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['user_has_permission']
+    autocomplete_fields = ["user_has_permission"]
 
 
 class RlcUserAdmin(admin.ModelAdmin):
-    search_fields = ('user__email', 'user__name')
+    search_fields = ("user__email", "user__name")
 
 
 class LoggedPathAdmin(admin.ModelAdmin):
-    search_fields = ('path', 'user__email', 'status')
+    search_fields = ("path", "user__email", "status")
 
 
 class UsersRlcKeysAdmin(admin.ModelAdmin):
-    search_fields = ('rlc__name', 'user__email')
+    search_fields = ("rlc__name", "user__email")
 
 
 class RlcAdmin(admin.ModelAdmin):
     def get_fieldsets(self, request, obj=None):
         if obj is None:
             return (
-                ('LC', {'fields': ('name', 'federal_state')}),
-                ('Admin', {'fields': ('user_name', 'user_email', 'user_password')}),
+                ("LC", {"fields": ("name", "federal_state")}),
+                ("Admin", {"fields": ("user_name", "user_email", "user_password")}),
             )
         return super().get_fieldsets(request, obj)
 
@@ -61,13 +73,13 @@ class RlcAdmin(admin.ModelAdmin):
         """
         defaults = {}
         if obj is None:
-            defaults['form'] = RlcAdminForm
+            defaults["form"] = RlcAdminForm
         defaults.update(kwargs)
         return super().get_form(request, obj, **defaults)
 
 
 class StatisticUserAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['user']
+    autocomplete_fields = ["user"]
 
 
 admin.site.register(Group)

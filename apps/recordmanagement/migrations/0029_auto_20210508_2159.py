@@ -6,16 +6,24 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0028_auto_20210331_1132'),
+        ("recordmanagement", "0028_auto_20210331_1132"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='encryptedrecordmessage',
-            options={'ordering': ['created_on'], 'verbose_name': 'RecordMessage', 'verbose_name_plural': 'RecordMessages'},
+            name="encryptedrecordmessage",
+            options={
+                "ordering": ["created_on"],
+                "verbose_name": "RecordMessage",
+                "verbose_name_plural": "RecordMessages",
+            },
         ),
         migrations.AlterModelOptions(
-            name='recordtag',
-            options={'ordering': ['name'], 'verbose_name': 'RecordTag', 'verbose_name_plural': 'RecordTags'},
+            name="recordtag",
+            options={
+                "ordering": ["name"],
+                "verbose_name": "RecordTag",
+                "verbose_name_plural": "RecordTags",
+            },
         ),
     ]

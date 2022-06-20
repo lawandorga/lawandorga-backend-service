@@ -1,12 +1,12 @@
 repos:
     -   repo: https://github.com/pre-commit/pre-commit-hooks
-        rev: v2.3.0
+        rev: v4.3.0
         hooks:
             -   id: check-yaml
             -   id: end-of-file-fixer
             -   id: trailing-whitespace
     -   repo: https://github.com/psf/black
-        rev: 19.3b0
+        rev: 22.3.0
         hooks:
             -   id: black
     -   repo: https://github.com/pycqa/isort
@@ -15,9 +15,17 @@ repos:
             -   id: isort
                 name: isort (python)
     -   repo: https://github.com/pre-commit/mirrors-mypy
-        rev: 'v0.910-1'
+        rev: 'v0.961'
         hooks:
             -   id: mypy
+                language: system
+                exclude: "[a-zA-Z]*/(migrations)/(.)*"
+                additional_dependencies: [
+                    # mypy dependencies
+                    djangorestframework-stubs,
+                    django-stubs,
+                    # runtime dependencies
+                ]
     -   repo: https://github.com/pycqa/flake8
         rev: '4.0.1'
         hooks:

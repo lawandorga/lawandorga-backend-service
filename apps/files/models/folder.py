@@ -1,19 +1,29 @@
-from apps.files.static import PERMISSION_READ_FOLDER, PERMISSION_WRITE_FOLDER
-from apps.files.models.folder_permission import FolderPermission
-from apps.static.storage_folders import get_storage_base_files_folder
-from apps.api.static import PERMISSION_FILES_MANAGE_PERMISSIONS, PERMISSION_FILES_READ_ALL_FOLDERS, \
-    PERMISSION_FILES_WRITE_ALL_FOLDERS
-from apps.api.models.rlc import Rlc
-from apps.api.models import UserProfile
 from django.db import models
+
+from apps.api.models import UserProfile
+from apps.api.models.rlc import Rlc
+from apps.api.static import (PERMISSION_FILES_MANAGE_PERMISSIONS,
+                             PERMISSION_FILES_READ_ALL_FOLDERS,
+                             PERMISSION_FILES_WRITE_ALL_FOLDERS)
+from apps.files.models.folder_permission import FolderPermission
+from apps.files.static import PERMISSION_READ_FOLDER, PERMISSION_WRITE_FOLDER
+from apps.static.storage_folders import get_storage_base_files_folder
 
 
 class Folder(models.Model):
     name = models.CharField(max_length=255)
     created = models.DateTimeField(auto_now_add=True)
     last_edited = models.DateTimeField(auto_now_add=True)
-    parent = models.ForeignKey("self", related_name="child_folders", null=True, on_delete=models.CASCADE, blank=True)
-    rlc = models.ForeignKey(Rlc, related_name="folders", on_delete=models.CASCADE, null=False, blank=True)
+    parent = models.ForeignKey(
+        "self",
+        related_name="child_folders",
+        null=True,
+        on_delete=models.CASCADE,
+        blank=True,
+    )
+    rlc = models.ForeignKey(
+        Rlc, related_name="folders", on_delete=models.CASCADE, null=False, blank=True
+    )
 
     class Meta:
         verbose_name = "Folder"
@@ -77,10 +87,9 @@ class Folder(models.Model):
         if user.rlc != self.rlc:
             return False
 
-        if (
-            user.has_permission(PERMISSION_FILES_WRITE_ALL_FOLDERS) or
-            user.has_permission(PERMISSION_FILES_MANAGE_PERMISSIONS)
-        ):
+        if user.has_permission(
+            PERMISSION_FILES_WRITE_ALL_FOLDERS
+        ) or user.has_permission(PERMISSION_FILES_MANAGE_PERMISSIONS):
             return True
 
         relevant_folders = self.get_all_parents() + [self]
@@ -100,14 +109,15 @@ class Folder(models.Model):
     def user_can_see_folder(self, user: UserProfile) -> bool:
         from apps.files.models.permission_for_folder import PermissionForFolder
 
-        if (
-            user.has_permission(PERMISSION_FILES_WRITE_ALL_FOLDERS) or
-            user.has_permission(PERMISSION_FILES_MANAGE_PERMISSIONS)
-        ):
+        if user.has_permission(
+            PERMISSION_FILES_WRITE_ALL_FOLDERS
+        ) or user.has_permission(PERMISSION_FILES_MANAGE_PERMISSIONS):
             return True
 
         folders = self.get_all_parents() + [self] + self.get_all_children()
         users_groups = user.rlcgroups.all()
-        if PermissionForFolder.objects.filter(folder__in=folders, group_has_permission__in=users_groups).exists():
+        if PermissionForFolder.objects.filter(
+            folder__in=folders, group_has_permission__in=users_groups
+        ).exists():
             return True
         return False

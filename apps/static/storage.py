@@ -1,5 +1,6 @@
 from django.core.files.storage import default_storage
 from rest_framework.exceptions import ParseError
+
 from apps.static.encryption import AESEncryption
 
 
@@ -14,7 +15,7 @@ def download_and_decrypt_file(file_key, aes_key):
     try:
         file = default_storage.open(file_key)
     except FileNotFoundError:
-        raise ParseError('The file was not found.')
+        raise ParseError("The file was not found.")
     # decrypt the file
     file = AESEncryption.decrypt_bytes_file(file, aes_key)
     file.seek(0)

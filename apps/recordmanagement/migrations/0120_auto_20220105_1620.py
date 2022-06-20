@@ -6,17 +6,24 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0119_rename_request_processed_encryptedrecordpermission_processed_by'),
+        (
+            "recordmanagement",
+            "0119_rename_request_processed_encryptedrecordpermission_processed_by",
+        ),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='encryptedrecordpermission',
-            options={'ordering': ['-state', '-created'], 'verbose_name': 'RecordPermission', 'verbose_name_plural': 'RecordPermissions'},
+            name="encryptedrecordpermission",
+            options={
+                "ordering": ["-state", "-created"],
+                "verbose_name": "RecordPermission",
+                "verbose_name_plural": "RecordPermissions",
+            },
         ),
         migrations.RenameField(
-            model_name='encryptedrecordpermission',
-            old_name='requested',
-            new_name='created',
+            model_name="encryptedrecordpermission",
+            old_name="requested",
+            new_name="created",
         ),
     ]

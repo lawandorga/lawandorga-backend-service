@@ -1,7 +1,8 @@
-from apps.recordmanagement.models.encrypted_record import EncryptedRecord
-from apps.static.encryption import RSAEncryption, EncryptedModelMixin
-from apps.api.models import UserProfile
 from django.db import models
+
+from apps.api.models import UserProfile
+from apps.recordmanagement.models.encrypted_record import EncryptedRecord
+from apps.static.encryption import EncryptedModelMixin, RSAEncryption
 
 
 class RecordEncryption(EncryptedModelMixin, models.Model):

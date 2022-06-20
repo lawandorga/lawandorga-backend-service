@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0078_rlcuser_note'),
+        ("api", "0078_rlcuser_note"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='rlcuser',
-            name='note',
+            model_name="rlcuser",
+            name="note",
             field=models.TextField(blank=True),
         ),
     ]

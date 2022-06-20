@@ -6,24 +6,24 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('files', '0013_auto_20210604_1511'),
+        ("files", "0013_auto_20210604_1511"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='folder',
-            name='creator',
+            model_name="folder",
+            name="creator",
         ),
         migrations.RemoveField(
-            model_name='folder',
-            name='last_editor',
+            model_name="folder",
+            name="last_editor",
         ),
         migrations.RemoveField(
-            model_name='folder',
-            name='number_of_files',
+            model_name="folder",
+            name="number_of_files",
         ),
         migrations.RemoveField(
-            model_name='folder',
-            name='size',
+            model_name="folder",
+            name="size",
         ),
     ]

@@ -1,34 +1,37 @@
-from apps.static.encryption import AESEncryption, RSAEncryption
-from apps.api.models.user import UserProfile
 from django.db import models
+
+from apps.api.models.user import UserProfile
+from apps.static.encryption import AESEncryption, RSAEncryption
 
 
 class Rlc(models.Model):
     FEDERAL_STATE_CHOICES = (
-        ('BW', 'Baden-Württemberg'),
-        ('BY', 'Bayern (Freistaat)'),
-        ('BE', 'Berlin'),
-        ('BB', 'Brandenburg'),
-        ('HB', 'Bremen (Hansestadt)'),
-        ('HH', 'Hamburg (Hansestadt)'),
-        ('HE', 'Hessen'),
-        ('MV', 'Mecklenburg-Vorpommern'),
-        ('NI', 'Niedersachsen'),
-        ('NW', 'Nordrhein-Westfalen'),
-        ('RP', 'Rheinland-Pfalz'),
-        ('SL', 'Saarland'),
-        ('SN', 'Sachsen (Freistaat)'),
-        ('ST', 'Sachsen-Anhalt'),
-        ('SH', 'Schleswig-Holstein'),
-        ('TH', 'Thüringen (Freistaat)'),
-        ('OTHER', 'Ausland'),
+        ("BW", "Baden-Württemberg"),
+        ("BY", "Bayern (Freistaat)"),
+        ("BE", "Berlin"),
+        ("BB", "Brandenburg"),
+        ("HB", "Bremen (Hansestadt)"),
+        ("HH", "Hamburg (Hansestadt)"),
+        ("HE", "Hessen"),
+        ("MV", "Mecklenburg-Vorpommern"),
+        ("NI", "Niedersachsen"),
+        ("NW", "Nordrhein-Westfalen"),
+        ("RP", "Rheinland-Pfalz"),
+        ("SL", "Saarland"),
+        ("SN", "Sachsen (Freistaat)"),
+        ("ST", "Sachsen-Anhalt"),
+        ("SH", "Schleswig-Holstein"),
+        ("TH", "Thüringen (Freistaat)"),
+        ("OTHER", "Ausland"),
     )
     name = models.CharField(max_length=200, null=False)
-    federal_state = models.CharField(choices=FEDERAL_STATE_CHOICES, max_length=100, blank=True, null=True)
+    federal_state = models.CharField(
+        choices=FEDERAL_STATE_CHOICES, max_length=100, blank=True, null=True
+    )
     use_record_pool = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]
         verbose_name = "Rlc"
         verbose_name_plural = "Rlcs"
 
@@ -39,8 +42,9 @@ class Rlc(models.Model):
         super().save(*args, **kwargs)
         # create the root folder from files if it doesn't exist
         from apps.files.models import Folder
+
         if not Folder.objects.filter(rlc=self, parent=None).exists():
-            Folder.objects.create(rlc=self, parent=None, name='Files')
+            Folder.objects.create(rlc=self, parent=None, name="Files")
 
     def get_public_key(self) -> bytes:
         # safety check
@@ -98,7 +102,9 @@ class Rlc(models.Model):
         aes_key = AESEncryption.generate_secure_key()
         private, public = RSAEncryption.generate_keys()
         # create encryption key for rlc
-        rlc_encryption_keys = RlcEncryptionKeys(rlc=self, encrypted_private_key=private, public_key=public)
+        rlc_encryption_keys = RlcEncryptionKeys(
+            rlc=self, encrypted_private_key=private, public_key=public
+        )
         rlc_encryption_keys.encrypt(aes_key)
         rlc_encryption_keys.save()
         # create encryption keys for users to be able to decrypt rlc private key with users private key
@@ -112,16 +118,20 @@ class Rlc(models.Model):
 
     def get_meta_information(self):
         return {
-            'id': self.id,
-            'name': self.name,
-            'records': sum([template.records.count() for template in self.recordtemplates.all()]),
-            'files': sum([folder.files_in_folder.count() for folder in self.folders.all()]),
-            'collab': self.collab_documents.count()
+            "id": self.id,
+            "name": self.name,
+            "records": sum(
+                [template.records.count() for template in self.recordtemplates.all()]
+            ),
+            "files": sum(
+                [folder.files_in_folder.count() for folder in self.folders.all()]
+            ),
+            "collab": self.collab_documents.count(),
         }
 
     def force_delete(self):
-        from apps.recordmanagement.models.record import Record
         from apps.files.models.file import File
+        from apps.recordmanagement.models.record import Record
 
         # delete records
         for r in Record.objects.filter(template__in=self.recordtemplates.all()):

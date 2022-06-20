@@ -6,20 +6,20 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0056_loggedpath'),
+        ("api", "0056_loggedpath"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='haspermission',
-            name='permission_for_group',
+            model_name="haspermission",
+            name="permission_for_group",
         ),
         migrations.RemoveField(
-            model_name='haspermission',
-            name='permission_for_rlc',
+            model_name="haspermission",
+            name="permission_for_rlc",
         ),
         migrations.RemoveField(
-            model_name='haspermission',
-            name='permission_for_user',
+            model_name="haspermission",
+            name="permission_for_user",
         ),
     ]

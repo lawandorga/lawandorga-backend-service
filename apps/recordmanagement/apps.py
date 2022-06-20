@@ -6,8 +6,10 @@ class RecordmanagementConfig(AppConfig):
     name = "apps.recordmanagement"
 
     def ready(self):
-        from apps.recordmanagement.fixtures import create_default_record_template
         from apps.api.models import Rlc
+        from apps.recordmanagement.fixtures import \
+            create_default_record_template
+
         # from apps.recordmanagement.models import RecordTemplate, RecordStandardField, RecordEncryptedStandardField, \
         #     OriginCountry, RecordUsersField, RecordStateField, RecordSelectField, RecordMultipleField
         try:
@@ -17,4 +19,3 @@ class RecordmanagementConfig(AppConfig):
         except (OperationalError, ProgrammingError):
             # the needed tables don't exist
             return
-

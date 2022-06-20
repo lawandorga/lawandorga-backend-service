@@ -6,17 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('files', '0018_auto_20210611_1215'),
+        ("files", "0018_auto_20210611_1215"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='file',
-            options={'ordering': ['exists', '-created'], 'verbose_name': 'File', 'verbose_name_plural': 'Files'},
+            name="file",
+            options={
+                "ordering": ["exists", "-created"],
+                "verbose_name": "File",
+                "verbose_name_plural": "Files",
+            },
         ),
         migrations.AlterField(
-            model_name='file',
-            name='key',
+            model_name="file",
+            name="key",
             field=models.CharField(max_length=1000, null=True, unique=True),
         ),
     ]

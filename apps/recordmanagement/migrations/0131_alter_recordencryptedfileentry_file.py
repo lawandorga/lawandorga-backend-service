@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0130_alter_recorddeletion_options'),
+        ("recordmanagement", "0130_alter_recorddeletion_options"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='recordencryptedfileentry',
-            name='file',
-            field=models.FileField(upload_to='recordmanagement/recordencryptedfileentry/'),
+            model_name="recordencryptedfileentry",
+            name="file",
+            field=models.FileField(
+                upload_to="recordmanagement/recordencryptedfileentry/"
+            ),
         ),
     ]

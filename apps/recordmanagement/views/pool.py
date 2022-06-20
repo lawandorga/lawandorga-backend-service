@@ -1,10 +1,12 @@
-from apps.recordmanagement.models.record import Record, RecordEncryptionNew
-from apps.recordmanagement.serializers import PoolConsultantSerializer, PoolRecordSerializer
-from apps.recordmanagement.models.pool import PoolConsultant, PoolRecord
+from django.shortcuts import get_object_or_404
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status, mixins
+
+from apps.recordmanagement.models.pool import PoolConsultant, PoolRecord
+from apps.recordmanagement.models.record import Record, RecordEncryptionNew
+from apps.recordmanagement.serializers import (PoolConsultantSerializer,
+                                               PoolRecordSerializer)
 
 
 class PoolConsultantViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -20,8 +22,12 @@ class PoolConsultantViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
             record = entry.record
             record.save()
 
-            if not RecordEncryptionNew.objects.filter(user=user, record=record).exists():
-                new_keys = RecordEncryptionNew(user=user, record=record, key=entry.record_key)
+            if not RecordEncryptionNew.objects.filter(
+                user=user, record=record
+            ).exists():
+                new_keys = RecordEncryptionNew(
+                    user=user, record=record, key=entry.record_key
+                )
                 new_keys.encrypt(user.get_public_key())
 
                 new_keys.save()
@@ -45,27 +51,46 @@ class PoolRecordViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = PoolRecordSerializer
 
     def create(self, request, *args, **kwargs):
-        record = get_object_or_404(Record.objects.filter(template__rlc=request.user.rlc), pk=request.data['record'])
+        record = get_object_or_404(
+            Record.objects.filter(template__rlc=request.user.rlc),
+            pk=request.data["record"],
+        )
 
         if PoolRecord.objects.filter(record=record).exists():
-            data = {'non_field_errors': ['This record is already in the record pool.']}
+            data = {"non_field_errors": ["This record is already in the record pool."]}
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
-        if not RecordEncryptionNew.objects.filter(record=record, user=request.user).exists():
-            data = {'non_field_errors': ['You need to have access to this record in order to be able to yield it.']}
+        if not RecordEncryptionNew.objects.filter(
+            record=record, user=request.user
+        ).exists():
+            data = {
+                "non_field_errors": [
+                    "You need to have access to this record in order to be able to yield it."
+                ]
+            }
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
         private_key = request.user.get_private_key(request=request)
-        record_decryption_key = record.get_aes_key(user=request.user, private_key_user=private_key)
+        record_decryption_key = record.get_aes_key(
+            user=request.user, private_key_user=private_key
+        )
 
         if PoolConsultant.objects.filter(consultant__rlc=request.user.rlc).count() >= 1:
-            entry = PoolConsultant.objects.filter(consultant__rlc=request.user.rlc).order_by("created").first()
+            entry = (
+                PoolConsultant.objects.filter(consultant__rlc=request.user.rlc)
+                .order_by("created")
+                .first()
+            )
             new_consultant = entry.consultant
             entry.delete()
 
             # RecordEncryptionNew.objects.filter(record=record, user=request.user).delete()
-            if not RecordEncryptionNew.objects.filter(user=new_consultant, record=record).exists():
-                new_keys = RecordEncryptionNew(user=new_consultant, record=record, key=record_decryption_key)
+            if not RecordEncryptionNew.objects.filter(
+                user=new_consultant, record=record
+            ).exists():
+                new_keys = RecordEncryptionNew(
+                    user=new_consultant, record=record, key=record_decryption_key
+                )
                 new_keys.encrypt(public_key_user=new_consultant.get_public_key())
                 new_keys.save()
 
@@ -77,7 +102,7 @@ class PoolRecordViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
             return_val.update({"action": "created"})
             return Response(return_val)
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=["get"])
     def status(self, request):
         user = request.user
 

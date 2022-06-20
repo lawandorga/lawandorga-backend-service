@@ -6,19 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0051_auto_20211016_1515'),
+        ("recordmanagement", "0051_auto_20211016_1515"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='recordquestionnaire',
-            name='code',
-            field=models.SlugField(default='12321KD', unique=True),
+            model_name="recordquestionnaire",
+            name="code",
+            field=models.SlugField(default="12321KD", unique=True),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='recordquestionnaire',
-            name='answer',
+            model_name="recordquestionnaire",
+            name="answer",
             field=models.TextField(blank=True),
         ),
     ]

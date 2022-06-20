@@ -64,7 +64,8 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.AlterModelOptions(
-            name="rlc", options={"verbose_name": "Rlc", "verbose_name_plural": "Rlcs"},
+            name="rlc",
+            options={"verbose_name": "Rlc", "verbose_name_plural": "Rlcs"},
         ),
         migrations.AlterModelOptions(
             name="rlcencryptionkeys",

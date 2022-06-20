@@ -6,19 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internal', '0010_tomspage'),
+        ("internal", "0010_tomspage"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='HelpPage',
+            name="HelpPage",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('manual', models.FileField(upload_to='internal/helppage/manual/', verbose_name='Manual')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "manual",
+                    models.FileField(
+                        upload_to="internal/helppage/manual/", verbose_name="Manual"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'HelpPage',
-                'verbose_name_plural': 'HelpPage',
+                "verbose_name": "HelpPage",
+                "verbose_name_plural": "HelpPage",
             },
         ),
     ]

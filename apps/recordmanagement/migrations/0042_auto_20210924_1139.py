@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0041_auto_20210924_1121'),
+        ("recordmanagement", "0041_auto_20210924_1121"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='encryptedrecord',
-            name='tagged',
-            field=models.ManyToManyField(blank=True, related_name='e_tagged', to='recordmanagement.RecordTag'),
+            model_name="encryptedrecord",
+            name="tagged",
+            field=models.ManyToManyField(
+                blank=True, related_name="e_tagged", to="recordmanagement.RecordTag"
+            ),
         ),
     ]

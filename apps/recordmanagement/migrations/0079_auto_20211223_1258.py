@@ -6,17 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0078_rename_users_recordusersentry_value'),
+        ("recordmanagement", "0078_rename_users_recordusersentry_value"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='recordencryptedselectfield',
-            name='multiple',
+            model_name="recordencryptedselectfield",
+            name="multiple",
         ),
         migrations.AlterField(
-            model_name='recordselectentry',
-            name='value',
+            model_name="recordselectentry",
+            name="value",
             field=models.CharField(max_length=200),
         ),
     ]

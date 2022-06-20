@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0109_auto_20220103_1903'),
+        ("recordmanagement", "0109_auto_20220103_1903"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='encryptedrecorddeletionrequest',
-            name='old_record',
+            model_name="encryptedrecorddeletionrequest",
+            name="old_record",
         ),
     ]

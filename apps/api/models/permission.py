@@ -9,7 +9,7 @@ class Permission(models.Model):
     class Meta:
         verbose_name = "Permission"
         verbose_name_plural = "Permissions"
-        ordering = ['name']
+        ordering = ["name"]
 
     def __str__(self):
         return "permission: {}; name: {};".format(self.pk, self.name)

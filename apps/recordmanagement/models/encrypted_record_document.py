@@ -1,11 +1,15 @@
-from apps.recordmanagement.models.record import Record
-from apps.static.storage_folders import get_storage_folder_encrypted_record_document
-from django.core.files.storage import default_storage
-from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
-from apps.api.models import UserProfile
-from django.db import models
-import unicodedata
 import re
+import unicodedata
+
+from django.core.files.storage import default_storage
+from django.db import models
+
+from apps.api.models import UserProfile
+from apps.recordmanagement.models.record import Record
+from apps.static.storage import (download_and_decrypt_file,
+                                 encrypt_and_upload_file)
+from apps.static.storage_folders import \
+    get_storage_folder_encrypted_record_document
 
 
 class EncryptedRecordDocument(models.Model):
@@ -16,9 +20,16 @@ class EncryptedRecordDocument(models.Model):
         on_delete=models.SET_NULL,
         null=True,
     )
-    old_record = models.ForeignKey("EncryptedRecord", related_name="e_record_documents", on_delete=models.CASCADE,
-                                   blank=True, null=True)
-    record = models.ForeignKey(Record, related_name='documents', on_delete=models.CASCADE, null=True)
+    old_record = models.ForeignKey(
+        "EncryptedRecord",
+        related_name="e_record_documents",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
+    record = models.ForeignKey(
+        Record, related_name="documents", on_delete=models.CASCADE, null=True
+    )
     created_on = models.DateTimeField(auto_now_add=True)
     last_edited = models.DateTimeField(auto_now_add=True)
     file_size = models.BigIntegerField(null=True)
@@ -39,31 +50,44 @@ class EncryptedRecordDocument(models.Model):
             self.key = self.slugify()
         super().save(*args, **kwargs)
 
-    def slugify(self, unique=''):
-        key = 'rlcs/{}/encrypted_records/{}/{}_{}'.format(self.record.template.rlc.pk, self.record.id, unique, self.name)
-        special_char_map = {ord('ä'): 'ae', ord('ü'): 'ue', ord('ö'): 'oe', ord('ß'): 'ss', ord('Ä'): 'AE',
-                            ord('Ö'): 'OE', ord('Ü'): 'UE'}
+    def slugify(self, unique=""):
+        key = "rlcs/{}/encrypted_records/{}/{}_{}".format(
+            self.record.template.rlc.pk, self.record.id, unique, self.name
+        )
+        special_char_map = {
+            ord("ä"): "ae",
+            ord("ü"): "ue",
+            ord("ö"): "oe",
+            ord("ß"): "ss",
+            ord("Ä"): "AE",
+            ord("Ö"): "OE",
+            ord("Ü"): "UE",
+        }
         key = key.translate(special_char_map)
-        key = unicodedata.normalize('NFKC', key).encode('ascii', 'ignore').decode('ascii')
-        key = re.sub(r'[^/.\w\s-]', '', key.lower()).strip()
-        key = re.sub(r'[-\s]+', '-', key)
+        key = (
+            unicodedata.normalize("NFKC", key).encode("ascii", "ignore").decode("ascii")
+        )
+        key = re.sub(r"[^/.\w\s-]", "", key.lower()).strip()
+        key = re.sub(r"[-\s]+", "-", key)
         if not EncryptedRecordDocument.objects.filter(key=key).exists():
             return key
         else:
-            unique = 1 if unique == '' else int(unique) + 1
+            unique = 1 if unique == "" else int(unique) + 1
             return self.slugify(unique=unique)
 
     def get_key(self):
         if not self.key:
-            self.key = '{}{}'.format(
-                get_storage_folder_encrypted_record_document(self.record.template.rlc.pk, self.record.id),
-                self.name
+            self.key = "{}{}".format(
+                get_storage_folder_encrypted_record_document(
+                    self.record.template.rlc.pk, self.record.id
+                ),
+                self.name,
             )
             self.save()
         return self.key
 
     def get_file_key(self):
-        return '{}.enc'.format(self.get_key())
+        return "{}.enc".format(self.get_key())
 
     def upload(self, file, record_key):
         key = self.get_file_key()

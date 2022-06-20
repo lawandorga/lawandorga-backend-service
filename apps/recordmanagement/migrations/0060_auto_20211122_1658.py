@@ -6,21 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0059_auto_20211122_1557'),
+        ("recordmanagement", "0059_auto_20211122_1557"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='questionnaire',
-            name='allow_file_upload',
+            model_name="questionnaire",
+            name="allow_file_upload",
         ),
         migrations.RemoveField(
-            model_name='questionnaire',
-            name='questionnaire',
+            model_name="questionnaire",
+            name="questionnaire",
         ),
         migrations.AlterField(
-            model_name='questionnairefield',
-            name='type',
-            field=models.CharField(choices=[('FILE', 'File'), ('TEXTAREA', 'Text')], max_length=20),
+            model_name="questionnairefield",
+            name="type",
+            field=models.CharField(
+                choices=[("FILE", "File"), ("TEXTAREA", "Text")], max_length=20
+            ),
         ),
     ]

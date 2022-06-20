@@ -68,4 +68,3 @@ jobs:
                       -H 'X-Auth-Token: ${{ secrets.SCALEWAY_TOKEN }}' \
                       -H 'Content-Type: application/json' \
                       -d '{ "redeploy": true }'
-
