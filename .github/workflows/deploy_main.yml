@@ -33,7 +33,9 @@ jobs:
                     pip install -r requirements.txt
 
             -   name: Run Tests
-                run: coverage run --source='.' manage.py test
+                run: |
+                    coverage run --source='.' manage.py test
+                    coverage xml
 
             -   name: Coverage Comment
                 id: coverage_comment
