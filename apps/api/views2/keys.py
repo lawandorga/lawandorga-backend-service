@@ -1,5 +1,6 @@
 from typing import List, Literal, Optional
 
+from django.views.decorators.csrf import csrf_exempt
 from pydantic import BaseModel
 
 from apps.api.models import UserProfile
@@ -59,11 +60,11 @@ def delete_key(data: KeyDelete, user: UserProfile):
             DELETE_KEY_ERROR_NOT_FOUND,
             error="The key you want to delete does not exist.",
         )
-    if key.record.encryptions.count() <= 2:
+    if key.record.encryptions.filter(correct=True).count() <= 1:
         return ServiceResult(
             DELETE_KEY_ERROR_NOT_ENOUGH,
             error="Not enough people have access to this record. "
-            "There need to be at least 2 people who must "
+            "There needs to be at least one person who must "
             "have access. You can not delete this key.",
         )
     if key.correct:

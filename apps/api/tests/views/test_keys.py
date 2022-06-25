@@ -5,7 +5,7 @@ from apps.api.static import get_all_permission_strings
 from apps.recordmanagement.models import RecordEncryptionNew, RecordTemplate
 from apps.static.encryption import RSAEncryption
 
-from . import data
+from .. import data
 
 
 class TestUserKeys(TestCase):

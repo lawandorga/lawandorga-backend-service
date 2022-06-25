@@ -1,10 +1,11 @@
-from typing import Callable, Dict, List, Optional, Type
+from typing import Callable, Dict, List, Optional, Type, Union
 
 from django.http import HttpRequest, JsonResponse
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model
 
 from apps.api.models import UserProfile
 from apps.static.service_layer import ServiceResult
+from django.views.decorators.csrf import csrf_exempt
 
 
 class Config(BaseConfig):
@@ -58,12 +59,12 @@ class API:
                         return result
                 return JsonResponse({"data": "Method not allowed."}, status=405)
 
-        return decorator
+        return csrf_exempt(decorator)
 
     @staticmethod
     def api(
         input_schema: Optional[Type[BaseModel]] = None,
-        output_schema: Type = None,
+        output_schema: Optional[Type] = None,
         auth=False,
         error_dict: Optional[Dict[str, ErrorResponse]] = None,
     ):
@@ -126,15 +127,16 @@ class API:
                 if not result.success:
                     if error_dict and result.message in error_dict:
                         return error_dict[result.message].value
-                    return JsonResponse({"data": result.value}, status=400)
+                    return JsonResponse({"detail": result.value}, status=400)
 
                 # validate the output
                 if output_schema:
                     model = create_model(
-                        "Output", __root__=(output_schema, ...), __config__=Config
+                        "Output",
+                        root=(output_schema, ...),
                     )
-                    output_data = model.from_orm(result.value)
-                    return JsonResponse(output_data.dict()["__root__"], safe=False)
+                    output_data = model(root=result.value)
+                    return JsonResponse(output_data.dict()["root"], safe=False)
 
                 # default
                 return JsonResponse({})

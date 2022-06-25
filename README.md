@@ -11,7 +11,7 @@ A project of Refugee Law Clinics Deutschland e.V. and Dominik Walser
 
 © Dominik Walser, AGPL-3.0
 
-This project contains a backend based on Django-Rest-Framework. It uses Amazon S3 as file-storage.
+This project contains a backend based on Django-Rest-Framework. It uses S3 as file-storage.
 
 ## Local Setup
 1. `git clone https://github.com/lawandorga/law-orga-apps.git`

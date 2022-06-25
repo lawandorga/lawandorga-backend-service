@@ -1,5 +1,9 @@
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import RequestDataTooBig
 from django.http import UnreadablePostError
+from django.utils.deprecation import MiddlewareMixin
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.exceptions import AuthenticationFailed
 
 from apps.api.models import LoggedPath
 
@@ -35,3 +39,25 @@ class LoggingMiddleware:
 
         # return the response
         return response
+
+
+class TokenAuthenticationMiddleware(MiddlewareMixin):
+    def process_request(self, request):
+        authenticate = False
+        if hasattr(request, 'user') and getattr(request.user, 'id', None) is None:
+            authenticate = True
+        if not hasattr(request, 'user'):
+            authenticate = True
+
+        if authenticate:
+            user = self.authenticate(request)
+            if user:
+                request.user = user[0]
+
+    def authenticate(self, request):
+        try:
+            jwt_auth = JWTAuthentication()
+            user = jwt_auth.authenticate(request)
+        except AuthenticationFailed:
+            user = None
+        return user

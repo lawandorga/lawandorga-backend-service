@@ -188,14 +188,6 @@ class RlcUserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
             return Response(
                 {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
             )
-        if user.rlc_user.locked:
-            message = (
-                "Your account is temporarily blocked, because your keys need to be recreated. "
-                "Please tell an admin to press the unlock button on your user."
-            )
-            return Response(
-                {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
-            )
         if not user.rlc_user.is_active:
             message = (
                 "You can not login. Your account was deactivated by one of your admins."

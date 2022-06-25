@@ -54,6 +54,14 @@ class RlcUser(models.Model):
     def __str__(self):
         return "rlcUser: {}; email: {};".format(self.pk, self.user.email)
 
+    @property
+    def name(self):
+        return self.user.name
+
+    @property
+    def email(self):
+        return self.user.email
+
     def delete(self, *args, **kwargs):
         user = self.user
         super().delete(*args, **kwargs)

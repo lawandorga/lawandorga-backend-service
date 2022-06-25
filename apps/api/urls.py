@@ -26,6 +26,7 @@ router.register("notes", views.NoteViewSet)
 router.register("statistics", views.StatisticsViewSet, basename="statistic")
 router.register("rlc_statistics", views.RlcStatisticsViewSet, basename="rlc_statistic")
 urlpatterns = [
+    path('rlc_users/unlock_self/', views2.rlc_user),
     path("", include(router.urls)),
     path("keys/", views2.keys),
     path("keys/<int:id>/", views2.keys),

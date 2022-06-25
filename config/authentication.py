@@ -22,7 +22,6 @@ class IsAuthenticatedAndEverything(permissions.IsAuthenticated):
                 not rlc_user.is_active
                 or not rlc_user.email_confirmed
                 or not user.rlc_user.accepted
-                or user.rlc_user.locked
             ):
                 return False
 

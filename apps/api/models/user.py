@@ -354,6 +354,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         return ret
 
+    def check_all_keys_correct(self):
+        keys = self.get_all_keys()
+        for key in keys:
+            if not key['correct']:
+                return False
+        return True
+
     def get_all_keys(self):
         keys = self.__get_all_keys_raw()
         all_keys = []
