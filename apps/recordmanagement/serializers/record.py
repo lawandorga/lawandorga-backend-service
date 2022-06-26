@@ -621,8 +621,15 @@ class RecordTemplateSerializer(serializers.ModelSerializer):
 
     def validate_show(self, val):
         if self.instance:
+            field_types_and_serializer = [
+                ("state_fields", RecordStateFieldSerializer),
+                ("standard_fields", RecordStandardFieldSerializer),
+                ("select_fields", RecordSelectFieldSerializer),
+                ("multiple_fields", RecordMultipleFieldSerializer),
+                ("users_fields", RecordUsersFieldSerializer),
+            ]
             fields = self.instance.get_fields(
-                FIELD_TYPES_AND_SERIALIZERS, request=self.context["request"]
+                field_types_and_serializer, request=self.context["request"]
             )
             possible_names = list(map(lambda f: f["name"], fields))
             possible_names.append("Created")
