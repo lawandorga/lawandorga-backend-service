@@ -25,6 +25,7 @@ class RecordAccess(models.Model):
         ("de", "declined"),
     )
     state = models.CharField(max_length=2, choices=STATE_CHOICES, default="re")
+    explanation = models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
