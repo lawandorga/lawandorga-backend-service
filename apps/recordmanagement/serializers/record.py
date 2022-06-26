@@ -311,6 +311,8 @@ class RecordStateEntrySerializer(RecordEntrySerializer):
             raise ValidationError("Field needs to be set.")
         if "value" in attrs and not attrs["value"] in field.options:
             raise ValidationError("The selected state is not allowed.")
+        if attrs['value'] == 'Closed':
+            attrs['closed_at'] = timezone.now()
         return attrs
 
 

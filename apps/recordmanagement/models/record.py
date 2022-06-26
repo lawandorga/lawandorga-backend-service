@@ -705,6 +705,7 @@ class RecordStateEntry(RecordEntry):
         RecordStateField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.CharField(max_length=1000)
+    closed_at = models.DateTimeField(blank=True, null=True, default=None)
 
     class Meta:
         unique_together = ["record", "field"]
