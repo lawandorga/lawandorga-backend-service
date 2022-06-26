@@ -311,7 +311,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
     def record_client_sex(self, request, *args, **kwargs):
         statement = """
         select
-        case when entry.value is null then 'Unknown' else entry.value end as value,
+        case when entry.value is null then 'Unset' else entry.value end as value,
         count(*) as count
         from recordmanagement_record record
         left join recordmanagement_recordstatisticentry entry on record.id = entry.record_id
@@ -327,7 +327,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
     def record_client_nationality(self, request, *args, **kwargs):
         statement = """
         select
-        case when entry.value is null then 'Unknown' else entry.value end as value,
+        case when entry.value is null then 'Unset' else entry.value end as value,
         count(*) as count
         from recordmanagement_record record
         left join recordmanagement_recordstatisticentry entry on record.id = entry.record_id
@@ -343,7 +343,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
     def record_client_age(self, request, *args, **kwargs):
         statement = """
         select
-        case when entry.value is null then 'Unknown' else entry.value end as value,
+        case when entry.value is null then 'Unset' else entry.value end as value,
         count(*) as count
         from recordmanagement_record record
         left join recordmanagement_recordstatisticentry entry on record.id = entry.record_id
@@ -359,7 +359,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
     def record_client_state(self, request, *args, **kwargs):
         statement = """
         select
-        case when entry.value is null then 'Unknown' else entry.value end as value,
+        case when entry.value is null then 'Unset' else entry.value end as value,
         count(*) as count
         from recordmanagement_record record
         left join recordmanagement_recordstatisticentry entry on record.id = entry.record_id
