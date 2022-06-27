@@ -82,8 +82,6 @@ class RlcUserSerializer(serializers.ModelSerializer):
 
 
 class RlcUserUpdateSerializer(RlcUserSerializer):
-    name = serializers.CharField(required=True)
-
     class Meta:
         model = RlcUser
         fields = [
