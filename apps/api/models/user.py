@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+import jwt
 from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -15,6 +16,7 @@ from apps.api.models.has_permission import HasPermission
 from apps.api.models.permission import Permission
 from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS
 from apps.static.encryption import RSAEncryption
+from rest_framework_simplejwt.settings import api_settings as jwt_settings
 
 
 class UserProfileManager(BaseUserManager):
@@ -302,7 +304,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         elif request and not password_user:
             try:
-                private_key = request.auth.payload["key"]
+                if hasattr(request, 'META') and 'HTTP_AUTHORIZATION' in request.META:
+                    token = request.META['HTTP_AUTHORIZATION'].replace('Bearer ', '')
+                    payload = jwt.decode(token, jwt_settings.SIGNING_KEY, [jwt_settings.ALGORITHM])
+                    private_key = payload['key']
+                else:
+                    private_key = request.auth.payload["key"]
             except AttributeError:
                 # enable direct testing of the rest framework
                 if self.email == "dummy@law-orga.de" and settings.DUMMY_USER_PASSWORD:
