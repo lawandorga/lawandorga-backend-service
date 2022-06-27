@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Any
 
 from pydantic import BaseModel
 
@@ -11,7 +11,7 @@ from apps.static.service_layer import ServiceResult
 class RlcUser(BaseModel):
     id: int
     user_id: int
-    birthday: Optional[str]
+    birthday: Optional[Any]
     phone_int: Optional[str]
     street: Optional[str]
     city: Optional[str]

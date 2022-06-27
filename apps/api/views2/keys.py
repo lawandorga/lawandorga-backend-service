@@ -1,6 +1,5 @@
 from typing import List, Literal, Optional
 
-from django.views.decorators.csrf import csrf_exempt
 from pydantic import BaseModel
 
 from apps.api.models import UserProfile
