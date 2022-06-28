@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Optional, Type, Union
+from typing import Callable, Dict, List, Optional, Type
 
 from django.http import HttpRequest, JsonResponse
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model
