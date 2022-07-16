@@ -7,18 +7,32 @@ assignees: ''
 
 ---
 
-# Core
+# Problem
+
+`The best problem definition consists of a single specific story that shows why the status quo doesn’t work.`
 
 -
 
-# Features
+# Appetite
+
+`How much time should be spent on this project?`
 
 -
 
-# Risks
+# Solution
+
+`How will the problem be solved? Add embedded and fat marker sketches.`
 
 -
 
-# Technical
+# Rabbit holes
+
+`What could go wrong? Or what problems might come up?`
+
+-
+
+# No-gos
+
+`What will not be done?`
 
 -
