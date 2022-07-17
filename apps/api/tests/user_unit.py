@@ -50,6 +50,7 @@ class UserUnitTests(UserBase, TestCase):
 
     def test_generate_keys_for_user_works_with_unlocking_user_having_the_keys(self):
         record = self.generate_record_with_keys_for_users([self.user1, self.user2])
+        RecordEncryptionNew.objects.filter(user=self.user2).update(correct=False)
         self.user2.set_password("pass12345")
         self.user2.save()
         self.user2.encryption_keys.delete()
@@ -65,6 +66,9 @@ class UserUnitTests(UserBase, TestCase):
 
     def test_generate_keys_for_user_works_with_unlocking_user_not_having_the_keys(self):
         record = self.generate_record_with_keys_for_users([self.user2])
+        # set all of those keys as incorrect
+        RecordEncryptionNew.objects.filter(user=self.user2).update(correct=False)
+
         self.user2.set_password("pass12345")
         self.user2.save()
         self.user2.encryption_keys.delete()
