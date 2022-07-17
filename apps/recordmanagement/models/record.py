@@ -266,6 +266,7 @@ class RecordTemplate(models.Model):
                     "Somalia",
                     "South Africa",
                     "South Georgia and the South Sandwich Islands",
+                    "South Sudan",
                     "Spain",
                     "Sri Lanka",
                     "Sudan",
@@ -307,6 +308,8 @@ class RecordTemplate(models.Model):
                     "Yemen",
                     "Zambia",
                     "Zimbabwe",
+                    "Stateless",
+                    "Unknown"
                 ],
                 "order": 99100,
                 "helptext": "",
