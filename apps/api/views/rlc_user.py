@@ -212,13 +212,9 @@ class RlcUserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
     @action(detail=False, methods=["get"])
     def admin(self, request, *args, **kwargs):
         instance = request.user
+        profiles = UserProfile.objects.filter(rlc=instance.rlc, rlc_user__locked=True).count()
         if instance.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
-            profiles = UserProfile.objects.filter(
-                Q(rlc=instance.rlc)
-                & (Q(rlc_user__locked=True) | Q(rlc_user__accepted=False))
-            ).count()
-        else:
-            profiles = 0
+            profiles += UserProfile.objects.filter(rlc=instance.rlc, rlc_user__accepted=False).count()
         if instance.has_permission(PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS):
             record_deletion_requests = RecordDeletion.objects.filter(
                 record__template__rlc=instance.rlc, state="re"

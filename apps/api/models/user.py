@@ -33,8 +33,8 @@ class UserProfileManager(BaseUserManager):
                 permission=permission,
                 group_has_permission=None,
             )
-            .values("user_has_permission")
-            .distinct()
+                .values("user_has_permission")
+                .distinct()
         )
 
         user_ids = [has_permission["user_has_permission"] for has_permission in users]
@@ -408,33 +408,30 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         from apps.api.models import UsersRlcKeys
         from apps.recordmanagement.models import RecordEncryptionNew
 
-        # safety check if all keys can be handed over
-        record_encryptions = user_to_unlock.recordencryptions.all()
-        for old_keys in list(record_encryptions):
-            try:
-                RecordEncryptionNew.objects.get(user=self, record=old_keys.record)
-            except ObjectDoesNotExist:
-                return False
+        # check if all keys can be handed over
+        success = True
 
         # generate new rlc key - this always works
         user_to_unlock.users_rlc_keys.all().delete()
         aes_key_rlc = self.rlc.get_aes_key(user=self, private_key_user=private_key_self)
-        new_keys = UsersRlcKeys(
-            user=user_to_unlock, rlc=user_to_unlock.rlc, encrypted_key=aes_key_rlc
-        )
+        new_keys = UsersRlcKeys(user=user_to_unlock, rlc=user_to_unlock.rlc, encrypted_key=aes_key_rlc)
         new_keys.encrypt(user_to_unlock.get_public_key())
         new_keys.save()
 
         # generate new record encryption
+        record_encryptions = user_to_unlock.recordencryptions.filter(correct=False)
+
         for old_keys in list(record_encryptions):
             # change the keys to the new keys
-            encryption = RecordEncryptionNew.objects.get(
-                user=self, record=old_keys.record
-            )
+            try:
+                encryption = RecordEncryptionNew.objects.get(user=self, record=old_keys.record)
+            except ObjectDoesNotExist:
+                success = False
+                continue
             encryption.decrypt(private_key_user=private_key_self)
             old_keys.key = encryption.key
             old_keys.encrypt(user_to_unlock.get_public_key())
             old_keys.save()
 
         # return true if everything worked as expected return false otherwise
-        return True
+        return success

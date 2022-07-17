@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
 from apps.api.models.user import UserProfile
@@ -61,7 +62,10 @@ class Rlc(models.Model):
         if user and private_key_user:
             # get the aes key that encrypted the rlc private key. this aes key is encrypted for every user with its
             # public key, therefore only its private key can unlock the aes key.
-            keys = user.users_rlc_keys.get(rlc=self)
+            try:
+                keys = user.users_rlc_keys.get(rlc=self)
+            except ObjectDoesNotExist:
+                keys = user.users_rlc_keys.create(rlc=self, user=user, correct=False, encrypted_key=b'')
             keys.decrypt(private_key_user)
             aes_key = keys.encrypted_key
             return aes_key
@@ -78,7 +82,10 @@ class Rlc(models.Model):
 
         if user and private_key_user:
 
-            keys = user.users_rlc_keys.get(rlc=self)
+            try:
+                keys = user.users_rlc_keys.get(rlc=self)
+            except ObjectDoesNotExist:
+                keys = user.users_rlc_keys.create(rlc=self, correct=False, encrypted_key=b'')
             keys.decrypt(private_key_user)
             aes_key = self.get_aes_key(user=user, private_key_user=private_key_user)
 

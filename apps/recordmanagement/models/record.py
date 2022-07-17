@@ -979,11 +979,10 @@ class RecordEncryptionNew(EncryptedModelMixin, models.Model):
         try:
             super().decrypt(private_key_user)
             self.set_correct(True)
-        except ValueError as e:
-            if "Encryption/decryption failed." in e.__str__():
-                self.set_correct(False)
-                self.user.rlc_user.locked = True
-                self.user.rlc_user.save()
+        except ValueError:
+            self.set_correct(False)
+            self.user.rlc_user.locked = True
+            self.user.rlc_user.save()
 
     def decrypt(self, private_key_user=None):
         if private_key_user:
