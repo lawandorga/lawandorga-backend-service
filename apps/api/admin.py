@@ -11,7 +11,6 @@ from apps.api.models import (
     NotificationGroup,
     Permission,
     Rlc,
-    RlcEncryptionKeys,
     RlcUser,
     StatisticUser,
     UserEncryptionKeys,
@@ -120,7 +119,6 @@ admin.site.register(Permission)
 admin.site.register(HasPermission, HasPermissionAdmin)
 admin.site.register(Rlc, RlcAdmin)
 admin.site.register(UserEncryptionKeys)
-admin.site.register(RlcEncryptionKeys)
 admin.site.register(UsersRlcKeys, UsersRlcKeysAdmin)
 admin.site.register(NotificationGroup)
 admin.site.register(UserProfile, UserAdmin)

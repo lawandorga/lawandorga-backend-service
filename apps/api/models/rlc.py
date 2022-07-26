@@ -31,8 +31,8 @@ class Rlc(EncryptedModelMixin, models.Model):
     )
     use_record_pool = models.BooleanField(default=False)
     # keys
-    public_key = models.BinaryField()
-    private_key = models.BinaryField()
+    public_key = models.BinaryField(null=True)
+    private_key = models.BinaryField(null=True)
     encrypted_fields = ["private_key"]
     encryption_class = AESEncryption
 
