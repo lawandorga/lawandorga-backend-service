@@ -140,15 +140,9 @@ class RlcUser(models.Model):
 # this is used on signup
 class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
     def _make_hash_value(self, rlc_user, timestamp):
-        login_timestamp = (
-            ""
-            if rlc_user.user.last_login is None
-            else rlc_user.user.last_login.replace(microsecond=0, tzinfo=None)
-        )
         super_make_hash_value = (
             str(rlc_user.pk)
             + rlc_user.user.password
-            + str(login_timestamp)
             + str(timestamp)
         )
         additional_hash_value = str(rlc_user.email_confirmed)
