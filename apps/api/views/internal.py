@@ -1,8 +1,7 @@
 from rest_framework import mixins
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-
-from apps.internal.models import (
+from apps.api.models import (
     Article,
     HelpPage,
     ImprintPage,
@@ -10,7 +9,7 @@ from apps.internal.models import (
     RoadmapItem,
     TomsPage,
 )
-from apps.internal.serializers import (
+from apps.api.serializers import (
     ArticleDetailSerializer,
     ArticleSerializer,
     HelpPageSerializer,

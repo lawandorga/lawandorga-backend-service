@@ -1,4 +1,3 @@
-from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.db import models
 from solo.models import SingletonModel
 from tinymce.models import HTMLField

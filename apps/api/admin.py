@@ -16,8 +16,16 @@ from apps.api.models import (
     StatisticUser,
     UserEncryptionKeys,
     UserProfile,
-    UsersRlcKeys,
+    UsersRlcKeys,    Article,
+    HelpPage,
+    ImprintPage,
+    IndexPage,
+    InternalUser,
+    RoadmapItem,
+    TomsPage,
 )
+from solo.admin import SingletonModelAdmin
+
 
 
 class UserAdmin(DjangoUserAdmin):
@@ -93,6 +101,20 @@ class StatisticUserAdmin(admin.ModelAdmin):
     autocomplete_fields = ["user"]
 
 
+
+
+
+class InternalUserAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["user"]
+
+
+admin.site.register(InternalUser, InternalUserAdmin)
+admin.site.register(IndexPage, SingletonModelAdmin)
+admin.site.register(ImprintPage, SingletonModelAdmin)
+admin.site.register(TomsPage, SingletonModelAdmin)
+admin.site.register(HelpPage, SingletonModelAdmin)
+admin.site.register(RoadmapItem)
+admin.site.register(Article)
 admin.site.register(Group)
 admin.site.register(Permission)
 admin.site.register(HasPermission, HasPermissionAdmin)

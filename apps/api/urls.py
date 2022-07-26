@@ -4,11 +4,17 @@ from rest_framework.routers import DefaultRouter
 from apps.api import views, views2
 from apps.collab.urls import router as collab_router
 from apps.files.urls import router as files_router
-from apps.internal.urls import router as internal_router
 from apps.recordmanagement.urls import router as records_router
 
 router = DefaultRouter()
-router.registry.extend(internal_router.registry)
+
+router.register("articles", views.ArticleViewSet)
+router.register("pages/index", views.IndexPageViewSet)
+router.register("pages/imprint", views.ImprintPageViewSet)
+router.register("pages/toms", views.TomsPageViewSet)
+router.register("pages/help", views.HelpPageViewSet)
+router.register("roadmap-items", views.RoadmapItemViewSet)
+
 router.registry.extend(collab_router.registry)
 router.registry.extend(files_router.registry)
 router.registry.extend(records_router.registry)
