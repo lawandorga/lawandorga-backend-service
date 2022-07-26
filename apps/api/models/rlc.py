@@ -2,10 +2,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
 from apps.api.models.user import UserProfile
-from apps.static.encryption import AESEncryption, RSAEncryption
+from apps.static.encryption import AESEncryption, RSAEncryption, EncryptedModelMixin
 
 
-class Rlc(models.Model):
+class Rlc(EncryptedModelMixin, models.Model):
     FEDERAL_STATE_CHOICES = (
         ("BW", "Baden-Württemberg"),
         ("BY", "Bayern (Freistaat)"),
@@ -30,6 +30,11 @@ class Rlc(models.Model):
         choices=FEDERAL_STATE_CHOICES, max_length=100, blank=True, null=True
     )
     use_record_pool = models.BooleanField(default=False)
+    # keys
+    public_key = models.BinaryField()
+    private_key = models.BinaryField()
+    encrypted_fields = ["private_key"]
+    encryption_class = AESEncryption
 
     class Meta:
         ordering = ["name"]
@@ -46,6 +51,12 @@ class Rlc(models.Model):
 
         if not Folder.objects.filter(rlc=self, parent=None).exists():
             Folder.objects.create(rlc=self, parent=None, name="Files")
+
+    def decrypt(self, aes_key):
+        super().decrypt(aes_key)
+
+    def encrypt(self, aes_key):
+        super().encrypt(aes_key)
 
     def get_public_key(self) -> bytes:
         # safety check

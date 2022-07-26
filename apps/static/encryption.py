@@ -5,6 +5,7 @@ import struct
 import tempfile
 from enum import Enum
 from hashlib import sha3_256
+from typing import Type, Union, List
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
@@ -204,9 +205,9 @@ class RSAEncryption:
         return plaintext
 
 
-class EncryptedModelMixin(object):
-    encrypted_fields = []
-    encryption_class = RSAEncryption
+class EncryptedModelMixin:
+    encrypted_fields: List[str] = []
+    encryption_class: Union[Type[RSAEncryption], Type[AESEncryption]] = RSAEncryption
     encryption_status = None
 
     def save(
