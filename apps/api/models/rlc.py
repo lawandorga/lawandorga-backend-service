@@ -41,6 +41,10 @@ class Rlc(EncryptedModelMixin, models.Model):
         verbose_name = "Rlc"
         verbose_name_plural = "Rlcs"
 
+    @property
+    def do_keys_exist(self):
+        return self.public_key is not None or self.private_key is not None
+
     def __str__(self):
         return "rlc: {}; name: {};".format(self.pk, self.name)
 
@@ -60,14 +64,14 @@ class Rlc(EncryptedModelMixin, models.Model):
 
     def get_public_key(self) -> bytes:
         # safety check
-        if not hasattr(self, "encryption_keys"):
+        if not self.do_keys_exist:
             self.generate_keys()
         # return the public key
         return self.encryption_keys.public_key
 
     def get_aes_key(self, user=None, private_key_user=None):
         # safety check
-        if not hasattr(self, "encryption_keys"):
+        if not self.do_keys_exist:
             self.generate_keys()
 
         if user and private_key_user:
@@ -88,7 +92,7 @@ class Rlc(EncryptedModelMixin, models.Model):
         self, user: UserProfile = None, private_key_user: str = None
     ) -> str:
         # safety check
-        if not hasattr(self, "encryption_keys"):
+        if not self.do_keys_exist:
             self.generate_keys()
 
         if user and private_key_user:
@@ -100,31 +104,27 @@ class Rlc(EncryptedModelMixin, models.Model):
             keys.decrypt(private_key_user)
             aes_key = self.get_aes_key(user=user, private_key_user=private_key_user)
 
-            rlc_keys = self.encryption_keys
-            rlc_keys.decrypt(aes_key)
+            self.decrypt(aes_key)
 
-            return rlc_keys.encrypted_private_key
+            return self.private_key
 
         else:
             raise ValueError("You need to pass (user and private_key_user).")
 
     def generate_keys(self) -> None:
-        from apps.api.models.rlc_encryption_keys import RlcEncryptionKeys
         from apps.api.models.users_rlc_keys import UsersRlcKeys
 
         # safety return
-        if RlcEncryptionKeys.objects.filter(rlc__pk=self.pk).exists():
+        if self.do_keys_exist:
             return
 
-        # generate some keys
+        # generate some keys for rlc
         aes_key = AESEncryption.generate_secure_key()
-        private, public = RSAEncryption.generate_keys()
-        # create encryption key for rlc
-        rlc_encryption_keys = RlcEncryptionKeys(
-            rlc=self, encrypted_private_key=private, public_key=public
-        )
-        rlc_encryption_keys.encrypt(aes_key)
-        rlc_encryption_keys.save()
+        private_key, public_key = RSAEncryption.generate_keys()
+        self.private_key = private_key
+        self.public_key = public_key
+        self.encrypt(aes_key)
+        self.save()
         # create encryption keys for users to be able to decrypt rlc private key with users private key
         # the aes key is encrypted with the users public key, but only the user's private key can decrypt
         # the encrypted aes key
