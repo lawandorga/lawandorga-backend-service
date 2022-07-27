@@ -44,7 +44,7 @@ class UsersRlcKeys(EncryptedModelMixin, models.Model):
         except ValueError:
             self.set_correct(False)
             self.user.rlc_user.locked = True
-            self.user.rlc_user.save()
+            self.user.rlc_user.save(update_fields=['locked'])
 
     def decrypt(self, private_key_user):
         try:

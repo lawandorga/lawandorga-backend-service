@@ -26,7 +26,8 @@ class UserBase:
             user=self.user, email_confirmed=True, accepted=True
         )
         self.rlc.generate_keys()
-        self.private_key = bytes(self.user.encryption_keys.private_key).decode("utf-8")
+        self.rlc_user = RlcUser.objects.get(pk=self.rlc_user.pk)
+        self.private_key = bytes(self.rlc_user.private_key).decode("utf-8")
         self.create_permissions()
 
     def create_permissions(self):
@@ -144,8 +145,8 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
 
     def test_change_password_works(self):
         view = RlcUserViewSet.as_view(actions={"post": "change_password"})
-        self.user.encryption_keys.decrypt(settings.DUMMY_USER_PASSWORD)
-        private_key = self.user.encryption_keys.private_key
+        self.user.rlc_user.decrypt(settings.DUMMY_USER_PASSWORD)
+        private_key = self.user.rlc_user.private_key
         data = {
             "current_password": settings.DUMMY_USER_PASSWORD,
             "new_password": "pass1234!",
@@ -155,7 +156,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         force_authenticate(request, self.user)
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        keys = UserEncryptionKeys.objects.get(user__pk=self.user.pk)
+        keys = RlcUser.objects.get(user__pk=self.user.pk)
         keys.decrypt("pass1234!")
         self.assertEqual(private_key, keys.private_key)
 

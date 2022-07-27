@@ -96,12 +96,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def change_password(self, old_password, new_password):
         if not self.check_password(old_password):
             raise ParseError("The password is not correct.")
-        keys = self.encryption_keys
-        keys.decrypt(old_password)
-        keys.encrypt(new_password)
+        rlc_user = self.rlc_user
+        rlc_user.decrypt(old_password)
+        rlc_user.encrypt(new_password)
         self.set_password(new_password)
         with transaction.atomic():
-            keys.save()
+            rlc_user.save()
             self.save()
 
     def __get_as_user_permissions(self):
@@ -290,17 +290,17 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         gets the public key of the user from the database
         :return: public key of user (PEM)
         """
-        if not hasattr(self, "encryption_keys"):
-            self.generate_new_user_encryption_keys()
-        return self.encryption_keys.public_key
+        if not self.rlc_user.do_keys_exist:
+            self.rlc_user.generate_keys()
+        return self.rlc_user.public_key
 
     def get_private_key(self, password_user=None, request=None):
-        if not hasattr(self, "encryption_keys"):
-            self.generate_new_user_encryption_keys()
+        if not self.rlc_user.do_keys_exist:
+            self.rlc_user.generate_keys()
 
         if password_user and not request:
-            self.encryption_keys.decrypt(password_user)
-            private_key = self.encryption_keys.private_key
+            self.rlc_user.decrypt(password_user)
+            private_key = self.rlc_user.private_key
 
         elif request and not password_user:
             try:
@@ -313,13 +313,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             except AttributeError:
                 # enable direct testing of the rest framework
                 if self.email == "dummy@law-orga.de" and settings.DUMMY_USER_PASSWORD:
-                    self.encryption_keys.decrypt(settings.DUMMY_USER_PASSWORD)
-                    return self.encryption_keys.private_key
+                    self.rlc_user.decrypt(settings.DUMMY_USER_PASSWORD)
+                    return self.rlc_user.private_key
                 else:
-                    raise AuthenticationFailed(
-                        "No token or no private key provided within the token."
-                    )
-            # private_key = private_key.replace("\\n", "\n").replace("<linebreak>", "\n")
+                    raise AuthenticationFailed("No token or no private key provided within the token.")
 
         else:
             raise ValueError("You need to pass (password_user) or (request).")
@@ -390,16 +387,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             all_keys.append(d)
 
         return all_keys
-
-    def generate_new_user_encryption_keys(self):
-        from apps.api.models.user_encryption_keys import UserEncryptionKeys
-
-        UserEncryptionKeys.objects.filter(user=self).delete()
-        private, public = RSAEncryption.generate_keys()
-        user_keys = UserEncryptionKeys(
-            user=self, private_key=private, public_key=public
-        )
-        user_keys.save()
 
     def generate_keys_for_user(self, private_key_self, user_to_unlock):
         """

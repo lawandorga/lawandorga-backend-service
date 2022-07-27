@@ -3,14 +3,13 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.db import models
 from django.template import loader
-
 from apps.api.models.has_permission import HasPermission
 from apps.api.models.permission import Permission
-
+from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 from .user import UserProfile
 
 
-class RlcUser(models.Model):
+class RlcUser(EncryptedModelMixin, models.Model):
     STUDY_CHOICES = (
         ("LAW", "Law Sciences"),
         ("PSYCH", "Psychology"),
@@ -42,6 +41,12 @@ class RlcUser(models.Model):
     speciality_of_study = models.CharField(
         choices=STUDY_CHOICES, max_length=100, blank=True, null=True
     )
+    # encryption
+    private_key = models.BinaryField(null=True)
+    is_private_key_encrypted = models.BooleanField(default=False)
+    public_key = models.BinaryField(null=True)
+    encryption_class = AESEncryption
+    encrypted_fields = ["private_key"]
     # other
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -61,6 +66,46 @@ class RlcUser(models.Model):
     @property
     def email(self):
         return self.user.email
+
+    @property
+    def do_keys_exist(self):
+        return self.public_key is not None or self.private_key is not None
+
+    def encrypt(self, password=None):
+        if password is not None:
+            key = password
+        else:
+            raise ValueError("You need to pass (password).")
+
+        super().encrypt(key)
+
+        if not self.is_private_key_encrypted:
+            self.is_private_key_encrypted = True
+            self.save()
+
+    def decrypt(self, password=None):
+        if password is not None:
+            key = password
+        else:
+            raise ValueError("You need to pass (password).")
+
+        if not self.is_private_key_encrypted:
+            self.encrypt(key)
+            self.is_private_key_encrypted = True
+            self.save()
+
+        super().decrypt(key)
+
+    def delete_keys(self):
+        self.private_key = None
+        self.public_key = None
+        self.is_private_key_encrypted = False
+        self.save()
+
+    def generate_keys(self):
+        self.private_key, self.public_key = RSAEncryption.generate_keys()
+        self.is_private_key_encrypted = False
+        self.save()
 
     def delete(self, *args, **kwargs):
         user = self.user

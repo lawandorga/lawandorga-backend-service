@@ -4,7 +4,7 @@ from apps.api.models.rlc import Rlc
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
 
 
-class RlcEncryptionKeys(EncryptedModelMixin, models.Model):
+class OldRlcEncryptionKeys(EncryptedModelMixin, models.Model):
     rlc = models.OneToOneField(
         Rlc, related_name="encryption_keys", on_delete=models.CASCADE
     )

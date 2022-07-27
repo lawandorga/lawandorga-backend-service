@@ -213,7 +213,8 @@ class EncryptedModelMixin:
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ) -> None:
-        for field in self.encrypted_fields:
+        fields = self.encrypted_fields  # if update_fields is None else list(set(self.encrypted_fields).intersection(set(update_fields)))
+        for field in fields:
             data_in_field = getattr(self, field)
             if data_in_field and not (
                 isinstance(data_in_field, bytes)

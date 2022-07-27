@@ -6,7 +6,7 @@ from .notification import *
 from .notification_group import *
 from .permission import *
 from .rlc import *
-from .rlc_encryption_keys import *
+from .old_rlc_encryption_keys import *
 from .rlc_user import *
 from .statistic_user import *
 from .user import *

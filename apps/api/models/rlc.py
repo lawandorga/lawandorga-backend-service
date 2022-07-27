@@ -131,7 +131,8 @@ class Rlc(EncryptedModelMixin, models.Model):
         for user in self.rlc_members.all():
             UsersRlcKeys.objects.filter(user=user, rlc=self).delete()
             user_rlc_keys = UsersRlcKeys(user=user, rlc=self, encrypted_key=aes_key)
-            user_rlc_keys.encrypt(user.get_public_key())
+            public_key_user = user.get_public_key()
+            user_rlc_keys.encrypt(public_key_user)
             user_rlc_keys.save()
 
     def get_meta_information(self):

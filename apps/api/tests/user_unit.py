@@ -18,11 +18,17 @@ class UserBase:
             "tester@law-orga.de", "Tester", "pass1234"
         )
         self.rlc.generate_keys()
+        self.user1 = self.get_user(self.user1.pk)
+        self.user2 = self.get_user(self.user2.pk)
         self.private_key1 = self.user1.get_private_key(settings.DUMMY_USER_PASSWORD)
         self.private_key2 = self.user2.get_private_key("pass1234")
+
         self.create_permissions()
         create_default_record_template(self.rlc)
         self.template = RecordTemplate.objects.filter(rlc=self.rlc).first()
+
+    def get_user(self, pk):
+        return UserProfile.objects.get(pk=pk)
 
     def create_user(self, email, name, password):
         user = UserProfile.objects.create(email=email, name=name, rlc=self.rlc)
@@ -53,7 +59,7 @@ class UserUnitTests(UserBase, TestCase):
         RecordEncryptionNew.objects.filter(user=self.user2).update(correct=False)
         self.user2.set_password("pass12345")
         self.user2.save()
-        self.user2.encryption_keys.delete()
+        self.user2.rlc_user.delete_keys()
         private_key = UserProfile.objects.get(pk=self.user2.pk).get_private_key(
             "pass12345"
         )
@@ -71,7 +77,7 @@ class UserUnitTests(UserBase, TestCase):
 
         self.user2.set_password("pass12345")
         self.user2.save()
-        self.user2.encryption_keys.delete()
+        self.user2.rlc_user.delete_keys()
         private_key = UserProfile.objects.get(pk=self.user2.pk).get_private_key(
             "pass12345"
         )
