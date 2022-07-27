@@ -7,7 +7,7 @@ from apps.api.models import (
     Permission,
     Rlc,
     RlcUser,
-    UserEncryptionKeys,
+    OldUserEncryptionKeys,
     UserProfile,
 )
 from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS, get_all_permission_strings

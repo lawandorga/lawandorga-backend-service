@@ -1,6 +1,6 @@
 from rest_framework.test import APIClient
 
-from apps.api.models import UserEncryptionKeys, UserProfile
+from apps.api.models import OldUserEncryptionKeys, UserProfile
 from apps.static.encryption import RSAEncryption
 
 
@@ -71,6 +71,6 @@ class StaticTestMethods:
     @staticmethod
     def generate_user_encryption_keys(user):
         private, public = RSAEncryption.generate_keys()
-        keys = UserEncryptionKeys(user=user, private_key=private, public_key=public)
+        keys = OldUserEncryptionKeys(user=user, private_key=private, public_key=public)
         keys.save()
         return keys

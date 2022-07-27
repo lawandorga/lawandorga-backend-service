@@ -4,7 +4,7 @@ from apps.api.models.user import UserProfile
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
 
 
-class UserEncryptionKeys(EncryptedModelMixin, models.Model):
+class OldUserEncryptionKeys(EncryptedModelMixin, models.Model):
     user = models.OneToOneField(
         UserProfile,
         related_name="encryption_keys",

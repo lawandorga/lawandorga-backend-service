@@ -15,10 +15,10 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from rest_framework import serializers
 
-from apps.api.models.user_encryption_keys import UserEncryptionKeys
+from apps.api.models.old_user_encryption_keys import OldUserEncryptionKeys
 
 
 class UserEncryptionKeysSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserEncryptionKeys
+        model = OldUserEncryptionKeys
         fields = "__all__"

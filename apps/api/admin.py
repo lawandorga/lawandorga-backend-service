@@ -13,9 +13,9 @@ from apps.api.models import (
     Rlc,
     RlcUser,
     StatisticUser,
-    UserEncryptionKeys,
+    OldUserEncryptionKeys,
     UserProfile,
-    UsersRlcKeys,    Article,
+    UsersRlcKeys, Article,
     HelpPage,
     ImprintPage,
     IndexPage,
@@ -118,7 +118,7 @@ admin.site.register(Group)
 admin.site.register(Permission)
 admin.site.register(HasPermission, HasPermissionAdmin)
 admin.site.register(Rlc, RlcAdmin)
-admin.site.register(UserEncryptionKeys)
+admin.site.register(OldUserEncryptionKeys)
 admin.site.register(UsersRlcKeys, UsersRlcKeysAdmin)
 admin.site.register(NotificationGroup)
 admin.site.register(UserProfile, UserAdmin)

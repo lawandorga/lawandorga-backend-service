@@ -1,6 +1,6 @@
 from django.test import TransactionTestCase
 
-from apps.api.models import UserEncryptionKeys
+from apps.api.models import OldUserEncryptionKeys
 from apps.api.tests.statics import StaticTestMethods
 from apps.static.encryption import RSAEncryption
 
@@ -22,7 +22,7 @@ class UserEncryptionKeysTests(TransactionTestCase):
     def test_user_encryption_keys_from_database_working(self):
         user = StaticTestMethods.generate_test_user()
         StaticTestMethods.generate_user_encryption_keys(user)
-        keys = UserEncryptionKeys.objects.get(user=user)
+        keys = OldUserEncryptionKeys.objects.get(user=user)
 
         message = "hello there"
         encrypted = RSAEncryption.encrypt(message, keys.public_key)
