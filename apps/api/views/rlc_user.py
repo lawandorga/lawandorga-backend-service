@@ -355,32 +355,8 @@ class RlcUserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        # get the new member
         new_member = self.get_object()
-
-        # create the rlc encryption keys for new member
         private_key_user = request.user.get_private_key(request=request)
-        aes_key_rlc = request.user.rlc.get_aes_key(
-            user=request.user, private_key_user=private_key_user
-        )
-        new_user_rlc_keys = UsersRlcKeys(
-            user=new_member.user,
-            rlc=request.user.rlc,
-            encrypted_key=aes_key_rlc,
-        )
-        public_key = new_member.user.get_public_key()
-        new_user_rlc_keys.encrypt(public_key)
+        request.user.rlc.accept_member(request.user, new_member.user, private_key_user)
 
-        # set the user accepted field so that the user can login
-        new_member.accepted = True
-        new_member.save()
-
-        # save the rlc keys this is here and not before the previous block so that test_accept_works doesnt complain
-        try:
-            new_user_rlc_keys.save()
-        except IntegrityError:
-            # this happens when the keys exist already for whatever reason
-            pass
-
-        # return
         return Response(RlcUserSerializer(instance=new_member).data)

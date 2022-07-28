@@ -1,13 +1,11 @@
 from django.conf import settings
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
-
 from apps.api.models import (
     HasPermission,
     Permission,
     Rlc,
     RlcUser,
-    OldUserEncryptionKeys,
     UserProfile,
 )
 from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS, get_all_permission_strings
@@ -202,6 +200,21 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         force_authenticate(request, self.user)
         response = view(request, pk=self.another_rlc_user.pk)
         self.assertEqual(response.status_code, 200)
+
+    def test_keys_are_generated(self):
+        user = UserProfile.objects.create(rlc=self.rlc, email='test3@law-orga.de')
+        rlc_user = RlcUser.objects.create(user=user)
+        user = UserProfile.objects.get(email='test3@law-orga.de')
+        user.rlc_user.generate_keys()
+        assert user.rlc_user.private_key is not None
+
+    def test_accept_works_on_new_user(self):
+        user = UserProfile.objects.create(rlc=self.rlc, email='test3@law-orga.de')
+        rlc_user = RlcUser.objects.create(user=user)
+        user = UserProfile.objects.get(email='test3@law-orga.de')
+        user.rlc_user.generate_keys()
+        assert user.rlc_user.private_key is not None
+        self.rlc.accept_member(self.user, user, self.private_key)
 
     def test_accept_works(self):
         HasPermission.objects.create(

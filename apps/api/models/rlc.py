@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-
 from apps.api.models.user import UserProfile
+from apps.api.static import PERMISSION_ADMIN_MANAGE_USERS
 from apps.static.encryption import AESEncryption, RSAEncryption, EncryptedModelMixin
 
 
@@ -134,6 +134,31 @@ class Rlc(EncryptedModelMixin, models.Model):
             public_key_user = user.get_public_key()
             user_rlc_keys.encrypt(public_key_user)
             user_rlc_keys.save()
+
+    def accept_member(self, admin: UserProfile, member: UserProfile, private_key_admin: str):
+        from apps.api.models import UsersRlcKeys
+
+        if not admin.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
+            return
+
+        # create the rlc encryption keys for new member
+        aes_key_rlc = self.get_aes_key(user=admin, private_key_user=private_key_admin)
+        new_user_rlc_keys = UsersRlcKeys(user=member, rlc_id=self.id, encrypted_key=aes_key_rlc)
+        public_key = member.get_public_key()
+        new_user_rlc_keys.encrypt(public_key)
+
+        # delete the old keys
+        UsersRlcKeys.objects.filter(user=member).delete()
+
+        # save the new keys
+        new_user_rlc_keys.save()
+
+        # set the user accepted field so that the user can login
+        member.rlc_user.accepted = True
+        member.rlc_user.save()
+
+    def deactivate_member(self, admin: UserProfile, member: UserProfile):
+        pass
 
     def get_meta_information(self):
         return {
