@@ -1,15 +1,14 @@
-from typing import List, Literal, Optional
+from typing import List, Literal
 
 from pydantic import BaseModel
 
 from apps.api.models import UserProfile
 from apps.recordmanagement.models import RecordEncryptionNew
-from apps.static.api_layer import API
+from apps.static.api_layer import API, Router
 from apps.static.service_layer import ServiceResult
 
 
-class Empty(BaseModel):
-    car: Optional[str] = "Tolles Auto"
+router = Router()
 
 
 class Key(BaseModel):
@@ -30,13 +29,13 @@ LIST_KEYS_SUCCESS = "User {} has requested the list of all his keys."
 TEST_KEYS_SUCCESS = "User {} has tested all his keys."
 
 
-@API.api(output_schema=List[Key], auth=True)
+@router.api(output_schema=List[Key], auth=True)
 def list_keys(user: UserProfile):
     all_keys: List[Key] = user.get_all_keys()
     return ServiceResult(LIST_KEYS_SUCCESS, all_keys)
 
 
-@API.api(output_schema=List[Key], auth=True)
+@router.api(url='test/', output_schema=List[Key], auth=True)
 def test_keys(user: UserProfile, private_key_user: str):
     user.test_all_keys(private_key_user)
     all_keys: List[Key] = user.get_all_keys()
@@ -51,7 +50,7 @@ DELETE_KEY_ERROR_WORKS = "User {} tried to delete a key that works."
 DELETE_KEY_SUCCESS_RECORD = "User {} deleted a record key."
 
 
-@API.api(input_schema=KeyDelete, auth=True)
+@router.api(url='<int:id>/', method='POST', input_schema=KeyDelete, auth=True)
 def delete_key(data: KeyDelete, user: UserProfile):
     key = RecordEncryptionNew.objects.filter(user=user, pk=data.id).first()
     if key is None:
@@ -63,8 +62,8 @@ def delete_key(data: KeyDelete, user: UserProfile):
         return ServiceResult(
             DELETE_KEY_ERROR_NOT_ENOUGH,
             error="Not enough people have access to this record. "
-            "There needs to be at least one person who must "
-            "have access. You can not delete this key.",
+                  "There needs to be at least one person who must "
+                  "have access. You can not delete this key.",
         )
     if key.correct:
         return ServiceResult(
@@ -72,18 +71,3 @@ def delete_key(data: KeyDelete, user: UserProfile):
         )
     key.delete()
     return ServiceResult(DELETE_KEY_SUCCESS_RECORD)
-
-
-@API.split
-def keys():
-    return {
-        "GET": {
-            "keys/": list_keys,
-        },
-        "POST": {
-            "keys/test/": test_keys,
-        },
-        "DELETE": {
-            "keys/<int:id>/": delete_key,
-        },
-    }

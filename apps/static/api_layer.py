@@ -1,6 +1,7 @@
-from typing import Callable, Dict, List, Optional, Type
+from typing import Callable, Dict, List, Optional, Type, Literal
 
 from django.http import HttpRequest, JsonResponse
+from django.urls import path
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model
 
 from apps.api.models import UserProfile
@@ -43,6 +44,136 @@ class ErrorResponse:
     @property
     def value(self):
         return JsonResponse(self.data, status=self.status)
+
+
+class Router:
+    def __init__(self):
+        self.__routes = []
+
+    @staticmethod
+    def generate_view_func(method_route: Dict) -> Callable[..., JsonResponse]:
+        def decorator(request: HttpRequest, *args, **kwargs) -> JsonResponse:
+            if request.method in method_route:
+                return method_route[request.method]['view'](request, *args, **kwargs)
+            else:
+                return JsonResponse(data={'detail': 'Method not allowed.'}, status=405)
+
+        return decorator
+
+    @property
+    def urls(self):
+        urls = {}
+
+        for route in self.__routes:
+            if route['url'] in urls:
+                if route['method'] in urls[route['url']]:
+                    raise ValueError('The same url and method must not exist.')
+                else:
+                    urls[route['url']][route['method']] = route
+            else:
+                urls[route['url']] = {route['method']: route}
+
+        ret = []
+        for url, method_route in urls.items():
+            for method, route in method_route.items():
+                if len(method_route) > 1:
+                    view = Router.generate_view_func(method_route)
+                    ret.append(path(url, view))
+                else:
+                    ret.append(path(url, route['view']))
+
+        return ret
+
+    @staticmethod
+    def generate_view(
+        func: Callable[..., ServiceResult],
+        input_schema: Optional[Type[BaseModel]] = None,
+        output_schema: Optional[Type] = None,
+        auth=False,
+        error_dict: Optional[Dict[str, ErrorResponse]] = None
+    ) -> Callable:
+        def wrapper(
+            request: HttpRequest, *args, **kwargs
+        ) -> JsonResponse:
+            # set up input
+            func_kwargs = {}
+            func_input = func.__code__.co_varnames
+
+            # handle auth
+            if auth:
+                if not request.user.is_authenticated:
+                    return JsonResponse(
+                        {"data": "You need to be logged in."}, status=401
+                    )
+
+                user: UserProfile = request.user  # type: ignore
+
+                if not hasattr(user, "rlc_user"):
+                    return JsonResponse(
+                        {"data": "You need to have the rlc user role."}, status=403
+                    )
+
+                if "user" in func_input:
+                    func_kwargs["user"] = user
+                if "private_key_user" in func_input:
+                    func_kwargs["private_key_user"] = user.get_private_key(request=request)
+
+            # validate the input
+            if input_schema:
+                try:
+                    data = validate(request, input_schema)
+                except ValidationError as e:
+                    return JsonResponse(
+                        validation_error_handler(e), status=422, safe=False
+                    )
+
+                if "data" in func_input:
+                    func_kwargs["data"] = data
+
+            # service layer next step
+            result: ServiceResult = func(**func_kwargs)
+
+            # log service layer
+            # if auth:
+            #     log_message = result.message.format(request.user.email)
+            # else:
+            #     log_message = result.message
+            # TODO: log
+
+            # error handling
+            if not result.success:
+                if error_dict and result.message in error_dict:
+                    return error_dict[result.message].value
+                return JsonResponse({"detail": result.value}, status=400)
+
+            # validate the output
+            if output_schema:
+                model = create_model(
+                    "Output",
+                    root=(output_schema, ...),
+                )
+                output_data = model(root=result.value)
+                return JsonResponse(output_data.dict()["root"], safe=False)
+
+            # default
+            return JsonResponse({})
+
+        return wrapper
+
+    def api(
+        self,
+        url: str = '',
+        method: Literal['GET', 'POST', 'PUT', 'DELETE'] = 'GET',
+        input_schema: Optional[Type[BaseModel]] = None,
+        output_schema: Optional[Type] = None,
+        auth=False,
+        error_dict: Optional[Dict[str, ErrorResponse]] = None
+    ):
+        def decorator(func: Callable[..., ServiceResult]):
+            view = Router.generate_view(func, input_schema, output_schema, auth, error_dict)
+            self.__routes.append({'url': url, 'method': method, 'view': view})
+
+        return decorator
 
 
 class API:

@@ -1,10 +1,11 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from apps.api import views, views2
+from apps.api import views
 from apps.collab.urls import router as collab_router
 from apps.files.urls import router as files_router
 from apps.recordmanagement.urls import router as records_router
+from apps.api.views2 import keys_router, rlc_user_router
 
 router = DefaultRouter()
 
@@ -31,10 +32,9 @@ router.register("notification_groups", views.NotificationGroupViewSet)
 router.register("notes", views.NoteViewSet)
 router.register("statistics", views.StatisticsViewSet, basename="statistic")
 router.register("rlc_statistics", views.RlcStatisticsViewSet, basename="rlc_statistic")
+
 urlpatterns = [
-    path('rlc_users/unlock_self/', views2.rlc_user),
     path("", include(router.urls)),
-    path("keys/", views2.keys),
-    path("keys/<int:id>/", views2.keys),
-    path("keys/test/", views2.keys),
+    path('rlc_users/', include(rlc_user_router.urls)),
+    path('keys/', include(keys_router.urls))
 ]
