@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from apps.api.models import UserProfile
 from apps.recordmanagement.models import RecordEncryptionNew
-from apps.static.api_layer import API, Router
+from apps.static.api_layer import Router
 from apps.static.service_layer import ServiceResult
 
 
