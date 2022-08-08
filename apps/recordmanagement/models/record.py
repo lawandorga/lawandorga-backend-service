@@ -883,7 +883,7 @@ class RecordStandardEntry(RecordEntry):
     field = models.ForeignKey(
         RecordStandardField, related_name="entries", on_delete=models.PROTECT
     )
-    value = models.TextField(max_length=1000)
+    value = models.TextField(max_length=20000)
 
     class Meta:
         unique_together = ["record", "field"]
