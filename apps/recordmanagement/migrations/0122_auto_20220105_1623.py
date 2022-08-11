@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="processedrecordaccesses",
-                to="api.userprofile",
+                to="core.userprofile",
             ),
         ),
         migrations.AlterField(

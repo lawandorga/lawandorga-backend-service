@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0012_auto_20200108_1533"),
+        ("core", "0012_auto_20200108_1533"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("files", "0001_initial"),
     ]
@@ -61,7 +61,7 @@ class Migration(migrations.Migration):
                         null=True,
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="group_has_folder_permissions",
-                        to="api.Group",
+                        to="core.Group",
                     ),
                 ),
                 (
@@ -79,7 +79,7 @@ class Migration(migrations.Migration):
                         null=True,
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="rlc_has_folder_permissions",
-                        to="api.Rlc",
+                        to="core.Rlc",
                     ),
                 ),
                 (

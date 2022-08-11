@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0073_auto_20211011_2158"),
+        ("core", "0073_auto_20211011_2158"),
         ("recordmanagement", "0047_auto_20211011_2158"),
     ]
 
@@ -86,7 +86,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="questionnaires",
-                to="api.rlc",
+                to="core.rlc",
             ),
         ),
     ]

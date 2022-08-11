@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("api", "0079_alter_rlcuser_note"),
+        ("core", "0079_alter_rlcuser_note"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
                         null=True,
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="collab_documents",
-                        to="api.rlc",
+                        to="core.rlc",
                     ),
                 ),
             ],
@@ -104,7 +104,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="text_documents",
-                        to="api.rlc",
+                        to="core.rlc",
                     ),
                 ),
             ],
@@ -180,7 +180,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="group_has_collab_permission",
-                        to="api.group",
+                        to="core.group",
                     ),
                 ),
                 (

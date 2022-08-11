@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.api.serializers import UserProfileNameSerializer
+from apps.core.serializers import UserProfileNameSerializer
 from apps.recordmanagement.models import RecordEncryptionNew
 
 

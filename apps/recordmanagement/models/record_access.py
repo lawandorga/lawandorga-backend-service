@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.api.models import UserProfile
+from apps.core.models import UserProfile
 from apps.recordmanagement.models.record import Record
 
 

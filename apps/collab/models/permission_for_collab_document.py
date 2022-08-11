@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.api.models import Group
+from apps.core.models import Group
 from apps.collab.models import CollabDocument, CollabPermission
 
 

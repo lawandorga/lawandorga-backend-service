@@ -1,8 +1,8 @@
 from django.db import models
 
-from apps.api.models import UserProfile
-from apps.api.models.rlc import Rlc
-from apps.api.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
+from apps.core.models import UserProfile
+from apps.core.models.rlc import Rlc
+from apps.core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
 
 from .tag import Tag

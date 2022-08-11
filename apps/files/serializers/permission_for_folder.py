@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.api.serializers import GroupNameSerializer
+from apps.core.serializers import GroupNameSerializer
 from apps.files.models.permission_for_folder import PermissionForFolder
 from apps.files.serializers import FolderPermissionSerializer, FolderSimpleSerializer
 

@@ -1,7 +1,7 @@
 from django.db import models
 
-from apps.api.models import Rlc
-from apps.api.static import (
+from apps.core.models import Rlc
+from apps.core.static import (
     PERMISSION_COLLAB_READ_ALL_DOCUMENTS,
     PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS,
 )

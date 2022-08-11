@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0075_remove_userprofile_is_active"),
+        ("core", "0075_remove_userprofile_is_active"),
         ("recordmanagement", "0050_questionnaire_allow_file_upload"),
     ]
 
@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="questionnaires",
-                to="api.rlc",
+                to="core.rlc",
             ),
         ),
     ]

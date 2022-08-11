@@ -7,7 +7,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.test import TestCase
 from rest_framework.test import force_authenticate
 
-from apps.api.models import RlcUser, UserProfile
+from apps.core.models import RlcUser, UserProfile
 from apps.recordmanagement.models import (
     Record,
     RecordEncryptedFileEntry,

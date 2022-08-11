@@ -4,7 +4,7 @@ from rest_framework import mixins, status, viewsets
 from rest_framework.exceptions import ParseError, PermissionDenied
 from rest_framework.response import Response
 
-from apps.api.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
+from apps.core.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
 from apps.recordmanagement.models import RecordEncryptionNew
 from apps.recordmanagement.models.record_access import RecordAccess
 from apps.recordmanagement.serializers import RecordAccessSerializer

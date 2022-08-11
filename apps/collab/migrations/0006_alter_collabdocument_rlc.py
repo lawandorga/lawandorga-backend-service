@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0080_loggedpath_status"),
+        ("core", "0080_loggedpath_status"),
         ("collab", "0005_remove_textdocumentversion_creator"),
     ]
 
@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="collab_documents",
-                to="api.rlc",
+                to="core.rlc",
             ),
         ),
     ]

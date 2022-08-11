@@ -3,7 +3,7 @@ from typing import Callable, Dict, List, Optional, Type, Literal, Any
 from django.http import HttpRequest, JsonResponse
 from django.urls import path
 from apps.static.service_layer import ServiceResult
-from apps.api.models import UserProfile
+from apps.core.models import UserProfile
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model
 
 

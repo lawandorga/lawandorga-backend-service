@@ -1,7 +1,7 @@
 from django.db.models import Q
 from rest_framework import mixins, viewsets
 
-from apps.api.static import PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS
+from apps.core.static import PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS
 from apps.recordmanagement.models.record_deletion import RecordDeletion
 from apps.recordmanagement.serializers import RecordDeletionSerializer
 from apps.static.permission import CheckPermissionWall

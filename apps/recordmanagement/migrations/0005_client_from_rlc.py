@@ -23,7 +23,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0008_auto_20190411_1633"),
+        ("core", "0008_auto_20190411_1633"),
         ("recordmanagement", "0004_auto_20190414_1953"),
     ]
 
@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
                 null=True,
                 on_delete=django.db.models.deletion.SET_NULL,
                 related_name="client_from_rlc",
-                to="api.Rlc",
+                to="core.Rlc",
             ),
         ),
     ]

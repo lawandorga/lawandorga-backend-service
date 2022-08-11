@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.api.models import Rlc
+from apps.core.models import Rlc
 
 
 class Tag(models.Model):

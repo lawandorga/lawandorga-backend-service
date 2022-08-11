@@ -11,7 +11,7 @@ import apps.static.encryption
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0076_alter_rlcuser_options"),
+        ("core", "0076_alter_rlcuser_options"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("recordmanagement", "0067_questionnairefile"),
     ]
@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="recordtemplates",
-                        to="api.rlc",
+                        to="core.rlc",
                     ),
                 ),
             ],
@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="tags",
-                to="api.rlc",
+                to="core.rlc",
             ),
         ),
         migrations.CreateModel(

@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "tinymce",
-    "apps.api",
+    "apps.core",
     "apps.recordmanagement",
     "apps.files",
     "apps.collab",
@@ -111,7 +111,7 @@ USE_TZ = True
 
 # Authentication
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-AUTH_USER_MODEL
-AUTH_USER_MODEL = "api.UserProfile"
+AUTH_USER_MODEL = "core.UserProfile"
 
 # Static Files Storage
 # http://whitenoise.evans.io/en/stable/

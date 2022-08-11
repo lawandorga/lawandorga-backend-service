@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0075_remove_userprofile_is_active"),
+        ("core", "0075_remove_userprofile_is_active"),
         ("recordmanagement", "0053_auto_20211018_1609"),
     ]
 
@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="deletion_requests",
-                to="api.rlc",
+                to="core.rlc",
             ),
         ),
     ]

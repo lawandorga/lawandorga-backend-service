@@ -2,9 +2,9 @@ from django.conf import settings
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from apps.api.fixtures import create_permissions
-from apps.api.models import HasPermission, Permission, Rlc, RlcUser, UserProfile
-from apps.api.static import (
+from apps.core.fixtures import create_permissions
+from apps.core.models import HasPermission, Permission, Rlc, RlcUser, UserProfile
+from apps.core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
     PERMISSION_RECORDS_ADD_RECORD,
 )

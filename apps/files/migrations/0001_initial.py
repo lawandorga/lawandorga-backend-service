@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("api", "0012_auto_20200108_1533"),
+        ("core", "0012_auto_20200108_1533"),
     ]
 
     operations = [
@@ -55,7 +55,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="folders",
-                        to="api.Rlc",
+                        to="core.Rlc",
                     ),
                 ),
             ],

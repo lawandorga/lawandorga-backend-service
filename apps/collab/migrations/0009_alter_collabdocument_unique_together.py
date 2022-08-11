@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0092_alter_note_note"),
+        ("core", "0092_alter_note_note"),
         ("collab", "0008_remove_textdocumentversion_is_draft"),
     ]
 

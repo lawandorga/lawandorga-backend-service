@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("api", "0076_alter_rlcuser_options"),
+        ("core", "0076_alter_rlcuser_options"),
         ("recordmanagement", "0105_encryptedrecorddeletionrequest_updated"),
     ]
 

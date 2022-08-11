@@ -1,8 +1,8 @@
 from django.db import models
 
-from apps.api.models import UserProfile
-from apps.api.models.rlc import Rlc
-from apps.api.static import (
+from apps.core.models import UserProfile
+from apps.core.models.rlc import Rlc
+from apps.core.static import (
     PERMISSION_FILES_MANAGE_PERMISSIONS,
     PERMISSION_FILES_READ_ALL_FOLDERS,
     PERMISSION_FILES_WRITE_ALL_FOLDERS,

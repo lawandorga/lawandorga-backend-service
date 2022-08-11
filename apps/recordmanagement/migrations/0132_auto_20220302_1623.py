@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0093_alter_note_rlc"),
+        ("core", "0093_alter_note_rlc"),
         ("recordmanagement", "0131_alter_recordencryptedfileentry_file"),
     ]
 
@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 default=None,
                 null=True,
                 on_delete=django.db.models.deletion.SET_NULL,
-                to="api.group",
+                to="core.group",
             ),
         ),
         migrations.AddField(

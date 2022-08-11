@@ -4,7 +4,7 @@ import unicodedata
 from django.core.files.storage import default_storage
 from django.db import models
 
-from apps.api.models import UserProfile
+from apps.core.models import UserProfile
 from apps.recordmanagement.models.record import Record
 from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
 from apps.static.storage_folders import get_storage_folder_encrypted_record_document

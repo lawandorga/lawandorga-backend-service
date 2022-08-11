@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0033_auto_20210318_1915"),
+        ("core", "0033_auto_20210318_1915"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("recordmanagement", "0021_auto_20210316_1513"),
     ]
@@ -102,7 +102,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="encrypted_records",
-                to="api.Rlc",
+                to="core.Rlc",
             ),
         ),
         migrations.AlterField(

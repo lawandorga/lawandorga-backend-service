@@ -10,7 +10,7 @@ from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from apps.api.static import (
+from apps.core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
     PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
     PERMISSION_RECORDS_ADD_RECORD,

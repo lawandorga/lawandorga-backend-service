@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0079_alter_rlcuser_note"),
+        ("core", "0079_alter_rlcuser_note"),
         ("collab", "0003_auto_20220205_1346"),
     ]
 
@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="collab_documents",
-                to="api.rlc",
+                to="core.rlc",
             ),
         ),
     ]

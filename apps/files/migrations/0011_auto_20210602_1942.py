@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0063_auto_20210513_1441"),
+        ("core", "0063_auto_20210513_1441"),
         ("files", "0010_auto_20210602_1421"),
     ]
 
@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="group_has_folder_permissions",
-                to="api.group",
+                to="core.group",
             ),
         ),
     ]

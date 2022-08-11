@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("api", "0011_auto_20200104_1333"),
+        ("core", "0011_auto_20200104_1333"),
         ("recordmanagement", "0009_recordencryption"),
     ]
 
@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
                         related_name="e_client_from_rlc",
-                        to="api.Rlc",
+                        to="core.Rlc",
                     ),
                 ),
                 (
@@ -120,7 +120,7 @@ class Migration(migrations.Migration):
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
                         related_name="e_record_from_rlc",
-                        to="api.Rlc",
+                        to="core.Rlc",
                     ),
                 ),
                 (

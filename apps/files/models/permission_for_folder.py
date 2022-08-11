@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.api.models.group import Group
+from apps.core.models.group import Group
 from apps.files.models.folder import Folder
 from apps.files.models.folder_permission import FolderPermission
 

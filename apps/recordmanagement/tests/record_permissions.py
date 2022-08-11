@@ -2,7 +2,7 @@ from django.conf import settings
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
-from apps.api.models import Rlc, RlcUser, UserProfile
+from apps.core.models import Rlc, RlcUser, UserProfile
 from apps.recordmanagement.views import (
     RecordEncryptedFileEntryViewSet,
     RecordEncryptedFileFieldViewSet,

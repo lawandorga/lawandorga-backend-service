@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.api.models.rlc import Rlc
+from apps.core.models.rlc import Rlc
 from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 

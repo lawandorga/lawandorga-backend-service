@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0069_remove_haspermission_rlc_has_permission"),
+        ("core", "0069_remove_haspermission_rlc_has_permission"),
         ("recordmanagement", "0038_auto_20210622_1407"),
     ]
 
@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
                 (
                     "rlc",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to="api.rlc"
+                        on_delete=django.db.models.deletion.CASCADE, to="core.rlc"
                     ),
                 ),
             ],

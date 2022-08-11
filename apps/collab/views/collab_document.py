@@ -6,7 +6,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.api.static import (
+from apps.core.static import (
     PERMISSION_COLLAB_MANAGE_PERMISSIONS,
     PERMISSION_COLLAB_READ_ALL_DOCUMENTS,
     PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS,

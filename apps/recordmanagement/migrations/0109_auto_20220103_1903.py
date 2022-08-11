@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="requestedrecorddeletions",
-                to="api.userprofile",
+                to="core.userprofile",
             ),
         ),
         migrations.AlterField(
@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="processedrecorddeletions",
-                to="api.userprofile",
+                to="core.userprofile",
             ),
         ),
         migrations.AlterField(
