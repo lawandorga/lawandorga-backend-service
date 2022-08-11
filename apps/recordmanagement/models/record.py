@@ -64,7 +64,6 @@ class RecordTemplate(models.Model):
                 "name": "Nationality of the client",
                 "options": [
                     "Afghanistan",
-                    "land Islands",
                     "Albania",
                     "Algeria",
                     "American Samoa",
