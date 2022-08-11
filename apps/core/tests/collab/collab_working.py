@@ -1,8 +1,8 @@
 from django.test import TestCase
 from rest_framework.test import force_authenticate
 
-from apps.collab.models import TextDocumentVersion
-from apps.collab.views import CollabDocumentViewSet
+from apps.core.models import TextDocumentVersion
+from apps.core.views import CollabDocumentViewSet
 
 from .base import BaseCollab
 

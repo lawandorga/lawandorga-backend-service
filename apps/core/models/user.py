@@ -160,7 +160,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return as_user or as_group
 
     def get_collab_permissions(self):
-        from apps.collab.models import PermissionForCollabDocument
+        from apps.core.models import PermissionForCollabDocument
 
         groups = self.rlcgroups.all()
         return PermissionForCollabDocument.objects.filter(

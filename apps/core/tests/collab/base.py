@@ -4,7 +4,7 @@ from rest_framework.test import APIRequestFactory
 from apps.core.fixtures import create_permissions
 from apps.core.models import HasPermission, Permission, Rlc, RlcUser, UserProfile
 from apps.core.static import PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS
-from apps.collab.models import CollabDocument, TextDocumentVersion
+from apps.core.models import CollabDocument, TextDocumentVersion
 
 
 class BaseCollab:

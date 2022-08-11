@@ -11,8 +11,8 @@ from apps.core.static import (
     PERMISSION_COLLAB_READ_ALL_DOCUMENTS,
     PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS,
 )
-from apps.collab.models import CollabDocument, PermissionForCollabDocument
-from apps.collab.serializers import (
+from apps.core.models import CollabDocument, PermissionForCollabDocument
+from apps.core.serializers import (
     CollabDocumentCreateSerializer,
     CollabDocumentListSerializer,
     CollabDocumentRetrieveSerializer,

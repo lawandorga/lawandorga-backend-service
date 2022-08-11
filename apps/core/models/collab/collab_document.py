@@ -5,7 +5,7 @@ from apps.core.static import (
     PERMISSION_COLLAB_READ_ALL_DOCUMENTS,
     PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS,
 )
-from apps.collab.static import PERMISSION_WRITE_DOCUMENT
+from apps.core.static import PERMISSION_WRITE_DOCUMENT
 
 
 class CollabDocument(models.Model):

@@ -72,7 +72,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         left join recordmanagement_record record on record.template_id = template.id
         left join files_folder folder on rlc.id = folder.rlc_id
         left join files_file file on file.folder_id = folder.id
-        left join collab_collabdocument document on rlc.id = document.rlc_id
+        left join core_collabdocument document on rlc.id = document.rlc_id
         group by rlc.id, rlc.name;
         """
         data = self.execute_statement(statement)
@@ -229,7 +229,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         select
         (select count(*) as records from recordmanagement_record) as records,
         (select count(*) as files from files_file) as files,
-        (select count(*) as collab from collab_collabdocument as collab),
+        (select count(*) as collab from core_collabdocument as collab),
         (select count(*) as users from api_rlcuser as users),
         (select count(*) as lcs from api_rlc as lcs)
         """

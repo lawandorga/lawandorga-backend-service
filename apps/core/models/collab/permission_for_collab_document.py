@@ -1,7 +1,8 @@
 from django.db import models
 
 from apps.core.models import Group
-from apps.collab.models import CollabDocument, CollabPermission
+from .collab_document import CollabDocument
+from .collab_permission import CollabPermission
 
 
 class PermissionForCollabDocument(models.Model):

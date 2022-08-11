@@ -10,3 +10,4 @@ from .rlc_user import *
 from .statistic import *
 from .statistic_user import *
 from .internal import *
+from .collab import *

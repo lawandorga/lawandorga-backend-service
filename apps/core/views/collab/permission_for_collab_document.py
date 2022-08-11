@@ -4,11 +4,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from apps.core.static import PERMISSION_COLLAB_MANAGE_PERMISSIONS
-from apps.collab.models import PermissionForCollabDocument
-from apps.collab.serializers.permission_for_collab_document import (
-    PermissionForCollabDocumentAllNamesSerializer,
-    PermissionForCollabDocumentSerializer,
-)
+from apps.core.models import PermissionForCollabDocument
+
+from .collab_document import PermissionForCollabDocumentAllNamesSerializer
+from ...serializers import PermissionForCollabDocumentSerializer
 
 
 class PermissionForCollabDocumentViewSet(

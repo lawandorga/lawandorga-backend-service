@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.recordmanagement",
     "apps.files",
-    "apps.collab",
+    # "apps.core",
     # "apps.internal",
     "storages",
     "corsheaders",

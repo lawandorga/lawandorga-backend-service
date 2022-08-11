@@ -9,8 +9,8 @@ from apps.core.models.has_permission import HasPermission
 from apps.core.models.permission import Permission
 from apps.core.models.rlc import Rlc
 from apps.core.static import get_all_permission_strings
-from apps.collab.models import CollabDocument, CollabPermission, TextDocumentVersion
-from apps.collab.static import get_all_collab_permission_strings
+from apps.core.models import CollabDocument, CollabPermission, TextDocumentVersion
+from apps.core.static import get_all_collab_permission_strings
 from apps.files.models import FolderPermission
 from apps.files.static import get_all_files_permission_strings
 from apps.core.models import InternalUser

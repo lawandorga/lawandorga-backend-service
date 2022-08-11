@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.collab.models.collab_document import CollabDocument
+from .collab_document import CollabDocument
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
 
 

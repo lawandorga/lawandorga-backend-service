@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.collab.models import TextDocumentVersion
+from apps.core.models import TextDocumentVersion
 
 
 class TextDocumentVersionSerializer(serializers.ModelSerializer):

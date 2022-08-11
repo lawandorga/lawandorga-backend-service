@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.collab.models import CollabPermission
+from apps.core.models import CollabPermission
 
 
 class CollabPermissionSerializer(serializers.ModelSerializer):
