@@ -2,7 +2,7 @@ from django.test import TestCase
 from rest_framework.test import force_authenticate
 
 from apps.core.models import CollabDocument
-from apps.core.tests.collab_working import BaseCollab
+from .collab_working import BaseCollab
 from apps.core.views import CollabDocumentViewSet
 
 
