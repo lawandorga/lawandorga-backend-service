@@ -3,7 +3,7 @@ from django.urls import include, path
 from apps.core import views
 from apps.files.urls import router as files_router
 from apps.recordmanagement.urls import router as records_router
-from apps.core.views2 import keys_router, rlc_user_router
+from apps.core.api import keys_router, rlc_user_router
 
 from rest_framework.routers import DefaultRouter
 
