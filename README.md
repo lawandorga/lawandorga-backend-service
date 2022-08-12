@@ -1,17 +1,16 @@
 ![Codecov branch](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/wiki/lawandorga/lawandorga-backend/python-coverage-comment-action-badge.json)
-[![codecov](https://codecov.io/gh/lawandorga/lawandorga-backend/branch/main/graph/badge.svg?token=3YGIYK0I70)](https://codecov.io/gh/lawandorga/lawandorga-backend)
 
 # Law&Orga
 
 ## General
 
-Backend for Law&Orga of (Refugee) Law Clinics in Germany
+Backend for Law&Orga of Law Clinics in Germany
 
 A project of Refugee Law Clinics Deutschland e.V. and Dominik Walser
 
 © Dominik Walser, AGPL-3.0
 
-This project contains a backend based on Django-Rest-Framework. It uses S3 as file-storage.
+This project contains a backend based on Django.
 
 ## Local Setup
 1. `git clone https://github.com/lawandorga/law-orga-apps.git`
