@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
-from apps.files.models import Folder
-from apps.files.models.file import File
+from apps.core.models import Folder, File
 
 
 class AddUserMixin:

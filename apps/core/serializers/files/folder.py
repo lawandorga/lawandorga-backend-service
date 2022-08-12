@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.files.models.folder import Folder
+from apps.core.models import Folder
 
 
 class FolderSerializer(serializers.ModelSerializer):

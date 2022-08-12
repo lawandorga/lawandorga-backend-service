@@ -56,7 +56,7 @@ class Rlc(EncryptedModelMixin, models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         # create the root folder from files if it doesn't exist
-        from apps.files.models import Folder
+        from apps.core.models import Folder
 
         if not Folder.objects.filter(rlc=self, parent=None).exists():
             Folder.objects.create(rlc=self, parent=None, name="Files")
@@ -179,7 +179,7 @@ class Rlc(EncryptedModelMixin, models.Model):
         }
 
     def force_delete(self):
-        from apps.files.models.file import File
+        from apps.core.models.file import File
         from apps.recordmanagement.models.record import Record
 
         # delete records

@@ -70,8 +70,8 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         from core_rlc as rlc
         left join recordmanagement_recordtemplate template on rlc.id = template.rlc_id
         left join recordmanagement_record record on record.template_id = template.id
-        left join files_folder folder on rlc.id = folder.rlc_id
-        left join files_file file on file.folder_id = folder.id
+        left join core_folder folder on rlc.id = folder.rlc_id
+        left join core_file file on file.folder_id = folder.id
         left join core_collabdocument document on rlc.id = document.rlc_id
         group by rlc.id, rlc.name;
         """
@@ -228,7 +228,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         statement = """
         select
         (select count(*) as records from recordmanagement_record) as records,
-        (select count(*) as files from files_file) as files,
+        (select count(*) as files from core_file) as files,
         (select count(*) as collab from core_collabdocument as collab),
         (select count(*) as users from core_rlcuser as users),
         (select count(*) as lcs from core_rlc as lcs)

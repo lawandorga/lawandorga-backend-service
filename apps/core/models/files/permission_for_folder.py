@@ -1,8 +1,8 @@
 from django.db import models
 
 from apps.core.models import Group
-from apps.files.models.folder import Folder
-from apps.files.models.folder_permission import FolderPermission
+from .folder import Folder
+from .folder_permission import FolderPermission
 
 
 class PermissionForFolder(models.Model):

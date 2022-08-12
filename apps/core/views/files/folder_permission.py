@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 
-from apps.files.models.folder_permission import FolderPermission
-from apps.files.serializers import FolderPermissionSerializer
+from apps.core.models import FolderPermission
+from apps.core.serializers import FolderPermissionSerializer
 
 
 class FolderPermissionViewSet(viewsets.ModelViewSet):

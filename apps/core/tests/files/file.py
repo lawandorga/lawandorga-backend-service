@@ -9,9 +9,9 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 from apps.core.fixtures import create_permissions
 from apps.core.models import HasPermission, Permission, Rlc, RlcUser, UserProfile
 from apps.core.static import PERMISSION_FILES_WRITE_ALL_FOLDERS
-from apps.files.fixtures import create_folder_permissions
-from apps.files.models import File, Folder
-from apps.files.views import FileViewSet
+from apps.core.fixtures import create_folder_permissions
+from apps.core.models import File, Folder
+from apps.core.views import FileViewSet
 
 settings.DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 

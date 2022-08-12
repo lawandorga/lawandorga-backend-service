@@ -4,8 +4,8 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from apps.files.models.file import File
-from apps.files.serializers import (
+from apps.core.models import File
+from apps.core.serializers import (
     FileCreateSerializer,
     FileSerializer,
     FileUpdateSerializer,

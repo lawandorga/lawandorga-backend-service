@@ -1,13 +1,11 @@
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ParseError, PermissionDenied, ValidationError
+from rest_framework.exceptions import ParseError, PermissionDenied
 from rest_framework.response import Response
 
 from apps.core.models import Group
-from apps.files.models import PermissionForFolder
-from apps.files.models.file import File
-from apps.files.models.folder import Folder
-from apps.files.serializers import (
+from apps.core.models import PermissionForFolder, File, Folder
+from apps.core.serializers import (
     FileSerializer,
     FolderCreateSerializer,
     FolderPathSerializer,

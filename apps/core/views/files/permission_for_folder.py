@@ -2,8 +2,8 @@ from rest_framework import status, viewsets
 from rest_framework.response import Response
 
 from apps.core.static import PERMISSION_FILES_MANAGE_PERMISSIONS
-from apps.files.models.permission_for_folder import PermissionForFolder
-from apps.files.serializers import (
+from apps.core.models import PermissionForFolder
+from apps.core.serializers import (
     PermissionForFolderNestedSerializer,
     PermissionForFolderSerializer,
 )

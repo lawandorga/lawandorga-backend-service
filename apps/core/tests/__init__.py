@@ -8,3 +8,4 @@ from .user_encryption_keys import *
 from .user_unit import *
 from .views import *
 from .collab import *
+from .files import *

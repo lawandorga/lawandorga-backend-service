@@ -3,9 +3,9 @@ from django.core.files.storage import default_storage
 from django.test import TestCase
 from rest_framework.test import force_authenticate
 
-from apps.files.models import File
-from apps.files.tests.file import FileTestsBase
-from apps.files.views import FileViewSet
+from apps.core.models import File
+from .file import FileTestsBase
+from apps.core.views import FileViewSet
 
 settings.DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 

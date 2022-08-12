@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.files.models.folder_permission import FolderPermission
+from apps.core.models import FolderPermission
 
 
 class FolderPermissionSerializer(serializers.ModelSerializer):

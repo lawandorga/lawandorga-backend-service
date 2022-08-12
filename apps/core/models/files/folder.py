@@ -7,8 +7,8 @@ from apps.core.static import (
     PERMISSION_FILES_READ_ALL_FOLDERS,
     PERMISSION_FILES_WRITE_ALL_FOLDERS,
 )
-from apps.files.models.folder_permission import FolderPermission
-from apps.files.static import PERMISSION_READ_FOLDER, PERMISSION_WRITE_FOLDER
+from .folder_permission import FolderPermission
+from apps.core.static import PERMISSION_READ_FOLDER, PERMISSION_WRITE_FOLDER
 from apps.static.storage_folders import get_storage_base_files_folder
 
 
@@ -59,7 +59,7 @@ class Folder(models.Model):
         return children
 
     def user_has_permission_read(self, user: UserProfile) -> bool:
-        from apps.files.models.permission_for_folder import PermissionForFolder
+        from .permission_for_folder import PermissionForFolder
 
         if user.rlc != self.rlc:
             return False
@@ -84,7 +84,7 @@ class Folder(models.Model):
         return False
 
     def user_has_permission_write(self, user: UserProfile) -> bool:
-        from apps.files.models.permission_for_folder import PermissionForFolder
+        from .permission_for_folder import PermissionForFolder
 
         if user.rlc != self.rlc:
             return False
@@ -109,7 +109,7 @@ class Folder(models.Model):
         return False
 
     def user_can_see_folder(self, user: UserProfile) -> bool:
-        from apps.files.models.permission_for_folder import PermissionForFolder
+        from apps.core.models.permission_for_folder import PermissionForFolder
 
         if user.has_permission(
             PERMISSION_FILES_WRITE_ALL_FOLDERS

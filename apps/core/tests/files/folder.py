@@ -1,9 +1,9 @@
 from django.test import TestCase
 from rest_framework.test import force_authenticate
 
-from apps.files.models import Folder
-from apps.files.tests import FileTestsBase
-from apps.files.views import FolderViewSet
+from apps.core.models import Folder
+from .file import FileTestsBase
+from apps.core.views import FolderViewSet
 
 
 class FolderTests(FileTestsBase, TestCase):

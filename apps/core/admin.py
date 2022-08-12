@@ -26,14 +26,15 @@ from apps.core.models import (
     CollabPermission,
     PermissionForCollabDocument,
     TextDocumentVersion,
+    File, Folder, FolderPermission, PermissionForFolder
 )
 from solo.admin import SingletonModelAdmin
-
 
 admin.site.register(CollabDocument)
 admin.site.register(CollabPermission)
 admin.site.register(PermissionForCollabDocument)
 admin.site.register(TextDocumentVersion)
+
 
 class UserAdmin(DjangoUserAdmin):
     fieldsets = (
@@ -108,9 +109,6 @@ class StatisticUserAdmin(admin.ModelAdmin):
     autocomplete_fields = ["user"]
 
 
-
-
-
 class InternalUserAdmin(admin.ModelAdmin):
     autocomplete_fields = ["user"]
 
@@ -134,3 +132,34 @@ admin.site.register(Notification)
 admin.site.register(LoggedPath, LoggedPathAdmin)
 admin.site.register(RlcUser, RlcUserAdmin)
 admin.site.register(StatisticUser, StatisticUserAdmin)
+
+
+class FileAdmin(admin.ModelAdmin):
+    model = File
+    list_display = ("name", "key", "exists", "created")
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(FileAdmin, self).get_form(request, obj, **kwargs)
+        form.base_fields["key"].widget.attrs["style"] = "width: 900px;"
+        return form
+
+
+class FolderAdmin(admin.ModelAdmin):
+    model = Folder
+    list_display = ("name", "parent_name", "same_parent", "rlc")
+    search_fields = ("name", "pk", "rlc__pk", "rlc__name")
+    list_per_page = 200
+    autocomplete_fields = ("parent",)
+
+    def parent_name(self, obj):
+        return obj.parent.name if obj.parent else ""
+
+    @admin.display(boolean=True)
+    def same_parent(self, obj):
+        return obj.pk == obj.parent_id
+
+
+admin.site.register(File, FileAdmin)
+admin.site.register(Folder, FolderAdmin)
+admin.site.register(FolderPermission)
+admin.site.register(PermissionForFolder)

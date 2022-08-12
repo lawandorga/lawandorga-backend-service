@@ -8,3 +8,4 @@ from .statistic_user import *
 from .user import *
 from .internal import *
 from .collab import *
+from .files import *
