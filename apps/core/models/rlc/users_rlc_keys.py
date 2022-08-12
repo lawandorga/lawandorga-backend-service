@@ -1,7 +1,7 @@
 from django.db import models
 
 from apps.core.models.rlc import Rlc
-from apps.core.models.user import UserProfile
+from apps.core.models.auth.user import UserProfile
 from apps.static.encryption import EncryptedModelMixin, RSAEncryption
 
 

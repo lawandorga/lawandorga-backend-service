@@ -1,8 +1,13 @@
+from typing import TYPE_CHECKING
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from apps.core.models.user import UserProfile
 from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS
 from apps.static.encryption import AESEncryption, RSAEncryption, EncryptedModelMixin
+
+
+if TYPE_CHECKING:
+    from apps.core.models.auth.user import UserProfile
 
 
 class Rlc(EncryptedModelMixin, models.Model):
@@ -89,7 +94,7 @@ class Rlc(EncryptedModelMixin, models.Model):
             raise ValueError("You need to pass (user and private_key_user).")
 
     def get_private_key(
-        self, user: UserProfile = None, private_key_user: str = None
+        self, user: 'UserProfile' = None, private_key_user: str = None
     ) -> str:
         # safety check
         if not self.do_keys_exist:
@@ -112,7 +117,7 @@ class Rlc(EncryptedModelMixin, models.Model):
             raise ValueError("You need to pass (user and private_key_user).")
 
     def generate_keys(self) -> None:
-        from apps.core.models.users_rlc_keys import UsersRlcKeys
+        from .users_rlc_keys import UsersRlcKeys
 
         # safety return
         if self.do_keys_exist:
@@ -135,7 +140,7 @@ class Rlc(EncryptedModelMixin, models.Model):
             user_rlc_keys.encrypt(public_key_user)
             user_rlc_keys.save()
 
-    def accept_member(self, admin: UserProfile, member: UserProfile, private_key_admin: str):
+    def accept_member(self, admin: 'UserProfile', member: 'UserProfile', private_key_admin: str):
         from apps.core.models import UsersRlcKeys
 
         if not admin.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
@@ -157,7 +162,7 @@ class Rlc(EncryptedModelMixin, models.Model):
         member.rlc_user.accepted = True
         member.rlc_user.save()
 
-    def deactivate_member(self, admin: UserProfile, member: UserProfile):
+    def deactivate_member(self, admin: 'UserProfile', member: 'UserProfile'):
         pass
 
     def get_meta_information(self):

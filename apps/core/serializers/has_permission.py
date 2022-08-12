@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from apps.core.models.has_permission import HasPermission
+from apps.core.models import HasPermission
 
 from .group import GroupNameSerializer
 from .permission import PermissionNameSerializer

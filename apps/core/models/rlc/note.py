@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.core.models import Rlc
+from .rlc import Rlc
 
 
 class Note(models.Model):

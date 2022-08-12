@@ -4,9 +4,9 @@ from django.conf import settings
 
 from apps.core import static
 from apps.core.models import RlcUser, UserProfile
-from apps.core.models.group import Group
-from apps.core.models.has_permission import HasPermission
-from apps.core.models.permission import Permission
+from apps.core.models import Group
+from apps.core.models import HasPermission
+from apps.core.models import Permission
 from apps.core.models.rlc import Rlc
 from apps.core.static import get_all_permission_strings
 from apps.core.models import CollabDocument, CollabPermission, TextDocumentVersion

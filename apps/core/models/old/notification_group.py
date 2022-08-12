@@ -16,7 +16,7 @@
 from django.db import models
 from django.utils import timezone
 
-from apps.core.models.user import UserProfile
+from .. import UserProfile
 from apps.static.notification_enums import NotificationGroupType
 
 

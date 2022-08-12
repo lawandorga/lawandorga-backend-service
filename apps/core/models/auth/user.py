@@ -12,51 +12,14 @@ from django.db import models, transaction
 from django.utils import timezone
 from rest_framework.exceptions import AuthenticationFailed, ParseError
 
-from apps.core.models.has_permission import HasPermission
-from apps.core.models.permission import Permission
+
 from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS
-from apps.static.encryption import RSAEncryption
 from rest_framework_simplejwt.settings import api_settings as jwt_settings
 
 
 class UserProfileManager(BaseUserManager):
     def get_queryset(self):
         return super().get_queryset().select_related("rlc_user")
-
-    @staticmethod
-    def get_users_with_special_permission(permission, from_rlc=None, for_rlc=None):
-        if isinstance(permission, str):
-            permission = Permission.objects.get(name=permission).id
-
-        users = (
-            HasPermission.objects.filter(
-                permission=permission,
-                group_has_permission=None,
-            )
-                .values("user_has_permission")
-                .distinct()
-        )
-
-        user_ids = [has_permission["user_has_permission"] for has_permission in users]
-        result = UserProfile.objects.filter(id__in=user_ids).distinct()
-        if from_rlc is not None:
-            result = result.filter(rlc=from_rlc)
-
-        groups = HasPermission.objects.filter(
-            permission=permission,
-            user_has_permission=None,
-        ).values("group_has_permission")
-        group_ids = [
-            has_permission["group_has_permission"] for has_permission in groups
-        ]
-        result = result | UserProfile.objects.filter(rlcgroups__in=group_ids).distinct()
-        if from_rlc is not None:
-            result = result.filter(rlc=from_rlc)
-
-        if from_rlc is not None:
-            result = result.filter(rlc=from_rlc)
-
-        return result
 
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
@@ -108,6 +71,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         """
         Returns: all HasPermissions the user itself has as list
         """
+        from apps.core.models import HasPermission
         return [
             has_permission.permission.name
             for has_permission in HasPermission.objects.filter(
@@ -120,6 +84,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         Returns: all HasPermissions the groups in which the user is member of have as list
         """
         groups = [groups["id"] for groups in list(self.rlcgroups.values("id"))]
+        from apps.core.models import HasPermission
         return [
             has_permission.permission.name
             for has_permission in HasPermission.objects.filter(
@@ -137,12 +102,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         )
 
     def __has_as_user_permission(self, permission):
+        from apps.core.models import HasPermission
         return HasPermission.objects.filter(
             user_has_permission=self.pk, permission=permission
         ).exists()
 
     def __has_as_group_member_permission(self, permission):
         groups = [group.pk for group in self.rlcgroups.all()]
+        from apps.core.models import HasPermission
         return HasPermission.objects.filter(
             group_has_permission__pk__in=groups, permission=permission
         ).exists()
@@ -150,6 +117,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def has_permission(self, permission, for_user=None, for_group=None, for_rlc=None):
         if isinstance(permission, str):
             try:
+                from apps.core.models import Permission
                 permission = Permission.objects.get(name=permission)
             except ObjectDoesNotExist:
                 return False

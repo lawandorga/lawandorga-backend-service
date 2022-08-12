@@ -4,7 +4,7 @@ from django.core.files import File as DjangoFile
 from django.db import models
 from django.utils import timezone
 
-from apps.core.models.user import UserProfile
+from apps.core.models import UserProfile
 from apps.static.encryption import AESEncryption
 
 from .folder import Folder

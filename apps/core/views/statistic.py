@@ -28,11 +28,11 @@ class StatisticsViewSet(viewsets.GenericViewSet):
     def rlc_members(self, request, *args, **kwargs):
         statement = """
         select
-            api_rlc.name as rlc_name,
-            count(distinct api_userprofile.id) as member_amount
-        from api_userprofile
-        inner join api_rlc on api_rlc.id = api_userprofile.rlc_id
-        group by api_userprofile.rlc_id, api_rlc.name;
+            core_rlc.name as rlc_name,
+            count(distinct core_userprofile.id) as member_amount
+        from core_userprofile
+        inner join core_rlc on core_rlc.id = core_userprofile.rlc_id
+        group by core_userprofile.rlc_id, core_rlc.name;
         """
         data = self.execute_statement(statement)
         data = map(lambda x: {"name": x[0], "amount": x[1]}, data)
@@ -67,7 +67,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
             count(distinct record.id) as records,
             count(distinct file.id) as files,
             count(distinct document.id) as documents
-        from api_rlc as rlc
+        from core_rlc as rlc
         left join recordmanagement_recordtemplate template on rlc.id = template.rlc_id
         left join recordmanagement_record record on record.template_id = template.id
         left join files_folder folder on rlc.id = folder.rlc_id
@@ -87,8 +87,8 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         if settings.DEBUG:
             statement = """
             select u.id as email, count(*) as actions
-            from api_userprofile as u
-            left join api_loggedpath path on u.id = path.user_id
+            from core_userprofile as u
+            left join core_loggedpath path on u.id = path.user_id
             where user_id is not null
             and path.time > date('now', '-1 month')
             group by u.email, u.id
@@ -97,8 +97,8 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         else:
             statement = """
             select u.id as email, count(*) as actions
-            from api_userprofile as u
-            left join api_loggedpath path on u.id = path.user_id
+            from core_userprofile as u
+            left join core_loggedpath path on u.id = path.user_id
             where user_id is not null
             and path.time > date_trunc('day', NOW() - interval '1 month')
             group by u.email, u.id
@@ -112,7 +112,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
     def user_logins(self, request, *args, **kwargs):
         statement = """
         select date(time) as date, count(*) as logins
-        from api_loggedpath as path
+        from core_loggedpath as path
         where path.path like '%login%'
         and (path.status = 200 or path.status = 0)
         group by date(time)
@@ -127,7 +127,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         if settings.DEBUG:
             statement = """
             select strftime('%Y/%m', time) as month, count(*) as logins
-            from api_loggedpath as path
+            from core_loggedpath as path
             where path.path like '%login%'
             and (path.status = 200 or path.status = 0)
             group by strftime('%Y/%m', time)
@@ -136,7 +136,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         else:
             statement = """
             select to_char(time, 'YYYY/MM') as month, count(*) as logins
-            from api_loggedpath as path
+            from core_loggedpath as path
             where path.path like '%login%'
             and (path.status = 200 or path.status = 0)
             group by to_char(time, 'YYYY/MM')
@@ -152,14 +152,14 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         if settings.DEBUG:
             statement = """
             select strftime('%Y/%m', time) as month, count(distinct path.user_id) as logins
-            from api_loggedpath as path
+            from core_loggedpath as path
             group by strftime('%Y/%m', time)
             order by date(time) asc
             """
         else:
             statement = """
             select to_char(time, 'YYYY/MM') as month, count(distinct path.user_id) as logins
-            from api_loggedpath as path
+            from core_loggedpath as path
             group by to_char(time, 'YYYY/MM')
             order by to_char(time, 'YYYY/MM') asc;
             """
@@ -172,7 +172,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         if settings.DEBUG:
             statement = """
             select status, path, count(*) as count
-            from api_loggedpath
+            from core_loggedpath
             where status > 300
             and status <> 401
             and time > date('now', '-1 month')
@@ -183,7 +183,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         else:
             statement = """
             select status, path, count(*) as count
-            from api_loggedpath
+            from core_loggedpath
             where status > 300
             and status <> 401
             and time > current_date - interval '30' day
@@ -204,10 +204,10 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         userkeys.id is not null as userkeys,
         rlcuser.accepted,
         rlcuser.locked
-        from api_userprofile baseuser
-        inner join api_rlcuser rlcuser on baseuser.id = rlcuser.user_id
-        left join api_usersrlckeys rlckeys on baseuser.id = rlckeys.user_id
-        left join api_userencryptionkeys userkeys on baseuser.id = userkeys.user_id
+        from core_userprofile baseuser
+        inner join core_rlcuser rlcuser on baseuser.id = rlcuser.user_id
+        left join core_usersrlckeys rlckeys on baseuser.id = rlckeys.user_id
+        left join core_userencryptionkeys userkeys on baseuser.id = userkeys.user_id
         where rlckeys.id is null or userkeys.id is null
         """
         data = self.execute_statement(statement)
@@ -230,8 +230,8 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         (select count(*) as records from recordmanagement_record) as records,
         (select count(*) as files from files_file) as files,
         (select count(*) as collab from core_collabdocument as collab),
-        (select count(*) as users from api_rlcuser as users),
-        (select count(*) as lcs from api_rlc as lcs)
+        (select count(*) as users from core_rlcuser as users),
+        (select count(*) as lcs from core_rlc as lcs)
         """
         data = self.execute_statement(statement)
         data = list(

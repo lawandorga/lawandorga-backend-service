@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.core.models.user import UserProfile
+from .. import UserProfile
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
 
 

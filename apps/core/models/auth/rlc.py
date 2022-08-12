@@ -3,10 +3,9 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.db import models
 from django.template import loader
-from apps.core.models.has_permission import HasPermission
-from apps.core.models.permission import Permission
 from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 from .user import UserProfile
+from apps.core.models.rlc import Permission, HasPermission
 
 
 class RlcUser(EncryptedModelMixin, models.Model):
