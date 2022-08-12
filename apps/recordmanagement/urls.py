@@ -1,54 +1,58 @@
 from rest_framework.routers import DefaultRouter
 
-from apps.recordmanagement.views import *
+from apps.recordmanagement import views
 
 router = DefaultRouter()
 
-router.register("records/messages", MessageViewSet)
-router.register("records/pool_records", PoolRecordViewSet)
-router.register("records/pool_consultants", PoolConsultantViewSet)
-router.register("records/record_documents", EncryptedRecordDocumentViewSet)
+router.register("records/messages", views.MessageViewSet)
+router.register("records/pool_records", views.PoolRecordViewSet)
+router.register("records/pool_consultants", views.PoolConsultantViewSet)
+router.register("records/record_documents", views.EncryptedRecordDocumentViewSet)
 # record access and deletion
-router.register("records/deletions", RecordDeletionViewSet)
-router.register("records/accesses", RecordAccessViewSet)
+router.register("records/deletions", views.RecordDeletionViewSet)
+router.register("records/accesses", views.RecordAccessViewSet)
 # questionnaires
-router.register("records/questionnairetemplates", QuestionnaireTemplateViewSet)
-router.register("records/questionnaires", QuestionnaireViewSet)
-router.register("records/questionnaire_answers", QuestionnaireAnswersViewSet)
-router.register("records/questionnaire_fields", QuestionnaireFieldsViewSet)
-router.register("records/questionnaire_files", QuestionnaireFilesViewSet)
+router.register("records/questionnairetemplates", views.QuestionnaireTemplateViewSet)
+router.register("records/questionnaires", views.QuestionnaireViewSet)
+router.register("records/questionnaire_answers", views.QuestionnaireAnswersViewSet)
+router.register("records/questionnaire_fields", views.QuestionnaireFieldsViewSet)
+router.register("records/questionnaire_files", views.QuestionnaireFilesViewSet)
 # records
-router.register("records/recordtemplates", RecordTemplateViewSet)
-router.register("records/records", RecordViewSet)
+router.register("records/recordtemplates", views.RecordTemplateViewSet)
+router.register("records/records", views.RecordViewSet)
 # encryptions
-router.register("records/encryptions", RecordEncryptionNewViewSet)
+router.register("records/encryptions", views.RecordEncryptionNewViewSet)
 # fields
-router.register("records/recordstatefields", RecordStateFieldViewSet)
-router.register("records/recordusersfields", RecordUsersFieldViewSet)
-router.register("records/recordselectfields", RecordSelectFieldViewSet)
-router.register("records/recordstandardfields", RecordStandardFieldViewSet)
-router.register("records/recordmultiplefields", RecordMultipleFieldViewSet)
+router.register("records/recordstatefields", views.RecordStateFieldViewSet)
+router.register("records/recordusersfields", views.RecordUsersFieldViewSet)
+router.register("records/recordselectfields", views.RecordSelectFieldViewSet)
+router.register("records/recordstandardfields", views.RecordStandardFieldViewSet)
+router.register("records/recordmultiplefields", views.RecordMultipleFieldViewSet)
 # fields encrypted
 router.register(
-    "records/recordencryptedselectfields", RecordEncryptedSelectFieldViewSet
+    "records/recordencryptedselectfields", views.RecordEncryptedSelectFieldViewSet
 )
-router.register("records/recordencryptedfilefields", RecordEncryptedFileFieldViewSet)
 router.register(
-    "records/recordencryptedstandardfields", RecordEncryptedStandardFieldViewSet
+    "records/recordencryptedfilefields", views.RecordEncryptedFileFieldViewSet
+)
+router.register(
+    "records/recordencryptedstandardfields", views.RecordEncryptedStandardFieldViewSet
 )
 # entries
-router.register("records/recordstateentries", RecordStateEntryViewSet)
-router.register("records/recordusersentries", RecordUsersEntryViewSet)
-router.register("records/recordselectentries", RecordSelectEntryViewSet)
-router.register("records/recordstandardentries", RecordStandardEntryViewSet)
-router.register("records/recordmultipleentries", RecordMultipleEntryViewSet)
+router.register("records/recordstateentries", views.RecordStateEntryViewSet)
+router.register("records/recordusersentries", views.RecordUsersEntryViewSet)
+router.register("records/recordselectentries", views.RecordSelectEntryViewSet)
+router.register("records/recordstandardentries", views.RecordStandardEntryViewSet)
+router.register("records/recordmultipleentries", views.RecordMultipleEntryViewSet)
 # entries encrypted
 router.register(
-    "records/recordencryptedselectentries", RecordEncryptedSelectEntryViewSet
+    "records/recordencryptedselectentries", views.RecordEncryptedSelectEntryViewSet
 )
-router.register("records/recordencryptedfileentries", RecordEncryptedFileEntryViewSet)
 router.register(
-    "records/recordencryptedstandardentries", RecordEncryptedStandardEntryViewSet
+    "records/recordencryptedfileentries", views.RecordEncryptedFileEntryViewSet
+)
+router.register(
+    "records/recordencryptedstandardentries", views.RecordEncryptedStandardEntryViewSet
 )
 # statistic
-router.register("records/recordstatisticentries", RecordStatisticEntryViewSet)
+router.register("records/recordstatisticentries", views.RecordStatisticEntryViewSet)

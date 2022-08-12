@@ -2,8 +2,9 @@ from django.test import TestCase
 from rest_framework.test import force_authenticate
 
 from apps.core.models import Folder
-from .file import FileTestsBase
 from apps.core.views import FolderViewSet
+
+from .file import FileTestsBase
 
 
 class FolderTests(FileTestsBase, TestCase):

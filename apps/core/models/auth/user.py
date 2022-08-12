@@ -11,10 +11,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
 from django.utils import timezone
 from rest_framework.exceptions import AuthenticationFailed, ParseError
-
+from rest_framework_simplejwt.settings import api_settings as jwt_settings
 
 from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS
-from rest_framework_simplejwt.settings import api_settings as jwt_settings
 
 
 class UserProfileManager(BaseUserManager):
@@ -72,6 +71,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         Returns: all HasPermissions the user itself has as list
         """
         from apps.core.models import HasPermission
+
         return [
             has_permission.permission.name
             for has_permission in HasPermission.objects.filter(
@@ -85,6 +85,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         """
         groups = [groups["id"] for groups in list(self.rlcgroups.values("id"))]
         from apps.core.models import HasPermission
+
         return [
             has_permission.permission.name
             for has_permission in HasPermission.objects.filter(
@@ -103,6 +104,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def __has_as_user_permission(self, permission):
         from apps.core.models import HasPermission
+
         return HasPermission.objects.filter(
             user_has_permission=self.pk, permission=permission
         ).exists()
@@ -110,6 +112,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def __has_as_group_member_permission(self, permission):
         groups = [group.pk for group in self.rlcgroups.all()]
         from apps.core.models import HasPermission
+
         return HasPermission.objects.filter(
             group_has_permission__pk__in=groups, permission=permission
         ).exists()
@@ -118,6 +121,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         if isinstance(permission, str):
             try:
                 from apps.core.models import Permission
+
                 permission = Permission.objects.get(name=permission)
             except ObjectDoesNotExist:
                 return False
@@ -272,10 +276,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         elif request and not password_user:
             try:
-                if hasattr(request, 'META') and 'HTTP_AUTHORIZATION' in request.META:
-                    token = request.META['HTTP_AUTHORIZATION'].replace('Bearer ', '')
-                    payload = jwt.decode(token, jwt_settings.SIGNING_KEY, [jwt_settings.ALGORITHM])
-                    private_key = payload['key']
+                if hasattr(request, "META") and "HTTP_AUTHORIZATION" in request.META:
+                    token = request.META["HTTP_AUTHORIZATION"].replace("Bearer ", "")
+                    payload = jwt.decode(
+                        token, jwt_settings.SIGNING_KEY, [jwt_settings.ALGORITHM]
+                    )
+                    private_key = payload["key"]
                 else:
                     private_key = request.auth.payload["key"]
             except AttributeError:
@@ -284,7 +290,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                     self.rlc_user.decrypt(settings.DUMMY_USER_PASSWORD)
                     return self.rlc_user.private_key
                 else:
-                    raise AuthenticationFailed("No token or no private key provided within the token.")
+                    raise AuthenticationFailed(
+                        "No token or no private key provided within the token."
+                    )
 
         else:
             raise ValueError("You need to pass (password_user) or (request).")
@@ -329,7 +337,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def check_all_keys_correct(self):
         keys = self.get_all_keys()
         for key in keys:
-            if not key['correct']:
+            if not key["correct"]:
                 return False
         return True
 
@@ -369,7 +377,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         # generate new rlc key - this always works
         user_to_unlock.users_rlc_keys.all().delete()
         aes_key_rlc = self.rlc.get_aes_key(user=self, private_key_user=private_key_self)
-        new_keys = UsersRlcKeys(user=user_to_unlock, rlc=user_to_unlock.rlc, encrypted_key=aes_key_rlc)
+        new_keys = UsersRlcKeys(
+            user=user_to_unlock, rlc=user_to_unlock.rlc, encrypted_key=aes_key_rlc
+        )
         new_keys.encrypt(user_to_unlock.get_public_key())
         new_keys.save()
 
@@ -379,7 +389,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         for old_keys in list(record_encryptions):
             # change the keys to the new keys
             try:
-                encryption = RecordEncryptionNew.objects.get(user=self, record=old_keys.record)
+                encryption = RecordEncryptionNew.objects.get(
+                    user=self, record=old_keys.record
+                )
             except ObjectDoesNotExist:
                 success = False
                 continue

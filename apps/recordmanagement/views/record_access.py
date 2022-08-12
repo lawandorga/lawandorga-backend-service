@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
-from rest_framework import mixins, status, viewsets
-from rest_framework.exceptions import ParseError, PermissionDenied
+from rest_framework import mixins, viewsets
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from apps.core.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS

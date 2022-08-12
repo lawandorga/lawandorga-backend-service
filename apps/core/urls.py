@@ -1,10 +1,9 @@
 from django.urls import include, path
+from rest_framework.routers import DefaultRouter
 
 from apps.core import views
-from apps.recordmanagement.urls import router as records_router
 from apps.core.api import keys_router, rlc_user_router
-
-from rest_framework.routers import DefaultRouter
+from apps.recordmanagement.urls import router as records_router
 
 router = DefaultRouter()
 
@@ -39,6 +38,6 @@ router.register("rlc_statistics", views.RlcStatisticsViewSet, basename="rlc_stat
 
 urlpatterns = [
     path("", include(router.urls)),
-    path('rlc_users/', include(rlc_user_router.urls)),
-    path('keys/', include(keys_router.urls))
+    path("rlc_users/", include(rlc_user_router.urls)),
+    path("keys/", include(keys_router.urls)),
 ]

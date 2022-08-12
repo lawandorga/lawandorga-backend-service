@@ -1,9 +1,10 @@
 from rest_framework import serializers
 
-from apps.core.serializers import GroupNameSerializer
 from apps.core.models import PermissionForCollabDocument
+
+from ..group import GroupNameSerializer
 from .collab_document import CollabDocumentPathSerializer
-from .collab_permission import  CollabPermissionNameSerializer
+from .collab_permission import CollabPermissionNameSerializer
 
 
 class PermissionForCollabDocumentSerializer(serializers.ModelSerializer):

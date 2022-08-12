@@ -3,11 +3,11 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from apps.core.static import PERMISSION_COLLAB_MANAGE_PERMISSIONS
 from apps.core.models import PermissionForCollabDocument
+from apps.core.static import PERMISSION_COLLAB_MANAGE_PERMISSIONS
 
-from .collab_document import PermissionForCollabDocumentAllNamesSerializer
 from ...serializers import PermissionForCollabDocumentSerializer
+from .collab_document import PermissionForCollabDocumentAllNamesSerializer
 
 
 class PermissionForCollabDocumentViewSet(

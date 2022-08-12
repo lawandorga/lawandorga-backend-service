@@ -1,9 +1,10 @@
 from rest_framework import serializers
 
-from apps.core.serializers import GroupNameSerializer
 from apps.core.models import PermissionForFolder
-from .folder_permission import FolderPermissionSerializer
+from apps.core.serializers import GroupNameSerializer
+
 from .folder import FolderSimpleSerializer
+from .folder_permission import FolderPermissionSerializer
 
 
 class PermissionForFolderSerializer(serializers.ModelSerializer):

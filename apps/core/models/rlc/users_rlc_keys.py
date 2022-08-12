@@ -1,7 +1,7 @@
 from django.db import models
 
-from apps.core.models.rlc import Rlc
 from apps.core.models.auth.user import UserProfile
+from apps.core.models.rlc import Rlc
 from apps.static.encryption import EncryptedModelMixin, RSAEncryption
 
 
@@ -44,7 +44,7 @@ class UsersRlcKeys(EncryptedModelMixin, models.Model):
         except ValueError:
             self.set_correct(False)
             self.user.rlc_user.locked = True
-            self.user.rlc_user.save(update_fields=['locked'])
+            self.user.rlc_user.save(update_fields=["locked"])
 
     def decrypt(self, private_key_user):
         try:

@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0105_rename_private_key_encrypted_rlcuser_is_private_key_encrypted'),
+        ("core", "0105_rename_private_key_encrypted_rlcuser_is_private_key_encrypted"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='rlcuser',
-            name='private_key',
+            model_name="rlcuser",
+            name="private_key",
             field=models.BinaryField(null=True),
         ),
         migrations.AlterField(
-            model_name='rlcuser',
-            name='public_key',
+            model_name="rlcuser",
+            name="public_key",
             field=models.BinaryField(null=True),
         ),
     ]

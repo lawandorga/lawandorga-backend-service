@@ -7,7 +7,6 @@ from apps.recordmanagement.models import RecordEncryptionNew
 from apps.static.api_layer import Router
 from apps.static.service_layer import ServiceResult
 
-
 router = Router()
 
 
@@ -35,7 +34,7 @@ def list_keys(user: UserProfile):
     return ServiceResult(LIST_KEYS_SUCCESS, all_keys)
 
 
-@router.api(url='test/', output_schema=List[Key], auth=True)
+@router.api(url="test/", output_schema=List[Key], auth=True)
 def test_keys(user: UserProfile, private_key_user: str):
     user.test_all_keys(private_key_user)
     all_keys: List[Key] = user.get_all_keys()
@@ -50,7 +49,7 @@ DELETE_KEY_ERROR_WORKS = "User {} tried to delete a key that works."
 DELETE_KEY_SUCCESS_RECORD = "User {} deleted a record key."
 
 
-@router.api(url='<int:id>/', method='POST', input_schema=KeyDelete, auth=True)
+@router.api(url="<int:id>/", method="POST", input_schema=KeyDelete, auth=True)
 def delete_key(data: KeyDelete, user: UserProfile):
     key = RecordEncryptionNew.objects.filter(user=user, pk=data.id).first()
     if key is None:
@@ -62,8 +61,8 @@ def delete_key(data: KeyDelete, user: UserProfile):
         return ServiceResult(
             DELETE_KEY_ERROR_NOT_ENOUGH,
             error="Not enough people have access to this record. "
-                  "There needs to be at least one person who must "
-                  "have access. You can not delete this key.",
+            "There needs to be at least one person who must "
+            "have access. You can not delete this key.",
         )
     if key.correct:
         return ServiceResult(

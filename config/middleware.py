@@ -1,4 +1,3 @@
-from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import RequestDataTooBig
 from django.http import UnreadablePostError
 from django.utils.deprecation import MiddlewareMixin
@@ -44,9 +43,9 @@ class LoggingMiddleware:
 class TokenAuthenticationMiddleware(MiddlewareMixin):
     def process_request(self, request):
         authenticate = False
-        if hasattr(request, 'user') and getattr(request.user, 'id', None) is None:
+        if hasattr(request, "user") and getattr(request.user, "id", None) is None:
             authenticate = True
-        if not hasattr(request, 'user'):
+        if not hasattr(request, "user"):
             authenticate = True
 
         if authenticate:

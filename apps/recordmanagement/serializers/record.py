@@ -1,9 +1,8 @@
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.timezone import localtime
 from rest_framework import serializers
-from rest_framework.exceptions import ParseError, PermissionDenied, ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.reverse import reverse
 
 from apps.recordmanagement.models import EncryptedClient
@@ -311,8 +310,8 @@ class RecordStateEntrySerializer(RecordEntrySerializer):
             raise ValidationError("Field needs to be set.")
         if "value" in attrs and not attrs["value"] in field.options:
             raise ValidationError("The selected state is not allowed.")
-        if "value" in attrs and attrs['value'] == 'Closed':
-            attrs['closed_at'] = timezone.now()
+        if "value" in attrs and attrs["value"] == "Closed":
+            attrs["closed_at"] = timezone.now()
         return attrs
 
 

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0138_recordaccess_explanation'),
+        ("recordmanagement", "0138_recordaccess_explanation"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='recordstateentry',
-            name='closed_at',
+            model_name="recordstateentry",
+            name="closed_at",
             field=models.DateTimeField(blank=True, default=None, null=True),
         ),
     ]

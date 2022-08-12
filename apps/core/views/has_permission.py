@@ -5,8 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from apps.core.models import Permission, UserProfile
-from apps.core.models import HasPermission
+from apps.core.models import HasPermission, Permission, UserProfile
 from apps.core.serializers import HasPermissionCreateSerializer, HasPermissionSerializer
 from apps.core.static import (
     PERMISSION_ADMIN_MANAGE_PERMISSIONS,

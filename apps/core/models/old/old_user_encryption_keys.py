@@ -1,7 +1,8 @@
 from django.db import models
 
-from .. import UserProfile
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
+
+from .. import UserProfile
 
 
 class OldUserEncryptionKeys(EncryptedModelMixin, models.Model):

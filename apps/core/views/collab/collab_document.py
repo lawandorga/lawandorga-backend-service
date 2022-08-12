@@ -6,11 +6,6 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.core.static import (
-    PERMISSION_COLLAB_MANAGE_PERMISSIONS,
-    PERMISSION_COLLAB_READ_ALL_DOCUMENTS,
-    PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS,
-)
 from apps.core.models import CollabDocument, PermissionForCollabDocument
 from apps.core.serializers import (
     CollabDocumentCreateSerializer,
@@ -20,6 +15,11 @@ from apps.core.serializers import (
     CollabDocumentUpdateSerializer,
     PermissionForCollabDocumentAllNamesSerializer,
     TextDocumentVersionSerializer,
+)
+from apps.core.static import (
+    PERMISSION_COLLAB_MANAGE_PERMISSIONS,
+    PERMISSION_COLLAB_READ_ALL_DOCUMENTS,
+    PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS,
 )
 
 

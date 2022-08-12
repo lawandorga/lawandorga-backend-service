@@ -1,10 +1,10 @@
-
 from django.db import models
 from django.utils import timezone
 
-from .notification_group import NotificationGroup
-from .. import UserProfile
 from apps.static.notification_enums import NotificationType
+
+from .. import UserProfile
+from .notification_group import NotificationGroup
 
 
 class Notification(models.Model):

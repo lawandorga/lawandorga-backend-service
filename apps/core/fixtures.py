@@ -1,5 +1,9 @@
-from apps.core.models import Permission, CollabPermission, FolderPermission
-from apps.core.static import get_all_permission_strings, get_all_collab_permission_strings, get_all_files_permission_strings
+from apps.core.models import CollabPermission, FolderPermission, Permission
+from apps.core.static import (
+    get_all_collab_permission_strings,
+    get_all_files_permission_strings,
+    get_all_permission_strings,
+)
 
 
 def create_collab_permissions():

@@ -308,7 +308,7 @@ class RecordTemplate(models.Model):
                     "Zambia",
                     "Zimbabwe",
                     "Stateless",
-                    "Unknown"
+                    "Unknown",
                 ],
                 "order": 99100,
                 "helptext": "",

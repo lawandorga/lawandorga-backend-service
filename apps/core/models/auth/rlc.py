@@ -3,9 +3,11 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.db import models
 from django.template import loader
+
+from apps.core.models.rlc import HasPermission, Permission
 from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
+
 from .user import UserProfile
-from apps.core.models.rlc import Permission, HasPermission
 
 
 class RlcUser(EncryptedModelMixin, models.Model):
@@ -185,9 +187,7 @@ class RlcUser(EncryptedModelMixin, models.Model):
 class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
     def _make_hash_value(self, rlc_user, timestamp):
         super_make_hash_value = (
-            str(rlc_user.pk)
-            + rlc_user.user.password
-            + str(timestamp)
+            str(rlc_user.pk) + rlc_user.user.password + str(timestamp)
         )
         additional_hash_value = str(rlc_user.email_confirmed)
         return super_make_hash_value + additional_hash_value

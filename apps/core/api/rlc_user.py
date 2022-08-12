@@ -1,12 +1,11 @@
 from datetime import datetime
-from typing import Optional, Any
+from typing import Any, Optional
 
 from pydantic import BaseModel
 
 from apps.core.models import UserProfile
 from apps.static.api_layer import Router
 from apps.static.service_layer import ServiceResult
-
 
 router = Router()
 
@@ -35,15 +34,19 @@ class RlcUser(BaseModel):
         orm_mode = True
 
 
-UNLOCK_RLC_USER_NOT_ALL_KEYS_CORRECT = 'User {} tried to unlock himself, but not all keys are correct.'
-UNLOCK_RLC_USER_SUCCESS = 'User {} successfully unlocked himself or herself.'
+UNLOCK_RLC_USER_NOT_ALL_KEYS_CORRECT = (
+    "User {} tried to unlock himself, but not all keys are correct."
+)
+UNLOCK_RLC_USER_SUCCESS = "User {} successfully unlocked himself or herself."
 
 
-@router.api(method='POST', url='unlock_self/', output_schema=RlcUser, auth=True)
+@router.api(method="POST", url="unlock_self/", output_schema=RlcUser, auth=True)
 def unlock_rlc_user(user: UserProfile):
     if not user.check_all_keys_correct():
-        return ServiceResult(UNLOCK_RLC_USER_NOT_ALL_KEYS_CORRECT,
-                             error='You can only unlock yourself when all your keys are correct.')
+        return ServiceResult(
+            UNLOCK_RLC_USER_NOT_ALL_KEYS_CORRECT,
+            error="You can only unlock yourself when all your keys are correct.",
+        )
     user.rlc_user.locked = False
     user.rlc_user.save()
     return ServiceResult(UNLOCK_RLC_USER_SUCCESS, user.rlc_user)

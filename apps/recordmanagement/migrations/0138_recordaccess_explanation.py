@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0137_recordencryptionnew_correct'),
+        ("recordmanagement", "0137_recordencryptionnew_correct"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='recordaccess',
-            name='explanation',
+            model_name="recordaccess",
+            name="explanation",
             field=models.TextField(blank=True),
         ),
     ]

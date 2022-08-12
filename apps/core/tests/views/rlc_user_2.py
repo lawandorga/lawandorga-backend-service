@@ -52,13 +52,13 @@ class TestRlcUser(TestCase):
 
     def test_unlock_works(self):
         # setup
-        rlc_user = self.user_1['rlc_user']
+        rlc_user = self.user_1["rlc_user"]
         rlc_user.locked = True
-        rlc_user.encrypt(password=self.user_1['password'])
+        rlc_user.encrypt(password=self.user_1["password"])
         rlc_user.save()
         # check
         c = Client()
         c.login(**self.user_1)
         response = c.post("/api/rlc_users/unlock_self/")
         response_data = response.json()
-        assert response_data['locked'] is False
+        assert response_data["locked"] is False

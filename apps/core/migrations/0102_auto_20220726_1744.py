@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0101_auto_20220726_1730'),
+        ("core", "0101_auto_20220726_1730"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='rlc',
-            name='private_key',
+            model_name="rlc",
+            name="private_key",
             field=models.BinaryField(null=True),
         ),
         migrations.AlterField(
-            model_name='rlc',
-            name='public_key',
+            model_name="rlc",
+            name="public_key",
             field=models.BinaryField(null=True),
         ),
     ]

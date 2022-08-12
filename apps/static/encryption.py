@@ -5,7 +5,7 @@ import struct
 import tempfile
 from enum import Enum
 from hashlib import sha3_256
-from typing import Type, Union, List
+from typing import List, Type, Union
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
@@ -213,7 +213,9 @@ class EncryptedModelMixin:
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ) -> None:
-        fields = self.encrypted_fields  # if update_fields is None else list(set(self.encrypted_fields).intersection(set(update_fields)))
+        fields = (
+            self.encrypted_fields
+        )  # if update_fields is None else list(set(self.encrypted_fields).intersection(set(update_fields)))
         for field in fields:
             data_in_field = getattr(self, field)
             if data_in_field and not (

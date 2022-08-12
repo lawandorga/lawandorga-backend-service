@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import connection
-from rest_framework import status, viewsets
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response

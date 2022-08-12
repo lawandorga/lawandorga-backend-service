@@ -3,17 +3,24 @@ from random import choice, randint
 from django.conf import settings
 
 from apps.core import static
-from apps.core.models import RlcUser, UserProfile
-from apps.core.models import Group
-from apps.core.models import HasPermission
-from apps.core.models import Permission
+from apps.core.models import (
+    CollabDocument,
+    CollabPermission,
+    FolderPermission,
+    Group,
+    HasPermission,
+    InternalUser,
+    Permission,
+    RlcUser,
+    TextDocumentVersion,
+    UserProfile,
+)
 from apps.core.models.rlc import Rlc
-from apps.core.static import get_all_permission_strings
-from apps.core.models import CollabDocument, CollabPermission, TextDocumentVersion
-from apps.core.static import get_all_collab_permission_strings
-from apps.core.models import FolderPermission
-from apps.core.static import get_all_files_permission_strings
-from apps.core.models import InternalUser
+from apps.core.static import (
+    get_all_collab_permission_strings,
+    get_all_files_permission_strings,
+    get_all_permission_strings,
+)
 from apps.recordmanagement.fixtures import create_default_record_template
 from apps.recordmanagement.models import (
     QuestionnaireQuestion,

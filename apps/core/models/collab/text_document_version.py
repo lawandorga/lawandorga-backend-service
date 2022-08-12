@@ -1,7 +1,8 @@
 from django.db import models
 
-from .collab_document import CollabDocument
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
+
+from .collab_document import CollabDocument
 
 
 class TextDocumentVersion(EncryptedModelMixin, models.Model):

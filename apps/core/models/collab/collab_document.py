@@ -1,11 +1,11 @@
 from django.db import models
 
-from apps.core.models import Rlc
+from apps.core.models.rlc import Rlc
 from apps.core.static import (
     PERMISSION_COLLAB_READ_ALL_DOCUMENTS,
     PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS,
+    PERMISSION_WRITE_DOCUMENT,
 )
-from apps.core.static import PERMISSION_WRITE_DOCUMENT
 
 
 class CollabDocument(models.Model):

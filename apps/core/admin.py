@@ -1,34 +1,38 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.translation import gettext_lazy as _
+from solo.admin import SingletonModelAdmin
 
 from apps.core.forms import RlcAdminForm
 from apps.core.models import (
+    Article,
+    CollabDocument,
+    CollabPermission,
+    File,
+    Folder,
+    FolderPermission,
     Group,
     HasPermission,
-    LoggedPath,
-    Notification,
-    NotificationGroup,
-    Permission,
-    Rlc,
-    RlcUser,
-    StatisticUser,
-    OldUserEncryptionKeys,
-    UserProfile,
-    UsersRlcKeys, Article,
     HelpPage,
     ImprintPage,
     IndexPage,
     InternalUser,
-    RoadmapItem,
-    TomsPage,
-    CollabDocument,
-    CollabPermission,
+    LoggedPath,
+    Notification,
+    NotificationGroup,
+    OldUserEncryptionKeys,
+    Permission,
     PermissionForCollabDocument,
+    PermissionForFolder,
+    Rlc,
+    RlcUser,
+    RoadmapItem,
+    StatisticUser,
     TextDocumentVersion,
-    File, Folder, FolderPermission, PermissionForFolder
+    TomsPage,
+    UserProfile,
+    UsersRlcKeys,
 )
-from solo.admin import SingletonModelAdmin
 
 admin.site.register(CollabDocument)
 admin.site.register(CollabPermission)

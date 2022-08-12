@@ -1,4 +1,4 @@
-from config.settings.base import *
+from .base import *
 
 # Debug
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEBUG

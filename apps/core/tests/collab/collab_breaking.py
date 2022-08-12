@@ -2,8 +2,9 @@ from django.test import TestCase
 from rest_framework.test import force_authenticate
 
 from apps.core.models import CollabDocument
-from .collab_working import BaseCollab
 from apps.core.views import CollabDocumentViewSet
+
+from .collab_working import BaseCollab
 
 
 ###

@@ -1,4 +1,3 @@
-
 from enum import Enum
 
 
@@ -64,7 +63,7 @@ class NotificationType(Enum):
     GROUP__ADDED_ME = "GROUP__ADDED_ME"
     GROUP__REMOVED_ME = "GROUP__REMOVED_ME"
 
-    FILE__UPLOAD_ERROR = "FILE__UPLOAD_ERROR"  #  TODO: event needed anymore?
+    FILE__UPLOAD_ERROR = "FILE__UPLOAD_ERROR"
 
     FOLDER__FILE_NOT_EXISTING = "FOLDER__FILE_NOT_EXISTING"
     FOLDER__FILE_UPLOAD_ERROR = "FOLDER__FILE_UPLOAD_ERROR"

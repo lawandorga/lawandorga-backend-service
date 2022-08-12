@@ -1,5 +1,6 @@
-from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer
+
 from apps.core.models import Article, HelpPage, IndexPage, RoadmapItem, TomsPage
 
 

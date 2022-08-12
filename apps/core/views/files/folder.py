@@ -3,8 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError, PermissionDenied
 from rest_framework.response import Response
 
-from apps.core.models import Group
-from apps.core.models import PermissionForFolder, File, Folder
+from apps.core.models import File, Folder, Group, PermissionForFolder
 from apps.core.serializers import (
     FileSerializer,
     FolderCreateSerializer,

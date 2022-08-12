@@ -1,6 +1,4 @@
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import IntegrityError
-from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import AuthenticationFailed, ParseError
@@ -14,7 +12,6 @@ from apps.core.models import (
     PasswordResetTokenGenerator,
     RlcUser,
     UserProfile,
-    UsersRlcKeys,
 )
 from apps.core.serializers import (
     ChangePasswordSerializer,
@@ -212,9 +209,13 @@ class RlcUserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
     @action(detail=False, methods=["get"])
     def admin(self, request, *args, **kwargs):
         instance = request.user
-        profiles = UserProfile.objects.filter(rlc=instance.rlc, rlc_user__locked=True).count()
+        profiles = UserProfile.objects.filter(
+            rlc=instance.rlc, rlc_user__locked=True
+        ).count()
         if instance.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
-            profiles += UserProfile.objects.filter(rlc=instance.rlc, rlc_user__accepted=False).count()
+            profiles += UserProfile.objects.filter(
+                rlc=instance.rlc, rlc_user__accepted=False
+            ).count()
         if instance.has_permission(PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS):
             record_deletion_requests = RecordDeletion.objects.filter(
                 record__template__rlc=instance.rlc, state="re"
