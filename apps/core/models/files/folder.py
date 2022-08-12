@@ -109,7 +109,7 @@ class Folder(models.Model):
         return False
 
     def user_can_see_folder(self, user: UserProfile) -> bool:
-        from apps.core.models.permission_for_folder import PermissionForFolder
+        from apps.core.models import PermissionForFolder
 
         if user.has_permission(
             PERMISSION_FILES_WRITE_ALL_FOLDERS
