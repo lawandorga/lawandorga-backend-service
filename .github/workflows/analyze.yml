@@ -12,7 +12,7 @@ jobs:
         steps:
             -   uses: actions/checkout@v3
             -   uses: actions/setup-python@v3
-            -   run: pip install mypy djangorestframework-stubs django-stubs
+            -   run: pip install -r requirements.txt
             -   uses: pre-commit/action@v3.0.0
 
     scan:
