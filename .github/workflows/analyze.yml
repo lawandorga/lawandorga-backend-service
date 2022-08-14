@@ -30,6 +30,7 @@ jobs:
                 uses: actions/upload-artifact@v3
                 with:
                     name: lawandorga-backend-${{ github.sha }}
+                    path: /
                     retention-days: 1
 
     clean:
