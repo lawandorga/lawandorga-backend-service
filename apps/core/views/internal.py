@@ -1,3 +1,5 @@
+from typing import List
+
 from rest_framework import mixins
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -30,15 +32,15 @@ class PageViewSet(mixins.ListModelMixin, GenericViewSet):
 class RoadmapItemViewSet(mixins.ListModelMixin, GenericViewSet):
     queryset = RoadmapItem.objects.all()
     serializer_class = RoadmapItemSerializer
-    permission_classes = []
-    authentication_classes = []
+    permission_classes: List = []
+    authentication_classes: List = []
 
 
 class ArticleViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_classes = []
-    authentication_classes = []
+    permission_classes: List = []
+    authentication_classes: List = []
 
     def get_serializer_class(self):
         if self.action == "retrieve":

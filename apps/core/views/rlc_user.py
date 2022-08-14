@@ -134,7 +134,7 @@ class RlcUserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"])
     def change_password(self, request: Request):
-        user = self.request.user
+        user: UserProfile = self.request.user  # type: ignore
         serializer = ChangePasswordSerializer(
             data=request.data, context={"request": request}
         )
