@@ -5,7 +5,10 @@ from django.core.files import File
 from django.db import models
 
 from apps.core.models import Group, Rlc, UserProfile
-from apps.recordmanagement.models import EncryptedClient, EncryptedRecord
+from apps.recordmanagement.models import (  # type: ignore
+    EncryptedClient,
+    EncryptedRecord,
+)
 from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 

@@ -20,7 +20,7 @@ class PermissionForCollabDocumentAllNamesSerializer(
     document = CollabDocumentPathSerializer(read_only=True)
     permission = CollabPermissionNameSerializer(read_only=True)
     type = serializers.SerializerMethodField()
-    source = serializers.SerializerMethodField()
+    source = serializers.SerializerMethodField()  # type: ignore
 
     def __init__(self, instance=None, from_direction="", *args, **kwargs):
         super().__init__(instance, *args, **kwargs)

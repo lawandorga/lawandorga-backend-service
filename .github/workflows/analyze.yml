@@ -24,8 +24,6 @@ jobs:
                 with:
                     fetch-depth: 0
 
-
-
     test:
         name: Test
         runs-on: ubuntu-latest

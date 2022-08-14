@@ -9,7 +9,7 @@ from .user import UserProfileNameSerializer
 
 
 class HasPermissionSerializer(serializers.ModelSerializer):
-    source = serializers.SerializerMethodField()
+    source = serializers.SerializerMethodField()  # type: ignore
     permission_object = PermissionNameSerializer(read_only=True, source="permission")
     user_object = UserProfileNameSerializer(
         read_only=True, source="user_has_permission"

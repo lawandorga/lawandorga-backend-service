@@ -3,7 +3,7 @@ import uuid
 from django.db import models
 
 from apps.core.models import Rlc
-from apps.recordmanagement.models import EncryptedRecord, Record
+from apps.recordmanagement.models import EncryptedRecord, Record  # type: ignore
 from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
 

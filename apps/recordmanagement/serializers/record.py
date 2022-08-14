@@ -40,7 +40,7 @@ class RecordFieldSerializer(serializers.ModelSerializer):
     entry_url = serializers.SerializerMethodField()
     type = serializers.SerializerMethodField()
     kind = serializers.SerializerMethodField()
-    label = serializers.SerializerMethodField()
+    label = serializers.SerializerMethodField()  # type: ignore
     encrypted = serializers.SerializerMethodField()
     entry_view_name: Optional[str] = None
     view_name: Optional[str] = None
@@ -554,7 +554,7 @@ class RecordEncryptionNewSerializer(serializers.ModelSerializer):
 
 class RecordDetailSerializer(RecordSerializer):
     entries = serializers.SerializerMethodField()
-    fields = serializers.SerializerMethodField(method_name="get_form_fields")
+    fields = serializers.SerializerMethodField(method_name="get_form_fields")  # type: ignore
     client = serializers.SerializerMethodField()
     url = serializers.HyperlinkedIdentityField(view_name="record-detail")
     encryptions = RecordEncryptionNewSerializer(many=True)
@@ -648,7 +648,7 @@ class RecordTemplateSerializer(serializers.ModelSerializer):
 
 
 class RecordTemplateDetailSerializer(RecordTemplateSerializer):
-    fields = serializers.SerializerMethodField(method_name="get_form_fields")
+    fields = serializers.SerializerMethodField(method_name="get_form_fields")  # type: ignore
 
     def get_form_fields(self, obj):
         return obj.get_fields(

@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import TYPE_CHECKING, Any, Dict
 
 import jwt
 from django.conf import settings
@@ -14,6 +15,9 @@ from rest_framework.exceptions import AuthenticationFailed, ParseError
 from rest_framework_simplejwt.settings import api_settings as jwt_settings
 
 from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS
+
+if TYPE_CHECKING:
+    from apps.core.models import RlcUser, StatisticUser
 
 
 class UserProfileManager(BaseUserManager):
@@ -40,6 +44,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # overwrites abstract base user
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name"]
+
+    # mypy stuff
+    rlc_user: "RlcUser"
+    statistic_user: "StatisticUser"
 
     class Meta:
         verbose_name = "UserProfile"
@@ -236,7 +244,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             )
         return changed_records_data
 
-    def get_information(self):
+    def get_information(self) -> Dict[str, Any]:
         return_dict = {}
         # records
         records_data = self.get_records_information()
@@ -264,9 +272,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         """
         if not self.rlc_user.do_keys_exist:
             self.rlc_user.generate_keys()
-        return self.rlc_user.public_key
+        return str(self.rlc_user.public_key)
 
-    def get_private_key(self, password_user=None, request=None):
+    def get_private_key(self, password_user=None, request=None) -> str:
         if not self.rlc_user.do_keys_exist:
             self.rlc_user.generate_keys()
 
@@ -288,7 +296,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                 # enable direct testing of the rest framework
                 if self.email == "dummy@law-orga.de" and settings.DUMMY_USER_PASSWORD:
                     self.rlc_user.decrypt(settings.DUMMY_USER_PASSWORD)
-                    return self.rlc_user.private_key
+                    private_key = self.rlc_user.private_key
                 else:
                     raise AuthenticationFailed(
                         "No token or no private key provided within the token."
@@ -297,7 +305,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         else:
             raise ValueError("You need to pass (password_user) or (request).")
 
-        return private_key
+        return private_key  # type: ignore
 
     def get_private_key_rlc(self, private_key_user=None, request=None):
         if private_key_user:

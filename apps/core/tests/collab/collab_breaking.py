@@ -10,7 +10,7 @@ from .collab_working import BaseCollab
 ###
 # CollabDocument
 ###
-class CollabDocumentViewSetWorking(BaseCollab, TestCase):
+class CollabDocumentViewSetBreaking(BaseCollab, TestCase):
     def setUp(self):
         super().setUp()
 

@@ -5,6 +5,7 @@ from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 
+from apps.core.models import UserProfile
 from apps.recordmanagement.models.encrypted_record_document import (
     EncryptedRecordDocument,
 )
@@ -37,7 +38,8 @@ class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
             raise PermissionDenied()
 
         # download the file
-        private_key_user = request.user.get_private_key(request=request)
+        user: UserProfile = request.user  # type: ignore
+        private_key_user = user.get_private_key(request=request)
         record_key = instance.record.get_aes_key(request.user, private_key_user)
         file = instance.download(record_key)
 

@@ -18,11 +18,11 @@ class CodeSerializer(serializers.Serializer):
 
 
 class DataFileSerializer(serializers.Serializer):
-    data = serializers.FileField()
+    data = serializers.FileField()  # type: ignore
 
 
 class DataTextSerializer(serializers.Serializer):
-    data = serializers.CharField()
+    data = serializers.CharField()  # type: ignore
 
 
 ###
@@ -77,7 +77,7 @@ class QuestionnaireAnswerSerializer(serializers.ModelSerializer):
 
 
 class QuestionnaireAnswerRetrieveSerializer(QuestionnaireAnswerSerializer):
-    data = serializers.CharField()
+    data = serializers.CharField()  # type: ignore
 
 
 class QuestionnaireAnswerCreateSerializer(serializers.ModelSerializer):
@@ -90,7 +90,7 @@ class QuestionnaireAnswerCreateSerializer(serializers.ModelSerializer):
 
 
 class QuestionnaireFileAnswerSerializer(QuestionnaireAnswerCreateSerializer):
-    data = serializers.FileField()
+    data = serializers.FileField()  # type: ignore
 
     def get_instance(self):
         instance = super().get_instance()
@@ -99,7 +99,7 @@ class QuestionnaireFileAnswerSerializer(QuestionnaireAnswerCreateSerializer):
 
 
 class QuestionnaireTextAnswerSerializer(QuestionnaireAnswerCreateSerializer):
-    data = serializers.CharField()
+    data = serializers.CharField()  # type: ignore
 
     def validate_data(self, data):
         if len(data) > 190:
@@ -126,7 +126,7 @@ class QuestionnaireListSerializer(QuestionnaireSerializer):
 
 class RecordQuestionnaireDetailSerializer(QuestionnaireSerializer):
     template = QuestionnaireTemplateFilesSerializer(read_only=True)
-    fields = serializers.SerializerMethodField(method_name="get_questionnaire_fields")
+    fields = serializers.SerializerMethodField(method_name="get_questionnaire_fields")  # type: ignore
 
     def get_questionnaire_fields(self, obj):
         fields = list(obj.template.fields.all())

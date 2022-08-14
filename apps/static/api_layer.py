@@ -124,7 +124,7 @@ class Router:
     ) -> Callable:
         def wrapper(request: HttpRequest, *args, **kwargs) -> JsonResponse:
             # set up input
-            func_kwargs = {}
+            func_kwargs: Dict[str, Any] = {}
             func_input = func.__code__.co_varnames
 
             # handle auth

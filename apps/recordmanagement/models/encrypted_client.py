@@ -1,3 +1,4 @@
+# type: ignore
 from django.db import models
 
 from apps.core.models.rlc import Rlc
@@ -30,7 +31,7 @@ class EncryptedClient(EncryptedModelMixin, models.Model):
     def __str__(self):
         return "client: {};".format(self.pk)
 
-    def encrypt(self, public_key_rlc: bytes) -> None:
+    def encrypt(self, public_key_rlc: str) -> None:
         key = AESEncryption.generate_secure_key()
         self.encrypted_client_key = RSAEncryption.encrypt(key, public_key_rlc)
         super().encrypt(key)
