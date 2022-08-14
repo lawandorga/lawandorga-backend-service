@@ -1,3 +1,4 @@
+# type: ignore
 from django.db import models
 
 from apps.core.models import UserProfile
