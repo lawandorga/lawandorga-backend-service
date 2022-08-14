@@ -15,6 +15,7 @@ from rest_framework.exceptions import AuthenticationFailed, ParseError
 from rest_framework_simplejwt.settings import api_settings as jwt_settings
 
 from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS
+from apps.static.encryption import to_bytes
 
 if TYPE_CHECKING:
     from apps.core.models import RlcUser, StatisticUser
@@ -265,14 +266,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             # return
         return return_dict
 
-    def get_public_key(self) -> str:
+    def get_public_key(self) -> bytes:
         """
         gets the public key of the user from the database
         :return: public key of user (PEM)
         """
         if not self.rlc_user.do_keys_exist:
             self.rlc_user.generate_keys()
-        return str(self.rlc_user.public_key)
+        return to_bytes(self.rlc_user.public_key)
 
     def get_private_key(self, password_user=None, request=None) -> str:
         if not self.rlc_user.do_keys_exist:

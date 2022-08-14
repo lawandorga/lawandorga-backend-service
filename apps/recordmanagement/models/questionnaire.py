@@ -3,7 +3,7 @@ import uuid
 from django.db import models
 
 from apps.core.models import Rlc
-from apps.recordmanagement.models import EncryptedRecord, Record  # type: ignore
+from apps.recordmanagement.models import Record
 from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
 
@@ -14,7 +14,7 @@ class QuestionnaireTemplate(models.Model):
         Rlc, related_name="questionnaires", on_delete=models.CASCADE, blank=True
     )
     notes = models.TextField(blank=True)
-    records = models.ManyToManyField(EncryptedRecord, through="Questionnaire")
+    records = models.ManyToManyField("EncryptedRecord", through="Questionnaire")
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -74,7 +74,7 @@ class QuestionnaireQuestion(models.Model):
 
 class Questionnaire(models.Model):
     old_record = models.ForeignKey(
-        EncryptedRecord,
+        "EncryptedRecord",
         on_delete=models.CASCADE,
         related_name="questionnaires",
         null=True,

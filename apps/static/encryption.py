@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padd
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 
-def to_bytes(val: Union[bytes, str, memoryview]) -> bytes:
+def to_bytes(val: Union[bytes, str, memoryview, None]) -> bytes:
     if isinstance(val, str):
         return bytes(val, "utf-8")
     if isinstance(val, memoryview):
@@ -161,10 +161,10 @@ class RSAEncryption:
         return pem_private, pem_public
 
     @staticmethod
-    def encrypt(msg, pem_public_key):
+    def encrypt(msg, pem_public_key: bytes):
         msg = to_bytes(msg)
 
-        public_key = serialization.load_pem_public_key(
+        public_key: rsa.RSAPublicKey = serialization.load_pem_public_key(  # type: ignore
             pem_public_key, backend=default_backend()
         )
         ciphertext = public_key.encrypt(
@@ -234,7 +234,7 @@ class EncryptedModelMixin:
                 setattr(self, field, decrypted_field)
         setattr(self, "encryption_status", "DECRYPTED")
 
-    def encrypt(self, key: str) -> None:
+    def encrypt(self, key) -> None:
         if getattr(self, "encryption_status", "") != "ENCRYPTED":
             for field in self.encrypted_fields:
                 encrypted_field = self.encryption_class.encrypt(
