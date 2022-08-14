@@ -1,4 +1,5 @@
 import mimetypes
+from typing import Optional, Type
 
 from django.conf import settings
 from django.db import IntegrityError
@@ -24,6 +25,7 @@ from apps.recordmanagement.models.record import (
     RecordEncryptedStandardEntry,
     RecordEncryptedStandardField,
     RecordEncryptionNew,
+    RecordField,
     RecordMultipleEntry,
     RecordMultipleField,
     RecordSelectEntry,
@@ -123,7 +125,7 @@ class RecordFieldViewSet(
         "update": PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
         "destroy": PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
     }
-    model = None
+    model: Optional[Type[RecordField]] = None
 
     def get_queryset(self):
         return self.model.objects.filter(template__rlc=self.request.user.rlc)

@@ -115,7 +115,9 @@ class Rlc(EncryptedModelMixin, models.Model):
 
             self.decrypt(aes_key)
 
-            return self.private_key
+            private_key: str = self.private_key  # type: ignore
+
+            return private_key  # type: ignore
 
         else:
             raise ValueError("You need to pass (user and private_key_user).")

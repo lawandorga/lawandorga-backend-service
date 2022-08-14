@@ -8,7 +8,7 @@ from apps.recordmanagement.models import Record, RecordEncryptionNew, RecordTemp
 from apps.static.encryption import AESEncryption
 
 
-class UserBase:
+class UserUnitUserBase:
     def setUp(self):
         self.rlc = Rlc.objects.create(name="Test RLC")
         self.user1, self.rlc_user1 = self.create_user(
@@ -44,7 +44,7 @@ class UserBase:
             Permission.objects.create(name=perm)
 
 
-class UserUnitTests(UserBase, TestCase):
+class UserUnitTests(UserUnitUserBase, TestCase):
     def generate_record_with_keys_for_users(self, users):
         record = Record.objects.create(template=self.template)
         key = AESEncryption.generate_secure_key()

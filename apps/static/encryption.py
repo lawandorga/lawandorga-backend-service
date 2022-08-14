@@ -3,9 +3,8 @@ import secrets
 import string
 import struct
 import tempfile
-from enum import Enum
 from hashlib import sha3_256
-from typing import List, Type, Union
+from typing import List, Optional, Tuple, Type, Union
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
@@ -15,21 +14,22 @@ from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padd
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 
-class OutputType(Enum):
-    STRING = 1
-    BYTES = 2
+def to_bytes(val: Union[bytes, str, memoryview, None]) -> bytes:
+    if isinstance(val, str):
+        return bytes(val, "utf-8")
+    if isinstance(val, memoryview):
+        return bytes(val)
+    if isinstance(val, bytes):
+        return val
+    raise ValueError("Can't turn the value with type {} into bytes.".format(type(val)))
 
 
-def get_bytes_from_string_or_return_bytes(key):
-    if isinstance(key, str):
-        return bytes(key, "utf-8")
-    return key
-
-
-def get_string_from_bytes_or_return_string(pot_bytes):
-    if isinstance(pot_bytes, bytes):
-        return pot_bytes.decode("utf-8")
-    return pot_bytes
+def to_str(val: Union[bytes, str]) -> str:
+    if isinstance(val, bytes):
+        return val.decode("utf-8")
+    if isinstance(val, str):
+        return val
+    raise ValueError("Can't turn the value with type {} into str.".format(type(val)))
 
 
 class AESEncryption:
@@ -43,57 +43,55 @@ class AESEncryption:
         return "".join(secrets.choice(password_characters) for i in range(64))
 
     @staticmethod
-    def encrypt_with_iv(msg: str, key: str, iv: bytes):
-        msg = get_bytes_from_string_or_return_bytes(msg)
-        key = get_bytes_from_string_or_return_bytes(key)
+    def encrypt_with_iv(
+        msg: Union[bytes, memoryview, str], key: Union[bytes, str], iv: bytes
+    ):
+        msg = to_bytes(msg)
+        key = to_bytes(key)
         hashed_key_bytes = sha3_256(key).digest()
         cipher = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
-        if isinstance(msg, memoryview):
-            msg = bytes(msg)
         cipher_bytes = cipher.encrypt(pad(msg, AES.block_size))
         return cipher_bytes
 
     @staticmethod
-    def decrypt_with_iv(encrypted, key, iv, output_type=OutputType.STRING):
+    def decrypt_with_iv(
+        encrypted: Union[bytes, memoryview], key: str, iv: Union[bytes, memoryview]
+    ) -> str:
         if encrypted.__len__() == 0:
-            if output_type == OutputType.STRING:
-                return ""
-            return encrypted
-        key = get_bytes_from_string_or_return_bytes(key)
-        hashed_key_bytes = sha3_256(key).digest()
+            return ""
+        bytes_key = to_bytes(key)
+        encrypted = to_bytes(encrypted)
+
+        hashed_key_bytes = sha3_256(bytes_key).digest()
         cipher = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
-        if isinstance(encrypted, memoryview):
-            encrypted = bytes(encrypted)
         plaintext_bytes = unpad(cipher.decrypt(encrypted), AES.block_size)
-        if output_type == OutputType.STRING:
-            return get_string_from_bytes_or_return_string(plaintext_bytes)
-        return plaintext_bytes
+        return to_str(plaintext_bytes)
 
     @staticmethod
-    def encrypt(msg: str, key: str) -> bytes:
+    def encrypt(msg: Optional[str], key: str) -> bytes:
         """
         :param msg: bytes/string, message which shall be encrypted
         :param key: bytes/string, key with which to encrypt
-        :return: bytes, encrypted message (with iv at the beginning
+        :return: bytes, encrypted message (with iv at the beginning)
         """
         if msg is None or msg.__len__() == 0:
-            return bytearray()
-        iv: bytes = AESEncryption.generate_iv()
+            return bytes()
+        iv = AESEncryption.generate_iv()
         cipher_bytes = AESEncryption.encrypt_with_iv(msg, key, iv)
         cipher_bytes = iv + cipher_bytes
         return cipher_bytes
 
     @staticmethod
-    def decrypt(encrypted, key, output_type=OutputType.STRING):
+    def decrypt(encrypted: Union[bytes, memoryview], key: str) -> str:
         iv = encrypted[:16]
-        real_encrypted = encrypted[16:]
-        plain = AESEncryption.decrypt_with_iv(real_encrypted, key, iv, output_type)
+        encrypted = encrypted[16:]
+        plain = AESEncryption.decrypt_with_iv(encrypted, key, iv)
         return plain
 
     @staticmethod
     def encrypt_in_memory_file(file, aes_key):
         # fix the aes key
-        aes_key = get_bytes_from_string_or_return_bytes(aes_key)
+        aes_key = to_bytes(aes_key)
         # stuff needed
         chunk_size = 64 * 1024
         hashed_key_bytes = sha3_256(aes_key).digest()
@@ -118,7 +116,7 @@ class AESEncryption:
     @staticmethod
     def decrypt_bytes_file(file, aes_key):
         # fix the aes key
-        aes_key = get_bytes_from_string_or_return_bytes(aes_key)
+        aes_key = to_bytes(aes_key)
         # stuff needed
         chunk_size = 64 * 1024
         hashed_key_bytes = sha3_256(aes_key).digest()
@@ -141,7 +139,7 @@ class AESEncryption:
 
 class RSAEncryption:
     @staticmethod
-    def generate_keys() -> (bytes, bytes):
+    def generate_keys() -> Tuple[bytes, bytes]:
         """
         generates private and public RSA key pair
 
@@ -163,10 +161,10 @@ class RSAEncryption:
         return pem_private, pem_public
 
     @staticmethod
-    def encrypt(msg, pem_public_key):
-        msg = get_bytes_from_string_or_return_bytes(msg)
+    def encrypt(msg, pem_public_key: bytes):
+        msg = to_bytes(msg)
 
-        public_key = serialization.load_pem_public_key(
+        public_key: rsa.RSAPublicKey = serialization.load_pem_public_key(  # type: ignore
             pem_public_key, backend=default_backend()
         )
         ciphertext = public_key.encrypt(
@@ -180,8 +178,8 @@ class RSAEncryption:
         return ciphertext
 
     @staticmethod
-    def decrypt(ciphertext, pem_private_key, output_type=OutputType.STRING):
-        pem_private_key = get_bytes_from_string_or_return_bytes(pem_private_key)
+    def decrypt(ciphertext, pem_private_key):
+        pem_private_key = to_bytes(pem_private_key)
         private_key = serialization.load_pem_private_key(
             pem_private_key, None, backend=default_backend()
         )
@@ -200,9 +198,7 @@ class RSAEncryption:
                 label=None,
             ),
         )
-        if output_type == OutputType.STRING:
-            return get_string_from_bytes_or_return_string(plaintext)
-        return plaintext
+        return to_str(plaintext)
 
 
 class EncryptedModelMixin:
@@ -227,9 +223,9 @@ class EncryptedModelMixin:
                     "Do not save unencrypted data. "
                     "Value of the field: {}.".format(field, self, data_in_field)
                 )
-        super().save(force_insert, force_update, using, update_fields)
+        super().save(force_insert, force_update, using, update_fields)  # type: ignore
 
-    def decrypt(self, key: str or bytes) -> None:
+    def decrypt(self, key: str) -> None:
         if getattr(self, "encryption_status", "") != "DECRYPTED":
             for field in self.encrypted_fields:
                 decrypted_field = self.encryption_class.decrypt(
@@ -238,7 +234,7 @@ class EncryptedModelMixin:
                 setattr(self, field, decrypted_field)
         setattr(self, "encryption_status", "DECRYPTED")
 
-    def encrypt(self, key: str or bytes) -> None:
+    def encrypt(self, key) -> None:
         if getattr(self, "encryption_status", "") != "ENCRYPTED":
             for field in self.encrypted_fields:
                 encrypted_field = self.encryption_class.encrypt(

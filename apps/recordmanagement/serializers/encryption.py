@@ -4,7 +4,7 @@ from apps.core.serializers import UserProfileNameSerializer
 from apps.recordmanagement.models import RecordEncryptionNew
 
 
-class RecordEncryptionNewSerializer(serializers.ModelSerializer):
+class DontUseRecordEncryptionNewSerializer(serializers.ModelSerializer):
     user_object = UserProfileNameSerializer(source="user")
 
     class Meta:

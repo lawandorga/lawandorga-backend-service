@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
-from apps.core.models import StatisticUser
+from apps.core.models import StatisticUser, UserProfile
 from apps.core.serializers import (
     ChangePasswordSerializer,
     StatisticUserJWTSerializer,
@@ -98,7 +98,7 @@ class StatisticsUserViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=["post"])
     def change_password(self, request: Request):
-        user = self.request.user
+        user: UserProfile = self.request.user  # type: ignore
         serializer = ChangePasswordSerializer(
             data=request.data, context={"request": request}
         )
@@ -109,5 +109,5 @@ class StatisticsUserViewSet(viewsets.GenericViewSet):
                 serializer.validated_data["new_password"],
             )
         except ValueError as e:
-            raise ParseError(e)
+            raise ParseError(str(e))
         return Response(StatisticUserSerializer(user.statistic_user).data)

@@ -8,7 +8,7 @@ from apps.core.models import CollabDocument, TextDocumentVersion
 
 class CollabDocumentSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=True)
-    root = serializers.BooleanField(read_only=True)
+    root = serializers.BooleanField(read_only=True)  # type: ignore
 
     class Meta:
         model = CollabDocument

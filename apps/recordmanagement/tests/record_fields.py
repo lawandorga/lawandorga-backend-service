@@ -1,13 +1,15 @@
 import json
-from typing import Dict, List
+from typing import Any, Dict, List, Optional, Type
 
 from django.test import TestCase
 from rest_framework.test import force_authenticate
+from rest_framework.viewsets import GenericViewSet
 
 from apps.recordmanagement.models import (
     RecordEncryptedFileField,
     RecordEncryptedSelectField,
     RecordEncryptedStandardField,
+    RecordField,
     RecordMultipleField,
     RecordSelectField,
     RecordStandardField,
@@ -36,14 +38,14 @@ class BaseRecordField(BaseRecord):
 
 
 class GenericRecordField(BaseRecordField):
-    view = None
-    model = None
+    view: Optional[Type[GenericViewSet]] = None
+    model: Optional[Type[RecordField]] = None
     # create
-    create_data = None
-    create_test = None
+    create_data: Optional[Dict[str, Any]] = None
+    create_test: Optional[Dict[str, Any]] = None
     # update
-    update_data = None
-    update_test = None
+    update_data: Optional[Dict[str, Any]] = None
+    update_test: Optional[Dict[str, Any]] = None
 
     def setUp(self):
         super().setUp()

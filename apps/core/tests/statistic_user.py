@@ -6,7 +6,7 @@ from apps.core.models import RlcUser, StatisticUser, UserProfile
 from apps.core.views import StatisticsUserViewSet
 
 
-class UserBase:
+class StatisticUserUserBase:
     def setUp(self):
         self.user = UserProfile.objects.create(
             email="dummy@law-orga.de", name="Dummy 1"
@@ -17,7 +17,7 @@ class UserBase:
         self.factory = APIRequestFactory()
 
 
-class StatisticsUserViewSetTests(UserBase, TestCase):
+class StatisticsUserViewSetTests(StatisticUserUserBase, TestCase):
     def login(self, email="dummy@law-orga.de", password=settings.DUMMY_USER_PASSWORD):
         view = StatisticsUserViewSet.as_view(actions={"post": "login"})
         data = {

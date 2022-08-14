@@ -18,7 +18,7 @@ class PermissionForFolderNestedSerializer(serializers.ModelSerializer):
     permission = FolderPermissionSerializer(many=False, read_only=True)
     folder = FolderSimpleSerializer(many=False, read_only=True)
     type = serializers.SerializerMethodField("get_type")
-    source = serializers.SerializerMethodField("get_source")
+    source = serializers.SerializerMethodField("get_source")  # type: ignore
 
     class Meta:
         model = PermissionForFolder

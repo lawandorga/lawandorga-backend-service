@@ -1,11 +1,13 @@
 import io
 import json
 import sys
+from typing import Optional, Type
 
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.test import TestCase
 from rest_framework.test import force_authenticate
+from rest_framework.viewsets import GenericViewSet
 
 from apps.core.models import UserProfile
 from apps.recordmanagement.models import (
@@ -66,7 +68,7 @@ class BaseRecordEntry(BaseRecord):
 
 
 class GenericRecordEntry(BaseRecordEntry):
-    view = None
+    view: Optional[Type[GenericViewSet]] = None
 
     def setUp(self):
         super().setUp()

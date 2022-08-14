@@ -1,3 +1,5 @@
+from typing import List
+
 from rest_framework import mixins
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -30,15 +32,15 @@ class PageViewSet(mixins.ListModelMixin, GenericViewSet):
 class RoadmapItemViewSet(mixins.ListModelMixin, GenericViewSet):
     queryset = RoadmapItem.objects.all()
     serializer_class = RoadmapItemSerializer
-    permission_classes = []
-    authentication_classes = []
+    permission_classes: List = []
+    authentication_classes: List = []
 
 
 class ArticleViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_classes = []
-    authentication_classes = []
+    permission_classes: List = []
+    authentication_classes: List = []
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -49,26 +51,26 @@ class ArticleViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericVi
 class IndexPageViewSet(PageViewSet):
     queryset = IndexPage.objects.none()
     serializer_class = IndexPageSerializer
-    permission_classes = []
-    authentication_classes = []
+    permission_classes: List = []
+    authentication_classes: List = []
 
 
 class ImprintPageViewSet(PageViewSet):
     queryset = ImprintPage.objects.none()
     serializer_class = IndexPageSerializer
-    permission_classes = []
-    authentication_classes = []
+    permission_classes: List = []
+    authentication_classes: List = []
 
 
 class TomsPageViewSet(PageViewSet):
     queryset = TomsPage.objects.none()
     serializer_class = TomsPageSerializer
-    permission_classes = []
-    authentication_classes = []
+    permission_classes: List = []
+    authentication_classes: List = []
 
 
 class HelpPageViewSet(PageViewSet):
     queryset = HelpPage.objects.none()
     serializer_class = HelpPageSerializer
-    permission_classes = []
-    authentication_classes = []
+    permission_classes: List = []
+    authentication_classes: List = []

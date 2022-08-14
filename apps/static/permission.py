@@ -1,3 +1,5 @@
+from typing import Dict, Optional
+
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -15,7 +17,7 @@ class AuthenticatedAndHasPermission(IsAuthenticated):
 
 
 class CheckPermissionWall:
-    permission_wall = None
+    permission_wall: Optional[Dict[str, str]] = None
 
     def check_permissions(self, request):
         check = super().check_permissions(request)
