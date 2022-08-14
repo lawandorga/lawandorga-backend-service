@@ -43,10 +43,11 @@ def validation_error_handler(validation_error: ValidationError) -> RFC7807:
 
 
 def validate(request: HttpRequest, schema: Type[BaseModel]):
-    data = {}
+    data: Dict[str, Any] = {}
     data.update(request.POST)
     data.update(request.GET)
-    data.update(request.resolver_match.kwargs)
+    if request.resolver_match is not None:
+        data.update(request.resolver_match.kwargs)
     return schema(**data)
 
 

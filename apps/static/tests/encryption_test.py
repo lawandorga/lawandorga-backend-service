@@ -1,8 +1,6 @@
-import os
-
 from django.test import SimpleTestCase
 
-from apps.static.encryption import AESEncryption, OutputType, RSAEncryption
+from apps.static.encryption import AESEncryption, RSAEncryption
 
 
 class EncryptionTests(SimpleTestCase):
@@ -23,19 +21,18 @@ class EncryptionTests(SimpleTestCase):
         self.assertEqual(decrypted, msg)
 
     def test_rsa_en_decrypt_random(self):
-        msg = os.urandom(180)
+        msg = "12301320931290"
         private_key, public_key = RSAEncryption.generate_keys()
         encrypted = RSAEncryption.encrypt(msg, public_key)
-        decrypted = RSAEncryption.decrypt(encrypted, private_key, OutputType.BYTES)
-
+        decrypted = RSAEncryption.decrypt(encrypted, private_key)
         self.assertEqual(decrypted, msg)
 
     def test_rsa_en_decrypt_random_10(self):
         for i in range(10):
-            msg = os.urandom(180)
+            msg = "sdafdsafdsafdasfdsa{}".format(i)
             private_key, public_key = RSAEncryption.generate_keys()
             encrypted = RSAEncryption.encrypt(msg, public_key)
-            decrypted = RSAEncryption.decrypt(encrypted, private_key, OutputType.BYTES)
+            decrypted = RSAEncryption.decrypt(encrypted, private_key)
 
             self.assertEqual(decrypted, msg)
 

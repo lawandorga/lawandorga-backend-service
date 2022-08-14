@@ -1,4 +1,5 @@
 from random import choice, randint
+from typing import List
 
 from django.conf import settings
 
@@ -210,7 +211,7 @@ def create_users(rlc1, rlc2):
     return created_users
 
 
-def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> [UserProfile]:
+def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> List[UserProfile]:
     users = []
 
     # main user
@@ -259,7 +260,7 @@ def create_inactive_user(rlc):
     RlcUser.objects.create(user=user)
 
 
-def create_groups(rlc: Rlc, creator: UserProfile, users: [UserProfile]):
+def create_groups(rlc: Rlc, creator: UserProfile, users: List[UserProfile]):
     # create users group
     users_group = Group.objects.create(
         from_rlc=rlc,

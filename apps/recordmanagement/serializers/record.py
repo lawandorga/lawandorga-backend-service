@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from django.utils.timezone import localtime
@@ -40,8 +42,8 @@ class RecordFieldSerializer(serializers.ModelSerializer):
     kind = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
     encrypted = serializers.SerializerMethodField()
-    entry_view_name = None
-    view_name = None
+    entry_view_name: Optional[str] = None
+    view_name: Optional[str] = None
 
     def get_url(self, obj):
         return reverse(self.view_name, args=[obj.pk], request=self.context["request"])
