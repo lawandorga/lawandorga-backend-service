@@ -51,26 +51,26 @@ class ArticleViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericVi
 class IndexPageViewSet(PageViewSet):
     queryset = IndexPage.objects.none()
     serializer_class = IndexPageSerializer
-    permission_classes = []
-    authentication_classes = []
+    permission_classes: List = []
+    authentication_classes: List = []
 
 
 class ImprintPageViewSet(PageViewSet):
     queryset = ImprintPage.objects.none()
     serializer_class = IndexPageSerializer
-    permission_classes = []
-    authentication_classes = []
+    permission_classes: List = []
+    authentication_classes: List = []
 
 
 class TomsPageViewSet(PageViewSet):
     queryset = TomsPage.objects.none()
     serializer_class = TomsPageSerializer
-    permission_classes = []
-    authentication_classes = []
+    permission_classes: List = []
+    authentication_classes: List = []
 
 
 class HelpPageViewSet(PageViewSet):
     queryset = HelpPage.objects.none()
     serializer_class = HelpPageSerializer
-    permission_classes = []
-    authentication_classes = []
+    permission_classes: List = []
+    authentication_classes: List = []

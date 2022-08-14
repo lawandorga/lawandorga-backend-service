@@ -118,7 +118,8 @@ class RlcUserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
 
     def update(self, request: Request, *args, **kwargs):
         rlc_user = self.get_object()
-        if request.user.rlc_user.pk != rlc_user.pk and not request.user.has_permission(
+        user: UserProfile = request.user  # type: ignore
+        if user.rlc_user.pk != rlc_user.pk and not user.has_permission(
             PERMISSION_ADMIN_MANAGE_USERS
         ):
             data = {

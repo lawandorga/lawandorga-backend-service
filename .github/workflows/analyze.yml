@@ -1,4 +1,4 @@
-name: Deploy Main
+name: Analyze
 
 on:
     pull_request:
@@ -19,6 +19,11 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
+            -   name: Checkout
+                uses: actions/checkout@v2
+                with:
+                    fetch-depth: 0
+
             -   name: SonarCloud Scan
                 uses: SonarSource/sonarcloud-github-action@master
                 env:

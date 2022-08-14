@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
-from apps.core.models import StatisticUser
+from apps.core.models import StatisticUser, UserProfile
 from apps.core.serializers import (
     ChangePasswordSerializer,
     StatisticUserJWTSerializer,

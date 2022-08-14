@@ -1,3 +1,5 @@
+from typing import List
+
 from rest_framework.test import APIClient
 
 from apps.core.models import OldUserEncryptionKeys, UserProfile
@@ -47,7 +49,7 @@ class StaticTestMethods:
         return client
 
     @staticmethod
-    def generate_users(number_of_users, rlc) -> [UserProfile]:
+    def generate_users(number_of_users, rlc) -> List[UserProfile]:
         base_name = "test_user"
         users = []
         for i in range(number_of_users):
