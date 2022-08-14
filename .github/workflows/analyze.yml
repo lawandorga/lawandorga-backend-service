@@ -6,9 +6,10 @@ on:
             - main
 
 jobs:
-    main:
-        name: Clean, Test And Scan The Code
+    build:
+        name: Build
         runs-on: ubuntu-latest
+        environment: TEST
         steps:
             -   name: Checkout
                 uses: actions/checkout@v3
@@ -20,18 +21,25 @@ jobs:
                 with:
                     python-version: 3.9
 
-            -   name: Create secrets.json for Django
-                id: create-json
-                uses: jsdaniell/create-json@1.1.2
-                with:
-                    name: "secrets.json"
-                    json: ${{ secrets.SECRETS_PROD }}
-                    dir: 'tmp/'
-
             -   name: Install Dependencies
                 run: |
                     python -m pip install --upgrade pip
                     pip install -r requirements.txt
+
+            - name: Upload Artifact
+              uses: actions/upload-artifact@v3
+              with:
+                  name: lawandorga-backend-${{ github.sha }}
+                  retention-days: 1
+
+    clean:
+        name: Clean
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Download a single artifact
+                uses: actions/download-artifact@v3
+                with:
+                    name: lawandorga-backend-${{ github.sha }}
 
             -   name: Clean
                 uses: pre-commit/action@v3.0.0
