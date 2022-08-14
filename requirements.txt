@@ -33,6 +33,7 @@ pydantic==1.9.2
 # tests
 coverage==6.4.3
 # mypy
+mypy==0.971
 djangorestframework-stubs==1.7.0
 django-stubs==1.12.0
 # formatter
