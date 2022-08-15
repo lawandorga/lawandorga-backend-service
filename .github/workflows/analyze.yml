@@ -104,14 +104,58 @@ jobs:
             -   name: Clean
                 uses: pre-commit/action@v3.0.0
 
-#            -   name: Test
-#                run: |
-#                    coverage run --source='.' manage.py test
-#                    coverage xml
-#                    coverage report
+    test:
+        name: Test
+        runs-on: ubuntu-latest
+        needs: [ build ]
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v3
+                with:
+                    fetch-depth: 0
 
-#            -   name: Scan
-#                uses: SonarSource/sonarcloud-github-action@master
-#                env:
-#                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#                    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            -   name: Set Up Python
+                uses: actions/setup-python@v3
+                with:
+                    python-version: 3.9
+                    cache: pip
+
+            -   uses: actions/cache@v2
+                id: cache-packages
+                with:
+                    path: ${{ env.pythonLocation }}
+                    key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+
+            -   name: Test
+                run: |
+                    coverage run --source='.' manage.py test
+                    coverage xml
+                    coverage report
+
+    scan:
+        name: Scan
+        runs-on: ubuntu-latest
+        needs: [ build ]
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v3
+                with:
+                    fetch-depth: 0
+
+            -   name: Set Up Python
+                uses: actions/setup-python@v3
+                with:
+                    python-version: 3.9
+                    cache: pip
+
+            -   uses: actions/cache@v2
+                id: cache-packages
+                with:
+                    path: ${{ env.pythonLocation }}
+                    key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+
+            -   name: Scan
+                uses: SonarSource/sonarcloud-github-action@master
+                env:
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
