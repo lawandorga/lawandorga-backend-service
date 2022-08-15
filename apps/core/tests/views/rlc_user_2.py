@@ -1,6 +1,6 @@
 from django.test import Client, TestCase
 
-from apps.core.models import Permission, Org, OrgEncryption
+from apps.core.models import Org, OrgEncryption, Permission
 from apps.core.static import get_all_permission_strings
 from apps.recordmanagement.models import RecordTemplate
 

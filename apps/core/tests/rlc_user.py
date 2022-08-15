@@ -2,7 +2,7 @@ from django.conf import settings
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from apps.core.models import HasPermission, Permission, Org, RlcUser, UserProfile
+from apps.core.models import HasPermission, Org, Permission, RlcUser, UserProfile
 from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS, get_all_permission_strings
 from apps.core.views import RlcUserViewSet
 

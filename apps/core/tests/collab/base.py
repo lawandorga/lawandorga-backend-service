@@ -5,8 +5,8 @@ from apps.core.fixtures import create_permissions
 from apps.core.models import (
     CollabDocument,
     HasPermission,
-    Permission,
     Org,
+    Permission,
     RlcUser,
     TextDocumentVersion,
     UserProfile,

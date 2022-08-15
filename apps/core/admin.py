@@ -19,17 +19,17 @@ from apps.core.models import (
     InternalUser,
     LoggedPath,
     OldUserEncryptionKeys,
+    Org,
+    OrgEncryption,
     Permission,
     PermissionForCollabDocument,
     PermissionForFolder,
-    Org,
     RlcUser,
     RoadmapItem,
     StatisticUser,
     TextDocumentVersion,
     TomsPage,
     UserProfile,
-    OrgEncryption,
 )
 
 admin.site.register(CollabDocument)

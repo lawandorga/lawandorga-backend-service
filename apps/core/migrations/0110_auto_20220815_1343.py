@@ -6,18 +6,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0109_file_folder_folderpermission_permissionforfolder'),
+        ("core", "0109_file_folder_folderpermission_permissionforfolder"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='notificationgroup',
-            name='user',
+            model_name="notificationgroup",
+            name="user",
         ),
         migrations.DeleteModel(
-            name='Notification',
+            name="Notification",
         ),
         migrations.DeleteModel(
-            name='NotificationGroup',
+            name="NotificationGroup",
         ),
     ]

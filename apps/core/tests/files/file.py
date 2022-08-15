@@ -11,8 +11,8 @@ from apps.core.models import (
     File,
     Folder,
     HasPermission,
-    Permission,
     Org,
+    Permission,
     RlcUser,
     UserProfile,
 )

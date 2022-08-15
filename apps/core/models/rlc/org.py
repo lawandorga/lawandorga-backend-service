@@ -189,8 +189,9 @@ class Org(EncryptedModelMixin, models.Model):
         }
 
     def force_delete(self):
-        from ..files.file import File
         from apps.recordmanagement.models.record import Record
+
+        from ..files.file import File
 
         # delete records
         for r in Record.objects.filter(template__in=self.recordtemplates.all()):
