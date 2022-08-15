@@ -63,6 +63,12 @@ jobs:
                 with:
                     fetch-depth: 0
 
+            -   name: Set Up Python
+                uses: actions/setup-python@v3
+                with:
+                    python-version: 3.9
+                    cache: pip
+
             -   uses: actions/cache@v2
                 id: cache-packages
                 with:
