@@ -29,13 +29,12 @@ jobs:
 
             -   name: Setup Virtual Environment
                 if: steps.cache-packages.outputs.cache-hit != 'true'
-                run: |
-                    python -m venv ./tmp/venv
-                    source ./tmp/venv/bin/activate
+                run: python -m venv ./tmp/venv
 
             -   name: Install Dependencies
-                if: steps.cache-packages.outputs.cache-hit != 'true'
+#                if: steps.cache-packages.outputs.cache-hit != 'true'
                 run: |
+                    source ./tmp/venv/bin/activate
                     python -m pip install --upgrade pip
                     pip install -r requirements.txt
 
