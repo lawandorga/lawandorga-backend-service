@@ -39,6 +39,8 @@ jobs:
                     python -m pip install --upgrade pip
                     pip install -r requirements.txt
 
+            -   run: ls -l
+
             -   uses: actions/cache@v2
                 id: cache-app
                 with:
@@ -59,7 +61,7 @@ jobs:
 
             -   run: ls -l
 
-            - run: ls ~/.cache/
+            -   run: ls ~/.cache/
 
             -   name: Activate Virtual Environment
                 run: source ./tmp/venv/bin/activate
