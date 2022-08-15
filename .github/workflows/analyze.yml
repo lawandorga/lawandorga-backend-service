@@ -56,6 +56,7 @@ jobs:
     clean:
         name: Clean
         runs-on: ubuntu-latest
+        environment: TEST
         needs: [ build ]
         steps:
             -   name: Checkout
