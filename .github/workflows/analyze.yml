@@ -65,6 +65,12 @@ jobs:
                     path: ${{ github.WORKSPACE }}/apps
                     key: ${{ runner.os }}-app-${{ github.sha }}
 
+            -   uses: actions/cache@v2
+                id: cache-packages
+                with:
+                    path: ./tmp/venv
+                    key: ${{ runner.os }}-packages-${{ hashFiles('requirements.txt') }}
+
             -   run: ls -l ${{ github.WORKSPACE }}
 
             -   run: ls -l ${{ github.WORKSPACE }}/tmp
