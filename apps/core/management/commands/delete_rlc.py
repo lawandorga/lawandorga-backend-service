@@ -1,14 +1,14 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
 
-from apps.core.models import Rlc
+from apps.core.models import Org
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
         rlc_id = input("Enter the id of the LC you want to delete: ")
         try:
-            rlc = Rlc.objects.get(pk=rlc_id)
+            rlc = Org.objects.get(pk=rlc_id)
         except (ObjectDoesNotExist, ValueError):
             raise CommandError("No LC was found with this id.")
         delete = input(

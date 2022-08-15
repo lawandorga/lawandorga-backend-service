@@ -1,6 +1,6 @@
 from django.test import Client, TestCase
 
-from apps.core.models import Permission, Rlc, UsersRlcKeys
+from apps.core.models import Permission, Org, OrgEncryption
 from apps.core.static import get_all_permission_strings
 from apps.recordmanagement.models import RecordEncryptionNew, RecordTemplate
 from apps.static.encryption import RSAEncryption
@@ -10,7 +10,7 @@ from .. import data
 
 class TestUserKeys(TestCase):
     def setUp(self):
-        self.rlc = Rlc.objects.create(name="Test RLC")
+        self.rlc = Org.objects.create(name="Test RLC")
         self.user_1 = data.create_rlc_user(rlc=self.rlc)
         self.user_2 = data.create_rlc_user(email="dummy2@law-orga.de", rlc=self.rlc)
         self.user_3 = data.create_rlc_user(email="dummy3@law-orga.de", rlc=self.rlc)
@@ -33,7 +33,7 @@ class TestUserKeys(TestCase):
             Permission.objects.create(name=perm)
 
     def get_user_rlc_keys(self, user_obj):
-        keys = UsersRlcKeys.objects.get(pk=user_obj["user"].users_rlc_keys.first().pk)
+        keys = OrgEncryption.objects.get(pk=user_obj["user"].users_rlc_keys.first().pk)
         return keys
 
     def get_user_record_key(self, record_obj, user_obj):

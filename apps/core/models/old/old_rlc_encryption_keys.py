@@ -1,12 +1,12 @@
 from django.db import models
 
-from apps.core.models.rlc import Rlc
+from apps.core.models.rlc import Org
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
 
 
 class OldRlcEncryptionKeys(EncryptedModelMixin, models.Model):
     rlc = models.OneToOneField(
-        Rlc, related_name="encryption_keys", on_delete=models.CASCADE
+        Org, related_name="encryption_keys", on_delete=models.CASCADE
     )
     public_key = models.BinaryField()
     encrypted_private_key = models.BinaryField()

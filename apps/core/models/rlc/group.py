@@ -1,12 +1,12 @@
 from django.db import models
 
 from apps.core.models.auth.user import UserProfile
-from apps.core.models.rlc.rlc import Rlc
+from apps.core.models.rlc.org import Org
 
 
 class Group(models.Model):
     from_rlc = models.ForeignKey(
-        Rlc, related_name="group_from_rlc", on_delete=models.CASCADE, blank=True
+        Org, related_name="group_from_rlc", on_delete=models.CASCADE, blank=True
     )
     name = models.CharField(max_length=200, null=False)
     visible = models.BooleanField(null=False, default=True)

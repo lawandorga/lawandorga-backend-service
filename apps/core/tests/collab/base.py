@@ -6,7 +6,7 @@ from apps.core.models import (
     CollabDocument,
     HasPermission,
     Permission,
-    Rlc,
+    Org,
     RlcUser,
     TextDocumentVersion,
     UserProfile,
@@ -17,7 +17,7 @@ from apps.core.static import PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS
 class BaseCollab:
     def setUp(self):
         self.factory = APIRequestFactory()
-        self.rlc = Rlc.objects.create(name="Test RLC")
+        self.rlc = Org.objects.create(name="Test RLC")
         self.user = UserProfile.objects.create(
             email="dummy@law-orga.de", name="Dummy 1", rlc=self.rlc
         )

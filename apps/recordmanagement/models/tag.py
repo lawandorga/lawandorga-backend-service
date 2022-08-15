@@ -1,11 +1,11 @@
 from django.db import models
 
-from apps.core.models import Rlc
+from apps.core.models import Org
 
 
 class Tag(models.Model):
     rlc = models.ForeignKey(
-        Rlc, on_delete=models.CASCADE, blank=True, related_name="tags"
+        Org, on_delete=models.CASCADE, blank=True, related_name="tags"
     )
     name = models.CharField(max_length=200)
     updated = models.DateTimeField(auto_now=True)

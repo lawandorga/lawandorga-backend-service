@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from apps.core.models.auth.user import UserProfile
 
 
-class Rlc(EncryptedModelMixin, models.Model):
+class Org(EncryptedModelMixin, models.Model):
     FEDERAL_STATE_CHOICES = (
         ("BW", "Baden-Württemberg"),
         ("BY", "Bayern (Freistaat)"),
@@ -123,7 +123,7 @@ class Rlc(EncryptedModelMixin, models.Model):
             raise ValueError("You need to pass (user and private_key_user).")
 
     def generate_keys(self) -> None:
-        from .users_rlc_keys import UsersRlcKeys
+        from .org_encryption import OrgEncryption
 
         # safety return
         if self.do_keys_exist:
@@ -140,8 +140,8 @@ class Rlc(EncryptedModelMixin, models.Model):
         # the aes key is encrypted with the users public key, but only the user's private key can decrypt
         # the encrypted aes key
         for user in self.rlc_members.all():
-            UsersRlcKeys.objects.filter(user=user, rlc=self).delete()
-            user_rlc_keys = UsersRlcKeys(user=user, rlc=self, encrypted_key=aes_key)
+            OrgEncryption.objects.filter(user=user, rlc=self).delete()
+            user_rlc_keys = OrgEncryption(user=user, rlc=self, encrypted_key=aes_key)
             public_key_user = user.get_public_key()
             user_rlc_keys.encrypt(public_key_user)
             user_rlc_keys.save()
@@ -149,21 +149,21 @@ class Rlc(EncryptedModelMixin, models.Model):
     def accept_member(
         self, admin: "UserProfile", member: "UserProfile", private_key_admin: str
     ):
-        from apps.core.models import UsersRlcKeys
+        from apps.core.models import OrgEncryption
 
         if not admin.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
             return
 
         # create the rlc encryption keys for new member
         aes_key_rlc = self.get_aes_key(user=admin, private_key_user=private_key_admin)
-        new_user_rlc_keys = UsersRlcKeys(
+        new_user_rlc_keys = OrgEncryption(
             user=member, rlc_id=self.id, encrypted_key=aes_key_rlc
         )
         public_key = member.get_public_key()
         new_user_rlc_keys.encrypt(public_key)
 
         # delete the old keys
-        UsersRlcKeys.objects.filter(user=member).delete()
+        OrgEncryption.objects.filter(user=member).delete()
 
         # save the new keys
         new_user_rlc_keys.save()
@@ -189,7 +189,7 @@ class Rlc(EncryptedModelMixin, models.Model):
         }
 
     def force_delete(self):
-        from apps.core.models.file import File
+        from ..files.file import File
         from apps.recordmanagement.models.record import Record
 
         # delete records

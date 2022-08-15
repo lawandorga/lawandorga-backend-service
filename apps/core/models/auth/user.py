@@ -30,7 +30,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     rlc = models.ForeignKey(
-        "Rlc",
+        "Org",
         related_name="rlc_members",
         on_delete=models.PROTECT,
         blank=True,
@@ -377,7 +377,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         """
         this method assumes that a valid public key exists for user_to_unlock
         """
-        from apps.core.models import UsersRlcKeys
+        from apps.core.models import OrgEncryption
         from apps.recordmanagement.models import RecordEncryptionNew
 
         # check if all keys can be handed over
@@ -386,7 +386,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         # generate new rlc key - this always works
         user_to_unlock.users_rlc_keys.all().delete()
         aes_key_rlc = self.rlc.get_aes_key(user=self, private_key_user=private_key_self)
-        new_keys = UsersRlcKeys(
+        new_keys = OrgEncryption(
             user=user_to_unlock, rlc=user_to_unlock.rlc, encrypted_key=aes_key_rlc
         )
         new_keys.encrypt(user_to_unlock.get_public_key())

@@ -7,7 +7,7 @@ from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework_simplejwt.serializers import TokenObtainSerializer
 from rest_framework_simplejwt.settings import api_settings
 
-from apps.core.models import Rlc, RlcUser, UserProfile
+from apps.core.models import Org, RlcUser, UserProfile
 from apps.core.serializers import RlcSerializer
 from config.authentication import RefreshPrivateKeyToken
 
@@ -17,7 +17,7 @@ from config.authentication import RefreshPrivateKeyToken
 ###
 class RlcUserCreateSerializer(serializers.ModelSerializer):
     password_confirm = serializers.CharField(write_only=True)
-    rlc = serializers.PrimaryKeyRelatedField(queryset=Rlc.objects.all(), required=True)
+    rlc = serializers.PrimaryKeyRelatedField(queryset=Org.objects.all(), required=True)
 
     class Meta:
         model = UserProfile

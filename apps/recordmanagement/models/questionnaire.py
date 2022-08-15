@@ -2,7 +2,7 @@ import uuid
 
 from django.db import models
 
-from apps.core.models import Rlc
+from apps.core.models import Org
 from apps.recordmanagement.models import Record
 from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
@@ -11,7 +11,7 @@ from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_fi
 class QuestionnaireTemplate(models.Model):
     name = models.CharField(max_length=100)
     rlc = models.ForeignKey(
-        Rlc, related_name="questionnaires", on_delete=models.CASCADE, blank=True
+        Org, related_name="questionnaires", on_delete=models.CASCADE, blank=True
     )
     notes = models.TextField(blank=True)
     records = models.ManyToManyField("EncryptedRecord", through="Questionnaire")

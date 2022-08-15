@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.test import TestCase
 
-from apps.core.models import Permission, Rlc, RlcUser, UserProfile
+from apps.core.models import Permission, Org, RlcUser, UserProfile
 from apps.core.static import get_all_permission_strings
 from apps.recordmanagement.fixtures import create_default_record_template
 from apps.recordmanagement.models import Record, RecordEncryptionNew, RecordTemplate
@@ -10,7 +10,7 @@ from apps.static.encryption import AESEncryption
 
 class UserUnitUserBase:
     def setUp(self):
-        self.rlc = Rlc.objects.create(name="Test RLC")
+        self.rlc = Org.objects.create(name="Test RLC")
         self.user1, self.rlc_user1 = self.create_user(
             "dummy@law-orga.de", "Dummy", settings.DUMMY_USER_PASSWORD
         )

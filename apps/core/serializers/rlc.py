@@ -15,12 +15,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 from rest_framework import serializers
 
-from apps.core.models.rlc import Rlc
+from apps.core.models.rlc import Org
 
 
 class RlcSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Rlc
+        model = Org
         fields = "__all__"
 
 
@@ -32,11 +32,11 @@ class RlcVerboseSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = Rlc
+        model = Org
         fields = "__all__"
 
 
 class RlcNameSerializer(RlcVerboseSerializer):
     class Meta:
-        model = Rlc
+        model = Org
         fields = ["id", "name"]

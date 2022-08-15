@@ -18,20 +18,18 @@ from apps.core.models import (
     IndexPage,
     InternalUser,
     LoggedPath,
-    Notification,
-    NotificationGroup,
     OldUserEncryptionKeys,
     Permission,
     PermissionForCollabDocument,
     PermissionForFolder,
-    Rlc,
+    Org,
     RlcUser,
     RoadmapItem,
     StatisticUser,
     TextDocumentVersion,
     TomsPage,
     UserProfile,
-    UsersRlcKeys,
+    OrgEncryption,
 )
 
 admin.site.register(CollabDocument)
@@ -127,12 +125,10 @@ admin.site.register(Article)
 admin.site.register(Group)
 admin.site.register(Permission)
 admin.site.register(HasPermission, HasPermissionAdmin)
-admin.site.register(Rlc, RlcAdmin)
+admin.site.register(Org, RlcAdmin)
 admin.site.register(OldUserEncryptionKeys)
-admin.site.register(UsersRlcKeys, UsersRlcKeysAdmin)
-admin.site.register(NotificationGroup)
+admin.site.register(OrgEncryption, UsersRlcKeysAdmin)
 admin.site.register(UserProfile, UserAdmin)
-admin.site.register(Notification)
 admin.site.register(LoggedPath, LoggedPathAdmin)
 admin.site.register(RlcUser, RlcUserAdmin)
 admin.site.register(StatisticUser, StatisticUserAdmin)
