@@ -2,7 +2,7 @@ from django.conf import settings
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
-from apps.core.models import Rlc, RlcUser, UserProfile
+from apps.core.models import Org, RlcUser, UserProfile
 from apps.recordmanagement.views import (
     RecordEncryptedFileEntryViewSet,
     RecordEncryptedFileFieldViewSet,
@@ -102,7 +102,7 @@ class RecordViewSetsPermissions(TestCase):
 
     def setUp(self):
         self.factory = APIRequestFactory()
-        self.rlc = Rlc.objects.create(name="Test RLC")
+        self.rlc = Org.objects.create(name="Test RLC")
         self.user = UserProfile.objects.create(
             email="dummy@rlcm.de", name="Dummy 1", rlc=self.rlc
         )

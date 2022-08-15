@@ -4,7 +4,7 @@ from django.apps import apps
 from django.core.files import File
 from django.db import models
 
-from apps.core.models import Group, Rlc, UserProfile
+from apps.core.models import Group, Org, UserProfile
 from apps.recordmanagement.models import (  # type: ignore
     EncryptedClient,
     EncryptedRecord,
@@ -22,7 +22,7 @@ def get_default_show():
 class RecordTemplate(models.Model):
     name = models.CharField(max_length=200)
     rlc = models.ForeignKey(
-        Rlc, related_name="recordtemplates", on_delete=models.CASCADE, blank=True
+        Org, related_name="recordtemplates", on_delete=models.CASCADE, blank=True
     )
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

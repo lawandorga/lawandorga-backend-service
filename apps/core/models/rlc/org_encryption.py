@@ -1,16 +1,16 @@
 from django.db import models
 
 from apps.core.models.auth.user import UserProfile
-from apps.core.models.rlc import Rlc
+from apps.core.models.rlc import Org
 from apps.static.encryption import EncryptedModelMixin, RSAEncryption
 
 
-class UsersRlcKeys(EncryptedModelMixin, models.Model):
+class OrgEncryption(EncryptedModelMixin, models.Model):
     user = models.ForeignKey(
         UserProfile, related_name="users_rlc_keys", on_delete=models.CASCADE, null=False
     )
     rlc = models.ForeignKey(
-        Rlc,
+        Org,
         related_name="encrypted_users_rlc_keys",
         on_delete=models.CASCADE,
         null=False,
@@ -32,7 +32,7 @@ class UsersRlcKeys(EncryptedModelMixin, models.Model):
         )
 
     def set_correct(self, value):
-        key = UsersRlcKeys.objects.get(pk=self.pk)
+        key = OrgEncryption.objects.get(pk=self.pk)
         key.correct = value
         key.save()
         self.correct = value

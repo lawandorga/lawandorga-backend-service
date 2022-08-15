@@ -16,7 +16,7 @@ from apps.core.models import (
     TextDocumentVersion,
     UserProfile,
 )
-from apps.core.models.rlc import Rlc
+from apps.core.models.rlc import Org
 from apps.core.static import (
     get_all_collab_permission_strings,
     get_all_files_permission_strings,
@@ -59,11 +59,11 @@ def add_permissions_to_group(group: Group, permission_name):
 
 # create
 def create_rlcs():
-    rlc1 = Rlc.objects.create(
+    rlc1 = Org.objects.create(
         name="Dummy RLC",
         id=3033,
     )
-    rlc2 = Rlc.objects.create(
+    rlc2 = Org.objects.create(
         name="Neighbourhood RLC",
         id=1,
     )
@@ -211,7 +211,7 @@ def create_users(rlc1, rlc2):
     return created_users
 
 
-def create_dummy_users(rlc: Rlc, dummy_password: str = "qwe123") -> List[UserProfile]:
+def create_dummy_users(rlc: Org, dummy_password: str = "qwe123") -> List[UserProfile]:
     users = []
 
     # main user
@@ -260,7 +260,7 @@ def create_inactive_user(rlc):
     RlcUser.objects.create(user=user)
 
 
-def create_groups(rlc: Rlc, users: List[UserProfile]):
+def create_groups(rlc: Org, users: List[UserProfile]):
     # create users group
     users_group = Group.objects.create(
         from_rlc=rlc,
@@ -287,7 +287,7 @@ def create_groups(rlc: Rlc, users: List[UserProfile]):
     return [users_group, ag_group]
 
 
-def create_admin_group(rlc: Rlc, main_user: UserProfile):
+def create_admin_group(rlc: Org, main_user: UserProfile):
     # create admin group
     admin_group = Group.objects.create(
         from_rlc=rlc,

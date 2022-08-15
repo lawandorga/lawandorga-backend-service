@@ -3,7 +3,7 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from apps.core.fixtures import create_permissions
-from apps.core.models import HasPermission, Permission, Rlc, RlcUser, UserProfile
+from apps.core.models import HasPermission, Org, Permission, RlcUser, UserProfile
 from apps.core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
     PERMISSION_RECORDS_ADD_RECORD,
@@ -18,7 +18,7 @@ from apps.recordmanagement.views import RecordTemplateViewSet, RecordViewSet
 class BaseRecord:
     def setUp(self):
         self.factory = APIRequestFactory()
-        self.rlc = Rlc.objects.create(name="Test RLC")
+        self.rlc = Org.objects.create(name="Test RLC")
         self.user = UserProfile.objects.create(
             email="dummy@law-orga.de", name="Dummy 1", rlc=self.rlc
         )

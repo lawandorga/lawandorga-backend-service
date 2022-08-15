@@ -2,7 +2,7 @@
 from django.db import models
 
 from apps.core.models import UserProfile
-from apps.core.models.rlc import Rlc
+from apps.core.models.rlc import Org
 from apps.core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
 
@@ -17,7 +17,7 @@ class EncryptedRecord(EncryptedModelMixin, models.Model):
         UserProfile, related_name="encrypted_records", on_delete=models.CASCADE
     )
     from_rlc = models.ForeignKey(
-        Rlc, related_name="encrypted_records", on_delete=models.CASCADE
+        Org, related_name="encrypted_records", on_delete=models.CASCADE
     )
     client = models.ForeignKey(
         "EncryptedClient", related_name="e_records", on_delete=models.CASCADE

@@ -2,14 +2,14 @@ from django.conf import settings
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from apps.core.models import HasPermission, Permission, Rlc, RlcUser, UserProfile
+from apps.core.models import HasPermission, Org, Permission, RlcUser, UserProfile
 from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS, get_all_permission_strings
 from apps.core.views import RlcUserViewSet
 
 
 class UserBase:
     def setUp(self):
-        self.rlc = Rlc.objects.create(name="Test RLC")
+        self.rlc = Org.objects.create(name="Test RLC")
         self.user = UserProfile.objects.create(
             email="dummy@law-orga.de", name="Dummy 1", rlc=self.rlc
         )
@@ -239,7 +239,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
 class UserViewSetErrorTests(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
-        self.rlc = Rlc.objects.create(name="Test RLC")
+        self.rlc = Org.objects.create(name="Test RLC")
         self.user = UserProfile.objects.create(
             email="test@test.de", name="Dummy 1", rlc=self.rlc
         )
@@ -336,7 +336,7 @@ class UserViewSetErrorTests(TestCase):
 class UserViewSetAccessTests(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
-        self.rlc = Rlc.objects.create(name="Test RLC")
+        self.rlc = Org.objects.create(name="Test RLC")
         self.user = UserProfile.objects.create(
             email="test@test.de", name="Dummy 1", rlc=self.rlc
         )

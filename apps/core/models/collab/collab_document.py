@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.core.models.rlc import Rlc
+from apps.core.models.rlc import Org
 from apps.core.static import (
     PERMISSION_COLLAB_READ_ALL_DOCUMENTS,
     PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS,
@@ -10,7 +10,7 @@ from apps.core.static import (
 
 class CollabDocument(models.Model):
     rlc = models.ForeignKey(
-        Rlc, related_name="collab_documents", on_delete=models.CASCADE, blank=True
+        Org, related_name="collab_documents", on_delete=models.CASCADE, blank=True
     )
     path = models.CharField(max_length=4096, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)

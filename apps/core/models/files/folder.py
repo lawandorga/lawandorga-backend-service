@@ -1,7 +1,7 @@
 from django.db import models
 
 from apps.core.models import UserProfile
-from apps.core.models.rlc import Rlc
+from apps.core.models.rlc import Org
 from apps.core.static import (
     PERMISSION_FILES_MANAGE_PERMISSIONS,
     PERMISSION_FILES_READ_ALL_FOLDERS,
@@ -26,7 +26,7 @@ class Folder(models.Model):
         blank=True,
     )
     rlc = models.ForeignKey(
-        Rlc, related_name="folders", on_delete=models.CASCADE, null=False, blank=True
+        Org, related_name="folders", on_delete=models.CASCADE, null=False, blank=True
     )
 
     class Meta:

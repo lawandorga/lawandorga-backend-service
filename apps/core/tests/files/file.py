@@ -11,8 +11,8 @@ from apps.core.models import (
     File,
     Folder,
     HasPermission,
+    Org,
     Permission,
-    Rlc,
     RlcUser,
     UserProfile,
 )
@@ -27,7 +27,7 @@ class FileTestsBase:
         create_folder_permissions()
         create_permissions()
         self.factory = APIRequestFactory()
-        self.rlc = Rlc.objects.create(name="Test RLC")
+        self.rlc = Org.objects.create(name="Test RLC")
         self.user = UserProfile.objects.create(
             email="dummy@law-orga.de", name="Dummy 1", rlc=self.rlc
         )
