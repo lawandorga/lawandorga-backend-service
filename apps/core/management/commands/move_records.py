@@ -24,7 +24,7 @@ from apps.recordmanagement.models import (
 class Command(BaseCommand):
     help = "Moves the records to the new format."
 
-    def handle(self, *args, **options):
+    def __handle(self, *args, **options):
         for record in EncryptedRecord.objects.all().order_by("id"):
             self.stdout.write(record.id)
             if not hasattr(record, "record"):

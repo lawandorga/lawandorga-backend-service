@@ -19,8 +19,8 @@ from apps.recordmanagement.models import (
     RecordStateEntry,
     RecordStateField,
 )
-from apps.recordmanagement.tests.record import BaseRecord
-from apps.recordmanagement.tests.record_entries import BaseRecordEntry
+from .record import BaseRecord
+from apps.core.records.tests.record_entries import BaseRecordEntry
 from apps.recordmanagement.views import (
     RecordEncryptedSelectEntryViewSet,
     RecordEncryptedStandardEntryViewSet,

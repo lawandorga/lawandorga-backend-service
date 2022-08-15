@@ -17,7 +17,7 @@ from apps.recordmanagement.models import (
     RecordTemplate,
     RecordUsersField,
 )
-from apps.recordmanagement.tests import BaseRecord
+from .record import BaseRecord
 from apps.recordmanagement.views import (
     RecordEncryptedFileFieldViewSet,
     RecordEncryptedSelectFieldViewSet,

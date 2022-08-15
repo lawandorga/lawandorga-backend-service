@@ -33,7 +33,7 @@ from apps.recordmanagement.models import (
     RecordUsersEntry,
     RecordUsersField,
 )
-from apps.recordmanagement.tests import BaseRecord
+from .record import BaseRecord
 from apps.recordmanagement.views import (
     RecordEncryptedFileEntryViewSet,
     RecordEncryptedSelectEntryViewSet,

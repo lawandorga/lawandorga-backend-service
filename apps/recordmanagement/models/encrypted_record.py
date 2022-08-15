@@ -1,9 +1,7 @@
-# type: ignore
 from django.db import models
 
 from apps.core.models import UserProfile
 from apps.core.rlc.models import Org
-from apps.core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
 
 from .tag import Tag
@@ -90,71 +88,23 @@ class EncryptedRecord(EncryptedModelMixin, models.Model):
         if user and private_key_user and aes_key is None:
             record_encryption = self.encryptions.get(user=user)
             record_encryption.decrypt(private_key_user)
-            key = record_encryption.encrypted_key
+            key: str = record_encryption.encrypted_key  # type: ignore
         elif aes_key and user is None and private_key_user is None:
-            key = aes_key
+            key: str = aes_key  # type: ignore
         else:
             raise ValueError(
                 "You have to set (user and private_key_user) or (aes_key)."
             )
         super().encrypt(key)
 
-    def decrypt(self, user: UserProfile = None, private_key_user: str = None) -> None:
+    def decrypt(self, user: UserProfile = None, private_key_user: str = None) -> None:  # type: ignore
         if user and private_key_user:
             key = self.get_decryption_key(user, private_key_user)
         else:
             raise ValueError("You have to set (user and private_key_user).")
         super().decrypt(key)
 
-    def user_has_permission(self, user):
-        """
-        return if the user has permission edit and view the record in full detail
-        :param user: user object, the user to check
-        :return: boolean, true if the user has permission
-        """
-        from apps.recordmanagement.models.encrypted_record_permission import (
-            RecordAccess,
-        )
-
-        return (
-            self.working_on_record.filter(id=user.id).count() == 1
-            or RecordAccess.objects.filter(
-                record=self, request_from=user, state="gr"
-            ).count()
-            == 1
-            or user.has_permission(
-                PERMISSION_RECORDS_ACCESS_ALL_RECORDS, for_rlc=self.from_rlc
-            )
-        )
-
-    def get_notification_emails(self):
-        emails = []
-        for user in list(self.working_on_record.all()):
-            emails.append(user.email)
-        from apps.recordmanagement.models.encrypted_record_permission import (
-            RecordAccess,
-        )
-
-        for permission_request in list(
-            RecordAccess.objects.filter(record=self, state="gr")
-        ):
-            emails.append(permission_request.request_from.email)
-        return emails
-
-    def get_notification_users(self) -> [UserProfile]:
-
-        users = []
-        for user in list(self.working_on_record.all()):
-            users.append(user)
-        from apps.recordmanagement.models.encrypted_record_permission import (
-            RecordAccess,
-        )
-
-        for permission_request in RecordAccess.objects.filter(record=self, state="gr"):
-            users.append(permission_request.request_from)
-        return users
-
-    def get_decryption_key(self, user: UserProfile, users_private_key: str) -> str:
+    def get_decryption_key(self, user: UserProfile, users_private_key: str) -> bytes:
         encryption = self.encryptions.get(user=user)
         encryption.decrypt(users_private_key)
         key = encryption.encrypted_key
