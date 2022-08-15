@@ -2,7 +2,7 @@ from django.apps import AppConfig
 from django.db import OperationalError, ProgrammingError
 
 
-class ApiConfig(AppConfig):
+class CoreConfig(AppConfig):
     name = "apps.core"
 
     def ready(self):

@@ -1,7 +1,7 @@
 # type: ignore
 from django.db import models
 
-from apps.core.models.rlc import Org
+from apps.core.rlc.models import Org
 from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 

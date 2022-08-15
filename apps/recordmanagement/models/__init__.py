@@ -8,5 +8,5 @@ from .questionnaire import *
 from .record import *
 from .record_access import *
 from .record_deletion import *
-from .record_encryption import *
+from .record_encryption import *  # type: ignore
 from .tag import *

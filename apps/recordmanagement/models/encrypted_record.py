@@ -2,7 +2,7 @@
 from django.db import models
 
 from apps.core.models import UserProfile
-from apps.core.models.rlc import Org
+from apps.core.rlc.models import Org
 from apps.core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
 

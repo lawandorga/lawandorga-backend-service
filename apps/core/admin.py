@@ -3,7 +3,6 @@ from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.translation import gettext_lazy as _
 from solo.admin import SingletonModelAdmin
 
-from apps.core.forms import RlcAdminForm
 from apps.core.models import (
     Article,
     CollabDocument,
@@ -31,6 +30,7 @@ from apps.core.models import (
     TomsPage,
     UserProfile,
 )
+from apps.core.rlc.forms import RlcAdminForm
 
 admin.site.register(CollabDocument)
 admin.site.register(CollabPermission)
