@@ -5,9 +5,14 @@ on:
         branches:
             - main
 
+env:
+    JWT_SIGNING_KEY: 'nosecret'
+    SECRET_KEY: 'nosecret'
+    FRONTEND_URL: 'http://localhost:4200/'
+
 jobs:
-    main:
-        name: Clean, Test And Scan The Code
+    build:
+        name: Build
         runs-on: ubuntu-latest
         steps:
             -   name: Checkout
@@ -19,28 +24,146 @@ jobs:
                 uses: actions/setup-python@v3
                 with:
                     python-version: 3.9
+                    cache: pip
 
-            -   name: Create secrets.json for Django
-                id: create-json
-                uses: jsdaniell/create-json@1.1.2
+            -   uses: actions/cache@v2
+                id: cache-packages
                 with:
-                    name: "secrets.json"
-                    json: ${{ secrets.SECRETS_PROD }}
-                    dir: 'tmp/'
+                    path: ${{ env.pythonLocation }}
+                    key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
 
+            #            -   name: Setup Virtual Environment
+            #                if: steps.cache-packages.outputs.cache-hit != 'true'
+            #                run: python -m venv ./tmp/venv
+            #
+            #            -   run: source ./tmp/venv/bin/activate
+            #
             -   name: Install Dependencies
-                run: |
-                    python -m pip install --upgrade pip
-                    pip install -r requirements.txt
+                if: steps.cache-packages.outputs.cache-hit != 'true'
+                run: pip install -r requirements.txt
+            #
+            #                    python -m pip install --upgrade pip
+            #                    pip install -r requirements.txt
+            #
+            -   run: pip list
+            -   run: echo ${{ env.pythonLocation }}
+    #
+    #            -   run: ls -l ${{ github.WORKSPACE }}/tmp
+    #
+    #            -   run: echo  ${{ env.pythonLocation }}
+    #
+    #            -   uses: actions/cache@v2
+    #                id: cache-app
+    #                with:
+    #                    path: ${{ github.WORKSPACE }}/apps
+    #                    key: ${{ runner.os }}-app-${{ github.sha }}
+
+    clean:
+        name: Clean
+        runs-on: ubuntu-latest
+        needs: [ build ]
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v3
+                with:
+                    fetch-depth: 0
+
+            -   name: Set Up Python
+                uses: actions/setup-python@v3
+                with:
+                    python-version: 3.9
+                    cache: pip
+
+            -   uses: actions/cache@v2
+                id: cache-packages
+                with:
+                    path: ${{ env.pythonLocation }}
+                    key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+
+            #            -   uses: actions/cache@v2
+            #                id: cache-app
+            #                with:
+            #                    path: ${{ github.WORKSPACE }}/apps
+            #                    key: ${{ runner.os }}-app-${{ github.sha }}
+
+            #            -   uses: actions/cache@v2
+            #                id: cache-packages
+            #                with:
+            #                    path: ./tmp/venv
+            #                    key: ${{ runner.os }}-packages-${{ hashFiles('requirements.txt') }}
+
+            -   run: ls -l ${{ github.WORKSPACE }}
+
+            -   run: ls -l ${{ github.WORKSPACE }}/tmp
+
+            #            -   name: Activate Virtual Environment
+            #                run: source ./tmp/venv/bin/activate
+
+            -   run: pip list
 
             -   name: Clean
                 uses: pre-commit/action@v3.0.0
+
+    test:
+        name: Test
+        runs-on: ubuntu-latest
+        needs: [ build ]
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v3
+                with:
+                    fetch-depth: 0
+
+            -   name: Set Up Python
+                uses: actions/setup-python@v3
+                with:
+                    python-version: 3.9
+                    cache: pip
+
+            -   uses: actions/cache@v2
+                id: cache-packages
+                with:
+                    path: ${{ env.pythonLocation }}
+                    key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
 
             -   name: Test
                 run: |
                     coverage run --source='.' manage.py test
                     coverage xml
                     coverage report
+
+            -   name: Upload Test Results
+                uses: actions/upload-artifact@v3
+                with:
+                    name: coverage
+                    path: ./coverage.xml
+
+    scan:
+        name: Scan
+        runs-on: ubuntu-latest
+        needs: [ build, test ]
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v3
+                with:
+                    fetch-depth: 0
+
+            -   name: Set Up Python
+                uses: actions/setup-python@v3
+                with:
+                    python-version: 3.9
+                    cache: pip
+
+            -   uses: actions/cache@v2
+                id: cache-packages
+                with:
+                    path: ${{ env.pythonLocation }}
+                    key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+
+            -   name: Download Test Results
+                uses: actions/download-artifact@v3
+                with:
+                    name: coverage
 
             -   name: Scan
                 uses: SonarSource/sonarcloud-github-action@master

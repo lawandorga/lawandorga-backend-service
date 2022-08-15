@@ -9,14 +9,22 @@ from django.core.exceptions import ImproperlyConfigured
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Secret settings
-with open(os.path.join(BASE_DIR, "tmp/secrets.json")) as f:
-    secrets_json = json.loads(f.read())
+try:
+    with open(os.path.join(BASE_DIR, "tmp/secrets.json")) as f:
+        secrets_json = json.loads(f.read())
+except FileNotFoundError:
+    secrets_json = {}
 
 
 def get_secret(setting, secrets=secrets_json):
-    try:
-        return secrets[setting]
-    except KeyError:
+    if setting in secrets:
+        var = secrets[setting]
+    else:
+        var = os.getenv(setting, None)
+
+    if var is not None:
+        return var
+    else:
         error_msg = "Set the {} environment variable.".format(setting)
         raise ImproperlyConfigured(error_msg)
 
