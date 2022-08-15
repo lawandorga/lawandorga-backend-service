@@ -136,7 +136,7 @@ jobs:
                 uses: actions/upload-artifact@v3
                 with:
                     name: coverage
-                    path: ./converage.xml
+                    path: ./coverage.xml
 
     scan:
         name: Scan
@@ -160,7 +160,7 @@ jobs:
                     path: ${{ env.pythonLocation }}
                     key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
 
-            -   name: Upload Test Results
+            -   name: Download Test Results
                 uses: actions/download-artifact@v3
                 with:
                     name: coverage
