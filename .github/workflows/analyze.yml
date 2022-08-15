@@ -56,6 +56,8 @@ jobs:
                     path: ./
                     key: ${{ runner.os }}-app-${{ github.sha }}
 
+            - run: ls -l
+
             -   name: Activate Virtual Environment
                 run: source ./tmp/venv/bin/activate
 
