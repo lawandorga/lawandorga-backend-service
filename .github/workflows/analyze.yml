@@ -78,6 +78,8 @@ jobs:
             -   name: Activate Virtual Environment
                 run: source ./tmp/venv/bin/activate
 
+            - run: pip list
+
             -   name: Clean
                 uses: pre-commit/action@v3.0.0
 
