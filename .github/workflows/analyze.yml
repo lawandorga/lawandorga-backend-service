@@ -42,6 +42,7 @@ jobs:
             #                    pip install -r requirements.txt
             #
             -   run: pip list
+            -   run: echo ${{ env.pythonLocation }}
     #
     #            -   run: ls -l ${{ github.WORKSPACE }}/tmp
     #
