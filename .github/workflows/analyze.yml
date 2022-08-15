@@ -43,7 +43,7 @@ jobs:
                 id: cache-app
                 with:
                     path: ./
-                    key: ${{ github.sha }}
+                    key: ${{ runner.os }}-app-${{ github.sha }}
 
     clean:
         name: Clean
@@ -54,7 +54,7 @@ jobs:
                 id: cache-app
                 with:
                     path: ./
-                    key: ${{ github.sha }}
+                    key: ${{ runner.os }}-app-${{ github.sha }}
 
             -   name: Activate Virtual Environment
                 run: source ./tmp/venv/bin/activate
