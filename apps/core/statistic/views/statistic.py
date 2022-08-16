@@ -28,11 +28,11 @@ class StatisticsViewSet(viewsets.GenericViewSet):
     def rlc_members(self, request, *args, **kwargs):
         statement = """
         select
-            core_rlc.name as rlc_name,
+            core_org.name as rlc_name,
             count(distinct core_userprofile.id) as member_amount
         from core_userprofile
-        inner join core_rlc on core_rlc.id = core_userprofile.rlc_id
-        group by core_userprofile.rlc_id, core_rlc.name;
+        inner join core_org on core_org.id = core_userprofile.rlc_id
+        group by core_userprofile.rlc_id, core_org.name;
         """
         data = self.execute_statement(statement)
         data = map(lambda x: {"name": x[0], "amount": x[1]}, data)
@@ -67,7 +67,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
             count(distinct record.id) as records,
             count(distinct file.id) as files,
             count(distinct document.id) as documents
-        from core_rlc as rlc
+        from core_org as rlc
         left join recordmanagement_recordtemplate template on rlc.id = template.rlc_id
         left join recordmanagement_record record on record.template_id = template.id
         left join core_folder folder on rlc.id = folder.rlc_id
@@ -201,14 +201,13 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         select
         baseuser.id,
         rlckeys.id is not null as rlckeys,
-        userkeys.id is not null as userkeys,
+        rlcuser.public_key is not null as userkeys,
         rlcuser.accepted,
         rlcuser.locked
         from core_userprofile baseuser
         inner join core_rlcuser rlcuser on baseuser.id = rlcuser.user_id
-        left join core_usersrlckeys rlckeys on baseuser.id = rlckeys.user_id
-        left join core_userencryptionkeys userkeys on baseuser.id = userkeys.user_id
-        where rlckeys.id is null or userkeys.id is null
+        left join core_orgencryption rlckeys on baseuser.id = rlckeys.user_id
+        where rlckeys.id is null or rlcuser.public_key is null
         """
         data = self.execute_statement(statement)
         data = map(
@@ -231,7 +230,7 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         (select count(*) as files from core_file) as files,
         (select count(*) as collab from core_collabdocument as collab),
         (select count(*) as users from core_rlcuser as users),
-        (select count(*) as lcs from core_rlc as lcs)
+        (select count(*) as lcs from core_org as lcs)
         """
         data = self.execute_statement(statement)
         data = list(
