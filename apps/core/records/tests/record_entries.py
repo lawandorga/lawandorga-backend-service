@@ -33,7 +33,6 @@ from apps.recordmanagement.models import (
     RecordUsersEntry,
     RecordUsersField,
 )
-from .record import BaseRecord
 from apps.recordmanagement.views import (
     RecordEncryptedFileEntryViewSet,
     RecordEncryptedSelectEntryViewSet,
@@ -46,6 +45,8 @@ from apps.recordmanagement.views import (
     RecordUsersEntryViewSet,
 )
 from apps.static.encryption import AESEncryption
+
+from .record import BaseRecord
 
 
 ###
