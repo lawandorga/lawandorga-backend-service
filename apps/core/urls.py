@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from apps.core import views
-from apps.core.api import keys_router, rlc_user_router
+from apps.core.auth.api import keys_router, rlc_user_router
 from apps.recordmanagement.urls import router as records_router
 
 router = DefaultRouter()

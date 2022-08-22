@@ -225,7 +225,7 @@ class EncryptedModelMixin:
                 )
         super().save(force_insert, force_update, using, update_fields)  # type: ignore
 
-    def decrypt(self, key: str) -> None:
+    def decrypt(self, key) -> None:
         if getattr(self, "encryption_status", "") != "DECRYPTED":
             for field in self.encrypted_fields:
                 decrypted_field = self.encryption_class.decrypt(

@@ -1,7 +1,7 @@
 from django.db import models
 
 from apps.core.models import UserProfile
-from apps.recordmanagement.models import EncryptedRecord  # type: ignore
+from apps.recordmanagement.models import EncryptedRecord
 from apps.static.encryption import EncryptedModelMixin, RSAEncryption
 
 

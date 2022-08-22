@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.core.serializers.user import UserProfileNameSerializer
+from apps.core.auth.serializers.user import UserProfileNameSerializer
 from apps.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
 
 
