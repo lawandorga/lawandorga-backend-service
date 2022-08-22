@@ -1,7 +1,7 @@
 from django.test import TransactionTestCase
 
 from apps.core.models import OldUserEncryptionKeys
-from apps.core.tests import StaticTestMethods
+from .statics import StaticTestMethods
 from apps.static.encryption import RSAEncryption
 
 
