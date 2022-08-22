@@ -78,6 +78,9 @@ class RlcUser(EncryptedModelMixin, models.Model):
         else:
             raise ValueError("You need to pass (password).")
 
+        if not self.do_keys_exist:
+            self.generate_keys()
+
         super().encrypt(key)
 
         if not self.is_private_key_encrypted:
@@ -89,6 +92,9 @@ class RlcUser(EncryptedModelMixin, models.Model):
             key = password
         else:
             raise ValueError("You need to pass (password).")
+
+        if not self.do_keys_exist:
+            self.generate_keys()
 
         if not self.is_private_key_encrypted:
             self.encrypt(key)

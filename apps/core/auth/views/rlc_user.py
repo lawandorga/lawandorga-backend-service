@@ -304,8 +304,9 @@ class RlcUserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
             rlc_user.locked = True
             rlc_user.save()
             # generate new user private and public key based on the new password
-            if hasattr(user, "encryption_keys"):
-                user.encryption_keys.delete()
+            rlc_user.public_key = None
+            rlc_user.private_key = None
+            rlc_user.save()
             # get the user from db because the old encryption_keys might still be in this user
             user = UserProfile.objects.get(pk=rlc_user.user.pk)
             user.get_private_key(password_user=new_password)

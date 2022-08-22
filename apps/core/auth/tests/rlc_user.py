@@ -20,7 +20,8 @@ class UserBase:
         )
         self.rlc.generate_keys()
         self.rlc_user = RlcUser.objects.get(pk=self.rlc_user.pk)
-        self.private_key = bytes(self.rlc_user.private_key).decode("utf-8")
+        self.rlc_user.encrypt(password=settings.DUMMY_USER_PASSWORD)
+        self.private_key = self.rlc_user.user.get_private_key(password_user=settings.DUMMY_USER_PASSWORD)
         self.create_permissions()
 
     def create_permissions(self):
