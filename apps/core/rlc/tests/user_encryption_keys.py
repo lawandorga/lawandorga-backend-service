@@ -1,8 +1,9 @@
 from django.test import TransactionTestCase
 
 from apps.core.models import OldUserEncryptionKeys
-from .statics import StaticTestMethods
 from apps.static.encryption import RSAEncryption
+
+from .statics import StaticTestMethods
 
 
 class UserEncryptionKeysTests(TransactionTestCase):
