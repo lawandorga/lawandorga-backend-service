@@ -2,8 +2,8 @@ from django.conf import settings
 from django.test import TestCase
 
 from apps.core.models import Org, Permission, RlcUser, UserProfile
+from apps.core.records.fixtures import create_default_record_template
 from apps.core.static import get_all_permission_strings
-from apps.recordmanagement.fixtures import create_default_record_template
 from apps.recordmanagement.models import Record, RecordEncryptionNew, RecordTemplate
 from apps.static.encryption import AESEncryption
 

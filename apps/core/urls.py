@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from apps.core import views
 from apps.core.auth.api import keys_router, rlc_user_router
-from apps.recordmanagement.urls import router as records_router
+from apps.core.records.urls import router as records_router
 
 router = DefaultRouter()
 
@@ -38,6 +38,7 @@ router.register("rlc_statistics", views.RlcStatisticsViewSet, basename="rlc_stat
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("records/", include(records_router.urls)),
     path("rlc_users/", include(rlc_user_router.urls)),
     path("keys/", include(keys_router.urls)),
 ]

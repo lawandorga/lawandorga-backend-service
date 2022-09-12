@@ -6,6 +6,15 @@ from django.utils import timezone
 from rest_framework.test import force_authenticate
 
 from apps.core.records.tests.record_entries import BaseRecordEntry
+from apps.core.records.views import (
+    RecordEncryptedSelectEntryViewSet,
+    RecordEncryptedStandardEntryViewSet,
+    RecordMultipleEntryViewSet,
+    RecordSelectEntryViewSet,
+    RecordStandardEntryViewSet,
+    RecordStateEntryViewSet,
+    RecordStateFieldViewSet,
+)
 from apps.recordmanagement.models import (
     Record,
     RecordEncryptedSelectEntry,
@@ -19,15 +28,6 @@ from apps.recordmanagement.models import (
     RecordStandardField,
     RecordStateEntry,
     RecordStateField,
-)
-from apps.recordmanagement.views import (
-    RecordEncryptedSelectEntryViewSet,
-    RecordEncryptedStandardEntryViewSet,
-    RecordMultipleEntryViewSet,
-    RecordSelectEntryViewSet,
-    RecordStandardEntryViewSet,
-    RecordStateEntryViewSet,
-    RecordStateFieldViewSet,
 )
 
 from .record import BaseRecord

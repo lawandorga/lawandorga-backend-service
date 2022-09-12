@@ -38,3 +38,15 @@ class CoreConfig(AppConfig):
             # the needed tables don't exist
             return
         create_collab_permissions()
+
+        # record templates
+        from apps.core.models import Org
+        from apps.core.records.fixtures import create_default_record_template
+
+        try:
+            for rlc in Org.objects.all():
+                if rlc.recordtemplates.count() == 0:
+                    create_default_record_template(rlc)
+        except (OperationalError, ProgrammingError):
+            # the needed tables don't exist
+            return

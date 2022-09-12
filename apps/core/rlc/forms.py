@@ -2,8 +2,8 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from apps.core.models import RlcUser, UserProfile
+from apps.core.records.fixtures import create_default_record_template
 from apps.core.static import get_all_permission_strings
-from apps.recordmanagement.fixtures import create_default_record_template
 
 
 class RlcAdminForm(forms.ModelForm):

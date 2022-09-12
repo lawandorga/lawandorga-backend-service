@@ -2,9 +2,9 @@ from rest_framework import mixins, status, viewsets
 from rest_framework.exceptions import ParseError, PermissionDenied
 from rest_framework.response import Response
 
+from apps.core.records.serializers import RecordEncryptionNewSerializer
 from apps.core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from apps.recordmanagement.models import RecordEncryptionNew
-from apps.recordmanagement.serializers import RecordEncryptionNewSerializer
 
 
 class RecordEncryptionNewViewSet(
