@@ -10,6 +10,7 @@ from apps.static.service_layer import ServiceResult
 router = Router()
 
 
+# schemas
 class Key(BaseModel):
     id: int
     correct: bool
@@ -24,14 +25,18 @@ class KeyDelete(BaseModel):
     id: int
 
 
+# list keys
 LIST_KEYS_SUCCESS = "User {} has requested the list of all his keys."
-TEST_KEYS_SUCCESS = "User {} has tested all his keys."
 
 
 @router.api(output_schema=List[Key], auth=True)
 def list_keys(user: UserProfile):
     all_keys: List[Key] = user.get_all_keys()
     return ServiceResult(LIST_KEYS_SUCCESS, all_keys)
+
+
+# test keys
+TEST_KEYS_SUCCESS = "User {} has tested all his keys."
 
 
 @router.api(url="test/", output_schema=List[Key], auth=True)
@@ -41,6 +46,7 @@ def test_keys(user: UserProfile, private_key_user: str):
     return ServiceResult(TEST_KEYS_SUCCESS, all_keys)
 
 
+# delete key
 DELETE_KEY_ERROR_NOT_FOUND = "User {} tried to delete a key that could not be found."
 DELETE_KEY_ERROR_NOT_ENOUGH = (
     "User {} tried to delete a record key that only one other person or nobody has."

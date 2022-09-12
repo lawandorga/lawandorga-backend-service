@@ -10,6 +10,7 @@ from apps.static.service_layer import ServiceResult
 router = Router()
 
 
+# schemas
 class RlcUser(BaseModel):
     id: int
     user_id: int
@@ -34,6 +35,7 @@ class RlcUser(BaseModel):
         orm_mode = True
 
 
+# unlock user
 UNLOCK_RLC_USER_NOT_ALL_KEYS_CORRECT = (
     "User {} tried to unlock himself, but not all keys are correct."
 )
