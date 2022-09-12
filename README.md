@@ -1,5 +1,4 @@
 ![Codecov branch](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/wiki/lawandorga/lawandorga-backend/python-coverage-comment-action-badge.json)
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/lawandorga/lawandorga-backend/main.svg)](https://results.pre-commit.ci/latest/github/lawandorga/lawandorga-backend/main)
 
 # Law&Orga
 
@@ -13,7 +12,9 @@ A project of Refugee Law Clinics Deutschland e.V. and Dominik Walser
 
 This project contains a backend based on Django.
 
-## Local Setup
+## Tech
+
+### Local Setup
 1. `git clone https://github.com/lawandorga/law-orga-apps.git`
 2. `cd law-orga-backend/`
 3. `python -m venv tmp/venv`
@@ -22,7 +23,7 @@ This project contains a backend based on Django.
 6. Add relevant content into `secrets.json`
 6. Run `python local_manage.py runserver`
 
-## Server Setup
+### Server Setup
 1. `cd /home`
 2. `git clone https://github.com/lawandorga/law-orga-apps.git`
 3. `cd law-orga-backend/`
@@ -31,7 +32,7 @@ This project contains a backend based on Django.
 6. Add content to `tmp/secrets.json`
 7. `./deploy.sh`
 
-## Secrets Local
+### Secrets Local
 
 `
 {
@@ -41,7 +42,7 @@ This project contains a backend based on Django.
 }
 `
 
-## Secrets Prod
+### Secrets Prod
 
 `
 {
