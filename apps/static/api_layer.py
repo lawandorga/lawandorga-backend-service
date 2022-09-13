@@ -66,7 +66,7 @@ class ErrorResponse(JsonResponse):
             type=type,
             title=title,
             status=status,
-            detail=detail,
+            detail=detail or title,
             instance=instance,
             internal=internal,
             param_errors=param_errors,

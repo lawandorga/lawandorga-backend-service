@@ -4,10 +4,10 @@ from rest_framework import mixins, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
+from apps.core.records.serializers import RecordAccessSerializer
 from apps.core.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
 from apps.recordmanagement.models import RecordEncryptionNew
 from apps.recordmanagement.models.record_access import RecordAccess
-from apps.recordmanagement.serializers import RecordAccessSerializer
 from apps.static.encryption import RSAEncryption
 from apps.static.permission import CheckPermissionWall
 

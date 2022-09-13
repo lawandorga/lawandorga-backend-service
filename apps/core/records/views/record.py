@@ -11,6 +11,32 @@ from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from apps.core.records.serializers import RecordDocumentSerializer
+from apps.core.records.serializers.record import (
+    FIELD_TYPES_AND_SERIALIZERS,
+    RecordCreateSerializer,
+    RecordDetailSerializer,
+    RecordEncryptedFileEntrySerializer,
+    RecordEncryptedFileFieldSerializer,
+    RecordEncryptedSelectEntrySerializer,
+    RecordEncryptedSelectFieldSerializer,
+    RecordEncryptedStandardEntrySerializer,
+    RecordEncryptedStandardFieldSerializer,
+    RecordListSerializer,
+    RecordMultipleEntrySerializer,
+    RecordMultipleFieldSerializer,
+    RecordSelectEntrySerializer,
+    RecordSelectFieldSerializer,
+    RecordSerializer,
+    RecordStandardEntrySerializer,
+    RecordStandardFieldSerializer,
+    RecordStateEntrySerializer,
+    RecordStateFieldSerializer,
+    RecordStatisticEntrySerializer,
+    RecordTemplateSerializer,
+    RecordUsersEntrySerializer,
+    RecordUsersFieldSerializer,
+)
 from apps.core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
     PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
@@ -38,32 +64,6 @@ from apps.recordmanagement.models.record import (
     RecordTemplate,
     RecordUsersEntry,
     RecordUsersField,
-)
-from apps.recordmanagement.serializers import RecordDocumentSerializer
-from apps.recordmanagement.serializers.record import (
-    FIELD_TYPES_AND_SERIALIZERS,
-    RecordCreateSerializer,
-    RecordDetailSerializer,
-    RecordEncryptedFileEntrySerializer,
-    RecordEncryptedFileFieldSerializer,
-    RecordEncryptedSelectEntrySerializer,
-    RecordEncryptedSelectFieldSerializer,
-    RecordEncryptedStandardEntrySerializer,
-    RecordEncryptedStandardFieldSerializer,
-    RecordListSerializer,
-    RecordMultipleEntrySerializer,
-    RecordMultipleFieldSerializer,
-    RecordSelectEntrySerializer,
-    RecordSelectFieldSerializer,
-    RecordSerializer,
-    RecordStandardEntrySerializer,
-    RecordStandardFieldSerializer,
-    RecordStateEntrySerializer,
-    RecordStateFieldSerializer,
-    RecordStatisticEntrySerializer,
-    RecordTemplateSerializer,
-    RecordUsersEntrySerializer,
-    RecordUsersFieldSerializer,
 )
 from apps.static.encryption import AESEncryption
 from apps.static.permission import CheckPermissionWall

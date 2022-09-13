@@ -5,6 +5,16 @@ from django.test import TestCase
 from rest_framework.test import force_authenticate
 from rest_framework.viewsets import GenericViewSet
 
+from apps.core.records.views import (
+    RecordEncryptedFileFieldViewSet,
+    RecordEncryptedSelectFieldViewSet,
+    RecordEncryptedStandardFieldViewSet,
+    RecordMultipleFieldViewSet,
+    RecordSelectFieldViewSet,
+    RecordStandardFieldViewSet,
+    RecordStateFieldViewSet,
+    RecordUsersFieldViewSet,
+)
 from apps.recordmanagement.models import (
     RecordEncryptedFileField,
     RecordEncryptedSelectField,
@@ -16,16 +26,6 @@ from apps.recordmanagement.models import (
     RecordStateField,
     RecordTemplate,
     RecordUsersField,
-)
-from apps.recordmanagement.views import (
-    RecordEncryptedFileFieldViewSet,
-    RecordEncryptedSelectFieldViewSet,
-    RecordEncryptedStandardFieldViewSet,
-    RecordMultipleFieldViewSet,
-    RecordSelectFieldViewSet,
-    RecordStandardFieldViewSet,
-    RecordStateFieldViewSet,
-    RecordUsersFieldViewSet,
 )
 
 from .record import BaseRecord

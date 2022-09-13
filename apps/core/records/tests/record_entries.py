@@ -10,6 +10,17 @@ from rest_framework.test import force_authenticate
 from rest_framework.viewsets import GenericViewSet
 
 from apps.core.models import UserProfile
+from apps.core.records.views import (
+    RecordEncryptedFileEntryViewSet,
+    RecordEncryptedSelectEntryViewSet,
+    RecordEncryptedStandardEntryViewSet,
+    RecordMultipleEntryViewSet,
+    RecordSelectEntryViewSet,
+    RecordStandardEntryViewSet,
+    RecordStateEntryViewSet,
+    RecordStatisticEntryViewSet,
+    RecordUsersEntryViewSet,
+)
 from apps.recordmanagement.models import (
     Record,
     RecordEncryptedFileEntry,
@@ -32,17 +43,6 @@ from apps.recordmanagement.models import (
     RecordTemplate,
     RecordUsersEntry,
     RecordUsersField,
-)
-from apps.recordmanagement.views import (
-    RecordEncryptedFileEntryViewSet,
-    RecordEncryptedSelectEntryViewSet,
-    RecordEncryptedStandardEntryViewSet,
-    RecordMultipleEntryViewSet,
-    RecordSelectEntryViewSet,
-    RecordStandardEntryViewSet,
-    RecordStateEntryViewSet,
-    RecordStatisticEntryViewSet,
-    RecordUsersEntryViewSet,
 )
 from apps.static.encryption import AESEncryption
 

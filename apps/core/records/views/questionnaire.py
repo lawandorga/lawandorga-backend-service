@@ -7,15 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.response import Response
 
-from apps.core.static import PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES
-from apps.recordmanagement.models import (
-    Questionnaire,
-    QuestionnaireAnswer,
-    QuestionnaireQuestion,
-    QuestionnaireTemplate,
-    QuestionnaireTemplateFile,
-)
-from apps.recordmanagement.serializers.questionnaire import (
+from apps.core.records.serializers.questionnaire import (
     CodeSerializer,
     QuestionnaireAnswerRetrieveSerializer,
     QuestionnaireFileAnswerSerializer,
@@ -26,6 +18,14 @@ from apps.recordmanagement.serializers.questionnaire import (
     QuestionnaireTemplateSerializer,
     QuestionnaireTextAnswerSerializer,
     RecordQuestionnaireDetailSerializer,
+)
+from apps.core.static import PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES
+from apps.recordmanagement.models import (
+    Questionnaire,
+    QuestionnaireAnswer,
+    QuestionnaireQuestion,
+    QuestionnaireTemplate,
+    QuestionnaireTemplateFile,
 )
 from apps.static.permission import CheckPermissionWall
 
