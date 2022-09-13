@@ -8,7 +8,6 @@ from apps.core.records.urls import router as records_router
 from apps.core.rlc.urls import router as rlc_router
 from apps.core.statistic.urls import router as statistics_router
 
-
 urlpatterns = [
     *auth_urlpatterns,
     path("", include(rlc_router.urls)),
