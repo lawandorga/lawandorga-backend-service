@@ -18,10 +18,10 @@ This project contains a backend based on Django.
 1. `git clone https://github.com/lawandorga/law-orga-apps.git`
 2. `cd law-orga-backend/`
 3. `python -m venv tmp/venv`
-4. Install all dependencies from `requirements.txt`
+4. Install all dependencies from `requirements.txt` with `pip install -r requirements.txt`
 5. Create `tmp/media/`, `tmp/static/`, `tmp/logs` and `tmp/secrets.json`
 6. Add relevant content into `secrets.json`
-6. Run `python local_manage.py runserver`
+6. Run `python manage.py runserver`
 
 ### Server Setup
 1. `cd /home`
