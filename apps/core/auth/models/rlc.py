@@ -144,7 +144,9 @@ class RlcUser(EncryptedModelMixin, models.Model):
     def send_email_confirmation_email(self):
         link = self.get_email_confirmation_link()
         subject = "Law&Orga - Registration - Please confirm your email"
-        message = "Please confirm your email by opening this link in your browser: {}.".format(link)
+        message = "Please confirm your email by opening this link in your browser: {}.".format(
+            link
+        )
         html_message = loader.render_to_string(
             "email_templates/activate_account.html", {"url": link}
         )
