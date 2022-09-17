@@ -139,20 +139,35 @@ class Router:
 
                 user: UserProfile = request.user  # type: ignore
 
-                if not hasattr(user, "rlc_user"):
-                    return ErrorResponse(
-                        type="RoleRequired",
-                        title="Rlc User Required",
-                        detail="You need to have the rlc user role.",
-                        status=403,
-                    )
-
                 if "user" in func_input:
                     func_kwargs["user"] = user
+
+                if "rlc_user" in func_input:
+                    if not hasattr(user, "rlc_user"):
+                        return ErrorResponse(
+                            type="RoleRequired",
+                            title="Rlc User Required",
+                            detail="You need to have the rlc user role.",
+                            status=403,
+                        )
+
+                    func_kwargs["rlc_user"] = user.rlc_user
+
                 if "private_key_user" in func_input:
                     func_kwargs["private_key_user"] = user.get_private_key(
                         request=request
                     )
+
+                if "statistics_user" in func_input:
+                    if not hasattr(user, "statistic_user"):
+                        return ErrorResponse(
+                            type="RoleRequired",
+                            title="Statistics User Required",
+                            detail="You need to have the statistics user role.",
+                            status=403,
+                        )
+
+                    func_kwargs["statistics_user"] = user.statistic_user
 
             # validate the input
             if input_schema:

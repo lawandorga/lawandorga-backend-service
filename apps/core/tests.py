@@ -5,4 +5,4 @@ from .internal.tests import *
 from .other.tests import *
 from .records.tests import *
 from .rlc.tests import *
-from .statistic.tests import *
+from .statistics.tests import *

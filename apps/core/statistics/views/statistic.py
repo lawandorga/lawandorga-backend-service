@@ -369,3 +369,34 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         data = self.execute_statement(statement)
         data = map(lambda x: {"value": x[0], "count": x[1]}, data)
         return Response(data)
+
+    @action(detail=False)
+    def users_with_missing_access(self, request, *args, **kwargs):
+        statement = """
+        select u, r, enc
+        from (
+                 select u.id                   as u,
+                        count(distinct r.id)   as r,
+                        count(distinct enc.id) as enc
+
+                 from core_userprofile u
+                          cross join recordmanagement_record r
+
+                          left join recordmanagement_recordencryptionnew enc
+                                    on enc.user_id = u.id and enc.record_id = r.id
+
+                          left join recordmanagement_recordtemplate t on t.id = r.template_id
+                          left join core_group_group_members cggm on u.id = cggm.userprofile_id
+                          left join core_haspermission ch1 on u.id = ch1.user_has_permission_id
+                          left join core_haspermission ch2 on cggm.group_id = ch2.group_has_permission_id
+                          left join core_permission cp1 on cp1.id = ch1.permission_id
+                          left join core_permission cp2 on cp2.id = ch2.permission_id
+                 where (cp1.name = 'records__access_all_records' or cp2.name = 'records__access_all_records')
+                   and t.rlc_id = u.rlc_id
+                 group by u.id
+             ) t1
+        where r<>enc;
+        """
+        data = self.execute_statement(statement)
+        data = map(lambda x: {"user": x[0], "records": x[1], "access": x[2]}, data)
+        return Response(data)

@@ -1,7 +1,7 @@
 class ServiceResult:
     def __init__(self, message: str, data=None, error=None):
         self.message = message
-        if data:
+        if data is not None:
             self.success = True
             self.data = data
         elif error:
