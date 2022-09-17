@@ -46,7 +46,7 @@ from apps.recordmanagement.models import (
 )
 from apps.static.encryption import AESEncryption
 
-from .record import BaseRecord
+from .test_record import BaseRecord
 
 
 ###

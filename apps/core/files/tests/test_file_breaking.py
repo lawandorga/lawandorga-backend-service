@@ -6,7 +6,7 @@ from rest_framework.test import force_authenticate
 from apps.core.models import File
 from apps.core.views import FileViewSet
 
-from .file import FileTestsBase
+from .test_file import FileTestsBase
 
 settings.DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 

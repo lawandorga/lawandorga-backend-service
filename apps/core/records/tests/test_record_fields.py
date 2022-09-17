@@ -28,7 +28,7 @@ from apps.recordmanagement.models import (
     RecordUsersField,
 )
 
-from .record import BaseRecord
+from .test_record import BaseRecord
 
 
 ###

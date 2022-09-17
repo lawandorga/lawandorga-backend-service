@@ -4,7 +4,7 @@ from rest_framework.test import force_authenticate
 from apps.core.models import CollabDocument
 from apps.core.views import CollabDocumentViewSet
 
-from .collab_working import BaseCollab
+from .test_collab_working import BaseCollab
 
 
 ###

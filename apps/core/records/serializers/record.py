@@ -313,7 +313,12 @@ class RecordStateEntrySerializer(RecordEntrySerializer):
         if "value" in attrs and not attrs["value"] in field.options:
             raise ValidationError("The selected state is not allowed.")
         if "value" in attrs and attrs["value"] == "Closed":
-            attrs["closed_at"] = timezone.now()
+            if (
+                self.instance and self.instance.closed_at is None
+            ) or self.instance is None:
+                attrs["closed_at"] = timezone.now()
+        else:
+            attrs["closed_at"] = None
         return attrs
 
 

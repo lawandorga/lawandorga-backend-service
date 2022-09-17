@@ -85,7 +85,7 @@ jobs:
 
             -   name: Test
                 run: |
-                    coverage run --source='.' manage.py test
+                    coverage run --source='.' pytest
                     coverage xml
                     coverage report
 

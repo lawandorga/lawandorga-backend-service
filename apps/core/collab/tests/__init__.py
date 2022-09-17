@@ -1,4 +1,4 @@
 from .base import *
-from .collab_breaking import *
-from .collab_permissions import *
-from .collab_working import *
+from .test_collab_breaking import *
+from .test_collab_permissions import *
+from .test_collab_working import *
