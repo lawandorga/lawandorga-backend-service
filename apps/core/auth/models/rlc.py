@@ -61,6 +61,12 @@ class RlcUser(EncryptedModelMixin, models.Model):
         return "rlcUser: {}; email: {};".format(self.pk, self.user.email)
 
     @property
+    def org(self):
+        if hasattr(self.user, "org"):
+            return self.user.org
+        raise ValueError("RlcUser has no org.")
+
+    @property
     def name(self):
         return self.user.name
 
