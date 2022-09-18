@@ -12,4 +12,5 @@ router.register("statistics/rlc", views.RlcStatisticsViewSet, basename="rlc_stat
 urlpatterns = [
     path("", include(router.urls)),
     path("statistics/error/", include(api.error_statistics_router.urls)),
+    path("statistics/record/", include(api.record_statistics_router.urls)),
 ]
