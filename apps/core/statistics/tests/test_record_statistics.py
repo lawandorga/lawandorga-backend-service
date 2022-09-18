@@ -41,5 +41,11 @@ def test_records_closed_statistic(user, db):
     c.login(**user)
     response = c.get("/api/statistics/record/records_closed_statistic/")
     response_data = response.json()
-    print(response_data)
     assert response.status_code == 200 and len(response_data) == 2
+
+
+def test_records_field_statistic(user, db):
+    c = Client()
+    c.login(**user)
+    response = c.get("/api/statistics/record/record_fields_amount/")
+    assert response.status_code == 200

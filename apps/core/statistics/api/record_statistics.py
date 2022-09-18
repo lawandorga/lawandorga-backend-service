@@ -18,13 +18,12 @@ def execute_statement(statement):
     return data
 
 
-# schemas
+# records closed statistic
 class RecordClosedStatistic(BaseModel):
     days: Optional[int]
     count: int
 
 
-# records closed statistic
 GET_RECORDS_CLOSED_STATISTIC_SUCCESS = (
     "User {} has requested the users with missing record keys."
 )
@@ -61,3 +60,46 @@ def get_records_closed_statistic(statistics_user: StatisticUser):
     data = execute_statement(statement)
     data = list(map(lambda x: {"days": x[0], "count": x[1]}, data))
     return ServiceResult(GET_RECORDS_CLOSED_STATISTIC_SUCCESS, data)
+
+
+# records field amount statistic
+class RecordFieldAmount(BaseModel):
+    field: str
+    amount: int
+
+
+GET_RECORDS_FIELD_AMOUNT_STATISTIC = (
+    "User {} has requested the count of the record fields."
+)
+
+
+@router.api(
+    url="record_fields_amount/",
+    output_schema=List[RecordFieldAmount],
+    auth=True,
+)
+def get_record_fields_amount(statistics_user: StatisticUser):
+    statement = """
+    select name, count(*) as amount from (
+        select name from recordmanagement_recordstatefield
+        union all
+        select name from recordmanagement_recordstatisticfield
+        union all
+        select name from recordmanagement_recordencryptedfilefield
+        union all
+        select name from recordmanagement_recordselectfield
+        union all
+        select name from recordmanagement_recordencryptedselectfield
+        union all
+        select name from recordmanagement_recordstandardfield
+        union all
+        select name from recordmanagement_recordusersfield
+        union all
+        select name from recordmanagement_recordmultiplefield
+        ) t1
+    group by name
+    order by count(*) desc;
+    """
+    data = execute_statement(statement)
+    data = list(map(lambda x: {"field": x[0], "amount": x[1]}, data))
+    return ServiceResult(GET_RECORDS_FIELD_AMOUNT_STATISTIC, data)
