@@ -48,7 +48,7 @@ def get_records_created_and_closed(rlc_user: RlcUser):
         and t.rlc_id = {}
         group by strftime('%Y/%m', se.closed_at), t.rlc_id
         ) t2 on t1.month = t2.month
-        order by t1.month desc
+        order by t1.month
         """.format(
             rlc_user.org.id, rlc_user.org.id
         )
@@ -71,10 +71,12 @@ def get_records_created_and_closed(rlc_user: RlcUser):
         and t.rlc_id = {}
         group by to_char(se.closed_at, 'YYYY/MM'), t.rlc_id
         ) t2 on t1.month = t2.month
-        order by t1.month desc
+        order by t1.month
         """.format(
             rlc_user.org.id, rlc_user.org.id
         )
     data = execute_statement(statement)
-    data = list(map(lambda x: {"month": x[0], "created": x[1] or 0, "closed": x[2] or 0}, data))
+    data = list(
+        map(lambda x: {"month": x[0], "created": x[1] or 0, "closed": x[2] or 0}, data)
+    )
     return ServiceResult(GET_RECORDS_CREATED_AND_CLOSED, data)
