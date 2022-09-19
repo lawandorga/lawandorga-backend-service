@@ -26,4 +26,4 @@ def test_records_created_and_closed_works(user, db):
     c.login(**user)
     response = c.get("/api/statistics/org/records_created_and_closed/")
     response_data = response.json()
-    assert response.status_code == 200 and response_data[0]['created'] == 2
+    assert response.status_code == 200 and response_data[0]["created"] == 2
