@@ -62,8 +62,8 @@ class RlcUser(EncryptedModelMixin, models.Model):
 
     @property
     def org(self):
-        if hasattr(self.user, "org"):
-            return self.user.org
+        if hasattr(self.user, "rlc"):
+            return self.user.rlc
         raise ValueError("RlcUser has no org.")
 
     @property
