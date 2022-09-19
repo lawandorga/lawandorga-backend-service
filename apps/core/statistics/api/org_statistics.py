@@ -31,7 +31,7 @@ GET_RECORDS_CREATED_AND_CLOSED = (
 def get_records_created_and_closed(rlc_user: RlcUser):
     if connection.vendor == "sqlite":
         statement = """
-        select t1.month as month, created, closed
+        select t1.month as month, t2.month as month, created, closed
         from (
         select strftime('%Y/%m', r.created) as month, count(*) as created
         from recordmanagement_record r
@@ -54,7 +54,7 @@ def get_records_created_and_closed(rlc_user: RlcUser):
         )
     else:
         statement = """
-        select t1.month as month, created, closed
+        select t1.month as month, t2.month as month, created, closed
         from (
         select to_char(r.created, 'YYYY/MM') as month, count(*) as created
         from recordmanagement_record r
@@ -77,6 +77,13 @@ def get_records_created_and_closed(rlc_user: RlcUser):
         )
     data = execute_statement(statement)
     data = list(
-        map(lambda x: {"month": x[0], "created": x[1] or 0, "closed": x[2] or 0}, data)
+        map(
+            lambda x: {
+                "month": x[0] or x[1],
+                "created": x[2] or 0,
+                "closed": x[3] or 0,
+            },
+            data,
+        )
     )
     return ServiceResult(GET_RECORDS_CREATED_AND_CLOSED, data)
