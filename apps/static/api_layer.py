@@ -1,7 +1,7 @@
 import json
 from typing import Any, Callable, Dict, List, Literal, Optional, Type
 
-from django.http import HttpRequest, JsonResponse, QueryDict
+from django.http import HttpRequest, JsonResponse
 from django.urls import path
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model
 
