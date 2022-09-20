@@ -1,39 +1,13 @@
-from datetime import datetime
-from typing import Any, Optional
-
-from pydantic import BaseModel
+from typing import Any, Dict
 
 from apps.core.models import UserProfile
 from apps.static.api_layer import Router
 from apps.static.service_layer import ServiceResult
 
+from ..models import RlcUser
+from . import schemas
+
 router = Router()
-
-
-# schemas
-class RlcUser(BaseModel):
-    id: int
-    user_id: int
-    birthday: Optional[Any]
-    phone_int: Optional[str]
-    street: Optional[str]
-    city: Optional[str]
-    postal_code: Optional[str]
-    locked: bool
-    email_confirmed: bool
-    is_active: bool
-    accepted: bool
-    updated: datetime
-    note: Optional[str]
-    name: str
-    email: str
-    created: datetime
-    speciality_of_study: Optional[str]
-    speciality_of_study_display: Optional[str]
-
-    class Config:
-        orm_mode = True
-
 
 # unlock user
 UNLOCK_RLC_USER_NOT_ALL_KEYS_CORRECT = (
@@ -42,7 +16,7 @@ UNLOCK_RLC_USER_NOT_ALL_KEYS_CORRECT = (
 UNLOCK_RLC_USER_SUCCESS = "User {} successfully unlocked himself or herself."
 
 
-@router.api(method="POST", url="unlock_self/", output_schema=RlcUser, auth=True)
+@router.api(method="POST", url="unlock_self/", output_schema=schemas.RlcUser, auth=True)
 def unlock_rlc_user(user: UserProfile):
     if not user.check_all_keys_correct():
         return ServiceResult(
@@ -52,3 +26,33 @@ def unlock_rlc_user(user: UserProfile):
     user.rlc_user.locked = False
     user.rlc_user.save()
     return ServiceResult(UNLOCK_RLC_USER_SUCCESS, user.rlc_user)
+
+
+# update settings
+UPDATE_SETTINGS_SUCCESS = (
+    "User {} has successfully updated his or her frontend settings."
+)
+
+
+@router.api(method="PUT", url="settings_self/", auth=True, input_schema=Dict[str, Any])
+def update_settings(data: Dict[str, Any], rlc_user: RlcUser):
+    rlc_user.set_frontend_settings(data)
+    return ServiceResult(UPDATE_SETTINGS_SUCCESS)
+
+
+# get data
+DATA_RLC_USER_SUCCESS = "User {} successfully requested data about himself or herself."
+
+
+@router.api(
+    method="GET", url="data_self/", output_schema=schemas.RlcUserData, auth=True
+)
+def get_data(rlc_user: RlcUser):
+    data = {
+        "user": rlc_user,
+        "rlc": rlc_user.org,
+        "badges": rlc_user.get_badges(),
+        "permissions": rlc_user.user.get_all_user_permissions(),
+        "settings": rlc_user.frontend_settings,
+    }
+    return ServiceResult(DATA_RLC_USER_SUCCESS, data)

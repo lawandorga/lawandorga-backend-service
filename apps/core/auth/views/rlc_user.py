@@ -13,15 +13,9 @@ from apps.core.models import (
     RlcUser,
     UserProfile,
 )
-from apps.core.static import (
-    PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
-    PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
-    PERMISSION_ADMIN_MANAGE_USERS,
-)
-from apps.recordmanagement.models import RecordAccess, RecordDeletion
+from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS
 from apps.static.permission import CheckPermissionWall
 
-from ...rlc.serializers import RlcSerializer
 from ..serializers import (
     ChangePasswordSerializer,
     EmailSerializer,
@@ -207,51 +201,6 @@ class RlcUserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
     def dashboard(self, request, *args, **kwargs):
         user = request.user
         return Response(user.get_information())
-
-    @action(detail=False, methods=["get"])
-    def admin(self, request, *args, **kwargs):
-        instance = request.user
-        profiles = UserProfile.objects.filter(
-            rlc=instance.rlc, rlc_user__locked=True
-        ).count()
-        if instance.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
-            profiles += UserProfile.objects.filter(
-                rlc=instance.rlc, rlc_user__accepted=False
-            ).count()
-        if instance.has_permission(PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS):
-            record_deletion_requests = RecordDeletion.objects.filter(
-                record__template__rlc=instance.rlc, state="re"
-            ).count()
-        else:
-            record_deletion_requests = 0
-        if instance.has_permission(PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS):
-            record_permit_requests = RecordAccess.objects.filter(
-                record__template__rlc=instance.rlc, state="re"
-            ).count()
-        else:
-            record_permit_requests = 0
-        data = {
-            "profiles": profiles,
-            "record_deletion_requests": record_deletion_requests,
-            "record_permit_requests": record_permit_requests,
-        }
-        return Response(data)
-
-    @action(detail=False, methods=["get"])
-    def statics(self, request):
-        try:
-            payload = request.auth.payload
-        except AttributeError:
-            raise ParseError("Token was not set within the request.")
-        user = UserProfile.objects.get(pk=payload["django_user"])
-
-        data = {
-            "user": RlcUserSerializer(user.rlc_user).data,
-            "rlc": RlcSerializer(user.rlc).data,
-            "permissions": user.get_all_user_permissions(),
-        }
-
-        return Response(data, status=status.HTTP_200_OK)
 
     @action(
         detail=True,

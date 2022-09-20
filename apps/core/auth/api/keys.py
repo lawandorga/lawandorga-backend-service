@@ -2,7 +2,7 @@ from typing import List, Literal
 
 from pydantic import BaseModel
 
-from apps.core.models import UserProfile
+from apps.core.auth.models import RlcUser
 from apps.recordmanagement.models import RecordEncryptionNew
 from apps.static.api_layer import Router
 from apps.static.service_layer import ServiceResult
@@ -30,8 +30,8 @@ LIST_KEYS_SUCCESS = "User {} has requested the list of all his keys."
 
 
 @router.api(output_schema=List[Key], auth=True)
-def list_keys(user: UserProfile):
-    all_keys: List[Key] = user.get_all_keys()
+def list_keys(rlc_user: RlcUser):
+    all_keys: List[Key] = rlc_user.user.get_all_keys()
     return ServiceResult(LIST_KEYS_SUCCESS, all_keys)
 
 
@@ -40,9 +40,9 @@ TEST_KEYS_SUCCESS = "User {} has tested all his keys."
 
 
 @router.api(url="test/", output_schema=List[Key], auth=True)
-def test_keys(user: UserProfile, private_key_user: str):
-    user.test_all_keys(private_key_user)
-    all_keys: List[Key] = user.get_all_keys()
+def test_keys(rlc_user: RlcUser, private_key_user: str):
+    rlc_user.user.test_all_keys(private_key_user)
+    all_keys: List[Key] = rlc_user.user.get_all_keys()
     return ServiceResult(TEST_KEYS_SUCCESS, all_keys)
 
 
@@ -56,8 +56,8 @@ DELETE_KEY_SUCCESS_RECORD = "User {} deleted a record key."
 
 
 @router.api(url="<int:id>/", method="POST", input_schema=KeyDelete, auth=True)
-def delete_key(data: KeyDelete, user: UserProfile):
-    key = RecordEncryptionNew.objects.filter(user=user, pk=data.id).first()
+def delete_key(data: KeyDelete, rlc_user: RlcUser):
+    key = RecordEncryptionNew.objects.filter(user=rlc_user.user, pk=data.id).first()
     if key is None:
         return ServiceResult(
             DELETE_KEY_ERROR_NOT_FOUND,

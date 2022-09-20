@@ -1,3 +1,5 @@
+import json
+from json import JSONDecodeError
 from typing import Any, Callable, Dict, List, Literal, Optional, Type
 
 from django.http import HttpRequest, JsonResponse
@@ -12,7 +14,7 @@ class RFC7807(BaseModel):
     type: str
     title: str
     status: int
-    detail: Optional[str] = None
+    detail: Optional[Any] = None
     instance: Optional[str] = None
     internal: Optional[Any] = None
     param_errors: Optional[Dict[str, List[str]]] = None
@@ -42,13 +44,22 @@ def validation_error_handler(validation_error: ValidationError) -> RFC7807:
     )
 
 
-def validate(request: HttpRequest, schema: Type[BaseModel]):
+def validate(request: HttpRequest, schema: Type[BaseModel]) -> BaseModel:
     data: Dict[str, Any] = {}
-    data.update(request.POST)
+    # query params
     data.update(request.GET)
+    # request resolver
     if request.resolver_match is not None:
         data.update(request.resolver_match.kwargs)
-    return schema(**data)
+    # body
+    body_str = request.body.decode("utf-8")
+    try:
+        body_dict = json.loads(body_str)
+        data.update(body_dict)
+    except JSONDecodeError:
+        pass
+    # validate
+    return schema(root=data)
 
 
 class ErrorResponse(JsonResponse):
@@ -117,7 +128,7 @@ class Router:
     @staticmethod
     def generate_view(
         func: Callable[..., ServiceResult],
-        input_schema: Optional[Type[BaseModel]] = None,
+        input_schema: Optional[Type] = None,
         output_schema: Optional[Type] = None,
         auth=False,
         error_dict: Optional[Dict[str, ErrorResponse]] = None,
@@ -172,12 +183,16 @@ class Router:
             # validate the input
             if input_schema:
                 try:
-                    data = validate(request, input_schema)
+                    model = create_model(
+                        "Input",
+                        root=(input_schema, ...),
+                    )
+                    data = validate(request, model)
                 except ValidationError as e:
                     return ErrorResponse(**validation_error_handler(e).dict())
 
                 if "data" in func_input:
-                    func_kwargs["data"] = data
+                    func_kwargs["data"] = data.root  # type: ignore
 
             # service layer next step
             result: ServiceResult = func(**func_kwargs)
@@ -222,7 +237,7 @@ class Router:
     def get(
         self,
         url: str = "",
-        input_schema: Optional[Type[BaseModel]] = None,
+        input_schema: Optional[Type] = None,
         output_schema: Optional[Type] = None,
         auth=False,
         error_dict: Optional[Dict[str, ErrorResponse]] = None,
@@ -232,7 +247,7 @@ class Router:
     def post(
         self,
         url: str = "",
-        input_schema: Optional[Type[BaseModel]] = None,
+        input_schema: Optional[Type] = None,
         output_schema: Optional[Type] = None,
         auth=False,
         error_dict: Optional[Dict[str, ErrorResponse]] = None,
@@ -242,7 +257,7 @@ class Router:
     def put(
         self,
         url: str = "",
-        input_schema: Optional[Type[BaseModel]] = None,
+        input_schema: Optional[Type] = None,
         output_schema: Optional[Type] = None,
         auth=False,
         error_dict: Optional[Dict[str, ErrorResponse]] = None,
@@ -252,7 +267,7 @@ class Router:
     def delete(
         self,
         url: str = "",
-        input_schema: Optional[Type[BaseModel]] = None,
+        input_schema: Optional[Type] = None,
         output_schema: Optional[Type] = None,
         auth=False,
         error_dict: Optional[Dict[str, ErrorResponse]] = None,
@@ -263,7 +278,7 @@ class Router:
         self,
         url: str = "",
         method: Literal["GET", "POST", "PUT", "DELETE"] = "GET",
-        input_schema: Optional[Type[BaseModel]] = None,
+        input_schema: Optional[Type] = None,
         output_schema: Optional[Type] = None,
         auth=False,
         error_dict: Optional[Dict[str, ErrorResponse]] = None,

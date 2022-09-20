@@ -178,6 +178,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 # See: https://docs.djangoproject.com/en/3.2/ref/settings/#admins
 ADMINS = [("Daniel Mössner", "it@law-orga.de")]
 
+# custom test runner
+# See: https://pytest-django.readthedocs.io/en/latest/faq.html#how-can-i-use-manage-py-test-with-pytest-django
+TEST_RUNNER = "config.test.PytestTestRunner"
+
 # This is used by the ExpiringTokenAuthentication which extends from rest's token authentication
 TIMEOUT_TIMEDELTA = timedelta(minutes=30)
 
