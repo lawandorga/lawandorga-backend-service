@@ -126,7 +126,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             group_has_permission__pk__in=groups, permission=permission
         ).exists()
 
-    def has_permission(self, permission, for_user=None, for_group=None, for_rlc=None):
+    def has_permission(self, permission):
         if isinstance(permission, str):
             try:
                 from apps.core.models import Permission
@@ -136,9 +136,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                 return False
 
         as_user = self.__has_as_user_permission(permission)
-        as_group = self.__has_as_group_member_permission(permission)
+        if as_user:
+            return True
 
-        return as_user or as_group
+        as_group = self.__has_as_group_member_permission(permission)
+        if as_group:
+            return True
+
+        return False
 
     def get_collab_permissions(self):
         from apps.core.models import PermissionForCollabDocument

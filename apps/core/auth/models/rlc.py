@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
@@ -7,6 +9,11 @@ from django.template import loader
 from apps.core.rlc.models import HasPermission, Permission
 from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
+from ...static import (
+    PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
+    PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
+    PERMISSION_ADMIN_MANAGE_USERS,
+)
 from .user import UserProfile
 
 
@@ -42,6 +49,8 @@ class RlcUser(EncryptedModelMixin, models.Model):
     speciality_of_study = models.CharField(
         choices=STUDY_CHOICES, max_length=100, blank=True, null=True
     )
+    # settings
+    frontend_settings = models.JSONField(null=True)
     # encryption
     private_key = models.BinaryField(null=True)
     is_private_key_encrypted = models.BooleanField(default=False)
@@ -114,6 +123,13 @@ class RlcUser(EncryptedModelMixin, models.Model):
         self.public_key = None
         self.is_private_key_encrypted = False
         self.save()
+
+    def get_permissions(self):
+        return self.user.get_all_permissions()
+
+    def set_frontend_settings(self, settings: Dict[str, Any]):
+        self.settings = settings
+        self.save(update_fields=["frontend_settings"])
 
     def generate_keys(self):
         self.private_key, self.public_key = RSAEncryption.generate_keys()
@@ -195,6 +211,45 @@ class RlcUser(EncryptedModelMixin, models.Model):
         HasPermission.objects.create(
             user_has_permission=self.user, permission=permission
         )
+
+    def has_permission(self, permission: str):
+        return self.user.has_permission(permission)
+
+    def get_badges(self):
+        from apps.recordmanagement.models import RecordAccess, RecordDeletion
+
+        # profiles
+        profiles = UserProfile.objects.filter(
+            rlc=self.org, rlc_user__locked=True
+        ).count()
+        if self.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
+            profiles += UserProfile.objects.filter(
+                rlc=self.org, rlc_user__accepted=False
+            ).count()
+
+        # deletion requests
+        if self.has_permission(PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS):
+            record_deletion_requests = RecordDeletion.objects.filter(
+                record__template__rlc=self.org, state="re"
+            ).count()
+        else:
+            record_deletion_requests = 0
+
+        # permit requests
+        if self.has_permission(PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS):
+            record_permit_requests = RecordAccess.objects.filter(
+                record__template__rlc=self.org, state="re"
+            ).count()
+        else:
+            record_permit_requests = 0
+
+        # return
+        data = {
+            "profiles": profiles,
+            "record_deletion_requests": record_deletion_requests,
+            "record_permit_requests": record_permit_requests,
+        }
+        return data
 
 
 # this is used on signup
