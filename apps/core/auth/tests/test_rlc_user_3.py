@@ -27,3 +27,12 @@ def test_get_data_works(user, db):
     c.login(**user)
     response = c.get("/api/rlc_users/data_self/")
     assert response.status_code == 200
+
+
+def test_update_frontend_settings(user, db):
+    c = Client()
+    c.login(**user)
+    response = c.put("/api/rlc_users/settings_self/", json={'abc': '123'})
+    data = response.json()
+    print(data)
+    assert response.status_code == 200

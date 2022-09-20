@@ -1,3 +1,5 @@
+from typing import Dict, Any
+
 from apps.core.models import UserProfile
 from apps.static.api_layer import Router
 from apps.static.service_layer import ServiceResult
@@ -27,8 +29,15 @@ def unlock_rlc_user(user: UserProfile):
 
 
 # update settings
-def update_settings(rlc_user: RlcUser):
-    pass
+UPDATE_SETTINGS_SUCCESS = 'User {} has successfully updated his or her frontend settings.'
+
+
+@router.api(
+    method="PUT", url="settings_self/", auth=True, input_schema=Dict[str, Any]
+)
+def update_settings(data: Dict[str, Any], rlc_user: RlcUser):
+    rlc_user.set_frontend_settings(data)
+    return ServiceResult(UPDATE_SETTINGS_SUCCESS)
 
 
 # get data
