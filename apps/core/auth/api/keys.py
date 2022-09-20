@@ -57,7 +57,6 @@ DELETE_KEY_SUCCESS_RECORD = "User {} deleted a record key."
 
 @router.api(url="<int:id>/", method="POST", input_schema=KeyDelete, auth=True)
 def delete_key(data: KeyDelete, user: UserProfile):
-    print(data)
     key = RecordEncryptionNew.objects.filter(user=user, pk=data.id).first()
     if key is None:
         return ServiceResult(

@@ -1,6 +1,7 @@
+import json
 from typing import Any, Callable, Dict, List, Literal, Optional, Type
 
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, JsonResponse, QueryDict
 from django.urls import path
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model
 
@@ -44,7 +45,8 @@ def validation_error_handler(validation_error: ValidationError) -> RFC7807:
 
 def validate(request: HttpRequest, schema: Type[BaseModel]) -> BaseModel:
     data: Dict[str, Any] = {}
-    data.update(request.POST)
+    body = json.loads(request.body)
+    data.update(body)
     data.update(request.GET)
     if request.resolver_match is not None:
         data.update(request.resolver_match.kwargs)

@@ -127,8 +127,8 @@ class RlcUser(EncryptedModelMixin, models.Model):
     def get_permissions(self):
         return self.user.get_all_permissions()
 
-    def set_frontend_settings(self, settings: Dict[str, Any]):
-        self.settings = settings
+    def set_frontend_settings(self, data: Dict[str, Any]):
+        self.frontend_settings = data
         self.save(update_fields=["frontend_settings"])
 
     def generate_keys(self):
