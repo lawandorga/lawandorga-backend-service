@@ -1,4 +1,5 @@
 import json
+from json import JSONDecodeError
 from typing import Any, Callable, Dict, List, Literal, Optional, Type
 
 from django.http import HttpRequest, JsonResponse
@@ -45,11 +46,19 @@ def validation_error_handler(validation_error: ValidationError) -> RFC7807:
 
 def validate(request: HttpRequest, schema: Type[BaseModel]) -> BaseModel:
     data: Dict[str, Any] = {}
-    body = json.loads(request.body)
-    data.update(body)
+    # query params
     data.update(request.GET)
+    # request resolver
     if request.resolver_match is not None:
         data.update(request.resolver_match.kwargs)
+    # body
+    body_str = request.body.decode("utf-8")
+    try:
+        body_dict = json.loads(body_str)
+        data.update(body_dict)
+    except JSONDecodeError:
+        pass
+    # validate
     return schema(root=data)
 
 
