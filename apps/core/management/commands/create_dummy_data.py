@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from apps.core.tests import create
+from apps.core.rlc.tests.example_data import create
 
 
 class Command(BaseCommand):

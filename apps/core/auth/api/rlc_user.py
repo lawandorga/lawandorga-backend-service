@@ -44,6 +44,6 @@ def get_data(rlc_user: RlcUser):
         "rlc": rlc_user.org,
         "badges": rlc_user.get_badges(),
         "permissions": rlc_user.user.get_all_user_permissions(),
-        "settings": rlc_user.frontend_settings
+        "settings": rlc_user.frontend_settings,
     }
     return ServiceResult(DATA_RLC_USER_SUCCESS, data)

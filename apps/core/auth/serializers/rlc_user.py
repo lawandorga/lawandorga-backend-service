@@ -8,7 +8,6 @@ from rest_framework_simplejwt.serializers import TokenObtainSerializer
 from rest_framework_simplejwt.settings import api_settings
 
 from apps.core.models import Org, RlcUser, UserProfile
-from apps.core.rlc.serializers.rlc import RlcSerializer
 from config.authentication import RefreshPrivateKeyToken
 
 
@@ -153,9 +152,6 @@ class RlcUserJWTSerializer(TokenObtainSerializer):
 
         data["refresh"] = str(refresh)
         data["access"] = str(refresh.access_token)
-        data["user"] = RlcUserSerializer(self.user.rlc_user).data
-        data["rlc"] = RlcSerializer(self.user.rlc).data
-        data["permissions"] = self.user.get_all_user_permissions()
 
         if api_settings.UPDATE_LAST_LOGIN:
             update_last_login(None, self.user)

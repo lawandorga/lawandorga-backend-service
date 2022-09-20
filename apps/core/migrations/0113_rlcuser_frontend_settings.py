@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0112_rename_rlc_org'),
+        ("core", "0112_rename_rlc_org"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='rlcuser',
-            name='frontend_settings',
+            model_name="rlcuser",
+            name="frontend_settings",
             field=models.JSONField(null=True),
         ),
     ]

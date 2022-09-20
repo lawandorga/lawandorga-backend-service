@@ -26,6 +26,4 @@ def test_get_data_works(user, db):
     c = Client()
     c.login(**user)
     response = c.get("/api/rlc_users/data_self/")
-    response_data = response.json()
-    print(response_data)
     assert response.status_code == 200

@@ -96,9 +96,6 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         response = view(request)
         self.assertContains(response, "access")
         self.assertContains(response, "refresh")
-        self.assertContains(response, "user")
-        self.assertContains(response, "rlc")
-        self.assertContains(response, "permissions")
         self.assertEqual(response.status_code, 200)
 
     def test_password_forgotten_works(self):
@@ -386,19 +383,6 @@ class UserViewSetAccessTests(TestCase):
         response = view(request)
         self.assertNotEqual(response.status_code, 403)
         self.assertNotEqual(response.status_code, 401)
-
-    def test_not_everybody_can_hit_admin(self):
-        view = RlcUserViewSet.as_view(actions={"get": "admin"})
-        request = self.factory.get("/api/users/admin/")
-        response = view(request)
-        self.assertEqual(response.status_code, 401)
-
-    def test_everybody_can_hit_statics(self):
-        view = RlcUserViewSet.as_view(actions={"get": "statics"})
-        request = self.factory.get("/api/users/statics/")
-        response = view(request)
-        self.assertNotEqual(response.status_code, 401)
-        self.assertNotEqual(response.status_code, 403)
 
     def test_everybody_can_hit_activate(self):
         view = RlcUserViewSet.as_view(actions={"post": "activate"})
