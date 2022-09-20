@@ -181,7 +181,7 @@ class Router:
                     return ErrorResponse(**validation_error_handler(e).dict())
 
                 if "data" in func_input:
-                    func_kwargs["data"] = data.root
+                    func_kwargs["data"] = data.root  # type: ignore
 
             # service layer next step
             result: ServiceResult = func(**func_kwargs)
