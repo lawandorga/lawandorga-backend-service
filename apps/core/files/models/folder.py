@@ -115,7 +115,7 @@ class Folder(models.Model):
 
         if user.has_permission(
             PERMISSION_FILES_WRITE_ALL_FOLDERS
-        ) or user.has_permission(PERMISSION_FILES_MANAGE_PERMISSIONS):
+        ) or user.has_permission(PERMISSION_FILES_MANAGE_PERMISSIONS) or user.has_permission(PERMISSION_FILES_READ_ALL_FOLDERS):
             return True
 
         folders = self.get_all_parents() + [self] + self.get_all_children()

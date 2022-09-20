@@ -46,6 +46,10 @@ class FolderViewSet(viewsets.ModelViewSet):
         # if instance is the root folder block the request
         if instance.parent is None:
             raise ParseError("You can not edit the root folder.")
+        # check permissions
+        if not instance.user_has_permission_write(request.user):
+            raise PermissionDenied()
+        # check valid
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         # check that there is no circular reference happening
