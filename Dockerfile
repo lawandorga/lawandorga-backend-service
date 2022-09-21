@@ -10,7 +10,7 @@ COPY requirements.txt /django/requirements.txt
 COPY tmp/secrets.json /django/tmp/secrets.json
 
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 COPY . /django
 
