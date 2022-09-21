@@ -12,6 +12,8 @@ COPY tmp/secrets.json /django/tmp/secrets.json
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
+RUN python production_manage.py collectstatic --noinput
+
 COPY . /django
 
 # RUN python production_manage.py collectstatic --noinput
