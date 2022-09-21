@@ -14,8 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /django
 
-RUN python production_manage.py collectstatic --noinput
-RUN python production_manage.py migrate
+# RUN python production_manage.py collectstatic --noinput
+# RUN python production_manage.py migrate
 
 EXPOSE 8080
 
