@@ -6,34 +6,6 @@ on:
             - test
 
 jobs:
-    test:
-        runs-on: ubuntu-latest
-
-        steps:
-            -   name: Checkout
-                uses: actions/checkout@v2
-
-            -   name: Set up Python
-                uses: actions/setup-python@v2
-                with:
-                    python-version: 3.9
-
-            -   name: Create secrets.json for Django
-                id: create-json
-                uses: jsdaniell/create-json@1.1.2
-                with:
-                    name: "secrets.json"
-                    json: ${{ secrets.SECRETS_TEST }}
-                    dir: 'tmp/'
-
-            -   name: Install Dependencies & Collect Staticfiles
-                run: |
-                    python -m pip install --upgrade pip
-                    pip install -r requirements.txt
-
-            -   name: Run Tests
-                run: python manage.py test
-
     deploy:
         runs-on: ubuntu-latest
 
@@ -52,20 +24,20 @@ jobs:
             -   name: Login to docker
                 uses: docker/login-action@v1
                 with:
-                    registry: ${{ secrets.DOCKER_REGISTRY }}
-                    username: ${{ secrets.DOCKER_USERNAME }}
-                    password: ${{ secrets.SCALEWAY_TOKEN }}
+                    registry: ${{ secrets.SCW_DOCKER_REGISTRY }}
+                    username: ${{ secrets.SCW_DOCKER_USERNAME }}
+                    password: ${{ secrets.SCW_TOKEN }}
 
             -   name: Build the container
                 run: |
-                    docker build -t ${{ secrets.DOCKER_REGISTRY }}/lawandorga-backend-test:latest .
-                    docker push ${{ secrets.DOCKER_REGISTRY }}/lawandorga-backend-test:latest
+                    docker build -t ${{ secrets.SCW_DOCKER_REGISTRY }}/lawandorga-backend-test:latest .
+                    docker push ${{ secrets.SCW_DOCKER_REGISTRY }}/lawandorga-backend-test:latest
 
             -   name: Trigger a redeploy
                 run: |
                     curl -X PATCH \
-                      https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/${{ secrets.CONTAINER_TEST }} \
-                      -H 'X-Auth-Token: ${{ secrets.SCALEWAY_TOKEN }}' \
+                      https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/48026603-6018-469f-bce8-43d7a8a6036c \
+                      -H 'X-Auth-Token: ${{ secrets.SCW_TOKEN }}' \
                       -H 'Content-Type: application/json' \
                       -d '{ "redeploy": true }'
 

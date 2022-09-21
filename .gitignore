@@ -3,6 +3,7 @@
 .pytest_cache
 .coverage
 .mypy_cache
+./test.sh
 coverage.xml
 
 **secrets**
