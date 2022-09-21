@@ -6,6 +6,7 @@ from django.core.mail import send_mail
 from django.db import models
 from django.template import loader
 
+from apps.core.auth.token_generator import EmailConfirmationTokenGenerator
 from apps.core.rlc.models import HasPermission, Permission
 from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
@@ -50,7 +51,7 @@ class RlcUser(EncryptedModelMixin, models.Model):
         choices=STUDY_CHOICES, max_length=100, blank=True, null=True
     )
     # settings
-    frontend_settings = models.JSONField(null=True)
+    frontend_settings = models.JSONField(null=True, blank=True)
     # encryption
     private_key = models.BinaryField(null=True)
     is_private_key_encrypted = models.BooleanField(default=False)
@@ -153,7 +154,7 @@ class RlcUser(EncryptedModelMixin, models.Model):
         return True
 
     def get_email_confirmation_token(self):
-        token = AccountActivationTokenGenerator().make_token(self)
+        token = EmailConfirmationTokenGenerator().make_token(self)
         return token
 
     def get_email_confirmation_link(self):
@@ -250,13 +251,3 @@ class RlcUser(EncryptedModelMixin, models.Model):
             "record_permit_requests": record_permit_requests,
         }
         return data
-
-
-# this is used on signup
-class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
-    def _make_hash_value(self, rlc_user, timestamp):
-        super_make_hash_value = (
-            str(rlc_user.pk) + rlc_user.user.password + str(timestamp)
-        )
-        additional_hash_value = str(rlc_user.email_confirmed)
-        return super_make_hash_value + additional_hash_value

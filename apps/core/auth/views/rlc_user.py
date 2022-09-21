@@ -7,12 +7,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
-from apps.core.models import (
-    AccountActivationTokenGenerator,
-    PasswordResetTokenGenerator,
-    RlcUser,
-    UserProfile,
-)
+from apps.core.models import PasswordResetTokenGenerator, RlcUser, UserProfile
 from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS
 from apps.static.permission import CheckPermissionWall
 
@@ -26,6 +21,7 @@ from ..serializers import (
     RlcUserUpdateSerializer,
     UserPasswordResetConfirmSerializer,
 )
+from ..token_generator import EmailConfirmationTokenGenerator
 
 
 class RlcUserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
@@ -213,7 +209,7 @@ class RlcUserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
         # localhost:4200/activate-account/1023/akoksc-f52702143fcf098155fb1b2c6b081f7a/
         rlc_user = self.get_object()
 
-        if AccountActivationTokenGenerator().check_token(rlc_user, token):
+        if EmailConfirmationTokenGenerator().check_token(rlc_user, token):
             rlc_user.email_confirmed = True
             rlc_user.save()
             return Response(status=status.HTTP_200_OK)
