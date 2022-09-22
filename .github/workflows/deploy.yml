@@ -3,7 +3,7 @@ name: Deploy
 on:
     push:
         branches:
-            - test
+            - main
 
 jobs:
     deploy:
@@ -55,7 +55,12 @@ jobs:
                       -H 'X-Auth-Token: ${{ secrets.SCW_TOKEN }}' \
                       -H 'Content-Type: application/json' \
                       -d '{
+                        "registry_image": "${{ env.IMAGE }}",
                         "secret_environment_variables": [
+                          {
+                            "key": "SCW_TEST",
+                            "value": "---"
+                          },
                           {
                             "key": "ALLOWED_HOSTS",
                             "value": "${{ env.ALLOWED_HOSTS }}"
