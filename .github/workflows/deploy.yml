@@ -79,10 +79,10 @@ jobs:
         environment: PRODUCTION
 
         env:
-            ALLOWED_HOSTS: ${{ secrets.DJANGO_ALLOWED_HOSTS }}
-            CORS_ALLOWED_ORIGINS: ${{ secrets.DJANGO_CORS_ALLOWED_ORIGINS }}
-            SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-            JWT_SIGNING_KEY: ${{ secrets.DJANGO_JWT_SIGNING_KEY }}
+            DJANGO_ALLOWED_HOSTS: ${{ secrets.DJANGO_ALLOWED_HOSTS }}
+            DJANGO_CORS_ALLOWED_ORIGINS: ${{ secrets.DJANGO_CORS_ALLOWED_ORIGINS }}
+            DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+            DJANGO_JWT_SIGNING_KEY: ${{ secrets.DJANGO_JWT_SIGNING_KEY }}
             EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
             EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
             EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
@@ -96,8 +96,8 @@ jobs:
             DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
             DB_PORT: ${{ secrets.DB_PORT }}
             DB_HOST: ${{ secrets.DB_HOST }}
-            IMAGE: ${{ github.event.repository.name }}:latest
-            SERVICE: ${{ github.repository }}
+            PIPELINE_IMAGE: ${{ github.event.repository.name }}:latest
+            PIPELINE_SERVICE: ${{ github.repository }}
 
         steps:
             -   name: Checkout
@@ -124,12 +124,20 @@ jobs:
                         "registry_image": "${{ secrets.SCW_DOCKER_REGISTRY }}/${{ env.IMAGE }}",
                         "secret_environment_variables": [
                           {
-                            "key": "ALLOWED_HOSTS",
-                            "value": "${{ env.ALLOWED_HOSTS }}"
+                            "key": "DJANGO_ALLOWED_HOSTS",
+                            "value": "${{ env.DJANGO_ALLOWED_HOSTS }}"
                           },
                           {
-                            "key": "CORS_ALLOWED_ORIGINS",
-                            "value": "${{ env.CORS_ALLOWED_ORIGINS }}"
+                            "key": "DJANGO_CORS_ALLOWED_ORIGINS",
+                            "value": "${{ env.DJANGO_CORS_ALLOWED_ORIGINS }}"
+                          },
+                          {
+                            "key": "DJANGO_SECRET_KEY",
+                            "value": "${{ env.DJANGO_SECRET_KEY }}"
+                          },
+                          {
+                            "key": "DJANGO_JWT_SIGNING_KEY",
+                            "value": "${{ env.DJANGO_JWT_SIGNING_KEY }}"
                           },
                           {
                             "key": "DB_HOST",
@@ -156,10 +164,6 @@ jobs:
                             "value": "${{ env.FRONTEND_URL }}"
                           },
                           {
-                            "key": "JWT_SIGNING_KEY",
-                            "value": "${{ env.JWT_SIGNING_KEY }}"
-                          },
-                          {
                             "key": "S3_ACCESS_KEY",
                             "value": "${{ env.S3_ACCESS_KEY }}"
                           },
@@ -170,10 +174,6 @@ jobs:
                           {
                             "key": "S3_BUCKET_NAME",
                             "value": "${{ env.S3_BUCKET_NAME }}"
-                          },
-                          {
-                            "key": "SECRET_KEY",
-                            "value": "${{ env.SECRET_KEY }}"
                           },
                           {
                             "key": "EMAIL_ADDRESS",
@@ -192,12 +192,12 @@ jobs:
                             "value": "${{ env.EMAIL_PORT }}"
                           },
                           {
-                            "key": "SERVICE",
-                            "value": "${{ env.SERVICE }}"
+                            "key": "PIPELINE_SERVICE",
+                            "value": "${{ env.PIPELINE_SERVICE }}"
                           },
                           {
-                            "key": "IMAGE",
-                            "value": "${{ env.IMAGE }}"
+                            "key": "PIPELINE_IMAGE",
+                            "value": "${{ env.PIPELINE_IMAGE }}"
                           }
                         ]
                       }'

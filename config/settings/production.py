@@ -14,11 +14,11 @@ DEBUG = False
 
 # Allowed Hosts
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY
-SECRET_KEY = env.str("SECRET_KEY")
+SECRET_KEY = env.str("DJANGO_SECRET_KEY")
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
@@ -48,7 +48,7 @@ EMAIL_USE_SSL = False
 
 # Installed app django-cors-headers
 # https://pypi.org/project/django-cors-headers/
-CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS")
+CORS_ALLOWED_ORIGINS = env.list("DJANGO_CORS_ALLOWED_ORIGINS")
 
 # Storage
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
@@ -62,7 +62,7 @@ AWS_S3_FILE_OVERWRITE = False
 
 # JWT Token
 # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
-SIMPLE_JWT['SIGNING_KEY'] = env.str("JWT_SIGNING_KEY")
+SIMPLE_JWT['SIGNING_KEY'] = env.str("DJANGO_JWT_SIGNING_KEY")
 
 # Logging
 # https://docs.djangoproject.com/en/dev/topics/logging/

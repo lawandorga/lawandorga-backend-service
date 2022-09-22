@@ -167,8 +167,8 @@ FRONTEND_URL = 'http://localhost:4200'
 
 # General settings displayed on the index page
 RUNTIME = datetime.now(pytz.timezone("Europe/Berlin")).strftime("%Y-%m-%d--%H:%M:%S")
-IMAGE = os.getenv('IMAGE', 'unknown')
-SERVICE = os.getenv('SERVICE', 'unknown')
+IMAGE = os.getenv('PIPELINE_IMAGE', 'unknown')
+SERVICE = os.getenv('PIPELINE_SERVICE', 'unknown')
 
 # The standard password of the dummy user, this is used within get_private_key in UserProfile
 # This enables us to do a lot of cool stuff, for example: test the restframework api directly
