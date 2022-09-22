@@ -96,7 +96,7 @@ jobs:
                       -H 'X-Auth-Token: ${{ secrets.SCW_TOKEN }}' \
                       -H 'Content-Type: application/json' \
                       -d '{
-                        "registry_image": "${{ env.IMAGE }}",
+                        "registry_image": "${{ secrets.SCW_DOCKER_REGISTRY }}/${{ env.IMAGE }}",
                         "secret_environment_variables": [
                           {
                             "key": "ALLOWED_HOSTS",
