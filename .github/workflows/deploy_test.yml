@@ -19,9 +19,9 @@ jobs:
             EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
             EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
             EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
-            SCW_S3_BUCKET_NAME: ${{ secrets.SCW_S3_BUCKET_NAME }}
-            SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
-            SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+            S3_BUCKET_NAME: ${{ secrets.SCW_S3_BUCKET_NAME }}
+            S3_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+            S3_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
             FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
             DB_NAME: ${{ secrets.DB_NAME }}
             DB_USER: ${{ secrets.DB_USER }}
@@ -93,16 +93,16 @@ jobs:
                             "value": "${{ env.JWT_SIGNING_KEY }}"
                           },
                           {
-                            "key": "SCW_ACCESS_KEY",
-                            "value": "${{ env.SCW_ACCESS_KEY }}"
+                            "key": "S3_ACCESS_KEY",
+                            "value": "${{ env.S3_ACCESS_KEY }}"
                           },
                           {
-                            "key": "SCW_SECRET_KEY",
-                            "value": "${{ env.SCW_SECRET_KEY }}"
+                            "key": "S3_SECRET_KEY",
+                            "value": "${{ env.S3_SECRET_KEY }}"
                           },
                           {
-                            "key": "SCW_S3_BUCKET_NAME",
-                            "value": "${{ env.SCW_S3_BUCKET_NAME }}"
+                            "key": "S3_BUCKET_NAME",
+                            "value": "${{ env.S3_BUCKET_NAME }}"
                           },
                           {
                             "key": "SECRET_KEY",
