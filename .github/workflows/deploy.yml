@@ -77,11 +77,6 @@ jobs:
             -   name: Checkout
                 uses: actions/checkout@v2
 
-            -   name: Update curl
-                run: |
-                    sudo apt-get install curl -y
-                    curl -V
-
             -   name: Login to docker
                 uses: docker/login-action@v1
                 with:
@@ -103,10 +98,6 @@ jobs:
                       -d '{
                         "registry_image": "${{ env.IMAGE }}",
                         "secret_environment_variables": [
-                          {
-                            "key": "SCW_TEST",
-                            "value": "---"
-                          },
                           {
                             "key": "ALLOWED_HOSTS",
                             "value": "${{ env.ALLOWED_HOSTS }}"
