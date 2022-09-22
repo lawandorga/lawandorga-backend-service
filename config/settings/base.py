@@ -140,7 +140,7 @@ REST_FRAMEWORK = {
 # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
 SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": True,
-    "SIGNING_KEY": 'nosecret',
+    "SIGNING_KEY": "nosecret",
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
     "REFRESH_TOKEN_LIFETIME": timedelta(minutes=20),
     "USER_ID_CLAIM": "django_user",
@@ -163,12 +163,12 @@ TEST_RUNNER = "config.test.PytestTestRunner"
 TIMEOUT_TIMEDELTA = timedelta(minutes=30)
 
 # This is used for links in activation emails and so on
-FRONTEND_URL = 'http://localhost:4200'
+FRONTEND_URL = "http://localhost:4200"
 
 # General settings displayed on the index page
 RUNTIME = datetime.now(pytz.timezone("Europe/Berlin")).strftime("%Y-%m-%d--%H:%M:%S")
-IMAGE = os.getenv('PIPELINE_IMAGE', 'unknown')
-SERVICE = os.getenv('PIPELINE_SERVICE', 'unknown')
+IMAGE = os.getenv("PIPELINE_IMAGE", "unknown")
+SERVICE = os.getenv("PIPELINE_SERVICE", "unknown")
 
 # The standard password of the dummy user, this is used within get_private_key in UserProfile
 # This enables us to do a lot of cool stuff, for example: test the restframework api directly

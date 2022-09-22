@@ -62,7 +62,7 @@ AWS_S3_FILE_OVERWRITE = False
 
 # JWT Token
 # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
-SIMPLE_JWT['SIGNING_KEY'] = env.str("DJANGO_JWT_SIGNING_KEY")
+SIMPLE_JWT["SIGNING_KEY"] = env.str("DJANGO_JWT_SIGNING_KEY")
 
 # Logging
 # https://docs.djangoproject.com/en/dev/topics/logging/

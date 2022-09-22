@@ -33,7 +33,11 @@ urlpatterns = [
         "",
         TemplateView.as_view(
             template_name="index.html",
-            extra_context={"RUNTIME": settings.RUNTIME, "SERVICE": settings.SERVICE, 'IMAGE': settings.IMAGE},
+            extra_context={
+                "RUNTIME": settings.RUNTIME,
+                "SERVICE": settings.SERVICE,
+                "IMAGE": settings.IMAGE,
+            },
         ),
     ),
     path("tinymce/", include("tinymce.urls")),
