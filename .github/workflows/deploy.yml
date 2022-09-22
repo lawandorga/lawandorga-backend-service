@@ -6,17 +6,17 @@ on:
             - test
 
 jobs:
-    test:
-        name: Test
+    build:
+        name: Build
         runs-on: ubuntu-22.04
         steps:
             -   name: Checkout
-                uses: actions/checkout@v2
+                uses: actions/checkout@v3
                 with:
                     fetch-depth: 0
 
             -   name: Set Up Python
-                uses: actions/setup-python@v2
+                uses: actions/setup-python@v3
                 with:
                     python-version: 3.9
                     cache: pip
@@ -27,7 +27,33 @@ jobs:
                     path: ${{ env.pythonLocation }}
                     key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
 
-            -   name: Run Tests
+            -   name: Install Dependencies
+                if: steps.cache-packages.outputs.cache-hit != 'true'
+                run: pip install -r requirements.txt
+
+    test:
+        name: Test
+        runs-on: ubuntu-22.04
+        needs: [ build ]
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v3
+                with:
+                    fetch-depth: 0
+
+            -   name: Set Up Python
+                uses: actions/setup-python@v3
+                with:
+                    python-version: 3.9
+                    cache: pip
+
+            -   uses: actions/cache@v2
+                id: cache-packages
+                with:
+                    path: ${{ env.pythonLocation }}
+                    key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+
+            -   name: Test
                 run: |
                     coverage run --source='.' -m pytest
                     coverage xml
