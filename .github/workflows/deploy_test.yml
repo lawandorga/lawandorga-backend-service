@@ -7,8 +7,29 @@ on:
 
 jobs:
     deploy:
+        name: Deploy
         runs-on: ubuntu-latest
         environment: PRODUCTION
+
+        env:
+            ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+            CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+            SECRET_KEY: ${{ secrets.SECRET_KEY }}
+            EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+            EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+            EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+            EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+            SCW_S3_BUCKET_NAME: ${{ secrets.SCW_S3_BUCKET_NAME }}
+            SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+            SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+            FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+            DB_NAME: ${{ secrets.DB_NAME }}
+            DB_USER: ${{ secrets.DB_USER }}
+            DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+            DB_PORT: ${{ secrets.DB_PORT }}
+            DB_HOST: ${{ secrets.DB_HOST }}
+            JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY }}
+
         steps:
             -   name: Checkout
                 uses: actions/checkout@v2
