@@ -7,7 +7,7 @@ FROM python:3.9
 WORKDIR /django
 
 COPY requirements.txt /django/requirements.txt
-COPY tmp/secrets.json /django/tmp/secrets.json
+#COPY tmp/secrets.json /django/tmp/secrets.json
 
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
