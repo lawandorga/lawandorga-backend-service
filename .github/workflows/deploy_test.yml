@@ -50,7 +50,7 @@ jobs:
 
             -   name: Set secrets within the scaleway
                 run: |
-                    curl -X PATCH \
+                    curl -X PATCH --fail-with-body \
                       https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/${{ secrets.SCW_CONTAINER_ID }} \
                       -H 'X-Auth-Token: ${{ secrets.SCW_TOKEN }}' \
                       -H 'Content-Type: application/json' \
@@ -137,7 +137,7 @@ jobs:
 
             -   name: Trigger a redeploy
                 run: |
-                    curl -X PATCH \
+                    curl -X PATCH --fail-with-body \
                       https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/${{ secrets.SCW_CONTAINER_ID }}/ \
                       -H 'X-Auth-Token: ${{ secrets.SCW_TOKEN }}' \
                       -H 'Content-Type: application/json' \
