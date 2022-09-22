@@ -71,14 +71,9 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "handlers": {
-        "file": {
-            "class": "logging.FileHandler",
-            "level": "ERROR",
-            "filename": os.path.join(LOGGING_DIR, "django.log"),
-        },
         "console": {
             "class": "logging.StreamHandler",
-            "level": "ERROR",
+            "level": "WARNING",
         },
         "mail_admins": {
             "class": "django.utils.log.AdminEmailHandler",
@@ -94,7 +89,7 @@ LOGGING = {
             "propagate": False,
         },
         "django": {
-            "handlers": ["console", "file", "mail_admins"],
+            "handlers": ["console", "mail_admins"],
             "propagate": False,
             "level": "INFO",
         },
