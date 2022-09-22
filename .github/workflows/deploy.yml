@@ -38,7 +38,7 @@ jobs:
 
             -   name: Update curl
                 run: |
-                    apt install curl -y
+                    sudo apt-get install curl -y
                     echo curl -V
 
             -   name: Login to docker
