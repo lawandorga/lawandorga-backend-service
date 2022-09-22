@@ -8,7 +8,7 @@ on:
 jobs:
     build:
         name: Build
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
         steps:
             -   name: Checkout
                 uses: actions/checkout@v3
@@ -33,7 +33,7 @@ jobs:
 
     clean:
         name: Clean
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
         needs: [ build ]
         steps:
             -   name: Checkout
@@ -58,7 +58,7 @@ jobs:
 
     test:
         name: Test
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
         needs: [ build ]
         steps:
             -   name: Checkout
@@ -92,7 +92,7 @@ jobs:
 
     scan:
         name: Scan
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
         needs: [ build, test ]
         steps:
             -   name: Checkout
