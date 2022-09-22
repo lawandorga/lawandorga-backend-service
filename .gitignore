@@ -15,7 +15,7 @@ staticfiles/
 backend/static/tests/test_files/
 data/
 
-*.sh
+test*.sh
 .coverage
 test.sh
 coverage.xml
