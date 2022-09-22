@@ -36,6 +36,11 @@ jobs:
             -   name: Checkout
                 uses: actions/checkout@v2
 
+            -   name: Update curl
+                run: |
+                    apt install curl -y
+                    echo curl -V
+
             -   name: Login to docker
                 uses: docker/login-action@v1
                 with:
