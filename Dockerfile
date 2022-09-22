@@ -16,7 +16,10 @@ RUN pip install -r requirements.txt
 
 COPY . /django
 
-RUN python production_manage.py collectstatic --noinput
+# collectstatic
+ENV JWT_SIGNING_KEY=''
+ENV FRONTEND_URL=''
+RUN python manage.py collectstatic --noinput
 # RUN python production_manage.py migrate
 
 EXPOSE 8080
