@@ -159,7 +159,7 @@ class RlcUser(EncryptedModelMixin, models.Model):
 
     def get_email_confirmation_link(self):
         token = self.get_email_confirmation_token()
-        link = "{}user/email-confirm/{}/{}/".format(
+        link = "{}/user/email-confirm/{}/{}/".format(
             settings.FRONTEND_URL, self.id, token
         )
         return link
@@ -187,7 +187,7 @@ class RlcUser(EncryptedModelMixin, models.Model):
 
     def get_password_reset_link(self):
         token = self.get_password_reset_token()
-        link = "{}user/password-reset-confirm/{}/{}/".format(
+        link = "{}/user/password-reset-confirm/{}/{}/".format(
             settings.FRONTEND_URL, self.id, token
         )
         return link
