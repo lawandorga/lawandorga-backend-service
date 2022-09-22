@@ -29,6 +29,8 @@ jobs:
             DB_PORT: ${{ secrets.DB_PORT }}
             DB_HOST: ${{ secrets.DB_HOST }}
             JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY }}
+            IMAGE: ${{ github.repository }}:latest
+            SERVICE: ${{ github.repository}}
 
         steps:
             -   name: Checkout
@@ -43,8 +45,8 @@ jobs:
 
             -   name: Build and push the container
                 run: |
-                    docker build -t ${{ secrets.SCW_DOCKER_REGISTRY }}/lawandorga-backend-service:latest .
-                    docker push ${{ secrets.SCW_DOCKER_REGISTRY }}/lawandorga-backend-service:latest
+                    docker build -t ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ env.IMAGE }} .
+                    docker push ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ env.IMAGE }}
 
             -   name: Set secrets within the scaleway
                 run: |
@@ -56,71 +58,79 @@ jobs:
                         "secret_environment_variables": [
                           {
                             "key": "ALLOWED_HOSTS",
-                            "value": "${{ secrets.ALLOWED_HOSTS }}"
+                            "value": "${{ env.ALLOWED_HOSTS }}"
                           },
                           {
                             "key": "CORS_ALLOWED_ORIGINS",
-                            "value": "${{ secrets.CORS_ALLOWED_ORIGINS }}"
+                            "value": "${{ env.CORS_ALLOWED_ORIGINS }}"
                           },
                           {
                             "key": "DB_HOST",
-                            "value": "${{ secrets.DB_HOST }}"
+                            "value": "${{ env.DB_HOST }}"
                           },
                           {
                             "key": "DB_NAME",
-                            "value": "${{ secrets.DB_NAME }}"
+                            "value": "${{ env.DB_NAME }}"
                           },
                           {
                             "key": "DB_PASSWORD",
-                            "value": "${{ secrets.DB_PASSWORD }}"
+                            "value": "${{ env.DB_PASSWORD }}"
                           },
                           {
                             "key": "DB_PORT",
-                            "value": "${{ secrets.DB_PORT }}"
+                            "value": "${{ env.DB_PORT }}"
                           },
                           {
                             "key": "DB_USER",
-                            "value": "${{ secrets.DB_USER }}"
+                            "value": "${{ env.DB_USER }}"
                           },
                           {
                             "key": "FRONTEND_URL",
-                            "value": "${{ secrets.FRONTEND_URL }}"
+                            "value": "${{ env.FRONTEND_URL }}"
                           },
                           {
                             "key": "JWT_SIGNING_KEY",
-                            "value": "${{ secrets.JWT_SIGNING_KEY }}"
+                            "value": "${{ env.JWT_SIGNING_KEY }}"
                           },
                           {
                             "key": "SCW_ACCESS_KEY",
-                            "value": "${{ secrets.SCW_ACCESS_KEY }}"
+                            "value": "${{ env.SCW_ACCESS_KEY }}"
                           },
                           {
                             "key": "SCW_SECRET_KEY",
-                            "value": "${{ secrets.SCW_SECRET_KEY }}"
+                            "value": "${{ env.SCW_SECRET_KEY }}"
                           },
                           {
                             "key": "SCW_S3_BUCKET_NAME",
-                            "value": "${{ secrets.SCW_S3_BUCKET_NAME }}"
+                            "value": "${{ env.SCW_S3_BUCKET_NAME }}"
                           },
                           {
                             "key": "SECRET_KEY",
-                            "value": "${{ secrets.SECRET_KEY }}"
+                            "value": "${{ env.SECRET_KEY }}"
                           },
                           {
                             "key": "EMAIL_ADDRESS",
-                            "value": "${{ secrets.EMAIL_ADDRESS }}"
+                            "value": "${{ env.EMAIL_ADDRESS }}"
                           },
                           {
                             "key": "EMAIL_HOST",
-                            "value": "${{ secrets.EMAIL_HOST }}"
+                            "value": "${{ env.EMAIL_HOST }}"
                           },
                           {
                             "key": "EMAIL_PASSWORD",
-                            "value": "${{ secrets.EMAIL_PASSWORD }}"
+                            "value": "${{ env.EMAIL_PASSWORD }}"
                           },
                           {
                             "key": "EMAIL_PORT",
-                            "value": "${{ secrets.EMAIL_PORT }}"
+                            "value": "${{ env.EMAIL_PORT }}"
+                          },
+                          {
+                            "key": "SERVICE",
+                            "value": "${{ env.SERVICE }}"
+                          },
+                          {
+                            "key": "IMAGE",
+                            "value": "${{ env.IMAGE }}"
                           }
                         ]
                       }'

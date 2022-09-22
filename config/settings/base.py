@@ -1,18 +1,10 @@
 import os
 from datetime import datetime, timedelta
 
-import environs
 import pytz
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-
-# Environment
-# https://github.com/sloria/environs/blob/master/examples/django_example.py
-env = environs.Env()
-env.read_env()
-
 
 # Application definition
 # https://docs.djangoproject.com/en/dev/ref/applications/
@@ -148,7 +140,7 @@ REST_FRAMEWORK = {
 # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
 SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": True,
-    "SIGNING_KEY": env.str("JWT_SIGNING_KEY"),
+    "SIGNING_KEY": 'nosecret',
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
     "REFRESH_TOKEN_LIFETIME": timedelta(minutes=20),
     "USER_ID_CLAIM": "django_user",
@@ -171,10 +163,12 @@ TEST_RUNNER = "config.test.PytestTestRunner"
 TIMEOUT_TIMEDELTA = timedelta(minutes=30)
 
 # This is used for links in activation emails and so on
-FRONTEND_URL = env.str("FRONTEND_URL")
+FRONTEND_URL = 'http://localhost:4200'
 
-# Run time is set when django starts
+# General settings displayed on the index page
 RUNTIME = datetime.now(pytz.timezone("Europe/Berlin")).strftime("%Y-%m-%d--%H:%M:%S")
+IMAGE = os.getenv('IMAGE', 'unknown')
+SERVICE = os.getenv('SERVICE', 'unknown')
 
 # The standard password of the dummy user, this is used within get_private_key in UserProfile
 # This enables us to do a lot of cool stuff, for example: test the restframework api directly

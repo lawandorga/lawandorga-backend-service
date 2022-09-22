@@ -1,5 +1,12 @@
 # type: ignore
+import environs
+
 from .base import *
+
+# Environment
+# https://github.com/sloria/environs/blob/master/examples/django_example.py
+env = environs.Env()
+env.read_env()
 
 # Debug
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEBUG
@@ -53,6 +60,10 @@ AWS_S3_REGION_NAME = "fr-par"
 AWS_S3_ENDPOINT_URL = "https://s3.fr-par.scw.cloud"
 AWS_S3_FILE_OVERWRITE = False
 
+# JWT Token
+# https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
+SIMPLE_JWT['SIGNING_KEY'] = env.str("JWT_SIGNING_KEY")
+
 # Logging
 # https://docs.djangoproject.com/en/dev/topics/logging/
 LOGGING_DIR = os.path.join(BASE_DIR, "tmp/logs")
@@ -89,3 +100,6 @@ LOGGING = {
         },
     },
 }
+
+# This is used for links in activation emails and so on
+FRONTEND_URL = env.str("FRONTEND_URL")
