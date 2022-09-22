@@ -17,7 +17,7 @@ class EmailView(APIView):
         send_mail(
             "Test Mail",
             "Test Body",
-            "do-not-reply@law-orga.de",
+            settings.SERVER_EMAIL,
             [a[1] for a in settings.ADMINS],
             fail_silently=False,
         )
