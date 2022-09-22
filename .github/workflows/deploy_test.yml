@@ -1,4 +1,4 @@
-name: Deploy Test
+name: Deploy
 
 on:
     push:
@@ -8,18 +8,10 @@ on:
 jobs:
     deploy:
         runs-on: ubuntu-latest
-
+        environment: PRODUCTION
         steps:
             -   name: Checkout
                 uses: actions/checkout@v2
-
-            -   name: Create secrets.json for Django
-                id: create-json
-                uses: jsdaniell/create-json@1.1.2
-                with:
-                    name: secrets.json
-                    json: ${{ secrets.SECRETS_TEST }}
-                    dir: tmp/
 
             -   name: Login to docker
                 uses: docker/login-action@v1
@@ -28,17 +20,94 @@ jobs:
                     username: ${{ secrets.SCW_DOCKER_USERNAME }}
                     password: ${{ secrets.SCW_TOKEN }}
 
-            -   name: Build the container
+            -   name: Build and push the container
                 run: |
-                    docker build -t ${{ secrets.SCW_DOCKER_REGISTRY }}/lawandorga-backend-test:latest .
-                    docker push ${{ secrets.SCW_DOCKER_REGISTRY }}/lawandorga-backend-test:latest
+                    docker build -t ${{ secrets.SCW_DOCKER_REGISTRY }}/lawandorga-backend-service:latest .
+                    docker push ${{ secrets.SCW_DOCKER_REGISTRY }}/lawandorga-backend-service:latest
+
+            -   name: Set secrets within the scaleway
+                run: |
+                    curl -X PATCH \
+                      https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/${{ secrets.SCW_CONTAINER_ID }} \
+                      -H 'X-Auth-Token: ${{ secrets.SCW_TOKEN }}' \
+                      -H 'Content-Type: application/json' \
+                      -d '{
+                        "secret_environment_variables": [
+                          {
+                            "key": "ALLOWED_HOSTS",
+                            "value": "${{ secrets.ALLOWED_HOSTS }}"
+                          },
+                          {
+                            "key": "CORS_ALLOWED_ORIGINS",
+                            "value": "${{ secrets.CORS_ALLOWED_ORIGINS }}"
+                          },
+                          {
+                            "key": "DB_HOST",
+                            "value": "${{ secrets.DB_HOST }}"
+                          },
+                          {
+                            "key": "DB_NAME",
+                            "value": "${{ secrets.DB_NAME }}"
+                          },
+                          {
+                            "key": "DB_PASSWORD",
+                            "value": "${{ secrets.DB_PASSWORD }}"
+                          },
+                          {
+                            "key": "DB_PORT",
+                            "value": "${{ secrets.DB_PORT }}"
+                          },
+                          {
+                            "key": "DB_USER",
+                            "value": "${{ secrets.DB_USER }}"
+                          },
+                          {
+                            "key": "FRONTEND_URL",
+                            "value": "${{ secrets.FRONTEND_URL }}"
+                          },
+                          {
+                            "key": "JWT_SIGNING_KEY",
+                            "value": "${{ secrets.JWT_SIGNING_KEY }}"
+                          },
+                          {
+                            "key": "SCW_ACCESS_KEY",
+                            "value": "${{ secrets.SCW_ACCESS_KEY }}"
+                          },
+                          {
+                            "key": "SCW_SECRET_KEY",
+                            "value": "${{ secrets.SCW_SECRET_KEY }}"
+                          },
+                          {
+                            "key": "SCW_S3_BUCKET_NAME",
+                            "value": "${{ secrets.SCW_S3_BUCKET_NAME }}"
+                          },
+                          {
+                            "key": "SECRET_KEY",
+                            "value": "${{ secrets.SECRET_KEY }}"
+                          },
+                          {
+                            "key": "EMAIL_ADDRESS",
+                            "value": "${{ secrets.EMAIL_ADDRESS }}"
+                          },
+                          {
+                            "key": "EMAIL_HOST",
+                            "value": "${{ secrets.EMAIL_HOST }}"
+                          },
+                          {
+                            "key": "EMAIL_PASSWORD",
+                            "value": "${{ secrets.EMAIL_PASSWORD }}"
+                          },
+                          {
+                            "key": "EMAIL_PORT",
+                            "value": "${{ secrets.EMAIL_PORT }}"
+                          }
+                        ]
+                      }'
 
             -   name: Trigger a redeploy
                 run: |
                     curl -X PATCH \
-                      https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/48026603-6018-469f-bce8-43d7a8a6036c \
+                      https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/${{ secrets.SCW_CONTAINER_ID }}/ \
                       -H 'X-Auth-Token: ${{ secrets.SCW_TOKEN }}' \
                       -H 'Content-Type: application/json' \
                       -d '{ "redeploy": true }'
-
-

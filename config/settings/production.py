@@ -7,22 +7,22 @@ DEBUG = False
 
 # Allowed Hosts
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = get_secret("ALLOWED_HOSTS")
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY
-SECRET_KEY = get_secret("SECRET_KEY")
+SECRET_KEY = env.str("SECRET_KEY")
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": get_secret("DB_NAME"),
-        "USER": get_secret("DB_USER"),
-        "PASSWORD": get_secret("DB_PASSWORD"),
-        "HOST": get_secret("DB_HOST"),
-        "PORT": get_secret("DB_PORT"),
+        "NAME": env.str("DB_NAME"),
+        "USER": env.str("DB_USER"),
+        "PASSWORD": env.str("DB_PASSWORD"),
+        "HOST": env.str("DB_HOST"),
+        "PORT": env.int("DB_PORT"),
         "TEST": {"NAME": "test_{}".format(RUNTIME)},
     }
 }
@@ -30,25 +30,25 @@ DATABASES = {
 # E-Mail
 # https://docs.djangoproject.com/en/dev/topics/email/#smtp-backend
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = get_secret("EMAIL_HOST")
-DEFAULT_FROM_EMAIL = get_secret("EMAIL_ADDRESS")
-SERVER_EMAIL = get_secret("EMAIL_ADDRESS")
-EMAIL_PORT = get_secret("EMAIL_PORT")
-EMAIL_HOST_USER = get_secret("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = get_secret("EMAIL_HOST_PASSWORD")
+EMAIL_HOST = env.str("EMAIL_HOST")
+DEFAULT_FROM_EMAIL = env.str("EMAIL_HOST")
+SERVER_EMAIL = env.str("EMAIL_HOST")
+EMAIL_PORT = env.int("EMAIL_PORT")
+EMAIL_HOST_USER = env.str("EMAIL_HOST")
+EMAIL_HOST_PASSWORD = env.str("EMAIL_PASSWORD")
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
 # Installed app django-cors-headers
 # https://pypi.org/project/django-cors-headers/
-CORS_ALLOWED_ORIGINS = get_secret("CORS_ALLOWED_ORIGINS")
+CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS")
 
 # Storage
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
 DEFAULT_FILE_STORAGE = "config.storage.CustomS3Boto3Storage"
-AWS_S3_SECRET_ACCESS_KEY = get_secret("SCW_SECRET_KEY")
-AWS_S3_ACCESS_KEY_ID = get_secret("SCW_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = get_secret("SCW_S3_BUCKET_NAME")
+AWS_S3_SECRET_ACCESS_KEY = env.str("SCW_SECRET_KEY")
+AWS_S3_ACCESS_KEY_ID = env.str("SCW_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = env.str("SCW_S3_BUCKET_NAME")
 AWS_S3_REGION_NAME = "fr-par"
 AWS_S3_ENDPOINT_URL = "https://s3.fr-par.scw.cloud"
 AWS_S3_FILE_OVERWRITE = False
