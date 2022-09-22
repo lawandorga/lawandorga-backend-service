@@ -112,8 +112,8 @@ jobs:
 
             -   name: Build and push the container
                 run: |
-                    docker build -t ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ env.IMAGE }} .
-                    docker push ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ env.IMAGE }}
+                    docker build -t ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ env.PIPELINE_IMAGE }} .
+                    docker push ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ env.PIPELINE_IMAGE }}
 
             -   name: Set secrets within the scaleway
                 run: |
@@ -122,7 +122,7 @@ jobs:
                       -H 'X-Auth-Token: ${{ secrets.SCW_TOKEN }}' \
                       -H 'Content-Type: application/json' \
                       -d '{
-                        "registry_image": "${{ secrets.SCW_DOCKER_REGISTRY }}/${{ env.IMAGE }}",
+                        "registry_image": "${{ secrets.SCW_DOCKER_REGISTRY }}/${{ env.PIPELINE_IMAGE }}",
                         "secret_environment_variables": [
                           {
                             "key": "DJANGO_ALLOWED_HOSTS",
