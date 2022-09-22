@@ -74,7 +74,7 @@ jobs:
 
     deploy:
         name: Deploy
-        needs: [ test ]
+#        needs: [ test ]
         runs-on: ubuntu-22.04
         environment: PRODUCTION
 
@@ -107,6 +107,7 @@ jobs:
                 uses: docker/login-action@v1
                 with:
                     registry: ${{ secrets.SCW_DOCKER_REGISTRY }}
+                    username: ""
                     password: ${{ secrets.SCW_TOKEN }}
 
             -   name: Build and push the container
