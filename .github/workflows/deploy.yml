@@ -107,7 +107,7 @@ jobs:
                 uses: docker/login-action@v1
                 with:
                     registry: ${{ secrets.SCW_DOCKER_REGISTRY }}
-                    username: ""
+                    username: ${{ secrets.SCW_TOKEN }}
                     password: ${{ secrets.SCW_TOKEN }}
 
             -   name: Build and push the container
