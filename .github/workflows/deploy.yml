@@ -6,49 +6,49 @@ on:
             - test
 
 jobs:
-#    test:
-#        name: Test
-#        runs-on: ubuntu-22.04
-#        steps:
-#            -   name: Checkout
-#                uses: actions/checkout@v2
-#                with:
-#                    fetch-depth: 0
-#
-#            -   name: Set Up Python
-#                uses: actions/setup-python@v2
-#                with:
-#                    python-version: 3.9
-#                    cache: pip
-#
-#            -   uses: actions/cache@v2
-#                id: cache-packages
-#                with:
-#                    path: ${{ env.pythonLocation }}
-#                    key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
-#
-#            -   name: Run Tests
-#                run: |
-#                    coverage run --source='.' manage.py test
-#                    coverage xml
-#                    coverage report
-#
-#            -   name: Coverage Comment
-#                id: coverage_comment
-#                uses: ewjoachim/python-coverage-comment-action@v2
-#                with:
-#                    GITHUB_TOKEN: ${{ github.token }}
-#
-#            -   name: Store Pull Request Comment To Be Posted
-#                uses: actions/upload-artifact@v2
-#                if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
-#                with:
-#                    name: python-coverage-comment-action
-#                    path: python-coverage-comment-action.txt
+    test:
+        name: Test
+        runs-on: ubuntu-22.04
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v2
+                with:
+                    fetch-depth: 0
+
+            -   name: Set Up Python
+                uses: actions/setup-python@v2
+                with:
+                    python-version: 3.9
+                    cache: pip
+
+            -   uses: actions/cache@v2
+                id: cache-packages
+                with:
+                    path: ${{ env.pythonLocation }}
+                    key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+
+            -   name: Run Tests
+                run: |
+                    coverage run --source='.' manage.py test
+                    coverage xml
+                    coverage report
+
+            -   name: Coverage Comment
+                id: coverage_comment
+                uses: ewjoachim/python-coverage-comment-action@v2
+                with:
+                    GITHUB_TOKEN: ${{ github.token }}
+
+            -   name: Store Pull Request Comment To Be Posted
+                uses: actions/upload-artifact@v2
+                if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
+                with:
+                    name: python-coverage-comment-action
+                    path: python-coverage-comment-action.txt
 
     deploy:
         name: Deploy
-#        needs: [ test ]
+        needs: [ test ]
         runs-on: ubuntu-22.04
         environment: PRODUCTION
 
@@ -71,7 +71,7 @@ jobs:
             DB_HOST: ${{ secrets.DB_HOST }}
             JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY }}
             IMAGE: ${{ github.event.repository.name }}:latest
-            SERVICE: ${{ github.repository}}
+            SERVICE: ${{ github.repository }}
 
         steps:
             -   name: Checkout
