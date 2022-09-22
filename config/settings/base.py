@@ -1,33 +1,10 @@
-import json
 import os
 from datetime import datetime, timedelta
 
 import pytz
-from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Secret settings
-try:
-    with open(os.path.join(BASE_DIR, "tmp/secrets.json")) as f:
-        secrets_json = json.loads(f.read())
-except FileNotFoundError:
-    secrets_json = {}
-
-
-def get_secret(setting, secrets=secrets_json):
-    if setting in secrets:
-        var = secrets[setting]
-    else:
-        var = os.getenv(setting, None)
-
-    if var is not None:
-        return var
-    else:
-        error_msg = "Set the {} environment variable.".format(setting)
-        raise ImproperlyConfigured(error_msg)
-
 
 # Application definition
 # https://docs.djangoproject.com/en/dev/ref/applications/
@@ -160,10 +137,10 @@ REST_FRAMEWORK = {
 }
 
 # JWT Token
-# See: https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
+# https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
 SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": True,
-    "SIGNING_KEY": get_secret("JWT_SIGNING_KEY"),
+    "SIGNING_KEY": "nosecret",
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
     "REFRESH_TOKEN_LIFETIME": timedelta(minutes=20),
     "USER_ID_CLAIM": "django_user",
@@ -175,21 +152,23 @@ SIMPLE_JWT = {
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # mail errors to the admins
-# See: https://docs.djangoproject.com/en/3.2/ref/settings/#admins
+# https://docs.djangoproject.com/en/3.2/ref/settings/#admins
 ADMINS = [("Daniel Mössner", "it@law-orga.de")]
 
 # custom test runner
-# See: https://pytest-django.readthedocs.io/en/latest/faq.html#how-can-i-use-manage-py-test-with-pytest-django
+# https://pytest-django.readthedocs.io/en/latest/faq.html#how-can-i-use-manage-py-test-with-pytest-django
 TEST_RUNNER = "config.test.PytestTestRunner"
 
 # This is used by the ExpiringTokenAuthentication which extends from rest's token authentication
 TIMEOUT_TIMEDELTA = timedelta(minutes=30)
 
 # This is used for links in activation emails and so on
-FRONTEND_URL = get_secret("FRONTEND_URL")
+FRONTEND_URL = "http://localhost:4200"
 
-# Run time is set when django starts
+# General settings displayed on the index page
 RUNTIME = datetime.now(pytz.timezone("Europe/Berlin")).strftime("%Y-%m-%d--%H:%M:%S")
+IMAGE = os.getenv("PIPELINE_IMAGE", "unknown")
+SERVICE = os.getenv("PIPELINE_SERVICE", "unknown")
 
 # The standard password of the dummy user, this is used within get_private_key in UserProfile
 # This enables us to do a lot of cool stuff, for example: test the restframework api directly

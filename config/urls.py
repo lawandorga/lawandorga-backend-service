@@ -17,7 +17,7 @@ class EmailView(APIView):
         send_mail(
             "Test Mail",
             "Test Body",
-            "no-reply@law-orga.de",
+            "do-not-reply@law-orga.de",
             [a[1] for a in settings.ADMINS],
             fail_silently=False,
         )
@@ -33,7 +33,11 @@ urlpatterns = [
         "",
         TemplateView.as_view(
             template_name="index.html",
-            extra_context={"RUNTIME": settings.RUNTIME, "PORT": settings.EMAIL_PORT},
+            extra_context={
+                "RUNTIME": settings.RUNTIME,
+                "SERVICE": settings.SERVICE,
+                "IMAGE": settings.IMAGE,
+            },
         ),
     ),
     path("tinymce/", include("tinymce.urls")),

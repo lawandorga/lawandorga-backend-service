@@ -3,7 +3,7 @@ wheel==0.37.1
 # docker container setup
 gunicorn==20.1.0
 # django
-Django==4.1.1
+Django==4.0.7
 djangorestframework==3.13.1
 # jwts
 djangorestframework-simplejwt==5.2.0
@@ -27,7 +27,7 @@ whitenoise==6.2.0
 django-tinymce==3.5.0
 # unknown
 pycryptodome==3.15.0
-boto3==1.24.77
+boto3==1.24.78
 # validation
 pydantic==1.10.2
 # tests
@@ -40,3 +40,8 @@ djangorestframework-stubs==1.7.0
 django-stubs==1.12.0
 # formatter
 black==22.8.0
+# environements
+environs==9.5.0
+# other
+PyJWT==2.5.0
+pytz==2022.2.1

@@ -1,21 +1,15 @@
-FROM python:3.8-alpine3.13
-
-RUN apk update && apk add --no-cache postgresql-dev gcc openssl-dev libressl-dev musl-dev libffi-dev
-
-ENV PYTHONUNBUFFERED 1
+FROM python:3.9
 
 WORKDIR /django
 
 COPY requirements.txt /django/requirements.txt
-COPY tmp/secrets.json /django/tmp/secrets.json
 
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 COPY . /django
 
-RUN python production_manage.py collectstatic --noinput
-RUN python production_manage.py migrate
+RUN python manage.py collectstatic --noinput
 
 EXPOSE 8080
 

@@ -2,67 +2,53 @@
 
 # Law&Orga
 
+Law&Orga is a project of Refugee Law Clinics Deutschland e.V.
+
 ## General
 
-Backend for Law&Orga of Law Clinics in Germany
+This is the main backend service of Law&Orga.
 
-A project of Refugee Law Clinics Deutschland e.V. and Dominik Walser
+Special thanks to Dominik Walser who was the first developer on this project.
 
-© Dominik Walser, AGPL-3.0
-
-This project contains a backend based on Django.
+© AGPL-3.0
 
 ## Tech
 
+This project uses Django, which is based on python.
+
 ### Local Setup
+
 1. `git clone https://github.com/lawandorga/law-orga-apps.git`
 2. `cd law-orga-backend/`
 3. `python -m venv tmp/venv`
 4. Install all dependencies from `requirements.txt` with `pip install -r requirements.txt`
-5. Create `tmp/media/`, `tmp/static/`, `tmp/logs` and `tmp/secrets.json`
-6. Add relevant content into `secrets.json`
+5. Create `tmp/media/`, `tmp/static/`, `tmp/logs`
 6. Run `python manage.py runserver`
 
 ### Server Setup
-1. `cd /home`
-2. `git clone https://github.com/lawandorga/law-orga-apps.git`
-3. `cd law-orga-backend/`
-4. Connect `prod-api.law-orga.de` with the server IP
-5. `./setup.prod.sh`
-6. Add content to `tmp/secrets.json`
-7. `./deploy.sh`
 
-### Secrets Local
+You might want to look into the following file: `.github/workflows/deploy.yml`. You need to set some environment
+variables and with them the workflow file pushes a docker container into a docker registry. From that registry you can
+deploy the image to the hoster of your choice. Some environment variables need to be set within the running environment.
+
+### Environment Variables
 
 `
-{
-    "SECRET_KEY": "nosecret",
-    "FRONTEND_URL": "http://localhost:4200/",
-    "JWT_SIGNING_KEY": "nosecret"
-}
-`
-
-### Secrets Prod
-
-`
-{
-    "ALLOWED_HOSTS": [],
-    "CORS_ALLOWED_ORIGINS": [],
-    "SECRET_KEY": "",
-    "EMAIL_ADDRESS": "",
-    "EMAIL_HOST": "",
-    "EMAIL_HOST_PASSWORD": "",
-    "EMAIL_HOST_USER": "",
-    "EMAIL_PORT": 0,
-    "SCW_S3_BUCKET_NAME": "",
-    "SCW_ACCESS_KEY": "",
-    "SCW_SECRET_KEY": "",
-    "FRONTEND_URL": "",
-    "DB_NAME": "",
-    "DB_USER": "",
-    "DB_PASSWORD": "",
-    "DB_PORT": 0,
-    "DB_HOST": "",
-    "JWT_SIGNING_KEY": ""
-}
+ALLOWED_HOSTS=""
+CORS_ALLOWED_ORIGINS=""
+SECRET_KEY=""
+EMAIL_ADDRESS=""
+EMAIL_HOST=""
+EMAIL_PASSWORD=""
+EMAIL_PORT=""
+S3_BUCKET_NAME=""
+S3_ACCESS_KEY=""
+S3_SECRET_KEY=""
+FRONTEND_URL=""
+DB_NAME=""
+DB_USER=""
+DB_PASSWORD=""
+DB_PORT=""
+DB_HOST=""
+JWT_SIGNING_KEY=""
 `
