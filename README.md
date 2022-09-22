@@ -27,16 +27,17 @@ This project uses Django, which is based on python.
 
 ### Server Setup
 
-You might want to look into the following file: `.github/workflows/deploy.yml`. You need to set some environment
-variables and with them the workflow file pushes a docker container into a docker registry. From that registry you can
-deploy the image to the hoster of your choice. Some environment variables need to be set within the running environment.
+You might want to look into the following file `.github/workflows/deploy.yml`. This workflow file tests the application
+and afterwards it builds and pushes the image into a docker registry. From that registry you can deploy the image to the
+hoster of your choice. Some environment variables need to be set within the running environment.
 
-### Environment Variables
+#### Needed Environment Variables
 
-`
-ALLOWED_HOSTS=""
-CORS_ALLOWED_ORIGINS=""
-SECRET_KEY=""
+```
+DJANGO_ALLOWED_HOSTS=""
+DJANGO_CORS_ALLOWED_ORIGINS=""
+DJANGO_SECRET_KEY=""
+DJANGO_JWT_SIGNING_KEY=""
 EMAIL_ADDRESS=""
 EMAIL_HOST=""
 EMAIL_PASSWORD=""
@@ -50,5 +51,6 @@ DB_USER=""
 DB_PASSWORD=""
 DB_PORT=""
 DB_HOST=""
-JWT_SIGNING_KEY=""
-`
+PIPELINE_IMAGE=""
+PIPELINE_SERVICE=""
+```
