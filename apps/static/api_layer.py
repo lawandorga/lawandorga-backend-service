@@ -139,46 +139,56 @@ class Router:
             func_input = func.__code__.co_varnames
 
             # handle auth
-            if auth:
-                if not request.user.is_authenticated:
-                    return ErrorResponse(
-                        type="NotAuthenticated",
-                        title="Login Required",
-                        detail="You need to be logged in.",
-                        status=401,
-                    )
+            is_authenticated = request.user.is_authenticated
+            not_authenticated_error = ErrorResponse(
+                type="NotAuthenticated",
+                title="Login Required",
+                detail="You need to be logged in.",
+                status=401,
+            )
 
+            if is_authenticated:
                 user: UserProfile = request.user  # type: ignore
 
-                if "user" in func_input:
-                    func_kwargs["user"] = user
+            if "user" in func_input:
+                if not is_authenticated:
+                    return not_authenticated_error
 
-                if "rlc_user" in func_input:
-                    if not hasattr(user, "rlc_user"):
-                        return ErrorResponse(
-                            type="RoleRequired",
-                            title="Rlc User Required",
-                            detail="You need to have the rlc user role.",
-                            status=403,
-                        )
+                func_kwargs["user"] = user
 
-                    func_kwargs["rlc_user"] = user.rlc_user
+            if "rlc_user" in func_input:
+                if not is_authenticated:
+                    return not_authenticated_error
 
-                if "private_key_user" in func_input:
-                    func_kwargs["private_key_user"] = user.get_private_key(
-                        request=request
+                if not hasattr(request.user, "rlc_user"):
+                    return ErrorResponse(
+                        type="RoleRequired",
+                        title="Rlc User Required",
+                        detail="You need to have the rlc user role.",
+                        status=403,
                     )
 
-                if "statistics_user" in func_input:
-                    if not hasattr(user, "statistic_user"):
-                        return ErrorResponse(
-                            type="RoleRequired",
-                            title="Statistics User Required",
-                            detail="You need to have the statistics user role.",
-                            status=403,
-                        )
+                func_kwargs["rlc_user"] = user.rlc_user
 
-                    func_kwargs["statistics_user"] = user.statistic_user
+            if "private_key_user" in func_input:
+                if not is_authenticated:
+                    return not_authenticated_error
+
+                func_kwargs["private_key_user"] = user.get_private_key(request=request)
+
+            if "statistics_user" in func_input:
+                if not is_authenticated:
+                    return not_authenticated_error
+
+                if not hasattr(request.user, "statistic_user"):
+                    return ErrorResponse(
+                        type="RoleRequired",
+                        title="Statistics User Required",
+                        detail="You need to have the statistics user role.",
+                        status=403,
+                    )
+
+                func_kwargs["statistics_user"] = user.statistic_user
 
             # validate the input
             if input_schema:
