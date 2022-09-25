@@ -22,6 +22,7 @@ class RlcUser(BaseModel):
     city: Optional[str]
     postal_code: Optional[str]
     locked: bool
+    locked_legal: bool
     email_confirmed: bool
     is_active: bool
     accepted: bool
