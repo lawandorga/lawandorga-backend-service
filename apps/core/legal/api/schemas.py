@@ -22,7 +22,7 @@ class LegalRequirement(BaseModel):
 
 class LegalRequirementEvent(BaseModel):
     actor: Optional[RlcUser]
-    text: str
+    text: Optional[str]
     accepted: bool
     created: datetime
 
@@ -34,6 +34,7 @@ class LegalRequirementUser(BaseModel):
     legal_requirement: LegalRequirement
     rlc_user_id: int
     accepted: bool
+    id: int
     events_list: List[LegalRequirementEvent]
 
     class Config:
@@ -42,5 +43,3 @@ class LegalRequirementUser(BaseModel):
 
 class LegalRequirementEventCreate(BaseModel):
     id: int
-    actor: int
-    accepted: bool

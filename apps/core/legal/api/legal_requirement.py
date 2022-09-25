@@ -31,12 +31,12 @@ ADD_EVENT_ERROR_NOT_FOUND = (
 
 
 @router.post(
-    url="<int:id>/add_event/",
+    url="<int:id>/accept/",
     input_schema=schemas.LegalRequirementEventCreate,
-    output_schema=schemas.LegalRequirementEvent,
+    output_schema=schemas.LegalRequirementUser,
     auth=True,
 )
-def create_legal_requirement_event(
+def accept_legal_requirement(
     data: schemas.LegalRequirementEventCreate, rlc_user: RlcUser
 ):
     legal_requirement_user = LegalRequirementUser.objects.filter(id=data.id).first()
@@ -48,8 +48,8 @@ def create_legal_requirement_event(
 
     event = LegalRequirementEvent(
         legal_requirement_user=legal_requirement_user,
-        accepted=data.accepted,
-        actor_id=data.actor,
+        accepted=True,
+        actor_id=rlc_user.id,
     )
     event.save()
-    return ServiceResult(ADD_EVENT_SUCCESS, event)
+    return ServiceResult(ADD_EVENT_SUCCESS, event.legal_requirement_user)

@@ -39,12 +39,12 @@ def test_get_data_works(user, db, legal_requirement_user):
     )
 
 
-def test_create_event(user, db, legal_requirement_user):
+def test_accept_legal_requirement(user, db, legal_requirement_user):
     c = Client()
     c.login(**user)
 
     response = c.post(
-        "/api/legal/legal_requirements/{}/add_event/".format(legal_requirement_user.pk),
+        "/api/legal/legal_requirements/{}/accept/".format(legal_requirement_user.pk),
         data=json.dumps({"accepted": True, "actor": user["rlc_user"].id}),
         content_type="application/json",
     )
