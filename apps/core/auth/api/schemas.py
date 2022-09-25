@@ -41,6 +41,7 @@ class Badges(BaseModel):
     profiles: int
     record_deletion_requests: int
     record_permit_requests: int
+    legal: int
 
 
 class RlcUserData(BaseModel):

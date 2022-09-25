@@ -244,10 +244,17 @@ class RlcUser(EncryptedModelMixin, models.Model):
         else:
             record_permit_requests = 0
 
+        # legal
+        legal = 0
+        for lr in list(self.legal_requirements_user.all()):
+            if not lr.accepted:
+                legal += 1
+
         # return
         data = {
             "profiles": profiles,
             "record_deletion_requests": record_deletion_requests,
             "record_permit_requests": record_permit_requests,
+            "legal": legal
         }
         return data
