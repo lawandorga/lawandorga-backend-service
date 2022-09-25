@@ -17,15 +17,15 @@ UNLOCK_RLC_USER_SUCCESS = "User {} successfully unlocked himself or herself."
 
 
 @router.api(method="POST", url="unlock_self/", output_schema=schemas.RlcUser, auth=True)
-def unlock_rlc_user(user: UserProfile):
-    if not user.check_all_keys_correct():
+def unlock_rlc_user(rlc_user: RlcUser):
+    if not rlc_user.user.check_all_keys_correct():
         return ServiceResult(
             UNLOCK_RLC_USER_NOT_ALL_KEYS_CORRECT,
             error="You can only unlock yourself when all your keys are correct.",
         )
-    user.rlc_user.locked = False
-    user.rlc_user.save()
-    return ServiceResult(UNLOCK_RLC_USER_SUCCESS, user.rlc_user)
+    rlc_user.locked = False
+    rlc_user.save()
+    return ServiceResult(UNLOCK_RLC_USER_SUCCESS, rlc_user)
 
 
 # update settings
