@@ -90,7 +90,9 @@ class RlcUser(EncryptedModelMixin, models.Model):
 
     @property
     def locked_legal(self):
-        for lr in list(self.legal_requirements_user.filter(legal_requirement__accept_required=True)):
+        for lr in list(
+            self.legal_requirements_user.filter(legal_requirement__accept_required=True)
+        ):
             if not lr.accepted:
                 return True
         return False
@@ -262,6 +264,6 @@ class RlcUser(EncryptedModelMixin, models.Model):
             "profiles": profiles,
             "record_deletion_requests": record_deletion_requests,
             "record_permit_requests": record_permit_requests,
-            "legal": legal
+            "legal": legal,
         }
         return data

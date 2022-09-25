@@ -1,6 +1,5 @@
 from typing import Any, Dict
 
-from apps.core.models import UserProfile
 from apps.static.api_layer import Router
 from apps.static.service_layer import ServiceResult
 
