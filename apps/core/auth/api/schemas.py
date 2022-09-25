@@ -22,6 +22,7 @@ class RlcUser(BaseModel):
     city: Optional[str]
     postal_code: Optional[str]
     locked: bool
+    locked_legal: bool
     email_confirmed: bool
     is_active: bool
     accepted: bool
@@ -41,6 +42,7 @@ class Badges(BaseModel):
     profiles: int
     record_deletion_requests: int
     record_permit_requests: int
+    legal: int
 
 
 class RlcUserData(BaseModel):

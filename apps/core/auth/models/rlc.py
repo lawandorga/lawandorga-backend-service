@@ -88,6 +88,15 @@ class RlcUser(EncryptedModelMixin, models.Model):
     def do_keys_exist(self):
         return self.public_key is not None or self.private_key is not None
 
+    @property
+    def locked_legal(self):
+        for lr in list(
+            self.legal_requirements_user.filter(legal_requirement__accept_required=True)
+        ):
+            if not lr.accepted:
+                return True
+        return False
+
     def encrypt(self, password=None):
         if password is not None:
             key = password
@@ -244,10 +253,17 @@ class RlcUser(EncryptedModelMixin, models.Model):
         else:
             record_permit_requests = 0
 
+        # legal
+        legal = 0
+        for lr in list(self.legal_requirements_user.all()):
+            if not lr.accepted:
+                legal += 1
+
         # return
         data = {
             "profiles": profiles,
             "record_deletion_requests": record_deletion_requests,
             "record_permit_requests": record_permit_requests,
+            "legal": legal,
         }
         return data

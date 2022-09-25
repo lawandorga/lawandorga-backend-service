@@ -2,7 +2,7 @@ from typing import List
 
 from django.conf import settings
 
-from apps.core.models import RlcUser, UserProfile
+from apps.core.auth.models import RlcUser, UserProfile
 from apps.recordmanagement.models import Record, RecordEncryptionNew
 from apps.static.encryption import AESEncryption
 
