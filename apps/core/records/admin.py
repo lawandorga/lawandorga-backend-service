@@ -2,7 +2,6 @@ from django.contrib import admin
 
 from apps.recordmanagement.models import (
     EncryptedClient,
-    EncryptedRecord,
     EncryptedRecordDocument,
     EncryptedRecordMessage,
     OriginCountry,
@@ -22,7 +21,6 @@ from apps.recordmanagement.models import (
     RecordEncryptedSelectField,
     RecordEncryptedStandardEntry,
     RecordEncryptedStandardField,
-    RecordEncryption,
     RecordEncryptionNew,
     RecordMultipleEntry,
     RecordMultipleField,
@@ -38,7 +36,6 @@ from apps.recordmanagement.models import (
 )
 
 admin.site.register(OriginCountry)
-admin.site.register(RecordEncryption)
 admin.site.register(EncryptedClient)
 admin.site.register(EncryptedRecordDocument)
 admin.site.register(EncryptedRecordMessage)
@@ -46,7 +43,6 @@ admin.site.register(RecordAccess)
 admin.site.register(RecordDeletion)
 admin.site.register(PoolConsultant)
 admin.site.register(PoolRecord)
-admin.site.register(EncryptedRecord)
 admin.site.register(QuestionnaireTemplate)
 admin.site.register(Questionnaire)
 admin.site.register(QuestionnaireQuestion)

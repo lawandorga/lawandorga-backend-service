@@ -18,13 +18,6 @@ class EncryptedRecordDocument(models.Model):
         on_delete=models.SET_NULL,
         null=True,
     )
-    old_record = models.ForeignKey(
-        "EncryptedRecord",
-        related_name="e_record_documents",
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-    )
     record = models.ForeignKey(
         Record, related_name="documents", on_delete=models.CASCADE, null=True
     )

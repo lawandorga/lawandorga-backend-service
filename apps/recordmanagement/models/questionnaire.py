@@ -14,7 +14,7 @@ class QuestionnaireTemplate(models.Model):
         Org, related_name="questionnaires", on_delete=models.CASCADE, blank=True
     )
     notes = models.TextField(blank=True)
-    records = models.ManyToManyField("EncryptedRecord", through="Questionnaire")
+    records = models.ManyToManyField("Record", through="Questionnaire")
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -73,12 +73,6 @@ class QuestionnaireQuestion(models.Model):
 
 
 class Questionnaire(models.Model):
-    old_record = models.ForeignKey(
-        "EncryptedRecord",
-        on_delete=models.CASCADE,
-        related_name="questionnaires",
-        null=True,
-    )
     record = models.ForeignKey(
         Record,
         on_delete=models.CASCADE,

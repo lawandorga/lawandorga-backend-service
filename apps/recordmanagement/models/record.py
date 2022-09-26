@@ -5,10 +5,7 @@ from django.core.files import File
 from django.db import models
 
 from apps.core.models import Group, Org, UserProfile
-from apps.recordmanagement.models import (  # type: ignore
-    EncryptedClient,
-    EncryptedRecord,
-)
+from apps.recordmanagement.models import EncryptedClient  # type: ignore
 from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 
@@ -581,13 +578,6 @@ class RecordStatisticField(RecordField):
 class Record(models.Model):
     template = models.ForeignKey(
         RecordTemplate, related_name="records", on_delete=models.PROTECT
-    )
-    old_record = models.OneToOneField(
-        EncryptedRecord,
-        related_name="record",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
     )
     old_client = models.ForeignKey(
         EncryptedClient,

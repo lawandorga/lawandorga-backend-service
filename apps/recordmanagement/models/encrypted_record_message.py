@@ -13,13 +13,6 @@ class EncryptedRecordMessage(EncryptedModelMixin, models.Model):
         null=True,
         blank=True,
     )
-    old_record = models.ForeignKey(
-        "EncryptedRecord",
-        related_name="messages",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-    )
     record = models.ForeignKey(
         Record, related_name="messages", on_delete=models.CASCADE, null=True
     )
