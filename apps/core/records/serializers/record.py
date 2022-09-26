@@ -529,7 +529,11 @@ class RecordListSerializer(RecordSerializer):
         return obj.template.show
 
     def get_delete(self, obj):
-        return obj.deletions.filter(state="re").exists()
+        deletions = list(obj.deletions.all())
+        for deletion in deletions:
+            if deletion.state == 're':
+                return True
+        return False
 
 
 class RecordCreateSerializer(RecordListSerializer):
