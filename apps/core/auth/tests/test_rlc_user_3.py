@@ -172,6 +172,10 @@ def test_activate_success(user, rlc_user_2, db):
     user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_USERS)
     ru = rlc_user_2["rlc_user"]
     response = c.post("/api/rlc_users/{}/activate/".format(ru.id))
+    response_data = response.json()
     assert (
-        response.status_code == 200 and RlcUser.objects.get(id=ru.id).is_active is False
+        response.status_code == 200
+        and RlcUser.objects.get(id=ru.id).is_active is False
+        and response_data["email"] == ru.email and
+        response_data['is_active'] is not ru.is_active
     )

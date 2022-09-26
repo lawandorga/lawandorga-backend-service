@@ -118,7 +118,7 @@ def activate_rlc_user(data: schemas.InputRlcUserActivate, rlc_user: RlcUser):
     rlc_user_to_update.activate_or_deactivate()
     rlc_user_to_update.save()
 
-    return ServiceResult(ACTIVATE_RLC_USER_SUCCESS, rlc_user)
+    return ServiceResult(ACTIVATE_RLC_USER_SUCCESS, rlc_user_to_update)
 
 
 # update settings

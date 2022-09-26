@@ -24,10 +24,10 @@ class EmailView(APIView):
         return Response({"status": "email sent"})
 
 
-handler400 = 'config.handlers.handler400'
-handler403 = 'config.handlers.handler403'
-handler404 = 'config.handlers.handler404'
-handler500 = 'config.handlers.handler500'
+handler400 = "config.handlers.handler400"
+handler403 = "config.handlers.handler403"
+handler404 = "config.handlers.handler404"
+handler500 = "config.handlers.handler500"
 
 
 urlpatterns = [
