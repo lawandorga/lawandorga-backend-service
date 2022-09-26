@@ -3,6 +3,7 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from apps.core.models import RlcUser, StatisticUser, UserProfile
+from apps.core.rlc.models import Org
 from apps.core.views import StatisticsUserViewSet
 
 
@@ -81,7 +82,9 @@ class StatisticsUserViewSetTests(StatisticUserUserBase, TestCase):
         self.assertContains(response, "non_field_errors", status_code=400)
 
     def test_change_password_blocked_with_rlc_user_existing(self):
+        rlc = Org.objects.create(name="Test")
         RlcUser.objects.create(
+            org=rlc,
             user=self.user,
             accepted=True,
             email_confirmed=True,
