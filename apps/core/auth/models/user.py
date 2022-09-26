@@ -29,7 +29,7 @@ class UserProfileManager(BaseUserManager):
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    rlc = models.ForeignKey(
+    rlc_old = models.ForeignKey(
         "Org",
         related_name="rlc_members",
         on_delete=models.PROTECT,
@@ -64,6 +64,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return hasattr(self, "internal_user")
 
     # other stuff
+    @property
+    def rlc(self):
+        return self.rlc_user.org
+
     def change_password(self, old_password, new_password):
         if not self.check_password(old_password):
             raise ParseError("The password is not correct.")

@@ -23,10 +23,12 @@ def create_statistics_user(email="dummy@law-orga.de", name="Dummy 1"):
 
 
 def create_rlc_user(email="dummy@law-orga.de", name="Dummy 1", rlc=None):
-    user = UserProfile.objects.create(email=email, name=name, rlc=rlc)
+    user = UserProfile.objects.create(email=email, name=name)
     user.set_password(settings.DUMMY_USER_PASSWORD)
     user.save()
-    rlc_user = RlcUser.objects.create(user=user, email_confirmed=True, accepted=True)
+    rlc_user = RlcUser.objects.create(
+        user=user, email_confirmed=True, accepted=True, org=rlc
+    )
     private_key = user.get_private_key(password_user=settings.DUMMY_USER_PASSWORD)
     return {
         "user": user,

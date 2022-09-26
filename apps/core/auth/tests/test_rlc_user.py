@@ -11,12 +11,12 @@ class UserBase:
     def setUp(self):
         self.rlc = Org.objects.create(name="Test RLC")
         self.user = UserProfile.objects.create(
-            email="dummy@law-orga.de", name="Dummy 1", rlc=self.rlc
+            email="dummy@law-orga.de", name="Dummy 1"
         )
         self.user.set_password(settings.DUMMY_USER_PASSWORD)
         self.user.save()
         self.rlc_user = RlcUser.objects.create(
-            user=self.user, email_confirmed=True, accepted=True
+            user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
         self.rlc.generate_keys()
         self.rlc_user = RlcUser.objects.get(pk=self.rlc_user.pk)
@@ -41,12 +41,12 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
     def setUp(self):
         super().setUp()
         self.another_user = UserProfile.objects.create(
-            email="test_new@test.de", name="Dummy 2", rlc=self.rlc
+            email="test_new@test.de", name="Dummy 2"
         )
         self.another_user.set_password("test")
         self.another_user.save()
         self.another_rlc_user = RlcUser.objects.create(
-            user=self.another_user, email_confirmed=True, accepted=True
+            user=self.another_user, email_confirmed=True, accepted=True, org=self.rlc
         )
         self.user.generate_keys_for_user(self.private_key, self.another_user)
 
@@ -197,15 +197,15 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_keys_are_generated(self):
-        user = UserProfile.objects.create(rlc=self.rlc, email="test3@law-orga.de")
-        RlcUser.objects.create(user=user)
+        user = UserProfile.objects.create(email="test3@law-orga.de")
+        RlcUser.objects.create(user=user, org=self.rlc)
         user = UserProfile.objects.get(email="test3@law-orga.de")
         user.rlc_user.generate_keys()
         assert user.rlc_user.private_key is not None
 
     def test_accept_works_on_new_user(self):
-        user = UserProfile.objects.create(rlc=self.rlc, email="test3@law-orga.de")
-        RlcUser.objects.create(user=user)
+        user = UserProfile.objects.create(email="test3@law-orga.de")
+        RlcUser.objects.create(user=user, org=self.rlc)
         user = UserProfile.objects.get(email="test3@law-orga.de")
         user.rlc_user.generate_keys()
         assert user.rlc_user.private_key is not None
@@ -240,21 +240,19 @@ class UserViewSetErrorTests(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.rlc = Org.objects.create(name="Test RLC")
-        self.user = UserProfile.objects.create(
-            email="test@test.de", name="Dummy 1", rlc=self.rlc
-        )
+        self.user = UserProfile.objects.create(email="test@test.de", name="Dummy 1")
         self.user.set_password("test")
         self.user.save()
         self.rlc_user = RlcUser.objects.create(
-            user=self.user, email_confirmed=True, accepted=True
+            user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
         self.another_user = UserProfile.objects.create(
-            email="test_new@test.de", name="Dummy 2", rlc=self.rlc
+            email="test_new@test.de", name="Dummy 2"
         )
         self.another_user.set_password("test")
         self.another_user.save()
         self.another_rlc_user = RlcUser.objects.create(
-            user=self.another_user, email_confirmed=True, accepted=True
+            user=self.another_user, email_confirmed=True, accepted=True, org=self.rlc
         )
 
     def test_create_returns_error_message_on_different_passwords(self):
@@ -337,13 +335,11 @@ class UserViewSetAccessTests(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.rlc = Org.objects.create(name="Test RLC")
-        self.user = UserProfile.objects.create(
-            email="test@test.de", name="Dummy 1", rlc=self.rlc
-        )
+        self.user = UserProfile.objects.create(email="test@test.de", name="Dummy 1")
         self.user.set_password("test")
         self.user.save()
         self.rlc_user = RlcUser.objects.create(
-            pk=1, user=self.user, email_confirmed=True, accepted=True
+            pk=1, user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
 
     def test_everybody_can_post_to_user_create(self):

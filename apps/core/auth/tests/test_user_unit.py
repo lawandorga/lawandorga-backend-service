@@ -31,11 +31,11 @@ class UserUnitUserBase:
         return UserProfile.objects.get(pk=pk)
 
     def create_user(self, email, name, password):
-        user = UserProfile.objects.create(email=email, name=name, rlc=self.rlc)
+        user = UserProfile.objects.create(email=email, name=name)
         user.set_password(password)
         user.save()
         rlc_user = RlcUser.objects.create(
-            user=user, email_confirmed=True, accepted=True
+            user=user, email_confirmed=True, accepted=True, org=self.rlc
         )
         return user, rlc_user
 

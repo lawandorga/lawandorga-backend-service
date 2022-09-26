@@ -197,10 +197,10 @@ def create_users(rlc1, rlc2):
         user = UserProfile.objects.create(
             email=user_data[0],
             name=user_data[1],
-            rlc=choice([rlc1, rlc2]),
         )
         RlcUser.objects.create(
             user=user,
+            org=choice([rlc1, rlc2]),
             phone_number=user_data[3],
             street=user_data[4],
             city=user_data[5],
@@ -216,11 +216,13 @@ def create_dummy_users(rlc: Org, dummy_password: str = "qwe123") -> List[UserPro
 
     # main user
     user = UserProfile.objects.create(
-        name="Mr. Dummy", email="dummy@law-orga.de", rlc=rlc, is_superuser=True
+        name="Mr. Dummy", email="dummy@law-orga.de", is_superuser=True
     )
     user.set_password(dummy_password)
     user.save()
-    RlcUser.objects.create(user=user, accepted=True, pk=999, email_confirmed=True)
+    RlcUser.objects.create(
+        user=user, accepted=True, pk=999, email_confirmed=True, org=rlc
+    )
     InternalUser.objects.create(user=user)
     users.append(user)
 
@@ -228,21 +230,16 @@ def create_dummy_users(rlc: Org, dummy_password: str = "qwe123") -> List[UserPro
     user = UserProfile.objects.create(
         name="Tester 1",
         email="tester1@law-orga.de",
-        rlc=rlc,
     )
     user.set_password("qwe123")
     user.save()
-    RlcUser.objects.create(user=user, accepted=True, pk=1000)
+    RlcUser.objects.create(user=user, accepted=True, pk=1000, org=rlc)
     users.append(user)
 
-    user = UserProfile.objects.create(
-        name="Tester 2",
-        email="tester2@law-orga.de",
-        rlc=rlc,
-    )
+    user = UserProfile.objects.create(name="Tester 2", email="tester2@law-orga.de")
     user.set_password("qwe123")
     user.save()
-    RlcUser.objects.create(user=user, pk=1001, accepted=True)
+    RlcUser.objects.create(user=user, pk=1001, accepted=True, org=rlc)
     users.append(user)
 
     # return
@@ -253,11 +250,10 @@ def create_inactive_user(rlc):
     user = UserProfile(
         name="Mr. Inactive",
         email="inactive@law-orga.de",
-        rlc=rlc,
     )
     user.set_password("qwe123")
     user.save()
-    RlcUser.objects.create(user=user)
+    RlcUser.objects.create(user=user, org=rlc)
 
 
 def create_groups(rlc: Org, users: List[UserProfile]):

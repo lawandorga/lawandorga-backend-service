@@ -7,7 +7,7 @@ from django.db import models
 from django.template import loader
 
 from apps.core.auth.token_generator import EmailConfirmationTokenGenerator
-from apps.core.rlc.models import HasPermission, Permission
+from apps.core.rlc.models import HasPermission, Org, Permission
 from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 from ...static import (
@@ -34,7 +34,7 @@ class RlcUser(EncryptedModelMixin, models.Model):
     user = models.OneToOneField(
         UserProfile, on_delete=models.CASCADE, related_name="rlc_user"
     )
-    # rlc = models.ForeignKey("Rlc", related_name="users", on_delete=models.PROTECT, blank=True, null=True)
+    org = models.ForeignKey(Org, related_name="users", on_delete=models.PROTECT)
     # blocker
     email_confirmed = models.BooleanField(default=True)
     accepted = models.BooleanField(default=False)
@@ -69,12 +69,6 @@ class RlcUser(EncryptedModelMixin, models.Model):
 
     def __str__(self):
         return "rlcUser: {}; email: {};".format(self.pk, self.user.email)
-
-    @property
-    def org(self):
-        if hasattr(self.user, "rlc"):
-            return self.user.rlc
-        raise ValueError("RlcUser has no org.")
 
     @property
     def name(self):
@@ -229,13 +223,9 @@ class RlcUser(EncryptedModelMixin, models.Model):
         from apps.recordmanagement.models import RecordAccess, RecordDeletion
 
         # profiles
-        profiles = UserProfile.objects.filter(
-            rlc=self.org, rlc_user__locked=True
-        ).count()
+        profiles = RlcUser.objects.filter(org=self.org, locked=True).count()
         if self.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
-            profiles += UserProfile.objects.filter(
-                rlc=self.org, rlc_user__accepted=False
-            ).count()
+            profiles += RlcUser.objects.filter(org=self.org, accepted=False).count()
 
         # deletion requests
         if self.has_permission(PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS):

@@ -3,9 +3,8 @@ from django.test import Client, TestCase
 from apps.core.models import Org, OrgEncryption, Permission
 from apps.core.static import get_all_permission_strings
 from apps.recordmanagement.models import RecordEncryptionNew, RecordTemplate
+from apps.static import test_helpers as data
 from apps.static.encryption import RSAEncryption
-
-from . import data
 
 
 class TestUserKeys(TestCase):
