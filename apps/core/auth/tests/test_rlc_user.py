@@ -127,15 +127,6 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         # 400 response because the account is locked now to have its keys regenerated
         self.assertContains(response, "non_field_errors", status_code=400)
 
-    def test_retrieve_works(self):
-        view = RlcUserViewSet.as_view(actions={"get": "retrieve"})
-        rlc_user = self.rlc_user
-        url = "/api/users/{}/".format(rlc_user.pk)
-        request = self.factory.get(url)
-        force_authenticate(request, rlc_user.user)
-        response = view(request, pk=rlc_user.pk)
-        self.assertEqual(response.status_code, 200)
-
     def test_change_password_works(self):
         view = RlcUserViewSet.as_view(actions={"post": "change_password"})
         self.user.rlc_user.decrypt(settings.DUMMY_USER_PASSWORD)
@@ -175,26 +166,6 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         self.assertEqual(response.status_code, 204)
         self.assertEqual(RlcUser.objects.count(), rlc_users - 1)
         self.assertEqual(UserProfile.objects.count(), user_profiles - 1)
-
-    def test_update_works(self):
-        view = RlcUserViewSet.as_view(actions={"patch": "partial_update"})
-        rlc_user = self.rlc_user
-        data = {
-            "phone": "3243214321",
-        }
-        request = self.factory.patch("", data)
-        force_authenticate(request, self.user)
-        response = view(request, pk=rlc_user.pk)
-        self.assertEqual(response.status_code, 200)
-
-    def test_update_works_on_another_user(self):
-        self.rlc_user.grant(PERMISSION_ADMIN_MANAGE_USERS)
-        view = RlcUserViewSet.as_view(actions={"patch": "partial_update"})
-        data = {"phone": "3243214321"}
-        request = self.factory.patch("", data)
-        force_authenticate(request, self.user)
-        response = view(request, pk=self.another_rlc_user.pk)
-        self.assertEqual(response.status_code, 200)
 
     def test_keys_are_generated(self):
         user = UserProfile.objects.create(email="test3@law-orga.de")
@@ -322,14 +293,6 @@ class UserViewSetErrorTests(TestCase):
         response = view(request)
         self.assertContains(response, "non_field_errors", status_code=400)
 
-    def test_update_denys_without_permission(self):
-        view = RlcUserViewSet.as_view(actions={"patch": "partial_update"})
-        data = {"phone": "3243214321"}
-        request = self.factory.patch("", data)
-        force_authenticate(request, self.user)
-        response = view(request, pk=self.another_rlc_user.pk)
-        self.assertEqual(response.status_code, 403)
-
 
 class UserViewSetAccessTests(TestCase):
     def setUp(self):
@@ -349,28 +312,10 @@ class UserViewSetAccessTests(TestCase):
         self.assertNotEqual(response.status_code, 403)
         self.assertNotEqual(response.status_code, 401)
 
-    def test_not_everytbody_can_hit_retrieve(self):
-        view = RlcUserViewSet.as_view(actions={"get": "retrieve"})
-        request = self.factory.get("/api/users/1/")
-        response = view(request, pk=1)
-        self.assertEqual(response.status_code, 401)
-
-    def test_not_everybody_can_hit_update(self):
-        view = RlcUserViewSet.as_view(actions={"patch": "update"})
-        request = self.factory.patch("/api/users/1/", {})
-        response = view(request, pk=1)
-        self.assertEqual(response.status_code, 401)
-
     def test_not_everytbody_can_hit_destroy(self):
         view = RlcUserViewSet.as_view(actions={"delete": "destroy"})
         request = self.factory.delete("/api/users/1/")
         response = view(request, pk=1)
-        self.assertEqual(response.status_code, 401)
-
-    def test_not_everytbody_can_hit_list(self):
-        view = RlcUserViewSet.as_view(actions={"get": "list"})
-        request = self.factory.delete("/api/users/")
-        response = view(request)
         self.assertEqual(response.status_code, 401)
 
     def test_everybody_can_hit_login(self):

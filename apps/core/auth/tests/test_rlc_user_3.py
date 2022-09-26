@@ -10,6 +10,7 @@ from apps.static import test_helpers as data
 
 from ...fixtures import create_permissions
 from ...static import PERMISSION_ADMIN_MANAGE_USERS
+from ..models import RlcUser
 from ..token_generator import EmailConfirmationTokenGenerator
 
 
@@ -104,4 +105,73 @@ def test_update_another_user_allowed(user, rlc_user_2, db):
         response.status_code == 200
         and response_data["note"] == "New Note"
         and response_data["name"] == "New Name"
+    )
+
+
+def test_list_rlc_users(user, db):
+    c = Client()
+    c.login(**user)
+    response = c.get("/api/rlc_users/")
+    response_data = response.json()
+    assert response.status_code == 200 and "street" not in response_data[0]
+
+
+def test_retrieve_rlc_user(user, db):
+    c = Client()
+    c.login(**user)
+    ru = user["rlc_user"]
+    response = c.get("/api/rlc_users/{}/".format(ru.id))
+    response_data = response.json()
+    assert response.status_code == 200 and response_data["street"] is None
+
+
+def test_retrieve_another_rlc_user(user, rlc_user_2, db):
+    c = Client()
+    c.login(**user)
+    ru = rlc_user_2["rlc_user"]
+    ru_update = RlcUser.objects.get(id=ru.id)
+    ru_update.street = "ABC"
+    ru_update.save()
+    response = c.get("/api/rlc_users/{}/".format(ru.id))
+    response_data = response.json()
+    assert response.status_code == 200 and response_data["street"] is None
+
+
+def test_retrieve_another_rlc_user_with_permission(user, rlc_user_2, db):
+    c = Client()
+    c.login(**user)
+    user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_USERS)
+    ru = rlc_user_2["rlc_user"]
+    ru_update = RlcUser.objects.get(id=ru.id)
+    ru_update.street = "ABC"
+    ru_update.save()
+    response = c.get("/api/rlc_users/{}/".format(ru.id))
+    response_data = response.json()
+    assert response.status_code == 200 and response_data["street"] == "ABC"
+
+
+def test_activate_error(user, db):
+    c = Client()
+    c.login(**user)
+    ru = user["rlc_user"]
+    response = c.get("/api/rlc_users/{}/activate/".format(ru.id))
+    assert response.status_code == 400
+
+
+def test_activate_error_permission(user, rlc_user_2, db):
+    c = Client()
+    c.login(**user)
+    ru = rlc_user_2["rlc_user"]
+    response = c.post("/api/rlc_users/{}/activate/".format(ru.id))
+    assert response.status_code == 400
+
+
+def test_activate_success(user, rlc_user_2, db):
+    c = Client()
+    c.login(**user)
+    user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_USERS)
+    ru = rlc_user_2["rlc_user"]
+    response = c.post("/api/rlc_users/{}/activate/".format(ru.id))
+    assert (
+        response.status_code == 200 and RlcUser.objects.get(id=ru.id).is_active is False
     )

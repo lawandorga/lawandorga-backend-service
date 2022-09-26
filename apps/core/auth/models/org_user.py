@@ -75,6 +75,10 @@ class RlcUser(EncryptedModelMixin, models.Model):
         return self.user.name
 
     @property
+    def speciality_of_study_display(self):
+        return self.get_speciality_of_study_display()
+
+    @property
     def email(self):
         return self.user.email
 
@@ -90,6 +94,9 @@ class RlcUser(EncryptedModelMixin, models.Model):
             if not lr.accepted:
                 return True
         return False
+
+    def activate_or_deactivate(self):
+        self.is_active = not self.is_active
 
     def update_information(
         self,

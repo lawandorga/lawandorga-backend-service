@@ -29,6 +29,50 @@ class InputRlcUserGet(BaseModel):
     id: int
 
 
+class InputRlcUserActivate(BaseModel):
+    id: int
+
+
+class RlcUserOptional(BaseModel):
+    id: int
+    user_id: int
+    birthday: Optional[Any]
+    phone_number: Optional[str]
+    street: Optional[str]
+    city: Optional[str]
+    postal_code: Optional[str]
+    locked: Optional[bool]
+    locked_legal: Optional[bool]
+    email_confirmed: Optional[bool]
+    is_active: Optional[bool]
+    accepted: Optional[bool]
+    updated: Optional[datetime]
+    note: Optional[str]
+    name: Optional[str]
+    email: Optional[str]
+    created: Optional[datetime]
+    speciality_of_study: Optional[str]
+    speciality_of_study_display: Optional[str]
+
+    class Config:
+        orm_mode = True
+
+
+class RlcUserSmall(BaseModel):
+    id: int
+    user_id: int
+    phone_number: Optional[str]
+    name: str
+    email: str
+    accepted: bool
+    email_confirmed: bool
+    locked: bool
+    is_active: bool
+
+    class Config:
+        orm_mode = True
+
+
 class RlcUser(BaseModel):
     id: int
     user_id: int
