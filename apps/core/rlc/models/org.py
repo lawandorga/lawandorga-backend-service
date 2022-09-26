@@ -141,7 +141,9 @@ class Org(EncryptedModelMixin, models.Model):
         # the encrypted aes key
         for rlc_user in self.users.all():
             OrgEncryption.objects.filter(user=rlc_user.user, rlc=self).delete()
-            user_rlc_keys = OrgEncryption(user=rlc_user.user, rlc=self, encrypted_key=aes_key)
+            user_rlc_keys = OrgEncryption(
+                user=rlc_user.user, rlc=self, encrypted_key=aes_key
+            )
             public_key_user = rlc_user.user.get_public_key()
             user_rlc_keys.encrypt(public_key_user)
             user_rlc_keys.save()

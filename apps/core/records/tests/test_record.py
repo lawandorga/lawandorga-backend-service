@@ -49,7 +49,12 @@ class BaseRecord:
         user.set_password("pass1234")
         user.save()
         RlcUser.objects.create(
-            user=user, accepted=True, locked=False, email_confirmed=True, is_active=True, org=self.rlc
+            user=user,
+            accepted=True,
+            locked=False,
+            email_confirmed=True,
+            is_active=True,
+            org=self.rlc,
         )
 
 

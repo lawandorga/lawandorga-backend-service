@@ -103,9 +103,7 @@ class RecordViewSetsPermissions(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.rlc = Org.objects.create(name="Test RLC")
-        self.user = UserProfile.objects.create(
-            email="dummy@rlcm.de", name="Dummy 1"
-        )
+        self.user = UserProfile.objects.create(email="dummy@rlcm.de", name="Dummy 1")
         self.user.set_password(settings.DUMMY_USER_PASSWORD)
         self.user.save()
         self.rlc_user = RlcUser.objects.create(

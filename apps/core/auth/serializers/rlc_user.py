@@ -37,11 +37,13 @@ class RlcUserCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         password = validated_data.pop("password")
         validated_data.pop("password_confirm")
-        user = UserProfile(email=validated_data['email'], name=validated_data['name'])
+        user = UserProfile(email=validated_data["email"], name=validated_data["name"])
         user.set_password(password)
         with transaction.atomic():
             user.save()
-            rlc_user = RlcUser(user=user, email_confirmed=False, org=validated_data['rlc'])
+            rlc_user = RlcUser(
+                user=user, email_confirmed=False, org=validated_data["rlc"]
+            )
             rlc_user.save()
         try:
             rlc_user.send_email_confirmation_email()

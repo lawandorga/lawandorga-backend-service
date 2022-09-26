@@ -197,7 +197,6 @@ def create_users(rlc1, rlc2):
         user = UserProfile.objects.create(
             email=user_data[0],
             name=user_data[1],
-
         )
         RlcUser.objects.create(
             user=user,
@@ -221,7 +220,9 @@ def create_dummy_users(rlc: Org, dummy_password: str = "qwe123") -> List[UserPro
     )
     user.set_password(dummy_password)
     user.save()
-    RlcUser.objects.create(user=user, accepted=True, pk=999, email_confirmed=True, org=rlc)
+    RlcUser.objects.create(
+        user=user, accepted=True, pk=999, email_confirmed=True, org=rlc
+    )
     InternalUser.objects.create(user=user)
     users.append(user)
 
@@ -229,17 +230,13 @@ def create_dummy_users(rlc: Org, dummy_password: str = "qwe123") -> List[UserPro
     user = UserProfile.objects.create(
         name="Tester 1",
         email="tester1@law-orga.de",
-
     )
     user.set_password("qwe123")
     user.save()
     RlcUser.objects.create(user=user, accepted=True, pk=1000, org=rlc)
     users.append(user)
 
-    user = UserProfile.objects.create(
-        name="Tester 2",
-        email="tester2@law-orga.de"
-    )
+    user = UserProfile.objects.create(name="Tester 2", email="tester2@law-orga.de")
     user.set_password("qwe123")
     user.save()
     RlcUser.objects.create(user=user, pk=1001, accepted=True, org=rlc)
@@ -552,7 +549,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
         field=field,
         record=record,
         value="Mandant moechte dass wir ihn vor Gericht vertreten. "
-              "Das duerfen wir aber nicht. #RDG",
+        "Das duerfen wir aber nicht. #RDG",
     )
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
@@ -618,7 +615,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
         field=field,
         record=record,
         value="Hallo Liebes Team der RLC,\n ich habe folgendes Problem."
-              "\nKoennt ihr mir helfen?\n Vielen Dank",
+        "\nKoennt ihr mir helfen?\n Vielen Dank",
     )
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
@@ -630,7 +627,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
         field=field,
         record=record,
         value="Kam ueber die Balkanroute, Bruder auf dem Weg verloren, "
-              "wenig Kontakt zu Familie.",
+        "wenig Kontakt zu Familie.",
     )
     entry.encrypt(aes_key_record=aes_key)
     entry.save()

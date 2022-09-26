@@ -240,9 +240,7 @@ class UserViewSetErrorTests(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.rlc = Org.objects.create(name="Test RLC")
-        self.user = UserProfile.objects.create(
-            email="test@test.de", name="Dummy 1"
-        )
+        self.user = UserProfile.objects.create(email="test@test.de", name="Dummy 1")
         self.user.set_password("test")
         self.user.save()
         self.rlc_user = RlcUser.objects.create(
@@ -337,9 +335,7 @@ class UserViewSetAccessTests(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.rlc = Org.objects.create(name="Test RLC")
-        self.user = UserProfile.objects.create(
-            email="test@test.de", name="Dummy 1"
-        )
+        self.user = UserProfile.objects.create(email="test@test.de", name="Dummy 1")
         self.user.set_password("test")
         self.user.save()
         self.rlc_user = RlcUser.objects.create(
