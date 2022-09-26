@@ -6,47 +6,49 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0140_alter_recordstandardentry_value'),
+        ("recordmanagement", "0140_alter_recordstandardentry_value"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='recordencryption',
+            name="recordencryption",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='recordencryption',
-            name='record',
+            model_name="recordencryption",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='recordencryption',
-            name='user',
+            model_name="recordencryption",
+            name="user",
         ),
         migrations.RemoveField(
-            model_name='encryptedrecorddocument',
-            name='old_record',
+            model_name="encryptedrecorddocument",
+            name="old_record",
         ),
         migrations.RemoveField(
-            model_name='encryptedrecordmessage',
-            name='old_record',
+            model_name="encryptedrecordmessage",
+            name="old_record",
         ),
         migrations.RemoveField(
-            model_name='questionnaire',
-            name='old_record',
+            model_name="questionnaire",
+            name="old_record",
         ),
         migrations.RemoveField(
-            model_name='record',
-            name='old_record',
+            model_name="record",
+            name="old_record",
         ),
         migrations.AlterField(
-            model_name='questionnairetemplate',
-            name='records',
-            field=models.ManyToManyField(through='recordmanagement.Questionnaire', to='recordmanagement.record'),
+            model_name="questionnairetemplate",
+            name="records",
+            field=models.ManyToManyField(
+                through="recordmanagement.Questionnaire", to="recordmanagement.record"
+            ),
         ),
         migrations.DeleteModel(
-            name='EncryptedRecord',
+            name="EncryptedRecord",
         ),
         migrations.DeleteModel(
-            name='RecordEncryption',
+            name="RecordEncryption",
         ),
     ]

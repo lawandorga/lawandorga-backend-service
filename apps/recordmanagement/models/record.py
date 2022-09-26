@@ -5,9 +5,7 @@ from django.core.files import File
 from django.db import models
 
 from apps.core.models import Group, Org, UserProfile
-from apps.recordmanagement.models import (  # type: ignore
-    EncryptedClient,
-)
+from apps.recordmanagement.models import EncryptedClient  # type: ignore
 from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 
