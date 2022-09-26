@@ -19,10 +19,11 @@ class RlcStatisticsViewSet(viewsets.GenericViewSet):
             statement = """
                 select u.email as email, count(*) as actions
                 from core_userprofile as u
+                left join core_rlcuser ru on ru.user_id = u.id
                 left join core_loggedpath path on u.id = path.user_id
-                where user_id is not null
+                where path.user_id is not null
                 and path.time > date('now', '-1 month')
-                and u.rlc_id = {}
+                and ru.org_id = {}
                 group by u.email
                 order by count(*) desc;
                 """.format(
@@ -32,10 +33,11 @@ class RlcStatisticsViewSet(viewsets.GenericViewSet):
             statement = """
                 select u.email as email, count(*) as actions
                 from core_userprofile as u
+                left join core_rlcuser ru on ru.user_id = u.id
                 left join core_loggedpath path on u.id = path.user_id
-                where user_id is not null
+                where path.user_id is not null
                 and path.time > date_trunc('day', NOW() - interval '1 month')
-                and u.rlc_id = {}
+                and ru.org_id = {}
                 group by u.email
                 order by count(*) desc;
                 """.format(

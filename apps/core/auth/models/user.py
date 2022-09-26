@@ -201,18 +201,20 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return records_data
 
     def get_members_information(self):
+        from .rlc import RlcUser
+
         if self.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
             members_data = []
-            users = UserProfile.objects.filter(
-                rlc=self.rlc, rlc_user__created__gt=timezone.now() - timedelta(days=14)
-            ).select_related("rlc_user")
-            for user in list(users):
-                if user.rlcgroups.all().count() == 0:
+            users = RlcUser.objects.filter(
+                org=self.rlc, created__gt=timezone.now() - timedelta(days=14)
+            )
+            for rlc_user in list(users):
+                if rlc_user.user.rlcgroups.all().count() == 0:
                     members_data.append(
                         {
-                            "name": user.name,
-                            "id": user.id,
-                            "rlcuserid": user.rlc_user.id,
+                            "name": rlc_user.user.name,
+                            "id": rlc_user.user.id,
+                            "rlcuserid": rlc_user.id,
                         }
                     )
             return members_data
