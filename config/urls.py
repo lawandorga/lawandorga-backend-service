@@ -24,6 +24,12 @@ class EmailView(APIView):
         return Response({"status": "email sent"})
 
 
+handler400 = 'config.handlers.handler400'
+handler403 = 'config.handlers.handler403'
+handler404 = 'config.handlers.handler404'
+handler500 = 'config.handlers.handler500'
+
+
 urlpatterns = [
     path("error/", TemplateView.as_view(template_name="")),
     path("email/", EmailView.as_view()),
