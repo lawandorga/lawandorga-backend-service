@@ -4,15 +4,15 @@ import pytest
 from django.test import Client
 
 from apps.core.models import Org
+from apps.static import test_helpers
 
 from ..models import LegalRequirement, LegalRequirementUser
-from . import data
 
 
 @pytest.fixture
 def user(db):
     rlc = Org.objects.create(name="Test RLC")
-    user = data.create_rlc_user(rlc=rlc)
+    user = test_helpers.create_rlc_user(rlc=rlc)
     yield user
 
 

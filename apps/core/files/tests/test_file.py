@@ -29,12 +29,12 @@ class FileTestsBase:
         self.factory = APIRequestFactory()
         self.rlc = Org.objects.create(name="Test RLC")
         self.user = UserProfile.objects.create(
-            email="dummy@law-orga.de", name="Dummy 1", rlc=self.rlc
+            email="dummy@law-orga.de", name="Dummy 1"
         )
         self.user.set_password(settings.DUMMY_USER_PASSWORD)
         self.user.save()
         self.rlc_user = RlcUser.objects.create(
-            user=self.user, email_confirmed=True, accepted=True
+            user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
         self.folder = Folder.objects.get(parent=None, rlc=self.rlc)
         self.private_key_user = self.user.get_private_key(

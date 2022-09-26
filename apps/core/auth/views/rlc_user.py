@@ -85,7 +85,7 @@ class RlcUserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
             "partial_update",
             "change_password",
         ]:
-            queryset = RlcUser.objects.filter(user__rlc=self.request.user.rlc)
+            queryset = RlcUser.objects.filter(org=self.request.user.rlc_user.org)
         else:
             queryset = RlcUser.objects.filter(pk=self.request.user.rlc_user.id)
         group = self.request.query_params.get("group", None)

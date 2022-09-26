@@ -104,12 +104,12 @@ class RecordViewSetsPermissions(TestCase):
         self.factory = APIRequestFactory()
         self.rlc = Org.objects.create(name="Test RLC")
         self.user = UserProfile.objects.create(
-            email="dummy@rlcm.de", name="Dummy 1", rlc=self.rlc
+            email="dummy@rlcm.de", name="Dummy 1"
         )
         self.user.set_password(settings.DUMMY_USER_PASSWORD)
         self.user.save()
         self.rlc_user = RlcUser.objects.create(
-            user=self.user, email_confirmed=True, accepted=True
+            user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
 
     def check_forbidden(self, view_class, actions):

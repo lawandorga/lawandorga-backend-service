@@ -20,12 +20,12 @@ class BaseRecord:
         self.factory = APIRequestFactory()
         self.rlc = Org.objects.create(name="Test RLC")
         self.user = UserProfile.objects.create(
-            email="dummy@law-orga.de", name="Dummy 1", rlc=self.rlc
+            email="dummy@law-orga.de", name="Dummy 1"
         )
         self.user.set_password(settings.DUMMY_USER_PASSWORD)
         self.user.save()
         self.rlc_user = RlcUser.objects.create(
-            user=self.user, email_confirmed=True, accepted=True
+            user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
         self.template = RecordTemplate.objects.create(
             rlc=self.rlc, name="Record Template"
@@ -45,11 +45,11 @@ class BaseRecord:
         # HasPermission.objects.create(user_has_permission=self.user, permission=)
 
     def create_user(self, email, name):
-        user = UserProfile.objects.create(email=email, name=name, rlc=self.rlc)
+        user = UserProfile.objects.create(email=email, name=name)
         user.set_password("pass1234")
         user.save()
         RlcUser.objects.create(
-            user=user, accepted=True, locked=False, email_confirmed=True, is_active=True
+            user=user, accepted=True, locked=False, email_confirmed=True, is_active=True, org=self.rlc
         )
 
 
