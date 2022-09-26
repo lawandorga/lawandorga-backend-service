@@ -18,6 +18,11 @@ from ...static import (
 from .user import UserProfile
 
 
+class RlcUserManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related("user")
+
+
 class RlcUser(EncryptedModelMixin, models.Model):
     STUDY_CHOICES = (
         ("LAW", "Law Sciences"),
@@ -61,6 +66,8 @@ class RlcUser(EncryptedModelMixin, models.Model):
     # other
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    # custom manager
+    objects = RlcUserManager()
 
     class Meta:
         verbose_name = "RlcUser"
