@@ -13,6 +13,22 @@ class Rlc(BaseModel):
         orm_mode = True
 
 
+class InputRlcUserUpdate(BaseModel):
+    id: int
+    name: Optional[str]
+    birthday: Optional[Any]
+    phone_number: Optional[str]
+    street: Optional[str]
+    city: Optional[str]
+    postal_code: Optional[str]
+    speciality_of_study: Optional[str]
+    note: Optional[str]
+
+
+class InputRlcUserGet(BaseModel):
+    id: int
+
+
 class RlcUser(BaseModel):
     id: int
     user_id: int

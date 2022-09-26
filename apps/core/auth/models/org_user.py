@@ -91,6 +91,31 @@ class RlcUser(EncryptedModelMixin, models.Model):
                 return True
         return False
 
+    def update_information(
+        self,
+        note=None,
+        birthday=None,
+        phone_number=None,
+        street=None,
+        city=None,
+        postal_code=None,
+        speciality_of_study=None,
+    ):
+        if note is not None:
+            self.note = note
+        if birthday is not None:
+            self.birthday = birthday
+        if phone_number is not None:
+            self.phone_number = phone_number
+        if street is not None:
+            self.street = street
+        if city is not None:
+            self.city = city
+        if postal_code is not None:
+            self.postal_code = postal_code
+        if speciality_of_study is not None:
+            self.speciality_of_study = speciality_of_study
+
     def encrypt(self, password=None):
         if password is not None:
             key = password
