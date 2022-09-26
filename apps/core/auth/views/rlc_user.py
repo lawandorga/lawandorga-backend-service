@@ -1,9 +1,10 @@
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import status, viewsets
+from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import AuthenticationFailed, ParseError
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
@@ -24,7 +25,12 @@ from ..serializers import (
 from ..token_generator import EmailConfirmationTokenGenerator
 
 
-class RlcUserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
+class RlcUserViewSet(
+    CheckPermissionWall,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet,
+):
     serializer_class = RlcUserSerializer
     queryset = RlcUser.objects.none()
     permission_wall = {
@@ -95,34 +101,6 @@ class RlcUserViewSet(CheckPermissionWall, viewsets.ModelViewSet):
             ).group_members.values_list("rlc_user__pk", flat=True)
             queryset = queryset.filter(pk__in=group)
         return queryset
-
-    def retrieve(self, request, pk=None, **kwargs):
-        rlc_user = self.get_object()
-        if (
-            request.user.has_permission(PERMISSION_ADMIN_MANAGE_USERS)
-            or rlc_user.pk == request.user.rlc_user.pk
-        ):
-            serializer = RlcUserSerializer(rlc_user)
-        else:
-            serializer = RlcUserForeignSerializer(rlc_user)
-        return Response(serializer.data)
-
-    def update(self, request: Request, *args, **kwargs):
-        rlc_user = self.get_object()
-        user: UserProfile = request.user  # type: ignore
-        if user.rlc_user.pk != rlc_user.pk and not user.has_permission(
-            PERMISSION_ADMIN_MANAGE_USERS
-        ):
-            data = {
-                "detail": "You need the permission {} to do this.".format(
-                    PERMISSION_ADMIN_MANAGE_USERS
-                )
-            }
-            return Response(data, status=status.HTTP_403_FORBIDDEN)
-        serializer = self.get_serializer(rlc_user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(RlcUserSerializer(rlc_user).data)
 
     @action(detail=False, methods=["post"])
     def change_password(self, request: Request):
