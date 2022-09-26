@@ -39,9 +39,9 @@ class HasPermissionViewSet(
         return super().get_serializer_class()
 
     def get_queryset(self):
-        rlc = self.request.user.rlc
+        rlc = self.request.user.rlc_user.org
         queryset = HasPermission.objects.filter(
-            Q(user_has_permission__rlc=rlc) | Q(group_has_permission__from_rlc=rlc)
+            Q(user_has_permission__rlc_user__org=rlc) | Q(group_has_permission__from_rlc=rlc)
         )
         queryset = queryset.select_related(
             "permission", "group_has_permission", "user_has_permission"
