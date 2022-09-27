@@ -5,3 +5,4 @@ from .internal.models import *
 from .legal.models import *
 from .other.models import *
 from .rlc.models import *
+from .events.models import *
