@@ -27,8 +27,8 @@ class Config(BaseConfig):
 def validation_error_handler(validation_error: ValidationError) -> RFC7807:
     field_errors: Dict[str, List[str]] = {}
     for error in validation_error.errors():
-        if len(error["loc"]) == 1:
-            name = str(error["loc"][0])
+        if len(error["loc"]) == 2:
+            name = str(error["loc"][1])
             if name in field_errors:
                 field_errors[name].append(error["msg"])
             else:

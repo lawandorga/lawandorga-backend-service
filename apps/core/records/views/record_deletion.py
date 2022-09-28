@@ -2,6 +2,7 @@ from django.db.models import Q
 from rest_framework import mixins, viewsets
 
 from apps.core.records.serializers import RecordDeletionSerializer
+from apps.core.rlc.models import Org
 from apps.core.static import PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS
 from apps.recordmanagement.models.record_deletion import RecordDeletion
 from apps.static.permission import CheckPermissionWall
@@ -23,8 +24,10 @@ class RecordDeletionViewSet(
     }
 
     def get_queryset(self):
+        org = Org.objects.get(pk=self.request.user.rlc.id)
+
         return RecordDeletion.objects.filter(
-            Q(requested_by__rlc=self.request.user.rlc)
-            | Q(processed_by__rlc=self.request.user.rlc)
+            Q(requested_by__rlc_user__org=self.request.user.rlc)
+            | Q(processed_by__rlc_user__org=self.request.user.rlc)
             | Q(record__template__rlc=self.request.user.rlc)
         )
