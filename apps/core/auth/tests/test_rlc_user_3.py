@@ -176,6 +176,6 @@ def test_activate_success(user, rlc_user_2, db):
     assert (
         response.status_code == 200
         and RlcUser.objects.get(id=ru.id).is_active is False
-        and response_data["email"] == ru.email and
-        response_data['is_active'] is not ru.is_active
+        and response_data["email"] == ru.email
+        and response_data["is_active"] is not ru.is_active
     )

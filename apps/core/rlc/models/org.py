@@ -72,7 +72,9 @@ class Org(EncryptedModelMixin, models.Model):
         if not self.do_keys_exist:
             self.generate_keys()
         # return the public key
-        return self.encryption_keys.public_key
+        if self.public_key is not None:
+            return bytes(self.public_key)
+        raise ValueError("The public key can not be None.")
 
     def get_aes_key(self, user=None, private_key_user=None):
         # safety check

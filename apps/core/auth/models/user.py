@@ -201,7 +201,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return records_data
 
     def get_members_information(self):
-        from .rlc import RlcUser
+        from .org_user import RlcUser
 
         if self.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
             members_data = []
