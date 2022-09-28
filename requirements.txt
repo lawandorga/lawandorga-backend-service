@@ -45,3 +45,4 @@ environs==9.5.0
 # other
 PyJWT==2.5.0
 pytz==2022.2.1
+git+https://github.com/timonegk/django-oidc-provider-django4
