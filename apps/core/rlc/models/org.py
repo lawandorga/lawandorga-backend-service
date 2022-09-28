@@ -51,6 +51,10 @@ class Org(EncryptedModelMixin, models.Model):
     def do_keys_exist(self):
         return self.public_key is not None or self.private_key is not None
 
+    @property
+    def links(self):
+        return list(self.external_links.all())
+
     def __str__(self):
         return "rlc: {}; name: {};".format(self.pk, self.name)
 
