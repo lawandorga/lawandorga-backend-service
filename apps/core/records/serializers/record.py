@@ -531,7 +531,7 @@ class RecordListSerializer(RecordSerializer):
     def get_delete(self, obj):
         deletions = list(obj.deletions.all())
         for deletion in deletions:
-            if deletion.state == 're':
+            if deletion.state == "re":
                 return True
         return False
 

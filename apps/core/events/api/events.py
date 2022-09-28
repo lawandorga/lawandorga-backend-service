@@ -5,7 +5,8 @@ from pydantic import BaseModel
 
 from apps.core.auth.models import RlcUser
 from apps.core.events.models import Event
-from apps.core.rlc.models import Org
+
+# from apps.core.rlc.models import Org
 from apps.static.api_layer import Router
 from apps.static.service_layer import ServiceResult
 
