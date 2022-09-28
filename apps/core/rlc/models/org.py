@@ -1,3 +1,4 @@
+import uuid
 from typing import TYPE_CHECKING
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -49,6 +50,10 @@ class Org(EncryptedModelMixin, models.Model):
     @property
     def do_keys_exist(self):
         return self.public_key is not None or self.private_key is not None
+
+    @property
+    def links(self):
+        return list(self.external_links.all())
 
     def __str__(self):
         return "rlc: {}; name: {};".format(self.pk, self.name)
@@ -193,9 +198,8 @@ class Org(EncryptedModelMixin, models.Model):
         }
 
     def force_delete(self):
+        from apps.core.files.models import File
         from apps.recordmanagement.models.record import Record
-
-        from ..files.file import File
 
         # delete records
         for r in Record.objects.filter(template__in=self.recordtemplates.all()):
@@ -211,3 +215,21 @@ class Org(EncryptedModelMixin, models.Model):
             u.delete()
         # delete self
         self.delete()
+
+
+class ExternalLink(models.Model):
+    org = models.ForeignKey(
+        Org, related_name="external_links", on_delete=models.CASCADE
+    )
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    link = models.URLField(max_length=1000)
+    order = models.IntegerField()
+
+    class Meta:
+        ordering = ["order"]
+        verbose_name = "ExternalLink"
+        verbose_name_plural = "ExternalLinks"
+
+    def __str__(self):
+        return "externalLink: {}; name: {};".format(self.id, self.name)

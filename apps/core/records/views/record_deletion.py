@@ -24,7 +24,7 @@ class RecordDeletionViewSet(
 
     def get_queryset(self):
         return RecordDeletion.objects.filter(
-            Q(requested_by__rlc=self.request.user.rlc)
-            | Q(processed_by__rlc=self.request.user.rlc)
+            Q(requested_by__rlc_user__org=self.request.user.rlc)
+            | Q(processed_by__rlc_user__org=self.request.user.rlc)
             | Q(record__template__rlc=self.request.user.rlc)
         )
