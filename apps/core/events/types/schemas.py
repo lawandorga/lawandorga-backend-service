@@ -43,3 +43,7 @@ class EventUpdate(BaseModel):
     description: Optional[str]
     start_time: Optional[datetime]
     end_time: Optional[datetime]
+
+
+class EventDelete(BaseModel):
+    id: int

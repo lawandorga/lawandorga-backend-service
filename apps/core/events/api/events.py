@@ -4,7 +4,12 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from apps.core.auth.models import RlcUser
 from apps.core.events.models import Event
-from apps.core.events.types.schemas import EventCreate, EventResponse, EventUpdate
+from apps.core.events.types.schemas import (
+    EventCreate,
+    EventDelete,
+    EventResponse,
+    EventUpdate,
+)
 from apps.core.rlc.models import Org
 from apps.static.api_layer import Router
 from apps.static.service_layer import ServiceResult
@@ -18,6 +23,12 @@ UPDATE_EVENT_SUCCESS = "User {} has updated an event."
 UPDATE_EVENT_NOT_FOUND = "User {} tried to edit an event that does not exist."
 UPDATE_EVENT_ERROR_UNAUTHORIZED = (
     "User {} tried to update an event that is not part of his clinic."
+)
+
+DELETE_EVENT_SUCCESS = "User {} successfully deleted an event."
+DELETE_EVENT_NOT_FOUND = "User {} tried to delete an event that does not exist."
+DELETE_EVENT_ERROR_UNAUTHORIZED = (
+    "User {} tried to delete an event that is not part of his clinic."
 )
 
 
@@ -43,7 +54,7 @@ def create_event(data: EventCreate, rlc_user: RlcUser):  # TODO: Owner?
 
 
 @router.api(
-    url="/<int:id>",
+    url="<int:id>/",
     method="PUT",
     input_schema=EventUpdate,
     output_schema=EventResponse,
@@ -66,3 +77,21 @@ def update_event(data: EventUpdate, rlc_user: RlcUser):
     event.update_information(data)
 
     return ServiceResult(UPDATE_EVENT_SUCCESS, event)
+
+
+@router.api(url="<int:id>/", method="DELETE", input_schema=EventDelete)
+def delete_event(data: EventDelete, rlc_user: RlcUser):
+    try:
+        event = Event.objects.get(id=data.id)
+    except ObjectDoesNotExist:
+        return ServiceResult(
+            DELETE_EVENT_NOT_FOUND, error="The event you want to delete does not exist."
+        )
+    if rlc_user.org.id != event.org.id:
+        return ServiceResult(
+            DELETE_EVENT_ERROR_UNAUTHORIZED,
+            error="You do not have the permission to delete this event.",
+        )
+
+    event.delete()
+    return ServiceResult(DELETE_EVENT_SUCCESS)
