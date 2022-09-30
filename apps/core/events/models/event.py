@@ -20,18 +20,6 @@ class Event(models.Model):
     def get_all_events_for_user(rlc_user: RlcUser):
         raw_events: List[Event] = list(
             Event.objects.filter(org=rlc_user.org)
-        )  # TODO: Return global events
-        all_events = []
-        for e in raw_events:
-            d = {
-                "id": e.id,
-                "created": e.created,
-                "updated": e.updated,
-                "is_global": e.is_global,
-                "name": e.name,
-                "description": e.description,
-                "start_time": e.start_time,
-                "end_time": e.end_time,
-            }
-            all_events.append(d)
-        return all_events
+            | Event.objects.filter(is_global=True)
+        )
+        return raw_events

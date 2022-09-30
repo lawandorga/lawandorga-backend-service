@@ -5,12 +5,19 @@ from pydantic import BaseModel
 
 from apps.core.auth.models import RlcUser
 from apps.core.events.models import Event
-
-# from apps.core.rlc.models import Org
 from apps.static.api_layer import Router
 from apps.static.service_layer import ServiceResult
 
 router = Router()
+
+
+class Rlc(BaseModel):
+    id: int
+    name: str
+    use_record_pool: bool
+
+    class Config:
+        orm_mode = True
 
 
 class EventResponse(BaseModel):
@@ -22,7 +29,10 @@ class EventResponse(BaseModel):
     description: str
     start_time: datetime
     end_time: datetime
-    # TODO: org is missing
+    org: Rlc
+
+    class Config:
+        orm_mode = True
 
 
 LIST_EVENTS_SUCCESS = "User {} has requested the list of all his events."
