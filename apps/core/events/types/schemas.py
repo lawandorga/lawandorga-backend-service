@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -33,3 +34,12 @@ class EventCreate(BaseModel):
     description: str
     start_time: datetime
     end_time: datetime
+
+
+class EventUpdate(BaseModel):
+    id: int
+    is_global: Optional[bool]
+    name: Optional[str]
+    description: Optional[str]
+    start_time: Optional[datetime]
+    end_time: Optional[datetime]

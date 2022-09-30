@@ -1,8 +1,10 @@
 from typing import List
 
+from django.core.exceptions import ObjectDoesNotExist
+
 from apps.core.auth.models import RlcUser
-from apps.core.events.api.schemas import EventCreate, EventResponse
 from apps.core.events.models import Event
+from apps.core.events.types.schemas import EventCreate, EventResponse, EventUpdate
 from apps.core.rlc.models import Org
 from apps.static.api_layer import Router
 from apps.static.service_layer import ServiceResult
@@ -11,6 +13,12 @@ router = Router()
 
 LIST_EVENTS_SUCCESS = "User {} has requested the list of all his events."
 CREATE_EVENT_SUCCESS = "User {} has created a new event."
+
+UPDATE_EVENT_SUCCESS = "User {} has updated an event."
+UPDATE_EVENT_NOT_FOUND = "User {} tried to edit an event that does not exist."
+UPDATE_EVENT_ERROR_UNAUTHORIZED = (
+    "User {} tried to update an event that is not part of his clinic."
+)
 
 
 @router.api(output_schema=List[EventResponse], auth=True)
@@ -32,3 +40,29 @@ def create_event(data: EventCreate, rlc_user: RlcUser):  # TODO: Owner?
         end_time=data.end_time,
     )
     return ServiceResult(CREATE_EVENT_SUCCESS, event)
+
+
+@router.api(
+    url="/<int:id>",
+    method="PUT",
+    input_schema=EventUpdate,
+    output_schema=EventResponse,
+    auth=True,
+)
+def update_event(data: EventUpdate, rlc_user: RlcUser):
+    try:
+        event = Event.objects.get(id=data.id)
+    except ObjectDoesNotExist:
+        return ServiceResult(
+            UPDATE_EVENT_NOT_FOUND, error="The event you want to edit does not exist."
+        )
+
+    if rlc_user.org.id != event.org.id:
+        return ServiceResult(
+            UPDATE_EVENT_ERROR_UNAUTHORIZED,
+            error="You do not have the permission to edit this event.",
+        )
+
+    event.update_information(data)
+
+    return ServiceResult(UPDATE_EVENT_SUCCESS, event)
