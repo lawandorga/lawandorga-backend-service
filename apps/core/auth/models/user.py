@@ -1,4 +1,6 @@
+from binascii import hexlify
 from datetime import timedelta
+from random import randbytes
 from typing import TYPE_CHECKING, Any, Dict
 
 import jwt
@@ -38,6 +40,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     )
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    _matrix_localpart = models.CharField(max_length=8, unique=True, null=True)
 
     # custom manager
     objects = UserProfileManager()
@@ -67,6 +70,16 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     @property
     def rlc(self):
         return self.rlc_user.org
+
+    @property
+    def matrix_localpart(self):
+        if not self._matrix_localpart:
+            localpart = hexlify(randbytes(4)).decode()
+            while UserProfile.objects.filter(_matrix_localpart=localpart).exists():
+                localpart = hexlify(randbytes(4)).decode()
+            self._matrix_localpart = localpart
+            self.save()
+        return self._matrix_localpart
 
     def change_password(self, old_password, new_password):
         if not self.check_password(old_password):

@@ -151,6 +151,11 @@ SIMPLE_JWT = {
 # https://docs.djangoproject.com/en/3.2/releases/3.2/#customizing-type-of-auto-created-primary-keys
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
+# OpenID connect settings
+OIDC_USERINFO = 'apps.core.auth.oidc_provider_settings.userinfo'
+OIDC_EXTRA_SCOPE_CLAIMS = 'apps.core.auth.oidc_provider_settings.RlcScopeClaims'
+OIDC_IDTOKEN_INCLUDE_CLAIMS = True
+
 # mail errors to the admins
 # https://docs.djangoproject.com/en/3.2/ref/settings/#admins
 ADMINS = [("Daniel Mössner", "it@law-orga.de")]
