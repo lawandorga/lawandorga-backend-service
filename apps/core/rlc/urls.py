@@ -17,4 +17,5 @@ router.register("notes", views.NoteViewSet)
 urlpatterns = [
     path("", include(router.urls)),
     path("org/", include(api.org_router.urls)),
+    path('groups/', include(api.group_router.urls))
 ]

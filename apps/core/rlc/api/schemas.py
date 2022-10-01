@@ -21,3 +21,16 @@ class ExternalLink(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class ListUsersGetInput(BaseModel):
+    id: int
+
+
+class GroupMember(BaseModel):
+    id: int
+    email: str
+    name: str
+
+    class Config:
+        orm_mode = True
