@@ -427,10 +427,10 @@ class RecordUsersField(RecordField):
     @property
     def options(self):
         if self.group:
-            users = self.group.group_members.all()
+            users = list(self.group.group_members.all())
         else:
-            users = self.template.rlc.rlc_members.all()
-        return [{"name": i[0], "id": i[1]} for i in users.values_list("name", "pk")]
+            users = list(map(lambda x: x.user, list(self.template.rlc.users.select_related('user'))))
+        return [{"name": i.name, "id": i.pk} for i in users]
 
 
 class RecordSelectField(RecordField):
