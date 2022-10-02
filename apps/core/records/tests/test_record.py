@@ -39,9 +39,7 @@ class BaseRecord:
         permission = Permission.objects.get(
             name=PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
         )
-        HasPermission.objects.create(
-            user_has_permission=self.user, permission=permission
-        )
+        HasPermission.objects.create(user=self.rlc_user, permission=permission)
         # HasPermission.objects.create(user_has_permission=self.user, permission=)
 
     def create_user(self, email, name):

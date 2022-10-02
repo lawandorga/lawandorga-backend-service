@@ -41,8 +41,7 @@ class HasPermissionViewSet(
     def get_queryset(self):
         rlc = self.request.user.rlc_user.org
         queryset = HasPermission.objects.filter(
-            Q(user_has_permission__rlc_user__org=rlc)
-            | Q(group_has_permission__from_rlc=rlc)
+            Q(user__org=rlc) | Q(group_has_permission__from_rlc=rlc)
         )
         queryset = queryset.select_related(
             "permission", "group_has_permission", "user_has_permission"
@@ -53,7 +52,7 @@ class HasPermissionViewSet(
             user = get_object_or_404(UserProfile, pk=user)
             groups = user.rlcgroups.all()
             queryset = queryset.filter(
-                Q(user_has_permission=user) | Q(group_has_permission__in=groups)
+                Q(user=user.rlc_user) | Q(group_has_permission__in=groups)
             )
         # group param like ?group=3
         group = self.request.query_params.get("group", None)
@@ -77,7 +76,7 @@ class HasPermissionViewSet(
                 Q(user_has_permission__in=request.user.rlc.rlc_members.all())
                 | Q(group_has_permission__in=request.user.rlc.group_from_rlc.all())
             )
-            .select_related("user_has_permission", "group_has_permission", "permission")
+            .select_related("user", "group_has_permission", "permission")
         )
         return Response(HasPermissionSerializer(general_permissions, many=True).data)
 

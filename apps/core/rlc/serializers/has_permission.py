@@ -1,19 +1,22 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from apps.core.auth.serializers.user import UserProfileNameSerializer
-
+from ...auth.models import RlcUser
 from ..models import HasPermission
 from .group import GroupNameSerializer
 from .permission import PermissionNameSerializer
 
 
+class RlcUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RlcUser
+        fields = ("id", "name", "email")
+
+
 class HasPermissionSerializer(serializers.ModelSerializer):
     source = serializers.SerializerMethodField()  # type: ignore
     permission_object = PermissionNameSerializer(read_only=True, source="permission")
-    user_object = UserProfileNameSerializer(
-        read_only=True, source="user_has_permission"
-    )
+    user_object = RlcUserSerializer(read_only=True, source="user")
     group_object = GroupNameSerializer(read_only=True, source="group_has_permission")
 
     class Meta:
@@ -21,7 +24,7 @@ class HasPermissionSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_source(self, obj):
-        if obj.user_has_permission and not obj.group_has_permission:
+        if obj.user and not obj.group_has_permission:
             return "USER"
         if not obj.user_has_permission and obj.group_has_permission:
             return "GROUP"
@@ -49,7 +52,7 @@ class HasPermissionCreateSerializer(HasPermissionSerializer):
         if (
             user
             and HasPermission.objects.filter(
-                user_has_permission=user, permission=permission
+                user=user.rlc_user, permission=permission
             ).exists()
         ) or (
             group

@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -249,13 +249,16 @@ class RlcUser(EncryptedModelMixin, models.Model):
             recipient_list=[self.user.email],
         )
 
-    def grant(self, permission_name):
-        permission = Permission.objects.get(name=permission_name)
-        HasPermission.objects.create(
-            user_has_permission=self.user, permission=permission
-        )
+    def grant(self, permission_name=None, permission=None):
+        if permission_name:
+            p = Permission.objects.get(name=permission_name)
+        elif permission:
+            p = permission
+        else:
+            raise ValueError("You need to pass 'permission_name' or 'permission'")
+        HasPermission.objects.create(user=self, permission=p)
 
-    def has_permission(self, permission: str):
+    def has_permission(self, permission: Union[str, Permission]):
         return self.user.has_permission(permission)
 
     def get_badges(self):

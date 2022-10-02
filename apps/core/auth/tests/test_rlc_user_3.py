@@ -9,7 +9,8 @@ from apps.recordmanagement.models import RecordTemplate
 from apps.static import test_helpers as data
 
 from ...fixtures import create_permissions
-from ...static import PERMISSION_ADMIN_MANAGE_USERS
+from ...rlc.models import Permission
+from ...static import PERMISSION_ADMIN_MANAGE_PERMISSIONS, PERMISSION_ADMIN_MANAGE_USERS
 from ..models import RlcUser
 from ..token_generator import EmailConfirmationTokenGenerator
 
@@ -179,3 +180,40 @@ def test_activate_success(user, rlc_user_2, db):
         and response_data["email"] == ru.email
         and response_data["is_active"] is not ru.is_active
     )
+
+
+def test_permission_grant(user, rlc_user_2, db):
+    rlc_user_2["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_PERMISSIONS)
+    permission = Permission.objects.first()
+    c = Client()
+    c.login(**rlc_user_2)
+    response = c.post(
+        "/api/rlc_users/{}/grant_permission/".format(user["rlc_user"].id),
+        data=json.dumps({"permission": permission.id}),
+        content_type="application/json",
+    )
+    assert response.status_code == 200
+
+
+def test_permission_grant_forbidden(user, rlc_user_2, db):
+    permission = Permission.objects.first()
+    c = Client()
+    c.login(**rlc_user_2)
+    response = c.post(
+        "/api/rlc_users/{}/grant_permission/".format(user["rlc_user"].id),
+        data=json.dumps({"permission": permission.id}),
+        content_type="application/json",
+    )
+    assert response.status_code == 400
+
+
+def test_permission_not_found(user, rlc_user_2, db):
+    rlc_user_2["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_PERMISSIONS)
+    c = Client()
+    c.login(**rlc_user_2)
+    response = c.post(
+        "/api/rlc_users/{}/grant_permission/".format(user["rlc_user"].id),
+        data=json.dumps({"permission": -1}),
+        content_type="application/json",
+    )
+    assert response.status_code == 400

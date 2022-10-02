@@ -1,14 +1,14 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from apps.static.api_layer import Router
 from apps.static.service_layer import ServiceResult
 
-from ...static import PERMISSION_ADMIN_MANAGE_USERS
+from ...rlc.models import Permission
+from ...static import PERMISSION_ADMIN_MANAGE_PERMISSIONS, PERMISSION_ADMIN_MANAGE_USERS
 from ..models import RlcUser
 from . import schemas
 
 router = Router()
-
 
 # list
 LIST_SUCCESS = "User {} has successfully retrieved all users."
@@ -197,3 +197,58 @@ def update_user(data: schemas.InputRlcUserUpdate, rlc_user: RlcUser):
         rlc_user_to_update.user.save()
 
     return ServiceResult(UPDATE_USER_SUCCESS, rlc_user_to_update)
+
+
+# grant permission
+GRANT_PERMISSION_ERROR_FORBIDDEN = (
+    "User {} tried to grant permissions but is not allowed to do so."
+)
+GRANT_PERMISSION_SUCCESS = "User {} granted a permission to another user."
+GRANT_PERMISSION_ERROR_EXISTS = (
+    "User {} tried to grant a permission that already exists on that user."
+)
+GRANT_PERMISSION_ERROR_USER_NOT_FOUND = (
+    "User {} tried to grant permission to a user that does not exist."
+)
+GRANT_PERMISSION_ERROR_PERMISSION_NOT_FOUND = (
+    "User {} tried to grant a permission that does not exist."
+)
+
+
+@router.post(
+    url="<int:id>/grant_permission/", input_schema=schemas.InputRlcUserGrantPermission
+)
+def grant_permission(data: schemas.InputRlcUserGrantPermission, rlc_user: RlcUser):
+    rlc_user_to_grant: Optional[RlcUser] = RlcUser.objects.filter(
+        id=data.id, org=rlc_user.org
+    ).first()
+
+    if rlc_user_to_grant is None:
+        return ServiceResult(
+            GRANT_PERMISSION_ERROR_USER_NOT_FOUND,
+            error="The user you tried to update could not be found.",
+        )
+
+    if not rlc_user.has_permission(PERMISSION_ADMIN_MANAGE_PERMISSIONS):
+        return ServiceResult(
+            GRANT_PERMISSION_ERROR_FORBIDDEN,
+            error="You need the permission '{}' to do this.".format(
+                PERMISSION_ADMIN_MANAGE_PERMISSIONS
+            ),
+        )
+
+    permission = Permission.objects.filter(id=data.permission).first()
+    if permission is None:
+        return ServiceResult(
+            GRANT_PERMISSION_ERROR_PERMISSION_NOT_FOUND,
+            error="The permission you tried to grant could not be found.",
+        )
+
+    if rlc_user_to_grant.has_permission(permission):
+        return ServiceResult(
+            GRANT_PERMISSION_ERROR_EXISTS, error="The user already has this permission."
+        )
+
+    rlc_user_to_grant.grant(permission=permission)
+
+    return ServiceResult(GRANT_PERMISSION_SUCCESS)
