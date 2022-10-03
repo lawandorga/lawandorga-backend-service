@@ -43,9 +43,7 @@ class HasPermissionViewSet(
         queryset = HasPermission.objects.filter(
             Q(user__org=rlc) | Q(group_has_permission__from_rlc=rlc)
         )
-        queryset = queryset.select_related(
-            "permission", "group_has_permission", "user"
-        )
+        queryset = queryset.select_related("permission", "group_has_permission", "user")
         # user param like ?user=5
         user = self.request.query_params.get("user", None)
         if user is not None:

@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0120_haspermission_user'),
+        ("core", "0120_haspermission_user"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='haspermission',
-            unique_together={('permission', 'user', 'group_has_permission')},
+            name="haspermission",
+            unique_together={("permission", "user", "group_has_permission")},
         ),
         migrations.RemoveField(
-            model_name='haspermission',
-            name='user_has_permission',
+            model_name="haspermission",
+            name="user_has_permission",
         ),
     ]

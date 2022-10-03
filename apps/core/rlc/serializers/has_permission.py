@@ -49,8 +49,8 @@ class HasPermissionCreateSerializer(HasPermissionSerializer):
         if (
             group
             and HasPermission.objects.filter(
-            group_has_permission=group, permission=permission
-        ).exists()
+                group_has_permission=group, permission=permission
+            ).exists()
         ):
             raise ValidationError("This permission exists already.")
 
