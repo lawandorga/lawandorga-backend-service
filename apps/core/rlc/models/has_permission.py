@@ -14,13 +14,6 @@ class HasPermission(models.Model):
         on_delete=models.CASCADE,
         null=True,
     )
-    user_has_permission = models.ForeignKey(
-        "UserProfile",
-        related_name="user_has_permission",
-        blank=True,
-        on_delete=models.CASCADE,
-        null=True,
-    )
     group_has_permission = models.ForeignKey(
         "Group",
         related_name="group_has_permission",
@@ -32,7 +25,7 @@ class HasPermission(models.Model):
     class Meta:
         verbose_name = "HasPermission"
         verbose_name_plural = "HasPermissions"
-        unique_together = ("permission", "user_has_permission", "group_has_permission")
+        unique_together = ("permission", "user", "group_has_permission")
 
     def __str__(self):
         return "hasPermission: {}; name: {};".format(self.pk, self.permission.name)

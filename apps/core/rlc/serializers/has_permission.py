@@ -26,7 +26,7 @@ class HasPermissionSerializer(serializers.ModelSerializer):
     def get_source(self, obj):
         if obj.user and not obj.group_has_permission:
             return "USER"
-        if not obj.user_has_permission and obj.group_has_permission:
+        if not obj.user and obj.group_has_permission:
             return "GROUP"
         return "ERROR"
 
@@ -34,27 +34,19 @@ class HasPermissionSerializer(serializers.ModelSerializer):
 class HasPermissionCreateSerializer(HasPermissionSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["user_has_permission"].queryset = self.context[
-            "request"
-        ].user.rlc.rlc_members.all()
         self.fields["group_has_permission"].queryset = self.context[
             "request"
         ].user.rlc.group_from_rlc.all()
 
     def validate(self, data):
-        user = data["user_has_permission"] if "user_has_permission" in data else None
+        data["user"] = None
         group = data["group_has_permission"] if "group_has_permission" in data else None
         permission = data["permission"] if "permission" in data else None
 
-        if user is None and group is None:
+        if group is None:
             raise ValidationError("A permission needs an user or a group.")
 
         if (
-            user
-            and HasPermission.objects.filter(
-                user=user.rlc_user, permission=permission
-            ).exists()
-        ) or (
             group
             and HasPermission.objects.filter(
                 group_has_permission=group, permission=permission
