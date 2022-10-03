@@ -7,6 +7,13 @@ class HasPermission(models.Model):
     permission = models.ForeignKey(
         Permission, related_name="in_has_permission", on_delete=models.CASCADE
     )
+    user = models.ForeignKey(
+        "RlcUser",
+        related_name="permissions",
+        blank=True,
+        on_delete=models.CASCADE,
+        null=True,
+    )
     user_has_permission = models.ForeignKey(
         "UserProfile",
         related_name="user_has_permission",

@@ -185,7 +185,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
     def test_accept_works(self):
         HasPermission.objects.create(
             permission=Permission.objects.get(name=PERMISSION_ADMIN_MANAGE_USERS),
-            user_has_permission=self.user,
+            user=self.rlc_user,
         )
         view = RlcUserViewSet.as_view(actions={"post": "accept"})
         rlc_user = self.rlc_user

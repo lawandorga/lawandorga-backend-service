@@ -429,7 +429,12 @@ class RecordUsersField(RecordField):
         if self.group:
             users = list(self.group.group_members.all())
         else:
-            users = list(map(lambda x: x.user, list(self.template.rlc.users.select_related('user'))))
+            users = list(
+                map(
+                    lambda x: x.user,
+                    list(self.template.rlc.users.select_related("user")),
+                )
+            )
         return [{"name": i.name, "id": i.pk} for i in users]
 
 

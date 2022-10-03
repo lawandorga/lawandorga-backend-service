@@ -37,6 +37,11 @@ class InputRlcUserUpdate(BaseModel):
     note: Optional[str]
 
 
+class InputRlcUserGrantPermission(BaseModel):
+    id: int
+    permission: int
+
+
 class InputRlcUserGet(BaseModel):
     id: int
 
