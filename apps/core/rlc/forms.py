@@ -6,7 +6,7 @@ from apps.core.records.fixtures import create_default_record_template
 from apps.core.static import get_all_permission_strings
 
 
-class RlcAdminForm(forms.ModelForm):
+class OrgAdminForm(forms.ModelForm):
     user_name = forms.CharField(label="Name")
     user_email = forms.EmailField(label="E-Mail")
     user_password = forms.CharField(label="Password", widget=forms.PasswordInput())
