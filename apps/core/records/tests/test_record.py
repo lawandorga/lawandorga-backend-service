@@ -33,9 +33,7 @@ class BaseRecord:
         # permissions
         create_permissions()
         permission = Permission.objects.get(name=PERMISSION_RECORDS_ADD_RECORD)
-        HasPermission.objects.create(
-            user_has_permission=self.user, permission=permission
-        )
+        HasPermission.objects.create(user=self.user.rlc_user, permission=permission)
         permission = Permission.objects.get(
             name=PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
         )

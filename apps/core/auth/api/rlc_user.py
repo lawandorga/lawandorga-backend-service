@@ -87,8 +87,7 @@ ACTIVATE_RLC_USER_ERROR_SELF = (
 )
 
 
-@router.api(
-    method="POST",
+@router.post(
     url="<int:id>/activate/",
     input_schema=schemas.InputRlcUserActivate,
     output_schema=schemas.RlcUserSmall,

@@ -155,7 +155,7 @@ def test_activate_error(user, db):
     c = Client()
     c.login(**user)
     ru = user["rlc_user"]
-    response = c.get("/api/rlc_users/{}/activate/".format(ru.id))
+    response = c.post("/api/rlc_users/{}/activate/".format(ru.id))
     assert response.status_code == 400
 
 

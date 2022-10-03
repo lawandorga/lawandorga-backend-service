@@ -31,6 +31,6 @@ def user(db, group, org):
 def test_list_users(user, group, db):
     c = Client()
     c.login(**user)
-    response = c.put("/api/groups/{}/users/".format(group.id))
+    response = c.get("/api/groups/{}/users/".format(group.id))
     # response_data = response.json()
     assert response.status_code == 200
