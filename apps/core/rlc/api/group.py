@@ -27,3 +27,10 @@ def list_users(data: schemas.ListUsersGetInput, rlc_user: RlcUser):
         map(lambda x: x.rlc_user, list(group.group_members.select_related("rlc_user")))
     )
     return ServiceResult(LIST_USERS_SUCCESS, users_list)
+
+
+# add member TODO
+pass
+
+# remove member TODO
+pass

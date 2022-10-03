@@ -13,6 +13,7 @@ class Group(models.Model):
     group_members = models.ManyToManyField(
         UserProfile, related_name="rlcgroups", blank=True
     )
+    members = models.ManyToManyField("RlcUser", related_name='groups', blank=True)
     description = models.TextField(blank=True, null=True)
 
     class Meta:
