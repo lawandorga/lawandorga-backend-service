@@ -1,13 +1,25 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import AnyUrl, BaseModel
+
+
+class Link(BaseModel):
+    id: UUID
+    name: str
+    link: AnyUrl
+    order: int
+
+    class Config:
+        orm_mode = True
 
 
 class Rlc(BaseModel):
     id: int
     name: str
     use_record_pool: bool
+    links: List[Link]
 
     class Config:
         orm_mode = True
@@ -23,6 +35,11 @@ class InputRlcUserUpdate(BaseModel):
     postal_code: Optional[str]
     speciality_of_study: Optional[str]
     note: Optional[str]
+
+
+class InputRlcUserGrantPermission(BaseModel):
+    id: int
+    permission: int
 
 
 class InputRlcUserGet(BaseModel):

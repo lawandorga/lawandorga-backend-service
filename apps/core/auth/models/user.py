@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 import jwt
 from django.conf import settings
@@ -18,7 +18,7 @@ from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS
 from apps.static.encryption import to_bytes
 
 if TYPE_CHECKING:
-    from apps.core.models import RlcUser, StatisticUser
+    from apps.core.models import Permission, RlcUser, StatisticUser
 
 
 class UserProfileManager(BaseUserManager):
@@ -87,9 +87,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         return [
             has_permission.permission.name
-            for has_permission in HasPermission.objects.filter(
-                user_has_permission=self.pk
-            )
+            for has_permission in HasPermission.objects.filter(user=self.rlc_user)
         ]
 
     def __get_as_group_member_permissions(self):
@@ -119,7 +117,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         from apps.core.models import HasPermission
 
         return HasPermission.objects.filter(
-            user_has_permission=self.pk, permission=permission
+            user=self.rlc_user, permission=permission
         ).exists()
 
     def __has_as_group_member_permission(self, permission):
@@ -130,7 +128,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             group_has_permission__pk__in=groups, permission=permission
         ).exists()
 
-    def has_permission(self, permission):
+    def has_permission(self, permission: Union[str, "Permission"]):
         if isinstance(permission, str):
             try:
                 from apps.core.models import Permission
@@ -201,7 +199,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return records_data
 
     def get_members_information(self):
-        from .rlc import RlcUser
+        from .org_user import RlcUser
 
         if self.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
             members_data = []

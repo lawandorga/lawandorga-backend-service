@@ -39,7 +39,7 @@ def list_keys(rlc_user: RlcUser):
 TEST_KEYS_SUCCESS = "User {} has tested all his keys."
 
 
-@router.api(url="test/", output_schema=List[Key], auth=True)
+@router.post(url="test/", output_schema=List[Key], auth=True)
 def test_keys(rlc_user: RlcUser, private_key_user: str):
     rlc_user.user.test_all_keys(private_key_user)
     all_keys: List[Key] = rlc_user.user.get_all_keys()
@@ -55,7 +55,7 @@ DELETE_KEY_ERROR_WORKS = "User {} tried to delete a key that works."
 DELETE_KEY_SUCCESS_RECORD = "User {} deleted a record key."
 
 
-@router.api(url="<int:id>/", method="POST", input_schema=KeyDelete, auth=True)
+@router.delete(url="<int:id>/", input_schema=KeyDelete, auth=True)
 def delete_key(data: KeyDelete, rlc_user: RlcUser):
     key = RecordEncryptionNew.objects.filter(user=rlc_user.user, pk=data.id).first()
     if key is None:

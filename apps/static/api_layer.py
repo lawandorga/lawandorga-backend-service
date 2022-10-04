@@ -27,8 +27,8 @@ class Config(BaseConfig):
 def validation_error_handler(validation_error: ValidationError) -> RFC7807:
     field_errors: Dict[str, List[str]] = {}
     for error in validation_error.errors():
-        if len(error["loc"]) == 1:
-            name = str(error["loc"][0])
+        if len(error["loc"]) == 2:
+            name = str(error["loc"][1])
             if name in field_errors:
                 field_errors[name].append(error["msg"])
             else:
@@ -96,7 +96,7 @@ class Router:
                 return method_route[request.method]["view"](request, *args, **kwargs)
             else:
                 return ErrorResponse(
-                    title="Method Not Allowed", status=405, type="MethodNotAllowed"
+                    title="Method not allowed", status=405, type="MethodNotAllowed"
                 )
 
         return decorator
@@ -116,12 +116,8 @@ class Router:
 
         ret = []
         for url, method_route in urls.items():
-            for method, route in method_route.items():
-                if len(method_route) > 1:
-                    view = Router.generate_view_func(method_route)
-                    ret.append(path(url, view))
-                else:
-                    ret.append(path(url, route["view"]))
+            view = Router.generate_view_func(method_route)
+            ret.append(path(url, view))
 
         return ret
 

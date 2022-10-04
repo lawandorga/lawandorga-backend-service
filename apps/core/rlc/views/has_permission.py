@@ -41,19 +41,16 @@ class HasPermissionViewSet(
     def get_queryset(self):
         rlc = self.request.user.rlc_user.org
         queryset = HasPermission.objects.filter(
-            Q(user_has_permission__rlc_user__org=rlc)
-            | Q(group_has_permission__from_rlc=rlc)
+            Q(user__org=rlc) | Q(group_has_permission__from_rlc=rlc)
         )
-        queryset = queryset.select_related(
-            "permission", "group_has_permission", "user_has_permission"
-        )
+        queryset = queryset.select_related("permission", "group_has_permission", "user")
         # user param like ?user=5
         user = self.request.query_params.get("user", None)
         if user is not None:
             user = get_object_or_404(UserProfile, pk=user)
             groups = user.rlcgroups.all()
             queryset = queryset.filter(
-                Q(user_has_permission=user) | Q(group_has_permission__in=groups)
+                Q(user=user.rlc_user) | Q(group_has_permission__in=groups)
             )
         # group param like ?group=3
         group = self.request.query_params.get("group", None)
@@ -64,8 +61,7 @@ class HasPermissionViewSet(
     def create(self, request, *args, **kwargs):
         if "group_has_permission" not in request.data:
             request.data.update({"group_has_permission": None})
-        if "user_has_permission" not in request.data:
-            request.data.update({"user_has_permission": None})
+        request.data.update({"user": None})
         return super().create(request, *args, **kwargs)
 
     def get_permissions_response(self, request, permissions):
@@ -74,10 +70,10 @@ class HasPermissionViewSet(
                 permission__in=Permission.objects.filter(name__in=permissions)
             )
             .filter(
-                Q(user_has_permission__in=request.user.rlc.rlc_members.all())
+                Q(user__in=request.user.rlc.users.all())
                 | Q(group_has_permission__in=request.user.rlc.group_from_rlc.all())
             )
-            .select_related("user_has_permission", "group_has_permission", "permission")
+            .select_related("user", "group_has_permission", "permission")
         )
         return Response(HasPermissionSerializer(general_permissions, many=True).data)
 

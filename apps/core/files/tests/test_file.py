@@ -44,7 +44,7 @@ class FileTestsBase:
             user=self.user, private_key_user=self.private_key_user
         )
         HasPermission.objects.create(
-            user_has_permission=self.user,
+            user=self.rlc_user,
             permission=Permission.objects.get(name=PERMISSION_FILES_WRITE_ALL_FOLDERS),
         )
 
