@@ -4,10 +4,7 @@ from apps.core.models import Group
 from apps.core.static import PERMISSION_ADMIN_MANAGE_GROUPS
 from apps.static.permission import CheckPermissionWall
 
-from ..serializers import (
-    GroupCreateSerializer,
-    GroupSerializer,
-)
+from ..serializers import GroupCreateSerializer, GroupSerializer
 
 
 class GroupViewSet(CheckPermissionWall, viewsets.ModelViewSet):
