@@ -6,7 +6,7 @@ from django.db import migrations, models
 def update_groups(apps, schema_editor):
     Group = apps.get_model("core", "Group")
 
-    for g in list(Group.objects.all().prefetch_related('group_members')):
+    for g in list(Group.objects.all().prefetch_related("group_members")):
         for u in list(g.group_members.all()):
             g.members.add(u.rlc_user)
         g.save()
@@ -15,14 +15,16 @@ def update_groups(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0121_alter_haspermission_unique_together_and_more'),
+        ("core", "0121_alter_haspermission_unique_together_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='group',
-            name='members',
-            field=models.ManyToManyField(blank=True, related_name='groups', to='core.rlcuser'),
+            model_name="group",
+            name="members",
+            field=models.ManyToManyField(
+                blank=True, related_name="groups", to="core.rlcuser"
+            ),
         ),
-        migrations.RunPython(update_groups)
+        migrations.RunPython(update_groups),
     ]
