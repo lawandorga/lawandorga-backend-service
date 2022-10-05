@@ -34,3 +34,13 @@ class GroupMember(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class InputAddMember(BaseModel):
+    id: int
+    new_member: int
+
+
+class InputRemoveMember(BaseModel):
+    id: int
+    member: int
