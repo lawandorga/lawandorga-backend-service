@@ -94,12 +94,6 @@ class RlcUserViewSet(
             queryset = RlcUser.objects.filter(org=self.request.user.rlc_user.org)
         else:
             queryset = RlcUser.objects.filter(pk=self.request.user.rlc_user.id)
-        group = self.request.query_params.get("group", None)
-        if group:
-            group = self.request.user.rlc.group_from_rlc.get(
-                pk=group
-            ).group_members.values_list("rlc_user__pk", flat=True)
-            queryset = queryset.filter(pk__in=group)
         return queryset
 
     @action(detail=False, methods=["post"])

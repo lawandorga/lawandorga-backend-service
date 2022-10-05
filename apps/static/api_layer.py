@@ -219,13 +219,6 @@ class Router:
                     status=400,
                     type="DomainError",
                 )
-            except Exception as e:
-                return ErrorResponse(
-                    title="Server Error",
-                    status=500,
-                    type="ServerError",
-                    internal=str(e),
-                )
 
             # log service layer
             # if auth:

@@ -79,78 +79,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             rlc_user.save()
             self.save()
 
-    def __get_as_user_permissions(self):
-        """
-        Returns: all HasPermissions the user itself has as list
-        """
-        from apps.core.models import HasPermission
-
-        return [
-            has_permission.permission.name
-            for has_permission in HasPermission.objects.filter(user=self.rlc_user)
-        ]
-
-    def __get_as_group_member_permissions(self):
-        """
-        Returns: all HasPermissions the groups in which the user is member of have as list
-        """
-        groups = [groups["id"] for groups in list(self.rlcgroups.values("id"))]
-        from apps.core.models import HasPermission
-
-        return [
-            has_permission.permission.name
-            for has_permission in HasPermission.objects.filter(
-                group_has_permission_id__in=groups
-            )
-        ]
-
-    def get_all_user_permissions(self):
-        """
-        Returns: all HasPermissions which the user has direct and
-                    indirect (through membership in a group or rlc) as list
-        """
-        return (
-            self.__get_as_user_permissions() + self.__get_as_group_member_permissions()
-        )
-
-    def __has_as_user_permission(self, permission):
-        from apps.core.models import HasPermission
-
-        return HasPermission.objects.filter(
-            user=self.rlc_user, permission=permission
-        ).exists()
-
-    def __has_as_group_member_permission(self, permission):
-        groups = [group.pk for group in self.rlcgroups.all()]
-        from apps.core.models import HasPermission
-
-        return HasPermission.objects.filter(
-            group_has_permission__pk__in=groups, permission=permission
-        ).exists()
-
     def has_permission(self, permission: Union[str, "Permission"]):
-        if isinstance(permission, str):
-            try:
-                from apps.core.models import Permission
-
-                permission = Permission.objects.get(name=permission)
-            except ObjectDoesNotExist:
-                return False
-
-        as_user = self.__has_as_user_permission(permission)
-        if as_user:
-            return True
-
-        as_group = self.__has_as_group_member_permission(permission)
-        if as_group:
-            return True
-
-        return False
+        return self.rlc_user.has_permission(permission)
 
     def get_collab_permissions(self):
         from apps.core.models import PermissionForCollabDocument
 
-        groups = self.rlcgroups.all()
+        groups = self.rlc_user.groups.all()
         return PermissionForCollabDocument.objects.filter(
             group_has_permission__in=groups
         ).select_related("document")
