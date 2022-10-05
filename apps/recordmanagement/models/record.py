@@ -427,7 +427,7 @@ class RecordUsersField(RecordField):
     @property
     def options(self):
         if self.group:
-            users = list(self.group.group_members.all())
+            users = [u.user for u in list(self.group.members.all())]
         else:
             users = list(
                 map(

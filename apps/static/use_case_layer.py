@@ -65,7 +65,7 @@ def __check_actor(kwargs, func_code, type_hints):
 
 def __update_parameters(args, kwargs, func_code, type_hints):
     args = list(args)
-    kwargs = kwargs
+
     i = 0
     for param in func_code.co_varnames:
 

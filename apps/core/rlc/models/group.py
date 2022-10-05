@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING
 
 from django.db import models
 
-from apps.core.auth.models import UserProfile
 from apps.core.rlc.models.org import Org
 from apps.static.domain_layer import DomainError
 
@@ -16,9 +15,6 @@ class Group(models.Model):
     )
     name = models.CharField(max_length=200, null=False)
     visible = models.BooleanField(null=False, default=True)
-    group_members = models.ManyToManyField(
-        UserProfile, related_name="rlcgroups", blank=True
-    )
     members = models.ManyToManyField("RlcUser", related_name="groups", blank=True)
     description = models.TextField(blank=True, null=True)
 

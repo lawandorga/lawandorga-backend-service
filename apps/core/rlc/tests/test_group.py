@@ -34,7 +34,7 @@ def user(db, group, user_2, org):
     user_1 = data.create_rlc_user(rlc=org)
     org.generate_keys()
     create_permissions()
-    group.group_members.add(user_1["user"])
+    group.members.add(user_1["rlc_user"])
     group.save()
     yield user_1
 
