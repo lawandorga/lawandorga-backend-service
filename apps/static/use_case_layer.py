@@ -20,12 +20,6 @@ def add_mapping(t: T, func: F):
     MAPPINGS[t] = func
 
 
-add_mapping(type(None), lambda x: x)
-
-
-# add_mapping(int, lambda x: x)
-
-
 class UseCaseError(Exception):
     def __init__(self, message):
         self.message = message

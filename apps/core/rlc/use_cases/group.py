@@ -14,9 +14,6 @@ def add_member_to_group(group: Group, new_member: RlcUser, __actor: RlcUser):
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
 def remove_member_from_group(group: Group, member: RlcUser, __actor: RlcUser):
-    print(member.org)
-    print(__actor.org)
-    print(group.from_rlc)
     if group.from_rlc_id != member.org_id:
         raise UseCaseError("You can not edit a member from another org.")
 
