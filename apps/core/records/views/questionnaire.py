@@ -87,18 +87,6 @@ class QuestionnaireTemplateViewSet(CheckPermissionWall, viewsets.ModelViewSet):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    @action(detail=False, methods=["post"])
-    def publish(self, request, *args, **kwargs):
-        serializer = QuestionnaireSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            RecordQuestionnaireDetailSerializer(instance).data,
-            status=status.HTTP_201_CREATED,
-            headers=headers,
-        )
-
 
 ###
 # QuestionnaireFile

@@ -4,7 +4,7 @@ from django.conf import settings
 
 from apps.core.auth.models import StatisticUser
 from apps.core.models import RlcUser, UserProfile
-from apps.recordmanagement.models import Record, RecordEncryptionNew
+from apps.recordmanagement.models import Record, RecordEncryptionNew, RecordTemplate
 from apps.static.encryption import AESEncryption
 
 
@@ -39,6 +39,11 @@ def create_rlc_user(email="dummy@law-orga.de", name="Dummy 1", rlc=None):
         "private_key": private_key,
         "public_key": user.get_public_key(),
     }
+
+
+def create_record_template(org=None):
+    template = RecordTemplate.objects.create(rlc=org, name="Record Template")
+    return {"template": template}
 
 
 def create_record(template=None, users: List[UserProfile] = None):
