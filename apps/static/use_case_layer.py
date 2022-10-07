@@ -85,10 +85,8 @@ def __update_parameters(args, kwargs, func_code, type_hints, actor):
                 try:
                     replacement = MAPPINGS[type_hint](value, actor)
                 except ObjectDoesNotExist as e:
-                    message = (
-                        "The object of type '{}' with identifier '{}' could not be found.".format(
-                            type_hint, value
-                        )
+                    message = "The object of type '{}' with identifier '{}' could not be found.".format(
+                        type_hint, value
                     )
                     raise UseCaseInputError(message) from e
             else:
