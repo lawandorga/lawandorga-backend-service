@@ -1,5 +1,5 @@
 from logging import INFO, WARNING, getLogger
-from typing import Callable, TypeVar, Union, get_type_hints
+from typing import Any, Callable, Type, TypeVar, get_type_hints
 
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -9,12 +9,12 @@ logger = getLogger("usecase")
 
 T = TypeVar("T", bound=type)
 K = TypeVar("K", bound=object)
-F = TypeVar("F", bound=Callable[[K], Union[T, K]])
+F = TypeVar("F", bound=Callable[[K, Any], T])
 
 MAPPINGS = dict[T, F]()
 
 
-def add_mapping(t: T, func: F):
+def add_mapping(t: Type[K], func: Callable[[Any, Any], K]):
     if t in MAPPINGS:
         raise Exception("Type '{}' already has a mapping.".format(t))
     MAPPINGS[t] = func
@@ -25,12 +25,12 @@ class UseCaseError(Exception):
         self.message = message
 
 
-class InputError(Exception):
+class UseCaseInputError(Exception):
     def __init__(self, message):
         self.message = message
 
 
-__all__ = ["use_case", "add_mapping", "UseCaseError", "InputError"]
+__all__ = ["use_case", "add_mapping", "UseCaseError", "UseCaseInputError"]
 
 
 def __check_actor(kwargs, func_code, type_hints):
@@ -57,11 +57,21 @@ def __check_actor(kwargs, func_code, type_hints):
     return actor
 
 
-def __update_parameters(args, kwargs, func_code, type_hints):
+def __check_type(value, type_hint):
+    value_type = type(value)
+    if value_type != type_hint:
+        raise Exception(
+            "The type of '{}' is '{}' but should be '{}'.".format(
+                value, value_type, type_hint
+            )
+        )
+
+
+def __update_parameters(args, kwargs, func_code, type_hints, actor):
     args = list(args)
 
     i = 0
-    for param in func_code.co_varnames:
+    for param in func_code.co_varnames[: func_code.co_argcount]:
 
         if len(args) > i:
             value = args[i]
@@ -70,30 +80,27 @@ def __update_parameters(args, kwargs, func_code, type_hints):
 
         if param in type_hints:
             type_hint = type_hints[param]
-            if type_hint in MAPPINGS:
 
+            if param != "__actor" and type_hint in MAPPINGS:
                 try:
-                    replacement = MAPPINGS[type_hint](value)
+                    replacement = MAPPINGS[type_hint](value, actor)
                 except ObjectDoesNotExist as e:
                     message = (
-                        "The object with identifier '{}' could not be found.".format(
-                            value
+                        "The object of type '{}' with identifier '{}' could not be found.".format(
+                            type_hint, value
                         )
                     )
-                    raise InputError(message) from e
-
-                if len(args) > i:
-                    args[i] = replacement
-                else:
-                    kwargs[param] = replacement
+                    raise UseCaseInputError(message) from e
             else:
-                value_type = type(value)
-                if value_type != type_hint:
-                    raise Exception(
-                        "The type of '{}' is '{}' but should be '{}'.".format(
-                            param, value_type, type_hint
-                        )
-                    )
+                replacement = value
+
+            __check_type(replacement, type_hint)
+
+            if len(args) > i:
+                args[i] = replacement
+            else:
+                kwargs[param] = replacement
+
         i += 1
 
     return args, kwargs
@@ -121,12 +128,15 @@ def use_case(permissions=None):
 
             __check_permissions(actor, permissions)
 
-            args, kwargs = __update_parameters(args, kwargs, func_code, type_hints)
+            args, kwargs = __update_parameters(
+                args, kwargs, func_code, type_hints, actor
+            )
 
             try:
-                usecase_func(*args, **kwargs)
+                ret = usecase_func(*args, **kwargs)
                 msg = "SUCCESS: '{}' called '{}'.".format(str(actor), func_name)
                 logger.log(INFO, msg)
+                return ret
             except (UseCaseError, DomainError) as e:
                 msg = "ERROR: '{}' called '{}' and '{}' happened.".format(
                     str(actor), func_name, str(e)

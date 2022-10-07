@@ -4,14 +4,24 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Type
 
 from django.http import HttpRequest, JsonResponse
 from django.urls import path
-from pydantic import BaseConfig, BaseModel, ValidationError, create_model
+from pydantic import BaseConfig, BaseModel, ValidationError, create_model, validator
 
 from apps.core.models import UserProfile
 from apps.static.domain_layer import DomainError
 from apps.static.service_layer import ServiceResult
-from apps.static.use_case_layer import UseCaseError
+from apps.static.use_case_layer import UseCaseError, UseCaseInputError
 
 PLACEHOLDER = "User {} did something."
+
+
+def qs_to_list_validator(qs) -> List:
+    if hasattr(qs, "all"):
+        return list(qs.all())
+    raise ValueError("The value is not a queryset")
+
+
+def qs_to_list(x):
+    return validator(x, pre=True, allow_reuse=True)(qs_to_list_validator)
 
 
 class RFC7807(BaseModel):
@@ -212,6 +222,12 @@ class Router:
                     title=e.message,
                     status=400,
                     type="UseCaseError",
+                )
+            except UseCaseInputError as e:
+                return ErrorResponse(
+                    title=e.message,
+                    status=400,
+                    type="UseCaseInputError",
                 )
             except DomainError as e:
                 return ErrorResponse(
