@@ -29,10 +29,10 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         statement = """
         select
             core_org.name as rlc_name,
-            count(distinct core_userprofile.id) as member_amount
-        from core_userprofile
-        inner join core_org on core_org.id = core_userprofile.rlc_id
-        group by core_userprofile.rlc_id, core_org.name;
+            count(distinct core_rlcuser.id) as member_amount
+        from core_rlcuser
+        inner join core_org on core_org.id = core_rlcuser.org_id
+        group by core_rlcuser.org_id, core_org.name;
         """
         data = self.execute_statement(statement)
         data = map(lambda x: {"name": x[0], "amount": x[1]}, data)
