@@ -2,7 +2,7 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from apps.recordmanagement.models.record_deletion import RecordDeletion
+from apps.core.records.models import RecordDeletion
 
 
 class RecordDeletionSerializer(serializers.ModelSerializer):

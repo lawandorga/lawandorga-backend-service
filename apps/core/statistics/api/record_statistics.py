@@ -40,8 +40,8 @@ def get_records_closed_statistic(statistics_user: StatisticUser):
             select
             round(julianday(se.closed_at) - julianday(r.created) + 1) as days,
             count(*) as count
-            from recordmanagement_record r
-            left join recordmanagement_recordstateentry se on r.id = se.record_id
+            from core_record r
+            left join core_recordstateentry se on r.id = se.record_id
             where se.value = 'Closed'
             group by round(julianday(se.closed_at) - julianday(r.created) + 1)
             order by days;
@@ -51,8 +51,8 @@ def get_records_closed_statistic(statistics_user: StatisticUser):
             select
             date_part('day', se.closed_at - r.created) + 1 as days,
             count(*)
-            from recordmanagement_record r
-            left join recordmanagement_recordstateentry se on r.id = se.record_id
+            from core_record r
+            left join core_recordstateentry se on r.id = se.record_id
             where se.value = 'Closed'
             group by date_part('day', se.closed_at - r.created)
             order by days;
@@ -81,21 +81,21 @@ GET_RECORDS_FIELD_AMOUNT_STATISTIC = (
 def get_record_fields_amount(statistics_user: StatisticUser):
     statement = """
     select name, count(*) as amount from (
-        select name from recordmanagement_recordstatefield
+        select name from core_recordstatefield
         union all
-        select name from recordmanagement_recordstatisticfield
+        select name from core_recordstatisticfield
         union all
-        select name from recordmanagement_recordencryptedfilefield
+        select name from core_recordencryptedfilefield
         union all
-        select name from recordmanagement_recordselectfield
+        select name from core_recordselectfield
         union all
-        select name from recordmanagement_recordencryptedselectfield
+        select name from core_recordencryptedselectfield
         union all
-        select name from recordmanagement_recordstandardfield
+        select name from core_recordstandardfield
         union all
-        select name from recordmanagement_recordusersfield
+        select name from core_recordusersfield
         union all
-        select name from recordmanagement_recordmultiplefield
+        select name from core_recordmultiplefield
         ) t1
     group by name
     order by count(*) desc;

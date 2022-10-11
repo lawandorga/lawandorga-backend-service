@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from apps.recordmanagement.models import (
+from apps.core.records.models import (
     Questionnaire,
     QuestionnaireAnswer,
     QuestionnaireQuestion,

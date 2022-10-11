@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 
-import apps.recordmanagement.models.record
+import apps.core.records.models.record
 
 
 class Migration(migrations.Migration):
@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             model_name="recordtemplate",
             name="show",
             field=models.JSONField(
-                default=apps.recordmanagement.models.record.get_default_show
+                default=apps.core.records.models.record.get_default_show
             ),
         ),
     ]

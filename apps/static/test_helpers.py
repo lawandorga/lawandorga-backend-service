@@ -4,7 +4,7 @@ from django.conf import settings
 
 from apps.core.auth.models import StatisticUser
 from apps.core.models import RlcUser, UserProfile
-from apps.recordmanagement.models import Record, RecordEncryptionNew, RecordTemplate
+from apps.core.records.models import Record, RecordEncryptionNew, RecordTemplate
 from apps.static.encryption import AESEncryption
 
 

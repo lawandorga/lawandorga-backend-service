@@ -1,6 +1,6 @@
 from django.db import transaction
 
-from apps.recordmanagement.models import (
+from apps.core.records.models import (
     RecordEncryptedStandardField,
     RecordMultipleField,
     RecordSelectField,

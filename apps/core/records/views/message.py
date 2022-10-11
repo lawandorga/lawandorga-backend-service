@@ -2,11 +2,11 @@ from rest_framework import mixins, status
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from apps.core.records.models import EncryptedRecordMessage
 from apps.core.records.serializers import (
     EncryptedRecordMessageDetailSerializer,
     EncryptedRecordMessageSerializer,
 )
-from apps.recordmanagement.models import EncryptedRecordMessage
 
 
 class MessageViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, GenericViewSet):
