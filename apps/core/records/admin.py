@@ -4,7 +4,6 @@ from apps.core.records.models import (
     EncryptedClient,
     EncryptedRecordDocument,
     EncryptedRecordMessage,
-    OriginCountry,
     PoolConsultant,
     PoolRecord,
     Questionnaire,
@@ -35,7 +34,6 @@ from apps.core.records.models import (
     RecordUsersField,
 )
 
-admin.site.register(OriginCountry)
 admin.site.register(EncryptedClient)
 admin.site.register(EncryptedRecordDocument)
 admin.site.register(EncryptedRecordMessage)

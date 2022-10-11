@@ -10,10 +10,6 @@ class EncryptedClient(EncryptedModelMixin, models.Model):
     )
     created_on = models.DateField(auto_now_add=True)
     last_edited = models.DateTimeField(auto_now_add=True)
-    birthday = models.DateField(null=True, blank=True)
-    origin_country = models.ForeignKey(
-        "OriginCountry", related_name="e_clients", on_delete=models.SET_NULL, null=True
-    )
     # encrypted
     name = models.BinaryField(null=True)
     note = models.BinaryField(null=True)
