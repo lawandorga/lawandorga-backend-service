@@ -6,7 +6,6 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("recordmanagement", "0140_alter_recordstandardentry_value"),
         ("core", "0111_rename_usersrlckeys_orgencryption"),
     ]
 

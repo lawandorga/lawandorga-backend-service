@@ -382,7 +382,7 @@ class RecordField(models.Model):
     @classmethod
     def get_entry_model(cls):
         name = cls.__name__.replace("Field", "Entry")
-        model = apps.get_model("recordmanagement", name)
+        model = apps.get_model("core", name)
         return model
 
 
