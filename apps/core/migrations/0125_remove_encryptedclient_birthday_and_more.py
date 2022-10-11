@@ -6,19 +6,19 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0124_encryptedclient_origincountry_questionnaire_and_more'),
+        ("core", "0124_encryptedclient_origincountry_questionnaire_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='encryptedclient',
-            name='birthday',
+            model_name="encryptedclient",
+            name="birthday",
         ),
         migrations.RemoveField(
-            model_name='encryptedclient',
-            name='origin_country',
+            model_name="encryptedclient",
+            name="origin_country",
         ),
         migrations.DeleteModel(
-            name='OriginCountry',
+            name="OriginCountry",
         ),
     ]
