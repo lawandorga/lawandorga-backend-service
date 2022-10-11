@@ -34,20 +34,20 @@ __all__ = ["use_case", "add_mapping", "UseCaseError", "UseCaseInputError"]
 
 def __check_actor(kwargs, func_code, type_hints):
     if "__actor" not in kwargs:
-        raise Exception("You need to submit an '__actor' when calling a usecase.")
+        raise TypeError("You need to submit an '__actor' when calling a usecase.")
 
     if "__actor" not in func_code.co_varnames:
-        raise Exception("The usecase needs to define an '__actor' as argument.")
+        raise TypeError("The usecase needs to define an '__actor' as argument.")
 
     if "__actor" not in type_hints:
-        raise Exception("The usecase needs a type hint to '__actor'.")
+        raise TypeError("The usecase needs a type hint to '__actor'.")
 
     actor = kwargs["__actor"]
 
     submitted_actor_type = type(actor)
     usecase_actor_type = type_hints["__actor"]
     if submitted_actor_type != usecase_actor_type:
-        raise Exception(
+        raise TypeError(
             "The use case '__actor' type is '{}' but should be '{}'.".format(
                 submitted_actor_type, usecase_actor_type
             )
@@ -59,7 +59,7 @@ def __check_actor(kwargs, func_code, type_hints):
 def __check_type(value, type_hint):
     value_type = type(value)
     if value_type != type_hint:
-        raise Exception(
+        raise TypeError(
             "The type of '{}' is '{}' but should be '{}'.".format(
                 value, value_type, type_hint
             )
