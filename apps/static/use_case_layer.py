@@ -1,5 +1,5 @@
 from logging import INFO, WARNING, getLogger
-from typing import Any, Callable, Type, TypeVar, get_type_hints
+from typing import Any, Callable, Dict, Type, TypeVar, get_type_hints
 
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -7,11 +7,10 @@ from apps.static.domain_layer import DomainError
 
 logger = getLogger("usecase")
 
-T = TypeVar("T", bound=type)
 K = TypeVar("K", bound=object)
-F = TypeVar("F", bound=Callable[[K, Any], T])
+F = TypeVar("F", bound=Callable[[Any, Any], K])
 
-MAPPINGS = dict[T, F]()
+MAPPINGS: Dict[Type[K], F] = dict()  # type: ignore
 
 
 def add_mapping(t: Type[K], func: Callable[[Any, Any], K]):
