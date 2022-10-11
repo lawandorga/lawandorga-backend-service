@@ -6,373 +6,373 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recordmanagement', '0141_alter_recordencryption_unique_together_and_more'),
+        ("recordmanagement", "0141_alter_recordencryption_unique_together_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='encryptedrecorddocument',
-            name='creator',
+            model_name="encryptedrecorddocument",
+            name="creator",
         ),
         migrations.RemoveField(
-            model_name='encryptedrecorddocument',
-            name='record',
+            model_name="encryptedrecorddocument",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='encryptedrecordmessage',
-            name='record',
+            model_name="encryptedrecordmessage",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='encryptedrecordmessage',
-            name='sender',
+            model_name="encryptedrecordmessage",
+            name="sender",
         ),
         migrations.RemoveField(
-            model_name='poolconsultant',
-            name='consultant',
+            model_name="poolconsultant",
+            name="consultant",
         ),
         migrations.RemoveField(
-            model_name='poolrecord',
-            name='record',
+            model_name="poolrecord",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='questionnaire',
-            name='record',
+            model_name="questionnaire",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='questionnaire',
-            name='template',
+            model_name="questionnaire",
+            name="template",
         ),
         migrations.RemoveField(
-            model_name='questionnaireanswer',
-            name='field',
+            model_name="questionnaireanswer",
+            name="field",
         ),
         migrations.RemoveField(
-            model_name='questionnaireanswer',
-            name='questionnaire',
+            model_name="questionnaireanswer",
+            name="questionnaire",
         ),
         migrations.RemoveField(
-            model_name='questionnairequestion',
-            name='questionnaire',
+            model_name="questionnairequestion",
+            name="questionnaire",
         ),
         migrations.RemoveField(
-            model_name='questionnairetemplate',
-            name='records',
+            model_name="questionnairetemplate",
+            name="records",
         ),
         migrations.RemoveField(
-            model_name='questionnairetemplate',
-            name='rlc',
+            model_name="questionnairetemplate",
+            name="rlc",
         ),
         migrations.RemoveField(
-            model_name='questionnairetemplatefile',
-            name='questionnaire',
+            model_name="questionnairetemplatefile",
+            name="questionnaire",
         ),
         migrations.RemoveField(
-            model_name='record',
-            name='old_client',
+            model_name="record",
+            name="old_client",
         ),
         migrations.RemoveField(
-            model_name='record',
-            name='template',
+            model_name="record",
+            name="template",
         ),
         migrations.RemoveField(
-            model_name='recordaccess',
-            name='processed_by',
+            model_name="recordaccess",
+            name="processed_by",
         ),
         migrations.RemoveField(
-            model_name='recordaccess',
-            name='record',
+            model_name="recordaccess",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='recordaccess',
-            name='requested_by',
+            model_name="recordaccess",
+            name="requested_by",
         ),
         migrations.RemoveField(
-            model_name='recorddeletion',
-            name='processed_by',
+            model_name="recorddeletion",
+            name="processed_by",
         ),
         migrations.RemoveField(
-            model_name='recorddeletion',
-            name='record',
+            model_name="recorddeletion",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='recorddeletion',
-            name='requested_by',
+            model_name="recorddeletion",
+            name="requested_by",
         ),
         migrations.AlterUniqueTogether(
-            name='recordencryptedfileentry',
+            name="recordencryptedfileentry",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='recordencryptedfileentry',
-            name='field',
+            model_name="recordencryptedfileentry",
+            name="field",
         ),
         migrations.RemoveField(
-            model_name='recordencryptedfileentry',
-            name='record',
+            model_name="recordencryptedfileentry",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='recordencryptedfilefield',
-            name='template',
+            model_name="recordencryptedfilefield",
+            name="template",
         ),
         migrations.AlterUniqueTogether(
-            name='recordencryptedselectentry',
+            name="recordencryptedselectentry",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='recordencryptedselectentry',
-            name='field',
+            model_name="recordencryptedselectentry",
+            name="field",
         ),
         migrations.RemoveField(
-            model_name='recordencryptedselectentry',
-            name='record',
+            model_name="recordencryptedselectentry",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='recordencryptedselectfield',
-            name='template',
+            model_name="recordencryptedselectfield",
+            name="template",
         ),
         migrations.AlterUniqueTogether(
-            name='recordencryptedstandardentry',
+            name="recordencryptedstandardentry",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='recordencryptedstandardentry',
-            name='field',
+            model_name="recordencryptedstandardentry",
+            name="field",
         ),
         migrations.RemoveField(
-            model_name='recordencryptedstandardentry',
-            name='record',
+            model_name="recordencryptedstandardentry",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='recordencryptedstandardfield',
-            name='template',
+            model_name="recordencryptedstandardfield",
+            name="template",
         ),
         migrations.AlterUniqueTogether(
-            name='recordencryptionnew',
+            name="recordencryptionnew",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='recordencryptionnew',
-            name='record',
+            model_name="recordencryptionnew",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='recordencryptionnew',
-            name='user',
+            model_name="recordencryptionnew",
+            name="user",
         ),
         migrations.AlterUniqueTogether(
-            name='recordmultipleentry',
+            name="recordmultipleentry",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='recordmultipleentry',
-            name='field',
+            model_name="recordmultipleentry",
+            name="field",
         ),
         migrations.RemoveField(
-            model_name='recordmultipleentry',
-            name='record',
+            model_name="recordmultipleentry",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='recordmultiplefield',
-            name='template',
+            model_name="recordmultiplefield",
+            name="template",
         ),
         migrations.AlterUniqueTogether(
-            name='recordselectentry',
+            name="recordselectentry",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='recordselectentry',
-            name='field',
+            model_name="recordselectentry",
+            name="field",
         ),
         migrations.RemoveField(
-            model_name='recordselectentry',
-            name='record',
+            model_name="recordselectentry",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='recordselectfield',
-            name='template',
+            model_name="recordselectfield",
+            name="template",
         ),
         migrations.AlterUniqueTogether(
-            name='recordstandardentry',
+            name="recordstandardentry",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='recordstandardentry',
-            name='field',
+            model_name="recordstandardentry",
+            name="field",
         ),
         migrations.RemoveField(
-            model_name='recordstandardentry',
-            name='record',
+            model_name="recordstandardentry",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='recordstandardfield',
-            name='template',
+            model_name="recordstandardfield",
+            name="template",
         ),
         migrations.AlterUniqueTogether(
-            name='recordstateentry',
+            name="recordstateentry",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='recordstateentry',
-            name='field',
+            model_name="recordstateentry",
+            name="field",
         ),
         migrations.RemoveField(
-            model_name='recordstateentry',
-            name='record',
+            model_name="recordstateentry",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='recordstatefield',
-            name='template',
+            model_name="recordstatefield",
+            name="template",
         ),
         migrations.AlterUniqueTogether(
-            name='recordstatisticentry',
+            name="recordstatisticentry",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='recordstatisticentry',
-            name='field',
+            model_name="recordstatisticentry",
+            name="field",
         ),
         migrations.RemoveField(
-            model_name='recordstatisticentry',
-            name='record',
+            model_name="recordstatisticentry",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='recordstatisticfield',
-            name='template',
+            model_name="recordstatisticfield",
+            name="template",
         ),
         migrations.RemoveField(
-            model_name='recordtemplate',
-            name='rlc',
+            model_name="recordtemplate",
+            name="rlc",
         ),
         migrations.AlterUniqueTogether(
-            name='recordusersentry',
+            name="recordusersentry",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='recordusersentry',
-            name='field',
+            model_name="recordusersentry",
+            name="field",
         ),
         migrations.RemoveField(
-            model_name='recordusersentry',
-            name='record',
+            model_name="recordusersentry",
+            name="record",
         ),
         migrations.RemoveField(
-            model_name='recordusersentry',
-            name='value',
+            model_name="recordusersentry",
+            name="value",
         ),
         migrations.RemoveField(
-            model_name='recordusersfield',
-            name='group',
+            model_name="recordusersfield",
+            name="group",
         ),
         migrations.RemoveField(
-            model_name='recordusersfield',
-            name='template',
+            model_name="recordusersfield",
+            name="template",
         ),
         migrations.RemoveField(
-            model_name='tag',
-            name='rlc',
+            model_name="tag",
+            name="rlc",
         ),
         migrations.DeleteModel(
-            name='EncryptedClient',
+            name="EncryptedClient",
         ),
         migrations.DeleteModel(
-            name='EncryptedRecordDocument',
+            name="EncryptedRecordDocument",
         ),
         migrations.DeleteModel(
-            name='EncryptedRecordMessage',
+            name="EncryptedRecordMessage",
         ),
         migrations.DeleteModel(
-            name='OriginCountry',
+            name="OriginCountry",
         ),
         migrations.DeleteModel(
-            name='PoolConsultant',
+            name="PoolConsultant",
         ),
         migrations.DeleteModel(
-            name='PoolRecord',
+            name="PoolRecord",
         ),
         migrations.DeleteModel(
-            name='Questionnaire',
+            name="Questionnaire",
         ),
         migrations.DeleteModel(
-            name='QuestionnaireAnswer',
+            name="QuestionnaireAnswer",
         ),
         migrations.DeleteModel(
-            name='QuestionnaireQuestion',
+            name="QuestionnaireQuestion",
         ),
         migrations.DeleteModel(
-            name='QuestionnaireTemplate',
+            name="QuestionnaireTemplate",
         ),
         migrations.DeleteModel(
-            name='QuestionnaireTemplateFile',
+            name="QuestionnaireTemplateFile",
         ),
         migrations.DeleteModel(
-            name='Record',
+            name="Record",
         ),
         migrations.DeleteModel(
-            name='RecordAccess',
+            name="RecordAccess",
         ),
         migrations.DeleteModel(
-            name='RecordDeletion',
+            name="RecordDeletion",
         ),
         migrations.DeleteModel(
-            name='RecordEncryptedFileEntry',
+            name="RecordEncryptedFileEntry",
         ),
         migrations.DeleteModel(
-            name='RecordEncryptedFileField',
+            name="RecordEncryptedFileField",
         ),
         migrations.DeleteModel(
-            name='RecordEncryptedSelectEntry',
+            name="RecordEncryptedSelectEntry",
         ),
         migrations.DeleteModel(
-            name='RecordEncryptedSelectField',
+            name="RecordEncryptedSelectField",
         ),
         migrations.DeleteModel(
-            name='RecordEncryptedStandardEntry',
+            name="RecordEncryptedStandardEntry",
         ),
         migrations.DeleteModel(
-            name='RecordEncryptedStandardField',
+            name="RecordEncryptedStandardField",
         ),
         migrations.DeleteModel(
-            name='RecordEncryptionNew',
+            name="RecordEncryptionNew",
         ),
         migrations.DeleteModel(
-            name='RecordMultipleEntry',
+            name="RecordMultipleEntry",
         ),
         migrations.DeleteModel(
-            name='RecordMultipleField',
+            name="RecordMultipleField",
         ),
         migrations.DeleteModel(
-            name='RecordSelectEntry',
+            name="RecordSelectEntry",
         ),
         migrations.DeleteModel(
-            name='RecordSelectField',
+            name="RecordSelectField",
         ),
         migrations.DeleteModel(
-            name='RecordStandardEntry',
+            name="RecordStandardEntry",
         ),
         migrations.DeleteModel(
-            name='RecordStandardField',
+            name="RecordStandardField",
         ),
         migrations.DeleteModel(
-            name='RecordStateEntry',
+            name="RecordStateEntry",
         ),
         migrations.DeleteModel(
-            name='RecordStateField',
+            name="RecordStateField",
         ),
         migrations.DeleteModel(
-            name='RecordStatisticEntry',
+            name="RecordStatisticEntry",
         ),
         migrations.DeleteModel(
-            name='RecordStatisticField',
+            name="RecordStatisticField",
         ),
         migrations.DeleteModel(
-            name='RecordTemplate',
+            name="RecordTemplate",
         ),
         migrations.DeleteModel(
-            name='RecordUsersEntry',
+            name="RecordUsersEntry",
         ),
         migrations.DeleteModel(
-            name='RecordUsersField',
+            name="RecordUsersField",
         ),
         migrations.DeleteModel(
-            name='Tag',
+            name="Tag",
         ),
     ]
