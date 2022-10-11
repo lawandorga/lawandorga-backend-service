@@ -4,7 +4,7 @@ import pytest
 from django.test import Client
 
 from apps.core.models import Org
-from apps.recordmanagement.models import QuestionnaireTemplate
+from apps.core.records.models import QuestionnaireTemplate
 from apps.static import test_helpers as data
 
 from ...fixtures import create_permissions

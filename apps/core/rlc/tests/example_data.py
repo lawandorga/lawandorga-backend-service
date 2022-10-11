@@ -17,13 +17,8 @@ from apps.core.models import (
     UserProfile,
 )
 from apps.core.records.fixtures import create_default_record_template
-from apps.core.rlc.models import Org
-from apps.core.static import (
-    get_all_collab_permission_strings,
-    get_all_files_permission_strings,
-    get_all_permission_strings,
-)
-from apps.recordmanagement.models import (
+from apps.core.records.models import (
+    EncryptedRecordMessage,
     QuestionnaireQuestion,
     QuestionnaireTemplate,
     Record,
@@ -42,10 +37,13 @@ from apps.recordmanagement.models import (
     RecordUsersEntry,
     RecordUsersField,
 )
-from apps.recordmanagement.models.encrypted_record_document import (
-    EncryptedRecordDocument,
+from apps.core.records.models.encrypted_record_document import EncryptedRecordDocument
+from apps.core.rlc.models import Org
+from apps.core.static import (
+    get_all_collab_permission_strings,
+    get_all_files_permission_strings,
+    get_all_permission_strings,
 )
-from apps.recordmanagement.models.encrypted_record_message import EncryptedRecordMessage
 from apps.static.encryption import AESEncryption
 
 

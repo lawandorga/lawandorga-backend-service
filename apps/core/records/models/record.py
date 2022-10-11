@@ -1,11 +1,11 @@
 import json
 
 from django.apps import apps
-from django.core.files import File
+from django.core.files import File as DjangoFile
 from django.db import models
 
 from apps.core.models import Group, Org, UserProfile
-from apps.recordmanagement.models import EncryptedClient  # type: ignore
+from apps.core.records.models import EncryptedClient  # type: ignore
 from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 
@@ -856,7 +856,7 @@ class RecordEncryptedFileEntry(RecordEntry):
             )
         name = file.name
         file = AESEncryption.encrypt_in_memory_file(file, key)
-        file = File(file, name="{}.enc".format(name))
+        file = DjangoFile(file, name="{}.enc".format(name))
         return file
 
     def decrypt_file(self, user=None, private_key_user=None, aes_key_record=None):

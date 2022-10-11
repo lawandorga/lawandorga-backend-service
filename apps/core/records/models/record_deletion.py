@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 from apps.core.models import UserProfile
-from apps.recordmanagement.models.record import Record
+from apps.core.records.models.record import Record
 
 
 class RecordDeletion(models.Model):

@@ -2,9 +2,9 @@ import pytest
 from django.test import Client
 
 from apps.core.fixtures import create_permissions
+from apps.core.records.models import RecordTemplate
 from apps.core.rlc.models import Org
 from apps.core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
-from apps.recordmanagement.models import RecordTemplate
 from apps.static import test_helpers as data
 
 

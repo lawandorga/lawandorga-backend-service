@@ -91,7 +91,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         ).select_related("document")
 
     def get_own_records(self):
-        from apps.recordmanagement.models.record import Record
+        from apps.core.records.models import Record
 
         records = Record.objects.filter(template__rlc=self.rlc).prefetch_related(
             "users_entries", "users_entries__value"
@@ -108,7 +108,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return Record.objects.filter(pk__in=record_pks)
 
     def get_records_information(self):
-        from apps.recordmanagement.models.record import Record
+        from apps.core.records.models import Record
 
         records = Record.objects.filter(template__rlc=self.rlc).prefetch_related(
             "state_entries", "users_entries", "users_entries__value"
@@ -154,7 +154,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return None
 
     def get_questionnaire_information(self):
-        from apps.recordmanagement.models.questionnaire import Questionnaire
+        from apps.core.records.models.questionnaire import Questionnaire
 
         questionnaires = Questionnaire.objects.filter(
             record__in=self.get_own_records()
@@ -269,14 +269,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             raise ValueError("You need to set (private_key_user).")
 
     def test_all_keys(self, private_key_user):
-        from apps.recordmanagement.models import RecordEncryptionNew
+        from apps.core.records.models import RecordEncryptionNew
 
         for key in RecordEncryptionNew.objects.filter(user=self):
             key.test(private_key_user)
         self.users_rlc_keys.first().test(private_key_user)
 
     def __get_all_keys_raw(self):
-        from apps.recordmanagement.models import RecordEncryptionNew
+        from apps.core.records.models import RecordEncryptionNew
 
         ret = {
             "record_keys": list(
@@ -322,7 +322,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         this method assumes that a valid public key exists for user_to_unlock
         """
         from apps.core.models import OrgEncryption
-        from apps.recordmanagement.models import RecordEncryptionNew
+        from apps.core.records.models import RecordEncryptionNew
 
         # check if all keys can be handed over
         success = True

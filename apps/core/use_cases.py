@@ -1,6 +1,6 @@
 from apps.core.auth.models import RlcUser
+from apps.core.records.models import QuestionnaireTemplate, Record
 from apps.core.rlc.models import Group
-from apps.recordmanagement.models import QuestionnaireTemplate, Record
 from apps.static.use_case_layer import add_mapping
 
 add_mapping(Group, lambda v, actor: Group.objects.get(id=v))

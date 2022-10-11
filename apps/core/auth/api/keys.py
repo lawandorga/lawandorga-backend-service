@@ -3,7 +3,7 @@ from typing import List, Literal
 from pydantic import BaseModel
 
 from apps.core.auth.models import RlcUser
-from apps.recordmanagement.models import RecordEncryptionNew
+from apps.core.records.models import RecordEncryptionNew
 from apps.static.api_layer import Router
 from apps.static.service_layer import ServiceResult
 

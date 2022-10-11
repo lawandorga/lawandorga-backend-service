@@ -45,12 +45,12 @@ def get_users_with_missing_record_keys(statistics_user: StatisticUser):
                            count(distinct enc.id) as enc
 
                     from core_userprofile u
-                             cross join recordmanagement_record r
+                             cross join core_record r
 
-                             left join recordmanagement_recordencryptionnew enc
+                             left join core_recordencryptionnew enc
                                        on enc.user_id = u.id and enc.record_id = r.id
                              left join core_rlcuser ru on ru.user_id = u.id
-                             left join recordmanagement_recordtemplate t on t.id = r.template_id
+                             left join core_recordtemplate t on t.id = r.template_id
                              left join core_group_members cggm on ru.id = cggm.rlcuser_id
                              left join core_haspermission ch1 on ru.id = ch1.user_id
                              left join core_haspermission ch2 on cggm.group_id = ch2.group_has_permission_id

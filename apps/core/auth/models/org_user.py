@@ -207,7 +207,7 @@ class RlcUser(EncryptedModelMixin, models.Model):
         user.delete()
 
     def check_delete_is_safe(self):
-        from apps.recordmanagement.models import RecordEncryptionNew
+        from apps.core.records.models import RecordEncryptionNew
 
         for encryption in self.user.recordencryptions.all():
             if (
@@ -311,7 +311,7 @@ class RlcUser(EncryptedModelMixin, models.Model):
             return True
 
     def get_badges(self):
-        from apps.recordmanagement.models import RecordAccess, RecordDeletion
+        from apps.core.records.models import RecordAccess, RecordDeletion
 
         # profiles
         profiles = RlcUser.objects.filter(org=self.org, locked=True).count()

@@ -4,7 +4,7 @@ import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
 
-import apps.recordmanagement.models.record
+import apps.core.records.models.record
 import apps.static.encryption
 
 
@@ -567,7 +567,7 @@ class Migration(migrations.Migration):
                 "unique_together": {("record", "field")},
             },
             bases=(
-                apps.recordmanagement.models.record.RecordEntryEncryptedModelMixin,
+                apps.core.records.models.record.RecordEntryEncryptedModelMixin,
                 models.Model,
             ),
         ),
@@ -609,7 +609,7 @@ class Migration(migrations.Migration):
                 "unique_together": {("record", "field")},
             },
             bases=(
-                apps.recordmanagement.models.record.RecordEntryEncryptedModelMixin,
+                apps.core.records.models.record.RecordEntryEncryptedModelMixin,
                 models.Model,
             ),
         ),

@@ -7,8 +7,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.reverse import reverse
 
-from apps.recordmanagement.models import EncryptedClient
-from apps.recordmanagement.models.record import (
+from apps.core.records.models import (
+    EncryptedClient,
     Record,
     RecordEncryptedFileEntry,
     RecordEncryptedFileField,

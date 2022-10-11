@@ -1,6 +1,6 @@
 from apps.core.auth.models import RlcUser
+from apps.core.records.models import Questionnaire, QuestionnaireTemplate, Record
 from apps.core.static import PERMISSION_RECORDS_ADD_RECORD
-from apps.recordmanagement.models import Questionnaire, QuestionnaireTemplate, Record
 from apps.static.use_case_layer import use_case
 
 

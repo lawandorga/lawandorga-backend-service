@@ -1,7 +1,7 @@
 from django.db import models
 
 from apps.core.models import UserProfile
-from apps.recordmanagement.models.record import Record
+from apps.core.records.models.record import Record
 
 
 class RecordAccess(models.Model):

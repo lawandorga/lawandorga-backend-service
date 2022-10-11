@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.recordmanagement.models import (
+from apps.core.records.models import (
     EncryptedClient,
     EncryptedRecordDocument,
     EncryptedRecordMessage,

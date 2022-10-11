@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from apps.recordmanagement.models import RecordDeletion
+from apps.core.records.models import RecordDeletion
 
 
 class Command(BaseCommand):

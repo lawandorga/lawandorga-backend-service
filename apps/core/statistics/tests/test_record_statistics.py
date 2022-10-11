@@ -3,12 +3,8 @@ from django.test import Client
 from django.utils import timezone
 
 from apps.core.fixtures import create_permissions
+from apps.core.records.models import RecordStateEntry, RecordStateField, RecordTemplate
 from apps.core.rlc.models import Org
-from apps.recordmanagement.models import (
-    RecordStateEntry,
-    RecordStateField,
-    RecordTemplate,
-)
 from apps.static import test_helpers as data
 
 
