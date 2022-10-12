@@ -4,13 +4,12 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
-def move_value(apps, schema_editor):
-    RecordUsersEntry = apps.get_model("core", "RecordUsersEntry")
+def migrate_encryptions(apps, schema_editor):
+    RecordEncryptionsNew = apps.get_model("core", "RecordEncryptionNew")
 
-    for m in list(RecordUsersEntry.objects.all()):
-        for u in list(m.value_old.all()):
-            m.value.add(u.rlc_user)
-        m.save()
+    for e in list(RecordEncryptionsNew.objects.all()):
+        e.user = e.user_old.rlc_user
+        e.save()
 
 
 class Migration(migrations.Migration):
