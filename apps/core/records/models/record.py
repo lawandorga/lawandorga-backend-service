@@ -4,6 +4,7 @@ from django.apps import apps
 from django.core.files import File as DjangoFile
 from django.db import models
 
+from apps.core.auth.models import RlcUser
 from apps.core.models import Group, Org, UserProfile
 from apps.core.records.models import EncryptedClient  # type: ignore
 from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
@@ -427,14 +428,10 @@ class RecordUsersField(RecordField):
     @property
     def options(self):
         if self.group:
-            users = [u.user for u in list(self.group.members.all())]
+            users = list(self.group.members.all())
         else:
-            users = list(
-                map(
-                    lambda x: x.user,
-                    list(self.template.rlc.users.select_related("user")),
-                )
-            )
+            users = list(self.template.rlc.users.all())
+
         return [{"name": i.name, "id": i.pk} for i in users]
 
 
@@ -726,7 +723,7 @@ class RecordUsersEntry(RecordEntry):
     field = models.ForeignKey(
         RecordUsersField, related_name="entries", on_delete=models.PROTECT
     )
-    value = models.ManyToManyField(UserProfile, blank=True)
+    value = models.ManyToManyField(RlcUser, blank=True)
 
     class Meta:
         unique_together = ["record", "field"]

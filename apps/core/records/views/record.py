@@ -433,12 +433,12 @@ class RecordUsersEntryViewSet(RecordEntryViewSet):
         if share_keys:
             for user in users:
                 if not RecordEncryptionNew.objects.filter(
-                    user=user, record=record
+                    user=user.user, record=record
                 ).exists():
                     encryption = RecordEncryptionNew(
-                        user=user, record=record, key=aes_key_record
+                        user=user.user, record=record, key=aes_key_record
                     )
-                    encryption.encrypt(user.get_public_key())
+                    encryption.encrypt(user.user.get_public_key())
                     encryption.save()
 
     def perform_create(self, serializer):
