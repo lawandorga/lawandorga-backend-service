@@ -1,14 +1,14 @@
 from django.db import models
 
-from apps.core.models import UserProfile
+from apps.core.auth.models import RlcUser
 from apps.core.records.models.record import Record
 from apps.static.encryption import AESEncryption, EncryptedModelMixin
 
 
 class EncryptedRecordMessage(EncryptedModelMixin, models.Model):
     sender = models.ForeignKey(
-        UserProfile,
-        related_name="e_record_messages_sent",
+        RlcUser,
+        related_name="messages",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

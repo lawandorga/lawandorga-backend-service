@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.core.auth.serializers.user import UserProfileNameSerializer
+from apps.core.auth.models import RlcUser
 from apps.core.records.models import EncryptedRecordMessage
 
 
@@ -13,12 +13,18 @@ class EncryptedRecordMessageSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
-        attrs["sender"] = self.context["request"].user
+        attrs["sender"] = self.context["request"].user.rlc_user
         return attrs
 
 
+class MessageSenderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RlcUser
+        fields = ("name", "email")
+
+
 class EncryptedRecordMessageDetailSerializer(EncryptedRecordMessageSerializer):
-    sender = UserProfileNameSerializer(read_only=True)
+    sender = MessageSenderSerializer(read_only=True)
 
     class Meta:
         model = EncryptedRecordMessage
