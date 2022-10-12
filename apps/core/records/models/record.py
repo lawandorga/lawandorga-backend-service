@@ -943,8 +943,11 @@ class RecordStatisticEntry(RecordEntry):
 # RecordEncryption
 ###
 class RecordEncryptionNew(EncryptedModelMixin, models.Model):
-    user = models.ForeignKey(
+    user_old = models.ForeignKey(
         UserProfile, related_name="recordencryptions", on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(
+        RlcUser, related_name="recordencryptions", on_delete=models.CASCADE, null=True
     )
     record = models.ForeignKey(
         Record, related_name="encryptions", on_delete=models.CASCADE
@@ -957,7 +960,7 @@ class RecordEncryptionNew(EncryptedModelMixin, models.Model):
     encrypted_fields = ["key"]
 
     class Meta:
-        unique_together = ["user", "record"]
+        unique_together = ["user_old", "record"]
         verbose_name = "RecordEncryption"
         verbose_name_plural = "RecordEncryptions"
 
