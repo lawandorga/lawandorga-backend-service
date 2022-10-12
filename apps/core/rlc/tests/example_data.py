@@ -696,7 +696,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
 
     # add some messages
     message1 = EncryptedRecordMessage(
-        sender=main_user,
+        sender=main_user.rlc_user,
         record=record,
         created="2019-3-11T10:12:21+00:00",
         message="Bitte dringend die Kontaktdaten des Mandanten eintragen.",
@@ -704,7 +704,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     message1.encrypt(main_user, main_user.get_private_key(main_user_password))
     message1.save()
     message2 = EncryptedRecordMessage(
-        sender=choice(users),
+        sender=choice(users).rlc_user,
         record=record,
         created="2019-3-12T9:32:21",
         message="Ist erledigt! Koennen wir uns morgen treffen um das zu besprechen?",
@@ -712,7 +712,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     message2.encrypt(main_user, main_user.get_private_key(main_user_password))
     message2.save()
     message3 = EncryptedRecordMessage(
-        sender=main_user,
+        sender=main_user.rlc_user,
         record=record,
         created="2019-3-12T14:7:21",
         message="Klar, einfach direkt in der Mittagspause in der Mensa.",
@@ -720,7 +720,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     message3.encrypt(main_user, main_user.get_private_key(main_user_password))
     message3.save()
     message4 = EncryptedRecordMessage(
-        sender=choice(users),
+        sender=choice(users).rlc_user,
         record=record,
         created="2019-3-13T18:7:21",
         message="Gut, jetzt faellt mir aber auch nichts mehr ein.",
