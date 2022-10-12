@@ -351,7 +351,7 @@ class RecordTemplate(models.Model):
                 ],
                 "order": 99400,
                 "helptext": "A person has migration background if one or both parents were not "
-                "born with a German citizenship. (Source: Statistisches Bundesamt)",
+                            "born with a German citizenship. (Source: Statistisches Bundesamt)",
             },
         ]
 
@@ -428,14 +428,10 @@ class RecordUsersField(RecordField):
     @property
     def options(self):
         if self.group:
-            users = [u.user for u in list(self.group.members.all())]
+            users = list(self.group.members.all())
         else:
-            users = list(
-                map(
-                    lambda x: x.user,
-                    list(self.template.rlc.users.select_related("user")),
-                )
-            )
+            users = list(self.template.rlc.users.all())
+
         return [{"name": i.name, "id": i.pk} for i in users]
 
 
@@ -727,7 +723,6 @@ class RecordUsersEntry(RecordEntry):
     field = models.ForeignKey(
         RecordUsersField, related_name="entries", on_delete=models.PROTECT
     )
-    value_old = models.ManyToManyField(UserProfile, blank=True)
     value = models.ManyToManyField(RlcUser, blank=True)
 
     class Meta:

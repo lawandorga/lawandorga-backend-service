@@ -15,14 +15,14 @@ def move_value(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0132_rename_value_recordusersentry_value_old'),
+        ("core", "0132_rename_value_recordusersentry_value_old"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='recordusersentry',
-            name='value',
-            field=models.ManyToManyField(blank=True, to='core.rlcuser'),
+            model_name="recordusersentry",
+            name="value",
+            field=models.ManyToManyField(blank=True, to="core.rlcuser"),
         ),
-        migrations.RunPython(move_value)
+        migrations.RunPython(move_value),
     ]
