@@ -671,28 +671,24 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     # add some documents
     EncryptedRecordDocument.objects.create(
         name="7_1_19__pass.jpg",
-        creator=main_user,
         record=record,
         file_size=18839,
         created_on="2019-1-7",
     )
     EncryptedRecordDocument.objects.create(
         name="3_10_18__geburtsurkunde.pdf",
-        creator=main_user,
         record=record,
         file_size=488383,
         created_on="2018-10-3",
     )
     EncryptedRecordDocument.objects.create(
         name="3_12_18__Ablehnungbescheid.pdf",
-        creator=main_user,
         record=record,
         file_size=343433,
         created_on="2018-12-3",
     )
     EncryptedRecordDocument.objects.create(
         name="1_1_19__Klageschrift.docx",
-        creator=main_user,
         record=record,
         file_size=444444,
         created_on="2019-1-1",
