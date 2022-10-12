@@ -63,7 +63,7 @@ class BaseRecordEntry(BaseRecord):
         self.aes_key_record = AESEncryption.generate_secure_key()
         public_key_user = self.user.get_public_key()
         encryption = RecordEncryptionNew(
-            record=self.record, user=self.user, key=self.aes_key_record
+            record=self.record, user=self.user.rlc_user, key=self.aes_key_record
         )
         encryption.encrypt(public_key_user=public_key_user)
         encryption.save()
@@ -238,7 +238,9 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
             actions={"post": "create", "patch": "partial_update"}
         )
         users = UserProfile.objects.exclude(pk=self.user.pk)[:2]
-        RecordEncryptionNew.objects.filter(record=self.record, user__in=users).delete()
+        RecordEncryptionNew.objects.filter(
+            record=self.record, user__in=[u.rlc_user for u in users]
+        ).delete()
         data = {
             "record": self.record.pk,
             "field": field.pk,
@@ -250,7 +252,7 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
         self.assertContains(response, self.record.pk, status_code=201)
         self.assertEqual(
             RecordEncryptionNew.objects.filter(
-                record=self.record, user__in=users
+                record=self.record, user__in=[u.rlc_user for u in users]
             ).count(),
             1,
         )
@@ -261,7 +263,7 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
         self.assertContains(response, self.record.pk, status_code=200)
         self.assertEqual(
             RecordEncryptionNew.objects.filter(
-                record=self.record, user__in=users
+                record=self.record, user__in=[u.rlc_user for u in users]
             ).count(),
             users.count(),
         )
@@ -274,7 +276,9 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
             actions={"post": "create", "patch": "partial_update"}
         )
         users = UserProfile.objects.exclude(pk=self.user.pk)[:2]
-        RecordEncryptionNew.objects.filter(record=self.record, user__in=users).delete()
+        RecordEncryptionNew.objects.filter(
+            record=self.record, user__in=[u.rlc_user for u in users]
+        ).delete()
         data = {
             "record": self.record.pk,
             "field": field.pk,
@@ -286,7 +290,7 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
         self.assertContains(response, self.record.pk, status_code=201)
         self.assertEqual(
             RecordEncryptionNew.objects.filter(
-                record=self.record, user__in=users
+                record=self.record, user__in=[u.rlc_user for u in users]
             ).count(),
             0,
         )
@@ -321,7 +325,7 @@ class RecordEncryptedStandardEntryViewSetWorking(GenericRecordEntry, TestCase):
         private_key_user = self.user.get_private_key(
             password_user=settings.DUMMY_USER_PASSWORD
         )
-        entry.decrypt(user=self.user, private_key_user=private_key_user)
+        entry.decrypt(user=self.user.rlc_user, private_key_user=private_key_user)
         self.assertEqual(entry.value, "Hallo")
 
     def test_entry_update(self):
@@ -339,7 +343,7 @@ class RecordEncryptedStandardEntryViewSetWorking(GenericRecordEntry, TestCase):
         private_key_user = self.user.get_private_key(
             password_user=settings.DUMMY_USER_PASSWORD
         )
-        entry.decrypt(user=self.user, private_key_user=private_key_user)
+        entry.decrypt(user=self.user.rlc_user, private_key_user=private_key_user)
         self.assertEqual(entry.value, "Hallo 2")
 
 
@@ -513,7 +517,7 @@ class RecordEncryptedSelectEntryViewSetWorking(GenericRecordEntry, TestCase):
         private_key_user = self.user.get_private_key(
             password_user=settings.DUMMY_USER_PASSWORD
         )
-        entry.decrypt(user=self.user, private_key_user=private_key_user)
+        entry.decrypt(user=self.user.rlc_user, private_key_user=private_key_user)
         self.assertEqual(entry.value, "Option 1")
 
     def test_entry_update(self):
@@ -534,7 +538,7 @@ class RecordEncryptedSelectEntryViewSetWorking(GenericRecordEntry, TestCase):
         private_key_user = self.user.get_private_key(
             password_user=settings.DUMMY_USER_PASSWORD
         )
-        entry.decrypt(user=self.user, private_key_user=private_key_user)
+        entry.decrypt(user=self.user.rlc_user, private_key_user=private_key_user)
         self.assertEqual(entry.value, "Option 2")
 
 

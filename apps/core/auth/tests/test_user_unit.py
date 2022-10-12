@@ -49,14 +49,16 @@ class UserUnitTests(UserUnitUserBase, TestCase):
         record = Record.objects.create(template=self.template)
         key = AESEncryption.generate_secure_key()
         for user in users:
-            enc = RecordEncryptionNew(record=record, key=key, user=user)
+            enc = RecordEncryptionNew(record=record, key=key, user=user.rlc_user)
             enc.encrypt(user.get_public_key())
             enc.save()
         return record
 
     def test_generate_keys_for_user_works_with_unlocking_user_having_the_keys(self):
         record = self.generate_record_with_keys_for_users([self.user1, self.user2])
-        RecordEncryptionNew.objects.filter(user=self.user2).update(correct=False)
+        RecordEncryptionNew.objects.filter(user=self.user2.rlc_user).update(
+            correct=False
+        )
         self.user2.set_password("pass12345")
         self.user2.save()
         self.user2.rlc_user.delete_keys()
@@ -67,13 +69,15 @@ class UserUnitTests(UserUnitUserBase, TestCase):
             self.private_key1, UserProfile.objects.get(pk=self.user2.pk)
         )
         assert success is True
-        enc = RecordEncryptionNew.objects.get(record=record, user=self.user2)
+        enc = RecordEncryptionNew.objects.get(record=record, user=self.user2.rlc_user)
         enc.decrypt(private_key_user=private_key)
 
     def test_generate_keys_for_user_works_with_unlocking_user_not_having_the_keys(self):
         record = self.generate_record_with_keys_for_users([self.user2])
         # set all of those keys as incorrect
-        RecordEncryptionNew.objects.filter(user=self.user2).update(correct=False)
+        RecordEncryptionNew.objects.filter(user=self.user2.rlc_user).update(
+            correct=False
+        )
 
         self.user2.set_password("pass12345")
         self.user2.save()
@@ -85,6 +89,6 @@ class UserUnitTests(UserUnitUserBase, TestCase):
             self.private_key1, UserProfile.objects.get(pk=self.user2.pk)
         )
         assert success is False
-        enc = RecordEncryptionNew.objects.get(record=record, user=self.user2)
+        enc = RecordEncryptionNew.objects.get(record=record, user=self.user2.rlc_user)
         with self.assertRaises(ValueError):
             enc.decrypt(private_key_user=private_key)

@@ -271,7 +271,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def test_all_keys(self, private_key_user):
         from apps.core.records.models import RecordEncryptionNew
 
-        for key in RecordEncryptionNew.objects.filter(user=self):
+        for key in RecordEncryptionNew.objects.filter(user=self.rlc_user):
             key.test(private_key_user)
         self.users_rlc_keys.first().test(private_key_user)
 
@@ -280,7 +280,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         ret = {
             "record_keys": list(
-                RecordEncryptionNew.objects.filter(user=self).select_related("record")
+                RecordEncryptionNew.objects.filter(user=self.rlc_user).select_related(
+                    "record"
+                )
             ),
             "rlc_keys": self.users_rlc_keys.select_related("rlc").all(),
         }
@@ -337,13 +339,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         new_keys.save()
 
         # generate new record encryption
-        record_encryptions = user_to_unlock.recordencryptions.filter(correct=False)
+        record_encryptions = user_to_unlock.rlc_user.recordencryptions.filter(
+            correct=False
+        )
 
         for old_keys in list(record_encryptions):
             # change the keys to the new keys
             try:
                 encryption = RecordEncryptionNew.objects.get(
-                    user=self, record=old_keys.record
+                    user=self.rlc_user, record=old_keys.record
                 )
             except ObjectDoesNotExist:
                 success = False

@@ -462,7 +462,7 @@ def create_records(users, rlc):
         aes_key = AESEncryption.generate_secure_key()
         for user in set(record[5]):
             record_encryption = RecordEncryptionNew(
-                user=user, record=created_record, key=aes_key
+                user=user.rlc_user, record=created_record, key=aes_key
             )
             record_encryption.encrypt(user.get_public_key())
             record_encryption.save()
@@ -483,9 +483,11 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     record_users = [choice(users), main_user]
     aes_key = AESEncryption.generate_secure_key()
     for user in record_users:
-        if not RecordEncryptionNew.objects.filter(user=user, record=record).exists():
+        if not RecordEncryptionNew.objects.filter(
+            user=user.rlc_user, record=record
+        ).exists():
             record_encryption = RecordEncryptionNew(
-                user=user, record=record, key=aes_key
+                user=user.rlc_user, record=record, key=aes_key
             )
             record_encryption.encrypt(user.get_public_key())
             record_encryption.save()
@@ -701,7 +703,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
         created="2019-3-11T10:12:21+00:00",
         message="Bitte dringend die Kontaktdaten des Mandanten eintragen.",
     )
-    message1.encrypt(main_user, main_user.get_private_key(main_user_password))
+    message1.encrypt(main_user.rlc_user, main_user.get_private_key(main_user_password))
     message1.save()
     message2 = EncryptedRecordMessage(
         sender=choice(users).rlc_user,
@@ -709,7 +711,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
         created="2019-3-12T9:32:21",
         message="Ist erledigt! Koennen wir uns morgen treffen um das zu besprechen?",
     )
-    message2.encrypt(main_user, main_user.get_private_key(main_user_password))
+    message2.encrypt(main_user.rlc_user, main_user.get_private_key(main_user_password))
     message2.save()
     message3 = EncryptedRecordMessage(
         sender=main_user.rlc_user,
@@ -717,7 +719,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
         created="2019-3-12T14:7:21",
         message="Klar, einfach direkt in der Mittagspause in der Mensa.",
     )
-    message3.encrypt(main_user, main_user.get_private_key(main_user_password))
+    message3.encrypt(main_user.rlc_user, main_user.get_private_key(main_user_password))
     message3.save()
     message4 = EncryptedRecordMessage(
         sender=choice(users).rlc_user,
@@ -725,7 +727,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
         created="2019-3-13T18:7:21",
         message="Gut, jetzt faellt mir aber auch nichts mehr ein.",
     )
-    message4.encrypt(main_user, main_user.get_private_key(main_user_password))
+    message4.encrypt(main_user.rlc_user, main_user.get_private_key(main_user_password))
     message4.save()
 
     # return

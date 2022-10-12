@@ -15,7 +15,7 @@ class RecordDocumentCreateSerializer(RecordDocumentSerializer):
 
     class Meta:
         model = EncryptedRecordDocument
-        fields = ["id", "name", "record", "creator", "created_on"]
+        fields = ["id", "name", "record", "created_on"]
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
