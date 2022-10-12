@@ -8,7 +8,7 @@ def migrate_messages(apps, schema_editor):
     EncryptedRecordMessage = apps.get_model("core", "EncryptedRecordMessage")
 
     for m in list(EncryptedRecordMessage.objects.all()):
-        m.sender = m.sender_old.rlc_user
+        m.sender = m.sender_old.rlc_user if m.sender_old else None
         m.save()
 
 
