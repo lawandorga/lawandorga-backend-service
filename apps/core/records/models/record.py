@@ -351,7 +351,7 @@ class RecordTemplate(models.Model):
                 ],
                 "order": 99400,
                 "helptext": "A person has migration background if one or both parents were not "
-                            "born with a German citizenship. (Source: Statistisches Bundesamt)",
+                "born with a German citizenship. (Source: Statistisches Bundesamt)",
             },
         ]
 
