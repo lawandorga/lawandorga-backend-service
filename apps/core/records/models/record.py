@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 
 from django.apps import apps
 from django.core.files import File as DjangoFile
@@ -351,7 +352,7 @@ class RecordTemplate(models.Model):
                 ],
                 "order": 99400,
                 "helptext": "A person has migration background if one or both parents were not "
-                "born with a German citizenship. (Source: Statistisches Bundesamt)",
+                            "born with a German citizenship. (Source: Statistisches Bundesamt)",
             },
         ]
 
@@ -606,7 +607,7 @@ class Record(models.Model):
             return first_standard_entry.value
         return None
 
-    def get_aes_key(self, user=None, private_key_user=None):
+    def get_aes_key(self, user: Optional[RlcUser] = None, private_key_user=None):
         if user and private_key_user:
             encryption = self.encryptions.get(user=user)
             encryption.decrypt(private_key_user)
@@ -671,7 +672,7 @@ class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
     # used in record for get entries
     encrypted_entry = True
 
-    def encrypt(self, user=None, private_key_user=None, aes_key_record=None):
+    def encrypt(self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None):
         if user and private_key_user:
             key = self.record.get_aes_key(user=user, private_key_user=private_key_user)
         elif aes_key_record:
@@ -682,7 +683,7 @@ class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
             )
         super().encrypt(key)
 
-    def decrypt(self, user=None, private_key_user=None, aes_key_record=None):
+    def decrypt(self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None):
         if user and private_key_user:
             key = self.record.get_aes_key(user=user, private_key_user=private_key_user)
         elif aes_key_record:
@@ -844,7 +845,7 @@ class RecordEncryptedFileEntry(RecordEntry):
         file, record, user=None, private_key_user=None, aes_key_record=None
     ):
         if user and private_key_user:
-            key = record.get_aes_key(user=user, private_key_user=private_key_user)
+            key = record.get_aes_key(user=user.rlc_user, private_key_user=private_key_user)
         elif aes_key_record:
             key = aes_key_record
         else:
@@ -856,7 +857,7 @@ class RecordEncryptedFileEntry(RecordEntry):
         file = DjangoFile(file, name="{}.enc".format(name))
         return file
 
-    def decrypt_file(self, user=None, private_key_user=None, aes_key_record=None):
+    def decrypt_file(self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None):
         if user and private_key_user:
             key = self.record.get_aes_key(user=user, private_key_user=private_key_user)
         elif aes_key_record:
@@ -943,11 +944,8 @@ class RecordStatisticEntry(RecordEntry):
 # RecordEncryption
 ###
 class RecordEncryptionNew(EncryptedModelMixin, models.Model):
-    user_old = models.ForeignKey(
-        UserProfile, related_name="recordencryptions", on_delete=models.CASCADE
-    )
     user = models.ForeignKey(
-        RlcUser, related_name="recordencryptions", on_delete=models.CASCADE, null=True
+        RlcUser, related_name="recordencryptions", on_delete=models.CASCADE
     )
     record = models.ForeignKey(
         Record, related_name="encryptions", on_delete=models.CASCADE
@@ -960,7 +958,7 @@ class RecordEncryptionNew(EncryptedModelMixin, models.Model):
     encrypted_fields = ["key"]
 
     class Meta:
-        unique_together = ["user_old", "record"]
+        unique_together = ["user", "record"]
         verbose_name = "RecordEncryption"
         verbose_name_plural = "RecordEncryptions"
 
@@ -981,8 +979,8 @@ class RecordEncryptionNew(EncryptedModelMixin, models.Model):
             self.set_correct(True)
         except ValueError:
             self.set_correct(False)
-            self.user.rlc_user.locked = True
-            self.user.rlc_user.save()
+            self.user.locked = True
+            self.user.save()
 
     def decrypt(self, private_key_user=None):
         if private_key_user:

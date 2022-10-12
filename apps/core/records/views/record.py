@@ -293,9 +293,9 @@ class RecordViewSet(
                 users_with_permissions.append(user)
         for user in users_with_permissions:
             if not RecordEncryptionNew.objects.filter(
-                record=record, user=user
+                record=record, user=user.rlc_user
             ).exists():
-                encryption = RecordEncryptionNew(record=record, user=user, key=aes_key)
+                encryption = RecordEncryptionNew(record=record, user=user.rlc_user, key=aes_key)
                 public_key_user = user.get_public_key()
                 encryption.encrypt(public_key_user=public_key_user)
                 encryption.save()
@@ -360,7 +360,7 @@ class RecordEncryptedFileEntryViewSet(RecordEntryViewSet):
         instance = self.get_object()
         private_key_user = request.user.get_private_key(request=request)
         file = instance.decrypt_file(
-            private_key_user=private_key_user, user=request.user
+            private_key_user=private_key_user, user=request.user.rlc_user
         )
         response = FileResponse(
             file, content_type=mimetypes.guess_type(instance.get_value())[0]
@@ -427,16 +427,16 @@ class RecordUsersEntryViewSet(RecordEntryViewSet):
 
     def create_encryptions(self, share_keys, record, users):
         aes_key_record = record.get_aes_key(
-            user=self.request.user,
+            user=self.request.user.rlc_user,
             private_key_user=self.request.user.get_private_key(request=self.request),
         )
         if share_keys:
             for user in users:
                 if not RecordEncryptionNew.objects.filter(
-                    user=user.user, record=record
+                    user=user, record=record
                 ).exists():
                     encryption = RecordEncryptionNew(
-                        user=user.user, record=record, key=aes_key_record
+                        user=user, record=record, key=aes_key_record
                     )
                     encryption.encrypt(user.user.get_public_key())
                     encryption.save()

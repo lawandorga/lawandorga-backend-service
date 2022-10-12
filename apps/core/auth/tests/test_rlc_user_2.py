@@ -35,7 +35,7 @@ class TestRlcUser(TestCase):
         return keys
 
     def get_user_record_key(self, record_obj, user_obj):
-        key = record_obj["record"].encryptions.get(user=user_obj["user"])
+        key = record_obj["record"].encryptions.get(user=user_obj["rlc_user"])
         return key
 
     def test_unlock_fails(self):

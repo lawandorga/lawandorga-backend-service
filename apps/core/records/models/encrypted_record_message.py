@@ -35,7 +35,7 @@ class EncryptedRecordMessage(EncryptedModelMixin, models.Model):
 
     def encrypt(self, user=None, private_key_user=None, aes_key_record=None):
         if user and private_key_user:
-            record_encryption = self.record.encryptions.get(user=user)
+            record_encryption = self.record.encryptions.get(user=user.rlc_user)
             record_encryption.decrypt(private_key_user)
             key = record_encryption.key
         elif aes_key_record:

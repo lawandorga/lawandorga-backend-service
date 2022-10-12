@@ -36,7 +36,7 @@ class TestUserKeys(TestCase):
         return keys
 
     def get_user_record_key(self, record_obj, user_obj):
-        key = record_obj["record"].encryptions.get(user=user_obj["user"])
+        key = record_obj["record"].encryptions.get(user=user_obj["rlc_user"])
         return key
 
     def test_rlc_key_check(self):
@@ -85,7 +85,7 @@ class TestUserKeys(TestCase):
         response = c.get("/api/keys/")
         response_data = response.json()
         assert RecordEncryptionNew.objects.filter(
-            user=self.user_1["user"]
+            user=self.user_1["rlc_user"]
         ).count() + 1 == len(response_data)
 
     def test_delete_key(self):
@@ -105,7 +105,7 @@ class TestUserKeys(TestCase):
         assert response.status_code == 400
         encryption = RecordEncryptionNew(
             record=self.record_1["record"],
-            user=self.user_3["user"],
+            user=self.user_3["rlc_user"],
             key=self.record_1["aes_key"],
         )
         encryption.encrypt(public_key_user=self.user_3["public_key"])

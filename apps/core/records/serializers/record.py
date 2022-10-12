@@ -336,7 +336,7 @@ class RecordEncryptedStandardEntrySerializer(RecordEntrySerializer):
         request = self.context["request"]
         private_key_user = request.user.get_private_key(request=request)
         record = validated_data["record"]
-        aes_key_record = record.get_aes_key(request.user, private_key_user)
+        aes_key_record = record.get_aes_key(request.user.rlc_user, private_key_user)
         entry = RecordEncryptedStandardEntry(**validated_data)
         entry.encrypt(aes_key_record=aes_key_record)
         entry.save()
@@ -348,7 +348,7 @@ class RecordEncryptedStandardEntrySerializer(RecordEntrySerializer):
         request = self.context["request"]
         private_key_user = request.user.get_private_key(request=request)
         aes_key_record = instance.record.get_aes_key(
-            user=request.user, private_key_user=private_key_user
+            user=request.user.rlc_user, private_key_user=private_key_user
         )
         # update the instance
         instance.decrypt(aes_key_record=aes_key_record)
@@ -386,7 +386,7 @@ class RecordEncryptedSelectEntrySerializer(RecordEntrySerializer):
         request = self.context["request"]
         private_key_user = request.user.get_private_key(request=request)
         record = validated_data["record"]
-        aes_key_record = record.get_aes_key(request.user, private_key_user)
+        aes_key_record = record.get_aes_key(request.user.rlc_user, private_key_user)
         entry = RecordEncryptedSelectEntry(**validated_data)
         entry.encrypt(aes_key_record=aes_key_record)
         entry.save()
@@ -399,7 +399,7 @@ class RecordEncryptedSelectEntrySerializer(RecordEntrySerializer):
         request = self.context["request"]
         private_key_user = request.user.get_private_key(request=request)
         aes_key_record = instance.record.get_aes_key(
-            user=request.user, private_key_user=private_key_user
+            user=request.user.rlc_user, private_key_user=private_key_user
         )
         instance.encrypt(aes_key_record=aes_key_record)
         instance.save()

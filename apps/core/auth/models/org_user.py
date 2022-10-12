@@ -209,7 +209,7 @@ class RlcUser(EncryptedModelMixin, models.Model):
     def check_delete_is_safe(self):
         from apps.core.records.models import RecordEncryptionNew
 
-        for encryption in self.user.recordencryptions.all():
+        for encryption in self.user.rlc_user.recordencryptions.all():
             if (
                 RecordEncryptionNew.objects.filter(record=encryption.record).count()
                 <= 2
