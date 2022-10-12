@@ -295,7 +295,9 @@ class RecordViewSet(
             if not RecordEncryptionNew.objects.filter(
                 record=record, user=user.rlc_user
             ).exists():
-                encryption = RecordEncryptionNew(record=record, user=user.rlc_user, key=aes_key)
+                encryption = RecordEncryptionNew(
+                    record=record, user=user.rlc_user, key=aes_key
+                )
                 public_key_user = user.get_public_key()
                 encryption.encrypt(public_key_user=public_key_user)
                 encryption.save()

@@ -6,17 +6,17 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0134_remove_recordusersentry_value_old'),
+        ("core", "0134_remove_recordusersentry_value_old"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='recordencryptionnew',
-            old_name='user',
-            new_name='user_old',
+            model_name="recordencryptionnew",
+            old_name="user",
+            new_name="user_old",
         ),
         migrations.AlterUniqueTogether(
-            name='recordencryptionnew',
-            unique_together={('user_old', 'record')},
+            name="recordencryptionnew",
+            unique_together={("user_old", "record")},
         ),
     ]

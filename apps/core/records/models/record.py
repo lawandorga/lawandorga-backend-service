@@ -6,7 +6,7 @@ from django.core.files import File as DjangoFile
 from django.db import models
 
 from apps.core.auth.models import RlcUser
-from apps.core.models import Group, Org, UserProfile
+from apps.core.models import Group, Org
 from apps.core.records.models import EncryptedClient  # type: ignore
 from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
@@ -352,7 +352,7 @@ class RecordTemplate(models.Model):
                 ],
                 "order": 99400,
                 "helptext": "A person has migration background if one or both parents were not "
-                            "born with a German citizenship. (Source: Statistisches Bundesamt)",
+                "born with a German citizenship. (Source: Statistisches Bundesamt)",
             },
         ]
 
@@ -672,9 +672,12 @@ class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
     # used in record for get entries
     encrypted_entry = True
 
-    def encrypt(self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None):
+    def encrypt(
+        self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None
+    ):
+        record: Record = self.record  # type: ignore
         if user and private_key_user:
-            key = self.record.get_aes_key(user=user, private_key_user=private_key_user)
+            key = record.get_aes_key(user=user, private_key_user=private_key_user)
         elif aes_key_record:
             key = aes_key_record
         else:
@@ -683,9 +686,12 @@ class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
             )
         super().encrypt(key)
 
-    def decrypt(self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None):
+    def decrypt(
+        self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None
+    ):
+        record: Record = self.record  # type: ignore
         if user and private_key_user:
-            key = self.record.get_aes_key(user=user, private_key_user=private_key_user)
+            key = record.get_aes_key(user=user, private_key_user=private_key_user)
         elif aes_key_record:
             key = aes_key_record
         else:
@@ -845,7 +851,9 @@ class RecordEncryptedFileEntry(RecordEntry):
         file, record, user=None, private_key_user=None, aes_key_record=None
     ):
         if user and private_key_user:
-            key = record.get_aes_key(user=user.rlc_user, private_key_user=private_key_user)
+            key = record.get_aes_key(
+                user=user.rlc_user, private_key_user=private_key_user
+            )
         elif aes_key_record:
             key = aes_key_record
         else:
@@ -857,7 +865,9 @@ class RecordEncryptedFileEntry(RecordEntry):
         file = DjangoFile(file, name="{}.enc".format(name))
         return file
 
-    def decrypt_file(self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None):
+    def decrypt_file(
+        self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None
+    ):
         if user and private_key_user:
             key = self.record.get_aes_key(user=user, private_key_user=private_key_user)
         elif aes_key_record:

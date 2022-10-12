@@ -238,7 +238,9 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
             actions={"post": "create", "patch": "partial_update"}
         )
         users = UserProfile.objects.exclude(pk=self.user.pk)[:2]
-        RecordEncryptionNew.objects.filter(record=self.record, user__in=[u.rlc_user for u in users]).delete()
+        RecordEncryptionNew.objects.filter(
+            record=self.record, user__in=[u.rlc_user for u in users]
+        ).delete()
         data = {
             "record": self.record.pk,
             "field": field.pk,
@@ -274,7 +276,9 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
             actions={"post": "create", "patch": "partial_update"}
         )
         users = UserProfile.objects.exclude(pk=self.user.pk)[:2]
-        RecordEncryptionNew.objects.filter(record=self.record, user__in=[u.rlc_user for u in users]).delete()
+        RecordEncryptionNew.objects.filter(
+            record=self.record, user__in=[u.rlc_user for u in users]
+        ).delete()
         data = {
             "record": self.record.pk,
             "field": field.pk,

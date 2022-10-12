@@ -51,7 +51,9 @@ def create_record(template=None, users: List[UserProfile] = None):
     aes_key_record = AESEncryption.generate_secure_key()
     for user in users if users else []:
         public_key_user = user.get_public_key()
-        encryption = RecordEncryptionNew(record=record, user=user.rlc_user, key=aes_key_record)
+        encryption = RecordEncryptionNew(
+            record=record, user=user.rlc_user, key=aes_key_record
+        )
         encryption.encrypt(public_key_user=public_key_user)
         encryption.save()
     return {"record": record, "aes_key": aes_key_record}

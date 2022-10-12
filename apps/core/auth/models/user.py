@@ -280,7 +280,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         ret = {
             "record_keys": list(
-                RecordEncryptionNew.objects.filter(user=self.rlc_user).select_related("record")
+                RecordEncryptionNew.objects.filter(user=self.rlc_user).select_related(
+                    "record"
+                )
             ),
             "rlc_keys": self.users_rlc_keys.select_related("rlc").all(),
         }
@@ -337,7 +339,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         new_keys.save()
 
         # generate new record encryption
-        record_encryptions = user_to_unlock.rlc_user.recordencryptions.filter(correct=False)
+        record_encryptions = user_to_unlock.rlc_user.recordencryptions.filter(
+            correct=False
+        )
 
         for old_keys in list(record_encryptions):
             # change the keys to the new keys
