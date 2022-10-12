@@ -16,7 +16,7 @@ class RecordEncryptionNewViewSet(
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         if not RecordEncryptionNew.objects.filter(
-            user=request.user, record=instance.record
+            user=request.user.rlc_user, record=instance.record
         ).exists():
             raise PermissionDenied(
                 "You need access to the record in order to remove access from another person."

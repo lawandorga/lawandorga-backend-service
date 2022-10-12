@@ -521,7 +521,7 @@ class RecordListSerializer(RecordSerializer):
 
     def get_access(self, obj):
         for enc in getattr(obj, "encryptions").all():
-            if enc.user_id == self.context["request"].user.id:
+            if enc.user_id == self.context["request"].user.rlc_user.id:
                 return True
         return False
 
@@ -555,7 +555,7 @@ class RecordEncryptionNewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecordEncryptionNew
-        fields = ["created", "user", "user_detail"]
+        fields = ["created", "user", "user_detail", "id"]
 
     def get_user_detail(self, obj):
         return obj.user.name
@@ -577,7 +577,7 @@ class RecordDetailSerializer(RecordSerializer):
     def get_entries(self, obj):
         try:
             aes_key_record = self.instance.get_aes_key(
-                user=self.user, private_key_user=self.private_key_user
+                user=self.user.rlc_user, private_key_user=self.private_key_user
             )
         except ObjectDoesNotExist:
             raise PermissionDenied(

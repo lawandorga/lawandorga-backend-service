@@ -27,9 +27,9 @@ class MessageViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, GenericView
         serializer.is_valid(raise_exception=True)
         private_key_user = request.user.get_private_key(request=request)
         message = EncryptedRecordMessage(**serializer.validated_data)
-        message.encrypt(user=request.user, private_key_user=private_key_user)
+        message.encrypt(user=request.user.rlc_user, private_key_user=private_key_user)
         message.save()
-        message.decrypt(user=request.user, private_key_user=private_key_user)
+        message.decrypt(user=request.user.rlc_user, private_key_user=private_key_user)
         serializer = EncryptedRecordMessageDetailSerializer(
             instance=message, context={"request": request}
         )
@@ -43,6 +43,6 @@ class MessageViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, GenericView
         messages = self.filter_queryset(self.get_queryset())
         messages_data = []
         for message in list(messages):
-            message.decrypt(user=request.user, private_key_user=private_key_user)
+            message.decrypt(user=request.user.rlc_user, private_key_user=private_key_user)
             messages_data.append(EncryptedRecordMessageDetailSerializer(message).data)
         return Response(messages_data)
