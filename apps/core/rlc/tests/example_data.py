@@ -451,7 +451,7 @@ def create_records(users, rlc):
         # consultants
         field = RecordUsersField.objects.get(template=template, name="Consultants")
         entry = RecordUsersEntry.objects.create(record=created_record, field=field)
-        entry.value.set(record[5])
+        entry.value.set([u.rlc_user for u in record[5]])
         # tags
         field = RecordMultipleField.objects.get(template=template, name="Tags")
         RecordMultipleEntry.objects.create(
@@ -666,7 +666,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     # consultants
     field = RecordUsersField.objects.get(template=template, name="Consultants")
     entry = RecordUsersEntry.objects.create(record=record, field=field)
-    entry.value.set(record_users)
+    entry.value.set([u.rlc_user for u in record_users])
 
     # add some documents
     EncryptedRecordDocument.objects.create(

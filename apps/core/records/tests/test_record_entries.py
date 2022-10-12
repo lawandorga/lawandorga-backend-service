@@ -52,6 +52,9 @@ from .test_record import BaseRecord
 ###
 # Base
 ###
+from ...auth.models import RlcUser
+
+
 class BaseRecordEntry(BaseRecord):
     def setUp(self):
         super().setUp()
@@ -195,7 +198,7 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
         self.entry = RecordUsersEntry.objects.create(
             record=self.record, field=self.field
         )
-        self.entry.value.set(UserProfile.objects.all())
+        self.entry.value.set(RlcUser.objects.filter(org=self.record.template.rlc))
 
     def create_users(self):
         self.create_user(email="tester1@law-orga.de", name="Tester1")
