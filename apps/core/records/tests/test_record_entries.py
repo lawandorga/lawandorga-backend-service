@@ -46,13 +46,11 @@ from apps.core.records.views import (
 )
 from apps.static.encryption import AESEncryption
 
-from .test_record import BaseRecord
-
-
 ###
 # Base
 ###
 from ...auth.models import RlcUser
+from .test_record import BaseRecord
 
 
 class BaseRecordEntry(BaseRecord):
