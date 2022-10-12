@@ -6,13 +6,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0127_remove_encryptedrecorddocument_creator'),
+        ("core", "0127_remove_encryptedrecorddocument_creator"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='encryptedrecordmessage',
-            old_name='sender',
-            new_name='sender_old',
+            model_name="encryptedrecordmessage",
+            old_name="sender",
+            new_name="sender_old",
         ),
     ]

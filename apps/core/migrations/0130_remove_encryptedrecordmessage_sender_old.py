@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0129_encryptedrecordmessage_sender'),
+        ("core", "0129_encryptedrecordmessage_sender"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='encryptedrecordmessage',
-            name='sender_old',
+            model_name="encryptedrecordmessage",
+            name="sender_old",
         ),
     ]
