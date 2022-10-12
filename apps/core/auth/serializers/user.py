@@ -43,9 +43,3 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_rlcuserid(self, obj):
         return obj.rlc_user.id
-
-
-class UserProfileNameSerializer(UserProfileSerializer):
-    class Meta:
-        model = UserProfile
-        fields = ("id", "rlc_user", "name", "email")
