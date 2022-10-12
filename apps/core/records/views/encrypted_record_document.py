@@ -5,6 +5,7 @@ from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 
+from apps.core.auth.models import RlcUser
 from apps.core.models import UserProfile
 from apps.core.records.models.encrypted_record_document import EncryptedRecordDocument
 from apps.core.records.serializers import (
@@ -31,14 +32,17 @@ class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
         # instance
         instance = self.get_object()
 
+        # mypy fix
+        rlc_user: RlcUser = request.user.rlc_user  # type: ignore
+
         # check permission
-        if not instance.record.encryptions.filter(user=request.user.rlc_user).exists():
+        if not instance.record.encryptions.filter(user=rlc_user).exists():
             raise PermissionDenied()
 
         # download the file
         user: UserProfile = request.user  # type: ignore
         private_key_user = user.get_private_key(request=request)
-        record_key = instance.record.get_aes_key(request.user.rlc_user, private_key_user)
+        record_key = instance.record.get_aes_key(rlc_user, private_key_user)
         file = instance.download(record_key)
 
         # generate response
@@ -59,7 +63,9 @@ class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
         response = super().create(request, *args, **kwargs)
         file = request.FILES["file"]
         private_key_user = request.user.get_private_key(request=request)
-        record_key = self.instance.record.get_aes_key(request.user.rlc_user, private_key_user)
+        record_key = self.instance.record.get_aes_key(
+            request.user.rlc_user, private_key_user
+        )
         # upload the file to s3
         self.instance.upload(file, record_key)
         # return

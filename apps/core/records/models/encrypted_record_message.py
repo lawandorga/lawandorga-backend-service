@@ -16,7 +16,7 @@ class EncryptedRecordMessage(EncryptedModelMixin, models.Model):
         blank=True,
     )
     record = models.ForeignKey(
-        Record, related_name="messages", on_delete=models.CASCADE, null=True
+        Record, related_name="messages", on_delete=models.CASCADE
     )
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -35,7 +35,9 @@ class EncryptedRecordMessage(EncryptedModelMixin, models.Model):
     def __str__(self):
         return "recordMessage: {}; record: {};".format(self.pk, self.record.pk)
 
-    def encrypt(self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None):
+    def encrypt(
+        self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None
+    ):
         if user and private_key_user:
             record_encryption = self.record.encryptions.get(user=user)
             record_encryption.decrypt(private_key_user)
@@ -48,7 +50,9 @@ class EncryptedRecordMessage(EncryptedModelMixin, models.Model):
             )
         super().encrypt(key)
 
-    def decrypt(self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None):
+    def decrypt(
+        self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None
+    ):
         if user and private_key_user:
             record_encryption = self.record.encryptions.get(user=user)
             record_encryption.decrypt(private_key_user)

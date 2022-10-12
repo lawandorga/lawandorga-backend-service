@@ -43,6 +43,8 @@ class MessageViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, GenericView
         messages = self.filter_queryset(self.get_queryset())
         messages_data = []
         for message in list(messages):
-            message.decrypt(user=request.user.rlc_user, private_key_user=private_key_user)
+            message.decrypt(
+                user=request.user.rlc_user, private_key_user=private_key_user
+            )
             messages_data.append(EncryptedRecordMessageDetailSerializer(message).data)
         return Response(messages_data)
