@@ -4,7 +4,6 @@ import unicodedata
 from django.core.files.storage import default_storage
 from django.db import models
 
-from apps.core.models import UserProfile
 from apps.core.records.models.record import Record
 from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
 from apps.static.storage_folders import get_storage_folder_encrypted_record_document
@@ -12,12 +11,6 @@ from apps.static.storage_folders import get_storage_folder_encrypted_record_docu
 
 class EncryptedRecordDocument(models.Model):
     name = models.CharField(max_length=200)
-    creator = models.ForeignKey(
-        UserProfile,
-        related_name="e_record_documents_created",
-        on_delete=models.SET_NULL,
-        null=True,
-    )
     record = models.ForeignKey(
         Record, related_name="documents", on_delete=models.CASCADE, null=True
     )
