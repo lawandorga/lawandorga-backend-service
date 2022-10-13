@@ -14,7 +14,7 @@ jobs:
         runs-on: ubuntu-22.04
         steps:
             -   name: Start update
-                runs: curl https://lawandorgaupdatefuncpllv4num-start-update.functions.fnc.fr-par.scw.cloud?name=${{ env.UPDATE_NAME }}
+                run: curl https://lawandorgaupdatefuncpllv4num-start-update.functions.fnc.fr-par.scw.cloud?name=${{ env.UPDATE_NAME }}
 
     build:
         name: Build
@@ -244,4 +244,4 @@ jobs:
         runs-on: ubuntu-22.04
         steps:
             -   name: Stop update
-                runs: curl https://lawandorgaupdatefuncpllv4num-finish-update.functions.fnc.fr-par.scw.cloud?name=${{ env.UPDATE_NAME }}
+                run: curl https://lawandorgaupdatefuncpllv4num-finish-update.functions.fnc.fr-par.scw.cloud?name=${{ env.UPDATE_NAME }}
