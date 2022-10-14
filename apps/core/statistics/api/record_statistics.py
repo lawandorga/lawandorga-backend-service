@@ -4,18 +4,13 @@ from django.db import connection
 from pydantic import BaseModel
 
 from apps.core.auth.models import StatisticUser
-from apps.static.api_layer import Router
+from apps.core.statistics.api import schemas
+from apps.core.statistics.use_cases.records import create_statistic
+from apps.static.api_layer import PLACEHOLDER, Router
 from apps.static.service_layer import ServiceResult
+from apps.static.statistics import execute_statement
 
 router = Router()
-
-
-# helpers
-def execute_statement(statement):
-    cursor = connection.cursor()
-    cursor.execute(statement)
-    data = cursor.fetchall()
-    return data
 
 
 # records closed statistic
@@ -32,7 +27,6 @@ GET_RECORDS_CLOSED_STATISTIC_SUCCESS = (
 @router.api(
     url="records_closed_statistic/",
     output_schema=List[RecordClosedStatistic],
-    auth=True,
 )
 def get_records_closed_statistic(statistics_user: StatisticUser):
     if connection.vendor == "sqlite":
@@ -76,7 +70,6 @@ GET_RECORDS_FIELD_AMOUNT_STATISTIC = (
 @router.api(
     url="record_fields_amount/",
     output_schema=List[RecordFieldAmount],
-    auth=True,
 )
 def get_record_fields_amount(statistics_user: StatisticUser):
     statement = """
@@ -103,3 +96,18 @@ def get_record_fields_amount(statistics_user: StatisticUser):
     data = execute_statement(statement)
     data = list(map(lambda x: {"field": x[0], "amount": x[1]}, data))
     return ServiceResult(GET_RECORDS_FIELD_AMOUNT_STATISTIC, data)
+
+
+# build a dynamic statistic
+@router.post(
+    url="dynamic/",
+    input_schema=schemas.InputRecordStats,
+    output_schema=schemas.OutputRecordStats,
+)
+def get_dynamic_record_stats(
+    data: schemas.InputRecordStats, statistics_user: StatisticUser
+):
+    ret = create_statistic(
+        data.field_1, data.value_1, data.field_2, __actor=statistics_user
+    )
+    return ServiceResult(PLACEHOLDER, ret)

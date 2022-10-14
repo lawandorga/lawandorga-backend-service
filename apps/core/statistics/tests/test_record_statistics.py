@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from django.test import Client
 from django.utils import timezone
@@ -44,4 +46,20 @@ def test_records_field_statistic(user, db):
     c = Client()
     c.login(**user)
     response = c.get("/api/statistics/record/record_fields_amount/")
+    assert response.status_code == 200
+
+
+def test_records_dynamic_statistic(user, db):
+    c = Client()
+    c.login(**user)
+    response = c.post(
+        "/api/statistics/record/dynamic/",
+        data=json.dumps({"field_1": "Token", "value_1": "%", "field_2": "Token"}),
+        content_type="application/json",
+    )
+    # response = c.post(
+    #     "/api/org/links/",
+    #     data=json.dumps({"name": "New Link", "link": "https://ebay.de", "order": 2}),
+    #     content_type="application/json",
+    # )
     assert response.status_code == 200
