@@ -44,7 +44,7 @@ class RecordAccessViewSet(
             private_key_user = request.user.get_private_key(request=request)
             try:
                 record_key = instance.record.get_aes_key(
-                    user=request.user, private_key_user=private_key_user
+                    user=request.user.rlc_user, private_key_user=private_key_user
                 )
             except ObjectDoesNotExist:
                 raise PermissionDenied(
