@@ -57,9 +57,4 @@ def test_records_dynamic_statistic(user, db):
         data=json.dumps({"field_1": "Token", "value_1": "%", "field_2": "Token"}),
         content_type="application/json",
     )
-    # response = c.post(
-    #     "/api/org/links/",
-    #     data=json.dumps({"name": "New Link", "link": "https://ebay.de", "order": 2}),
-    #     content_type="application/json",
-    # )
     assert response.status_code == 200
