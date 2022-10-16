@@ -53,12 +53,12 @@ class RecordAccessViewSet(
             public_key_user = instance.requested_by.get_public_key()
             encrypted_record_key = RSAEncryption.encrypt(record_key, public_key_user)
             data = {
-                "user": instance.requested_by,
+                "user": instance.requested_by.rlc_user,
                 "record": instance.record,
                 "key": encrypted_record_key,
             }
             if not RecordEncryptionNew.objects.filter(
-                user=data["user"], record=data["record"]
+                user=data["user"].rlc_user, record=data["record"]
             ).exists():
                 RecordEncryptionNew.objects.create(**data)
         elif serializer.validated_data["state"] == "de":
