@@ -58,7 +58,7 @@ class RecordAccessViewSet(
                 "key": encrypted_record_key,
             }
             if not RecordEncryptionNew.objects.filter(
-                user=data["user"].rlc_user, record=data["record"]
+                user=data["user"], record=data["record"]
             ).exists():
                 RecordEncryptionNew.objects.create(**data)
         elif serializer.validated_data["state"] == "de":
