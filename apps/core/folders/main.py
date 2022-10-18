@@ -1,17 +1,12 @@
-from typing import Literal, Optional, Type
+# type: ignore
+# flake8: noqa
+from typing import Optional
 from uuid import uuid4
 
 from apps.core.folders.domain.aggregates.content import Content
 from apps.core.folders.domain.aggregates.folder import Folder
 from apps.core.folders.domain.aggregates.object import EncryptedObject
-from apps.core.folders.domain.value_objects.box import OpenBox
-from apps.core.folders.domain.value_objects.encryption import SymmetricEncryption
-from apps.core.folders.domain.value_objects.key import (
-    ContentKey,
-    FolderKey,
-    PasswordKey,
-    SymmetricKey,
-)
+from apps.core.folders.domain.value_objects.key import FolderKey, PasswordKey
 from apps.core.folders.infrastructure.asymmetric_encryptions import (
     AsymmetricEncryptionV1,
 )
@@ -22,8 +17,10 @@ class CarWithSecretName(EncryptedObject):
     ENCRYPTED_FIELDS = ["name"]
 
     def __init__(self, enc_name: Optional[bytes] = None, name: Optional[str] = None):
-        self.enc_name = enc_name
-        self.name = bytes(name, 'utf-8')
+        if isinstance(name, str):
+            self.name = bytes(name, "utf-8")
+        if isinstance(enc_name, bytes):
+            self.name = enc_name
 
 
 SYMMETRIC_ENCRYPTION_HIERARCHY = {1: SymmetricEncryptionV1}
@@ -47,18 +44,18 @@ def test_1():
 
     _car = CarWithSecretName(name="BMW")
 
-    _content = Content("My Car", _folder, _car, SYMMETRIC_ENCRYPTION_HIERARCHY, ASYMMETRIC_ENCRYPTION_HIERARCHY)
+    _content = Content(
+        "My Car",
+        _car,
+        SYMMETRIC_ENCRYPTION_HIERARCHY,
+    )
 
-    _content.encrypt()
+    _key = _content.encrypt()
 
-    print(_content.key)
-    print(_car.enc_name)
     print(_car.name)
 
     print("#########")
 
-    _content.decrypt(_folder_key)
+    _content.decrypt(_key)
 
-    print(_content.key)
-    print(_car.enc_name)
     print(_car.name)

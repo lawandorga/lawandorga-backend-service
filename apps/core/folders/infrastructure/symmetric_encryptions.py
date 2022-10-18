@@ -2,7 +2,6 @@ import os
 import secrets
 import string
 from hashlib import sha3_256
-from typing import Optional, Tuple
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
@@ -43,14 +42,3 @@ class SymmetricEncryptionV1(SymmetricEncryption):
         cipher = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
         data = unpad(cipher.decrypt(encrypted), AES.block_size)
         return data
-
-
-class SymmetricEncryptionV2(SymmetricEncryption):
-    def generate_key() -> str:
-        return ""
-
-    def encrypt(self, data: bytes) -> Tuple[bytes, str]:
-        return data, ""
-
-    def decrypt(self, enc_data: bytes) -> bytes:
-        return b""

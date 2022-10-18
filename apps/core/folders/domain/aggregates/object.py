@@ -1,5 +1,5 @@
 import abc
-from typing import Type, Union, Optional
+from typing import Optional, Type, Union
 
 from apps.core.folders.domain.value_objects.box import LockedBox, OpenBox
 from apps.core.folders.domain.value_objects.encryption import (
@@ -15,11 +15,21 @@ class EncryptedObject(abc.ABC):
     @property
     def is_encrypted(self) -> Optional[bool]:
 
-        is_encrypted = all(map(lambda f: isinstance(getattr(self, f, None), LockedBox), self.ENCRYPTED_FIELDS))
+        is_encrypted = all(
+            map(
+                lambda f: isinstance(getattr(self, f, None), LockedBox),
+                self.ENCRYPTED_FIELDS,
+            )
+        )
         if is_encrypted:
             return True
 
-        is_not_encrypted = all(map(lambda f: isinstance(getattr(self, f, None), OpenBox), self.ENCRYPTED_FIELDS))
+        is_not_encrypted = all(
+            map(
+                lambda f: isinstance(getattr(self, f, None), OpenBox),
+                self.ENCRYPTED_FIELDS,
+            )
+        )
         if is_not_encrypted:
             return False
 
@@ -36,11 +46,11 @@ class EncryptedObject(abc.ABC):
             if isinstance(v, LockedBox):
                 raise ValueError("Field '{}' is already in a LockedBox.".format(field))
 
-            if not isinstance(v, OpenBox):
-                v = OpenBox(
-                    data=v,
-                    encryption_class=encryption_class,
-                )
+            v = OpenBox(
+                data=v,
+                encryption_class=encryption_class,
+            )
+
             setattr(self, field, v.lock(key))
 
     def decrypt(
@@ -54,9 +64,9 @@ class EncryptedObject(abc.ABC):
             if isinstance(v, OpenBox):
                 raise ValueError("Field '{}' is already in a OpenBox.".format(field))
 
-            if not isinstance(v, LockedBox):
-                v = LockedBox(
-                    enc_data=v,
-                    encryption_class=encryption_class,
-                )
+            v = LockedBox(
+                enc_data=v,
+                encryption_class=encryption_class,
+            )
+
             setattr(self, field, v.unlock(key))

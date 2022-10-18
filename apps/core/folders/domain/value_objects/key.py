@@ -1,12 +1,6 @@
 import abc
-from typing import TYPE_CHECKING, Literal, Optional
+from typing import Literal, Optional
 from uuid import UUID
-
-from apps.core.folders.domain.value_objects.box import LockedBox, OpenBox
-from apps.core.folders.domain.value_objects.encryption import SymmetricEncryption, AsymmetricEncryption
-
-if TYPE_CHECKING:
-    from apps.core.files.models import Folder
 
 
 class Key(abc.ABC):
@@ -86,34 +80,8 @@ class UserKey(AsymmetricKey):
 
 
 class ContentKey(SymmetricKey):
-    def __init__(
-        self,
-        key: Optional[str] = None,
-    ):
-        assert issubclass(encryption_class, AsymmetricEncryption)
-        assert isinstance(key, str) or isinstance(enc_key, bytes)
-
-        if key is not None:
-            bytes_key = bytes(key, 'utf-8')
-            self.__key = OpenBox(data=bytes_key, encryption_class=encryption_class)
-
-        if enc_key is not None:
-            self.__enc_key = LockedBox(enc_data=key, encryption_class=encryption_class)
-
-        self.__encryption_class = encryption_class
+    def __init__(self, key: str):
+        self.__key = key
 
     def get_key(self) -> str:
-        assert isinstance(self.__key, OpenBox)
-
-        return self.__key.decode('utf-8')
-
-    def __repr__(self):
-        return "ContentKey('{}')".format(self.__key)
-
-    def encrypt(self, key: AsymmetricKey) -> "ContentKey":
-        enc_key = self.__key.lock(key)
-        return ContentKey(enc_key=enc_key, encryption_class=self.__encryption_class)
-
-    def decrypt(self, key: AsymmetricKey) -> "ContentKey":
-        key = self.__enc_key.unlock(key)
-        return ContentKey(key=key, encryption_class=self.__encryption_class)
+        return self.__key
