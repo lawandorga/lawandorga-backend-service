@@ -3,7 +3,7 @@ from typing import List
 from django.db import models
 
 from apps.core.auth.models import RlcUser
-from apps.core.events.types.schemas import EventUpdate
+from apps.core.events.api.schemas import EventUpdate
 from apps.core.rlc.models import Org
 
 
