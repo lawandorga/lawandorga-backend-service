@@ -1,5 +1,6 @@
 from .auth.admin import *
 from .collab.admin import *
+from .events.admin import *
 from .files.admin import *
 from .internal.admin import *
 from .legal.admin import *
