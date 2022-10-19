@@ -29,9 +29,9 @@ class EventResponse(BaseModel):
 
 
 class EventCreate(BaseModel):
-    is_global: bool
+    is_global: bool = False
     name: str
-    description: str
+    description: str = ""
     start_time: datetime
     end_time: datetime
 
