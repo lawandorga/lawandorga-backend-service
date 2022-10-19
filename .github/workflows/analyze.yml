@@ -25,11 +25,13 @@ jobs:
                 id: cache-packages
                 with:
                     path: ${{ env.pythonLocation }}
-                    key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+                    key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
 
             -   name: Install Dependencies
                 if: steps.cache-packages.outputs.cache-hit != 'true'
-                run: pipenv install
+                run: |
+                    pip install --upgrade pip pipenv
+                    pipenv install
 
     clean:
         name: Clean
@@ -51,7 +53,7 @@ jobs:
                 id: cache-packages
                 with:
                     path: ${{ env.pythonLocation }}
-                    key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+                    key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
 
             -   name: Clean
                 uses: pre-commit/action@v3.0.0
@@ -76,7 +78,7 @@ jobs:
                 id: cache-packages
                 with:
                     path: ${{ env.pythonLocation }}
-                    key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+                    key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
 
             -   name: Test
                 run: |
@@ -110,7 +112,7 @@ jobs:
                 id: cache-packages
                 with:
                     path: ${{ env.pythonLocation }}
-                    key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+                    key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
 
             -   name: Download Test Results
                 uses: actions/download-artifact@v3
