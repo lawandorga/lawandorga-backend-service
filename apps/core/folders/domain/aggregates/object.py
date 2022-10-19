@@ -48,10 +48,9 @@ class EncryptedObject(abc.ABC):
 
             v = OpenBox(
                 data=v,
-                encryption_class=encryption_class,
             )
 
-            setattr(self, field, v.lock(key))
+            setattr(self, field, v.lock(key, encryption_class))
 
     def decrypt(
         self,

@@ -22,10 +22,10 @@ def key():
 
 
 def test_box_is_bytes(key):
-    o1 = OpenBox(data=b"Secret", encryption_class=SymmetricEncryptionTest1)
+    o1 = OpenBox(data=b"Secret")
     assert o1 == b"Secret"
     assert isinstance(o1, bytes)
-    l1 = o1.lock(key)
+    l1 = o1.lock(key, encryption_class=SymmetricEncryptionTest1)
     assert isinstance(l1, bytes)
     o2 = l1.unlock(key)
     assert o2 == b"Secret"
@@ -33,9 +33,9 @@ def test_box_is_bytes(key):
 
 
 def test_box_can_be_unloaded(key):
-    o1 = OpenBox(data=b"Secret", encryption_class=SymmetricEncryptionTest1)
+    o1 = OpenBox(data=b"Secret")
     assert o1 == b"Secret"
-    l1 = o1.lock(key)
+    l1 = o1.lock(key, encryption_class=SymmetricEncryptionTest1)
     enc_data = l1.value
     l2 = LockedBox(enc_data=enc_data, encryption_class=SymmetricEncryptionTest1)
     assert enc_data == l2
@@ -44,8 +44,8 @@ def test_box_can_be_unloaded(key):
 
 
 def test_box_decryption_fails_with_another_encryption_class(key):
-    o1 = OpenBox(data=b"Secret", encryption_class=SymmetricEncryptionTest1)
-    l1 = o1.lock(key)
+    o1 = OpenBox(data=b"Secret")
+    l1 = o1.lock(key, encryption_class=SymmetricEncryptionTest1)
     enc_data = l1.value
     l2 = LockedBox(enc_data=enc_data, encryption_class=SymmetricEncryptionTest2)
     with pytest.raises(KeyError):

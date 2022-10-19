@@ -1,7 +1,8 @@
-from typing import List, Optional
+from typing import List, Literal, Optional, Tuple, Type
 
+from apps.core.folders.domain.aggregates.content import Content
 from apps.core.folders.domain.value_objects.encryption import AsymmetricEncryption
-from apps.core.folders.domain.value_objects.key import FolderKey
+from apps.core.folders.domain.value_objects.key import ContentKey, FolderKey
 
 # from uuid import UUID
 
@@ -16,17 +17,21 @@ class Folder:
         name: str,
         # parent: Optional["Folder"],
         encryption_class: AsymmetricEncryption,
+        asymmetric_encryption_hierarchy: dict[int, Type[AsymmetricEncryption]],
+        encryption_version=0,
         keys: List[FolderKey] = None,
         public_key: Optional[str] = None,
-        # children: List[Content],
+        children: List[Tuple[Content, ContentKey]] = None,
     ):
         # self.__pk = pk
         self.__name = name
         # self.__parent = parent
         self.__public_key = public_key
-        # self.__children = children
+        self.__children = children if children is not None else []
         self.__keys = keys if keys is not None else []
         self.__encryption_class = encryption_class
+        self.__encryption_hierarchy = asymmetric_encryption_hierarchy
+        self.__encryption_version = encryption_version
 
     # @property
     # def public_key(self):
@@ -65,6 +70,21 @@ class Folder:
     #
     #     else:
     #         return FolderKey(public_key=self.public_key)
+
+    def get_asymmetric_encryption_class(
+        self, direction: Literal["ENCRYPTION", "DECRYPTION"]
+    ) -> Type[AsymmetricEncryption]:
+        if direction == "DECRYPTION":
+            return self.__encryption_hierarchy[self.__encryption_version]
+        if direction == "ENCRYPTION":
+            return self.__encryption_hierarchy[max(self.__encryption_hierarchy.keys())]
+
+    def add_content(
+        self, content: Content, content_key: ContentKey, folder_key: FolderKey
+    ):
+        encryption_class = self.get_asymmetric_encryption_class("ENCRYPTION")
+        enc_content_key = content_key.encrypt(folder_key, encryption_class)
+        self.__children.append((content, enc_content_key))
 
     def move(self, target: "Folder"):
         # TODO
