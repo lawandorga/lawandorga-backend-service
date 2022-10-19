@@ -31,7 +31,7 @@ jobs:
                 if: steps.cache-packages.outputs.cache-hit != 'true'
                 run: |
                     pip install --upgrade pip pipenv
-                    pipenv install
+                    pipenv install --system
 
     clean:
         name: Clean
