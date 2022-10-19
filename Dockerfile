@@ -5,7 +5,8 @@ WORKDIR /django
 COPY Pipfile /django/Pipfile
 
 RUN pip install --upgrade pip pipenv
-RUN pipenv install --system
+RUN pipenv requirements > requirements.txt
+RUN pip install -r requirements.txt
 
 COPY . /django
 
