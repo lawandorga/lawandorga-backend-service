@@ -3,6 +3,7 @@ FROM python:3.10
 WORKDIR /django
 
 COPY Pipfile /django/Pipfile
+COPY Pipfile.lock /django/Pipfile.lock
 
 RUN pip install --upgrade pip pipenv
 RUN pipenv requirements > requirements.txt
