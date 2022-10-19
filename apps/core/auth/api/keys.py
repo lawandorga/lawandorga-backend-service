@@ -3,7 +3,7 @@ from typing import List, Literal
 from pydantic import BaseModel
 
 from apps.core.auth.models import RlcUser
-from apps.recordmanagement.models import RecordEncryptionNew
+from apps.core.records.models import RecordEncryptionNew
 from apps.static.api_layer import Router
 from apps.static.service_layer import ServiceResult
 
@@ -57,7 +57,7 @@ DELETE_KEY_SUCCESS_RECORD = "User {} deleted a record key."
 
 @router.delete(url="<int:id>/", input_schema=KeyDelete, auth=True)
 def delete_key(data: KeyDelete, rlc_user: RlcUser):
-    key = RecordEncryptionNew.objects.filter(user=rlc_user.user, pk=data.id).first()
+    key = RecordEncryptionNew.objects.filter(user=rlc_user, pk=data.id).first()
     if key is None:
         return ServiceResult(
             DELETE_KEY_ERROR_NOT_FOUND,

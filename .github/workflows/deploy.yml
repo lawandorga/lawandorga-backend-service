@@ -5,7 +5,17 @@ on:
         branches:
             - main
 
+env:
+    UPDATE_NAME: lawandorga-backend-service:${{ github.sha }}
+
 jobs:
+    start:
+        name: Start
+        runs-on: ubuntu-22.04
+        steps:
+            -   name: Start update
+                run: curl https://lawandorgaupdatefuncpllv4num-start-update.functions.fnc.fr-par.scw.cloud?name=${{ env.UPDATE_NAME }}
+
     build:
         name: Build
         runs-on: ubuntu-22.04
@@ -225,3 +235,13 @@ jobs:
                       -H 'X-Auth-Token: ${{ secrets.SCW_TOKEN }}' \
                       -H 'Content-Type: application/json' \
                       -d '{ "redeploy": true }'
+
+
+    end:
+        name: Stop
+        needs: [start, build, test, deploy]
+        if: always()
+        runs-on: ubuntu-22.04
+        steps:
+            -   name: Stop update
+                run: curl https://lawandorgaupdatefuncpllv4num-finish-update.functions.fnc.fr-par.scw.cloud?name=${{ env.UPDATE_NAME }}

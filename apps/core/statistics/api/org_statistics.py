@@ -34,16 +34,16 @@ def get_records_created_and_closed(rlc_user: RlcUser):
         select t1.month as month, t2.month as month, created, closed
         from (
         select strftime('%Y/%m', r.created) as month, count(*) as created
-        from recordmanagement_record r
-        left join recordmanagement_recordtemplate t on t.id = r.template_id
+        from core_record r
+        left join core_recordtemplate t on t.id = r.template_id
         where t.rlc_id = {}
         group by strftime('%Y/%m', r.created), t.rlc_id
         ) t1
         left outer join (
         select strftime('%Y/%m', se.closed_at) as month, count(*) as closed
-        from recordmanagement_recordstateentry se
-        left join recordmanagement_record r on se.record_id = r.id
-        left join recordmanagement_recordtemplate t on t.id = r.template_id
+        from core_recordstateentry se
+        left join core_record r on se.record_id = r.id
+        left join core_recordtemplate t on t.id = r.template_id
         where se.value = 'Closed'
         and t.rlc_id = {}
         group by strftime('%Y/%m', se.closed_at), t.rlc_id
@@ -57,16 +57,16 @@ def get_records_created_and_closed(rlc_user: RlcUser):
         select t1.month as month, t2.month as month, created, closed
         from (
         select to_char(r.created, 'YYYY/MM') as month, count(*) as created
-        from recordmanagement_record r
-        left join recordmanagement_recordtemplate t on t.id = r.template_id
+        from core_record r
+        left join core_recordtemplate t on t.id = r.template_id
         where t.rlc_id = {}
         group by to_char(r.created, 'YYYY/MM'), t.rlc_id
         ) t1
         full outer join (
         select to_char(se.closed_at, 'YYYY/MM') as month, count(*) as closed
-        from recordmanagement_recordstateentry se
-        left join recordmanagement_record r on se.record_id = r.id
-        left join recordmanagement_recordtemplate t on t.id = r.template_id
+        from core_recordstateentry se
+        left join core_record r on se.record_id = r.id
+        left join core_recordtemplate t on t.id = r.template_id
         where se.value = 'Closed'
         and t.rlc_id = {}
         group by to_char(se.closed_at, 'YYYY/MM'), t.rlc_id

@@ -18,7 +18,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "tinymce",
     "apps.core",
-    "apps.recordmanagement",
     "storages",
     "corsheaders",
     "solo",

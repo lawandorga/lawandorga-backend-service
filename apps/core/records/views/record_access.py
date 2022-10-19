@@ -4,10 +4,9 @@ from rest_framework import mixins, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
+from apps.core.records.models import RecordAccess, RecordEncryptionNew
 from apps.core.records.serializers import RecordAccessSerializer
 from apps.core.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
-from apps.recordmanagement.models import RecordEncryptionNew
-from apps.recordmanagement.models.record_access import RecordAccess
 from apps.static.encryption import RSAEncryption
 from apps.static.permission import CheckPermissionWall
 
@@ -45,7 +44,7 @@ class RecordAccessViewSet(
             private_key_user = request.user.get_private_key(request=request)
             try:
                 record_key = instance.record.get_aes_key(
-                    user=request.user, private_key_user=private_key_user
+                    user=request.user.rlc_user, private_key_user=private_key_user
                 )
             except ObjectDoesNotExist:
                 raise PermissionDenied(
@@ -54,7 +53,7 @@ class RecordAccessViewSet(
             public_key_user = instance.requested_by.get_public_key()
             encrypted_record_key = RSAEncryption.encrypt(record_key, public_key_user)
             data = {
-                "user": instance.requested_by,
+                "user": instance.requested_by.rlc_user,
                 "record": instance.record,
                 "key": encrypted_record_key,
             }

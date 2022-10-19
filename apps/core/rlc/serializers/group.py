@@ -17,10 +17,6 @@ class GroupCreateSerializer(GroupSerializer):
         return attrs
 
 
-class MemberIntegerSerializer(serializers.Serializer):
-    member = serializers.IntegerField()
-
-
 class GroupNameSerializer(GroupSerializer):
     class Meta:
         model = Group

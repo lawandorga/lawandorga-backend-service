@@ -1,6 +1,9 @@
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from apps.core.records import views
+
+from . import api
 
 router = DefaultRouter()
 
@@ -48,3 +51,8 @@ router.register(
 )
 # statistic
 router.register("recordstatisticentries", views.RecordStatisticEntryViewSet)
+
+urlpatterns = [
+    path("", include(router.urls)),
+    path("questionnaires/v2/", include(api.questionnaire_router.urls)),
+]

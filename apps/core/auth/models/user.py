@@ -79,84 +79,19 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             rlc_user.save()
             self.save()
 
-    def __get_as_user_permissions(self):
-        """
-        Returns: all HasPermissions the user itself has as list
-        """
-        from apps.core.models import HasPermission
-
-        return [
-            has_permission.permission.name
-            for has_permission in HasPermission.objects.filter(user=self.rlc_user)
-        ]
-
-    def __get_as_group_member_permissions(self):
-        """
-        Returns: all HasPermissions the groups in which the user is member of have as list
-        """
-        groups = [groups["id"] for groups in list(self.rlcgroups.values("id"))]
-        from apps.core.models import HasPermission
-
-        return [
-            has_permission.permission.name
-            for has_permission in HasPermission.objects.filter(
-                group_has_permission_id__in=groups
-            )
-        ]
-
-    def get_all_user_permissions(self):
-        """
-        Returns: all HasPermissions which the user has direct and
-                    indirect (through membership in a group or rlc) as list
-        """
-        return (
-            self.__get_as_user_permissions() + self.__get_as_group_member_permissions()
-        )
-
-    def __has_as_user_permission(self, permission):
-        from apps.core.models import HasPermission
-
-        return HasPermission.objects.filter(
-            user=self.rlc_user, permission=permission
-        ).exists()
-
-    def __has_as_group_member_permission(self, permission):
-        groups = [group.pk for group in self.rlcgroups.all()]
-        from apps.core.models import HasPermission
-
-        return HasPermission.objects.filter(
-            group_has_permission__pk__in=groups, permission=permission
-        ).exists()
-
     def has_permission(self, permission: Union[str, "Permission"]):
-        if isinstance(permission, str):
-            try:
-                from apps.core.models import Permission
-
-                permission = Permission.objects.get(name=permission)
-            except ObjectDoesNotExist:
-                return False
-
-        as_user = self.__has_as_user_permission(permission)
-        if as_user:
-            return True
-
-        as_group = self.__has_as_group_member_permission(permission)
-        if as_group:
-            return True
-
-        return False
+        return self.rlc_user.has_permission(permission)
 
     def get_collab_permissions(self):
         from apps.core.models import PermissionForCollabDocument
 
-        groups = self.rlcgroups.all()
+        groups = self.rlc_user.groups.all()
         return PermissionForCollabDocument.objects.filter(
             group_has_permission__in=groups
         ).select_related("document")
 
     def get_own_records(self):
-        from apps.recordmanagement.models.record import Record
+        from apps.core.records.models import Record
 
         records = Record.objects.filter(template__rlc=self.rlc).prefetch_related(
             "users_entries", "users_entries__value"
@@ -173,7 +108,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return Record.objects.filter(pk__in=record_pks)
 
     def get_records_information(self):
-        from apps.recordmanagement.models.record import Record
+        from apps.core.records.models import Record
 
         records = Record.objects.filter(template__rlc=self.rlc).prefetch_related(
             "state_entries", "users_entries", "users_entries__value"
@@ -207,7 +142,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                 org=self.rlc, created__gt=timezone.now() - timedelta(days=14)
             )
             for rlc_user in list(users):
-                if rlc_user.user.rlcgroups.all().count() == 0:
+                if rlc_user.groups.all().count() == 0:
                     members_data.append(
                         {
                             "name": rlc_user.user.name,
@@ -219,7 +154,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return None
 
     def get_questionnaire_information(self):
-        from apps.recordmanagement.models.questionnaire import Questionnaire
+        from apps.core.records.models.questionnaire import Questionnaire
 
         questionnaires = Questionnaire.objects.filter(
             record__in=self.get_own_records()
@@ -334,18 +269,20 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             raise ValueError("You need to set (private_key_user).")
 
     def test_all_keys(self, private_key_user):
-        from apps.recordmanagement.models import RecordEncryptionNew
+        from apps.core.records.models import RecordEncryptionNew
 
-        for key in RecordEncryptionNew.objects.filter(user=self):
+        for key in RecordEncryptionNew.objects.filter(user=self.rlc_user):
             key.test(private_key_user)
         self.users_rlc_keys.first().test(private_key_user)
 
     def __get_all_keys_raw(self):
-        from apps.recordmanagement.models import RecordEncryptionNew
+        from apps.core.records.models import RecordEncryptionNew
 
         ret = {
             "record_keys": list(
-                RecordEncryptionNew.objects.filter(user=self).select_related("record")
+                RecordEncryptionNew.objects.filter(user=self.rlc_user).select_related(
+                    "record"
+                )
             ),
             "rlc_keys": self.users_rlc_keys.select_related("rlc").all(),
         }
@@ -387,7 +324,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         this method assumes that a valid public key exists for user_to_unlock
         """
         from apps.core.models import OrgEncryption
-        from apps.recordmanagement.models import RecordEncryptionNew
+        from apps.core.records.models import RecordEncryptionNew
 
         # check if all keys can be handed over
         success = True
@@ -402,13 +339,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         new_keys.save()
 
         # generate new record encryption
-        record_encryptions = user_to_unlock.recordencryptions.filter(correct=False)
+        record_encryptions = user_to_unlock.rlc_user.recordencryptions.filter(
+            correct=False
+        )
 
         for old_keys in list(record_encryptions):
             # change the keys to the new keys
             try:
                 encryption = RecordEncryptionNew.objects.get(
-                    user=self, record=old_keys.record
+                    user=self.rlc_user, record=old_keys.record
                 )
             except ObjectDoesNotExist:
                 success = False

@@ -7,8 +7,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.reverse import reverse
 
-from apps.recordmanagement.models import EncryptedClient
-from apps.recordmanagement.models.record import (
+from apps.core.records.models import (
+    EncryptedClient,
     Record,
     RecordEncryptedFileEntry,
     RecordEncryptedFileField,
@@ -336,7 +336,7 @@ class RecordEncryptedStandardEntrySerializer(RecordEntrySerializer):
         request = self.context["request"]
         private_key_user = request.user.get_private_key(request=request)
         record = validated_data["record"]
-        aes_key_record = record.get_aes_key(request.user, private_key_user)
+        aes_key_record = record.get_aes_key(request.user.rlc_user, private_key_user)
         entry = RecordEncryptedStandardEntry(**validated_data)
         entry.encrypt(aes_key_record=aes_key_record)
         entry.save()
@@ -348,7 +348,7 @@ class RecordEncryptedStandardEntrySerializer(RecordEntrySerializer):
         request = self.context["request"]
         private_key_user = request.user.get_private_key(request=request)
         aes_key_record = instance.record.get_aes_key(
-            user=request.user, private_key_user=private_key_user
+            user=request.user.rlc_user, private_key_user=private_key_user
         )
         # update the instance
         instance.decrypt(aes_key_record=aes_key_record)
@@ -386,7 +386,7 @@ class RecordEncryptedSelectEntrySerializer(RecordEntrySerializer):
         request = self.context["request"]
         private_key_user = request.user.get_private_key(request=request)
         record = validated_data["record"]
-        aes_key_record = record.get_aes_key(request.user, private_key_user)
+        aes_key_record = record.get_aes_key(request.user.rlc_user, private_key_user)
         entry = RecordEncryptedSelectEntry(**validated_data)
         entry.encrypt(aes_key_record=aes_key_record)
         entry.save()
@@ -399,7 +399,7 @@ class RecordEncryptedSelectEntrySerializer(RecordEntrySerializer):
         request = self.context["request"]
         private_key_user = request.user.get_private_key(request=request)
         aes_key_record = instance.record.get_aes_key(
-            user=request.user, private_key_user=private_key_user
+            user=request.user.rlc_user, private_key_user=private_key_user
         )
         instance.encrypt(aes_key_record=aes_key_record)
         instance.save()
@@ -521,7 +521,7 @@ class RecordListSerializer(RecordSerializer):
 
     def get_access(self, obj):
         for enc in getattr(obj, "encryptions").all():
-            if enc.user_id == self.context["request"].user.id:
+            if enc.user_id == self.context["request"].user.rlc_user.id:
                 return True
         return False
 
@@ -555,7 +555,7 @@ class RecordEncryptionNewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecordEncryptionNew
-        fields = ["created", "user", "user_detail"]
+        fields = ["created", "user", "user_detail", "id"]
 
     def get_user_detail(self, obj):
         return obj.user.name
@@ -577,7 +577,7 @@ class RecordDetailSerializer(RecordSerializer):
     def get_entries(self, obj):
         try:
             aes_key_record = self.instance.get_aes_key(
-                user=self.user, private_key_user=self.private_key_user
+                user=self.user.rlc_user, private_key_user=self.private_key_user
             )
         except ObjectDoesNotExist:
             raise PermissionDenied(

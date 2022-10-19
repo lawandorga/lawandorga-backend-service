@@ -2,9 +2,9 @@ from rest_framework import mixins, status, viewsets
 from rest_framework.exceptions import ParseError, PermissionDenied
 from rest_framework.response import Response
 
+from apps.core.records.models import RecordEncryptionNew
 from apps.core.records.serializers import RecordEncryptionNewSerializer
 from apps.core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
-from apps.recordmanagement.models import RecordEncryptionNew
 
 
 class RecordEncryptionNewViewSet(
@@ -16,7 +16,7 @@ class RecordEncryptionNewViewSet(
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         if not RecordEncryptionNew.objects.filter(
-            user=request.user, record=instance.record
+            user=request.user.rlc_user, record=instance.record
         ).exists():
             raise PermissionDenied(
                 "You need access to the record in order to remove access from another person."

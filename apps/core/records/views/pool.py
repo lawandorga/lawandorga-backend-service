@@ -3,9 +3,9 @@ from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.core.records.models import Record, RecordEncryptionNew
+from apps.core.records.models.pool import PoolConsultant, PoolRecord
 from apps.core.records.serializers import PoolConsultantSerializer, PoolRecordSerializer
-from apps.recordmanagement.models.pool import PoolConsultant, PoolRecord
-from apps.recordmanagement.models.record import Record, RecordEncryptionNew
 
 
 class PoolConsultantViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):

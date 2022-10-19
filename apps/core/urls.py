@@ -6,7 +6,7 @@ from apps.core.events.urls import urlpatterns as events_urlpatterns
 from apps.core.files.urls import router as files_router
 from apps.core.internal.urls import router as internal_router
 from apps.core.legal.urls import urlpatterns as legal_urlpatterns
-from apps.core.records.urls import router as records_router
+from apps.core.records.urls import urlpatterns as records_urlpatterns
 from apps.core.rlc.urls import urlpatterns as org_urlpatterns
 from apps.core.statistics.urls import urlpatterns as statistics_urlpatterns
 
@@ -19,5 +19,5 @@ urlpatterns = [
     path("", include(internal_router.urls)),
     path("collab/", include(collab_router.urls)),
     path("files/", include(files_router.urls)),
-    path("records/", include(records_router.urls)),
+    path("records/", include(records_urlpatterns)),
 ]

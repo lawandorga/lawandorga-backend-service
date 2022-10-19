@@ -4,7 +4,7 @@ from django.conf import settings
 
 from apps.core.auth.models import StatisticUser
 from apps.core.models import RlcUser, UserProfile
-from apps.recordmanagement.models import Record, RecordEncryptionNew
+from apps.core.records.models import Record, RecordEncryptionNew, RecordTemplate
 from apps.static.encryption import AESEncryption
 
 
@@ -41,12 +41,19 @@ def create_rlc_user(email="dummy@law-orga.de", name="Dummy 1", rlc=None):
     }
 
 
+def create_record_template(org=None):
+    template = RecordTemplate.objects.create(rlc=org, name="Record Template")
+    return {"template": template}
+
+
 def create_record(template=None, users: List[UserProfile] = None):
     record = Record.objects.create(template=template)
     aes_key_record = AESEncryption.generate_secure_key()
     for user in users if users else []:
         public_key_user = user.get_public_key()
-        encryption = RecordEncryptionNew(record=record, user=user, key=aes_key_record)
+        encryption = RecordEncryptionNew(
+            record=record, user=user.rlc_user, key=aes_key_record
+        )
         encryption.encrypt(public_key_user=public_key_user)
         encryption.save()
     return {"record": record, "aes_key": aes_key_record}

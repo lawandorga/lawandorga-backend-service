@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.recordmanagement.models.record_access import RecordAccess
+from apps.core.records.models import RecordAccess
 
 
 class RecordAccessSerializer(serializers.ModelSerializer):

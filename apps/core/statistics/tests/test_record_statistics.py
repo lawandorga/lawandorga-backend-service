@@ -1,14 +1,12 @@
+import json
+
 import pytest
 from django.test import Client
 from django.utils import timezone
 
 from apps.core.fixtures import create_permissions
+from apps.core.records.models import RecordStateEntry, RecordStateField, RecordTemplate
 from apps.core.rlc.models import Org
-from apps.recordmanagement.models import (
-    RecordStateEntry,
-    RecordStateField,
-    RecordTemplate,
-)
 from apps.static import test_helpers as data
 
 
@@ -48,4 +46,15 @@ def test_records_field_statistic(user, db):
     c = Client()
     c.login(**user)
     response = c.get("/api/statistics/record/record_fields_amount/")
+    assert response.status_code == 200
+
+
+def test_records_dynamic_statistic(user, db):
+    c = Client()
+    c.login(**user)
+    response = c.post(
+        "/api/statistics/record/dynamic/",
+        data=json.dumps({"field_1": "Token", "value_1": "%", "field_2": "Token"}),
+        content_type="application/json",
+    )
     assert response.status_code == 200

@@ -48,7 +48,7 @@ class HasPermissionViewSet(
         user = self.request.query_params.get("user", None)
         if user is not None:
             user = get_object_or_404(UserProfile, pk=user)
-            groups = user.rlcgroups.all()
+            groups = user.rlc_user.groups.all()
             queryset = queryset.filter(
                 Q(user=user.rlc_user) | Q(group_has_permission__in=groups)
             )

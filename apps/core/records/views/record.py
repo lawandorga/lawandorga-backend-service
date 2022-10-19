@@ -11,6 +11,29 @@ from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from apps.core.records.models import (
+    Record,
+    RecordEncryptedFileEntry,
+    RecordEncryptedFileField,
+    RecordEncryptedSelectEntry,
+    RecordEncryptedSelectField,
+    RecordEncryptedStandardEntry,
+    RecordEncryptedStandardField,
+    RecordEncryptionNew,
+    RecordField,
+    RecordMultipleEntry,
+    RecordMultipleField,
+    RecordSelectEntry,
+    RecordSelectField,
+    RecordStandardEntry,
+    RecordStandardField,
+    RecordStateEntry,
+    RecordStateField,
+    RecordStatisticEntry,
+    RecordTemplate,
+    RecordUsersEntry,
+    RecordUsersField,
+)
 from apps.core.records.serializers import RecordDocumentSerializer
 from apps.core.records.serializers.record import (
     FIELD_TYPES_AND_SERIALIZERS,
@@ -41,29 +64,6 @@ from apps.core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
     PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
     PERMISSION_RECORDS_ADD_RECORD,
-)
-from apps.recordmanagement.models.record import (
-    Record,
-    RecordEncryptedFileEntry,
-    RecordEncryptedFileField,
-    RecordEncryptedSelectEntry,
-    RecordEncryptedSelectField,
-    RecordEncryptedStandardEntry,
-    RecordEncryptedStandardField,
-    RecordEncryptionNew,
-    RecordField,
-    RecordMultipleEntry,
-    RecordMultipleField,
-    RecordSelectEntry,
-    RecordSelectField,
-    RecordStandardEntry,
-    RecordStandardField,
-    RecordStateEntry,
-    RecordStateField,
-    RecordStatisticEntry,
-    RecordTemplate,
-    RecordUsersEntry,
-    RecordUsersField,
 )
 from apps.static.encryption import AESEncryption
 from apps.static.permission import CheckPermissionWall
@@ -293,9 +293,11 @@ class RecordViewSet(
                 users_with_permissions.append(user)
         for user in users_with_permissions:
             if not RecordEncryptionNew.objects.filter(
-                record=record, user=user
+                record=record, user=user.rlc_user
             ).exists():
-                encryption = RecordEncryptionNew(record=record, user=user, key=aes_key)
+                encryption = RecordEncryptionNew(
+                    record=record, user=user.rlc_user, key=aes_key
+                )
                 public_key_user = user.get_public_key()
                 encryption.encrypt(public_key_user=public_key_user)
                 encryption.save()
@@ -360,7 +362,7 @@ class RecordEncryptedFileEntryViewSet(RecordEntryViewSet):
         instance = self.get_object()
         private_key_user = request.user.get_private_key(request=request)
         file = instance.decrypt_file(
-            private_key_user=private_key_user, user=request.user
+            private_key_user=private_key_user, user=request.user.rlc_user
         )
         response = FileResponse(
             file, content_type=mimetypes.guess_type(instance.get_value())[0]
@@ -427,7 +429,7 @@ class RecordUsersEntryViewSet(RecordEntryViewSet):
 
     def create_encryptions(self, share_keys, record, users):
         aes_key_record = record.get_aes_key(
-            user=self.request.user,
+            user=self.request.user.rlc_user,
             private_key_user=self.request.user.get_private_key(request=self.request),
         )
         if share_keys:
@@ -438,7 +440,7 @@ class RecordUsersEntryViewSet(RecordEntryViewSet):
                     encryption = RecordEncryptionNew(
                         user=user, record=record, key=aes_key_record
                     )
-                    encryption.encrypt(user.get_public_key())
+                    encryption.encrypt(user.user.get_public_key())
                     encryption.save()
 
     def perform_create(self, serializer):

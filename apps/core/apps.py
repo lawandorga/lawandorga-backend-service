@@ -6,6 +6,9 @@ class CoreConfig(AppConfig):
     name = "apps.core"
 
     def ready(self):
+        # import this file to add use_case mappings
+        from apps.core import use_cases  # noqa F401
+
         # rlc permissions
         from apps.core.fixtures import create_permissions
         from apps.core.models import Permission

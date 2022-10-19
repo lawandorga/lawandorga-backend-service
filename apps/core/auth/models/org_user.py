@@ -1,7 +1,8 @@
-from typing import Any, Dict, Union
+from typing import Any, Dict, List, Union
 
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import models
 from django.template import loader
@@ -167,8 +168,29 @@ class RlcUser(EncryptedModelMixin, models.Model):
         self.is_private_key_encrypted = False
         self.save()
 
-    def get_permissions(self):
-        return self.user.get_all_permissions()
+    def __get_as_user_permissions(self) -> List[str]:
+        from apps.core.models import HasPermission
+
+        permissions = list(HasPermission.objects.filter(user__id=self.pk))
+
+        return [has_permission.permission.name for has_permission in permissions]
+
+    def __get_as_group_member_permissions(self) -> List[str]:
+        from apps.core.models import HasPermission
+
+        groups = [groups["id"] for groups in list(self.groups.values("id"))]
+
+        return [
+            has_permission.permission.name
+            for has_permission in HasPermission.objects.filter(
+                group_has_permission_id__in=groups
+            )
+        ]
+
+    def get_permissions(self) -> List[str]:
+        return (
+            self.__get_as_user_permissions() + self.__get_as_group_member_permissions()
+        )
 
     def set_frontend_settings(self, data: Dict[str, Any]):
         self.frontend_settings = data
@@ -185,9 +207,9 @@ class RlcUser(EncryptedModelMixin, models.Model):
         user.delete()
 
     def check_delete_is_safe(self):
-        from apps.recordmanagement.models import RecordEncryptionNew
+        from apps.core.records.models import RecordEncryptionNew
 
-        for encryption in self.user.recordencryptions.all():
+        for encryption in self.user.rlc_user.recordencryptions.all():
             if (
                 RecordEncryptionNew.objects.filter(record=encryption.record).count()
                 <= 2
@@ -258,11 +280,38 @@ class RlcUser(EncryptedModelMixin, models.Model):
             raise ValueError("You need to pass 'permission_name' or 'permission'")
         HasPermission.objects.create(user=self, permission=p)
 
-    def has_permission(self, permission: Union[str, Permission]):
-        return self.user.has_permission(permission)
+    def __has_as_user_permission(self, permission):
+        from apps.core.models import HasPermission
+
+        return HasPermission.objects.filter(user=self, permission=permission).exists()
+
+    def __has_as_group_member_permission(self, permission):
+        groups = [group.pk for group in self.groups.all()]
+        from apps.core.models import HasPermission
+
+        return HasPermission.objects.filter(
+            group_has_permission__pk__in=groups, permission=permission
+        ).exists()
+
+    def has_permission(self, permission: Union[str, "Permission"]):
+        if isinstance(permission, str):
+            try:
+                from apps.core.models import Permission
+
+                permission = Permission.objects.get(name=permission)
+            except ObjectDoesNotExist:
+                return False
+
+        as_user = self.__has_as_user_permission(permission)
+        if as_user:
+            return True
+
+        as_group = self.__has_as_group_member_permission(permission)
+        if as_group:
+            return True
 
     def get_badges(self):
-        from apps.recordmanagement.models import RecordAccess, RecordDeletion
+        from apps.core.records.models import RecordAccess, RecordDeletion
 
         # profiles
         profiles = RlcUser.objects.filter(org=self.org, locked=True).count()

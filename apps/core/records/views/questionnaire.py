@@ -7,6 +7,13 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.response import Response
 
+from apps.core.records.models import (
+    Questionnaire,
+    QuestionnaireAnswer,
+    QuestionnaireQuestion,
+    QuestionnaireTemplate,
+    QuestionnaireTemplateFile,
+)
 from apps.core.records.serializers.questionnaire import (
     CodeSerializer,
     QuestionnaireAnswerRetrieveSerializer,
@@ -20,13 +27,6 @@ from apps.core.records.serializers.questionnaire import (
     RecordQuestionnaireDetailSerializer,
 )
 from apps.core.static import PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES
-from apps.recordmanagement.models import (
-    Questionnaire,
-    QuestionnaireAnswer,
-    QuestionnaireQuestion,
-    QuestionnaireTemplate,
-    QuestionnaireTemplateFile,
-)
 from apps.static.permission import CheckPermissionWall
 
 
@@ -85,18 +85,6 @@ class QuestionnaireTemplateViewSet(CheckPermissionWall, viewsets.ModelViewSet):
         return Response(
             {"non_field_errors": "There is no questionnaire with this code."},
             status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    @action(detail=False, methods=["post"])
-    def publish(self, request, *args, **kwargs):
-        serializer = QuestionnaireSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            RecordQuestionnaireDetailSerializer(instance).data,
-            status=status.HTTP_201_CREATED,
-            headers=headers,
         )
 
 
