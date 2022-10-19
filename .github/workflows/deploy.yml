@@ -28,14 +28,13 @@ jobs:
             -   name: Set Up Python
                 uses: actions/setup-python@v3
                 with:
-                    python-version: 3.9
-                    cache: pipenv
+                    python-version: "3.10"
 
             -   uses: actions/cache@v2
                 id: cache-packages
                 with:
                     path: ${{ env.pythonLocation }}
-                    key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+                    key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
 
             -   name: Install Dependencies
                 if: steps.cache-packages.outputs.cache-hit != 'true'
@@ -54,14 +53,13 @@ jobs:
             -   name: Set Up Python
                 uses: actions/setup-python@v3
                 with:
-                    python-version: 3.9
-                    cache: pipenv
+                    python-version: "3.10"
 
             -   uses: actions/cache@v2
                 id: cache-packages
                 with:
                     path: ${{ env.pythonLocation }}
-                    key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+                    key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
 
             -   name: Test
                 run: |
@@ -116,14 +114,13 @@ jobs:
             -   name: Set Up Python
                 uses: actions/setup-python@v3
                 with:
-                    python-version: 3.9
-                    cache: pipenv
+                    python-version: "3.10"
 
             -   uses: actions/cache@v2
                 id: cache-packages
                 with:
                     path: ${{ env.pythonLocation }}
-                    key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+                    key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
 
             -   name: Run migrations
                 run: python production_manage.py migrate
