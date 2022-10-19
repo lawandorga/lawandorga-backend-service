@@ -3,13 +3,13 @@ from typing import List
 from django.core.exceptions import ObjectDoesNotExist
 
 from apps.core.auth.models import RlcUser
-from apps.core.events.models import Event
 from apps.core.events.api.schemas import (
     InputEventCreate,
     InputEventDelete,
-    OutputEventResponse,
     InputEventUpdate,
+    OutputEventResponse,
 )
+from apps.core.events.models import Event
 from apps.core.rlc.models import Org
 from apps.static.api_layer import Router
 from apps.static.service_layer import ServiceResult
@@ -39,7 +39,10 @@ def get_all_events_for_user(rlc_user: RlcUser):
 
 
 @router.api(
-    method="POST", input_schema=InputEventCreate, output_schema=OutputEventResponse, auth=True
+    method="POST",
+    input_schema=InputEventCreate,
+    output_schema=OutputEventResponse,
+    auth=True,
 )
 def create_event(data: InputEventCreate, rlc_user: RlcUser):
     org_list = Org.objects.filter(id=rlc_user.org.id)
