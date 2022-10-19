@@ -17,6 +17,9 @@ class Event(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
 
+    class Meta:
+        ordering = ["start_time"]
+
     @staticmethod
     def get_all_events_for_user(rlc_user: RlcUser):
         raw_events: List[Event] = list(
