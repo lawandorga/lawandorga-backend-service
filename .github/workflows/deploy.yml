@@ -39,7 +39,10 @@ jobs:
 
             -   name: Install Dependencies
                 if: steps.cache-packages.outputs.cache-hit != 'true'
-                run: pip install -r requirements.txt
+                run: |
+                    pip install --upgrade pip pipenv
+                    pipenv requirements > requirements.txt
+                    pip install -r requirements.txt
 
     test:
         name: Test
