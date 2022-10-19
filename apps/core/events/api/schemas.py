@@ -4,16 +4,15 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class Rlc(BaseModel):
+class OutputRlc(BaseModel):
     id: int
     name: str
-    use_record_pool: bool
 
     class Config:
         orm_mode = True
 
 
-class EventResponse(BaseModel):
+class OutputEventResponse(BaseModel):
     id: int
     created: datetime
     updated: datetime
@@ -22,13 +21,13 @@ class EventResponse(BaseModel):
     description: str
     start_time: datetime
     end_time: datetime
-    org: Rlc
+    org: OutputRlc
 
     class Config:
         orm_mode = True
 
 
-class EventCreate(BaseModel):
+class InputEventCreate(BaseModel):
     is_global: bool = False
     name: str
     description: str = ""
@@ -36,7 +35,7 @@ class EventCreate(BaseModel):
     end_time: datetime
 
 
-class EventUpdate(BaseModel):
+class InputEventUpdate(BaseModel):
     id: int
     is_global: Optional[bool]
     name: Optional[str]
@@ -45,5 +44,5 @@ class EventUpdate(BaseModel):
     end_time: Optional[datetime]
 
 
-class EventDelete(BaseModel):
+class InputEventDelete(BaseModel):
     id: int

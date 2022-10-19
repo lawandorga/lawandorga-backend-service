@@ -4,11 +4,11 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from apps.core.auth.models import RlcUser
 from apps.core.events.models import Event
-from apps.core.events.types.schemas import (
-    EventCreate,
-    EventDelete,
-    EventResponse,
-    EventUpdate,
+from apps.core.events.api.schemas import (
+    InputEventCreate,
+    InputEventDelete,
+    OutputEventResponse,
+    InputEventUpdate,
 )
 from apps.core.rlc.models import Org
 from apps.static.api_layer import Router
@@ -32,16 +32,16 @@ DELETE_EVENT_ERROR_UNAUTHORIZED = (
 )
 
 
-@router.api(output_schema=List[EventResponse], auth=True)
+@router.api(output_schema=List[OutputEventResponse], auth=True)
 def get_all_events_for_user(rlc_user: RlcUser):
-    events: List[EventResponse] = Event.get_all_events_for_user(rlc_user)
+    events: List[OutputEventResponse] = Event.get_all_events_for_user(rlc_user)
     return ServiceResult(LIST_EVENTS_SUCCESS, events)
 
 
 @router.api(
-    method="POST", input_schema=EventCreate, output_schema=EventResponse, auth=True
+    method="POST", input_schema=InputEventCreate, output_schema=OutputEventResponse, auth=True
 )
-def create_event(data: EventCreate, rlc_user: RlcUser):  # TODO: Owner?
+def create_event(data: InputEventCreate, rlc_user: RlcUser):
     org_list = Org.objects.filter(id=rlc_user.org.id)
     event = org_list[0].events.create(
         is_global=data.is_global,
@@ -56,11 +56,11 @@ def create_event(data: EventCreate, rlc_user: RlcUser):  # TODO: Owner?
 @router.api(
     url="<int:id>/",
     method="PUT",
-    input_schema=EventUpdate,
-    output_schema=EventResponse,
+    input_schema=InputEventUpdate,
+    output_schema=OutputEventResponse,
     auth=True,
 )
-def update_event(data: EventUpdate, rlc_user: RlcUser):
+def update_event(data: InputEventUpdate, rlc_user: RlcUser):
     try:
         event = Event.objects.get(id=data.id)
     except ObjectDoesNotExist:
@@ -79,8 +79,8 @@ def update_event(data: EventUpdate, rlc_user: RlcUser):
     return ServiceResult(UPDATE_EVENT_SUCCESS, event)
 
 
-@router.api(url="<int:id>/", method="DELETE", input_schema=EventDelete)
-def delete_event(data: EventDelete, rlc_user: RlcUser):
+@router.api(url="<int:id>/", method="DELETE", input_schema=InputEventDelete)
+def delete_event(data: InputEventDelete, rlc_user: RlcUser):
     try:
         event = Event.objects.get(id=data.id)
     except ObjectDoesNotExist:
