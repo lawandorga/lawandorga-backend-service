@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0122_merge_20221004_1650'),
+        ("core", "0122_merge_20221004_1650"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='event',
-            options={'ordering': ['start_time']},
+            name="event",
+            options={"ordering": ["start_time"]},
         ),
     ]
