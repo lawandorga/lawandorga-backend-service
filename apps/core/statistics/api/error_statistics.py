@@ -1,39 +1,17 @@
 from typing import List
 
-from django.db import connection
-from pydantic import BaseModel
-
 from apps.core.auth.models import StatisticUser
+from apps.core.statistics.api.schemas import OutputUserWithMissingRecordKeys
 from apps.static.api_layer import Router
-from apps.static.service_layer import ServiceResult
+from apps.static.statistics import execute_statement
 
 router = Router()
 
 
-# helpers
-def execute_statement(statement):
-    cursor = connection.cursor()
-    cursor.execute(statement)
-    data = cursor.fetchall()
-    return data
-
-
-# schemas
-class UserWithMissingRecordKeys(BaseModel):
-    user: int
-    records: int
-    access: int
-
-
 # list keys
-GET_USERS_WITH_MISSING_RECORD_KEYS_SUCCESS = (
-    "User {} has requested the users with missing record keys."
-)
-
-
 @router.api(
     url="users_with_missing_record_keys/",
-    output_schema=List[UserWithMissingRecordKeys],
+    output_schema=List[OutputUserWithMissingRecordKeys],
     auth=True,
 )
 def get_users_with_missing_record_keys(statistics_user: StatisticUser):
@@ -64,4 +42,4 @@ def get_users_with_missing_record_keys(statistics_user: StatisticUser):
            """
     data = execute_statement(statement)
     data = list(map(lambda x: {"user": x[0], "records": x[1], "access": x[2]}, data))
-    return ServiceResult(GET_USERS_WITH_MISSING_RECORD_KEYS_SUCCESS, data)
+    return data

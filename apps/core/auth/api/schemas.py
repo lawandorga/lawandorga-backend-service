@@ -1,8 +1,22 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 from uuid import UUID
 
 from pydantic import AnyUrl, BaseModel
+
+
+class OutputKey(BaseModel):
+    id: int
+    correct: bool
+    source: Literal["RECORD", "RLC"]
+    information: str
+
+    class Config:
+        orm_mode = True
+
+
+class InputKeyDelete(BaseModel):
+    id: int
 
 
 class Link(BaseModel):
@@ -50,7 +64,7 @@ class InputRlcUserActivate(BaseModel):
     id: int
 
 
-class RlcUserOptional(BaseModel):
+class OutputRlcUserOptional(BaseModel):
     id: int
     user_id: int
     birthday: Optional[Any]
@@ -75,7 +89,7 @@ class RlcUserOptional(BaseModel):
         orm_mode = True
 
 
-class RlcUserSmall(BaseModel):
+class OutputRlcUserSmall(BaseModel):
     id: int
     user_id: int
     phone_number: Optional[str]
@@ -90,7 +104,7 @@ class RlcUserSmall(BaseModel):
         orm_mode = True
 
 
-class RlcUser(BaseModel):
+class OutputRlcUser(BaseModel):
     id: int
     user_id: int
     birthday: Optional[Any]
@@ -122,8 +136,8 @@ class Badges(BaseModel):
     legal: int
 
 
-class RlcUserData(BaseModel):
-    user: RlcUser
+class OutputRlcUserData(BaseModel):
+    user: OutputRlcUser
     rlc: Rlc
     badges: Badges
     permissions: List[str]

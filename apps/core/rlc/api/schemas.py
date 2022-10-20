@@ -3,17 +3,17 @@ from uuid import UUID
 from pydantic import AnyUrl, BaseModel
 
 
-class ExternalLinkDelete(BaseModel):
+class InputExternalLinkDelete(BaseModel):
     id: UUID
 
 
-class ExternalLinkCreate(BaseModel):
+class InputExternalLinkCreate(BaseModel):
     name: str
     link: AnyUrl
     order: int
 
 
-class ExternalLink(BaseModel):
+class OutputExternalLink(BaseModel):
     id: UUID
     name: str
     link: AnyUrl
@@ -23,11 +23,11 @@ class ExternalLink(BaseModel):
         orm_mode = True
 
 
-class ListUsersGetInput(BaseModel):
+class InputListUsersGet(BaseModel):
     id: int
 
 
-class GroupMember(BaseModel):
+class OutputGroupMember(BaseModel):
     id: int
     email: str
     name: str

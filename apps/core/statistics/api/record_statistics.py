@@ -1,32 +1,23 @@
-from typing import List, Optional
+from typing import List
 
 from django.db import connection
-from pydantic import BaseModel
 
 from apps.core.auth.models import StatisticUser
 from apps.core.statistics.api import schemas
+from apps.core.statistics.api.schemas import (
+    OutputRecordClosedStatistic,
+    OutputRecordFieldAmount,
+)
 from apps.core.statistics.use_cases.records import create_statistic
-from apps.static.api_layer import PLACEHOLDER, Router
-from apps.static.service_layer import ServiceResult
+from apps.static.api_layer import Router
 from apps.static.statistics import execute_statement
 
 router = Router()
 
 
-# records closed statistic
-class RecordClosedStatistic(BaseModel):
-    days: Optional[int]
-    count: int
-
-
-GET_RECORDS_CLOSED_STATISTIC_SUCCESS = (
-    "User {} has requested the users with missing record keys."
-)
-
-
 @router.api(
     url="records_closed_statistic/",
-    output_schema=List[RecordClosedStatistic],
+    output_schema=List[OutputRecordClosedStatistic],
 )
 def get_records_closed_statistic(statistics_user: StatisticUser):
     if connection.vendor == "sqlite":
@@ -53,23 +44,13 @@ def get_records_closed_statistic(statistics_user: StatisticUser):
         """
     data = execute_statement(statement)
     data = list(map(lambda x: {"days": x[0], "count": x[1]}, data))
-    return ServiceResult(GET_RECORDS_CLOSED_STATISTIC_SUCCESS, data)
+    return data
 
 
 # records field amount statistic
-class RecordFieldAmount(BaseModel):
-    field: str
-    amount: int
-
-
-GET_RECORDS_FIELD_AMOUNT_STATISTIC = (
-    "User {} has requested the count of the record fields."
-)
-
-
 @router.api(
     url="record_fields_amount/",
-    output_schema=List[RecordFieldAmount],
+    output_schema=List[OutputRecordFieldAmount],
 )
 def get_record_fields_amount(statistics_user: StatisticUser):
     statement = """
@@ -95,7 +76,7 @@ def get_record_fields_amount(statistics_user: StatisticUser):
     """
     data = execute_statement(statement)
     data = list(map(lambda x: {"field": x[0], "amount": x[1]}, data))
-    return ServiceResult(GET_RECORDS_FIELD_AMOUNT_STATISTIC, data)
+    return data
 
 
 # build a dynamic statistic
@@ -110,4 +91,4 @@ def get_dynamic_record_stats(
     ret = create_statistic(
         data.field_1, data.value_1, data.field_2, __actor=statistics_user
     )
-    return ServiceResult(PLACEHOLDER, ret)
+    return ret

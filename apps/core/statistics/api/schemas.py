@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Optional
 
 from pydantic import BaseModel
 
@@ -13,3 +13,25 @@ class OutputRecordStats(BaseModel):
     error: bool
     label: str
     data: List[tuple[Any, int, int]]
+
+
+class OutputUserWithMissingRecordKeys(BaseModel):
+    user: int
+    records: int
+    access: int
+
+
+class OutputRecordClosedStatistic(BaseModel):
+    days: Optional[int]
+    count: int
+
+
+class OutputRecordFieldAmount(BaseModel):
+    field: str
+    amount: int
+
+
+class OutputRecordsCreatedClosed(BaseModel):
+    month: str
+    created: int
+    closed: int
