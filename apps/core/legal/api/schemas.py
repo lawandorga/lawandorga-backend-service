@@ -4,7 +4,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 
-class RlcUser(BaseModel):
+class OutputRlcUser(BaseModel):
     name: str
     id: int
 
@@ -12,16 +12,18 @@ class RlcUser(BaseModel):
         orm_mode = True
 
 
-class LegalRequirement(BaseModel):
+class OutputLegalRequirement(BaseModel):
     title: str
     content: str
+    accept_text: str
+    button_text: str
 
     class Config:
         orm_mode = True
 
 
-class LegalRequirementEvent(BaseModel):
-    actor: Optional[RlcUser]
+class OutputLegalRequirementEvent(BaseModel):
+    actor: Optional[OutputRlcUser]
     text: Optional[str]
     accepted: bool
     created: datetime
@@ -30,16 +32,16 @@ class LegalRequirementEvent(BaseModel):
         orm_mode = True
 
 
-class LegalRequirementUser(BaseModel):
-    legal_requirement: LegalRequirement
+class OutputLegalRequirementUser(BaseModel):
+    legal_requirement: OutputLegalRequirement
     rlc_user_id: int
     accepted: bool
     id: int
-    events_list: List[LegalRequirementEvent]
+    events_list: List[OutputLegalRequirementEvent]
 
     class Config:
         orm_mode = True
 
 
-class LegalRequirementEventCreate(BaseModel):
+class InputLegalRequirementEventCreate(BaseModel):
     id: int

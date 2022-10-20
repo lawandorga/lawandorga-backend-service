@@ -11,6 +11,8 @@ class LegalRequirement(models.Model):
     rlc_users = models.ManyToManyField(
         RlcUser, through="LegalRequirementUser", related_name="legal_requirements"
     )
+    button_text = models.CharField(default="Accept", max_length=1000)
+    accept_text = models.CharField(default="Accepted", max_length=1000)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
