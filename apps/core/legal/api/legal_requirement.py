@@ -4,8 +4,8 @@ from apps.core.auth.models import RlcUser
 from apps.static.api_layer import Router
 from apps.static.service_layer import ServiceResult
 
-from . import schemas
 from ..use_cases.legal_requirement import accept_legal_requirement
+from . import schemas
 
 router = Router()
 
