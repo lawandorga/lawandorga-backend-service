@@ -1,31 +1,19 @@
 from typing import List
 
 from django.db import connection
-from pydantic import BaseModel
 
 from apps.core.auth.models import RlcUser
+from apps.core.statistics.api.schemas import OutputRecordsCreatedClosed
 from apps.static.api_layer import Router
-from apps.static.service_layer import ServiceResult
 from apps.static.statistics import execute_statement
 
 router = Router()
 
 
 # records field amount statistic
-class RecordFieldAmount(BaseModel):
-    month: str
-    created: int
-    closed: int
-
-
-GET_RECORDS_CREATED_AND_CLOSED = (
-    "User {} has requested the monthly created and closed records."
-)
-
-
 @router.api(
     url="records_created_and_closed/",
-    output_schema=List[RecordFieldAmount],
+    output_schema=List[OutputRecordsCreatedClosed],
     auth=True,
 )
 def get_records_created_and_closed(rlc_user: RlcUser):
@@ -86,4 +74,4 @@ def get_records_created_and_closed(rlc_user: RlcUser):
             data,
         )
     )
-    return ServiceResult(GET_RECORDS_CREATED_AND_CLOSED, data)
+    return data

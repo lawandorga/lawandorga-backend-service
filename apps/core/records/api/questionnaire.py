@@ -1,5 +1,4 @@
-from apps.static.api_layer import PLACEHOLDER, Router
-from apps.static.service_layer import ServiceResult
+from apps.static.api_layer import Router
 
 from ...auth.models import RlcUser
 from ..use_cases.questionnaire import publish_a_questionnaire
@@ -17,4 +16,4 @@ def publish_questionnaire(data: schemas.InputPublishQuestionnaire, rlc_user: Rlc
     questionnaire = publish_a_questionnaire(
         record=data.record, template=data.template, __actor=rlc_user
     )
-    return ServiceResult(PLACEHOLDER, questionnaire)
+    return questionnaire

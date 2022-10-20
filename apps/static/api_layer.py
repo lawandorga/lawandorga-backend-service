@@ -1,6 +1,6 @@
 import json
 from json import JSONDecodeError
-from typing import Any, Callable, Dict, List, Literal, Optional, Type
+from typing import Any, Callable, Dict, List, Literal, Optional, Type, Union
 
 from django.http import HttpRequest, JsonResponse
 from django.urls import path
@@ -8,10 +8,7 @@ from pydantic import BaseConfig, BaseModel, ValidationError, create_model, valid
 
 from apps.core.models import UserProfile
 from apps.static.domain_layer import DomainError
-from apps.static.service_layer import ServiceResult
 from apps.static.use_case_layer import UseCaseError, UseCaseInputError
-
-PLACEHOLDER = "User {} did something."
 
 
 def qs_to_list_validator(qs) -> List:
@@ -24,8 +21,13 @@ def qs_to_list(x):
     return validator(x, pre=True, allow_reuse=True)(qs_to_list_validator)
 
 
+class ApiError(Exception):
+    def __init__(self, message):
+        self.message = message
+
+
 class RFC7807(BaseModel):
-    type: str
+    err_type: str
     title: str
     status: int
     detail: Optional[Any] = None
@@ -52,7 +54,7 @@ def validation_error_handler(validation_error: ValidationError) -> RFC7807:
     return RFC7807(
         detail=form_error,
         status=422,
-        type="RequestValidationError",
+        err_type="RequestValidationError",
         title="Malformed Request",
         internal=validation_error.errors(),
     )
@@ -79,7 +81,7 @@ def validate(request: HttpRequest, schema: Type[BaseModel]) -> BaseModel:
 class ErrorResponse(JsonResponse):
     def __init__(
         self,
-        type: str,
+        err_type: str,
         title: str,
         status: int,
         detail: Optional[str] = None,
@@ -88,7 +90,7 @@ class ErrorResponse(JsonResponse):
         param_errors: Optional[Dict[str, List[str]]] = None,
     ):
         error = RFC7807(
-            type=type,
+            err_type=err_type,
             title=title,
             status=status,
             detail=detail or title,
@@ -110,7 +112,7 @@ class Router:
                 return method_route[request.method]["view"](request, *args, **kwargs)
             else:
                 return ErrorResponse(
-                    title="Method not allowed", status=405, type="MethodNotAllowed"
+                    title="Method not allowed", status=405, err_type="MethodNotAllowed"
                 )
 
         return decorator
@@ -137,7 +139,7 @@ class Router:
 
     @staticmethod
     def generate_view(
-        func: Callable[..., ServiceResult],
+        func: Callable[..., Union[Any, None]],
         input_schema: Optional[Type] = None,
         output_schema: Optional[Type] = None,
         auth=False,
@@ -151,7 +153,7 @@ class Router:
             # handle auth
             is_authenticated = request.user.is_authenticated
             not_authenticated_error = ErrorResponse(
-                type="NotAuthenticated",
+                err_type="NotAuthenticated",
                 title="Login Required",
                 detail="You need to be logged in.",
                 status=401,
@@ -172,7 +174,7 @@ class Router:
 
                 if not hasattr(request.user, "rlc_user"):
                     return ErrorResponse(
-                        type="RoleRequired",
+                        err_type="RoleRequired",
                         title="Org User Required",
                         detail="You need to have the rlc user role.",
                         status=403,
@@ -192,7 +194,7 @@ class Router:
 
                 if not hasattr(request.user, "statistic_user"):
                     return ErrorResponse(
-                        type="RoleRequired",
+                        err_type="RoleRequired",
                         title="Statistics User Required",
                         detail="You need to have the statistics user role.",
                         status=403,
@@ -214,41 +216,32 @@ class Router:
                 if "data" in func_input:
                     func_kwargs["data"] = data.root  # type: ignore
 
-            # service layer next step
+            # different layer errors
             try:
-                result: ServiceResult = func(**func_kwargs)
-            except UseCaseError as e:
+                result: Any = func(**func_kwargs)
+            except ApiError as e:
                 return ErrorResponse(
                     title=e.message,
                     status=400,
-                    type="UseCaseError",
+                    err_type="ApiError",
                 )
             except UseCaseInputError as e:
                 return ErrorResponse(
                     title=e.message,
                     status=400,
-                    type="UseCaseInputError",
+                    err_type="UseCaseInputError",
+                )
+            except UseCaseError as e:
+                return ErrorResponse(
+                    title=e.message,
+                    status=400,
+                    err_type="UseCaseError",
                 )
             except DomainError as e:
                 return ErrorResponse(
                     title=e.message,
                     status=400,
-                    type="DomainError",
-                )
-
-            # log service layer
-            # if auth:
-            #     log_message = result.message.format(request.user.email)
-            # else:
-            #     log_message = result.message
-            # TODO: log
-
-            # error handling
-            if not result.success:
-                if error_dict and result.message in error_dict:
-                    return error_dict[result.message]
-                return ErrorResponse(
-                    title=result.value, status=400, type="ServiceError"
+                    err_type="DomainError",
                 )
 
             # validate the output
@@ -258,10 +251,10 @@ class Router:
                     root=(output_schema, ...),
                 )
                 try:
-                    output_data = model(root=result.value)
+                    output_data = model(root=result)
                 except ValidationError as e:
                     return ErrorResponse(
-                        type="OutputError",
+                        err_type="OutputError",
                         title="Server Error",
                         internal=e.errors(),
                         status=500,
@@ -322,7 +315,7 @@ class Router:
         auth=False,
         error_dict: Optional[Dict[str, ErrorResponse]] = None,
     ):
-        def decorator(func: Callable[..., ServiceResult]):
+        def decorator(func: Callable[..., Union[Any, None]]):
             view = Router.generate_view(
                 func, input_schema, output_schema, auth, error_dict
             )
