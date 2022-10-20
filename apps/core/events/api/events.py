@@ -54,7 +54,7 @@ def update_event(data: InputEventUpdate, rlc_user: RlcUser):
         raise ApiError("The event you want to edit does not exist.")
 
     if rlc_user.org.id != event.org.id:
-        return ApiError(
+        raise ApiError(
             "You do not have the permission to edit this event.",
         )
 

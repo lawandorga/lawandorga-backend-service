@@ -28,15 +28,15 @@ def test_keys(rlc_user: RlcUser, private_key_user: str):
 def delete_key(data: InputKeyDelete, rlc_user: RlcUser):
     key = RecordEncryptionNew.objects.filter(user=rlc_user, pk=data.id).first()
     if key is None:
-        return ApiError(
+        raise ApiError(
             "The key you want to delete does not exist.",
         )
     if key.record.encryptions.filter(correct=True).count() <= 1:
-        return ApiError(
+        raise ApiError(
             "Not enough people have access to this record. "
             "There needs to be at least one person who must "
             "have access. You can not delete this key.",
         )
     if key.correct:
-        return ApiError("You can not delete a key that works.")
+        raise ApiError("You can not delete a key that works.")
     key.delete()

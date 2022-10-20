@@ -93,6 +93,7 @@ class TestUserKeys(TestCase):
         c.login(**self.user_1)
         key_id = self.get_user_record_key(self.record_1, self.user_1).pk
         response = c.delete("/api/keys/{}/".format(key_id))
+        print(response.json())
         assert response.status_code == 400
         response = c.delete("/api/keys/999999/")
         assert response.status_code == 400
