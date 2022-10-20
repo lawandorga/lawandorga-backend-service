@@ -3,7 +3,7 @@ from apps.core.legal.models import LegalRequirementEvent, LegalRequirementUser
 from apps.static.use_case_layer import use_case
 
 
-@use_case
+@use_case()
 def accept_legal_requirement(
     legal_requirement_user: LegalRequirementUser, __actor: RlcUser
 ) -> LegalRequirementEvent:
