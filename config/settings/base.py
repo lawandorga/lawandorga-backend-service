@@ -17,7 +17,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "tinymce",
-    "apps.core",
+    "core",
     "storages",
     "corsheaders",
     "solo",
@@ -160,18 +160,18 @@ TINYMCE_DEFAULT_CONFIG = {
     "height": 500,
     "menubar": False,
     "plugins": "advlist,autolink,lists,link,image,charmap,print,preview,anchor,"
-               "searchreplace,visualblocks,code,fullscreen,insertdatetime,media,table,paste,"
-               "code,help,wordcount",
+    "searchreplace,visualblocks,code,fullscreen,insertdatetime,media,table,paste,"
+    "code,help,wordcount",
     "toolbar": "undo redo | formatselect | "
-               "bold italic underline | forecolor backcolor | alignleft aligncenter "
-               "alignright alignjustify | bullist numlist outdent indent | link",
-    "block_formats": 'Paragraph=p; Heading=h2; Subheading=h3; Preformatted=pre',
+    "bold italic underline | forecolor backcolor | alignleft aligncenter "
+    "alignright alignjustify | bullist numlist outdent indent | link",
+    "block_formats": "Paragraph=p; Heading=h2; Subheading=h3; Preformatted=pre",
     "valid_classes": "",
     "valid_styles": {
-        '*': 'color,text-align,padding-left,text-decoration,background-color'
+        "*": "color,text-align,padding-left,text-decoration,background-color"
     },
     "advlist_bullet_styles": "default",
-    "advlist_number_styles": "default"
+    "advlist_number_styles": "default",
 }
 
 # custom test runner

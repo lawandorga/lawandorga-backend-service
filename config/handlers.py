@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 
-from apps.static.api_layer import RFC7807
+from core.seedwork.api_layer import RFC7807
 
 
 def handler400(request, exception, template_name="none.html"):
