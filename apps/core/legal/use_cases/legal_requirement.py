@@ -1,6 +1,6 @@
 from apps.core.auth.models import RlcUser
 from apps.core.legal.models import LegalRequirementEvent, LegalRequirementUser
-from apps.static.use_case_layer import use_case
+from apps.seedwork.use_case_layer import use_case
 
 
 @use_case()

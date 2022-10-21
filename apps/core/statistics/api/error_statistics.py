@@ -2,8 +2,8 @@ from typing import List
 
 from apps.core.auth.models import StatisticUser
 from apps.core.statistics.api.schemas import OutputUserWithMissingRecordKeys
-from apps.static.api_layer import Router
-from apps.static.statistics import execute_statement
+from apps.seedwork.api_layer import Router
+from apps.seedwork.statistics import execute_statement
 
 router = Router()
 

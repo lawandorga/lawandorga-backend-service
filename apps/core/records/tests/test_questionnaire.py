@@ -5,7 +5,7 @@ from django.test import Client
 
 from apps.core.models import Org
 from apps.core.records.models import QuestionnaireTemplate
-from apps.static import test_helpers as data
+from apps.seedwork import test_helpers as data
 
 from ...fixtures import create_permissions
 from ...static import PERMISSION_RECORDS_ADD_RECORD

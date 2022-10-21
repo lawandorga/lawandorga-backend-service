@@ -4,8 +4,8 @@ from django.db import models
 
 from apps.core.models import Org
 from apps.core.records.models import Record
-from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
-from apps.static.storage import download_and_decrypt_file, encrypt_and_upload_file
+from apps.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
+from apps.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_file
 
 
 class QuestionnaireTemplate(models.Model):

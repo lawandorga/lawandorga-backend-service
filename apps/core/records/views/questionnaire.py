@@ -27,7 +27,7 @@ from apps.core.records.serializers.questionnaire import (
     RecordQuestionnaireDetailSerializer,
 )
 from apps.core.static import PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES
-from apps.static.permission import CheckPermissionWall
+from apps.seedwork.permission import CheckPermissionWall
 
 
 ###

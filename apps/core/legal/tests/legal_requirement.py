@@ -4,7 +4,7 @@ import pytest
 from django.test import Client
 
 from apps.core.models import Org
-from apps.static import test_helpers
+from apps.seedwork import test_helpers
 
 from ..models import LegalRequirement, LegalRequirementUser
 

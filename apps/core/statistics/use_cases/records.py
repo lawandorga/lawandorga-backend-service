@@ -1,6 +1,6 @@
 from apps.core.auth.models import StatisticUser
-from apps.static.statistics import execute_statement
-from apps.static.use_case_layer import UseCaseError, use_case
+from apps.seedwork.statistics import execute_statement
+from apps.seedwork.use_case_layer import UseCaseError, use_case
 
 
 def clean_str(v):

@@ -3,7 +3,7 @@ from typing import Any, Callable, Dict, Type, TypeVar, get_type_hints
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from apps.static.domain_layer import DomainError
+from apps.seedwork.domain_layer import DomainError
 
 logger = getLogger("usecase")
 

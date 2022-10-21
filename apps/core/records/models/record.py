@@ -8,7 +8,7 @@ from django.db import models
 from apps.core.auth.models import RlcUser
 from apps.core.models import Group, Org
 from apps.core.records.models import EncryptedClient  # type: ignore
-from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
+from apps.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 
 ###

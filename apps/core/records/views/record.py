@@ -65,8 +65,8 @@ from apps.core.static import (
     PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
     PERMISSION_RECORDS_ADD_RECORD,
 )
-from apps.static.encryption import AESEncryption
-from apps.static.permission import CheckPermissionWall
+from apps.seedwork.encryption import AESEncryption
+from apps.seedwork.permission import CheckPermissionWall
 
 
 ###

@@ -4,7 +4,7 @@ from apps.core.auth.models import RlcUser
 from apps.core.rlc.api import schemas
 from apps.core.rlc.models import Group
 from apps.core.rlc.use_cases.group import add_member_to_group, remove_member_from_group
-from apps.static.api_layer import Router
+from apps.seedwork.api_layer import Router
 
 router = Router()
 

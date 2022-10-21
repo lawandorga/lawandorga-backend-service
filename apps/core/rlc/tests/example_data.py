@@ -44,7 +44,7 @@ from apps.core.static import (
     get_all_files_permission_strings,
     get_all_permission_strings,
 )
-from apps.static.encryption import AESEncryption
+from apps.seedwork.encryption import AESEncryption
 
 
 # helpers

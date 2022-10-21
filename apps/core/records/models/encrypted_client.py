@@ -1,7 +1,7 @@
 from django.db import models
 
 from apps.core.rlc.models import Org
-from apps.static.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
+from apps.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 
 class EncryptedClient(EncryptedModelMixin, models.Model):

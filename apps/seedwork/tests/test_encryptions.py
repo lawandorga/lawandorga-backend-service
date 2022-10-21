@@ -1,6 +1,6 @@
 from django.test import SimpleTestCase
 
-from apps.static.encryption import AESEncryption, RSAEncryption
+from apps.seedwork.encryption import AESEncryption, RSAEncryption
 
 
 class EncryptionTests(SimpleTestCase):

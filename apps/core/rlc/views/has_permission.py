@@ -13,7 +13,7 @@ from apps.core.static import (
     get_all_files_permissions,
     get_all_records_permissions,
 )
-from apps.static.permission import CheckPermissionWall
+from apps.seedwork.permission import CheckPermissionWall
 
 from ..serializers import HasPermissionCreateSerializer, HasPermissionSerializer
 

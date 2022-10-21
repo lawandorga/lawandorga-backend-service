@@ -3,7 +3,7 @@ from typing import List
 from apps.core.auth.models import RlcUser
 from apps.core.rlc.api import schemas
 from apps.core.rlc.models import ExternalLink
-from apps.static.api_layer import ApiError, Router
+from apps.seedwork.api_layer import ApiError, Router
 
 router = Router()
 

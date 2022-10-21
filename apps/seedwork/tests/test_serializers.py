@@ -1,6 +1,6 @@
 from django.test import SimpleTestCase
 
-from apps.static.serializers import map_values
+from apps.seedwork.serializers import map_values
 
 
 class TestCase(SimpleTestCase):

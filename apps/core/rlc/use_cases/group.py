@@ -1,7 +1,7 @@
 from apps.core.auth.models import RlcUser
 from apps.core.rlc.models import Group
 from apps.core.static import PERMISSION_ADMIN_MANAGE_GROUPS
-from apps.static.use_case_layer import UseCaseError, use_case
+from apps.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])

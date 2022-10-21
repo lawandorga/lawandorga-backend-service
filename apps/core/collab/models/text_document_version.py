@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.static.encryption import AESEncryption, EncryptedModelMixin
+from apps.seedwork.encryption import AESEncryption, EncryptedModelMixin
 
 from .collab_document import CollabDocument
 

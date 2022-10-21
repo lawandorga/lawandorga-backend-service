@@ -15,7 +15,7 @@ from rest_framework.exceptions import AuthenticationFailed, ParseError
 from rest_framework_simplejwt.settings import api_settings as jwt_settings
 
 from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS
-from apps.static.encryption import to_bytes
+from apps.seedwork.encryption import to_bytes
 
 if TYPE_CHECKING:
     from apps.core.models import Permission, RlcUser, StatisticUser

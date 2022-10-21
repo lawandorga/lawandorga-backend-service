@@ -1,7 +1,7 @@
 from django.core.files.storage import default_storage
 from rest_framework.exceptions import ParseError
 
-from apps.static.encryption import AESEncryption
+from apps.seedwork.encryption import AESEncryption
 
 
 def encrypt_and_upload_file(file, key, aes_key):

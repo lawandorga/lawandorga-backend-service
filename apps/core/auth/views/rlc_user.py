@@ -10,7 +10,7 @@ from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 from apps.core.models import PasswordResetTokenGenerator, RlcUser, UserProfile
 from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS
-from apps.static.permission import CheckPermissionWall
+from apps.seedwork.permission import CheckPermissionWall
 
 from ..serializers import (
     ChangePasswordSerializer,
