@@ -1,7 +1,7 @@
 from apps.core.auth.models import RlcUser
 from apps.core.records.models import Questionnaire, QuestionnaireTemplate, Record
 from apps.core.static import PERMISSION_RECORDS_ADD_RECORD
-from apps.seedwork.use_case_layer import use_case
+from apps.core.seedwork.use_case_layer import use_case
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])

@@ -4,7 +4,7 @@ import pytest
 from django.test import Client
 
 from apps.core.models import Org
-from apps.seedwork import test_helpers as data
+from apps.core.seedwork import test_helpers as data
 
 from ...fixtures import create_permissions
 from ...static import PERMISSION_ADMIN_MANAGE_GROUPS

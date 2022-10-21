@@ -9,7 +9,7 @@ from apps.core.static import (
     PERMISSION_READ_FOLDER,
     PERMISSION_WRITE_FOLDER,
 )
-from apps.seedwork.storage_folders import get_storage_base_files_folder
+from apps.core.seedwork.storage_folders import get_storage_base_files_folder
 
 from .folder_permission import FolderPermission
 

@@ -5,7 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
 from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS
-from apps.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
+from apps.core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 if TYPE_CHECKING:
     from apps.core.auth.models import UserProfile

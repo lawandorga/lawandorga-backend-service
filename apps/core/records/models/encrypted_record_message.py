@@ -4,7 +4,7 @@ from django.db import models
 
 from apps.core.auth.models import RlcUser
 from apps.core.records.models.record import Record
-from apps.seedwork.encryption import AESEncryption, EncryptedModelMixin
+from apps.core.seedwork.encryption import AESEncryption, EncryptedModelMixin
 
 
 class EncryptedRecordMessage(EncryptedModelMixin, models.Model):

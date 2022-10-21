@@ -4,8 +4,8 @@ from django.db import connection
 
 from apps.core.auth.models import RlcUser
 from apps.core.statistics.api.schemas import OutputRecordsCreatedClosed
-from apps.seedwork.api_layer import Router
-from apps.seedwork.statistics import execute_statement
+from apps.core.seedwork.api_layer import Router
+from apps.core.seedwork.statistics import execute_statement
 
 router = Router()
 

@@ -3,7 +3,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from apps.core.models import Note
 from apps.core.static import PERMISSION_DASHBOARD_MANAGE_NOTES
-from apps.seedwork.permission import CheckPermissionWall
+from apps.core.seedwork.permission import CheckPermissionWall
 
 from ..serializers import NoteSerializer
 

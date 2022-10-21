@@ -5,8 +5,8 @@ from django.core.files.storage import default_storage
 from django.db import models
 
 from apps.core.records.models.record import Record
-from apps.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_file
-from apps.seedwork.storage_folders import get_storage_folder_encrypted_record_document
+from apps.core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_file
+from apps.core.seedwork.storage_folders import get_storage_folder_encrypted_record_document
 
 
 class EncryptedRecordDocument(models.Model):

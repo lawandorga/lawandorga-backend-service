@@ -2,7 +2,7 @@ from django.test import TransactionTestCase
 
 from apps.core.auth.models import UserProfile
 from apps.core.models import OldUserEncryptionKeys
-from apps.seedwork.encryption import RSAEncryption
+from apps.core.seedwork.encryption import RSAEncryption
 
 
 class StaticTestMethods:

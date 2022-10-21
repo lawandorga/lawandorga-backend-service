@@ -3,7 +3,7 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
-import apps.seedwork.encryption
+import apps.core.seedwork.encryption
 
 
 class Migration(migrations.Migration):
@@ -93,7 +93,7 @@ class Migration(migrations.Migration):
                 "verbose_name": "TextDocumentVersion",
                 "verbose_name_plural": "TextDocumentVersions",
             },
-            bases=(apps.seedwork.encryption.EncryptedModelMixin, models.Model),
+            bases=(apps.core.seedwork.encryption.EncryptedModelMixin, models.Model),
         ),
         migrations.CreateModel(
             name="PermissionForCollabDocument",

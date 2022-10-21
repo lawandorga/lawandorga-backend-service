@@ -5,7 +5,7 @@ from django.conf import settings
 from apps.core.auth.models import StatisticUser
 from apps.core.models import RlcUser, UserProfile
 from apps.core.records.models import Record, RecordEncryptionNew, RecordTemplate
-from apps.seedwork.encryption import AESEncryption
+from apps.core.seedwork.encryption import AESEncryption
 
 
 def create_statistics_user(email="dummy@law-orga.de", name="Dummy 1"):

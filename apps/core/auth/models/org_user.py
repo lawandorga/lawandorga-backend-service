@@ -9,7 +9,7 @@ from django.template import loader
 
 from apps.core.auth.token_generator import EmailConfirmationTokenGenerator
 from apps.core.rlc.models import HasPermission, Org, Permission
-from apps.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
+from apps.core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 from ...static import (
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,

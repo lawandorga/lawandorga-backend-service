@@ -3,7 +3,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from apps.seedwork.api_layer import qs_to_list
+from apps.core.seedwork.api_layer import qs_to_list
 
 
 class InputPublishQuestionnaire(BaseModel):

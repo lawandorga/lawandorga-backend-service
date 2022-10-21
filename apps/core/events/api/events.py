@@ -11,7 +11,7 @@ from apps.core.events.api.schemas import (
 )
 from apps.core.events.models import Event
 from apps.core.rlc.models import Org
-from apps.seedwork.api_layer import ApiError, Router
+from apps.core.seedwork.api_layer import ApiError, Router
 
 router = Router()
 

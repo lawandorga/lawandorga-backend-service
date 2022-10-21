@@ -2,7 +2,7 @@ from django.db import models
 
 from apps.core.auth.models import UserProfile
 from apps.core.rlc.models import Org
-from apps.seedwork.encryption import EncryptedModelMixin, RSAEncryption
+from apps.core.seedwork.encryption import EncryptedModelMixin, RSAEncryption
 
 
 class OrgEncryption(EncryptedModelMixin, models.Model):

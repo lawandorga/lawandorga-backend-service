@@ -5,7 +5,7 @@ from django.db import models
 from django.utils import timezone
 
 from apps.core.models import UserProfile
-from apps.seedwork.encryption import AESEncryption
+from apps.core.seedwork.encryption import AESEncryption
 
 from .folder import Folder
 

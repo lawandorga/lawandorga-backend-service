@@ -44,7 +44,7 @@ from apps.core.records.views import (
     RecordStatisticEntryViewSet,
     RecordUsersEntryViewSet,
 )
-from apps.seedwork.encryption import AESEncryption
+from apps.core.seedwork.encryption import AESEncryption
 
 ###
 # Base

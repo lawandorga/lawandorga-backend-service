@@ -7,8 +7,8 @@ from rest_framework.response import Response
 from apps.core.records.models import RecordAccess, RecordEncryptionNew
 from apps.core.records.serializers import RecordAccessSerializer
 from apps.core.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
-from apps.seedwork.encryption import RSAEncryption
-from apps.seedwork.permission import CheckPermissionWall
+from apps.core.seedwork.encryption import RSAEncryption
+from apps.core.seedwork.permission import CheckPermissionWall
 
 
 class RecordAccessViewSet(

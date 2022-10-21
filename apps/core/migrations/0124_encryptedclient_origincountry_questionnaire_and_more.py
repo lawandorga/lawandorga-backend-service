@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db import migrations, models
 
 import apps.core.records.models.record
-import apps.seedwork.encryption
+import apps.core.seedwork.encryption
 
 
 class Migration(migrations.Migration):
@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
                 "verbose_name": "Client",
                 "verbose_name_plural": "Clients",
             },
-            bases=(apps.seedwork.encryption.EncryptedModelMixin, models.Model),
+            bases=(apps.core.seedwork.encryption.EncryptedModelMixin, models.Model),
         ),
         migrations.CreateModel(
             name="OriginCountry",
@@ -786,7 +786,7 @@ class Migration(migrations.Migration):
                 "verbose_name": "QuestionnaireAnswer",
                 "verbose_name_plural": "QuestionnaireAnswers",
             },
-            bases=(apps.seedwork.encryption.EncryptedModelMixin, models.Model),
+            bases=(apps.core.seedwork.encryption.EncryptedModelMixin, models.Model),
         ),
         migrations.AddField(
             model_name="questionnaire",
@@ -902,7 +902,7 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "RecordMessages",
                 "ordering": ["created"],
             },
-            bases=(apps.seedwork.encryption.EncryptedModelMixin, models.Model),
+            bases=(apps.core.seedwork.encryption.EncryptedModelMixin, models.Model),
         ),
         migrations.CreateModel(
             name="EncryptedRecordDocument",
@@ -1234,7 +1234,7 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "RecordEncryptions",
                 "unique_together": {("user", "record")},
             },
-            bases=(apps.seedwork.encryption.EncryptedModelMixin, models.Model),
+            bases=(apps.core.seedwork.encryption.EncryptedModelMixin, models.Model),
         ),
         migrations.CreateModel(
             name="RecordEncryptedStandardEntry",

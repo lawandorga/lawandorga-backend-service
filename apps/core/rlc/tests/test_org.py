@@ -5,7 +5,7 @@ from django.test import Client
 
 from apps.core.models import Org
 from apps.core.rlc.models import ExternalLink
-from apps.seedwork import test_helpers as data
+from apps.core.seedwork import test_helpers as data
 
 
 @pytest.fixture

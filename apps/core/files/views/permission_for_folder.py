@@ -3,7 +3,7 @@ from rest_framework.response import Response
 
 from apps.core.models import PermissionForFolder
 from apps.core.static import PERMISSION_FILES_MANAGE_PERMISSIONS
-from apps.seedwork.permission import CheckPermissionWall
+from apps.core.seedwork.permission import CheckPermissionWall
 
 from ..serializers import (
     PermissionForFolderNestedSerializer,

@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from django.db import models
 
 from apps.core.rlc.models.org import Org
-from apps.seedwork.domain_layer import DomainError
+from apps.core.seedwork.domain_layer import DomainError
 
 if TYPE_CHECKING:
     from apps.core.auth.models.org_user import RlcUser

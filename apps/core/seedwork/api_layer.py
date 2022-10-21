@@ -7,8 +7,8 @@ from django.urls import path
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model, validator
 
 from apps.core.models import UserProfile
-from apps.seedwork.domain_layer import DomainError
-from apps.seedwork.use_case_layer import UseCaseError, UseCaseInputError
+from apps.core.seedwork.domain_layer import DomainError
+from apps.core.seedwork.use_case_layer import UseCaseError, UseCaseInputError
 
 
 def qs_to_list_validator(qs) -> List:

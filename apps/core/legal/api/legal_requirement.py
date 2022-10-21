@@ -3,7 +3,7 @@ from typing import List
 from apps.core.auth.models import RlcUser
 from apps.core.legal.api import schemas
 from apps.core.legal.use_cases.legal_requirement import accept_legal_requirement
-from apps.seedwork.api_layer import Router
+from apps.core.seedwork.api_layer import Router
 
 router = Router()
 

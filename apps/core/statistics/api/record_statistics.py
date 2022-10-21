@@ -9,8 +9,8 @@ from apps.core.statistics.api.schemas import (
     OutputRecordFieldAmount,
 )
 from apps.core.statistics.use_cases.records import create_statistic
-from apps.seedwork.api_layer import Router
-from apps.seedwork.statistics import execute_statement
+from apps.core.seedwork.api_layer import Router
+from apps.core.seedwork.statistics import execute_statement
 
 router = Router()
 

@@ -2,7 +2,7 @@ from apps.core.auth.models import RlcUser
 from apps.core.legal.models import LegalRequirementUser
 from apps.core.records.models import QuestionnaireTemplate, Record
 from apps.core.rlc.models import Group
-from apps.seedwork.use_case_layer import add_mapping
+from apps.core.seedwork.use_case_layer import add_mapping
 
 add_mapping(Group, lambda v, actor: Group.objects.get(id=v, from_rlc__id=actor.org_id))
 add_mapping(RlcUser, lambda v, actor: RlcUser.objects.get(id=v, org__id=actor.org_id))

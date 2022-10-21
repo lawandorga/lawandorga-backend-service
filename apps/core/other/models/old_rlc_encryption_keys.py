@@ -1,7 +1,7 @@
 from django.db import models
 
 from apps.core.rlc.models import Org
-from apps.seedwork.encryption import AESEncryption, EncryptedModelMixin
+from apps.core.seedwork.encryption import AESEncryption, EncryptedModelMixin
 
 
 class OldRlcEncryptionKeys(EncryptedModelMixin, models.Model):

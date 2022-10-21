@@ -4,7 +4,7 @@ from django.test import Client
 from apps.core.fixtures import create_permissions
 from apps.core.records.models import RecordTemplate
 from apps.core.rlc.models import Org
-from apps.seedwork import test_helpers as data
+from apps.core.seedwork import test_helpers as data
 
 
 @pytest.fixture

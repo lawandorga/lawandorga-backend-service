@@ -1,7 +1,7 @@
 from django.db import models
 
 from apps.core.models import UserProfile
-from apps.seedwork.encryption import AESEncryption, EncryptedModelMixin
+from apps.core.seedwork.encryption import AESEncryption, EncryptedModelMixin
 
 
 class OldUserEncryptionKeys(EncryptedModelMixin, models.Model):

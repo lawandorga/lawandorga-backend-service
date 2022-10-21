@@ -1,4 +1,4 @@
-from apps.seedwork.api_layer import Router
+from apps.core.seedwork.api_layer import Router
 
 from ...auth.models import RlcUser
 from ..use_cases.questionnaire import publish_a_questionnaire

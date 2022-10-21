@@ -7,7 +7,7 @@ from apps.core.static import (
     PERMISSION_ADMIN_MANAGE_PERMISSIONS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
-from apps.seedwork.api_layer import ApiError, Router
+from apps.core.seedwork.api_layer import ApiError, Router
 
 router = Router()
 
