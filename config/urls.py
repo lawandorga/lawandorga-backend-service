@@ -6,7 +6,7 @@ from django.views.generic import TemplateView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.core import urls as api_urls
+from core import urls as api_urls
 
 
 class EmailView(APIView):

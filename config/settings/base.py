@@ -17,7 +17,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "tinymce",
-    "apps.core",
+    "core",
     "storages",
     "corsheaders",
     "solo",
