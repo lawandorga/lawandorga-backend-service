@@ -8,17 +8,12 @@ from apps.static.api_layer import Router
 router = Router()
 
 
-# get legal requirement
-LIST_SUCCESS = "User {} has requested all legal requirements."
-
-
 @router.get(output_schema=List[schemas.OutputLegalRequirementUser])
 def api_list_legal_requirements(rlc_user: RlcUser):
     legal_requirements = list(rlc_user.legal_requirements_user.all())
     return legal_requirements
 
 
-# add event
 @router.post(
     url="<int:id>/accept/",
     input_schema=schemas.InputLegalRequirementEventCreate,

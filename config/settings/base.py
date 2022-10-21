@@ -153,6 +153,27 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#admins
 ADMINS = [("Daniel Mössner", "it@law-orga.de")]
 
+# TinyMCE
+# https://django-tinymce.readthedocs.io/en/latest/installation.html#configuration
+TINYMCE_DEFAULT_CONFIG = {
+    "theme": "silver",
+    "height": 500,
+    "menubar": False,
+    "plugins": "advlist,autolink,lists,link,image,charmap,print,preview,anchor,"
+               "searchreplace,visualblocks,code,fullscreen,insertdatetime,media,table,paste,"
+               "code,help,wordcount",
+    "toolbar": "undo redo | formatselect | "
+               "bold italic underline | forecolor backcolor | alignleft aligncenter "
+               "alignright alignjustify | bullist numlist outdent indent | link",
+    "block_formats": 'Paragraph=p; Heading=h2; Subheading=h3; Preformatted=pre',
+    "valid_classes": "",
+    "valid_styles": {
+        '*': 'color,text-align,padding-left,text-decoration,background-color'
+    },
+    "advlist_bullet_styles": "default",
+    "advlist_number_styles": "default"
+}
+
 # custom test runner
 # https://pytest-django.readthedocs.io/en/latest/faq.html#how-can-i-use-manage-py-test-with-pytest-django
 TEST_RUNNER = "config.test.PytestTestRunner"
