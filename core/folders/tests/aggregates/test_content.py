@@ -1,9 +1,7 @@
-from typing import Optional
-
 from core.folders.domain.aggregates.content import Content
-from core.folders.domain.aggregates.object import EncryptedObject
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
-from core.folders.tests.encryptions import (
+from core.folders.tests.helpers.car import CarWithSecretName
+from core.folders.tests.helpers.encryptions import (
     SymmetricEncryptionTest1,
     SymmetricEncryptionTest2,
 )
@@ -13,16 +11,6 @@ CUSTOM_ENCRYPTION_HIERARCHY = {
     1: SymmetricEncryptionTest1,
     2: SymmetricEncryptionTest2,
 }
-
-
-class CarWithSecretName(EncryptedObject):
-    ENCRYPTED_FIELDS = ["name"]
-
-    def __init__(self, enc_name: Optional[bytes] = None, name: Optional[str] = None):
-        if isinstance(name, str):
-            self.name = bytes(name, "utf-8")
-        if isinstance(enc_name, bytes):
-            self.name = enc_name
 
 
 def test_encrypt_and_decrypt():
@@ -42,7 +30,6 @@ def test_encrypt_and_decrypt():
 
 
 def test_encryption_hierarchy_works_in_simple_case():
-
     car = CarWithSecretName(name="Secret Antique")
     content = Content(
         "My Car",

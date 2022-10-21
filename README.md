@@ -20,9 +20,9 @@ This project uses Django, which is based on python.
 
 1. `git clone https://github.com/lawandorga/law-orga-apps.git`
 2. `cd law-orga-backend/`
-3. `python -m venv tmp/venv`
-4. Install all dependencies from `requirements.txt` with `pip install -r requirements.txt`
-5. Create `tmp/media/`, `tmp/static/`, `tmp/logs`
+3. `pipenv install`
+4. Create `tmp/media/`, `tmp/static/`, `tmp/logs`
+5. Run `pipenv shell`
 6. Run `python manage.py runserver`
 
 ### Server Setup

@@ -25,35 +25,38 @@ SYMMETRIC_ENCRYPTION_HIERARCHY = {1: SymmetricEncryptionV1}
 ASYMMETRIC_ENCRYPTION_HIERARCHY = {1: AsymmetricEncryptionV1}
 
 
-def test_1():
-    _key = PasswordKey("test")
+def f1():
+    key = PasswordKey("test")
 
-    _user = uuid4()
+    user = uuid4()
 
-    _private_key, _public_key = AsymmetricEncryptionV1.generate_keys()
-    _folder_key = FolderKey(_user, _private_key, _public_key)
+    private_key, public_key = AsymmetricEncryptionV1.generate_keys()
+    folder_key = FolderKey(user, private_key, public_key)
 
-    _folder = Folder(
+    folder = Folder(
         "My Folder",
-        encryption_class=AsymmetricEncryptionV1,
-        keys=[_folder_key],
-        public_key=_public_key,
+        asymmetric_encryption_hierarchy=ASYMMETRIC_ENCRYPTION_HIERARCHY,
     )
 
-    _car = CarWithSecretName(name="BMW")
-
-    _content = Content(
+    # secret car
+    car = CarWithSecretName(name="BMW")
+    content = Content(
         "My Car",
-        _car,
+        car,
         SYMMETRIC_ENCRYPTION_HIERARCHY,
     )
+    key = content.encrypt()
 
-    _key = _content.encrypt()
+    # add to folder
+    folder.add_content(content, key, folder_key)
 
-    print(_car.name)
+    # get content
+    content = folder.get_content_by_name(content.name)
+    content_key = folder.get_content_key(content, folder_key)
+    content.decrypt(content_key)
+    car = content.item
 
-    print("#########")
+    print(car.name)
 
-    _content.decrypt(_key)
 
-    print(_car.name)
+f1()

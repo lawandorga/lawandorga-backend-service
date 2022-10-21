@@ -1,3 +1,5 @@
+import sys
+
 ###
 # A simple tree building algorithm. Takes in paths and returns a tree structure
 ###
@@ -11,15 +13,15 @@ docs = [
 
 def build_tree(doc, iter=0):
     children = []
-    print(iter, doc["path"])
+    sys.stdout.write("{} {}".format(iter, doc["path"]))
     for d in docs:
-        print("loop", iter, d["path"])
+        sys.stdout.write("loop {} {}".format(iter, d["path"]))
         if (
             d["path"].startswith(doc["path"])
             and d["path"] != doc["path"]
             and "/" not in d["path"][len(doc["path"]) + 1 :]
         ):
-            print("append", iter, d["path"])
+            sys.stdout.write("append {} {}".format(iter, d["path"]))
             children.append(build_tree(d, iter + 1))
     data = {"path": doc["path"], "content": doc["content"], "children": children}
     return data

@@ -58,7 +58,7 @@ def update_event(data: InputEventUpdate, rlc_user: RlcUser):
             "You do not have the permission to edit this event.",
         )
 
-    event.update_information(data)
+    event.update_information(**data.dict())
 
     return event
 

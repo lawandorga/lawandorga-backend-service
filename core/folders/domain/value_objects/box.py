@@ -47,7 +47,7 @@ class Box(bytes):
         ):
             return encryption_class(
                 private_key=key.get_decryption_key(),
-                public_key=key.get_decryption_key(),
+                public_key=key.get_encryption_key(),
             )
 
         else:

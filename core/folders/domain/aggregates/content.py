@@ -22,6 +22,14 @@ class Content:
     def encryption_version(self):
         return self.__encryption_version
 
+    @property
+    def name(self):
+        return self.__name
+
+    @property
+    def item(self):
+        return self.__item
+
     def get_symmetric_encryption_class(
         self, direction: Literal["ENCRYPTION", "DECRYPTION"]
     ) -> Type[SymmetricEncryption]:
