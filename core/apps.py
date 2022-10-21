@@ -7,6 +7,7 @@ class CoreConfig(AppConfig):
 
     def ready(self):
         # import this file to add use_case mappings
+        import core.use_cases  # type: ignore
 
         # rlc permissions
         from core.fixtures import create_permissions
