@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from apps.core.models import HasPermission, Permission, UserProfile
+from apps.core.seedwork.permission import CheckPermissionWall
 from apps.core.static import (
     PERMISSION_ADMIN_MANAGE_PERMISSIONS,
     get_all_admin_permissions,
@@ -13,7 +14,6 @@ from apps.core.static import (
     get_all_files_permissions,
     get_all_records_permissions,
 )
-from apps.core.seedwork.permission import CheckPermissionWall
 
 from ..serializers import HasPermissionCreateSerializer, HasPermissionSerializer
 

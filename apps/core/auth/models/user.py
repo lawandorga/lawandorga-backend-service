@@ -14,8 +14,8 @@ from django.utils import timezone
 from rest_framework.exceptions import AuthenticationFailed, ParseError
 from rest_framework_simplejwt.settings import api_settings as jwt_settings
 
-from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS
 from apps.core.seedwork.encryption import to_bytes
+from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS
 
 if TYPE_CHECKING:
     from apps.core.models import Permission, RlcUser, StatisticUser

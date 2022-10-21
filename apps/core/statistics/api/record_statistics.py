@@ -3,14 +3,14 @@ from typing import List
 from django.db import connection
 
 from apps.core.auth.models import StatisticUser
+from apps.core.seedwork.api_layer import Router
+from apps.core.seedwork.statistics import execute_statement
 from apps.core.statistics.api import schemas
 from apps.core.statistics.api.schemas import (
     OutputRecordClosedStatistic,
     OutputRecordFieldAmount,
 )
 from apps.core.statistics.use_cases.records import create_statistic
-from apps.core.seedwork.api_layer import Router
-from apps.core.seedwork.statistics import execute_statement
 
 router = Router()
 

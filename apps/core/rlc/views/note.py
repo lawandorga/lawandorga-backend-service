@@ -2,8 +2,8 @@ from rest_framework import mixins
 from rest_framework.viewsets import GenericViewSet
 
 from apps.core.models import Note
-from apps.core.static import PERMISSION_DASHBOARD_MANAGE_NOTES
 from apps.core.seedwork.permission import CheckPermissionWall
+from apps.core.static import PERMISSION_DASHBOARD_MANAGE_NOTES
 
 from ..serializers import NoteSerializer
 

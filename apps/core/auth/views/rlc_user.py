@@ -9,8 +9,8 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 from apps.core.models import PasswordResetTokenGenerator, RlcUser, UserProfile
-from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS
 from apps.core.seedwork.permission import CheckPermissionWall
+from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS
 
 from ..serializers import (
     ChangePasswordSerializer,

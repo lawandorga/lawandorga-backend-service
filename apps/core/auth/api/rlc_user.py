@@ -3,11 +3,11 @@ from typing import Any, Dict, List, Optional
 from apps.core.auth.api import schemas
 from apps.core.auth.models import RlcUser
 from apps.core.rlc.models import Permission
+from apps.core.seedwork.api_layer import ApiError, Router
 from apps.core.static import (
     PERMISSION_ADMIN_MANAGE_PERMISSIONS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
-from apps.core.seedwork.api_layer import ApiError, Router
 
 router = Router()
 

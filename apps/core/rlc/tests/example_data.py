@@ -39,12 +39,12 @@ from apps.core.records.models import (
 )
 from apps.core.records.models.encrypted_record_document import EncryptedRecordDocument
 from apps.core.rlc.models import Org
+from apps.core.seedwork.encryption import AESEncryption
 from apps.core.static import (
     get_all_collab_permission_strings,
     get_all_files_permission_strings,
     get_all_permission_strings,
 )
-from apps.core.seedwork.encryption import AESEncryption
 
 
 # helpers

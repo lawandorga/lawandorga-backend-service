@@ -4,8 +4,8 @@ from django.test import TestCase
 from apps.core.models import Org, Permission, RlcUser, UserProfile
 from apps.core.records.fixtures import create_default_record_template
 from apps.core.records.models import Record, RecordEncryptionNew, RecordTemplate
-from apps.core.static import get_all_permission_strings
 from apps.core.seedwork.encryption import AESEncryption
+from apps.core.static import get_all_permission_strings
 
 
 class UserUnitUserBase:

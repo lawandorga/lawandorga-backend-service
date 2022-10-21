@@ -3,8 +3,8 @@ from rest_framework import mixins, viewsets
 
 from apps.core.records.models import RecordDeletion
 from apps.core.records.serializers import RecordDeletionSerializer
-from apps.core.static import PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS
 from apps.core.seedwork.permission import CheckPermissionWall
+from apps.core.static import PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS
 
 
 class RecordDeletionViewSet(

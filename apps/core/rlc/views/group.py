@@ -1,8 +1,8 @@
 from rest_framework import viewsets
 
 from apps.core.models import Group
-from apps.core.static import PERMISSION_ADMIN_MANAGE_GROUPS
 from apps.core.seedwork.permission import CheckPermissionWall
+from apps.core.static import PERMISSION_ADMIN_MANAGE_GROUPS
 
 from ..serializers import GroupCreateSerializer, GroupSerializer
 

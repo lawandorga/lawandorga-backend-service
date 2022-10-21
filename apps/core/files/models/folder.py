@@ -2,6 +2,7 @@ from django.db import models
 
 from apps.core.models import UserProfile
 from apps.core.rlc.models import Org
+from apps.core.seedwork.storage_folders import get_storage_base_files_folder
 from apps.core.static import (
     PERMISSION_FILES_MANAGE_PERMISSIONS,
     PERMISSION_FILES_READ_ALL_FOLDERS,
@@ -9,7 +10,6 @@ from apps.core.static import (
     PERMISSION_READ_FOLDER,
     PERMISSION_WRITE_FOLDER,
 )
-from apps.core.seedwork.storage_folders import get_storage_base_files_folder
 
 from .folder_permission import FolderPermission
 

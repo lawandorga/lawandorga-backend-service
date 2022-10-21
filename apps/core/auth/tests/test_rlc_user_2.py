@@ -2,8 +2,8 @@ from django.test import Client, TestCase
 
 from apps.core.models import Org, OrgEncryption, Permission
 from apps.core.records.models import RecordTemplate
-from apps.core.static import get_all_permission_strings
 from apps.core.seedwork import test_helpers as data
+from apps.core.static import get_all_permission_strings
 
 
 class TestRlcUser(TestCase):
