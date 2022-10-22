@@ -1,4 +1,5 @@
 from oidc_provider.lib.claims import ScopeClaims
+from .models import UserProfile
 
 
 def userinfo(claims, user):
@@ -20,10 +21,13 @@ class RlcScopeClaims(ScopeClaims):
     )
 
     def scope_rlc(self):
-        dic = {
-                'matrix_localpart': self.user.matrix_localpart,
-                'name': self.userinfo['name'],
-                'email': self.userinfo['email'],
-                'rlc': self.user.rlc.name,
-        }
-        return dic
+        try:
+            dic = {
+                    'matrix_localpart': self.user.matrix_user.id,
+                    'name': self.userinfo['name'],
+                    'email': self.userinfo['email'],
+                    'rlc': self.user.matrix_user.group,
+            }
+            return dic
+        except UserProfile.matrix_user.RelatedObjectDoesNotExist:
+            return ''

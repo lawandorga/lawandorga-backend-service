@@ -20,7 +20,7 @@ from apps.core.static import PERMISSION_ADMIN_MANAGE_USERS
 from apps.static.encryption import to_bytes
 
 if TYPE_CHECKING:
-    from apps.core.models import RlcUser, StatisticUser
+    from apps.core.models import RlcUser, StatisticUser, MatrixUser
 
 
 class UserProfileManager(BaseUserManager):
@@ -40,7 +40,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     )
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    _matrix_localpart = models.CharField(max_length=8, unique=True, null=True)
 
     # custom manager
     objects = UserProfileManager()
@@ -52,6 +51,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # mypy stuff
     rlc_user: "RlcUser"
     statistic_user: "StatisticUser"
+    matrix_user: "MatrixUser"
 
     class Meta:
         verbose_name = "UserProfile"
@@ -70,16 +70,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     @property
     def rlc(self):
         return self.rlc_user.org
-
-    @property
-    def matrix_localpart(self):
-        if not self._matrix_localpart:
-            localpart = hexlify(randbytes(4)).decode()
-            while UserProfile.objects.filter(_matrix_localpart=localpart).exists():
-                localpart = hexlify(randbytes(4)).decode()
-            self._matrix_localpart = localpart
-            self.save()
-        return self._matrix_localpart
 
     def change_password(self, old_password, new_password):
         if not self.check_password(old_password):
