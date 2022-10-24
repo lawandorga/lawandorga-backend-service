@@ -1,7 +1,4 @@
-from binascii import hexlify
 from datetime import timedelta
-from random import randbytes
-from typing import TYPE_CHECKING, Any, Dict
 from typing import TYPE_CHECKING, Any, Dict, Union
 
 import jwt
@@ -21,8 +18,7 @@ from core.seedwork.encryption import to_bytes
 from core.static import PERMISSION_ADMIN_MANAGE_USERS
 
 if TYPE_CHECKING:
-    from apps.core.models import RlcUser, StatisticUser, MatrixUser
-    from core.models import Permission, RlcUser, StatisticUser
+    from core.models import MatrixUser, Permission, RlcUser, StatisticUser
 
 
 class UserProfileManager(BaseUserManager):

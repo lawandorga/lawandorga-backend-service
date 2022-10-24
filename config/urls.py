@@ -47,7 +47,7 @@ urlpatterns = [
         ),
     ),
     path("tinymce/", include("tinymce.urls")),
-    path("openid/", include('oidc_provider.urls', namespace='oidc_provider')),
+    path("openid/", include("oidc_provider.urls", namespace="oidc_provider")),
 ]
 
 
