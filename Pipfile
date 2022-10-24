@@ -31,5 +31,6 @@ environs = "==9.5.0"
 pyjwt = "==2.5.0"
 pytz = ">=2022.5"
 django = "4.1.x"
+django-oidc-provider = {git = "https://github.com/timonegk/django-oidc-provider-django4"}
 
 [dev-packages]
