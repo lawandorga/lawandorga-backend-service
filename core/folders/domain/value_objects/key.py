@@ -33,23 +33,59 @@ class SymmetricKey(Key):
         pass
 
 
+class Owner(abc.ABC):
+    slug: UUID
+
+    @abc.abstractmethod
+    def get_key(self) -> AsymmetricKey:
+        pass
+
+
 class FolderKey(AsymmetricKey):
+    __private_key: Union[OpenBox, LockedBox]
+
     def __init__(
         self,
-        user: Optional[UUID] = None,
-        # folder: "Folder",
+        owner: Optional[Owner] = None,
+        folder_pk: Optional[UUID] = None,
         private_key: Optional[str] = None,
-        public_key: Optional[str] = None
-        # correct: bool,
-        # missing: bool,
+        enc_private_key: Optional[bytes] = None,
+        public_key: Optional[str] = None,
+        encryption_class: Optional[
+            Union[Type[AsymmetricEncryption], Type[SymmetricEncryption]]
+        ] = None
     ):
-        self.__user = user
-        # self.__folder = folder
-        self.__private_key = private_key
+        assert owner is not None
+
+        self.__folder_pk = folder_pk
+        self.__owner = owner
         self.__public_key = public_key
-        # self.__encryption = encryption
-        # self.__correct = correct
-        # self.__missing = missing
+
+        if private_key:
+            assert private_key is not None
+            bytes_key = private_key.encode("utf-8")
+            self.__private_key = OpenBox(data=bytes_key)
+
+        elif enc_private_key:
+            assert enc_private_key is not None and encryption_class is not None
+            self.__private_key = LockedBox(enc_data=enc_private_key, encryption_class=encryption_class)
+
+    def encrypt(
+        self, encryption_class: Type[AsymmetricEncryption]
+    ) -> "FolderKey":
+        assert isinstance(self.__private_key, OpenBox)
+
+        lock_key = self.__owner.get_key()
+        enc_key = self.__private_key.lock(lock_key, encryption_class)
+        return FolderKey(enc_private_key=enc_key, encryption_class=encryption_class, public_key=self.__public_key)
+
+    def decrypt(self) -> "FolderKey":
+        assert isinstance(self.__private_key, LockedBox)
+
+        unlock_key = self.__owner.get_key()
+        bytes_key = self.__private_key.unlock(unlock_key)
+        key = bytes_key.decode("utf-8")
+        return FolderKey(private_key=key, public_key=self.__public_key)
 
     def get_encryption_key(self) -> str:
         assert self.__public_key is not None
@@ -60,9 +96,14 @@ class FolderKey(AsymmetricKey):
         return self.__private_key
 
     @property
-    def user(self):
-        assert self.__user is not None
-        return self.__user
+    def owner(self):
+        assert self.__owner is not None
+        return self.__owner
+
+    @property
+    def folder_id(self):
+        assert self.__folder_pk is not None
+        return self.__folder_pk
 
 
 class PasswordKey(SymmetricKey):
