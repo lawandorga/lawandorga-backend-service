@@ -1,10 +1,8 @@
-from django.core.exceptions import RequestDataTooBig
-from django.http import UnreadablePostError
 from django.utils.deprecation import MiddlewareMixin
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
 
-from apps.core.models import LoggedPath
+from core.models import LoggedPath
 
 
 class LoggingMiddleware:
@@ -12,14 +10,6 @@ class LoggingMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        # save the body for 500 errors now because it will not be available after get_response
-        try:
-            body = request.body
-        except RequestDataTooBig:
-            body = b"LoggingMiddleware Exception: RequestDateTooBig"
-        except UnreadablePostError:
-            body = b"LoggingMiddleware Exception: UnreadablePostError"
-
         # get the response
         response = self.get_response(request)
 
@@ -30,8 +20,6 @@ class LoggingMiddleware:
             "status": response.status_code if response.status_code else 0,
             "method": request.method if request.method else "UNKNOWN",
         }
-        if response.status_code == 500:
-            data.update({"data": body.decode("utf-8")})
 
         # create the logged path
         LoggedPath.objects.create(**data)

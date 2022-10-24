@@ -1,10 +1,12 @@
-FROM python:3.9
+FROM python:3.10
 
 WORKDIR /django
 
-COPY requirements.txt /django/requirements.txt
+COPY Pipfile /django/Pipfile
+COPY Pipfile.lock /django/Pipfile.lock
 
-RUN pip install --upgrade pip
+RUN pip install --upgrade pip pipenv
+RUN pipenv requirements > requirements.txt
 RUN pip install -r requirements.txt
 
 COPY . /django
