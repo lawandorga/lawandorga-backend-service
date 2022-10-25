@@ -112,7 +112,9 @@ class PoolRecordViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
             return_val.update({"entries": data})
             return Response(return_val)
 
-        queryset = PoolConsultant.objects.filter(consultant__rlc_user__org=user.rlc_user.org)
+        queryset = PoolConsultant.objects.filter(
+            consultant__rlc_user__org=user.rlc_user.org
+        )
         if queryset.count() > 0:
             data = PoolConsultantSerializer(queryset, many=True).data
             return_val = {"type": "consultants"}
