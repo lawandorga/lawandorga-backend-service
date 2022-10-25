@@ -4,7 +4,8 @@ import pytest
 
 from core.folders.domain.aggregates.content import Content
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.value_objects.key import FolderKey
+from core.folders.domain.value_objects.encryption import EncryptionPyramid
+from core.folders.domain.value_objects.keys import FolderKey
 from core.folders.tests.helpers.car import CarWithSecretName
 from core.folders.tests.helpers.encryptions import (
     AsymmetricEncryptionTest1,
@@ -12,44 +13,59 @@ from core.folders.tests.helpers.encryptions import (
     SymmetricEncryptionTest1,
     SymmetricEncryptionTest2,
 )
-
-SYMMETRIC_ENCRYPTION_HIERARCHY = {1: SymmetricEncryptionTest1}
-CUSTOM_SYMMETRIC_ENCRYPTION_HIERARCHY = {
-    1: SymmetricEncryptionTest1,
-    2: SymmetricEncryptionTest2,
-}
-
-ASYMMETRIC_ENCRYPTION_HIERARCHY = {1: AsymmetricEncryptionTest1}
-CUSTOM_ASYMMETRIC_ENCRYPTION_HIERARCHY = {
-    1: AsymmetricEncryptionTest1,
-    2: AsymmetricEncryptionTest2,
-}
+from core.folders.tests.helpers.user import UserObject
 
 
 @pytest.fixture
-def car():
+def encryption_reset():
+    EncryptionPyramid.reset_encryption_hierarchies()
+    yield
+
+
+@pytest.fixture
+def single_encryption(encryption_reset):
+    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest1)
+    EncryptionPyramid.add_asymmetric_encryption(AsymmetricEncryptionTest1)
+    yield
+
+
+@pytest.fixture
+def double_encryption(encryption_reset):
+    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest1)
+    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest2)
+    EncryptionPyramid.add_asymmetric_encryption(AsymmetricEncryptionTest1)
+    EncryptionPyramid.add_asymmetric_encryption(AsymmetricEncryptionTest2)
+    yield
+
+
+@pytest.fixture
+def car_content_key():
     car = CarWithSecretName(name="BMW")
     content = Content(
         "My Car",
         car,
-        SYMMETRIC_ENCRYPTION_HIERARCHY,
     )
     key = content.encrypt()
-    yield {"content": content, "key": key}
+    yield car, content, key
 
 
-def test_encryption_decryption(car):
-    user = uuid4()
-    private_key, public_key = AsymmetricEncryptionTest1.generate_keys()
-    folder_key = FolderKey(user, private_key, public_key)
+def test_encryption_decryption(single_encryption, car_content_key):
+    car, content, key = car_content_key
 
-    folder = Folder(
-        "My Folder",
-        asymmetric_encryption_hierarchy=ASYMMETRIC_ENCRYPTION_HIERARCHY,
+    user = UserObject()
+
+    private_key, public_key, version = AsymmetricEncryptionTest1.generate_keys()
+    folder_key = FolderKey.create(
+        owner=user,
+        private_key=private_key,
+        public_key=public_key,
+        origin=version,
     )
-    folder.add_content(car["content"], car["key"], folder_key)
 
-    content = folder.get_content_by_name(car["content"].name)
+    folder = Folder(name="My Folder", pk=uuid4(), keys=[folder_key])
+    folder.add_content(content, key, folder_key)
+
+    content = folder.get_content_by_name(content.name)
     content_key = folder.get_content_key(content, folder_key)
     content.decrypt(content_key)
 
@@ -57,20 +73,29 @@ def test_encryption_decryption(car):
     assert car.name == b"BMW"
 
 
-def test_encryption_decryption_with_hierarchy(car):
-    user_1 = uuid4()
-    user_2 = uuid4()
-    private_key, public_key = AsymmetricEncryptionTest1.generate_keys()
-    folder_key_1 = FolderKey(user_1, private_key, public_key)
-    folder_key_2 = FolderKey(user_2, private_key, public_key)
-
-    folder = Folder(
-        "My Folder",
-        asymmetric_encryption_hierarchy=CUSTOM_ASYMMETRIC_ENCRYPTION_HIERARCHY,
+def test_encryption_decryption_with_hierarchy(double_encryption, car_content_key):
+    user_1 = UserObject()
+    user_2 = UserObject()
+    private_key, public_key, version = AsymmetricEncryptionTest1.generate_keys()
+    folder_key_1 = FolderKey.create(
+        owner=user_1,
+        private_key=private_key,
+        public_key=public_key,
+        origin=version,
     )
-    folder.add_content(car["content"], car["key"], folder_key_1)
-    content = folder.get_content_by_name(car["content"].name)
-    content_key = folder.get_content_key(content, folder_key_1)
+    folder_key_2 = FolderKey.create(
+        owner=user_2,
+        private_key=private_key,
+        public_key=public_key,
+        origin=version,
+    )
+    folder = Folder(name="My Folder", pk=uuid4(), keys=[folder_key_1, folder_key_2])
+
+    car, content, key = car_content_key
+    folder.add_content(content, key, folder_key_1)
+
+    content = folder.get_content_by_name(content.name)
+    content_key = folder.get_content_key(content, folder_key_2)
     content.decrypt(content_key)
 
     car = content.item
@@ -88,3 +113,9 @@ def test_encryption_decryption_with_hierarchy(car):
     content.decrypt(content_key)
 
     assert car.name == b"Audi"
+
+
+def test_keys_are_regenerated(single_encryption, car_content_key):
+    car, content, key = car_content_key
+
+    folder_key = FolderKey()

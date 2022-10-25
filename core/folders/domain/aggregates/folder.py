@@ -1,141 +1,114 @@
-from typing import Dict, List, Literal, Tuple, Type
-from uuid import UUID
+from typing import Dict, List, Optional, Tuple
+from uuid import UUID, uuid4
 
 from core.folders.domain.aggregates.content import Content
-from core.folders.domain.value_objects.encryption import AsymmetricEncryption
-from core.folders.domain.value_objects.key import ContentKey, FolderKey
+from core.folders.domain.value_objects.encryption import EncryptionPyramid
+from core.folders.domain.value_objects.keys import ContentKey, FolderKey
 from core.seedwork.domain_layer import DomainError
 
 
 class Folder:
+    @staticmethod
+    def create(name: str = None):
+        pk = uuid4()
+        return Folder(name=name, pk=pk, keys=[], content={})
+
     def __init__(
         self,
-        name: str = None,
         # parent: Optional["Folder"],
-        asymmetric_encryption_hierarchy: dict[int, Type[AsymmetricEncryption]] = None,
-        encryption_version: int = 0,
+        name: str = None,
         pk: UUID = None,
         keys: List[FolderKey] = None,
         content: Dict[str, Tuple[Content, ContentKey]] = None,
     ):
-        assert name and asymmetric_encryption_hierarchy
+        assert name is not None and pk is not None
 
         self.__pk = pk
         self.__name = name
         # self.__parent = parent
         self.__content = content if content is not None else {}
         self.__keys = keys if keys is not None else []
-        self.__encryption_hierarchy = asymmetric_encryption_hierarchy
-        self.__encryption_version = encryption_version
 
     @property
     def content(self) -> List[Content]:
         return [c[0].name for c in self.__content.values()]
 
-    # @property
-    # def public_key(self):
-    #     return self.__public_key
+    @property
+    def encryption_version(self) -> Optional[str]:
+        if len(self.__keys) == 0:
+            return None
 
-    # def get_private_key(self, user: UUID, private_key_user: str):
-    #     key = self.get_key(user)
-    #
-    #     try:
-    #         private_key = key.get_decryption_key()
-    #     except ValueError:
-    #         raise DomainError(
-    #             "The key to access content of this folder is not working."
-    #         )
-    #
-    #     return private_key
+        versions = []
+        for key in self.__keys:
+            versions.append(key.origin)
 
-    # def get_key(self, user: Optional[UUID] = None) -> FolderKey:
-    #     if user is not None:
-    #         possible_keys = list(
-    #             filter(
-    #                 lambda k: k.user == user and not k.missing and k.correct,
-    #                 self.__keys,
-    #             )
-    #         )
-    #
-    #         if len(possible_keys) > 1:
-    #             raise DomainError("More than one possible key detected.")
-    #
-    #         if len(possible_keys) == 0:
-    #             raise DomainError("No keys detected to access content in this folder.")
-    #
-    #         key = possible_keys
-    #
-    #         return key
-    #
-    #     else:
-    #         return FolderKey(public_key=self.public_key)
+        if not all([v == versions[0] for v in versions]):
+            raise Exception("Not all folder keys have the same encryption version.")
 
-    def get_asymmetric_encryption_class(
-        self, direction: Literal["ENCRYPTION", "DECRYPTION"]
-    ) -> Type[AsymmetricEncryption]:
-        if direction == "DECRYPTION":
-            return self.__encryption_hierarchy[self.__encryption_version]
-        if direction == "ENCRYPTION":
-            return self.__encryption_hierarchy[max(self.__encryption_hierarchy.keys())]
+        return versions[0]
 
     def __reencrypt_all_keys(self, folder_key: FolderKey):
-        encryption_class = self.get_asymmetric_encryption_class("ENCRYPTION")
+        encryption_class = EncryptionPyramid.get_highest_asymmetric_encryption()
 
         # get a new folder key
-        private_key, public_key = encryption_class.generate_keys()
-        new_folder_key = FolderKey(
+        private_key, public_key, version = encryption_class.generate_keys()
+        new_folder_key = FolderKey.create(
             private_key=private_key,
             public_key=public_key,
+            origin=version,
             owner=folder_key.owner,
-            folder_pk=self.__pk,
         )
 
         # decrypt content keys
+        new_content = {}
         for content in self.__content.values():
             enc_content_key = content[1]
             content_key = enc_content_key.decrypt(folder_key)
-            new_enc_content_key = content_key.encrypt(
-                lock_key=new_folder_key, encryption_class=encryption_class
-            )
-            self.__content[content[0].name] = (content[0], new_enc_content_key)
+            new_enc_content_key = content_key.encrypt(new_folder_key)
+            new_content[content[0].name] = (content[0], new_enc_content_key)
 
         # reencrypt keys
         new_keys = []
         for key in self.__keys:
-            new_key = FolderKey(
+            new_key = FolderKey.create(
                 owner=key.owner,
-                folder_pk=self.__pk,
                 private_key=new_folder_key.get_decryption_key(),
                 public_key=new_folder_key.get_encryption_key(),
+                origin=new_folder_key.origin,
             )
             enc_new_key = new_key.encrypt()
             new_keys.append(enc_new_key)
+
+        # set
+        self.__content = new_content
         self.__keys = new_keys
 
-        # update encryption version
-        self.__encryption_version = max(self.__encryption_hierarchy.keys())
+    def __check_encryption_version(self, folder_key: FolderKey):
+        encryption_class = EncryptionPyramid.get_highest_asymmetric_encryption()
+        if self.encryption_version != encryption_class.VERSION:
+            self.__reencrypt_all_keys(folder_key)
 
     def add_content(
         self, content: Content, content_key: ContentKey, folder_key: FolderKey
     ):
-        encryption_class = self.get_asymmetric_encryption_class("ENCRYPTION")
-        enc_content_key = content_key.encrypt(folder_key, encryption_class)
         if content.name in self.__content:
             raise DomainError(
                 "This folder already contains an item with the same name."
             )
+        enc_content_key = content_key.encrypt(folder_key)
         self.__content[content.name] = (content, enc_content_key)
-        self.__encryption_version = max(self.__encryption_hierarchy.keys())
+        # check
+        self.__check_encryption_version(folder_key)
 
     def update_content(
         self, content: Content, content_key: ContentKey, folder_key: FolderKey
     ):
-        encryption_class = self.get_asymmetric_encryption_class("ENCRYPTION")
-        enc_content_key = content_key.encrypt(folder_key, encryption_class)
         if content.name not in self.__content:
             raise DomainError("This folder does not contain an item with this name.")
+        enc_content_key = content_key.encrypt(folder_key)
         self.__content[content.name] = (content, enc_content_key)
-        self.__encryption_version = max(self.__encryption_hierarchy.keys())
+        # check
+        self.__check_encryption_version(folder_key)
 
     def delete_content(self, content: Content):
         if content.name not in self.__content:
@@ -155,7 +128,6 @@ class Folder:
         return self.__content[name][0]
 
     def move(self, target: "Folder"):
-        # TODO
         pass
 
     # def grant_access(self, user: UUID, private_key_folder: Optional[str] = None):

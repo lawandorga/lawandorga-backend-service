@@ -1,7 +1,7 @@
 import pytest
 
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
-from core.folders.domain.value_objects.key import SymmetricKey
+from core.folders.domain.value_objects.keys import SymmetricKey
 from core.folders.tests.helpers.encryptions import (
     SymmetricEncryptionTest1,
     SymmetricEncryptionTest2,

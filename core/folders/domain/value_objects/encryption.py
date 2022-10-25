@@ -45,13 +45,15 @@ class SymmetricEncryption(Encryption):
 
 
 class EncryptionPyramid:
-    ASYMMETRIC_ENCRYPTION_HIERARCHY: dict[str, Type[AsymmetricEncryption]] = {}
-    SYMMETRIC_ENCRYPTION_HIERARCHY: dict[str, Type[SymmetricEncryption]] = {}
+    __ASYMMETRIC_ENCRYPTION_HIERARCHY: dict[str, Type[AsymmetricEncryption]] = {}
+    __SYMMETRIC_ENCRYPTION_HIERARCHY: dict[str, Type[SymmetricEncryption]] = {}
+    __HIGHEST_ASYMMETRIC_ENCRYPTION: Type[AsymmetricEncryption]
+    __HIGHEST_SYMMETRIC_ENCRYPTION: Type[SymmetricEncryption]
 
     @classmethod
     def reset_encryption_hierarchies(cls):
-        cls.ASYMMETRIC_ENCRYPTION_HIERARCHY = {}
-        cls.SYMMETRIC_ENCRYPTION_HIERARCHY = {}
+        cls.__ASYMMETRIC_ENCRYPTION_HIERARCHY = {}
+        cls.__SYMMETRIC_ENCRYPTION_HIERARCHY = {}
 
     @classmethod
     def add_asymmetric_encryption(cls, encryption: Type[AsymmetricEncryption]):
@@ -60,10 +62,11 @@ class EncryptionPyramid:
         if not encryption.VERSION.startswith("A"):
             raise ValueError("The version needs to start with 'A'.")
 
-        if encryption.VERSION in cls.ASYMMETRIC_ENCRYPTION_HIERARCHY:
+        if encryption.VERSION in cls.__ASYMMETRIC_ENCRYPTION_HIERARCHY:
             raise ValueError("This encryption level is already occupied.")
 
-        cls.ASYMMETRIC_ENCRYPTION_HIERARCHY[encryption.VERSION] = encryption
+        cls.__ASYMMETRIC_ENCRYPTION_HIERARCHY[encryption.VERSION] = encryption
+        cls.__HIGHEST_ASYMMETRIC_ENCRYPTION = encryption
 
     @classmethod
     def add_symmetric_encryption(cls, encryption: Type[SymmetricEncryption]):
@@ -72,26 +75,31 @@ class EncryptionPyramid:
         if not encryption.VERSION.startswith("S"):
             raise ValueError("The version needs to start with 'S'.")
 
-        if encryption.VERSION in cls.SYMMETRIC_ENCRYPTION_HIERARCHY:
+        if encryption.VERSION in cls.__SYMMETRIC_ENCRYPTION_HIERARCHY:
             raise ValueError("This encryption level is already occupied.")
 
-        cls.SYMMETRIC_ENCRYPTION_HIERARCHY[encryption.VERSION] = encryption
+        cls.__SYMMETRIC_ENCRYPTION_HIERARCHY[encryption.VERSION] = encryption
+        cls.__HIGHEST_SYMMETRIC_ENCRYPTION = encryption
 
     @classmethod
     def get_asymmetric_encryption_hierarchy(cls):
-        return cls.ASYMMETRIC_ENCRYPTION_HIERARCHY
+        return cls.__ASYMMETRIC_ENCRYPTION_HIERARCHY
 
     @classmethod
     def get_symmetric_encryption_hierarchy(cls):
-        return cls.SYMMETRIC_ENCRYPTION_HIERARCHY
+        return cls.__SYMMETRIC_ENCRYPTION_HIERARCHY
+
+    @classmethod
+    def get_highest_asymmetric_encryption(cls):
+        return cls.__HIGHEST_ASYMMETRIC_ENCRYPTION
 
     @classmethod
     def get_encryption_class(cls, version: str):
-        if version.startswith("A") and version in cls.ASYMMETRIC_ENCRYPTION_HIERARCHY:
-            return cls.ASYMMETRIC_ENCRYPTION_HIERARCHY[version]
+        if version.startswith("A") and version in cls.__ASYMMETRIC_ENCRYPTION_HIERARCHY:
+            return cls.__ASYMMETRIC_ENCRYPTION_HIERARCHY[version]
 
-        elif version.startswith("S") and version in cls.SYMMETRIC_ENCRYPTION_HIERARCHY:
-            return cls.SYMMETRIC_ENCRYPTION_HIERARCHY[version]
+        elif version.startswith("S") and version in cls.__SYMMETRIC_ENCRYPTION_HIERARCHY:
+            return cls.__SYMMETRIC_ENCRYPTION_HIERARCHY[version]
 
         else:
             raise ValueError(

@@ -1,3 +1,5 @@
+import pytest
+
 from core.folders.domain.aggregates.content import Content
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import EncryptionPyramid
@@ -6,7 +8,6 @@ from core.folders.tests.helpers.encryptions import (
     SymmetricEncryptionTest1,
     SymmetricEncryptionTest2,
 )
-import pytest
 
 
 @pytest.fixture
@@ -88,9 +89,7 @@ def test_content_after_encryption(double_encryption, car_content_key):
     car, content, key = car_content_key
 
     car2 = CarWithSecretName(enc_name=car.name)
-    content = Content(
-        "My Car", car2, content.encryption_version
-    )
+    content = Content("My Car", car2, content.encryption_version)
     content.decrypt(key)
 
     assert car2.name == b"Secret Antique"

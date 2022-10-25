@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
-    from core.folders.domain.value_objects.key import AsymmetricKey, SymmetricKey
+    from core.folders.domain.value_objects.keys import AsymmetricKey, SymmetricKey
 
 
 class Box(bytes):
@@ -36,10 +36,10 @@ class LockedBox(Box):
         return "LockedBox({}, {})".format(self.__enc_data, self.__encryption_version)
 
     def decrypt(self, key: Union["AsymmetricKey", "SymmetricKey"]) -> "OpenBox":
-        if self.__encryption_version != key.encryption_version:
+        if self.__encryption_version != key.origin:
             raise ValueError(
                 "This key can not unlock this box because the encryption versions do not match. '{}' != '{}'.".format(
-                    self.__encryption_version, key.encryption_version
+                    self.__encryption_version, key.origin
                 )
             )
         encryption = key.get_encryption()
@@ -62,7 +62,7 @@ class OpenBox(Box):
     def encrypt(self, key: Union["AsymmetricKey", "SymmetricKey"]) -> LockedBox:
         encryption = key.get_encryption()
         enc_data = encryption.encrypt(self.__data)
-        return LockedBox(enc_data=enc_data, encryption_version=key.encryption_version)
+        return LockedBox(enc_data=enc_data, encryption_version=key.origin)
 
     @property
     def value(self) -> bytes:

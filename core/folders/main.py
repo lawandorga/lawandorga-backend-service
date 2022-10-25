@@ -6,7 +6,7 @@ from uuid import uuid4
 from core.folders.domain.aggregates.content import Content
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.aggregates.object import EncryptedObject
-from core.folders.domain.value_objects.key import FolderKey, PasswordKey
+from core.folders.domain.value_objects.keys import FolderKey, PasswordKey
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 
