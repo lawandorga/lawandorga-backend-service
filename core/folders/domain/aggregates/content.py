@@ -49,4 +49,5 @@ class Content:
         return content_key
 
     def decrypt(self, key: ContentKey):
+        assert self.__encryption_version is not None
         self.__item.decrypt(key, self.__encryption_version)

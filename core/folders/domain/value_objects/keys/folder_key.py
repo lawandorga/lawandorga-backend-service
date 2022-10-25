@@ -1,23 +1,14 @@
-import abc
 from typing import Union
-from uuid import UUID
 
+from core.folders.domain.external import IUser
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.keys.base import AsymmetricKey
-
-
-class Owner(abc.ABC):
-    slug: UUID
-
-    @abc.abstractmethod
-    def get_key(self) -> AsymmetricKey:
-        pass
 
 
 class FolderKey(AsymmetricKey):
     @staticmethod
     def create(
-        owner: Owner = None,
+        owner: IUser = None,
         # folder_pk: UUID = None,
         private_key: str = None,
         origin: str = None,
@@ -35,7 +26,7 @@ class FolderKey(AsymmetricKey):
 
     def __init__(
         self,
-        owner: Owner = None,
+        owner: IUser = None,
         # folder_pk: UUID = None,
         private_key: Union[LockedBox, OpenBox] = None,
         public_key: str = None,
@@ -93,6 +84,10 @@ class FolderKey(AsymmetricKey):
     @property
     def owner(self):
         return self.__owner
+
+    @property
+    def is_encrypted(self):
+        return isinstance(self.__private_key, LockedBox)
 
     # @property
     # def folder_pk(self):

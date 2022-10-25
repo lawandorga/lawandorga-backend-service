@@ -1,5 +1,5 @@
 import abc
-from typing import Literal, Type
+from typing import Literal, Type, Union
 
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import (
@@ -20,6 +20,10 @@ class Key(abc.ABC):
     @property
     def origin(self):
         return self._origin
+
+    @abc.abstractmethod
+    def get_encryption(self) -> Union[SymmetricEncryption, AsymmetricEncryption]:
+        pass
 
     def lock(self, box: OpenBox) -> LockedBox:
         return box.encrypt(self)
@@ -57,7 +61,7 @@ class SymmetricKey(Key):
     def get_key(self) -> str:
         pass
 
-    def get_encryption(self) -> AsymmetricEncryption:
+    def get_encryption(self) -> SymmetricEncryption:
         encryption_class = EncryptionPyramid.get_encryption_class(self.origin)
         return encryption_class(key=self.get_key())
 

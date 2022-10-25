@@ -98,7 +98,9 @@ class EncryptionPyramid:
         if version.startswith("A") and version in cls.__ASYMMETRIC_ENCRYPTION_HIERARCHY:
             return cls.__ASYMMETRIC_ENCRYPTION_HIERARCHY[version]
 
-        elif version.startswith("S") and version in cls.__SYMMETRIC_ENCRYPTION_HIERARCHY:
+        elif (
+            version.startswith("S") and version in cls.__SYMMETRIC_ENCRYPTION_HIERARCHY
+        ):
             return cls.__SYMMETRIC_ENCRYPTION_HIERARCHY[version]
 
         else:

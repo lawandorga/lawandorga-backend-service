@@ -2,6 +2,7 @@ from typing import Dict, List, Optional, Tuple
 from uuid import UUID, uuid4
 
 from core.folders.domain.aggregates.content import Content
+from core.folders.domain.external import IUser
 from core.folders.domain.value_objects.encryption import EncryptionPyramid
 from core.folders.domain.value_objects.keys import ContentKey, FolderKey
 from core.seedwork.domain_layer import DomainError
@@ -27,7 +28,11 @@ class Folder:
         self.__name = name
         # self.__parent = parent
         self.__content = content if content is not None else {}
-        self.__keys = keys if keys is not None else []
+        self.__keys = (
+            [k.encrypt() if k.is_encrypted else k for k in keys]
+            if keys is not None
+            else []
+        )
 
     @property
     def content(self) -> List[Content]:
@@ -76,8 +81,8 @@ class Folder:
                 public_key=new_folder_key.get_encryption_key(),
                 origin=new_folder_key.origin,
             )
-            enc_new_key = new_key.encrypt()
-            new_keys.append(enc_new_key)
+            # enc_new_key = new_key.encrypt()
+            new_keys.append(new_key)
 
         # set
         self.__content = new_content
@@ -88,23 +93,27 @@ class Folder:
         if self.encryption_version != encryption_class.VERSION:
             self.__reencrypt_all_keys(folder_key)
 
-    def add_content(
-        self, content: Content, content_key: ContentKey, folder_key: FolderKey
-    ):
+    def __find_folder_key(self, user: IUser) -> FolderKey:
+        for key in self.__keys:
+            if key.owner.slug == user.slug:
+                return key
+        raise DomainError("No folder key was found for this user.")
+
+    def add_content(self, content: Content, content_key: ContentKey, user: IUser):
         if content.name in self.__content:
             raise DomainError(
                 "This folder already contains an item with the same name."
             )
+        folder_key = self.__find_folder_key(user)
         enc_content_key = content_key.encrypt(folder_key)
         self.__content[content.name] = (content, enc_content_key)
         # check
         self.__check_encryption_version(folder_key)
 
-    def update_content(
-        self, content: Content, content_key: ContentKey, folder_key: FolderKey
-    ):
+    def update_content(self, content: Content, content_key: ContentKey, user: IUser):
         if content.name not in self.__content:
             raise DomainError("This folder does not contain an item with this name.")
+        folder_key = self.__find_folder_key(user)
         enc_content_key = content_key.encrypt(folder_key)
         self.__content[content.name] = (content, enc_content_key)
         # check
@@ -115,9 +124,10 @@ class Folder:
             raise DomainError("This folder does not contain an item with this name.")
         del self.__content[content.name]
 
-    def get_content_key(self, content: Content, folder_key: FolderKey):
+    def get_content_key(self, content: Content, user: IUser):
         if content.name not in self.__content:
             raise DomainError("This folder does not contain the specified item.")
+        folder_key = self.__find_folder_key(user)
         enc_content_key = self.__content[content.name][1]
         content_key = enc_content_key.decrypt(folder_key)
         return content_key
@@ -130,8 +140,9 @@ class Folder:
     def move(self, target: "Folder"):
         pass
 
-    # def grant_access(self, user: UUID, private_key_folder: Optional[str] = None):
-    #
+    def grant_access(self, user: UUID, private_key_folder: Optional[str] = None):
+        pass
+
     #     if self.__public_key is None:
     #         private_key, public_key = self.__encryption_class.generate_keys()
     #         self.__public_key = public_key

@@ -5,10 +5,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padding
 from cryptography.hazmat.primitives.asymmetric import rsa
 
-from core.folders.domain.value_objects.encryption import (
-    AsymmetricEncryption,
-    add_asymmetric_encryption,
-)
+from core.folders.domain.value_objects.encryption import AsymmetricEncryption
 
 
 class AsymmetricEncryptionV1(AsymmetricEncryption):
@@ -81,6 +78,3 @@ class AsymmetricEncryptionV1(AsymmetricEncryption):
         )
 
         return key
-
-
-add_asymmetric_encryption(1, AsymmetricEncryptionV1)

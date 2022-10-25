@@ -6,10 +6,7 @@ from hashlib import sha3_256
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 
-from core.folders.domain.value_objects.encryption import (
-    SymmetricEncryption,
-    add_symmetric_encryption,
-)
+from core.folders.domain.value_objects.encryption import SymmetricEncryption
 
 
 class SymmetricEncryptionV1(SymmetricEncryption):
@@ -50,6 +47,3 @@ class SymmetricEncryptionV1(SymmetricEncryption):
         cipher = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
         data = unpad(cipher.decrypt(encrypted), AES.block_size)
         return data
-
-
-add_symmetric_encryption(1, SymmetricEncryptionV1)
