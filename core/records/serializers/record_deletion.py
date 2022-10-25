@@ -42,7 +42,7 @@ class RecordDeletionSerializer(serializers.ModelSerializer):
         return attrs
 
     def get_record_detail(self, obj):
-        if obj.record and obj.record.identifier:
+        if obj.record and obj.record.pk and obj.record.identifier:
             return obj.record.identifier
         return "Deleted"
 
