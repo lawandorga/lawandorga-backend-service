@@ -156,6 +156,11 @@ class Folder:
             public_key = folder_key.get_encryption_key()
             version = folder_key.origin
 
-        key = FolderKey.create(owner=to_user, private_key=private_key, public_key=public_key, origin=version)
+        key = FolderKey.create(
+            owner=to_user,
+            private_key=private_key,
+            public_key=public_key,
+            origin=version,
+        )
         enc_key = key.encrypt()
         self.__keys.append(enc_key)

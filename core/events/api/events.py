@@ -59,7 +59,7 @@ def update_event(data: InputEventUpdate, rlc_user: RlcUser):
         )
 
     update_data = data.dict()
-    update_data.pop('id')
+    update_data.pop("id")
     event.update_information(**update_data)
 
     return event
