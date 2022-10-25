@@ -122,11 +122,13 @@ class Folder:
     def delete_content(self, content: Content):
         if content.name not in self.__content:
             raise DomainError("This folder does not contain an item with this name.")
+
         del self.__content[content.name]
 
     def get_content_key(self, content: Content, user: IUser):
         if content.name not in self.__content:
             raise DomainError("This folder does not contain the specified item.")
+
         folder_key = self.__find_folder_key(user)
         enc_content_key = self.__content[content.name][1]
         content_key = enc_content_key.decrypt(folder_key)
@@ -140,16 +142,20 @@ class Folder:
     def move(self, target: "Folder"):
         pass
 
-    def grant_access(self, user: UUID, private_key_folder: Optional[str] = None):
-        pass
+    def grant_access(self, to_user: IUser, by_user: Optional[IUser] = None):
 
-    #     if self.__public_key is None:
-    #         private_key, public_key = self.__encryption_class.generate_keys()
-    #         self.__public_key = public_key
-    #         key = FolderKey(user, self, private_key, public_key)
-    #
-    #     else:
-    #         assert private_key_folder is not None
-    #         key = FolderKey(user, self, private_key_folder, self.__public_key)
-    #
-    #     self.__keys.append(key)
+        if len(self.__keys) == 0:
+            encryption_class = EncryptionPyramid.get_highest_asymmetric_encryption()
+            private_key, public_key, version = encryption_class.generate_keys()
+
+        else:
+            assert by_user is not None
+            enc_folder_key = self.__find_folder_key(user=by_user)
+            folder_key = enc_folder_key.decrypt()
+            private_key = folder_key.get_decryption_key()
+            public_key = folder_key.get_encryption_key()
+            version = folder_key.origin
+
+        key = FolderKey.create(owner=to_user, private_key=private_key, public_key=public_key, origin=version)
+        enc_key = key.encrypt()
+        self.__keys.append(enc_key)
