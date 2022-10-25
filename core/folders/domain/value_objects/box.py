@@ -1,9 +1,4 @@
-from typing import TYPE_CHECKING, Optional, Type, Union
-
-from core.folders.domain.value_objects.encryption import (
-    AsymmetricEncryption,
-    SymmetricEncryption,
-)
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from core.folders.domain.value_objects.key import AsymmetricKey, SymmetricKey
@@ -30,49 +25,24 @@ class Box(bytes):
     def value(self):
         return
 
-    def _get_encryption(
-        self,
-        key: Union["AsymmetricKey", "SymmetricKey"],
-        encryption_class: Union[Type[AsymmetricEncryption], Type[SymmetricEncryption]],
-    ) -> Union[SymmetricEncryption, AsymmetricEncryption]:
-        from core.folders.domain.value_objects.key import AsymmetricKey, SymmetricKey
-
-        if isinstance(key, SymmetricKey) and issubclass(
-            encryption_class, SymmetricEncryption
-        ):
-            return encryption_class(key=key.get_key())
-
-        elif isinstance(key, AsymmetricKey) and issubclass(
-            encryption_class, AsymmetricEncryption
-        ):
-            return encryption_class(
-                private_key=key.get_decryption_key(),
-                public_key=key.get_encryption_key(),
-            )
-
-        else:
-            raise ValueError(
-                "The key type '{}' does not match the encryption type '{}'".format(
-                    key.KEY_TYPE, encryption_class.ENCRYPTION_TYPE
-                )
-            )
-
 
 class LockedBox(Box):
-    def __init__(
-        self,
-        enc_data: bytes,
-        encryption_class: Union[Type[AsymmetricEncryption], Type[SymmetricEncryption]],
-    ):
+    def __init__(self, enc_data: bytes, encryption_version: str):
         self.__enc_data = enc_data
-        self.__encryption_class = encryption_class
+        self.__encryption_version = encryption_version
         super().__init__()
 
     def __repr__(self):
-        return "LockedBox({}, {})".format(self.__enc_data, self.__encryption_class)
+        return "LockedBox({}, {})".format(self.__enc_data, self.__encryption_version)
 
-    def unlock(self, key: Union["AsymmetricKey", "SymmetricKey"]) -> "OpenBox":
-        encryption = self._get_encryption(key, self.__encryption_class)
+    def decrypt(self, key: Union["AsymmetricKey", "SymmetricKey"]) -> "OpenBox":
+        if self.__encryption_version != key.encryption_version:
+            raise ValueError(
+                "This key can not unlock this box because the encryption versions do not match. '{}' != '{}'.".format(
+                    self.__encryption_version, key.encryption_version
+                )
+            )
+        encryption = key.get_encryption()
         data = encryption.decrypt(self.__enc_data)
         return OpenBox(data=data)
 
@@ -82,27 +52,17 @@ class LockedBox(Box):
 
 
 class OpenBox(Box):
-    def __init__(
-        self,
-        data: bytes,
-    ):
+    def __init__(self, data: bytes):
         self.__data = data
-        self.__encryption_class: Optional[
-            Union[Type[AsymmetricEncryption], Type[SymmetricEncryption]]
-        ] = None
         super().__init__()
 
     def __repr__(self):
         return "OpenBox({})".format(self.__data)
 
-    def lock(
-        self,
-        key: Union["AsymmetricKey", "SymmetricKey"],
-        encryption_class: Union[Type[AsymmetricEncryption], Type[SymmetricEncryption]],
-    ) -> LockedBox:
-        encryption = self._get_encryption(key, encryption_class)
+    def encrypt(self, key: Union["AsymmetricKey", "SymmetricKey"]) -> LockedBox:
+        encryption = key.get_encryption()
         enc_data = encryption.encrypt(self.__data)
-        return LockedBox(enc_data=enc_data, encryption_class=encryption_class)
+        return LockedBox(enc_data=enc_data, encryption_version=key.encryption_version)
 
     @property
     def value(self) -> bytes:

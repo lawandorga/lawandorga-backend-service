@@ -38,7 +38,6 @@ class EncryptedObject(abc.ABC):
     def encrypt(
         self,
         key: Union[AsymmetricKey, SymmetricKey],
-        encryption_class: Union[Type[SymmetricEncryption], Type[AsymmetricEncryption]],
     ):
         for field in self.ENCRYPTED_FIELDS:
             v = getattr(self, field, b"")
@@ -50,12 +49,12 @@ class EncryptedObject(abc.ABC):
                 data=v,
             )
 
-            setattr(self, field, v.lock(key, encryption_class))
+            setattr(self, field, key.lock(v))
 
     def decrypt(
         self,
         key: Union[AsymmetricKey, SymmetricKey],
-        encryption_class: Union[Type[SymmetricEncryption], Type[AsymmetricEncryption]],
+        encryption_version: str,
     ):
         for field in self.ENCRYPTED_FIELDS:
             v = getattr(self, "{}".format(field), b"")
@@ -65,7 +64,7 @@ class EncryptedObject(abc.ABC):
 
             v = LockedBox(
                 enc_data=v,
-                encryption_class=encryption_class,
+                encryption_version=encryption_version,
             )
 
-            setattr(self, field, v.unlock(key))
+            setattr(self, field, key.unlock(v))

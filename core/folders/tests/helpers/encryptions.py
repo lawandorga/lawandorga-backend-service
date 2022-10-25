@@ -9,6 +9,7 @@ from core.folders.domain.value_objects.encryption import (
 
 
 class AsymmetricEncryptionTest1(AsymmetricEncryption):
+    VERSION = "AT1"
     __SECRETS: dict[str, bytes] = {}
     __KEYS: dict[str, str] = {}
 
@@ -26,9 +27,9 @@ class AsymmetricEncryptionTest1(AsymmetricEncryption):
     def get_keys():
         return AsymmetricEncryptionTest1.__KEYS
 
-    @staticmethod
-    def generate_keys() -> Tuple[str, str]:
-        return str(os.urandom(1)), str(os.urandom(1))
+    @classmethod
+    def generate_keys(cls) -> Tuple[str, str, str]:
+        return str(os.urandom(1)), str(os.urandom(1)), cls.VERSION
 
     def encrypt(self, data: bytes) -> bytes:
         uuid = bytes(str(uuid4()), "utf-8")
@@ -44,6 +45,7 @@ class AsymmetricEncryptionTest1(AsymmetricEncryption):
 
 
 class AsymmetricEncryptionTest2(AsymmetricEncryptionTest1):
+    VERSION = "AT2"
     __SECRETS_2: dict[str, bytes] = {}
     __KEYS_2: dict[str, str] = {}
 
@@ -57,6 +59,7 @@ class AsymmetricEncryptionTest2(AsymmetricEncryptionTest1):
 
 
 class SymmetricEncryptionTest1(SymmetricEncryption):
+    VERSION = "ST1"
     __SECRETS: dict[bytes, bytes] = {}
 
     def __init__(self, key: str):
@@ -67,9 +70,9 @@ class SymmetricEncryptionTest1(SymmetricEncryption):
     def get_treasure_chest():
         return SymmetricEncryptionTest1.__SECRETS
 
-    @staticmethod
-    def generate_key() -> str:
-        return str(os.urandom(1))
+    @classmethod
+    def generate_key(cls) -> tuple[str, str]:
+        return str(os.urandom(1)), cls.VERSION
 
     def encrypt(self, data: bytes) -> bytes:
         uuid = bytes(str(uuid4()), "utf-8")
@@ -85,6 +88,7 @@ class SymmetricEncryptionTest1(SymmetricEncryption):
 
 
 class SymmetricEncryptionTest2(SymmetricEncryptionTest1):
+    VERSION = "ST2"
     __SECRETS_2: dict[bytes, bytes] = {}
 
     @staticmethod

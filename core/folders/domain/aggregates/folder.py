@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Optional, Tuple, Type
+from typing import Dict, List, Literal, Tuple, Type
 from uuid import UUID
 
 from core.folders.domain.aggregates.content import Content
@@ -79,26 +79,36 @@ class Folder:
             return self.__encryption_hierarchy[max(self.__encryption_hierarchy.keys())]
 
     def __reencrypt_all_keys(self, folder_key: FolderKey):
-        encryption_class = self.get_asymmetric_encryption_class('ENCRYPTION')
+        encryption_class = self.get_asymmetric_encryption_class("ENCRYPTION")
 
         # get a new folder key
         private_key, public_key = encryption_class.generate_keys()
-        new_folder_key = FolderKey(private_key=private_key, public_key=public_key, owner=folder_key.owner,
-                                   folder_pk=self.__pk)
+        new_folder_key = FolderKey(
+            private_key=private_key,
+            public_key=public_key,
+            owner=folder_key.owner,
+            folder_pk=self.__pk,
+        )
 
         # decrypt content keys
         for content in self.__content.values():
             enc_content_key = content[1]
             content_key = enc_content_key.decrypt(folder_key)
-            new_enc_content_key = content_key.encrypt(lock_key=new_folder_key, encryption_class=encryption_class)
+            new_enc_content_key = content_key.encrypt(
+                lock_key=new_folder_key, encryption_class=encryption_class
+            )
             self.__content[content[0].name] = (content[0], new_enc_content_key)
 
         # reencrypt keys
         new_keys = []
         for key in self.__keys:
-            new_key = FolderKey(owner=key.owner, folder_pk=self.__pk, private_key=new_folder_key.get_decryption_key(),
-                                public_key=new_folder_key.get_encryption_key())
-            enc_new_key = new_key.encrypt(encryption_class)
+            new_key = FolderKey(
+                owner=key.owner,
+                folder_pk=self.__pk,
+                private_key=new_folder_key.get_decryption_key(),
+                public_key=new_folder_key.get_encryption_key(),
+            )
+            enc_new_key = new_key.encrypt()
             new_keys.append(enc_new_key)
         self.__keys = new_keys
 
