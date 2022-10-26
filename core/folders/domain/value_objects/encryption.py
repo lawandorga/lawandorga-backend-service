@@ -94,6 +94,10 @@ class EncryptionPyramid:
         return cls.__HIGHEST_ASYMMETRIC_ENCRYPTION
 
     @classmethod
+    def get_highest_symmetric_encryption(cls):
+        return cls.__HIGHEST_SYMMETRIC_ENCRYPTION
+
+    @classmethod
     def get_encryption_class(cls, version: str):
         if version.startswith("A") and version in cls.__ASYMMETRIC_ENCRYPTION_HIERARCHY:
             return cls.__ASYMMETRIC_ENCRYPTION_HIERARCHY[version]

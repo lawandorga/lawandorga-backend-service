@@ -93,3 +93,10 @@ def test_content_after_encryption(double_encryption, car_content_key):
     content.decrypt(key)
 
     assert car2.name == b"Secret Antique"
+
+
+def test_item_and_name(single_encryption, car_content_key):
+    car, content, key = car_content_key
+
+    assert content.item == car
+    assert content.name == "My Car"

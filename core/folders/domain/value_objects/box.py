@@ -1,3 +1,4 @@
+import abc
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -22,8 +23,9 @@ class Box(bytes):
         return super().__new__(cls, value)
 
     @property
-    def value(self):
-        return
+    @abc.abstractmethod
+    def value(self) -> bytes:
+        pass
 
 
 class LockedBox(Box):
@@ -33,7 +35,7 @@ class LockedBox(Box):
         super().__init__()
 
     def __repr__(self):
-        return "LockedBox({}, {})".format(self.__enc_data, self.__encryption_version)
+        return "LockedBox({}, '{}')".format(self.__enc_data, self.__encryption_version)
 
     def decrypt(self, key: "Key") -> "OpenBox":
         if self.__encryption_version != key.origin:

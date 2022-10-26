@@ -29,14 +29,14 @@ class Folder:
         # self.__parent = parent
         self.__content = content if content is not None else {}
         self.__keys = (
-            [k.encrypt() if k.is_encrypted else k for k in keys]
+            [k if k.is_encrypted else k.encrypt() for k in keys]
             if keys is not None
             else []
         )
 
     @property
-    def content(self) -> List[Content]:
-        return [c[0].name for c in self.__content.values()]
+    def name(self):
+        return self.__name
 
     @property
     def encryption_version(self) -> Optional[str]:
@@ -81,12 +81,15 @@ class Folder:
                 public_key=new_folder_key.get_encryption_key(),
                 origin=new_folder_key.origin,
             )
-            # enc_new_key = new_key.encrypt()
-            new_keys.append(new_key)
+            enc_new_key = new_key.encrypt()
+            new_keys.append(enc_new_key)
 
         # set
         self.__content = new_content
         self.__keys = new_keys
+
+    def update_information(self, name=None):
+        self.__name = name if name is not None else self.__name
 
     def __check_encryption_version(self, folder_key: FolderKey):
         encryption_class = EncryptionPyramid.get_highest_asymmetric_encryption()
@@ -104,7 +107,8 @@ class Folder:
             raise DomainError(
                 "This folder already contains an item with the same name."
             )
-        folder_key = self.__find_folder_key(user)
+        enc_folder_key = self.__find_folder_key(user)
+        folder_key = enc_folder_key.decrypt()
         enc_content_key = content_key.encrypt(folder_key)
         self.__content[content.name] = (content, enc_content_key)
         # check
@@ -113,7 +117,8 @@ class Folder:
     def update_content(self, content: Content, content_key: ContentKey, user: IUser):
         if content.name not in self.__content:
             raise DomainError("This folder does not contain an item with this name.")
-        folder_key = self.__find_folder_key(user)
+        enc_folder_key = self.__find_folder_key(user)
+        folder_key = enc_folder_key.decrypt()
         enc_content_key = content_key.encrypt(folder_key)
         self.__content[content.name] = (content, enc_content_key)
         # check
@@ -129,7 +134,8 @@ class Folder:
         if content.name not in self.__content:
             raise DomainError("This folder does not contain the specified item.")
 
-        folder_key = self.__find_folder_key(user)
+        enc_folder_key = self.__find_folder_key(user)
+        folder_key = enc_folder_key.decrypt()
         enc_content_key = self.__content[content.name][1]
         content_key = enc_content_key.decrypt(folder_key)
         return content_key

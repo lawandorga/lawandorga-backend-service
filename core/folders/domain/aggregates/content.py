@@ -1,10 +1,7 @@
-from typing import Literal, Type, Union
+from typing import Union
 
 from core.folders.domain.aggregates.object import EncryptedObject
-from core.folders.domain.value_objects.encryption import (
-    EncryptionPyramid,
-    SymmetricEncryption,
-)
+from core.folders.domain.value_objects.encryption import EncryptionPyramid
 from core.folders.domain.value_objects.keys import ContentKey
 
 
@@ -31,17 +28,8 @@ class Content:
     def item(self):
         return self.__item
 
-    def get_symmetric_encryption_class(
-        self, direction: Literal["ENCRYPTION", "DECRYPTION"]
-    ) -> Type[SymmetricEncryption]:
-        encryption_hierarchy = EncryptionPyramid.get_symmetric_encryption_hierarchy()
-        if direction == "DECRYPTION":
-            return encryption_hierarchy[self.__encryption_version]
-        if direction == "ENCRYPTION":
-            return encryption_hierarchy[max(encryption_hierarchy.keys())]
-
     def encrypt(self) -> ContentKey:
-        encryption_class = self.get_symmetric_encryption_class("ENCRYPTION")
+        encryption_class = EncryptionPyramid.get_highest_symmetric_encryption()
         raw_key, version = encryption_class.generate_key()
         content_key = ContentKey.create(key=raw_key, origin=version)
         self.__item.encrypt(content_key)
