@@ -40,7 +40,7 @@ class AsymmetricEncryptionTest1(AsymmetricEncryption):
     def decrypt(self, enc_data: bytes) -> bytes:
         uuid = enc_data
         place = uuid + bytes(self.__class__.get_keys()[self.__private_key], "utf-8")
-        data = self.__class__.get_treasure_chest().pop(place)
+        data = self.__class__.get_treasure_chest()[place]
         return data
 
 

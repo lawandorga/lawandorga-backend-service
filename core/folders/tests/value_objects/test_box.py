@@ -1,6 +1,6 @@
 import pytest
 
-from core.folders.domain.value_objects.box import LockedBox, OpenBox, Box
+from core.folders.domain.value_objects.box import Box, LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import EncryptionPyramid
 from core.folders.domain.value_objects.keys import SymmetricKey
 from core.folders.tests.helpers.encryptions import SymmetricEncryptionTest1
@@ -57,24 +57,24 @@ def test_box_decryption_fails_with_another_encryption_class(key):
 
 def test_repr():
     o1 = OpenBox(data=b"Data")
-    o2 = LockedBox(enc_data=b"EncData", encryption_version='ST1')
+    o2 = LockedBox(enc_data=b"EncData", encryption_version="ST1")
     assert repr(o1) == "OpenBox(b'Data')"
     assert repr(o2) == "LockedBox(b'EncData', 'ST1')"
 
 
 def test_box_error():
     with pytest.raises(TypeError):
-        Box(data=b'abc', enc_data=b'abc')
+        Box(data=b"abc", enc_data=b"abc")
 
 
 def test_data():
     o1 = OpenBox(data=b"Data")
-    o2 = LockedBox(enc_data=b"EncData", encryption_version='ST1')
+    o2 = LockedBox(enc_data=b"EncData", encryption_version="ST1")
     assert o1.value == b"Data"
     assert o2.value == b"EncData"
 
 
 def test_decryption_error(key):
-    lb = LockedBox(enc_data=b"EncData", encryption_version='SUNKNOWN')
+    lb = LockedBox(enc_data=b"EncData", encryption_version="SUNKNOWN")
     with pytest.raises(ValueError):
         key.unlock(lb)
