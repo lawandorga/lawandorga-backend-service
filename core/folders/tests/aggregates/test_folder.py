@@ -267,5 +267,5 @@ def test_move(single_encryption, folder_user):
 
 def test_update_information(single_encryption, folder_user):
     folder, user = folder_user
-    folder.update_information(name='New Name')
-    assert folder.name == 'New Name'
+    folder.update_information(name="New Name")
+    assert folder.name == "New Name"
