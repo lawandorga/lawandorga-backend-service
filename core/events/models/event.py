@@ -35,7 +35,7 @@ class Event(models.Model):
         start_time=None,
         end_time=None,
     ):
-        self.is_global = is_global or self.is_global
+        self.is_global = self.is_global if (is_global is None) else is_global
         self.name = name or self.name
         self.description = description or self.description
         self.start_time = start_time or self.start_time
