@@ -263,3 +263,9 @@ def test_folder_key_not_found(single_encryption, folder_user, car_content_key):
 def test_move(single_encryption, folder_user):
     folder, user = folder_user
     folder.move(None)
+
+
+def test_update_information(single_encryption, folder_user):
+    folder, user = folder_user
+    folder.update_information(name='New Name')
+    assert folder.name == 'New Name'

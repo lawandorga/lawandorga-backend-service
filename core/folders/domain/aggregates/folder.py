@@ -35,6 +35,10 @@ class Folder:
         )
 
     @property
+    def name(self):
+        return self.__name
+
+    @property
     def encryption_version(self) -> Optional[str]:
         if len(self.__keys) == 0:
             return None
@@ -83,6 +87,9 @@ class Folder:
         # set
         self.__content = new_content
         self.__keys = new_keys
+
+    def update_information(self, name=None):
+        self.__name = name if name is not None else self.__name
 
     def __check_encryption_version(self, folder_key: FolderKey):
         encryption_class = EncryptionPyramid.get_highest_asymmetric_encryption()
