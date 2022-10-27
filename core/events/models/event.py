@@ -1,12 +1,9 @@
-from typing import TYPE_CHECKING, List
+from typing import List
 
 from django.db import models
 
 from core.auth.models import RlcUser
 from core.rlc.models import Org
-
-if TYPE_CHECKING:
-    from core.events.api.schemas import InputEventUpdate
 
 
 class Event(models.Model):
@@ -30,11 +27,18 @@ class Event(models.Model):
         )
         return raw_events
 
-    def update_information(self, update_info: "InputEventUpdate"):
-        self.is_global = update_info.is_global or self.is_global
-        self.name = update_info.name or self.name
-        self.description = update_info.description or self.description
-        self.start_time = update_info.start_time or self.start_time
-        self.end_time = update_info.end_time or self.end_time
+    def update_information(
+        self,
+        is_global=None,
+        name=None,
+        description=None,
+        start_time=None,
+        end_time=None,
+    ):
+        self.is_global = self.is_global if (is_global is None) else is_global
+        self.name = name or self.name
+        self.description = description or self.description
+        self.start_time = start_time or self.start_time
+        self.end_time = end_time or self.end_time
 
         self.save()

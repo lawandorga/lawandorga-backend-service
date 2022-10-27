@@ -1,8 +1,8 @@
-from typing import Literal, Type
+from typing import Union
 
 from core.folders.domain.aggregates.object import EncryptedObject
-from core.folders.domain.value_objects.encryption import SymmetricEncryption
-from core.folders.domain.value_objects.key import ContentKey
+from core.folders.domain.value_objects.encryption import EncryptionPyramid
+from core.folders.domain.value_objects.keys import ContentKey
 
 
 class Content:
@@ -10,34 +10,32 @@ class Content:
         self,
         name: str,
         item: EncryptedObject,
-        symmetric_encryption_hierarchy: dict[int, Type[SymmetricEncryption]],
-        symmetric_encryption_version: int = 0,
+        symmetric_encryption_version: Union[str, None] = None,
     ):
         self.__name = name
         self.__item = item
         self.__encryption_version = symmetric_encryption_version
-        self.__encryption_hierarchy = symmetric_encryption_hierarchy
 
     @property
     def encryption_version(self):
         return self.__encryption_version
 
-    def get_symmetric_encryption_class(
-        self, direction: Literal["ENCRYPTION", "DECRYPTION"]
-    ) -> Type[SymmetricEncryption]:
-        if direction == "DECRYPTION":
-            return self.__encryption_hierarchy[self.__encryption_version]
-        if direction == "ENCRYPTION":
-            return self.__encryption_hierarchy[max(self.__encryption_hierarchy.keys())]
+    @property
+    def name(self):
+        return self.__name
+
+    @property
+    def item(self):
+        return self.__item
 
     def encrypt(self) -> ContentKey:
-        encryption_class = self.get_symmetric_encryption_class("ENCRYPTION")
-        raw_key = encryption_class.generate_key()
-        content_key = ContentKey(key=raw_key)
-        self.__item.encrypt(content_key, encryption_class)
-        self.__encryption_version = max(self.__encryption_hierarchy.keys())
+        encryption_class = EncryptionPyramid.get_highest_symmetric_encryption()
+        raw_key, version = encryption_class.generate_key()
+        content_key = ContentKey.create(key=raw_key, origin=version)
+        self.__item.encrypt(content_key)
+        self.__encryption_version = encryption_class.VERSION
         return content_key
 
     def decrypt(self, key: ContentKey):
-        item_encryption_class = self.get_symmetric_encryption_class("DECRYPTION")
-        self.__item.decrypt(key, item_encryption_class)
+        assert self.__encryption_version is not None
+        self.__item.decrypt(key, self.__encryption_version)

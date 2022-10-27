@@ -10,16 +10,21 @@ from core.folders.domain.value_objects.encryption import SymmetricEncryption
 
 
 class SymmetricEncryptionV1(SymmetricEncryption):
+    VERSION = "S1"
+
     def __init__(self, key: str):
         assert isinstance(key, str)
 
         self.__key = key
         super().__init__()
 
-    @staticmethod
-    def generate_key() -> str:
+    @classmethod
+    def generate_key(cls) -> tuple[str, str]:
         password_characters = string.ascii_letters + string.digits + string.punctuation
-        return "".join(secrets.choice(password_characters) for i in range(64))
+        return (
+            "".join(secrets.choice(password_characters) for i in range(64)),
+            cls.VERSION,
+        )
 
     def encrypt(self, data: bytes) -> bytes:
         assert self.__key is not None

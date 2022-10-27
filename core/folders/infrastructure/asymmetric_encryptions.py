@@ -9,6 +9,8 @@ from core.folders.domain.value_objects.encryption import AsymmetricEncryption
 
 
 class AsymmetricEncryptionV1(AsymmetricEncryption):
+    VERSION = "A1"
+
     def __init__(
         self, private_key: Optional[str] = None, public_key: Optional[str] = None
     ):
@@ -16,8 +18,8 @@ class AsymmetricEncryptionV1(AsymmetricEncryption):
         self.__public_key = public_key
         super().__init__()
 
-    @staticmethod
-    def generate_keys() -> Tuple[str, str]:
+    @classmethod
+    def generate_keys(cls) -> Tuple[str, str, str]:
 
         generated_private_key = rsa.generate_private_key(
             public_exponent=65537, key_size=2048, backend=default_backend()
@@ -37,7 +39,7 @@ class AsymmetricEncryptionV1(AsymmetricEncryption):
         private_key = bytes_private_key.decode("utf-8")
         public_key = bytes_public_key.decode("utf-8")
 
-        return private_key, public_key
+        return private_key, public_key, cls.VERSION
 
     def encrypt(self, key: bytes) -> bytes:
         assert self.__public_key is not None
