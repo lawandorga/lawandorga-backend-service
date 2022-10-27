@@ -1,3 +1,4 @@
+from asgiref.sync import sync_to_async
 from django.apps import AppConfig
 from django.db import OperationalError, ProgrammingError
 
@@ -6,6 +7,9 @@ class CoreConfig(AppConfig):
     name = "core"
 
     def ready(self):
+        sync_to_async(self.setup)
+
+    def setup(self):
         # import this file to add use_case mappings
         from core import use_cases  # noqa: F401
 
