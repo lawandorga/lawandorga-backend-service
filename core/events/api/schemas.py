@@ -27,17 +27,17 @@ class OutputEventResponse(BaseModel):
     class Config:
         orm_mode = True
 
-    @validator('start_time')
+    @validator("start_time")
     def localtime_1(cls, v: datetime):
         if v.tzinfo is None or v.tzinfo.utcoffset(v) is None:
-            return v.strftime('%Y-%m-%dT%H:%M:%S')
-        return localtime(v).strftime('%Y-%m-%dT%H:%M:%S')
+            return v.strftime("%Y-%m-%dT%H:%M:%S")
+        return localtime(v).strftime("%Y-%m-%dT%H:%M:%S")
 
-    @validator('end_time')
+    @validator("end_time")
     def localtime_2(cls, v):
         if v.tzinfo is None or v.tzinfo.utcoffset(v) is None:
-            return v.strftime('%Y-%m-%dT%H:%M:%S')
-        return localtime(v).strftime('%Y-%m-%dT%H:%M:%S')
+            return v.strftime("%Y-%m-%dT%H:%M:%S")
+        return localtime(v).strftime("%Y-%m-%dT%H:%M:%S")
 
 
 class InputEventCreate(BaseModel):
