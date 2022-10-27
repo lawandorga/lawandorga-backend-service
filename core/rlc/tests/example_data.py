@@ -68,25 +68,6 @@ def create_rlcs():
     return [rlc1, rlc2]
 
 
-def create_fixtures():
-    # create permissions
-    [
-        Permission.objects.get_or_create(name=permission)
-        for permission in get_all_permission_strings()
-    ]
-
-    # create collab permissions
-    [
-        CollabPermission.objects.get_or_create(name=permission)
-        for permission in get_all_collab_permission_strings()
-    ]
-    # create folder permissions
-    [
-        FolderPermission.objects.get_or_create(name=permission)
-        for permission in get_all_files_permission_strings()
-    ]
-
-
 def create_users(rlc1, rlc2):
     users = [
         (
@@ -772,8 +753,6 @@ def create_collab_documents(user, rlc):
 
 def create() -> None:
     dummy_password = settings.DUMMY_USER_PASSWORD
-    # general fixtures
-    create_fixtures()
     # rlcs and fixtures
     rlc1, rlc2 = create_rlcs()
     create_default_record_template(rlc1)

@@ -3,7 +3,7 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from core.models import HasPermission, Org, Permission, RlcUser, UserProfile
-from core.static import PERMISSION_ADMIN_MANAGE_USERS, get_all_permission_strings
+from core.static import PERMISSION_ADMIN_MANAGE_USERS
 from core.views import RlcUserViewSet
 
 
@@ -24,11 +24,6 @@ class UserBase:
         self.private_key = self.rlc_user.user.get_private_key(
             password_user=settings.DUMMY_USER_PASSWORD
         )
-        self.create_permissions()
-
-    def create_permissions(self):
-        for perm in get_all_permission_strings():
-            Permission.objects.create(name=perm)
 
 
 class UserViewSetBase(UserBase):
@@ -59,10 +54,6 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         return RlcUser.objects.create(
             user=self.another_user, email_confirmed=True, accepted=True
         )
-
-    def create_permissions(self):
-        for perm in get_all_permission_strings():
-            Permission.objects.create(name=perm)
 
     def test_create_works(self):
         view = RlcUserViewSet.as_view(actions={"post": "create"})

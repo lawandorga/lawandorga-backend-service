@@ -6,7 +6,6 @@ from django.test import Client
 from core.models import Org
 from core.seedwork import test_helpers as data
 
-from ...fixtures import create_permissions
 from ...static import PERMISSION_ADMIN_MANAGE_GROUPS
 from ..models import Group
 
@@ -33,7 +32,6 @@ def user_2(db, org):
 def user(db, group, user_2, org):
     user_1 = data.create_rlc_user(rlc=org)
     org.generate_keys()
-    create_permissions()
     group.members.add(user_1["rlc_user"])
     group.save()
     yield user_1

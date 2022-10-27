@@ -34,7 +34,6 @@ class BaseCollab:
             user=self.user, private_key_user=self.private_key_user
         )
         # permissions
-        create_permissions()
         permission = Permission.objects.get(name=PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS)
         HasPermission.objects.create(user=self.rlc_user, permission=permission)
 
