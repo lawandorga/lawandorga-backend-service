@@ -23,7 +23,11 @@ if TYPE_CHECKING:
 
 class UserProfileManager(BaseUserManager):
     def get_queryset(self):
-        return super().get_queryset().select_related("rlc_user", "statistic_user", "internal_user")
+        return (
+            super()
+            .get_queryset()
+            .select_related("rlc_user", "statistic_user", "internal_user")
+        )
 
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):

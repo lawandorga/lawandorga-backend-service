@@ -16,13 +16,13 @@ def create_collab_permissions(collab_permission_model: "Type[CollabPermission]")
         collab_permission_model.objects.get_or_create(name=permission)
 
 
-def create_permissions(permission_model: 'Type[Permission]'):
+def create_permissions(permission_model: "Type[Permission]"):
     permissions = get_all_permission_strings()
     for permission in permissions:
         permission_model.objects.get_or_create(name=permission)
 
 
-def create_folder_permissions(folder_permission_model: 'Type[FolderPermission]'):
+def create_folder_permissions(folder_permission_model: "Type[FolderPermission]"):
     permissions = get_all_files_permission_strings()
     for permission in permissions:
         folder_permission_model.objects.get_or_create(name=permission)

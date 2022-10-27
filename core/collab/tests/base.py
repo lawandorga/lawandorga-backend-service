@@ -1,7 +1,6 @@
 from django.conf import settings
 from rest_framework.test import APIRequestFactory
 
-from core.fixtures import create_permissions
 from core.models import (
     CollabDocument,
     HasPermission,

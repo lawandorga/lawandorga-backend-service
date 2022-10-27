@@ -6,8 +6,6 @@ from django.conf import settings
 from core import static
 from core.models import (
     CollabDocument,
-    CollabPermission,
-    FolderPermission,
     Group,
     HasPermission,
     InternalUser,
@@ -40,11 +38,6 @@ from core.records.models import (
 from core.records.models.encrypted_record_document import EncryptedRecordDocument
 from core.rlc.models import Org
 from core.seedwork.encryption import AESEncryption
-from core.static import (
-    get_all_collab_permission_strings,
-    get_all_files_permission_strings,
-    get_all_permission_strings,
-)
 
 
 # helpers
