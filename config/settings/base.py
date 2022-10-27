@@ -47,13 +47,10 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    # "django.middleware.common.CommonMiddleware",
-    # "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "config.middleware.TokenAuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    # "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "config.middleware.LoggingMiddleware",
+    "config.middleware.logging_middleware",
 ]
 
 # Url conf
@@ -192,3 +189,7 @@ SERVICE = os.getenv("PIPELINE_SERVICE", "unknown")
 # The standard password of the dummy user, this is used within get_private_key in UserProfile
 # This enables us to do a lot of cool stuff, for example: test the restframework api directly
 DUMMY_USER_PASSWORD = "qwe123"
+
+# cronjobs
+# those are used within core.cronjobs and imported by string
+CRONJOBS = ["core.legal.cronjobs.create_legal_requirements_for_users"]

@@ -2,7 +2,6 @@ from django.conf import settings
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from core.fixtures import create_permissions
 from core.models import HasPermission, Org, Permission, RlcUser, UserProfile
 from core.records.models import Record, RecordEncryptionNew, RecordTemplate
 from core.records.views import RecordTemplateViewSet, RecordViewSet
@@ -31,7 +30,6 @@ class BaseRecord:
             rlc=self.rlc, name="Record Template"
         )
         # permissions
-        create_permissions()
         permission = Permission.objects.get(name=PERMISSION_RECORDS_ADD_RECORD)
         HasPermission.objects.create(user=self.user.rlc_user, permission=permission)
         permission = Permission.objects.get(

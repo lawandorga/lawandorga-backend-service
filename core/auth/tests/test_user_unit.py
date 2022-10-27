@@ -1,11 +1,10 @@
 from django.conf import settings
 from django.test import TestCase
 
-from core.models import Org, Permission, RlcUser, UserProfile
+from core.models import Org, RlcUser, UserProfile
 from core.records.fixtures import create_default_record_template
 from core.records.models import Record, RecordEncryptionNew, RecordTemplate
 from core.seedwork.encryption import AESEncryption
-from core.static import get_all_permission_strings
 
 
 class UserUnitUserBase:
@@ -23,7 +22,6 @@ class UserUnitUserBase:
         self.private_key1 = self.user1.get_private_key(settings.DUMMY_USER_PASSWORD)
         self.private_key2 = self.user2.get_private_key("pass1234")
 
-        self.create_permissions()
         create_default_record_template(self.rlc)
         self.template = RecordTemplate.objects.filter(rlc=self.rlc).first()
 
@@ -38,10 +36,6 @@ class UserUnitUserBase:
             user=user, email_confirmed=True, accepted=True, org=self.rlc
         )
         return user, rlc_user
-
-    def create_permissions(self):
-        for perm in get_all_permission_strings():
-            Permission.objects.create(name=perm)
 
 
 class UserUnitTests(UserUnitUserBase, TestCase):

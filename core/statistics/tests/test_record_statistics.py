@@ -4,7 +4,6 @@ import pytest
 from django.test import Client
 from django.utils import timezone
 
-from core.fixtures import create_permissions
 from core.records.models import RecordStateEntry, RecordStateField, RecordTemplate
 from core.rlc.models import Org
 from core.seedwork import test_helpers as data
@@ -18,7 +17,6 @@ def user(db):
         email="statistics@law-orga.de", name="Mr. Statistics"
     )
     rlc.generate_keys()
-    create_permissions()
     template = RecordTemplate.objects.create(rlc=rlc, name="Record Template")
     field = RecordStateField.objects.create(
         template=template, options=["Open", "Closed"]

@@ -1,0 +1,39 @@
+{
+    "version": 1,
+    "disable_existing_loggers": true,
+    "formatters": {
+        "console": {
+            "format": "{levelname:8s}O | {name:14s} | {message}",
+            "style": "{"
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "formatter": "console"
+        }
+    },
+    "loggers": {
+        "": {
+            "handlers": [
+                "console"
+            ],
+            "level": "DEBUG"
+        },
+        "uvicorn.access": {
+            "handlers": [
+                "console"
+            ],
+            "propagate": false,
+            "level": "DEBUG"
+        },
+        "uvicorn.error": {
+            "handlers": [
+                "console"
+            ],
+            "propagate": false,
+            "level": "DEBUG"
+        }
+    }
+}

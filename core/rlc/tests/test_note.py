@@ -2,8 +2,8 @@ from django.conf import settings
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from core.models import Note, Org, Permission, RlcUser, UserProfile
-from core.static import PERMISSION_DASHBOARD_MANAGE_NOTES, get_all_permission_strings
+from core.models import Note, Org, RlcUser, UserProfile
+from core.static import PERMISSION_DASHBOARD_MANAGE_NOTES
 from core.views import NoteViewSet
 
 
@@ -21,11 +21,6 @@ class NoteUserBase:
         self.rlc.generate_keys()
         self.rlc_user = RlcUser.objects.get(pk=self.rlc_user.pk)
         self.private_key = bytes(self.rlc_user.private_key).decode("utf-8")
-        self.create_permissions()
-
-    def create_permissions(self):
-        for perm in get_all_permission_strings():
-            Permission.objects.create(name=perm)
 
 
 class NoteUserViewSetBase(NoteUserBase):

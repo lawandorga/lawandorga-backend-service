@@ -2,6 +2,7 @@ from django.urls import include, path
 
 from core.auth.urls import urlpatterns as auth_urlpatterns
 from core.collab.urls import router as collab_router
+from core.cronjobs import router as cronjobs_router
 from core.events.urls import urlpatterns as events_urlpatterns
 from core.files.urls import router as files_router
 from core.internal.urls import router as internal_router
@@ -15,6 +16,7 @@ urlpatterns = [
     *statistics_urlpatterns,
     *events_urlpatterns,
     path("legal/", include(legal_urlpatterns)),
+    path("cronjobs/", include(cronjobs_router.urls)),
     path("", include(org_urlpatterns)),
     path("", include(internal_router.urls)),
     path("collab/", include(collab_router.urls)),

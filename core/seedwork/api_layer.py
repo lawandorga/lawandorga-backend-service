@@ -1,7 +1,9 @@
+import asyncio
 import json
 from json import JSONDecodeError
-from typing import Any, Callable, Dict, List, Literal, Optional, Type, Union
+from typing import Any, Awaitable, Callable, Dict, List, Literal, Optional, Type, Union
 
+from asgiref.sync import sync_to_async
 from django.http import HttpRequest, JsonResponse
 from django.urls import path
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model, validator
@@ -106,10 +108,14 @@ class Router:
         self.__routes = []
 
     @staticmethod
-    def generate_view_func(method_route: Dict) -> Callable[..., JsonResponse]:
-        def decorator(request: HttpRequest, *args, **kwargs) -> JsonResponse:
+    def generate_view_func(
+        method_route: Dict,
+    ) -> Callable[..., Awaitable[JsonResponse]]:
+        async def decorator(request: HttpRequest, *args, **kwargs) -> JsonResponse:
             if request.method in method_route:
-                return method_route[request.method]["view"](request, *args, **kwargs)
+                return await method_route[request.method]["view"](
+                    request, *args, **kwargs
+                )
             else:
                 return ErrorResponse(
                     title="Method not allowed", status=405, err_type="MethodNotAllowed"
@@ -139,16 +145,16 @@ class Router:
 
     @staticmethod
     def generate_view(
-        func: Callable[..., Union[Any, None]],
+        func: Callable[..., Union[Union[Awaitable[Any], Any], None]],
         input_schema: Optional[Type] = None,
         output_schema: Optional[Type] = None,
         auth=False,
         error_dict: Optional[Dict[str, ErrorResponse]] = None,
     ) -> Callable:
-        def wrapper(request: HttpRequest, *args, **kwargs) -> JsonResponse:
+        async def wrapper(request: HttpRequest, *args, **kwargs) -> JsonResponse:
             # set up input
             func_kwargs: Dict[str, Any] = {}
-            func_input = func.__code__.co_varnames
+            func_input = func.__code__.co_varnames[: func.__code__.co_argcount]
 
             # handle auth
             is_authenticated = request.user.is_authenticated
@@ -218,7 +224,11 @@ class Router:
 
             # different layer errors
             try:
-                result: Any = func(**func_kwargs)
+                if asyncio.iscoroutinefunction(func):
+                    async_func: Callable[..., Awaitable[Any]] = func
+                else:
+                    async_func: Callable[..., Awaitable[Any]] = sync_to_async(func)  # type: ignore
+                result: Any = await async_func(**func_kwargs)
             except ApiError as e:
                 return ErrorResponse(
                     title=e.message,
@@ -251,7 +261,7 @@ class Router:
                     root=(output_schema, ...),
                 )
                 try:
-                    output_data = model(root=result)
+                    output_data = await sync_to_async(model)(root=result)
                 except ValidationError as e:
                     return ErrorResponse(
                         err_type="OutputError",
