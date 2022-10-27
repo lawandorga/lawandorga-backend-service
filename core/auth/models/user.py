@@ -143,7 +143,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                 org=self.rlc, created__gt=timezone.now() - timedelta(days=14)
             )
             for rlc_user in list(users):
-                if rlc_user.user.rlcgroups.all().count() == 0:
+                if rlc_user.groups.all().count() == 0:
                     members_data.append(
                         {
                             "name": rlc_user.user.name,
