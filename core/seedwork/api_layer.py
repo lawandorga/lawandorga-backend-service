@@ -6,6 +6,7 @@ from typing import Any, Awaitable, Callable, Dict, List, Literal, Optional, Type
 from asgiref.sync import sync_to_async
 from django.http import HttpRequest, JsonResponse
 from django.urls import path
+from django.utils.timezone import localtime
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model, validator
 
 from core.models import UserProfile
@@ -21,6 +22,17 @@ def qs_to_list_validator(qs) -> List:
 
 def qs_to_list(x):
     return validator(x, pre=True, allow_reuse=True)(qs_to_list_validator)
+
+
+def format_datetime_validator(v) -> str:
+    datetime_format = "%Y-%m-%dT%H:%M:%S"
+    if v.tzinfo is None or v.tzinfo.utcoffset(v) is None:
+        return v.strftime(datetime_format)
+    return localtime(v).strftime(datetime_format)
+
+
+def format_datetime(x):
+    return validator(x, allow_reuse=True)(format_datetime_validator)
 
 
 class ApiError(Exception):
