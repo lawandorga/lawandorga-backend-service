@@ -38,7 +38,9 @@ def format_datetime(x):
 
 
 def make_datetime_aware_validator(v: datetime) -> datetime:
-    return make_aware(v, pytz.timezone("Europe/Berlin"))
+    if v.utcoffset() is None:
+        return make_aware(v, pytz.timezone("Europe/Berlin"))
+    return v
 
 
 def make_datetime_aware(x):
