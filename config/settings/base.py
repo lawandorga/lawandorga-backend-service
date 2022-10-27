@@ -151,6 +151,7 @@ SIMPLE_JWT = {
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # OpenID connect settings
+# https://django-oidc-provider.readthedocs.io/en/latest/sections/settings.html
 OIDC_USERINFO = "apps.core.auth.oidc_provider_settings.userinfo"
 OIDC_EXTRA_SCOPE_CLAIMS = "apps.core.auth.oidc_provider_settings.RlcScopeClaims"
 OIDC_IDTOKEN_INCLUDE_CLAIMS = True
