@@ -1,15 +1,57 @@
-#  law&orga - record and organization management software for refugee law clinics
-#  Copyright (C) 2019  Dominik Walser
+# from core.legal.cronjobs import create_legal_requirements_for_users
+# from django.db import OperationalError, ProgrammingError
+# from core.cronjobs import CronjobWarehouse
 #
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as
-#  published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
+# def setup():
+#     # import this file to add use_case mappings
+#     from core import use_cases  # noqa: F401
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
+#     # rlc permissions
+#     from core.fixtures import create_permissions
+#     from core.models import Permission
 #
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#     try:
+#         Permission.objects.first()
+#     except (OperationalError, ProgrammingError):
+#         # the needed tables don't exist
+#         return
+#     create_permissions()
+#
+#     # files permissions
+#     from core.fixtures import create_folder_permissions
+#     from core.models import FolderPermission
+#
+#     try:
+#         FolderPermission.objects.first()
+#     except (OperationalError, ProgrammingError):
+#         # the needed tables don't exist
+#         return
+#     create_folder_permissions()
+#
+#     # collab permissions
+#     from core.fixtures import create_collab_permissions
+#     from core.models import CollabPermission
+#
+#     try:
+#         CollabPermission.objects.first()
+#     except (OperationalError, ProgrammingError):
+#         # the needed tables don't exist
+#         return
+#     create_collab_permissions()
+#
+#     # record templates
+#     from core.models import Org
+#     from core.records.fixtures import create_default_record_template
+#
+#     try:
+#         for rlc in Org.objects.all():
+#             if rlc.recordtemplates.count() == 0:
+#                 create_default_record_template(rlc)
+#     except (OperationalError, ProgrammingError):
+#         # the needed tables don't exist
+#         return
+#
+#
+# # setup cronjobs
+# CronjobWarehouse.add_cronjob(create_legal_requirements_for_users)
+#
