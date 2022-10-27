@@ -25,7 +25,6 @@ def get_all_events_for_user(rlc_user: RlcUser):
 @router.api(
     method="POST",
     input_schema=InputEventCreate,
-    output_schema=OutputEventResponse,
     auth=True,
 )
 def create_event(data: InputEventCreate, rlc_user: RlcUser):
@@ -45,7 +44,6 @@ def create_event(data: InputEventCreate, rlc_user: RlcUser):
     method="PUT",
     input_schema=InputEventUpdate,
     output_schema=OutputEventResponse,
-    auth=True,
 )
 def update_event(data: InputEventUpdate, rlc_user: RlcUser):
     try:
