@@ -1,10 +1,9 @@
 from django.test import Client, TestCase
 
-from core.models import Org, OrgEncryption, Permission
+from core.models import Org, OrgEncryption
 from core.records.models import RecordEncryptionNew, RecordTemplate
 from core.seedwork import test_helpers as data
 from core.seedwork.encryption import RSAEncryption
-from core.static import get_all_permission_strings
 
 
 class TestUserKeys(TestCase):
@@ -14,7 +13,6 @@ class TestUserKeys(TestCase):
         self.user_2 = data.create_rlc_user(email="dummy2@law-orga.de", rlc=self.rlc)
         self.user_3 = data.create_rlc_user(email="dummy3@law-orga.de", rlc=self.rlc)
         self.rlc.generate_keys()
-        self.create_permissions()
         self.template = RecordTemplate.objects.create(
             rlc=self.rlc, name="Record Template"
         )
@@ -26,10 +24,6 @@ class TestUserKeys(TestCase):
         )
         self.client = Client()
         self.client.login(**self.user_1)
-
-    def create_permissions(self):
-        for perm in get_all_permission_strings():
-            Permission.objects.create(name=perm)
 
     def get_user_rlc_keys(self, user_obj):
         keys = OrgEncryption.objects.get(pk=user_obj["user"].users_rlc_keys.first().pk)

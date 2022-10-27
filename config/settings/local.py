@@ -21,6 +21,7 @@ INSTALLED_APPS += ["debug_toolbar"]
 # https://docs.djangoproject.com/en/dev/topics/http/middleware/
 MIDDLEWARE += [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "config.middleware.custom_debug_toolbar_middleware",
 ]
 
 # Database
@@ -43,3 +44,57 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Django Debug Toolbar
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#configuring-internal-ips
 INTERNAL_IPS = ["127.0.0.1"]
+
+# Logging
+# https://docs.djangoproject.com/en/dev/topics/logging/
+LOGGING_DIR = os.path.join(BASE_DIR, "tmp/logs")
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": True,
+    "formatters": {
+        "console": {
+            "format": "{levelname:8s}I | {name:14s} | {message}",
+            "style": "{",
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "formatter": "console",
+        },
+    },
+    "loggers": {
+        "": {"handlers": ["console"], "level": "DEBUG"},
+        "uvicorn": {
+            "handlers": ["console"],
+            "propagate": False,
+            "level": "DEBUG",
+        },
+        "uvicorn.error": {
+            "handlers": ["console"],
+            "propagate": False,
+            "level": "DEBUG",
+        },
+        "django": {
+            "handlers": ["console"],
+            "propagate": False,
+            "level": "INFO",
+        },
+        "django.request": {
+            "handlers": ["console"],
+            "propagate": False,
+            "level": "DEBUG",
+        },
+        "django.server": {
+            "handlers": ["console"],
+            "propagate": False,
+            "level": "DEBUG",
+        },
+        "django.security": {
+            "handlers": ["console"],
+            "propagate": False,
+            "level": "DEBUG",
+        },
+    },
+}

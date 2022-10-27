@@ -1,7 +1,6 @@
 from django.conf import settings
 from rest_framework.test import APIRequestFactory
 
-from core.fixtures import create_permissions
 from core.models import (
     CollabDocument,
     HasPermission,
@@ -34,7 +33,6 @@ class BaseCollab:
             user=self.user, private_key_user=self.private_key_user
         )
         # permissions
-        create_permissions()
         permission = Permission.objects.get(name=PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS)
         HasPermission.objects.create(user=self.rlc_user, permission=permission)
 

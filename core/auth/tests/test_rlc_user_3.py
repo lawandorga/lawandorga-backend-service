@@ -8,7 +8,6 @@ from core.models import Org
 from core.records.models import RecordTemplate
 from core.seedwork import test_helpers as data
 
-from ...fixtures import create_permissions
 from ...rlc.models import Permission
 from ...static import PERMISSION_ADMIN_MANAGE_PERMISSIONS, PERMISSION_ADMIN_MANAGE_USERS
 from ..models import RlcUser
@@ -32,7 +31,6 @@ def user(db, rlc_user_2, org):
     user_1 = data.create_rlc_user(rlc=org)
     data.create_rlc_user(email="dummy3@law-orga.de", rlc=org)
     org.generate_keys()
-    create_permissions()
     template = RecordTemplate.objects.create(rlc=org, name="Record Template")
     data.create_record(template=template, users=[user_1["user"], rlc_user_2["user"]])
     data.create_record(template=template, users=[user_1["user"], rlc_user_2["user"]])

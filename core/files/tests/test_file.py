@@ -6,7 +6,6 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from core.fixtures import create_folder_permissions, create_permissions
 from core.models import (
     File,
     Folder,
@@ -24,8 +23,6 @@ settings.DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 class FileTestsBase:
     def setUp(self):
-        create_folder_permissions()
-        create_permissions()
         self.factory = APIRequestFactory()
         self.rlc = Org.objects.create(name="Test RLC")
         self.user = UserProfile.objects.create(

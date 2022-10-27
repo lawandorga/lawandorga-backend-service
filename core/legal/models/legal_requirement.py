@@ -44,6 +44,7 @@ class LegalRequirementUser(models.Model):
     class Meta:
         verbose_name = "LegalRequirementUser"
         verbose_name_plural = "LegalRequirementUsers"
+        unique_together = ["legal_requirement", "rlc_user"]
 
     @property
     def accepted(self):

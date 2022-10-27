@@ -6,8 +6,6 @@ from django.conf import settings
 from core import static
 from core.models import (
     CollabDocument,
-    CollabPermission,
-    FolderPermission,
     Group,
     HasPermission,
     InternalUser,
@@ -40,11 +38,6 @@ from core.records.models import (
 from core.records.models.encrypted_record_document import EncryptedRecordDocument
 from core.rlc.models import Org
 from core.seedwork.encryption import AESEncryption
-from core.static import (
-    get_all_collab_permission_strings,
-    get_all_files_permission_strings,
-    get_all_permission_strings,
-)
 
 
 # helpers
@@ -66,25 +59,6 @@ def create_rlcs():
         id=1,
     )
     return [rlc1, rlc2]
-
-
-def create_fixtures():
-    # create permissions
-    [
-        Permission.objects.get_or_create(name=permission)
-        for permission in get_all_permission_strings()
-    ]
-
-    # create collab permissions
-    [
-        CollabPermission.objects.get_or_create(name=permission)
-        for permission in get_all_collab_permission_strings()
-    ]
-    # create folder permissions
-    [
-        FolderPermission.objects.get_or_create(name=permission)
-        for permission in get_all_files_permission_strings()
-    ]
 
 
 def create_users(rlc1, rlc2):
@@ -772,8 +746,6 @@ def create_collab_documents(user, rlc):
 
 def create() -> None:
     dummy_password = settings.DUMMY_USER_PASSWORD
-    # general fixtures
-    create_fixtures()
     # rlcs and fixtures
     rlc1, rlc2 = create_rlcs()
     create_default_record_template(rlc1)

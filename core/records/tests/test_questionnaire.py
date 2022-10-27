@@ -7,7 +7,6 @@ from core.models import Org
 from core.records.models import QuestionnaireTemplate
 from core.seedwork import test_helpers as data
 
-from ...fixtures import create_permissions
 from ...static import PERMISSION_RECORDS_ADD_RECORD
 
 
@@ -21,7 +20,6 @@ def org(db):
 def user(db, org):
     user_1 = data.create_rlc_user(rlc=org)
     org.generate_keys()
-    create_permissions()
     yield user_1
 
 
