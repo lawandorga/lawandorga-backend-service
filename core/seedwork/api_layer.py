@@ -33,15 +33,17 @@ def format_datetime_validator(v: datetime) -> str:
     return localtime(v).strftime(datetime_format)
 
 
-def format_datetime(x: datetime):
+def format_datetime(x):
     return validator(x, allow_reuse=True)(format_datetime_validator)
 
 
 def make_datetime_aware_validator(v: datetime) -> datetime:
-    return make_aware(v, pytz.timezone('Europe/Berlin'))
+    if v.utcoffset() is None:
+        return make_aware(v, pytz.timezone("Europe/Berlin"))
+    return v
 
 
-def make_datetime_aware(x: datetime):
+def make_datetime_aware(x):
     return validator(x, allow_reuse=True)(make_datetime_aware_validator)
 
 

@@ -39,8 +39,8 @@ class InputEventCreate(BaseModel):
     start_time: datetime
     end_time: datetime
 
-    _ = make_datetime_aware('start_time')
-    __ = make_datetime_aware('end_time')
+    _ = make_datetime_aware("start_time")
+    __ = make_datetime_aware("end_time")
 
 
 class InputEventUpdate(BaseModel):
@@ -51,8 +51,8 @@ class InputEventUpdate(BaseModel):
     start_time: Optional[datetime]
     end_time: Optional[datetime]
 
-    _ = make_datetime_aware('start_time')
-    __ = make_datetime_aware('end_time')
+    _ = make_datetime_aware("start_time")
+    __ = make_datetime_aware("end_time")
 
 
 class InputEventDelete(BaseModel):

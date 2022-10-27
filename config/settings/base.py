@@ -15,6 +15,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "oidc_provider",
     "rest_framework",
     "tinymce",
     "core",
@@ -145,6 +146,12 @@ SIMPLE_JWT = {
 # Necessary in django 3.2
 # https://docs.djangoproject.com/en/3.2/releases/3.2/#customizing-type-of-auto-created-primary-keys
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
+# OpenID connect settings
+# https://django-oidc-provider.readthedocs.io/en/latest/sections/settings.html
+OIDC_USERINFO = "apps.core.auth.oidc_provider_settings.userinfo"
+OIDC_EXTRA_SCOPE_CLAIMS = "apps.core.auth.oidc_provider_settings.RlcScopeClaims"
+OIDC_IDTOKEN_INCLUDE_CLAIMS = True
 
 # mail errors to the admins
 # https://docs.djangoproject.com/en/3.2/ref/settings/#admins

@@ -18,7 +18,7 @@ from core.seedwork.encryption import to_bytes
 from core.static import PERMISSION_ADMIN_MANAGE_USERS
 
 if TYPE_CHECKING:
-    from core.models import Permission, RlcUser, StatisticUser
+    from core.models import MatrixUser, Permission, RlcUser, StatisticUser
 
 
 class UserProfileManager(BaseUserManager):
@@ -53,6 +53,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # mypy stuff
     rlc_user: "RlcUser"
     statistic_user: "StatisticUser"
+    matrix_user: "MatrixUser"
 
     class Meta:
         verbose_name = "UserProfile"
