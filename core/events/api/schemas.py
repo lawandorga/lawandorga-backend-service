@@ -5,6 +5,9 @@ from django.utils.timezone import localtime
 from pydantic import BaseModel, validator
 
 
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
+
+
 class OutputRlc(BaseModel):
     id: int
     name: str
@@ -30,14 +33,14 @@ class OutputEventResponse(BaseModel):
     @validator("start_time")
     def localtime_1(cls, v: datetime):
         if v.tzinfo is None or v.tzinfo.utcoffset(v) is None:
-            return v.strftime("%Y-%m-%dT%H:%M:%S")
-        return localtime(v).strftime("%Y-%m-%dT%H:%M:%S")
+            return v.strftime(DATETIME_FORMAT)
+        return localtime(v).strftime(DATETIME_FORMAT)
 
     @validator("end_time")
     def localtime_2(cls, v):
         if v.tzinfo is None or v.tzinfo.utcoffset(v) is None:
-            return v.strftime("%Y-%m-%dT%H:%M:%S")
-        return localtime(v).strftime("%Y-%m-%dT%H:%M:%S")
+            return v.strftime(DATETIME_FORMAT)
+        return localtime(v).strftime(DATETIME_FORMAT)
 
 
 class InputEventCreate(BaseModel):
