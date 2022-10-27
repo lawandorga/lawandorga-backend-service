@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from core.seedwork.api_layer import format_datetime
+from core.seedwork.api_layer import format_datetime, make_datetime_aware
 
 
 class OutputRlc(BaseModel):
@@ -39,6 +39,9 @@ class InputEventCreate(BaseModel):
     start_time: datetime
     end_time: datetime
 
+    _ = make_datetime_aware('start_time')
+    __ = make_datetime_aware('end_time')
+
 
 class InputEventUpdate(BaseModel):
     id: int
@@ -47,6 +50,9 @@ class InputEventUpdate(BaseModel):
     description: Optional[str]
     start_time: Optional[datetime]
     end_time: Optional[datetime]
+
+    _ = make_datetime_aware('start_time')
+    __ = make_datetime_aware('end_time')
 
 
 class InputEventDelete(BaseModel):

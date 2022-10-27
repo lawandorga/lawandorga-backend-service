@@ -1,12 +1,14 @@
 import asyncio
 import json
+from datetime import datetime
 from json import JSONDecodeError
 from typing import Any, Awaitable, Callable, Dict, List, Literal, Optional, Type, Union
 
+import pytz
 from asgiref.sync import sync_to_async
 from django.http import HttpRequest, JsonResponse
 from django.urls import path
-from django.utils.timezone import localtime
+from django.utils.timezone import localtime, make_aware
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model, validator
 
 from core.models import UserProfile
@@ -24,15 +26,23 @@ def qs_to_list(x):
     return validator(x, pre=True, allow_reuse=True)(qs_to_list_validator)
 
 
-def format_datetime_validator(v) -> str:
+def format_datetime_validator(v: datetime) -> str:
     datetime_format = "%Y-%m-%dT%H:%M:%S"
-    if v.tzinfo is None or v.tzinfo.utcoffset(v) is None:
+    if v.utcoffset() is None:
         return v.strftime(datetime_format)
     return localtime(v).strftime(datetime_format)
 
 
-def format_datetime(x):
+def format_datetime(x: datetime):
     return validator(x, allow_reuse=True)(format_datetime_validator)
+
+
+def make_datetime_aware_validator(v: datetime) -> datetime:
+    return make_aware(v, pytz.timezone('Europe/Berlin'))
+
+
+def make_datetime_aware(x: datetime):
+    return validator(x, allow_reuse=True)(make_datetime_aware_validator)
 
 
 class ApiError(Exception):
