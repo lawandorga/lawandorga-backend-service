@@ -1,7 +1,7 @@
-import asyncio
 import importlib
-from typing import Awaitable, Callable, Optional
+from typing import Callable
 
+from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.utils import timezone
 
@@ -11,7 +11,7 @@ router = Router()
 
 
 class CronjobWarehouse:
-    __CRONJOBS: list[Callable[[], Awaitable[str]]] = []
+    __CRONJOBS: list[Callable[[], str]] = []
     __RUNS: dict[str, list[str]] = {}
 
     @classmethod
@@ -25,14 +25,19 @@ class CronjobWarehouse:
                 cls.add_cronjob(job)
 
     @classmethod
-    def add_cronjob(cls, job: Callable[[], Awaitable[str]]):
+    def add_cronjob(cls, job: Callable[[], str]):
         cls.__CRONJOBS.append(job)
 
     @classmethod
     async def run_cronjobs(cls):
         cls.setup_cronjobs()
-        jobs = [f() for f in cls.__CRONJOBS]
-        results = await asyncio.gather(*jobs)
+        results = []
+        for job in cls.__CRONJOBS:
+            try:
+                result = await sync_to_async(job, thread_sensitive=False)()
+            except Exception as e:
+                result = "ERROR {}".format(str(e))
+            results.append(result)
         cls.__RUNS[timezone.now().strftime("%Y-%m-%d---%H:%M:%S")] = results
 
     @classmethod
@@ -42,11 +47,12 @@ class CronjobWarehouse:
 
 @router.api(url="run/", output_schema=dict)
 async def run_cronjobs():
-    loop = asyncio.get_event_loop()
-    loop.create_task(CronjobWarehouse.run_cronjobs())
+    # loop = asyncio.get_event_loop()
+    # loop.create_task(CronjobWarehouse.run_cronjobs())
+    await CronjobWarehouse.run_cronjobs()
     return {"status": "OK"}
 
 
-@router.api(url="status/", output_schema=dict[str, list[Optional[str]]])
+@router.api(url="status/", output_schema=dict[str, list[str]])
 def status():
     return CronjobWarehouse.status()

@@ -60,7 +60,7 @@ def logging_middleware(get_response):
         async def middleware(request):
             response = await get_response(request)
             data = create_data(request, response)
-            LoggedPath.objects.acreate(**data)
+            await LoggedPath.objects.acreate(**data)
             return response
 
     else:
