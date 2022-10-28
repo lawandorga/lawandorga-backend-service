@@ -2,25 +2,25 @@ name: Backup Files
 
 on:
   schedule:
-    - cron:  '5 2 * * *'
+    - cron: '5 2 * * *'
 
 jobs:
-    backup:
-        runs-on: ubuntu-latest
-        environment: PRODUCTION
-        steps:
-            -   name: Install Dependencies
-                run: pip3 install awscli awscli-plugin-endpoint
+  backup:
+    runs-on: ubuntu-latest
+    environment: PRODUCTION
+    steps:
+      - name: Install Dependencies
+        run: pip3 install awscli awscli-plugin-endpoint
 
-            -   name: Configure AWS Cli
-                run: |
-                    aws configure set plugins.endpoint awscli_plugin_endpoint
-                    aws configure << EOF
-                    ${{ secrets.S3_ACCESS_KEY }}
-                    ${{ secrets.S3_SECRET_KEY }}
-                    fr-par
+      - name: Configure AWS Cli
+        run: |
+          aws configure set plugins.endpoint awscli_plugin_endpoint
+          aws configure << EOF
+          ${{ secrets.S3_ACCESS_KEY }}
+          ${{ secrets.S3_SECRET_KEY }}
+          fr-par
 
-                    EOF
+          EOF
 
-            -   name: Backup
-                run: aws s3 sync s3://law-orga-prod-files s3://lawandorga-backup --endpoint-url https://s3.fr-par.scw.cloud --region fr-par --quiet
+      - name: Backup
+        run: aws s3 sync s3://law-orga-prod-files s3://lawandorga-backup --endpoint-url https://s3.fr-par.scw.cloud --region fr-par --quiet
