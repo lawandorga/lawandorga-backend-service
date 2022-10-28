@@ -1,247 +1,247 @@
 name: Deploy
 
 on:
-    push:
-        branches:
-            - main
+  push:
+    branches:
+      - main
 
 env:
-    UPDATE_NAME: lawandorga-backend-service:${{ github.sha }}
+  UPDATE_NAME: lawandorga-backend-service:${{ github.sha }}
 
 jobs:
-    start:
-        name: Start
-        runs-on: ubuntu-22.04
-        steps:
-            -   name: Start update
-                run: curl https://lawandorgaupdatefuncpllv4num-start-update.functions.fnc.fr-par.scw.cloud?name=${{ env.UPDATE_NAME }}
+  start:
+    name: Start
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Start update
+        run: curl https://lawandorgaupdatefuncpllv4num-start-update.functions.fnc.fr-par.scw.cloud?name=${{ env.UPDATE_NAME }}
 
-    build:
-        name: Build
-        runs-on: ubuntu-22.04
-        steps:
-            -   name: Checkout
-                uses: actions/checkout@v3
-                with:
-                    fetch-depth: 0
+  build:
+    name: Build
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-            -   name: Set Up Python
-                uses: actions/setup-python@v4
-                with:
-                    python-version: "3.10"
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-            -   uses: actions/cache@v3
-                id: cache-packages
-                with:
-                    path: ${{ env.pythonLocation }}
-                    key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
+      - uses: actions/cache@v3
+        id: cache-packages
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
 
-            -   name: Install Dependencies
-                if: steps.cache-packages.outputs.cache-hit != 'true'
-                run: |
-                    pip install --upgrade pip pipenv
-                    pipenv requirements > requirements.txt
-                    pip install -r requirements.txt
+      - name: Install Dependencies
+        if: steps.cache-packages.outputs.cache-hit != 'true'
+        run: |
+          pip install --upgrade pip pipenv
+          pipenv requirements > requirements.txt
+          pip install -r requirements.txt
 
-    test:
-        name: Test
-        runs-on: ubuntu-22.04
-        needs: [ build ]
-        steps:
-            -   name: Checkout
-                uses: actions/checkout@v3
-                with:
-                    fetch-depth: 0
+  test:
+    name: Test
+    runs-on: ubuntu-22.04
+    needs: [ build ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-            -   name: Set Up Python
-                uses: actions/setup-python@v4
-                with:
-                    python-version: "3.10"
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-            -   uses: actions/cache@v3
-                id: cache-packages
-                with:
-                    path: ${{ env.pythonLocation }}
-                    key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
+      - uses: actions/cache@v3
+        id: cache-packages
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
 
-            -   name: Test
-                run: |
-                    coverage run --source='.' -m pytest
-                    coverage xml
-                    coverage report
+      - name: Test
+        run: |
+          coverage run --source='.' -m pytest
+          coverage xml
+          coverage report
 
-            -   name: Coverage Comment
-                id: coverage_comment
-                uses: ewjoachim/python-coverage-comment-action@v2
-                with:
-                    GITHUB_TOKEN: ${{ github.token }}
+      - name: Coverage Comment
+        id: coverage_comment
+        uses: ewjoachim/python-coverage-comment-action@v2
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
 
-            -   name: Store Pull Request Comment To Be Posted
-                uses: actions/upload-artifact@v2
-                if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
-                with:
-                    name: python-coverage-comment-action
-                    path: python-coverage-comment-action.txt
+      - name: Store Pull Request Comment To Be Posted
+        uses: actions/upload-artifact@v2
+        if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
+        with:
+          name: python-coverage-comment-action
+          path: python-coverage-comment-action.txt
 
-    deploy:
-        name: Deploy
-        needs: [ test ]
-        runs-on: ubuntu-22.04
-        environment: PRODUCTION
+  deploy:
+    name: Deploy
+    needs: [ test ]
+    runs-on: ubuntu-22.04
+    environment: PRODUCTION
 
-        env:
-            DJANGO_ALLOWED_HOSTS: ${{ secrets.DJANGO_ALLOWED_HOSTS }}
-            DJANGO_CORS_ALLOWED_ORIGINS: ${{ secrets.DJANGO_CORS_ALLOWED_ORIGINS }}
-            DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-            DJANGO_JWT_SIGNING_KEY: ${{ secrets.DJANGO_JWT_SIGNING_KEY }}
-            EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
-            EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
-            EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-            EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
-            S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
-            S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
-            S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
-            FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
-            DB_NAME: ${{ secrets.DB_NAME }}
-            DB_USER: ${{ secrets.DB_USER }}
-            DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-            DB_PORT: ${{ secrets.DB_PORT }}
-            DB_HOST: ${{ secrets.DB_HOST }}
-            PIPELINE_IMAGE: ${{ github.event.repository.name }}:latest
-            PIPELINE_SERVICE: ${{ github.repository }}
+    env:
+      DJANGO_ALLOWED_HOSTS: ${{ secrets.DJANGO_ALLOWED_HOSTS }}
+      DJANGO_CORS_ALLOWED_ORIGINS: ${{ secrets.DJANGO_CORS_ALLOWED_ORIGINS }}
+      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      DJANGO_JWT_SIGNING_KEY: ${{ secrets.DJANGO_JWT_SIGNING_KEY }}
+      EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+      EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+      S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+      FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      PIPELINE_IMAGE: ${{ github.event.repository.name }}:latest
+      PIPELINE_SERVICE: ${{ github.repository }}
 
-        steps:
-            -   name: Checkout
-                uses: actions/checkout@v3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
-            -   name: Set Up Python
-                uses: actions/setup-python@v4
-                with:
-                    python-version: "3.10"
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-            -   uses: actions/cache@v3
-                id: cache-packages
-                with:
-                    path: ${{ env.pythonLocation }}
-                    key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
+      - uses: actions/cache@v3
+        id: cache-packages
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
 
-            -   name: Run migrations
-                run: python production_manage.py migrate
+      - name: Run migrations
+        run: python production_manage.py migrate
 
-            -   name: Login to docker
-                uses: docker/login-action@v1
-                with:
-                    registry: ${{ secrets.SCW_DOCKER_REGISTRY }}
-                    username: ${{ secrets.SCW_TOKEN }}
-                    password: ${{ secrets.SCW_TOKEN }}
+      - name: Login to docker
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.SCW_DOCKER_REGISTRY }}
+          username: ${{ secrets.SCW_TOKEN }}
+          password: ${{ secrets.SCW_TOKEN }}
 
-            -   name: Build and push the container
-                run: |
-                    docker build -t ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ env.PIPELINE_IMAGE }} .
-                    docker push ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ env.PIPELINE_IMAGE }}
+      - name: Build and push the container
+        run: |
+          docker build -t ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ env.PIPELINE_IMAGE }} .
+          docker push ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ env.PIPELINE_IMAGE }}
 
-            -   name: Set secrets within the scaleway
-                run: |
-                    curl -X PATCH --fail-with-body \
-                      https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/${{ secrets.SCW_CONTAINER_ID }} \
-                      -H 'X-Auth-Token: ${{ secrets.SCW_TOKEN }}' \
-                      -H 'Content-Type: application/json' \
-                      -d '{
-                        "registry_image": "${{ secrets.SCW_DOCKER_REGISTRY }}/${{ env.PIPELINE_IMAGE }}",
-                        "secret_environment_variables": [
-                          {
-                            "key": "DJANGO_ALLOWED_HOSTS",
-                            "value": "${{ env.DJANGO_ALLOWED_HOSTS }}"
-                          },
-                          {
-                            "key": "DJANGO_CORS_ALLOWED_ORIGINS",
-                            "value": "${{ env.DJANGO_CORS_ALLOWED_ORIGINS }}"
-                          },
-                          {
-                            "key": "DJANGO_SECRET_KEY",
-                            "value": "${{ env.DJANGO_SECRET_KEY }}"
-                          },
-                          {
-                            "key": "DJANGO_JWT_SIGNING_KEY",
-                            "value": "${{ env.DJANGO_JWT_SIGNING_KEY }}"
-                          },
-                          {
-                            "key": "DB_HOST",
-                            "value": "${{ env.DB_HOST }}"
-                          },
-                          {
-                            "key": "DB_NAME",
-                            "value": "${{ env.DB_NAME }}"
-                          },
-                          {
-                            "key": "DB_PASSWORD",
-                            "value": "${{ env.DB_PASSWORD }}"
-                          },
-                          {
-                            "key": "DB_PORT",
-                            "value": "${{ env.DB_PORT }}"
-                          },
-                          {
-                            "key": "DB_USER",
-                            "value": "${{ env.DB_USER }}"
-                          },
-                          {
-                            "key": "FRONTEND_URL",
-                            "value": "${{ env.FRONTEND_URL }}"
-                          },
-                          {
-                            "key": "S3_ACCESS_KEY",
-                            "value": "${{ env.S3_ACCESS_KEY }}"
-                          },
-                          {
-                            "key": "S3_SECRET_KEY",
-                            "value": "${{ env.S3_SECRET_KEY }}"
-                          },
-                          {
-                            "key": "S3_BUCKET_NAME",
-                            "value": "${{ env.S3_BUCKET_NAME }}"
-                          },
-                          {
-                            "key": "EMAIL_ADDRESS",
-                            "value": "${{ env.EMAIL_ADDRESS }}"
-                          },
-                          {
-                            "key": "EMAIL_HOST",
-                            "value": "${{ env.EMAIL_HOST }}"
-                          },
-                          {
-                            "key": "EMAIL_PASSWORD",
-                            "value": "${{ env.EMAIL_PASSWORD }}"
-                          },
-                          {
-                            "key": "EMAIL_PORT",
-                            "value": "${{ env.EMAIL_PORT }}"
-                          },
-                          {
-                            "key": "PIPELINE_SERVICE",
-                            "value": "${{ env.PIPELINE_SERVICE }}"
-                          },
-                          {
-                            "key": "PIPELINE_IMAGE",
-                            "value": "${{ env.PIPELINE_IMAGE }}"
-                          }
-                        ]
-                      }'
+      - name: Set secrets within the scaleway
+        run: |
+          curl -X PATCH --fail-with-body \
+            https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/${{ secrets.SCW_CONTAINER_ID }} \
+            -H 'X-Auth-Token: ${{ secrets.SCW_TOKEN }}' \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "registry_image": "${{ secrets.SCW_DOCKER_REGISTRY }}/${{ env.PIPELINE_IMAGE }}",
+              "secret_environment_variables": [
+                {
+                  "key": "DJANGO_ALLOWED_HOSTS",
+                  "value": "${{ env.DJANGO_ALLOWED_HOSTS }}"
+                },
+                {
+                  "key": "DJANGO_CORS_ALLOWED_ORIGINS",
+                  "value": "${{ env.DJANGO_CORS_ALLOWED_ORIGINS }}"
+                },
+                {
+                  "key": "DJANGO_SECRET_KEY",
+                  "value": "${{ env.DJANGO_SECRET_KEY }}"
+                },
+                {
+                  "key": "DJANGO_JWT_SIGNING_KEY",
+                  "value": "${{ env.DJANGO_JWT_SIGNING_KEY }}"
+                },
+                {
+                  "key": "DB_HOST",
+                  "value": "${{ env.DB_HOST }}"
+                },
+                {
+                  "key": "DB_NAME",
+                  "value": "${{ env.DB_NAME }}"
+                },
+                {
+                  "key": "DB_PASSWORD",
+                  "value": "${{ env.DB_PASSWORD }}"
+                },
+                {
+                  "key": "DB_PORT",
+                  "value": "${{ env.DB_PORT }}"
+                },
+                {
+                  "key": "DB_USER",
+                  "value": "${{ env.DB_USER }}"
+                },
+                {
+                  "key": "FRONTEND_URL",
+                  "value": "${{ env.FRONTEND_URL }}"
+                },
+                {
+                  "key": "S3_ACCESS_KEY",
+                  "value": "${{ env.S3_ACCESS_KEY }}"
+                },
+                {
+                  "key": "S3_SECRET_KEY",
+                  "value": "${{ env.S3_SECRET_KEY }}"
+                },
+                {
+                  "key": "S3_BUCKET_NAME",
+                  "value": "${{ env.S3_BUCKET_NAME }}"
+                },
+                {
+                  "key": "EMAIL_ADDRESS",
+                  "value": "${{ env.EMAIL_ADDRESS }}"
+                },
+                {
+                  "key": "EMAIL_HOST",
+                  "value": "${{ env.EMAIL_HOST }}"
+                },
+                {
+                  "key": "EMAIL_PASSWORD",
+                  "value": "${{ env.EMAIL_PASSWORD }}"
+                },
+                {
+                  "key": "EMAIL_PORT",
+                  "value": "${{ env.EMAIL_PORT }}"
+                },
+                {
+                  "key": "PIPELINE_SERVICE",
+                  "value": "${{ env.PIPELINE_SERVICE }}"
+                },
+                {
+                  "key": "PIPELINE_IMAGE",
+                  "value": "${{ env.PIPELINE_IMAGE }}"
+                }
+              ]
+            }'
 
-            -   name: Trigger a redeploy
-                run: |
-                    curl -X PATCH --fail-with-body \
-                      https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/${{ secrets.SCW_CONTAINER_ID }}/ \
-                      -H 'X-Auth-Token: ${{ secrets.SCW_TOKEN }}' \
-                      -H 'Content-Type: application/json' \
-                      -d '{ "redeploy": true }'
+      - name: Trigger a redeploy
+        run: |
+          curl -X PATCH --fail-with-body \
+            https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/${{ secrets.SCW_CONTAINER_ID }}/ \
+            -H 'X-Auth-Token: ${{ secrets.SCW_TOKEN }}' \
+            -H 'Content-Type: application/json' \
+            -d '{ "redeploy": true }'
 
 
-    end:
-        name: Stop
-        needs: [start, build, test, deploy]
-        if: always()
-        runs-on: ubuntu-22.04
-        steps:
-            -   name: Stop update
-                run: curl https://lawandorgaupdatefuncpllv4num-finish-update.functions.fnc.fr-par.scw.cloud?name=${{ env.UPDATE_NAME }}
+  end:
+    name: Stop
+    needs: [ start, build, test, deploy ]
+    if: always()
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Stop update
+        run: curl https://lawandorgaupdatefuncpllv4num-finish-update.functions.fnc.fr-par.scw.cloud?name=${{ env.UPDATE_NAME }}
