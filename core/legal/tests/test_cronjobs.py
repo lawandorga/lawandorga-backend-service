@@ -2,8 +2,8 @@ import pytest
 
 from core.models import Org
 from core.seedwork import test_helpers
-from ..cronjobs import create_legal_requirements_for_users
 
+from ..cronjobs import create_legal_requirements_for_users
 from ..models import LegalRequirement, LegalRequirementUser
 
 
@@ -16,7 +16,7 @@ def user(db):
 
 @pytest.fixture()
 def legal_requirement(user):
-    legal_requirement = LegalRequirement.objects.create(
+    LegalRequirement.objects.create(
         title="Test", content="Accept this please", accept_required=True
     )
 
