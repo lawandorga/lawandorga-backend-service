@@ -1,29 +1,22 @@
-import asyncio
-
-from asgiref.sync import sync_to_async
-
 from core.auth.models import RlcUser
 from core.legal.models import LegalRequirement, LegalRequirementUser
 
 
-async def create_legal_requirements_for_users() -> str:
-    rlc_users = await sync_to_async(list)(RlcUser.objects.all())
-    legal_requirements = await sync_to_async(list)(
+def create_legal_requirements_for_users() -> str:
+    rlc_users = list(RlcUser.objects.all())
+    legal_requirements = list(
         LegalRequirement.objects.prefetch_related("rlc_users").all()
     )
 
     created = 0
-    statements = []
+    lrus = []
     for u in rlc_users:
         for lr in legal_requirements:
-            lr_users = await sync_to_async(list)(lr.rlc_users.all())
+            lr_users = list(lr.rlc_users.all())
             if u not in lr_users:
-                statement = LegalRequirementUser.objects.acreate(  # type: ignore
-                    rlc_user=u, legal_requirement=lr
-                )
-                statements.append(statement)
+                lru = LegalRequirementUser(rlc_user=u, legal_requirement=lr)
+                lrus.append(lru)
                 created += 1
-
-    await asyncio.gather(*statements)
+    LegalRequirementUser.objects.bulk_create(lrus)
 
     return "Created {} LegalRequirementUser objects.".format(created)
