@@ -236,7 +236,6 @@ jobs:
             -H 'Content-Type: application/json' \
             -d '{ "redeploy": true }'
 
-
   end:
     name: Stop
     needs: [ start, build, test, deploy ]
