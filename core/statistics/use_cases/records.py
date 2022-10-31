@@ -55,7 +55,7 @@ def create_statistic(field_1: str, value_1: str, field_2: str, __actor: Statisti
         select t1.id, t2.value as value, count(*) as count, COUNT('x') over (partition by t1.id) - 1 as error
         from t t1
         inner join t t2 on t1.id = t2.id
-        where (lower(t1.field) like lower('{}') and lower(t1.value) like lower('{}')) and t2.field = lower('{}')
+        where (lower(t1.field) like lower('{}') and lower(t1.value) like lower('{}')) and lower(t2.field) = lower('{}')
         group by t1.id, t2.value
     ) m
     group by value;
