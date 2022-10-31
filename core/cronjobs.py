@@ -37,7 +37,7 @@ class CronjobWarehouse:
                 result = job()
             except Exception as e:
                 result = "ERROR {}".format(str(e))
-            status = '{}: {}'.format(job.__code__.co_name, result)
+            status = "{}: {}".format(job.__code__.co_name, result)
             results.append(status)
         cls.__RUNS[timezone.now().strftime("%Y-%m-%d---%H:%M:%S")] = results
         return results

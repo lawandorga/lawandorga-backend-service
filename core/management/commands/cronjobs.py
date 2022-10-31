@@ -8,4 +8,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         results = CronjobWarehouse.run_cronjobs()
-        self.stdout.write('\n'.join(results))
+        self.stdout.write("\n".join(results))
