@@ -7,3 +7,4 @@ from .legal.models import *
 from .other.models import *
 from .records.models import *
 from .rlc.models import *
+from .mail.models import *
