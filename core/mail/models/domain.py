@@ -9,8 +9,8 @@ class Domain(models.Model):
     relative_path = models.CharField(unique=True, max_length=100)
 
     class Meta:
-        verbose_name = 'Domain'
-        verbose_name_plural = 'Domains'
+        verbose_name = "Domain"
+        verbose_name_plural = "Domains"
 
     def __str__(self):
-        return 'domain: {};'.format(self.pk)
+        return "domain: {};".format(self.pk)
