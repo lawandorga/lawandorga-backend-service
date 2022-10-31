@@ -15,12 +15,6 @@ class UserAdmin(DjangoUserAdmin):
                 "fields": ("groups",),
             },
         ),
-        (
-            _("RLC Stuff"),
-            {
-                "fields": ("rlc",),
-            },
-        ),
         (_("Important dates"), {"fields": ("last_login",)}),
     )
     add_fieldsets = (
