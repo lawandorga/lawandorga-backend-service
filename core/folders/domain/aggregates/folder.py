@@ -2,13 +2,13 @@ from typing import Dict, List, Optional, Tuple
 from uuid import UUID, uuid4
 
 from core.folders.domain.aggregates.content import Content
-from core.folders.domain.external import IUser
+from core.folders.domain.external import IOwner
 from core.folders.domain.value_objects.encryption import EncryptionPyramid
-from core.folders.domain.value_objects.keys import ContentKey, FolderKey
+from core.folders.domain.value_objects.keys import AsymmetricKey, ContentKey, FolderKey
 from core.seedwork.domain_layer import DomainError
 
 
-class Folder:
+class Folder(IOwner):
     @staticmethod
     def create(name: str = None):
         pk = uuid4()
@@ -21,6 +21,7 @@ class Folder:
         pk: UUID = None,
         keys: List[FolderKey] = None,
         content: Dict[str, Tuple[Content, ContentKey]] = None,
+        parent: UUID = None,
     ):
         assert name is not None and pk is not None
 
@@ -33,6 +34,14 @@ class Folder:
             if keys is not None
             else []
         )
+        self.__parent = parent
+
+    def __str__(self):
+        return "Folder {}".format(self.name)
+
+    @property
+    def slug(self):
+        return self.__pk
 
     @property
     def name(self):
@@ -96,29 +105,37 @@ class Folder:
         if self.encryption_version != encryption_class.VERSION:
             self.__reencrypt_all_keys(folder_key)
 
-    def __find_folder_key(self, user: IUser) -> FolderKey:
+    def find_folder_key(self, user: IOwner) -> FolderKey:
+        parent_key: Optional[FolderKey] = None
+
         for key in self.__keys:
             if key.owner.slug == user.slug:
                 return key
+            if self.__parent and key.owner.slug == self.__parent:
+                parent_key = key
+
+        if parent_key is not None:
+            return parent_key
+
         raise DomainError("No folder key was found for this user.")
 
-    def add_content(self, content: Content, content_key: ContentKey, user: IUser):
+    def add_content(self, content: Content, content_key: ContentKey, user: IOwner):
         if content.name in self.__content:
             raise DomainError(
                 "This folder already contains an item with the same name."
             )
-        enc_folder_key = self.__find_folder_key(user)
-        folder_key = enc_folder_key.decrypt()
+        enc_folder_key = self.find_folder_key(user)
+        folder_key = enc_folder_key.decrypt(user)
         enc_content_key = content_key.encrypt(folder_key)
         self.__content[content.name] = (content, enc_content_key)
         # check
         self.__check_encryption_version(folder_key)
 
-    def update_content(self, content: Content, content_key: ContentKey, user: IUser):
+    def update_content(self, content: Content, content_key: ContentKey, user: IOwner):
         if content.name not in self.__content:
             raise DomainError("This folder does not contain an item with this name.")
-        enc_folder_key = self.__find_folder_key(user)
-        folder_key = enc_folder_key.decrypt()
+        enc_folder_key = self.find_folder_key(user)
+        folder_key = enc_folder_key.decrypt(user)
         enc_content_key = content_key.encrypt(folder_key)
         self.__content[content.name] = (content, enc_content_key)
         # check
@@ -130,12 +147,21 @@ class Folder:
 
         del self.__content[content.name]
 
-    def get_content_key(self, content: Content, user: IUser):
+    def get_key(self) -> "AsymmetricKey":
+        if len(self.__keys) == 0:
+            raise DomainError("This folder has no keys.")
+        return self.__keys[0]
+
+    def set_parent(self, folder: "Folder", by: IOwner = None):
+        self.__parent = folder.slug
+        self.grant_access(folder, by)
+
+    def get_content_key(self, content: Content, user: IOwner):
         if content.name not in self.__content:
             raise DomainError("This folder does not contain the specified item.")
 
-        enc_folder_key = self.__find_folder_key(user)
-        folder_key = enc_folder_key.decrypt()
+        enc_folder_key = self.find_folder_key(user)
+        folder_key = enc_folder_key.decrypt(user)
         enc_content_key = self.__content[content.name][1]
         content_key = enc_content_key.decrypt(folder_key)
         return content_key
@@ -148,22 +174,22 @@ class Folder:
     def move(self, target: "Folder"):
         pass
 
-    def grant_access(self, to_user: IUser, by_user: Optional[IUser] = None):
+    def grant_access(self, to: IOwner, by: Optional[IOwner] = None):
 
         if len(self.__keys) == 0:
             encryption_class = EncryptionPyramid.get_highest_asymmetric_encryption()
             private_key, public_key, version = encryption_class.generate_keys()
 
         else:
-            assert by_user is not None
-            enc_folder_key = self.__find_folder_key(user=by_user)
-            folder_key = enc_folder_key.decrypt()
+            assert by is not None
+            enc_folder_key = self.find_folder_key(user=by)
+            folder_key = enc_folder_key.decrypt(by)
             private_key = folder_key.get_decryption_key()
             public_key = folder_key.get_encryption_key()
             version = folder_key.origin
 
         key = FolderKey.create(
-            owner=to_user,
+            owner=to,
             private_key=private_key,
             public_key=public_key,
             origin=version,

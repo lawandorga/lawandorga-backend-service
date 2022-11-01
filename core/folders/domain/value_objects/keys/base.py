@@ -1,5 +1,5 @@
 import abc
-from typing import Literal, Type, Union
+from typing import Literal, Optional, Type, Union
 
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import (
@@ -36,7 +36,7 @@ class AsymmetricKey(Key):
     KEY_TYPE: Literal["ASYMMETRIC"] = "ASYMMETRIC"
 
     @abc.abstractmethod
-    def get_decryption_key(self) -> str:
+    def get_decryption_key(self) -> Optional[str]:
         pass
 
     @abc.abstractmethod

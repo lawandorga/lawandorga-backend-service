@@ -55,7 +55,7 @@ def folder_user(car_content_key):
     car, content, key = car_content_key
     user = UserObject()
     folder = Folder.create("New Folder")
-    folder.grant_access(to_user=user)
+    folder.grant_access(to=user)
     folder.add_content(content, key, user)
     yield folder, user
 
@@ -156,7 +156,7 @@ def test_grant_access(single_encryption, car_content_key):
     user = UserObject()
 
     folder = Folder.create("New Folder")
-    folder.grant_access(to_user=user)
+    folder.grant_access(to=user)
 
     folder.add_content(content, key, user)
 
@@ -174,7 +174,7 @@ def test_with_unknown_content(single_encryption, car_content_key):
     user = UserObject()
 
     folder = Folder.create("New Folder")
-    folder.grant_access(to_user=user)
+    folder.grant_access(to=user)
 
     with pytest.raises(DomainError):
         folder.update_content(content, key, user)
@@ -213,14 +213,14 @@ def test_grant_access_by_user(single_encryption, folder_user):
     user = UserObject()
     folder, user2 = folder_user
 
-    folder.grant_access(to_user=user, by_user=user2)
+    folder.grant_access(to=user, by=user2)
 
 
 def test_encryption_version(single_encryption):
     folder = Folder.create("Test")
     assert folder.encryption_version is None
     user = UserObject()
-    folder.grant_access(to_user=user)
+    folder.grant_access(to=user)
     assert folder.encryption_version == "AT1"
 
     private_key, public_key, version = AsymmetricEncryptionTest1.generate_keys()
