@@ -65,7 +65,11 @@ def test_encryption_decryption(single_encryption, car_content_key):
 
     user = UserObject()
 
-    private_key, public_key, version = EncryptionPyramid.get_highest_asymmetric_encryption().generate_keys()
+    (
+        private_key,
+        public_key,
+        version,
+    ) = EncryptionPyramid.get_highest_asymmetric_encryption().generate_keys()
     folder_key = FolderKey.create(
         owner=user,
         private_key=private_key,
@@ -272,14 +276,20 @@ def test_update_information(single_encryption, folder_user):
 
 
 def test_str_method():
-    folder = Folder.create('Test')
-    assert str(folder) == 'Folder Test'
+    folder = Folder.create("Test")
+    assert str(folder) == "Folder Test"
 
 
 def test_folder_key_decryption_error(single_encryption):
-    private, public, version = EncryptionPyramid.get_highest_asymmetric_encryption().generate_keys()
+    (
+        private,
+        public,
+        version,
+    ) = EncryptionPyramid.get_highest_asymmetric_encryption().generate_keys()
     user1 = UserObject()
-    key = FolderKey.create(private_key=private, public_key=public, origin=version, owner=user1)
+    key = FolderKey.create(
+        private_key=private, public_key=public, origin=version, owner=user1
+    )
     enc_key = key.encrypt()
     user2 = UserObject()
     with pytest.raises(DomainError):
@@ -287,7 +297,13 @@ def test_folder_key_decryption_error(single_encryption):
 
 
 def test_folder_key_str_method(single_encryption):
-    private, public, version = EncryptionPyramid.get_highest_asymmetric_encryption().generate_keys()
+    (
+        private,
+        public,
+        version,
+    ) = EncryptionPyramid.get_highest_asymmetric_encryption().generate_keys()
     user1 = UserObject()
-    key = FolderKey.create(private_key=private, public_key=public, origin=version, owner=user1)
-    assert str(key) == 'FolderKey of {}'.format(user1.slug)
+    key = FolderKey.create(
+        private_key=private, public_key=public, origin=version, owner=user1
+    )
+    assert str(key) == "FolderKey of {}".format(user1.slug)

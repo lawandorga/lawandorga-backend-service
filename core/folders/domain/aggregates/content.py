@@ -2,7 +2,7 @@ from typing import Union
 
 from core.folders.domain.aggregates.object import EncryptedObject
 from core.folders.domain.value_objects.encryption import EncryptionPyramid
-from core.folders.domain.value_objects.keys import ContentKey
+from core.folders.domain.value_objects.keys import ContentKey, SymmetricKey
 
 
 class Content:
@@ -28,14 +28,14 @@ class Content:
     def item(self):
         return self.__item
 
-    def encrypt(self) -> ContentKey:
+    def encrypt(self) -> SymmetricKey:
         encryption_class = EncryptionPyramid.get_highest_symmetric_encryption()
         raw_key, version = encryption_class.generate_key()
-        content_key = ContentKey.create(key=raw_key, origin=version)
+        content_key = SymmetricKey.create(key=raw_key, origin=version)
         self.__item.encrypt(content_key)
         self.__encryption_version = encryption_class.VERSION
         return content_key
 
-    def decrypt(self, key: ContentKey):
+    def decrypt(self, key: SymmetricKey):
         assert self.__encryption_version is not None
         self.__item.decrypt(key, self.__encryption_version)

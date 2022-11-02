@@ -6,22 +6,12 @@ from core.folders.domain.value_objects.keys import SymmetricKey
 from core.folders.tests.helpers.encryptions import SymmetricEncryptionTest1
 
 
-class TestKey(SymmetricKey):
-    def __init__(self, key: str, origin: str):
-        self.__key = key
-        self._origin = origin
-        super().__init__()
-
-    def get_key(self) -> str:
-        return self.__key
-
-
 @pytest.fixture
 def key():
     EncryptionPyramid.reset_encryption_hierarchies()
     EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest1)
     key, version = SymmetricEncryptionTest1.generate_key()
-    yield TestKey(key, version)
+    yield SymmetricKey.create(key=key, origin=version)
 
 
 def test_box_is_bytes(key):

@@ -99,10 +99,10 @@ def test_deep_hierarchy(single_encryption, car_content_key):
     user = UserObject()
 
     folders = []
-    folder1 = Folder.create('1')
+    folder1 = Folder.create("1")
     folder1.grant_access(user)
 
-    for i in range(2, 100+1):
+    for i in range(2, 100 + 1):
         folder = Folder.create(str(i))
         folder.set_parent(folder1, user)
         folders.append(folder)
@@ -118,13 +118,13 @@ def test_deep_hierarchy(single_encryption, car_content_key):
 
 
 def test_no_keys_error(single_encryption, car_content_key):
-    folder1 = Folder.create('My Folder')
+    folder1 = Folder.create("My Folder")
     with pytest.raises(DomainError):
         folder1.get_key()
 
 
 def test_hierarchy_no_access(single_encryption, subfolder):
     user = UserObject()
-    content = subfolder.get_content_by_name('My Car')
+    content = subfolder.get_content_by_name("My Car")
     with pytest.raises(DomainError):
         subfolder.get_content_key(content, user)
