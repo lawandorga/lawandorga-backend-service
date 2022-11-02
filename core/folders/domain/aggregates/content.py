@@ -2,7 +2,7 @@ from typing import Union
 
 from core.folders.domain.aggregates.object import EncryptedObject
 from core.folders.domain.value_objects.encryption import EncryptionPyramid
-from core.folders.domain.value_objects.keys import ContentKey, SymmetricKey
+from core.folders.domain.value_objects.keys import SymmetricKey
 
 
 class Content:
