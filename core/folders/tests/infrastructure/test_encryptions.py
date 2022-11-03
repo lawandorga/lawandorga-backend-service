@@ -1,5 +1,9 @@
 from core.folders.domain.value_objects.encryption import EncryptionPyramid
-from core.folders.domain.value_objects.keys import FolderKey, AsymmetricKey, SymmetricKey
+from core.folders.domain.value_objects.keys import (
+    AsymmetricKey,
+    FolderKey,
+    SymmetricKey,
+)
 from core.folders.domain.value_objects.keys.base import EncryptedSymmetricKey
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
@@ -13,9 +17,7 @@ def test_asymmetric_encryption():
     s_key = SymmetricKey.generate()
 
     a_key = AsymmetricKey.generate()
-    folder_key = FolderKey(
-        key=a_key, owner={}
-    )
+    folder_key = FolderKey(key=a_key, owner={})
 
     enc_content_key = EncryptedSymmetricKey.create(s_key, folder_key.key)
     dec_content_key = enc_content_key.decrypt(folder_key.key)
@@ -41,7 +43,7 @@ def test_asymmetric_encryption_encrypt_private_key():
 
     encryption = AsymmetricEncryptionV1(private, public)
 
-    b_private = b'my secret diary'
+    b_private = b"my secret diary"
 
     enc_data = encryption.encrypt(b_private)
     assert enc_data != b_private
