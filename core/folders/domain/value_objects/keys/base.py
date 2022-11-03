@@ -1,21 +1,24 @@
 import abc
-from typing import Literal, Optional, Type, Union
+from typing import Literal, Optional, Type, Union, Dict, Any, TypeVar
 
+from core.folders.domain.external import IOwner
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import (
     AsymmetricEncryption,
     EncryptionPyramid,
     SymmetricEncryption,
 )
+from core.types import StrDict
 
 
 class Key(abc.ABC):
     KEY_TYPE: Literal["SYMMETRIC", "ASYMMETRIC"]
 
-    def __init__(self, origin: str):
-        self.__origin = origin
-        assert self.__origin is not None
+    def __init__(self, origin: str = None):
+        assert origin is not None
         assert self.KEY_TYPE is not None
+
+        self.__origin = origin
 
     @property
     def origin(self):
@@ -28,7 +31,7 @@ class Key(abc.ABC):
     def lock(self, box: OpenBox) -> LockedBox:
         encryption = self.get_encryption()
         enc_data = encryption.encrypt(box.value)
-        return LockedBox(enc_data=enc_data, encryption_version=self.origin)
+        return LockedBox(enc_data=enc_data, key_origin=self.origin)
 
     def unlock(self, box: LockedBox) -> OpenBox:
         if self.origin != box.key_origin:
@@ -41,9 +44,21 @@ class Key(abc.ABC):
         data = encryption.decrypt(box.value)
         return OpenBox(data=data)
 
+    def get_encryption_class(self) -> Union[Type[AsymmetricEncryption], Type[SymmetricEncryption]]:
+        encryption_class = EncryptionPyramid.get_encryption_class(self.origin)
+        assert (isinstance(self, AsymmetricKey) and issubclass(encryption_class, AsymmetricEncryption)) or (
+            isinstance(self, SymmetricKey) and issubclass(encryption_class, SymmetricEncryption)
+        )
+        return encryption_class
+
 
 class SymmetricKey(Key):
     KEY_TYPE: Literal["SYMMETRIC"] = "SYMMETRIC"
+
+    @staticmethod
+    def generate() -> "SymmetricKey":
+        key, version = EncryptionPyramid.get_highest_symmetric_encryption().generate_key()
+        return SymmetricKey.create(key, version)
 
     @staticmethod
     def create(key: str, origin: str) -> "SymmetricKey":
@@ -51,31 +66,30 @@ class SymmetricKey(Key):
 
     def __init__(
         self,
-        key: Union[OpenBox, LockedBox] = None,
+        key: OpenBox = None,
         origin: Optional[str] = None,
     ):
-        assert origin is not None
+        assert origin is not None and key is not None
 
         self.__key = key
 
         super().__init__(origin)
 
-    def get_key(self) -> str:
-        assert isinstance(self.__key, OpenBox)
-        key = self.__key.decode("utf-8")
-        return key
+    def get_key(self) -> OpenBox:
+        return self.__key
 
     def get_encryption(self) -> SymmetricEncryption:
         encryption_class = EncryptionPyramid.get_encryption_class(self.origin)
         return encryption_class(key=self.get_key())
 
-    def get_encryption_class(self) -> Type[SymmetricEncryption]:
-        hierarchy = EncryptionPyramid.get_symmetric_encryption_hierarchy()
-        return hierarchy[self.origin]
-
 
 class AsymmetricKey(Key):
     KEY_TYPE: Literal["ASYMMETRIC"] = "ASYMMETRIC"
+
+    @staticmethod
+    def generate() -> "AsymmetricKey":
+        private_key, public_key, version = EncryptionPyramid.get_highest_asymmetric_encryption().generate_keys()
+        return AsymmetricKey.create(private_key, public_key, version)
 
     @staticmethod
     def create(
@@ -93,7 +107,7 @@ class AsymmetricKey(Key):
 
     def __init__(
         self,
-        private_key: Union[LockedBox, OpenBox] = None,
+        private_key: OpenBox = None,
         public_key: str = None,
         origin: str = None,
     ):
@@ -110,6 +124,103 @@ class AsymmetricKey(Key):
             public_key=self.__public_key, private_key=self.__private_key
         )
 
-    def get_encryption_class(self) -> Type[AsymmetricEncryption]:
-        hierarchy = EncryptionPyramid.get_asymmetric_encryption_hierarchy()
-        return hierarchy[self.origin]
+    def get_private_key(self) -> OpenBox:
+        return self.__private_key
+
+    def get_public_key(self) -> str:
+        return self.__public_key
+
+
+class EncryptedSymmetricKey(Key):
+    @staticmethod
+    def create(original: SymmetricKey = None, owner: IOwner = None) -> "EncryptedSymmetricKey":
+        assert original is not None and owner is not None
+
+        enc_key = owner.get_key().lock(original.get_key())
+
+        return EncryptedSymmetricKey(enc_key=enc_key, origin=original.origin)
+
+    @staticmethod
+    def create_from_dict(d: Dict[str, str]):
+        assert 'enc_key' in d and 'origin' in d
+
+        enc_key = LockedBox.create_from_dict(d['enc_key'])
+        origin = d['origin']
+
+        return EncryptedSymmetricKey(enc_key=enc_key, origin=origin)
+
+    def __init__(self, enc_key: LockedBox = None, origin: str = None):
+        assert enc_key is not None
+
+        self.__enc_key = enc_key
+
+        super().__init__(origin=origin)
+
+    def __dict__(self) -> StrDict:  # type: ignore
+        return {
+            'enc_key': self.__enc_key.__dict__(),
+            'origin': self.origin,
+        }
+
+    def decrypt(self, owner: IOwner) -> SymmetricKey:
+        key = owner.get_key().unlock(self.__enc_key)
+        return SymmetricKey(key=key, origin=self.origin)
+
+    def unlock(self, box: LockedBox) -> OpenBox:
+        raise ValueError('This key is encrypted and can not lock a box.')
+
+    def lock(self, box: OpenBox) -> LockedBox:
+        raise ValueError('This key is encrypted and can not lock a box.')
+
+    def get_encryption(self) -> Union[SymmetricEncryption, AsymmetricEncryption]:
+        raise ValueError('This key is encrypted and can not deliver a encryption.')
+
+
+class EncryptedAsymmetricKey(Key):
+    @staticmethod
+    def create(original: AsymmetricKey = None, owner: IOwner = None) -> "EncryptedAsymmetricKey":
+        assert original is not None and owner is not None
+
+        s_key = SymmetricKey.generate()
+        enc_private_key = s_key.lock(original.get_private_key())
+        enc_s_key = EncryptedSymmetricKey.create(s_key, owner)
+
+        return EncryptedAsymmetricKey(enc_s_key, enc_private_key)
+
+    @staticmethod
+    def create_from_dict(d: StrDict):
+        # TODO
+        pass
+
+    def __init__(self, enc_key: EncryptedSymmetricKey = None, enc_private_key: LockedBox = None,
+                 public_key: str = None, origin: str = None):
+        assert enc_key is not None and enc_private_key is not None and public_key is not None
+
+        self.__enc_key = enc_key
+        self.__enc_private_key = enc_private_key
+        self.__public_key = public_key
+
+        super().__init__(origin=origin)
+
+    def get_encryption(self) -> AsymmetricEncryption:
+        encryption_class = EncryptionPyramid.get_encryption_class(self.origin)
+        return encryption_class(public_key=self.__public_key)
+
+    def unlock(self, box: LockedBox) -> OpenBox:
+        raise ValueError('This key is encrypted and can not unlock a box.')
+
+    def decrypt(self, owner: IOwner) -> AsymmetricKey:
+        enc_s_key = EncryptedSymmetricKey.create_from_dict(self.__enc_key)
+        s_key = enc_s_key.decrypt(owner)
+
+        private_key = s_key.unlock(self.__enc_private_key)
+
+        return AsymmetricKey(private_key=private_key,public_key=self.__public_key, origin=self.origin)
+
+    def __dict__(self) -> StrDict:  # type: ignore
+        return {
+            'enc_key': self.__enc_key.__dict__(),
+            'enc_private_key': self.__enc_private_key.__dict__(),
+            'public_key': self.__public_key,
+            "origin": self.origin
+        }

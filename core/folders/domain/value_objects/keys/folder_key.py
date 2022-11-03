@@ -6,7 +6,7 @@ from core.folders.domain.value_objects.keys.base import AsymmetricKey
 from core.seedwork.domain_layer import DomainError
 
 
-class FolderKey(AsymmetricKey):
+class FolderKey:
     @staticmethod
     def create(
         owner: IOwner = None,
