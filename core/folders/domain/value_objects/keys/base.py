@@ -1,7 +1,6 @@
 import abc
-from typing import Literal, Optional, Type, Union
+from typing import Optional, Type, Union
 
-from core.folders.domain.external import IOwner
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import (
     AsymmetricEncryption,
@@ -145,7 +144,8 @@ class AsymmetricKey(Key):
 class EncryptedSymmetricKey(Key):
     @staticmethod
     def create(
-        original: SymmetricKey = None, key: Union[AsymmetricKey, SymmetricKey, "EncryptedAsymmetricKey"] = None
+        original: SymmetricKey = None,
+        key: Union[AsymmetricKey, SymmetricKey, "EncryptedAsymmetricKey"] = None,
     ) -> "EncryptedSymmetricKey":
         assert original is not None and key is not None
 
