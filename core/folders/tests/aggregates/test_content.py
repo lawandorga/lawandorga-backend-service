@@ -58,9 +58,7 @@ def test_encryption_hierarchy_works_in_simple_case(single_encryption, car_conten
     content.decrypt(key)
     assert isinstance(car.name, OpenBox)
     assert car.name == b"Secret Antique"
-    assert (
-        b"Secret Antique" in SymmetricEncryptionTest1.get_treasure_chest().values()
-    )
+    assert b"Secret Antique" in SymmetricEncryptionTest1.get_treasure_chest().values()
     EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest2)
     assert (
         b"Secret Antique" not in SymmetricEncryptionTest2.get_treasure_chest().values()

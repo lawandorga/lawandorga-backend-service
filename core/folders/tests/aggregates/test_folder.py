@@ -5,7 +5,7 @@ import pytest
 from core.folders.domain.aggregates.content import Content
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.value_objects.encryption import EncryptionPyramid
-from core.folders.domain.value_objects.keys import FolderKey, AsymmetricKey
+from core.folders.domain.value_objects.keys import AsymmetricKey, FolderKey
 from core.folders.tests.helpers.car import CarWithSecretName
 from core.folders.tests.helpers.encryptions import (
     AsymmetricEncryptionTest1,
@@ -121,17 +121,11 @@ def test_keys_are_regenerated(double_encryption, car_content_key):
     car, content, key = car_content_key
     user = UserObject()
 
-    folder_key = FolderKey(
-        owner=user,
-        key=AsymmetricKey.generate()
-    )
+    folder_key = FolderKey(owner=user, key=AsymmetricKey.generate())
     folder = Folder(name="My Folder", pk=uuid4(), keys=[folder_key])
     folder.add_content(content, key, user)
 
-    assert (
-        key.get_key()
-        in AsymmetricEncryptionTest2.get_treasure_chest().values()
-    )
+    assert key.get_key() in AsymmetricEncryptionTest2.get_treasure_chest().values()
 
     enc_content = folder.get_content_by_name("My Car")
     key = folder.get_content_key(enc_content, user)
@@ -267,9 +261,7 @@ def test_str_method():
 
 def test_folder_key_decryption_error(single_encryption):
     user1 = UserObject()
-    key = FolderKey(
-        key=AsymmetricKey.generate(), owner=user1
-    )
+    key = FolderKey(key=AsymmetricKey.generate(), owner=user1)
     enc_key = key.encrypt()
     user2 = UserObject()
     with pytest.raises(DomainError):
@@ -278,6 +270,5 @@ def test_folder_key_decryption_error(single_encryption):
 
 def test_folder_key_str_method(single_encryption):
     user1 = UserObject()
-    key = FolderKey(
-        owner=user1, key=AsymmetricKey.generate())
+    key = FolderKey(owner=user1, key=AsymmetricKey.generate())
     assert str(key) == "FolderKey of {}".format(user1.slug)

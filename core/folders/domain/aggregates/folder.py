@@ -77,16 +77,15 @@ class Folder(IOwner):
         for content in self.__content.values():
             enc_content_key = content[1]
             s_key = enc_content_key.decrypt(folder_key.key)
-            new_enc_content_key = EncryptedSymmetricKey.create(original=s_key, key=new_folder_key.key)
+            new_enc_content_key = EncryptedSymmetricKey.create(
+                original=s_key, key=new_folder_key.key
+            )
             new_content[content[0].name] = (content[0], new_enc_content_key)
 
         # reencrypt keys
         new_keys = []
         for key in self.__keys:
-            new_key = FolderKey(
-                owner=key.owner,
-                key=new_folder_key.key
-            )
+            new_key = FolderKey(owner=key.owner, key=new_folder_key.key)
             enc_new_key = new_key.encrypt()
             new_keys.append(enc_new_key)
 
@@ -151,7 +150,7 @@ class Folder(IOwner):
 
     def set_parent(self, folder: "Folder", by: IOwner = None):
         self.__parent = folder.slug
-        self.grant_access(folder, by)
+        self.grant_access(to=folder, by=by)
 
     def get_content_key(self, content: Content, user: IOwner):
         if content.name not in self.__content:

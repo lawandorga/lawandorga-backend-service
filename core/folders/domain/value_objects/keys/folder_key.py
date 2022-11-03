@@ -25,7 +25,9 @@ class FolderKey:
     def encrypt(self) -> "FolderKey":
         assert isinstance(self.__key, AsymmetricKey)
 
-        enc_key = EncryptedAsymmetricKey.create(self.__key, self.__owner.get_key())
+        enc_key = EncryptedAsymmetricKey.create(
+            original=self.__key, key=self.__owner.get_key()
+        )
         return FolderKey(
             owner=self.__owner,
             key=enc_key,

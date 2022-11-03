@@ -98,7 +98,9 @@ class AsymmetricKey(Key):
             public_key,
             version,
         ) = EncryptionPyramid.get_highest_asymmetric_encryption().generate_keys()
-        return AsymmetricKey.create(private_key=private_key, public_key=public_key, origin=version)
+        return AsymmetricKey.create(
+            private_key=private_key, public_key=public_key, origin=version
+        )
 
     @staticmethod
     def create(
@@ -143,7 +145,7 @@ class AsymmetricKey(Key):
 class EncryptedSymmetricKey(Key):
     @staticmethod
     def create(
-        original: SymmetricKey = None, key: Union[AsymmetricKey, SymmetricKey] = None
+        original: SymmetricKey = None, key: Union[AsymmetricKey, SymmetricKey, "EncryptedAsymmetricKey"] = None
     ) -> "EncryptedSymmetricKey":
         assert original is not None and key is not None
 
@@ -195,16 +197,28 @@ class EncryptedSymmetricKey(Key):
 class EncryptedAsymmetricKey(Key):
     @staticmethod
     def create(
-        original: AsymmetricKey = None, key: AsymmetricKey = None
+        original: AsymmetricKey = None,
+        key: Union[AsymmetricKey, "EncryptedAsymmetricKey"] = None,
     ) -> "EncryptedAsymmetricKey":
-        assert original is not None and key is not None and isinstance(key, AsymmetricKey)
+        assert (
+            original is not None
+            and key is not None
+            and (
+                isinstance(key, AsymmetricKey)
+                or isinstance(key, EncryptedAsymmetricKey)
+            )
+        )
 
         s_key = SymmetricKey.generate()
         enc_private_key = s_key.lock(original.get_private_key())
         enc_s_key = EncryptedSymmetricKey.create(s_key, key)
 
-        return EncryptedAsymmetricKey(enc_key=enc_s_key, enc_private_key=enc_private_key,
-                                      public_key=original.get_public_key(), origin=original.origin)
+        return EncryptedAsymmetricKey(
+            enc_key=enc_s_key,
+            enc_private_key=enc_private_key,
+            public_key=original.get_public_key(),
+            origin=original.origin,
+        )
 
     @staticmethod
     def create_from_dict(d: StrDict):
