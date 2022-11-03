@@ -1,5 +1,6 @@
 import abc
-from typing import Dict
+
+from core.types import StrDict
 
 
 class Box(bytes):
@@ -27,11 +28,16 @@ class Box(bytes):
 
 class LockedBox(Box):
     @staticmethod
-    def create_from_dict(data: Dict[str, str]) -> "LockedBox":
-        assert 'enc_data' in data and 'key_origin' in data
+    def create_from_dict(d: StrDict) -> "LockedBox":
+        assert (
+            "enc_data" in d
+            and "key_origin" in d
+            and isinstance(d["enc_data"], str)
+            and isinstance(d["key_origin"], str)
+        )
 
-        enc_data = data['enc_data'].encode('utf-8')
-        key_origin = data['key_origin']
+        enc_data = d["enc_data"].encode("utf-8")
+        key_origin: str = d["key_origin"]
 
         return LockedBox(enc_data, key_origin)
 
@@ -43,10 +49,10 @@ class LockedBox(Box):
     def __repr__(self):
         return "LockedBox({}, '{}')".format(self.__enc_data, self.__key_origin)
 
-    def __dict__(self) -> Dict[str, str]:  # type: ignore
+    def __dict__(self) -> StrDict:  # type: ignore
         return {
-            'enc_data': self.__enc_data.decode('utf-8'),
-            'key_origin': self.__key_origin
+            "enc_data": self.__enc_data.decode("utf-8"),
+            "key_origin": self.__key_origin,
         }
 
     @property
@@ -60,10 +66,10 @@ class LockedBox(Box):
 
 class OpenBox(Box):
     @staticmethod
-    def create_from_dict(d: Dict[str, str]) -> "OpenBox":
-        assert 'data' in d
+    def create_from_dict(d: StrDict) -> "OpenBox":
+        assert "data" in d and isinstance(d["data"], str)
 
-        data = d['data'].encode('utf-8')
+        data = d["data"].encode("utf-8")
 
         return OpenBox(data)
 
@@ -74,10 +80,8 @@ class OpenBox(Box):
     def __repr__(self):
         return "OpenBox({})".format(self.__data)
 
-    def __dict__(self):
-        return {
-            'data': self.__data.decode('utf-8')
-        }
+    def __dict__(self) -> StrDict:  # type: ignore
+        return {"data": self.__data.decode("utf-8")}
 
     @property
     def value(self) -> bytes:

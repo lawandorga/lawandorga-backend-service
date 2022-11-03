@@ -1,5 +1,5 @@
 import abc
-from typing import Literal, Optional, Type, Union, Dict, Any, TypeVar
+from typing import Literal, Optional, Type, Union
 
 from core.folders.domain.external import IOwner
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
@@ -44,10 +44,16 @@ class Key(abc.ABC):
         data = encryption.decrypt(box.value)
         return OpenBox(data=data)
 
-    def get_encryption_class(self) -> Union[Type[AsymmetricEncryption], Type[SymmetricEncryption]]:
+    def get_encryption_class(
+        self,
+    ) -> Union[Type[AsymmetricEncryption], Type[SymmetricEncryption]]:
         encryption_class = EncryptionPyramid.get_encryption_class(self.origin)
-        assert (isinstance(self, AsymmetricKey) and issubclass(encryption_class, AsymmetricEncryption)) or (
-            isinstance(self, SymmetricKey) and issubclass(encryption_class, SymmetricEncryption)
+        assert (
+            (isinstance(self, AsymmetricKey) or isinstance(self, EncryptedAsymmetricKey))
+            and issubclass(encryption_class, AsymmetricEncryption)
+        ) or (
+            isinstance(self, SymmetricKey)
+            and issubclass(encryption_class, SymmetricEncryption)
         )
         return encryption_class
 
@@ -57,7 +63,10 @@ class SymmetricKey(Key):
 
     @staticmethod
     def generate() -> "SymmetricKey":
-        key, version = EncryptionPyramid.get_highest_symmetric_encryption().generate_key()
+        (
+            key,
+            version,
+        ) = EncryptionPyramid.get_highest_symmetric_encryption().generate_key()
         return SymmetricKey.create(key, version)
 
     @staticmethod
@@ -80,7 +89,7 @@ class SymmetricKey(Key):
 
     def get_encryption(self) -> SymmetricEncryption:
         encryption_class = EncryptionPyramid.get_encryption_class(self.origin)
-        return encryption_class(key=self.get_key())
+        return encryption_class(key=self.get_key().decode('utf-8'))
 
 
 class AsymmetricKey(Key):
@@ -88,7 +97,11 @@ class AsymmetricKey(Key):
 
     @staticmethod
     def generate() -> "AsymmetricKey":
-        private_key, public_key, version = EncryptionPyramid.get_highest_asymmetric_encryption().generate_keys()
+        (
+            private_key,
+            public_key,
+            version,
+        ) = EncryptionPyramid.get_highest_asymmetric_encryption().generate_keys()
         return AsymmetricKey.create(private_key, public_key, version)
 
     @staticmethod
@@ -121,7 +134,7 @@ class AsymmetricKey(Key):
     def get_encryption(self) -> AsymmetricEncryption:
         encryption_class = EncryptionPyramid.get_encryption_class(self.origin)
         return encryption_class(
-            public_key=self.__public_key, private_key=self.__private_key
+            public_key=self.__public_key, private_key=self.__private_key.decode('utf-8')
         )
 
     def get_private_key(self) -> OpenBox:
@@ -133,7 +146,9 @@ class AsymmetricKey(Key):
 
 class EncryptedSymmetricKey(Key):
     @staticmethod
-    def create(original: SymmetricKey = None, owner: IOwner = None) -> "EncryptedSymmetricKey":
+    def create(
+        original: SymmetricKey = None, owner: IOwner = None
+    ) -> "EncryptedSymmetricKey":
         assert original is not None and owner is not None
 
         enc_key = owner.get_key().lock(original.get_key())
@@ -141,11 +156,16 @@ class EncryptedSymmetricKey(Key):
         return EncryptedSymmetricKey(enc_key=enc_key, origin=original.origin)
 
     @staticmethod
-    def create_from_dict(d: Dict[str, str]):
-        assert 'enc_key' in d and 'origin' in d
+    def create_from_dict(d: StrDict):
+        assert (
+            "enc_key" in d
+            and "origin" in d
+            and isinstance(d["enc_key"], dict)
+            and isinstance(d["origin"], str)
+        )
 
-        enc_key = LockedBox.create_from_dict(d['enc_key'])
-        origin = d['origin']
+        enc_key = LockedBox.create_from_dict(d["enc_key"])
+        origin = d["origin"]
 
         return EncryptedSymmetricKey(enc_key=enc_key, origin=origin)
 
@@ -158,8 +178,8 @@ class EncryptedSymmetricKey(Key):
 
     def __dict__(self) -> StrDict:  # type: ignore
         return {
-            'enc_key': self.__enc_key.__dict__(),
-            'origin': self.origin,
+            "enc_key": self.__enc_key.__dict__(),
+            "origin": self.origin,
         }
 
     def decrypt(self, owner: IOwner) -> SymmetricKey:
@@ -167,18 +187,20 @@ class EncryptedSymmetricKey(Key):
         return SymmetricKey(key=key, origin=self.origin)
 
     def unlock(self, box: LockedBox) -> OpenBox:
-        raise ValueError('This key is encrypted and can not lock a box.')
+        raise ValueError("This key is encrypted and can not lock a box.")
 
     def lock(self, box: OpenBox) -> LockedBox:
-        raise ValueError('This key is encrypted and can not lock a box.')
+        raise ValueError("This key is encrypted and can not lock a box.")
 
     def get_encryption(self) -> Union[SymmetricEncryption, AsymmetricEncryption]:
-        raise ValueError('This key is encrypted and can not deliver a encryption.')
+        raise ValueError("This key is encrypted and can not deliver a encryption.")
 
 
 class EncryptedAsymmetricKey(Key):
     @staticmethod
-    def create(original: AsymmetricKey = None, owner: IOwner = None) -> "EncryptedAsymmetricKey":
+    def create(
+        original: AsymmetricKey = None, owner: IOwner = None
+    ) -> "EncryptedAsymmetricKey":
         assert original is not None and owner is not None
 
         s_key = SymmetricKey.generate()
@@ -189,12 +211,41 @@ class EncryptedAsymmetricKey(Key):
 
     @staticmethod
     def create_from_dict(d: StrDict):
-        # TODO
-        pass
+        assert (
+            "enc_key" in d
+            and "enc_private_key" in d
+            and "public_key" in d
+            and "origin" in d
+            and isinstance(d["enc_key"], dict)
+            and isinstance(d["enc_private_key"], dict)
+            and isinstance(d["public_key"], str)
+            and isinstance(d["origin"], str)
+        )
 
-    def __init__(self, enc_key: EncryptedSymmetricKey = None, enc_private_key: LockedBox = None,
-                 public_key: str = None, origin: str = None):
-        assert enc_key is not None and enc_private_key is not None and public_key is not None
+        enc_s_key = EncryptedSymmetricKey.create_from_dict(d["enc_key"])
+        enc_private_key = LockedBox.create_from_dict(d["enc_private_key"])
+        public_key = d["public_key"]
+        origin = d["origin"]
+
+        return EncryptedAsymmetricKey(
+            enc_key=enc_s_key,
+            enc_private_key=enc_private_key,
+            public_key=public_key,
+            origin=origin,
+        )
+
+    def __init__(
+        self,
+        enc_key: EncryptedSymmetricKey = None,
+        enc_private_key: LockedBox = None,
+        public_key: str = None,
+        origin: str = None,
+    ):
+        assert (
+            enc_key is not None
+            and enc_private_key is not None
+            and public_key is not None
+        )
 
         self.__enc_key = enc_key
         self.__enc_private_key = enc_private_key
@@ -207,20 +258,21 @@ class EncryptedAsymmetricKey(Key):
         return encryption_class(public_key=self.__public_key)
 
     def unlock(self, box: LockedBox) -> OpenBox:
-        raise ValueError('This key is encrypted and can not unlock a box.')
+        raise ValueError("This key is encrypted and can not unlock a box.")
 
     def decrypt(self, owner: IOwner) -> AsymmetricKey:
-        enc_s_key = EncryptedSymmetricKey.create_from_dict(self.__enc_key)
-        s_key = enc_s_key.decrypt(owner)
+        s_key = self.__enc_key.decrypt(owner)
 
         private_key = s_key.unlock(self.__enc_private_key)
 
-        return AsymmetricKey(private_key=private_key,public_key=self.__public_key, origin=self.origin)
+        return AsymmetricKey(
+            private_key=private_key, public_key=self.__public_key, origin=self.origin
+        )
 
     def __dict__(self) -> StrDict:  # type: ignore
         return {
-            'enc_key': self.__enc_key.__dict__(),
-            'enc_private_key': self.__enc_private_key.__dict__(),
-            'public_key': self.__public_key,
-            "origin": self.origin
+            "enc_key": self.__enc_key.__dict__(),
+            "enc_private_key": self.__enc_private_key.__dict__(),
+            "public_key": self.__public_key,
+            "origin": self.origin,
         }

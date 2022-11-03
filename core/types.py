@@ -1,3 +1,3 @@
 from typing import Dict, Union
 
-StrDict = Dict[str, Union[str, "D"]]
+StrDict = Dict[str, Union[str, "StrDict"]]

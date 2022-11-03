@@ -30,7 +30,7 @@ def test_box_can_be_unloaded(key):
     assert o1 == b"Secret"
     l1 = key.lock(o1)
     enc_data = l1.value
-    l2 = LockedBox(enc_data=enc_data, encryption_version=key.origin)
+    l2 = LockedBox(enc_data=enc_data, key_origin=key.origin)
     assert enc_data == l2
     o2 = key.unlock(l2)
     assert o2 == b"Secret"
@@ -40,14 +40,14 @@ def test_box_decryption_fails_with_another_encryption_class(key):
     o1 = OpenBox(data=b"Secret")
     l1 = key.lock(o1)
     enc_data = l1.value
-    l2 = LockedBox(enc_data=enc_data, encryption_version="ST0")
+    l2 = LockedBox(enc_data=enc_data, key_origin="ST0")
     with pytest.raises(ValueError):
         key.unlock(l2)
 
 
 def test_repr():
     o1 = OpenBox(data=b"Data")
-    o2 = LockedBox(enc_data=b"EncData", encryption_version="ST1")
+    o2 = LockedBox(enc_data=b"EncData", key_origin="ST1")
     assert repr(o1) == "OpenBox(b'Data')"
     assert repr(o2) == "LockedBox(b'EncData', 'ST1')"
 
@@ -59,12 +59,12 @@ def test_box_error():
 
 def test_data():
     o1 = OpenBox(data=b"Data")
-    o2 = LockedBox(enc_data=b"EncData", encryption_version="ST1")
+    o2 = LockedBox(enc_data=b"EncData", key_origin="ST1")
     assert o1.value == b"Data"
     assert o2.value == b"EncData"
 
 
 def test_decryption_error(key):
-    lb = LockedBox(enc_data=b"EncData", encryption_version="SUNKNOWN")
+    lb = LockedBox(enc_data=b"EncData", key_origin="SUNKNOWN")
     with pytest.raises(ValueError):
         key.unlock(lb)

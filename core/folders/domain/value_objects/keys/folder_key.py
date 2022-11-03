@@ -2,7 +2,6 @@ from typing import Optional, Union
 
 from core.folders.domain.external import IOwner
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
-from core.folders.domain.value_objects.keys.base import AsymmetricKey
 from core.seedwork.domain_layer import DomainError
 
 

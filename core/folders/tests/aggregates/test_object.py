@@ -49,7 +49,7 @@ def test_encryption_errors(single_encryption):
             self.a2 = a2
 
     s = SecretObject(
-        OpenBox(data=b"v1"), LockedBox(enc_data=b"v2", encryption_version="ST1")
+        OpenBox(data=b"v1"), LockedBox(enc_data=b"v2", key_origin="ST1")
     )
     assert s.is_encrypted is None
 
