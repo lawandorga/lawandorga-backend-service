@@ -13,7 +13,9 @@ class AsymmetricEncryptionTest1(AsymmetricEncryption):
     __SECRETS: dict[str, bytes] = {}
     __KEYS: dict[str, str] = {}
 
-    def __init__(self, private_key: str, public_key: str):
+    def __init__(self, private_key: str = None, public_key: str = None):
+        assert public_key is not None
+
         self.__private_key = private_key
         self.__public_key = public_key
         self.__class__.get_keys()[private_key] = public_key
@@ -83,7 +85,7 @@ class SymmetricEncryptionTest1(SymmetricEncryption):
     def decrypt(self, enc_data: bytes) -> bytes:
         uuid = enc_data
         place = uuid + bytes(self.__key, "utf-8")
-        data = self.__class__.get_treasure_chest().pop(place)
+        data = self.__class__.get_treasure_chest()[place]
         return data
 
 

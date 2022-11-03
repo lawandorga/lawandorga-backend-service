@@ -2,8 +2,7 @@ from typing import Optional, Tuple
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padding
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
 from core.folders.domain.value_objects.encryption import AsymmetricEncryption
 
@@ -20,7 +19,6 @@ class AsymmetricEncryptionV1(AsymmetricEncryption):
 
     @classmethod
     def generate_keys(cls) -> Tuple[str, str, str]:
-
         generated_private_key = rsa.generate_private_key(
             public_exponent=65537, key_size=2048, backend=default_backend()
         )
@@ -51,8 +49,8 @@ class AsymmetricEncryptionV1(AsymmetricEncryption):
 
         enc_key = object_public_key.encrypt(
             key,
-            asymmetric_padding.OAEP(
-                mgf=asymmetric_padding.MGF1(algorithm=hashes.SHA256()),
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
                 label=None,
             ),
@@ -70,8 +68,8 @@ class AsymmetricEncryptionV1(AsymmetricEncryption):
 
         key = object_private_key.decrypt(
             enc_key,
-            asymmetric_padding.OAEP(
-                mgf=asymmetric_padding.MGF1(algorithm=hashes.SHA256()),
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
                 label=None,
             ),
