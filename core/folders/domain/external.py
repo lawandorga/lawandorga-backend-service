@@ -10,5 +10,5 @@ class IOwner(abc.ABC):
     slug: UUID
 
     @abc.abstractmethod
-    def get_key(self, *args, **kwargs) -> "AsymmetricKey":
+    def get_key(self) -> "AsymmetricKey":
         pass

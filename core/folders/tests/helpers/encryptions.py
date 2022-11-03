@@ -83,7 +83,7 @@ class SymmetricEncryptionTest1(SymmetricEncryption):
     def decrypt(self, enc_data: bytes) -> bytes:
         uuid = enc_data
         place = uuid + bytes(self.__key, "utf-8")
-        data = self.__class__.get_treasure_chest().pop(place)
+        data = self.__class__.get_treasure_chest()[place]
         return data
 
 

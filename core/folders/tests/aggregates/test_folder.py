@@ -5,7 +5,7 @@ import pytest
 from core.folders.domain.aggregates.content import Content
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.value_objects.encryption import EncryptionPyramid
-from core.folders.domain.value_objects.keys import FolderKey
+from core.folders.domain.value_objects.keys import FolderKey, AsymmetricKey
 from core.folders.tests.helpers.car import CarWithSecretName
 from core.folders.tests.helpers.encryptions import (
     AsymmetricEncryptionTest1,
@@ -65,16 +65,10 @@ def test_encryption_decryption(single_encryption, car_content_key):
 
     user = UserObject()
 
-    (
-        private_key,
-        public_key,
-        version,
-    ) = EncryptionPyramid.get_highest_asymmetric_encryption().generate_keys()
-    folder_key = FolderKey.create(
+    a_key = AsymmetricKey.generate()
+    folder_key = FolderKey(
         owner=user,
-        private_key=private_key,
-        public_key=public_key,
-        origin=version,
+        key=a_key,
     )
 
     folder = Folder(name="My Folder", pk=uuid4(), keys=[folder_key])
@@ -82,6 +76,7 @@ def test_encryption_decryption(single_encryption, car_content_key):
 
     content = folder.get_content_by_name(content.name)
     content_key = folder.get_content_key(content, user)
+
     content.decrypt(content_key)
 
     car = content.item
@@ -91,18 +86,14 @@ def test_encryption_decryption(single_encryption, car_content_key):
 def test_encryption_decryption_with_hierarchy(single_encryption, car_content_key):
     user_1 = UserObject()
     user_2 = UserObject()
-    private_key, public_key, version = AsymmetricEncryptionTest1.generate_keys()
-    folder_key_1 = FolderKey.create(
+    a_key = AsymmetricKey.generate()
+    folder_key_1 = FolderKey(
         owner=user_1,
-        private_key=private_key,
-        public_key=public_key,
-        origin=version,
+        key=a_key,
     )
-    folder_key_2 = FolderKey.create(
+    folder_key_2 = FolderKey(
         owner=user_2,
-        private_key=private_key,
-        public_key=public_key,
-        origin=version,
+        key=a_key,
     )
     folder = Folder(name="My Folder", pk=uuid4(), keys=[folder_key_1, folder_key_2])
 
@@ -130,18 +121,15 @@ def test_keys_are_regenerated(double_encryption, car_content_key):
     car, content, key = car_content_key
     user = UserObject()
 
-    private_key, public_key, version = AsymmetricEncryptionTest1.generate_keys()
-    folder_key = FolderKey.create(
+    folder_key = FolderKey(
         owner=user,
-        private_key=private_key,
-        public_key=public_key,
-        origin=version,
+        key=AsymmetricKey.generate()
     )
     folder = Folder(name="My Folder", pk=uuid4(), keys=[folder_key])
     folder.add_content(content, key, user)
 
     assert (
-        key.get_key().encode("utf-8")
+        key.get_key()
         in AsymmetricEncryptionTest2.get_treasure_chest().values()
     )
 
@@ -227,19 +215,16 @@ def test_encryption_version(single_encryption):
     folder.grant_access(to=user)
     assert folder.encryption_version == "AT1"
 
-    private_key, public_key, version = AsymmetricEncryptionTest1.generate_keys()
-    folder_key_1 = FolderKey.create(
+    a_key = AsymmetricKey.generate()
+    folder_key_1 = FolderKey(
         owner=user,
-        private_key=private_key,
-        public_key=public_key,
-        origin=version,
+        key=a_key,
     )
-    private_key, public_key, version = AsymmetricEncryptionTest2.generate_keys()
-    folder_key_2 = FolderKey.create(
+    EncryptionPyramid.add_asymmetric_encryption(AsymmetricEncryptionTest2)
+    a_key = AsymmetricKey.generate()
+    folder_key_2 = FolderKey(
         owner=user,
-        private_key=private_key,
-        public_key=public_key,
-        origin=version,
+        key=a_key,
     )
     folder = Folder(name="Test", pk=uuid4(), keys=[folder_key_1, folder_key_2])
     with pytest.raises(Exception):
@@ -281,14 +266,9 @@ def test_str_method():
 
 
 def test_folder_key_decryption_error(single_encryption):
-    (
-        private,
-        public,
-        version,
-    ) = EncryptionPyramid.get_highest_asymmetric_encryption().generate_keys()
     user1 = UserObject()
-    key = FolderKey.create(
-        private_key=private, public_key=public, origin=version, owner=user1
+    key = FolderKey(
+        key=AsymmetricKey.generate(), owner=user1
     )
     enc_key = key.encrypt()
     user2 = UserObject()
@@ -297,13 +277,7 @@ def test_folder_key_decryption_error(single_encryption):
 
 
 def test_folder_key_str_method(single_encryption):
-    (
-        private,
-        public,
-        version,
-    ) = EncryptionPyramid.get_highest_asymmetric_encryption().generate_keys()
     user1 = UserObject()
-    key = FolderKey.create(
-        private_key=private, public_key=public, origin=version, owner=user1
-    )
+    key = FolderKey(
+        owner=user1, key=AsymmetricKey.generate())
     assert str(key) == "FolderKey of {}".format(user1.slug)
