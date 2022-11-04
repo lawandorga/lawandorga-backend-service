@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 from uuid import UUID, uuid4
 
 from core.folders.domain.aggregates.content import Content
@@ -9,7 +9,7 @@ from core.folders.domain.value_objects.keys import (
     FolderKey,
     SymmetricKey,
 )
-from core.folders.domain.value_objects.keys.base import EncryptedSymmetricKey
+from core.folders.domain.value_objects.keys.base import EncryptedSymmetricKey, EncryptedAsymmetricKey
 from core.seedwork.domain_layer import DomainError
 
 
@@ -28,15 +28,12 @@ class Folder(IOwner):
         parent: UUID = None,
     ):
         assert name is not None and pk is not None
+        assert all([k.is_encrypted for k in keys or []])
 
         self.__pk = pk
         self.__name = name
         self.__content = content if content is not None else {}
-        self.__keys = (
-            [k if k.is_encrypted else k.encrypt() for k in keys]
-            if keys is not None
-            else []
-        )
+        self.__keys = keys if keys is not None else []
         self.__parent = parent
 
     def __str__(self):
@@ -64,9 +61,9 @@ class Folder(IOwner):
 
         return versions[0]
 
-    def __reencrypt_all_keys(self, folder_key: FolderKey):
+    def __reencrypt_all_keys(self, folder_key: FolderKey, user: IOwner):
         # get a new folder key
-        a_key = AsymmetricKey.generate()
+        a_key = SymmetricKey.generate()
         new_folder_key = FolderKey(
             key=a_key,
             owner=folder_key.owner,
@@ -86,7 +83,7 @@ class Folder(IOwner):
         new_keys = []
         for key in self.__keys:
             new_key = FolderKey(owner=key.owner, key=new_folder_key.key)
-            enc_new_key = new_key.encrypt()
+            enc_new_key = new_key.encrypt_with(key.owner.get_encryption_key(requestor=user))
             new_keys.append(enc_new_key)
 
         # set
@@ -96,10 +93,9 @@ class Folder(IOwner):
     def update_information(self, name=None):
         self.__name = name if name is not None else self.__name
 
-    def __check_encryption_version(self, folder_key: FolderKey):
-        encryption_class = EncryptionPyramid.get_highest_asymmetric_encryption()
-        if self.encryption_version != encryption_class.VERSION:
-            self.__reencrypt_all_keys(folder_key)
+    def __check_encryption_version(self, folder_key: FolderKey, user: IOwner):
+        if self.encryption_version not in EncryptionPyramid.get_highest_versions():
+            self.__reencrypt_all_keys(folder_key, user)
 
     def find_folder_key(self, user: IOwner) -> FolderKey:
         parent_key: Optional[FolderKey] = None
@@ -121,21 +117,21 @@ class Folder(IOwner):
                 "This folder already contains an item with the same name."
             )
         enc_folder_key = self.find_folder_key(user)
-        folder_key = enc_folder_key.decrypt(user)
+        folder_key = enc_folder_key.decrypt_with(user)
         enc_key = EncryptedSymmetricKey.create(original=key, key=folder_key.key)
         self.__content[content.name] = (content, enc_key)
         # check
-        self.__check_encryption_version(folder_key)
+        self.__check_encryption_version(folder_key, user)
 
     def update_content(self, content: Content, key: SymmetricKey, user: IOwner):
         if content.name not in self.__content:
             raise DomainError("This folder does not contain an item with this name.")
         enc_folder_key = self.find_folder_key(user)
-        folder_key = enc_folder_key.decrypt(user)
+        folder_key = enc_folder_key.decrypt_with(user)
         enc_key = EncryptedSymmetricKey.create(original=key, key=folder_key.key)
         self.__content[content.name] = (content, enc_key)
         # check
-        self.__check_encryption_version(folder_key)
+        self.__check_encryption_version(folder_key, user)
 
     def delete_content(self, content: Content):
         if content.name not in self.__content:
@@ -148,16 +144,58 @@ class Folder(IOwner):
             raise DomainError("This folder has no keys.")
         return self.__keys[0].key
 
-    def set_parent(self, folder: "Folder", by: IOwner = None):
+    def get_encryption_key(self, *args, **kwargs) -> Union["AsymmetricKey", "SymmetricKey", "EncryptedAsymmetricKey"]:
+        assert len(self.__keys) > 0
+
+        if isinstance(self.__keys[0].key, EncryptedAsymmetricKey):
+            return self.__keys[0].key
+
+        assert 'requestor' in kwargs
+        requestor = kwargs['requestor']
+
+        enc_folder_key = self.find_folder_key(requestor)
+        folder_key = enc_folder_key.decrypt_with(requestor)
+
+        return folder_key.key
+
+    def get_decryption_key(self, *args, **kwargs) -> Union["AsymmetricKey", "SymmetricKey"]:
+        assert 'requestor' in kwargs and len(self.__keys) > 0
+
+        requestor = kwargs['requestor']
+        enc_folder_key = self.find_folder_key(requestor)
+        folder_key = enc_folder_key.decrypt_with(requestor)
+
+        return folder_key.key
+
+    def set_parent(self, folder: "Folder" = None, by: IOwner = None):
+        assert folder is not None and by is not None
+
         self.__parent = folder.slug
-        self.grant_access(to=folder, by=by)
+
+        parent_key = folder.get_encryption_key(requestor=by)
+
+        if len(self.__keys) == 0:
+            key = SymmetricKey.generate()
+
+        else:
+            enc_folder_key = self.find_folder_key(by)
+            folder_key = enc_folder_key.decrypt_with(by)
+            key = folder_key.key
+
+        access_key = FolderKey(
+            owner=folder,
+            key=key,
+        )
+        enc_access_key = access_key.encrypt_with(parent_key)
+
+        self.__keys.append(enc_access_key)
 
     def get_content_key(self, content: Content, user: IOwner):
         if content.name not in self.__content:
             raise DomainError("This folder does not contain the specified item.")
 
         enc_folder_key = self.find_folder_key(user)
-        folder_key = enc_folder_key.decrypt(user)
+        folder_key = enc_folder_key.decrypt_with(user)
         enc_key = self.__content[content.name][1]
         content_key = enc_key.decrypt(folder_key.key)
         return content_key
@@ -171,18 +209,22 @@ class Folder(IOwner):
         pass
 
     def grant_access(self, to: IOwner, by: Optional[IOwner] = None):
+        key: Union[AsymmetricKey, SymmetricKey]
 
         if len(self.__keys) == 0:
-            a_key = AsymmetricKey.generate()
+            key = SymmetricKey.generate()
 
         else:
             assert by is not None
-            enc_folder_key = self.find_folder_key(user=by)
-            a_key = enc_folder_key.decrypt(by).key
+            key = self.get_decryption_key(requestor=by)
 
-        key = FolderKey(
+        folder_key = FolderKey(
             owner=to,
-            key=a_key,
+            key=key,
         )
-        enc_key = key.encrypt()
+
+        lock_key = to.get_key()
+        assert isinstance(lock_key, AsymmetricKey) or isinstance(lock_key, EncryptedAsymmetricKey)
+        enc_key = folder_key.encrypt_with(lock_key)
+
         self.__keys.append(enc_key)

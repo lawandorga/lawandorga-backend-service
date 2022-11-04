@@ -198,7 +198,7 @@ class EncryptedAsymmetricKey(Key):
     @staticmethod
     def create(
         original: AsymmetricKey = None,
-        key: Union[AsymmetricKey, "EncryptedAsymmetricKey"] = None,
+        key: Union[AsymmetricKey, "EncryptedAsymmetricKey", SymmetricKey] = None,
     ) -> "EncryptedAsymmetricKey":
         assert (
             original is not None
@@ -206,6 +206,7 @@ class EncryptedAsymmetricKey(Key):
             and (
                 isinstance(key, AsymmetricKey)
                 or isinstance(key, EncryptedAsymmetricKey)
+                or isinstance(key, SymmetricKey)
             )
         )
 

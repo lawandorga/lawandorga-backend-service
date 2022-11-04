@@ -71,7 +71,7 @@ def test_encryption_decryption(single_encryption, car_content_key):
         key=a_key,
     )
 
-    folder = Folder(name="My Folder", pk=uuid4(), keys=[folder_key])
+    folder = Folder(name="My Folder", pk=uuid4(), keys=[folder_key.encrypt_with(user.get_key())])
     folder.add_content(content, key, user)
 
     content = folder.get_content_by_name(content.name)
@@ -95,7 +95,8 @@ def test_encryption_decryption_with_hierarchy(single_encryption, car_content_key
         owner=user_2,
         key=a_key,
     )
-    folder = Folder(name="My Folder", pk=uuid4(), keys=[folder_key_1, folder_key_2])
+    folder = Folder(name="My Folder", pk=uuid4(),
+                    keys=[folder_key_1.encrypt_with(user_1.get_key()), folder_key_2.encrypt_with(user_2.get_key())])
 
     car, content, key = car_content_key
     folder.add_content(content, key, user_1)
@@ -122,7 +123,7 @@ def test_keys_are_regenerated(double_encryption, car_content_key):
     user = UserObject()
 
     folder_key = FolderKey(owner=user, key=AsymmetricKey.generate())
-    folder = Folder(name="My Folder", pk=uuid4(), keys=[folder_key])
+    folder = Folder(name="My Folder", pk=uuid4(), keys=[folder_key.encrypt_with(user.get_key())])
     folder.add_content(content, key, user)
 
     assert key.get_key() in AsymmetricEncryptionTest2.get_treasure_chest().values()
@@ -207,7 +208,7 @@ def test_encryption_version(single_encryption):
     assert folder.encryption_version is None
     user = UserObject()
     folder.grant_access(to=user)
-    assert folder.encryption_version == "AT1"
+    assert folder.encryption_version == "AT1" or folder.encryption_version == "ST1"
 
     a_key = AsymmetricKey.generate()
     folder_key_1 = FolderKey(
@@ -220,7 +221,8 @@ def test_encryption_version(single_encryption):
         owner=user,
         key=a_key,
     )
-    folder = Folder(name="Test", pk=uuid4(), keys=[folder_key_1, folder_key_2])
+    folder = Folder(name="Test", pk=uuid4(),
+                    keys=[folder_key_1.encrypt_with(user.get_key()), folder_key_2.encrypt_with(user.get_key())])
     with pytest.raises(Exception):
         assert folder.encryption_version
 
@@ -229,9 +231,10 @@ def test_reencrypt_all_keys(single_encryption, folder_user, car_content_key):
     folder, user = folder_user
     car, content, key = car_content_key
     EncryptionPyramid.add_asymmetric_encryption(AsymmetricEncryptionTest2)
-    assert folder.encryption_version == "AT1"
+    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest2)
+    assert folder.encryption_version in ["AT1", 'ST1']
     folder.update_content(content, key, user)
-    assert folder.encryption_version == "AT2"
+    assert folder.encryption_version in ["AT2", 'ST2']
 
 
 def test_folder_key_not_found(single_encryption, folder_user, car_content_key):
@@ -262,10 +265,10 @@ def test_str_method():
 def test_folder_key_decryption_error(single_encryption):
     user1 = UserObject()
     key = FolderKey(key=AsymmetricKey.generate(), owner=user1)
-    enc_key = key.encrypt()
+    enc_key = key.encrypt_with(user1.get_key())
     user2 = UserObject()
     with pytest.raises(DomainError):
-        enc_key.decrypt(user2)
+        enc_key.decrypt_with(user2)
 
 
 def test_folder_key_str_method(single_encryption):

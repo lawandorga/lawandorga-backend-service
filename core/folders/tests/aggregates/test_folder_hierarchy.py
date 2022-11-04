@@ -1,8 +1,12 @@
+import time
+
 import pytest
 
 from core.folders.domain.aggregates.content import Content
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.value_objects.encryption import EncryptionPyramid
+# from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
+# from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.folders.tests.helpers.car import CarWithSecretName
 from core.folders.tests.helpers.encryptions import (
     AsymmetricEncryptionTest1,
@@ -74,21 +78,34 @@ def subfolder(car_content_key):
 
 
 def test_hierarchy(single_encryption, car_content_key):
+    print()
+    print()
     car1, content1, key1 = car_content_key
 
     user = UserObject()
 
+    t1 = time.time()
+    print("t1")
     folder1 = Folder.create("Parent")
     folder1.grant_access(to=user)
+    t2 = time.time()
+    print("t2")
 
     folder2 = Folder.create("Child")
     folder2.set_parent(folder1, user)
     folder2.add_content(content1, key1, user)
 
+    t3 = time.time()
+    print("t3")
+
     content2 = folder2.get_content_by_name("My Car")
     key2 = folder2.get_content_key(content2, user)
     content2.decrypt(key2)
     car2 = content2.item
+
+    t4 = time.time()
+    print("t4")
+    print(t2 - t1, t3 - t2, t4 - t3)
 
     assert car2.name == b"BMW"
 
