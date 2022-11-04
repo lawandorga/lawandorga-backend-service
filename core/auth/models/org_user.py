@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Union
 
+import ics
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.exceptions import ObjectDoesNotExist
@@ -348,3 +349,19 @@ class RlcUser(EncryptedModelMixin, models.Model):
             "legal": legal,
         }
         return data
+
+    def get_ics_calendar(self):
+        from ...events.models import Event
+
+        events = self.org.events.all() | Event.objects.filter(is_global=True)
+
+        c = ics.Calendar()
+        for rlcEvent in events:
+            e = ics.Event()
+            e.name = rlcEvent.name
+            e.begin = rlcEvent.start_time
+            e.end = rlcEvent.end_time
+            e.description = rlcEvent.description
+            e.organizer = rlcEvent.org.name
+            c.events.add(e)
+        return c.serialize()
