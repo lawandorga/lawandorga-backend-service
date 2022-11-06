@@ -1,6 +1,6 @@
 import pytest
 
-from core.folders.domain.aggregates.content import Content
+from core.folders.domain.aggregates.content_upgrade import Content
 from core.folders.domain.aggregates.object import EncryptedObject
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import EncryptionPyramid

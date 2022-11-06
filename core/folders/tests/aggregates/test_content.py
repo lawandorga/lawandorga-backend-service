@@ -1,6 +1,6 @@
 import pytest
 
-from core.folders.domain.aggregates.content import Content
+from core.folders.domain.aggregates.content_upgrade import Content
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import EncryptionPyramid
 from core.folders.tests.helpers.car import CarWithSecretName
@@ -8,25 +8,6 @@ from core.folders.tests.helpers.encryptions import (
     SymmetricEncryptionTest1,
     SymmetricEncryptionTest2,
 )
-
-
-@pytest.fixture
-def encryption_reset():
-    EncryptionPyramid.reset_encryption_hierarchies()
-    yield
-
-
-@pytest.fixture
-def single_encryption(encryption_reset):
-    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest1)
-    yield
-
-
-@pytest.fixture
-def double_encryption(encryption_reset):
-    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest1)
-    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest2)
-    yield
 
 
 @pytest.fixture

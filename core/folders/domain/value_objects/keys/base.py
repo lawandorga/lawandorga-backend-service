@@ -253,11 +253,7 @@ class EncryptedAsymmetricKey(Key):
         public_key: str = None,
         origin: str = None,
     ):
-        assert (
-            enc_key is not None
-            and enc_private_key is not None
-            and public_key is not None
-        )
+        assert public_key is not None
 
         self.__enc_key = enc_key
         self.__enc_private_key = enc_private_key
@@ -273,6 +269,11 @@ class EncryptedAsymmetricKey(Key):
         raise ValueError("This key is encrypted and can not unlock a box.")
 
     def decrypt(self, unlock_key: Union[AsymmetricKey, SymmetricKey]) -> AsymmetricKey:
+        if self.__enc_key is None or self.__enc_private_key is None:
+            raise ValueError(
+                "This key can not be decrypted because one or more of its keys are of type 'None'."
+            )
+
         s_key = self.__enc_key.decrypt(unlock_key)
 
         private_key = s_key.unlock(self.__enc_private_key)
@@ -282,6 +283,9 @@ class EncryptedAsymmetricKey(Key):
         )
 
     def __dict__(self) -> StrDict:  # type: ignore
+        if self.__enc_key is None or self.__enc_private_key is None:
+            raise ValueError("One or more keys of this key are of type 'None'.")
+
         return {
             "enc_key": self.__enc_key.__dict__(),
             "enc_private_key": self.__enc_private_key.__dict__(),

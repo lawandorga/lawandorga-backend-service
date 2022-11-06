@@ -7,16 +7,13 @@ from core.folders.domain.value_objects.keys.base import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
-from core.seedwork.domain_layer import DomainError
 
 
 class FolderKey:
     def __init__(
         self,
         owner: IOwner = None,
-        key: Union[
-            AsymmetricKey, EncryptedAsymmetricKey, SymmetricKey, EncryptedSymmetricKey
-        ] = None,
+        key: Union[SymmetricKey, EncryptedSymmetricKey] = None,
     ):
         assert owner is not None and key is not None
 
@@ -28,41 +25,22 @@ class FolderKey:
     def __str__(self):
         return "FolderKey of {}".format(self.__owner.slug)
 
-    def encrypt_with(
+    def encrypt_self(
         self, key: Union[AsymmetricKey, EncryptedAsymmetricKey, SymmetricKey]
     ) -> "FolderKey":
-        enc_key: Union[EncryptedAsymmetricKey, EncryptedSymmetricKey]
+        assert isinstance(self.__key, SymmetricKey)
 
-        if isinstance(self.__key, AsymmetricKey):
-            enc_key = EncryptedAsymmetricKey.create(original=self.__key, key=key)
-
-        elif isinstance(self.__key, SymmetricKey):
-            enc_key = EncryptedSymmetricKey.create(original=self.__key, key=key)
-
-        else:
-            raise ValueError("The key has the wrong type.")
+        enc_key = EncryptedSymmetricKey.create(original=self.__key, key=key)
 
         return FolderKey(
             owner=self.__owner,
             key=enc_key,
         )
 
-    def decrypt_with(self, owner: IOwner) -> "FolderKey":
-        from core.folders.domain.aggregates.folder import Folder
+    def decrypt_self(self, user: IOwner) -> "FolderKey":
+        assert isinstance(self.__key, EncryptedSymmetricKey)
 
-        assert isinstance(self.__key, EncryptedAsymmetricKey) or isinstance(
-            self.__key, EncryptedSymmetricKey
-        )
-
-        if owner.slug == self.__owner.slug:
-            unlock_key = owner.get_key()
-
-        elif isinstance(self.__owner, Folder):
-            folder_key = self.__owner.find_folder_key(owner)
-            unlock_key = folder_key.decrypt_with(owner).key
-
-        else:
-            raise DomainError("This folder key can not be decrypted.")
+        unlock_key = self.__owner.get_decryption_key(requestor=user)
 
         key = self.key.decrypt(unlock_key)
 
@@ -81,4 +59,4 @@ class FolderKey:
 
     @property
     def is_encrypted(self):
-        return isinstance(self.__key, EncryptedAsymmetricKey)
+        return isinstance(self.__key, EncryptedSymmetricKey)
