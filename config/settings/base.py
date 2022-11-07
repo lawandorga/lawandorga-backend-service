@@ -199,4 +199,7 @@ DUMMY_USER_PASSWORD = "qwe123"
 
 # cronjobs
 # those are used within core.cronjobs and imported by string
-CRONJOBS = ["core.legal.cronjobs.create_legal_requirements_for_users"]
+CRONJOBS = [
+    "core.legal.cronjobs.create_legal_requirements_for_users",
+    "core.records.cronjobs.update_statistic_fields",
+]
