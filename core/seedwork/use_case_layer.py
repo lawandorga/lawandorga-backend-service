@@ -85,10 +85,13 @@ def __update_parameters(args, kwargs, func, actor):
     for index, (key, value) in enumerate(data.items()):
         if isinstance(value, Findable):
 
-            if index <= len(args):
-                old_value = args[index]
-            else:
-                old_value = kwargs[key]
+            try:
+                if index <= len(args):
+                    old_value = args[index]
+                else:
+                    old_value = kwargs[key]
+            except (IndexError, KeyError):
+                raise ValueError("You need to submit '{}'.".format(key))
 
             new_value = value(actor, old_value)
 
