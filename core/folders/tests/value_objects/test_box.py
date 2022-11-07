@@ -68,3 +68,35 @@ def test_decryption_error(key):
     lb = LockedBox(enc_data=b"EncData", key_origin="SUNKNOWN")
     with pytest.raises(ValueError):
         key.unlock(lb)
+
+
+def test_open_box_dict():
+    b1 = OpenBox(data=b"Open")
+    b_dict = b1.__dict__()
+    b2 = OpenBox.create_from_dict(b_dict)
+    assert b1 == b2
+
+
+def test_closed_box_dict(key):
+    o1 = OpenBox(data=b"Open")
+    l1 = key.lock(o1)
+    l1_dict = l1.__dict__()
+    l2 = LockedBox.create_from_dict(l1_dict)
+    assert l1 == l2
+    o2 = key.unlock(l2)
+    assert o1 == o2
+
+
+def test_equality_false(key):
+    o1 = OpenBox(data=b"Open")
+    l1 = key.lock(o1)
+
+    assert not o1 == l1
+    assert not l1 == o1
+    assert not l1 == b"Open"
+    assert not o1 == "Open"
+
+
+def test_bytes_equality():
+    o1 = OpenBox(data=b"Open")
+    assert o1 == b"Open"

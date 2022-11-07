@@ -16,6 +16,11 @@ class Key(abc.ABC):
 
         self.__origin = origin
 
+    def __eq__(self, other):
+        if type(other) == type(self):
+            return hash(other) == hash(self)
+        return NotImplemented
+
     @property
     def origin(self):
         return self.__origin
@@ -39,22 +44,6 @@ class Key(abc.ABC):
         encryption = self.get_encryption()
         data = encryption.decrypt(box.value)
         return OpenBox(data=data)
-
-    def get_encryption_class(
-        self,
-    ) -> Union[Type[AsymmetricEncryption], Type[SymmetricEncryption]]:
-        encryption_class = EncryptionPyramid.get_encryption_class(self.origin)
-        assert (
-            (
-                isinstance(self, AsymmetricKey)
-                or isinstance(self, EncryptedAsymmetricKey)
-            )
-            and issubclass(encryption_class, AsymmetricEncryption)
-        ) or (
-            isinstance(self, SymmetricKey)
-            and issubclass(encryption_class, SymmetricEncryption)
-        )
-        return encryption_class
 
 
 class SymmetricKey(Key):
@@ -80,6 +69,9 @@ class SymmetricKey(Key):
         self.__key = key
 
         super().__init__(origin)
+
+    def __hash__(self):
+        return hash("{}{}".format(self.origin, hash(self.__key)))
 
     def get_key(self) -> OpenBox:
         return self.__key
@@ -127,6 +119,11 @@ class AsymmetricKey(Key):
         self.__private_key = private_key
 
         super().__init__(origin)
+
+    def __hash__(self):
+        return hash(
+            "{}{}{}".format(self.origin, hash(self.__private_key), self.__public_key)
+        )
 
     def get_encryption(self) -> AsymmetricEncryption:
         encryption_class = EncryptionPyramid.get_encryption_class(self.origin)
@@ -179,6 +176,9 @@ class EncryptedSymmetricKey(Key):
             "enc_key": self.__enc_key.__dict__(),
             "origin": self.origin,
         }
+
+    def __hash__(self):
+        return hash("{}{}".format(self.origin, hash(self.__enc_key)))
 
     def decrypt(self, unlock_key: Union[AsymmetricKey, SymmetricKey]) -> SymmetricKey:
         key = unlock_key.unlock(self.__enc_key)
@@ -261,6 +261,27 @@ class EncryptedAsymmetricKey(Key):
 
         super().__init__(origin=origin)
 
+    def __dict__(self) -> StrDict:  # type: ignore
+        if self.__enc_key is None or self.__enc_private_key is None:
+            raise ValueError("One or more keys of this key are of type 'None'.")
+
+        return {
+            "enc_key": self.__enc_key.__dict__(),
+            "enc_private_key": self.__enc_private_key.__dict__(),
+            "public_key": self.__public_key,
+            "origin": self.origin,
+        }
+
+    def __hash__(self):
+        return hash(
+            "{}{}{}{}".format(
+                hash(self.__enc_key),
+                hash(self.__enc_private_key),
+                self.__public_key,
+                self.origin,
+            )
+        )
+
     def get_encryption(self) -> AsymmetricEncryption:
         encryption_class = EncryptionPyramid.get_encryption_class(self.origin)
         return encryption_class(public_key=self.__public_key)
@@ -281,14 +302,3 @@ class EncryptedAsymmetricKey(Key):
         return AsymmetricKey(
             private_key=private_key, public_key=self.__public_key, origin=self.origin
         )
-
-    def __dict__(self) -> StrDict:  # type: ignore
-        if self.__enc_key is None or self.__enc_private_key is None:
-            raise ValueError("One or more keys of this key are of type 'None'.")
-
-        return {
-            "enc_key": self.__enc_key.__dict__(),
-            "enc_private_key": self.__enc_private_key.__dict__(),
-            "public_key": self.__public_key,
-            "origin": self.origin,
-        }

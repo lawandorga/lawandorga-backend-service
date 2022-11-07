@@ -136,3 +136,11 @@ def test_folder_access(single_encryption, car_content_key):
     )
 
     assert folder.has_access(user_1) and folder.has_access(user_2)
+
+
+def test_has_no_access(single_encryption):
+    user1 = UserObject()
+    user2 = UserObject()
+    folder = Folder.create("Test")
+    folder.grant_access(user2)
+    assert not folder.has_access(user1)

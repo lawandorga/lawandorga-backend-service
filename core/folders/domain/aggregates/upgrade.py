@@ -15,6 +15,7 @@ class Upgrade:
     def __init__(self, folder: "Folder" = None):
         assert folder is not None
         self.__folder = folder
+        self.__folder.add_upgrade(self)
 
     @property
     def folder(self) -> "Folder":

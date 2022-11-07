@@ -104,6 +104,25 @@ def test_reencrypt_all_keys(single_encryption, car_content_key, folder_upgrade_u
     assert folder.encryption_version in ["AT2", "ST2"]
 
 
-def test_reencrypt_works():
-    # TODO
-    pass
+def test_reencrypt_works(single_encryption, folder_upgrade_user):
+    folder, upgrade, user = folder_upgrade_user
+
+    content2 = upgrade.get_content_by_name("My Car")
+    key2 = upgrade.get_content_key(content2, user)
+    content2.decrypt(key2)
+    car2 = content2.item
+    assert car2.name == b"BMW"
+    key2 = content2.encrypt()
+    upgrade.update_content(content2, key2, user)
+    assert folder.encryption_version == "ST1" and upgrade.encryption_version == "ST1"
+
+    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest2)
+
+    folder.check_encryption_version(user)
+    assert folder.encryption_version == "ST2" and upgrade.encryption_version == "ST2"
+
+    content3 = upgrade.get_content_by_name("My Car")
+    key3 = upgrade.get_content_key(content3, user)
+    content3.decrypt(key3)
+    car3 = content3.item
+    assert car3.name == b"BMW"

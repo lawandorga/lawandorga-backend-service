@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Optional, Union
 
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.aggregates.object import EncryptedObject
@@ -29,7 +29,7 @@ class Content(Item):
         return self.__name
 
     @property
-    def item(self):
+    def item(self) -> EncryptedObject:
         return self.__item
 
     def encrypt(self) -> SymmetricKey:
@@ -55,11 +55,36 @@ class ContentUpgrade(Upgrade):
 
         super().__init__(folder=folder)
 
+    @property
+    def encryption_version(self) -> Optional[str]:
+        if len(self.__content.items()) == 0:
+            return None
+
+        keys = map(lambda x: x[1], self.__content.values())
+
+        versions = []
+        for key in keys:
+            versions.append(key.origin)
+
+        if not all([v == versions[0] for v in versions]):
+            raise Exception("Not all upgrade keys have the same encryption version.")
+
+        return versions[0]
+
     def content(self) -> list[Item]:
         pass
 
-    def reencrypt(self, old_key: SymmetricKey, new_key: SymmetricKey):
-        pass
+    def reencrypt(self, old_folder_key: SymmetricKey, new_folder_key: SymmetricKey):
+        new_content: dict[str, tuple[Content, EncryptedSymmetricKey]] = {}
+
+        for name, item in self.__content.items():
+            old_key = item[1].decrypt(old_folder_key)
+            item[0].decrypt(old_key)
+            new_key = item[0].encrypt()
+            enc_new_key = EncryptedSymmetricKey.create(new_key, new_folder_key)
+            new_content[name] = (item[0], enc_new_key)
+
+        self.__content = new_content
 
     def __add_or_overwrite_content(
         self, content: Content, key: SymmetricKey, user: IOwner

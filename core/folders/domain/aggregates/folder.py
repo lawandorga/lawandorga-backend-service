@@ -77,7 +77,11 @@ class Folder(IOwner):
     def add_upgrade(self, upgrade: Upgrade):
         self.__upgrades.append(upgrade)
 
-    def __reencrypt_all_keys(self, old_key: SymmetricKey, user: IOwner):
+    def __reencrypt_all_keys(self, user: IOwner):
+        enc_folder_key = self.__find_folder_key(user)
+        folder_key = enc_folder_key.decrypt_self(user)
+        old_key = folder_key.key
+
         # get a new folder key
         new_key = SymmetricKey.generate()
 
@@ -102,8 +106,7 @@ class Folder(IOwner):
 
     def check_encryption_version(self, user: IOwner):
         if self.encryption_version not in EncryptionPyramid.get_highest_versions():
-            folder_key = self.__find_folder_key(user)
-            self.__reencrypt_all_keys(folder_key.key, user)
+            self.__reencrypt_all_keys(user)
 
     def __find_folder_key(self, user: IOwner) -> FolderKey:
         parent_key: Optional[FolderKey] = None
@@ -120,9 +123,8 @@ class Folder(IOwner):
         raise DomainError("No folder key was found for this user.")
 
     def get_encryption_key(self, *args, **kwargs) -> "SymmetricKey":
-        assert len(self.__keys) > 0
+        assert len(self.__keys) > 0 and "requestor" in kwargs
 
-        assert "requestor" in kwargs
         requestor = kwargs["requestor"]
 
         enc_folder_key = self.__find_folder_key(requestor)
