@@ -58,7 +58,9 @@ class RlcUser(EncryptedModelMixin, models.Model):
     speciality_of_study = models.CharField(
         choices=STUDY_CHOICES, max_length=100, blank=True, null=True
     )
-    calendar_uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=True, unique=True)
+    calendar_uuid = models.UUIDField(
+        primary_key=False, default=uuid.uuid4, editable=True, unique=True
+    )
     # settings
     frontend_settings = models.JSONField(null=True, blank=True)
     # encryption

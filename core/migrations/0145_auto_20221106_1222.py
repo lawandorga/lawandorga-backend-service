@@ -5,10 +5,10 @@ from django.db import migrations
 
 
 def gen_uuid(apps, schema_editor):
-    RlcUser = apps.get_model('core', 'RlcUser')
+    RlcUser = apps.get_model("core", "RlcUser")
     for row in RlcUser.objects.all():
         row.calendar_uuid = uuid.uuid4()
-        row.save(update_fields=['calendar_uuid'])
+        row.save(update_fields=["calendar_uuid"])
 
 
 class Migration(migrations.Migration):
