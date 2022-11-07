@@ -92,7 +92,7 @@ class OpenBox(Box):
         return {"data": self.__data.decode("utf-8")}
 
     def __hash__(self):
-        return hash('openbox{}'.format(self.__data))
+        return hash("openbox{}".format(self.__data))
 
     @property
     def value(self) -> bytes:

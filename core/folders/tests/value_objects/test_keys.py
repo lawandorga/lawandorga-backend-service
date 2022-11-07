@@ -33,7 +33,7 @@ def a_key(encryption):
 
 @pytest.fixture
 def box():
-    yield OpenBox(data=b'Test')
+    yield OpenBox(data=b"Test")
 
 
 def test_symmetric_dict(s_key):
@@ -64,7 +64,7 @@ def test_unlock_error(s_key, a_key):
 
 
 def test_encrypted_symmetric_keys_errors(s_key):
-    box = OpenBox(data=b'Test')
+    box = OpenBox(data=b"Test")
     key = SymmetricKey.generate()
     locked_box = key.lock(box)
     enc_key = EncryptedSymmetricKey.create(key, s_key)
@@ -102,5 +102,5 @@ def test_encrypted_asymmetric_key_can_encrypt(a_key, box):
 def test_equality_false(a_key, s_key):
     assert not a_key == s_key
     assert not s_key == a_key
-    assert not a_key == 'test'
-    assert not s_key == 'test'
+    assert not a_key == "test"
+    assert not s_key == "test"
