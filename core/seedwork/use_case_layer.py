@@ -2,6 +2,8 @@ import inspect
 from logging import INFO, WARNING, getLogger
 from typing import Any, Callable, TypeVar, get_type_hints
 
+from django.core.exceptions import ObjectDoesNotExist
+
 from core.seedwork.domain_layer import DomainError
 
 logger = getLogger("usecase")
@@ -93,7 +95,13 @@ def __update_parameters(args, kwargs, func, actor):
             except (IndexError, KeyError):
                 raise ValueError("You need to submit '{}'.".format(key))
 
-            new_value = value(actor, old_value)
+            try:
+                new_value = value(actor, old_value)
+            except ObjectDoesNotExist as e:
+                message = "The object with identifier '{}' could not be found.".format(
+                    value
+                )
+                raise UseCaseInputError(message) from e
 
             if index < len(args):
                 args[index] = new_value
