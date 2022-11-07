@@ -88,7 +88,5 @@ def get_record_fields_amount(statistics_user: StatisticUser):
 def get_dynamic_record_stats(
     data: schemas.InputRecordStats, statistics_user: StatisticUser
 ):
-    ret = create_statistic(
-        data.field_1, data.value_1, data.field_2, __actor=statistics_user
-    )
+    ret = create_statistic(statistics_user, data.field_1, data.value_1, data.field_2)
     return ret

@@ -1,13 +1,13 @@
 import abc
 from typing import Optional, Union
 
+from core.folders.domain.types import StrDict
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import (
     AsymmetricEncryption,
     EncryptionPyramid,
     SymmetricEncryption,
 )
-from core.types import StrDict
 
 
 class Key(abc.ABC):

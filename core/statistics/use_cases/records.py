@@ -12,7 +12,7 @@ def clean_str(v):
 
 
 @use_case()
-def create_statistic(field_1: str, value_1: str, field_2: str, __actor: StatisticUser):
+def create_statistic(__actor: StatisticUser, field_1: str, value_1: str, field_2: str):
     cleaned_field_1 = clean_str(field_1)
     cleaned_value_1 = clean_str(value_1)
     cleaned_field_2 = clean_str(field_2)
