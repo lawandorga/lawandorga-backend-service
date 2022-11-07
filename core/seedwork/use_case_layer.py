@@ -86,7 +86,7 @@ def __update_parameters(args, kwargs, func, actor):
         if isinstance(value, Findable):
 
             try:
-                if index <= len(args):
+                if index < len(args):
                     old_value = args[index]
                 else:
                     old_value = kwargs[key]
@@ -95,7 +95,7 @@ def __update_parameters(args, kwargs, func, actor):
 
             new_value = value(actor, old_value)
 
-            if index <= len(args):
+            if index < len(args):
                 args[index] = new_value
             else:
                 kwargs[key] = new_value
