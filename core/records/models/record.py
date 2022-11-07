@@ -60,7 +60,8 @@ class RecordTemplate(models.Model):
         fields = list(sorted(fields, key=lambda i: i["order"]))
         return fields
 
-    def get_statistic_fields_meta(self):
+    @classmethod
+    def get_statistic_fields_meta(cls):
         return [
             {
                 "name": "Nationality of the client",
