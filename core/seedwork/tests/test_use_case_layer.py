@@ -53,6 +53,13 @@ def test_actor_errors():
 
     assert "submit an '__actor'" in str(e.value)
 
+    @use_case()
+    def f8(__actor: Actor, _):
+        pass
+
+    with pytest.raises(TypeError):
+        f8(0, __actor=Actor())
+
 
 def test_actor_works():
     @use_case()
