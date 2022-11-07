@@ -82,9 +82,20 @@ def __update_parameters(args, kwargs, func, actor):
     signature = inspect.signature(func)
     data = {k: v.default for k, v in signature.parameters.items()}
 
-    for key, value in kwargs.items():
-        if key in data and isinstance(data[key], Findable):
-            kwargs[key] = data[key](actor, kwargs[key])
+    for index, (key, value) in enumerate(data.items()):
+        if isinstance(value, Findable):
+
+            if index <= len(args):
+                old_value = args[index]
+            else:
+                old_value = kwargs[key]
+
+            new_value = value(actor, old_value)
+
+            if index <= len(args):
+                args[index] = new_value
+            else:
+                kwargs[key] = new_value
 
     return args, kwargs
 
