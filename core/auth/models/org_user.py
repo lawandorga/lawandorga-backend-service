@@ -1,3 +1,4 @@
+import uuid
 from typing import Any, Dict, List, Union
 
 import ics
@@ -57,6 +58,7 @@ class RlcUser(EncryptedModelMixin, models.Model):
     speciality_of_study = models.CharField(
         choices=STUDY_CHOICES, max_length=100, blank=True, null=True
     )
+    calendar_uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=True, unique=True)
     # settings
     frontend_settings = models.JSONField(null=True, blank=True)
     # encryption
@@ -365,3 +367,7 @@ class RlcUser(EncryptedModelMixin, models.Model):
             e.organizer = rlcEvent.org.name
             c.events.add(e)
         return c.serialize()
+
+    def regenerate_calendar_uuid(self):
+        self.calendar_uuid = uuid.uuid4()
+        self.save()
