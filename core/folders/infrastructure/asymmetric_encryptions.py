@@ -39,7 +39,7 @@ class AsymmetricEncryptionV1(AsymmetricEncryption):
 
         return private_key, public_key, cls.VERSION
 
-    def encrypt(self, key: bytes) -> bytes:
+    def encrypt(self, data: bytes) -> bytes:
         assert self.__public_key is not None
 
         bytes_public_key = self.__public_key.encode("utf-8")
@@ -48,7 +48,7 @@ class AsymmetricEncryptionV1(AsymmetricEncryption):
         )
 
         enc_key = object_public_key.encrypt(
-            key,
+            data,
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
@@ -58,7 +58,7 @@ class AsymmetricEncryptionV1(AsymmetricEncryption):
 
         return enc_key
 
-    def decrypt(self, enc_key: bytes) -> bytes:
+    def decrypt(self, enc_data: bytes) -> bytes:
         assert self.__private_key is not None
 
         bytes_private_key = self.__private_key.encode("utf-8")
@@ -66,8 +66,8 @@ class AsymmetricEncryptionV1(AsymmetricEncryption):
             bytes_private_key, None, backend=default_backend()
         )
 
-        key = object_private_key.decrypt(
-            enc_key,
+        data = object_private_key.decrypt(
+            enc_data,
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
@@ -75,4 +75,4 @@ class AsymmetricEncryptionV1(AsymmetricEncryption):
             ),
         )
 
-        return key
+        return data

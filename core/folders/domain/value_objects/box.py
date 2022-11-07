@@ -20,6 +20,11 @@ class Box(bytes):
 
         return super().__new__(cls, value)
 
+    def __eq__(self, other):
+        if type(other) == type(self):
+            return hash(other) == hash(self)
+        return NotImplemented
+
     @property
     @abc.abstractmethod
     def value(self) -> bytes:
@@ -39,7 +44,7 @@ class LockedBox(Box):
         enc_data = d["enc_data"].encode("utf-8")
         key_origin: str = d["key_origin"]
 
-        return LockedBox(enc_data, key_origin)
+        return LockedBox(enc_data=enc_data, key_origin=key_origin)
 
     def __init__(self, enc_data: bytes, key_origin: str):
         self.__enc_data = enc_data
@@ -54,6 +59,9 @@ class LockedBox(Box):
             "enc_data": self.__enc_data.decode("utf-8"),
             "key_origin": self.__key_origin,
         }
+
+    def __hash__(self):
+        return hash("{}{}".format(self.__enc_data, self.__key_origin))
 
     @property
     def key_origin(self) -> str:
@@ -71,7 +79,7 @@ class OpenBox(Box):
 
         data = d["data"].encode("utf-8")
 
-        return OpenBox(data)
+        return OpenBox(data=data)
 
     def __init__(self, data: bytes):
         self.__data = data
@@ -82,6 +90,9 @@ class OpenBox(Box):
 
     def __dict__(self) -> StrDict:  # type: ignore
         return {"data": self.__data.decode("utf-8")}
+
+    def __hash__(self):
+        return hash("openbox{}".format(self.__data))
 
     @property
     def value(self) -> bytes:

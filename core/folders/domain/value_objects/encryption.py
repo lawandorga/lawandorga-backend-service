@@ -82,20 +82,19 @@ class EncryptionPyramid:
         cls.__HIGHEST_SYMMETRIC_ENCRYPTION = encryption
 
     @classmethod
-    def get_asymmetric_encryption_hierarchy(cls):
-        return cls.__ASYMMETRIC_ENCRYPTION_HIERARCHY
-
-    @classmethod
-    def get_symmetric_encryption_hierarchy(cls):
-        return cls.__SYMMETRIC_ENCRYPTION_HIERARCHY
-
-    @classmethod
     def get_highest_asymmetric_encryption(cls):
         return cls.__HIGHEST_ASYMMETRIC_ENCRYPTION
 
     @classmethod
     def get_highest_symmetric_encryption(cls):
         return cls.__HIGHEST_SYMMETRIC_ENCRYPTION
+
+    @classmethod
+    def get_highest_versions(cls):
+        return [
+            cls.get_highest_symmetric_encryption().VERSION,
+            cls.get_highest_asymmetric_encryption().VERSION,
+        ]
 
     @classmethod
     def get_encryption_class(cls, version: str):
