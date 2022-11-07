@@ -7,7 +7,7 @@ from core.folders.domain.value_objects.encryption import (
     EncryptionPyramid,
     SymmetricEncryption,
 )
-from core.types import StrDict
+from core.folders.domain.types import StrDict
 
 
 class Key(abc.ABC):

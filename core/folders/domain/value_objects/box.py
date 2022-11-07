@@ -1,6 +1,6 @@
 import abc
 
-from core.types import StrDict
+from core.folders.domain.types import StrDict
 
 
 class Box(bytes):

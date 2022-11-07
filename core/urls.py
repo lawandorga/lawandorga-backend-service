@@ -14,7 +14,7 @@ from core.statistics.urls import urlpatterns as statistics_urlpatterns
 urlpatterns = [
     *auth_urlpatterns,
     *statistics_urlpatterns,
-    *events_urlpatterns,
+    path("events/", include(events_urlpatterns)),
     path("legal/", include(legal_urlpatterns)),
     path("cronjobs/", include(cronjobs_router.urls)),
     path("", include(org_urlpatterns)),
