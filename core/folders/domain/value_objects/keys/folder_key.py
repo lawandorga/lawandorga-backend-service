@@ -1,6 +1,7 @@
 from typing import Union
 
 from core.folders.domain.external import IOwner
+from core.folders.domain.types import StrDict
 from core.folders.domain.value_objects.keys import AsymmetricKey
 from core.folders.domain.value_objects.keys.base import (
     EncryptedAsymmetricKey,
@@ -10,6 +11,20 @@ from core.folders.domain.value_objects.keys.base import (
 
 
 class FolderKey:
+    @staticmethod
+    def create_from_dict(d: StrDict, owner: IOwner) -> "FolderKey":
+        assert (
+            "key" in d
+            and isinstance(d["key"], dict)
+            and "owner" in d
+            and isinstance(d["owner"], str)
+        )
+
+        key = EncryptedSymmetricKey.create_from_dict(d["key"])
+        assert str(owner.slug) == d["owner"]
+
+        return FolderKey(key=key, owner=owner)
+
     def __init__(
         self,
         owner: IOwner = None,
@@ -24,6 +39,23 @@ class FolderKey:
 
     def __str__(self):
         return "FolderKey of {}".format(self.__owner.slug)
+
+    def __dict__(self) -> StrDict:  # type: ignore
+        assert isinstance(self.__key, EncryptedSymmetricKey)
+
+        return {"owner": str(self.__owner.slug), "key": self.__key.__dict__()}
+
+    @property
+    def key(self):
+        return self.__key
+
+    @property
+    def owner(self):
+        return self.__owner
+
+    @property
+    def is_encrypted(self):
+        return isinstance(self.__key, EncryptedSymmetricKey)
 
     def encrypt_self(
         self, key: Union[AsymmetricKey, EncryptedAsymmetricKey, SymmetricKey]
@@ -48,15 +80,3 @@ class FolderKey:
             owner=self.__owner,
             key=key,
         )
-
-    @property
-    def key(self):
-        return self.__key
-
-    @property
-    def owner(self):
-        return self.__owner
-
-    @property
-    def is_encrypted(self):
-        return isinstance(self.__key, EncryptedSymmetricKey)

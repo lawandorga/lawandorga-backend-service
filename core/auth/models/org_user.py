@@ -1,3 +1,4 @@
+import uuid
 from typing import Any, Dict, List, Union
 
 from django.conf import settings
@@ -11,6 +12,7 @@ from core.auth.token_generator import EmailConfirmationTokenGenerator
 from core.rlc.models import HasPermission, Org, Permission
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
+from ...folders.domain.value_objects.keys import AsymmetricKey, EncryptedAsymmetricKey
 from ...static import (
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
@@ -41,6 +43,7 @@ class RlcUser(EncryptedModelMixin, models.Model):
         UserProfile, on_delete=models.CASCADE, related_name="rlc_user"
     )
     org = models.ForeignKey(Org, related_name="users", on_delete=models.PROTECT)
+    slug = models.UUIDField(default=uuid.uuid4)
     # blocker
     email_confirmed = models.BooleanField(default=True)
     accepted = models.BooleanField(default=False)
@@ -102,6 +105,32 @@ class RlcUser(EncryptedModelMixin, models.Model):
             if not lr.accepted:
                 return True
         return False
+
+    def get_encryption_key(self, *args, **kwargs) -> EncryptedAsymmetricKey:
+        assert self.public_key is not None
+        if isinstance(self.public_key, memoryview):
+            key = self.public_key.tobytes().decode("utf-8")
+        else:
+            key = self.public_key.decode("utf-8")
+        origin = "A1"
+        return EncryptedAsymmetricKey(public_key=key, origin=origin)
+
+    def get_decryption_key(self, *args, **kwargs) -> AsymmetricKey:
+        assert self.private_key is not None and self.public_key is not None
+        if self.email == "dummy@law-orga.de":
+            if isinstance(self.public_key, memoryview):
+                public_key = self.public_key.tobytes().decode("utf-8")
+            else:
+                public_key = self.public_key.decode("utf-8")
+
+            origin = "A1"
+
+            self.decrypt(settings.DUMMY_USER_PASSWORD)
+            private_key = self.private_key
+            return AsymmetricKey.create(
+                public_key=public_key, private_key=private_key, origin=origin
+            )
+        raise NotImplementedError()
 
     def activate_or_deactivate(self):
         self.is_active = not self.is_active

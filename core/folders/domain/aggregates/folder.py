@@ -1,7 +1,7 @@
 from typing import List, Optional, Union
 from uuid import UUID, uuid4
 
-from core.folders.domain.aggregates.upgrade import Item, Upgrade
+from core.folders.domain.aggregates.upgrade import Upgrade
 from core.folders.domain.external import IOwner
 from core.folders.domain.value_objects.encryption import EncryptionPyramid
 from core.folders.domain.value_objects.keys import (
@@ -23,23 +23,39 @@ class Folder(IOwner):
         self,
         name: str = None,
         pk: UUID = None,
+        org_pk: int = None,
         keys: List[FolderKey] = None,
-        items: list[Item] = None,
-        parent: UUID = None,
+        parent_pk: UUID = None,
         upgrades: list[Upgrade] = None,
     ):
         assert name is not None and pk is not None
         assert all([k.is_encrypted for k in keys or []])
 
+        self.__parent_pk = parent_pk
         self.__pk = pk
         self.__name = name
-        self.__items = items if items is not None else []
+        self.__org_pk = org_pk
         self.__keys = keys if keys is not None else []
-        self.__parent = parent
         self.__upgrades = upgrades if upgrades is not None else []
 
     def __str__(self):
         return "Folder {}".format(self.name)
+
+    @property
+    def org_pk(self):
+        return self.__org_pk
+
+    @property
+    def keys(self):
+        return self.__keys
+
+    @property
+    def pk(self):
+        return self.__pk
+
+    @property
+    def parent(self):
+        return self.__parent_pk
 
     @property
     def slug(self):
@@ -51,7 +67,11 @@ class Folder(IOwner):
 
     @property
     def items(self):
-        return self.__items
+        return []
+
+    @property
+    def upgrades(self):
+        return self.__upgrades
 
     @property
     def encryption_version(self) -> Optional[str]:
@@ -114,7 +134,7 @@ class Folder(IOwner):
         for key in self.__keys:
             if key.owner.slug == user.slug:
                 return key
-            if self.__parent and key.owner.slug == self.__parent:
+            if self.__parent_pk and key.owner.slug == self.__parent_pk:
                 parent_key = key
 
         if parent_key is not None:
@@ -144,7 +164,7 @@ class Folder(IOwner):
     def set_parent(self, folder: "Folder" = None, by: IOwner = None):
         assert folder is not None and by is not None
 
-        self.__parent = folder.slug
+        self.__parent_pk = folder.pk
 
         parent_key = folder.get_encryption_key(requestor=by)
 

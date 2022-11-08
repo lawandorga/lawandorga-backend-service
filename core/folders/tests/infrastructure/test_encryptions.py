@@ -1,3 +1,4 @@
+from core.folders.domain.value_objects.box import OpenBox
 from core.folders.domain.value_objects.encryption import EncryptionPyramid
 from core.folders.domain.value_objects.keys import (
     AsymmetricKey,
@@ -63,3 +64,15 @@ def test_asymmetric_encryption_encrypt_symmetric_key():
     assert enc_data != b_key
     dec_data = encryption.decrypt(enc_data)
     assert dec_data == b_key
+
+
+def test_asymmetric_encryption_decode():
+    EncryptionPyramid.reset_encryption_hierarchies()
+    EncryptionPyramid.add_asymmetric_encryption(AsymmetricEncryptionV1)
+
+    key = AsymmetricKey.generate()
+    data = OpenBox(data=b'Secret')
+    locked = key.lock(data)
+
+    assert locked.decode('ISO-8859-1').encode('ISO-8859-1') == locked.value
+    locked.__dict__()

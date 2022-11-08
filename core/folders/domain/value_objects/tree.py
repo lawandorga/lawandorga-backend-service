@@ -1,0 +1,2 @@
+class FolderTree:
+    pass

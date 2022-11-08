@@ -41,7 +41,7 @@ class LockedBox(Box):
             and isinstance(d["key_origin"], str)
         )
 
-        enc_data = d["enc_data"].encode("utf-8")
+        enc_data = d["enc_data"].encode("ISO-8859-1")
         key_origin: str = d["key_origin"]
 
         return LockedBox(enc_data=enc_data, key_origin=key_origin)
@@ -55,8 +55,9 @@ class LockedBox(Box):
         return "LockedBox({}, '{}')".format(self.__enc_data, self.__key_origin)
 
     def __dict__(self) -> StrDict:  # type: ignore
+        print(self.__enc_data)
         return {
-            "enc_data": self.__enc_data.decode("utf-8"),
+            "enc_data": self.__enc_data.decode("ISO-8859-1"),
             "key_origin": self.__key_origin,
         }
 
