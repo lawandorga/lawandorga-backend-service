@@ -40,6 +40,14 @@ def user(db):
     yield user
 
 
+@pytest.fixture
+def folder_pk(db, user, repository):
+    folder1 = Folder.create(name="New Folder", org_pk=user.org_id)
+    folder1.grant_access(to=user)
+    repository.save(folder1)
+    yield folder1.pk
+
+
 def test_save(db, user, repository):
     folder1 = Folder.create("New Folder")
     folder1.grant_access(to=user)
@@ -48,17 +56,22 @@ def test_save(db, user, repository):
     assert folder2.has_access(user)
 
 
-def test_retrieve(db):
-    pass
+def test_retrieve(db, user, folder_pk, repository):
+    folder = repository.retrieve(user.org_id, folder_pk)
+    assert folder.has_access(user)
 
 
-def test_list(db):
-    pass
+def test_list(db, user, repository, folder_pk):
+    folders = repository.list(user.org_id)
+    assert folders[0].has_access(user)
 
 
 def test_tree(db):
     pass
 
 
-def test_find_key_owner(db):
-    pass
+def test_find_key_owner(db, folder_pk, user, repository):
+    folder = repository.retrieve(user.org_id, folder_pk)
+    key = folder.keys[0]
+    user2 = repository.find_key_owner(key.owner.slug)
+    assert user2.pk == user.pk

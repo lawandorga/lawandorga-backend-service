@@ -15,9 +15,9 @@ from core.seedwork.domain_layer import DomainError
 
 class Folder(IOwner):
     @staticmethod
-    def create(name: str = None):
+    def create(name: str = None, org_pk: int = None):
         pk = uuid4()
-        return Folder(name=name, pk=pk)
+        return Folder(name=name, pk=pk, org_pk=org_pk)
 
     def __init__(
         self,
