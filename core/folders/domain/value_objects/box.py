@@ -55,7 +55,6 @@ class LockedBox(Box):
         return "LockedBox({}, '{}')".format(self.__enc_data, self.__key_origin)
 
     def __dict__(self) -> StrDict:  # type: ignore
-        print(self.__enc_data)
         return {
             "enc_data": self.__enc_data.decode("ISO-8859-1"),
             "key_origin": self.__key_origin,

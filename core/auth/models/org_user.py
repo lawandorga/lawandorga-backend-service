@@ -1,7 +1,6 @@
 import uuid
 from typing import Any, Dict, List, Union
 
-import jwt
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.cache import cache
@@ -9,8 +8,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import models
 from django.template import loader
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework_simplejwt.settings import api_settings as jwt_settings
 
 from core.auth.token_generator import EmailConfirmationTokenGenerator
 from core.rlc.models import HasPermission, Org, Permission

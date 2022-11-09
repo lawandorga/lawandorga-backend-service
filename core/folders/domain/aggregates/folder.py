@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 
 from core.folders.domain.aggregates.upgrade import Upgrade
 from core.folders.domain.external import IOwner
+from core.folders.domain.types import StrDict
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.keys import (
     AsymmetricKey,
@@ -41,6 +42,9 @@ class Folder(IOwner):
     def __str__(self):
         return "Folder {}".format(self.name)
 
+    def __dict__(self) -> StrDict:  # type: ignore
+        return {"name": self.__name, "id": str(self.__pk)}
+
     @property
     def org_pk(self):
         return self.__org_pk
@@ -54,7 +58,7 @@ class Folder(IOwner):
         return self.__pk
 
     @property
-    def parent(self):
+    def parent_pk(self):
         return self.__parent_pk
 
     @property

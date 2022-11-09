@@ -37,7 +37,7 @@ class FoldersFolder(models.Model):
         upgrades = [u.__dict__() for u in folder.upgrades]
 
         f = FoldersFolder(
-            parent=folder.parent,
+            parent=folder.parent_pk,
             pk=folder.pk,
             name=folder.name,
             org_pk=folder.org_pk,
@@ -53,6 +53,7 @@ class FoldersFolder(models.Model):
             Type[FolderRepository], RepositoryWarehouse.get(FolderRepository)
         )
         for key in self.keys:
+            # TODO: owner is difficult to get into the FolderKey
             owner = folder_repository.find_key_owner(key["owner"])
             k = FolderKey.create_from_dict(key, owner)
             keys.append(k)

@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Optional, cast
 from uuid import UUID
 
 from core.auth.models import RlcUser
@@ -14,10 +14,14 @@ def get_repository() -> FolderRepository:
 
 
 @use_case()
-def create_folder(__actor: RlcUser, name: str):
-    folder = Folder.create(name=name, org_pk=__actor.org_id)
-    folder.grant_access(to=__actor)
+def create_folder(__actor: RlcUser, name: str, parent: Optional[str]):
     r = get_repository()
+    folder = Folder.create(name=name, org_pk=__actor.org_id)
+    if parent:
+        parent_folder = r.retrieve(__actor.org_id, parent)
+        folder.set_parent(folder=parent_folder, by=__actor)
+    else:
+        folder.grant_access(to=__actor)
     r.save(folder)
 
 

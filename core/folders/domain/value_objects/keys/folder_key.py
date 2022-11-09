@@ -43,7 +43,18 @@ class FolderKey:
     def __dict__(self) -> StrDict:  # type: ignore
         assert isinstance(self.__key, EncryptedSymmetricKey)
 
-        return {"owner": str(self.__owner.slug), "key": self.__key.__dict__()}
+        return {"owner": str(self.__owner.slug), "key": self.__key.__dict__(), "type": self.type}
+
+    @property
+    def type(self) -> str:
+        from core.folders.domain.aggregates.folder import Folder
+
+        if isinstance(self.__owner, Folder):
+            return 'FOLDER'
+        elif isinstance(self.__owner, IOwner):
+            return 'USER'
+        else:
+            return 'UNKNOWN'
 
     @property
     def key(self):

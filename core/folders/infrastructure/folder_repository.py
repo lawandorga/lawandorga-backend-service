@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Union, cast
 from uuid import UUID
 
 from core.auth.models import RlcUser
@@ -15,7 +15,7 @@ class DjangoFolderRepository(FolderRepository):
         return cast(IOwner, RlcUser.objects.get(slug=slug))
 
     @classmethod
-    def retrieve(cls, org_pk: int, pk: UUID) -> Folder:
+    def retrieve(cls, org_pk: int, pk: Union[UUID, str]) -> Folder:
         return FoldersFolder.query().filter(org_pk=org_pk).get(pk=pk).to_domain()
 
     @classmethod
@@ -34,4 +34,4 @@ class DjangoFolderRepository(FolderRepository):
 
     @classmethod
     def tree(cls, org_pk: int) -> FolderTree:
-        pass
+        return FolderTree(cls.list(org_pk))
