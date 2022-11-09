@@ -7,7 +7,6 @@ from django.db import models
 
 from core.auth.models import RlcUser
 from core.models import Group, Org
-from core.records.fixtures import get_all_countries
 from core.records.models import EncryptedClient  # type: ignore
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
@@ -63,6 +62,8 @@ class RecordTemplate(models.Model):
 
     @classmethod
     def get_statistic_fields_meta(cls):
+        from core.records.fixtures import get_all_countries
+
         return [
             {
                 "name": "Nationality of the client",
