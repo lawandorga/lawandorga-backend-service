@@ -27,6 +27,11 @@ class FolderRepository(Repository, abc.ABC):
 
     @classmethod
     @abc.abstractmethod
+    def delete(cls, folder: Folder):
+        pass
+
+    @classmethod
+    @abc.abstractmethod
     def tree(cls, org_pk: int) -> FolderTree:
         pass
 

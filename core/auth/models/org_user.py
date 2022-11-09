@@ -1,17 +1,27 @@
 import uuid
 from typing import Any, Dict, List, Union
 
+import jwt
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import models
 from django.template import loader
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.settings import api_settings as jwt_settings
 
 from core.auth.token_generator import EmailConfirmationTokenGenerator
 from core.rlc.models import HasPermission, Org, Permission
-from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
+from core.seedwork.encryption import (
+    AESEncryption,
+    EncryptedModelMixin,
+    RSAEncryption,
+    to_bytes,
+)
 
+from ...folders.domain.external import IOwner
 from ...folders.domain.value_objects.keys import AsymmetricKey, EncryptedAsymmetricKey
 from ...static import (
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
@@ -26,7 +36,7 @@ class RlcUserManager(models.Manager):
         return super().get_queryset().select_related("user")
 
 
-class RlcUser(EncryptedModelMixin, models.Model):
+class RlcUser(EncryptedModelMixin, models.Model, IOwner):
     STUDY_CHOICES = (
         ("LAW", "Law Sciences"),
         ("PSYCH", "Psychology"),
@@ -106,6 +116,31 @@ class RlcUser(EncryptedModelMixin, models.Model):
                 return True
         return False
 
+    def get_public_key(self) -> bytes:
+        """
+        gets the public key of the user from the database
+        :return: public key of user (PEM)
+        """
+        if not self.do_keys_exist:
+            self.generate_keys()
+        return to_bytes(self.public_key)
+
+    def get_private_key(self, password_user=None, request=None) -> str:
+        if not self.do_keys_exist:
+            self.generate_keys()
+
+        if password_user and not request:
+            self.decrypt(password_user)
+            private_key = self.private_key
+
+        elif request and not password_user:
+            private_key = self.get_decryption_key().get_private_key()
+
+        else:
+            raise ValueError("You need to pass (password_user) or (request).")
+
+        return private_key  # type: ignore
+
     def get_encryption_key(self, *args, **kwargs) -> EncryptedAsymmetricKey:
         assert self.public_key is not None
         if isinstance(self.public_key, memoryview):
@@ -117,20 +152,30 @@ class RlcUser(EncryptedModelMixin, models.Model):
 
     def get_decryption_key(self, *args, **kwargs) -> AsymmetricKey:
         assert self.private_key is not None and self.public_key is not None
+
         if self.email == "dummy@law-orga.de":
-            if isinstance(self.public_key, memoryview):
-                public_key = self.public_key.tobytes().decode("utf-8")
-            else:
-                public_key = self.public_key.decode("utf-8")
-
-            origin = "A1"
-
-            self.decrypt(settings.DUMMY_USER_PASSWORD)
-            private_key = self.private_key
-            return AsymmetricKey.create(
-                public_key=public_key, private_key=private_key, origin=origin
+            private_key = self.encryption_class.decrypt(
+                self.private_key, settings.DUMMY_USER_PASSWORD
             )
-        raise NotImplementedError()
+
+        else:
+            private_key = cache.get(self.pk, None)
+
+        if private_key is None:
+            raise ValueError(
+                "No private key could be found for user '{}'.".format(self.pk)
+            )
+
+        if isinstance(self.public_key, memoryview):
+            public_key = self.public_key.tobytes().decode("utf-8")
+        else:
+            public_key = self.public_key.decode("utf-8")
+
+        origin = "A1"
+
+        return AsymmetricKey.create(
+            public_key=public_key, private_key=private_key, origin=origin
+        )
 
     def activate_or_deactivate(self):
         self.is_active = not self.is_active

@@ -209,3 +209,13 @@ class Folder(IOwner):
         enc_key = folder_key.encrypt_self(lock_key)
 
         self.__keys.append(enc_key)
+
+    def revoke_access(self, of: IOwner):
+        new_keys = list(filter(lambda x: x.owner.slug != of.slug, self.__keys))
+
+        if len(new_keys) == 0:
+            raise DomainError(
+                "You can not revoke access of this user as there would be no keys left."
+            )
+
+        self.__keys = new_keys

@@ -29,5 +29,9 @@ class DjangoFolderRepository(FolderRepository):
         FoldersFolder.from_domain(folder).save()
 
     @classmethod
+    def delete(cls, folder: Folder):
+        FoldersFolder.from_domain(folder).delete()
+
+    @classmethod
     def tree(cls, org_pk: int) -> FolderTree:
         pass

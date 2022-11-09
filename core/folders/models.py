@@ -33,7 +33,6 @@ class FoldersFolder(models.Model):
 
     @staticmethod
     def from_domain(folder: Folder) -> "FoldersFolder":
-        print([k.key.origin for k in folder.keys])
         keys = [k.__dict__() for k in folder.keys]
         upgrades = [u.__dict__() for u in folder.upgrades]
 
@@ -54,7 +53,7 @@ class FoldersFolder(models.Model):
             Type[FolderRepository], RepositoryWarehouse.get(FolderRepository)
         )
         for key in self.keys:
-            owner = folder_repository.find_key_owner(key['owner'])
+            owner = folder_repository.find_key_owner(key["owner"])
             k = FolderKey.create_from_dict(key, owner)
             keys.append(k)
 
@@ -63,7 +62,7 @@ class FoldersFolder(models.Model):
             upgrade_repository = cast(
                 Type[UpgradeRepository], RepositoryWarehouse.get(upgrade.repository)
             )
-            loaded_upgrade = upgrade_repository.load_upgrade(upgrade['upgrade_pk'])
+            loaded_upgrade = upgrade_repository.load_upgrade(upgrade["upgrade_pk"])
             u = Upgrade.create_from_dict(upgrade, loaded_upgrade)
             upgrades.append(u)
 

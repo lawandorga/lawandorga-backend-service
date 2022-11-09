@@ -71,8 +71,8 @@ def test_asymmetric_encryption_decode():
     EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionV1)
 
     key = AsymmetricKey.generate()
-    data = OpenBox(data=b'Secret')
+    data = OpenBox(data=b"Secret")
     locked = key.lock(data)
 
-    assert locked.decode('ISO-8859-1').encode('ISO-8859-1') == locked.value
+    assert locked.decode("ISO-8859-1").encode("ISO-8859-1") == locked.value
     locked.__dict__()

@@ -1,6 +1,5 @@
 import abc
-from typing import TYPE_CHECKING, Union
-from uuid import UUID
+from typing import TYPE_CHECKING, Any, Union
 
 if TYPE_CHECKING:
     from core.folders.domain.value_objects.keys import (
@@ -10,8 +9,8 @@ if TYPE_CHECKING:
     )
 
 
-class IOwner(abc.ABC):
-    slug: UUID
+class IOwner:
+    slug: Any
 
     @abc.abstractmethod
     def get_encryption_key(
