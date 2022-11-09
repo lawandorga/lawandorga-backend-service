@@ -1,4 +1,4 @@
-name: Deploy
+name: Cronjobs
 
 on:
   schedule:
@@ -34,7 +34,7 @@ jobs:
 
   cron:
     name: Run Cronjobs
-    needs: [ test ]
+    needs: [ build ]
     runs-on: ubuntu-22.04
     environment: PRODUCTION
 
