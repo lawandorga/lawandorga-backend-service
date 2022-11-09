@@ -4,7 +4,7 @@ from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.aggregates.object import EncryptedObject
 from core.folders.domain.aggregates.upgrade import Item, Upgrade
 from core.folders.domain.external import IOwner
-from core.folders.domain.value_objects.encryption import EncryptionPyramid
+from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.keys import EncryptedSymmetricKey, SymmetricKey
 from core.seedwork.domain_layer import DomainError
 
@@ -33,7 +33,7 @@ class Content(Item):
         return self.__item
 
     def encrypt(self) -> SymmetricKey:
-        encryption_class = EncryptionPyramid.get_highest_symmetric_encryption()
+        encryption_class = EncryptionWarehouse.get_highest_symmetric_encryption()
         raw_key, version = encryption_class.generate_key()
         content_key = SymmetricKey.create(key=raw_key, origin=version)
         self.__item.encrypt(content_key)

@@ -4,7 +4,7 @@ import pytest
 
 from core.folders.domain.aggregates.content_upgrade import ContentUpgrade
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.value_objects.encryption import EncryptionPyramid
+from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.keys import FolderKey, SymmetricKey
 from core.folders.tests.helpers.encryptions import (
     AsymmetricEncryptionTest2,
@@ -97,8 +97,8 @@ def test_folder_key_not_found(single_encryption, car_content_key, upgrade_user):
 def test_reencrypt_all_keys(single_encryption, car_content_key, folder_upgrade_user):
     folder, upgrade, user = folder_upgrade_user
     car, content, key = car_content_key
-    EncryptionPyramid.add_asymmetric_encryption(AsymmetricEncryptionTest2)
-    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest2)
+    EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionTest2)
+    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest2)
     assert folder.encryption_version in ["AT1", "ST1"]
     upgrade.update_content(content, key, user)
     assert folder.encryption_version in ["AT2", "ST2"]
@@ -116,7 +116,7 @@ def test_reencrypt_works(single_encryption, folder_upgrade_user):
     upgrade.update_content(content2, key2, user)
     assert folder.encryption_version == "ST1" and upgrade.encryption_version == "ST1"
 
-    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest2)
+    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest2)
 
     folder.check_encryption_version(user)
     assert folder.encryption_version == "ST2" and upgrade.encryption_version == "ST2"

@@ -44,7 +44,7 @@ class SymmetricEncryption(Encryption):
         pass
 
 
-class EncryptionPyramid:
+class EncryptionWarehouse:
     __ASYMMETRIC_ENCRYPTION_HIERARCHY: dict[str, Type[AsymmetricEncryption]] = {}
     __SYMMETRIC_ENCRYPTION_HIERARCHY: dict[str, Type[SymmetricEncryption]] = {}
     __HIGHEST_ASYMMETRIC_ENCRYPTION: Type[AsymmetricEncryption]

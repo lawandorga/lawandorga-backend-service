@@ -1,5 +1,5 @@
 from core.folders.domain.value_objects.box import OpenBox
-from core.folders.domain.value_objects.encryption import EncryptionPyramid
+from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.keys import (
     AsymmetricKey,
     FolderKey,
@@ -11,9 +11,9 @@ from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptio
 
 
 def test_asymmetric_encryption():
-    EncryptionPyramid.reset_encryption_hierarchies()
-    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionV1)
-    EncryptionPyramid.add_asymmetric_encryption(AsymmetricEncryptionV1)
+    EncryptionWarehouse.reset_encryption_hierarchies()
+    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
+    EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionV1)
 
     s_key = SymmetricKey.generate()
 
@@ -67,8 +67,8 @@ def test_asymmetric_encryption_encrypt_symmetric_key():
 
 
 def test_asymmetric_encryption_decode():
-    EncryptionPyramid.reset_encryption_hierarchies()
-    EncryptionPyramid.add_asymmetric_encryption(AsymmetricEncryptionV1)
+    EncryptionWarehouse.reset_encryption_hierarchies()
+    EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionV1)
 
     key = AsymmetricKey.generate()
     data = OpenBox(data=b'Secret')

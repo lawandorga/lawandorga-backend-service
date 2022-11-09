@@ -5,7 +5,7 @@ from core.folders.domain.types import StrDict
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import (
     AsymmetricEncryption,
-    EncryptionPyramid,
+    EncryptionWarehouse,
     SymmetricEncryption,
 )
 
@@ -52,7 +52,7 @@ class SymmetricKey(Key):
         (
             key,
             version,
-        ) = EncryptionPyramid.get_highest_symmetric_encryption().generate_key()
+        ) = EncryptionWarehouse.get_highest_symmetric_encryption().generate_key()
         return SymmetricKey.create(key, version)
 
     @staticmethod
@@ -77,7 +77,7 @@ class SymmetricKey(Key):
         return self.__key
 
     def get_encryption(self) -> SymmetricEncryption:
-        encryption_class = EncryptionPyramid.get_encryption_class(self.origin)
+        encryption_class = EncryptionWarehouse.get_encryption_class(self.origin)
         return encryption_class(key=self.get_key().decode("utf-8"))
 
 
@@ -88,7 +88,7 @@ class AsymmetricKey(Key):
             private_key,
             public_key,
             version,
-        ) = EncryptionPyramid.get_highest_asymmetric_encryption().generate_keys()
+        ) = EncryptionWarehouse.get_highest_asymmetric_encryption().generate_keys()
         return AsymmetricKey.create(
             private_key=private_key, public_key=public_key, origin=version
         )
@@ -126,7 +126,7 @@ class AsymmetricKey(Key):
         )
 
     def get_encryption(self) -> AsymmetricEncryption:
-        encryption_class = EncryptionPyramid.get_encryption_class(self.origin)
+        encryption_class = EncryptionWarehouse.get_encryption_class(self.origin)
         return encryption_class(
             public_key=self.__public_key, private_key=self.__private_key.decode("utf-8")
         )
@@ -283,7 +283,7 @@ class EncryptedAsymmetricKey(Key):
         )
 
     def get_encryption(self) -> AsymmetricEncryption:
-        encryption_class = EncryptionPyramid.get_encryption_class(self.origin)
+        encryption_class = EncryptionWarehouse.get_encryption_class(self.origin)
         return encryption_class(public_key=self.__public_key)
 
     def unlock(self, box: LockedBox) -> OpenBox:

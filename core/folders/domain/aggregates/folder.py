@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 
 from core.folders.domain.aggregates.upgrade import Upgrade
 from core.folders.domain.external import IOwner
-from core.folders.domain.value_objects.encryption import EncryptionPyramid
+from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.keys import (
     AsymmetricKey,
     FolderKey,
@@ -125,7 +125,7 @@ class Folder(IOwner):
         self.__name = name if name is not None else self.__name
 
     def check_encryption_version(self, user: IOwner):
-        if self.encryption_version not in EncryptionPyramid.get_highest_versions():
+        if self.encryption_version not in EncryptionWarehouse.get_highest_versions():
             self.__reencrypt_all_keys(user)
 
     def __find_folder_key(self, user: IOwner) -> FolderKey:
