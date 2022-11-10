@@ -96,7 +96,7 @@ def authentication_middleware(get_response):
             and request.user.pk
             and request.user.email == "dummy@law-orga.de"
         ):
-            private_key = RlcUser.get_dummy_user_private_key(request.user)
+            private_key = RlcUser.get_dummy_user_private_key(request.user.rlc_user)
             cache.set(request.user.rlc_user.pk, private_key, 10)
 
         return request
