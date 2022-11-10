@@ -7,10 +7,6 @@ from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
-from core.folders.tests.helpers.encryptions import (
-    AsymmetricEncryptionTest1,
-    SymmetricEncryptionTest1,
-)
 from core.rlc.models import Org
 from core.seedwork.repository import RepositoryWarehouse
 
@@ -18,9 +14,7 @@ from core.seedwork.repository import RepositoryWarehouse
 @pytest.fixture
 def real_encryption(encryption_reset):
     EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
-    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest1)
     EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionV1)
-    EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionTest1)
 
 
 @pytest.fixture
@@ -49,10 +43,10 @@ def folder_pk(db, user, repository):
 
 
 def test_save(db, user, repository):
-    folder1 = Folder.create("New Folder")
+    folder1 = Folder.create(name="New Folder", org_pk=user.org_id)
     folder1.grant_access(to=user)
     repository.save(folder1)
-    folder2 = repository.retrieve(None, folder1.pk)
+    folder2 = repository.retrieve(user.org_id, folder1.pk)
     assert folder2.has_access(user)
 
 

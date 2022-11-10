@@ -1,11 +1,16 @@
 from typing import Optional
+from uuid import UUID
 
 from pydantic import BaseModel
 
 
 class InputFolderCreate(BaseModel):
     name: str
-    parent: Optional[str]
+    parent: Optional[UUID]
+
+
+class InputFolderDelete(BaseModel):
+    id: UUID
 
 
 class OutputFolder(BaseModel):
@@ -13,9 +18,10 @@ class OutputFolder(BaseModel):
     id: str
 
 
-class OutputFolderDeep(BaseModel):
-    __root__: tuple[OutputFolder, list["OutputFolderDeep"]]
+class OutputFolderTreeNode(BaseModel):
+    folder: OutputFolder
+    children: list["OutputFolderTreeNode"]
 
 
 class OutputFolderTree(BaseModel):
-    __root__: list[tuple[OutputFolder, list[OutputFolderDeep]]]
+    __root__: list[OutputFolderTreeNode]

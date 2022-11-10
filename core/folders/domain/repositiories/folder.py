@@ -1,5 +1,4 @@
 import abc
-from typing import Union
 from uuid import UUID
 
 from core.folders.domain.aggregates.folder import Folder
@@ -13,7 +12,7 @@ class FolderRepository(Repository, abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def retrieve(cls, org_pk: int, pk: Union[UUID, str]) -> Folder:
+    def retrieve(cls, org_pk: int, pk: UUID) -> Folder:
         pass
 
     @classmethod

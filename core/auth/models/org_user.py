@@ -50,7 +50,7 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         UserProfile, on_delete=models.CASCADE, related_name="rlc_user"
     )
     org = models.ForeignKey(Org, related_name="users", on_delete=models.PROTECT)
-    slug = models.UUIDField(default=uuid.uuid4)
+    slug = models.UUIDField(default=uuid.uuid4, unique=True)
     # blocker
     email_confirmed = models.BooleanField(default=True)
     accepted = models.BooleanField(default=False)
@@ -151,9 +151,12 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         assert self.private_key is not None and self.public_key is not None
 
         if self.email == "dummy@law-orga.de":
-            private_key = self.encryption_class.decrypt(
-                self.private_key, settings.DUMMY_USER_PASSWORD
-            )
+            if self.is_private_key_encrypted:
+                private_key = self.encryption_class.decrypt(
+                    getattr(self, "private_key"), settings.DUMMY_USER_PASSWORD
+                )
+            else:
+                private_key = self.private_key.decode("utf-8")
 
         else:
             private_key = cache.get(self.pk, None)

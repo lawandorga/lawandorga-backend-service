@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional, Union
 
 from core.folders.domain.aggregates.folder import Folder
@@ -48,12 +49,13 @@ class Content(Item):
 class ContentUpgrade(Upgrade):
     def __init__(
         self,
+        pk: uuid.UUID = uuid.uuid4(),
         folder: Folder = None,
         content: dict[str, tuple[Content, EncryptedSymmetricKey]] = None,
     ):
         self.__content = content if content is not None else {}
 
-        super().__init__(folder=folder)
+        super().__init__(folder=folder, pk=pk)
 
     @property
     def encryption_version(self) -> Optional[str]:

@@ -62,7 +62,10 @@ class EncryptionWarehouse:
         if not encryption.VERSION.startswith("A"):
             raise ValueError("The version needs to start with 'A'.")
 
-        if encryption.VERSION in cls.__ASYMMETRIC_ENCRYPTION_HIERARCHY:
+        if (
+            encryption.VERSION in cls.__ASYMMETRIC_ENCRYPTION_HIERARCHY
+            and encryption != cls.__ASYMMETRIC_ENCRYPTION_HIERARCHY[encryption.VERSION]
+        ):
             raise ValueError("This encryption level is already occupied.")
 
         cls.__ASYMMETRIC_ENCRYPTION_HIERARCHY[encryption.VERSION] = encryption
@@ -75,7 +78,10 @@ class EncryptionWarehouse:
         if not encryption.VERSION.startswith("S"):
             raise ValueError("The version needs to start with 'S'.")
 
-        if encryption.VERSION in cls.__SYMMETRIC_ENCRYPTION_HIERARCHY:
+        if (
+            encryption.VERSION in cls.__SYMMETRIC_ENCRYPTION_HIERARCHY
+            and encryption != cls.__SYMMETRIC_ENCRYPTION_HIERARCHY[encryption.VERSION]
+        ):
             raise ValueError("This encryption level is already occupied.")
 
         cls.__SYMMETRIC_ENCRYPTION_HIERARCHY[encryption.VERSION] = encryption

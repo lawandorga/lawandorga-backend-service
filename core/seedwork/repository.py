@@ -21,7 +21,10 @@ class RepositoryWarehouse:
 
     @classmethod
     def add_repository(cls, repository: Type[Repository]):
-        if repository.IDENTIFIER in cls.repositories:
+        if (
+            repository.IDENTIFIER in cls.repositories
+            and cls.repositories[repository.IDENTIFIER] != repository
+        ):
             raise ValueError(
                 "This or another repository with the same identifier is already in this warehouse."
             )

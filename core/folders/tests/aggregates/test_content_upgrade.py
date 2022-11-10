@@ -31,7 +31,7 @@ def test_encryption_decryption(single_encryption, car_content_key):
         keys=[folder_key.encrypt_self(user.get_encryption_key())],
     )
 
-    upgrade = ContentUpgrade(folder)
+    upgrade = ContentUpgrade(folder=folder)
 
     upgrade.add_content(content, key, user)
 

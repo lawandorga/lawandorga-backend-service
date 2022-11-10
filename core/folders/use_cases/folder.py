@@ -5,7 +5,7 @@ from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.seedwork.repository import RepositoryWarehouse
-from core.seedwork.use_case_layer import use_case
+from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 def get_repository() -> FolderRepository:
@@ -14,7 +14,7 @@ def get_repository() -> FolderRepository:
 
 
 @use_case()
-def create_folder(__actor: RlcUser, name: str, parent: Optional[str]):
+def create_folder(__actor: RlcUser, name: str, parent: Optional[UUID]):
     r = get_repository()
     folder = Folder.create(name=name, org_pk=__actor.org_id)
     if parent:
@@ -39,6 +39,10 @@ def delete_folder(__actor: RlcUser, folder_pk: UUID):
     folder = r.retrieve(org_pk=__actor.org_id, pk=folder_pk)
     if folder.has_access(__actor):
         r.delete(folder)
+    else:
+        raise UseCaseError(
+            "You can not delete this folder because you have no access to this folder."
+        )
 
 
 @use_case()
