@@ -147,19 +147,28 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         origin = "A1"
         return EncryptedAsymmetricKey(public_key=key, origin=origin)
 
+    @staticmethod
+    def get_dummy_user_private_key(dummy: "RlcUser"):
+        if settings.TESTING and dummy.email == "dummy@law-orga.de":
+            if dummy.is_private_key_encrypted:
+                private_key = dummy.encryption_class.decrypt(
+                    getattr(dummy, "private_key"), settings.DUMMY_USER_PASSWORD
+                )
+            elif isinstance(dummy.private_key, bytes):
+                private_key = dummy.private_key.decode("utf-8")
+            else:
+                raise ValueError("Dummy's private key could not be found.")
+            return private_key
+
+        raise ValueError("This method is only available for dummy and in test mode.")
+
     def get_decryption_key(self, *args, **kwargs) -> AsymmetricKey:
         assert self.private_key is not None and self.public_key is not None
 
-        if self.email == "dummy@law-orga.de":
-            if self.is_private_key_encrypted:
-                private_key = self.encryption_class.decrypt(
-                    getattr(self, "private_key"), settings.DUMMY_USER_PASSWORD
-                )
-            else:
-                private_key = self.private_key.decode("utf-8")
+        private_key = cache.get(self.pk, None)
 
-        else:
-            private_key = cache.get(self.pk, None)
+        if settings.TESTING and self.email == "dummy@law-orga.de":
+            private_key = RlcUser.get_dummy_user_private_key(self)
 
         if private_key is None:
             raise ValueError(

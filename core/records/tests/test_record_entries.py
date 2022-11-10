@@ -5,7 +5,7 @@ from typing import Optional, Type
 
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.test import TestCase
+from django.test import Client, TestCase
 from rest_framework.test import force_authenticate
 from rest_framework.viewsets import GenericViewSet
 
@@ -579,12 +579,13 @@ class RecordEncryptedFileEntryViewSetWorking(GenericRecordEntry, TestCase):
 
     def test_download(self):
         self.setup_entry()
-        view = self.view.as_view(actions={"get": "download"})
-        request = self.factory.get("")
-        force_authenticate(request, self.user)
-        response = view(request, pk=self.entry.pk)
+        c = Client()
+        c.login(email=self.user.email, password=settings.DUMMY_USER_PASSWORD)
+        response = c.get(
+            "/api/records/recordencryptedfileentries/{}/download/".format(self.entry.pk)
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(b"test string" in b"".join(response.streaming_content))
+        self.assertContains(response, "test string")
 
 
 class RecordStatisticEntryViewSetWorking(GenericRecordEntry, TestCase):

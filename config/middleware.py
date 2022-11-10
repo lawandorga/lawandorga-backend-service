@@ -2,21 +2,21 @@ import asyncio
 import json
 
 import jwt
+from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.utils.decorators import sync_and_async_middleware
 
-from core.auth.models import UserProfile
+from core.auth.models import RlcUser, UserProfile
 from core.models import LoggedPath
+from core.seedwork.api_layer import ErrorResponse
 
 __all__ = [
     "custom_debug_toolbar_middleware",
     "logging_middleware",
     "authentication_middleware",
 ]
-
-from core.seedwork.api_layer import ErrorResponse
 
 
 @sync_and_async_middleware
@@ -89,6 +89,16 @@ def authentication_middleware(get_response):
             user = UserProfile.objects.get(pk=payload["django_user"])
             request.user = user
             cache.set(user.rlc_user.pk, payload["key"], 10)
+
+        if (
+            settings.TESTING
+            and request.user
+            and request.user.pk
+            and request.user.email == "dummy@law-orga.de"
+        ):
+            private_key = RlcUser.get_dummy_user_private_key(request.user)
+            cache.set(request.user.rlc_user.pk, private_key, 10)
+
         return request
 
     def clear_cache(request):
@@ -99,7 +109,7 @@ def authentication_middleware(get_response):
 
         async def middleware(request):
             try:
-                request = authenticate(request)
+                request = await sync_to_async(authenticate)(request)
             except Exception as e:
                 response = ErrorResponse(
                     err_type="JwtTokenFailed",
@@ -109,7 +119,7 @@ def authentication_middleware(get_response):
                 )
             else:
                 response = await get_response(request)
-            clear_cache(request)
+            await sync_to_async(clear_cache)(request)
             return response
 
     else:

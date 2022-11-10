@@ -212,3 +212,6 @@ CRONJOBS = [
     "core.legal.cronjobs.create_legal_requirements_for_users",
     "core.records.cronjobs.update_statistic_fields",
 ]
+
+# testing
+TESTING = os.getenv("TESTING", False)
