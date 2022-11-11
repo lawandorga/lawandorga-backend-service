@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.test import TestCase
+from django.test import Client, TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from core.models import HasPermission, Org, Permission, RlcUser, UserProfile
@@ -178,24 +178,22 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
             permission=Permission.objects.get(name=PERMISSION_ADMIN_MANAGE_USERS),
             user=self.rlc_user,
         )
-        view = RlcUserViewSet.as_view(actions={"post": "accept"})
         rlc_user = self.rlc_user
         self.another_rlc_user.accepted = False
         self.another_rlc_user.save()
-        request = self.factory.post("")
-        force_authenticate(request, rlc_user.user)
-        response = view(request, pk=self.another_rlc_user.pk)
-        self.assertEqual(response.status_code, 200)
+        c = Client()
+        c.login(email=rlc_user.email, password=settings.DUMMY_USER_PASSWORD)
+        response = c.post("/api/profiles/{}/accept/".format(self.another_rlc_user.pk))
+        assert response.status_code == 200
 
     def test_unlock_works(self):
-        view = RlcUserViewSet.as_view(actions={"post": "unlock"})
         rlc_user = self.rlc_user
         self.another_rlc_user.locked = True
         self.another_rlc_user.save()
-        request = self.factory.post("")
-        force_authenticate(request, rlc_user.user)
-        response = view(request, pk=self.another_rlc_user.pk)
-        self.assertEqual(response.status_code, 200)
+        c = Client()
+        c.login(email=rlc_user.email, password=settings.DUMMY_USER_PASSWORD)
+        response = c.post("/api/profiles/{}/unlock/".format(self.another_rlc_user.pk))
+        assert response.status_code == 200
 
 
 class UserViewSetErrorTests(TestCase):

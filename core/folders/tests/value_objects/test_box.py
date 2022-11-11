@@ -1,15 +1,15 @@
 import pytest
 
 from core.folders.domain.value_objects.box import Box, LockedBox, OpenBox
-from core.folders.domain.value_objects.encryption import EncryptionPyramid
+from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.keys import SymmetricKey
 from core.folders.tests.helpers.encryptions import SymmetricEncryptionTest1
 
 
 @pytest.fixture
 def key():
-    EncryptionPyramid.reset_encryption_hierarchies()
-    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest1)
+    EncryptionWarehouse.reset_encryption_hierarchies()
+    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest1)
     key, version = SymmetricEncryptionTest1.generate_key()
     yield SymmetricKey.create(key=key, origin=version)
 

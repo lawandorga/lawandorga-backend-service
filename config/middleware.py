@@ -1,18 +1,21 @@
 import asyncio
 import json
 
+import jwt
+from asgiref.sync import sync_to_async
+from django.conf import settings
+from django.core.cache import cache
 from django.http import HttpResponse
 from django.utils.decorators import sync_and_async_middleware
-from django.utils.deprecation import MiddlewareMixin
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework_simplejwt.exceptions import AuthenticationFailed
 
+from core.auth.models import RlcUser, UserProfile
 from core.models import LoggedPath
+from core.seedwork.api_layer import ErrorResponse
 
 __all__ = [
     "custom_debug_toolbar_middleware",
     "logging_middleware",
-    "TokenAuthenticationMiddleware",
+    "authentication_middleware",
 ]
 
 
@@ -74,23 +77,66 @@ def logging_middleware(get_response):
     return middleware
 
 
-class TokenAuthenticationMiddleware(MiddlewareMixin):
-    def process_request(self, request):
-        authenticate = False
-        if hasattr(request, "user") and getattr(request.user, "id", None) is None:
-            authenticate = True
-        if not hasattr(request, "user"):
-            authenticate = True
+@sync_and_async_middleware
+def authentication_middleware(get_response):
+    def authenticate(request):
+        header = request.META.get("HTTP_AUTHORIZATION")
+        if header:
+            token = header.split(" ")[1]
+            payload = jwt.decode(
+                token, settings.SIMPLE_JWT["SIGNING_KEY"], algorithms=["HS256"]
+            )
+            user = UserProfile.objects.get(pk=payload["django_user"])
+            request.user = user
+            cache.set(user.rlc_user.pk, payload["key"], 10)
 
-        if authenticate:
-            user = self.authenticate(request)
-            if user:
-                request.user = user[0]
+        if (
+            settings.TESTING
+            and request.user
+            and request.user.pk
+            and request.user.email == "dummy@law-orga.de"
+        ):
+            private_key = RlcUser.get_dummy_user_private_key(request.user.rlc_user)
+            cache.set(request.user.rlc_user.pk, private_key, 10)
 
-    def authenticate(self, request):
-        try:
-            jwt_auth = JWTAuthentication()
-            user = jwt_auth.authenticate(request)
-        except AuthenticationFailed:
-            user = None
-        return user
+        return request
+
+    def clear_cache(request):
+        if hasattr(request, "user") and hasattr(request.user, "rlc_user"):
+            cache.delete(request.user.rlc_user.pk)
+
+    if asyncio.iscoroutinefunction(get_response):
+
+        async def middleware(request):
+            try:
+                request = await sync_to_async(authenticate)(request)
+            except Exception as e:
+                response = ErrorResponse(
+                    err_type="JwtTokenFailed",
+                    title="Authentication Failed",
+                    status=401,
+                    internal=str(e),
+                )
+            else:
+                response = await get_response(request)
+            await sync_to_async(clear_cache)(request)
+            return response
+
+    else:
+
+        def middleware(request):
+            try:
+                request = authenticate(request)
+            except Exception as e:
+                response = ErrorResponse(
+                    err_type="JwtTokenFailed",
+                    title="Authentication Failed",
+                    status=401,
+                    internal=str(e),
+                )
+            else:
+                response = get_response(request)
+            clear_cache(request)
+            return response
+
+    return middleware

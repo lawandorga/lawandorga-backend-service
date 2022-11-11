@@ -49,7 +49,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "config.middleware.TokenAuthenticationMiddleware",
+    "config.middleware.authentication_middleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "config.middleware.logging_middleware",
 ]
@@ -182,6 +182,15 @@ TINYMCE_DEFAULT_CONFIG = {
 # https://pytest-django.readthedocs.io/en/latest/faq.html#how-can-i-use-manage-py-test-with-pytest-django
 TEST_RUNNER = "config.test.PytestTestRunner"
 
+# caching
+# https://docs.djangoproject.com/en/4.1/topics/cache/#local-memory-caching
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    }
+}
+
 # This is used by the ExpiringTokenAuthentication which extends from rest's token authentication
 TIMEOUT_TIMEDELTA = timedelta(minutes=30)
 
@@ -203,3 +212,6 @@ CRONJOBS = [
     "core.legal.cronjobs.create_legal_requirements_for_users",
     "core.records.cronjobs.update_statistic_fields",
 ]
+
+# testing
+TESTING = os.getenv("TESTING", False)

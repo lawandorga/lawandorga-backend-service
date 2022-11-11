@@ -1,8 +1,6 @@
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Dict, Union
 
-import jwt
-from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -11,10 +9,8 @@ from django.contrib.auth.models import (
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
 from django.utils import timezone
-from rest_framework.exceptions import AuthenticationFailed, ParseError
-from rest_framework_simplejwt.settings import api_settings as jwt_settings
+from rest_framework.exceptions import ParseError
 
-from core.seedwork.encryption import to_bytes
 from core.static import PERMISSION_ADMIN_MANAGE_USERS
 
 if TYPE_CHECKING:
@@ -216,46 +212,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return return_dict
 
     def get_public_key(self) -> bytes:
-        """
-        gets the public key of the user from the database
-        :return: public key of user (PEM)
-        """
-        if not self.rlc_user.do_keys_exist:
-            self.rlc_user.generate_keys()
-        return to_bytes(self.rlc_user.public_key)
+        return self.rlc_user.get_public_key()
 
     def get_private_key(self, password_user=None, request=None) -> str:
-        if not self.rlc_user.do_keys_exist:
-            self.rlc_user.generate_keys()
-
-        if password_user and not request:
-            self.rlc_user.decrypt(password_user)
-            private_key = self.rlc_user.private_key
-
-        elif request and not password_user:
-            try:
-                if hasattr(request, "META") and "HTTP_AUTHORIZATION" in request.META:
-                    token = request.META["HTTP_AUTHORIZATION"].replace("Bearer ", "")
-                    payload = jwt.decode(
-                        token, jwt_settings.SIGNING_KEY, [jwt_settings.ALGORITHM]
-                    )
-                    private_key = payload["key"]
-                else:
-                    private_key = request.auth.payload["key"]
-            except AttributeError:
-                # enable direct testing of the rest framework
-                if self.email == "dummy@law-orga.de" and settings.DUMMY_USER_PASSWORD:
-                    self.rlc_user.decrypt(settings.DUMMY_USER_PASSWORD)
-                    private_key = self.rlc_user.private_key
-                else:
-                    raise AuthenticationFailed(
-                        "No token or no private key provided within the token."
-                    )
-
-        else:
-            raise ValueError("You need to pass (password_user) or (request).")
-
-        return private_key  # type: ignore
+        return self.rlc_user.get_private_key(password_user, request)
 
     def get_private_key_rlc(self, private_key_user=None, request=None):
         if private_key_user:

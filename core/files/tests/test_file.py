@@ -3,7 +3,7 @@ import sys
 
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.test import TestCase
+from django.test import Client, TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from core.models import (
@@ -59,15 +59,14 @@ class FileTestsBase:
 
 class FileTests(FileTestsBase, TestCase):
     def test_create_file(self):
-        view = FileViewSet.as_view(actions={"post": "create"})
         data = {
             "file": self.get_file(),
         }
-        request = self.factory.post("", data)
-        force_authenticate(request, self.user)
-        response = view(request)
+        c = Client()
+        c.login(email=self.user.email, password=settings.DUMMY_USER_PASSWORD)
+        response = c.post("/api/files/file_base/", data)
         self.assertContains(response, "test.txt", status_code=201)
-        file = File.objects.get(pk=response.data["id"])
+        file = File.objects.get(pk=response.json()["id"])
         self.assertEqual("test.txt", file.name)
         self.assertNotEqual(file.file.read(), b"test text inside the file")
         file.file.seek(0)

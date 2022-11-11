@@ -1,10 +1,11 @@
+import uuid
 from typing import Optional, Union
 
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.aggregates.object import EncryptedObject
 from core.folders.domain.aggregates.upgrade import Item, Upgrade
 from core.folders.domain.external import IOwner
-from core.folders.domain.value_objects.encryption import EncryptionPyramid
+from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.keys import EncryptedSymmetricKey, SymmetricKey
 from core.seedwork.domain_layer import DomainError
 
@@ -33,7 +34,7 @@ class Content(Item):
         return self.__item
 
     def encrypt(self) -> SymmetricKey:
-        encryption_class = EncryptionPyramid.get_highest_symmetric_encryption()
+        encryption_class = EncryptionWarehouse.get_highest_symmetric_encryption()
         raw_key, version = encryption_class.generate_key()
         content_key = SymmetricKey.create(key=raw_key, origin=version)
         self.__item.encrypt(content_key)
@@ -48,12 +49,14 @@ class Content(Item):
 class ContentUpgrade(Upgrade):
     def __init__(
         self,
-        folder: Folder = None,
-        content: dict[str, tuple[Content, EncryptedSymmetricKey]] = None,
+        pk: uuid.UUID = uuid.uuid4(),
+        folder: Optional[Folder] = None,
+        content: Optional[dict[str, tuple[Content, EncryptedSymmetricKey]]] = None,
     ):
+        assert folder is not None
         self.__content = content if content is not None else {}
 
-        super().__init__(folder=folder)
+        super().__init__(folder=folder, pk=pk)
 
     @property
     def encryption_version(self) -> Optional[str]:
@@ -71,8 +74,9 @@ class ContentUpgrade(Upgrade):
 
         return versions[0]
 
+    @property
     def content(self) -> list[Item]:
-        pass
+        return []
 
     def reencrypt(self, old_folder_key: SymmetricKey, new_folder_key: SymmetricKey):
         new_content: dict[str, tuple[Content, EncryptedSymmetricKey]] = {}

@@ -1,5 +1,5 @@
 import uuid
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -106,7 +106,9 @@ class Org(EncryptedModelMixin, models.Model):
             raise ValueError("You need to pass (user and private_key_user).")
 
     def get_private_key(
-        self, user: "UserProfile" = None, private_key_user: str = None
+        self,
+        user: Optional["UserProfile"] = None,
+        private_key_user: Optional[str] = None,
     ) -> str:
         # safety check
         if not self.do_keys_exist:
