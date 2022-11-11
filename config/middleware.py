@@ -88,7 +88,8 @@ def authentication_middleware(get_response):
             )
             user = UserProfile.objects.get(pk=payload["django_user"])
             request.user = user
-            cache.set(user.rlc_user.pk, payload["key"], 10)
+            if hasattr(request.user, "rlc_user") and "key" in payload:
+                cache.set(user.rlc_user.pk, payload["key"], 10)
 
         if (
             settings.TESTING
