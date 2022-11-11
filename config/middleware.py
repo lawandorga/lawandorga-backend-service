@@ -103,8 +103,10 @@ def authentication_middleware(get_response):
         return request
 
     def clear_cache(request):
-        if hasattr(request, "user") and hasattr(request.user, "rlc_user"):
-            cache.delete(request.user.rlc_user.pk)
+        pass
+        # don't clear the cache for now as another request at the same time might delete the cache
+        # if hasattr(request, "user") and hasattr(request.user, "rlc_user"):
+        #     cache.delete(request.user.rlc_user.pk)
 
     if asyncio.iscoroutinefunction(get_response):
 
