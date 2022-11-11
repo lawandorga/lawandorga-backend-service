@@ -1,7 +1,7 @@
 import pytest
 
 from core.folders.domain.value_objects.box import OpenBox
-from core.folders.domain.value_objects.encryption import EncryptionPyramid
+from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.keys import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
@@ -16,9 +16,9 @@ from core.folders.tests.helpers.encryptions import (
 
 @pytest.fixture
 def encryption():
-    EncryptionPyramid.reset_encryption_hierarchies()
-    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest1)
-    EncryptionPyramid.add_asymmetric_encryption(AsymmetricEncryptionTest1)
+    EncryptionWarehouse.reset_encryption_hierarchies()
+    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest1)
+    EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionTest1)
 
 
 @pytest.fixture

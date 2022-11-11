@@ -5,13 +5,13 @@ from core.folders.domain.types import StrDict
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import (
     AsymmetricEncryption,
-    EncryptionPyramid,
+    EncryptionWarehouse,
     SymmetricEncryption,
 )
 
 
 class Key(abc.ABC):
-    def __init__(self, origin: str = None):
+    def __init__(self, origin: Optional[str] = None):
         assert origin is not None
 
         self.__origin = origin
@@ -52,7 +52,7 @@ class SymmetricKey(Key):
         (
             key,
             version,
-        ) = EncryptionPyramid.get_highest_symmetric_encryption().generate_key()
+        ) = EncryptionWarehouse.get_highest_symmetric_encryption().generate_key()
         return SymmetricKey.create(key, version)
 
     @staticmethod
@@ -61,7 +61,7 @@ class SymmetricKey(Key):
 
     def __init__(
         self,
-        key: OpenBox = None,
+        key: Optional[OpenBox] = None,
         origin: Optional[str] = None,
     ):
         assert origin is not None and key is not None
@@ -77,7 +77,7 @@ class SymmetricKey(Key):
         return self.__key
 
     def get_encryption(self) -> SymmetricEncryption:
-        encryption_class = EncryptionPyramid.get_encryption_class(self.origin)
+        encryption_class = EncryptionWarehouse.get_encryption_class(self.origin)
         return encryption_class(key=self.get_key().decode("utf-8"))
 
 
@@ -88,16 +88,16 @@ class AsymmetricKey(Key):
             private_key,
             public_key,
             version,
-        ) = EncryptionPyramid.get_highest_asymmetric_encryption().generate_keys()
+        ) = EncryptionWarehouse.get_highest_asymmetric_encryption().generate_keys()
         return AsymmetricKey.create(
             private_key=private_key, public_key=public_key, origin=version
         )
 
     @staticmethod
     def create(
-        private_key: str = None,
-        origin: str = None,
-        public_key: str = None,
+        private_key: Optional[str] = None,
+        origin: Optional[str] = None,
+        public_key: Optional[str] = None,
     ) -> "AsymmetricKey":
         assert private_key is not None
 
@@ -109,9 +109,9 @@ class AsymmetricKey(Key):
 
     def __init__(
         self,
-        private_key: OpenBox = None,
-        public_key: str = None,
-        origin: str = None,
+        private_key: Optional[OpenBox] = None,
+        public_key: Optional[str] = None,
+        origin: Optional[str] = None,
     ):
         assert private_key is not None and public_key is not None and origin is not None
 
@@ -126,7 +126,7 @@ class AsymmetricKey(Key):
         )
 
     def get_encryption(self) -> AsymmetricEncryption:
-        encryption_class = EncryptionPyramid.get_encryption_class(self.origin)
+        encryption_class = EncryptionWarehouse.get_encryption_class(self.origin)
         return encryption_class(
             public_key=self.__public_key, private_key=self.__private_key.decode("utf-8")
         )
@@ -141,8 +141,10 @@ class AsymmetricKey(Key):
 class EncryptedSymmetricKey(Key):
     @staticmethod
     def create(
-        original: SymmetricKey = None,
-        key: Union[AsymmetricKey, SymmetricKey, "EncryptedAsymmetricKey"] = None,
+        original: Optional[SymmetricKey] = None,
+        key: Optional[
+            Union[AsymmetricKey, SymmetricKey, "EncryptedAsymmetricKey"]
+        ] = None,
     ) -> "EncryptedSymmetricKey":
         assert original is not None and key is not None
 
@@ -164,7 +166,9 @@ class EncryptedSymmetricKey(Key):
 
         return EncryptedSymmetricKey(enc_key=enc_key, origin=origin)
 
-    def __init__(self, enc_key: LockedBox = None, origin: str = None):
+    def __init__(
+        self, enc_key: Optional[LockedBox] = None, origin: Optional[str] = None
+    ):
         assert enc_key is not None
 
         self.__enc_key = enc_key
@@ -197,8 +201,10 @@ class EncryptedSymmetricKey(Key):
 class EncryptedAsymmetricKey(Key):
     @staticmethod
     def create(
-        original: AsymmetricKey = None,
-        key: Union[AsymmetricKey, "EncryptedAsymmetricKey", SymmetricKey] = None,
+        original: Optional[AsymmetricKey] = None,
+        key: Optional[
+            Union[AsymmetricKey, "EncryptedAsymmetricKey", SymmetricKey]
+        ] = None,
     ) -> "EncryptedAsymmetricKey":
         assert (
             original is not None
@@ -248,10 +254,10 @@ class EncryptedAsymmetricKey(Key):
 
     def __init__(
         self,
-        enc_key: EncryptedSymmetricKey = None,
-        enc_private_key: LockedBox = None,
-        public_key: str = None,
-        origin: str = None,
+        enc_key: Optional[EncryptedSymmetricKey] = None,
+        enc_private_key: Optional[LockedBox] = None,
+        public_key: Optional[str] = None,
+        origin: Optional[str] = None,
     ):
         assert public_key is not None
 
@@ -283,7 +289,7 @@ class EncryptedAsymmetricKey(Key):
         )
 
     def get_encryption(self) -> AsymmetricEncryption:
-        encryption_class = EncryptionPyramid.get_encryption_class(self.origin)
+        encryption_class = EncryptionWarehouse.get_encryption_class(self.origin)
         return encryption_class(public_key=self.__public_key)
 
     def unlock(self, box: LockedBox) -> OpenBox:

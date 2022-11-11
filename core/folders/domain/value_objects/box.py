@@ -9,8 +9,6 @@ class Box(bytes):
 
     def __new__(cls, **kwargs):
 
-        value: bytes
-
         if issubclass(cls, OpenBox):
             value = kwargs["data"]
         elif issubclass(cls, LockedBox):
@@ -41,7 +39,7 @@ class LockedBox(Box):
             and isinstance(d["key_origin"], str)
         )
 
-        enc_data = d["enc_data"].encode("utf-8")
+        enc_data = d["enc_data"].encode("ISO-8859-1")
         key_origin: str = d["key_origin"]
 
         return LockedBox(enc_data=enc_data, key_origin=key_origin)
@@ -56,7 +54,7 @@ class LockedBox(Box):
 
     def __dict__(self) -> StrDict:  # type: ignore
         return {
-            "enc_data": self.__enc_data.decode("utf-8"),
+            "enc_data": self.__enc_data.decode("ISO-8859-1"),
             "key_origin": self.__key_origin,
         }
 

@@ -3,7 +3,7 @@ from uuid import uuid4
 import pytest
 
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.value_objects.encryption import EncryptionPyramid
+from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.keys import (
     AsymmetricKey,
     FolderKey,
@@ -25,7 +25,7 @@ def test_keys_are_regenerated(single_encryption, car_content_key):
 
     assert folder.encryption_version == "ST1"
 
-    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest2)
+    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest2)
     folder.check_encryption_version(user)
 
     assert folder.encryption_version == "ST2"
@@ -63,7 +63,7 @@ def test_encryption_version(single_encryption):
         owner=user,
         key=s_key,
     )
-    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest2)
+    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest2)
     s_key = SymmetricKey.generate()
     folder_key_2 = FolderKey(
         owner=user,

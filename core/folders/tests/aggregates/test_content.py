@@ -1,6 +1,6 @@
 from core.folders.domain.aggregates.content_upgrade import Content
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
-from core.folders.domain.value_objects.encryption import EncryptionPyramid
+from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.tests.helpers.car import CarWithSecretName
 from core.folders.tests.helpers.encryptions import (
     SymmetricEncryptionTest1,
@@ -26,7 +26,7 @@ def test_encryption_hierarchy_works_in_simple_case(single_encryption, car_conten
     assert isinstance(car.name, OpenBox)
     assert car.name == b"BMW"
     assert b"BMW" in SymmetricEncryptionTest1.get_treasure_chest().values()
-    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest2)
+    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest2)
     assert b"BMW" not in SymmetricEncryptionTest2.get_treasure_chest().values()
     content.encrypt()
     assert b"BMW" in SymmetricEncryptionTest2.get_treasure_chest().values()
