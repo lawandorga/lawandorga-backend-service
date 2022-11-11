@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Optional, Union
 
 from core.folders.domain.external import IOwner
 from core.folders.domain.types import StrDict
@@ -29,8 +29,8 @@ class FolderKey:
 
     def __init__(
         self,
-        owner: IOwner = None,
-        key: Union[SymmetricKey, EncryptedSymmetricKey] = None,
+        owner: Optional[IOwner] = None,
+        key: Optional[Union[SymmetricKey, EncryptedSymmetricKey]] = None,
     ):
         assert owner is not None and key is not None
 

@@ -20,7 +20,7 @@ class CronjobWarehouse:
                 module_name = ".".join(s.split(".")[:-1])
                 module = importlib.import_module(module_name)
                 function_name = s.split(".")[-1]
-                job: Callable[[], str] = getattr(module, function_name)
+                job: Callable[[], str] = getattr(module, function_name)  # type: ignore
                 cls.__add_cronjob(job)
 
     @classmethod

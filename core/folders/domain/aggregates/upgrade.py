@@ -1,5 +1,5 @@
 import abc
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
 from core.folders.domain.types import StrDict
@@ -30,7 +30,7 @@ class Upgrade:
 
         return upgrade
 
-    def __init__(self, folder: "Folder" = None, pk: UUID = None):
+    def __init__(self, folder: Optional["Folder"] = None, pk: Optional[UUID] = None):
         assert folder is not None and pk is not None
         self.__pk = pk
         self.__folder = folder

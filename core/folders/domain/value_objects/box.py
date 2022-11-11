@@ -9,8 +9,6 @@ class Box(bytes):
 
     def __new__(cls, **kwargs):
 
-        value: bytes
-
         if issubclass(cls, OpenBox):
             value = kwargs["data"]
         elif issubclass(cls, LockedBox):

@@ -17,18 +17,18 @@ from core.seedwork.domain_layer import DomainError
 
 class Folder(IOwner):
     @staticmethod
-    def create(name: str = None, org_pk: int = None):
+    def create(name: Optional[str] = None, org_pk: Optional[int] = None):
         pk = uuid4()
         return Folder(name=name, pk=pk, org_pk=org_pk)
 
     def __init__(
         self,
-        name: str = None,
-        pk: UUID = None,
-        org_pk: int = None,
-        keys: List[Union[FolderKey, ParentKey]] = None,
-        parent: "Folder" = None,
-        upgrades: list[Upgrade] = None,
+        name: Optional[str] = None,
+        pk: Optional[UUID] = None,
+        org_pk: Optional[int] = None,
+        keys: Optional[List[Union[FolderKey, ParentKey]]] = None,
+        parent: Optional["Folder"] = None,
+        upgrades: Optional[list[Upgrade]] = None,
     ):
         assert name is not None and pk is not None
         assert all([k.is_encrypted for k in keys or []])
@@ -184,7 +184,9 @@ class Folder(IOwner):
         # the key is symmetric therefore the encryption and decryption key is the same
         return self.get_encryption_key(*args, **kwargs)
 
-    def set_parent(self, folder: "Folder" = None, by: IOwner = None):
+    def set_parent(
+        self, folder: Optional["Folder"] = None, by: Optional[IOwner] = None
+    ):
         assert folder is not None and by is not None
 
         self.__parent = folder

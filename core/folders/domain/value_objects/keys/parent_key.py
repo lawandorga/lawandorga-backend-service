@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Optional, Union
 from uuid import UUID
 
 from core.folders.domain.types import StrDict
@@ -27,8 +27,8 @@ class ParentKey:
 
     def __init__(
         self,
-        folder_pk: UUID = None,
-        key: Union[SymmetricKey, EncryptedSymmetricKey] = None,
+        folder_pk: Optional[UUID] = None,
+        key: Optional[Union[SymmetricKey, EncryptedSymmetricKey]] = None,
     ):
         assert folder_pk is not None and key is not None
 

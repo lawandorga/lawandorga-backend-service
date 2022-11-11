@@ -50,9 +50,10 @@ class ContentUpgrade(Upgrade):
     def __init__(
         self,
         pk: uuid.UUID = uuid.uuid4(),
-        folder: Folder = None,
-        content: dict[str, tuple[Content, EncryptedSymmetricKey]] = None,
+        folder: Optional[Folder] = None,
+        content: Optional[dict[str, tuple[Content, EncryptedSymmetricKey]]] = None,
     ):
+        assert folder is not None
         self.__content = content if content is not None else {}
 
         super().__init__(folder=folder, pk=pk)
@@ -73,8 +74,9 @@ class ContentUpgrade(Upgrade):
 
         return versions[0]
 
+    @property
     def content(self) -> list[Item]:
-        pass
+        return []
 
     def reencrypt(self, old_folder_key: SymmetricKey, new_folder_key: SymmetricKey):
         new_content: dict[str, tuple[Content, EncryptedSymmetricKey]] = {}
