@@ -1,4 +1,4 @@
-from django.urls import URLPattern, include, path
+from django.urls import include, path
 
 from core.auth.urls import urlpatterns as auth_urlpatterns
 from core.collab.urls import router as collab_router
@@ -12,11 +12,9 @@ from core.records.urls import urlpatterns as records_urlpatterns
 from core.rlc.urls import urlpatterns as org_urlpatterns
 from core.statistics.urls import urlpatterns as statistics_urlpatterns
 
-x: list[URLPattern] = auth_urlpatterns
-
 urlpatterns = [
     *statistics_urlpatterns,
-    path("", x),
+    path("", include(auth_urlpatterns)),
     path("folders/", include(folders_urlpatterns)),
     path("events/", include(events_urlpatterns)),
     path("legal/", include(legal_urlpatterns)),
