@@ -46,6 +46,9 @@ CORS_ALLOW_CREDENTIALS = True
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#configuring-internal-ips
 INTERNAL_IPS = ["127.0.0.1"]
 
+# todo
+SESSION_COOKIE_SAMESITE = 'None'
+
 # Logging
 # https://docs.djangoproject.com/en/dev/topics/logging/
 LOGGING_DIR = os.path.join(BASE_DIR, "tmp/logs")
