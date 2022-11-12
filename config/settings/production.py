@@ -106,4 +106,4 @@ LOGGING = {
 FRONTEND_URL = env.str("FRONTEND_URL")
 
 # This is used for ics calendar integration links
-CALENDAR_URL = "https://calendar.law-orga.de/"
+CALENDAR_URL = "https://calendar.law-orga.de/api/events/ics/"
