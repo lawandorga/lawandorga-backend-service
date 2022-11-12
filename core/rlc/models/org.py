@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class Org(EncryptedModelMixin, models.Model):
-    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True)
+    meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True)
     FEDERAL_STATE_CHOICES = (
         ("BW", "Baden-Württemberg"),
         ("BY", "Bayern (Freistaat)"),
