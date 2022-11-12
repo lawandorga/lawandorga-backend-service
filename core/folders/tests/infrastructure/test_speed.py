@@ -1,6 +1,6 @@
+import random
 import string
 import time
-import random
 
 import pytest
 
@@ -26,7 +26,12 @@ def keys(real_encryption):
 
 def disable_test_speed(keys):
     L = 1000
-    data = ["".join([random.choice(string.ascii_letters) for i in range(0, 100)]).encode('utf-8') for i in range(0, L)]
+    data = [
+        "".join([random.choice(string.ascii_letters) for i in range(0, 100)]).encode(
+            "utf-8"
+        )
+        for i in range(0, L)
+    ]
     assert len(data) == L
     lboxes = []
     oboxes = []
@@ -34,16 +39,16 @@ def disable_test_speed(keys):
     t1 = time.time()
 
     for i, _ in enumerate(data):
-        o = OpenBox(data=data[i])
-        l = keys[i].lock(o)
-        lboxes.append(l)
+        open_box = OpenBox(data=data[i])
+        locked_box = keys[i].lock(open_box)
+        lboxes.append(locked_box)
 
     t2 = time.time()
 
     for i, _ in enumerate(data):
-        l = lboxes[i]
-        o = keys[i].unlock(l)
-        oboxes.append(o)
+        locked_box = lboxes[i]
+        open_box = keys[i].unlock(locked_box)
+        oboxes.append(open_box)
 
     t3 = time.time()
 
@@ -51,5 +56,5 @@ def disable_test_speed(keys):
         assert data[i] == oboxes[i]
 
     print()
-    print('encryption took', t2-t1, 'seconds.')
-    print('decryption took', t3 - t2, 'seconds.')
+    print("encryption took", t2 - t1, "seconds.")
+    print("decryption took", t3 - t2, "seconds.")
