@@ -1,5 +1,5 @@
 import os
-from typing import Tuple
+from typing import Optional, Tuple
 from uuid import uuid4
 
 from core.folders.domain.value_objects.encryption import (
@@ -13,7 +13,9 @@ class AsymmetricEncryptionTest1(AsymmetricEncryption):
     __SECRETS: dict[str, bytes] = {}
     __KEYS: dict[str, str] = {}
 
-    def __init__(self, private_key: str = None, public_key: str = None):
+    def __init__(
+        self, private_key: Optional[str] = None, public_key: Optional[str] = None
+    ):
         assert public_key is not None
 
         self.__private_key = private_key
@@ -31,7 +33,7 @@ class AsymmetricEncryptionTest1(AsymmetricEncryption):
 
     @classmethod
     def generate_keys(cls) -> Tuple[str, str, str]:
-        return str(os.urandom(1)), str(os.urandom(1)), cls.VERSION
+        return str(os.urandom(2)), str(os.urandom(2)), cls.VERSION
 
     def encrypt(self, data: bytes) -> bytes:
         uuid = bytes(str(uuid4()), "utf-8")

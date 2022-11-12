@@ -2,204 +2,53 @@ from uuid import uuid4
 
 import pytest
 
-from core.folders.domain.aggregates.content import Content
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.value_objects.encryption import EncryptionPyramid
-from core.folders.domain.value_objects.keys import AsymmetricKey, FolderKey
-from core.folders.tests.helpers.car import CarWithSecretName
-from core.folders.tests.helpers.encryptions import (
-    AsymmetricEncryptionTest1,
-    AsymmetricEncryptionTest2,
-    SymmetricEncryptionTest1,
-    SymmetricEncryptionTest2,
+from core.folders.domain.value_objects.encryption import EncryptionWarehouse
+from core.folders.domain.value_objects.keys import (
+    AsymmetricKey,
+    FolderKey,
+    SymmetricKey,
 )
-from core.folders.tests.helpers.user import UserObject
-from core.seedwork.domain_layer import DomainError
+from core.folders.tests.helpers.encryptions import SymmetricEncryptionTest2
+from core.folders.tests.helpers.user import ForeignUserObject, UserObject
 
 
-@pytest.fixture
-def encryption_reset():
-    EncryptionPyramid.reset_encryption_hierarchies()
-    yield
-
-
-@pytest.fixture
-def single_encryption(encryption_reset):
-    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest1)
-    EncryptionPyramid.add_asymmetric_encryption(AsymmetricEncryptionTest1)
-    yield
-
-
-@pytest.fixture
-def double_encryption(encryption_reset):
-    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest1)
-    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest2)
-    EncryptionPyramid.add_asymmetric_encryption(AsymmetricEncryptionTest1)
-    EncryptionPyramid.add_asymmetric_encryption(AsymmetricEncryptionTest2)
-    yield
-
-
-@pytest.fixture
-def car_content_key():
-    car = CarWithSecretName(name="BMW")
-    content = Content(
-        "My Car",
-        car,
-    )
-    key = content.encrypt()
-    yield car, content, key
-
-
-@pytest.fixture
-def folder_user(car_content_key):
-    car, content, key = car_content_key
-    user = UserObject()
-    folder = Folder.create("New Folder")
-    folder.grant_access(to=user)
-    folder.add_content(content, key, user)
-    yield folder, user
-
-
-def test_encryption_decryption(single_encryption, car_content_key):
-    car, content, key = car_content_key
-
+def test_keys_are_regenerated(single_encryption, car_content_key):
     user = UserObject()
 
-    a_key = AsymmetricKey.generate()
-    folder_key = FolderKey(
-        owner=user,
-        key=a_key,
+    folder_key = FolderKey(owner=user, key=SymmetricKey.generate())
+    folder = Folder(
+        name="My Folder",
+        pk=uuid4(),
+        keys=[folder_key.encrypt_self(user.get_encryption_key())],
     )
 
-    folder = Folder(name="My Folder", pk=uuid4(), keys=[folder_key])
-    folder.add_content(content, key, user)
+    assert folder.encryption_version == "ST1"
 
-    content = folder.get_content_by_name(content.name)
-    content_key = folder.get_content_key(content, user)
+    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest2)
+    folder.check_encryption_version(user)
 
-    content.decrypt(content_key)
-
-    car = content.item
-    assert car.name == b"BMW"
-
-
-def test_encryption_decryption_with_hierarchy(single_encryption, car_content_key):
-    user_1 = UserObject()
-    user_2 = UserObject()
-    a_key = AsymmetricKey.generate()
-    folder_key_1 = FolderKey(
-        owner=user_1,
-        key=a_key,
-    )
-    folder_key_2 = FolderKey(
-        owner=user_2,
-        key=a_key,
-    )
-    folder = Folder(name="My Folder", pk=uuid4(), keys=[folder_key_1, folder_key_2])
-
-    car, content, key = car_content_key
-    folder.add_content(content, key, user_1)
-
-    content = folder.get_content_by_name(content.name)
-    content_key = folder.get_content_key(content, user_2)
-    content.decrypt(content_key)
-
-    car = content.item
-    car.name = b"Audi"
-
-    new_key = content.encrypt()
-    folder.update_content(content, new_key, user_2)
-
-    content = folder.get_content_by_name(content.name)
-    content_key = folder.get_content_key(content, user_1)
-    content.decrypt(content_key)
-
-    assert car.name == b"Audi"
-
-
-def test_keys_are_regenerated(double_encryption, car_content_key):
-    car, content, key = car_content_key
-    user = UserObject()
-
-    folder_key = FolderKey(owner=user, key=AsymmetricKey.generate())
-    folder = Folder(name="My Folder", pk=uuid4(), keys=[folder_key])
-    folder.add_content(content, key, user)
-
-    assert key.get_key() in AsymmetricEncryptionTest2.get_treasure_chest().values()
-
-    enc_content = folder.get_content_by_name("My Car")
-    key = folder.get_content_key(enc_content, user)
-
-    enc_content.decrypt(key)
-    car = content.item
-
-    assert car.name == b"BMW"
-    assert folder.encryption_version == "AT2"
+    assert folder.encryption_version == "ST2"
 
 
 def test_grant_access(single_encryption, car_content_key):
-    car, content, key = car_content_key
     user = UserObject()
 
     folder = Folder.create("New Folder")
     folder.grant_access(to=user)
 
-    folder.add_content(content, key, user)
-
-    content2 = folder.get_content_by_name(content.name)
-    key = folder.get_content_key(content2, user)
-
-    content2.decrypt(key)
-    car = content2.item
-
-    assert car.name == b"BMW"
+    assert folder.has_access(user)
 
 
-def test_with_unknown_content(single_encryption, car_content_key):
-    car, content, key = car_content_key
-    user = UserObject()
+def test_grant_access_to_another_user(single_encryption, car_content_key):
+    user1 = UserObject()
+    user2 = UserObject()
 
     folder = Folder.create("New Folder")
-    folder.grant_access(to=user)
+    folder.grant_access(to=user1)
+    folder.grant_access(to=user2, by=user1)
 
-    with pytest.raises(DomainError):
-        folder.update_content(content, key, user)
-
-    with pytest.raises(DomainError):
-        folder.delete_content(content)
-
-    with pytest.raises(DomainError):
-        folder.get_content_key(content, user)
-
-    with pytest.raises(DomainError):
-        folder.get_content_by_name("Unknown")
-
-
-def test_delete_content(single_encryption, car_content_key, folder_user):
-    folder, user = folder_user
-    car, content, key = car_content_key
-
-    folder.delete_content(content)
-
-    with pytest.raises(DomainError):
-        folder.delete_content(content)
-
-
-def test_add_content_fails_with_same_name(
-    single_encryption, car_content_key, folder_user
-):
-    folder, user = folder_user
-    car, content, key = car_content_key
-
-    with pytest.raises(DomainError):
-        folder.add_content(content, key, user)
-
-
-def test_grant_access_by_user(single_encryption, folder_user):
-    user = UserObject()
-    folder, user2 = folder_user
-
-    folder.grant_access(to=user, by=user2)
+    assert folder.has_access(user2)
 
 
 def test_encryption_version(single_encryption):
@@ -207,40 +56,29 @@ def test_encryption_version(single_encryption):
     assert folder.encryption_version is None
     user = UserObject()
     folder.grant_access(to=user)
-    assert folder.encryption_version == "AT1"
+    assert folder.encryption_version == "AT1" or folder.encryption_version == "ST1"
 
-    a_key = AsymmetricKey.generate()
+    s_key = SymmetricKey.generate()
     folder_key_1 = FolderKey(
         owner=user,
-        key=a_key,
+        key=s_key,
     )
-    EncryptionPyramid.add_asymmetric_encryption(AsymmetricEncryptionTest2)
-    a_key = AsymmetricKey.generate()
+    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest2)
+    s_key = SymmetricKey.generate()
     folder_key_2 = FolderKey(
         owner=user,
-        key=a_key,
+        key=s_key,
     )
-    folder = Folder(name="Test", pk=uuid4(), keys=[folder_key_1, folder_key_2])
+    folder = Folder(
+        name="Test",
+        pk=uuid4(),
+        keys=[
+            folder_key_1.encrypt_self(user.get_encryption_key()),
+            folder_key_2.encrypt_self(user.get_encryption_key()),
+        ],
+    )
     with pytest.raises(Exception):
         assert folder.encryption_version
-
-
-def test_reencrypt_all_keys(single_encryption, folder_user, car_content_key):
-    folder, user = folder_user
-    car, content, key = car_content_key
-    EncryptionPyramid.add_asymmetric_encryption(AsymmetricEncryptionTest2)
-    assert folder.encryption_version == "AT1"
-    folder.update_content(content, key, user)
-    assert folder.encryption_version == "AT2"
-
-
-def test_folder_key_not_found(single_encryption, folder_user, car_content_key):
-    folder, user = folder_user
-    car, content, key = car_content_key
-    user2 = UserObject()
-
-    with pytest.raises(DomainError):
-        folder.get_content_key(content, user2)
 
 
 def test_move(single_encryption, folder_user):
@@ -260,15 +98,49 @@ def test_str_method():
 
 
 def test_folder_key_decryption_error(single_encryption):
-    user1 = UserObject()
-    key = FolderKey(key=AsymmetricKey.generate(), owner=user1)
-    enc_key = key.encrypt()
+    user1 = ForeignUserObject()
+    key = FolderKey(key=SymmetricKey.generate(), owner=user1)
+    enc_key = key.encrypt_self(user1.get_encryption_key())
     user2 = UserObject()
-    with pytest.raises(DomainError):
-        enc_key.decrypt(user2)
+    with pytest.raises(ValueError):
+        enc_key.decrypt_self(user2)
 
 
 def test_folder_key_str_method(single_encryption):
     user1 = UserObject()
     key = FolderKey(owner=user1, key=AsymmetricKey.generate())
     assert str(key) == "FolderKey of {}".format(user1.slug)
+
+
+def test_folder_access(single_encryption, car_content_key):
+    user_1 = UserObject()
+    user_2 = UserObject()
+
+    s_key = SymmetricKey.generate()
+    folder_key_1 = FolderKey(
+        owner=user_1,
+        key=s_key,
+    )
+    folder_key_2 = FolderKey(
+        owner=user_2,
+        key=s_key,
+    )
+
+    folder = Folder(
+        name="My Folder",
+        pk=uuid4(),
+        keys=[
+            folder_key_1.encrypt_self(user_1.get_encryption_key()),
+            folder_key_2.encrypt_self(user_2.get_encryption_key()),
+        ],
+    )
+
+    assert folder.has_access(user_1) and folder.has_access(user_2)
+
+
+def test_has_no_access(single_encryption):
+    user1 = UserObject()
+    user2 = UserObject()
+    folder = Folder.create("Test")
+    folder.grant_access(user2)
+    assert not folder.has_access(user1)

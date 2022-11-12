@@ -1,8 +1,9 @@
-from django.test import TestCase
-from rest_framework.test import force_authenticate
+import json
+
+from django.conf import settings
+from django.test import Client, TestCase
 
 from core.models import CollabDocument
-from core.views import CollabDocumentViewSet
 
 from .test_collab_working import BaseCollab
 
@@ -34,16 +35,20 @@ class CollabDocumentViewSetBreaking(BaseCollab, TestCase):
 
     def test_name_does_not_allow_slash(self):
         collab_document = self.create_collab_document()
-        view = CollabDocumentViewSet.as_view(actions={"patch": "partial_update"})
         data = {"path": "/", "name": "My$$/&.Document/Test"}
-        request = self.factory.patch("", data)
-        force_authenticate(request, self.user)
-        response = view(request, pk=collab_document.pk)
+        c = Client()
+        c.login(email=self.user.email, password=settings.DUMMY_USER_PASSWORD)
+        response = c.patch(
+            "/api/collab/collab_documents/{}/".format(collab_document.pk),
+            json.dumps(data),
+            content_type="application/json",
+        )
         self.assertContains(response, "My.DocumentTest", status_code=200)
         collab_document = self.create_collab_document("/MyDocumentTest/Document 2")
-        view = CollabDocumentViewSet.as_view(actions={"patch": "partial_update"})
         data = {"path": "/", "name": "Document/#$%%#/400"}
-        request = self.factory.patch("", data)
-        force_authenticate(request, self.user)
-        response = view(request, pk=collab_document.pk)
+        response = c.patch(
+            "/api/collab/collab_documents/{}/".format(collab_document.pk),
+            json.dumps(data),
+            content_type="application/json",
+        )
         self.assertContains(response, "/MyDocumentTest/Document400", status_code=200)

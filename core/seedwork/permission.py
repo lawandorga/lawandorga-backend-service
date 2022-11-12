@@ -3,7 +3,7 @@ from typing import Dict, Optional
 from rest_framework.permissions import IsAuthenticated
 
 
-class AuthenticatedAndHasPermission(IsAuthenticated):
+class AuthenticatedAndHasPermission(IsAuthenticated):  # type: ignore
     def has_permission(self, request, view):
         if not super().has_permission(request, view):
             return False

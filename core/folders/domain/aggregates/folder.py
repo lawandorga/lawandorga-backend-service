@@ -1,46 +1,68 @@
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Union
 from uuid import UUID, uuid4
 
-from core.folders.domain.aggregates.content import Content
+from core.folders.domain.aggregates.upgrade import Upgrade
 from core.folders.domain.external import IOwner
-from core.folders.domain.value_objects.encryption import EncryptionPyramid
+from core.folders.domain.types import StrDict
+from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.keys import (
     AsymmetricKey,
     FolderKey,
     SymmetricKey,
 )
-from core.folders.domain.value_objects.keys.base import EncryptedSymmetricKey
+from core.folders.domain.value_objects.keys.base import EncryptedAsymmetricKey
+from core.folders.domain.value_objects.keys.parent_key import ParentKey
 from core.seedwork.domain_layer import DomainError
 
 
 class Folder(IOwner):
     @staticmethod
-    def create(name: str = None):
+    def create(name: Optional[str] = None, org_pk: Optional[int] = None):
         pk = uuid4()
-        return Folder(name=name, pk=pk, keys=[], content={})
+        return Folder(name=name, pk=pk, org_pk=org_pk)
 
     def __init__(
         self,
-        name: str = None,
-        pk: UUID = None,
-        keys: List[FolderKey] = None,
-        content: Dict[str, Tuple[Content, EncryptedSymmetricKey]] = None,
-        parent: UUID = None,
+        name: Optional[str] = None,
+        pk: Optional[UUID] = None,
+        org_pk: Optional[int] = None,
+        keys: Optional[List[Union[FolderKey, ParentKey]]] = None,
+        parent: Optional["Folder"] = None,
+        upgrades: Optional[list[Upgrade]] = None,
     ):
         assert name is not None and pk is not None
+        assert all([k.is_encrypted for k in keys or []])
 
+        self.__parent = parent
         self.__pk = pk
         self.__name = name
-        self.__content = content if content is not None else {}
-        self.__keys = (
-            [k if k.is_encrypted else k.encrypt() for k in keys]
-            if keys is not None
-            else []
-        )
-        self.__parent = parent
+        self.__org_pk = org_pk
+        self.__keys = keys if keys is not None else []
+        self.__upgrades = upgrades if upgrades is not None else []
 
     def __str__(self):
         return "Folder {}".format(self.name)
+
+    def __dict__(self) -> StrDict:  # type: ignore
+        return {"name": self.__name, "id": str(self.__pk)}
+
+    @property
+    def org_pk(self):
+        return self.__org_pk
+
+    @property
+    def keys(self):
+        return self.__keys
+
+    @property
+    def pk(self):
+        return self.__pk
+
+    @property
+    def parent_pk(self):
+        if self.__parent:
+            return self.__parent.pk
+        return None
 
     @property
     def slug(self):
@@ -49,6 +71,14 @@ class Folder(IOwner):
     @property
     def name(self):
         return self.__name
+
+    @property
+    def items(self):
+        return []
+
+    @property
+    def upgrades(self):
+        return self.__upgrades
 
     @property
     def encryption_version(self) -> Optional[str]:
@@ -64,125 +94,164 @@ class Folder(IOwner):
 
         return versions[0]
 
-    def __reencrypt_all_keys(self, folder_key: FolderKey):
-        # get a new folder key
-        a_key = AsymmetricKey.generate()
-        new_folder_key = FolderKey(
-            key=a_key,
-            owner=folder_key.owner,
-        )
+    def has_access(self, owner: IOwner) -> bool:
+        try:
+            self.get_decryption_key(requestor=owner)
+        except DomainError:
+            return False
+        return True
 
-        # decrypt content keys
-        new_content = {}
-        for content in self.__content.values():
-            enc_content_key = content[1]
-            s_key = enc_content_key.decrypt(folder_key.key)
-            new_enc_content_key = EncryptedSymmetricKey.create(
-                original=s_key, key=new_folder_key.key
-            )
-            new_content[content[0].name] = (content[0], new_enc_content_key)
+    def add_upgrade(self, upgrade: Upgrade):
+        self.__upgrades.append(upgrade)
+
+    def __reencrypt_all_keys(self, user: IOwner):
+        old_key = self.get_encryption_key(requestor=user)
+
+        # get a new folder key
+        new_key = SymmetricKey.generate()
+
+        # reencrypt upgrades
+        for upgrade in self.__upgrades:
+            upgrade.reencrypt(old_key, new_key)
 
         # reencrypt keys
-        new_keys = []
+        new_keys: list[Union[FolderKey, ParentKey]] = []
         for key in self.__keys:
-            new_key = FolderKey(owner=key.owner, key=new_folder_key.key)
-            enc_new_key = new_key.encrypt()
-            new_keys.append(enc_new_key)
+            if isinstance(key, ParentKey) and self.__parent is not None:
+                new_parent_key = ParentKey(folder_pk=self.pk, key=new_key)
+                enc_new_parent_key = new_parent_key.encrypt_self(
+                    self.__parent.get_encryption_key(requestor=user)
+                )
+                new_keys.append(enc_new_parent_key)
+
+            elif isinstance(key, FolderKey):
+                new_folder_key = FolderKey(owner=key.owner, key=new_key)
+                enc_new_folder_key = new_folder_key.encrypt_self(
+                    key.owner.get_encryption_key(requestor=user)
+                )
+                new_keys.append(enc_new_folder_key)
+
+            else:
+                raise ValueError(
+                    "This folder might have an parent key but its parent is None."
+                )
 
         # set
-        self.__content = new_content
         self.__keys = new_keys
 
     def update_information(self, name=None):
         self.__name = name if name is not None else self.__name
 
-    def __check_encryption_version(self, folder_key: FolderKey):
-        encryption_class = EncryptionPyramid.get_highest_asymmetric_encryption()
-        if self.encryption_version != encryption_class.VERSION:
-            self.__reencrypt_all_keys(folder_key)
+    def check_encryption_version(self, user: IOwner):
+        if self.encryption_version not in EncryptionWarehouse.get_highest_versions():
+            self.__reencrypt_all_keys(user)
 
-    def find_folder_key(self, user: IOwner) -> FolderKey:
-        parent_key: Optional[FolderKey] = None
-
+    def __find_folder_key(self, user: IOwner) -> Optional[FolderKey]:
         for key in self.__keys:
-            if key.owner.slug == user.slug:
+            if isinstance(key, FolderKey) and key.owner.slug == user.slug:
                 return key
-            if self.__parent and key.owner.slug == self.__parent:
-                parent_key = key
 
-        if parent_key is not None:
-            return parent_key
+        return None
 
-        raise DomainError("No folder key was found for this user.")
+    def __find_parent_key(self) -> Optional[ParentKey]:
+        for key in self.__keys:
+            if isinstance(key, ParentKey):
+                return key
 
-    def add_content(self, content: Content, key: SymmetricKey, user: IOwner):
-        if content.name in self.__content:
-            raise DomainError(
-                "This folder already contains an item with the same name."
-            )
-        enc_folder_key = self.find_folder_key(user)
-        folder_key = enc_folder_key.decrypt(user)
-        enc_key = EncryptedSymmetricKey.create(original=key, key=folder_key.key)
-        self.__content[content.name] = (content, enc_key)
-        # check
-        self.__check_encryption_version(folder_key)
+        return None
 
-    def update_content(self, content: Content, key: SymmetricKey, user: IOwner):
-        if content.name not in self.__content:
-            raise DomainError("This folder does not contain an item with this name.")
-        enc_folder_key = self.find_folder_key(user)
-        folder_key = enc_folder_key.decrypt(user)
-        enc_key = EncryptedSymmetricKey.create(original=key, key=folder_key.key)
-        self.__content[content.name] = (content, enc_key)
-        # check
-        self.__check_encryption_version(folder_key)
+    def get_encryption_key(self, *args, **kwargs) -> "SymmetricKey":
+        assert len(self.__keys) > 0 and "requestor" in kwargs
 
-    def delete_content(self, content: Content):
-        if content.name not in self.__content:
-            raise DomainError("This folder does not contain an item with this name.")
+        requestor = kwargs["requestor"]
 
-        del self.__content[content.name]
+        enc_folder_key = self.__find_folder_key(requestor)
+        if enc_folder_key:
+            folder_key = enc_folder_key.decrypt_self(requestor)
+            key = folder_key.key
+            return key
 
-    def get_key(self) -> "AsymmetricKey":
+        enc_parent_key = self.__find_parent_key()
+        if self.__parent is not None and enc_parent_key:
+            unlock_key = self.__parent.get_decryption_key(requestor=requestor)
+            parent_key = enc_parent_key.decrypt_self(unlock_key)
+            key = parent_key.key
+            return key
+
+        raise DomainError("No key was found for this folder.")
+
+    def get_decryption_key(self, *args, **kwargs) -> "SymmetricKey":
+        # the key is symmetric therefore the encryption and decryption key is the same
+        return self.get_encryption_key(*args, **kwargs)
+
+    def set_parent(
+        self, folder: Optional["Folder"] = None, by: Optional[IOwner] = None
+    ):
+        assert folder is not None and by is not None
+
+        self.__parent = folder
+
+        # get the key of self
         if len(self.__keys) == 0:
-            raise DomainError("This folder has no keys.")
-        return self.__keys[0].key
+            key = SymmetricKey.generate()
 
-    def set_parent(self, folder: "Folder", by: IOwner = None):
-        self.__parent = folder.slug
-        self.grant_access(to=folder, by=by)
+        else:
+            key = self.get_decryption_key(requestor=by)
 
-    def get_content_key(self, content: Content, user: IOwner):
-        if content.name not in self.__content:
-            raise DomainError("This folder does not contain the specified item.")
+        parent_key = ParentKey(
+            folder_pk=self.__pk,
+            key=key,
+        )
 
-        enc_folder_key = self.find_folder_key(user)
-        folder_key = enc_folder_key.decrypt(user)
-        enc_key = self.__content[content.name][1]
-        content_key = enc_key.decrypt(folder_key.key)
-        return content_key
+        # encrypt the new parent key
+        lock_key = folder.get_encryption_key(requestor=by)
+        enc_parent_key = parent_key.encrypt_self(lock_key)
 
-    def get_content_by_name(self, name: str) -> Content:
-        if name not in self.__content:
-            raise DomainError("This folder does not contain the specified item.")
-        return self.__content[name][0]
+        # add the parent key to keys
+        self.__keys.append(enc_parent_key)
 
     def move(self, target: "Folder"):
         pass
 
     def grant_access(self, to: IOwner, by: Optional[IOwner] = None):
+        key: Union[AsymmetricKey, SymmetricKey]
 
         if len(self.__keys) == 0:
-            a_key = AsymmetricKey.generate()
+            key = SymmetricKey.generate()
 
         else:
             assert by is not None
-            enc_folder_key = self.find_folder_key(user=by)
-            a_key = enc_folder_key.decrypt(by).key
+            key = self.get_decryption_key(requestor=by)
 
-        key = FolderKey(
+        folder_key = FolderKey(
             owner=to,
-            key=a_key,
+            key=key,
         )
-        enc_key = key.encrypt()
+
+        lock_key = to.get_encryption_key()
+        assert isinstance(lock_key, AsymmetricKey) or isinstance(
+            lock_key, EncryptedAsymmetricKey
+        )
+        enc_key = folder_key.encrypt_self(lock_key)
+
         self.__keys.append(enc_key)
+
+    def revoke_access(self, of: IOwner):
+        prev_length = len(self.__keys)
+
+        new_keys = list(
+            filter(
+                lambda x: isinstance(x, ParentKey) or x.owner.slug != of.slug,
+                self.__keys,
+            )
+        )
+
+        if prev_length == len(new_keys):
+            raise DomainError("This user has no direct access to this folder.")
+
+        if len(new_keys) == 0:
+            raise DomainError(
+                "You can not revoke access of this user as there would be no keys left."
+            )
+
+        self.__keys = new_keys
