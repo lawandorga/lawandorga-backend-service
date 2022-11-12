@@ -439,7 +439,14 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
     def get_ics_calendar(self):
         from ...events.models import Event
 
-        events = self.org.events.all() | Event.objects.filter(is_global=True)
+        events = (
+            (
+                self.org.events.all()
+                | Event.objects.filter(is_global=True).filter(org__meta=self.org.meta)
+            )
+            if (self.org.meta is not None)
+            else self.org.events.all()
+        )
 
         c = ics.Calendar()
         for rlcEvent in events:
