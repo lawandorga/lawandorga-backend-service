@@ -63,3 +63,4 @@ class InputEventDelete(BaseModel):
 class CalendarUuidUser(BaseModel):
     id: int
     calendar_uuid: uuid.UUID
+    calendar_url: str
