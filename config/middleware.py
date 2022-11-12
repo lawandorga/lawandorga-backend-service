@@ -1,14 +1,13 @@
 import asyncio
 import json
 
-import jwt
 from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.utils.decorators import sync_and_async_middleware
 
-from core.auth.models import RlcUser, UserProfile
+from core.auth.models import RlcUser
 from core.models import LoggedPath
 from core.seedwork.api_layer import ErrorResponse
 
@@ -80,8 +79,8 @@ def logging_middleware(get_response):
 @sync_and_async_middleware
 def authentication_middleware(get_response):
     def authenticate(request):
-        if request.user.is_authenticated and hasattr(request.user, 'rlc_user'):
-            key = request.session.get('private_key')
+        if request.user.is_authenticated and hasattr(request.user, "rlc_user"):
+            key = request.session.get("private_key")
             cache.set(request.user.rlc_user.pk, key, 10)
 
         # header = request.META.get("HTTP_AUTHORIZATION")

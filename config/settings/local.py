@@ -49,7 +49,7 @@ INTERNAL_IPS = ["127.0.0.1"]
 # todo
 # https://stackoverflow.com/questions/63576338/django-check-cookiess-samesite-attribute
 SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = "None"
 
 # Logging
 # https://docs.djangoproject.com/en/dev/topics/logging/
