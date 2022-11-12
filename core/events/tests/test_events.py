@@ -106,3 +106,7 @@ class TestEvents(TestCase):
         assert res.status_code == 200
         all_events = Event.objects.all()
         assert len(all_events) == 3
+
+    def test_ics_calendar(self):
+        ics_cal = self.user_1["rlc_user"].get_ics_calendar()
+        assert ics_cal.count("\n") == 17
