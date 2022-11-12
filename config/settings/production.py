@@ -31,6 +31,9 @@ DATABASES = {
         "HOST": env.str("DB_HOST"),
         "PORT": env.int("DB_PORT"),
         "TEST": {"NAME": "test_{}".format(RUNTIME)},
+        "OPTIONS": {
+            "sslmode": "verify-full",
+        },
     }
 }
 
