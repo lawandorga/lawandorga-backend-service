@@ -39,7 +39,8 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Installed app django-cors-headers
 # https://pypi.org/project/django-cors-headers/
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = ["http://localhost:4200", "http://127.0.0.1:4200"]
+CORS_ALLOW_CREDENTIALS = True
 
 # Django Debug Toolbar
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#configuring-internal-ips

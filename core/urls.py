@@ -13,7 +13,7 @@ from core.rlc.urls import urlpatterns as org_urlpatterns
 from core.statistics.urls import urlpatterns as statistics_urlpatterns
 
 urlpatterns = [
-    *auth_urlpatterns,
+    path("", include(auth_urlpatterns)),
     *statistics_urlpatterns,
     path("folders/", include(folders_urlpatterns)),
     path("events/", include(events_urlpatterns)),
