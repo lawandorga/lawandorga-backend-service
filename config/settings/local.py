@@ -47,6 +47,8 @@ CORS_ALLOW_CREDENTIALS = True
 INTERNAL_IPS = ["127.0.0.1"]
 
 # todo
+# https://stackoverflow.com/questions/63576338/django-check-cookiess-samesite-attribute
+SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_SAMESITE = 'None'
 
 # Logging
