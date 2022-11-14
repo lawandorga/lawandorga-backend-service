@@ -27,10 +27,10 @@ def list_users(data: schemas.InputListUsersGet, rlc_user: RlcUser):
 # add member
 @router.post(url="<int:id>/add_member/", input_schema=schemas.InputAddMember)
 def add_member(data: schemas.InputAddMember, rlc_user: RlcUser):
-    add_member_to_group(data.id, data.new_member, __actor=rlc_user)
+    add_member_to_group(rlc_user, data.id, data.new_member)
 
 
 # remove member
 @router.post(url="<int:id>/remove_member/", input_schema=schemas.InputRemoveMember)
 def remove_member(data: schemas.InputRemoveMember, rlc_user: RlcUser):
-    remove_member_from_group(data.id, data.member, __actor=rlc_user)
+    remove_member_from_group(rlc_user, data.id, data.member)

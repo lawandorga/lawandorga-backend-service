@@ -2,7 +2,7 @@ from rest_framework import permissions
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-class IsAuthenticatedAndEverything(permissions.IsAuthenticated):
+class IsAuthenticatedAndEverything(permissions.IsAuthenticated):  # type: ignore
     message = (
         "You need to be logged in, your account needs to be active, your email needs to be confirmed, your"
         "account should not be locked and you should be accepted as a member of your law clinic."

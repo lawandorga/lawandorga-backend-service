@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from django.conf import settings
 
@@ -46,7 +46,7 @@ def create_record_template(org=None):
     return {"template": template}
 
 
-def create_record(template=None, users: List[UserProfile] = None):
+def create_record(template=None, users: Optional[List[UserProfile]] = None):
     record = Record.objects.create(template=template)
     aes_key_record = AESEncryption.generate_secure_key()
     for user in users if users else []:

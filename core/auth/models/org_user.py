@@ -1,7 +1,10 @@
+import uuid
 from typing import Any, Dict, List, Union
 
+import ics
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import models
@@ -9,8 +12,15 @@ from django.template import loader
 
 from core.auth.token_generator import EmailConfirmationTokenGenerator
 from core.rlc.models import HasPermission, Org, Permission
-from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
+from core.seedwork.encryption import (
+    AESEncryption,
+    EncryptedModelMixin,
+    RSAEncryption,
+    to_bytes,
+)
 
+from ...folders.domain.external import IOwner
+from ...folders.domain.value_objects.keys import AsymmetricKey, EncryptedAsymmetricKey
 from ...static import (
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
@@ -24,7 +34,7 @@ class RlcUserManager(models.Manager):
         return super().get_queryset().select_related("user")
 
 
-class RlcUser(EncryptedModelMixin, models.Model):
+class RlcUser(EncryptedModelMixin, models.Model, IOwner):
     STUDY_CHOICES = (
         ("LAW", "Law Sciences"),
         ("PSYCH", "Psychology"),
@@ -41,6 +51,7 @@ class RlcUser(EncryptedModelMixin, models.Model):
         UserProfile, on_delete=models.CASCADE, related_name="rlc_user"
     )
     org = models.ForeignKey(Org, related_name="users", on_delete=models.PROTECT)
+    slug = models.UUIDField(default=uuid.uuid4, unique=True)
     # blocker
     email_confirmed = models.BooleanField(default=True)
     accepted = models.BooleanField(default=False)
@@ -55,6 +66,9 @@ class RlcUser(EncryptedModelMixin, models.Model):
     postal_code = models.CharField(max_length=255, default=None, null=True, blank=True)
     speciality_of_study = models.CharField(
         choices=STUDY_CHOICES, max_length=100, blank=True, null=True
+    )
+    calendar_uuid = models.UUIDField(
+        primary_key=False, default=uuid.uuid4, editable=True, unique=True
     )
     # settings
     frontend_settings = models.JSONField(null=True, blank=True)
@@ -102,6 +116,79 @@ class RlcUser(EncryptedModelMixin, models.Model):
             if not lr.accepted:
                 return True
         return False
+
+    def get_public_key(self) -> bytes:
+        """
+        gets the public key of the user from the database
+        :return: public key of user (PEM)
+        """
+        if not self.do_keys_exist:
+            self.generate_keys()
+        return to_bytes(self.public_key)
+
+    def get_private_key(self, password_user=None, request=None) -> str:
+        if not self.do_keys_exist:
+            self.generate_keys()
+
+        if password_user and not request:
+            self.decrypt(password_user)
+            private_key = self.private_key
+
+        elif request and not password_user:
+            private_key = self.get_decryption_key().get_private_key()
+
+        else:
+            raise ValueError("You need to pass (password_user) or (request).")
+
+        return private_key  # type: ignore
+
+    def get_encryption_key(self, *args, **kwargs) -> EncryptedAsymmetricKey:
+        assert self.public_key is not None
+        if isinstance(self.public_key, memoryview):
+            key = self.public_key.tobytes().decode("utf-8")
+        else:
+            key = self.public_key.decode("utf-8")
+        origin = "A1"
+        return EncryptedAsymmetricKey(public_key=key, origin=origin)
+
+    @staticmethod
+    def get_dummy_user_private_key(dummy: "RlcUser"):
+        if settings.TESTING and dummy.email == "dummy@law-orga.de":
+            if dummy.is_private_key_encrypted:
+                private_key = dummy.encryption_class.decrypt(
+                    getattr(dummy, "private_key"), settings.DUMMY_USER_PASSWORD
+                )
+            elif isinstance(dummy.private_key, bytes):
+                private_key = dummy.private_key.decode("utf-8")
+            else:
+                raise ValueError("Dummy's private key could not be found.")
+            return private_key
+
+        raise ValueError("This method is only available for dummy and in test mode.")
+
+    def get_decryption_key(self, *args, **kwargs) -> AsymmetricKey:
+        assert self.private_key is not None and self.public_key is not None
+
+        private_key = cache.get(self.pk, None)
+
+        if settings.TESTING and self.email == "dummy@law-orga.de":
+            private_key = RlcUser.get_dummy_user_private_key(self)
+
+        if private_key is None:
+            raise ValueError(
+                "No private key could be found for user '{}'.".format(self.pk)
+            )
+
+        if isinstance(self.public_key, memoryview):
+            public_key = self.public_key.tobytes().decode("utf-8")
+        else:
+            public_key = self.public_key.decode("utf-8")
+
+        origin = "A1"
+
+        return AsymmetricKey.create(
+            public_key=public_key, private_key=private_key, origin=origin
+        )
 
     def activate_or_deactivate(self):
         self.is_active = not self.is_active
@@ -348,3 +435,30 @@ class RlcUser(EncryptedModelMixin, models.Model):
             "legal": legal,
         }
         return data
+
+    def get_ics_calendar(self):
+        from ...events.models import Event
+
+        events = (
+            (
+                self.org.events.all()
+                | Event.objects.filter(is_global=True).filter(org__meta=self.org.meta)
+            )
+            if (self.org.meta is not None)
+            else self.org.events.all()
+        )
+
+        c = ics.Calendar()
+        for rlcEvent in events:
+            e = ics.Event()
+            e.name = rlcEvent.name
+            e.begin = rlcEvent.start_time
+            e.end = rlcEvent.end_time
+            e.description = rlcEvent.description
+            e.organizer = rlcEvent.org.name
+            c.events.add(e)
+        return c.serialize()
+
+    def regenerate_calendar_uuid(self):
+        self.calendar_uuid = uuid.uuid4()
+        self.save()

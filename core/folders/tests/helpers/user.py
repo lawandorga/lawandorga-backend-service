@@ -1,18 +1,43 @@
+from typing import Union
 from uuid import uuid4
 
-from core.folders.domain.value_objects.encryption import EncryptionPyramid
-from core.folders.domain.value_objects.keys import UserKey
+from core.folders.domain.external import IOwner
+from core.folders.domain.value_objects.keys import (
+    AsymmetricKey,
+    EncryptedAsymmetricKey,
+    SymmetricKey,
+)
 
 
-class UserObject:
+class UserObject(IOwner):
     def __init__(self):
         self.slug = uuid4()
-        (
-            pr,
-            pu,
-            ve,
-        ) = EncryptionPyramid.get_highest_asymmetric_encryption().generate_keys()
-        self.key = UserKey(private_key=pr, public_key=pu, origin=ve)
+        self.key = AsymmetricKey.generate()
 
-    def get_key(self):
+    def get_decryption_key(
+        self, *args, **kwargs
+    ) -> Union["AsymmetricKey", "SymmetricKey"]:
         return self.key
+
+    def get_encryption_key(
+        self, *args, **kwargs
+    ) -> Union["AsymmetricKey", "SymmetricKey", "EncryptedAsymmetricKey"]:
+        return self.key
+
+
+class ForeignUserObject(IOwner):
+    def __init__(self):
+        self.slug = uuid4()
+        self.key = AsymmetricKey.generate()
+
+    def get_decryption_key(
+        self, *args, **kwargs
+    ) -> Union["AsymmetricKey", "SymmetricKey"]:
+        raise ValueError("The key can not be decrypted.")
+
+    def get_encryption_key(
+        self, *args, **kwargs
+    ) -> Union["AsymmetricKey", "SymmetricKey", "EncryptedAsymmetricKey"]:
+        return EncryptedAsymmetricKey(
+            public_key=self.key.get_public_key(), origin=self.key.origin
+        )
