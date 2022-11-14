@@ -2,7 +2,6 @@ from core.auth.api import schemas
 from core.auth.models import StatisticUser
 from core.seedwork.api_layer import Router
 
-
 router = Router()
 
 

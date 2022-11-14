@@ -1,8 +1,10 @@
 import json
+import re
 from json import JSONDecodeError
 
 from django.conf import settings
 from django.contrib.auth import login, logout
+from django.contrib.auth.views import LoginView
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -10,20 +12,17 @@ from django.views.decorators.csrf import csrf_exempt
 from core.auth.models import UserProfile
 from core.seedwork.api_layer import ErrorResponse
 
-from django.contrib.auth.views import LoginView
-
-
-import re
-
 
 def strip_scheme(url: str):
-    return re.sub(r'^https?:\/\/', '', url)
+    return re.sub(r"^https?:\/\/", "", url)
 
 
 class CustomLoginView(LoginView):
     redirect_url = settings.MAIN_FRONTEND_URL
-    success_url_allowed_hosts = {strip_scheme(settings.MAIN_FRONTEND_URL),
-                                 strip_scheme(settings.STATISTICS_FRONTEND_URL)}
+    success_url_allowed_hosts = {
+        strip_scheme(settings.MAIN_FRONTEND_URL),
+        strip_scheme(settings.STATISTICS_FRONTEND_URL),
+    }
 
 
 @csrf_exempt
