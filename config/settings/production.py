@@ -31,6 +31,7 @@ CSRF_TRUSTED_ORIGINS = ["https://*.law-orga.de"]
 # session cookie domain
 # https://docs.djangoproject.com/en/4.1/ref/settings/#session-cookie-domain
 SESSION_COOKIE_DOMAIN = ".law-orga.de"
+CSRF_COOKIE_DOMAIN = ".law-orga.de"
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY
