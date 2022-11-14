@@ -24,6 +24,15 @@ class CustomLoginView(LoginView):
         strip_scheme(settings.STATISTICS_FRONTEND_URL),
     }
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        user = self.request.user
+        if hasattr(user, "rlc_user"):
+            self.request.session["private_key"] = user.rlc_user.get_private_key(
+                password_user=form.data["password"]
+            )
+        return response
+
 
 @csrf_exempt
 def command__login(request):
