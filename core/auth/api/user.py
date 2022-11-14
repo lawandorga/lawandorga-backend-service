@@ -13,24 +13,19 @@ from core.seedwork.api_layer import ErrorResponse
 @csrf_exempt
 def command__login(request):
     error = ErrorResponse(
-        param_errors={"general": ["E-Mail or password wrong."]},
+        param_errors={"general": ["The E-Mail or the password is wrong."]},
         status=422,
         err_type="ApiError",
         title="Wrong Combination",
     )
 
+    # check user exists and password is correct
     try:
         body = json.loads(request.body)
         assert "email" in body and "password" in body
-    except (JSONDecodeError, AssertionError):
-        return error
-
-    try:
         user = UserProfile.objects.get(email=body["email"])
-    except ObjectDoesNotExist:
-        return error
-
-    if not user.check_password(body["password"]):
+        assert user.check_password(body["password"])
+    except (JSONDecodeError, AssertionError, ObjectDoesNotExist):
         return error
 
     # check if user active and user accepted in rlc

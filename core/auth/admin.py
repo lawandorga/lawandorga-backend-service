@@ -6,7 +6,7 @@ from .models import InternalUser, MatrixUser, RlcUser, StatisticUser, UserProfil
 
 
 class UserAdmin(DjangoUserAdmin):
-    fieldsets = (
+    fieldsets = [
         (None, {"fields": ("email",)}),
         (_("Personal info"), {"fields": ("name",)}),
         (
@@ -16,7 +16,7 @@ class UserAdmin(DjangoUserAdmin):
             },
         ),
         (_("Important dates"), {"fields": ("last_login",)}),
-    )
+    ]
     add_fieldsets = (
         (
             None,

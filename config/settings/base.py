@@ -129,6 +129,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "config.authentication.IsAuthenticatedAndEverything"
     ],
+    "EXCEPTION_HANDLER": "config.authentication.custom_exception_handler",
 }
 
 # Necessary in django 3.2
