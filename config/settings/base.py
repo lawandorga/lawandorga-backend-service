@@ -103,20 +103,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, "tmp/static/")
 MEDIA_URL = "media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "tmp/media/")
 
-# Installed app django-cors-headers
+# needed for session
 # https://pypi.org/project/django-cors-headers/
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
-    "private-key",
-]
+CORS_ALLOW_CREDENTIALS = True
+
+# still works locally with http
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies?retiredLocale=de#restrict_access_to_cookies
+SESSION_COOKIE_SECURE = True
+
+# same site attribute
+# https://docs.djangoproject.com/en/4.1/ref/settings/#session-cookie-samesite
+SESSION_COOKIE_SAMESITE = "None"
 
 # Rest Framework
 # https://www.django-rest-framework.org/api-guide/settings/
@@ -129,17 +126,6 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "config.authentication.IsAuthenticatedAndEverything"
     ],
-}
-
-# JWT Token
-# https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
-SIMPLE_JWT = {
-    "UPDATE_LAST_LOGIN": True,
-    "SIGNING_KEY": "nosecret",
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
-    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=20),
-    "USER_ID_CLAIM": "django_user",
-    "ROTATE_REFRESH_TOKENS": True,
 }
 
 # Necessary in django 3.2

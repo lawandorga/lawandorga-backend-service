@@ -40,16 +40,14 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # Installed app django-cors-headers
 # https://pypi.org/project/django-cors-headers/
 CORS_ALLOWED_ORIGINS = ["http://localhost:4200", "http://127.0.0.1:4200"]
-CORS_ALLOW_CREDENTIALS = True
+
+# Add the frontend to trusted origins
+# https://docs.djangoproject.com/en/4.1/ref/settings/#csrf-trusted-origins
+CSRF_TRUSTED_ORIGINS = ["http://localhost:4200", "http://127.0.0.1:4200"]
 
 # Django Debug Toolbar
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#configuring-internal-ips
 INTERNAL_IPS = ["127.0.0.1"]
-
-# todo
-# https://stackoverflow.com/questions/63576338/django-check-cookiess-samesite-attribute
-SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_SAMESITE = "None"
 
 # Logging
 # https://docs.djangoproject.com/en/dev/topics/logging/

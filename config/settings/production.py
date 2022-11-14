@@ -16,6 +16,10 @@ DEBUG = False
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
 
+# Add the frontend to trusted origins
+# https://docs.djangoproject.com/en/4.1/ref/settings/#csrf-trusted-origins
+CSRF_TRUSTED_ORIGINS = ["https://*.law-orga.de"]
+
 # SECURITY WARNING: keep the secret key used in production secret!
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY
 SECRET_KEY = env.str("DJANGO_SECRET_KEY")
@@ -65,10 +69,6 @@ AWS_STORAGE_BUCKET_NAME = env.str("S3_BUCKET_NAME")
 AWS_S3_REGION_NAME = "fr-par"
 AWS_S3_ENDPOINT_URL = "https://s3.fr-par.scw.cloud"
 AWS_S3_FILE_OVERWRITE = False
-
-# JWT Token
-# https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
-SIMPLE_JWT["SIGNING_KEY"] = env.str("DJANGO_JWT_SIGNING_KEY")
 
 # Logging
 # https://docs.djangoproject.com/en/dev/topics/logging/
