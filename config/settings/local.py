@@ -24,6 +24,11 @@ MIDDLEWARE += [
     "config.middleware.custom_debug_toolbar_middleware",
 ]
 
+# same site attribute
+# https://docs.djangoproject.com/en/4.1/ref/settings/#session-cookie-samesite
+SESSION_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SAMESITE = "None"
+
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 DATABASES = {

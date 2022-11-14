@@ -4,11 +4,13 @@ from json import JSONDecodeError
 from django.contrib.auth import login, logout
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from core.auth.models import UserProfile
 from core.seedwork.api_layer import ErrorResponse
 
 
+@csrf_exempt
 def command__login(request):
     error = ErrorResponse(
         param_errors={"general": ["E-Mail or password wrong."]},
@@ -59,6 +61,7 @@ def command__login(request):
     return HttpResponse()
 
 
+@csrf_exempt
 def command__logout(request):
     logout(request)
 

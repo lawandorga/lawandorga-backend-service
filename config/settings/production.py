@@ -16,9 +16,18 @@ DEBUG = False
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
 
+# same site attribute
+# https://docs.djangoproject.com/en/4.1/ref/settings/#session-cookie-samesite
+SESSION_COOKIE_SAMESITE = "Strict"
+CSRF_COOKIE_SAMESITE = "Strict"
+
 # Add the frontend to trusted origins
 # https://docs.djangoproject.com/en/4.1/ref/settings/#csrf-trusted-origins
 CSRF_TRUSTED_ORIGINS = ["https://*.law-orga.de"]
+
+# session cookie domain
+# https://docs.djangoproject.com/en/4.1/ref/settings/#session-cookie-domain
+SESSION_COOKIE_DOMAIN = ".law-orga.de"
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY

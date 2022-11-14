@@ -46,6 +46,7 @@ AUTH_PASSWORD_VALIDATORS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -107,13 +108,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "tmp/media/")
 # https://pypi.org/project/django-cors-headers/
 CORS_ALLOW_CREDENTIALS = True
 
-# still works locally with http
+# secure attribute
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies?retiredLocale=de#restrict_access_to_cookies
 SESSION_COOKIE_SECURE = True
-
-# same site attribute
-# https://docs.djangoproject.com/en/4.1/ref/settings/#session-cookie-samesite
-SESSION_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SECURE = True
 
 # Rest Framework
 # https://www.django-rest-framework.org/api-guide/settings/

@@ -117,9 +117,9 @@ class ErrorResponse(JsonResponse):
     ):
         if param_errors is not None:
             assert detail is None
-            detail = {'field_errors': {}, 'non_field_errors': []}
+            detail = {"field_errors": {}, "non_field_errors": []}
             for key, item in param_errors.items():
-                detail['field_errors'][key] = item
+                detail["field_errors"][key] = item
             detail["non_field_errors"] = (
                 param_errors["general"] if "general" in param_errors else []
             )
