@@ -1,14 +1,13 @@
 import asyncio
 import json
 
-import jwt
 from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.utils.decorators import sync_and_async_middleware
 
-from core.auth.models import RlcUser, UserProfile
+from core.auth.models import RlcUser
 from core.models import LoggedPath
 from core.seedwork.api_layer import ErrorResponse
 
@@ -80,16 +79,20 @@ def logging_middleware(get_response):
 @sync_and_async_middleware
 def authentication_middleware(get_response):
     def authenticate(request):
-        header = request.META.get("HTTP_AUTHORIZATION")
-        if header:
-            token = header.split(" ")[1]
-            payload = jwt.decode(
-                token, settings.SIMPLE_JWT["SIGNING_KEY"], algorithms=["HS256"]
-            )
-            user = UserProfile.objects.get(pk=payload["django_user"])
-            request.user = user
-            if hasattr(request.user, "rlc_user") and "key" in payload:
-                cache.set(user.rlc_user.pk, payload["key"], 10)
+        if request.user.is_authenticated and hasattr(request.user, "rlc_user"):
+            key = request.session.get("private_key")
+            cache.set(request.user.rlc_user.pk, key, 10)
+
+        # header = request.META.get("HTTP_AUTHORIZATION")
+        # if header:
+        #     token = header.split(" ")[1]
+        #     payload = jwt.decode(
+        #         token, settings.SIMPLE_JWT["SIGNING_KEY"], algorithms=["HS256"]
+        #     )
+        #     user = UserProfile.objects.get(pk=payload["django_user"])
+        #     request.user = user
+        #     if hasattr(request.user, "rlc_user") and "key" in payload:
+        #         cache.set(user.rlc_user.pk, payload["key"], 10)
 
         if (
             settings.TESTING

@@ -110,11 +110,20 @@ class ErrorResponse(JsonResponse):
         err_type: str,
         title: str,
         status: int,
-        detail: Optional[str] = None,
+        detail: Optional[Any] = None,
         instance: Optional[str] = None,
         internal: Optional[Any] = None,
         param_errors: Optional[Dict[str, List[str]]] = None,
     ):
+        if param_errors is not None:
+            assert detail is None
+            detail = {"field_errors": {}, "non_field_errors": []}
+            for key, item in param_errors.items():
+                detail["field_errors"][key] = item
+            detail["non_field_errors"] = (
+                param_errors["general"] if "general" in param_errors else []
+            )
+
         error = RFC7807(
             err_type=err_type,
             title=title,

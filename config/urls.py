@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core import urls as api_urls
+from core.auth.api.user import CustomLoginView
 
 
 class EmailView(APIView):
@@ -35,6 +36,7 @@ urlpatterns = [
     path("email/", EmailView.as_view()),
     path("admin/", admin.site.urls),
     path("api/", include(api_urls)),
+    path("login/", CustomLoginView.as_view()),
     path(
         "",
         TemplateView.as_view(

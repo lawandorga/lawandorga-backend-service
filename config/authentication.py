@@ -1,5 +1,4 @@
-from rest_framework import permissions
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import exceptions, permissions, status, views
 
 
 class IsAuthenticatedAndEverything(permissions.IsAuthenticated):  # type: ignore
@@ -33,15 +32,10 @@ class IsAuthenticatedAndEverything(permissions.IsAuthenticated):  # type: ignore
         return True
 
 
-class RefreshPrivateKeyToken(RefreshToken):
-    @classmethod
-    def for_user(cls, user, password_user=None, private_key=None):
-        if password_user:
-            key = user.get_private_key(password_user=password_user)
-        elif private_key:
-            key = private_key
-        else:
-            raise ValueError("You need to pass (password_user) or (private_key).")
-        token = super().for_user(user)
-        token["key"] = key
-        return token
+def custom_exception_handler(exc, context):
+    response = views.exception_handler(exc, context)
+
+    if isinstance(exc, (exceptions.AuthenticationFailed, exceptions.NotAuthenticated)):
+        response.status_code = status.HTTP_401_UNAUTHORIZED
+
+    return response
