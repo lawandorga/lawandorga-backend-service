@@ -41,7 +41,6 @@ class CollabDocumentViewSetWorking(BaseCollab, TestCase):
             json.dumps(data),
             content_type="application/json",
         )
-        print(response.json())
         self.assertEqual(
             1,
             TextDocumentVersion.objects.filter(

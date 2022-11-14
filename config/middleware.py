@@ -82,9 +82,6 @@ def authentication_middleware(get_response):
         if request.user.is_authenticated and hasattr(request.user, "rlc_user"):
             key = request.session.get("private_key")
             cache.set(request.user.rlc_user.pk, key, 10)
-            print(request.user.rlc_user.pk)
-            print(key)
-            print('private key set')
 
         # header = request.META.get("HTTP_AUTHORIZATION")
         # if header:

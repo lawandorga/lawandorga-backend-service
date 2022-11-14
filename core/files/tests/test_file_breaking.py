@@ -59,7 +59,6 @@ class FileTestsBreaking(FileTestsBase, TestCase):
         c = Client()
         c.login(email=self.user.email, password=settings.DUMMY_USER_PASSWORD)
         response = c.post("/api/files/file_base/", data)
-        print(response.json())
         file2 = File.objects.get(pk=response.json()["id"])
         self.assertEqual(response.status_code, 201)
         file1 = File.objects.get(pk=file1.pk)
