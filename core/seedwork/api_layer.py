@@ -110,7 +110,7 @@ class ErrorResponse(JsonResponse):
         err_type: str,
         title: str,
         status: int,
-        detail: Optional[str] = None,
+        detail: Optional[Any] = None,
         instance: Optional[str] = None,
         internal: Optional[Any] = None,
         param_errors: Optional[Dict[str, List[str]]] = None,
