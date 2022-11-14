@@ -1,4 +1,3 @@
-# type: ignore
 import environs
 
 from .base import *
