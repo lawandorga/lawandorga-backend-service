@@ -183,9 +183,6 @@ CACHES = {
 # This is used by the ExpiringTokenAuthentication which extends from rest's token authentication
 TIMEOUT_TIMEDELTA = timedelta(minutes=30)
 
-# This is used for links in activation emails and so on
-FRONTEND_URL = "http://localhost:4200"
-
 # This is used for ics calendar integration links
 CALENDAR_URL = "http://localhost:8000/api/events/ics/"
 

@@ -1,0 +1,5 @@
+/* https://tailwindcss.com/blog/standalone-cli */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

@@ -7,13 +7,17 @@ from .base import *
 env = environs.Env()
 env.read_env()
 
+# This is used for links in activation emails and so on
+MAIN_FRONTEND_URL = "https://www.law-orga.de"
+STATISTICS_FRONTEND_URL = "https://statistics.law-orga.de"
+
 # Debug
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEBUG
 DEBUG = False
 
 # Allowed Hosts
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
+ALLOWED_HOSTS = ["backend.law-orga.de"]
 
 # same site attribute
 # https://docs.djangoproject.com/en/4.1/ref/settings/#session-cookie-samesite
@@ -66,7 +70,7 @@ EMAIL_USE_SSL = False
 
 # Installed app django-cors-headers
 # https://pypi.org/project/django-cors-headers/
-CORS_ALLOWED_ORIGINS = env.list("DJANGO_CORS_ALLOWED_ORIGINS")
+CORS_ALLOWED_ORIGINS = [MAIN_FRONTEND_URL, STATISTICS_FRONTEND_URL]
 
 # Storage
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
@@ -109,9 +113,6 @@ LOGGING = {
         },
     },
 }
-
-# This is used for links in activation emails and so on
-FRONTEND_URL = env.str("FRONTEND_URL")
 
 # This is used for ics calendar integration links
 CALENDAR_URL = "https://calendar.law-orga.de/"

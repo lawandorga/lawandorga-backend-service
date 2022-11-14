@@ -16,5 +16,6 @@ urlpatterns: list[Union[URLPattern, URLResolver]] = [
     path("login/", api.command__login),
     path("logout/", api.command__logout),
     path("rlc_users/", include(api.rlc_user_router.urls)),
+    path("statistics_users/", include(api.statistics_user_router.urls)),
     path("keys/", include(api.keys_router.urls)),
 ]
