@@ -186,6 +186,9 @@ TIMEOUT_TIMEDELTA = timedelta(minutes=30)
 # This is used for links in activation emails and so on
 FRONTEND_URL = "http://localhost:4200"
 
+# This is used for ics calendar integration links
+CALENDAR_URL = "http://localhost:8000/api/events/ics/"
+
 # General settings displayed on the index page
 RUNTIME = datetime.now(pytz.timezone("Europe/Berlin")).strftime("%Y-%m-%d--%H:%M:%S")
 IMAGE = os.getenv("PIPELINE_IMAGE", "unknown")

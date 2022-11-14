@@ -1,6 +1,7 @@
 import uuid
 from typing import Any, Dict, List, Union
 
+import ics
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.cache import cache
@@ -65,6 +66,9 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
     postal_code = models.CharField(max_length=255, default=None, null=True, blank=True)
     speciality_of_study = models.CharField(
         choices=STUDY_CHOICES, max_length=100, blank=True, null=True
+    )
+    calendar_uuid = models.UUIDField(
+        primary_key=False, default=uuid.uuid4, editable=True, unique=True
     )
     # settings
     frontend_settings = models.JSONField(null=True, blank=True)
@@ -431,3 +435,30 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
             "legal": legal,
         }
         return data
+
+    def get_ics_calendar(self):
+        from ...events.models import Event
+
+        events = (
+            (
+                self.org.events.all()
+                | Event.objects.filter(is_global=True).filter(org__meta=self.org.meta)
+            )
+            if (self.org.meta is not None)
+            else self.org.events.all()
+        )
+
+        c = ics.Calendar()
+        for rlcEvent in events:
+            e = ics.Event()
+            e.name = rlcEvent.name
+            e.begin = rlcEvent.start_time
+            e.end = rlcEvent.end_time
+            e.description = rlcEvent.description
+            e.organizer = rlcEvent.org.name
+            c.events.add(e)
+        return c.serialize()
+
+    def regenerate_calendar_uuid(self):
+        self.calendar_uuid = uuid.uuid4()
+        self.save()

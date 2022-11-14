@@ -31,3 +31,4 @@ django = "4.1.x"
 uvicorn = "0.19.x"
 django-oidc-provider = {git = "https://github.com/lawandorga/django-oidc-provider"}
 pytest-env = "*"
+ics = "*"

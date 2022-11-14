@@ -112,3 +112,6 @@ LOGGING = {
 
 # This is used for links in activation emails and so on
 FRONTEND_URL = env.str("FRONTEND_URL")
+
+# This is used for ics calendar integration links
+CALENDAR_URL = "https://calendar.law-orga.de/"

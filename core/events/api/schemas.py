@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from typing import Optional
 
@@ -57,3 +58,9 @@ class InputEventUpdate(BaseModel):
 
 class InputEventDelete(BaseModel):
     id: int
+
+
+class CalendarUuidUser(BaseModel):
+    id: int
+    calendar_uuid: uuid.UUID
+    calendar_url: str
