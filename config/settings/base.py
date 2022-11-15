@@ -92,6 +92,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-AUTH_USER_MODEL
 AUTH_USER_MODEL = "core.UserProfile"
 
+# Login
+# https://docs.djangoproject.com/en/4.1/ref/settings/#login-url
+LOGIN_URL = "/login/"
+LOGOUT_REDIRECT_URL = "/login/"
+
 # Static Files Storage
 # http://whitenoise.evans.io/en/stable/
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"

@@ -1,5 +1,3 @@
-import json
-
 import pytest
 from django.conf import settings
 from django.test import Client
@@ -29,28 +27,24 @@ def auth_client(user):
 
 @pytest.fixture
 def login_data():
-    yield json.dumps(
-        {
-            "email": "dummy@law-orga.de",
-            "password": settings.DUMMY_USER_PASSWORD,
-        }
-    )
+    yield {
+        "email": "dummy@law-orga.de",
+        "password": settings.DUMMY_USER_PASSWORD,
+    }
 
 
 def test_login_works(client, login_data):
-    response = client.post("/api/login/", login_data, content_type="application/json")
+    response = client.post("/login/", login_data)
     assert response.status_code == 200
 
 
-def test_inactive_user_can_not_login(user, client, login_data):
+def test_inactive_user_can_not_hit_the_api(user, client, login_data):
     user["rlc_user"].is_active = False
     user["rlc_user"].encrypt(settings.DUMMY_USER_PASSWORD)
     user["rlc_user"].save(update_fields=["is_active"])
-    response = client.post("/api/login/", login_data, content_type="application/json")
-    assert (
-        response.status_code == 400
-        and "deactivated" in response.json()["non_field_errors"][0]
-    )
+    client.login(**user)
+    response = client.get("/api/rlc_users/data_self/")
+    assert response.status_code == 400 and "deactivated" in response.json()["title"]
 
 
 def test_login_returns_correct_email_wrong_message(client):
@@ -58,11 +52,8 @@ def test_login_returns_correct_email_wrong_message(client):
         "email": "dummy@law-orga.de",
         "password": "falsch",
     }
-    response = client.post("/api/login/", data, content_type="application/json")
-    assert (
-        response.status_code == 422
-        and "wrong" in response.json()["param_errors"]["general"][0]
-    )
+    response = client.post("/login/", data)
+    assert not response.context["user"].is_authenticated
 
 
 def test_login_returns_correct_password_wrong_error(client):
@@ -70,15 +61,12 @@ def test_login_returns_correct_password_wrong_error(client):
         "email": "falsch@law-orga.de",
         "password": settings.DUMMY_USER_PASSWORD,
     }
-    response = client.post("/api/login/", data, content_type="application/json")
-    assert (
-        response.status_code == 422
-        and "wrong" in response.json()["param_errors"]["general"][0]
-    )
+    response = client.post("/login/", data)
+    assert not response.context["user"].is_authenticated
 
 
 def test_everybody_can_hit_login(client):
-    response = client.post("/api/login/")
+    response = client.post("/login/")
     assert response.status_code != 401 and response.status_code != 403
 
 

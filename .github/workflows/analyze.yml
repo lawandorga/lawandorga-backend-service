@@ -80,6 +80,7 @@ jobs:
 
       - name: Test
         run: |
+          python manage.py collectstatic --no-input
           coverage run --source='.' -m pytest
           coverage xml
           coverage report

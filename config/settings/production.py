@@ -15,6 +15,10 @@ STATISTICS_FRONTEND_URL = "https://statistics.law-orga.de"
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEBUG
 DEBUG = False
 
+# Login
+# https://docs.djangoproject.com/en/4.1/ref/settings/#login-redirect-url
+LOGIN_REDIRECT_URL = MAIN_FRONTEND_URL
+
 # Allowed Hosts
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["backend.law-orga.de", "calendar.law-orga.de", "auth.law-orga.de"]
