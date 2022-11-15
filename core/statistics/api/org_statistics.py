@@ -14,7 +14,6 @@ router = Router()
 @router.api(
     url="records_created_and_closed/",
     output_schema=List[OutputRecordsCreatedClosed],
-    auth=True,
 )
 def get_records_created_and_closed(rlc_user: RlcUser):
     if connection.vendor == "sqlite":

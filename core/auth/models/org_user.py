@@ -11,21 +11,22 @@ from django.db import models
 from django.template import loader
 
 from core.auth.token_generator import EmailConfirmationTokenGenerator
+from core.folders.domain.external import IOwner
+from core.folders.domain.value_objects.keys import AsymmetricKey, EncryptedAsymmetricKey
 from core.rlc.models import HasPermission, Org, Permission
+from core.seedwork.domain_layer import DomainError
 from core.seedwork.encryption import (
     AESEncryption,
     EncryptedModelMixin,
     RSAEncryption,
     to_bytes,
 )
-
-from ...folders.domain.external import IOwner
-from ...folders.domain.value_objects.keys import AsymmetricKey, EncryptedAsymmetricKey
-from ...static import (
+from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
+
 from .user import UserProfile
 
 
@@ -116,6 +117,21 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
             if not lr.accepted:
                 return True
         return False
+
+    def check_login_allowed(self):
+        if not self.email_confirmed:
+            message = "You can not login, yet. Please confirm your email first."
+            raise DomainError(message)
+
+        if not self.is_active:
+            message = (
+                "You can not login. Your account was deactivated by one of your admins."
+            )
+            raise DomainError(message)
+
+        if not self.accepted:
+            message = "You can not login, yet. You need to be accepted as member by one of your admins."
+            raise DomainError(message)
 
     def get_public_key(self) -> bytes:
         """

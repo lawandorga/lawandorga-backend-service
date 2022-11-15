@@ -34,6 +34,10 @@ class StatisticUser(models.Model):
     def email(self):
         return self.user.email
 
+    def check_login_allowed(self):
+        # login is always allowed
+        pass
+
     def change_password(self, old_password, new_password):
         if not self.user.check_password(old_password):
             raise ValueError("The password is not correct.")
