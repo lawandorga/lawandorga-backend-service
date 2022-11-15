@@ -23,6 +23,7 @@ class CustomLoginView(LoginView):
         strip_scheme(settings.MAIN_FRONTEND_URL),
         strip_scheme(settings.STATISTICS_FRONTEND_URL),
     }
+    redirect_authenticated_user = True
 
     def form_valid(self, form):
         response = super().form_valid(form)
