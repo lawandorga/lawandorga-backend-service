@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core import urls as api_urls
-from core.auth.api.user import CustomLoginView
+from core.auth.views.user import CustomLoginView
 
 
 class EmailView(APIView):
