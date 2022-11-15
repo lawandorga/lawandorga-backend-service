@@ -17,7 +17,7 @@ DEBUG = False
 
 # Allowed Hosts
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["backend.law-orga.de"]
+ALLOWED_HOSTS = ["backend.law-orga.de", "calendar.law-orga.de", "auth.law-orga.de"]
 
 # same site attribute
 # https://docs.djangoproject.com/en/4.1/ref/settings/#session-cookie-samesite
