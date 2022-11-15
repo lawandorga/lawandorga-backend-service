@@ -14,3 +14,7 @@ class InternalUser(models.Model):
 
     def __str__(self):
         return "internalUser: {};".format(self.user.email)
+
+    def check_login_allowed(self):
+        # login is always allowed
+        pass
