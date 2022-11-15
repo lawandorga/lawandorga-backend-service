@@ -28,10 +28,9 @@ def auth_client(user):
 @pytest.fixture
 def login_data():
     yield {
-            "email": "dummy@law-orga.de",
-            "password": settings.DUMMY_USER_PASSWORD,
-        }
-
+        "email": "dummy@law-orga.de",
+        "password": settings.DUMMY_USER_PASSWORD,
+    }
 
 
 def test_login_works(client, login_data):
@@ -45,10 +44,7 @@ def test_inactive_user_can_not_hit_the_api(user, client, login_data):
     user["rlc_user"].save(update_fields=["is_active"])
     client.login(**user)
     response = client.get("/api/rlc_users/data_self/")
-    assert (
-        response.status_code == 400
-        and "deactivated" in response.json()["title"]
-    )
+    assert response.status_code == 400 and "deactivated" in response.json()["title"]
 
 
 def test_login_returns_correct_email_wrong_message(client):
@@ -57,7 +53,7 @@ def test_login_returns_correct_email_wrong_message(client):
         "password": "falsch",
     }
     response = client.post("/login/", data)
-    assert not response.context['user'].is_authenticated
+    assert not response.context["user"].is_authenticated
 
 
 def test_login_returns_correct_password_wrong_error(client):
@@ -66,7 +62,7 @@ def test_login_returns_correct_password_wrong_error(client):
         "password": settings.DUMMY_USER_PASSWORD,
     }
     response = client.post("/login/", data)
-    assert not response.context['user'].is_authenticated
+    assert not response.context["user"].is_authenticated
 
 
 def test_everybody_can_hit_login(client):
