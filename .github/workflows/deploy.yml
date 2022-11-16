@@ -90,8 +90,6 @@ jobs:
     environment: PRODUCTION
 
     env:
-      DJANGO_ALLOWED_HOSTS: ${{ secrets.DJANGO_ALLOWED_HOSTS }}
-      DJANGO_CORS_ALLOWED_ORIGINS: ${{ secrets.DJANGO_CORS_ALLOWED_ORIGINS }}
       DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
       DJANGO_JWT_SIGNING_KEY: ${{ secrets.DJANGO_JWT_SIGNING_KEY }}
       EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
@@ -101,7 +99,6 @@ jobs:
       S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
       S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
       S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
-      FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
       DB_NAME: ${{ secrets.DB_NAME }}
       DB_USER: ${{ secrets.DB_USER }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
@@ -186,8 +183,8 @@ jobs:
                   "value": "${{ env.DB_USER }}"
                 },
                 {
-                  "key": "FRONTEND_URL",
-                  "value": "${{ env.FRONTEND_URL }}"
+                  "key": "MAIN_FRONTEND_URL",
+                  "value": "${{ env.MAIN_FRONTEND_URL }}"
                 },
                 {
                   "key": "S3_ACCESS_KEY",

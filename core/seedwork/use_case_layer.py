@@ -1,5 +1,6 @@
+import inspect
 from logging import INFO, WARNING, getLogger
-from typing import Any, Callable, Dict, Type, TypeVar, get_type_hints
+from typing import Any, Callable, TypeVar, get_type_hints
 
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -7,16 +8,22 @@ from core.seedwork.domain_layer import DomainError
 
 logger = getLogger("usecase")
 
-K = TypeVar("K", bound=object)
-F = TypeVar("F", bound=Callable[[Any, Any], K])
 
-MAPPINGS: Dict[Type[K], F] = dict()  # type: ignore
+T = TypeVar("T")
 
 
-def add_mapping(t: Type[K], func: Callable[[Any, Any], K]):
-    if t in MAPPINGS:
-        raise Exception("Type '{}' already has a mapping.".format(t))
-    MAPPINGS[t] = func
+class Findable:
+    def __init__(self, func):
+        self.__func = func
+
+    def __call__(self, *args, **kwargs):
+        return self.__func(*args, **kwargs)
+
+
+def find(func: Callable[[Any, Any], T]) -> T:
+    # The use case wrapper calls this function and makes this function return T
+
+    return Findable(func)  # type: ignore
 
 
 class UseCaseError(Exception):
@@ -29,26 +36,31 @@ class UseCaseInputError(Exception):
         self.message = message
 
 
-__all__ = ["use_case", "add_mapping", "UseCaseError", "UseCaseInputError"]
+__all__ = ["use_case", "find", "UseCaseError", "UseCaseInputError"]
 
 
-def __check_actor(kwargs, func_code, type_hints):
-    if "__actor" not in kwargs:
-        raise TypeError("You need to submit an '__actor' when calling a usecase.")
-
-    if "__actor" not in func_code.co_varnames:
-        raise TypeError("The usecase needs to define an '__actor' as argument.")
+def __check_actor(args, kwargs, func_code, type_hints):
+    if len(func_code.co_varnames) == 0 or "__actor" not in func_code.co_varnames:
+        raise ValueError("The use case function needs to have '__actor' as input.")
 
     if "__actor" not in type_hints:
-        raise TypeError("The usecase needs a type hint to '__actor'.")
+        raise ValueError("The usecase needs a type hint to '__actor'.")
 
-    actor = kwargs["__actor"]
+    if "__actor" in kwargs:
+        actor = kwargs["__actor"]
+    elif len(args) > 0:
+        index = func_code.co_varnames.index("__actor")
+        actor = args[index]
+    else:
+        raise ValueError(
+            "You need to submit an '__actor' when you call a use case function."
+        )
 
     submitted_actor_type = type(actor)
     usecase_actor_type = type_hints["__actor"]
     if submitted_actor_type != usecase_actor_type:
         raise TypeError(
-            "The use case '__actor' type is '{}' but should be '{}'.".format(
+            "The submitted use case '__actor' type is '{}' but should be '{}'.".format(
                 submitted_actor_type, usecase_actor_type
             )
         )
@@ -66,39 +78,35 @@ def __check_type(value, type_hint):
         )
 
 
-def __update_parameters(args, kwargs, func_code, type_hints, actor):
+def __update_parameters(args, kwargs, func, actor):
     args = list(args)
 
-    i = 0
-    for param in func_code.co_varnames[: func_code.co_argcount]:
+    signature = inspect.signature(func)
+    data = {k: v.default for k, v in signature.parameters.items()}
 
-        if len(args) > i:
-            value = args[i]
-        else:
-            value = kwargs[param]
+    for index, (key, value) in enumerate(data.items()):
+        if isinstance(value, Findable):
 
-        if param in type_hints:
-            type_hint = type_hints[param]
+            try:
+                if index < len(args):
+                    old_value = args[index]
+                else:
+                    old_value = kwargs[key]
+            except (IndexError, KeyError):
+                raise ValueError("You need to submit '{}'.".format(key))
 
-            if param != "__actor" and type_hint in MAPPINGS:
-                try:
-                    replacement = MAPPINGS[type_hint](value, actor)
-                except ObjectDoesNotExist as e:
-                    message = "The object of type '{}' with identifier '{}' could not be found.".format(
-                        type_hint, value
-                    )
-                    raise UseCaseInputError(message) from e
+            try:
+                new_value = value(actor, old_value)
+            except ObjectDoesNotExist as e:
+                message = "The object with identifier '{}' could not be found.".format(
+                    value
+                )
+                raise UseCaseInputError(message) from e
+
+            if index < len(args):
+                args[index] = new_value
             else:
-                replacement = value
-
-            __check_type(replacement, type_hint)
-
-            if len(args) > i:
-                args[i] = replacement
-            else:
-                kwargs[param] = replacement
-
-        i += 1
+                kwargs[key] = new_value
 
     return args, kwargs
 
@@ -121,13 +129,11 @@ def use_case(permissions=None):
             func_code = usecase_func.__code__
             func_name = func_code.co_name
 
-            actor = __check_actor(kwargs, func_code, type_hints)
+            actor = __check_actor(args, kwargs, func_code, type_hints)
 
             __check_permissions(actor, permissions)
 
-            args, kwargs = __update_parameters(
-                args, kwargs, func_code, type_hints, actor
-            )
+            args, kwargs = __update_parameters(args, kwargs, usecase_func, actor)
 
             try:
                 ret = usecase_func(*args, **kwargs)

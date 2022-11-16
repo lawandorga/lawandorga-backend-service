@@ -1,5 +1,13 @@
-# type: ignore
 from .base import *
+
+# This is used for links in activation emails and so on
+#
+MAIN_FRONTEND_URL = "http://127.0.0.1:4200"
+STATISTICS_FRONTEND_URL = "http://127.0.0.1:4300"
+
+# This is used for ics calendar integration links
+#
+CALENDAR_URL = "http://127.0.0.1:8000"
 
 # Debug
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEBUG
@@ -24,6 +32,11 @@ MIDDLEWARE += [
     "config.middleware.custom_debug_toolbar_middleware",
 ]
 
+# same site attribute
+# https://docs.djangoproject.com/en/4.1/ref/settings/#session-cookie-samesite
+SESSION_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SAMESITE = "None"
+
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 DATABASES = {
@@ -39,7 +52,11 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Installed app django-cors-headers
 # https://pypi.org/project/django-cors-headers/
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [MAIN_FRONTEND_URL, STATISTICS_FRONTEND_URL]
+
+# Add the frontend to trusted origins
+# https://docs.djangoproject.com/en/4.1/ref/settings/#csrf-trusted-origins
+CSRF_TRUSTED_ORIGINS = [MAIN_FRONTEND_URL, STATISTICS_FRONTEND_URL]
 
 # Django Debug Toolbar
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#configuring-internal-ips

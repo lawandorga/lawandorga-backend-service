@@ -12,7 +12,6 @@ router = Router()
 @router.api(
     url="users_with_missing_record_keys/",
     output_schema=List[OutputUserWithMissingRecordKeys],
-    auth=True,
 )
 def get_users_with_missing_record_keys(statistics_user: StatisticUser):
     statement = """

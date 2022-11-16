@@ -25,7 +25,6 @@ def get_all_events_for_user(rlc_user: RlcUser):
 @router.api(
     method="POST",
     input_schema=InputEventCreate,
-    auth=True,
 )
 def create_event(data: InputEventCreate, rlc_user: RlcUser):
     org_list = Org.objects.filter(id=rlc_user.org.id)

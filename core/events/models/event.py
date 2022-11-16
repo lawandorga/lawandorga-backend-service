@@ -21,9 +21,15 @@ class Event(models.Model):
 
     @staticmethod
     def get_all_events_for_user(rlc_user: RlcUser):
-        raw_events: List[Event] = list(
-            Event.objects.filter(org=rlc_user.org)
-            | Event.objects.filter(is_global=True)
+        raw_events: List[Event] = (
+            list(
+                Event.objects.filter(org=rlc_user.org)
+                | Event.objects.filter(is_global=True).filter(
+                    org__meta=rlc_user.org.meta
+                )
+            )
+            if (rlc_user.org.meta is not None)
+            else list(Event.objects.filter(org=rlc_user.org))
         )
         return raw_events
 

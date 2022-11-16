@@ -46,10 +46,11 @@ AUTH_PASSWORD_VALIDATORS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "config.middleware.TokenAuthenticationMiddleware",
+    "config.middleware.authentication_middleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "config.middleware.logging_middleware",
 ]
@@ -103,26 +104,24 @@ STATIC_ROOT = os.path.join(BASE_DIR, "tmp/static/")
 MEDIA_URL = "media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "tmp/media/")
 
-# Installed app django-cors-headers
+# needed for session
 # https://pypi.org/project/django-cors-headers/
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
-    "private-key",
-]
+CORS_ALLOW_CREDENTIALS = True
+
+# secure attribute
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies?retiredLocale=de#restrict_access_to_cookies
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# logout after browser close
+# https://docs.djangoproject.com/en/4.1/ref/settings/#session-expire-at-browser-close
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 60 * 60 * 8
 
 # Rest Framework
 # https://www.django-rest-framework.org/api-guide/settings/
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DATE_INPUT_FORMATS": ["%d-%m-%Y", "%Y-%m-%d", "%Y-%m-%dT%H:%M:%S.%fZ"],
@@ -130,17 +129,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "config.authentication.IsAuthenticatedAndEverything"
     ],
-}
-
-# JWT Token
-# https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
-SIMPLE_JWT = {
-    "UPDATE_LAST_LOGIN": True,
-    "SIGNING_KEY": "nosecret",
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
-    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=20),
-    "USER_ID_CLAIM": "django_user",
-    "ROTATE_REFRESH_TOKENS": True,
+    "EXCEPTION_HANDLER": "config.authentication.custom_exception_handler",
 }
 
 # Necessary in django 3.2
@@ -149,8 +138,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # OpenID connect settings
 # https://django-oidc-provider.readthedocs.io/en/latest/sections/settings.html
-OIDC_USERINFO = "apps.core.auth.oidc_provider_settings.userinfo"
-OIDC_EXTRA_SCOPE_CLAIMS = "apps.core.auth.oidc_provider_settings.RlcScopeClaims"
+OIDC_USERINFO = "core.auth.oidc_provider_settings.userinfo"
+OIDC_EXTRA_SCOPE_CLAIMS = "core.auth.oidc_provider_settings.RlcScopeClaims"
 OIDC_IDTOKEN_INCLUDE_CLAIMS = True
 
 # mail errors to the admins
@@ -182,11 +171,20 @@ TINYMCE_DEFAULT_CONFIG = {
 # https://pytest-django.readthedocs.io/en/latest/faq.html#how-can-i-use-manage-py-test-with-pytest-django
 TEST_RUNNER = "config.test.PytestTestRunner"
 
+# caching
+# https://docs.djangoproject.com/en/4.1/topics/cache/#local-memory-caching
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    }
+}
+
 # This is used by the ExpiringTokenAuthentication which extends from rest's token authentication
 TIMEOUT_TIMEDELTA = timedelta(minutes=30)
 
-# This is used for links in activation emails and so on
-FRONTEND_URL = "http://localhost:4200"
+# This is used for ics calendar integration links
+CALENDAR_URL = "http://localhost:8000/api/events/ics/"
 
 # General settings displayed on the index page
 RUNTIME = datetime.now(pytz.timezone("Europe/Berlin")).strftime("%Y-%m-%d--%H:%M:%S")
@@ -199,4 +197,10 @@ DUMMY_USER_PASSWORD = "qwe123"
 
 # cronjobs
 # those are used within core.cronjobs and imported by string
-CRONJOBS = ["core.legal.cronjobs.create_legal_requirements_for_users"]
+CRONJOBS = [
+    "core.legal.cronjobs.create_legal_requirements_for_users",
+    "core.records.cronjobs.update_statistic_fields",
+]
+
+# testing
+TESTING = os.getenv("TESTING", False)

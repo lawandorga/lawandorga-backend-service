@@ -142,3 +142,17 @@ class OutputRlcUserData(BaseModel):
     badges: Badges
     permissions: List[str]
     settings: Optional[Dict]
+
+
+class OutputStatisticsUser(BaseModel):
+    id: int
+    user_id: int
+    name: str
+    email: str
+
+    class Config:
+        orm_mode = True
+
+
+class OutputStatisticsUserData(BaseModel):
+    user: OutputStatisticsUser

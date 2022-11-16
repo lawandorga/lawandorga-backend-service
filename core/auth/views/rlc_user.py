@@ -1,12 +1,10 @@
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import mixins, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import AuthenticationFailed, ParseError
+from rest_framework.exceptions import ParseError
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 from core.models import PasswordResetTokenGenerator, RlcUser, UserProfile
 from core.seedwork.permission import CheckPermissionWall
@@ -17,7 +15,6 @@ from ..serializers import (
     EmailSerializer,
     RlcUserCreateSerializer,
     RlcUserForeignSerializer,
-    RlcUserJWTSerializer,
     RlcUserSerializer,
     RlcUserUpdateSerializer,
     UserPasswordResetConfirmSerializer,
@@ -108,62 +105,6 @@ class RlcUserViewSet(
             serializer.validated_data["new_password"],
         )
         return Response(RlcUserSerializer(user.rlc_user).data)
-
-    @action(detail=False, methods=["post"])
-    def refresh(self, request):
-        serializer = TokenRefreshSerializer(
-            data=request.data, context={"request": request}
-        )
-
-        try:
-            serializer.is_valid(raise_exception=True)
-        except TokenError as e:
-            raise InvalidToken(e.args[0])
-
-        return Response(serializer.validated_data, status=status.HTTP_200_OK)
-
-    @action(detail=False, methods=["post"])
-    def login(self, request: Request):
-        serializer = RlcUserJWTSerializer(
-            data=request.data, context={"request": request}
-        )
-
-        try:
-            serializer.is_valid(raise_exception=True)
-        except TokenError as e:
-            raise InvalidToken(e.args[0])
-        except AuthenticationFailed:
-            raise ParseError(
-                {
-                    "non_field_errors": [
-                        "This e-mail doesn't exist or the password is wrong."
-                    ]
-                }
-            )
-        user = serializer.user
-        # password = serializer.validated_data["password"]
-
-        # check if user active and user accepted in rlc
-        if not user.rlc_user.email_confirmed:
-            message = "You can not login, yet. Please confirm your email first."
-            return Response(
-                {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
-            )
-        if not user.rlc_user.is_active:
-            message = (
-                "You can not login. Your account was deactivated by one of your admins."
-            )
-            return Response(
-                {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
-            )
-        if not user.rlc_user.accepted:
-            message = "You can not login, yet. You need to be accepted as member by one of your admins."
-            return Response(
-                {"non_field_errors": [message]}, status.HTTP_400_BAD_REQUEST
-            )
-
-        # return
-        return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["get"])
     def dashboard(self, request, *args, **kwargs):

@@ -1,4 +1,7 @@
-from django.test import TestCase
+import json
+
+from django.conf import settings
+from django.test import Client, TestCase
 from rest_framework.test import force_authenticate
 
 from core.models import TextDocumentVersion
@@ -23,33 +26,39 @@ class CollabDocumentViewSetWorking(BaseCollab, TestCase):
 
     def test_retrieve(self):
         collab_document = self.create_collab_document()
-        view = CollabDocumentViewSet.as_view(actions={"get": "retrieve"})
-        request = self.factory.get("")
-        force_authenticate(request, self.user)
-        response = view(request, pk=collab_document.pk)
+        c = Client()
+        c.login(email=self.user.email, password=settings.DUMMY_USER_PASSWORD)
+        response = c.get("/api/collab/collab_documents/{}/".format(collab_document.pk))
         self.assertContains(response, "Document Content", status_code=200)
 
     def test_create(self):
-        view = CollabDocumentViewSet.as_view(actions={"post": "create"})
         data = {"path": "/", "name": "My Document"}
-        request = self.factory.post("", data)
-        force_authenticate(request, self.user)
-        response = view(request)
+
+        c = Client()
+        c.login(email=self.user.email, password=settings.DUMMY_USER_PASSWORD)
+        response = c.post(
+            "/api/collab/collab_documents/",
+            json.dumps(data),
+            content_type="application/json",
+        )
         self.assertEqual(
             1,
             TextDocumentVersion.objects.filter(
-                document__pk=response.data["id"]
+                document__pk=response.json()["id"]
             ).count(),
         )
         self.assertContains(response, "My Document", status_code=201)
 
     def test_update(self):
         collab_document = self.create_collab_document()
-        view = CollabDocumentViewSet.as_view(actions={"patch": "partial_update"})
         data = {"path": "/", "name": "My Document"}
-        request = self.factory.patch("", data)
-        force_authenticate(request, self.user)
-        response = view(request, pk=collab_document.pk)
+        c = Client()
+        c.login(email=self.user.email, password=settings.DUMMY_USER_PASSWORD)
+        response = c.patch(
+            "/api/collab/collab_documents/{}/".format(collab_document.pk),
+            json.dumps(data),
+            content_type="application/json",
+        )
         self.assertContains(response, "My Document", status_code=200)
 
     def test_delete(self):

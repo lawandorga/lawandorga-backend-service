@@ -1,3 +1,6 @@
+from django.conf import settings
+
+
 class PytestTestRunner:
     """Runs pytest to discover and run tests."""
 
@@ -5,6 +8,7 @@ class PytestTestRunner:
         self.verbosity = verbosity
         self.failfast = failfast
         self.keepdb = keepdb
+        settings.TESTING = True
 
     @classmethod
     def add_arguments(cls, parser):

@@ -6,23 +6,17 @@ from .models import InternalUser, MatrixUser, RlcUser, StatisticUser, UserProfil
 
 
 class UserAdmin(DjangoUserAdmin):
-    fieldsets = (
+    fieldsets = [
         (None, {"fields": ("email",)}),
-        (_("Personal info"), {"fields": ("name",)}),
-        (
+        (_("Personal info"), {"fields": ("name",)}),  # type: ignore
+        (  # type: ignore
             _("Permissions"),
             {
                 "fields": ("groups",),
             },
         ),
-        (
-            _("RLC Stuff"),
-            {
-                "fields": ("rlc",),
-            },
-        ),
-        (_("Important dates"), {"fields": ("last_login",)}),
-    )
+        (_("Important dates"), {"fields": ("last_login",)}),  # type: ignore
+    ]
     add_fieldsets = (
         (
             None,

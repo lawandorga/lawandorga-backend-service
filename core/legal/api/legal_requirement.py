@@ -22,5 +22,5 @@ def api_list_legal_requirements(rlc_user: RlcUser):
 def api_accept_legal_requirement(
     data: schemas.InputLegalRequirementEventCreate, rlc_user: RlcUser
 ):
-    event = accept_legal_requirement(data.id, __actor=rlc_user)
+    event = accept_legal_requirement(rlc_user, data.id)
     return event.legal_requirement_user

@@ -1,35 +1,8 @@
 import pytest
 
-from core.folders.domain.aggregates.content import Content
+from core.folders.domain.aggregates.content_upgrade import Content
 from core.folders.domain.aggregates.object import EncryptedObject
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
-from core.folders.domain.value_objects.encryption import EncryptionPyramid
-from core.folders.tests.helpers.car import CarWithSecretName
-from core.folders.tests.helpers.encryptions import SymmetricEncryptionTest1
-
-
-@pytest.fixture
-def encryption_reset():
-    EncryptionPyramid.reset_encryption_hierarchies()
-    yield
-
-
-@pytest.fixture
-def single_encryption(encryption_reset):
-    EncryptionPyramid.add_symmetric_encryption(SymmetricEncryptionTest1)
-    yield
-
-
-@pytest.fixture
-def car_content_key():
-    car = CarWithSecretName(name="Secret Antique")
-    content = Content(
-        "My Car",
-        car,
-    )
-    assert car.name == b"Secret Antique"
-    key = content.encrypt()
-    yield car, content, key
 
 
 def test_is_encrypted(single_encryption, car_content_key):
@@ -48,9 +21,7 @@ def test_encryption_errors(single_encryption):
             self.a1 = a1
             self.a2 = a2
 
-    s = SecretObject(
-        OpenBox(data=b"v1"), LockedBox(enc_data=b"v2", encryption_version="ST1")
-    )
+    s = SecretObject(OpenBox(data=b"v1"), LockedBox(enc_data=b"v2", key_origin="ST1"))
     assert s.is_encrypted is None
 
     content = Content("Test", s)

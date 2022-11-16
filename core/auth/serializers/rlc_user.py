@@ -1,13 +1,9 @@
 from smtplib import SMTPRecipientsRefused
 
-from django.contrib.auth.models import update_last_login
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ParseError, ValidationError
-from rest_framework_simplejwt.serializers import TokenObtainSerializer
-from rest_framework_simplejwt.settings import api_settings
 
-from config.authentication import RefreshPrivateKeyToken
 from core.models import Org, RlcUser, UserProfile
 
 
@@ -129,36 +125,6 @@ class RlcUserForeignSerializer(RlcUserSerializer):
             "locked",
             "is_active",
         ]
-
-
-###
-# JWT
-###
-class RlcUserJWTSerializer(TokenObtainSerializer):
-    token_class = RefreshPrivateKeyToken
-
-    def get_token(self, user):
-        return self.token_class.for_user(
-            user, password_user=self.initial_data["password"]
-        )
-
-    def validate(self, attrs):
-        data = super().validate(attrs)
-
-        if not hasattr(self.user, "rlc_user"):
-            raise ValidationError(
-                "You don't have the necessary role to be able to login here."
-            )
-
-        refresh = self.get_token(self.user)
-
-        data["refresh"] = str(refresh)
-        data["access"] = str(refresh.access_token)
-
-        if api_settings.UPDATE_LAST_LOGIN:
-            update_last_login(None, self.user)
-
-        return data
 
 
 ###

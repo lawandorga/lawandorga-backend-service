@@ -9,7 +9,7 @@ from config.authentication import IsAuthenticatedAndEverything
 from core.models import LoggedPath
 
 
-class StatisticUserExists(BasePermission):
+class StatisticUserExists(BasePermission):  # type: ignore
     def has_permission(self, request, view):
         return hasattr(request.user, "statistic_user")
 

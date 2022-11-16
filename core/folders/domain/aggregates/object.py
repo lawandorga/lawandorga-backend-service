@@ -60,7 +60,7 @@ class EncryptedObject(abc.ABC):
 
             v = LockedBox(
                 enc_data=v,
-                encryption_version=encryption_version,
+                key_origin=encryption_version,
             )
 
             setattr(self, field, key.unlock(v))

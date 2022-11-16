@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.db import models
 
 from core.rlc.models import Org
@@ -31,6 +33,6 @@ class EncryptedClient(EncryptedModelMixin, models.Model):
         self.encrypted_client_key = RSAEncryption.encrypt(key, public_key_rlc)
         super().encrypt(key)
 
-    def decrypt(self, private_key_rlc: str = None) -> None:
+    def decrypt(self, private_key_rlc: Optional[str] = None) -> None:
         key = RSAEncryption.decrypt(self.encrypted_client_key, private_key_rlc)
         super().decrypt(key)

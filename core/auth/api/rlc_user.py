@@ -97,7 +97,7 @@ def update_settings(data: Dict[str, Any], rlc_user: RlcUser):
 
 # get data
 @router.get(url="data_self/", output_schema=schemas.OutputRlcUserData)
-def get_data(rlc_user: RlcUser):
+def query__data(rlc_user: RlcUser):
     data = {
         "user": rlc_user,
         "rlc": rlc_user.org,

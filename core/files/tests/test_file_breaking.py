@@ -1,10 +1,8 @@
 from django.conf import settings
 from django.core.files.storage import default_storage
-from django.test import TestCase
-from rest_framework.test import force_authenticate
+from django.test import Client, TestCase
 
 from core.models import File
-from core.views import FileViewSet
 
 from .test_file import FileTestsBase
 
@@ -17,10 +15,9 @@ class FileTestsBreaking(FileTestsBase, TestCase):
         self.setup_file()
         default_storage.delete(self.file.file.name)
         # test case
-        view = FileViewSet.as_view(actions={"get": "retrieve"})
-        request = self.factory.get("")
-        force_authenticate(request, self.user)
-        response = view(request, pk=self.file.pk)
+        c = Client()
+        c.login(email=self.user.email, password=settings.DUMMY_USER_PASSWORD)
+        response = c.get("/api/files/file_base/{}/".format(self.file.pk))
         self.assertContains(response, "The file could not be found", status_code=404)
         file = File.objects.get(pk=self.file.pk)
         self.assertEqual(file.exists, False)
@@ -34,10 +31,9 @@ class FileTestsBreaking(FileTestsBase, TestCase):
         self.file.file.name = ""
         self.file.save()
         # test case
-        view = FileViewSet.as_view(actions={"get": "retrieve"})
-        request = self.factory.get("")
-        force_authenticate(request, self.user)
-        response = view(request, pk=self.file.pk)
+        c = Client()
+        c.login(email=self.user.email, password=settings.DUMMY_USER_PASSWORD)
+        response = c.get("/api/files/file_base/{}/".format(self.file.pk))
         self.assertContains(response, "The file could not be found", status_code=404)
         file = File.objects.get(pk=self.file.pk)
         self.assertEqual(file.exists, False)
@@ -45,15 +41,14 @@ class FileTestsBreaking(FileTestsBase, TestCase):
         file.file.delete()
 
     def test_file_with_same_name_does_not_overwrite_another(self):
-        view = FileViewSet.as_view(actions={"post": "create"})
         data = {
             "file": self.get_file("1"),
         }
-        request = self.factory.post("", data)
-        force_authenticate(request, self.user)
-        response = view(request)
+        c = Client()
+        c.login(email=self.user.email, password=settings.DUMMY_USER_PASSWORD)
+        response = c.post("/api/files/file_base/", data)
         self.assertEqual(response.status_code, 201)
-        file1 = File.objects.get(pk=response.data["id"])
+        file1 = File.objects.get(pk=response.json()["id"])
         file1.file.seek(0)
         f = file1.decrypt_file(aes_key_rlc=self.aes_key_rlc)
         self.assertEqual(f.read(), b"1")
@@ -61,10 +56,10 @@ class FileTestsBreaking(FileTestsBase, TestCase):
         data = {
             "file": self.get_file("2"),
         }
-        request = self.factory.post("", data)
-        force_authenticate(request, self.user)
-        response = view(request)
-        file2 = File.objects.get(pk=response.data["id"])
+        c = Client()
+        c.login(email=self.user.email, password=settings.DUMMY_USER_PASSWORD)
+        response = c.post("/api/files/file_base/", data)
+        file2 = File.objects.get(pk=response.json()["id"])
         self.assertEqual(response.status_code, 201)
         file1 = File.objects.get(pk=file1.pk)
         f = file1.decrypt_file(aes_key_rlc=self.aes_key_rlc)

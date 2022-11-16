@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .forms import OrgAdminForm
-from .models import Group, HasPermission, Note, Org, OrgEncryption, Permission
+from .models import Group, HasPermission, Meta, Note, Org, OrgEncryption, Permission
 
 
 class HasPermissionAdmin(admin.ModelAdmin):
@@ -38,3 +38,4 @@ admin.site.register(Group)
 admin.site.register(Permission)
 admin.site.register(HasPermission, HasPermissionAdmin)
 admin.site.register(OrgEncryption, UsersRlcKeysAdmin)
+admin.site.register(Meta)
