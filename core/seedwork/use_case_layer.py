@@ -119,9 +119,6 @@ def __check_permissions(actor, permissions):
 
 
 def use_case(permissions=None):
-    if permissions is None:
-        permissions = []
-
     def wrapper(usecase_func):
         type_hints = get_type_hints(usecase_func)
 
@@ -148,5 +145,14 @@ def use_case(permissions=None):
                 raise e
 
         return execute
+
+    if callable(permissions):
+        # this happens when use_case is used like @use_case instead of @use_case()
+        func = permissions
+        permissions = []
+        return wrapper(func)
+
+    if permissions is None:
+        permissions = []
 
     return wrapper

@@ -8,12 +8,14 @@ from core.files.urls import router as files_router
 from core.folders.urls import urlpatterns as folders_urlpatterns
 from core.internal.urls import router as internal_router
 from core.legal.urls import urlpatterns as legal_urlpatterns
+from core.mail.urls import urlpatterns as mail_urlpatterns
 from core.records.urls import urlpatterns as records_urlpatterns
 from core.rlc.urls import urlpatterns as org_urlpatterns
 from core.statistics.urls import urlpatterns as statistics_urlpatterns
 
 urlpatterns = [
     *statistics_urlpatterns,
+    path("mail", include(mail_urlpatterns)),
     path("", include(auth_urlpatterns)),
     path("folders/", include(folders_urlpatterns)),
     path("events/", include(events_urlpatterns)),

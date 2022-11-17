@@ -1,2 +1,3 @@
-from .domain import Domain
-from .user import Alias, MailUser
+from .domain import MailDomain
+from .org import MailOrg
+from .user import MailAlias, MailUser

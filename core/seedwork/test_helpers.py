@@ -5,7 +5,13 @@ from django.conf import settings
 from core.auth.models import StatisticUser
 from core.models import RlcUser, UserProfile
 from core.records.models import Record, RecordEncryptionNew, RecordTemplate
+from core.rlc.models import Org
 from core.seedwork.encryption import AESEncryption
+
+
+def create_org(name="Dummy RLC"):
+    org = Org.objects.create(name=name)
+    return org
 
 
 def create_statistics_user(email="dummy@law-orga.de", name="Dummy 1"):
@@ -20,6 +26,13 @@ def create_statistics_user(email="dummy@law-orga.de", name="Dummy 1"):
         "password": settings.DUMMY_USER_PASSWORD,
         "statistics_user": statistics_user,
     }
+
+
+def create_user(email="dummy@law-orga.de", name="Mr. Dummy"):
+    user = UserProfile.objects.create(email=email, name=name)
+    user.set_password(settings.DUMMY_USER_PASSWORD)
+    user.save()
+    return user
 
 
 def create_rlc_user(email="dummy@law-orga.de", name="Dummy 1", rlc=None):
