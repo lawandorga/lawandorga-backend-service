@@ -2,12 +2,12 @@ from .base import *
 
 # This is used for links in activation emails and so on
 #
-MAIN_FRONTEND_URL = "http://127.0.0.1:4200"
+MAIN_FRONTEND_URL = "http://localhost:4200"
 STATISTICS_FRONTEND_URL = "http://127.0.0.1:4300"
 
 # This is used for ics calendar integration links
 #
-CALENDAR_URL = "http://127.0.0.1:8000"
+CALENDAR_URL = "http://localhost:8000"
 
 # Debug
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEBUG
@@ -32,10 +32,10 @@ MIDDLEWARE += [
     "config.middleware.custom_debug_toolbar_middleware",
 ]
 
-# same site attribute
-# https://docs.djangoproject.com/en/4.1/ref/settings/#session-cookie-samesite
-SESSION_COOKIE_SAMESITE = "None"
-CSRF_COOKIE_SAMESITE = "None"
+# secure attribute
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies?retiredLocale=de#restrict_access_to_cookies
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases

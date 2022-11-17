@@ -23,6 +23,11 @@ LOGIN_REDIRECT_URL = MAIN_FRONTEND_URL
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["backend.law-orga.de", "calendar.law-orga.de", "auth.law-orga.de"]
 
+# secure attribute
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies?retiredLocale=de#restrict_access_to_cookies
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 # same site attribute
 # https://docs.djangoproject.com/en/4.1/ref/settings/#session-cookie-samesite
 SESSION_COOKIE_SAMESITE = "Strict"
