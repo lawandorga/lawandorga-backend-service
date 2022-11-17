@@ -19,7 +19,7 @@ ALLOWED_HOSTS = ["*"]
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY
-SECRET_KEY = "srt(vue=+gl&0c_c3pban6a&m2h2iz6mhbx^%^_%9!#-jg0*lz"
+SECRET_KEY = "nosecret"
 
 # Application definition
 # https://docs.djangoproject.com/en/dev/ref/applications/
@@ -43,7 +43,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": os.path.join(BASE_DIR, "tmp/db.sqlite3"),
-    }
+    },
 }
 
 # E-Mail

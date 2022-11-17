@@ -243,7 +243,8 @@ class Router:
                 if not is_authenticated:
                     return not_authenticated_error
 
-                func_kwargs["user"] = user
+                # wake up the lazy object
+                func_kwargs["user"] = await UserProfile.objects.aget(pk=user.id)
 
             if "rlc_user" in func_input:
                 if not is_authenticated:
