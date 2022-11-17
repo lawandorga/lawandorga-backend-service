@@ -2,12 +2,12 @@ from django.conf import settings
 from django.contrib import admin
 from django.core.mail import send_mail
 from django.urls import include, path
-from django.views.generic import TemplateView
+from django.views.generic import RedirectView, TemplateView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core import urls as api_urls
-from core.auth.api.user import CustomLoginView
+from core.auth.views.user import CustomLoginView
 
 
 class EmailView(APIView):
@@ -34,9 +34,10 @@ handler500 = "config.handlers.handler500"
 urlpatterns = [
     path("error/", TemplateView.as_view(template_name="")),
     path("email/", EmailView.as_view()),
+    path("admin/login/", RedirectView.as_view(pattern_name="login", query_string=True)),
     path("admin/", admin.site.urls),
     path("api/", include(api_urls)),
-    path("login/", CustomLoginView.as_view()),
+    path("login/", CustomLoginView.as_view(), name="login"),
     path(
         "",
         TemplateView.as_view(
