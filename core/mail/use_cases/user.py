@@ -1,8 +1,12 @@
 from django.db import transaction
 
 from core.auth.models import UserProfile
-from core.mail.models import MailAlias, MailOrg, MailUser
-from core.mail.use_cases.finders import alias_from_id, domain_from_id, mail_user_from_id
+from core.mail.models import MailAccount, MailAddress, MailOrg, MailUser
+from core.mail.use_cases.finders import (
+    address_from_id,
+    domain_from_id,
+    mail_user_from_id,
+)
 from core.seedwork.use_case_layer import UseCaseError, find, use_case
 
 
@@ -26,39 +30,36 @@ def create_mail_user(__actor: UserProfile):
         if mail_org is None:
             mail_org = MailOrg.objects.create()
 
-        mail_user = MailUser.objects.create(
-            user=__actor, org=mail_org, pw_hash="", relative_path=""
-        )
-        mail_user.relative_path = str(mail_user.pk)
-        mail_user.save()
+        mail_user = MailUser.objects.create(user=__actor, org=mail_org, pw_hash="")
+        MailAccount.objects.create(user=mail_user)
 
 
 @use_case
-def create_alias(
+def create_address(
     __actor: MailUser,
     localpart: str,
     user=find(mail_user_from_id),
     domain=find(domain_from_id),
 ):
-    if MailAlias.objects.filter(localpart=localpart, domain=domain).exists():
+    if MailAddress.objects.filter(localpart=localpart, domain=domain).exists():
         raise UseCaseError(
             "An alias with the same localpart and domain exists already."
         )
 
-    MailAlias.objects.create(user=user, localpart=localpart, domain=domain)
+    MailAddress.objects.create(account=user.account, localpart=localpart, domain=domain)
 
 
 @use_case
-def set_alias_as_default(__actor: MailUser, alias=find(alias_from_id)):
+def set_address_as_default(__actor: MailUser, address=find(address_from_id)):
     with transaction.atomic():
-        MailAlias.objects.filter(user=alias.user).update(is_default=False)
-        alias.is_default = True
-        alias.save()
+        MailAddress.objects.filter(account=address.account).update(is_default=False)
+        address.is_default = True
+        address.save()
 
 
 @use_case
-def delete_alias(__actor: MailUser, alias=find(alias_from_id)):
-    if alias.is_default:
-        raise UseCaseError("You can not delete the default alias.")
+def delete_address(__actor: MailUser, address=find(address_from_id)):
+    if address.is_default:
+        raise UseCaseError("You can not delete the default address.")
 
-    alias.delete()
+    address.delete()

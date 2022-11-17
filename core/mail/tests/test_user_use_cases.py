@@ -1,11 +1,13 @@
 import pytest
+from django.db import IntegrityError
 
-from core.mail.models import MailAlias, MailOrg
+from core.mail.models import MailAccount, MailAddress, MailOrg, MailUser
+from core.mail.models.group import MailGroup
 from core.mail.use_cases.user import (
-    create_alias,
+    create_address,
     create_mail_user,
-    delete_alias,
-    set_alias_as_default,
+    delete_address,
+    set_address_as_default,
 )
 from core.seedwork.use_case_layer import UseCaseError
 
@@ -26,32 +28,49 @@ def test_create_mail_user_different_org(db, two_users_different_org):
     assert MailOrg.objects.count() == 2
 
 
+def test_account_constraints(db, user, mail_org):
+    mail_user = MailUser.objects.create(user=user, org=mail_org, pw_hash="")
+    mail_group = MailGroup.objects.create(org=mail_user.org)
+    MailAccount.objects.create(group=mail_group)
+    MailAccount.objects.create(user=mail_user)
+    with pytest.raises(IntegrityError):
+        MailAccount.objects.create(group=mail_group, user=mail_user)
+
+
+def test_account_constraints_2(db):
+    with pytest.raises(IntegrityError):
+        MailAccount.objects.create()
+
+
 def test_create_alias(db, mail_user, domain):
-    create_alias(mail_user, localpart="test", user=mail_user.id, domain=domain.id)
+    create_address(mail_user, localpart="test", user=mail_user.id, domain=domain.id)
 
 
 def test_create_alias_exists(db, mail_user, domain):
-    create_alias(mail_user, localpart="test", user=mail_user.id, domain=domain.id)
+    create_address(mail_user, localpart="test", user=mail_user.id, domain=domain.id)
     with pytest.raises(UseCaseError):
-        create_alias(mail_user, localpart="test", user=mail_user.id, domain=domain.id)
+        create_address(mail_user, localpart="test", user=mail_user.id, domain=domain.id)
 
 
 def test_delete_alias(db, mail_user, alias):
-    delete_alias(mail_user, alias.id)
+    delete_address(mail_user, alias.id)
 
 
 def test_delete_default_alias(db, mail_user, alias):
     alias.is_default = True
     alias.save()
     with pytest.raises(UseCaseError):
-        delete_alias(mail_user, alias.id)
+        delete_address(mail_user, alias.id)
 
 
 def test_set_alias_default(db, mail_user, domain, alias):
-    alias2 = MailAlias.objects.create(
-        localpart="abc", domain=domain, user=mail_user, is_default=True
+    alias2 = MailAddress.objects.create(
+        localpart="abc", domain=domain, account=mail_user.account, is_default=True
     )
     alias.is_default = True
     alias.save()
-    set_alias_as_default(mail_user, alias2.id)
-    assert MailAlias.objects.filter(user=mail_user, is_default=True).count() == 1
+    set_address_as_default(mail_user, alias2.id)
+    assert (
+        MailAddress.objects.filter(account__user=mail_user, is_default=True).count()
+        == 1
+    )

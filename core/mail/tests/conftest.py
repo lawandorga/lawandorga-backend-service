@@ -1,6 +1,6 @@
 import pytest
 
-from core.mail.models import MailAlias, MailDomain, MailOrg, MailUser
+from core.mail.models import MailAccount, MailAddress, MailDomain, MailOrg, MailUser
 from core.seedwork import test_helpers
 
 
@@ -36,9 +36,8 @@ def mail_org(db):
 @pytest.fixture
 def mail_user(db, mail_org):
     user = test_helpers.create_user(email="dummy3@law-orga.de")
-    mail_user = MailUser.objects.create(
-        user=user, org=mail_org, pw_hash="", relative_path=""
-    )
+    mail_user = MailUser.objects.create(user=user, org=mail_org, pw_hash="")
+    MailAccount.objects.create(user=mail_user)
     yield mail_user
 
 
@@ -49,4 +48,6 @@ def domain(db, mail_org):
 
 @pytest.fixture
 def alias(db, mail_user, domain):
-    yield MailAlias.objects.create(localpart="test", domain=domain, user=mail_user)
+    yield MailAddress.objects.create(
+        localpart="test", domain=domain, account=mail_user.account
+    )

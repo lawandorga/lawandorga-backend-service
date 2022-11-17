@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -19,3 +20,11 @@ class InputDeleteAlias(BaseModel):
 
 class InputSetDefaultAlias(BaseModel):
     alias: UUID
+
+
+class OutputMailUser(BaseModel):
+    id: Optional[UUID]
+    email: Optional[str]
+
+    class Config:
+        orm_mode = True
