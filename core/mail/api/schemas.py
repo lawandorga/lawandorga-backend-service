@@ -10,11 +10,12 @@ class InputAddDomain(BaseModel):
 class InputCreateAlias(BaseModel):
     localpart: str
     domain: UUID
+    user: UUID
 
 
 class InputDeleteAlias(BaseModel):
-    id: UUID
+    alias: UUID
 
 
 class InputSetDefaultAlias(BaseModel):
-    id: UUID
+    alias: UUID

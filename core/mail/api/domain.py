@@ -7,5 +7,5 @@ router = Router()
 
 
 @router.post(input_schema=schemas.InputAddDomain)
-def command__add_domain(__actor: MailUser, data: schemas.InputAddDomain):
-    add_domain(__actor, data.domain)
+def command__add_domain(mail_user: MailUser, data: schemas.InputAddDomain):
+    add_domain(mail_user, data.domain)

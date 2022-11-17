@@ -27,13 +27,13 @@ def test_create_mail_user_different_org(db, two_users_different_org):
 
 
 def test_create_alias(db, mail_user, domain):
-    create_alias(mail_user, localpart="test", domain=domain.id)
+    create_alias(mail_user, localpart="test", user=mail_user.id, domain=domain.id)
 
 
 def test_create_alias_exists(db, mail_user, domain):
-    create_alias(mail_user, localpart="test", domain=domain.id)
+    create_alias(mail_user, localpart="test", user=mail_user.id, domain=domain.id)
     with pytest.raises(UseCaseError):
-        create_alias(mail_user, localpart="test", domain=domain.id)
+        create_alias(mail_user, localpart="test", user=mail_user.id, domain=domain.id)
 
 
 def test_delete_alias(db, mail_user, alias):

@@ -13,27 +13,29 @@ router = Router()
 
 
 @router.get()
-def query__users(__actor: RlcUser):
+def query__users(rlc_user: RlcUser):
     pass
 
 
 @router.post()
-def command__create_user(__actor: UserProfile):
-    create_mail_user(__actor)
+def command__create_user(user: UserProfile):
+    create_mail_user(user)
 
 
-@router.post(input_schema=schemas.InputCreateAlias)
-def command__create_alias(__actor: MailUser, data: schemas.InputCreateAlias):
-    create_alias(__actor, data.localpart, data.domain)
+@router.post(url="<uuid:user>/add_alias/", input_schema=schemas.InputCreateAlias)
+def command__create_alias(mail_user: MailUser, data: schemas.InputCreateAlias):
+    create_alias(mail_user, data.localpart, data.user, data.domain)
 
 
-@router.delete(input_schema=schemas.InputDeleteAlias)
-def command__delete_alias(__actor: MailUser, data: schemas.InputDeleteAlias):
-    delete_alias(__actor, data.id)
+@router.delete(url="delete_alias/<uuid:alias>/", input_schema=schemas.InputDeleteAlias)
+def command__delete_alias(mail_user: MailUser, data: schemas.InputDeleteAlias):
+    delete_alias(mail_user, data.alias)
 
 
-@router.post(input_schema=schemas.InputSetDefaultAlias)
+@router.post(
+    url="set_default_alias/<uuid:alias>/", input_schema=schemas.InputSetDefaultAlias
+)
 def command__set_alias_as_default(
-    __actor: MailUser, data: schemas.InputSetDefaultAlias
+    mail_user: MailUser, data: schemas.InputSetDefaultAlias
 ):
-    set_alias_as_default(__actor, data.id)
+    set_alias_as_default(mail_user, data.alias)

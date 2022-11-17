@@ -2,7 +2,7 @@ from django.db import transaction
 
 from core.auth.models import UserProfile
 from core.mail.models import MailAlias, MailOrg, MailUser
-from core.mail.use_cases.finders import alias_from_id, domain_from_id
+from core.mail.use_cases.finders import alias_from_id, domain_from_id, mail_user_from_id
 from core.seedwork.use_case_layer import UseCaseError, find, use_case
 
 
@@ -34,19 +34,24 @@ def create_mail_user(__actor: UserProfile):
 
 
 @use_case
-def create_alias(__actor: MailUser, localpart: str, domain=find(domain_from_id)):
+def create_alias(
+    __actor: MailUser,
+    localpart: str,
+    user=find(mail_user_from_id),
+    domain=find(domain_from_id),
+):
     if MailAlias.objects.filter(localpart=localpart, domain=domain).exists():
         raise UseCaseError(
             "An alias with the same localpart and domain exists already."
         )
 
-    MailAlias.objects.create(user=__actor, localpart=localpart, domain=domain)
+    MailAlias.objects.create(user=user, localpart=localpart, domain=domain)
 
 
 @use_case
 def set_alias_as_default(__actor: MailUser, alias=find(alias_from_id)):
     with transaction.atomic():
-        MailAlias.objects.filter(user=__actor).update(is_default=False)
+        MailAlias.objects.filter(user=alias.user).update(is_default=False)
         alias.is_default = True
         alias.save()
 
