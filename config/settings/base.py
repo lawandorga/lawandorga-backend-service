@@ -113,10 +113,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "tmp/media/")
 # https://pypi.org/project/django-cors-headers/
 CORS_ALLOW_CREDENTIALS = True
 
-# secure attribute
-# https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies?retiredLocale=de#restrict_access_to_cookies
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# same site attribute
+# https://docs.djangoproject.com/en/4.1/ref/settings/#session-cookie-samesite
+SESSION_COOKIE_SAMESITE = "Strict"
+CSRF_COOKIE_SAMESITE = "Strict"
 
 # logout after browser close
 # https://docs.djangoproject.com/en/4.1/ref/settings/#session-expire-at-browser-close
