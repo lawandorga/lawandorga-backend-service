@@ -1,5 +1,3 @@
-from django.db.models import Q
-
 from core.auth.models import UserProfile
 from core.mail.api import schemas
 from core.mail.models import MailDomain
@@ -13,9 +11,7 @@ def query__page_mail(user: UserProfile):
     if hasattr(user, "mail_user"):
         mail_user = user.mail_user
 
-        available_domains = MailDomain.objects.filter(
-            Q(org=mail_user.org) | Q(org=None)
-        )
+        available_domains = MailDomain.objects.filter(org=mail_user.org)
 
         return {"user": mail_user, "available_domains": available_domains}
 

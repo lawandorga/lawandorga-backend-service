@@ -4,7 +4,7 @@ from core.mail.models import MailAddress, MailDomain, MailUser
 
 
 def domain_from_id(actor, v) -> MailDomain:
-    return MailDomain.objects.filter(id=v).get(Q(org__id=actor.org_id) | Q(org=None))
+    return MailDomain.objects.filter(id=v).get(Q(org__id=actor.org_id))
 
 
 def address_from_id(actor, v) -> MailAddress:
