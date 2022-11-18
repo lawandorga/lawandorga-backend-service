@@ -45,7 +45,7 @@ class OutputAddress(BaseModel):
 class OutputAccount(BaseModel):
     addresses: list[OutputAddress]
 
-    _ = qs_to_list('addresses')
+    _ = qs_to_list("addresses")
 
     class Config:
         orm_mode = True
@@ -65,7 +65,7 @@ class OutputPageMail(BaseModel):
     user: OutputMailUser
     available_domains: list[OutputDomain]
 
-    _ = qs_to_list('available_domains')
+    _ = qs_to_list("available_domains")
 
 
 class OutputNoAccount(BaseModel):

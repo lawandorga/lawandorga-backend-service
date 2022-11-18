@@ -30,7 +30,9 @@ class MailUser(models.Model):
 
     @property
     def aliases(self):
-        addresses_1 = list(self.account.addresses.filter(is_default=False).select_related('domain'))
+        addresses_1 = list(
+            self.account.addresses.filter(is_default=False).select_related("domain")
+        )
         addresses_2 = map(lambda a: a.address, addresses_1)
         addresses_3 = list(addresses_2)
         return addresses_3

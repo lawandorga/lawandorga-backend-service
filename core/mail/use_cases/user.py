@@ -47,7 +47,9 @@ def create_address(
         )
 
     is_default = MailAddress.objects.filter(account=user.account).count() == 0
-    MailAddress.objects.create(account=user.account, localpart=localpart, domain=domain, is_default=is_default)
+    MailAddress.objects.create(
+        account=user.account, localpart=localpart, domain=domain, is_default=is_default
+    )
 
 
 @use_case

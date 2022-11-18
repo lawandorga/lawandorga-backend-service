@@ -22,8 +22,10 @@ class MailAddress(models.Model):
         verbose_name_plural = "Aliases"
 
     def __str__(self):
-        return "address: {}; email: {}@{};".format(self.pk, self.localpart, self.domain.name)
+        return "address: {}; email: {}@{};".format(
+            self.pk, self.localpart, self.domain.name
+        )
 
     @property
     def address(self):
-        return '{}@{}'.format(self.localpart, self.domain.name)
+        return "{}@{}".format(self.localpart, self.domain.name)

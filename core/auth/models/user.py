@@ -14,7 +14,7 @@ from rest_framework.exceptions import ParseError
 from core.static import PERMISSION_ADMIN_MANAGE_USERS
 
 if TYPE_CHECKING:
-    from core.models import MatrixUser, Permission, RlcUser, StatisticUser, MailUser
+    from core.models import MailUser, MatrixUser, Permission, RlcUser, StatisticUser
 
 
 class UserProfileManager(BaseUserManager):
