@@ -1,5 +1,7 @@
+import secrets
 import uuid
 
+from django.contrib.auth.hashers import make_password
 from django.db import models
 
 from core.auth.models import UserProfile
@@ -26,4 +28,26 @@ class MailUser(models.Model):
         address = self.account.addresses.filter(is_default=True).first()
         if address is None:
             return None
-        return "{}@{}".format(address.localpart, address.domain.name)
+        return address.address
+
+    @property
+    def aliases(self):
+        addresses_1 = list(
+            self.account.addresses.filter(is_default=False).select_related("domain")
+        )
+        addresses_2 = map(lambda a: a.address, addresses_1)
+        addresses_3 = list(addresses_2)
+        return addresses_3
+
+    def check_login_allowed(self):
+        return True
+
+    def generate_random_password(self):
+        return secrets.token_urlsafe()
+
+    def set_password(self, password: str):
+        pw_1 = make_password(password)
+        assert "argon" in pw_1.lower()
+        pw_2 = pw_1[6:]
+        pw_3 = "{}{}".format("{ARGON2ID}", pw_2)
+        self.pw_hash = pw_3

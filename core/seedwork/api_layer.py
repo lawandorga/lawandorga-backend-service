@@ -48,8 +48,9 @@ def make_datetime_aware(x):
 
 
 class ApiError(Exception):
-    def __init__(self, message):
+    def __init__(self, message, status=400):
         self.message = message
+        self.status = status
 
 
 class RFC7807(BaseModel):
@@ -108,7 +109,7 @@ def _catch_error(func: Callable[..., Awaitable[JsonResponse]]):
         except ApiError as e:
             return ErrorResponse(
                 title=e.message,
-                status=400,
+                status=e.status,
                 err_type="ApiError",
             )
 
@@ -245,6 +246,22 @@ class Router:
 
                 # wake up the lazy object
                 func_kwargs["user"] = await UserProfile.objects.aget(pk=user.id)
+
+            if "mail_user" in func_input:
+                if not is_authenticated:
+                    return not_authenticated_error
+
+                if not hasattr(user, "mail_user"):
+                    return ErrorResponse(
+                        err_type="RoleRequired",
+                        title="Mail User Required",
+                        detail="You need to have the mail user role.",
+                        status=403,
+                    )
+
+                user.mail_user.check_login_allowed()
+
+                func_kwargs["mail_user"] = user.mail_user
 
             if "rlc_user" in func_input:
                 if not is_authenticated:

@@ -1,8 +1,10 @@
+from django.db.models import Q
+
 from core.mail.models import MailAddress, MailDomain, MailUser
 
 
 def domain_from_id(actor, v) -> MailDomain:
-    return MailDomain.objects.get(id=v, org__id=actor.org_id)
+    return MailDomain.objects.filter(id=v).get(Q(org__id=actor.org_id))
 
 
 def address_from_id(actor, v) -> MailAddress:

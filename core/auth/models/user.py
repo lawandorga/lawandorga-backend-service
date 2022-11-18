@@ -14,7 +14,7 @@ from rest_framework.exceptions import ParseError
 from core.static import PERMISSION_ADMIN_MANAGE_USERS
 
 if TYPE_CHECKING:
-    from core.models import MatrixUser, Permission, RlcUser, StatisticUser
+    from core.models import MailUser, MatrixUser, Permission, RlcUser, StatisticUser
 
 
 class UserProfileManager(BaseUserManager):
@@ -22,7 +22,7 @@ class UserProfileManager(BaseUserManager):
         return (
             super()
             .get_queryset()
-            .select_related("rlc_user", "statistic_user", "internal_user")
+            .select_related("rlc_user", "statistic_user", "internal_user", "mail_user")
         )
 
 
@@ -50,6 +50,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     rlc_user: "RlcUser"
     statistic_user: "StatisticUser"
     matrix_user: "MatrixUser"
+    mail_user: "MailUser"
 
     class Meta:
         verbose_name = "UserProfile"

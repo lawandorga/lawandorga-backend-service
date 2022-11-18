@@ -46,7 +46,10 @@ def create_address(
             "An alias with the same localpart and domain exists already."
         )
 
-    MailAddress.objects.create(account=user.account, localpart=localpart, domain=domain)
+    is_default = MailAddress.objects.filter(account=user.account).count() == 0
+    MailAddress.objects.create(
+        account=user.account, localpart=localpart, domain=domain, is_default=is_default
+    )
 
 
 @use_case

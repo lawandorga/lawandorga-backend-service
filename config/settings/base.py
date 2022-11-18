@@ -41,6 +41,16 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Password hasher
+# https://docs.djangoproject.com/en/4.1/topics/auth/passwords/#using-argon2-with-django
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.ScryptPasswordHasher",
+]
+
 # Middleware
 # https://docs.djangoproject.com/en/dev/topics/http/middleware/
 MIDDLEWARE = [

@@ -186,7 +186,6 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         assert self.private_key is not None and self.public_key is not None
 
         private_key = cache.get(self.pk, None)
-        print(self.pk)
 
         if settings.TESTING and self.email == "dummy@law-orga.de":
             private_key = RlcUser.get_dummy_user_private_key(self)

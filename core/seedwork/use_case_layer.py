@@ -99,7 +99,7 @@ def __update_parameters(args, kwargs, func, actor):
                 new_value = value(actor, old_value)
             except ObjectDoesNotExist as e:
                 message = "The object with identifier '{}' could not be found.".format(
-                    value
+                    old_value
                 )
                 raise UseCaseInputError(message) from e
 
