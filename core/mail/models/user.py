@@ -26,4 +26,14 @@ class MailUser(models.Model):
         address = self.account.addresses.filter(is_default=True).first()
         if address is None:
             return None
-        return "{}@{}".format(address.localpart, address.domain.name)
+        return address.address
+
+    @property
+    def aliases(self):
+        addresses_1 = list(self.account.addresses.filter(is_default=False).select_related('domain'))
+        addresses_2 = map(lambda a: a.address, addresses_1)
+        addresses_3 = list(addresses_2)
+        return addresses_3
+
+    def check_login_allowed(self):
+        return True

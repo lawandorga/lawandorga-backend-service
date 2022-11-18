@@ -3,28 +3,70 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from core.seedwork.api_layer import qs_to_list
+
 
 class InputAddDomain(BaseModel):
     domain: str
 
 
-class InputCreateAlias(BaseModel):
+class InputCreateAddress(BaseModel):
     localpart: str
     domain: UUID
     user: UUID
 
 
-class InputDeleteAlias(BaseModel):
-    alias: UUID
+class InputDeleteAddress(BaseModel):
+    address: UUID
 
 
-class InputSetDefaultAlias(BaseModel):
-    alias: UUID
+class InputSetDefaultAddress(BaseModel):
+    address: UUID
 
 
-class OutputMailUser(BaseModel):
-    id: Optional[UUID]
-    email: Optional[str]
+class OutputDomain(BaseModel):
+    id: UUID
+    name: str
 
     class Config:
         orm_mode = True
+
+
+class OutputAddress(BaseModel):
+    id: UUID
+    localpart: str
+    domain: OutputDomain
+    is_default: bool
+
+    class Config:
+        orm_mode = True
+
+
+class OutputAccount(BaseModel):
+    addresses: list[OutputAddress]
+
+    _ = qs_to_list('addresses')
+
+    class Config:
+        orm_mode = True
+
+
+class OutputMailUser(BaseModel):
+    id: UUID
+    email: Optional[str]
+    account: OutputAccount
+    aliases: list[str]
+
+    class Config:
+        orm_mode = True
+
+
+class OutputPageMail(BaseModel):
+    user: OutputMailUser
+    available_domains: list[OutputDomain]
+
+    _ = qs_to_list('available_domains')
+
+
+class OutputNoAccount(BaseModel):
+    no_mail_account = True
