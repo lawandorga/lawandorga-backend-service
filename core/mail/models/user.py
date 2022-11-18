@@ -1,5 +1,7 @@
+import secrets
 import uuid
 
+from django.contrib.auth.hashers import make_password
 from django.db import models
 
 from core.auth.models import UserProfile
@@ -39,3 +41,13 @@ class MailUser(models.Model):
 
     def check_login_allowed(self):
         return True
+
+    def generate_random_password(self):
+        return secrets.token_urlsafe()
+
+    def set_password(self, password: str):
+        pw_1 = make_password(password)
+        assert "argon" in pw_1.lower()
+        pw_2 = pw_1[6:]
+        pw_3 = "{}{}".format("{ARGON2ID}", pw_2)
+        self.password = pw_3

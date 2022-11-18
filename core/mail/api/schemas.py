@@ -42,6 +42,10 @@ class OutputAddress(BaseModel):
         orm_mode = True
 
 
+class OutputPassword(BaseModel):
+    password: str
+
+
 class OutputAccount(BaseModel):
     addresses: list[OutputAddress]
 
