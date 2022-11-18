@@ -50,4 +50,4 @@ class MailUser(models.Model):
         assert "argon" in pw_1.lower()
         pw_2 = pw_1[6:]
         pw_3 = "{}{}".format("{ARGON2ID}", pw_2)
-        self.password = pw_3
+        self.pw_hash = pw_3
