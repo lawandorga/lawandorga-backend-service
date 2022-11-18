@@ -12,7 +12,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name="mailuser",
+            name="user",
+        ),
+        migrations.AddField(
             model_name="mailuser",
             name="user",
             field=models.ForeignKey(
