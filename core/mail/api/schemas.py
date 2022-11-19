@@ -7,7 +7,12 @@ from core.seedwork.api_layer import qs_to_list
 
 
 class InputAddDomain(BaseModel):
-    domain: str
+    name: str
+
+
+class InputChangeDomain(BaseModel):
+    id: UUID
+    name: str
 
 
 class InputCreateAddress(BaseModel):
@@ -32,11 +37,42 @@ class OutputDomain(BaseModel):
         orm_mode = True
 
 
+class OutputDomain2(BaseModel):
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
 class OutputAddress(BaseModel):
     id: UUID
     localpart: str
     domain: OutputDomain
     is_default: bool
+
+    class Config:
+        orm_mode = True
+
+
+class OutputMailUser2(BaseModel):
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
+class OutputAccount2(BaseModel):
+    user: OutputMailUser2
+
+    class Config:
+        orm_mode = True
+
+
+class OutputAddress2(BaseModel):
+    localpart: str
+    domain: OutputDomain2
+    is_default: bool
+    account: OutputAccount2
 
     class Config:
         orm_mode = True
@@ -68,8 +104,10 @@ class OutputMailUser(BaseModel):
 class OutputPageMail(BaseModel):
     user: OutputMailUser
     available_domains: list[OutputDomain]
+    domain: Optional[OutputDomain]
+    addresses: list[OutputAddress2]
 
-    _ = qs_to_list("available_domains")
+    _ = qs_to_list("addresses")
 
 
 class OutputNoAccount(BaseModel):
