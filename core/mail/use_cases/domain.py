@@ -1,6 +1,6 @@
 from core.mail.models import MailDomain, MailUser
 from core.mail.use_cases.finders import domain_from_id
-from core.seedwork.use_case_layer import UseCaseError, use_case, find
+from core.seedwork.use_case_layer import UseCaseError, find, use_case
 
 
 @use_case

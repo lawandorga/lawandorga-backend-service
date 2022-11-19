@@ -1,6 +1,6 @@
 from core.auth.models import UserProfile
 from core.mail.api import schemas
-from core.mail.models import MailDomain, MailAddress
+from core.mail.models import MailAddress, MailDomain
 from core.seedwork.api_layer import ApiError, Router
 
 router = Router()
@@ -15,7 +15,11 @@ def query__page_mail(user: UserProfile):
         domain = available_domains[0] if len(available_domains) else None
         addresses = MailAddress.objects.filter(domain__org=mail_user.org)
 
-        return {"user": mail_user, "available_domains": available_domains, "domain": domain,
-                'addresses': addresses}
+        return {
+            "user": mail_user,
+            "available_domains": available_domains,
+            "domain": domain,
+            "addresses": addresses,
+        }
 
     raise ApiError("No mail account", status=444)

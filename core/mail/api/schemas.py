@@ -107,7 +107,7 @@ class OutputPageMail(BaseModel):
     domain: Optional[OutputDomain]
     addresses: list[OutputAddress2]
 
-    _ = qs_to_list('addresses')
+    _ = qs_to_list("addresses")
 
 
 class OutputNoAccount(BaseModel):
