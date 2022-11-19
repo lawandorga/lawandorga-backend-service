@@ -24,6 +24,10 @@ class MailUser(models.Model):
         return "mailUser: {}; user: {};".format(self.pk, self.user)
 
     @property
+    def name(self):
+        return self.user.name
+
+    @property
     def email(self):
         address = self.account.addresses.filter(is_default=True).first()
         if address is None:
