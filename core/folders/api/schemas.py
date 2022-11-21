@@ -9,6 +9,11 @@ class InputFolderCreate(BaseModel):
     parent: Optional[UUID]
 
 
+class InputFolderUpdate(BaseModel):
+    name: str
+    id: UUID
+
+
 class InputFolderDelete(BaseModel):
     id: UUID
 
@@ -29,6 +34,7 @@ class OutputFolderTreeNode(BaseModel):
     folder: OutputFolder
     children: list["OutputFolderTreeNode"]
     content: list[OutputContent]
+    access: list[str]
 
 
 class OutputFolderTree(BaseModel):

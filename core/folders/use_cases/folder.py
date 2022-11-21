@@ -4,8 +4,9 @@ from uuid import UUID
 from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.use_cases.finders import folder_from_id
 from core.seedwork.repository import RepositoryWarehouse
-from core.seedwork.use_case_layer import UseCaseError, use_case
+from core.seedwork.use_case_layer import UseCaseError, find, use_case
 
 
 def get_repository() -> FolderRepository:
@@ -22,6 +23,13 @@ def create_folder(__actor: RlcUser, name: str, parent: Optional[UUID]):
         folder.set_parent(folder=parent_folder, by=__actor)
     else:
         folder.grant_access(to=__actor)
+    r.save(folder)
+
+
+@use_case
+def rename_folder(__actor: RlcUser, name: str, folder=find(folder_from_id)):
+    r = get_repository()
+    folder.update_information(name=name)
     r.save(folder)
 
 

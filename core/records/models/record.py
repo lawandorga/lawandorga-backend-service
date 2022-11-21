@@ -72,7 +72,7 @@ class Record(models.Model):
 
         if self.key is None:
             aes_key = self.get_aes_key_old(user, private_key_user)
-            aes_key_box = OpenBox(data=bytes(aes_key, 'utf-8'))
+            aes_key_box = OpenBox(data=bytes(aes_key, "utf-8"))
             key = SymmetricKey(key=aes_key_box, origin=SymmetricEncryptionV1.VERSION)
             folder = self.upgrade.folder
             folder.grant_access(user)

@@ -3,6 +3,8 @@ from uuid import UUID
 
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.types import StrDict
+from core.folders.domain.value_objects.keys import FolderKey
+from core.folders.domain.value_objects.keys.parent_key import ParentKey
 
 
 class Node(TypedDict):
@@ -20,6 +22,8 @@ class FolderTree:
             self.__tree = []
             return
 
+        folders_dict = {f.pk: f for f in folders}
+
         parent_dict: dict[Union[UUID, None], list[Folder]] = {}
         for i in folders:
             if i.parent_pk in parent_dict:
@@ -27,8 +31,26 @@ class FolderTree:
             else:
                 parent_dict[i.parent_pk] = [i]
 
-        def build_node(f, c):
-            return {"folder": f.__dict__(), "children": c, "content": f.content}
+        def get_owners_with_access(folder: Folder):
+            access = []
+            for key in folder.keys:
+                if isinstance(key, FolderKey):
+                    access.append(key.owner.name)
+                    continue
+                if isinstance(key, ParentKey):
+                    f = folders_dict[folder.parent_pk]
+                    access += get_owners_with_access(f)
+                    continue
+                access.append("Unknown")
+            return access
+
+        def build_node(f: Folder, c):
+            return {
+                "folder": f.__dict__(),
+                "children": c,
+                "content": f.content,
+                "access": get_owners_with_access(f),
+            }
 
         def get_children(f: Folder):
             if f.pk not in parent_dict:
