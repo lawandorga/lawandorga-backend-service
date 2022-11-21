@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -13,6 +13,13 @@ class InputFolderDelete(BaseModel):
     id: UUID
 
 
+class OutputContent(BaseModel):
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
 class OutputFolder(BaseModel):
     name: str
     id: str
@@ -21,6 +28,7 @@ class OutputFolder(BaseModel):
 class OutputFolderTreeNode(BaseModel):
     folder: OutputFolder
     children: list["OutputFolderTreeNode"]
+    content: list[OutputContent]
 
 
 class OutputFolderTree(BaseModel):

@@ -28,7 +28,7 @@ class FolderTree:
                 parent_dict[i.parent_pk] = [i]
 
         def build_node(f, c):
-            return {"folder": f.__dict__(), "children": c}
+            return {"folder": f.__dict__(), "children": c, "content": f.content}
 
         def get_children(f: Folder):
             if f.pk not in parent_dict:

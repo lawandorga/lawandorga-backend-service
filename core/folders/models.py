@@ -5,7 +5,6 @@ from django.db import models
 from django.db.models import QuerySet
 
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.aggregates.upgrade import Upgrade
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.repositiories.upgrade import UpgradeRepository
 from core.folders.domain.value_objects.keys import FolderKey
@@ -74,22 +73,23 @@ class FoldersFolder(models.Model):
                 pk = ParentKey.create_from_dict(key)
                 keys.append(pk)
 
-        # revive upgrades
-        upgrades = []
-        for upgrade in self.upgrades:
-            upgrade_repository = cast(
-                Type[UpgradeRepository], RepositoryWarehouse.get(upgrade.repository)
-            )
-            loaded_upgrade = upgrade_repository.load_upgrade(upgrade["upgrade_pk"])
-            u = Upgrade.create_from_dict(upgrade, loaded_upgrade)
-            upgrades.append(u)
-
         # revive folder
-        return Folder(
+        folder = Folder(
             name=self.name,
             parent=parent,
             pk=self.pk,
             org_pk=self.org_pk,
             keys=keys,
-            upgrades=upgrades,
         )
+
+        # revive upgrades
+        for upgrade in self.upgrades:
+            print(upgrade)
+            upgrade_repository = cast(
+                Type[UpgradeRepository], RepositoryWarehouse.get(upgrade["repository"])
+            )
+            u = upgrade_repository.create_from_dict(d=upgrade, folder=folder)
+            folder.add_upgrade(u)
+
+        # return
+        return folder

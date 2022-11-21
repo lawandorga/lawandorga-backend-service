@@ -12,6 +12,9 @@ if TYPE_CHECKING:
 class Item:
     name: str
 
+    def __init__(self, name: str):
+        self.name = name
+
 
 class Upgrade:
     REPOSITORY: str
@@ -34,7 +37,6 @@ class Upgrade:
         assert folder is not None and pk is not None
         self.__pk = pk
         self.__folder = folder
-        self.__folder.add_upgrade(self)
 
     def __dict__(self) -> StrDict:  # type: ignore
         return {"pk": str(self.__pk), "repository": self.REPOSITORY}

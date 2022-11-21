@@ -81,6 +81,13 @@ class Folder(IOwner):
         return self.__upgrades
 
     @property
+    def content(self):
+        content = []
+        for upgrade in self.__upgrades:
+            content += upgrade.content
+        return content
+
+    @property
     def encryption_version(self) -> Optional[str]:
         if len(self.__keys) == 0:
             return None
