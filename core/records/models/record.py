@@ -7,6 +7,9 @@ from django.db import models, transaction
 from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.value_objects.box import OpenBox
+from core.folders.domain.value_objects.keys import EncryptedSymmetricKey, SymmetricKey
+from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.records.models import EncryptedClient  # type: ignore
 from core.records.models.template import (
     RecordEncryptedFileField,
@@ -20,6 +23,7 @@ from core.records.models.template import (
     RecordTemplate,
     RecordUsersField,
 )
+from core.records.models.upgrade import RecordUpgrade
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 ###
@@ -32,7 +36,9 @@ class Record(models.Model):
     template = models.ForeignKey(
         RecordTemplate, related_name="records", on_delete=models.PROTECT
     )
-    upgrade_pk = models.UUIDField(null=True)
+    upgrade = models.ForeignKey(
+        RecordUpgrade, null=True, related_name="records", on_delete=models.CASCADE
+    )
     old_client = models.ForeignKey(
         EncryptedClient,
         related_name="records",
@@ -40,6 +46,7 @@ class Record(models.Model):
         null=True,
         blank=True,
     )
+    key = models.JSONField(null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -58,7 +65,32 @@ class Record(models.Model):
             return first_standard_entry.value
         return None
 
-    def get_aes_key(self, user: Optional[RlcUser] = None, private_key_user=None):
+    def get_aes_key(self, user: RlcUser, private_key_user: str):
+        if self.upgrade is None:
+            self.put_in_folder()
+        assert self.upgrade is not None
+
+        if self.key is None:
+            aes_key = self.get_aes_key_old(user, private_key_user)
+            aes_key_box = OpenBox(data=bytes(aes_key, 'utf-8'))
+            key = SymmetricKey(key=aes_key_box, origin=SymmetricEncryptionV1.VERSION)
+            folder = self.upgrade.folder
+            folder.grant_access(user)
+            encryption_key = folder.get_encryption_key(requestor=user)
+            self.key = EncryptedSymmetricKey.create(key, encryption_key).__dict__()
+            for encryption in list(self.encryptions.all()):
+                self.upgrade.folder.grant_access(to=encryption.user, by=user)
+            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+            with transaction.atomic():
+                r.save(folder)
+                self.save()
+
+        decryption_key = self.upgrade.folder.get_decryption_key(requestor=user)
+        enc_key = EncryptedSymmetricKey.create_from_dict(self.key)
+        key = enc_key.decrypt(decryption_key)
+        return key.get_key()
+
+    def get_aes_key_old(self, user: Optional[RlcUser] = None, private_key_user=None):
         if user and private_key_user:
             encryption = self.encryptions.get(user=user)
             encryption.decrypt(private_key_user)
@@ -103,11 +135,12 @@ class Record(models.Model):
         from core.records.models.upgrade import RecordUpgrade
 
         folder = Folder.create(self.identifier, org_pk=self.template.rlc_id)
-        upgrade = RecordUpgrade.create(folder=folder)
+        upgrade = RecordUpgrade(folder_pk=folder.pk, org_pk=self.template.rlc_id)
         folder.add_upgrade(upgrade)
-        self.upgrade_pk = upgrade.pk
         r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
         with transaction.atomic():
+            upgrade.save()
+            self.upgrade = upgrade
             self.save()
             r.save(folder)
 

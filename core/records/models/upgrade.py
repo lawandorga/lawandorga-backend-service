@@ -1,68 +1,48 @@
 import uuid
-from typing import Optional
+from typing import cast
 from uuid import UUID
+
+from django.db import models
 
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.aggregates.upgrade import Item, Upgrade
+from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.repositiories.upgrade import UpgradeRepository
-from core.folders.domain.types import StrDict
 from core.folders.domain.value_objects.keys import SymmetricKey
-from core.records.models import Record
+from core.seedwork.repository import RepositoryWarehouse
 
 
 class RecordUpgradeRepository(UpgradeRepository):
     IDENTIFIER = "RECORD_UPGRADE"
 
     @classmethod
-    def create_from_dict(
-        cls, d: Optional[StrDict] = None, folder: Optional[Folder] = None
-    ) -> "RecordUpgrade":
-        assert (
-            d is not None
-            and folder is not None
-            and "pk" in d
-            and isinstance(d["pk"], str)
-            and "repository" in d
-            and isinstance(d["repository"], str)
-            # and 'token' in d
-            # and isinstance(d['token'], str)
-        )
-
-        assert d["repository"] == cls.IDENTIFIER
-
-        pk = UUID(d["pk"])
-
-        return RecordUpgrade(pk=pk, folder=folder)
-        # return RecordUpgrade(token=d['token'], pk=d['pk'], folder=folder)
+    def retrieve(cls, pk: UUID) -> "RecordUpgrade":
+        return RecordUpgrade.objects.get(pk=pk)
 
 
-class RecordUpgrade(Upgrade):
+class RecordUpgrade(Upgrade, models.Model):
     REPOSITORY = RecordUpgradeRepository.IDENTIFIER
 
-    @classmethod
-    def create(cls, folder: Optional["Folder"] = None) -> "RecordUpgrade":
-        return RecordUpgrade(folder=folder, pk=uuid.uuid4())
+    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4)
+    org_pk = models.IntegerField()
+    folder_pk = models.UUIDField()
 
-    def __init__(self, folder: Optional["Folder"] = None, pk: Optional[UUID] = None):
-        # assert token is not None
-        # self.__token = token
-        super().__init__(folder=folder, pk=pk)
+    class Meta:
+        verbose_name = "RecordUpgrade"
+        verbose_name_plural = "RecordUpgrades"
 
     def __str__(self):
-        return "recordUpgrade: {}; token: {};".format(self.pk, self.token)
+        return "recordUpgrade: {};".format(self.pk)
 
-    def __dict__(self) -> StrDict:  # type: ignore
-        d = super().__dict__()
-        return d
-        # return {**d, 'token': self.__token}
-
-    # @property
-    # def token(self):
-    #     return self.__token
+    @property
+    def folder(self) -> Folder:
+        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+        folder = r.retrieve(self.org_pk, self.folder_pk)
+        return folder
 
     @property
     def content(self) -> list[Item]:
-        records_1 = list(Record.objects.filter(upgrade_pk=self.pk))
+        records_1 = list(self.records.all())
         records_2 = map(lambda x: Item(x.identifier), records_1)
         records_3 = list(records_2)
         return records_3

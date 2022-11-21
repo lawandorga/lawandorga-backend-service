@@ -38,16 +38,25 @@ class FoldersFolder(models.Model):
     @staticmethod
     def from_domain(folder: Folder) -> "FoldersFolder":
         keys = [k.__dict__() for k in folder.keys]
-        upgrades = [u.__dict__() for u in folder.upgrades]
+        upgrades = [u.as_dict() for u in folder.upgrades]
 
-        f = FoldersFolder(
-            _parent_id=folder.parent_pk,
-            pk=folder.pk,
-            name=folder.name,
-            org_pk=folder.org_pk,
-            keys=keys,
-            upgrades=upgrades,
-        )
+        if FoldersFolder.objects.filter(pk=folder.pk).exists():
+            f = FoldersFolder.objects.get(pk=folder.pk)
+            f._parent_id = folder.parent_pk
+            f.name = folder.name
+            f.org_pk = folder.org_pk
+            f.keys = keys
+            f.upgrades = upgrades
+
+        else:
+            f = FoldersFolder(
+                _parent_id=folder.parent_pk,
+                pk=folder.pk,
+                name=folder.name,
+                org_pk=folder.org_pk,
+                keys=keys,
+                upgrades=upgrades,
+            )
 
         return f
 
@@ -84,11 +93,10 @@ class FoldersFolder(models.Model):
 
         # revive upgrades
         for upgrade in self.upgrades:
-            print(upgrade)
             upgrade_repository = cast(
                 Type[UpgradeRepository], RepositoryWarehouse.get(upgrade["repository"])
             )
-            u = upgrade_repository.create_from_dict(d=upgrade, folder=folder)
+            u = upgrade_repository.retrieve(pk=upgrade["pk"])
             folder.add_upgrade(u)
 
         # return

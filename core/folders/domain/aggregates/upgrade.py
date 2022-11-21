@@ -1,5 +1,5 @@
 import abc
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from core.folders.domain.types import StrDict
@@ -18,36 +18,34 @@ class Item:
 
 class Upgrade:
     REPOSITORY: str
+    pk: UUID
 
-    @classmethod
-    def create_from_dict(cls, d: StrDict, upgrade: "Upgrade") -> "Upgrade":
-        assert (
-            "pk" in d
-            and isinstance(d["pk"], str)
-            and "repository" in d
-            and isinstance(d["repository"], str)
-        )
+    # @classmethod
+    # def create_from_dict(cls, d: StrDict, upgrade: "Upgrade") -> "Upgrade":
+    #     assert (
+    #         "pk" in d
+    #         and isinstance(d["pk"], str)
+    #         and "repository" in d
+    #         and isinstance(d["repository"], str)
+    #     )
+    #
+    #     assert d["pk"] == upgrade.pk
+    #     assert d["repository"] == cls.REPOSITORY
+    #
+    #     return upgrade
+    #
+    # def __init__(self, folder: Optional["Folder"] = None, pk: Optional[UUID] = None):
+    #     assert folder is not None and pk is not None
+    #     self.__pk = pk
+    #     self.__folder = folder
 
-        assert d["pk"] == upgrade.pk
-        assert d["repository"] == cls.REPOSITORY
-
-        return upgrade
-
-    def __init__(self, folder: Optional["Folder"] = None, pk: Optional[UUID] = None):
-        assert folder is not None and pk is not None
-        self.__pk = pk
-        self.__folder = folder
-
-    def __dict__(self) -> StrDict:  # type: ignore
-        return {"pk": str(self.__pk), "repository": self.REPOSITORY}
+    def as_dict(self) -> StrDict:
+        return {"pk": str(self.pk), "repository": self.REPOSITORY}
 
     @property
+    @abc.abstractmethod
     def folder(self) -> "Folder":
-        return self.__folder
-
-    @property
-    def pk(self):
-        return self.__pk
+        pass
 
     @property
     @abc.abstractmethod
