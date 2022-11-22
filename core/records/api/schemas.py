@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Union
 
 from pydantic import BaseModel
 
@@ -51,3 +51,25 @@ class OutputQuestionnaire(BaseModel):
         orm_mode = True
 
     _ = qs_to_list("answers")
+
+
+class OutputEntry(BaseModel):
+    value: str
+
+    class Config:
+        orm_mode = True
+
+
+class OutputRecord(BaseModel):
+    id: int
+    attributes: dict[str, Union[str, list[str]]]
+    delete_requested: bool
+    has_access: bool
+
+    class Config:
+        orm_mode = True
+
+
+class OutputRecordsPage(BaseModel):
+    columns: list[str]
+    records: list[OutputRecord]
