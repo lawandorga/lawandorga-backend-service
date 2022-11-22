@@ -45,7 +45,6 @@ from core.records.serializers.record import (
     RecordEncryptedSelectFieldSerializer,
     RecordEncryptedStandardEntrySerializer,
     RecordEncryptedStandardFieldSerializer,
-    RecordListSerializer,
     RecordMultipleEntrySerializer,
     RecordMultipleFieldSerializer,
     RecordSelectEntrySerializer,
@@ -209,7 +208,6 @@ class RecordViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
     GenericViewSet,
 ):
     queryset = Record.objects.none()
@@ -217,36 +215,14 @@ class RecordViewSet(
     permission_wall = {"create": PERMISSION_RECORDS_ADD_RECORD}
 
     def get_serializer_class(self):
-        if self.action in ["list"]:
-            return RecordListSerializer
-        elif self.action in ["retrieve"]:
+        if self.action in ["retrieve"]:
             return RecordDetailSerializer
         elif self.action in ["create"]:
             return RecordCreateSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):
-        if self.action in ["list"]:
-            return (
-                Record.objects.filter(template__rlc=self.request.user.rlc)
-                .prefetch_related(
-                    "state_entries",
-                    "state_entries__field",
-                    "select_entries",
-                    "select_entries__field",
-                    "standard_entries",
-                    "standard_entries__field",
-                    "users_entries",
-                    "users_entries__value",
-                    "users_entries__field",
-                    "multiple_entries",
-                    "multiple_entries__field",
-                    "encryptions",
-                    "deletions",
-                )
-                .select_related("template")
-            )
-        elif self.action in ["retrieve"]:
+        if self.action in ["retrieve"]:
             return (
                 Record.objects.filter(template__rlc=self.request.user.rlc)
                 .prefetch_related(

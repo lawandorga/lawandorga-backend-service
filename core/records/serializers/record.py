@@ -2,7 +2,6 @@ from typing import Optional
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
-from django.utils.timezone import localtime
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.reverse import reverse
@@ -492,51 +491,7 @@ class RecordSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class RecordListSerializer(RecordSerializer):
-    entries = serializers.SerializerMethodField()
-    access = serializers.SerializerMethodField()
-    show = serializers.SerializerMethodField()
-    delete = serializers.SerializerMethodField()
-
-    def get_entries(self, obj):
-        entry_types = [
-            ("state_entries", RecordStateEntrySerializer),
-            ("standard_entries", RecordStandardEntrySerializer),
-            ("select_entries", RecordSelectEntrySerializer),
-            ("multiple_entries", RecordMultipleEntrySerializer),
-            ("users_entries", RecordUsersEntryDetailSerializer),
-        ]
-        dict_of_entries = obj.get_entries(entry_types, request=self.context["request"])
-        dict_of_entries["Created"] = {
-            "name": "Created",
-            "value": localtime(obj.created),
-            "type": "datetime-local",
-        }
-        dict_of_entries["Updated"] = {
-            "name": "Updated",
-            "value": localtime(obj.updated),
-            "type": "datetime-local",
-        }
-        return dict_of_entries
-
-    def get_access(self, obj):
-        for enc in getattr(obj, "encryptions").all():
-            if enc.user_id == self.context["request"].user.rlc_user.id:
-                return True
-        return False
-
-    def get_show(self, obj):
-        return obj.template.show
-
-    def get_delete(self, obj):
-        deletions = list(obj.deletions.all())
-        for deletion in deletions:
-            if deletion.state == "re":
-                return True
-        return False
-
-
-class RecordCreateSerializer(RecordListSerializer):
+class RecordCreateSerializer(RecordSerializer):
     pass
 
 
