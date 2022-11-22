@@ -3,37 +3,15 @@ import json
 import pytest
 from django.test import Client
 
-from core.models import Org
 from core.records.models import QuestionnaireTemplate
-from core.seedwork import test_helpers as data
 
 from ...static import PERMISSION_RECORDS_ADD_RECORD
-
-
-@pytest.fixture
-def org(db):
-    org = Org.objects.create(name="Test RLC")
-    yield org
-
-
-@pytest.fixture
-def user(db, org):
-    user_1 = data.create_rlc_user(rlc=org)
-    org.generate_keys()
-    yield user_1
 
 
 @pytest.fixture
 def template(db, org):
     template = QuestionnaireTemplate.objects.create(rlc=org, name="Test Template")
     yield template
-
-
-@pytest.fixture
-def record(db, org, user):
-    template = data.create_record_template(org)
-    record = data.create_record(template["template"], [user["user"]])
-    yield record["record"]
 
 
 def test_publish_questionnaire(user, db, template, record):

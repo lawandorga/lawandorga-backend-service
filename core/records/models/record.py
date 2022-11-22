@@ -1,9 +1,10 @@
 import json
-from typing import Optional
+from typing import Optional, Union
 
 from django.apps import apps
 from django.core.files import File as DjangoFile
 from django.db import models
+from django.utils.timezone import localtime
 
 from core.auth.models import RlcUser
 from core.models import Group, Org
@@ -362,6 +363,49 @@ class Record(models.Model):
         if first_standard_entry:
             return first_standard_entry.value
         return None
+
+    @property
+    def delete_requested(self) -> bool:
+        deletions = getattr(self, "deletions").all()
+        for deletion in deletions:
+            if deletion.state == "re":
+                return True
+        return False
+
+    @property
+    def attributes(self) -> dict[str, Union[list[str], str]]:
+        entries: dict[str, Union[list[str], str]] = {
+            "Created": localtime(self.created).strftime("%d.%m.%y %H:%M"),
+            "Updated": localtime(self.updated).strftime("%d.%m.%y %H:%M"),
+        }
+        for entry_type in self.get_unencrypted_entry_types():
+            for entry in getattr(self, entry_type).all():
+                entries[entry.field.name] = entry.get_value()
+        return entries
+
+    @staticmethod
+    def get_unencrypted_prefetch_related():
+        return [
+            "state_entries",
+            "state_entries__field",
+            "select_entries",
+            "select_entries__field",
+            "standard_entries",
+            "standard_entries__field",
+            "users_entries",
+            "users_entries__value",
+            "users_entries__field",
+            "multiple_entries",
+            "multiple_entries__field",
+            "encryptions",
+            "deletions",
+        ]
+
+    def has_access(self, user: RlcUser) -> bool:
+        for enc in getattr(self, "encryptions").all():
+            if enc.user_id == user.id:
+                return True
+        return False
 
     def get_aes_key(self, user: Optional[RlcUser] = None, private_key_user=None):
         if user and private_key_user:
