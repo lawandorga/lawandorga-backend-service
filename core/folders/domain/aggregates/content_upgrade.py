@@ -55,8 +55,17 @@ class ContentUpgrade(Upgrade):
     ):
         assert folder is not None
         self.__content = content if content is not None else {}
+        self.__folder = folder
+        self.__pk = pk
+        super().__init__()
 
-        super().__init__(folder=folder, pk=pk)
+    @property
+    def folder(self) -> "Folder":
+        return self.__folder
+
+    @property
+    def pk(self):
+        return self.__pk
 
     @property
     def encryption_version(self) -> Optional[str]:

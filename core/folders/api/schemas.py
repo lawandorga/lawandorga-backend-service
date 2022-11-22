@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from core.seedwork.api_layer import qs_to_list
+
 
 class InputFolderCreate(BaseModel):
     name: str
@@ -11,6 +13,11 @@ class InputFolderCreate(BaseModel):
 
 class InputFolderUpdate(BaseModel):
     name: str
+    id: UUID
+
+
+class InputFolderAccess(BaseModel):
+    user_slug: UUID
     id: UUID
 
 
@@ -30,12 +37,23 @@ class OutputFolder(BaseModel):
     id: str
 
 
+class OutputAccess(BaseModel):
+    name: str
+    slug: Optional[UUID]
+
+    class Config:
+        orm_mode = True
+
+
 class OutputFolderTreeNode(BaseModel):
     folder: OutputFolder
     children: list["OutputFolderTreeNode"]
     content: list[OutputContent]
-    access: list[str]
+    access: list[OutputAccess]
 
 
-class OutputFolderTree(BaseModel):
-    __root__: list[OutputFolderTreeNode]
+class OutputFolderPage(BaseModel):
+    tree: list[OutputFolderTreeNode]
+    available_persons: list[OutputAccess]
+
+    _ = qs_to_list("available_persons")

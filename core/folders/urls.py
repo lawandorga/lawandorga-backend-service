@@ -1,6 +1,6 @@
 from django.urls import include, path
 
-from core.folders.api.folders import router
+from core.folders.api import folders_router, query_router
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
@@ -12,5 +12,6 @@ EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
 RepositoryWarehouse.add_repository(DjangoFolderRepository)
 
 urlpatterns = [
-    path("", include(router.urls)),
+    path("folders/", include(folders_router.urls)),
+    path("query/", include(query_router.urls)),
 ]

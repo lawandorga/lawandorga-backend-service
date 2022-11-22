@@ -35,13 +35,13 @@ class FolderTree:
             access = []
             for key in folder.keys:
                 if isinstance(key, FolderKey):
-                    access.append(key.owner.name)
+                    access.append({"name": key.owner.name, "slug": key.owner.slug})
                     continue
                 if isinstance(key, ParentKey):
                     f = folders_dict[folder.parent_pk]
                     access += get_owners_with_access(f)
                     continue
-                access.append("Unknown")
+                access.append({"name": "Unknown", "slug": None})
             return access
 
         def build_node(f: Folder, c):
