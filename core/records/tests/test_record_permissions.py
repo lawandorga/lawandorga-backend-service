@@ -62,7 +62,7 @@ class RecordViewSetsPermissions(TestCase):
         (RecordStateFieldViewSet, "create", "partial_update", "update", "destroy"),
         (RecordUsersFieldViewSet, "create", "partial_update", "update", "destroy"),
         # record
-        (RecordViewSet, "create", "retrieve", "destroy", "list"),
+        (RecordViewSet, "create", "retrieve", "destroy"),
         # entry
         (
             RecordEncryptedSelectEntryViewSet,
