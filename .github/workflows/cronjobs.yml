@@ -71,5 +71,8 @@ jobs:
           path: ${{ env.pythonLocation }}
           key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
 
-      - name: Run migrations
+      - name: Run cronjobs
         run: python production_manage.py cronjobs
+
+      - name: Clear sessions
+        run: python production_manage.py clearsessions
