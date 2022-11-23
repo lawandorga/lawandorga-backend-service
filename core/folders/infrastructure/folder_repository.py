@@ -3,6 +3,7 @@ from uuid import UUID
 
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
 
 from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
@@ -20,7 +21,7 @@ class DjangoFolderRepository(FolderRepository):
     @classmethod
     def __as_dict(cls, org_pk: int) -> dict[UUID, FoldersFolder]:
         folders = {}
-        for f in list(FoldersFolder.query().filter(org_pk=org_pk)):
+        for f in list(FoldersFolder.query().filter(org_pk=org_pk, deleted=False)):
             folders[f.pk] = f
         return folders
 
@@ -72,7 +73,10 @@ class DjangoFolderRepository(FolderRepository):
 
     @classmethod
     def delete(cls, folder: Folder):
-        FoldersFolder.from_domain(folder).delete()
+        f = FoldersFolder.from_domain(folder)
+        f.deleted = True
+        f.deleted_at = timezone.now()
+        f.save()
         cache.delete(cls.get_cache_key(folder.org_pk))
 
     @classmethod

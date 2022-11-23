@@ -13,12 +13,14 @@ from core.seedwork.repository import RepositoryWarehouse
 
 
 class FoldersFolder(models.Model):
-    _parent = models.ForeignKey("FoldersFolder", on_delete=models.CASCADE, null=True)
+    _parent = models.ForeignKey("FoldersFolder", on_delete=models.CASCADE, null=True, blank=True)
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True)
     name = models.CharField(max_length=1000)
-    org_pk = models.IntegerField(null=True)
-    keys = models.JSONField()
-    upgrades = models.JSONField()
+    org_pk = models.IntegerField(null=True, blank=True)
+    keys = models.JSONField(blank=True)
+    upgrades = models.JSONField(blank=True)
+    deleted = models.BooleanField(default=False, blank=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "FoldersFolder"
