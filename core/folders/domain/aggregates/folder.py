@@ -242,7 +242,6 @@ class Folder(IOwner):
         enc_key = folder_key.encrypt_self(lock_key)
 
         self.__keys.append(enc_key)
-        print(self.keys)
 
     def revoke_access(self, of: IOwner):
         prev_length = len(self.__keys)

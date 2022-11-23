@@ -43,24 +43,16 @@ class RecordAccessViewSet(
         if serializer.validated_data["state"] == "gr":
             private_key_user = request.user.get_private_key(request=request)
             try:
-                record_key = instance.record.get_aes_key(
+                instance.record.get_aes_key(
                     user=request.user.rlc_user, private_key_user=private_key_user
                 )
             except ObjectDoesNotExist:
                 raise PermissionDenied(
                     "You have no access to this record. Therefore you can not allow access to this record."
                 )
-            public_key_user = instance.requested_by.get_public_key()
-            encrypted_record_key = RSAEncryption.encrypt(record_key, public_key_user)
-            data = {
-                "user": instance.requested_by.rlc_user,
-                "record": instance.record,
-                "key": encrypted_record_key,
-            }
-            if not RecordEncryptionNew.objects.filter(
-                user=data["user"], record=data["record"]
-            ).exists():
-                RecordEncryptionNew.objects.create(**data)
+            instance.record.grant_access(
+                instance.requested_by.rlc_user, request.user.rlc_user
+            )
         elif serializer.validated_data["state"] == "de":
             pass
 

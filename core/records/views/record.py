@@ -404,20 +404,9 @@ class RecordUsersEntryViewSet(RecordEntryViewSet):
         )
 
     def create_encryptions(self, share_keys, record, users):
-        aes_key_record = record.get_aes_key(
-            user=self.request.user.rlc_user,
-            private_key_user=self.request.user.get_private_key(request=self.request),
-        )
         if share_keys:
             for user in users:
-                if not RecordEncryptionNew.objects.filter(
-                    user=user, record=record
-                ).exists():
-                    encryption = RecordEncryptionNew(
-                        user=user, record=record, key=aes_key_record
-                    )
-                    encryption.encrypt(user.user.get_public_key())
-                    encryption.save()
+                record.grant_access(user, self.request.user.rlc_user)
 
     def perform_create(self, serializer):
         instance = super().perform_create(serializer)

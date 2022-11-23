@@ -1,5 +1,4 @@
 import json
-import uuid
 from typing import Optional, Union, cast
 
 from django.core.files import File as DjangoFile
@@ -12,7 +11,6 @@ from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.value_objects.box import OpenBox
 from core.folders.domain.value_objects.keys import EncryptedSymmetricKey, SymmetricKey
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
-from core.folders.models import FoldersFolder
 from core.records.models import EncryptedClient  # type: ignore
 from core.records.models.template import (
     RecordEncryptedFileField,
@@ -108,7 +106,8 @@ class Record(models.Model):
     def grant_access(self, to: RlcUser, by: RlcUser):
         if self.upgrade is not None:
             r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-            folder = self.upgrade.folder.grant_access(to=to, by=by)
+            folder = self.upgrade.folder
+            folder.grant_access(to=to, by=by)
             r.save(folder)
         else:
             raise ValueError("This record has no upgrade.")
