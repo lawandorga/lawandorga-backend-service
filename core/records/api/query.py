@@ -1,7 +1,6 @@
 import itertools
 
 from core.auth.models import RlcUser
-from core.folders.models import FoldersFolder
 from core.records.api import schemas
 from core.records.models import Record, RecordTemplate
 from core.seedwork.api_layer import Router
@@ -16,9 +15,6 @@ def query__records_page(rlc_user: RlcUser):
         .prefetch_related(*Record.get_unencrypted_prefetch_related())
         .select_related("upgrade")
     )
-    folders = {
-        f.pk: f for f in list(FoldersFolder.objects.filter(org_pk=rlc_user.org_id))
-    }
     records_2 = list(
         map(
             lambda r: (
@@ -26,7 +22,7 @@ def query__records_page(rlc_user: RlcUser):
                     "id": r.id,
                     "attributes": r.attributes,
                     "delete_requested": r.delete_requested,
-                    "has_access": r.has_access(rlc_user, folders),
+                    "has_access": r.has_access(rlc_user),
                 }
             ),
             records_1,

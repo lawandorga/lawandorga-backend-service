@@ -1,6 +1,5 @@
 import pickle
 
-import dill as dill
 import pytest
 
 from core.folders.domain.value_objects.box import Box, LockedBox, OpenBox

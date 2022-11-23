@@ -107,13 +107,13 @@ class Record(models.Model):
 
     def grant_access(self, to: RlcUser, by: RlcUser):
         if self.upgrade is not None:
-            folder = self.upgrade.folder
+            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+            folder = self.upgrade.folder.grant_access(to=to, by=by)
+            r.save(folder)
         else:
             raise ValueError("This record has no upgrade.")
 
-    def has_access(
-        self, user: RlcUser, folders: dict[uuid.UUID, FoldersFolder]
-    ) -> bool:
+    def has_access(self, user: RlcUser) -> bool:
         if self.upgrade is None:
             for enc in getattr(self, "encryptions").all():
                 if enc.user_id == user.id:
