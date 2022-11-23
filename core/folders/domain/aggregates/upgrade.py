@@ -1,5 +1,5 @@
 import abc
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
 from core.folders.domain.types import StrDict
@@ -12,8 +12,9 @@ if TYPE_CHECKING:
 class Item:
     name: str
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, actions: Optional[dict[str, str]] = None):
         self.name = name
+        self.actions = actions if actions is not None else {}
 
 
 class Upgrade:

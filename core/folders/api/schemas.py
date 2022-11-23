@@ -27,6 +27,7 @@ class InputFolderDelete(BaseModel):
 
 class OutputContent(BaseModel):
     name: str
+    actions: dict[str, str]
 
     class Config:
         orm_mode = True

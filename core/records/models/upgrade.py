@@ -44,7 +44,10 @@ class RecordUpgrade(Upgrade, models.Model):
     @property
     def content(self) -> list[Item]:
         records_1 = list(self.records.all())
-        records_2 = map(lambda x: Item(x.identifier), records_1)
+        records_2 = map(
+            lambda x: Item(x.identifier, {"OPEN": "/records/{}/".format(x.pk)}),
+            records_1,
+        )
         records_3 = list(records_2)
         return records_3
 
