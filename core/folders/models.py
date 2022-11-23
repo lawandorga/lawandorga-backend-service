@@ -4,8 +4,8 @@ from typing import Optional, Type, Union, cast
 from django.db import models
 from django.db.models import QuerySet
 
+from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.repositiories.upgrade import UpgradeRepository
 from core.folders.domain.value_objects.keys import FolderKey
 from core.folders.domain.value_objects.keys.parent_key import ParentKey
@@ -37,7 +37,7 @@ class FoldersFolder(models.Model):
 
     @staticmethod
     def from_domain(folder: Folder) -> "FoldersFolder":
-        keys = [k.__dict__() for k in folder.keys]
+        keys = [k.as_dict() for k in folder.keys]
         upgrades = [u.as_dict() for u in folder.upgrades]
 
         if FoldersFolder.objects.filter(pk=folder.pk).exists():
@@ -60,21 +60,19 @@ class FoldersFolder(models.Model):
 
         return f
 
-    def to_domain(self, folders: dict[uuid.UUID, "FoldersFolder"]) -> Folder:
-        folder_repository = cast(
-            Type[FolderRepository], RepositoryWarehouse.get(FolderRepository)
-        )
-
+    def to_domain(
+        self, folders: dict[uuid.UUID, "FoldersFolder"], users: dict[uuid.UUID, RlcUser]
+    ) -> Folder:
         # find the parent
         parent: Optional[Folder] = None
         if self.parent is not None:
-            parent = folders[self.parent].to_domain(folders)
+            parent = folders[self.parent].to_domain(folders, users)
 
         # revive keys
         keys: list[Union[ParentKey, FolderKey]] = []
         for key in self.keys:
             if key["type"] == "FOLDER":
-                owner = folder_repository.find_key_owner(key["owner"])
+                owner = users[uuid.UUID(key["owner"])]
                 fk = FolderKey.create_from_dict(key, owner)
                 keys.append(fk)
 

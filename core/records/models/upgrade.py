@@ -2,6 +2,7 @@ import uuid
 from typing import cast
 from uuid import UUID
 
+from django.core.cache import cache
 from django.db import models
 
 from core.folders.domain.aggregates.folder import Folder
@@ -46,6 +47,13 @@ class RecordUpgrade(Upgrade, models.Model):
         records_2 = map(lambda x: Item(x.identifier), records_1)
         records_3 = list(records_2)
         return records_3
+
+    def get_folders(self):
+        place = "core/records/models/upgrade/get_folders"
+        folders = cache.get(place, None)
+        if folders is None:
+            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+            folders = r.dict(self.org_pk)
 
     def reencrypt(self, old_key: SymmetricKey, new_key: SymmetricKey):
         pass

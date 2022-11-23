@@ -17,6 +17,11 @@ class FolderRepository(Repository, abc.ABC):
 
     @classmethod
     @abc.abstractmethod
+    def dict(cls, org_pk: int) -> dict[UUID, Folder]:
+        pass
+
+    @classmethod
+    @abc.abstractmethod
     def list(cls, org_pk: int) -> list[Folder]:
         pass
 

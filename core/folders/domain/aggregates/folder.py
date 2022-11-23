@@ -43,7 +43,7 @@ class Folder(IOwner):
     def __str__(self):
         return "Folder {}".format(self.name)
 
-    def __dict__(self) -> StrDict:  # type: ignore
+    def as_dict(self) -> StrDict:  # type: ignore
         return {"name": self.__name, "id": str(self.__pk)}
 
     @property

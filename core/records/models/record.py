@@ -1,4 +1,5 @@
 import json
+import uuid
 from typing import Optional, Union, cast
 
 from django.core.files import File as DjangoFile
@@ -11,6 +12,7 @@ from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.value_objects.box import OpenBox
 from core.folders.domain.value_objects.keys import EncryptedSymmetricKey, SymmetricKey
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
+from core.folders.models import FoldersFolder
 from core.records.models import EncryptedClient  # type: ignore
 from core.records.models.template import (
     RecordEncryptedFileField,
@@ -103,10 +105,21 @@ class Record(models.Model):
             "deletions",
         ]
 
-    def has_access(self, user: RlcUser) -> bool:
-        for enc in getattr(self, "encryptions").all():
-            if enc.user_id == user.id:
-                return True
+    def grant_access(self, to: RlcUser, by: RlcUser):
+        if self.upgrade is not None:
+            folder = self.upgrade.folder
+        else:
+            raise ValueError("This record has no upgrade.")
+
+    def has_access(
+        self, user: RlcUser, folders: dict[uuid.UUID, FoldersFolder]
+    ) -> bool:
+        if self.upgrade is None:
+            for enc in getattr(self, "encryptions").all():
+                if enc.user_id == user.id:
+                    return True
+        else:
+            return self.upgrade.folder.has_access(user)
         return False
 
     def get_aes_key(self, user: RlcUser, private_key_user: str):
@@ -121,7 +134,7 @@ class Record(models.Model):
             folder = self.upgrade.folder
             folder.grant_access(user)
             encryption_key = folder.get_encryption_key(requestor=user)
-            self.key = EncryptedSymmetricKey.create(key, encryption_key).__dict__()
+            self.key = EncryptedSymmetricKey.create(key, encryption_key).as_dict()
             for encryption in list(self.encryptions.all()):
                 self.upgrade.folder.grant_access(to=encryption.user, by=user)
             r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))

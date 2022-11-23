@@ -39,7 +39,7 @@ def box():
 def test_symmetric_dict(s_key):
     key_1 = SymmetricKey.generate()
     enc_key_1 = EncryptedSymmetricKey.create(key_1, s_key)
-    dict_enc_key_1 = enc_key_1.__dict__()
+    dict_enc_key_1 = enc_key_1.as_dict()
     enc_key_2 = EncryptedSymmetricKey.create_from_dict(dict_enc_key_1)
     assert enc_key_1 == enc_key_2
     key_2 = enc_key_2.decrypt(s_key)
@@ -49,7 +49,7 @@ def test_symmetric_dict(s_key):
 def test_asymmetric_dict(s_key):
     key_1 = AsymmetricKey.generate()
     enc_key_1 = EncryptedAsymmetricKey.create(key_1, s_key)
-    dict_enc_key_1 = enc_key_1.__dict__()
+    dict_enc_key_1 = enc_key_1.as_dict()
     enc_key_2 = EncryptedAsymmetricKey.create_from_dict(dict_enc_key_1)
     assert enc_key_1 == enc_key_2
     key_2 = enc_key_2.decrypt(s_key)
@@ -85,7 +85,7 @@ def test_asymmetric_key_errors(a_key, box):
 
     key = EncryptedAsymmetricKey(public_key=key.get_public_key(), origin=key.origin)
     with pytest.raises(ValueError):
-        key.__dict__()
+        key.as_dict()
     with pytest.raises(ValueError):
         key.decrypt(a_key)
 

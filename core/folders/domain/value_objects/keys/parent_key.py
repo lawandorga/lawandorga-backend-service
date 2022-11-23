@@ -38,12 +38,12 @@ class ParentKey:
     def __str__(self):
         return "ParentKey of {}".format(self.__folder_pk)
 
-    def __dict__(self) -> StrDict:  # type: ignore
+    def as_dict(self) -> StrDict:
         assert isinstance(self.__key, EncryptedSymmetricKey)
 
         return {
             "folder_pk": str(self.__folder_pk),
-            "key": self.__key.__dict__(),
+            "key": self.__key.as_dict(),
             "type": "PARENT",
         }
 

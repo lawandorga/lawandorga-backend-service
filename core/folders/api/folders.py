@@ -44,4 +44,4 @@ def command__delete_folder(data: schemas.InputFolderDelete, rlc_user: RlcUser):
 def query__list_folders(rlc_user: RlcUser):
     r = get_repository()
     tree = r.tree(rlc_user.org_id)
-    return tree.__dict__()
+    return tree.as_dict()

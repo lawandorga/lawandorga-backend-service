@@ -1,3 +1,6 @@
+import pickle
+
+import dill as dill
 import pytest
 
 from core.folders.domain.value_objects.box import Box, LockedBox, OpenBox
@@ -12,6 +15,13 @@ def key():
     EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest1)
     key, version = SymmetricEncryptionTest1.generate_key()
     yield SymmetricKey.create(key=key, origin=version)
+
+
+def test_box_can_be_pickled():
+    o1 = OpenBox(data=b"Data")
+    pickled = pickle.dumps(o1)
+    o2 = pickle.loads(pickled)
+    assert o1 == o2
 
 
 def test_box_is_bytes(key):
@@ -72,7 +82,7 @@ def test_decryption_error(key):
 
 def test_open_box_dict():
     b1 = OpenBox(data=b"Open")
-    b_dict = b1.__dict__()
+    b_dict = b1.as_dict()
     b2 = OpenBox.create_from_dict(b_dict)
     assert b1 == b2
 
@@ -80,7 +90,7 @@ def test_open_box_dict():
 def test_closed_box_dict(key):
     o1 = OpenBox(data=b"Open")
     l1 = key.lock(o1)
-    l1_dict = l1.__dict__()
+    l1_dict = l1.as_dict()
     l2 = LockedBox.create_from_dict(l1_dict)
     assert l1 == l2
     o2 = key.unlock(l2)

@@ -175,9 +175,9 @@ class EncryptedSymmetricKey(Key):
 
         super().__init__(origin=origin)
 
-    def __dict__(self) -> StrDict:  # type: ignore
+    def as_dict(self) -> StrDict:  # type: ignore
         return {
-            "enc_key": self.__enc_key.__dict__(),
+            "enc_key": self.__enc_key.as_dict(),
             "origin": self.origin,
         }
 
@@ -267,13 +267,13 @@ class EncryptedAsymmetricKey(Key):
 
         super().__init__(origin=origin)
 
-    def __dict__(self) -> StrDict:  # type: ignore
+    def as_dict(self) -> StrDict:  # type: ignore
         if self.__enc_key is None or self.__enc_private_key is None:
             raise ValueError("One or more keys of this key are of type 'None'.")
 
         return {
-            "enc_key": self.__enc_key.__dict__(),
-            "enc_private_key": self.__enc_private_key.__dict__(),
+            "enc_key": self.__enc_key.as_dict(),
+            "enc_private_key": self.__enc_private_key.as_dict(),
             "public_key": self.__public_key,
             "origin": self.origin,
         }

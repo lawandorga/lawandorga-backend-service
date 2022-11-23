@@ -46,7 +46,7 @@ class FolderTree:
 
         def build_node(f: Folder, c):
             return {
-                "folder": f.__dict__(),
+                "folder": f.as_dict(),
                 "children": c,
                 "content": f.content,
                 "access": get_owners_with_access(f),
@@ -69,5 +69,5 @@ class FolderTree:
 
         self.__tree = tree
 
-    def __dict__(self):
+    def as_dict(self):
         return self.__tree

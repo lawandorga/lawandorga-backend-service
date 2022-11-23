@@ -13,4 +13,4 @@ def query__list_folders(rlc_user: RlcUser):
 
     available_persons = RlcUser.objects.filter(org_id=rlc_user.org_id)
 
-    return {"tree": tree.__dict__(), "available_persons": available_persons}
+    return {"tree": tree.as_dict(), "available_persons": available_persons}

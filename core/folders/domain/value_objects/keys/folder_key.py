@@ -42,12 +42,12 @@ class FolderKey:
     def __str__(self):
         return "FolderKey of {}".format(self.__owner.slug)
 
-    def __dict__(self) -> StrDict:  # type: ignore
+    def as_dict(self) -> StrDict:
         assert isinstance(self.__key, EncryptedSymmetricKey)
 
         return {
             "owner": str(self.__owner.slug),
-            "key": self.__key.__dict__(),
+            "key": self.__key.as_dict(),
             "type": "FOLDER",
         }
 

@@ -75,4 +75,4 @@ def test_asymmetric_encryption_decode():
     locked = key.lock(data)
 
     assert locked.decode("ISO-8859-1").encode("ISO-8859-1") == locked.value
-    locked.__dict__()
+    locked.as_dict()
