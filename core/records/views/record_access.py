@@ -4,9 +4,8 @@ from rest_framework import mixins, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
-from core.records.models import RecordAccess, RecordEncryptionNew
+from core.records.models import RecordAccess
 from core.records.serializers import RecordAccessSerializer
-from core.seedwork.encryption import RSAEncryption
 from core.seedwork.permission import CheckPermissionWall
 from core.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
 
