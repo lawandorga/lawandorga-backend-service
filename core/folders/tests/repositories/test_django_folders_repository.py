@@ -19,7 +19,6 @@ def real_encryption(encryption_reset):
 
 @pytest.fixture
 def repository(real_encryption):
-    RepositoryWarehouse.reset()
     RepositoryWarehouse.add_repository(DjangoFolderRepository)
     yield RepositoryWarehouse.get(FolderRepository)
 
