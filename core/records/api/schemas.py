@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List, Union
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -9,6 +10,15 @@ from core.seedwork.api_layer import qs_to_list
 class InputPublishQuestionnaire(BaseModel):
     template: int
     record: int
+
+
+class InputRecordCreate(BaseModel):
+    template: int
+    folder: UUID
+
+
+class OutputRecordCreate(BaseModel):
+    id: int
 
 
 class OutputQuestionnaireTemplate(BaseModel):

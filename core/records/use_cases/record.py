@@ -29,6 +29,7 @@ def create_a_record(
             folder.grant_access(user, __actor)
 
     record = Record(template=template)
+
     upgrade = None
     for u in folder.upgrades:
         if isinstance(u, RecordUpgrade):
@@ -37,6 +38,9 @@ def create_a_record(
     if upgrade is None:
         upgrade = RecordUpgrade(org_pk=__actor.org_id, folder_pk=folder.pk)
         folder.add_upgrade(upgrade)
+
+    record.upgrade = upgrade
+    record.generate_key(__actor)
 
     r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
 

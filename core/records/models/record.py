@@ -121,13 +121,21 @@ class Record(models.Model):
             return self.upgrade.folder.has_access(user)
         return False
 
+    def generate_key(self, user: RlcUser):
+        assert self.upgrade is not None
+        key = SymmetricKey.generate()
+        enc_key = EncryptedSymmetricKey.create(
+            key, self.upgrade.folder.get_encryption_key(requestor=user)
+        )
+        self.key = enc_key.as_dict()
+
     def get_aes_key(self, user: RlcUser, private_key_user: str):
         if self.upgrade is None:
             self.put_in_folder()
         assert self.upgrade is not None
 
         if self.key is None:
-            aes_key = self.get_aes_key_old(user, private_key_user)
+            aes_key = self.get_aes_key_old(user)
             aes_key_box = OpenBox(data=bytes(aes_key, "utf-8"))
             key = SymmetricKey(key=aes_key_box, origin=SymmetricEncryptionV1.VERSION)
             folder = self.upgrade.folder
@@ -146,13 +154,11 @@ class Record(models.Model):
         key = enc_key.decrypt(decryption_key)
         return key.get_key()
 
-    def get_aes_key_old(self, user: Optional[RlcUser] = None, private_key_user=None):
-        if user and private_key_user:
-            encryption = self.encryptions.get(user=user)
-            encryption.decrypt(private_key_user)
-            key = encryption.key
-        else:
-            raise ValueError("You need to pass (user and private_key_user).")
+    def get_aes_key_old(self, user: RlcUser):
+        private_key_user = user.get_decryption_key().get_private_key()
+        encryption = self.encryptions.get(user=user)
+        encryption.decrypt(private_key_user)
+        key = encryption.key
         return key
 
     def get_unencrypted_entry_types(self):

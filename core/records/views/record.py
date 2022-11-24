@@ -19,7 +19,6 @@ from core.records.models import (
     RecordEncryptedSelectField,
     RecordEncryptedStandardEntry,
     RecordEncryptedStandardField,
-    RecordEncryptionNew,
     RecordField,
     RecordMultipleEntry,
     RecordMultipleField,
@@ -59,11 +58,9 @@ from core.records.serializers.record import (
     RecordUsersEntrySerializer,
     RecordUsersFieldSerializer,
 )
-from core.seedwork.encryption import AESEncryption
 from core.seedwork.permission import CheckPermissionWall
 from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
-    PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
     PERMISSION_RECORDS_ADD_RECORD,
 )
 
@@ -205,7 +202,6 @@ class RecordUsersFieldViewSet(RecordFieldViewSet):
 ###
 class RecordViewSet(
     CheckPermissionWall,
-    mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.DestroyModelMixin,
     GenericViewSet,
@@ -259,25 +255,6 @@ class RecordViewSet(
                 .select_related("old_client")
             )
         return Record.objects.filter(template__rlc=self.request.user.rlc)
-
-    def perform_create(self, serializer):
-        record = serializer.save()
-        aes_key = AESEncryption.generate_secure_key()
-
-        users_with_permissions = [self.request.user]
-        for user in list(self.request.user.rlc.rlc_members.all()):
-            if user.has_permission(PERMISSION_RECORDS_ACCESS_ALL_RECORDS):
-                users_with_permissions.append(user)
-        for user in users_with_permissions:
-            if not RecordEncryptionNew.objects.filter(
-                record=record, user=user.rlc_user
-            ).exists():
-                encryption = RecordEncryptionNew(
-                    record=record, user=user.rlc_user, key=aes_key
-                )
-                public_key_user = user.get_public_key()
-                encryption.encrypt(public_key_user=public_key_user)
-                encryption.save()
 
     @action(detail=True, methods=["get"])
     def documents(self, request, *args, **kwargs):

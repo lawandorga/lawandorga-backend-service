@@ -14,3 +14,11 @@ def query__list_folders(rlc_user: RlcUser):
     available_persons = RlcUser.objects.filter(org_id=rlc_user.org_id)
 
     return {"tree": tree.as_dict(), "available_persons": available_persons}
+
+
+@router.get(url="available_folders/", output_schema=list[schemas.OutputAvailableFolder])
+def query__available_folders(rlc_user: RlcUser):
+    r = get_repository()
+    folders_1 = r.list(rlc_user.org_id)
+    folders_2 = list(map(lambda f: {"id": f.pk, "name": f.name}, folders_1))
+    return folders_2

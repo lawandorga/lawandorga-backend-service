@@ -26,11 +26,16 @@ class InputFolderDelete(BaseModel):
 
 
 class OutputContent(BaseModel):
-    name: str
+    name: Optional[str]
     actions: dict[str, str]
 
     class Config:
         orm_mode = True
+
+
+class OutputAvailableFolder(BaseModel):
+    name: str
+    id: UUID
 
 
 class OutputFolder(BaseModel):
