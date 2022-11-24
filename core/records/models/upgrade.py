@@ -13,7 +13,7 @@ from core.folders.domain.value_objects.keys import SymmetricKey
 from core.seedwork.repository import RepositoryWarehouse
 
 
-class RecordUpgradeRepository(UpgradeRepository):
+class DjangoRecordUpgradeRepository(UpgradeRepository):
     IDENTIFIER = "RECORD_UPGRADE"
 
     @classmethod
@@ -22,7 +22,7 @@ class RecordUpgradeRepository(UpgradeRepository):
 
 
 class RecordUpgrade(Upgrade, models.Model):
-    REPOSITORY = RecordUpgradeRepository.IDENTIFIER
+    REPOSITORY = DjangoRecordUpgradeRepository.IDENTIFIER
 
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4)
     org_pk = models.IntegerField()

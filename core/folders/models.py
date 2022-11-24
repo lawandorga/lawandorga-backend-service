@@ -13,7 +13,9 @@ from core.seedwork.repository import RepositoryWarehouse
 
 
 class FoldersFolder(models.Model):
-    _parent = models.ForeignKey("FoldersFolder", on_delete=models.CASCADE, null=True, blank=True)
+    _parent = models.ForeignKey(
+        "FoldersFolder", on_delete=models.CASCADE, null=True, blank=True
+    )
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True)
     name = models.CharField(max_length=1000)
     org_pk = models.IntegerField(null=True, blank=True)

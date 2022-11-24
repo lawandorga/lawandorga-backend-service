@@ -3,9 +3,9 @@ from rest_framework.routers import DefaultRouter
 
 from ..seedwork.repository import RepositoryWarehouse
 from . import api, views
-from .models.upgrade import RecordUpgradeRepository
+from .models.upgrade import DjangoRecordUpgradeRepository
 
-RepositoryWarehouse.add_repository(RecordUpgradeRepository)
+RepositoryWarehouse.add_repository(DjangoRecordUpgradeRepository)
 
 router = DefaultRouter()
 

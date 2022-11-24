@@ -170,15 +170,17 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
     @staticmethod
     def get_dummy_user_private_key(dummy: "RlcUser"):
         if settings.TESTING and dummy.email == "dummy@law-orga.de":
-            if dummy.is_private_key_encrypted:
-                private_key = dummy.encryption_class.decrypt(
-                    getattr(dummy, "private_key"), settings.DUMMY_USER_PASSWORD
+            private_key = dummy.private_key
+            if isinstance(private_key, str) and "BEGIN" in private_key:
+                return private_key
+            elif private_key is not None and dummy.is_private_key_encrypted:
+                return dummy.encryption_class.decrypt(
+                    private_key, settings.DUMMY_USER_PASSWORD
                 )
             elif isinstance(dummy.private_key, bytes):
-                private_key = dummy.private_key.decode("utf-8")
+                return dummy.private_key.decode("utf-8")
             else:
                 raise ValueError("Dummy's private key could not be found.")
-            return private_key
 
         raise ValueError("This method is only available for dummy and in test mode.")
 

@@ -102,13 +102,19 @@ class Folder(IOwner):
         return versions[0]
 
     def has_access(self, owner: IOwner) -> bool:
-        try:
-            self.get_decryption_key(requestor=owner)
-        except DomainError:
+        for key in self.__keys:
+            if isinstance(key, FolderKey) and key.owner.slug == owner.slug:
+                return True
+        if self.__parent is None:
             return False
-        return True
+        return self.__parent.has_access(owner)
 
     def add_upgrade(self, upgrade: Upgrade):
+        for upgrade in self.__upgrades:
+            if upgrade.REPOSITORY == upgrade.REPOSITORY:
+                raise ValueError(
+                    "This folder already has an upgrade with the same repository."
+                )
         self.__upgrades.append(upgrade)
 
     def __reencrypt_all_keys(self, user: IOwner):

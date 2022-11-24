@@ -263,6 +263,7 @@ class RecordViewSet(
     def perform_create(self, serializer):
         record = serializer.save()
         aes_key = AESEncryption.generate_secure_key()
+
         users_with_permissions = [self.request.user]
         for user in list(self.request.user.rlc.rlc_members.all()):
             if user.has_permission(PERMISSION_RECORDS_ACCESS_ALL_RECORDS):
