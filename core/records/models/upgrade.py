@@ -51,12 +51,5 @@ class RecordUpgrade(Upgrade, models.Model):
         records_3 = list(records_2)
         return records_3
 
-    def get_folders(self):
-        place = "core/records/models/upgrade/get_folders"
-        folders = cache.get(place, None)
-        if folders is None:
-            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-            folders = r.dict(self.org_pk)
-
     def reencrypt(self, old_key: SymmetricKey, new_key: SymmetricKey):
         pass
