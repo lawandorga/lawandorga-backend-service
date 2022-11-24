@@ -2,7 +2,6 @@ import uuid
 from typing import cast
 from uuid import UUID
 
-from django.core.cache import cache
 from django.db import models
 
 from core.folders.domain.aggregates.folder import Folder

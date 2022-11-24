@@ -3,7 +3,7 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from core.models import HasPermission, Org, Permission, RlcUser, UserProfile
-from core.records.models import Record, RecordEncryptionNew, RecordTemplate
+from core.records.models import Record, RecordTemplate
 from core.records.views import RecordTemplateViewSet, RecordViewSet
 from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
