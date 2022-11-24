@@ -94,7 +94,9 @@ def test_folder_key_not_found(single_encryption, car_content_key, upgrade_user):
         upgrade.get_content_key(content, user2)
 
 
-def todo_test_reencrypt_all_keys(single_encryption, car_content_key, folder_upgrade_user):
+def todo_test_reencrypt_all_keys(
+    single_encryption, car_content_key, folder_upgrade_user
+):
     folder, upgrade, user = folder_upgrade_user
     car, content, key = car_content_key
     EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionTest2)
