@@ -150,16 +150,17 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
             self.decrypt(password_user)
             private_key = self.private_key
 
-        elif request and not password_user:
-            private_key = self.get_decryption_key().get_private_key()
-
         else:
-            raise ValueError("You need to pass (password_user) or (request).")
+            private_key = self.get_decryption_key().get_private_key()
 
         return private_key  # type: ignore
 
     def get_encryption_key(self, *args, **kwargs) -> EncryptedAsymmetricKey:
+        if not self.do_keys_exist:
+            self.generate_keys()
+
         assert self.public_key is not None
+
         if isinstance(self.public_key, memoryview):
             key = self.public_key.tobytes().decode("utf-8")
         else:

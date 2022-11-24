@@ -40,8 +40,6 @@ class BaseRecord:
 
     def create_user(self, email, name):
         user = UserProfile.objects.create(email=email, name=name)
-        user.set_password("pass1234")
-        user.save()
         RlcUser.objects.create(
             user=user,
             accepted=True,
@@ -50,6 +48,9 @@ class BaseRecord:
             is_active=True,
             org=self.rlc,
         )
+        user.set_password("pass1234")
+        user.save()
+        self.rlc.accept_member(self.user, user, self.user.get_private_key())
 
 
 ###

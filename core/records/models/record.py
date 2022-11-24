@@ -103,7 +103,7 @@ class Record(models.Model):
             "deletions",
         ]
 
-    def grant_access(self, to: RlcUser, by: RlcUser):
+    def grant_access(self, to: RlcUser, by: Optional[RlcUser]):
         if self.upgrade is not None:
             r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
             folder = self.upgrade.folder
@@ -190,7 +190,8 @@ class Record(models.Model):
     def put_in_folder(self):
         from core.records.models.upgrade import RecordUpgrade
 
-        folder = Folder.create(self.identifier, org_pk=self.template.rlc_id)
+        folder_name = "Folder of Record: {}".format(self.identifier or "Not-Set")
+        folder = Folder.create(folder_name, org_pk=self.template.rlc_id)
         upgrade = RecordUpgrade(folder_pk=folder.pk, org_pk=self.template.rlc_id)
         folder.add_upgrade(upgrade)
         r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))

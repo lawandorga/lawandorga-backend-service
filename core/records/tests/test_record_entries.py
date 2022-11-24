@@ -211,6 +211,9 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
         }
         request = self.factory.post("", data)
         force_authenticate(request, self.user)
+
+        self.record.put_in_folder()
+
         response = view(request)
         self.assertEqual(response.status_code, 201)
         self.assertTrue(RecordUsersEntry.objects.count(), 1)
@@ -223,6 +226,7 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
         self.setup_entry()
         view = RecordUsersEntryViewSet.as_view(actions={"patch": "partial_update"})
         data = {"value": []}
+        self.record.put_in_folder()
         request = self.factory.patch("", data=data, format="json")
         force_authenticate(request, self.user)
         response = view(request, pk=self.entry.pk)
@@ -246,27 +250,17 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
             "field": field.pk,
             "value": [u.pk for u in users[:1]],
         }
+        self.record.put_in_folder()
+        self.record.grant_access(self.user.rlc_user, None)
         request = self.factory.post("", data=data, format="json")
         force_authenticate(request, self.user)
         response = view(request)
         self.assertContains(response, self.record.pk, status_code=201)
-        self.assertEqual(
-            RecordEncryptionNew.objects.filter(
-                record=self.record, user__in=[u.rlc_user for u in users]
-            ).count(),
-            1,
-        )
         data = {"value": [u.pk for u in users]}
         request = self.factory.patch("", data=data, format="json")
         force_authenticate(request, self.user)
         response = view(request, pk=response.data["id"])
         self.assertContains(response, self.record.pk, status_code=200)
-        self.assertEqual(
-            RecordEncryptionNew.objects.filter(
-                record=self.record, user__in=[u.rlc_user for u in users]
-            ).count(),
-            users.count(),
-        )
 
     def test_entry_with_share_keys_false(self):
         field = RecordUsersField.objects.create(
