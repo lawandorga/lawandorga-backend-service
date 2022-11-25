@@ -215,8 +215,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def get_public_key(self) -> bytes:
         return self.rlc_user.get_public_key()
 
-    def get_private_key(self, password_user=None, request=None) -> str:
-        return self.rlc_user.get_private_key(password_user, request)
+    def get_private_key(self, *args, **kwargs) -> str:
+        return self.rlc_user.get_private_key()
 
     def get_private_key_rlc(self, private_key_user=None, request=None):
         if private_key_user:

@@ -16,7 +16,7 @@ from core.folders.domain.external import IOwner
 from core.folders.domain.value_objects.keys import AsymmetricKey, EncryptedAsymmetricKey
 from core.rlc.models import HasPermission, Org, Permission
 from core.seedwork.domain_layer import DomainError
-from core.seedwork.encryption import EncryptedModelMixin, RSAEncryption
+from core.seedwork.encryption import EncryptedModelMixin
 from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
@@ -207,6 +207,7 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
     def delete_keys(self):
         self.private_key = None
         self.public_key = None
+        self.key = None
         self.is_private_key_encrypted = False
         self.save()
 
@@ -238,10 +239,11 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         self.frontend_settings = data
         self.save(update_fields=["frontend_settings"])
 
-    def generate_keys(self):
-        self.private_key, self.public_key = RSAEncryption.generate_keys()
-        self.is_private_key_encrypted = False
-        self.save()
+    def generate_keys(self, password: str):
+        key = AsymmetricKey.generate()
+        u1 = UserKey(key=key)
+        u2 = u1.encrypt_self(password)
+        self.key = u2.as_dict()
 
     def delete(self, *args, **kwargs):
         user = self.user
