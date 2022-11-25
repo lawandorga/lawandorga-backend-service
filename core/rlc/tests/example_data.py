@@ -4,6 +4,7 @@ from typing import List
 from django.conf import settings
 
 from core import static
+from core.auth.domain.user_key import UserKey
 from core.models import (
     CollabDocument,
     Group,
@@ -170,7 +171,7 @@ def create_users(rlc1, rlc2):
             email=user_data[0],
             name=user_data[1],
         )
-        RlcUser.objects.create(
+        r = RlcUser.objects.create(
             user=user,
             org=choice([rlc1, rlc2]),
             phone_number=user_data[3],
@@ -179,6 +180,8 @@ def create_users(rlc1, rlc2):
             postal_code=user_data[6],
             birthday=user_data[2],
         )
+        r.generate_keys(settings.DUMMY_USER_PASSWORD)
+        r.save()
         created_users.append(user)
     return created_users
 
@@ -192,9 +195,11 @@ def create_dummy_users(rlc: Org, dummy_password: str = "qwe123") -> List[UserPro
     )
     user.set_password(dummy_password)
     user.save()
-    RlcUser.objects.create(
+    r = RlcUser.objects.create(
         user=user, accepted=True, pk=999, email_confirmed=True, org=rlc
     )
+    r.generate_keys(dummy_password)
+    r.save()
     InternalUser.objects.create(user=user)
     users.append(user)
 
@@ -203,15 +208,19 @@ def create_dummy_users(rlc: Org, dummy_password: str = "qwe123") -> List[UserPro
         name="Tester 1",
         email="tester1@law-orga.de",
     )
-    user.set_password("qwe123")
+    user.set_password(settings.DUMMY_USER_PASSWORD)
     user.save()
-    RlcUser.objects.create(user=user, accepted=True, pk=1000, org=rlc)
+    r = RlcUser.objects.create(user=user, accepted=True, pk=1000, org=rlc)
+    r.generate_keys(dummy_password)
+    r.save()
     users.append(user)
 
     user = UserProfile.objects.create(name="Tester 2", email="tester2@law-orga.de")
-    user.set_password("qwe123")
+    user.set_password(settings.DUMMY_USER_PASSWORD)
     user.save()
-    RlcUser.objects.create(user=user, pk=1001, accepted=True, org=rlc)
+    r = RlcUser.objects.create(user=user, pk=1001, accepted=True, org=rlc)
+    r.generate_keys(dummy_password)
+    r.save()
     users.append(user)
 
     # return
@@ -225,7 +234,9 @@ def create_inactive_user(rlc):
     )
     user.set_password("qwe123")
     user.save()
-    RlcUser.objects.create(user=user, org=rlc)
+    r = RlcUser.objects.create(user=user, org=rlc)
+    r.generate_keys(settings.DUMMY_USER_PASSWORD)
+    r.save()
 
 
 def create_groups(rlc: Org, users: List[UserProfile]):
@@ -731,7 +742,12 @@ def create_collab_document(
         rlc=rlc,
     )
     tv = TextDocumentVersion(document=cd, content=content, quill=False)
-    private_key_user = user.get_private_key(password_user=settings.DUMMY_USER_PASSWORD)
+    private_key_user = (
+        UserKey.create_from_dict(user.rlc_user.key)
+        .decrypt_self(settings.DUMMY_USER_PASSWORD)
+        .key.get_private_key()
+        .decode("utf-8")
+    )
     aes_key_rlc = rlc.get_aes_key(user=user, private_key_user=private_key_user)
     tv.encrypt(aes_key_rlc=aes_key_rlc)
     tv.save()
@@ -753,6 +769,9 @@ def create() -> None:
     dummy, *other_dummies = create_dummy_users(rlc1)
     users = create_users(rlc1, rlc2)
     create_inactive_user(rlc1)
+    # rlc keys
+    rlc1.generate_keys()
+    rlc2.generate_keys()
     # groups
     create_groups(rlc1, users)
     create_admin_group(rlc1, dummy)

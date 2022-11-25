@@ -33,6 +33,8 @@ class FileTestsBase:
         self.rlc_user = RlcUser.objects.create(
             user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
+        self.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
+        self.rlc_user.save()
         self.folder = Folder.objects.get(parent=None, rlc=self.rlc)
         self.private_key_user = self.user.get_private_key(
             password_user=settings.DUMMY_USER_PASSWORD
