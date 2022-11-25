@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from core.auth.domain.user_key import UserKey
 from core.auth.models import RlcUser
 from core.folders.domain.value_objects.box import LockedBox
-from core.folders.domain.value_objects.keys import AsymmetricKey, EncryptedAsymmetricKey
+from core.folders.domain.value_objects.keys import EncryptedAsymmetricKey
 
 
 class Command(BaseCommand):
@@ -33,5 +33,6 @@ class Command(BaseCommand):
                         "private_key": private_key,
                         "public_key": public_key,
                         "origin": origin,
+                        "type": "USER",
                     }
         RlcUser.objects.bulk_update(users, fields=["key"])

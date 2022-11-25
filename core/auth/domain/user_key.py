@@ -3,14 +3,8 @@ from core.folders.domain.value_objects.box import OpenBox
 from core.folders.domain.value_objects.keys.base import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
-    EncryptedSymmetricKey,
     SymmetricKey,
 )
-
-
-class IdentityKey(SymmetricKey):
-    def decrypt(self, key: SymmetricKey) -> SymmetricKey:
-        return key
 
 
 class UserKey:
@@ -67,20 +61,22 @@ class UserKey:
 
     @property
     def is_encrypted(self):
-        return isinstance(self.__key, EncryptedSymmetricKey)
+        return isinstance(self.__key, EncryptedAsymmetricKey)
 
     def encrypt_self(self, password: str) -> "UserKey":
-        assert isinstance(self.__key, SymmetricKey)
+        assert isinstance(self.__key, AsymmetricKey)
 
-        key = SymmetricKey(key=OpenBox(password.encode("utf-8")), origin="ST1")
-        enc_key = EncryptedSymmetricKey.create(original=self.__key, key=key)
+        key = SymmetricKey(key=OpenBox(data=password.encode("utf-8")), origin="S1")
+        enc_key = EncryptedAsymmetricKey.create(original=self.__key, key=key)
 
         return UserKey(key=enc_key)
 
     def decrypt_self(self, password: str) -> "UserKey":
-        assert isinstance(self.__key, EncryptedSymmetricKey)
+        assert isinstance(self.__key, EncryptedAsymmetricKey)
 
-        unlock_key = SymmetricKey(key=OpenBox(password.encode("utf-8")), origin="ST1")
+        unlock_key = SymmetricKey(
+            key=OpenBox(data=password.encode("utf-8")), origin="S1"
+        )
         key = self.key.decrypt(unlock_key)
 
         return UserKey(key=key)
