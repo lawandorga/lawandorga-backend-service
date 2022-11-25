@@ -2,12 +2,10 @@ import asyncio
 import json
 
 from asgiref.sync import sync_to_async
-from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.utils.decorators import sync_and_async_middleware
 
-from core.auth.models import RlcUser
 from core.models import LoggedPath
 from core.seedwork.api_layer import ErrorResponse
 
