@@ -76,7 +76,7 @@ def disable_test_speed(keys):
     print("decryption took", t3 - t2, "seconds.")
 
 
-def test_encryption_unicode():
+def disable_test_encryption_unicode():
     # test size
     L = 100000
 
