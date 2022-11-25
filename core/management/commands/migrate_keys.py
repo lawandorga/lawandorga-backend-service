@@ -10,7 +10,7 @@ from core.folders.domain.value_objects.keys import EncryptedAsymmetricKey
 class Command(BaseCommand):
     def handle(self, *args, **options):
         Session.objects.all().delete()
-        users = list(RlcUser.objects.filter(id=2345))
+        users = list(RlcUser.objects.all())
         for u in users:
             if u.public_key and u.private_key:
                 if u.is_private_key_encrypted:
@@ -29,8 +29,8 @@ class Command(BaseCommand):
                     user_key = UserKey(key=key)
                     u.key = user_key.as_dict()
                 else:
-                    private_key = bytes(u.private_key).decode("ISO-8859-1")
-                    public_key = bytes(u.public_key).decode("ISO-8859-1")
+                    private_key = bytes(u.private_key).decode('utf-8')
+                    public_key = bytes(u.public_key).decode('utf-8')
                     origin = "A1"
                     u.key = {
                         "private_key": private_key,
