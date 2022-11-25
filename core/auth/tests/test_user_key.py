@@ -1,3 +1,5 @@
+import pickle
+
 from core.auth.domain.user_key import UserKey
 from core.folders.domain.value_objects.box import OpenBox
 from core.folders.domain.value_objects.keys import (
@@ -60,3 +62,11 @@ def test_user_key_can_encrypt_and_decrypt():
     key = AsymmetricKey.generate()
     u1 = UserKey(key=key)
     assert_key_works(u1.key)
+
+
+def todo_test_key_is_pickleable():
+    key = AsymmetricKey.generate()
+    u1 = UserKey(key=key)
+    u2 = pickle.dumps(u1)
+    u3 = pickle.loads(u2)
+    assert_key_works(u3.key)

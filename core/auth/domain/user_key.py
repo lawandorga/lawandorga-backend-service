@@ -1,3 +1,5 @@
+from typing import Union
+
 from core.folders.domain.types import StrDict
 from core.folders.domain.value_objects.box import OpenBox
 from core.folders.domain.value_objects.keys.base import (
@@ -39,7 +41,7 @@ class UserKey:
 
     def __init__(
         self,
-        key: EncryptedAsymmetricKey,
+        key: Union[AsymmetricKey, EncryptedAsymmetricKey],
     ):
         self.__key = key
         super().__init__()
@@ -56,7 +58,7 @@ class UserKey:
         }
 
     @property
-    def key(self):
+    def key(self) -> Union[EncryptedAsymmetricKey, AsymmetricKey]:
         return self.__key
 
     @property
@@ -77,6 +79,6 @@ class UserKey:
         unlock_key = SymmetricKey(
             key=OpenBox(data=password.encode("utf-8")), origin="S1"
         )
-        key = self.key.decrypt(unlock_key)
+        key = self.__key.decrypt(unlock_key)
 
         return UserKey(key=key)
