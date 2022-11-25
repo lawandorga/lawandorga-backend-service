@@ -1,5 +1,4 @@
 import pytest
-from django.conf import settings
 
 from core.auth.models import RlcUser, UserProfile
 from core.folders.domain.aggregates.folder import Folder
@@ -30,8 +29,6 @@ def user(db):
     o = Org.objects.create(name="Test")
     p = UserProfile.objects.create(email="dummy@law-orga.de", name="Mr. Dummy")
     u = RlcUser.objects.create(user=p, org=o)
-    u.generate_keys(settings.DUMMY_USER_PASSWORD)
-    u.save()
     o.generate_keys()
     user = RlcUser.objects.get(pk=u.pk)
     yield user

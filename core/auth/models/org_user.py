@@ -10,13 +10,17 @@ from django.core.mail import send_mail
 from django.db import models
 from django.template import loader
 
-from core.auth.domain.user_key import UserKey
 from core.auth.token_generator import EmailConfirmationTokenGenerator
 from core.folders.domain.external import IOwner
 from core.folders.domain.value_objects.keys import AsymmetricKey, EncryptedAsymmetricKey
 from core.rlc.models import HasPermission, Org, Permission
 from core.seedwork.domain_layer import DomainError
-from core.seedwork.encryption import EncryptedModelMixin
+from core.seedwork.encryption import (
+    AESEncryption,
+    EncryptedModelMixin,
+    RSAEncryption,
+    to_bytes,
+)
 from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
@@ -70,10 +74,11 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
     # settings
     frontend_settings = models.JSONField(null=True, blank=True)
     # encryption
-    key = models.JSONField(null=True, blank=True)
     private_key = models.BinaryField(null=True)
     is_private_key_encrypted = models.BooleanField(default=False)
     public_key = models.BinaryField(null=True)
+    encryption_class = AESEncryption
+    encrypted_fields = ["private_key"]
     # other
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -129,31 +134,56 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
             raise DomainError(message)
 
     def get_public_key(self) -> bytes:
-        return self.get_encryption_key().get_public_key().encode("utf-8")
+        """
+        gets the public key of the user from the database
+        :return: public key of user (PEM)
+        """
+        if not self.do_keys_exist:
+            self.generate_keys()
+        return to_bytes(self.public_key)
 
-    def get_private_key(self, *args, **kwargs) -> str:
-        return self.get_decryption_key().get_private_key().decode("utf-8")
+    def get_private_key(self, password_user=None, request=None) -> str:
+        if not self.do_keys_exist:
+            self.generate_keys()
 
-    def get_encryption_key(
-        self, *args, **kwargs
-    ) -> Union[AsymmetricKey, EncryptedAsymmetricKey]:
-        assert self.key is not None
-        u = UserKey.create_from_dict(self.key)
-        return u.key
+        if password_user and not request:
+            self.decrypt(password_user)
+            private_key = self.private_key
+
+        elif request and not password_user:
+            private_key = self.get_decryption_key().get_private_key()
+
+        else:
+            raise ValueError("You need to pass (password_user) or (request).")
+
+        return private_key  # type: ignore
+
+    def get_encryption_key(self, *args, **kwargs) -> EncryptedAsymmetricKey:
+        assert self.public_key is not None
+        if isinstance(self.public_key, memoryview):
+            key = self.public_key.tobytes().decode("utf-8")
+        else:
+            key = self.public_key.decode("utf-8")
+        origin = "A1"
+        return EncryptedAsymmetricKey(public_key=key, origin=origin)
 
     @staticmethod
-    def get_dummy_user_private_key(dummy: "RlcUser") -> str:
+    def get_dummy_user_private_key(dummy: "RlcUser"):
         if settings.TESTING and dummy.email == "dummy@law-orga.de":
-            u1 = UserKey.create_from_dict(dummy.key)
-            u2 = u1.decrypt_self(settings.DUMMY_USER_PASSWORD)
-            key = u2.key
-            assert isinstance(key, AsymmetricKey)
-            return key.get_private_key().decode("utf-8")
+            if dummy.is_private_key_encrypted:
+                private_key = dummy.encryption_class.decrypt(
+                    getattr(dummy, "private_key"), settings.DUMMY_USER_PASSWORD
+                )
+            elif isinstance(dummy.private_key, bytes):
+                private_key = dummy.private_key.decode("utf-8")
+            else:
+                raise ValueError("Dummy's private key could not be found.")
+            return private_key
 
         raise ValueError("This method is only available for dummy and in test mode.")
 
     def get_decryption_key(self, *args, **kwargs) -> AsymmetricKey:
-        assert self.key is not None
+        assert self.private_key is not None and self.public_key is not None
 
         private_key = cache.get(self.pk, None)
 
@@ -165,10 +195,10 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
                 "No private key could be found for user '{}'.".format(self.pk)
             )
 
-        if "key" in self.key:
-            public_key = self.key["key"]["public_key"]
+        if isinstance(self.public_key, memoryview):
+            public_key = self.public_key.tobytes().decode("utf-8")
         else:
-            public_key = self.key["public_key"]
+            public_key = self.public_key.decode("utf-8")
 
         origin = "A1"
 
@@ -204,10 +234,40 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         if speciality_of_study is not None:
             self.speciality_of_study = speciality_of_study
 
+    def encrypt(self, password=None):
+        if password is not None:
+            key = password
+        else:
+            raise ValueError("You need to pass (password).")
+
+        if not self.do_keys_exist:
+            self.generate_keys()
+
+        super().encrypt(key)
+
+        if not self.is_private_key_encrypted:
+            self.is_private_key_encrypted = True
+            self.save()
+
+    def decrypt(self, password=None):
+        if password is not None:
+            key = password
+        else:
+            raise ValueError("You need to pass (password).")
+
+        if not self.do_keys_exist:
+            self.generate_keys()
+
+        if not self.is_private_key_encrypted:
+            self.encrypt(key)
+            self.is_private_key_encrypted = True
+            self.save()
+
+        super().decrypt(key)
+
     def delete_keys(self):
         self.private_key = None
         self.public_key = None
-        self.key = None
         self.is_private_key_encrypted = False
         self.save()
 
@@ -239,11 +299,10 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         self.frontend_settings = data
         self.save(update_fields=["frontend_settings"])
 
-    def generate_keys(self, password: str):
-        key = AsymmetricKey.generate()
-        u1 = UserKey(key=key)
-        u2 = u1.encrypt_self(password)
-        self.key = u2.as_dict()
+    def generate_keys(self):
+        self.private_key, self.public_key = RSAEncryption.generate_keys()
+        self.is_private_key_encrypted = False
+        self.save()
 
     def delete(self, *args, **kwargs):
         user = self.user

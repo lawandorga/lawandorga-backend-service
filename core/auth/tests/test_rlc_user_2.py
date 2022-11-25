@@ -47,7 +47,7 @@ class TestRlcUser(TestCase):
         # setup
         rlc_user = self.user_1["rlc_user"]
         rlc_user.locked = True
-        rlc_user.generate_keys(password=self.user_1["password"])
+        rlc_user.encrypt(password=self.user_1["password"])
         rlc_user.save()
         # check
         c = Client()

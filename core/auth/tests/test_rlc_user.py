@@ -18,10 +18,9 @@ class UserBase:
         self.rlc_user = RlcUser.objects.create(
             user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
-        self.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
-        self.rlc_user.save()
         self.rlc.generate_keys()
         self.rlc_user = RlcUser.objects.get(pk=self.rlc_user.pk)
+        self.rlc_user.encrypt(password=settings.DUMMY_USER_PASSWORD)
         self.private_key = self.rlc_user.user.get_private_key(
             password_user=settings.DUMMY_USER_PASSWORD
         )
@@ -44,7 +43,6 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         self.another_rlc_user = RlcUser.objects.create(
             user=self.another_user, email_confirmed=True, accepted=True, org=self.rlc
         )
-        self.another_rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
         self.user.generate_keys_for_user(self.private_key, self.another_user)
 
     def create_rlc_user(self):
@@ -145,15 +143,15 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         user = UserProfile.objects.create(email="test3@law-orga.de")
         RlcUser.objects.create(user=user, org=self.rlc)
         user = UserProfile.objects.get(email="test3@law-orga.de")
-        user.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
-        assert user.rlc_user.key is not None
+        user.rlc_user.generate_keys()
+        assert user.rlc_user.private_key is not None
 
     def test_accept_works_on_new_user(self):
         user = UserProfile.objects.create(email="test3@law-orga.de")
         RlcUser.objects.create(user=user, org=self.rlc)
         user = UserProfile.objects.get(email="test3@law-orga.de")
-        user.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
-        assert user.rlc_user.key is not None
+        user.rlc_user.generate_keys()
+        assert user.rlc_user.private_key is not None
         self.rlc.accept_member(self.user, user, self.private_key)
 
     def test_accept_works(self):

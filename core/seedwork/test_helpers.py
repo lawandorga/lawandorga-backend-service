@@ -2,7 +2,6 @@ from typing import List, Optional
 
 from django.conf import settings
 
-from core.auth.domain.user_key import UserKey
 from core.auth.models import StatisticUser
 from core.models import RlcUser, UserProfile
 from core.records.models import Record, RecordEncryptionNew, RecordTemplate
@@ -43,14 +42,7 @@ def create_rlc_user(email="dummy@law-orga.de", name="Dummy 1", rlc=None):
     rlc_user = RlcUser.objects.create(
         user=user, email_confirmed=True, accepted=True, org=rlc
     )
-    rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
-    rlc_user.save()
-    private_key = (
-        UserKey.create_from_dict(rlc_user.key)
-        .decrypt_self(settings.DUMMY_USER_PASSWORD)
-        .key.get_private_key()
-        .decode("utf-8")
-    )
+    private_key = user.get_private_key(password_user=settings.DUMMY_USER_PASSWORD)
     return {
         "user": user,
         "username": user.email,

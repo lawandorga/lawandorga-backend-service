@@ -2,7 +2,6 @@ from django.conf import settings
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from core.auth.domain.user_key import UserKey
 from core.models import Note, Org, RlcUser, UserProfile
 from core.static import PERMISSION_DASHBOARD_MANAGE_NOTES
 from core.views import NoteViewSet
@@ -19,16 +18,9 @@ class NoteUserBase:
         self.rlc_user = RlcUser.objects.create(
             user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
-        self.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
-        self.rlc_user.save()
         self.rlc.generate_keys()
         self.rlc_user = RlcUser.objects.get(pk=self.rlc_user.pk)
-        self.private_key = (
-            UserKey.create_from_dict(self.rlc_user.key)
-            .decrypt_self(settings.DUMMY_USER_PASSWORD)
-            .key.get_private_key()
-            .decode("utf-8")
-        )
+        self.private_key = bytes(self.rlc_user.private_key).decode("utf-8")
 
 
 class NoteUserViewSetBase(NoteUserBase):

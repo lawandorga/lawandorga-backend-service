@@ -26,8 +26,6 @@ class BaseRecord:
         self.rlc_user = RlcUser.objects.create(
             user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
-        self.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
-        self.rlc_user.save()
         self.template = RecordTemplate.objects.create(
             rlc=self.rlc, name="Record Template"
         )
@@ -42,9 +40,9 @@ class BaseRecord:
 
     def create_user(self, email, name):
         user = UserProfile.objects.create(email=email, name=name)
-        user.set_password(settings.DUMMY_USER_PASSWORD)
+        user.set_password("pass1234")
         user.save()
-        r = RlcUser.objects.create(
+        RlcUser.objects.create(
             user=user,
             accepted=True,
             locked=False,
@@ -52,8 +50,6 @@ class BaseRecord:
             is_active=True,
             org=self.rlc,
         )
-        r.generate_keys(settings.DUMMY_USER_PASSWORD)
-        r.save()
 
 
 ###
