@@ -74,6 +74,7 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
     # settings
     frontend_settings = models.JSONField(null=True, blank=True)
     # encryption
+    key = models.JSONField(null=True, blank=True)
     private_key = models.BinaryField(null=True)
     is_private_key_encrypted = models.BooleanField(default=False)
     public_key = models.BinaryField(null=True)
