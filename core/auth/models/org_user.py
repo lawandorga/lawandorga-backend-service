@@ -137,7 +137,7 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
     def get_encryption_key(
         self, *args, **kwargs
     ) -> Union[AsymmetricKey, EncryptedAsymmetricKey]:
-        assert self.public_key is not None
+        assert self.key is not None
         u = UserKey.create_from_dict(self.key)
         return u.key
 
