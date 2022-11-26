@@ -243,6 +243,7 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         key = AsymmetricKey.generate()
         u1 = UserKey(key=key)
         u2 = u1.encrypt_self(password)
+        self.is_private_key_encrypted = True
         self.key = u2.as_dict()
 
     def delete(self, *args, **kwargs):

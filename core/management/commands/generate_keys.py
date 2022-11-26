@@ -29,8 +29,8 @@ class Command(BaseCommand):
                     user_key = UserKey(key=key)
                     u.key = user_key.as_dict()
                 else:
-                    private_key = bytes(u.private_key).decode('utf-8')
-                    public_key = bytes(u.public_key).decode('utf-8')
+                    private_key = bytes(u.private_key).decode("utf-8")
+                    public_key = bytes(u.public_key).decode("utf-8")
                     origin = "A1"
                     u.key = {
                         "private_key": private_key,
