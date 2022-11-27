@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from core.auth.api import schemas
 from core.auth.models import RlcUser
+from core.auth.use_cases.rlc_user import register_rlc_user
 from core.rlc.models import Permission
 from core.seedwork.api_layer import ApiError, Router
 from core.static import (
@@ -10,6 +11,19 @@ from core.static import (
 )
 
 router = Router()
+
+
+# register
+@router.post(input_schema=schemas.InputRlcUserCreate)
+def command__create_user(data: schemas.InputRlcUserCreate):
+    register_rlc_user(
+        None,
+        org=data.org,
+        name=data.name,
+        password=data.password,
+        email=data.email,
+        accepted_legal_requirements=data.accepted_legal_requirements,
+    )
 
 
 # list

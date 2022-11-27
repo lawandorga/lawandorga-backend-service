@@ -57,20 +57,6 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
             user=self.another_user, email_confirmed=True, accepted=True
         )
 
-    def test_create_works(self):
-        view = RlcUserViewSet.as_view(actions={"post": "create"})
-        data = {
-            "name": "Test",
-            "email": "test2@test.de",
-            "password": "test",
-            "password_confirm": "test",
-            "rlc": self.rlc.id,
-        }
-        request = self.factory.post("", data)
-        response = view(request)
-        self.assertEqual(201, response.status_code)
-        self.assertTrue(RlcUser.objects.filter(user__email="test2@test.de").exists())
-
     def test_email_confirmation_token_works(self):
         view = RlcUserViewSet.as_view(actions={"post": "activate"})
         rlc_user = self.rlc_user
@@ -198,20 +184,6 @@ class UserViewSetErrorTests(TestCase):
             user=self.another_user, email_confirmed=True, accepted=True, org=self.rlc
         )
 
-    def test_create_returns_error_message_on_different_passwords(self):
-        view = RlcUserViewSet.as_view(actions={"post": "create"})
-        data = {
-            "rlc": self.rlc.pk,
-            "name": "Test",
-            "email": "test2@test.de",
-            "password": "test1",
-            "password_confirm": "test2",
-        }
-        request = self.factory.post("/api/users/", data)
-        response = view(request)
-        self.assertContains(response, "non_field_errors", status_code=400)
-        self.assertEqual(400, response.status_code)
-
     def test_user_can_not_delete_someone_else(self):
         view = RlcUserViewSet.as_view(actions={"delete": "destroy"})
         url = "/api/users/{}/".format(self.another_rlc_user.pk)
@@ -244,13 +216,6 @@ class UserViewSetAccessTests(TestCase):
         self.rlc_user = RlcUser.objects.create(
             pk=1, user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
-
-    def test_everybody_can_post_to_user_create(self):
-        view = RlcUserViewSet.as_view(actions={"post": "create"})
-        request = self.factory.post("/api/users/")
-        response = view(request)
-        self.assertNotEqual(403, response.status_code)
-        self.assertNotEqual(401, response.status_code)
 
     def test_not_everytbody_can_hit_destroy(self):
         view = RlcUserViewSet.as_view(actions={"delete": "destroy"})
