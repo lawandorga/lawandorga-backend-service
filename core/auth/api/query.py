@@ -1,5 +1,4 @@
 from core.auth.api import schemas
-from core.auth.models import RlcUser
 from core.legal.models import LegalRequirement
 from core.rlc.models import Org
 from core.seedwork.api_layer import Router
