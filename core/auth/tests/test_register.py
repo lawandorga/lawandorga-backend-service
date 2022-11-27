@@ -49,8 +49,10 @@ def test_everybody_can_post_to_user_create(db):
 
 
 def test_with_legal_requirement_blocks(db, data):
-    LegalRequirement.objects.create(title='Required', accept_required=True, content='')
-    LegalRequirement.objects.create(title='Not required', accept_required=False, content='')
+    LegalRequirement.objects.create(title="Required", accept_required=True, content="")
+    LegalRequirement.objects.create(
+        title="Not required", accept_required=False, content=""
+    )
     client = Client()
     response = client.post(
         "/api/rlc_users/", data=json.dumps(data), content_type="application/json"
@@ -59,9 +61,13 @@ def test_with_legal_requirement_blocks(db, data):
 
 
 def test_with_legal_requirement_works(db, data):
-    lr_required = LegalRequirement.objects.create(title='Required', accept_required=True, content='')
-    data['accepted_legal_requirements'] = [lr_required.pk]
-    LegalRequirement.objects.create(title='Not required', accept_required=False, content='')
+    lr_required = LegalRequirement.objects.create(
+        title="Required", accept_required=True, content=""
+    )
+    data["accepted_legal_requirements"] = [lr_required.pk]
+    LegalRequirement.objects.create(
+        title="Not required", accept_required=False, content=""
+    )
     client = Client()
     response = client.post(
         "/api/rlc_users/", data=json.dumps(data), content_type="application/json"
