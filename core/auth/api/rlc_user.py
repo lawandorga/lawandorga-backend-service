@@ -22,7 +22,7 @@ def command__create_user(data: schemas.InputRlcUserCreate):
         name=data.name,
         password=data.password,
         email=data.email,
-        # accepted_legal_requirements=data.accepted_legal_requirements,
+        accepted_legal_requirements=data.accepted_legal_requirements,
     )
 
 

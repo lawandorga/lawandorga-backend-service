@@ -11,12 +11,10 @@ class InputRlcUserCreate(BaseModel):
     email: EmailStr
     password: str
     password_confirm: str
-    # accepted_legal_requirements: list[int]
+    accepted_legal_requirements: list[int] = []
 
     @validator("password_confirm")
     def passwords_match(cls, v, values, **kwargs):
-        print(values)
-        print(v)
         if "password" not in values or "password" in values and v != values["password"]:
             raise ValueError("The passwords do not match.")
         return v
