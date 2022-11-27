@@ -4,6 +4,37 @@ from uuid import UUID
 
 from pydantic import AnyUrl, BaseModel, EmailStr, validator
 
+from core.seedwork.api_layer import qs_to_list
+
+
+class OutputOrg(BaseModel):
+    name: str
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
+class OutputLegalRequirement(BaseModel):
+    title: str
+    id: int
+    content: str
+    accept_required: bool
+
+    class Config:
+        orm_mode = True
+
+
+class OutputRegisterPage(BaseModel):
+    orgs: list[OutputOrg]
+    legal_requirements: list[OutputLegalRequirement]
+
+    _ = qs_to_list("orgs")
+    __ = qs_to_list("legal_requirements")
+
+    class Config:
+        orm_mode = True
+
 
 class InputRlcUserCreate(BaseModel):
     org: int
