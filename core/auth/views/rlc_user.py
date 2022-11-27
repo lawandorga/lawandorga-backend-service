@@ -13,7 +13,6 @@ from core.static import PERMISSION_ADMIN_MANAGE_USERS
 from ..serializers import (
     ChangePasswordSerializer,
     EmailSerializer,
-    RlcUserCreateSerializer,
     RlcUserForeignSerializer,
     RlcUserSerializer,
     RlcUserUpdateSerializer,
@@ -24,7 +23,6 @@ from ..token_generator import EmailConfirmationTokenGenerator
 
 class RlcUserViewSet(
     CheckPermissionWall,
-    mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
     GenericViewSet,
 ):
@@ -46,29 +44,21 @@ class RlcUserViewSet(
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def perform_authentication(self, request):
-        if self.action in ["login", "refresh"]:
-            pass
-        else:
-            super().perform_authentication(request)
+        super().perform_authentication(request)
 
     def get_permissions(self):
         if self.action in [
             "statics",
-            "create",
             "logout",
-            "login",
             "password_reset",
             "password_reset_confirm",
             "activate",
-            "refresh",
         ]:
             return []
         return super().get_permissions()
 
     def get_serializer_class(self):
-        if self.action in ["create"]:
-            return RlcUserCreateSerializer
-        elif self.action in ["list"]:
+        if self.action in ["list"]:
             return RlcUserForeignSerializer
         elif self.action in ["update", "partial_update"]:
             return RlcUserUpdateSerializer

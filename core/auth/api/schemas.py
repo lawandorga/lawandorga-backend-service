@@ -2,7 +2,24 @@ from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
 from uuid import UUID
 
-from pydantic import AnyUrl, BaseModel
+from pydantic import AnyUrl, BaseModel, EmailStr, validator
+
+
+class InputRlcUserCreate(BaseModel):
+    org: int
+    name: str
+    email: EmailStr
+    password: str
+    password_confirm: str
+    # accepted_legal_requirements: list[int]
+
+    @validator("password_confirm")
+    def passwords_match(cls, v, values, **kwargs):
+        print(values)
+        print(v)
+        if "password" not in values or "password" in values and v != values["password"]:
+            raise ValueError("The passwords do not match.")
+        return v
 
 
 class OutputKey(BaseModel):
