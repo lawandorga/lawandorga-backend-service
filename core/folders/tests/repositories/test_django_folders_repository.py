@@ -71,3 +71,11 @@ def test_find_key_owner(db, folder_pk, user, repository):
     key = folder.keys[0]
     user2 = repository.find_key_owner(key.owner.slug)
     assert user2.pk == user.pk
+
+
+def test_stop_inherit_saved(db, user, repository):
+    folder1 = Folder.create(name="New Folder", org_pk=user.org_id, stop_inherit=True)
+    folder1.grant_access(to=user)
+    repository.save(folder1)
+    folder2 = repository.retrieve(user.org_id, folder1.pk)
+    assert folder2.stop_inherit

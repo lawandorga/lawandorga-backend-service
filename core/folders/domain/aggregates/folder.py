@@ -17,9 +17,13 @@ from core.seedwork.domain_layer import DomainError
 
 class Folder(IOwner):
     @staticmethod
-    def create(name: Optional[str] = None, org_pk: Optional[int] = None):
+    def create(
+        name: Optional[str] = None,
+        org_pk: Optional[int] = None,
+        stop_inherit: bool = False,
+    ):
         pk = uuid4()
-        return Folder(name=name, pk=pk, org_pk=org_pk)
+        return Folder(name=name, pk=pk, org_pk=org_pk, stop_inherit=stop_inherit)
 
     def __init__(
         self,
@@ -29,6 +33,7 @@ class Folder(IOwner):
         keys: Optional[List[Union[FolderKey, ParentKey]]] = None,
         parent: Optional["Folder"] = None,
         upgrades: Optional[list[Upgrade]] = None,
+        stop_inherit: bool = False,
     ):
         assert name is not None and pk is not None
         assert all([k.is_encrypted for k in keys or []])
@@ -37,6 +42,7 @@ class Folder(IOwner):
         self.__pk = pk
         self.__name = name
         self.__org_pk = org_pk
+        self.__stop_inherit = stop_inherit
         self.__keys = keys if keys is not None else []
         self.__upgrades = upgrades if upgrades is not None else []
 
@@ -49,6 +55,10 @@ class Folder(IOwner):
     @property
     def org_pk(self):
         return self.__org_pk
+
+    @property
+    def stop_inherit(self):
+        return self.__stop_inherit
 
     @property
     def keys(self):
@@ -105,7 +115,7 @@ class Folder(IOwner):
         for key in self.__keys:
             if isinstance(key, FolderKey) and key.owner.slug == owner.slug:
                 return True
-        if self.__parent is None:
+        if self.__parent is None or self.__stop_inherit:
             return False
         return self.__parent.has_access(owner)
 
@@ -184,12 +194,13 @@ class Folder(IOwner):
             key = folder_key.key
             return key
 
-        enc_parent_key = self.__find_parent_key()
-        if self.__parent is not None and enc_parent_key:
-            unlock_key = self.__parent.get_decryption_key(requestor=requestor)
-            parent_key = enc_parent_key.decrypt_self(unlock_key)
-            key = parent_key.key
-            return key
+        if not self.__stop_inherit:
+            enc_parent_key = self.__find_parent_key()
+            if self.__parent is not None and enc_parent_key:
+                unlock_key = self.__parent.get_decryption_key(requestor=requestor)
+                parent_key = enc_parent_key.decrypt_self(unlock_key)
+                key = parent_key.key
+                return key
 
         raise DomainError("No key was found for this folder.")
 

@@ -24,6 +24,7 @@ class FoldersFolder(models.Model):
     )
     keys = models.JSONField(blank=True)
     upgrades = models.JSONField(blank=True)
+    stop_inherit = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
@@ -54,6 +55,7 @@ class FoldersFolder(models.Model):
             f.org_id = folder.org_pk
             f.keys = keys
             f.upgrades = upgrades
+            f.stop_inherit = folder.stop_inherit
 
         else:
             f = FoldersFolder(
@@ -63,6 +65,7 @@ class FoldersFolder(models.Model):
                 org_id=folder.org_pk,
                 keys=keys,
                 upgrades=upgrades,
+                stop_inherit=folder.stop_inherit,
             )
 
         return f
@@ -94,6 +97,7 @@ class FoldersFolder(models.Model):
             pk=self.pk,
             org_pk=self.org_id,
             keys=keys,
+            stop_inherit=self.stop_inherit,
         )
 
         # revive upgrades
