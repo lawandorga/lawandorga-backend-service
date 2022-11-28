@@ -9,6 +9,7 @@ from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.upgrade import UpgradeRepository
 from core.folders.domain.value_objects.keys import FolderKey
 from core.folders.domain.value_objects.keys.parent_key import ParentKey
+from core.rlc.models import Org
 from core.seedwork.repository import RepositoryWarehouse
 
 
@@ -18,7 +19,9 @@ class FoldersFolder(models.Model):
     )
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True)
     name = models.CharField(max_length=1000)
-    org_pk = models.IntegerField(null=True, blank=True)
+    org = models.ForeignKey(
+        Org, related_name="folders_folders", on_delete=models.CASCADE
+    )
     keys = models.JSONField(blank=True)
     upgrades = models.JSONField(blank=True)
     deleted = models.BooleanField(default=False, blank=True)
@@ -48,7 +51,7 @@ class FoldersFolder(models.Model):
             f = FoldersFolder.objects.get(pk=folder.pk)
             f._parent_id = folder.parent_pk
             f.name = folder.name
-            f.org_pk = folder.org_pk
+            f.org_id = folder.org_pk
             f.keys = keys
             f.upgrades = upgrades
 
@@ -57,7 +60,7 @@ class FoldersFolder(models.Model):
                 _parent_id=folder.parent_pk,
                 pk=folder.pk,
                 name=folder.name,
-                org_pk=folder.org_pk,
+                org_id=folder.org_pk,
                 keys=keys,
                 upgrades=upgrades,
             )
@@ -89,7 +92,7 @@ class FoldersFolder(models.Model):
             name=self.name,
             parent=parent,
             pk=self.pk,
-            org_pk=self.org_pk,
+            org_pk=self.org_id,
             keys=keys,
         )
 

@@ -9,6 +9,7 @@ from core.folders.domain.aggregates.upgrade import Item, Upgrade
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.repositiories.upgrade import UpgradeRepository
 from core.folders.domain.value_objects.keys import SymmetricKey
+from core.folders.models import FoldersFolder
 from core.seedwork.repository import RepositoryWarehouse
 
 
@@ -24,8 +25,9 @@ class RecordUpgrade(Upgrade, models.Model):
     REPOSITORY = DjangoRecordUpgradeRepository.IDENTIFIER
 
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4)
-    org_pk = models.IntegerField()
-    folder_pk = models.UUIDField()
+    raw_folder = models.ForeignKey(
+        FoldersFolder, on_delete=models.CASCADE, related_name="record_upgrades"
+    )
 
     class Meta:
         verbose_name = "RecordUpgrade"
@@ -37,7 +39,7 @@ class RecordUpgrade(Upgrade, models.Model):
     @property
     def folder(self) -> Folder:
         r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-        folder = r.retrieve(self.org_pk, self.folder_pk)
+        folder = r.retrieve(self.raw_folder.org_id, self.raw_folder_id)
         return folder
 
     @property

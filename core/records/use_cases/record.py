@@ -36,7 +36,7 @@ def create_a_record(
             upgrade = u
             break
     if upgrade is None:
-        upgrade = RecordUpgrade(org_pk=__actor.org_id, folder_pk=folder.pk)
+        upgrade = RecordUpgrade(raw_folder_id=folder.pk)
         folder.add_upgrade(upgrade)
 
     record.upgrade = upgrade

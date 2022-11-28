@@ -110,8 +110,8 @@ class Folder(IOwner):
         return self.__parent.has_access(owner)
 
     def add_upgrade(self, upgrade: Upgrade):
-        for upgrade in self.__upgrades:
-            if upgrade.REPOSITORY == upgrade.REPOSITORY:
+        for u in self.__upgrades:
+            if u.REPOSITORY == upgrade.REPOSITORY:
                 raise ValueError(
                     "This folder already has an upgrade with the same repository."
                 )
