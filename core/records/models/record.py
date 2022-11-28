@@ -143,7 +143,7 @@ class Record(models.Model):
             encryption_key = folder.get_encryption_key(requestor=user)
             self.key = EncryptedSymmetricKey.create(key, encryption_key).as_dict()
             for encryption in list(self.encryptions.all()):
-                self.upgrade.folder.grant_access(to=encryption.user, by=user)
+                folder.grant_access(to=encryption.user, by=user)
             r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
             with transaction.atomic():
                 r.save(folder)
