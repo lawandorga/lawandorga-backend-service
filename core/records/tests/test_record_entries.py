@@ -212,7 +212,7 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
         request = self.factory.post("", data)
         force_authenticate(request, self.user)
 
-        self.record.put_in_folder()
+        self.record.get_aes_key(self.user.rlc_user)
 
         response = view(request)
         self.assertEqual(response.status_code, 201)
@@ -226,7 +226,7 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
         self.setup_entry()
         view = RecordUsersEntryViewSet.as_view(actions={"patch": "partial_update"})
         data = {"value": []}
-        self.record.put_in_folder()
+        self.record.put_in_folder(self.user.rlc_user)
         request = self.factory.patch("", data=data, format="json")
         force_authenticate(request, self.user)
         response = view(request, pk=self.entry.pk)
@@ -250,8 +250,7 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
             "field": field.pk,
             "value": [u.pk for u in users[:1]],
         }
-        self.record.put_in_folder()
-        self.record.grant_access(self.user.rlc_user, None)
+        self.record.get_aes_key(self.user.rlc_user)
         request = self.factory.post("", data=data, format="json")
         force_authenticate(request, self.user)
         response = view(request)

@@ -107,8 +107,9 @@ class Record(models.Model):
         if self.upgrade is not None:
             r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
             folder = self.upgrade.folder
-            folder.grant_access(to=to, by=by)
-            r.save(folder)
+            if not folder.has_access(to):
+                folder.grant_access(to=to, by=by)
+                r.save(folder)
         else:
             raise ValueError("This record has no upgrade.")
 
@@ -129,9 +130,9 @@ class Record(models.Model):
         )
         self.key = enc_key.as_dict()
 
-    def get_aes_key(self, user: RlcUser, private_key_user: str):
+    def get_aes_key(self, user: RlcUser, *args, **kwargs):
         if self.upgrade is None:
-            self.put_in_folder()
+            self.put_in_folder(user)
         assert self.upgrade is not None
 
         if self.key is None:
@@ -139,11 +140,9 @@ class Record(models.Model):
             aes_key_box = OpenBox(data=bytes(aes_key, "utf-8"))
             key = SymmetricKey(key=aes_key_box, origin=SymmetricEncryptionV1.VERSION)
             folder = self.upgrade.folder
-            folder.grant_access(user)
             encryption_key = folder.get_encryption_key(requestor=user)
             self.key = EncryptedSymmetricKey.create(key, encryption_key).as_dict()
-            for encryption in list(self.encryptions.all()):
-                folder.grant_access(to=encryption.user, by=user)
+
             r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
             with transaction.atomic():
                 r.save(folder)
@@ -193,14 +192,27 @@ class Record(models.Model):
             entries = dict(sorted(entries.items(), key=lambda item: item[1]["order"]))
         return entries
 
-    def put_in_folder(self):
+    def put_in_folder(self, user: RlcUser):
         from core.records.models.upgrade import RecordUpgrade
 
-        folder_name = "Folder of Record: {}".format(self.identifier or "Not-Set")
-        folder = Folder.create(folder_name, org_pk=self.template.rlc_id)
+        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+
+        records_folder = r.get_or_create_records_folder(
+            org_pk=self.template.rlc_id, user=user
+        )
+
+        folder_name = "{}".format(self.identifier or "Not-Set")
+        folder = Folder.create(
+            folder_name, org_pk=self.template.rlc_id, stop_inherit=True
+        )
+        folder.grant_access(user)
+        folder.set_parent(records_folder, user)
+        for encryption in list(self.encryptions.exclude(user_id=user.id)):
+            folder.grant_access(to=encryption.user, by=user)
+
         upgrade = RecordUpgrade(raw_folder_id=folder.pk)
         folder.add_upgrade(upgrade)
-        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+
         with transaction.atomic():
             upgrade.save()
             self.upgrade = upgrade

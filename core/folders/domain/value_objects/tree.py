@@ -22,8 +22,9 @@ class Access:
                 )
                 continue
             if isinstance(key, ParentKey):
-                f = self.__folders_dict[folder.parent_pk]
-                access += self.get_owners_with_access(f)
+                if not folder.stop_inherit:
+                    f = self.__folders_dict[folder.parent_pk]
+                    access += self.get_owners_with_access(f)
                 continue
             access.append({"name": "Unknown", "slug": "-"})
         return access

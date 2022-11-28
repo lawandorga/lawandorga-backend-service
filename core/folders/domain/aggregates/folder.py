@@ -208,12 +208,10 @@ class Folder(IOwner):
         # the key is symmetric therefore the encryption and decryption key is the same
         return self.get_encryption_key(*args, **kwargs)
 
-    def set_parent(
-        self, folder: Optional["Folder"] = None, by: Optional[IOwner] = None
-    ):
-        assert folder is not None and by is not None
+    def set_parent(self, parent: "Folder", by: Optional[IOwner] = None):
+        assert by is not None
 
-        self.__parent = folder
+        self.__parent = parent
 
         # get the key of self
         if len(self.__keys) == 0:
@@ -228,7 +226,7 @@ class Folder(IOwner):
         )
 
         # encrypt the new parent key
-        lock_key = folder.get_encryption_key(requestor=by)
+        lock_key = parent.get_encryption_key(requestor=by)
         enc_parent_key = parent_key.encrypt_self(lock_key)
 
         # add the parent key to keys
@@ -239,6 +237,9 @@ class Folder(IOwner):
 
     def grant_access(self, to: IOwner, by: Optional[IOwner] = None):
         key: Union[AsymmetricKey, SymmetricKey]
+
+        if self.has_access(to):
+            raise DomainError("This user already has access to this folder.")
 
         if len(self.__keys) == 0:
             key = SymmetricKey.generate()

@@ -17,6 +17,11 @@ class FolderRepository(Repository, abc.ABC):
 
     @classmethod
     @abc.abstractmethod
+    def get_or_create_records_folder(cls, org_pk: int, user: IOwner) -> Folder:
+        pass
+
+    @classmethod
+    @abc.abstractmethod
     def dict(cls, org_pk: int) -> dict[UUID, Folder]:
         pass
 

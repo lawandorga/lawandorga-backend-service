@@ -37,6 +37,21 @@ class DjangoFolderRepository(FolderRepository):
         return cast(IOwner, RlcUser.objects.get(slug=slug))
 
     @classmethod
+    def get_or_create_records_folder(cls, org_pk: int, user: IOwner) -> Folder:
+        name = "Records"
+        if FoldersFolder.objects.filter(
+            org_id=org_pk, name=name, _parent=None
+        ).exists():
+            f = FoldersFolder.objects.get(org_id=org_pk, name=name, _parent=None)
+            return cls.dict(org_pk)[f.pk]
+        folder = Folder.create(name=name, org_pk=org_pk)
+        folder.grant_access(user)
+        for u in RlcUser.objects.filter(org_id=org_pk).exclude(slug=user.slug):
+            folder.grant_access(u, user)
+        cls.save(folder)
+        return cls.dict(org_pk)[folder.pk]
+
+    @classmethod
     def retrieve(cls, org_pk: int, pk: UUID) -> Folder:
         folders = cls.dict(org_pk)
         if pk in folders:
