@@ -64,7 +64,7 @@ def test_user_key_can_encrypt_and_decrypt():
     assert_key_works(u1.key)
 
 
-def todo_test_key_is_pickleable():
+def test_key_is_pickleable():
     key = AsymmetricKey.generate()
     u1 = UserKey(key=key)
     u2 = pickle.dumps(u1)
