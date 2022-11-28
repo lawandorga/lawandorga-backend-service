@@ -198,7 +198,7 @@ class Record(models.Model):
 
         folder_name = "Folder of Record: {}".format(self.identifier or "Not-Set")
         folder = Folder.create(folder_name, org_pk=self.template.rlc_id)
-        upgrade = RecordUpgrade(folder_pk=folder.pk, org_pk=self.template.rlc_id)
+        upgrade = RecordUpgrade(raw_folder_id=folder.pk)
         folder.add_upgrade(upgrade)
         r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
         with transaction.atomic():

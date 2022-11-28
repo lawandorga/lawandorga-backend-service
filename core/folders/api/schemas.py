@@ -6,6 +6,10 @@ from pydantic import BaseModel
 from core.seedwork.api_layer import qs_to_list
 
 
+class InputFolderDetail(BaseModel):
+    id: UUID
+
+
 class InputFolderCreate(BaseModel):
     name: str
     parent: Optional[UUID]
@@ -63,3 +67,8 @@ class OutputFolderPage(BaseModel):
     available_persons: list[OutputAccess]
 
     _ = qs_to_list("available_persons")
+
+
+class OutputFolderDetail(BaseModel):
+    folder: OutputFolder
+    access: list[OutputAccess]
