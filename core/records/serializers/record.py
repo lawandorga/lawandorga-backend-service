@@ -310,7 +310,7 @@ class RecordStateEntrySerializer(RecordEntrySerializer):
             field = attrs["field"]
         else:
             raise ValidationError("Field needs to be set.")
-        if "value" in attrs and not attrs["value"] in field.options:
+        if "value" in attrs and attrs["value"] not in field.options:
             raise ValidationError("The selected state is not allowed.")
         if "value" in attrs and attrs["value"] == "Closed":
             if (
@@ -442,7 +442,7 @@ class RecordMultipleEntrySerializer(RecordEntrySerializer):
             field = attrs["field"]
         else:
             raise ValidationError("Field needs to be set.")
-        if not (set(attrs["value"]) <= set(field.options)):
+        if set(attrs["value"]) > set(field.options):
             raise ValidationError("The selected values contain not allowed values.")
         return attrs
 

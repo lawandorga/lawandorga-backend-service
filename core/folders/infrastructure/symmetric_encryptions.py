@@ -22,7 +22,7 @@ class SymmetricEncryptionV1(SymmetricEncryption):
     def generate_key(cls) -> tuple[str, str]:
         password_characters = string.ascii_letters + string.digits + string.punctuation
         return (
-            "".join(secrets.choice(password_characters) for i in range(64)),
+            "".join(secrets.choice(password_characters) for _ in range(64)),
             cls.VERSION,
         )
 
