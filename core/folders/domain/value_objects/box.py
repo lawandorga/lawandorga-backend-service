@@ -1,4 +1,5 @@
 import abc
+import base64
 
 from core.folders.domain.types import StrDict
 
@@ -26,6 +27,22 @@ class Box(bytes):
 
 
 class LockedBox(Box):
+    ENCODING = "ISO-8859-1"
+
+    @staticmethod
+    def to_str(data: bytes):
+        data_1 = data
+        data_2 = base64.b64encode(data_1)
+        data_3 = data_2.decode(LockedBox.ENCODING)
+        return data_3
+
+    @staticmethod
+    def to_bytes(data: str) -> bytes:
+        data_1 = data
+        data_2 = data_1.encode(LockedBox.ENCODING)
+        data_3 = base64.b64decode(data_2)
+        return data_3
+
     @staticmethod
     def create_from_dict(d: StrDict) -> "LockedBox":
         assert (
@@ -35,7 +52,7 @@ class LockedBox(Box):
             and isinstance(d["key_origin"], str)
         )
 
-        enc_data = d["enc_data"].encode("ISO-8859-1")
+        enc_data = LockedBox.to_bytes(d["enc_data"])
         key_origin: str = d["key_origin"]
 
         return LockedBox(enc_data=enc_data, key_origin=key_origin)
@@ -50,7 +67,7 @@ class LockedBox(Box):
 
     def as_dict(self) -> StrDict:  # type: ignore
         return {
-            "enc_data": self.__enc_data.decode("ISO-8859-1"),
+            "enc_data": LockedBox.to_str(self.__enc_data),
             "key_origin": self.__key_origin,
         }
 

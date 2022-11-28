@@ -2,12 +2,10 @@ import asyncio
 import json
 
 from asgiref.sync import sync_to_async
-from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.utils.decorators import sync_and_async_middleware
 
-from core.auth.models import RlcUser
 from core.models import LoggedPath
 from core.seedwork.api_layer import ErrorResponse
 
@@ -83,33 +81,7 @@ def authentication_middleware(get_response):
             key = request.session.get("private_key")
             cache.set(request.user.rlc_user.pk, key, 10)
 
-        # header = request.META.get("HTTP_AUTHORIZATION")
-        # if header:
-        #     token = header.split(" ")[1]
-        #     payload = jwt.decode(
-        #         token, settings.SIMPLE_JWT["SIGNING_KEY"], algorithms=["HS256"]
-        #     )
-        #     user = UserProfile.objects.get(pk=payload["django_user"])
-        #     request.user = user
-        #     if hasattr(request.user, "rlc_user") and "key" in payload:
-        #         cache.set(user.rlc_user.pk, payload["key"], 10)
-
-        if (
-            settings.TESTING
-            and request.user
-            and request.user.pk
-            and request.user.email == "dummy@law-orga.de"
-        ):
-            private_key = RlcUser.get_dummy_user_private_key(request.user.rlc_user)
-            cache.set(request.user.rlc_user.pk, private_key, 10)
-
         return request
-
-    def clear_cache(request):
-        pass
-        # don't clear the cache for now as another request at the same time might delete the cache
-        # if hasattr(request, "user") and hasattr(request.user, "rlc_user"):
-        #     cache.delete(request.user.rlc_user.pk)
 
     if asyncio.iscoroutinefunction(get_response):
 
@@ -125,7 +97,6 @@ def authentication_middleware(get_response):
                 )
             else:
                 response = await get_response(request)
-            await sync_to_async(clear_cache)(request)
             return response
 
     else:
@@ -142,7 +113,6 @@ def authentication_middleware(get_response):
                 )
             else:
                 response = get_response(request)
-            clear_cache(request)
             return response
 
     return middleware

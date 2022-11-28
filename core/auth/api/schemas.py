@@ -2,7 +2,53 @@ from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
 from uuid import UUID
 
-from pydantic import AnyUrl, BaseModel
+from pydantic import AnyUrl, BaseModel, EmailStr, validator
+
+from core.seedwork.api_layer import qs_to_list
+
+
+class OutputOrg(BaseModel):
+    name: str
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
+class OutputLegalRequirement(BaseModel):
+    title: str
+    id: int
+    content: str
+    accept_required: bool
+
+    class Config:
+        orm_mode = True
+
+
+class OutputRegisterPage(BaseModel):
+    orgs: list[OutputOrg]
+    legal_requirements: list[OutputLegalRequirement]
+
+    _ = qs_to_list("orgs")
+    __ = qs_to_list("legal_requirements")
+
+    class Config:
+        orm_mode = True
+
+
+class InputRlcUserCreate(BaseModel):
+    org: int
+    name: str
+    email: EmailStr
+    password: str
+    password_confirm: str
+    accepted_legal_requirements: list[int] = []
+
+    @validator("password_confirm")
+    def passwords_match(cls, v, values, **kwargs):
+        if "password" not in values or "password" in values and v != values["password"]:
+            raise ValueError("The passwords do not match.")
+        return v
 
 
 class OutputKey(BaseModel):
