@@ -88,7 +88,7 @@ def disable_test_encryption_unicode():
     for i in range(0, L):
         open_box = OpenBox(data=data[i])
         locked_box = keys[i].lock(open_box)
-        locked_box_dict = locked_box.__dict__()
+        locked_box_dict = locked_box.as_dict()
         if "\u0000" in locked_box_dict["enc_data"]:
             print("found error after {}".format(i))
             print(locked_box_dict)

@@ -53,7 +53,7 @@ class UserKey:
         assert isinstance(self.__key, EncryptedAsymmetricKey)
 
         return {
-            "key": self.__key.__dict__(),
+            "key": self.__key.as_dict(),
             "type": "USER",
         }
 

@@ -39,7 +39,7 @@ def test_user_key_create_from_encrypted_works():
         public_key=key.get_public_key(),
         origin=key.origin,
     )
-    u1 = UserKey.create_from_dict({"key": enc_key.__dict__(), "type": "USER"})
+    u1 = UserKey.create_from_dict({"key": enc_key.as_dict(), "type": "USER"})
     u2 = u1.decrypt_self(password)
     assert_key_works(u2.key)
 
