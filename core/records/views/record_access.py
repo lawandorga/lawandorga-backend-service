@@ -52,8 +52,6 @@ class RecordAccessViewSet(
             instance.record.grant_access(
                 instance.requested_by.rlc_user, request.user.rlc_user
             )
-        elif serializer.validated_data["state"] == "de":
-            pass
 
         serializer.save()
         return Response(serializer.data)
