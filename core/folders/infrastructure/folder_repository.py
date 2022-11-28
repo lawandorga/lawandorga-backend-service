@@ -21,7 +21,7 @@ class DjangoFolderRepository(FolderRepository):
     @classmethod
     def __as_dict(cls, org_pk: int) -> dict[UUID, FoldersFolder]:
         folders = {}
-        for f in list(FoldersFolder.query().filter(org_pk=org_pk, deleted=False)):
+        for f in list(FoldersFolder.query().filter(org_id=org_pk, deleted=False)):
             folders[f.pk] = f
         return folders
 
