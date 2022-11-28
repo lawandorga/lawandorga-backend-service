@@ -41,7 +41,6 @@ class DjangoFolderRepository(FolderRepository):
         folders = cls.dict(org_pk)
         if pk in folders:
             return folders[pk]
-        print(pk)
         raise ObjectDoesNotExist()
 
     @classmethod
