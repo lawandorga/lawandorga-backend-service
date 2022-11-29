@@ -1,5 +1,5 @@
 import secrets
-import uuid
+from uuid import uuid4
 
 from django.contrib.auth.hashers import make_password
 from django.db import models
@@ -9,7 +9,7 @@ from core.mail.models.org import MailOrg
 
 
 class MailUser(models.Model):
-    id = models.UUIDField(unique=True, primary_key=True, default=uuid.uuid4)
+    uuid = models.UUIDField(db_index=True, default=uuid4, unique=True)
     user = models.OneToOneField(
         UserProfile, related_name="mail_user", on_delete=models.CASCADE
     )
@@ -47,7 +47,7 @@ class MailUser(models.Model):
         return True
 
     def generate_random_password(self):
-        return secrets.token_urlsafe()
+        return secrets.token_urlsafe()[:16]
 
     def set_password(self, password: str):
         pw_1 = make_password(password)

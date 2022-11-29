@@ -6,7 +6,7 @@ from core.mail.models.user import MailUser
 
 
 class MailAdmin(models.Model):
-    uuid = models.UUIDField(db_index=True, default=uuid4)
+    uuid = models.UUIDField(db_index=True, default=uuid4, unique=True)
     user = models.OneToOneField(
         MailUser, related_name="admin", on_delete=models.PROTECT
     )

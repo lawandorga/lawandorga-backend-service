@@ -1,10 +1,10 @@
-import uuid
+from uuid import uuid4
 
 from django.db import models
 
 
 class MailOrg(models.Model):
-    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4)
+    uuid = models.UUIDField(db_index=True, default=uuid4, unique=True)
 
     class Meta:
         verbose_name = "MailOrg"
