@@ -5,6 +5,13 @@ from django.conf import settings
 
 from core import static
 from core.auth.domain.user_key import UserKey
+from core.collab.models import CollabPermission
+from core.files.models import FolderPermission
+from core.fixtures import (
+    create_collab_permissions,
+    create_folder_permissions,
+    create_permissions,
+)
 from core.models import (
     CollabDocument,
     Group,
@@ -761,6 +768,11 @@ def create_collab_documents(user, rlc):
 
 
 def create() -> None:
+    # fixtures
+    create_permissions(Permission)
+    create_collab_permissions(CollabPermission)
+    create_folder_permissions(FolderPermission)
+    # password
     dummy_password = settings.DUMMY_USER_PASSWORD
     # rlcs and fixtures
     rlc1, rlc2 = create_rlcs()
