@@ -43,24 +43,26 @@ def test_account_constraints_2(db):
 
 
 def test_create_alias(db, mail_user, domain):
-    create_address(mail_user, localpart="test", user=mail_user.id, domain=domain.id)
+    create_address(mail_user, localpart="test", user=mail_user.uuid, domain=domain.uuid)
 
 
 def test_create_alias_exists(db, mail_user, domain):
-    create_address(mail_user, localpart="test", user=mail_user.id, domain=domain.id)
+    create_address(mail_user, localpart="test", user=mail_user.uuid, domain=domain.uuid)
     with pytest.raises(UseCaseError):
-        create_address(mail_user, localpart="test", user=mail_user.id, domain=domain.id)
+        create_address(
+            mail_user, localpart="test", user=mail_user.uuid, domain=domain.uuid
+        )
 
 
 def test_delete_alias(db, mail_user, alias):
-    delete_address(mail_user, alias.id)
+    delete_address(mail_user, alias.uuid)
 
 
 def test_delete_default_alias(db, mail_user, alias):
     alias.is_default = True
     alias.save()
     with pytest.raises(UseCaseError):
-        delete_address(mail_user, alias.id)
+        delete_address(mail_user, alias.uuid)
 
 
 def test_set_alias_default(db, mail_user, domain, alias):
@@ -69,7 +71,7 @@ def test_set_alias_default(db, mail_user, domain, alias):
     )
     alias.is_default = True
     alias.save()
-    set_address_as_default(mail_user, alias2.id)
+    set_address_as_default(mail_user, alias2.uuid)
     assert (
         MailAddress.objects.filter(account__user=mail_user, is_default=True).count()
         == 1
