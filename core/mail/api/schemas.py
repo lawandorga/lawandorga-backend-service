@@ -62,7 +62,7 @@ class OutputMailUser2(BaseModel):
 
 
 class OutputAccount2(BaseModel):
-    user: OutputMailUser2
+    user: Optional[OutputMailUser2]
 
     class Config:
         orm_mode = True
