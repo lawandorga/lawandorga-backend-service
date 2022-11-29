@@ -1,4 +1,4 @@
-import uuid
+from uuid import uuid4
 
 from django.db import models
 
@@ -7,7 +7,7 @@ from core.mail.models.user import MailUser
 
 
 class MailGroup(models.Model):
-    id = models.UUIDField(unique=True, primary_key=True, default=uuid.uuid4)
+    uuid = models.UUIDField(db_index=True, default=uuid4, unique=True)
     org = models.ForeignKey(MailOrg, related_name="groups", on_delete=models.CASCADE)
     members = models.ManyToManyField(MailUser, related_name="groups")
 

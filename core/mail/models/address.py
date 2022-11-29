@@ -1,4 +1,4 @@
-import uuid
+from uuid import uuid4
 
 from django.db import models
 
@@ -7,7 +7,7 @@ from core.mail.models.domain import MailDomain
 
 
 class MailAddress(models.Model):
-    id = models.UUIDField(unique=True, primary_key=True, default=uuid.uuid4)
+    uuid = models.UUIDField(db_index=True, default=uuid4, unique=True)
     localpart = models.CharField(max_length=100, db_index=True)
     account = models.ForeignKey(
         MailAccount, on_delete=models.CASCADE, related_name="addresses", db_index=True

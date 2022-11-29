@@ -1,6 +1,5 @@
+from django.core.exceptions import ObjectDoesNotExist
 from oidc_provider.lib.claims import ScopeClaims
-
-from .models import UserProfile
 
 
 def userinfo(claims, user):
@@ -24,11 +23,11 @@ class RlcScopeClaims(ScopeClaims):
     def scope_rlc(self):
         try:
             dic = {
-                "matrix_localpart": self.user.matrix_user.id,
+                "matrix_localpart": self.user.matrix_user.matrix_id,
                 "name": self.userinfo["name"],
                 "email": self.userinfo["email"],
                 "rlc": self.user.matrix_user.group,
             }
             return dic
-        except UserProfile.matrix_user.RelatedObjectDoesNotExist:
+        except ObjectDoesNotExist:
             return ""

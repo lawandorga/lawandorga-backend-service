@@ -1,6 +1,7 @@
 from binascii import hexlify
 from random import randbytes
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
 from .org_user import RlcUser
@@ -11,7 +12,7 @@ class MatrixUser(models.Model):
     user = models.OneToOneField(
         UserProfile, on_delete=models.CASCADE, related_name="matrix_user"
     )
-    id = models.CharField(max_length=8, primary_key=True, editable=False)
+    matrix_id = models.CharField(max_length=8, editable=False, unique=True)
     _group = models.CharField(max_length=255, null=True, blank=True)
     # other
     created = models.DateTimeField(auto_now_add=True)
@@ -28,11 +29,11 @@ class MatrixUser(models.Model):
         )
 
     def save(self, **kwargs):
-        if not self.id:
-            id = hexlify(randbytes(4)).decode()
-            while MatrixUser.objects.filter(id=id).exists():
-                id = hexlify(randbytes(4)).decode()
-            self.id = id
+        if not self.matrix_id:
+            matrix_id = hexlify(randbytes(4)).decode()
+            while MatrixUser.objects.filter(matrix_id=matrix_id).exists():
+                matrix_id = hexlify(randbytes(4)).decode()
+            self.matrix_id = matrix_id
         super().save(**kwargs)
 
     @property
@@ -42,5 +43,5 @@ class MatrixUser(models.Model):
         try:
             rlc_user = RlcUser.objects.get(user=self.user)
             return rlc_user.org.name
-        except RlcUser.DoesNotExist:
+        except ObjectDoesNotExist:
             return ""

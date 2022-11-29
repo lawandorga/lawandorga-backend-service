@@ -1,4 +1,4 @@
-import uuid
+from uuid import uuid4
 
 from django.db import models
 from django.db.models import Q
@@ -8,8 +8,8 @@ from core.mail.models.user import MailUser
 
 
 class MailAccount(models.Model):
-    id = models.UUIDField(unique=True, primary_key=True, default=uuid.uuid4)
-    relative_path = models.UUIDField(unique=True, default=uuid.uuid4)
+    uuid = models.UUIDField(db_index=True, default=uuid4, unique=True)
+    relative_path = models.UUIDField(unique=True, default=uuid4)
     group = models.OneToOneField(
         MailGroup, related_name="account", on_delete=models.CASCADE, null=True
     )
