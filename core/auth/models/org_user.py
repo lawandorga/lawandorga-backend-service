@@ -71,9 +71,9 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
     frontend_settings = models.JSONField(null=True, blank=True)
     # encryption
     key = models.JSONField(null=True, blank=True)
-    private_key = models.BinaryField(null=True)
+    old_private_key = models.BinaryField(null=True)
     is_private_key_encrypted = models.BooleanField(default=False)
-    public_key = models.BinaryField(null=True)
+    old_public_key = models.BinaryField(null=True)
     # other
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -112,6 +112,11 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
             if not lr.accepted:
                 return True
         return False
+
+    def get_decrypted_key_from_password(self, password: str) -> UserKey:
+        enc_user_key = UserKey.create_from_dict(self.key)
+        user_key = enc_user_key.decrypt_self(password)
+        return user_key
 
     def check_login_allowed(self):
         if not self.email_confirmed:
