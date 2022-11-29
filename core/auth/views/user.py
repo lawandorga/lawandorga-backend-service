@@ -35,8 +35,7 @@ class CustomLoginView(LoginView):
                 rlc_user.key = u2.as_dict()
                 rlc_user.save()
             # get and decrypt the key
-            u3 = UserKey.create_from_dict(rlc_user.key)
-            u4 = u3.decrypt_self(form.data["password"])
+            u4 = rlc_user.get_decrypted_key_from_password(form.data["password"])
             self.request.session["private_key"] = u4.key.get_private_key().decode(
                 "utf-8"
             )

@@ -90,7 +90,7 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
     def test_change_password_works(self):
         view = RlcUserViewSet.as_view(actions={"post": "change_password"})
         self.user.rlc_user.decrypt(settings.DUMMY_USER_PASSWORD)
-        private_key = self.user.rlc_user.private_key
+        private_key = self.user.rlc_user.get_private_key()
         data = {
             "current_password": settings.DUMMY_USER_PASSWORD,
             "new_password": "pass1234!",
@@ -100,9 +100,9 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         force_authenticate(request, self.user)
         response = view(request)
         self.assertEqual(200, response.status_code)
-        keys = RlcUser.objects.get(user__pk=self.user.pk)
-        keys.decrypt("pass1234!")
-        self.assertEqual(private_key, keys.private_key)
+        rlc_user = RlcUser.objects.get(user__pk=self.user.pk)
+        user_key = rlc_user.get_decrypted_key_from_password("pass1234!")
+        self.assertEqual(private_key, user_key.key.get_private_key().decode("utf-8"))
 
     # def test_destroy_works_on_myself(self):
     #     view = UserViewSet.as_view(actions={'delete': 'destroy'})
