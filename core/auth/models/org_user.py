@@ -246,6 +246,13 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         self.is_private_key_encrypted = True
         self.key = u2.as_dict()
 
+    def change_password_for_keys(self, new_password: str):
+        key = self.get_decryption_key()
+        u1 = UserKey(key=key)
+        u2 = u1.encrypt_self(new_password)
+        self.is_private_key_encrypted = True
+        self.key = u2.as_dict()
+
     def delete(self, *args, **kwargs):
         user = self.user
         super().delete(*args, **kwargs)

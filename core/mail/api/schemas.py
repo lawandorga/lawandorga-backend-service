@@ -11,7 +11,7 @@ class InputAddDomain(BaseModel):
 
 
 class InputChangeDomain(BaseModel):
-    id: UUID
+    uuid: UUID
     name: str
 
 
@@ -30,7 +30,7 @@ class InputSetDefaultAddress(BaseModel):
 
 
 class OutputDomain(BaseModel):
-    id: UUID
+    uuid: UUID
     name: str
 
     class Config:
@@ -45,7 +45,7 @@ class OutputDomain2(BaseModel):
 
 
 class OutputAddress(BaseModel):
-    id: UUID
+    uuid: UUID
     localpart: str
     domain: OutputDomain
     is_default: bool
@@ -92,7 +92,7 @@ class OutputAccount(BaseModel):
 
 
 class OutputMailUser(BaseModel):
-    id: UUID
+    uuid: UUID
     email: Optional[str]
     account: OutputAccount
     aliases: list[str]
