@@ -8,7 +8,7 @@ from core.mail.models.user import MailUser
 class MailAdmin(models.Model):
     uuid = models.UUIDField(db_index=True, default=uuid4)
     user = models.OneToOneField(
-        MailUser, related_name="admin", on_delete=models.CASCADE
+        MailUser, related_name="admin", on_delete=models.PROTECT
     )
 
     class Meta:
