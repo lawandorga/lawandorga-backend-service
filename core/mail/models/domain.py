@@ -13,8 +13,8 @@ class MailDomain(models.Model):
     )
 
     class Meta:
-        verbose_name = "Domain"
-        verbose_name_plural = "Domains"
+        verbose_name = "MailDomain"
+        verbose_name_plural = "MailDomains"
 
     def __str__(self):
         return "mailDomain: {};".format(self.pk)

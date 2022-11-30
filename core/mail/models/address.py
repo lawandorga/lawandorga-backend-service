@@ -18,8 +18,8 @@ class MailAddress(models.Model):
     )
 
     class Meta:
-        verbose_name = "Alias"
-        verbose_name_plural = "Aliases"
+        verbose_name = "MailAddress"
+        verbose_name_plural = "MailAddress"
 
     def __str__(self):
         return "address: {}; email: {}@{};".format(
