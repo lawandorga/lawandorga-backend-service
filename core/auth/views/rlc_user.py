@@ -1,4 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError
@@ -139,7 +140,7 @@ class RlcUserViewSet(
         detail=True, methods=["POST"], authentication_classes=[], permission_classes=[]
     )
     def password_reset_confirm(self, request, *args, **kwargs):
-        rlc_user = self.get_object()
+        rlc_user: RlcUser = self.get_object()
 
         serializer = UserPasswordResetConfirmSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -148,16 +149,11 @@ class RlcUserViewSet(
         user = rlc_user.user
         if PasswordResetTokenGenerator().check_token(user, token):
             user.set_password(new_password)
-            user.save()
+            rlc_user.generate_keys(new_password)
             rlc_user.locked = True
-            rlc_user.save()
-            # generate new user private and public key based on the new password
-            rlc_user.public_key = None
-            rlc_user.private_key = None
-            rlc_user.save()
-            # get the user from db because the old encryption_keys might still be in this user
-            user = UserProfile.objects.get(pk=rlc_user.user.pk)
-            user.get_private_key(password_user=new_password)
+            with transaction.atomic():
+                user.save()
+                rlc_user.save()
             # return
             return Response(status=status.HTTP_200_OK)
         else:

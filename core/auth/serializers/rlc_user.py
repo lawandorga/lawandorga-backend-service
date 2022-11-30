@@ -66,7 +66,12 @@ class RlcUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RlcUser
-        exclude = ["private_key", "public_key", "is_private_key_encrypted"]
+        exclude = [
+            "old_private_key",
+            "old_public_key",
+            "is_private_key_encrypted",
+            "key",
+        ]
 
     def get_name(self, obj):
         return obj.user.name
