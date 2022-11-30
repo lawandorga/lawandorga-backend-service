@@ -1,5 +1,5 @@
 from core.mail.models import MailDomain, MailUser
-from core.mail.use_cases.finders import domain_from_id
+from core.mail.use_cases.finders import mail_domain_from_id
 from core.seedwork.use_case_layer import UseCaseError, find, use_case
 
 
@@ -12,6 +12,6 @@ def add_domain(__actor: MailUser, domain: str):
 
 
 @use_case
-def change_domain(__actor: MailUser, name: str, domain=find(domain_from_id)):
+def change_domain(__actor: MailUser, name: str, domain=find(mail_domain_from_id)):
     domain.name = name
     domain.save()

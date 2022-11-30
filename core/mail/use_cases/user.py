@@ -3,8 +3,8 @@ from django.db import transaction
 from core.auth.models import UserProfile
 from core.mail.models import MailAccount, MailAddress, MailOrg, MailUser
 from core.mail.use_cases.finders import (
-    address_from_id,
-    domain_from_id,
+    mail_address_from_id,
+    mail_domain_from_id,
     mail_user_from_id,
 )
 from core.seedwork.use_case_layer import UseCaseError, find, use_case
@@ -39,7 +39,7 @@ def create_address(
     __actor: MailUser,
     localpart: str,
     user=find(mail_user_from_id),
-    domain=find(domain_from_id),
+    domain=find(mail_domain_from_id),
 ):
     if MailAddress.objects.filter(localpart=localpart, domain=domain).exists():
         raise UseCaseError(
@@ -53,7 +53,7 @@ def create_address(
 
 
 @use_case
-def set_address_as_default(__actor: MailUser, address=find(address_from_id)):
+def set_address_as_default(__actor: MailUser, address=find(mail_address_from_id)):
     with transaction.atomic():
         MailAddress.objects.filter(account=address.account).update(is_default=False)
         address.is_default = True
@@ -61,7 +61,7 @@ def set_address_as_default(__actor: MailUser, address=find(address_from_id)):
 
 
 @use_case
-def delete_address(__actor: MailUser, address=find(address_from_id)):
+def delete_address(__actor: MailUser, address=find(mail_address_from_id)):
     if address.is_default:
         raise UseCaseError("You can not delete the default address.")
 
