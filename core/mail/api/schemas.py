@@ -165,7 +165,7 @@ class OutputPageGroup(BaseModel):
     _ = qs_to_list("available_domains")
     __ = qs_to_list("addresses")
     ___ = qs_to_list("members")
-    ____ = qs_to_list('available_users')
+    ____ = qs_to_list("available_users")
 
 
 class OutputPageUser(BaseModel):

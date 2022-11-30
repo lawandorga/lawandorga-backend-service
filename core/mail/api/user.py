@@ -23,7 +23,8 @@ def command__create_address(mail_user: MailUser, data: schemas.InputCreateAddres
 
 
 @router.delete(
-    url="<uuid:user>/delete_address/<uuid:address>/", input_schema=schemas.InputDeleteAddress
+    url="<uuid:user>/delete_address/<uuid:address>/",
+    input_schema=schemas.InputDeleteAddress,
 )
 def command__delete_address(mail_user: MailUser, data: schemas.InputDeleteAddress):
     delete_address(mail_user, data.address)

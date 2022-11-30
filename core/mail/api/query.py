@@ -2,7 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from core.auth.models import UserProfile
 from core.mail.api import schemas
-from core.mail.models import MailAddress, MailDomain, MailUser
+from core.mail.models import MailDomain, MailUser
 from core.mail.models.group import MailGroup
 from core.seedwork.api_layer import ApiError, Router
 
@@ -44,10 +44,16 @@ def query__page_group(mail_user: MailUser, data: schemas.InputPageGroup):
     available_domains = MailDomain.objects.filter(org=mail_user.org)
     addresses = group.account.addresses.all()
     members = group.members.all()
-    available_users = MailUser.objects.exclude(pk__in=members.values_list('pk', flat=True))
+    available_users = MailUser.objects.exclude(
+        pk__in=members.values_list("pk", flat=True)
+    )
 
-    return {"addresses": addresses, "available_domains": available_domains, "members": members,
-            'available_users': available_users}
+    return {
+        "addresses": addresses,
+        "available_domains": available_domains,
+        "members": members,
+        "available_users": available_users,
+    }
 
 
 @router.get(
