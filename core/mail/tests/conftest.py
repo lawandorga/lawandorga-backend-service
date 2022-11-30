@@ -1,6 +1,8 @@
 import pytest
+from django.db import transaction
 
 from core.mail.models import MailAccount, MailAddress, MailDomain, MailOrg, MailUser
+from core.mail.models.group import MailGroup
 from core.seedwork import test_helpers
 
 
@@ -39,6 +41,29 @@ def mail_user(db, mail_org):
     mail_user = MailUser.objects.create(user=user, org=mail_org, pw_hash="")
     MailAccount.objects.create(user=mail_user)
     yield mail_user
+
+
+@pytest.fixture
+def another_mail_user(db, mail_org):
+    user = test_helpers.create_user(email="dummy4@law-orga.de")
+    mail_user = MailUser.objects.create(user=user, org=mail_org, pw_hash="")
+    MailAccount.objects.create(user=mail_user)
+    yield mail_user
+
+
+@pytest.fixture
+def mail_group(db, mail_user, domain):
+    group = MailGroup(org=mail_user.org)
+    account = MailAccount(group=group)
+    address = MailAddress(
+        localpart="conftest", domain=domain, is_default=True, account=account
+    )
+    with transaction.atomic():
+        group.save()
+        account.save()
+        address.save()
+        group.members.add(mail_user)
+    yield group
 
 
 @pytest.fixture

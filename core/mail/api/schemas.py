@@ -6,6 +6,43 @@ from pydantic import BaseModel
 from core.seedwork.api_layer import qs_to_list
 
 
+# group
+class InputCreateGroupMail(BaseModel):
+    localpart: str
+    domain: UUID
+
+
+class InputDeleteGroupMail(BaseModel):
+    group: UUID
+
+
+class InputAddMemberToGroupMail(BaseModel):
+    group: UUID
+    member: UUID
+
+
+class InputRemoveMemberFromGroupMail(BaseModel):
+    group: UUID
+    member: UUID
+
+
+class InputAddAddressToGroup(BaseModel):
+    localpart: str
+    group: UUID
+    domain: UUID
+
+
+class InputSetDefaultGroupAddress(BaseModel):
+    group: UUID
+    address: UUID
+
+
+class InputDeleteGroupAddress(BaseModel):
+    group: UUID
+    address: UUID
+
+
+# domain
 class InputAddDomain(BaseModel):
     name: str
 
@@ -15,6 +52,7 @@ class InputChangeDomain(BaseModel):
     name: str
 
 
+# mail user
 class InputCreateAddress(BaseModel):
     localpart: str
     domain: UUID
@@ -29,6 +67,7 @@ class InputSetDefaultAddress(BaseModel):
     address: UUID
 
 
+# query
 class OutputDomain(BaseModel):
     uuid: UUID
     name: str
