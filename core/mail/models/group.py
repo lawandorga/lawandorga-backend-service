@@ -17,3 +17,10 @@ class MailGroup(models.Model):
 
     def __str__(self):
         return "mailGroup: {};".format(self.id)
+
+    @property
+    def email(self):
+        address = self.account.addresses.filter(is_default=True).first()
+        if address is None:
+            return None
+        return address.address
