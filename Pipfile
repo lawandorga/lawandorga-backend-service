@@ -32,3 +32,4 @@ pytest-env = "*"
 ics = "*"
 django = {extras = ["argon2"], version = "*"}
 pydantic = {extras = ["email"], version = "*"}
+dnspython = "*"
