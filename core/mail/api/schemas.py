@@ -200,3 +200,8 @@ class OutputPageUser(BaseModel):
 
     _ = qs_to_list("available_domains")
     __ = qs_to_list("addresses")
+
+
+class OutputDomainCheck(BaseModel):
+    mx_records: list[str]
+    valid: bool

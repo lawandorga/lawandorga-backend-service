@@ -1,3 +1,7 @@
+from typing import Optional
+
+import dns.resolver
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
 from core.auth.models import UserProfile
@@ -71,3 +75,22 @@ def query__page_user(mail_user: MailUser, data: schemas.InputPageUser):
     addresses = user.account.addresses.all()
 
     return {"addresses": addresses, "available_domains": available_domains}
+
+
+@router.get(url="check_domain/", output_schema=schemas.OutputDomainCheck)
+def query__check_domain(mail_user: MailUser):
+    mx_records: list[str] = []
+    data = {"mx_records": mx_records, "valid": False}
+
+    domain: Optional[MailDomain] = mail_user.org.domains.first()
+    if domain is None:
+        return data
+
+    for record in dns.resolver.resolve(domain.name, "MX"):
+        exchange = str(record.exchange)
+        mx_records.append(exchange)
+
+    if len(mx_records) == 1 and settings.MAIL_MX_RECORD in mx_records:
+        data["valid"] = True
+
+    return data

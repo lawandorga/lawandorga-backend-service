@@ -201,6 +201,9 @@ TIMEOUT_TIMEDELTA = timedelta(minutes=30)
 # This is used for ics calendar integration links
 CALENDAR_URL = "http://localhost:8000/api/events/ics/"
 
+# this is used to check the domain settings for the email application
+MAIL_MX_RECORD = "mail.law-orga.de."
+
 # General settings displayed on the index page
 RUNTIME = datetime.now(pytz.timezone("Europe/Berlin")).strftime("%Y-%m-%d--%H:%M:%S")
 IMAGE = os.getenv("PIPELINE_IMAGE", "unknown")
