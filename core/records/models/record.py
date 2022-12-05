@@ -11,6 +11,7 @@ from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.value_objects.box import OpenBox
 from core.folders.domain.value_objects.keys import EncryptedSymmetricKey, SymmetricKey
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
+from core.folders.models import FoldersFolder
 from core.records.models import EncryptedClient  # type: ignore
 from core.records.models.template import (
     RecordEncryptedFileField,
@@ -210,14 +211,15 @@ class Record(models.Model):
         for encryption in list(self.encryptions.exclude(user_id=user.id)):
             folder.grant_access(to=encryption.user, by=user)
 
-        upgrade = RecordUpgrade(raw_folder_id=folder.pk)
+        upgrade = RecordUpgrade()
         folder.add_upgrade(upgrade)
 
         with transaction.atomic():
+            r.save(folder)
+            upgrade.raw_folder_id = FoldersFolder.from_domain(folder).pk
             upgrade.save()
             self.upgrade = upgrade
             self.save()
-            r.save(folder)
 
 
 ###

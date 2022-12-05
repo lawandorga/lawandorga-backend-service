@@ -111,7 +111,7 @@ class FoldersFolder(models.Model):
             upgrade_repository = cast(
                 Type[UpgradeRepository], RepositoryWarehouse.get(upgrade["repository"])
             )
-            u = upgrade_repository.retrieve(pk=upgrade["pk"])
+            u = upgrade_repository.retrieve(uuid=upgrade["uuid"])
             folder.add_upgrade(u)
 
         # return

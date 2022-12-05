@@ -4,7 +4,7 @@ from django.db import transaction
 
 from core.auth.models import RlcUser
 from core.folders.domain.repositiories.folder import FolderRepository
-from core.folders.use_cases.finders import folder_from_id
+from core.folders.use_cases.finders import folder_from_uuid
 from core.records.models import Record, RecordUpgrade
 from core.records.use_cases.finders import template_from_id
 from core.seedwork.repository import RepositoryWarehouse
@@ -17,7 +17,7 @@ from core.static import (
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
 def create_a_record(
-    __actor: RlcUser, folder=find(folder_from_id), template=find(template_from_id)
+    __actor: RlcUser, folder=find(folder_from_uuid), template=find(template_from_id)
 ):
     if not folder.has_access(__actor):
         raise UseCaseError(
@@ -36,7 +36,8 @@ def create_a_record(
             upgrade = u
             break
     if upgrade is None:
-        upgrade = RecordUpgrade(raw_folder_id=folder.pk)
+        upgrade = RecordUpgrade()
+        upgrade.set_folder(folder)
         folder.add_upgrade(upgrade)
 
     record.upgrade = upgrade

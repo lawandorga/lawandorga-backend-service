@@ -11,5 +11,5 @@ if TYPE_CHECKING:
 class UpgradeRepository(Repository, abc.ABC):
     @classmethod
     @abc.abstractmethod
-    def retrieve(cls, pk: UUID) -> "Upgrade":
+    def retrieve(cls, uuid: UUID) -> "Upgrade":
         pass

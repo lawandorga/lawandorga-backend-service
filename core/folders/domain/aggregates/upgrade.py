@@ -1,6 +1,5 @@
 import abc
-from typing import TYPE_CHECKING, Optional
-from uuid import UUID
+from typing import TYPE_CHECKING, Any, Optional
 
 from core.folders.domain.types import StrDict
 from core.folders.domain.value_objects.keys import SymmetricKey
@@ -19,7 +18,7 @@ class Item:
 
 class Upgrade:
     REPOSITORY: str
-    pk: UUID
+    uuid: Any
 
     # @classmethod
     # def create_from_dict(cls, d: StrDict, upgrade: "Upgrade") -> "Upgrade":
@@ -41,7 +40,7 @@ class Upgrade:
     #     self.__folder = folder
 
     def as_dict(self) -> StrDict:
-        return {"pk": str(self.pk), "repository": self.REPOSITORY}
+        return {"uuid": str(self.uuid), "repository": self.REPOSITORY}
 
     @property
     @abc.abstractmethod

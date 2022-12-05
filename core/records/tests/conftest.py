@@ -61,7 +61,7 @@ def folder(db, org, user):
     folder.grant_access(to=user["rlc_user"])
     r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
     r.save(folder)
-    yield r.retrieve(org.pk, folder.pk)
+    yield r.retrieve(org.pk, folder.uuid)
 
 
 @pytest.fixture

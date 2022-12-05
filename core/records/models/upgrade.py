@@ -51,5 +51,8 @@ class RecordUpgrade(Upgrade, models.Model):
         records_3 = list(records_2)
         return records_3
 
+    def set_folder(self, folder: Folder):
+        self.raw_folder = FoldersFolder.from_domain(folder)
+
     def reencrypt(self, old_key: SymmetricKey, new_key: SymmetricKey):
         pass

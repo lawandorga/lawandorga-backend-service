@@ -44,7 +44,7 @@ class DjangoFolderRepository(FolderRepository):
         for u in RlcUser.objects.filter(org_id=org_pk).exclude(uuid=user.uuid):
             folder.grant_access(u, user)
         cls.save(folder)
-        return cls.dict(org_pk)[folder.pk]
+        return cls.dict(org_pk)[folder.uuid]
 
     @classmethod
     def retrieve(cls, org_pk: int, uuid: UUID) -> Folder:
