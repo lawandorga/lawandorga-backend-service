@@ -109,7 +109,7 @@ def test_folder_key_decryption_error(single_encryption):
 def test_folder_key_str_method(single_encryption):
     user1 = UserObject()
     key = FolderKey(owner=user1, key=AsymmetricKey.generate())
-    assert str(key) == "FolderKey of {}".format(user1.slug)
+    assert str(key) == "FolderKey of {}".format(user1.uuid)
 
 
 def test_folder_access(single_encryption, car_content_key):

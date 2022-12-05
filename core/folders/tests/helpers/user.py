@@ -11,7 +11,7 @@ from core.folders.domain.value_objects.keys import (
 
 class UserObject(IOwner):
     def __init__(self):
-        self.slug = uuid4()
+        self.uuid = uuid4()
         self.key = AsymmetricKey.generate()
 
     def get_decryption_key(
@@ -27,7 +27,7 @@ class UserObject(IOwner):
 
 class ForeignUserObject(IOwner):
     def __init__(self):
-        self.slug = uuid4()
+        self.uuid = uuid4()
         self.key = AsymmetricKey.generate()
 
     def get_decryption_key(
