@@ -18,7 +18,7 @@ class Access:
         for key in folder.keys:
             if isinstance(key, FolderKey):
                 access.append(
-                    {"name": str(key.owner.name), "slug": str(key.owner.slug)}
+                    {"name": str(key.owner.name), "slug": str(key.owner.uuid)}
                 )
                 continue
             if isinstance(key, ParentKey):

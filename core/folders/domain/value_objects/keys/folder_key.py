@@ -23,7 +23,7 @@ class FolderKey:
         )
 
         key = EncryptedSymmetricKey.create_from_dict(d["key"])
-        assert str(owner.slug) == d["owner"]
+        assert str(owner.uuid) == d["owner"]
 
         return FolderKey(key=key, owner=owner)
 
@@ -40,13 +40,13 @@ class FolderKey:
         super().__init__()
 
     def __str__(self):
-        return "FolderKey of {}".format(self.__owner.slug)
+        return "FolderKey of {}".format(self.__owner.uuid)
 
     def as_dict(self) -> StrDict:
         assert isinstance(self.__key, EncryptedSymmetricKey)
 
         return {
-            "owner": str(self.__owner.slug),
+            "owner": str(self.__owner.uuid),
             "key": self.__key.as_dict(),
             "type": "FOLDER",
         }

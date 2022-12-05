@@ -1,5 +1,5 @@
-import uuid
 from typing import Any, Dict, List, Union
+from uuid import uuid4
 
 import ics
 from django.conf import settings
@@ -48,7 +48,7 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         UserProfile, on_delete=models.CASCADE, related_name="rlc_user"
     )
     org = models.ForeignKey(Org, related_name="users", on_delete=models.PROTECT)
-    slug = models.UUIDField(default=uuid.uuid4, unique=True)
+    uuid = models.UUIDField(default=uuid4, unique=True)
     # blocker
     email_confirmed = models.BooleanField(default=True)
     accepted = models.BooleanField(default=False)
@@ -65,7 +65,7 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         choices=STUDY_CHOICES, max_length=100, blank=True, null=True
     )
     calendar_uuid = models.UUIDField(
-        primary_key=False, default=uuid.uuid4, editable=True, unique=True
+        primary_key=False, default=uuid4, editable=True, unique=True
     )
     # settings
     frontend_settings = models.JSONField(null=True, blank=True)
@@ -430,5 +430,5 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         return c.serialize()
 
     def regenerate_calendar_uuid(self):
-        self.calendar_uuid = uuid.uuid4()
+        self.calendar_uuid = uuid4()
         self.save()

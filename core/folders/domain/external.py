@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 class IOwner:
-    slug: Any
+    uuid: Any
 
     @abc.abstractmethod
     def get_encryption_key(

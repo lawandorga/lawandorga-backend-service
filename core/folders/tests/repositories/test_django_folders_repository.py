@@ -69,7 +69,7 @@ def test_tree(db):
 def test_find_key_owner(db, folder_pk, user, repository):
     folder = repository.retrieve(user.org_id, folder_pk)
     key = folder.keys[0]
-    user2 = repository.find_key_owner(key.owner.slug)
+    user2 = repository.find_key_owner(key.owner.uuid)
     assert user2.pk == user.pk
 
 

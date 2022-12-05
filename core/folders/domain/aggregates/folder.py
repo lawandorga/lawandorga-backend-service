@@ -113,7 +113,7 @@ class Folder(IOwner):
 
     def has_access(self, owner: IOwner) -> bool:
         for key in self.__keys:
-            if isinstance(key, FolderKey) and key.owner.slug == owner.slug:
+            if isinstance(key, FolderKey) and key.owner.uuid == owner.uuid:
                 return True
         if self.__parent is None or self.__stop_inherit:
             return False
@@ -171,7 +171,7 @@ class Folder(IOwner):
 
     def __find_folder_key(self, user: IOwner) -> Optional[FolderKey]:
         for key in self.__keys:
-            if isinstance(key, FolderKey) and key.owner.slug == user.slug:
+            if isinstance(key, FolderKey) and key.owner.uuid == user.uuid:
                 return key
 
         return None
@@ -266,7 +266,7 @@ class Folder(IOwner):
 
         new_keys = list(
             filter(
-                lambda x: isinstance(x, ParentKey) or x.owner.slug != of.slug,
+                lambda x: isinstance(x, ParentKey) or x.owner.uuid != of.uuid,
                 self.__keys,
             )
         )

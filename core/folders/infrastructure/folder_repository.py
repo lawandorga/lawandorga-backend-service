@@ -29,12 +29,12 @@ class DjangoFolderRepository(FolderRepository):
     def __users(cls, org_pk: int) -> dict[UUID, RlcUser]:
         users = {}
         for u in list(RlcUser.objects.filter(org_id=org_pk)):
-            users[u.slug] = u
+            users[u.uuid] = u
         return users
 
     @classmethod
-    def find_key_owner(cls, slug: UUID) -> IOwner:
-        return cast(IOwner, RlcUser.objects.get(slug=slug))
+    def find_key_owner(cls, uuid: UUID) -> IOwner:
+        return cast(IOwner, RlcUser.objects.get(uuid=uuid))
 
     @classmethod
     def get_or_create_records_folder(cls, org_pk: int, user: IOwner) -> Folder:
@@ -46,7 +46,7 @@ class DjangoFolderRepository(FolderRepository):
             return cls.dict(org_pk)[f.pk]
         folder = Folder.create(name=name, org_pk=org_pk)
         folder.grant_access(user)
-        for u in RlcUser.objects.filter(org_id=org_pk).exclude(slug=user.slug):
+        for u in RlcUser.objects.filter(org_id=org_pk).exclude(slug=user.uuid):
             folder.grant_access(u, user)
         cls.save(folder)
         return cls.dict(org_pk)[folder.pk]
