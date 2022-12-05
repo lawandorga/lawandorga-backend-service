@@ -15,6 +15,8 @@ from core.seedwork.use_case_layer import UseCaseError, find, use_case
 def create_group_mail(
     __actor: MailUser, localpart: str, domain=find(mail_domain_from_id)
 ):
+    MailAddress.check_localpart(localpart)
+
     if MailAddress.objects.filter(localpart=localpart, domain=domain):
         raise UseCaseError("This mail is already in use.")
 
@@ -56,6 +58,8 @@ def add_address_to_group(
     group=find(mail_group_from_id),
     domain=find(mail_domain_from_id),
 ):
+    MailAddress.check_localpart(localpart)
+
     if MailAddress.objects.filter(localpart=localpart, domain=domain).exists():
         raise UseCaseError(
             "An alias with the same localpart and domain exists already."

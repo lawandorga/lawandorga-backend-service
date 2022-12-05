@@ -41,6 +41,8 @@ def create_address(
     user=find(mail_user_from_id),
     domain=find(mail_domain_from_id),
 ):
+    MailAddress.check_localpart(localpart)
+
     if MailAddress.objects.filter(localpart=localpart, domain=domain).exists():
         raise UseCaseError(
             "An alias with the same localpart and domain exists already."

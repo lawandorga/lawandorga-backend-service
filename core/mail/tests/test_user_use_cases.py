@@ -76,3 +76,13 @@ def test_set_alias_default(db, mail_user, domain, alias):
         MailAddress.objects.filter(account__user=mail_user, is_default=True).count()
         == 1
     )
+
+
+def test_create_alias_invalid_schema(db, mail_user, domain):
+    with pytest.raises(ValueError):
+        create_address(
+            mail_user,
+            localpart="invalid#localpart",
+            user=mail_user.uuid,
+            domain=domain.uuid,
+        )
