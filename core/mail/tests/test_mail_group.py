@@ -1,3 +1,5 @@
+import pytest
+
 from core.mail.models import MailAddress
 from core.mail.models.group import MailGroup
 from core.mail.use_cases.group import (
@@ -52,3 +54,15 @@ def test_delete_group_address(db, mail_user, mail_group, domain):
     address = MailAddress.objects.filter(localpart="custom", domain=domain).get()
     delete_group_address(mail_user, address.uuid)
     assert not MailAddress.objects.filter(localpart="custom", domain=domain).exists()
+
+
+def test_add_address_block_with_invalid_format(db, mail_user, mail_group, domain):
+    with pytest.raises(ValueError):
+        add_address_to_group(
+            mail_user, "invalid%localpart", mail_group.uuid, domain.uuid
+        )
+
+
+def test_create_group_with_invalid_localpart(db, mail_user, domain):
+    with pytest.raises(ValueError):
+        create_group_mail(mail_user, localpart="AFLJKFD", domain=domain.uuid)

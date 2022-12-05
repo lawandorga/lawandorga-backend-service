@@ -1,8 +1,9 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
+from core.mail.models import MailAddress, MailDomain
 from core.seedwork.api_layer import qs_to_list
 
 
@@ -19,6 +20,11 @@ class InputPageUser(BaseModel):
 class InputCreateGroupMail(BaseModel):
     localpart: str
     domain: UUID
+
+    @validator("localpart")
+    def localpart_validation(cls, v):
+        MailAddress.check_localpart(v)
+        return v
 
 
 class InputDeleteGroupMail(BaseModel):
@@ -40,6 +46,11 @@ class InputAddAddressToGroup(BaseModel):
     group: UUID
     domain: UUID
 
+    @validator("localpart")
+    def localpart_validation(cls, v):
+        MailAddress.check_localpart(v)
+        return v
+
 
 class InputSetDefaultGroupAddress(BaseModel):
     group: UUID
@@ -55,10 +66,20 @@ class InputDeleteGroupAddress(BaseModel):
 class InputAddDomain(BaseModel):
     name: str
 
+    @validator("name")
+    def domain_validation(cls, v):
+        MailDomain.check_domain(v)
+        return v
+
 
 class InputChangeDomain(BaseModel):
     uuid: UUID
     name: str
+
+    @validator("name")
+    def domain_validation(cls, v):
+        MailDomain.check_domain(v)
+        return v
 
 
 # mail user
@@ -66,6 +87,11 @@ class InputCreateAddress(BaseModel):
     localpart: str
     domain: UUID
     user: UUID
+
+    @validator("localpart")
+    def localpart_validation(cls, v):
+        MailAddress.check_localpart(v)
+        return v
 
 
 class InputDeleteAddress(BaseModel):
