@@ -1,24 +1,97 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
+from core.mail.models import MailAddress, MailDomain
 from core.seedwork.api_layer import qs_to_list
 
 
+# page
+class InputPageGroup(BaseModel):
+    group: UUID
+
+
+class InputPageUser(BaseModel):
+    user: UUID
+
+
+# group
+class InputCreateGroupMail(BaseModel):
+    localpart: str
+    domain: UUID
+
+    @validator("localpart")
+    def localpart_validation(cls, v):
+        MailAddress.check_localpart(v)
+        return v
+
+
+class InputDeleteGroupMail(BaseModel):
+    group: UUID
+
+
+class InputAddMemberToGroupMail(BaseModel):
+    group: UUID
+    member: UUID
+
+
+class InputRemoveMemberFromGroupMail(BaseModel):
+    group: UUID
+    member: UUID
+
+
+class InputAddAddressToGroup(BaseModel):
+    localpart: str
+    group: UUID
+    domain: UUID
+
+    @validator("localpart")
+    def localpart_validation(cls, v):
+        MailAddress.check_localpart(v)
+        return v
+
+
+class InputSetDefaultGroupAddress(BaseModel):
+    group: UUID
+    address: UUID
+
+
+class InputDeleteGroupAddress(BaseModel):
+    group: UUID
+    address: UUID
+
+
+# domain
 class InputAddDomain(BaseModel):
     name: str
 
+    @validator("name")
+    def domain_validation(cls, v):
+        MailDomain.check_domain(v)
+        return v
+
 
 class InputChangeDomain(BaseModel):
-    id: UUID
+    uuid: UUID
     name: str
 
+    @validator("name")
+    def domain_validation(cls, v):
+        MailDomain.check_domain(v)
+        return v
 
+
+# mail user
 class InputCreateAddress(BaseModel):
     localpart: str
     domain: UUID
     user: UUID
+
+    @validator("localpart")
+    def localpart_validation(cls, v):
+        MailAddress.check_localpart(v)
+        return v
 
 
 class InputDeleteAddress(BaseModel):
@@ -29,15 +102,9 @@ class InputSetDefaultAddress(BaseModel):
     address: UUID
 
 
+# query
 class OutputDomain(BaseModel):
-    id: UUID
-    name: str
-
-    class Config:
-        orm_mode = True
-
-
-class OutputDomain2(BaseModel):
+    uuid: UUID
     name: str
 
     class Config:
@@ -45,7 +112,7 @@ class OutputDomain2(BaseModel):
 
 
 class OutputAddress(BaseModel):
-    id: UUID
+    uuid: UUID
     localpart: str
     domain: OutputDomain
     is_default: bool
@@ -54,25 +121,10 @@ class OutputAddress(BaseModel):
         orm_mode = True
 
 
-class OutputMailUser2(BaseModel):
+class OutputUser(BaseModel):
     name: str
-
-    class Config:
-        orm_mode = True
-
-
-class OutputAccount2(BaseModel):
-    user: OutputMailUser2
-
-    class Config:
-        orm_mode = True
-
-
-class OutputAddress2(BaseModel):
-    localpart: str
-    domain: OutputDomain2
-    is_default: bool
-    account: OutputAccount2
+    uuid: UUID
+    email: Optional[str]
 
     class Config:
         orm_mode = True
@@ -82,7 +134,7 @@ class OutputPassword(BaseModel):
     password: str
 
 
-class OutputAccount(BaseModel):
+class OutputSelfAccount(BaseModel):
     addresses: list[OutputAddress]
 
     _ = qs_to_list("addresses")
@@ -91,24 +143,65 @@ class OutputAccount(BaseModel):
         orm_mode = True
 
 
-class OutputMailUser(BaseModel):
-    id: UUID
+class OutputSelfGroup(BaseModel):
     email: Optional[str]
-    account: OutputAccount
+
+    class Config:
+        orm_mode = True
+
+
+class OutputSelfMailUser(BaseModel):
+    uuid: UUID
+    email: Optional[str]
+    account: OutputSelfAccount
     aliases: list[str]
+    groups: list[OutputSelfGroup]
+
+    class Config:
+        orm_mode = True
+
+    _ = qs_to_list("groups")
+
+
+class OutputGroup(BaseModel):
+    uuid: UUID
+    email: Optional[str]
 
     class Config:
         orm_mode = True
 
 
 class OutputPageMail(BaseModel):
-    user: OutputMailUser
+    user: OutputSelfMailUser
     available_domains: list[OutputDomain]
     domain: Optional[OutputDomain]
-    addresses: list[OutputAddress2]
+    users: list[OutputUser]
+    groups: list[OutputGroup]
 
-    _ = qs_to_list("addresses")
+    __ = qs_to_list("users")
+    _ = qs_to_list("groups")
 
 
-class OutputNoAccount(BaseModel):
-    no_mail_account = True
+class OutputPageGroup(BaseModel):
+    available_domains: list[OutputDomain]
+    available_users: list[OutputUser]
+    addresses: list[OutputAddress]
+    members: list[OutputUser]
+
+    _ = qs_to_list("available_domains")
+    __ = qs_to_list("addresses")
+    ___ = qs_to_list("members")
+    ____ = qs_to_list("available_users")
+
+
+class OutputPageUser(BaseModel):
+    available_domains: list[OutputDomain]
+    addresses: list[OutputAddress]
+
+    _ = qs_to_list("available_domains")
+    __ = qs_to_list("addresses")
+
+
+class OutputDomainCheck(BaseModel):
+    mx_records: list[str]
+    valid: bool

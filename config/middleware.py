@@ -90,7 +90,7 @@ def authentication_middleware(get_response):
                 request = await sync_to_async(authenticate)(request)
             except Exception as e:
                 response = ErrorResponse(
-                    err_type="JwtTokenFailed",
+                    err_type="SessionAuthenticationFailed",
                     title="Authentication Failed",
                     status=401,
                     internal=str(e),
@@ -106,7 +106,7 @@ def authentication_middleware(get_response):
                 request = authenticate(request)
             except Exception as e:
                 response = ErrorResponse(
-                    err_type="JwtTokenFailed",
+                    err_type="SessionAuthenticationFailed",
                     title="Authentication Failed",
                     status=401,
                     internal=str(e),

@@ -10,6 +10,6 @@ router = Router()
 def query__register_page():
     data = {
         "orgs": Org.objects.all(),
-        "legal_requirements": LegalRequirement.objects.all(),
+        "legal_requirements": LegalRequirement.objects.filter(accept_required=True),
     }
     return data

@@ -74,9 +74,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         if not self.check_password(old_password):
             raise ParseError("The password is not correct.")
         rlc_user = self.rlc_user
-        rlc_user.decrypt(old_password)
-        rlc_user.encrypt(new_password)
         self.set_password(new_password)
+        rlc_user.change_password_for_keys(new_password)
         with transaction.atomic():
             rlc_user.save()
             self.save()

@@ -21,6 +21,10 @@ def register_rlc_user(
     accepted_legal_requirements: list[int],
     org=find(org_from_id),
 ):
+    # error validation
+    if UserProfile.objects.filter(email=email).exists():
+        raise UseCaseError("An account already exists with this email.")
+
     # user stuff
     user = UserProfile(email=email, name=name)
     user.set_password(password)

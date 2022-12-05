@@ -13,4 +13,4 @@ def command__add_domain(mail_user: MailUser, data: schemas.InputAddDomain):
 
 @router.post(url="<uuid:domain>/", input_schema=schemas.InputChangeDomain)
 def command__change_domain(mail_user: MailUser, data: schemas.InputChangeDomain):
-    change_domain(mail_user, data.name, data.id)
+    change_domain(mail_user, data.name, data.uuid)
