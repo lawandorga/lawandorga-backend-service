@@ -1,4 +1,3 @@
-from typing import cast
 from uuid import UUID
 
 from django.core.cache import cache
@@ -22,7 +21,7 @@ class DjangoFolderRepository(FolderRepository):
     def __as_dict(cls, org_pk: int) -> dict[UUID, FoldersFolder]:
         folders = {}
         for f in list(FoldersFolder.query().filter(org_id=org_pk, deleted=False)):
-            folders[f.pk] = f
+            folders[f.uuid] = f
         return folders
 
     @classmethod
@@ -33,17 +32,13 @@ class DjangoFolderRepository(FolderRepository):
         return users
 
     @classmethod
-    def find_key_owner(cls, uuid: UUID) -> IOwner:
-        return cast(IOwner, RlcUser.objects.get(uuid=uuid))
-
-    @classmethod
     def get_or_create_records_folder(cls, org_pk: int, user: IOwner) -> Folder:
         name = "Records"
         if FoldersFolder.objects.filter(
             org_id=org_pk, name=name, _parent=None
         ).exists():
             f = FoldersFolder.objects.get(org_id=org_pk, name=name, _parent=None)
-            return cls.dict(org_pk)[f.pk]
+            return cls.dict(org_pk)[f.uuid]
         folder = Folder.create(name=name, org_pk=org_pk)
         folder.grant_access(user)
         for u in RlcUser.objects.filter(org_id=org_pk).exclude(uuid=user.uuid):
@@ -52,10 +47,10 @@ class DjangoFolderRepository(FolderRepository):
         return cls.dict(org_pk)[folder.pk]
 
     @classmethod
-    def retrieve(cls, org_pk: int, pk: UUID) -> Folder:
+    def retrieve(cls, org_pk: int, uuid: UUID) -> Folder:
         folders = cls.dict(org_pk)
-        if pk in folders:
-            return folders[pk]
+        if uuid in folders:
+            return folders[uuid]
         raise ObjectDoesNotExist()
 
     @classmethod

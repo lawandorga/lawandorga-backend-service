@@ -23,23 +23,23 @@ class Folder(IOwner):
         stop_inherit: bool = False,
     ):
         pk = uuid4()
-        return Folder(name=name, pk=pk, org_pk=org_pk, stop_inherit=stop_inherit)
+        return Folder(name=name, uuid=pk, org_pk=org_pk, stop_inherit=stop_inherit)
 
     def __init__(
         self,
         name: Optional[str] = None,
-        pk: Optional[UUID] = None,
+        uuid: Optional[UUID] = None,
         org_pk: Optional[int] = None,
         keys: Optional[List[Union[FolderKey, ParentKey]]] = None,
         parent: Optional["Folder"] = None,
         upgrades: Optional[list[Upgrade]] = None,
         stop_inherit: bool = False,
     ):
-        assert name is not None and pk is not None
+        assert name is not None and uuid is not None
         assert all([k.is_encrypted for k in keys or []])
 
         self.__parent = parent
-        self.__pk = pk
+        self.__uuid = uuid
         self.__name = name
         self.__org_pk = org_pk
         self.__stop_inherit = stop_inherit
@@ -50,7 +50,7 @@ class Folder(IOwner):
         return "Folder {}".format(self.name)
 
     def as_dict(self) -> StrDict:  # type: ignore
-        return {"name": self.__name, "id": str(self.__pk)}
+        return {"name": self.__name, "id": str(self.__uuid)}
 
     @property
     def org_pk(self):
@@ -65,18 +65,22 @@ class Folder(IOwner):
         return self.__keys
 
     @property
-    def pk(self):
-        return self.__pk
+    def parent(self):
+        return self.__parent
 
     @property
-    def parent_pk(self):
+    def uuid(self):
+        return self.__uuid
+
+    @property
+    def parent_uuid(self):
         if self.__parent:
-            return self.__parent.pk
+            return self.__parent.uuid
         return None
 
     @property
     def slug(self):
-        return self.__pk
+        return self.__uuid
 
     @property
     def name(self):
@@ -141,7 +145,7 @@ class Folder(IOwner):
         new_keys: list[Union[FolderKey, ParentKey]] = []
         for key in self.__keys:
             if isinstance(key, ParentKey) and self.__parent is not None:
-                new_parent_key = ParentKey(folder_pk=self.pk, key=new_key)
+                new_parent_key = ParentKey(folder_uuid=self.uuid, key=new_key)
                 enc_new_parent_key = new_parent_key.encrypt_self(
                     self.__parent.get_encryption_key(requestor=user)
                 )
@@ -221,7 +225,7 @@ class Folder(IOwner):
             key = self.get_decryption_key(requestor=by)
 
         parent_key = ParentKey(
-            folder_pk=self.__pk,
+            folder_uuid=self.__uuid,
             key=key,
         )
 

@@ -48,7 +48,7 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         UserProfile, on_delete=models.CASCADE, related_name="rlc_user"
     )
     org = models.ForeignKey(Org, related_name="users", on_delete=models.PROTECT)
-    uuid = models.UUIDField(default=uuid4, unique=True)
+    uuid = models.UUIDField(default=uuid4, unique=True, db_index=True)
     # blocker
     email_confirmed = models.BooleanField(default=True)
     accepted = models.BooleanField(default=False)

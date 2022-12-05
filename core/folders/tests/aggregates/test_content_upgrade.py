@@ -27,7 +27,7 @@ def test_encryption_decryption(single_encryption, car_content_key):
 
     folder = Folder(
         name="My Folder",
-        pk=uuid4(),
+        uuid=uuid4(),
         keys=[folder_key.encrypt_self(user.get_encryption_key())],
     )
 

@@ -23,7 +23,7 @@ class Access:
                 continue
             if isinstance(key, ParentKey):
                 if not folder.stop_inherit:
-                    f = self.__folders_dict[folder.parent_pk]
+                    f = self.__folders_dict[folder.parent_uuid]
                     access += self.get_owners_with_access(f)
                 continue
             access.append({"name": "Unknown", "slug": "-"})
@@ -92,15 +92,15 @@ class FolderTree:
         self.__tree = tree
 
     def __generate_folders_dict(self) -> dict[UUID, Folder]:
-        folders_dict = {f.pk: f for f in self.folders}
+        folders_dict = {f.uuid: f for f in self.folders}
         return folders_dict
 
     def __generate_parent_dict(self) -> dict[Optional[UUID], list[Folder]]:
         parent_dict: dict[Union[UUID, None], list[Folder]] = {}
         for i in self.folders:
-            if i.parent_pk not in parent_dict:
-                parent_dict[i.parent_pk] = []
-            parent_dict[i.parent_pk].append(i)
+            if i.parent_uuid not in parent_dict:
+                parent_dict[i.parent_uuid] = []
+            parent_dict[i.parent_uuid].append(i)
         return parent_dict
 
     def as_dict(self):

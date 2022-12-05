@@ -1,5 +1,5 @@
-import uuid
 from typing import Optional, Type, Union, cast
+from uuid import UUID, uuid4
 
 from django.db import models
 from django.db.models import QuerySet
@@ -17,7 +17,7 @@ class FoldersFolder(models.Model):
     _parent = models.ForeignKey(
         "FoldersFolder", on_delete=models.CASCADE, null=True, blank=True
     )
-    id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True)
+    uuid = models.UUIDField(default=uuid4, unique=True, db_index=True)
     name = models.CharField(max_length=1000)
     org = models.ForeignKey(
         Org, related_name="folders_folders", on_delete=models.CASCADE
@@ -36,8 +36,10 @@ class FoldersFolder(models.Model):
         return "foldersFolder: {};".format(self.pk)
 
     @property
-    def parent(self) -> Optional[uuid.UUID]:
-        return self._parent_id
+    def parent(self) -> Optional[UUID]:
+        if self._parent is None:
+            return None
+        return self._parent.uuid
 
     @staticmethod
     def query() -> QuerySet:
@@ -48,9 +50,13 @@ class FoldersFolder(models.Model):
         keys = [k.as_dict() for k in folder.keys]
         upgrades = [u.as_dict() for u in folder.upgrades]
 
-        if FoldersFolder.objects.filter(pk=folder.pk).exists():
-            f = FoldersFolder.objects.get(pk=folder.pk)
-            f._parent_id = folder.parent_pk
+        parent_id: Optional[int] = None
+        if folder.parent is not None:
+            parent_id = FoldersFolder.from_domain(folder.parent).pk
+
+        if FoldersFolder.objects.filter(uuid=folder.uuid).exists():
+            f = FoldersFolder.objects.get(uuid=folder.uuid)
+            f._parent_id = parent_id
             f.name = folder.name
             f.org_id = folder.org_pk
             f.keys = keys
@@ -59,8 +65,8 @@ class FoldersFolder(models.Model):
 
         else:
             f = FoldersFolder(
-                _parent_id=folder.parent_pk,
-                pk=folder.pk,
+                _parent_id=parent_id,
+                uuid=folder.uuid,
                 name=folder.name,
                 org_id=folder.org_pk,
                 keys=keys,
@@ -71,7 +77,7 @@ class FoldersFolder(models.Model):
         return f
 
     def to_domain(
-        self, folders: dict[uuid.UUID, "FoldersFolder"], users: dict[uuid.UUID, RlcUser]
+        self, folders: dict[UUID, "FoldersFolder"], users: dict[UUID, RlcUser]
     ) -> Folder:
         # find the parent
         parent: Optional[Folder] = None
@@ -82,7 +88,7 @@ class FoldersFolder(models.Model):
         keys: list[Union[ParentKey, FolderKey]] = []
         for key in self.keys:
             if key["type"] == "FOLDER":
-                owner = users[uuid.UUID(key["owner"])]
+                owner = users[UUID(key["owner"])]
                 fk = FolderKey.create_from_dict(key, owner)
                 keys.append(fk)
 
@@ -94,7 +100,7 @@ class FoldersFolder(models.Model):
         folder = Folder(
             name=self.name,
             parent=parent,
-            pk=self.pk,
+            uuid=self.uuid,
             org_pk=self.org_id,
             keys=keys,
             stop_inherit=self.stop_inherit,

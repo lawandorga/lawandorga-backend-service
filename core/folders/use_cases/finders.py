@@ -8,7 +8,7 @@ from core.seedwork.repository import RepositoryWarehouse
 
 def folder_from_id(actor, v) -> Folder:
     repository = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-    folder = repository.retrieve(org_pk=actor.org_id, pk=v)
+    folder = repository.retrieve(org_pk=actor.org_id, uuid=v)
     return folder
 
 

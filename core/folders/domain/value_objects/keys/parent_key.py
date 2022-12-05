@@ -23,26 +23,26 @@ class ParentKey:
         key = EncryptedSymmetricKey.create_from_dict(d["key"])
         folder_pk = UUID(d["folder_pk"])
 
-        return ParentKey(key=key, folder_pk=folder_pk)
+        return ParentKey(key=key, folder_uuid=folder_pk)
 
     def __init__(
         self,
-        folder_pk: Optional[UUID] = None,
+        folder_uuid: Optional[UUID] = None,
         key: Optional[Union[SymmetricKey, EncryptedSymmetricKey]] = None,
     ):
-        assert folder_pk is not None and key is not None
+        assert folder_uuid is not None and key is not None
 
-        self.__folder_pk = folder_pk
+        self.__folder_uuid = folder_uuid
         self.__key = key
 
     def __str__(self):
-        return "ParentKey of {}".format(self.__folder_pk)
+        return "ParentKey of {}".format(self.__folder_uuid)
 
     def as_dict(self) -> StrDict:
         assert isinstance(self.__key, EncryptedSymmetricKey)
 
         return {
-            "folder_pk": str(self.__folder_pk),
+            "folder_pk": str(self.__folder_uuid),
             "key": self.__key.as_dict(),
             "type": "PARENT",
         }
@@ -53,7 +53,7 @@ class ParentKey:
 
     @property
     def folder_pk(self):
-        return self.__folder_pk
+        return self.__folder_uuid
 
     @property
     def is_encrypted(self):
@@ -65,7 +65,7 @@ class ParentKey:
         enc_key = EncryptedSymmetricKey.create(original=self.__key, key=key)
 
         return ParentKey(
-            folder_pk=self.__folder_pk,
+            folder_uuid=self.__folder_uuid,
             key=enc_key,
         )
 
@@ -75,6 +75,6 @@ class ParentKey:
         dec_key = self.__key.decrypt(key)
 
         return ParentKey(
-            folder_pk=self.__folder_pk,
+            folder_uuid=self.__folder_uuid,
             key=dec_key,
         )

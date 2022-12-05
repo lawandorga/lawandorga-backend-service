@@ -21,7 +21,7 @@ def query__list_folders(rlc_user: RlcUser):
 def query__available_folders(rlc_user: RlcUser):
     r = get_repository()
     folders_1 = r.list(rlc_user.org_id)
-    folders_2 = list(map(lambda f: {"id": f.pk, "name": f.name}, folders_1))
+    folders_2 = list(map(lambda f: {"id": f.uuid, "name": f.name}, folders_1))
     return folders_2
 
 

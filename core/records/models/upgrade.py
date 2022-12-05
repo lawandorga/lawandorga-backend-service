@@ -1,6 +1,5 @@
-import uuid
 from typing import cast
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from django.db import models
 
@@ -17,14 +16,14 @@ class DjangoRecordUpgradeRepository(UpgradeRepository):
     IDENTIFIER = "RECORD_UPGRADE"
 
     @classmethod
-    def retrieve(cls, pk: UUID) -> "RecordUpgrade":
-        return RecordUpgrade.objects.get(pk=pk)
+    def retrieve(cls, uuid: UUID) -> "RecordUpgrade":
+        return RecordUpgrade.objects.get(uuid=uuid)
 
 
 class RecordUpgrade(Upgrade, models.Model):
     REPOSITORY = DjangoRecordUpgradeRepository.IDENTIFIER
 
-    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4)
+    uuid = models.UUIDField(unique=True, default=uuid4)
     raw_folder = models.ForeignKey(
         FoldersFolder, on_delete=models.CASCADE, related_name="record_upgrades"
     )
@@ -39,7 +38,7 @@ class RecordUpgrade(Upgrade, models.Model):
     @property
     def folder(self) -> Folder:
         r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-        folder = r.retrieve(self.raw_folder.org_id, self.raw_folder_id)
+        folder = r.retrieve(self.raw_folder.org_id, self.raw_folder.uuid)
         return folder
 
     @property

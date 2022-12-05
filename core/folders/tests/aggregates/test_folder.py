@@ -19,7 +19,7 @@ def test_keys_are_regenerated(single_encryption, car_content_key):
     folder_key = FolderKey(owner=user, key=SymmetricKey.generate())
     folder = Folder(
         name="My Folder",
-        pk=uuid4(),
+        uuid=uuid4(),
         keys=[folder_key.encrypt_self(user.get_encryption_key())],
     )
 
@@ -71,7 +71,7 @@ def test_encryption_version(single_encryption):
     )
     folder = Folder(
         name="Test",
-        pk=uuid4(),
+        uuid=uuid4(),
         keys=[
             folder_key_1.encrypt_self(user.get_encryption_key()),
             folder_key_2.encrypt_self(user.get_encryption_key()),
@@ -128,7 +128,7 @@ def test_folder_access(single_encryption, car_content_key):
 
     folder = Folder(
         name="My Folder",
-        pk=uuid4(),
+        uuid=uuid4(),
         keys=[
             folder_key_1.encrypt_self(user_1.get_encryption_key()),
             folder_key_2.encrypt_self(user_2.get_encryption_key()),
