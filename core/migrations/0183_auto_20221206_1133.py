@@ -5,10 +5,10 @@ from django.db import migrations
 
 
 def gen_uuid(apps, schema_editor):
-    MyModel = apps.get_model('core', 'Record')
+    MyModel = apps.get_model("core", "Record")
     for row in MyModel.objects.all():
         row.uuid = uuid.uuid4()
-        row.save(update_fields=['uuid'])
+        row.save(update_fields=["uuid"])
 
 
 class Migration(migrations.Migration):
