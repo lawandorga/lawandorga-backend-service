@@ -1,16 +1,17 @@
 import uuid
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, cast
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import models
+from django.db import models, transaction
 
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
-from core.static import PERMISSION_ADMIN_MANAGE_USERS
 
+from ...folders.domain.repositiories.folder import FolderRepository
+from ...seedwork.repository import RepositoryWarehouse
 from .meta import Meta
 
 if TYPE_CHECKING:
-    from core.auth.models import UserProfile
+    from core.auth.models import RlcUser, UserProfile
 
 
 class Org(EncryptedModelMixin, models.Model):
@@ -160,31 +161,39 @@ class Org(EncryptedModelMixin, models.Model):
             user_rlc_keys.encrypt(public_key_user)
             user_rlc_keys.save()
 
-    def accept_member(
-        self, admin: "UserProfile", member: "UserProfile", private_key_admin: str
-    ):
+    def accept_member(self, admin: "RlcUser", member: "RlcUser"):
         from core.models import OrgEncryption
 
-        if not admin.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
-            return
-
         # create the rlc encryption keys for new member
-        aes_key_rlc = self.get_aes_key(user=admin, private_key_user=private_key_admin)
-        new_user_rlc_keys = OrgEncryption(
-            user=member, rlc_id=self.id, encrypted_key=aes_key_rlc
+        private_key_admin = admin.get_private_key()
+        aes_key_rlc = self.get_aes_key(
+            user=admin.user, private_key_user=private_key_admin
+        )
+        org_enc = OrgEncryption(
+            user=member.user, rlc_id=self.pk, encrypted_key=aes_key_rlc
         )
         public_key = member.get_public_key()
-        new_user_rlc_keys.encrypt(public_key)
+        org_enc.encrypt(public_key)
 
-        # delete the old keys
-        OrgEncryption.objects.filter(user=member).delete()
+        # grant access to the records folder
+        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+        folder = r.get_or_create_records_folder(admin.org_id, admin)
+        if not folder.has_access(member):
+            folder.grant_access(member, admin)
 
-        # save the new keys
-        new_user_rlc_keys.save()
+        with transaction.atomic():
+            # save the folder
+            r.save(folder)
 
-        # set the user accepted field so that the user can login
-        member.rlc_user.accepted = True
-        member.rlc_user.save()
+            # delete the old keys
+            OrgEncryption.objects.filter(user=member.user).delete()
+
+            # save the new keys
+            org_enc.save()
+
+            # set the user accepted field so that the user can login
+            member.accepted = True
+            member.save()
 
     def deactivate_member(self, admin: "UserProfile", member: "UserProfile"):
         pass

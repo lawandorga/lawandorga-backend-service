@@ -36,12 +36,12 @@ def create_user(email="dummy@law-orga.de", name="Mr. Dummy"):
     return user
 
 
-def create_rlc_user(email="dummy@law-orga.de", name="Dummy 1", rlc=None):
+def create_rlc_user(email="dummy@law-orga.de", name="Dummy 1", rlc=None, accepted=True):
     user = UserProfile.objects.create(email=email, name=name)
     user.set_password(settings.DUMMY_USER_PASSWORD)
     user.save()
     rlc_user = RlcUser.objects.create(
-        user=user, email_confirmed=True, accepted=True, org=rlc
+        user=user, email_confirmed=True, accepted=accepted, org=rlc
     )
     rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
     rlc_user.save()

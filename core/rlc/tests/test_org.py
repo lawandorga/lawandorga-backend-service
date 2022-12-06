@@ -6,6 +6,7 @@ from django.test import Client
 from core.models import Org
 from core.rlc.models import ExternalLink
 from core.seedwork import test_helpers as data
+from core.static import PERMISSION_ADMIN_MANAGE_USERS
 
 
 @pytest.fixture
@@ -49,4 +50,19 @@ def test_delete_link_works(user, db):
     c.login(**user)
     link = user["rlc_user"].org.external_links.first()
     response = c.delete("/api/org/links/{}/".format(link.id))
+    assert response.status_code == 200
+
+
+def test_member_accept(user, db):
+    c = Client()
+    c.login(**user)
+    user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_USERS)
+    another_user = data.create_rlc_user(
+        rlc=user["rlc_user"].org, email="another@law-orga.de"
+    )
+    response = c.post(
+        "/api/org/accept_member/",
+        json.dumps({"user": another_user["rlc_user"].id}),
+        content_type="application/json",
+    )
     assert response.status_code == 200
