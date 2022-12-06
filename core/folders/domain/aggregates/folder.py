@@ -1,10 +1,9 @@
-from typing import List, Optional, Union
+import abc
+from typing import Any, List, Optional, Union
 from uuid import UUID, uuid4
 
-from core.folders.domain.aggregates.upgrade import Upgrade
 from core.folders.domain.external import IOwner
 from core.folders.domain.types import StrDict
-from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.keys import (
     AsymmetricKey,
     FolderKey,
@@ -13,6 +12,27 @@ from core.folders.domain.value_objects.keys import (
 from core.folders.domain.value_objects.keys.base import EncryptedAsymmetricKey
 from core.folders.domain.value_objects.keys.parent_key import ParentKey
 from core.seedwork.domain_layer import DomainError
+
+
+class Item:
+    REPOSITORY: str
+    uuid: Any
+    folder_uuid: Optional[Any]
+    name: str
+    actions: Optional[dict[str, str]] = {}
+
+    def as_dict(self) -> StrDict:
+        return {"repository": self.REPOSITORY, "uuid": str(self.uuid)}
+
+    @property
+    @abc.abstractmethod
+    def folder(self) -> Optional["Folder"]:
+        pass
+
+    def set_folder(self, folder: "Folder"):
+        if self.folder_uuid is None:
+            self.folder_uuid = folder.uuid
+        assert folder.uuid == self.folder_uuid
 
 
 class Folder(IOwner):
@@ -32,7 +52,7 @@ class Folder(IOwner):
         org_pk: Optional[int] = None,
         keys: Optional[List[Union[FolderKey, ParentKey]]] = None,
         parent: Optional["Folder"] = None,
-        upgrades: Optional[list[Upgrade]] = None,
+        items: Optional[list[Item]] = None,
         stop_inherit: bool = False,
     ):
         assert name is not None and uuid is not None
@@ -44,12 +64,12 @@ class Folder(IOwner):
         self.__org_pk = org_pk
         self.__stop_inherit = stop_inherit
         self.__keys = keys if keys is not None else []
-        self.__upgrades = upgrades if upgrades is not None else []
+        self.__items = items if items is not None else []
 
     def __str__(self):
         return "Folder {}".format(self.name)
 
-    def as_dict(self) -> StrDict:  # type: ignore
+    def as_dict(self) -> StrDict:
         return {"name": self.__name, "id": str(self.__uuid)}
 
     @property
@@ -79,27 +99,12 @@ class Folder(IOwner):
         return None
 
     @property
-    def slug(self):
-        return self.__uuid
-
-    @property
     def name(self):
         return self.__name
 
     @property
     def items(self):
-        return []
-
-    @property
-    def upgrades(self):
-        return self.__upgrades
-
-    @property
-    def content(self):
-        content = []
-        for upgrade in self.__upgrades:
-            content += upgrade.content
-        return content
+        return self.__items
 
     @property
     def encryption_version(self) -> Optional[str]:
@@ -123,23 +128,25 @@ class Folder(IOwner):
             return False
         return self.__parent.has_access(owner)
 
-    def add_upgrade(self, upgrade: Upgrade):
-        for u in self.__upgrades:
-            if u.REPOSITORY == upgrade.REPOSITORY:
-                raise ValueError(
-                    "This folder already has an upgrade with the same repository."
-                )
-        self.__upgrades.append(upgrade)
+    def add_item(self, item: Item):
+        for i in self.__items:
+            if i.uuid == item.uuid:
+                raise ValueError("This folder already contains this item.")
+        item.set_folder(self)
+        self.__items.append(item)
 
-    def __reencrypt_all_keys(self, user: IOwner):
-        old_key = self.get_encryption_key(requestor=user)
+    def remove_item(self, item: Item):
+        new_items_1 = filter(lambda x: x.uuid != item.uuid, self.__items)
+        new_items_2 = list(new_items_1)
+        self.__items = new_items_2
+
+    def __todo_reencrypt_all_keys(self, user: IOwner):
+        # this method is not ready yet, because the keys of the children need to be reencrypted as well
+
+        # old_key = self.get_encryption_key(requestor=user)
 
         # get a new folder key
         new_key = SymmetricKey.generate()
-
-        # reencrypt upgrades
-        for upgrade in self.__upgrades:
-            upgrade.reencrypt(old_key, new_key)
 
         # reencrypt keys
         new_keys: list[Union[FolderKey, ParentKey]] = []
@@ -170,8 +177,9 @@ class Folder(IOwner):
         self.__name = name if name is not None else self.__name
 
     def check_encryption_version(self, user: IOwner):
-        if self.encryption_version not in EncryptionWarehouse.get_highest_versions():
-            self.__reencrypt_all_keys(user)
+        # if self.encryption_version not in EncryptionWarehouse.get_highest_versions():
+        #     self.__reencrypt_all_keys(user)
+        pass
 
     def __find_folder_key(self, user: IOwner) -> Optional[FolderKey]:
         for key in self.__keys:

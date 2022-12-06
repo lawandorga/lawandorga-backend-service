@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Union
+from typing import List, Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -13,8 +13,9 @@ class InputPublishQuestionnaire(BaseModel):
 
 
 class InputRecordCreate(BaseModel):
+    name: str
     template: int
-    folder: UUID
+    folder: Optional[UUID]
 
 
 class OutputRecordCreate(BaseModel):

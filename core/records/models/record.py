@@ -1,17 +1,18 @@
 import json
 from typing import Optional, Union, cast
+from uuid import UUID, uuid4
 
 from django.core.files import File as DjangoFile
 from django.db import models, transaction
 from django.utils.timezone import localtime
 
 from core.auth.models import RlcUser
-from core.folders.domain.aggregates.folder import Folder
+from core.folders.domain.aggregates.folder import Folder, Item
 from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositiories.item import ItemRepository
 from core.folders.domain.value_objects.box import OpenBox
 from core.folders.domain.value_objects.keys import EncryptedSymmetricKey, SymmetricKey
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
-from core.folders.models import FoldersFolder
 from core.records.models import EncryptedClient  # type: ignore
 from core.records.models.template import (
     RecordEncryptedFileField,
@@ -25,7 +26,6 @@ from core.records.models.template import (
     RecordTemplate,
     RecordUsersField,
 )
-from core.records.models.upgrade import RecordUpgrade
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 ###
@@ -34,13 +34,22 @@ from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncr
 from core.seedwork.repository import RepositoryWarehouse
 
 
-class Record(models.Model):
+class DjangoRecordRepository(ItemRepository):
+    IDENTIFIER = "RECORD"
+
+    @classmethod
+    def retrieve(cls, uuid: UUID) -> "Record":
+        return Record.objects.get(uuid=uuid)
+
+
+class Record(Item, models.Model):
+    REPOSITORY = "RECORD"
+
     template = models.ForeignKey(
         RecordTemplate, related_name="records", on_delete=models.PROTECT
     )
-    upgrade = models.ForeignKey(
-        RecordUpgrade, null=True, related_name="records", on_delete=models.CASCADE
-    )
+    folder_uuid = models.UUIDField(db_index=True, null=True)
+    uuid = models.UUIDField(default=uuid4, unique=True, db_index=True)
     old_client = models.ForeignKey(
         EncryptedClient,
         related_name="records",
@@ -59,6 +68,14 @@ class Record(models.Model):
 
     def __str__(self):
         return "record: {}; rlc: {};".format(self.pk, self.template.rlc.name)
+
+    @property
+    def actions(self):
+        return {"OPEN": "/records/{}/".format(self.pk)}
+
+    @property
+    def name(self):
+        return self.identifier
 
     @property
     def identifier(self):
@@ -105,9 +122,9 @@ class Record(models.Model):
         ]
 
     def grant_access(self, to: RlcUser, by: Optional[RlcUser]):
-        if self.upgrade is not None:
+        if self.folder is not None:
             r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-            folder = self.upgrade.folder
+            folder = self.folder
             if not folder.has_access(to):
                 folder.grant_access(to=to, by=by)
                 r.save(folder)
@@ -115,32 +132,45 @@ class Record(models.Model):
             raise ValueError("This record has no upgrade.")
 
     def has_access(self, user: RlcUser) -> bool:
-        if self.upgrade is None:
+        if self.folder is None:
             for enc in getattr(self, "encryptions").all():
                 if enc.user_id == user.id:
                     return True
         else:
-            return self.upgrade.folder.has_access(user)
+            return self.folder.has_access(user)
         return False
 
     def generate_key(self, user: RlcUser):
-        assert self.upgrade is not None
+        assert self.folder is not None
         key = SymmetricKey.generate()
-        enc_key = EncryptedSymmetricKey.create(
-            key, self.upgrade.folder.get_encryption_key(requestor=user)
-        )
+        lock_key = self.folder.get_encryption_key(requestor=user)
+        enc_key = EncryptedSymmetricKey.create(key, lock_key)
         self.key = enc_key.as_dict()
 
+    def set_folder(self, folder: "Folder"):
+        super().set_folder(folder)
+        self._folder = folder
+
+    @property
+    def folder(self) -> Optional[Folder]:
+        if self.folder_uuid is None:
+            return None
+        if not hasattr(self, "_folder"):
+            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+            self._folder = r.retrieve(self.template.rlc_id, self.folder_uuid)
+        return self._folder
+
     def get_aes_key(self, user: RlcUser, *args, **kwargs):
-        if self.upgrade is None:
+        if self.folder is None:
             self.put_in_folder(user)
-        assert self.upgrade is not None
+
+        assert self.folder is not None
 
         if self.key is None:
             aes_key = self.get_aes_key_old(user)
             aes_key_box = OpenBox(data=bytes(aes_key, "utf-8"))
             key = SymmetricKey(key=aes_key_box, origin=SymmetricEncryptionV1.VERSION)
-            folder = self.upgrade.folder
+            folder = self.folder
             encryption_key = folder.get_encryption_key(requestor=user)
             self.key = EncryptedSymmetricKey.create(key, encryption_key).as_dict()
 
@@ -149,7 +179,7 @@ class Record(models.Model):
                 r.save(folder)
                 self.save()
 
-        decryption_key = self.upgrade.folder.get_decryption_key(requestor=user)
+        decryption_key = self.folder.get_decryption_key(requestor=user)
         enc_key = EncryptedSymmetricKey.create_from_dict(self.key)
         key = enc_key.decrypt(decryption_key)
         return key.get_key()
@@ -194,8 +224,6 @@ class Record(models.Model):
         return entries
 
     def put_in_folder(self, user: RlcUser):
-        from core.records.models.upgrade import RecordUpgrade
-
         r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
 
         records_folder = r.get_or_create_records_folder(
@@ -211,14 +239,10 @@ class Record(models.Model):
         for encryption in list(self.encryptions.exclude(user_id=user.id)):
             folder.grant_access(to=encryption.user, by=user)
 
-        upgrade = RecordUpgrade()
-        folder.add_upgrade(upgrade)
+        folder.add_item(self)
 
         with transaction.atomic():
             r.save(folder)
-            upgrade.raw_folder_id = FoldersFolder.from_domain(folder).pk
-            upgrade.save()
-            self.upgrade = upgrade
             self.save()
 
 

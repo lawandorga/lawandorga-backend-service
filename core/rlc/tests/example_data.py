@@ -189,7 +189,8 @@ def create_users(rlc1, rlc2):
         )
         r.generate_keys(settings.DUMMY_USER_PASSWORD)
         r.save()
-        created_users.append(user)
+        if r.org == rlc1:
+            created_users.append(user)
     return created_users
 
 
@@ -207,6 +208,8 @@ def create_dummy_users(rlc: Org, dummy_password: str = "qwe123") -> List[UserPro
     )
     r.generate_keys(dummy_password)
     r.save()
+    for permission in Permission.objects.all():
+        r.grant(permission=permission)
     InternalUser.objects.create(user=user)
     users.append(user)
 
@@ -295,7 +298,11 @@ def create_admin_group(rlc: Org, main_user: UserProfile):
 
 
 def create_records(users, rlc):
-    tags = RecordSelectField.objects.filter(template__rlc=rlc).first().options
+    tags = (
+        RecordMultipleField.objects.filter(template__rlc=rlc, name="Tags")
+        .first()
+        .options
+    )
     records = [
         (
             "2018-7-12",
@@ -777,6 +784,7 @@ def create() -> None:
     # rlcs and fixtures
     rlc1, rlc2 = create_rlcs()
     create_default_record_template(rlc1)
+    create_default_record_template(rlc2)
     # users
     dummy, *other_dummies = create_dummy_users(rlc1)
     users = create_users(rlc1, rlc2)

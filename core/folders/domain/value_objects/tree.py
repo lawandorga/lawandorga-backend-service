@@ -45,14 +45,14 @@ class Node:
 
         self.folder = folder
         self.children = self.get_children(folder)
-        self.content = folder.content
+        self.content = folder.items
         self.access = Access(folders_dict, folder)
 
     def get_children(self, folder) -> list["Node"]:
-        if folder.pk not in self.__parent_dict:
+        if folder.uuid not in self.__parent_dict:
             return []
 
-        folder_list = self.__parent_dict[folder.pk]
+        folder_list = self.__parent_dict[folder.uuid]
 
         children = []
         for child in folder_list:
@@ -68,7 +68,7 @@ class Node:
         return {
             "folder": self.folder.as_dict(),
             "children": [child.as_dict() for child in self.children],
-            "content": self.folder.content,
+            "content": self.folder.items,
             "access": self.access.as_dict(),
         }
 

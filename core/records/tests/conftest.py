@@ -9,14 +9,12 @@ from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncrypt
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.models import Org
-from core.records.models.upgrade import DjangoRecordUpgradeRepository
 from core.seedwork import test_helpers as data
 from core.seedwork.repository import RepositoryWarehouse
 
 EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
 EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionV1)
 RepositoryWarehouse.add_repository(DjangoFolderRepository)
-RepositoryWarehouse.add_repository(DjangoRecordUpgradeRepository)
 
 
 @pytest.fixture

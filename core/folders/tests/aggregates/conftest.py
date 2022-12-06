@@ -35,6 +35,12 @@ def folder_user(folder_upgrade_user):
 
 
 @pytest.fixture
+def folder(folder_upgrade_user):
+    folder, upgrade, user = folder_upgrade_user
+    yield folder
+
+
+@pytest.fixture
 def upgrade_user(folder_upgrade_user):
     folder, upgrade, user = folder_upgrade_user
     yield upgrade, user

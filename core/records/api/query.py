@@ -11,9 +11,9 @@ router = Router()
 @router.get(output_schema=schemas.OutputRecordsPage)
 def query__records_page(rlc_user: RlcUser):
     records_1 = list(
-        Record.objects.filter(template__rlc_id=rlc_user.org_id)
-        .prefetch_related(*Record.get_unencrypted_prefetch_related())
-        .select_related("upgrade")
+        Record.objects.filter(template__rlc_id=rlc_user.org_id).prefetch_related(
+            *Record.get_unencrypted_prefetch_related()
+        )
     )
     records_2 = list(
         map(

@@ -26,7 +26,6 @@ from core.records.models import (
     RecordStateField,
     RecordStatisticEntry,
     RecordTemplate,
-    RecordUpgrade,
     RecordUsersEntry,
     RecordUsersField,
 )
@@ -517,22 +516,16 @@ class RecordEncryptionNewSerializer(serializers.ModelSerializer):
         return obj.user.name
 
 
-class UpgradeSerializer(serializers.ModelSerializer):
-    id = serializers.UUIDField()
-    raw_folder_id = serializers.UUIDField()
-
-    class Meta:
-        model = RecordUpgrade
-        fields = ["id", "raw_folder_id"]
-
-
 class RecordDetailSerializer(RecordSerializer):
     entries = serializers.SerializerMethodField()
     fields = serializers.SerializerMethodField(method_name="get_form_fields")  # type: ignore
     client = serializers.SerializerMethodField()
     url = serializers.HyperlinkedIdentityField(view_name="record-detail")
     encryptions = RecordEncryptionNewSerializer(many=True)
-    upgrade = UpgradeSerializer()
+    folder = serializers.SerializerMethodField()
+
+    def get_folder(self, obj):
+        return obj.folder_uuid
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
