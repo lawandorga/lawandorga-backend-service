@@ -93,7 +93,7 @@ class CollabDocumentRetrieveSerializer(CollabDocumentSerializer):
     def get_content_html(self, obj):
         latest_version = self.get_latest_version(obj)
         latest_version.decrypt(request=self.context["request"])
-        return latest_version.items
+        return latest_version.content
 
     def get_quill(self, obj):
         latest_version = self.get_latest_version(obj)
@@ -116,7 +116,7 @@ class CollabDocumentUpdateSerializer(CollabDocumentRetrieveSerializer):
             and latest_version.created.date() == timezone.now().date()
         ):
             version = latest_version
-            version.items = validated_data["content"]
+            version.content = validated_data["content"]
             version.quill = False
         else:
             version = TextDocumentVersion(
