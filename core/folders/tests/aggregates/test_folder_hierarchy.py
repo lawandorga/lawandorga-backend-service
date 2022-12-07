@@ -71,3 +71,15 @@ def test_parent_set(single_encryption, folder_user):
     folder2.set_parent(folder1, user2)
 
     assert folder2.has_access(user1)
+
+
+def test_inheritance_stop(single_encryption, folder_user):
+    folder1, user1 = folder_user
+    user2 = UserObject()
+    folder2 = Folder.create("Test", folder1.org_pk, stop_inherit=True)
+    folder2.grant_access(user1)
+    folder2.set_parent(folder2, user1)
+    folder1.grant_access(user2, user1)
+    assert not folder2.has_access(user2)
+    with pytest.raises(DomainError):
+        folder2.get_decryption_key(requestor=user2)

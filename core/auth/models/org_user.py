@@ -1,5 +1,5 @@
-import uuid
 from typing import Any, Dict, List, Union
+from uuid import uuid4
 
 import ics
 from django.conf import settings
@@ -13,7 +13,10 @@ from django.template import loader
 from core.auth.domain.user_key import UserKey
 from core.auth.token_generator import EmailConfirmationTokenGenerator
 from core.folders.domain.external import IOwner
-from core.folders.domain.value_objects.keys import AsymmetricKey, EncryptedAsymmetricKey
+from core.folders.domain.value_objects.asymmetric_key import (
+    AsymmetricKey,
+    EncryptedAsymmetricKey,
+)
 from core.rlc.models import HasPermission, Org, Permission
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.encryption import EncryptedModelMixin
@@ -48,7 +51,7 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         UserProfile, on_delete=models.CASCADE, related_name="rlc_user"
     )
     org = models.ForeignKey(Org, related_name="users", on_delete=models.PROTECT)
-    slug = models.UUIDField(default=uuid.uuid4, unique=True)
+    uuid = models.UUIDField(default=uuid4, unique=True, db_index=True)
     # blocker
     email_confirmed = models.BooleanField(default=True)
     accepted = models.BooleanField(default=False)
@@ -65,7 +68,7 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         choices=STUDY_CHOICES, max_length=100, blank=True, null=True
     )
     calendar_uuid = models.UUIDField(
-        primary_key=False, default=uuid.uuid4, editable=True, unique=True
+        primary_key=False, default=uuid4, editable=True, unique=True
     )
     # settings
     frontend_settings = models.JSONField(null=True, blank=True)
@@ -430,5 +433,5 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         return c.serialize()
 
     def regenerate_calendar_uuid(self):
-        self.calendar_uuid = uuid.uuid4()
+        self.calendar_uuid = uuid4()
         self.save()

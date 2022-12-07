@@ -9,5 +9,5 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         users = list(RlcUser.objects.all())
         for u in users:
-            u.slug = uuid.uuid4()
+            u.uuid = uuid.uuid4()
         RlcUser.objects.bulk_update(users, fields=["slug"])

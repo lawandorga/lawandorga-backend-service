@@ -2,16 +2,16 @@ from typing import Union
 from uuid import uuid4
 
 from core.folders.domain.external import IOwner
-from core.folders.domain.value_objects.keys import (
+from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
-    SymmetricKey,
 )
+from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 
 
 class UserObject(IOwner):
     def __init__(self):
-        self.slug = uuid4()
+        self.uuid = uuid4()
         self.key = AsymmetricKey.generate()
 
     def get_decryption_key(
@@ -27,7 +27,7 @@ class UserObject(IOwner):
 
 class ForeignUserObject(IOwner):
     def __init__(self):
-        self.slug = uuid4()
+        self.uuid = uuid4()
         self.key = AsymmetricKey.generate()
 
     def get_decryption_key(

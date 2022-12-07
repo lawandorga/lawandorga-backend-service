@@ -2,11 +2,14 @@ import uuid
 from typing import Optional, Union
 
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.aggregates.object import EncryptedObject
-from core.folders.domain.aggregates.upgrade import Item, Upgrade
 from core.folders.domain.external import IOwner
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
-from core.folders.domain.value_objects.keys import EncryptedSymmetricKey, SymmetricKey
+from core.folders.domain.value_objects.symmetric_key import (
+    EncryptedSymmetricKey,
+    SymmetricKey,
+)
+from core.other.deprecated.object import EncryptedObject
+from core.other.deprecated.upgrade import Item, Upgrade
 from core.seedwork.domain_layer import DomainError
 
 
@@ -55,8 +58,17 @@ class ContentUpgrade(Upgrade):
     ):
         assert folder is not None
         self.__content = content if content is not None else {}
+        self.__folder = folder
+        self.__pk = pk
+        super().__init__()
 
-        super().__init__(folder=folder, pk=pk)
+    @property
+    def folder(self) -> "Folder":
+        return self.__folder
+
+    @property
+    def pk(self):
+        return self.__pk
 
     @property
     def encryption_version(self) -> Optional[str]:

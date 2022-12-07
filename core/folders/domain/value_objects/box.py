@@ -5,15 +5,11 @@ from core.folders.domain.types import StrDict
 
 
 class Box(bytes):
-    def __init__(self):
-        super().__init__()
-
-    def __new__(cls, **kwargs):
-
+    def __new__(cls, *args, **kwargs):
         if issubclass(cls, OpenBox):
-            value = kwargs["data"]
+            value = kwargs["data"] if "data" in kwargs else args[0]
         elif issubclass(cls, LockedBox):
-            value = kwargs["enc_data"]
+            value = kwargs["enc_data"] if "enc_data" in kwargs else args[0]
         else:
             raise TypeError("The cls '{}' is of the wrong class.".format(cls))
 
@@ -69,7 +65,7 @@ class LockedBox(Box):
     def __repr__(self):
         return "LockedBox({}, '{}')".format(self.__enc_data, self.__key_origin)
 
-    def __dict__(self) -> StrDict:  # type: ignore
+    def as_dict(self) -> StrDict:  # type: ignore
         return {
             "enc_data": LockedBox.to_str(self.__enc_data),
             "key_origin": self.__key_origin,
@@ -103,11 +99,14 @@ class OpenBox(Box):
     def __repr__(self):
         return "OpenBox({})".format(self.__data)
 
-    def __dict__(self) -> StrDict:  # type: ignore
+    def as_dict(self) -> StrDict:  # type: ignore
         return {"data": self.__data.decode("utf-8")}
 
     def __hash__(self):
         return hash("openbox{}".format(self.__data))
+
+    def decode(self, *args, **kwargs):
+        return self.__data.decode(*args, **kwargs)
 
     @property
     def value(self) -> bytes:

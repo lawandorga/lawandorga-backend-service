@@ -6,7 +6,7 @@ import pytest
 
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
-from core.folders.domain.value_objects.keys import SymmetricKey
+from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 
 
@@ -40,7 +40,7 @@ def keys(real_encryption):
     yield generate_keys(5000)
 
 
-def disable_test_speed(keys):
+def test_speed(keys):
     L = 1000
     data = [
         "".join([random.choice(string.ascii_letters) for i in range(0, 100)]).encode(
@@ -71,29 +71,24 @@ def disable_test_speed(keys):
     for i, _ in enumerate(data):
         assert data[i] == oboxes[i]
 
-    print()
-    print("encryption took", t2 - t1, "seconds.")
-    print("decryption took", t3 - t2, "seconds.")
+    assert t2 - t1 < 1 and t3 - t2 < 1
 
 
-def disable_test_encryption_unicode():
+def test_encryption_unicode():
     # test size
-    L = 100000
+    L = 1000
 
     # data and keys
     data = generate_data(L)
     keys = generate_keys(L)
 
-    # test
+    # test no weird characters inside locked box
     for i in range(0, L):
         open_box = OpenBox(data=data[i])
         locked_box = keys[i].lock(open_box)
-        locked_box_dict = locked_box.__dict__()
+        locked_box_dict = locked_box.as_dict()
         if "\u0000" in locked_box_dict["enc_data"]:
-            print("found error after {}".format(i))
-            print(locked_box_dict)
-            print(locked_box)
-            break
+            assert False
 
         locked_box_2 = LockedBox.create_from_dict(locked_box_dict)
         open_box_2 = keys[i].unlock(locked_box_2)

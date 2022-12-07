@@ -1,8 +1,8 @@
 import pytest
 
-from core.folders.domain.aggregates.content_upgrade import Content
-from core.folders.domain.aggregates.object import EncryptedObject
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
+from core.other.deprecated.content_upgrade import Content
+from core.other.deprecated.object import EncryptedObject
 
 
 def test_is_encrypted(single_encryption, car_content_key):

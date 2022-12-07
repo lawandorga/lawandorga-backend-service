@@ -1,25 +1,25 @@
+from typing import Optional
 from uuid import uuid4
 
 import pytest
 
-from core.folders.domain.aggregates.folder import Folder
+from core.folders.domain.aggregates.folder import Folder, Item
+from core.folders.domain.value_objects.asymmetric_key import AsymmetricKey
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
-from core.folders.domain.value_objects.keys import (
-    AsymmetricKey,
-    FolderKey,
-    SymmetricKey,
-)
+from core.folders.domain.value_objects.folder_key import FolderKey
+from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from core.folders.tests.helpers.encryptions import SymmetricEncryptionTest2
 from core.folders.tests.helpers.user import ForeignUserObject, UserObject
+from core.seedwork.domain_layer import DomainError
 
 
-def test_keys_are_regenerated(single_encryption, car_content_key):
+def todo_test_keys_are_regenerated():
     user = UserObject()
 
     folder_key = FolderKey(owner=user, key=SymmetricKey.generate())
     folder = Folder(
         name="My Folder",
-        pk=uuid4(),
+        uuid=uuid4(),
         keys=[folder_key.encrypt_self(user.get_encryption_key())],
     )
 
@@ -31,7 +31,7 @@ def test_keys_are_regenerated(single_encryption, car_content_key):
     assert folder.encryption_version == "ST2"
 
 
-def test_grant_access(single_encryption, car_content_key):
+def test_grant_access(single_encryption):
     user = UserObject()
 
     folder = Folder.create("New Folder")
@@ -40,7 +40,7 @@ def test_grant_access(single_encryption, car_content_key):
     assert folder.has_access(user)
 
 
-def test_grant_access_to_another_user(single_encryption, car_content_key):
+def test_grant_access_to_another_user(single_encryption):
     user1 = UserObject()
     user2 = UserObject()
 
@@ -71,7 +71,7 @@ def test_encryption_version(single_encryption):
     )
     folder = Folder(
         name="Test",
-        pk=uuid4(),
+        uuid=uuid4(),
         keys=[
             folder_key_1.encrypt_self(user.get_encryption_key()),
             folder_key_2.encrypt_self(user.get_encryption_key()),
@@ -109,10 +109,10 @@ def test_folder_key_decryption_error(single_encryption):
 def test_folder_key_str_method(single_encryption):
     user1 = UserObject()
     key = FolderKey(owner=user1, key=AsymmetricKey.generate())
-    assert str(key) == "FolderKey of {}".format(user1.slug)
+    assert str(key) == "FolderKey of {}".format(user1.uuid)
 
 
-def test_folder_access(single_encryption, car_content_key):
+def test_folder_access(single_encryption):
     user_1 = UserObject()
     user_2 = UserObject()
 
@@ -128,7 +128,7 @@ def test_folder_access(single_encryption, car_content_key):
 
     folder = Folder(
         name="My Folder",
-        pk=uuid4(),
+        uuid=uuid4(),
         keys=[
             folder_key_1.encrypt_self(user_1.get_encryption_key()),
             folder_key_2.encrypt_self(user_2.get_encryption_key()),
@@ -144,3 +144,95 @@ def test_has_no_access(single_encryption):
     folder = Folder.create("Test")
     folder.grant_access(user2)
     assert not folder.has_access(user1)
+
+
+def test_grant_access_twice(folder_user):
+    folder, user = folder_user
+    with pytest.raises(DomainError):
+        folder.grant_access(user, user)
+
+
+def test_revoke_access(folder_user):
+    folder, user = folder_user
+    another_user = UserObject()
+    one_more = UserObject()
+
+    folder.grant_access(another_user, user)
+    folder.grant_access(one_more, user)
+    folder.revoke_access(user)
+
+    assert not folder.has_access(user)
+
+
+def test_revoke_access_errors(folder_user):
+    folder, user = folder_user
+    another_user = UserObject()
+
+    with pytest.raises(DomainError):
+        folder.revoke_access(another_user)
+
+    with pytest.raises(DomainError):
+        folder.revoke_access(user)
+
+
+def test_as_dict(folder):
+    d = folder.as_dict()
+    assert d["name"] == folder.name
+
+
+def test_parent_uuid(folder_user):
+    folder, user = folder_user
+    another_folder = Folder.create("Folder 2", org_pk=folder.org_pk)
+    another_folder.set_parent(folder, user)
+    assert another_folder.parent_uuid == folder.uuid
+    assert folder.parent_uuid is None
+
+
+class CustomItem(Item):
+    __folder: Optional[Folder]
+    folder_uuid = None
+    name = "CustomItem"
+    REPOSITORY = "NONE"
+
+    def __init__(self):
+        self.uuid = uuid4()
+
+    @property
+    def folder(self) -> Optional["Folder"]:
+        return self.__folder
+
+    def set_folder(self, folder: "Folder"):
+        super().set_folder(folder)
+        self.__folder = folder
+
+
+def test_item(folder_user):
+    folder, user = folder_user
+    item = CustomItem()
+
+    folder.add_item(item)
+    assert item in folder.items and item.folder == folder
+    folder.remove_item(item)
+    assert item not in folder.items
+
+
+def test_set_parent(folder_user):
+    folder, user = folder_user
+    another_user = UserObject()
+    folder.grant_access(another_user, user)
+
+    another_folder = Folder.create("Test Folder")
+
+    another_folder.grant_access(user)
+    another_folder.set_parent(folder, user)
+
+    assert another_folder.has_access(another_user)
+
+
+def test_get_encryption_key(folder_user):
+    folder, user = folder_user
+    another_user = UserObject()
+    another_folder = Folder.create("Another")
+    another_folder.set_parent(folder, user)
+    folder.grant_access(another_user, user)
+    another_folder.get_encryption_key(requestor=another_user)

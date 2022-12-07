@@ -172,7 +172,7 @@ class Migration(migrations.Migration):
                 (
                     "show",
                     models.JSONField(
-                        default=core.records.models.record.get_default_show
+                        default=core.records.models.template.get_default_show
                     ),
                 ),
                 (

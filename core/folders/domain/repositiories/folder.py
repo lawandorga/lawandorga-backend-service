@@ -12,7 +12,17 @@ class FolderRepository(Repository, abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def retrieve(cls, org_pk: int, pk: UUID) -> Folder:
+    def retrieve(cls, org_pk: int, uuid: UUID) -> Folder:
+        pass
+
+    @classmethod
+    @abc.abstractmethod
+    def get_or_create_records_folder(cls, org_pk: int, user: IOwner) -> Folder:
+        pass
+
+    @classmethod
+    @abc.abstractmethod
+    def dict(cls, org_pk: int) -> dict[UUID, Folder]:
         pass
 
     @classmethod
@@ -33,9 +43,4 @@ class FolderRepository(Repository, abc.ABC):
     @classmethod
     @abc.abstractmethod
     def tree(cls, org_pk: int) -> FolderTree:
-        pass
-
-    @classmethod
-    @abc.abstractmethod
-    def find_key_owner(cls, slug: UUID) -> IOwner:
         pass

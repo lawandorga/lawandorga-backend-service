@@ -2,9 +2,11 @@ from typing import Optional, Union
 
 from core.folders.domain.external import IOwner
 from core.folders.domain.types import StrDict
-from core.folders.domain.value_objects.keys import AsymmetricKey
-from core.folders.domain.value_objects.keys.base import (
+from core.folders.domain.value_objects.asymmetric_key import (
+    AsymmetricKey,
     EncryptedAsymmetricKey,
+)
+from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
@@ -23,7 +25,7 @@ class FolderKey:
         )
 
         key = EncryptedSymmetricKey.create_from_dict(d["key"])
-        assert str(owner.slug) == d["owner"]
+        assert str(owner.uuid) == d["owner"]
 
         return FolderKey(key=key, owner=owner)
 
@@ -40,14 +42,14 @@ class FolderKey:
         super().__init__()
 
     def __str__(self):
-        return "FolderKey of {}".format(self.__owner.slug)
+        return "FolderKey of {}".format(self.__owner.uuid)
 
-    def __dict__(self) -> StrDict:  # type: ignore
+    def as_dict(self) -> StrDict:
         assert isinstance(self.__key, EncryptedSymmetricKey)
 
         return {
-            "owner": str(self.__owner.slug),
-            "key": self.__key.__dict__(),
+            "owner": str(self.__owner.uuid),
+            "key": self.__key.as_dict(),
             "type": "FOLDER",
         }
 

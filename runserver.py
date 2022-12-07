@@ -5,6 +5,7 @@ if __name__ == "__main__":
         "config.asgi:application",
         reload=True,
         lifespan="off",
+        host="localhost",
         # workers=2,  ignored because of reload=True
         log_config="./logconfig.json",
     )

@@ -1,72 +1,102 @@
-from typing import List, Optional, Union
+import abc
+from typing import Any, List, Optional, Union
 from uuid import UUID, uuid4
 
-from core.folders.domain.aggregates.upgrade import Upgrade
 from core.folders.domain.external import IOwner
 from core.folders.domain.types import StrDict
-from core.folders.domain.value_objects.encryption import EncryptionWarehouse
-from core.folders.domain.value_objects.keys import (
+from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
-    FolderKey,
-    SymmetricKey,
+    EncryptedAsymmetricKey,
 )
-from core.folders.domain.value_objects.keys.base import EncryptedAsymmetricKey
-from core.folders.domain.value_objects.keys.parent_key import ParentKey
+from core.folders.domain.value_objects.folder_key import FolderKey
+from core.folders.domain.value_objects.parent_key import ParentKey
+from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from core.seedwork.domain_layer import DomainError
+
+
+class Item:
+    REPOSITORY: str
+    uuid: Any
+    folder_uuid: Optional[Any]
+    name: str
+    actions: Optional[dict[str, str]] = {}
+
+    def as_dict(self) -> StrDict:
+        return {"repository": self.REPOSITORY, "uuid": str(self.uuid)}
+
+    @property
+    @abc.abstractmethod
+    def folder(self) -> Optional["Folder"]:
+        pass
+
+    def set_folder(self, folder: "Folder"):
+        if self.folder_uuid is None:
+            self.folder_uuid = folder.uuid
+        assert folder.uuid == self.folder_uuid
 
 
 class Folder(IOwner):
     @staticmethod
-    def create(name: Optional[str] = None, org_pk: Optional[int] = None):
+    def create(
+        name: Optional[str] = None,
+        org_pk: Optional[int] = None,
+        stop_inherit: bool = False,
+    ):
         pk = uuid4()
-        return Folder(name=name, pk=pk, org_pk=org_pk)
+        return Folder(name=name, uuid=pk, org_pk=org_pk, stop_inherit=stop_inherit)
 
     def __init__(
         self,
         name: Optional[str] = None,
-        pk: Optional[UUID] = None,
+        uuid: Optional[UUID] = None,
         org_pk: Optional[int] = None,
         keys: Optional[List[Union[FolderKey, ParentKey]]] = None,
         parent: Optional["Folder"] = None,
-        upgrades: Optional[list[Upgrade]] = None,
+        items: Optional[list[Item]] = None,
+        stop_inherit: bool = False,
     ):
-        assert name is not None and pk is not None
+        assert name is not None and uuid is not None
         assert all([k.is_encrypted for k in keys or []])
 
         self.__parent = parent
-        self.__pk = pk
+        self.__uuid = uuid
         self.__name = name
         self.__org_pk = org_pk
+        self.__stop_inherit = stop_inherit
         self.__keys = keys if keys is not None else []
-        self.__upgrades = upgrades if upgrades is not None else []
+        self.__items = items if items is not None else []
 
     def __str__(self):
         return "Folder {}".format(self.name)
 
-    def __dict__(self) -> StrDict:  # type: ignore
-        return {"name": self.__name, "id": str(self.__pk)}
+    def as_dict(self) -> StrDict:
+        return {"name": self.__name, "id": str(self.__uuid)}
 
     @property
     def org_pk(self):
         return self.__org_pk
 
     @property
+    def stop_inherit(self):
+        return self.__stop_inherit
+
+    @property
     def keys(self):
         return self.__keys
 
     @property
-    def pk(self):
-        return self.__pk
+    def parent(self):
+        return self.__parent
 
     @property
-    def parent_pk(self):
+    def uuid(self):
+        return self.__uuid
+
+    @property
+    def parent_uuid(self):
         if self.__parent:
-            return self.__parent.pk
+            return self.__parent.uuid
         return None
-
-    @property
-    def slug(self):
-        return self.__pk
 
     @property
     def name(self):
@@ -74,11 +104,7 @@ class Folder(IOwner):
 
     @property
     def items(self):
-        return []
-
-    @property
-    def upgrades(self):
-        return self.__upgrades
+        return self.__items
 
     @property
     def encryption_version(self) -> Optional[str]:
@@ -95,30 +121,38 @@ class Folder(IOwner):
         return versions[0]
 
     def has_access(self, owner: IOwner) -> bool:
-        try:
-            self.get_decryption_key(requestor=owner)
-        except DomainError:
+        for key in self.__keys:
+            if isinstance(key, FolderKey) and key.owner.uuid == owner.uuid:
+                return True
+        if self.__parent is None or self.__stop_inherit:
             return False
-        return True
+        return self.__parent.has_access(owner)
 
-    def add_upgrade(self, upgrade: Upgrade):
-        self.__upgrades.append(upgrade)
+    def add_item(self, item: Item):
+        for i in self.__items:
+            if i.uuid == item.uuid:
+                raise ValueError("This folder already contains this item.")
+        item.set_folder(self)
+        self.__items.append(item)
 
-    def __reencrypt_all_keys(self, user: IOwner):
-        old_key = self.get_encryption_key(requestor=user)
+    def remove_item(self, item: Item):
+        new_items_1 = filter(lambda x: x.uuid != item.uuid, self.__items)
+        new_items_2 = list(new_items_1)
+        self.__items = new_items_2
+
+    def __todo_reencrypt_all_keys(self, user: IOwner):
+        # this method is not ready yet, because the keys of the children need to be reencrypted as well
+
+        # old_key = self.get_encryption_key(requestor=user)
 
         # get a new folder key
         new_key = SymmetricKey.generate()
-
-        # reencrypt upgrades
-        for upgrade in self.__upgrades:
-            upgrade.reencrypt(old_key, new_key)
 
         # reencrypt keys
         new_keys: list[Union[FolderKey, ParentKey]] = []
         for key in self.__keys:
             if isinstance(key, ParentKey) and self.__parent is not None:
-                new_parent_key = ParentKey(folder_pk=self.pk, key=new_key)
+                new_parent_key = ParentKey(folder_uuid=self.uuid, key=new_key)
                 enc_new_parent_key = new_parent_key.encrypt_self(
                     self.__parent.get_encryption_key(requestor=user)
                 )
@@ -143,12 +177,13 @@ class Folder(IOwner):
         self.__name = name if name is not None else self.__name
 
     def check_encryption_version(self, user: IOwner):
-        if self.encryption_version not in EncryptionWarehouse.get_highest_versions():
-            self.__reencrypt_all_keys(user)
+        # if self.encryption_version not in EncryptionWarehouse.get_highest_versions():
+        #     self.__reencrypt_all_keys(user)
+        pass
 
     def __find_folder_key(self, user: IOwner) -> Optional[FolderKey]:
         for key in self.__keys:
-            if isinstance(key, FolderKey) and key.owner.slug == user.slug:
+            if isinstance(key, FolderKey) and key.owner.uuid == user.uuid:
                 return key
 
         return None
@@ -171,12 +206,13 @@ class Folder(IOwner):
             key = folder_key.key
             return key
 
-        enc_parent_key = self.__find_parent_key()
-        if self.__parent is not None and enc_parent_key:
-            unlock_key = self.__parent.get_decryption_key(requestor=requestor)
-            parent_key = enc_parent_key.decrypt_self(unlock_key)
-            key = parent_key.key
-            return key
+        if not self.__stop_inherit:
+            enc_parent_key = self.__find_parent_key()
+            if self.__parent is not None and enc_parent_key:
+                unlock_key = self.__parent.get_decryption_key(requestor=requestor)
+                parent_key = enc_parent_key.decrypt_self(unlock_key)
+                key = parent_key.key
+                return key
 
         raise DomainError("No key was found for this folder.")
 
@@ -184,12 +220,10 @@ class Folder(IOwner):
         # the key is symmetric therefore the encryption and decryption key is the same
         return self.get_encryption_key(*args, **kwargs)
 
-    def set_parent(
-        self, folder: Optional["Folder"] = None, by: Optional[IOwner] = None
-    ):
-        assert folder is not None and by is not None
+    def set_parent(self, parent: "Folder", by: Optional[IOwner] = None):
+        assert by is not None
 
-        self.__parent = folder
+        self.__parent = parent
 
         # get the key of self
         if len(self.__keys) == 0:
@@ -199,12 +233,12 @@ class Folder(IOwner):
             key = self.get_decryption_key(requestor=by)
 
         parent_key = ParentKey(
-            folder_pk=self.__pk,
+            folder_uuid=self.__uuid,
             key=key,
         )
 
         # encrypt the new parent key
-        lock_key = folder.get_encryption_key(requestor=by)
+        lock_key = parent.get_encryption_key(requestor=by)
         enc_parent_key = parent_key.encrypt_self(lock_key)
 
         # add the parent key to keys
@@ -215,6 +249,9 @@ class Folder(IOwner):
 
     def grant_access(self, to: IOwner, by: Optional[IOwner] = None):
         key: Union[AsymmetricKey, SymmetricKey]
+
+        if self.has_access(to):
+            raise DomainError("This user already has access to this folder.")
 
         if len(self.__keys) == 0:
             key = SymmetricKey.generate()
@@ -241,7 +278,7 @@ class Folder(IOwner):
 
         new_keys = list(
             filter(
-                lambda x: isinstance(x, ParentKey) or x.owner.slug != of.slug,
+                lambda x: isinstance(x, ParentKey) or x.owner.uuid != of.uuid,
                 self.__keys,
             )
         )
@@ -249,9 +286,9 @@ class Folder(IOwner):
         if prev_length == len(new_keys):
             raise DomainError("This user has no direct access to this folder.")
 
-        if len(new_keys) == 0:
+        if (self.__stop_inherit and len(new_keys) <= 1) or len(new_keys) == 0:
             raise DomainError(
-                "You can not revoke access of this user as there would be no keys left."
+                "You can not revoke access of this user as there would be not enough keys left."
             )
 
         self.__keys = new_keys

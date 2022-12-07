@@ -1,4 +1,3 @@
-from core.folders.domain.aggregates.content_upgrade import Content
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.tests.helpers.car import CarWithSecretName
@@ -6,6 +5,7 @@ from core.folders.tests.helpers.encryptions import (
     SymmetricEncryptionTest1,
     SymmetricEncryptionTest2,
 )
+from core.other.deprecated.content_upgrade import Content
 
 
 def test_encrypt_and_decrypt(single_encryption, car_content_key):

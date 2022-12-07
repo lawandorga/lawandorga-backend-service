@@ -3,6 +3,10 @@ from uuid import UUID
 from pydantic import AnyUrl, BaseModel
 
 
+class InputAcceptMember(BaseModel):
+    user: int
+
+
 class InputExternalLinkDelete(BaseModel):
     id: UUID
 

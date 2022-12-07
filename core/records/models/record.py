@@ -1,344 +1,58 @@
 import json
-from typing import Optional, Union
+from typing import Optional, Union, cast
+from uuid import UUID, uuid4
 
-from django.apps import apps
 from django.core.files import File as DjangoFile
-from django.db import models
+from django.db import models, transaction
 from django.utils.timezone import localtime
 
 from core.auth.models import RlcUser
-from core.models import Group, Org
+from core.folders.domain.aggregates.folder import Folder, Item
+from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositiories.item import ItemRepository
+from core.folders.domain.value_objects.box import OpenBox
+from core.folders.domain.value_objects.symmetric_key import (
+    EncryptedSymmetricKey,
+    SymmetricKey,
+)
+from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.records.models import EncryptedClient  # type: ignore
+from core.records.models.template import (
+    RecordEncryptedFileField,
+    RecordEncryptedSelectField,
+    RecordEncryptedStandardField,
+    RecordMultipleField,
+    RecordSelectField,
+    RecordStandardField,
+    RecordStateField,
+    RecordStatisticField,
+    RecordTemplate,
+    RecordUsersField,
+)
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
-
-
-###
-# RecordTemplate
-###
-def get_default_show():
-    return ["Token", "State", "Consultants", "Tags", "Official Note"]
-
-
-class RecordTemplate(models.Model):
-    name = models.CharField(max_length=200)
-    rlc = models.ForeignKey(
-        Org, related_name="recordtemplates", on_delete=models.CASCADE, blank=True
-    )
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
-    show = models.JSONField(default=get_default_show)
-
-    class Meta:
-        verbose_name = "RecordTemplate"
-        verbose_name_plural = "RecordTemplates"
-
-    def __str__(self):
-        return "recordTemplate: {}; rlc: {};".format(self.pk, self.rlc)
-
-    def get_field_types(self):
-        return [
-            "standard_fields",
-            "state_fields",
-            "users_fields",
-            "select_fields",
-            "multiple_fields",
-            "encrypted_standard_fields",
-            "encrypted_select_fields",
-            "encrypted_file_fields",
-        ]
-
-    def get_fields(self, entry_types_and_serializers, request=None):
-        # this might look weird, but i've done it this way to optimize performance
-        # with prefetch related
-        # and watch out this expects a self from a query which has prefetched
-        # all the relevant unencrypted entries otherwise the queries explode
-        fields = []
-        for (field_type, serializer) in entry_types_and_serializers:
-            for field in getattr(self, field_type).all():
-                fields.append(
-                    serializer(instance=field, context={"request": request}).data
-                )
-        fields = list(sorted(fields, key=lambda i: i["order"]))
-        return fields
-
-    @classmethod
-    def get_statistic_fields_meta(cls):
-        from core.records.fixtures import get_all_countries
-
-        return [
-            {
-                "name": "Nationality of the client",
-                "options": get_all_countries(),
-                "order": 99100,
-                "helptext": "",
-            },
-            {
-                "name": "Age in years of the client",
-                "options": [
-                    "0-10",
-                    "11-20",
-                    "21-30",
-                    "31-40",
-                    "41-50",
-                    "51-60",
-                    "61-70",
-                    "71-80",
-                    "81-90",
-                    "90+",
-                    "Unknown",
-                ],
-                "order": 99200,
-                "helptext": "",
-            },
-            {
-                "name": "Sex of the client",
-                "options": ["Male", "Female", "Other", "Unknown"],
-                "order": 99300,
-                "helptext": "",
-            },
-            {
-                "name": "Current status of the client",
-                "options": [
-                    "Employed",
-                    "University Student",
-                    "Apprentice",
-                    "Unemployed",
-                    "Pensioner",
-                    "Other",
-                    "Unknown",
-                ],
-                "order": 99400,
-                "helptext": "A person has migration background if one or both parents were not "
-                "born with a German citizenship. (Source: Statistisches Bundesamt)",
-            },
-        ]
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        for field in self.get_statistic_fields_meta():
-            if not RecordStatisticField.objects.filter(
-                name=field["name"], template=self
-            ).exists():
-                RecordStatisticField.objects.create(template=self, **field)
-
-
-###
-# RecordField
-###
-class RecordField(models.Model):
-    name = models.CharField(max_length=200)
-    order = models.IntegerField(default=0)
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
-
-    @property
-    def type(self):
-        raise NotImplementedError("This property needs to be implemented.")
-
-    @classmethod
-    def get_entry_model(cls):
-        name = cls.__name__.replace("Field", "Entry")
-        model = apps.get_model("core", name)
-        return model
-
-
-class RecordStateField(RecordField):
-    template = models.ForeignKey(
-        RecordTemplate, on_delete=models.CASCADE, related_name="state_fields"
-    )
-    options = models.JSONField(default=list)
-
-    class Meta:
-        verbose_name = "RecordStateField"
-        verbose_name_plural = "RecordStateFields"
-
-    @property
-    def type(self):
-        return "select"
-
-    def __str__(self):
-        return "recordStateField: {}; name: {};".format(self.pk, self.name)
-
-
-class RecordUsersField(RecordField):
-    template = models.ForeignKey(
-        RecordTemplate, on_delete=models.CASCADE, related_name="users_fields"
-    )
-    share_keys = models.BooleanField(default=True)
-    group = models.ForeignKey(
-        Group, blank=True, null=True, default=None, on_delete=models.SET_NULL
-    )
-
-    class Meta:
-        verbose_name = "RecordUsersField"
-        verbose_name_plural = "RecordUsersFields"
-
-    @property
-    def type(self):
-        return "multiple"
-
-    def __str__(self):
-        return "recordUsersField: {}; name: {};".format(self.pk, self.name)
-
-    @property
-    def options(self):
-        if self.group:
-            users = list(self.group.members.all())
-        else:
-            users = list(self.template.rlc.users.all())
-
-        return [{"name": i.name, "id": i.pk} for i in users]
-
-
-class RecordSelectField(RecordField):
-    template = models.ForeignKey(
-        RecordTemplate, on_delete=models.CASCADE, related_name="select_fields"
-    )
-    options = models.JSONField(default=list)
-
-    class Meta:
-        verbose_name = "RecordSelectField"
-        verbose_name_plural = "RecordSelectFields"
-
-    @property
-    def type(self):
-        return "select"
-
-    def __str__(self):
-        return "recordSelectField: {}; name: {};".format(self.pk, self.name)
-
-
-class RecordMultipleField(RecordField):
-    template = models.ForeignKey(
-        RecordTemplate, on_delete=models.CASCADE, related_name="multiple_fields"
-    )
-    options = models.JSONField(default=list)
-
-    class Meta:
-        verbose_name = "RecordMultipleField"
-        verbose_name_plural = "RecordMultipleFields"
-
-    @property
-    def type(self):
-        return "multiple"
-
-    def __str__(self):
-        return "recordMultipleField: {}; name: {};".format(self.pk, self.name)
-
-
-class RecordEncryptedSelectField(RecordField):
-    template = models.ForeignKey(
-        RecordTemplate, on_delete=models.CASCADE, related_name="encrypted_select_fields"
-    )
-    options = models.JSONField(default=list)
-
-    class Meta:
-        verbose_name = "RecordEncryptedSelectField"
-        verbose_name_plural = "RecordEncryptedSelectFields"
-
-    @property
-    def type(self):
-        return "select"
-
-    def __str__(self):
-        return "recordEncryptedSelectField: {}; name: {};".format(self.pk, self.name)
-
-
-class RecordEncryptedFileField(RecordField):
-    template = models.ForeignKey(
-        RecordTemplate, on_delete=models.CASCADE, related_name="encrypted_file_fields"
-    )
-
-    class Meta:
-        verbose_name = "RecordEncryptedFileField"
-        verbose_name_plural = "RecordEncryptedFileFields"
-
-    @property
-    def type(self):
-        return "file"
-
-    def __str__(self):
-        return "recordEncryptedFileField: {}; name: {};".format(self.pk, self.name)
-
-
-class RecordStandardField(RecordField):
-    template = models.ForeignKey(
-        RecordTemplate, on_delete=models.CASCADE, related_name="standard_fields"
-    )
-    TYPE_CHOICES = (
-        ("TEXTAREA", "Multi Line"),
-        ("TEXT", "Single Line"),
-        ("DATETIME-LOCAL", "Date and Time"),
-        ("DATE", "Date"),
-    )
-    field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default="TEXT")
-
-    class Meta:
-        verbose_name = "RecordStandardField"
-        verbose_name_plural = "RecordStandardFields"
-
-    @property
-    def type(self):
-        return self.field_type.lower()
-
-    def __str__(self):
-        return "recordStandardField: {}; name: {};".format(self.pk, self.name)
-
-
-class RecordEncryptedStandardField(RecordField):
-    template = models.ForeignKey(
-        RecordTemplate,
-        on_delete=models.CASCADE,
-        related_name="encrypted_standard_fields",
-    )
-    TYPE_CHOICES = (
-        ("TEXTAREA", "Multi Line"),
-        ("TEXT", "Single Line"),
-        ("DATE", "Date"),
-    )
-    field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default="TEXT")
-
-    class Meta:
-        verbose_name = "RecordEncryptedStandardField"
-        verbose_name_plural = "RecordEncryptedStandardFields"
-
-    @property
-    def type(self):
-        return self.field_type.lower()
-
-    def __str__(self):
-        return "recordEncryptedStandardField: {}; name: {};".format(self.pk, self.name)
-
-
-class RecordStatisticField(RecordField):
-    template = models.ForeignKey(
-        RecordTemplate, on_delete=models.CASCADE, related_name="statistic_fields"
-    )
-    options = models.JSONField(default=list)
-    helptext = models.CharField(max_length=1000)
-
-    class Meta:
-        verbose_name = "RecordStatisticField"
-        verbose_name_plural = "RecordStatisticFields"
-
-    @property
-    def type(self):
-        return "select"
-
-    def __str__(self):
-        return "recordStatisticField: {}; name: {};".format(self.pk, self.name)
-
 
 ###
 # Record
 ###
-class Record(models.Model):
+from core.seedwork.repository import RepositoryWarehouse
+
+
+class DjangoRecordRepository(ItemRepository):
+    IDENTIFIER = "RECORD"
+
+    @classmethod
+    def retrieve(cls, uuid: UUID) -> "Record":
+        return Record.objects.get(uuid=uuid)
+
+
+class Record(Item, models.Model):
+    REPOSITORY = "RECORD"
+
     template = models.ForeignKey(
         RecordTemplate, related_name="records", on_delete=models.PROTECT
     )
+    folder_uuid = models.UUIDField(db_index=True, null=True)
+    uuid = models.UUIDField(default=uuid4, unique=True, db_index=True)
     old_client = models.ForeignKey(
         EncryptedClient,
         related_name="records",
@@ -346,6 +60,7 @@ class Record(models.Model):
         null=True,
         blank=True,
     )
+    key = models.JSONField(null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -356,6 +71,14 @@ class Record(models.Model):
 
     def __str__(self):
         return "record: {}; rlc: {};".format(self.pk, self.template.rlc.name)
+
+    @property
+    def actions(self):
+        return {"OPEN": "/records/{}/".format(self.pk)}
+
+    @property
+    def name(self):
+        return self.identifier
 
     @property
     def identifier(self):
@@ -401,19 +124,74 @@ class Record(models.Model):
             "deletions",
         ]
 
+    def grant_access(self, to: RlcUser, by: Optional[RlcUser]):
+        if self.folder is not None:
+            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+            folder = self.folder
+            if not folder.has_access(to):
+                folder.grant_access(to=to, by=by)
+                r.save(folder)
+        else:
+            raise ValueError("This record has no upgrade.")
+
     def has_access(self, user: RlcUser) -> bool:
-        for enc in getattr(self, "encryptions").all():
-            if enc.user_id == user.id:
-                return True
+        if self.folder is None:
+            for enc in getattr(self, "encryptions").all():
+                if enc.user_id == user.id:
+                    return True
+        else:
+            return self.folder.has_access(user)
         return False
 
-    def get_aes_key(self, user: Optional[RlcUser] = None, private_key_user=None):
-        if user and private_key_user:
-            encryption = self.encryptions.get(user=user)
-            encryption.decrypt(private_key_user)
-            key = encryption.key
-        else:
-            raise ValueError("You need to pass (user and private_key_user).")
+    def generate_key(self, user: RlcUser):
+        assert self.folder is not None
+        key = SymmetricKey.generate()
+        lock_key = self.folder.get_encryption_key(requestor=user)
+        enc_key = EncryptedSymmetricKey.create(key, lock_key)
+        self.key = enc_key.as_dict()
+
+    def set_folder(self, folder: "Folder"):
+        super().set_folder(folder)
+        self._folder = folder
+
+    @property
+    def folder(self) -> Optional[Folder]:
+        if self.folder_uuid is None:
+            return None
+        if not hasattr(self, "_folder"):
+            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+            self._folder = r.retrieve(self.template.rlc_id, self.folder_uuid)
+        return self._folder
+
+    def get_aes_key(self, user: RlcUser, *args, **kwargs):
+        if self.folder is None:
+            self.put_in_folder(user)
+
+        assert self.folder is not None
+
+        if self.key is None:
+            aes_key = self.get_aes_key_old(user)
+            aes_key_box = OpenBox(data=bytes(aes_key, "utf-8"))
+            key = SymmetricKey(key=aes_key_box, origin=SymmetricEncryptionV1.VERSION)
+            folder = self.folder
+            encryption_key = folder.get_encryption_key(requestor=user)
+            self.key = EncryptedSymmetricKey.create(key, encryption_key).as_dict()
+
+            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+            with transaction.atomic():
+                r.save(folder)
+                self.save()
+
+        decryption_key = self.folder.get_decryption_key(requestor=user)
+        enc_key = EncryptedSymmetricKey.create_from_dict(self.key)
+        key = enc_key.decrypt(decryption_key)
+        return key.get_key()
+
+    def get_aes_key_old(self, user: RlcUser):
+        private_key_user = user.get_decryption_key().get_private_key()
+        encryption = self.encryptions.get(user=user)
+        encryption.decrypt(private_key_user)
+        key = encryption.key
         return key
 
     def get_unencrypted_entry_types(self):
@@ -447,6 +225,28 @@ class Record(models.Model):
         if sort:
             entries = dict(sorted(entries.items(), key=lambda item: item[1]["order"]))
         return entries
+
+    def put_in_folder(self, user: RlcUser):
+        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+
+        records_folder = r.get_or_create_records_folder(
+            org_pk=self.template.rlc_id, user=user
+        )
+
+        folder_name = "{}".format(self.identifier or "Not-Set")
+        folder = Folder.create(
+            folder_name, org_pk=self.template.rlc_id, stop_inherit=True
+        )
+        folder.grant_access(user)
+        folder.set_parent(records_folder, user)
+        for encryption in list(self.encryptions.exclude(user_id=user.id)):
+            folder.grant_access(to=encryption.user, by=user)
+
+        folder.add_item(self)
+
+        with transaction.atomic():
+            r.save(folder)
+            self.save()
 
 
 ###

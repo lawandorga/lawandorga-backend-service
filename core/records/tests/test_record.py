@@ -3,7 +3,7 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from core.models import HasPermission, Org, Permission, RlcUser, UserProfile
-from core.records.models import Record, RecordEncryptionNew, RecordTemplate
+from core.records.models import Record, RecordTemplate
 from core.records.views import RecordTemplateViewSet, RecordViewSet
 from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
@@ -119,18 +119,6 @@ class RecordViewSetWorking(BaseRecord, TestCase):
 
     def setup_record(self):
         self.record = Record.objects.create(template=self.template)
-
-    def test_record_create(self):
-        view = RecordViewSet.as_view(actions={"post": "create"})
-        data = {
-            "template": self.template.pk,
-        }
-        request = self.factory.post("", data)
-        force_authenticate(request, self.user)
-        response = view(request)
-        self.assertEqual(response.status_code, 201)
-        self.assertTrue(Record.objects.filter(template=self.template.pk).count(), 1)
-        self.assertTrue(RecordEncryptionNew.objects.count(), 1)
 
     def test_record_delete(self):
         self.setup_record()

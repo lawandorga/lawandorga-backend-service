@@ -269,7 +269,7 @@ class RecordMultipleEntryViewSetErrors(BaseRecordEntry, TestCase):
         request = self.factory.patch("", data=data)
         force_authenticate(request, self.user)
         response = view(request, pk=self.entry.pk)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(200, response.status_code)
 
     def test_values_must_be_in_options(self):
         self.field.multiple = True

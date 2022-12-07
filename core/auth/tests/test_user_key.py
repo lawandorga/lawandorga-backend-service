@@ -1,12 +1,12 @@
 import pickle
 
 from core.auth.domain.user_key import UserKey
-from core.folders.domain.value_objects.box import OpenBox
-from core.folders.domain.value_objects.keys import (
+from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
-    SymmetricKey,
 )
+from core.folders.domain.value_objects.box import OpenBox
+from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 
 
 def assert_key_works(key):
@@ -39,7 +39,7 @@ def test_user_key_create_from_encrypted_works():
         public_key=key.get_public_key(),
         origin=key.origin,
     )
-    u1 = UserKey.create_from_dict({"key": enc_key.__dict__(), "type": "USER"})
+    u1 = UserKey.create_from_dict({"key": enc_key.as_dict(), "type": "USER"})
     u2 = u1.decrypt_self(password)
     assert_key_works(u2.key)
 
@@ -64,7 +64,7 @@ def test_user_key_can_encrypt_and_decrypt():
     assert_key_works(u1.key)
 
 
-def todo_test_key_is_pickleable():
+def test_key_is_pickleable():
     key = AsymmetricKey.generate()
     u1 = UserKey(key=key)
     u2 = pickle.dumps(u1)

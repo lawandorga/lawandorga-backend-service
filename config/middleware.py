@@ -20,7 +20,7 @@ __all__ = [
 def custom_debug_toolbar_middleware(get_response):
     def create_response(request, response):
         if "debug" in request.GET and response["content-type"] == "application/json":
-            content = json.dumps(json.loads(response.content), sort_keys=True, indent=2)
+            content = json.dumps(json.loads(response.items), sort_keys=True, indent=2)
             new_response = HttpResponse(
                 "<html><body><pre>{}</pre></body></html>".format(content)
             )

@@ -71,7 +71,6 @@ class RlcUserViewSet(
         elif self.action in [
             "list",
             "retrieve",
-            "accept",
             "unlock",
             "destroy",
             "permissions",
@@ -190,21 +189,3 @@ class RlcUserViewSet(
             raise ParseError(
                 "Not all keys could be handed over. Please tell another admin to unlock this user."
             )
-
-    @action(detail=True, methods=["post"])
-    def accept(self, request, *args, **kwargs):
-        if not request.user.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
-            return Response(
-                {
-                    "detail": "You don't have the necessary permission '{}' to do this.".format(
-                        PERMISSION_ADMIN_MANAGE_USERS
-                    )
-                },
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        new_member = self.get_object()
-        private_key_user = request.user.get_private_key(request=request)
-        request.user.rlc.accept_member(request.user, new_member.user, private_key_user)
-
-        return Response(RlcUserSerializer(instance=new_member).data)

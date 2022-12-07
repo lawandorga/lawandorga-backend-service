@@ -309,7 +309,7 @@ class RecordStateEntrySerializer(RecordEntrySerializer):
             field = attrs["field"]
         else:
             raise ValidationError("Field needs to be set.")
-        if "value" in attrs and not attrs["value"] in field.options:
+        if "value" in attrs and attrs["value"] not in field.options:
             raise ValidationError("The selected state is not allowed.")
         if "value" in attrs and attrs["value"] == "Closed":
             if (
@@ -522,6 +522,10 @@ class RecordDetailSerializer(RecordSerializer):
     client = serializers.SerializerMethodField()
     url = serializers.HyperlinkedIdentityField(view_name="record-detail")
     encryptions = RecordEncryptionNewSerializer(many=True)
+    folder = serializers.SerializerMethodField()
+
+    def get_folder(self, obj):
+        return obj.folder_uuid
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

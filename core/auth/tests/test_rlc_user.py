@@ -2,7 +2,7 @@ from django.conf import settings
 from django.test import Client, TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from core.models import HasPermission, Org, Permission, RlcUser, UserProfile
+from core.models import Org, RlcUser, UserProfile
 from core.static import PERMISSION_ADMIN_MANAGE_USERS
 from core.views import RlcUserViewSet
 
@@ -134,27 +134,6 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         user.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
         assert user.rlc_user.key is not None
 
-    def test_accept_works_on_new_user(self):
-        user = UserProfile.objects.create(email="test3@law-orga.de")
-        RlcUser.objects.create(user=user, org=self.rlc)
-        user = UserProfile.objects.get(email="test3@law-orga.de")
-        user.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
-        assert user.rlc_user.key is not None
-        self.rlc.accept_member(self.user, user, self.private_key)
-
-    def test_accept_works(self):
-        HasPermission.objects.create(
-            permission=Permission.objects.get(name=PERMISSION_ADMIN_MANAGE_USERS),
-            user=self.rlc_user,
-        )
-        rlc_user = self.rlc_user
-        self.another_rlc_user.accepted = False
-        self.another_rlc_user.save()
-        c = Client()
-        c.login(email=rlc_user.email, password=settings.DUMMY_USER_PASSWORD)
-        response = c.post("/api/profiles/{}/accept/".format(self.another_rlc_user.pk))
-        assert response.status_code == 200
-
     def test_unlock_works(self):
         rlc_user = self.rlc_user
         self.another_rlc_user.locked = True
@@ -247,11 +226,5 @@ class UserViewSetAccessTests(TestCase):
     def test_not_everybody_can_hit_unlock(self):
         view = RlcUserViewSet.as_view(actions={"post": "unlock"})
         request = self.factory.post("/api/users/1/unlock/")
-        response = view(request, pk=1)
-        self.assertEqual(401, response.status_code)
-
-    def test_not_everybody_can_hit_accept(self):
-        view = RlcUserViewSet.as_view(actions={"get": "accept"})
-        request = self.factory.post("/api/users/1/accept/")
         response = view(request, pk=1)
         self.assertEqual(401, response.status_code)
