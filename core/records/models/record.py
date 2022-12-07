@@ -227,6 +227,8 @@ class Record(Item, models.Model):
         return entries
 
     def put_in_folder(self, user: RlcUser):
+        if not self.has_access(user):
+            raise ValueError("User has no access to this folder.")
         r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
 
         records_folder = r.get_or_create_records_folder(
