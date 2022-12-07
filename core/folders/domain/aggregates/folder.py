@@ -286,9 +286,9 @@ class Folder(IOwner):
         if prev_length == len(new_keys):
             raise DomainError("This user has no direct access to this folder.")
 
-        if len(new_keys) == 0:
+        if (self.__stop_inherit and len(new_keys) <= 1) or len(new_keys) == 0:
             raise DomainError(
-                "You can not revoke access of this user as there would be no keys left."
+                "You can not revoke access of this user as there would be not enough keys left."
             )
 
         self.__keys = new_keys

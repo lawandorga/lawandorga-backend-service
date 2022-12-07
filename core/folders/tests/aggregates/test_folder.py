@@ -155,8 +155,10 @@ def test_grant_access_twice(folder_user):
 def test_revoke_access(folder_user):
     folder, user = folder_user
     another_user = UserObject()
+    one_more = UserObject()
 
     folder.grant_access(another_user, user)
+    folder.grant_access(one_more, user)
     folder.revoke_access(user)
 
     assert not folder.has_access(user)
