@@ -4,7 +4,8 @@ import pytest
 
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
-from core.folders.domain.value_objects.keys import FolderKey, SymmetricKey
+from core.folders.domain.value_objects.folder_key import FolderKey
+from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from core.folders.tests.helpers.encryptions import (
     AsymmetricEncryptionTest2,
     SymmetricEncryptionTest2,

@@ -4,7 +4,10 @@ from typing import Optional, Union
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.external import IOwner
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
-from core.folders.domain.value_objects.keys import EncryptedSymmetricKey, SymmetricKey
+from core.folders.domain.value_objects.symmetric_key import (
+    EncryptedSymmetricKey,
+    SymmetricKey,
+)
 from core.other.deprecated.object import EncryptedObject
 from core.other.deprecated.upgrade import Item, Upgrade
 from core.seedwork.domain_layer import DomainError

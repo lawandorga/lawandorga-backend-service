@@ -2,7 +2,7 @@ import abc
 from typing import TYPE_CHECKING, Any, Optional
 
 from core.folders.domain.types import StrDict
-from core.folders.domain.value_objects.keys import SymmetricKey
+from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 
 if TYPE_CHECKING:
     from core.folders.domain.aggregates.folder import Folder

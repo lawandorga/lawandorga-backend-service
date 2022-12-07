@@ -2,11 +2,11 @@ from typing import Union
 from uuid import uuid4
 
 from core.folders.domain.external import IOwner
-from core.folders.domain.value_objects.keys import (
+from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
-    SymmetricKey,
 )
+from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 
 
 class UserObject(IOwner):

@@ -4,12 +4,10 @@ from uuid import uuid4
 import pytest
 
 from core.folders.domain.aggregates.folder import Folder, Item
+from core.folders.domain.value_objects.asymmetric_key import AsymmetricKey
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
-from core.folders.domain.value_objects.keys import (
-    AsymmetricKey,
-    FolderKey,
-    SymmetricKey,
-)
+from core.folders.domain.value_objects.folder_key import FolderKey
+from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from core.folders.tests.helpers.encryptions import SymmetricEncryptionTest2
 from core.folders.tests.helpers.user import ForeignUserObject, UserObject
 from core.seedwork.domain_layer import DomainError

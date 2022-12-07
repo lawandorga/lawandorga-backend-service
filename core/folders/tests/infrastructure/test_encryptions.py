@@ -1,11 +1,8 @@
+from core.folders.domain.value_objects.asymmetric_key import AsymmetricKey, SymmetricKey
 from core.folders.domain.value_objects.box import OpenBox
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
-from core.folders.domain.value_objects.keys import (
-    AsymmetricKey,
-    FolderKey,
-    SymmetricKey,
-)
-from core.folders.domain.value_objects.keys.base import EncryptedSymmetricKey
+from core.folders.domain.value_objects.folder_key import FolderKey
+from core.folders.domain.value_objects.symmetric_key import EncryptedSymmetricKey
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 

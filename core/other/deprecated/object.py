@@ -1,8 +1,9 @@
 import abc
 from typing import Optional, Union
 
+from core.folders.domain.value_objects.asymmetric_key import AsymmetricKey
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
-from core.folders.domain.value_objects.keys import AsymmetricKey, SymmetricKey
+from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 
 
 class EncryptedObject(abc.ABC):
