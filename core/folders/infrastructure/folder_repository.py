@@ -156,7 +156,6 @@ class DjangoFolderRepository(FolderRepository):
             domain_folders[i] = cls.__db_folder_to_domain(f, folders, users)
 
         setattr(cls, cls.__get_cache_key(org_pk), domain_folders)
-        print("SETATTR")
 
         return domain_folders
 
