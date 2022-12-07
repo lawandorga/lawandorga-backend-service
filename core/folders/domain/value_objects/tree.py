@@ -3,8 +3,8 @@ from uuid import UUID
 
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.types import StrDict
-from core.folders.domain.value_objects.keys import FolderKey
-from core.folders.domain.value_objects.keys.parent_key import ParentKey
+from core.folders.domain.value_objects.folder_key import FolderKey
+from core.folders.domain.value_objects.parent_key import ParentKey
 
 
 class Access:

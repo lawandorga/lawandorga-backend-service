@@ -1,12 +1,12 @@
 from typing import Union
 
 from core.folders.domain.types import StrDict
-from core.folders.domain.value_objects.box import OpenBox
-from core.folders.domain.value_objects.keys.base import (
+from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
-    SymmetricKey,
 )
+from core.folders.domain.value_objects.box import OpenBox
+from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 
 
 class UserKey:

@@ -11,8 +11,8 @@ from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.external import IOwner
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.repositiories.item import ItemRepository
-from core.folders.domain.value_objects.keys import FolderKey
-from core.folders.domain.value_objects.keys.parent_key import ParentKey
+from core.folders.domain.value_objects.folder_key import FolderKey
+from core.folders.domain.value_objects.parent_key import ParentKey
 from core.folders.domain.value_objects.tree import FolderTree
 from core.folders.models import FoldersFolder
 from core.seedwork.repository import RepositoryWarehouse

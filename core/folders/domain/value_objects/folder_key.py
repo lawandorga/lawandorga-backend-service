@@ -2,9 +2,11 @@ from typing import Optional, Union
 
 from core.folders.domain.external import IOwner
 from core.folders.domain.types import StrDict
-from core.folders.domain.value_objects.keys import AsymmetricKey
-from core.folders.domain.value_objects.keys.base import (
+from core.folders.domain.value_objects.asymmetric_key import (
+    AsymmetricKey,
     EncryptedAsymmetricKey,
+)
+from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )

@@ -2,7 +2,7 @@ from typing import Optional, Union
 from uuid import UUID
 
 from core.folders.domain.types import StrDict
-from core.folders.domain.value_objects.keys.base import (
+from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )

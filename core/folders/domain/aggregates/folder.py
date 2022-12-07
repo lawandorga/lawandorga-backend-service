@@ -4,13 +4,13 @@ from uuid import UUID, uuid4
 
 from core.folders.domain.external import IOwner
 from core.folders.domain.types import StrDict
-from core.folders.domain.value_objects.keys import (
+from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
-    FolderKey,
-    SymmetricKey,
+    EncryptedAsymmetricKey,
 )
-from core.folders.domain.value_objects.keys.base import EncryptedAsymmetricKey
-from core.folders.domain.value_objects.keys.parent_key import ParentKey
+from core.folders.domain.value_objects.folder_key import FolderKey
+from core.folders.domain.value_objects.parent_key import ParentKey
+from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from core.seedwork.domain_layer import DomainError
 
 

@@ -11,7 +11,10 @@ from core.folders.domain.aggregates.folder import Folder, Item
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.repositiories.item import ItemRepository
 from core.folders.domain.value_objects.box import OpenBox
-from core.folders.domain.value_objects.keys import EncryptedSymmetricKey, SymmetricKey
+from core.folders.domain.value_objects.symmetric_key import (
+    EncryptedSymmetricKey,
+    SymmetricKey,
+)
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.records.models import EncryptedClient  # type: ignore
 from core.records.models.template import (

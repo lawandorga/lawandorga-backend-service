@@ -13,7 +13,10 @@ from django.template import loader
 from core.auth.domain.user_key import UserKey
 from core.auth.token_generator import EmailConfirmationTokenGenerator
 from core.folders.domain.external import IOwner
-from core.folders.domain.value_objects.keys import AsymmetricKey, EncryptedAsymmetricKey
+from core.folders.domain.value_objects.asymmetric_key import (
+    AsymmetricKey,
+    EncryptedAsymmetricKey,
+)
 from core.rlc.models import HasPermission, Org, Permission
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.encryption import EncryptedModelMixin
