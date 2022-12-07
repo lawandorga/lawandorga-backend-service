@@ -34,9 +34,8 @@ def user(db, org):
 def another_user(db, user, org):
     user_2 = data.create_rlc_user(rlc=org, email="test@law-orga.de")
     org.accept_member(
-        user["user"],
-        user_2["user"],
-        user["rlc_user"].get_decryption_key().get_private_key(),
+        user["rlc_user"],
+        user_2["rlc_user"],
     )
     yield user_2
 
