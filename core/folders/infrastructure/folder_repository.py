@@ -144,7 +144,7 @@ class DjangoFolderRepository(FolderRepository):
 
     @classmethod
     def dict(cls, org_pk: int) -> dict[UUID, Folder]:
-        cache_value = getattr(cls, cls.__get_cache_key(org_pk), None)
+        cache_value = None  # getattr(cls, cls.__get_cache_key(org_pk), None)
         if cache_value:
             return cache_value
 
