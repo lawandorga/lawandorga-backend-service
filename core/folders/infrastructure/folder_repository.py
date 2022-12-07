@@ -2,7 +2,6 @@ import os.path
 from typing import Optional, Type, Union, cast
 from uuid import UUID
 
-from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
@@ -22,14 +21,19 @@ PATH = os.path.abspath(__file__)
 
 class DjangoFolderRepository(FolderRepository):
     @classmethod
-    def __db_folder_to_domain(cls, db_folder: FoldersFolder) -> Folder:
-        folders = cls.__as_dict(db_folder.org_id)
-        users = cls.__users(db_folder.org_id)
+    def __db_folder_to_domain(
+        cls,
+        db_folder: FoldersFolder,
+        folders: dict[UUID, FoldersFolder],
+        users: dict[UUID, RlcUser],
+    ) -> Folder:
 
         # find the parent
         parent: Optional[Folder] = None
         if db_folder.parent is not None:
-            parent = cls.__db_folder_to_domain(folders[db_folder.parent])
+            parent = cls.__db_folder_to_domain(
+                folders[db_folder.parent], folders, users
+            )
 
         # revive keys
         keys: list[Union[ParentKey, FolderKey]] = []
@@ -140,32 +144,37 @@ class DjangoFolderRepository(FolderRepository):
 
     @classmethod
     def dict(cls, org_pk: int) -> dict[UUID, Folder]:
-        cache_value = cache.get(cls.__get_cache_key(org_pk), None)
+        cache_value = getattr(cls, cls.__get_cache_key(org_pk), None)
         if cache_value:
             return cache_value
 
         folders = cls.__as_dict(org_pk)
+        users = cls.__users(org_pk)
+
         domain_folders = {}
         for i, f in folders.items():
-            domain_folders[i] = cls.__db_folder_to_domain(f)
+            domain_folders[i] = cls.__db_folder_to_domain(f, folders, users)
 
-        cache.set(cls.__get_cache_key(org_pk), domain_folders)
+        setattr(cls, cls.__get_cache_key(org_pk), domain_folders)
 
         return domain_folders
 
     @classmethod
     def list(cls, org_pk: int) -> list[Folder]:
         folders = cls.__as_dict(org_pk)
+        users = cls.__users(org_pk)
+
         folders_list = []
         for folder in folders.values():
-            folders_list.append(cls.__db_folder_to_domain(folder))
+            folders_list.append(cls.__db_folder_to_domain(folder, folders, users))
+
         return folders_list
 
     @classmethod
     def save(cls, folder: Folder):
         db_folder = cls.__db_folder_from_domain(folder)
         db_folder.save()
-        cache.delete(cls.__get_cache_key(folder.org_pk))
+        delattr(cls, cls.__get_cache_key(folder.org_pk))
 
     @classmethod
     def delete(cls, folder: Folder):
@@ -173,7 +182,7 @@ class DjangoFolderRepository(FolderRepository):
         f.deleted = True
         f.deleted_at = timezone.now()
         f.save()
-        cache.delete(cls.__get_cache_key(folder.org_pk))
+        delattr(cls, cls.__get_cache_key(folder.org_pk))
 
     @classmethod
     def tree(cls, org_pk: int) -> FolderTree:

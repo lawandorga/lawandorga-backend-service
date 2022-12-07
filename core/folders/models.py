@@ -37,4 +37,4 @@ class FoldersFolder(models.Model):
 
     @staticmethod
     def query() -> QuerySet:
-        return FoldersFolder.objects.all()
+        return FoldersFolder.objects.select_related("_parent")
