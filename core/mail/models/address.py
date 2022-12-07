@@ -37,26 +37,27 @@ class MailAddress(models.Model):
             raise TypeError(
                 "The type should be 'str' not '{}'.".format(type(localpart))
             )
+
         if len(localpart) > 64:
             raise ValueError("The localpart is too long.")
-        count = localpart.count(".")
-        if count > 1:
-            raise ValueError(
-                "The localpart contains '.' {} times. '.' is only allowed once.".format(
-                    count
-                )
-            )
-        if len(localpart) <= 1:
+
+        if len(localpart) == 0:
             raise ValueError("The localpart is too short.")
-        regex = r"^([a-z]|[0-9]|\.|-|_)+$"
+
+        if localpart == 'postmaster':
+            raise ValueError("You are not allowed to use postmaster@.")
+
+        if ".." in localpart:
+            raise ValueError("You are not allowed to use '.' two times in a row.")
+
+        regex = r"^[a-z0-9._-]+$"
         pattern = re.compile(regex)
         if not pattern.match(localpart):
             raise ValueError(
-                "You are only allowed to use the following characters [a-z], [0-9], ., - or _."
+                "You are only allowed to use the following characters 'a-z', '0-9', '.', '-' or '_'."
             )
-        regex = r"^([a-z]|[0-9]).+([a-z]|[0-9])$"
-        pattern = re.compile(regex)
-        if not pattern.match(localpart):
+
+        if "." == localpart[0] or "." == localpart[-1]:
             raise ValueError(
-                "The localpart needs to start and end with [a-z] or [0-9]."
+                "The localpart needs to start and end with 'a-z', '0-9', '-' or '_'."
             )

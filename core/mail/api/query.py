@@ -86,9 +86,12 @@ def query__check_domain(mail_user: MailUser):
     if domain is None:
         return data
 
-    for record in dns.resolver.resolve(domain.name, "MX"):
-        exchange = str(record.exchange)
-        mx_records.append(exchange)
+    try:
+        for record in dns.resolver.resolve(domain.name, "MX"):
+            exchange = str(record.exchange)
+            mx_records.append(exchange)
+    except dns.exception.DNSException:
+        raise ApiError('Your domain seems to be wrong.')
 
     if len(mx_records) == 1 and settings.MAIL_MX_RECORD in mx_records:
         data["valid"] = True
