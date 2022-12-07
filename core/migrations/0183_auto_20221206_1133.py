@@ -6,9 +6,11 @@ from django.db import migrations
 
 def gen_uuid(apps, schema_editor):
     MyModel = apps.get_model("core", "Record")
+    rows = []
     for row in MyModel.objects.all():
         row.uuid = uuid.uuid4()
-        row.save(update_fields=["uuid"])
+        rows.append(row)
+    MyModel.objects.bulk_update(rows, ["uuid"])
 
 
 class Migration(migrations.Migration):

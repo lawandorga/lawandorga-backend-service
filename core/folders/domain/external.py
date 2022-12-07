@@ -2,11 +2,11 @@ import abc
 from typing import TYPE_CHECKING, Any, Union
 
 if TYPE_CHECKING:
-    from core.folders.domain.value_objects.keys import (
+    from core.folders.domain.value_objects.asymmetric_key import (
         AsymmetricKey,
         EncryptedAsymmetricKey,
-        SymmetricKey,
     )
+    from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 
 
 class IOwner:
