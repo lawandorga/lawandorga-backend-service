@@ -139,8 +139,8 @@ class Record(Item, models.Model):
             for enc in getattr(self, "encryptions").all():
                 if enc.user_id == user.id:
                     return True
-        # else:
-        #     return self.folder.has_access(user)
+        else:
+            return self.folder.has_access(user)
         return False
 
     def generate_key(self, user: RlcUser):
@@ -156,7 +156,6 @@ class Record(Item, models.Model):
 
     @property
     def folder(self) -> Optional[Folder]:
-        # return None
         if self.folder_uuid is None:
             return None
         if not hasattr(self, "_folder"):
