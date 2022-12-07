@@ -156,6 +156,7 @@ class DjangoFolderRepository(FolderRepository):
             domain_folders[i] = cls.__db_folder_to_domain(f, folders, users)
 
         setattr(cls, cls.__get_cache_key(org_pk), domain_folders)
+        print("SETATTR")
 
         return domain_folders
 
@@ -174,7 +175,8 @@ class DjangoFolderRepository(FolderRepository):
     def save(cls, folder: Folder):
         db_folder = cls.__db_folder_from_domain(folder)
         db_folder.save()
-        delattr(cls, cls.__get_cache_key(folder.org_pk))
+        if hasattr(cls, cls.__get_cache_key(folder.org_pk)):
+            delattr(cls, cls.__get_cache_key(folder.org_pk))
 
     @classmethod
     def delete(cls, folder: Folder):
@@ -182,7 +184,8 @@ class DjangoFolderRepository(FolderRepository):
         f.deleted = True
         f.deleted_at = timezone.now()
         f.save()
-        delattr(cls, cls.__get_cache_key(folder.org_pk))
+        if hasattr(cls, cls.__get_cache_key(folder.org_pk)):
+            delattr(cls, cls.__get_cache_key(folder.org_pk))
 
     @classmethod
     def tree(cls, org_pk: int) -> FolderTree:
