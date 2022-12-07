@@ -15,7 +15,7 @@ from core.folders.tests.helpers.user import ForeignUserObject, UserObject
 from core.seedwork.domain_layer import DomainError
 
 
-def todo_test_keys_are_regenerated(single_encryption, car_content_key):
+def todo_test_keys_are_regenerated():
     user = UserObject()
 
     folder_key = FolderKey(owner=user, key=SymmetricKey.generate())
@@ -33,7 +33,7 @@ def todo_test_keys_are_regenerated(single_encryption, car_content_key):
     assert folder.encryption_version == "ST2"
 
 
-def test_grant_access(single_encryption, car_content_key):
+def test_grant_access(single_encryption):
     user = UserObject()
 
     folder = Folder.create("New Folder")
@@ -42,7 +42,7 @@ def test_grant_access(single_encryption, car_content_key):
     assert folder.has_access(user)
 
 
-def test_grant_access_to_another_user(single_encryption, car_content_key):
+def test_grant_access_to_another_user(single_encryption):
     user1 = UserObject()
     user2 = UserObject()
 
@@ -114,7 +114,7 @@ def test_folder_key_str_method(single_encryption):
     assert str(key) == "FolderKey of {}".format(user1.uuid)
 
 
-def test_folder_access(single_encryption, car_content_key):
+def test_folder_access(single_encryption):
     user_1 = UserObject()
     user_2 = UserObject()
 

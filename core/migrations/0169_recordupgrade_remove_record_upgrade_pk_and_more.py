@@ -3,7 +3,7 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
-import core.folders.domain.aggregates.upgrade
+import core.other.deprecated.upgrade
 
 
 class Migration(migrations.Migration):
@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                 "verbose_name": "RecordUpgrade",
                 "verbose_name_plural": "RecordUpgrades",
             },
-            bases=(core.folders.domain.aggregates.upgrade.Upgrade, models.Model),
+            bases=(core.other.deprecated.upgrade.Upgrade, models.Model),
         ),
         migrations.RemoveField(
             model_name="record",

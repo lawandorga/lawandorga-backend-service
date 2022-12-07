@@ -2,7 +2,6 @@ from uuid import uuid4
 
 import pytest
 
-from core.folders.domain.aggregates.content_upgrade import ContentUpgrade
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.keys import FolderKey, SymmetricKey
@@ -11,6 +10,7 @@ from core.folders.tests.helpers.encryptions import (
     SymmetricEncryptionTest2,
 )
 from core.folders.tests.helpers.user import UserObject
+from core.other.deprecated.content_upgrade import ContentUpgrade
 from core.seedwork.domain_layer import DomainError
 
 

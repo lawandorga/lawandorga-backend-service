@@ -1,6 +1,6 @@
 from typing import Optional
 
-from core.folders.domain.aggregates.object import EncryptedObject
+from core.other.deprecated.object import EncryptedObject
 
 
 class CarWithSecretName(EncryptedObject):
