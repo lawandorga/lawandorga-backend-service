@@ -26,3 +26,11 @@ def create_folder_permissions(folder_permission_model: "Type[FolderPermission]")
     permissions = get_all_files_permission_strings()
     for permission in permissions:
         folder_permission_model.objects.get_or_create(name=permission)
+
+
+def create():
+    from core.models import CollabPermission, FolderPermission, Permission
+
+    create_permissions(Permission)
+    create_collab_permissions(CollabPermission)
+    create_folder_permissions(FolderPermission)

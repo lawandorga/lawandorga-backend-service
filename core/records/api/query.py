@@ -15,6 +15,9 @@ def query__records_page(rlc_user: RlcUser):
         .prefetch_related(*Record.get_unencrypted_prefetch_related())
         .select_related("template")
     )
+
+    # Record.set_folders(rlc_user.org_id)
+
     records_2 = list(
         map(
             lambda r: (

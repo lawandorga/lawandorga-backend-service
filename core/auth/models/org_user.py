@@ -1,10 +1,10 @@
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 from uuid import uuid4
 
 import ics
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.core.cache import cache
+from django.contrib.sessions.models import Session
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import models
@@ -163,7 +163,14 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
     def get_decryption_key(self, *args, **kwargs) -> AsymmetricKey:
         assert self.key is not None
 
-        private_key = cache.get(self.pk, None)
+        private_key: Optional[str] = None
+        for session in list(Session.objects.all()):
+            decoded: dict[str, str] = session.get_decoded()  # type: ignore
+            if (
+                decoded["_auth_user_id"] == str(self.user_id)
+                and "private_key" in decoded
+            ):
+                private_key = decoded["private_key"]
 
         if settings.TESTING and self.email == "dummy@law-orga.de":
             private_key = RlcUser.get_dummy_user_private_key(self)
