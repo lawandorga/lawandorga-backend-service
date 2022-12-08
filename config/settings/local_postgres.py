@@ -10,7 +10,7 @@ DATABASES = {
         "NAME": "lawandorga-backend-service",
         "USER": "lawandorga-backend-service",
         "PASSWORD": "pass1234",
-        "HOST": "localhost",
+        "HOST": "192.168.1.94",
         "PORT": "5432",
         "TEST": {"NAME": "test_{}".format(RUNTIME)},
     }
