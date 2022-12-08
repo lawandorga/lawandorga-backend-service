@@ -290,9 +290,9 @@ class Router:
                 if not is_authenticated:
                     return not_authenticated_error
 
-                func_kwargs["private_key_user"] = user.rlc_user.get_private_key(
-                    request=request
-                )
+                func_kwargs["private_key_user"] = await sync_to_async(
+                    user.rlc_user.get_private_key
+                )(request=request)
 
             if "statistics_user" in func_input:
                 if not is_authenticated:

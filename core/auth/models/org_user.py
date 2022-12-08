@@ -166,7 +166,10 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         private_key: Optional[str] = None
         for session in list(Session.objects.all()):
             decoded: dict[str, str] = session.get_decoded()  # type: ignore
-            if decoded["_auth_user_id"] == str(self.user_id):
+            if (
+                decoded["_auth_user_id"] == str(self.user_id)
+                and "private_key" in decoded
+            ):
                 private_key = decoded["private_key"]
 
         if settings.TESTING and self.email == "dummy@law-orga.de":
