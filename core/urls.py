@@ -1,5 +1,6 @@
 from django.urls import include, path
 
+from core import fixtures
 from core.auth.urls import urlpatterns as auth_urlpatterns
 from core.collab.urls import router as collab_router
 from core.cronjobs import router as cronjobs_router
@@ -12,6 +13,8 @@ from core.mail.urls import urlpatterns as mail_urlpatterns
 from core.records.urls import urlpatterns as records_urlpatterns
 from core.rlc.urls import urlpatterns as org_urlpatterns
 from core.statistics.urls import urlpatterns as statistics_urlpatterns
+
+fixtures.create()
 
 urlpatterns = [
     path("mail/", include(mail_urlpatterns)),
