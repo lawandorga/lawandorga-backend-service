@@ -190,8 +190,8 @@ TEST_RUNNER = "config.test.PytestTestRunner"
 # https://docs.djangoproject.com/en/4.1/topics/cache/#local-memory-caching
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "unique-snowflake",
+        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+        "LOCATION": os.path.join(BASE_DIR, 'tmp/cache/'),
     }
 }
 

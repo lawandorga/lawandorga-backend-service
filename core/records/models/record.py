@@ -159,8 +159,14 @@ class Record(Item, models.Model):
         if self.folder_uuid is None:
             return None
         if not hasattr(self, "_folder"):
-            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-            self._folder = r.retrieve(self.template.rlc_id, self.folder_uuid)
+            folders = self.__get_folders()
+            # get folder from the set cache
+            if folders is not None:
+                self._folder = folders[self.folder_uuid]
+            # get folder from the repository (many queries)
+            else:
+                r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+                self._folder = r.retrieve(self.template.rlc_id, self.folder_uuid)
         return self._folder
 
     def get_aes_key(self, user: RlcUser, *args, **kwargs):
@@ -186,6 +192,21 @@ class Record(Item, models.Model):
         enc_key = EncryptedSymmetricKey.create_from_dict(self.key)
         key = enc_key.decrypt(decryption_key)
         return key.get_key()
+
+    @classmethod
+    def __get_folders_attribute_key(cls, org_pk: int):
+        name = 'folders---{}'.format(org_pk)
+        return name
+
+    def __get_folders(self) -> Optional[dict[UUID, Folder]]:
+        return getattr(self, self.__get_folders_attribute_key(self.template.rlc_id), None)
+
+    @classmethod
+    def set_folders(cls, org_pk: int):
+        name = cls.__get_folders_attribute_key(org_pk)
+        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+        folders = r.dict(org_pk)
+        setattr(cls, name, folders)
 
     def get_aes_key_old(self, user: RlcUser):
         private_key_user = user.get_decryption_key().get_private_key()
