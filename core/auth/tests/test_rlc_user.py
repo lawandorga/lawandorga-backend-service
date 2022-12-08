@@ -3,6 +3,7 @@ from django.test import Client, TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from core.models import Org, RlcUser, UserProfile
+from core.seedwork import test_helpers
 from core.static import PERMISSION_ADMIN_MANAGE_USERS
 from core.views import RlcUserViewSet
 
@@ -15,7 +16,7 @@ class UserBase:
         )
         self.user.set_password(settings.DUMMY_USER_PASSWORD)
         self.user.save()
-        self.rlc_user = RlcUser.objects.create(
+        self.rlc_user = RlcUser(
             user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
         self.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
@@ -41,21 +42,12 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         )
         self.another_user.set_password("test")
         self.another_user.save()
-        self.another_rlc_user = RlcUser.objects.create(
+        self.another_rlc_user = RlcUser(
             user=self.another_user, email_confirmed=True, accepted=True, org=self.rlc
         )
         self.another_rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
+        self.another_rlc_user.save()
         self.user.generate_keys_for_user(self.private_key, self.another_user)
-
-    def create_rlc_user(self):
-        return RlcUser.objects.create(
-            user=self.user, email_confirmed=True, accepted=True
-        )
-
-    def create_another_rlc_user(self):
-        return RlcUser.objects.create(
-            user=self.another_user, email_confirmed=True, accepted=True
-        )
 
     def test_email_confirmation_token_works(self):
         view = RlcUserViewSet.as_view(actions={"post": "activate"})
@@ -129,9 +121,10 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
 
     def test_keys_are_generated(self):
         user = UserProfile.objects.create(email="test3@law-orga.de")
-        RlcUser.objects.create(user=user, org=self.rlc)
+        rlc_user = RlcUser(user=user, org=self.rlc)
+        rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
+        rlc_user.save()
         user = UserProfile.objects.get(email="test3@law-orga.de")
-        user.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
         assert user.rlc_user.key is not None
 
     def test_unlock_works(self):
@@ -148,20 +141,16 @@ class UserViewSetErrorTests(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.rlc = Org.objects.create(name="Test RLC")
-        self.user = UserProfile.objects.create(email="test@test.de", name="Dummy 1")
-        self.user.set_password("test")
-        self.user.save()
-        self.rlc_user = RlcUser.objects.create(
-            user=self.user, email_confirmed=True, accepted=True, org=self.rlc
+        user = test_helpers.create_rlc_user(
+            email="test@test.de", name="Dummy 1", rlc=self.rlc
         )
-        self.another_user = UserProfile.objects.create(
-            email="test_new@test.de", name="Dummy 2"
+        self.user = user["user"]
+        self.rlc_user = user["rlc_user"]
+        another_user = test_helpers.create_rlc_user(
+            email="test_new@test.de", name="Dummy 2", rlc=self.rlc
         )
-        self.another_user.set_password("test")
-        self.another_user.save()
-        self.another_rlc_user = RlcUser.objects.create(
-            user=self.another_user, email_confirmed=True, accepted=True, org=self.rlc
-        )
+        self.another_user = another_user["user"]
+        self.another_rlc_user = another_user["rlc_user"]
 
     def test_user_can_not_delete_someone_else(self):
         view = RlcUserViewSet.as_view(actions={"delete": "destroy"})
@@ -192,9 +181,11 @@ class UserViewSetAccessTests(TestCase):
         self.user = UserProfile.objects.create(email="test@test.de", name="Dummy 1")
         self.user.set_password("test")
         self.user.save()
-        self.rlc_user = RlcUser.objects.create(
+        self.rlc_user = RlcUser(
             pk=1, user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
+        self.rlc_user.generate_keys("test")
+        self.rlc_user.save()
 
     def test_not_everytbody_can_hit_destroy(self):
         view = RlcUserViewSet.as_view(actions={"delete": "destroy"})

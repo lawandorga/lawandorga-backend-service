@@ -22,7 +22,7 @@ class BaseCollab:
         )
         self.user.set_password(settings.DUMMY_USER_PASSWORD)
         self.user.save()
-        self.rlc_user = RlcUser.objects.create(
+        self.rlc_user = RlcUser(
             user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
         self.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
@@ -37,19 +37,6 @@ class BaseCollab:
         # permissions
         permission = Permission.objects.get(name=PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS)
         HasPermission.objects.create(user=self.rlc_user, permission=permission)
-
-    def create_user(self, email, name):
-        user = UserProfile.objects.create(email=email, name=name)
-        user.set_password("pass1234")
-        user.save()
-        RlcUser.objects.create(
-            user=user,
-            accepted=True,
-            locked=False,
-            email_confirmed=True,
-            is_active=True,
-            org=self.rlc,
-        )
 
     def create_collab_document(self, path="/Document"):
         collab_document = CollabDocument.objects.create(rlc=self.rlc, path=path)

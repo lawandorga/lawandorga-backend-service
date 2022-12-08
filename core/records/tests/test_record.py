@@ -23,7 +23,7 @@ class BaseRecord:
         )
         self.user.set_password(settings.DUMMY_USER_PASSWORD)
         self.user.save()
-        self.rlc_user = RlcUser.objects.create(
+        self.rlc_user = RlcUser(
             user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
         self.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
@@ -44,7 +44,7 @@ class BaseRecord:
         user = UserProfile.objects.create(email=email, name=name)
         user.set_password(settings.DUMMY_USER_PASSWORD)
         user.save()
-        r = RlcUser.objects.create(
+        r = RlcUser(
             user=user,
             accepted=True,
             locked=False,

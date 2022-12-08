@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.db import transaction
 
 from core.models import RlcUser, UserProfile
 from core.records.fixtures import create_default_record_template
@@ -23,23 +24,24 @@ class OrgAdminForm(forms.ModelForm):
         return email
 
     def save(self, commit=True):
-        # save
-        rlc = super().save()
-        create_default_record_template(rlc)
-        # create user
-        user = UserProfile.objects.create(
-            email=self.cleaned_data["user_email"],
-            name=self.cleaned_data["user_name"],
-        )
-        user.set_password(self.cleaned_data["user_password"])
-        user.save()
-        # and rlc user
-        rlc_user = RlcUser.objects.create(
-            accepted=True, email_confirmed=True, user=user, org=rlc
-        )
-        # grant permissions
-        for permission in get_all_permission_strings():
-            rlc_user.grant(permission)
+        with transaction.atomic():
+            # save
+            rlc = super().save()
+            create_default_record_template(rlc)
+            # create user
+            user = UserProfile.objects.create(
+                email=self.cleaned_data["user_email"],
+                name=self.cleaned_data["user_name"],
+            )
+            user.set_password(self.cleaned_data["user_password"])
+            user.save()
+            # and rlc user
+            rlc_user = RlcUser(accepted=True, email_confirmed=True, user=user, org=rlc)
+            rlc_user.generate_keys(self.cleaned_data["user_password"])
+            rlc_user.save()
+            # grant permissions
+            for permission in get_all_permission_strings():
+                rlc_user.grant(permission)
         # return
         return rlc
 

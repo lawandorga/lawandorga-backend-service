@@ -51,7 +51,7 @@ class StatisticsUserViewSetTests(StatisticUserUserBase, TestCase):
 
     def test_change_password_blocked_with_rlc_user_existing(self):
         rlc = Org.objects.create(name="Test")
-        RlcUser.objects.create(
+        rlc_user = RlcUser(
             org=rlc,
             user=self.user,
             accepted=True,
@@ -59,6 +59,8 @@ class StatisticsUserViewSetTests(StatisticUserUserBase, TestCase):
             locked=False,
             is_active=True,
         )
+        rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
+        rlc_user.save()
         view = StatisticsUserViewSet.as_view(actions={"post": "change_password"})
         data = {
             "current_password": settings.DUMMY_USER_PASSWORD,
