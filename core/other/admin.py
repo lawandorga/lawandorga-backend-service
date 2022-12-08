@@ -1,12 +1,10 @@
 from django.contrib import admin
 
-from .models import LoggedPath, OldRlcEncryptionKeys, OldUserEncryptionKeys
+from .models import LoggedPath
 
 
 class LoggedPathAdmin(admin.ModelAdmin):
     search_fields = ("path", "user__email", "status")
 
 
-admin.site.register(OldUserEncryptionKeys)
-admin.site.register(OldRlcEncryptionKeys)
 admin.site.register(LoggedPath, LoggedPathAdmin)
