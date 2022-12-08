@@ -6,6 +6,7 @@ from typing import Any, Awaitable, Callable, Dict, List, Literal, Optional, Type
 
 import pytz
 from asgiref.sync import sync_to_async
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, JsonResponse
 from django.urls import path
 from django.utils.timezone import localtime, make_aware
@@ -229,7 +230,13 @@ class Router:
             func_input = func.__code__.co_varnames[: func.__code__.co_argcount]
 
             # handle auth
-            is_authenticated = request.user.is_authenticated
+            @sync_to_async
+            def get_user_from_request(
+                r: HttpRequest,
+            ) -> Union[UserProfile, AnonymousUser, None]:
+                return r.user if bool(r.user) else None
+
+            is_authenticated = (await get_user_from_request(request)).is_authenticated
             not_authenticated_error = ErrorResponse(
                 err_type="NotAuthenticated",
                 title="Login Required",

@@ -60,7 +60,6 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "config.middleware.authentication_middleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "config.middleware.logging_middleware",
 ]
