@@ -28,7 +28,7 @@ def repository(real_encryption):
 def user(db):
     o = Org.objects.create(name="Test")
     p = UserProfile.objects.create(email="dummy@law-orga.de", name="Mr. Dummy")
-    u = RlcUser.objects.create(user=p, org=o)
+    u = RlcUser(user=p, org=o)
     u.generate_keys(settings.DUMMY_USER_PASSWORD)
     u.save()
     o.generate_keys()

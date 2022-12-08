@@ -12,17 +12,21 @@ class MatrixUserBase:
         self.user1 = UserProfile.objects.create(email="dummy@law-orga.de", name="Dummy")
         self.user1.set_password(settings.DUMMY_USER_PASSWORD)
         self.user1.save()
-        self.rlc_user1 = RlcUser.objects.create(
+        self.rlc_user1 = RlcUser(
             user=self.user1, email_confirmed=True, accepted=True, org=rlc
         )
+        self.rlc_user1.generate_keys(settings.DUMMY_USER_PASSWORD)
+        self.rlc_user1.save()
         self.matrix_user1 = MatrixUser.objects.create(user=self.user1)
 
         user2 = UserProfile.objects.create(email="tester1@law-orga.de", name="Tester1")
         user2.set_password("pass1234")
         user2.save()
-        self.rlc_user2 = RlcUser.objects.create(
+        self.rlc_user2 = RlcUser(
             user=user2, email_confirmed=True, accepted=True, org=rlc
         )
+        self.rlc_user2.generate_keys("pass1234")
+        self.rlc_user2.save()
         self.matrix_user2 = MatrixUser.objects.create(
             user=user2, _group="Different group"
         )

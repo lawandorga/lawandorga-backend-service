@@ -30,7 +30,7 @@ class FileTestsBase:
         )
         self.user.set_password(settings.DUMMY_USER_PASSWORD)
         self.user.save()
-        self.rlc_user = RlcUser.objects.create(
+        self.rlc_user = RlcUser(
             user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
         self.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)

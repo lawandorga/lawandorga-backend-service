@@ -106,9 +106,11 @@ class RecordViewSetsPermissions(TestCase):
         self.user = UserProfile.objects.create(email="dummy@rlcm.de", name="Dummy 1")
         self.user.set_password(settings.DUMMY_USER_PASSWORD)
         self.user.save()
-        self.rlc_user = RlcUser.objects.create(
+        self.rlc_user = RlcUser(
             user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
+        self.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
+        self.rlc_user.save()
 
     def check_forbidden(self, view_class, actions):
         for action in actions:

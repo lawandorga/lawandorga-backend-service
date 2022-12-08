@@ -178,7 +178,7 @@ def create_users(rlc1, rlc2):
             email=user_data[0],
             name=user_data[1],
         )
-        r = RlcUser.objects.create(
+        r = RlcUser(
             user=user,
             org=choice([rlc1, rlc2]),
             phone_number=user_data[3],
@@ -203,9 +203,7 @@ def create_dummy_users(rlc: Org, dummy_password: str = "qwe123") -> List[UserPro
     )
     user.set_password(dummy_password)
     user.save()
-    r = RlcUser.objects.create(
-        user=user, accepted=True, pk=999, email_confirmed=True, org=rlc
-    )
+    r = RlcUser(user=user, accepted=True, pk=999, email_confirmed=True, org=rlc)
     r.generate_keys(dummy_password)
     r.save()
     for permission in Permission.objects.all():
@@ -220,7 +218,7 @@ def create_dummy_users(rlc: Org, dummy_password: str = "qwe123") -> List[UserPro
     )
     user.set_password(settings.DUMMY_USER_PASSWORD)
     user.save()
-    r = RlcUser.objects.create(user=user, accepted=True, pk=1000, org=rlc)
+    r = RlcUser(user=user, accepted=True, pk=1000, org=rlc)
     r.generate_keys(dummy_password)
     r.save()
     users.append(user)
@@ -228,7 +226,7 @@ def create_dummy_users(rlc: Org, dummy_password: str = "qwe123") -> List[UserPro
     user = UserProfile.objects.create(name="Tester 2", email="tester2@law-orga.de")
     user.set_password(settings.DUMMY_USER_PASSWORD)
     user.save()
-    r = RlcUser.objects.create(user=user, pk=1001, accepted=True, org=rlc)
+    r = RlcUser(user=user, pk=1001, accepted=True, org=rlc)
     r.generate_keys(dummy_password)
     r.save()
     users.append(user)
@@ -244,7 +242,7 @@ def create_inactive_user(rlc):
     )
     user.set_password("qwe123")
     user.save()
-    r = RlcUser.objects.create(user=user, org=rlc)
+    r = RlcUser(user=user, org=rlc)
     r.generate_keys(settings.DUMMY_USER_PASSWORD)
     r.save()
 

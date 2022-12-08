@@ -73,7 +73,7 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
     # settings
     frontend_settings = models.JSONField(null=True, blank=True)
     # encryption
-    key = models.JSONField(null=True, blank=True)
+    key = models.JSONField(null=False, blank=True)
     old_private_key = models.BinaryField(null=True)
     is_private_key_encrypted = models.BooleanField(default=False)
     old_public_key = models.BinaryField(null=True)
@@ -224,7 +224,6 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         self.public_key = None
         self.key = None
         self.is_private_key_encrypted = False
-        self.save()
 
     def __get_as_user_permissions(self) -> List[str]:
         from core.models import HasPermission

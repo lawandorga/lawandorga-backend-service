@@ -29,13 +29,6 @@ class UserProfileManager(BaseUserManager):
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    rlc_old = models.ForeignKey(
-        "Org",
-        related_name="rlc_members",
-        on_delete=models.PROTECT,
-        blank=True,
-        null=True,
-    )
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 

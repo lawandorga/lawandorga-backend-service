@@ -43,9 +43,7 @@ class UserUnitUserBase:
         user = UserProfile.objects.create(email=email, name=name)
         user.set_password(password)
         user.save()
-        rlc_user = RlcUser.objects.create(
-            user=user, email_confirmed=True, accepted=True, org=self.rlc
-        )
+        rlc_user = RlcUser(user=user, email_confirmed=True, accepted=True, org=self.rlc)
         rlc_user.generate_keys(password)
         rlc_user.save()
         return user, rlc_user
@@ -68,9 +66,10 @@ class UserUnitTests(UserUnitUserBase, TestCase):
         )
         self.user2.set_password("pass12345")
         self.user2.save()
-        self.user2.rlc_user.delete_keys()
-        self.user2.rlc_user.generate_keys("pass12345")
-        self.user2.rlc_user.save()
+        rlc_user = self.user2.rlc_user
+        rlc_user.delete_keys()
+        rlc_user.generate_keys("pass12345")
+        rlc_user.save()
         private_key = (
             UserKey.create_from_dict(self.user2.rlc_user.key)
             .decrypt_self("pass12345")
