@@ -191,7 +191,7 @@ TEST_RUNNER = "config.test.PytestTestRunner"
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-        "LOCATION": os.path.join(BASE_DIR, 'tmp/cache/'),
+        "LOCATION": os.path.join(BASE_DIR, "tmp/cache/"),
     }
 }
 

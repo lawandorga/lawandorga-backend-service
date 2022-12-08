@@ -1,5 +1,6 @@
-from .local import *
+# type: ignore
 
+from .local import *
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
@@ -10,7 +11,7 @@ DATABASES = {
         "USER": "lawandorga-backend-service",
         "PASSWORD": "pass1234",
         "HOST": "localhost",
-        "PORT": 5432,
+        "PORT": "5432",
         "TEST": {"NAME": "test_{}".format(RUNTIME)},
     }
 }
