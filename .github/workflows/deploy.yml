@@ -127,7 +127,7 @@ jobs:
         run: python production_manage.py migrate
 
       - name: Login to docker
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ${{ secrets.SCW_DOCKER_REGISTRY }}
           username: ${{ secrets.SCW_TOKEN }}
