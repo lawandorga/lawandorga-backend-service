@@ -1,7 +1,3 @@
-from typing import Optional
-
-import dns.resolver
-from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
 from core.auth.models import UserProfile
@@ -18,8 +14,10 @@ def query__page_dashboard(user: UserProfile):
     if hasattr(user, "mail_user"):
         mail_user = user.mail_user
 
-        available_domains = list(MailDomain.objects.filter(org=mail_user.org))
-        domain = available_domains[0] if len(available_domains) else None
+        available_domains = list(
+            MailDomain.objects.filter(org=mail_user.org, is_active=True)
+        )
+        domain = MailDomain.objects.filter(org=mail_user.org).first()
         users = MailUser.objects.filter(org=mail_user.org).select_related("account")
         groups = MailGroup.objects.filter(org=mail_user.org).select_related("account")
 
@@ -45,7 +43,7 @@ def query__page_group(mail_user: MailUser, data: schemas.InputPageGroup):
     except ObjectDoesNotExist:
         raise ApiError("Group was not found.")
 
-    available_domains = MailDomain.objects.filter(org=mail_user.org)
+    available_domains = MailDomain.objects.filter(org=mail_user.org, is_active=True)
     addresses = group.account.addresses.all()
     members = group.members.all()
     available_users = MailUser.objects.exclude(
@@ -71,26 +69,7 @@ def query__page_user(mail_user: MailUser, data: schemas.InputPageUser):
     except ObjectDoesNotExist:
         raise ApiError("User was not found.")
 
-    available_domains = MailDomain.objects.filter(org=mail_user.org)
+    available_domains = MailDomain.objects.filter(org=mail_user.org, is_active=True)
     addresses = user.account.addresses.all()
 
     return {"addresses": addresses, "available_domains": available_domains}
-
-
-@router.get(url="check_domain/", output_schema=schemas.OutputDomainCheck)
-def query__check_domain(mail_user: MailUser):
-    mx_records: list[str] = []
-    data = {"mx_records": mx_records, "valid": False}
-
-    domain: Optional[MailDomain] = mail_user.org.domains.first()
-    if domain is None:
-        return data
-
-    for record in dns.resolver.resolve(domain.name, "MX"):
-        exchange = str(record.exchange)
-        mx_records.append(exchange)
-
-    if len(mx_records) == 1 and settings.MAIL_MX_RECORD in mx_records:
-        data["valid"] = True
-
-    return data

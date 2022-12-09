@@ -4,7 +4,7 @@ from core.mail.models import MailAddress, MailDomain, MailUser
 from core.mail.models.group import MailGroup
 
 
-def mail_domain_from_id(actor, v) -> MailDomain:
+def mail_domain_from_uuid(actor, v) -> MailDomain:
     return MailDomain.objects.filter(uuid=v).get(org__id=actor.org_id)
 
 

@@ -153,7 +153,7 @@ def test_activate_error(user, db):
     c = Client()
     c.login(**user)
     ru = user["rlc_user"]
-    response = c.post("/api/rlc_users/{}/activate/".format(ru.id))
+    response = c.put("/api/rlc_users/{}/activate/".format(ru.id))
     assert response.status_code == 400
 
 
@@ -161,7 +161,7 @@ def test_activate_error_permission(user, rlc_user_2, db):
     c = Client()
     c.login(**user)
     ru = rlc_user_2["rlc_user"]
-    response = c.post("/api/rlc_users/{}/activate/".format(ru.id))
+    response = c.put("/api/rlc_users/{}/activate/".format(ru.id))
     assert response.status_code == 400
 
 
@@ -170,7 +170,7 @@ def test_activate_success(user, rlc_user_2, db):
     c.login(**user)
     user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_USERS)
     ru = rlc_user_2["rlc_user"]
-    response = c.post("/api/rlc_users/{}/activate/".format(ru.id))
+    response = c.put("/api/rlc_users/{}/activate/".format(ru.id))
     response_data = response.json()
     assert (
         response.status_code == 200

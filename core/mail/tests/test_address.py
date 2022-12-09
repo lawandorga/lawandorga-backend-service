@@ -21,16 +21,9 @@ def test_localpart_illegal_character():
 
 
 def test_localpart_too_many_dots():
-    localpart = "lenoardo.von.gogh"
+    localpart = "lenoardo.....von.gogh"
     with pytest.raises(ValueError):
         MailAddress.check_localpart(localpart)
-
-
-def test_localpart_wrong_start_or_end():
-    with pytest.raises(ValueError):
-        MailAddress.check_localpart("localpart--")
-    with pytest.raises(ValueError):
-        MailAddress.check_localpart("--sdfafasfdasfas")
 
 
 def test_localpart_valid():

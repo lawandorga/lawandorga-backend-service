@@ -1,6 +1,7 @@
 import asyncio
 import json
 
+from asgiref.sync import sync_to_async
 from django.http import HttpResponse
 from django.utils.decorators import sync_and_async_middleware
 
@@ -55,7 +56,7 @@ def logging_middleware(get_response):
 
         async def middleware(request):
             response = await get_response(request)
-            data = create_data(request, response)
+            data = await sync_to_async(create_data)(request, response)
             await LoggedPath.objects.acreate(**data)
             return response
 
