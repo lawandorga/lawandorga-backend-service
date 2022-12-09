@@ -12,6 +12,7 @@ class MailDomain(models.Model):
     org = models.ForeignKey(
         MailOrg, related_name="domains", on_delete=models.CASCADE, null=True
     )
+    is_active = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "MailDomain"
@@ -26,7 +27,14 @@ class MailDomain(models.Model):
             raise TypeError(
                 "The domain should be of type 'str' but is '{}'.".format(type(domain))
             )
-        regex = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}$"
+
+        if len(domain) < 1:
+            raise ValueError('The domain is too short.')
+
+        if len(domain) > 64:
+            raise ValueError('The domain is too long.')
+
+        regex = "^((?!-)[a-z0-9-]+(?<!-)\\.)+(?!-)[a-z-]{2,20}(?<!-)$"
         pattern = re.compile(regex)
         if not pattern.match(domain):
             raise ValueError(
