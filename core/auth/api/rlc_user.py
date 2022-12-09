@@ -73,7 +73,7 @@ def unlock_rlc_user(rlc_user: RlcUser):
 
 
 # activate user
-@router.post(
+@router.put(
     url="<int:id>/activate/",
     input_schema=schemas.InputRlcUserActivate,
     output_schema=schemas.OutputRlcUserSmall,
