@@ -47,7 +47,7 @@ class MailUser(models.Model):
         return True
 
     def generate_random_password(self):
-        return secrets.token_urlsafe()[:16]
+        return secrets.token_urlsafe()[:24]
 
     def set_password(self, password: str):
         pw_1 = make_password(password)

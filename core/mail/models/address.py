@@ -44,7 +44,7 @@ class MailAddress(models.Model):
         if len(localpart) == 0:
             raise ValueError("The localpart is too short.")
 
-        if localpart == 'postmaster':
+        if localpart == "postmaster":
             raise ValueError("You are not allowed to use postmaster@.")
 
         if ".." in localpart:

@@ -4,7 +4,7 @@ from core.mail.models import MailAccount, MailAddress, MailUser
 from core.mail.models.group import MailGroup
 from core.mail.use_cases.finders import (
     mail_address_from_id,
-    mail_domain_from_id,
+    mail_domain_from_uuid,
     mail_group_from_id,
     mail_user_from_id,
 )
@@ -13,7 +13,7 @@ from core.seedwork.use_case_layer import UseCaseError, find, use_case
 
 @use_case
 def create_group_mail(
-    __actor: MailUser, localpart: str, domain=find(mail_domain_from_id)
+    __actor: MailUser, localpart: str, domain=find(mail_domain_from_uuid)
 ):
     MailAddress.check_localpart(localpart)
 
@@ -56,7 +56,7 @@ def add_address_to_group(
     __actor: MailUser,
     localpart: str,
     group=find(mail_group_from_id),
-    domain=find(mail_domain_from_id),
+    domain=find(mail_domain_from_uuid),
 ):
     MailAddress.check_localpart(localpart)
 

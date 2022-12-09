@@ -29,10 +29,10 @@ class MailDomain(models.Model):
             )
 
         if len(domain) < 1:
-            raise ValueError('The domain is too short.')
+            raise ValueError("The domain is too short.")
 
         if len(domain) > 64:
-            raise ValueError('The domain is too long.')
+            raise ValueError("The domain is too long.")
 
         regex = "^((?!-)[a-z0-9-]+(?<!-)\\.)+(?!-)[a-z-]{2,20}(?<!-)$"
         pattern = re.compile(regex)
@@ -40,3 +40,14 @@ class MailDomain(models.Model):
             raise ValueError(
                 "The domain contains illegal characters or does not conform to the correct structure."
             )
+
+    def set_name(self, name):
+        self.check_domain(name)
+        self.name = name
+        self.deactivate()
+
+    def activate(self):
+        self.is_active = True
+
+    def deactivate(self):
+        self.is_active = False

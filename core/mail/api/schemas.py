@@ -82,6 +82,10 @@ class InputChangeDomain(BaseModel):
         return v
 
 
+class InputCheckDomain(BaseModel):
+    domain: UUID
+
+
 # mail user
 class InputCreateAddress(BaseModel):
     localpart: str
@@ -106,6 +110,7 @@ class InputSetDefaultAddress(BaseModel):
 class OutputDomain(BaseModel):
     uuid: UUID
     name: str
+    is_active: bool
 
     class Config:
         orm_mode = True

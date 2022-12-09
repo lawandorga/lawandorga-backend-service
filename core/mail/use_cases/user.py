@@ -4,7 +4,7 @@ from core.auth.models import UserProfile
 from core.mail.models import MailAccount, MailAddress, MailOrg, MailUser
 from core.mail.use_cases.finders import (
     mail_address_from_id,
-    mail_domain_from_id,
+    mail_domain_from_uuid,
     mail_user_from_id,
 )
 from core.seedwork.use_case_layer import UseCaseError, find, use_case
@@ -39,7 +39,7 @@ def create_address(
     __actor: MailUser,
     localpart: str,
     user=find(mail_user_from_id),
-    domain=find(mail_domain_from_id),
+    domain=find(mail_domain_from_uuid),
 ):
     MailAddress.check_localpart(localpart)
 
