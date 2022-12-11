@@ -15,6 +15,7 @@ class Event(models.Model):
     description = models.TextField(blank=True, default="")
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    attendees = models.ManyToManyField(RlcUser) # Might be better stored in a SQL Table with Event|User|Attending?
 
     class Meta:
         ordering = ["start_time"]
@@ -40,11 +41,19 @@ class Event(models.Model):
         description=None,
         start_time=None,
         end_time=None,
+        attendance=None,
+        rlc_user=None
     ):
         self.is_global = self.is_global if (is_global is None) else is_global
         self.name = name or self.name
         self.description = description or self.description
         self.start_time = start_time or self.start_time
         self.end_time = end_time or self.end_time
+
+        if rlc_user:
+            if attendance:
+                self.attendees.add(rlc_user)
+            else:
+                self.attendees.remove(rlc_user)
 
         self.save()
