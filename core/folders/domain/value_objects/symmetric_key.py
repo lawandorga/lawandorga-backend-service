@@ -88,7 +88,7 @@ class EncryptedSymmetricKey(Key):
 
         super().__init__(origin=origin)
 
-    def as_dict(self) -> StrDict:  # type: ignore
+    def as_dict(self) -> StrDict:
         return {
             "enc_key": self.__enc_key.as_dict(),
             "origin": self.origin,

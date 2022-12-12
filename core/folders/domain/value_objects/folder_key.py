@@ -27,15 +27,22 @@ class FolderKey:
         key = EncryptedSymmetricKey.create_from_dict(d["key"])
         assert str(owner.uuid) == d["owner"]
 
-        return FolderKey(key=key, owner=owner)
+        is_valid: bool = True
+        if "is_valid" in d:
+            assert isinstance(d["is_valid"], bool)
+            is_valid = d["is_valid"]
+
+        return FolderKey(key=key, owner=owner, is_valid=is_valid)
 
     def __init__(
         self,
+        is_valid: bool = True,
         owner: Optional[IOwner] = None,
         key: Optional[Union[SymmetricKey, EncryptedSymmetricKey]] = None,
     ):
         assert owner is not None and key is not None
 
+        self.__is_valid = is_valid
         self.__owner = owner
         self.__key = key
 
@@ -47,11 +54,14 @@ class FolderKey:
     def as_dict(self) -> StrDict:
         assert isinstance(self.__key, EncryptedSymmetricKey)
 
-        return {
+        data: StrDict = {
             "owner": str(self.__owner.uuid),
             "key": self.__key.as_dict(),
             "type": "FOLDER",
+            "is_valid": self.__is_valid,
         }
+
+        return data
 
     @property
     def key(self):
@@ -62,12 +72,22 @@ class FolderKey:
         return self.__owner
 
     @property
+    def is_valid(self):
+        return self.__is_valid
+
+    @property
     def is_encrypted(self):
         return isinstance(self.__key, EncryptedSymmetricKey)
+
+    def invalidate_self(self) -> "FolderKey":
+        return FolderKey(owner=self.__owner, key=self.__key, is_valid=False)
 
     def encrypt_self(
         self, key: Union[AsymmetricKey, EncryptedAsymmetricKey, SymmetricKey]
     ) -> "FolderKey":
+        if not self.__is_valid:
+            raise ValueError("This key is not valid.")
+
         assert isinstance(self.__key, SymmetricKey)
 
         enc_key = EncryptedSymmetricKey.create(original=self.__key, key=key)
@@ -78,6 +98,9 @@ class FolderKey:
         )
 
     def decrypt_self(self, user: IOwner) -> "FolderKey":
+        if not self.__is_valid:
+            raise ValueError("This key is not valid.")
+
         assert isinstance(self.__key, EncryptedSymmetricKey)
 
         unlock_key = self.__owner.get_decryption_key(requestor=user)

@@ -65,7 +65,7 @@ class LockedBox(Box):
     def __repr__(self):
         return "LockedBox({}, '{}')".format(self.__enc_data, self.__key_origin)
 
-    def as_dict(self) -> StrDict:  # type: ignore
+    def as_dict(self) -> StrDict:
         return {
             "enc_data": LockedBox.to_str(self.__enc_data),
             "key_origin": self.__key_origin,
