@@ -3,3 +3,41 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* form */
+.tailwind-form {
+    @apply space-y-4;
+}
+.tailwind-form input:not([type=suhbmit]) {
+    @apply block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm appearance-none focus:outline-none focus:ring-1 focus-within:ring-1 focus-within:ring-lorgablue focus-within:border-lorgablue focus:ring-lorgablue focus:border-lorgablue sm:text-sm;
+}
+.tailwind-form input[type=submit], .tailwind-form button[type=submit] {
+    @apply ml-auto w-auto cursor-pointer flex items-center focus:outline-none border shadow-sm border-transparent text-white bg-lorgablue bg-opacity-100 hover:bg-opacity-90 focus:ring-2 focus:ring-offset-2 focus:ring-lorgablue px-4 py-2 text-sm font-medium rounded-xl;
+}
+.tailwind-form input[type=hidden] {
+    @apply hidden;
+}
+.tailwind-form input[name=csrfmiddlewaretoken] + p {
+    margin-top: 0!important;
+}
+.tailwind-form label {
+    @apply text-gray-700 text-gray-700 font-medium;
+}
+.tailwind-form .errorlist {
+    @apply !mt-1;
+}
+.tailwind-form .errorlist.nonfield {
+    @apply !mt-0;
+}
+.tailwind-form .errorlist > li {
+    @apply text-red-700 text-sm;
+}
+.tailwind-form .help {
+    @apply text-sm;
+}
+.tailwind-form .help > ul {
+    @apply mt-1;
+}
+.tailwind-form .help > ul > li {
+    @apply text-gray-600 mt-0.5;
+}

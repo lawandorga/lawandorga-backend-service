@@ -1,5 +1,3 @@
-from django.core.exceptions import ObjectDoesNotExist
-from django.db import transaction
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError
@@ -7,18 +5,16 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from core.models import PasswordResetTokenGenerator, RlcUser, UserProfile
-from core.seedwork.permission import CheckPermissionWall
-from core.static import PERMISSION_ADMIN_MANAGE_USERS
-
-from ..serializers import (
+from core.auth.serializers import (
     ChangePasswordSerializer,
-    EmailSerializer,
     RlcUserForeignSerializer,
     RlcUserSerializer,
     RlcUserUpdateSerializer,
-    UserPasswordResetConfirmSerializer,
 )
+from core.models import RlcUser, UserProfile
+from core.seedwork.permission import CheckPermissionWall
+from core.static import PERMISSION_ADMIN_MANAGE_USERS
+
 from ..token_generator import EmailConfirmationTokenGenerator
 
 
@@ -66,7 +62,7 @@ class RlcUserViewSet(
         return super().get_serializer_class()
 
     def get_queryset(self):
-        if self.action in ["activate", "password_reset_confirm"]:
+        if self.action in ["activate"]:
             queryset = RlcUser.objects.all()
         elif self.action in [
             "list",
@@ -119,45 +115,6 @@ class RlcUserViewSet(
         else:
             data = {
                 "detail": "The confirmation link is invalid, possibly because it has already been used."
-            }
-            return Response(data, status=status.HTTP_400_BAD_REQUEST)
-
-    @action(
-        detail=False, methods=["POST"], authentication_classes=[], permission_classes=[]
-    )
-    def password_reset(self, request, *args, **kwargs):
-        serializer = EmailSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        try:
-            user = UserProfile.objects.get(email=serializer.validated_data["email"])
-        except ObjectDoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        user.rlc_user.send_password_reset_email()
-        return Response()
-
-    @action(
-        detail=True, methods=["POST"], authentication_classes=[], permission_classes=[]
-    )
-    def password_reset_confirm(self, request, *args, **kwargs):
-        rlc_user: RlcUser = self.get_object()
-
-        serializer = UserPasswordResetConfirmSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        token = serializer.validated_data["token"]
-        new_password = serializer.validated_data["new_password"]
-        user = rlc_user.user
-        if PasswordResetTokenGenerator().check_token(user, token):
-            user.set_password(new_password)
-            rlc_user.generate_keys(new_password)
-            rlc_user.locked = True
-            with transaction.atomic():
-                user.save()
-                rlc_user.save()
-            # return
-            return Response(status=status.HTTP_200_OK)
-        else:
-            data = {
-                "detail": "The password reset link is invalid, possibly because it has already been used."
             }
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
 

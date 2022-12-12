@@ -3,7 +3,6 @@ from uuid import uuid4
 
 import ics
 from django.conf import settings
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sessions.models import Session
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
@@ -167,7 +166,8 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         for session in list(Session.objects.all()):
             decoded: dict[str, str] = session.get_decoded()  # type: ignore
             if (
-                decoded["_auth_user_id"] == str(self.user_id)
+                "_auth_user_id" in decoded
+                and decoded["_auth_user_id"] == str(self.user_id)
                 and "private_key" in decoded
             ):
                 private_key = decoded["private_key"]
@@ -260,6 +260,9 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         self.is_private_key_encrypted = True
         self.key = u2.as_dict()
 
+    def lock(self) -> None:
+        self.locked = True
+
     def change_password_for_keys(self, new_password: str):
         key = self.get_decryption_key()
         u1 = UserKey(key=key)
@@ -302,32 +305,6 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         )
         html_message = loader.render_to_string(
             "email_templates/activate_account.html", {"url": link}
-        )
-        send_mail(
-            subject=subject,
-            html_message=html_message,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[self.user.email],
-        )
-
-    def get_password_reset_token(self):
-        token = PasswordResetTokenGenerator().make_token(self.user)
-        return token
-
-    def get_password_reset_link(self):
-        token = self.get_password_reset_token()
-        link = "{}/user/password-reset-confirm/{}/{}/".format(
-            settings.MAIN_FRONTEND_URL, self.id, token
-        )
-        return link
-
-    def send_password_reset_email(self):
-        link = self.get_password_reset_link()
-        subject = "Law & Orga Account Password reset"
-        message = "Law & Orga - Reset your password here: {}".format(link)
-        html_message = loader.render_to_string(
-            "email_templates/reset_password.html", {"link": link}
         )
         send_mail(
             subject=subject,

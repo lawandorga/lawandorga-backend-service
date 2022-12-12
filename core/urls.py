@@ -14,16 +14,16 @@ from core.rlc.urls import urlpatterns as org_urlpatterns
 from core.statistics.urls import urlpatterns as statistics_urlpatterns
 
 urlpatterns = [
-    path("mail/", include(mail_urlpatterns)),
-    path("", include(statistics_urlpatterns)),
+    path("api/mail/", include(mail_urlpatterns)),
+    path("api/", include(statistics_urlpatterns)),
     path("", include(auth_urlpatterns)),
-    path("folders/", include(folders_urlpatterns)),
-    path("events/", include(events_urlpatterns)),
-    path("legal/", include(legal_urlpatterns)),
-    path("cronjobs/", include(cronjobs_router.urls)),
-    path("", include(org_urlpatterns)),
-    path("", include(internal_router.urls)),
-    path("collab/", include(collab_router.urls)),
-    path("files/", include(files_router.urls)),
-    path("records/", include(records_urlpatterns)),
+    path("api/folders/", include(folders_urlpatterns)),
+    path("api/events/", include(events_urlpatterns)),
+    path("api/legal/", include(legal_urlpatterns)),
+    path("api/cronjobs/", include(cronjobs_router.urls)),
+    path("api/", include(org_urlpatterns)),
+    path("api/", include(internal_router.urls)),
+    path("api/collab/", include(collab_router.urls)),
+    path("api/files/", include(files_router.urls)),
+    path("api/records/", include(records_urlpatterns)),
 ]
