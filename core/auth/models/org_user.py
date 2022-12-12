@@ -405,13 +405,13 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         )
 
         c = ics.Calendar()
-        for rlcEvent in events:
+        for rlc_event in events:
             e = ics.Event()
-            e.name = rlcEvent.name
-            e.begin = rlcEvent.start_time
-            e.end = rlcEvent.end_time
-            e.description = rlcEvent.description
-            e.organizer = rlcEvent.org.name
+            e.name = rlc_event.name
+            e.begin = rlc_event.start_time
+            e.end = rlc_event.end_time
+            e.description = rlc_event.description
+            e.organizer = rlc_event.org.name
             c.events.add(e)
         return c.serialize()
 
