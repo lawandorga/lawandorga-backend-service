@@ -1,3 +1,5 @@
+from typing import Generator
+
 import pytest
 
 from core.folders.domain.aggregates.folder import Folder
@@ -5,7 +7,9 @@ from core.folders.tests.helpers.user import UserObject
 
 
 @pytest.fixture
-def user_user_folders(single_encryption) -> tuple[UserObject, UserObject, list[Folder]]:
+def user_user_folders(
+    single_encryption,
+) -> Generator[tuple[UserObject, UserObject, list[Folder]], None, None]:
     user_1 = UserObject()
     user_2 = UserObject()
 
@@ -22,14 +26,18 @@ def user_user_folders(single_encryption) -> tuple[UserObject, UserObject, list[F
 def test_grant_access(user_user_folders):
     user_1, user_2, folders = user_user_folders
 
-    user_1.invalidate_keys(folders)
+    for folder in folders:
+        folder.invalidate_keys_of(user_1)
+
     assert not folders[1].has_access(user_1) and not folders[0].has_access(user_1)
 
 
 def test_fix_keys(user_user_folders):
     user_1, user_2, folders = user_user_folders
 
-    user_1.invalidate_keys(folders)
+    for folder in folders:
+        folder.invalidate_keys_of(user_1)
+
     user_2.fix_keys_of(user_1, folders)
 
     assert folders[1].has_access(user_1) and folders[0].has_access(user_1)
@@ -40,7 +48,9 @@ def test_check_invalid_keys(user_user_folders):
     user_3 = UserObject()
     folders[1].grant_access(user_3, user_1)
 
-    user_1.invalidate_keys(folders)
+    for folder in folders:
+        folder.invalidate_keys_of(user_1)
+
     assert user_1.check_has_invalid_keys(folders)
     user_3.fix_keys_of(user_1, folders)
     assert user_1.check_has_invalid_keys(folders)

@@ -18,13 +18,14 @@ from core.folders.domain.value_objects.asymmetric_key import (
 )
 from core.rlc.models import HasPermission, Org, Permission
 from core.seedwork.domain_layer import DomainError
-from core.seedwork.encryption import EncryptedModelMixin
 from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
+from messagebus import DjangoAggregate
 
+from ...folders.domain.types import StrDict
 from .user import UserProfile
 
 
@@ -33,7 +34,7 @@ class RlcUserManager(models.Manager):
         return super().get_queryset().select_related("user")
 
 
-class RlcUser(EncryptedModelMixin, models.Model, IOwner):
+class RlcUser(DjangoAggregate, IOwner, models.Model):
     STUDY_CHOICES = (
         ("LAW", "Law Sciences"),
         ("PSYCH", "Psychology"),
@@ -222,7 +223,7 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
     def delete_keys(self):
         self.private_key = None
         self.public_key = None
-        self.key = None
+        self.key: Optional[StrDict] = None
         self.is_private_key_encrypted = False
 
     def __get_as_user_permissions(self) -> List[str]:
@@ -262,6 +263,7 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
 
     def lock(self) -> None:
         self.locked = True
+        self.add_event("OrgUserLocked", {"org_user_uuid": str(self.uuid)})
 
     def change_password_for_keys(self, new_password: str):
         key = self.get_decryption_key()

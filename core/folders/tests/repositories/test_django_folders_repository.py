@@ -58,7 +58,7 @@ def test_retrieve(db, user, folder_uuid, repository):
 
 
 def test_list(db, user, repository, folder_uuid):
-    folders = repository.list(user.org_id)
+    folders = repository.get_list(user.org_id)
     assert folders[0].has_access(user)
 
 

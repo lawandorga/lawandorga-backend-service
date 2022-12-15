@@ -9,10 +9,9 @@ from django.contrib.auth.views import (
     PasswordResetDoneView,
     PasswordResetView,
 )
-from django.db import transaction
 
-from core.auth.domain.user_key import UserKey
-from core.auth.models import RlcUser, UserProfile
+from core.auth.models import UserProfile
+from core.auth.use_cases.user import run_user_login_checks, set_password_of_myself
 
 
 def strip_scheme(url: str):
@@ -30,23 +29,14 @@ class CustomLoginView(LoginView):
     def form_valid(self, form):
         response = super().form_valid(form)
         user = self.request.user
+        run_user_login_checks(user, form.data["password"])
+
         if hasattr(user, "rlc_user"):
-            rlc_user: RlcUser = user.rlc_user  # type: ignore
-            # generate if not existent
-            if rlc_user.key is None:
-                rlc_user.generate_keys(form.data["password"])
-                rlc_user.save()
-            # check if encrypted
-            u1 = UserKey.create_from_dict(rlc_user.key)
-            if not u1.is_encrypted:
-                u2 = u1.encrypt_self(form.data["password"])
-                rlc_user.key = u2.as_dict()
-                rlc_user.save()
-            # get and decrypt the key
-            u4 = rlc_user.get_decrypted_key_from_password(form.data["password"])
-            self.request.session["private_key"] = u4.key.get_private_key().decode(
+            uk = user.rlc_user.get_decrypted_key_from_password(form.data["password"])
+            self.request.session["private_key"] = uk.key.get_private_key().decode(
                 "utf-8"
             )
+
         return response
 
 
@@ -77,13 +67,9 @@ class CustomPasswordResetDoneView(PasswordResetDoneView):
 
 class CustomSetPasswordForm(SetPasswordForm):
     def save(self, commit=True):
-        with transaction.atomic():
-            user = super().save(commit)
-            if hasattr(user, "rlc_user"):
-                rlc_user = user.rlc_user
-                rlc_user.generate_keys(self.cleaned_data["new_password1"])
-                rlc_user.lock()
-                rlc_user.save()
+        if not commit:
+            raise ValueError("Why would this set password form not commit?")
+        user = set_password_of_myself(self.user, self.cleaned_data["new_password1"])
         return user
 
 

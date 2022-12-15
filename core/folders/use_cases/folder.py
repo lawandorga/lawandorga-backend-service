@@ -7,6 +7,7 @@ from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.use_cases.finders import folder_from_uuid, rlc_user_from_slug
 from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.use_case_layer import UseCaseError, find, use_case
+from messagebus import Event
 
 
 def get_repository() -> FolderRepository:
@@ -69,3 +70,13 @@ def revoke_access(
     r = get_repository()
     folder.revoke_access(of=of)
     r.save(folder)
+
+
+@use_case(event_handler=True)
+def invalidate_folder_keys(event: Event):
+    org_user = RlcUser.objects.get(uuid=event.data["org_user_uuid"])
+    r = get_repository()
+    folders = r.get_list(org_user.org_id)
+    for folder in folders:
+        folder.invalidate_keys_of(org_user)
+        r.save(folder)

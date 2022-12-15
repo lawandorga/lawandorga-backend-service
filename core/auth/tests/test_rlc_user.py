@@ -59,7 +59,6 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
 
     def test_change_password_works(self):
         view = RlcUserViewSet.as_view(actions={"post": "change_password"})
-        self.user.rlc_user.decrypt(settings.DUMMY_USER_PASSWORD)
         private_key = self.user.rlc_user.get_private_key()
         data = {
             "current_password": settings.DUMMY_USER_PASSWORD,

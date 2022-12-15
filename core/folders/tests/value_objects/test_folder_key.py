@@ -5,7 +5,7 @@ from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from core.folders.tests.helpers.user import UserObject
 
 
-def test_dict_valid_false():
+def test_dict_valid_false(single_encryption):
     owner = UserObject()
     s_key = SymmetricKey.generate()
     key = FolderKey(key=s_key, owner=owner)
@@ -16,7 +16,7 @@ def test_dict_valid_false():
     assert not new_key.is_valid
 
 
-def test_dict_valid():
+def test_dict_valid(single_encryption):
     owner = UserObject()
     s_key = SymmetricKey.generate()
     key = FolderKey(key=s_key, owner=owner)
@@ -26,7 +26,7 @@ def test_dict_valid():
     assert new_key.is_valid
 
 
-def test_not_equal():
+def test_not_equal(single_encryption):
     owner = UserObject()
     s_key = SymmetricKey.generate()
     key = FolderKey(key=s_key, owner=owner)
@@ -35,7 +35,7 @@ def test_not_equal():
     assert enc_key != invalid_key
 
 
-def test_raises_error():
+def test_raises_error(single_encryption):
     owner = UserObject()
     s_key = SymmetricKey.generate()
     key = FolderKey(key=s_key, owner=owner)

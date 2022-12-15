@@ -26,10 +26,6 @@ class IOwner:
     ) -> Union["AsymmetricKey", "SymmetricKey"]:
         pass
 
-    def invalidate_keys(self, folders: list["Folder"]):
-        for folder in folders:
-            folder.invalidate_keys_of(self)
-
     def check_has_invalid_keys(self, folders: list["Folder"]):
         for folder in folders:
             if folder.has_invalid_keys(self):
