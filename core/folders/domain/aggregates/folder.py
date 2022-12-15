@@ -35,7 +35,7 @@ class Item:
         assert folder.uuid == self.folder_uuid
 
 
-class Folder(IOwner):
+class Folder:
     @staticmethod
     def create(
         name: Optional[str] = None,
@@ -120,9 +120,55 @@ class Folder(IOwner):
 
         return versions[0]
 
+    def invalidate_keys_of(self, owner: IOwner):
+        new_keys: list[Union[FolderKey, ParentKey]] = []
+        for key in self.__keys:
+            new_key = key
+            if isinstance(key, FolderKey) and key.owner.uuid == owner.uuid:
+                new_key = key.invalidate_self()
+            new_keys.append(new_key)
+        self.__keys = new_keys
+
+    def has_invalid_keys(self, owner: IOwner) -> bool:
+        for key in self.__keys:
+            if (
+                isinstance(key, FolderKey)
+                and key.owner.uuid == owner.uuid
+                and not key.is_valid
+            ):
+                return True
+        return False
+
+    def fix_keys(self, of: IOwner, by: IOwner):
+        new_keys = []
+        fixed = False
+
+        for key in self.__keys:
+            enc_new_key = key
+            if (
+                isinstance(key, FolderKey)
+                and key.owner.uuid == of.uuid
+                and not key.is_valid
+            ):
+                s_key = self.get_decryption_key(requestor=by)
+                new_key = FolderKey(owner=of, key=s_key)
+                enc_key = of.get_encryption_key()
+                enc_new_key = new_key.encrypt_self(enc_key)
+                fixed = True
+            new_keys.append(enc_new_key)
+
+        if not fixed:
+            raise ValueError("The user has no invalid keys for this folder.")
+
+        self.__keys = new_keys
+
     def has_access(self, owner: IOwner) -> bool:
         for key in self.__keys:
-            if isinstance(key, FolderKey) and key.owner.uuid == owner.uuid:
+            if (
+                isinstance(key, FolderKey)
+                and key.owner.uuid == owner.uuid
+                and key.is_valid
+            ):
                 return True
         if self.__parent is None or self.__stop_inherit:
             return False
@@ -183,7 +229,11 @@ class Folder(IOwner):
 
     def __find_folder_key(self, user: IOwner) -> Optional[FolderKey]:
         for key in self.__keys:
-            if isinstance(key, FolderKey) and key.owner.uuid == user.uuid:
+            if (
+                isinstance(key, FolderKey)
+                and key.owner.uuid == user.uuid
+                and key.is_valid
+            ):
                 return key
 
         return None

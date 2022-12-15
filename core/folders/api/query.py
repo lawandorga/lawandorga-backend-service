@@ -20,7 +20,7 @@ def query__list_folders(rlc_user: RlcUser):
 @router.get(url="available_folders/", output_schema=list[schemas.OutputAvailableFolder])
 def query__available_folders(rlc_user: RlcUser):
     r = get_repository()
-    folders_1 = r.list(rlc_user.org_id)
+    folders_1 = r.get_list(rlc_user.org_id)
     folders_2 = list(map(lambda f: {"id": f.uuid, "name": f.name}, folders_1))
     return folders_2
 
@@ -33,7 +33,7 @@ def query__available_folders(rlc_user: RlcUser):
 def query__detail_folder(rlc_user: RlcUser, data: schemas.InputFolderDetail):
     r = get_repository()
     folder = r.retrieve(rlc_user.org_id, data.id)
-    folders_dict = r.dict(rlc_user.org_id)
+    folders_dict = r.get_dict(rlc_user.org_id)
     access = Access(folders_dict, folder)
 
     return {"folder": folder.as_dict(), "access": access.as_dict()}

@@ -1,102 +1,32 @@
+{% extends 'registration/base.html' %}
+
 {% load static %}
-<!DOCTYPE html>
-<html class="h-full bg-gray-50" lang="en">
-<head>
-    <title>Law&Orga Login</title>
-    <link rel="icon" href="{% static 'logo256blue.png' %}" />
-    <link rel="stylesheet" href="{% static 'tailwind.css' %}"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-</head>
-<body class="h-full">
-<div class="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
-    <div class="sm:mx-auto sm:w-full sm:max-w-md">
-        <img class="mx-auto h-12 w-auto" src="{% static 'logo256blue.png' %}"
-             alt="Law&Orga">
-        <h1 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">Sign in to Law&Orga</h1>
-    </div>
-    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            {% if request.user.is_authenticated %}
-                <p class="text-lg font-medium text-center text-gray-700">You are logged in already.</p>
-            {% else %}
-                <form action="" class="space-y-6" novalidate method="post">
-                    {% csrf_token %}
 
-                    <div class="grid grid-cols-1 gap-4">
-                        {% if form.non_field_errors %}
-                            <div class="mt-2 text-sm leading-tight text-red-700">{{ form.non_field_errors }}</div>
-                        {% endif %}
-                        <div class="">
-                            <label for="email" class="relative block" name="email">
-                                <div>
-                                    <div class="flex items-baseline">
-                                        <span class="text-gray-700 text-gray-700 font-medium">E-Mail</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-2 mt-1">
-                                    <div class="relative w-full">
-                                        <input id="email" type="email" required=""
-                                               autocomplete="off"
-                                               name="username"
-                                               class="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm appearance-none focus:outline-none focus:ring-1 focus-within:ring-1 focus-within:ring-lorgablue focus-within:border-lorgablue focus:ring-lorgablue focus:border-lorgablue sm:text-sm"
-                                        >
-                                    </div>
-                                </div>
-                            </label>
-                            {% if form.username.errors %}
-                                <div class="text-red-700 text-sm leading-tight ml-1.5 mt-1">
-                                    {{ form.username.errors }}
-                                </div>
-                            {% endif %}
-                        </div>
-                        <div class="">
-                            <label for="password" class="relative block" name="password">
-                                <div>
-                                    <div class="flex items-baseline">
-                                        <span class="text-gray-700 text-gray-700 font-medium">Password</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-2 mt-1">
-                                    <div class="relative w-full">
-                                        <input id="password" type="password" required=""
-                                               autocomplete="off"
-                                               name="password"
-                                               class="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm appearance-none focus:outline-none focus:ring-1 focus-within:ring-1 focus-within:ring-lorgablue focus-within:border-lorgablue focus:ring-lorgablue focus:border-lorgablue sm:text-sm"
-                                        >
-                                    </div>
-                                </div>
-                            </label>
-                            {% if form.password.errors %}
-                                <div class="text-red-700 text-sm leading-tight ml-1.5 mt-1">
-                                    {{ form.password.errors }}
-                                </div>
-                            {% endif %}
-                        </div>
-                        <div class="flex items-center justify-end pt-2 print:hidden">
-                            <div class="">
-                                <button
-                                    class="cursor-pointer inline-flex items-center focus:outline-none border shadow-sm border-transparent text-white bg-lorgablue bg-opacity-100 hover:bg-opacity-90 focus:ring-2 focus:ring-offset-2 focus:ring-lorgablue px-4 py-2 text-sm font-medium rounded-xl"
-                                    type="submit">
-                                    <svg class="animate-spin h-5 w-5 text-white mr-2" xmlns="http://www.w3.org/2000/svg"
-                                         fill="none" viewBox="0 0 24 24" style="display: none;">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                                stroke-width="4">
+{% block title %}Login{% endblock %}
 
-                                        </circle>
-                                        <path class="opacity-75" fill="currentColor"
-                                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-
-                                        </path>
-                                    </svg>
-                                    Login
-                                </button>
-                            </div>
+{% block body %}
+    <div class="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div class="sm:mx-auto sm:w-full sm:max-w-md">
+            <img class="mx-auto h-12 w-auto" src="{% static 'logo256blue.png' %}"
+                 alt="Law&Orga">
+            <h1 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">Sign in to Law&Orga</h1>
+        </div>
+        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+            <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                {% if request.user.is_authenticated %}
+                    <p class="text-lg font-medium text-center text-gray-700">You are logged in already.</p>
+                {% else %}
+                    {% include 'symbols/form.html' with submit="Login" form=form %}
+                    <div class="mt-3">
+                        <div class="text-sm">
+                            <a href="{% url 'password_reset' %}"
+                               class="font-medium text-blue-600 hover:text-blue-500">
+                                Forgot your password?
+                            </a>
                         </div>
                     </div>
-                </form>
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
     </div>
-</div>
-</body>
-</html>
+{% endblock body %}

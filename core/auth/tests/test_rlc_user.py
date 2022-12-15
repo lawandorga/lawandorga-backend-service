@@ -57,31 +57,8 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         response = view(request, pk=rlc_user.id, token=token)
         self.assertEqual(200, response.status_code)
 
-    def test_password_forgotten_works(self):
-        view = RlcUserViewSet.as_view(actions={"post": "password_reset"})
-        data = {"email": "test@test.de"}
-        request = self.factory.post("/api/users/password_forgotten/", data)
-        response = view(request)
-        self.assertNotEqual(403, response.status_code)
-
-    def test_reset_password_works(self):
-        view = RlcUserViewSet.as_view(actions={"post": "password_reset_confirm"})
-        rlc_user = self.rlc_user
-        data = {
-            "token": rlc_user.get_password_reset_token(),
-            "new_password": "test1234",
-            "new_password_confirm": "test1234",
-        }
-        url = "/api/users/{}/password_reset_confirm/".format(rlc_user.pk)
-        request = self.factory.post(url, data)
-        response = view(request, pk=rlc_user.pk)
-        self.assertEqual(200, response.status_code)
-        rlc_user.user.check_password("test1234")
-        assert RlcUser.objects.get(pk=rlc_user.pk).locked
-
     def test_change_password_works(self):
         view = RlcUserViewSet.as_view(actions={"post": "change_password"})
-        self.user.rlc_user.decrypt(settings.DUMMY_USER_PASSWORD)
         private_key = self.user.rlc_user.get_private_key()
         data = {
             "current_password": settings.DUMMY_USER_PASSWORD,
@@ -95,15 +72,6 @@ class UserViewSetWorkingTests(UserViewSetBase, TestCase):
         rlc_user = RlcUser.objects.get(user__pk=self.user.pk)
         user_key = rlc_user.get_decrypted_key_from_password("pass1234!")
         self.assertEqual(private_key, user_key.key.get_private_key().decode("utf-8"))
-
-    # def test_destroy_works_on_myself(self):
-    #     view = UserViewSet.as_view(actions={'delete': 'destroy'})
-    #     rlc_user = self.rlc_user
-    #     url = '/api/users/{}/'.format(rlc_user.pk)
-    #     request = self.factory.delete(url)
-    #     force_authenticate(request, rlc_user.user)
-    #     response = view(request, pk=rlc_user.pk)
-    #     self.assertEqual(204, response.status_code)
 
     def test_destroy_works(self):
         rlc_users = RlcUser.objects.count()
@@ -160,19 +128,6 @@ class UserViewSetErrorTests(TestCase):
         response = view(request, pk=self.another_rlc_user.pk)
         self.assertNotEqual(204, response.status_code)
 
-    def test_password_forgotten_fails_on_wrong_token(self):
-        view = RlcUserViewSet.as_view(actions={"post": "password_reset_confirm"})
-        self.rlc_user.send_password_reset_email()
-        data = {
-            "token": "ar9qt9-1606b5f4f0ee279d23863eb22c34f0b3",
-            "new_password": "test1234",
-            "password_confirm": "test1234",
-        }
-        url = "/api/users/{}/password_reset_confirm/".format(self.rlc_user.pk)
-        request = self.factory.post(url, data)
-        response = view(request, pk=self.rlc_user.pk)
-        self.assertNotEqual(200, response.status_code)
-
 
 class UserViewSetAccessTests(TestCase):
     def setUp(self):
@@ -197,20 +152,6 @@ class UserViewSetAccessTests(TestCase):
         view = RlcUserViewSet.as_view(actions={"post": "activate"})
         request = self.factory.post("/api/users/1/activate/token-123/")
         response = view(request, pk=1, token="token-123")
-        self.assertNotEqual(403, response.status_code)
-        self.assertNotEqual(401, response.status_code)
-
-    def test_everybody_can_hit_password_reset(self):
-        view = RlcUserViewSet.as_view(actions={"post": "password_reset"})
-        request = self.factory.post("/api/users/password_reset/")
-        response = view(request)
-        self.assertNotEqual(403, response.status_code)
-        self.assertNotEqual(401, response.status_code)
-
-    def test_everybody_can_hit_password_reset_confirm(self):
-        view = RlcUserViewSet.as_view(actions={"post": "password_reset_confirm"})
-        request = self.factory.post("/api/users/1/password_reset_confirm/")
-        response = view(request, pk=1)
         self.assertNotEqual(403, response.status_code)
         self.assertNotEqual(401, response.status_code)
 

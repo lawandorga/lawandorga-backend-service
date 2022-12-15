@@ -34,9 +34,9 @@ handler500 = "config.handlers.handler500"
 urlpatterns = [
     path("error/", TemplateView.as_view(template_name="")),
     path("email/", EmailView.as_view()),
+    path("", include(api_urls)),
     path("admin/login/", RedirectView.as_view(pattern_name="login", query_string=True)),
     path("admin/", admin.site.urls),
-    path("api/", include(api_urls)),
     path("login/", CustomLoginView.as_view(), name="login"),
     path(
         "",

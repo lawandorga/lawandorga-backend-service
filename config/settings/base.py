@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     "oidc_provider",
     "rest_framework",
     "tinymce",
+    "messagebus",
     "core",
     "storages",
     "corsheaders",

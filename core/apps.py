@@ -20,3 +20,8 @@ class CoreConfig(AppConfig):
         EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
         RepositoryWarehouse.add_repository(DjangoFolderRepository)
         RepositoryWarehouse.add_repository(DjangoRecordRepository)
+
+        # call the sub ready methods
+        from core.folders.ready import ready
+
+        ready()

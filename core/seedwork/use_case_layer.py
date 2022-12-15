@@ -36,7 +36,12 @@ class UseCaseInputError(Exception):
         self.message = message
 
 
-__all__ = ["use_case", "find", "UseCaseError", "UseCaseInputError"]
+__all__ = [
+    "use_case",
+    "find",
+    "UseCaseError",
+    "UseCaseInputError",
+]
 
 
 def __check_actor(args, kwargs, func_code, type_hints):
@@ -56,12 +61,11 @@ def __check_actor(args, kwargs, func_code, type_hints):
             "You need to submit an '__actor' when you call a use case function."
         )
 
-    submitted_actor_type = type(actor)
     usecase_actor_type = type_hints["__actor"]
-    if submitted_actor_type != usecase_actor_type:
+    if not isinstance(actor, usecase_actor_type):
         raise TypeError(
             "The submitted use case '__actor' type is '{}' but should be '{}'.".format(
-                submitted_actor_type, usecase_actor_type
+                type(actor), usecase_actor_type
             )
         )
 
@@ -118,7 +122,12 @@ def __check_permissions(actor, permissions):
             raise UseCaseError(message)
 
 
-def use_case(permissions=None):
+def use_case(permissions=None, event_handler=False):
+    if event_handler and permissions is not None:
+        raise ValueError(
+            "There is a conflict, this function can not be an event handler and use permissions."
+        )
+
     def wrapper(usecase_func):
         type_hints = get_type_hints(usecase_func)
 
@@ -126,11 +135,15 @@ def use_case(permissions=None):
             func_code = usecase_func.__code__
             func_name = func_code.co_name
 
-            actor = __check_actor(args, kwargs, func_code, type_hints)
+            if not event_handler:
+                actor = __check_actor(args, kwargs, func_code, type_hints)
 
-            __check_permissions(actor, permissions)
+                __check_permissions(actor, permissions)
 
-            args, kwargs = __update_parameters(args, kwargs, usecase_func, actor)
+                args, kwargs = __update_parameters(args, kwargs, usecase_func, actor)
+
+            else:
+                actor = "MessageBus"
 
             try:
                 ret = usecase_func(*args, **kwargs)

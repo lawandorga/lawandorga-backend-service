@@ -10,12 +10,31 @@ router = DefaultRouter()
 router.register("profiles", views.RlcUserViewSet, basename="profiles")
 router.register("statistic_users", views.StatisticsUserViewSet)
 
-
 urlpatterns: list[Union[URLPattern, URLResolver]] = [
-    path("", include(router.urls)),
-    path("logout/", api.command__logout),
-    path("rlc_users/", include(api.rlc_user_router.urls)),
-    path("statistics_users/", include(api.statistics_user_router.urls)),
-    path("keys/", include(api.keys_router.urls)),
-    path("auth/query/", include(api.query_router.urls)),
+    path("api/", include(router.urls)),
+    path("api/logout/", api.command__logout),
+    path("api/rlc_users/", include(api.rlc_user_router.urls)),
+    path("api/statistics_users/", include(api.statistics_user_router.urls)),
+    path("api/keys/", include(api.keys_router.urls)),
+    path("api/auth/query/", include(api.query_router.urls)),
+    path(
+        "auth/password_reset/",
+        views.CustomPasswordResetView.as_view(),
+        name="password_reset",
+    ),
+    path(
+        "auth/password_reset_done/",
+        views.CustomPasswordResetDoneView.as_view(),
+        name="password_reset_done",
+    ),
+    path(
+        "auth/password_reset_confirm/<uidb64>/<token>/",
+        views.CustomPasswordResetConfirmView.as_view(),
+        name="password_reset_confirm",
+    ),
+    path(
+        "auth/password_reset_complete/",
+        views.CustomPasswordResetCompleteView.as_view(),
+        name="password_reset_complete",
+    ),
 ]

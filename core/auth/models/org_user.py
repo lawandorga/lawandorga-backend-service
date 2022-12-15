@@ -3,7 +3,6 @@ from uuid import uuid4
 
 import ics
 from django.conf import settings
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sessions.models import Session
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
@@ -19,13 +18,14 @@ from core.folders.domain.value_objects.asymmetric_key import (
 )
 from core.rlc.models import HasPermission, Org, Permission
 from core.seedwork.domain_layer import DomainError
-from core.seedwork.encryption import EncryptedModelMixin
 from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
+from messagebus import DjangoAggregate
 
+from ...folders.domain.types import StrDict
 from .user import UserProfile
 
 
@@ -34,7 +34,7 @@ class RlcUserManager(models.Manager):
         return super().get_queryset().select_related("user")
 
 
-class RlcUser(EncryptedModelMixin, models.Model, IOwner):
+class RlcUser(DjangoAggregate, IOwner, models.Model):
     STUDY_CHOICES = (
         ("LAW", "Law Sciences"),
         ("PSYCH", "Psychology"),
@@ -167,7 +167,8 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         for session in list(Session.objects.all()):
             decoded: dict[str, str] = session.get_decoded()  # type: ignore
             if (
-                decoded["_auth_user_id"] == str(self.user_id)
+                "_auth_user_id" in decoded
+                and decoded["_auth_user_id"] == str(self.user_id)
                 and "private_key" in decoded
             ):
                 private_key = decoded["private_key"]
@@ -222,7 +223,7 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
     def delete_keys(self):
         self.private_key = None
         self.public_key = None
-        self.key = None
+        self.key: Optional[StrDict] = None
         self.is_private_key_encrypted = False
 
     def __get_as_user_permissions(self) -> List[str]:
@@ -259,6 +260,10 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         u2 = u1.encrypt_self(password)
         self.is_private_key_encrypted = True
         self.key = u2.as_dict()
+
+    def lock(self) -> None:
+        self.locked = True
+        self.add_event("OrgUserLocked", {"org_user_uuid": str(self.uuid)})
 
     def change_password_for_keys(self, new_password: str):
         key = self.get_decryption_key()
@@ -302,32 +307,6 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         )
         html_message = loader.render_to_string(
             "email_templates/activate_account.html", {"url": link}
-        )
-        send_mail(
-            subject=subject,
-            html_message=html_message,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[self.user.email],
-        )
-
-    def get_password_reset_token(self):
-        token = PasswordResetTokenGenerator().make_token(self.user)
-        return token
-
-    def get_password_reset_link(self):
-        token = self.get_password_reset_token()
-        link = "{}/user/password-reset-confirm/{}/{}/".format(
-            settings.MAIN_FRONTEND_URL, self.id, token
-        )
-        return link
-
-    def send_password_reset_email(self):
-        link = self.get_password_reset_link()
-        subject = "Law & Orga Account Password reset"
-        message = "Law & Orga - Reset your password here: {}".format(link)
-        html_message = loader.render_to_string(
-            "email_templates/reset_password.html", {"link": link}
         )
         send_mail(
             subject=subject,
@@ -428,13 +407,13 @@ class RlcUser(EncryptedModelMixin, models.Model, IOwner):
         )
 
         c = ics.Calendar()
-        for rlcEvent in events:
+        for rlc_event in events:
             e = ics.Event()
-            e.name = rlcEvent.name
-            e.begin = rlcEvent.start_time
-            e.end = rlcEvent.end_time
-            e.description = rlcEvent.description
-            e.organizer = rlcEvent.org.name
+            e.name = rlc_event.name
+            e.begin = rlc_event.start_time
+            e.end = rlc_event.end_time
+            e.description = rlc_event.description
+            e.organizer = rlc_event.org.name
             c.events.add(e)
         return c.serialize()
 

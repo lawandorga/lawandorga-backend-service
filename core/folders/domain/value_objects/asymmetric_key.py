@@ -145,7 +145,7 @@ class EncryptedAsymmetricKey(Key):
         if self.__enc_private_key is None:
             raise ValueError("The private key of this key is of type 'None'.")
 
-        data = {
+        data: StrDict = {
             "enc_private_key": self.__enc_private_key.as_dict(),
             "public_key": self.__public_key,
             "origin": self.origin,

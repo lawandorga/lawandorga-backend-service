@@ -128,23 +128,23 @@ class DjangoFolderRepository(FolderRepository):
             org_id=org_pk, name=name, _parent=None
         ).exists():
             f = FoldersFolder.objects.get(org_id=org_pk, name=name, _parent=None)
-            return cls.dict(org_pk)[f.uuid]
+            return cls.get_dict(org_pk)[f.uuid]
         folder = Folder.create(name=name, org_pk=org_pk)
         folder.grant_access(user)
         for u in RlcUser.objects.filter(org_id=org_pk).exclude(uuid=user.uuid):
             folder.grant_access(u, user)
         cls.save(folder)
-        return cls.dict(org_pk)[folder.uuid]
+        return cls.get_dict(org_pk)[folder.uuid]
 
     @classmethod
     def retrieve(cls, org_pk: int, uuid: UUID) -> Folder:
-        folders = cls.dict(org_pk)
+        folders = cls.get_dict(org_pk)
         if uuid in folders:
             return folders[uuid]
         raise ObjectDoesNotExist()
 
     @classmethod
-    def dict(cls, org_pk: int) -> dict[UUID, Folder]:
+    def get_dict(cls, org_pk: int) -> dict[UUID, Folder]:
         cache_value = cache.get(cls.__get_cache_key(org_pk), None)
         if cache_value:
             return cache_value
@@ -161,7 +161,7 @@ class DjangoFolderRepository(FolderRepository):
         return domain_folders
 
     @classmethod
-    def list(cls, org_pk: int) -> list[Folder]:
+    def get_list(cls, org_pk: int) -> list[Folder]:
         folders = cls.__as_dict(org_pk)
         users = cls.__users(org_pk)
 
@@ -187,4 +187,4 @@ class DjangoFolderRepository(FolderRepository):
 
     @classmethod
     def tree(cls, org_pk: int) -> FolderTree:
-        return FolderTree(cls.list(org_pk))
+        return FolderTree(cls.get_list(org_pk))

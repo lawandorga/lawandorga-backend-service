@@ -1,6 +1,7 @@
 module.exports = {
   content: [
     "templates/**/*.html",
+      "templates/**/*.class",
     // "node_modules/@lawandorga/components/dist/es.js",
   ],
   darkMode: "class",
@@ -59,7 +60,7 @@ module.exports = {
     },
   },
   plugins: [
-    // require("@tailwindcss/typography"),
-    // require("@tailwindcss/line-clamp"),
+    require("@tailwindcss/typography"),
+    // require("@tailwindcss/forms"),
   ],
 };
