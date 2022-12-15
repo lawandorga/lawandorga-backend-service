@@ -6,7 +6,7 @@ from core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 
 
 @use_case
-def optimize__deliver_access(__actor: RlcUser):
+def deliver_access_to_users_who_should_have_access(__actor: RlcUser):
     records_1 = Record.objects.filter(template__rlc_id=__actor.org_id)
     records_2 = list(records_1)
 
