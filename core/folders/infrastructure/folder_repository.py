@@ -40,7 +40,10 @@ class DjangoFolderRepository(FolderRepository):
         keys: list[Union[ParentKey, FolderKey]] = []
         for key in db_folder.keys:
             if key["type"] == "FOLDER":
-                owner = users[UUID(key["owner"])]
+                try:
+                    owner = users[UUID(key["owner"])]
+                except KeyError:
+                    continue
                 fk = FolderKey.create_from_dict(key, owner)
                 keys.append(fk)
 
