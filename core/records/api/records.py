@@ -27,6 +27,6 @@ def command__create_record(rlc_user: RlcUser, data: schemas.InputRecordCreate):
     return {"id": record_pk}
 
 
-@router.get(url="optimize/")
+@router.post(url="optimize/")
 def command__records_optimize(rlc_user: RlcUser):
     deliver_access_to_users_who_should_have_access(rlc_user)
