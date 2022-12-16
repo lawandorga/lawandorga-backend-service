@@ -2,8 +2,8 @@ import asyncio
 import json
 
 from asgiref.sync import sync_to_async
-from django.http import HttpResponse
-from django.utils.decorators import sync_and_async_middleware
+from django.template.response import TemplateResponse
+from django.utils.decorators import async_only_middleware, sync_and_async_middleware
 
 from core.models import LoggedPath
 
@@ -13,30 +13,22 @@ __all__ = [
 ]
 
 
-@sync_and_async_middleware
+@async_only_middleware
 def custom_debug_toolbar_middleware(get_response):
-    def create_response(request, response):
+    async def middleware(request):
+        response = await get_response(request)
+
         if "debug" in request.GET and response["content-type"] == "application/json":
             content = json.dumps(json.loads(response.content), sort_keys=True, indent=2)
-            new_response = HttpResponse(
-                "<html><body><pre>{}</pre></body></html>".format(content)
-            )
+            new_response = await sync_to_async(
+                TemplateResponse(
+                    request, "api_debug.html", context={"content": content}
+                ).render,
+                thread_sensitive=True,
+            )()
             return new_response
+
         return response
-
-    if asyncio.iscoroutinefunction(get_response):
-
-        async def middleware(request):
-            response = await get_response(request)
-            response = create_response(request, response)
-            return response
-
-    else:
-
-        def middleware(request):
-            response = get_response(request)
-            response = create_response(request, response)
-            return response
 
     return middleware
 

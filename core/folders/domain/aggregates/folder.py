@@ -278,9 +278,7 @@ class Folder:
         # the key is symmetric therefore the encryption and decryption key is the same
         return self.get_encryption_key(*args, **kwargs)
 
-    def set_parent(self, parent: "Folder", by: Optional[IOwner] = None):
-        assert by is not None
-
+    def __set_parent(self, parent: "Folder", by: Optional[IOwner] = None):
         self.__parent = parent
 
         # get the key of self
@@ -302,8 +300,23 @@ class Folder:
         # add the parent key to keys
         self.__keys.append(enc_parent_key)
 
-    def move(self, target: "Folder"):
-        pass
+    def set_parent(self, parent: "Folder", by: Optional[IOwner] = None):
+        assert by is not None
+
+        if self.__parent is not None:
+            raise DomainError("This folder already has a parent folder.")
+
+        self.__set_parent(parent, by)
+
+    def move(self, target: "Folder", by: IOwner):
+        if not self.has_access(by):
+            raise DomainError("You have no access to this folder.")
+
+        if not target.has_access(by):
+            raise DomainError("You have no access to the target folder.")
+
+        self.__keys = [k for k in self.__keys if isinstance(k, FolderKey)]
+        self.set_parent(target, by)
 
     def grant_access(self, to: IOwner, by: Optional[IOwner] = None):
         key: Union[AsymmetricKey, SymmetricKey]
