@@ -72,6 +72,10 @@ def create_record_template(org=None):
 
 
 def create_record(template=None, users: Optional[List[UserProfile]] = None):
+    if template is None and users is not None and len(users):
+        template = RecordTemplate.objects.create(
+            rlc=users[0].rlc, name="Record Template"
+        )
     record = Record.objects.create(template=template)
     aes_key_record = AESEncryption.generate_secure_key()
     for user in users if users else []:
