@@ -1,5 +1,5 @@
 import os.path
-from typing import Optional, Type, Union, cast
+from typing import Optional, Union
 from uuid import UUID
 
 from django.core.cache import cache
@@ -10,12 +10,11 @@ from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.external import IOwner
 from core.folders.domain.repositiories.folder import FolderRepository
-from core.folders.domain.repositiories.item import ItemRepository
+from core.folders.domain.value_objects.folder_item import FolderItem
 from core.folders.domain.value_objects.folder_key import FolderKey
 from core.folders.domain.value_objects.parent_key import ParentKey
 from core.folders.domain.value_objects.tree import FolderTree
 from core.folders.models import FoldersFolder
-from core.seedwork.repository import RepositoryWarehouse
 
 PATH = os.path.abspath(__file__)
 
@@ -63,14 +62,14 @@ class DjangoFolderRepository(FolderRepository):
 
         # revive items
         for item in db_folder.items:
-            item_repository = cast(
-                Type[ItemRepository], RepositoryWarehouse.get(item["repository"])
+            name = item["name"] if "name" in item else "-"
+            actions = item["actions"] if "actions" in item else {}
+            uuid = UUID(item["uuid"])
+            repository = item["repository"]
+            folder_item = FolderItem(
+                name=name, actions=actions, repository=repository, uuid=uuid
             )
-            try:
-                i = item_repository.retrieve(uuid=item["uuid"])
-            except ObjectDoesNotExist:
-                continue
-            folder.add_item(i)
+            folder.add_item(folder_item)
 
         # return
         return folder

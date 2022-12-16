@@ -29,7 +29,7 @@ def create_statistic(__actor: StatisticUser, field_1: str, value_1: str, field_2
 
     statement = """
     with t as (
-        select id, name as field, value from
+        select id, k.name as field, value from
         core_record record
         left join (
 

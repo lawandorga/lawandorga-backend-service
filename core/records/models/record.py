@@ -7,7 +7,7 @@ from django.db import models, transaction
 from django.utils.timezone import localtime
 
 from core.auth.models import RlcUser
-from core.folders.domain.aggregates.folder import Folder, Item
+from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.repositiories.item import ItemRepository
 from core.folders.domain.value_objects.box import OpenBox
@@ -15,6 +15,7 @@ from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
+from core.folders.infrastructure.django_item import DjangoItem
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.records.models import EncryptedClient  # type: ignore
 from core.records.models.template import (
@@ -40,12 +41,45 @@ from core.seedwork.repository import RepositoryWarehouse
 class DjangoRecordRepository(ItemRepository):
     IDENTIFIER = "RECORD"
 
+    # @classmethod
+    # def __get_records(cls, org_pk: Optional[int] = None):
+    #     records_cache_key = "records-key-of-{}".format(org_pk)
+    #     records_cache_time_key = "records-time-key-of-{}".format(org_pk)
+    #
+    #     if hasattr(cls, records_cache_key) and hasattr(cls, records_cache_time_key):
+    #         if timezone.now() < getattr(cls, records_cache_time_key):
+    #             return getattr(cls, records_cache_key)
+    #         else:
+    #             delattr(cls, records_cache_time_key)
+    #             delattr(cls, records_cache_key)
+    #
+    #     records_1 = list(
+    #         Record.objects.select_related("template").prefetch_related(
+    #             "standard_entries"
+    #         )
+    #     )
+    #     records_2 = {r.uuid: r for r in records_1}
+    #
+    #     print("setattr")
+    #     setattr(
+    #         cls,
+    #         records_cache_time_key,
+    #         timezone.now() + timedelta(seconds=20),
+    #     )
+    #     setattr(cls, records_cache_key, records_2)
+    #
+    #     return records_2
+
     @classmethod
-    def retrieve(cls, uuid: UUID) -> "Record":
+    def retrieve(cls, uuid: UUID, org_pk: Optional[int] = None) -> "Record":
+        # if org_pk:
+        #     records = cls.__get_records(org_pk)
+        #     if uuid in records:
+        #         return records[uuid]
         return Record.objects.get(uuid=uuid)
 
 
-class Record(Item, models.Model):
+class Record(DjangoItem, models.Model):
     REPOSITORY = "RECORD"
 
     template = models.ForeignKey(
@@ -60,6 +94,7 @@ class Record(Item, models.Model):
         null=True,
         blank=True,
     )
+    name = models.CharField(max_length=300, default="-")
     key = models.JSONField(null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -75,10 +110,6 @@ class Record(Item, models.Model):
     @property
     def actions(self):
         return {"OPEN": "/records/{}/".format(self.pk)}
-
-    @property
-    def name(self):
-        return self.identifier
 
     @property
     def identifier(self):
@@ -124,11 +155,14 @@ class Record(Item, models.Model):
             "deletions",
         ]
 
+    def set_name(self, name: str):
+        self.name = name
+
     def grant_access(self, to: RlcUser, by: Optional[RlcUser]):
         if self.folder is not None:
             r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
             folder = self.folder
-            if not folder.has_access(to):
+            if not folder.has_access(to) and (by is None or folder.has_access(by)):
                 folder.grant_access(to=to, by=by)
                 r.save(folder)
         else:
