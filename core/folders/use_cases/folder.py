@@ -72,6 +72,19 @@ def revoke_access(
     r.save(folder)
 
 
+@use_case
+def correct_folder_keys_of_others(__actor: RlcUser):
+    r = get_repository()
+    folders = r.get_list(__actor.org_id)
+    users = list(__actor.org.users.exclude(pk=__actor.pk))
+    for f in folders:
+        if f.has_access(__actor):
+            for u in users:
+                if f.has_invalid_keys(u):
+                    f.fix_keys(u, __actor)
+                    r.save(f)
+
+
 @use_case(event_handler=True)
 def invalidate_folder_keys(event: Event):
     org_user = RlcUser.objects.get(uuid=event.data["org_user_uuid"])
@@ -80,3 +93,18 @@ def invalidate_folder_keys(event: Event):
     for folder in folders:
         folder.invalidate_keys_of(org_user)
         r.save(folder)
+
+
+@use_case(event_handler=True)
+def correct_folder_keys(event: Event):
+    of = RlcUser.objects.get(uuid=event.data["org_user_uuid"])
+    by = RlcUser.objects.get(uuid=event.data["by_org_user_uuid"])
+    assert of.org_id == by.org_id
+
+    r = get_repository()
+    folders = r.get_list(of.org_id)
+    for f in folders:
+        if f.has_access(by):
+            if f.has_invalid_keys(of):
+                f.fix_keys(of, by)
+                r.save(f)

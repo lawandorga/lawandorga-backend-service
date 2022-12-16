@@ -51,8 +51,8 @@ router.register(
 router.register("recordstatisticentries", views.RecordStatisticEntryViewSet)
 
 urlpatterns = [
-    path("", include(router.urls)),
     path("records/v2/", include(api.records_router.urls)),
+    path("", include(router.urls)),
     path("query/", include(api.query_router.urls)),
     path("questionnaires/v2/", include(api.questionnaire_router.urls)),
 ]

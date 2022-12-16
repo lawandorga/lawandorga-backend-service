@@ -21,7 +21,7 @@ class InputFolderUpdate(BaseModel):
 
 
 class InputFolderAccess(BaseModel):
-    user_slug: UUID
+    user_uuid: UUID
     id: UUID
 
 
@@ -49,7 +49,7 @@ class OutputFolder(BaseModel):
 
 class OutputAccess(BaseModel):
     name: str
-    slug: Optional[UUID]
+    uuid: Optional[UUID]
 
     class Config:
         orm_mode = True

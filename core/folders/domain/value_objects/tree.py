@@ -18,7 +18,11 @@ class Access:
         for key in folder.keys:
             if isinstance(key, FolderKey):
                 access.append(
-                    {"name": str(key.owner.name), "slug": str(key.owner.uuid)}
+                    {
+                        "name": str(key.owner.name),
+                        "uuid": str(key.owner.uuid),
+                        "is_valid": key.is_valid,
+                    }
                 )
                 continue
             if isinstance(key, ParentKey):
@@ -26,7 +30,7 @@ class Access:
                     f = self.__folders_dict[folder.parent_uuid]
                     access += self.get_owners_with_access(f)
                 continue
-            access.append({"name": "Unknown", "slug": "-"})
+            access.append({"name": "Unknown", "uuid": "-"})
         return access
 
     def as_dict(self) -> list[StrDict]:
