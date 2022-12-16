@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from core.auth.api import schemas
 from core.auth.models import RlcUser
-from core.auth.use_cases.rlc_user import register_rlc_user
+from core.auth.use_cases.rlc_user import register_rlc_user, unlock_user
 from core.rlc.models import Permission
 from core.seedwork.api_layer import ApiError, Router
 from core.static import (
@@ -62,7 +62,8 @@ def retrieve(data: schemas.InputRlcUserGet, rlc_user: RlcUser):
 
 # unlock user
 @router.api(method="POST", url="unlock_self/", output_schema=schemas.OutputRlcUser)
-def unlock_rlc_user(rlc_user: RlcUser):
+def command__unlock_myself(rlc_user: RlcUser):
+    rlc_user.user.test_all_keys(rlc_user.get_private_key())
     if not rlc_user.user.check_all_keys_correct():
         raise ApiError(
             "You can only unlock yourself when all your keys are correct.",
@@ -191,3 +192,9 @@ def grant_permission(data: schemas.InputRlcUserGrantPermission, rlc_user: RlcUse
         raise ApiError("The user already has this permission.")
 
     rlc_user_to_grant.grant(permission=permission)
+
+
+# unlock user
+@router.post(url="<int:id>/unlock_user/", input_schema=schemas.InputUnlockOrgUser)
+def command__unlock_user(rlc_user: RlcUser, data: schemas.InputUnlockOrgUser):
+    unlock_user(rlc_user, data.id)

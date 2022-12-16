@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Any, Dict, List, Optional, Union
 from uuid import uuid4
 
@@ -8,6 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import models
 from django.template import loader
+from django.utils import timezone
 
 from core.auth.domain.user_key import UserKey
 from core.auth.token_generator import EmailConfirmationTokenGenerator
@@ -16,7 +18,7 @@ from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
 )
-from core.rlc.models import HasPermission, Org, Permission
+from core.rlc.models import HasPermission, Org, OrgEncryption, Permission
 from core.seedwork.domain_layer import DomainError
 from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
@@ -160,12 +162,47 @@ class RlcUser(DjangoAggregate, IOwner, models.Model):
 
         raise ValueError("This method is only available for dummy and in test mode.")
 
+    def __get_session(self) -> Optional[Session]:
+        memory_cache_session_key = "session-of-org-user-{}".format(self.pk)
+        memory_cache_time_key = "time-of-org-user-{}".format(self.pk)
+
+        if hasattr(self.__class__, memory_cache_session_key) and hasattr(
+            self.__class__, memory_cache_time_key
+        ):
+            if timezone.now() < getattr(self.__class__, memory_cache_time_key):
+                return getattr(self.__class__, memory_cache_session_key)
+            else:
+                delattr(self.__class__, memory_cache_time_key)
+                delattr(self.__class__, memory_cache_session_key)
+
+        session = None
+        for s in list(Session.objects.all()):
+            decoded: dict[str, str] = s.get_decoded()
+            if "_auth_user_id" in decoded and decoded["_auth_user_id"] == str(
+                self.user_id
+            ):
+                session = s
+                break
+
+        if session is None:
+            return None
+
+        setattr(
+            self.__class__,
+            memory_cache_time_key,
+            timezone.now() + timedelta(seconds=10),
+        )
+        setattr(self.__class__, memory_cache_session_key, session)
+
+        return session
+
     def get_decryption_key(self, *args, **kwargs) -> AsymmetricKey:
         assert self.key is not None
 
         private_key: Optional[str] = None
-        for session in list(Session.objects.all()):
-            decoded: dict[str, str] = session.get_decoded()  # type: ignore
+        session = self.__get_session()
+        if session:
+            decoded: dict[str, str] = session.get_decoded()
             if (
                 "_auth_user_id" in decoded
                 and decoded["_auth_user_id"] == str(self.user_id)
@@ -420,3 +457,24 @@ class RlcUser(DjangoAggregate, IOwner, models.Model):
     def regenerate_calendar_uuid(self):
         self.calendar_uuid = uuid4()
         self.save()
+
+    def fix_keys(self, by: "RlcUser"):
+        assert self.org_id == by.org_id
+
+        self.user.users_rlc_keys.all().delete()
+        aes_key_rlc = by.org.get_aes_key(
+            user=by.user, private_key_user=by.get_private_key()
+        )
+        new_keys = OrgEncryption(
+            user=self.user, rlc=self.org, encrypted_key=aes_key_rlc
+        )
+        new_keys.encrypt(self.get_public_key())
+        new_keys.save()
+
+    def unlock(self, by: "RlcUser"):
+        self.fix_keys(by)
+        self.locked = False
+        self.add_event(
+            "OrgUserUnlocked",
+            data={"org_user_uuid": str(self.uuid), "by_org_user_uuid": str(by.uuid)},
+        )

@@ -3,7 +3,7 @@ from smtplib import SMTPRecipientsRefused
 from django.db import transaction
 
 from core.auth.models import RlcUser, UserProfile
-from core.auth.use_cases.finders import org_from_id
+from core.auth.use_cases.finders import org_from_id, rlc_user_from_id
 from core.legal.models import (
     LegalRequirement,
     LegalRequirementEvent,
@@ -69,3 +69,10 @@ def register_rlc_user(
             "We could not send a confirmation email to this address. "
             "Please check if this email is correct."
         )
+
+
+@use_case
+def unlock_user(__actor: RlcUser, another_rlc_user=find(rlc_user_from_id)):
+    another_rlc_user.fix_keys(__actor)
+    another_rlc_user.unlock(__actor)
+    another_rlc_user.save()

@@ -174,6 +174,14 @@ class Folder:
             return False
         return self.__parent.has_access(owner)
 
+    def _has_keys(self, owner: IOwner) -> bool:
+        for key in self.__keys:
+            if isinstance(key, FolderKey) and key.owner.uuid == owner.uuid:
+                return True
+        if self.__parent is None or self.__stop_inherit:
+            return False
+        return self.__parent._has_keys(owner)
+
     def add_item(self, item: Item):
         for i in self.__items:
             if i.uuid == item.uuid:
@@ -300,8 +308,8 @@ class Folder:
     def grant_access(self, to: IOwner, by: Optional[IOwner] = None):
         key: Union[AsymmetricKey, SymmetricKey]
 
-        if self.has_access(to):
-            raise DomainError("This user already has access to this folder.")
+        if self._has_keys(to):
+            raise DomainError("This user already has keys for this folder.")
 
         if len(self.__keys) == 0:
             key = SymmetricKey.generate()

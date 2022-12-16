@@ -65,6 +65,10 @@ class InputKeyDelete(BaseModel):
     id: int
 
 
+class InputUnlockOrgUser(BaseModel):
+    id: int
+
+
 class Link(BaseModel):
     id: UUID
     name: str

@@ -7,7 +7,11 @@ from core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 
 @use_case
 def deliver_access_to_users_who_should_have_access(__actor: RlcUser):
-    records_1 = Record.objects.filter(template__rlc_id=__actor.org_id)
+    records_1 = (
+        Record.objects.filter(template__rlc_id=__actor.org_id)
+        .select_related("template")
+        .prefetch_related("encryptions")
+    )
     records_2 = list(records_1)
 
     permission = Permission.objects.get(name=PERMISSION_RECORDS_ACCESS_ALL_RECORDS)
