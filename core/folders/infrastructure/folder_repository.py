@@ -20,27 +20,39 @@ from core.folders.models import FoldersFolder
 PATH = os.path.abspath(__file__)
 
 
-def get_cache_of_obj(obj, key: Union[int, str]) -> Optional[Any]:
+def get_cache_keys(key: Union[int, str]):
     value_key = "cache-key-{}".format(key)
     time_key = "cache-key-time-{}".format(key)
+    return value_key, time_key
 
-    if hasattr(cls, value_key) and hasattr(cls, time_key):
-        if timezone.now() < getattr(cls, time_key):
-            return getattr(cls, value_key)
+
+def get_cache_of_obj(obj, key: Union[int, str]) -> Optional[Any]:
+    value_key, time_key = get_cache_keys(key)
+    
+    if hasattr(obj, value_key) and hasattr(obj, time_key):
+        if timezone.now() < getattr(obj, time_key):
+            return getattr(obj, value_key)
         
-        delattr(cls, time_key)
-        delattr(cls, value_key)
+        delattr(obj, time_key)
+        delattr(obj, value_key)
 
     return None
 
 
 def set_cache_on_object(obj, key: Union[int, str], value, seconds=10) -> None:
-    value_key = "cache-key-{}".format(key)
-    time_key = "cache-key-time-{}".format(key)
-    time_value = timezone.now() + timedelta(seconds=seconds)
-    setattr(cls, time_key, time_value)
-    setattr(cls, value_key, value)
+    value_key, time_key = get_cache_keys(key)
     
+    time_value = timezone.now() + timedelta(seconds=seconds)
+    setattr(obj, time_key, time_value)
+    setattr(obj, value_key, value)
+
+
+def delete_cache_of_object(obj, key: Union[int, str]) -> None:
+    value_key, time_key = get_cache_keys(key)
+    
+    delattr(obj, time_key)
+    delattr(obj, value_key)
+
     
 class DjangoFolderRepository(FolderRepository):
     @classmethod
@@ -129,10 +141,6 @@ class DjangoFolderRepository(FolderRepository):
         return f
 
     @classmethod
-    def __get_cache_key(cls, org_pk: int):
-        return "{}---{}".format(PATH, org_pk)
-
-    @classmethod
     def __as_dict(cls, org_pk: int) -> dict[UUID, FoldersFolder]:
         folders = {}
         for f in list(FoldersFolder.query().filter(org_id=org_pk, deleted=False)):
@@ -200,7 +208,7 @@ class DjangoFolderRepository(FolderRepository):
     def save(cls, folder: Folder):
         db_folder = cls.__db_folder_from_domain(folder)
         db_folder.save()
-        cache.delete(cls.__get_cache_key(folder.org_pk))
+        delete_cache_of_object(cls, folder.org_pk)
 
     @classmethod
     def delete(cls, folder: Folder):
@@ -208,7 +216,7 @@ class DjangoFolderRepository(FolderRepository):
         f.deleted = True
         f.deleted_at = timezone.now()
         f.save()
-        cache.delete(cls.__get_cache_key(folder.org_pk))
+        delete_cache_of_object(cls, folder.org_pk)
 
     @classmethod
     def tree(cls, org_pk: int) -> FolderTree:
