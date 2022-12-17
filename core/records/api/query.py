@@ -16,21 +16,15 @@ def query__records_page(rlc_user: RlcUser):
         .select_related("template")
     )
 
-    # Record.set_folders(rlc_user.org_id)
-
-    records_2 = list(
-        map(
-            lambda r: (
-                {
-                    "id": r.id,
-                    "attributes": r.attributes,
-                    "delete_requested": r.delete_requested,
-                    "has_access": r.has_access(rlc_user),
-                }
-            ),
-            records_1,
-        )
-    )
+    records_2 = [
+        {
+            "id": r.id,
+            "attributes": r.attributes,
+            "delete_requested": r.delete_requested,
+            "has_access": r.has_access(rlc_user),
+        }
+        for r in records_1
+    ]
 
     columns_1 = list(
         RecordTemplate.objects.filter(rlc_id=rlc_user.org_id).values_list(

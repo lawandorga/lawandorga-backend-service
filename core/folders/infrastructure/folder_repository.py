@@ -1,4 +1,5 @@
 import os.path
+from datetime import timedelta
 from typing import Optional, Union
 from uuid import UUID
 
@@ -146,8 +147,36 @@ class DjangoFolderRepository(FolderRepository):
         raise ObjectDoesNotExist()
 
     @classmethod
+    def __get_cached_dict(cls, org_pk: int) -> Optional[dict[UUID, Folder]]:
+        memory_cache_session_key = "folder-{}".format(org_pk)
+        memory_cache_time_key = "time-{}".format(org_pk)
+
+        if hasattr(cls, memory_cache_session_key) and hasattr(
+            cls, memory_cache_time_key
+        ):
+            if timezone.now() < getattr(cls, memory_cache_time_key):
+                return getattr(cls, memory_cache_session_key)
+            else:
+                delattr(cls, memory_cache_time_key)
+                delattr(cls, memory_cache_session_key)
+
+        return None
+
+    @classmethod
+    def __set_cached_dict(cls, org_pk: int, value: dict[UUID, Folder]) -> None:
+        memory_cache_session_key = "folder-{}".format(org_pk)
+        memory_cache_time_key = "time-{}".format(org_pk)
+
+        setattr(
+            cls,
+            memory_cache_time_key,
+            timezone.now() + timedelta(seconds=10),
+        )
+        setattr(cls, memory_cache_session_key, value)
+
+    @classmethod
     def get_dict(cls, org_pk: int) -> dict[UUID, Folder]:
-        cache_value = cache.get(cls.__get_cache_key(org_pk), None)
+        cache_value = cls.__get_cached_dict(org_pk)
         if cache_value:
             return cache_value
 
@@ -158,7 +187,8 @@ class DjangoFolderRepository(FolderRepository):
         for i, f in folders.items():
             domain_folders[i] = cls.__db_folder_to_domain(f, folders, users)
 
-        cache.set(cls.__get_cache_key(org_pk), domain_folders)
+        cls.__set_cached_dict(org_pk, domain_folders)
+        # cache.set(cls.__get_cache_key(org_pk), domain_folders)
 
         return domain_folders
 
