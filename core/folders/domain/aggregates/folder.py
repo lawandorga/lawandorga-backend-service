@@ -302,6 +302,7 @@ class Folder:
             raise DomainError("You have no access to the target folder.")
 
         self.__keys = [k for k in self.__keys if isinstance(k, FolderKey)]
+        self.__parent = None
         self.set_parent(target, by)
 
     def grant_access(self, to: IOwner, by: Optional[IOwner] = None):
