@@ -20,6 +20,24 @@ from core.folders.models import FoldersFolder
 PATH = os.path.abspath(__file__)
 
 
+def get_cache_of_obj(obj, key, value, seconds=10) -> Optional[Any]:
+    value_key = "cache-key-{}".format(key)
+    time_key = "cache-key-time-{}".format(key)
+
+    if hasattr(cls, value_key) and hasattr(cls, time_key):
+        if timezone.now() < getattr(cls, time_key):
+            return getattr(cls, value_key)
+        
+        delattr(cls, time_key)
+        delattr(cls, value_key)
+
+    return None
+
+
+def set_cache_on_object(obj, key, value, seconds=10):
+    
+    pass
+    
 class DjangoFolderRepository(FolderRepository):
     @classmethod
     def __db_folder_to_domain(
