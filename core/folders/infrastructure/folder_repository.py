@@ -1,6 +1,6 @@
 import os.path
 from datetime import timedelta
-from typing import Optional, Union
+from typing import Optional, Union, Any
 from uuid import UUID
 
 from django.core.cache import cache
@@ -20,7 +20,7 @@ from core.folders.models import FoldersFolder
 PATH = os.path.abspath(__file__)
 
 
-def get_cache_of_obj(obj, key, value, seconds=10) -> Optional[Any]:
+def get_cache_of_obj(obj, key: Union[int, str]) -> Optional[Any]:
     value_key = "cache-key-{}".format(key)
     time_key = "cache-key-time-{}".format(key)
 
@@ -34,9 +34,13 @@ def get_cache_of_obj(obj, key, value, seconds=10) -> Optional[Any]:
     return None
 
 
-def set_cache_on_object(obj, key, value, seconds=10):
+def set_cache_on_object(obj, key: Union[int, str], value, seconds=10) -> None:
+    value_key = "cache-key-{}".format(key)
+    time_key = "cache-key-time-{}".format(key)
+    time_value = timezone.now() + timedelta(seconds=seconds)
+    setattr(cls, time_key, time_value)
+    setattr(cls, value_key, value)
     
-    pass
     
 class DjangoFolderRepository(FolderRepository):
     @classmethod
@@ -165,36 +169,8 @@ class DjangoFolderRepository(FolderRepository):
         raise ObjectDoesNotExist()
 
     @classmethod
-    def __get_cached_dict(cls, org_pk: int) -> Optional[dict[UUID, Folder]]:
-        memory_cache_session_key = "folder-{}".format(org_pk)
-        memory_cache_time_key = "time-{}".format(org_pk)
-
-        if hasattr(cls, memory_cache_session_key) and hasattr(
-            cls, memory_cache_time_key
-        ):
-            if timezone.now() < getattr(cls, memory_cache_time_key):
-                return getattr(cls, memory_cache_session_key)
-            else:
-                delattr(cls, memory_cache_time_key)
-                delattr(cls, memory_cache_session_key)
-
-        return None
-
-    @classmethod
-    def __set_cached_dict(cls, org_pk: int, value: dict[UUID, Folder]) -> None:
-        memory_cache_session_key = "folder-{}".format(org_pk)
-        memory_cache_time_key = "time-{}".format(org_pk)
-
-        setattr(
-            cls,
-            memory_cache_time_key,
-            timezone.now() + timedelta(seconds=10),
-        )
-        setattr(cls, memory_cache_session_key, value)
-
-    @classmethod
     def get_dict(cls, org_pk: int) -> dict[UUID, Folder]:
-        cache_value = cls.__get_cached_dict(org_pk)
+        cache_value = get_cache_of_object(cls, org_pk)
         if cache_value:
             return cache_value
 
@@ -204,9 +180,8 @@ class DjangoFolderRepository(FolderRepository):
         domain_folders = {}
         for i, f in folders.items():
             domain_folders[i] = cls.__db_folder_to_domain(f, folders, users)
-
-        cls.__set_cached_dict(org_pk, domain_folders)
-        # cache.set(cls.__get_cache_key(org_pk), domain_folders)
+        
+        set_cache_of_object(cls, org_pk, domain_folders)
 
         return domain_folders
 
