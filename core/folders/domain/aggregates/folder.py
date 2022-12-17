@@ -1,38 +1,18 @@
-import abc
-from typing import Any, List, Optional, Union
+from typing import List, Optional, Union
 from uuid import UUID, uuid4
 
+from core.folders.domain.aggregates.item import Item
 from core.folders.domain.external import IOwner
 from core.folders.domain.types import StrDict
 from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
 )
+from core.folders.domain.value_objects.folder_item import FolderItem
 from core.folders.domain.value_objects.folder_key import FolderKey
 from core.folders.domain.value_objects.parent_key import ParentKey
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from core.seedwork.domain_layer import DomainError
-
-
-class Item:
-    REPOSITORY: str
-    uuid: Any
-    folder_uuid: Optional[Any]
-    name: str
-    actions: Optional[dict[str, str]] = {}
-
-    def as_dict(self) -> StrDict:
-        return {"repository": self.REPOSITORY, "uuid": str(self.uuid)}
-
-    @property
-    @abc.abstractmethod
-    def folder(self) -> Optional["Folder"]:
-        pass
-
-    def set_folder(self, folder: "Folder"):
-        if self.folder_uuid is None:
-            self.folder_uuid = folder.uuid
-        assert folder.uuid == self.folder_uuid
 
 
 class Folder:
@@ -52,7 +32,7 @@ class Folder:
         org_pk: Optional[int] = None,
         keys: Optional[List[Union[FolderKey, ParentKey]]] = None,
         parent: Optional["Folder"] = None,
-        items: Optional[list[Item]] = None,
+        items: Optional[list[FolderItem]] = None,
         stop_inherit: bool = False,
     ):
         assert name is not None and uuid is not None
@@ -182,12 +162,18 @@ class Folder:
             return False
         return self.__parent._has_keys(owner)
 
-    def add_item(self, item: Item):
+    def add_item(self, item: Union[Item, FolderItem]):
         for i in self.__items:
             if i.uuid == item.uuid:
                 raise ValueError("This folder already contains this item.")
-        item.set_folder(self)
-        self.__items.append(item)
+
+        if isinstance(item, FolderItem):
+            folder_item = item
+        else:
+            item.set_folder(self)
+            folder_item = FolderItem.create_from_item(item)
+
+        self.__items.append(folder_item)
 
     def remove_item(self, item: Item):
         new_items_1 = filter(lambda x: x.uuid != item.uuid, self.__items)

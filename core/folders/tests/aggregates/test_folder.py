@@ -3,7 +3,8 @@ from uuid import uuid4
 
 import pytest
 
-from core.folders.domain.aggregates.folder import Folder, Item
+from core.folders.domain.aggregates.folder import Folder
+from core.folders.domain.aggregates.item import Item
 from core.folders.domain.value_objects.asymmetric_key import AsymmetricKey
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.folder_key import FolderKey
@@ -193,6 +194,7 @@ class CustomItem(Item):
     folder_uuid = None
     name = "CustomItem"
     REPOSITORY = "NONE"
+    actions = {}
 
     def __init__(self):
         self.uuid = uuid4()
@@ -202,7 +204,7 @@ class CustomItem(Item):
         return self.__folder
 
     def set_folder(self, folder: "Folder"):
-        super().set_folder(folder)
+        self.folder_uuid = folder.uuid
         self.__folder = folder
 
 
@@ -211,7 +213,7 @@ def test_item(folder_user):
     item = CustomItem()
 
     folder.add_item(item)
-    assert item in folder.items and item.folder == folder
+    assert item.uuid in [i.uuid for i in folder.items] and item.folder == folder
     folder.remove_item(item)
     assert item not in folder.items
 
