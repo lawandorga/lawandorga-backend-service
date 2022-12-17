@@ -1,9 +1,8 @@
 import os.path
 from datetime import timedelta
-from typing import Optional, Union, Any
+from typing import Any, Optional, Union
 from uuid import UUID
 
-from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
@@ -26,13 +25,13 @@ def get_cache_keys(key: Union[int, str]):
     return value_key, time_key
 
 
-def get_cache_of_obj(obj, key: Union[int, str]) -> Optional[Any]:
+def get_cache_of_object(obj, key: Union[int, str]) -> Optional[Any]:
     value_key, time_key = get_cache_keys(key)
-    
+
     if hasattr(obj, value_key) and hasattr(obj, time_key):
         if timezone.now() < getattr(obj, time_key):
             return getattr(obj, value_key)
-        
+
         delattr(obj, time_key)
         delattr(obj, value_key)
 
@@ -41,7 +40,7 @@ def get_cache_of_obj(obj, key: Union[int, str]) -> Optional[Any]:
 
 def set_cache_on_object(obj, key: Union[int, str], value, seconds=10) -> None:
     value_key, time_key = get_cache_keys(key)
-    
+
     time_value = timezone.now() + timedelta(seconds=seconds)
     setattr(obj, time_key, time_value)
     setattr(obj, value_key, value)
@@ -49,11 +48,12 @@ def set_cache_on_object(obj, key: Union[int, str], value, seconds=10) -> None:
 
 def delete_cache_of_object(obj, key: Union[int, str]) -> None:
     value_key, time_key = get_cache_keys(key)
-    
-    delattr(obj, time_key)
-    delattr(obj, value_key)
 
-    
+    if hasattr(obj, value_key) and hasattr(obj, time_key):
+        delattr(obj, time_key)
+        delattr(obj, value_key)
+
+
 class DjangoFolderRepository(FolderRepository):
     @classmethod
     def __db_folder_to_domain(
@@ -188,8 +188,8 @@ class DjangoFolderRepository(FolderRepository):
         domain_folders = {}
         for i, f in folders.items():
             domain_folders[i] = cls.__db_folder_to_domain(f, folders, users)
-        
-        set_cache_of_object(cls, org_pk, domain_folders)
+
+        set_cache_on_object(cls, org_pk, domain_folders)
 
         return domain_folders
 
