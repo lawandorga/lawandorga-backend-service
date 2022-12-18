@@ -6,6 +6,15 @@ from pydantic import BaseModel
 from core.seedwork.api_layer import qs_to_list
 
 
+class InputFolderMove(BaseModel):
+    folder: UUID
+    target: UUID
+
+
+class InputFolderToggleInheritance(BaseModel):
+    folder: UUID
+
+
 class InputFolderDetail(BaseModel):
     id: UUID
 

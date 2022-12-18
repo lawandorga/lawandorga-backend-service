@@ -85,6 +85,25 @@ def correct_folder_keys_of_others(__actor: RlcUser):
                     r.save(f)
 
 
+@use_case
+def move_folder(
+    __actor: RlcUser, folder=find(folder_from_uuid), target=find(folder_from_uuid)
+):
+    folder.move(target, __actor)
+    r = get_repository()
+    r.save(folder)
+
+
+@use_case
+def toggle_inheritance(__actor: RlcUser, folder=find(folder_from_uuid)):
+    if folder.stop_inherit:
+        folder.allow_inheritance()
+    else:
+        folder.stop_inheritance()
+    r = get_repository()
+    r.save(folder)
+
+
 @use_case(event_handler=True)
 def invalidate_folder_keys(event: Event):
     org_user = RlcUser.objects.get(uuid=event.data["org_user_uuid"])

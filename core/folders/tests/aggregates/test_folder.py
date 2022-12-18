@@ -82,11 +82,6 @@ def test_encryption_version(single_encryption):
         assert folder.encryption_version
 
 
-def test_move(single_encryption, folder_user):
-    folder, user = folder_user
-    folder.move(None)
-
-
 def test_update_information(single_encryption, folder_user):
     folder, user = folder_user
     folder.update_information(name="New Name")
@@ -238,3 +233,69 @@ def test_get_encryption_key(folder_user):
     another_folder.set_parent(folder, user)
     folder.grant_access(another_user, user)
     another_folder.get_encryption_key(requestor=another_user)
+
+
+def test_folder_move(folder_user):
+    folder_1, user = folder_user
+    folder_2 = Folder.create("Child")
+    folder_2.grant_access(user)
+    folder_2.set_parent(folder_1, user)
+    folder_3 = Folder.create("Parent")
+    folder_3.grant_access(user)
+    folder_2.move(folder_3, user)
+    assert folder_2.parent == folder_3
+
+
+def test_folder_move_and_access():
+    folder_1 = Folder.create("1")
+    user_1 = UserObject()
+    folder_2 = Folder.create("2")
+    user_2 = UserObject()
+    folder_3 = Folder.create("3")
+    #
+    folder_1.grant_access(user_1)
+    folder_2.set_parent(folder_1, user_1)
+    folder_3.grant_access(user_1)
+    folder_3.grant_access(user_2, user_1)
+    assert not folder_2.has_access(user_2)
+    folder_2.move(folder_3, user_1)
+    assert folder_2.has_access(user_2)
+
+
+def test_folder_move_errors():
+    folder_1 = Folder.create("1")
+    user_1 = UserObject()
+    folder_2 = Folder.create("2")
+    user_2 = UserObject()
+    folder_3 = Folder.create("3")
+    user_3 = UserObject()
+    #
+    folder_1.grant_access(user_1)
+    folder_2.set_parent(folder_1, user_1)
+    folder_3.grant_access(user_2)
+    with pytest.raises(DomainError):
+        folder_2.move(folder_3, user_1)
+    with pytest.raises(DomainError):
+        folder_2.move(folder_3, user_1)
+    with pytest.raises(DomainError):
+        folder_2.move(folder_3, user_3)
+
+
+def test_folder_init_without_keys():
+    user = UserObject()
+    folder_1 = Folder.create("1")
+    folder_2 = Folder.create("2")
+    with pytest.raises(AssertionError):
+        folder_2.set_parent(folder_1, user)
+
+
+def test_folder_move_inside_child_error():
+    user = UserObject()
+    folder_1 = Folder.create("1")
+    folder_1.grant_access(user)
+    folder_2 = Folder.create("2")
+    folder_2.set_parent(folder_1, user)
+    folder_3 = Folder.create("3")
+    folder_3.set_parent(folder_2, user)
+    with pytest.raises(DomainError):
+        folder_1.move(folder_3, user)
