@@ -309,7 +309,7 @@ class Folder:
 
         parent = target.parent
         while parent is not None:
-            if parent == self:
+            if parent.uuid == self.uuid:
                 raise DomainError("A folder can not be moved to one of its descendants.")
             parent = parent.parent
 
