@@ -5,7 +5,6 @@ from typing import Optional
 from pydantic import BaseModel
 
 from core.seedwork.api_layer import format_datetime, make_datetime_aware
-from core.auth.models import RlcUser
 
 
 class OutputRlc(BaseModel):
@@ -52,14 +51,9 @@ class InputEventUpdate(BaseModel):
     description: Optional[str]
     start_time: Optional[datetime]
     end_time: Optional[datetime]
-    attendance: Optional[bool]
-    rlc_user: Optional[RlcUser]
 
     _ = make_datetime_aware("start_time")
     __ = make_datetime_aware("end_time")
-
-    class Config:
-        arbitrary_types_allowed = True  # Needed to allow for RlcUser in Schema
 
 
 class InputEventDelete(BaseModel):
@@ -70,3 +64,13 @@ class CalendarUuidUser(BaseModel):
     id: int
     calendar_uuid: uuid.UUID
     calendar_url: str
+
+
+class InputAttendanceUpdate(BaseModel):
+    event_id: int
+    attendance: int
+
+
+class OutputAttendanceResponse(BaseModel):  # TODO: Not sure if correct
+    event_id: int
+    attendance: int
