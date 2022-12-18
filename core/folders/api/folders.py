@@ -48,7 +48,7 @@ def command__move_folder(data: schemas.InputFolderMove, rlc_user: RlcUser):
 
 
 @router.post(
-    url="<uuid:folder>/move/", input_schema=schemas.InputFolderToggleInheritance
+    url="<uuid:folder>/toggle_inheritance/", input_schema=schemas.InputFolderToggleInheritance
 )
 def command__toggle_inheritance_of_folder(
     data: schemas.InputFolderToggleInheritance, rlc_user: RlcUser
