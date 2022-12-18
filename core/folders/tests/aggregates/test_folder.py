@@ -82,11 +82,6 @@ def test_encryption_version(single_encryption):
         assert folder.encryption_version
 
 
-def test_move(single_encryption, folder_user):
-    folder, user = folder_user
-    folder.move(None)
-
-
 def test_update_information(single_encryption, folder_user):
     folder, user = folder_user
     folder.update_information(name="New Name")
