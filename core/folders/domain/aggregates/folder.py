@@ -310,7 +310,9 @@ class Folder:
         parent = target.parent
         while parent is not None:
             if parent.uuid == self.uuid:
-                raise DomainError("A folder can not be moved to one of its descendants.")
+                raise DomainError(
+                    "A folder can not be moved to one of its descendants."
+                )
             parent = parent.parent
 
         self.__keys = [k for k in self.__keys if isinstance(k, FolderKey)]
