@@ -284,3 +284,23 @@ def test_folder_move_errors():
         folder_2.move(folder_3, user_1)
     with pytest.raises(DomainError):
         folder_2.move(folder_3, user_3)
+
+
+def test_folder_init_without_keys():
+    user = UserObject()
+    folder_1 = Folder.create("1")
+    folder_2 = Folder.create("2")
+    with pytest.raises(AssertionError):
+        folder_2.set_parent(folder_1, user)
+
+
+def test_folder_move_inside_child_error():
+    user = UserObject()
+    folder_1 = Folder.create("1")
+    folder_1.grant_access(user)
+    folder_2 = Folder.create("2")
+    folder_2.set_parent(folder_1, user)
+    folder_3 = Folder.create("3")
+    folder_3.set_parent(folder_2, user)
+    with pytest.raises(DomainError):
+        folder_1.move(folder_3, user)

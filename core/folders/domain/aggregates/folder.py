@@ -307,6 +307,12 @@ class Folder:
         if not target.has_access(by):
             raise DomainError("You have no access to the target folder.")
 
+        parent = target.parent
+        while parent is not None:
+            if parent == self:
+                raise DomainError("A folder can not be moved to one of its descendants.")
+            parent = parent.parent
+
         self.__keys = [k for k in self.__keys if isinstance(k, FolderKey)]
         self.__parent = None
         self.set_parent(target, by)
