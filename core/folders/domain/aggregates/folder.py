@@ -294,6 +294,12 @@ class Folder:
 
         self.__set_parent(parent, by)
 
+    def allow_inheritance(self):
+        self.__stop_inherit = False
+
+    def stop_inheritance(self):
+        self.__stop_inherit = True
+
     def move(self, target: "Folder", by: IOwner):
         if not self.has_access(by):
             raise DomainError("You have no access to this folder.")

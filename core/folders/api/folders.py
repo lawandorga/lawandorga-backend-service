@@ -5,8 +5,10 @@ from core.folders.use_cases.folder import (
     create_folder,
     delete_folder,
     grant_access,
+    move_folder,
     rename_folder,
     revoke_access,
+    toggle_inheritance,
 )
 from core.seedwork.api_layer import Router
 
@@ -38,6 +40,20 @@ def command__revoke_access_from_folder(
 @router.delete(url="<uuid:id>/", input_schema=schemas.InputFolderDelete)
 def command__delete_folder(data: schemas.InputFolderDelete, rlc_user: RlcUser):
     delete_folder(rlc_user, data.id)
+
+
+@router.post(url="<uuid:folder>/move/", input_schema=schemas.InputFolderMove)
+def command__move_folder(data: schemas.InputFolderMove, rlc_user: RlcUser):
+    move_folder(rlc_user, data.folder, data.target)
+
+
+@router.post(
+    url="<uuid:folder>/move/", input_schema=schemas.InputFolderToggleInheritance
+)
+def command__toggle_inheritance_of_folder(
+    data: schemas.InputFolderToggleInheritance, rlc_user: RlcUser
+):
+    toggle_inheritance(rlc_user, data.folder)
 
 
 @router.post(url="optimize/")
