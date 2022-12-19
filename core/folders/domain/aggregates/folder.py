@@ -162,11 +162,7 @@ class Folder:
             return False
         return self.__parent._has_keys(owner)
 
-    def add_item(self, item: Union[Item, FolderItem]):
-        for i in self.__items:
-            if i.uuid == item.uuid:
-                raise ValueError("This folder already contains this item.")
-
+    def __add_item(self, item: Union[Item, FolderItem]):
         if isinstance(item, FolderItem):
             folder_item = item
         else:
@@ -175,7 +171,18 @@ class Folder:
 
         self.__items.append(folder_item)
 
-    def remove_item(self, item: Item):
+    def add_item(self, item: Union[Item, FolderItem]):
+        for i in self.__items:
+            if i.uuid == item.uuid:
+                raise ValueError("This folder already contains this item.")
+
+        self.__add_item(item)
+
+    def update_item(self, item: Union[Item, FolderItem]):
+        self.remove_item(item)
+        self.__add_item(item)
+
+    def remove_item(self, item: Union[Item, FolderItem]):
         new_items_1 = filter(lambda x: x.uuid != item.uuid, self.__items)
         new_items_2 = list(new_items_1)
         self.__items = new_items_2

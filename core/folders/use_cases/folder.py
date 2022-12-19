@@ -4,6 +4,7 @@ from uuid import UUID
 from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositiories.item import ItemRepository
 from core.folders.use_cases.finders import folder_from_uuid, rlc_user_from_slug
 from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.use_case_layer import UseCaseError, find, use_case
@@ -101,6 +102,19 @@ def toggle_inheritance(__actor: RlcUser, folder=find(folder_from_uuid)):
     else:
         folder.stop_inheritance()
     r = get_repository()
+    r.save(folder)
+
+
+@use_case(event_handler=True)
+def item_name_changed(event: Event):
+    org_pk = event.data["org_pk"]
+    item_repository = cast(
+        ItemRepository, RepositoryWarehouse.get(event.data["repository"])
+    )
+    item = item_repository.retrieve(uuid=UUID(event.data["uuid"]), org_pk=org_pk)
+    r = get_repository()
+    folder = r.retrieve(org_pk=org_pk, uuid=UUID(event.data["folder_uuid"]))
+    folder.update_item(item)
     r.save(folder)
 
 

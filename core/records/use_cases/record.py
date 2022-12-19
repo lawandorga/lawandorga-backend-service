@@ -7,13 +7,19 @@ from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.use_cases.finders import folder_from_uuid
 from core.records.models import Record, RecordTemplate
-from core.records.use_cases.finders import template_from_id
+from core.records.use_cases.finders import record_from_id, template_from_id
 from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.use_case_layer import UseCaseError, find, use_case
 from core.static import (
     PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
     PERMISSION_RECORDS_ADD_RECORD,
 )
+
+
+@use_case
+def change_record_name(__actor: RlcUser, name: str, record=find(record_from_id)):
+    record.set_name(name)
+    record.save()
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
@@ -56,7 +62,7 @@ def __create(__actor: RlcUser, folder: Folder, template: RecordTemplate) -> int:
         ) and not folder.has_access(user):
             folder.grant_access(user, __actor)
 
-    record = Record(template=template)
+    record = Record(template=template, name=folder.name)
 
     r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
 

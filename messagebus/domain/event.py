@@ -1,6 +1,6 @@
 from typing import Union
 
-JsonDict = dict[str, Union[str, bool, "JsonDict"]]
+JsonDict = dict[str, Union[str, bool, int, "JsonDict"]]
 
 
 class Event:

@@ -18,6 +18,11 @@ class InputRecordCreate(BaseModel):
     folder: Optional[UUID]
 
 
+class InputRecordChangeName(BaseModel):
+    id: int
+    name: str
+
+
 class OutputRecordCreate(BaseModel):
     id: int
 

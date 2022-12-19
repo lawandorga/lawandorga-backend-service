@@ -18,7 +18,7 @@ class Item:
         assert folder.uuid == self.folder_uuid
 
     @abc.abstractmethod
-    def set_name(self, name: str):
+    def set_name(self, name: str, org_pk: int):
         """
         this method needs to set the name of an item and somehow inform the folder about the name change.
         no other method should be allowed to set the name of an item.
