@@ -61,7 +61,7 @@ def grant_access(
     __actor: RlcUser, to=find(rlc_user_from_slug), folder=find(folder_from_uuid)
 ):
     if not folder.has_access(__actor):
-        raise ApiError('You need access to this folder in order to do that.')
+        raise ApiError("You need access to this folder in order to do that.")
 
     r = get_repository()
     folder.grant_access(to=to, by=__actor)
@@ -73,7 +73,7 @@ def revoke_access(
     __actor: RlcUser, of=find(rlc_user_from_slug), folder=find(folder_from_uuid)
 ):
     if not folder.has_access(__actor):
-        raise ApiError('You need access to this folder in order to do that.')
+        raise ApiError("You need access to this folder in order to do that.")
 
     r = get_repository()
     folder.revoke_access(of=of)
@@ -105,7 +105,7 @@ def move_folder(
 @use_case
 def toggle_inheritance(__actor: RlcUser, folder=find(folder_from_uuid)):
     if not folder.has_access(__actor):
-        raise ApiError('You need access to this folder in order to do that.')
+        raise ApiError("You need access to this folder in order to do that.")
 
     if folder.stop_inherit:
         folder.allow_inheritance()
