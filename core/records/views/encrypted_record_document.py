@@ -2,7 +2,6 @@ import mimetypes
 
 from django.http import FileResponse
 from rest_framework import viewsets
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 
 from core.auth.models import RlcUser
@@ -34,10 +33,6 @@ class EncryptedRecordDocumentViewSet(viewsets.ModelViewSet):
 
         # mypy fix
         rlc_user: RlcUser = request.user.rlc_user  # type: ignore
-
-        # check permission
-        if not instance.record.encryptions.filter(user=rlc_user).exists():
-            raise PermissionDenied()
 
         # download the file
         user: UserProfile = request.user  # type: ignore

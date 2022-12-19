@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.db import models
 
 from core.auth.models import RlcUser
@@ -35,32 +33,10 @@ class EncryptedRecordMessage(EncryptedModelMixin, models.Model):
     def __str__(self):
         return "recordMessage: {}; record: {};".format(self.pk, self.record.pk)
 
-    def encrypt(
-        self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None
-    ):
-        if user and private_key_user:
-            record_encryption = self.record.encryptions.get(user=user)
-            record_encryption.decrypt(private_key_user)
-            key = record_encryption.key
-        elif aes_key_record:
-            key = aes_key_record
-        else:
-            raise ValueError(
-                "You have to set (user and private_key_user) or (aes_key_record)."
-            )
+    def encrypt(self, user: RlcUser, private_key_user=None, aes_key_record=None):
+        key = self.record.get_aes_key(user)
         super().encrypt(key)
 
-    def decrypt(
-        self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None
-    ):
-        if user and private_key_user:
-            record_encryption = self.record.encryptions.get(user=user)
-            record_encryption.decrypt(private_key_user)
-            key = record_encryption.key
-        elif aes_key_record:
-            key = aes_key_record
-        else:
-            raise ValueError(
-                "You have to set (user and private_key_user) or (aes_key)."
-            )
+    def decrypt(self, user: RlcUser, private_key_user=None, aes_key_record=None):
+        key = self.record.get_aes_key(user)
         super().decrypt(key)
