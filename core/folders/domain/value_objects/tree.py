@@ -13,7 +13,7 @@ class Access:
 
         self.access = self.get_owners_with_access(folder)
 
-    def get_owners_with_access(self, folder: Folder):
+    def get_owners_with_access(self, folder: Folder, source="direct"):
         access = []
         for key in folder.keys:
             if isinstance(key, FolderKey):
@@ -22,16 +22,24 @@ class Access:
                         "name": str(key.owner.name),
                         "uuid": str(key.owner.uuid),
                         "is_valid": key.is_valid,
+                        "source": source,
+                        "actions": self.get_actions(folder, key, source),
                     }
                 )
                 continue
             if isinstance(key, ParentKey):
                 if not folder.stop_inherit:
                     f = self.__folders_dict[folder.parent_uuid]
-                    access += self.get_owners_with_access(f)
+                    access += self.get_owners_with_access(f, "parent")
                 continue
-            access.append({"name": "Unknown", "uuid": "-"})
+            raise ValueError("Unknown type of key.")
         return access
+
+    def get_actions(self, folder, key, source):
+        if source == "direct":
+            url = "/api/records/records/v2/{}/revoke_access".format(folder.uuid)
+            return {"REVOKE_ACCESS": {"url": url, "user_uuid": key.owner.uuid}}
+        return {}
 
     def as_dict(self) -> list[StrDict]:
         return self.access

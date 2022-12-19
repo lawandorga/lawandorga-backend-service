@@ -50,7 +50,11 @@ class Folder:
         return "Folder {}".format(self.name)
 
     def as_dict(self) -> StrDict:
-        return {"name": self.__name, "id": str(self.__uuid)}
+        return {
+            "name": self.__name,
+            "id": str(self.__uuid),
+            "stop_inherit": self.stop_inherit,
+        }
 
     @property
     def org_pk(self):
