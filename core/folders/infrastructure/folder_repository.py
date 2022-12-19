@@ -171,6 +171,8 @@ class DjangoFolderRepository(FolderRepository):
 
     @classmethod
     def retrieve(cls, org_pk: int, uuid: UUID) -> Folder:
+        assert isinstance(uuid, UUID)
+
         folders = cls.get_dict(org_pk)
         if uuid in folders:
             return folders[uuid]

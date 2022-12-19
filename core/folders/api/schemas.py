@@ -54,9 +54,20 @@ class OutputAvailableFolder(BaseModel):
 class OutputFolder(BaseModel):
     name: str
     id: str
+    stop_inherit: bool
 
 
 class OutputAccess(BaseModel):
+    name: str
+    uuid: Optional[UUID]
+    source: str
+    actions: dict[str, dict] = {}
+
+    class Config:
+        orm_mode = True
+
+
+class OutputPerson(BaseModel):
     name: str
     uuid: Optional[UUID]
 
@@ -73,7 +84,7 @@ class OutputFolderTreeNode(BaseModel):
 
 class OutputFolderPage(BaseModel):
     tree: list[OutputFolderTreeNode]
-    available_persons: list[OutputAccess]
+    available_persons: list[OutputPerson]
 
     _ = qs_to_list("available_persons")
 

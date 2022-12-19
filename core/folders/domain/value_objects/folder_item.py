@@ -38,6 +38,8 @@ class FolderItem:
     def __init__(
         self, name: str, uuid: UUID, repository: str, actions: dict[str, dict[str, str]]
     ):
+        assert isinstance(uuid, UUID)
+
         self.name = name
         self.uuid = uuid
         self.repository = repository
@@ -50,3 +52,8 @@ class FolderItem:
             "name": self.name,
             "actions": self.actions,  # type: ignore
         }
+
+    def __repr__(self):
+        return "FolderItem('{}', UUID('{}'), '{}', {})".format(
+            self.name, self.uuid, self.repository, self.actions
+        )

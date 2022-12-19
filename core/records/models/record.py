@@ -60,7 +60,6 @@ class DjangoRecordRepository(ItemRepository):
     #     )
     #     records_2 = {r.uuid: r for r in records_1}
     #
-    #     print("setattr")
     #     setattr(
     #         cls,
     #         records_cache_time_key,
@@ -72,6 +71,7 @@ class DjangoRecordRepository(ItemRepository):
 
     @classmethod
     def retrieve(cls, uuid: UUID, org_pk: Optional[int] = None) -> "Record":
+        assert isinstance(uuid, UUID)
         # if org_pk:
         #     records = cls.__get_records(org_pk)
         #     if uuid in records:
@@ -155,7 +155,8 @@ class Record(DjangoItem, models.Model):
             "deletions",
         ]
 
-    def set_name(self, name: str):
+    def set_name(self, name: str, org_pk=None):
+        super().set_name(name, self.template.rlc_id)
         self.name = name
 
     def grant_access(self, to: RlcUser, by: Optional[RlcUser]):
