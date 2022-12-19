@@ -37,7 +37,7 @@ class Access:
 
     def get_actions(self, folder, key, source):
         if source == "direct":
-            url = "/api/records/records/v2/{}/revoke_access".format(folder.uuid)
+            url = "/folders/folders/{}/revoke_access/".format(folder.uuid)
             return {"REVOKE_ACCESS": {"url": url, "user_uuid": key.owner.uuid}}
         return {}
 
