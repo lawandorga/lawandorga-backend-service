@@ -1,21 +1,27 @@
 import re
 import unicodedata
+from typing import Optional, cast
 
 from django.core.files.storage import default_storage
 from django.db import models
 
+from core.folders.domain.aggregates.folder import Folder
+from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.infrastructure.django_item import DjangoItem
 from core.records.models.record import Record
+from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_file
 from core.seedwork.storage_folders import get_storage_folder_encrypted_record_document
 
 
-class EncryptedRecordDocument(models.Model):
+class EncryptedRecordDocument(DjangoItem, models.Model):
     name = models.CharField(max_length=200)
     record = models.ForeignKey(
         Record, related_name="documents", on_delete=models.CASCADE, null=True
     )
-    created_on = models.DateTimeField(auto_now_add=True)
-    last_edited = models.DateTimeField(auto_now_add=True)
+    folder_uuid = models.UUIDField(db_index=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
     file_size = models.BigIntegerField(null=True)
     key = models.SlugField(null=True, allow_unicode=True, max_length=1000, unique=True)
     exists = models.BooleanField(default=True)
@@ -28,6 +34,19 @@ class EncryptedRecordDocument(models.Model):
         return "recordDocument: {}; name: {}; record: {};".format(
             self.pk, self.name, self.record.id
         )
+
+    @property
+    def folder(self) -> Optional[Folder]:
+        if self.folder_uuid is None:
+            return None
+        if not hasattr(self, "_folder"):
+            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+            self._folder = r.retrieve(self.record.template.rlc_id, self.folder_uuid)
+        return self._folder
+
+    @property
+    def actions(self):
+        return {}
 
     def save(self, *args, **kwargs):
         if self.pk is None:

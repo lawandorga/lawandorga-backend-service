@@ -7,6 +7,7 @@ from core import static
 from core.auth.domain.user_key import UserKey
 from core.collab.models import CollabPermission
 from core.files.models import FolderPermission
+from core.files_new.models.encrypted_record_document import EncryptedRecordDocument
 from core.fixtures import (
     create_collab_permissions,
     create_folder_permissions,
@@ -43,7 +44,6 @@ from core.records.models import (
     RecordUsersEntry,
     RecordUsersField,
 )
-from core.records.models.encrypted_record_document import EncryptedRecordDocument
 from core.rlc.models import Org
 from core.seedwork.encryption import AESEncryption
 

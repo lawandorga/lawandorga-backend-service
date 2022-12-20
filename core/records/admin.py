@@ -2,7 +2,6 @@ from django.contrib import admin
 
 from core.records.models import (
     EncryptedClient,
-    EncryptedRecordDocument,
     EncryptedRecordMessage,
     PoolConsultant,
     PoolRecord,
@@ -35,7 +34,6 @@ from core.records.models import (
 )
 
 admin.site.register(EncryptedClient)
-admin.site.register(EncryptedRecordDocument)
 admin.site.register(EncryptedRecordMessage)
 admin.site.register(RecordAccess)
 admin.site.register(RecordDeletion)

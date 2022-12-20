@@ -12,6 +12,7 @@ from core.mail.urls import urlpatterns as mail_urlpatterns
 from core.records.urls import urlpatterns as records_urlpatterns
 from core.rlc.urls import urlpatterns as org_urlpatterns
 from core.statistics.urls import urlpatterns as statistics_urlpatterns
+from core.files_new.urls import urlpatterns as files_new_urlpatterns
 
 urlpatterns = [
     path("api/mail/", include(mail_urlpatterns)),
@@ -25,5 +26,6 @@ urlpatterns = [
     path("api/", include(internal_router.urls)),
     path("api/collab/", include(collab_router.urls)),
     path("api/files/", include(files_router.urls)),
+    path("api/files/v2/", include(files_new_urlpatterns)),
     path("api/records/", include(records_urlpatterns)),
 ]

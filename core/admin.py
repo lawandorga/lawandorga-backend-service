@@ -2,6 +2,7 @@ from .auth.admin import *
 from .collab.admin import *
 from .events.admin import *
 from .files.admin import *
+from .files_new.admin import *
 from .internal.admin import *
 from .legal.admin import *
 from .mail.admin import *

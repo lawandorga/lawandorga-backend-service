@@ -41,41 +41,9 @@ from core.seedwork.repository import RepositoryWarehouse
 class DjangoRecordRepository(ItemRepository):
     IDENTIFIER = "RECORD"
 
-    # @classmethod
-    # def __get_records(cls, org_pk: Optional[int] = None):
-    #     records_cache_key = "records-key-of-{}".format(org_pk)
-    #     records_cache_time_key = "records-time-key-of-{}".format(org_pk)
-    #
-    #     if hasattr(cls, records_cache_key) and hasattr(cls, records_cache_time_key):
-    #         if timezone.now() < getattr(cls, records_cache_time_key):
-    #             return getattr(cls, records_cache_key)
-    #         else:
-    #             delattr(cls, records_cache_time_key)
-    #             delattr(cls, records_cache_key)
-    #
-    #     records_1 = list(
-    #         Record.objects.select_related("template").prefetch_related(
-    #             "standard_entries"
-    #         )
-    #     )
-    #     records_2 = {r.uuid: r for r in records_1}
-    #
-    #     setattr(
-    #         cls,
-    #         records_cache_time_key,
-    #         timezone.now() + timedelta(seconds=20),
-    #     )
-    #     setattr(cls, records_cache_key, records_2)
-    #
-    #     return records_2
-
     @classmethod
     def retrieve(cls, uuid: UUID, org_pk: Optional[int] = None) -> "Record":
         assert isinstance(uuid, UUID)
-        # if org_pk:
-        #     records = cls.__get_records(org_pk)
-        #     if uuid in records:
-        #         return records[uuid]
         return Record.objects.get(uuid=uuid)
 
 
@@ -106,6 +74,15 @@ class Record(DjangoItem, models.Model):
 
     def __str__(self):
         return "record: {}; rlc: {};".format(self.pk, self.template.rlc.name)
+
+    @property
+    def folder(self) -> Optional[Folder]:
+        if self.folder_uuid is None:
+            return None
+        if not hasattr(self, "_folder"):
+            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+            self._folder = r.retrieve(self.template.rlc_id, self.folder_uuid)
+        return self._folder
 
     @property
     def actions(self):
@@ -188,15 +165,6 @@ class Record(DjangoItem, models.Model):
     def set_folder(self, folder: "Folder"):
         super().set_folder(folder)
         self._folder = folder
-
-    @property
-    def folder(self) -> Optional[Folder]:
-        if self.folder_uuid is None:
-            return None
-        if not hasattr(self, "_folder"):
-            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-            self._folder = r.retrieve(self.template.rlc_id, self.folder_uuid)
-        return self._folder
 
     def get_aes_key(self, user: RlcUser, *args, **kwargs):
         if self.folder is None:

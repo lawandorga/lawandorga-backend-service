@@ -7,7 +7,7 @@ from typing import Any, Awaitable, Callable, Dict, List, Literal, Optional, Type
 import pytz
 from asgiref.sync import sync_to_async
 from django.contrib.auth.models import AnonymousUser
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, JsonResponse, RawPostDataException
 from django.urls import path
 from django.utils.timezone import localtime, make_aware
 from pydantic import BaseModel, ValidationError, create_model, validator
@@ -49,9 +49,15 @@ def make_datetime_aware(x):
 
 
 class ApiError(Exception):
-    def __init__(self, message, status=400):
-        self.message = message
-        self.status = status
+    def __init__(self, message, status=None):
+        if isinstance(message, dict):
+            self.param_errors = message
+            self.message = 'An input error happened.'
+            self.status = status if status else 422
+        else:
+            self.param_errors = {}
+            self.message = message
+            self.status = status if status else 400
 
 
 class RFC7807(BaseModel):
@@ -87,17 +93,18 @@ def _validation_error_handler(validation_error: ValidationError) -> RFC7807:
 def _validate(request: HttpRequest, schema: Type[BaseModel]) -> BaseModel:
     data: Dict[str, Any] = {}
     # query params
-    data.update(request.GET)
+    data.update(request.GET.dict())
+    data.update(request.FILES.dict())
     # request resolver
     if request.resolver_match is not None:
         data.update(request.resolver_match.kwargs)
     # body
-    body_str = request.body.decode("utf-8")
     try:
+        body_str = request.body.decode("utf-8")
         body_dict = json.loads(body_str)
         data.update(body_dict)
-    except JSONDecodeError:
-        pass
+    except (JSONDecodeError, RawPostDataException):
+        data.update(request.POST.dict())
     # validate
     return schema(root=data)
 
@@ -109,6 +116,7 @@ def _catch_error(func: Callable[..., Awaitable[JsonResponse]]):
 
         except ApiError as e:
             return ErrorResponse(
+                param_errors=e.param_errors,
                 title=e.message,
                 status=e.status,
                 err_type="ApiError",

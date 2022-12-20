@@ -5,8 +5,8 @@ from rest_framework import viewsets
 from rest_framework.request import Request
 
 from core.auth.models import RlcUser
+from core.files_new.models.file import EncryptedRecordDocument
 from core.models import UserProfile
-from core.records.models.encrypted_record_document import EncryptedRecordDocument
 from core.records.serializers import (
     RecordDocumentCreateSerializer,
     RecordDocumentSerializer,

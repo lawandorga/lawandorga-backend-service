@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from core.records.models.encrypted_record_document import EncryptedRecordDocument
+from core.files_new.models.file import EncryptedRecordDocument
 
 
 class RecordDocumentSerializer(serializers.ModelSerializer):
