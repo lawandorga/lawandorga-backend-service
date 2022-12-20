@@ -38,12 +38,13 @@ def create_a_record_and_a_folder(
     folder.grant_access(__actor)
     folder.set_parent(parent_folder, __actor)
 
-    return __create(__actor, folder, template)
+    return __create(__actor, name, folder, template)
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
 def create_a_record_within_a_folder(
     __actor: RlcUser,
+    name: str,
     folder=find(folder_from_uuid),
     template=find(template_from_id),
 ):
@@ -52,17 +53,17 @@ def create_a_record_within_a_folder(
             "You can not create a record in this folder, because you have no access to this folder."
         )
 
-    return __create(__actor, folder, template)
+    return __create(__actor, name, folder, template)
 
 
-def __create(__actor: RlcUser, folder: Folder, template: RecordTemplate) -> int:
+def __create(__actor: RlcUser, name: str, folder: Folder, template: RecordTemplate) -> int:
     for user in list(__actor.org.users.all()):
         if user.has_permission(
             PERMISSION_RECORDS_ACCESS_ALL_RECORDS
         ) and not folder.has_access(user):
             folder.grant_access(user, __actor)
 
-    record = Record(template=template, name=folder.name)
+    record = Record(template=template, name=name)
 
     r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
 

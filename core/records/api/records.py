@@ -8,7 +8,7 @@ from core.records.use_cases.access_delivery import (
 )
 from core.records.use_cases.record import (
     change_record_name,
-    create_a_record_and_a_folder,
+    create_a_record_and_a_folder, create_a_record_within_a_folder,
 )
 from core.seedwork.api_layer import Router
 from core.seedwork.repository import RepositoryWarehouse
@@ -26,6 +26,17 @@ def command__create_record(rlc_user: RlcUser, data: schemas.InputRecordCreate):
     folder = folder_repository.get_or_create_records_folder(rlc_user.org_id, rlc_user)
     record_pk = create_a_record_and_a_folder(
         rlc_user, data.name, parent_folder=folder.uuid, template=data.template
+    )
+    return {"id": record_pk}
+
+
+@router.post(
+    url='within_folder/',
+    input_schema=schemas.InputRecordCreate, output_schema=schemas.OutputRecordCreate
+)
+def command__create_record_within_folder(rlc_user: RlcUser, data: schemas.InputRecordCreate):
+    record_pk = create_a_record_within_a_folder(
+        rlc_user, data.name, folder=data.folder, template=data.template
     )
     return {"id": record_pk}
 

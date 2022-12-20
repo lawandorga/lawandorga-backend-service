@@ -25,6 +25,7 @@ class FoldersFolder(models.Model):
     class Meta:
         verbose_name = "FoldersFolder"
         verbose_name_plural = "FoldersFolders"
+        ordering = ['name']
 
     def __str__(self):
         return "foldersFolder: {};".format(self.pk)
