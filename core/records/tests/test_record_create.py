@@ -14,7 +14,10 @@ from core.static import (
 def test_create_within_folder(user, record_template, folder):
     user["rlc_user"].grant(PERMISSION_RECORDS_ADD_RECORD)
     create_a_record_within_a_folder(
-        user["rlc_user"], folder=folder.uuid, template=record_template["template"].pk
+        user["rlc_user"],
+        "record123",
+        folder=folder.uuid,
+        template=record_template["template"].pk,
     )
 
 
@@ -32,6 +35,7 @@ def test_create_no_permission(user, record_template, folder):
     with pytest.raises(UseCaseError):
         create_a_record_within_a_folder(
             user["rlc_user"],
+            "record123",
             folder=folder.uuid,
             template=record_template["template"].pk,
         )
@@ -40,10 +44,16 @@ def test_create_no_permission(user, record_template, folder):
 def test_records_are_added_to_folder(user, record_template, folder, folder_repo):
     user["rlc_user"].grant(PERMISSION_RECORDS_ADD_RECORD)
     create_a_record_within_a_folder(
-        user["rlc_user"], folder=folder.uuid, template=record_template["template"].pk
+        user["rlc_user"],
+        "record123",
+        folder=folder.uuid,
+        template=record_template["template"].pk,
     )
     create_a_record_within_a_folder(
-        user["rlc_user"], folder=folder.uuid, template=record_template["template"].pk
+        user["rlc_user"],
+        "record123",
+        folder=folder.uuid,
+        template=record_template["template"].pk,
     )
     f = folder_repo.retrieve(folder.org_pk, folder.uuid)
     assert 2 == len(f.items)
@@ -55,6 +65,7 @@ def test_no_access_to_folder(user, record_template, folder, another_user):
     with pytest.raises(UseCaseError):
         create_a_record_within_a_folder(
             another_user["rlc_user"],
+            "record123",
             folder=folder.uuid,
             template=record_template["template"].pk,
         )
@@ -66,7 +77,10 @@ def test_grant_to_users_with_general_permission(
     user["rlc_user"].grant(PERMISSION_RECORDS_ADD_RECORD)
     another_user["rlc_user"].grant(PERMISSION_RECORDS_ACCESS_ALL_RECORDS)
     create_a_record_within_a_folder(
-        user["rlc_user"], folder=folder.uuid, template=record_template["template"].pk
+        user["rlc_user"],
+        "record123",
+        folder=folder.uuid,
+        template=record_template["template"].pk,
     )
     assert folder_repo.retrieve(folder.org_pk, folder.uuid).has_access(
         another_user["rlc_user"]
