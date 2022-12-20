@@ -56,7 +56,9 @@ def create_a_record_within_a_folder(
     return __create(__actor, name, folder, template)
 
 
-def __create(__actor: RlcUser, name: str, folder: Folder, template: RecordTemplate) -> int:
+def __create(
+    __actor: RlcUser, name: str, folder: Folder, template: RecordTemplate
+) -> int:
     for user in list(__actor.org.users.all()):
         if user.has_permission(
             PERMISSION_RECORDS_ACCESS_ALL_RECORDS
