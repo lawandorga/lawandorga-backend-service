@@ -7,7 +7,7 @@ from typing import Any, Awaitable, Callable, Dict, List, Literal, Optional, Type
 import pytz
 from asgiref.sync import sync_to_async
 from django.contrib.auth.models import AnonymousUser
-from django.http import HttpRequest, JsonResponse, RawPostDataException
+from django.http import HttpRequest, JsonResponse, RawPostDataException, HttpResponseBase
 from django.urls import path
 from django.utils.timezone import localtime, make_aware
 from pydantic import BaseModel, ValidationError, create_model, validator
@@ -52,7 +52,7 @@ class ApiError(Exception):
     def __init__(self, message, status=None):
         if isinstance(message, dict):
             self.param_errors = message
-            self.message = 'An input error happened.'
+            self.message = "An input error happened."
             self.status = status if status else 422
         else:
             self.param_errors = {}
@@ -340,7 +340,9 @@ class Router:
             result: Any = await async_func(**func_kwargs)
 
             # validate the output
-            if output_schema:
+            if issubclass(output_schema, HttpResponseBase) and isinstance(result, HttpResponseBase):
+                return result
+            elif output_schema:
                 model = create_model(
                     "Output",
                     root=(output_schema, ...),

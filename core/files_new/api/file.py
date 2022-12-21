@@ -1,7 +1,9 @@
 from django.core.files.uploadedfile import InMemoryUploadedFile
+
 from core.auth.models import RlcUser
 from core.files_new.use_cases.file import upload_a_file
-from core.seedwork.api_layer import Router, ApiError
+from core.seedwork.api_layer import ApiError, Router
+
 from . import schemas
 
 router = Router()

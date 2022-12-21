@@ -5,6 +5,7 @@ from core.collab.urls import router as collab_router
 from core.cronjobs import router as cronjobs_router
 from core.events.urls import urlpatterns as events_urlpatterns
 from core.files.urls import router as files_router
+from core.files_new.urls import urlpatterns as files_new_urlpatterns
 from core.folders.urls import urlpatterns as folders_urlpatterns
 from core.internal.urls import router as internal_router
 from core.legal.urls import urlpatterns as legal_urlpatterns
@@ -12,7 +13,6 @@ from core.mail.urls import urlpatterns as mail_urlpatterns
 from core.records.urls import urlpatterns as records_urlpatterns
 from core.rlc.urls import urlpatterns as org_urlpatterns
 from core.statistics.urls import urlpatterns as statistics_urlpatterns
-from core.files_new.urls import urlpatterns as files_new_urlpatterns
 
 urlpatterns = [
     path("api/mail/", include(mail_urlpatterns)),

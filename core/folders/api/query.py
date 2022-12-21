@@ -36,4 +36,8 @@ def query__detail_folder(rlc_user: RlcUser, data: schemas.InputFolderDetail):
     folders_dict = r.get_dict(rlc_user.org_id)
     access = Access(folders_dict, folder)
 
-    return {"folder": folder.as_dict(), "access": access.as_dict()}
+    return {
+        "folder": folder.as_dict(),
+        "content": folder.items,
+        "access": access.as_dict(),
+    }

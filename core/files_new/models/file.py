@@ -1,24 +1,44 @@
 import re
 import unicodedata
 from typing import Optional, cast
+from uuid import UUID, uuid4
 
 from django.core.files.storage import default_storage
 from django.db import models
 
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositiories.item import ItemRepository
 from core.folders.infrastructure.django_item import DjangoItem
 from core.records.models.record import Record
+from core.rlc.models import Org
 from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_file
 from core.seedwork.storage_folders import get_storage_folder_encrypted_record_document
 
 
+class DjangoFileRepository(ItemRepository):
+    IDENTIFIER = "FILE"
+
+    @classmethod
+    def retrieve(
+        cls, uuid: UUID, org_pk: Optional[int] = None
+    ) -> "EncryptedRecordDocument":
+        assert isinstance(uuid, UUID)
+        return EncryptedRecordDocument.objects.get(uuid=uuid)
+
+
 class EncryptedRecordDocument(DjangoItem, models.Model):
+    REPOSITORY = "FILE"
+
     name = models.CharField(max_length=200)
     record = models.ForeignKey(
         Record, related_name="documents", on_delete=models.CASCADE, null=True
     )
+    org = models.ForeignKey(
+        Org, related_name="files", on_delete=models.CASCADE, null=True
+    )
+    uuid = models.UUIDField(db_index=True, null=True, default=uuid4)
     folder_uuid = models.UUIDField(db_index=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -37,16 +57,22 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
 
     @property
     def folder(self) -> Optional[Folder]:
+        assert self.org_id is not None
         if self.folder_uuid is None:
             return None
         if not hasattr(self, "_folder"):
             r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-            self._folder = r.retrieve(self.record.template.rlc_id, self.folder_uuid)
+            self._folder = r.retrieve(self.org_id, self.folder_uuid)
         return self._folder
 
     @property
     def actions(self):
         return {}
+
+    def set_name(self, name: str, _: int = 0):
+        assert self.org_id is not None
+        super().set_name(name, self.org_id)
+        self.name = name
 
     def save(self, *args, **kwargs):
         if self.pk is None:
@@ -54,9 +80,7 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
         super().save(*args, **kwargs)
 
     def slugify(self, unique=""):
-        key = "rlcs/{}/encrypted_records/{}/{}_{}".format(
-            self.record.template.rlc.pk, self.record.id, unique, self.name
-        )
+        key = "core/files_new/{}/{}".format(unique, self.name)
         special_char_map = {
             ord("ä"): "ae",
             ord("ü"): "ue",
