@@ -35,6 +35,7 @@ def create_event(data: InputEventCreate, rlc_user: RlcUser):
         start_time=data.start_time,
         end_time=data.end_time,
     )
+    # org_list[0].attendances.create_attendances(event)  # TODO
     return event
 
 

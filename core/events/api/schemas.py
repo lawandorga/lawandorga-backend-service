@@ -74,3 +74,7 @@ class InputAttendanceUpdate(BaseModel):
 class OutputAttendanceResponse(BaseModel):  # TODO: Not sure if correct
     event_id: int
     attendance: int
+
+
+class InputAttendanceCreate(BaseModel):
+    event_id: int

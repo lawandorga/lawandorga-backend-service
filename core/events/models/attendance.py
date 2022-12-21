@@ -11,7 +11,7 @@ class Attendance(models.Model):
     rlc_user = models.ForeignKey(RlcUser, related_name="users", on_delete=models.PROTECT)  # Maybe "Attendees" would
     # be a better related name
     ATTENDING = 'Y'  # Yes
-    UNSURE = 'M'  # Maybe
+    UNSURE = 'U'  # Unsure
     ABSENT = 'N'  # No
     ATTENDANCE_CHOICES = [
         (ATTENDING, 'Attending'),

@@ -7,7 +7,7 @@ from core.events.api.schemas import (
     InputEventCreate,
     InputEventDelete,
     InputEventUpdate,
-    OutputEventResponse, OutputAttendanceResponse, InputAttendanceUpdate,
+    OutputEventResponse, OutputAttendanceResponse, InputAttendanceUpdate, InputAttendanceCreate,
 )
 from core.events.models import Event
 from core.events.models.attendance import Attendance
@@ -23,21 +23,22 @@ def get_all_attendances_for_user(rlc_user: RlcUser):
     return attendances
 
 
-# TODO: Only update should be needed. Maybe needed for initial attendance table creation tho
-"""@router.api(
+@router.api(
     method="POST",
-    input_schema=InputEventCreate,
+    input_schema=InputAttendanceCreate,
 )
-def create_event(data: InputEventCreate, rlc_user: RlcUser):
+def create_attendances(data: InputAttendanceCreate, rlc_user: RlcUser):
     org_list = Org.objects.filter(id=rlc_user.org.id)
-    event = org_list[0].events.create(
-        is_global=data.is_global,
-        name=data.name,
-        description=data.description,
-        start_time=data.start_time,
-        end_time=data.end_time,
-    )
-    return event"""
+    invitees = org_list[0].users.all()  # TODO: Differentiation between global and local events
+    invitee_list = []  # There surely is a nicer way, but I don't know exactly how Django handles returns here
+    for invitee in invitees:
+        current = org_list[0].attendances.create(
+            event_id=data.event_id,
+            rlc_user=invitee,
+            attendance='U'
+        )
+        invitee_list.append(current)
+    return invitee_list
 
 
 @router.api(
@@ -54,9 +55,10 @@ def update_event(data: InputAttendanceUpdate, rlc_user: RlcUser):
         raise ApiError("You are not invited to this event.")
 
     update_data = data.dict()
-    if update_data["event_id"] != attendance.event:
+    if update_data["event_id"] != attendance.event:  # TODO: Needed?
         raise ApiError("Event ID is not changeable.")
-    attendance.update_information(**update_data)  # user and event should be immutable
+
+    attendance.update_information(**update_data)
 
     return attendance
 
