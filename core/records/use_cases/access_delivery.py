@@ -16,10 +16,9 @@ def deliver_access_to_users_who_should_have_access(__actor: RlcUser):
 
     permission = Permission.objects.get(name=PERMISSION_RECORDS_ACCESS_ALL_RECORDS)
 
-    users_1 = RlcUser.objects.filter(
-        permissions__permission=permission, org_id=__actor.org_id
-    )
+    users_1 = RlcUser.objects.filter(org_id=__actor.org_id)
     users_2 = list(users_1)
+    users_3 = [u for u in users_2 if u.has_permission(permission)]
 
     for record in records_2:
         if record.has_access(__actor):
@@ -28,6 +27,6 @@ def deliver_access_to_users_who_should_have_access(__actor: RlcUser):
             if not record.folder_uuid:
                 record.get_aes_key(__actor)
 
-            for user in users_2:
+            for user in users_3:
                 if not record.has_access(user):
                     record.grant_access(user, __actor)
