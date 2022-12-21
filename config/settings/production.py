@@ -92,6 +92,10 @@ AWS_S3_REGION_NAME = "fr-par"
 AWS_S3_ENDPOINT_URL = "https://s3.fr-par.scw.cloud"
 AWS_S3_FILE_OVERWRITE = False
 
+# https
+# https://docs.djangoproject.com/en/dev/ref/settings/#std-setting-SECURE_SSL_REDIRECT
+SECURE_SSL_REDIRECT = True
+
 # Logging
 # https://docs.djangoproject.com/en/dev/topics/logging/
 LOGGING_DIR = os.path.join(BASE_DIR, "tmp/logs")
