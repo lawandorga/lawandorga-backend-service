@@ -55,7 +55,7 @@ class OutputAvailableFolder(BaseModel):
 
 class OutputFolder(BaseModel):
     name: str
-    id: str
+    uuid: UUID
     stop_inherit: bool
 
 

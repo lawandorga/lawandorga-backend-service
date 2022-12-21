@@ -2,6 +2,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from core.auth.models import RlcUser
 from core.files_new.models import EncryptedRecordDocument
+from core.files_new.use_cases.finder import file_from_uuid
 from core.folders.use_cases.finders import folder_from_uuid
 from core.seedwork.use_case_layer import UseCaseError, find, use_case
 
@@ -21,3 +22,9 @@ def upload_a_file(
     f.set_name(name)
     f.save()
     f.upload(file, folder.get_encryption_key(requestor=__actor).get_key())
+
+
+@use_case
+def delete_a_file(__actor: RlcUser, file=find(file_from_uuid)):
+    file.delete_on_cloud()
+    file.delete()

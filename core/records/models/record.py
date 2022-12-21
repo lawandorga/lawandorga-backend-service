@@ -76,6 +76,10 @@ class Record(DjangoItem, models.Model):
         return "record: {}; rlc: {};".format(self.pk, self.template.rlc.name)
 
     @property
+    def org_pk(self) -> int:
+        return self.template.rlc_id
+
+    @property
     def folder(self) -> Optional[Folder]:
         if self.folder_uuid is None:
             return None
@@ -132,8 +136,8 @@ class Record(DjangoItem, models.Model):
             "deletions",
         ]
 
-    def set_name(self, name: str, org_pk=None):
-        super().set_name(name, self.template.rlc_id)
+    def set_name(self, name: str):
+        super().set_name(name)
         self.name = name
 
     def grant_access(self, to: RlcUser, by: Optional[RlcUser]):

@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import json
 from datetime import datetime
 from json import JSONDecodeError
@@ -7,7 +8,7 @@ from typing import Any, Awaitable, Callable, Dict, List, Literal, Optional, Type
 import pytz
 from asgiref.sync import sync_to_async
 from django.contrib.auth.models import AnonymousUser
-from django.http import HttpRequest, JsonResponse, RawPostDataException, HttpResponseBase
+from django.http import FileResponse, HttpRequest, JsonResponse, RawPostDataException
 from django.urls import path
 from django.utils.timezone import localtime, make_aware
 from pydantic import BaseModel, ValidationError, create_model, validator
@@ -55,7 +56,7 @@ class ApiError(Exception):
             self.message = "An input error happened."
             self.status = status if status else 422
         else:
-            self.param_errors = {}
+            self.param_errors = None
             self.message = message
             self.status = status if status else 400
 
@@ -109,7 +110,7 @@ def _validate(request: HttpRequest, schema: Type[BaseModel]) -> BaseModel:
     return schema(root=data)
 
 
-def _catch_error(func: Callable[..., Awaitable[JsonResponse]]):
+def _catch_error(func: Callable[..., Awaitable[JsonResponse | FileResponse]]):
     async def catch(*args, **kwargs):
         try:
             return await func(*args, **kwargs)
@@ -232,7 +233,9 @@ class Router:
         input_schema: Optional[Type] = None,
         output_schema: Optional[Type] = None,
     ) -> Callable:
-        async def wrapper(request: HttpRequest, *args, **kwargs) -> JsonResponse:
+        async def wrapper(
+            request: HttpRequest, *args, **kwargs
+        ) -> JsonResponse | FileResponse:
             # set up input
             func_kwargs: Dict[str, Any] = {}
             func_input = func.__code__.co_varnames[: func.__code__.co_argcount]
@@ -340,9 +343,13 @@ class Router:
             result: Any = await async_func(**func_kwargs)
 
             # validate the output
-            if issubclass(output_schema, HttpResponseBase) and isinstance(result, HttpResponseBase):
+            if (
+                inspect.isclass(output_schema)
+                and issubclass(output_schema, FileResponse)
+                and isinstance(result, FileResponse)
+            ):
                 return result
-            elif output_schema:
+            if output_schema:
                 model = create_model(
                     "Output",
                     root=(output_schema, ...),

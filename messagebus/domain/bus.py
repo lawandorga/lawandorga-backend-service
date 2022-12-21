@@ -1,7 +1,10 @@
+from logging import getLogger
 from typing import Callable, Optional, Type
 
 from messagebus.domain.event import Event
 from messagebus.domain.repository import MessageBusRepository
+
+logger = getLogger("messagebus")
 
 
 class MessageBus:
@@ -17,6 +20,7 @@ class MessageBus:
         if action not in cls.handler:
             cls.handler[action] = set()
         cls.handler[action].add(handler)
+        logger.info(f"Handler {handler.__name__} registered for action '{action}'.")
 
     @classmethod
     def handle(cls, message: Event):

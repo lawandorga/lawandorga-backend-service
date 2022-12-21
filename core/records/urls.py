@@ -8,7 +8,6 @@ router = DefaultRouter()
 router.register("messages", views.MessageViewSet)
 router.register("pool_records", views.PoolRecordViewSet)
 router.register("pool_consultants", views.PoolConsultantViewSet)
-router.register("record_documents", views.EncryptedRecordDocumentViewSet)
 # record access and deletion
 router.register("deletions", views.RecordDeletionViewSet)
 router.register("accesses", views.RecordAccessViewSet)

@@ -33,7 +33,6 @@ from core.records.models import (
     RecordUsersEntry,
     RecordUsersField,
 )
-from core.records.serializers import RecordDocumentSerializer
 from core.records.serializers.record import (
     FIELD_TYPES_AND_SERIALIZERS,
     RecordCreateSerializer,
@@ -255,12 +254,6 @@ class RecordViewSet(
                 .select_related("old_client")
             )
         return Record.objects.filter(template__rlc=self.request.user.rlc)
-
-    @action(detail=True, methods=["get"])
-    def documents(self, request, *args, **kwargs):
-        record = self.get_object()
-        documents = record.documents.all()
-        return Response(RecordDocumentSerializer(documents, many=True).data)
 
 
 ###

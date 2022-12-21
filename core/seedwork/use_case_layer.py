@@ -1,13 +1,13 @@
 import inspect
 from logging import INFO, WARNING, getLogger
-from typing import Any, Callable, TypeVar, get_type_hints
+from typing import Any, Callable, Optional, TypeVar, get_type_hints
 
 from django.core.exceptions import ObjectDoesNotExist
 
 from core.seedwork.domain_layer import DomainError
+from messagebus import MessageBus
 
 logger = getLogger("usecase")
-
 
 T = TypeVar("T")
 
@@ -122,8 +122,8 @@ def __check_permissions(actor, permissions):
             raise UseCaseError(message)
 
 
-def use_case(permissions=None, event_handler=False):
-    if event_handler and permissions is not None:
+def use_case(permissions=None, on_event: Optional[str] = None):
+    if on_event and permissions is not None:
         raise ValueError(
             "There is a conflict, this function can not be an event handler and use permissions."
         )
@@ -135,7 +135,7 @@ def use_case(permissions=None, event_handler=False):
             func_code = usecase_func.__code__
             func_name = func_code.co_name
 
-            if not event_handler:
+            if not on_event:
                 actor = __check_actor(args, kwargs, func_code, type_hints)
 
                 __check_permissions(actor, permissions)
@@ -156,6 +156,9 @@ def use_case(permissions=None, event_handler=False):
                 )
                 logger.log(WARNING, msg)
                 raise e
+
+        if on_event:
+            MessageBus.register_handler(on_event, execute)
 
         return execute
 

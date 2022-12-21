@@ -115,8 +115,8 @@ def toggle_inheritance(__actor: RlcUser, folder=find(folder_from_uuid)):
     r.save(folder)
 
 
-@use_case(event_handler=True)
-def item_name_changed(event: Event):
+@use_case(on_event="ItemRenamed")
+def item_name_changed_handler(event: Event):
     org_pk = event.data["org_pk"]
     item_repository = cast(
         ItemRepository, RepositoryWarehouse.get(event.data["repository"])
@@ -128,8 +128,19 @@ def item_name_changed(event: Event):
     r.save(folder)
 
 
-@use_case(event_handler=True)
-def invalidate_folder_keys(event: Event):
+@use_case(on_event="ItemDeleted")
+def item_deleted_handler(event: Event):
+    org_pk = event.data["org_pk"]
+    uuid = UUID(event.data["uuid"])
+    folder_uuid = UUID(event.data["folder_uuid"])
+    r = get_repository()
+    folder = r.retrieve(org_pk=org_pk, uuid=folder_uuid)
+    folder.remove_item(uuid)
+    r.save(folder)
+
+
+@use_case(on_event="OrgUserLocked")
+def invalidate_folder_keys_handler(event: Event):
     org_user = RlcUser.objects.get(uuid=event.data["org_user_uuid"])
     r = get_repository()
     folders = r.get_list(org_user.org_id)
@@ -138,8 +149,8 @@ def invalidate_folder_keys(event: Event):
         r.save(folder)
 
 
-@use_case(event_handler=True)
-def correct_folder_keys(event: Event):
+@use_case(on_event="OrgUserUnlocked")
+def correct_folder_keys_handler(event: Event):
     of = RlcUser.objects.get(uuid=event.data["org_user_uuid"])
     by = RlcUser.objects.get(uuid=event.data["by_org_user_uuid"])
     assert of.org_id == by.org_id

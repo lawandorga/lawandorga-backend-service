@@ -56,6 +56,11 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
         )
 
     @property
+    def org_pk(self) -> int:
+        assert self.org_id is not None
+        return self.org_id
+
+    @property
     def folder(self) -> Optional[Folder]:
         assert self.org_id is not None
         if self.folder_uuid is None:
@@ -69,9 +74,9 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
     def actions(self):
         return {}
 
-    def set_name(self, name: str, _: int = 0):
+    def set_name(self, name: str):
         assert self.org_id is not None
-        super().set_name(name, self.org_id)
+        super().set_name(name)
         self.name = name
 
     def save(self, *args, **kwargs):
