@@ -9,6 +9,10 @@ from django.contrib.auth.views import (
     PasswordResetDoneView,
     PasswordResetView,
 )
+from django.utils.decorators import method_decorator
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.generic import RedirectView
 
 from core.auth.models import UserProfile
 from core.auth.use_cases.user import run_user_login_checks, set_password_of_myself
@@ -79,3 +83,37 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
 
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     pass
+
+
+class CustomRedirectView(RedirectView):
+    """used to set cookies"""
+
+    url = settings.MAIN_FRONTEND_URL
+    success_url_allowed_hosts = {
+        strip_scheme(settings.MAIN_FRONTEND_URL),
+        strip_scheme(settings.STATISTICS_FRONTEND_URL),
+    }
+
+    def get_success_url_allowed_hosts(self):
+        return {self.request.get_host(), *self.success_url_allowed_hosts}
+
+    def get_redirect_url(self, *args, **kwargs):
+        """Return the user-originating redirect URL if it's safe."""
+        redirect_to = self.request.GET.get("next")
+        url_is_safe = url_has_allowed_host_and_scheme(
+            url=redirect_to,
+            allowed_hosts=self.get_success_url_allowed_hosts(),
+            require_https=self.request.is_secure(),
+        )
+        return redirect_to if url_is_safe else self.url
+
+    @method_decorator(ensure_csrf_cookie)
+    def get(self, request, *args, **kwargs):
+        """Return a empty response with the token CSRF.
+
+        Returns
+        -------
+        Response
+            The response with the token CSRF as a cookie.
+        """
+        return super().get(request, *args, **kwargs)
