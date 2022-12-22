@@ -113,7 +113,9 @@ class RecordViewSetWorking(BaseRecord, TestCase):
         )
 
     def setup_record(self):
-        self.record = test_helpers.create_record(template=self.template, users=[self.user])["record"]
+        self.record = test_helpers.create_record(
+            template=self.template, users=[self.user]
+        )["record"]
         self.record.put_in_folder(self.rlc_user)
 
     def test_record_delete(self):
