@@ -35,15 +35,13 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
     record = models.ForeignKey(
         Record, related_name="documents", on_delete=models.CASCADE, null=True
     )
-    org = models.ForeignKey(
-        Org, related_name="files", on_delete=models.CASCADE, null=True
-    )
-    uuid = models.UUIDField(db_index=True, null=True, default=uuid4)
+    org = models.ForeignKey(Org, related_name="files", on_delete=models.CASCADE)
+    uuid = models.UUIDField(db_index=True, unique=True, default=uuid4)
     folder_uuid = models.UUIDField(db_index=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     file_size = models.BigIntegerField(null=True)
-    key = models.SlugField(null=True, allow_unicode=True, max_length=1000, unique=True)
+    key = models.SlugField(allow_unicode=True, max_length=1000, unique=True)
     exists = models.BooleanField(default=True)
 
     class Meta:
