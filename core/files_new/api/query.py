@@ -23,7 +23,10 @@ def query__download_file(rlc_user: RlcUser, data: schemas.InputQueryFile):
         EncryptedRecordDocument, org_id=rlc_user.org_id, uuid=data.uuid
     )
     assert f.folder is not None
-    key = f.folder.get_decryption_key(requestor=rlc_user).get_key()
+    if f.record:
+        key = f.record.get_aes_key(rlc_user)
+    else:
+        key = f.folder.get_decryption_key(requestor=rlc_user).get_key().decode('utf-8')
     try:
         file = f.download(key)
     except ParseError:
