@@ -94,7 +94,7 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
         super().save(*args, **kwargs)
 
     def set_location(self):
-        assert self.location is None or self.location == ''
+        assert self.location is None or self.location == ""
         self.location = "core/files_new/{}/{}".format(self.folder.uuid, uuid4())
 
     def __get_file_key(self):
