@@ -2,6 +2,7 @@ from .auth.models import *
 from .collab.models import *
 from .events.models import *
 from .files.models import *
+from .files_new.models import *
 from .folders.models import FoldersFolder
 from .internal.models import *
 from .legal.models import *

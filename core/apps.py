@@ -5,6 +5,7 @@ class CoreConfig(AppConfig):
     name = "core"
 
     def ready(self) -> None:
+        from core.files_new.models.file import DjangoFileRepository
         from core.folders.domain.value_objects.encryption import EncryptionWarehouse
         from core.folders.infrastructure.asymmetric_encryptions import (
             AsymmetricEncryptionV1,
@@ -20,6 +21,7 @@ class CoreConfig(AppConfig):
         EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
         RepositoryWarehouse.add_repository(DjangoFolderRepository)
         RepositoryWarehouse.add_repository(DjangoRecordRepository)
+        RepositoryWarehouse.add_repository(DjangoFileRepository)
 
         # call the sub ready methods
         from core.folders.ready import ready

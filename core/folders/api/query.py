@@ -1,8 +1,15 @@
+from typing import cast
+
+from django.db import transaction
+
 from core.auth.models import RlcUser
 from core.folders.api import schemas
+from core.folders.domain.repositiories.item import ItemRepository
 from core.folders.domain.value_objects.tree import Access
 from core.folders.use_cases.folder import get_repository
+from core.records.models import Record
 from core.seedwork.api_layer import Router
+from core.seedwork.repository import RepositoryWarehouse
 
 router = Router()
 
@@ -36,4 +43,22 @@ def query__detail_folder(rlc_user: RlcUser, data: schemas.InputFolderDetail):
     folders_dict = r.get_dict(rlc_user.org_id)
     access = Access(folders_dict, folder)
 
-    return {"folder": folder.as_dict(), "access": access.as_dict()}
+    for item in folder.items:
+        if item.repository == "RECORD":
+            item_repository = cast(
+                ItemRepository, RepositoryWarehouse.get(item.repository)
+            )
+            record = cast(Record, item_repository.retrieve(item.uuid, folder.org_pk))
+            with transaction.atomic():
+                for file in list(record.documents.all()):
+                    if file.folder_uuid is None:
+                        file.folder_uuid = folder.uuid
+                        folder.add_item(file)
+                        file.save()
+                r.save(folder)
+
+    return {
+        "folder": folder.as_dict(),
+        "content": folder.items,
+        "access": access.as_dict(),
+    }

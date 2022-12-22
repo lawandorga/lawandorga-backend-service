@@ -12,6 +12,8 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padding
 from cryptography.hazmat.primitives.asymmetric import rsa
+from django.core.files import File
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 
 def to_bytes(val: Union[bytes, str, memoryview, None]) -> bytes:
@@ -89,12 +91,12 @@ class AESEncryption:
         return plain
 
     @staticmethod
-    def encrypt_in_memory_file(file, aes_key):
+    def encrypt_in_memory_file(file: InMemoryUploadedFile, aes_key: str):
         # fix the aes key
-        aes_key = to_bytes(aes_key)
+        bytes_aes_key = to_bytes(aes_key)
         # stuff needed
         chunk_size = 64 * 1024
-        hashed_key_bytes = sha3_256(aes_key).digest()
+        hashed_key_bytes = sha3_256(bytes_aes_key).digest()
         iv = AESEncryption.generate_iv()
         encryptor = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)
         # encrypt the file
@@ -114,12 +116,12 @@ class AESEncryption:
         return encrypted_file
 
     @staticmethod
-    def decrypt_bytes_file(file, aes_key):
+    def decrypt_bytes_file(file: File, aes_key: str):
         # fix the aes key
-        aes_key = to_bytes(aes_key)
+        bytes_aes_key = to_bytes(aes_key)
         # stuff needed
         chunk_size = 64 * 1024
-        hashed_key_bytes = sha3_256(aes_key).digest()
+        hashed_key_bytes = sha3_256(bytes_aes_key).digest()
         org_size = struct.unpack("<Q", file.read(struct.calcsize("Q")))[0]
         iv = file.read(16)
         decryptor = AES.new(hashed_key_bytes, AES.MODE_CBC, iv)

@@ -39,8 +39,10 @@ class InputFolderDelete(BaseModel):
 
 
 class OutputContent(BaseModel):
+    uuid: UUID
     name: Optional[str]
     actions: dict[str, str]
+    repository: str
 
     class Config:
         orm_mode = True
@@ -53,7 +55,7 @@ class OutputAvailableFolder(BaseModel):
 
 class OutputFolder(BaseModel):
     name: str
-    id: str
+    uuid: UUID
     stop_inherit: bool
 
 
@@ -92,3 +94,4 @@ class OutputFolderPage(BaseModel):
 class OutputFolderDetail(BaseModel):
     folder: OutputFolder
     access: list[OutputAccess]
+    content: list[OutputContent]

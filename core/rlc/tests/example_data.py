@@ -7,6 +7,7 @@ from core import static
 from core.auth.domain.user_key import UserKey
 from core.collab.models import CollabPermission
 from core.files.models import FolderPermission
+from core.files_new.models.file import EncryptedRecordDocument
 from core.fixtures import (
     create_collab_permissions,
     create_folder_permissions,
@@ -43,7 +44,6 @@ from core.records.models import (
     RecordUsersEntry,
     RecordUsersField,
 )
-from core.records.models.encrypted_record_document import EncryptedRecordDocument
 from core.rlc.models import Org
 from core.seedwork.encryption import AESEncryption
 
@@ -672,25 +672,25 @@ def create_informative_record(main_user, main_user_password, users, rlc):
         name="7_1_19__pass.jpg",
         record=record,
         file_size=18839,
-        created_on="2019-1-7",
+        created="2019-1-7",
     )
     EncryptedRecordDocument.objects.create(
         name="3_10_18__geburtsurkunde.pdf",
         record=record,
         file_size=488383,
-        created_on="2018-10-3",
+        created="2018-10-3",
     )
     EncryptedRecordDocument.objects.create(
         name="3_12_18__Ablehnungbescheid.pdf",
         record=record,
         file_size=343433,
-        created_on="2018-12-3",
+        created="2018-12-3",
     )
     EncryptedRecordDocument.objects.create(
         name="1_1_19__Klageschrift.docx",
         record=record,
         file_size=444444,
-        created_on="2019-1-1",
+        created="2019-1-1",
     )
 
     # add some messages

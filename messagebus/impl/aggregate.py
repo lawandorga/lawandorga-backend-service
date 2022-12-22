@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 from django.db import transaction
 
@@ -11,14 +11,14 @@ class DjangoAggregate:
     uuid: Any  # Any because of django's models.UUIDField
     events: list[Event]
 
-    def save(self, *args, **kwargs):
+    def __save_or_delete(self, func: Callable, *args, **kwargs):
         events = []
 
         if not hasattr(self, "events"):
             self.events = []
 
         with transaction.atomic():
-            super().save(*args, **kwargs)
+            func(*args, **kwargs)
             for event in self.events:
                 event = MessageBus.save_event(event)
                 events.append(event)
@@ -29,6 +29,12 @@ class DjangoAggregate:
         # let the messagebus handle the events
         for event in events:
             MessageBus.handle(event)
+
+    def save(self, *args, **kwargs):
+        self.__save_or_delete(super().save)
+
+    def delete(self, *args, **kwargs):
+        self.__save_or_delete(super().delete)
 
     def add_event(
         self,

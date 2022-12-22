@@ -52,7 +52,7 @@ class Folder:
     def as_dict(self) -> StrDict:
         return {
             "name": self.__name,
-            "id": str(self.__uuid),
+            "uuid": str(self.__uuid),
             "stop_inherit": self.stop_inherit,
         }
 
@@ -183,11 +183,11 @@ class Folder:
         self.__add_item(item)
 
     def update_item(self, item: Union[Item, FolderItem]):
-        self.remove_item(item)
+        self.remove_item(item.uuid)
         self.__add_item(item)
 
-    def remove_item(self, item: Union[Item, FolderItem]):
-        new_items_1 = filter(lambda x: x.uuid != item.uuid, self.__items)
+    def remove_item(self, uuid: UUID):
+        new_items_1 = filter(lambda x: x.uuid != uuid, self.__items)
         new_items_2 = list(new_items_1)
         self.__items = new_items_2
 
