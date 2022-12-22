@@ -1,13 +1,16 @@
+import io
+import sys
 from random import choice, randint
 from typing import List
 
 from django.conf import settings
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from core import static
 from core.auth.domain.user_key import UserKey
 from core.collab.models import CollabPermission
 from core.files.models import FolderPermission
-from core.files_new.models.file import EncryptedRecordDocument
+from core.files_new.use_cases.file import upload_a_file
 from core.fixtures import (
     create_collab_permissions,
     create_folder_permissions,
@@ -44,6 +47,7 @@ from core.records.models import (
     RecordUsersEntry,
     RecordUsersField,
 )
+from core.records.use_cases.record import create_a_record_and_a_folder
 from core.rlc.models import Org
 from core.seedwork.encryption import AESEncryption
 
@@ -476,18 +480,16 @@ def create_informative_record(main_user, main_user_password, users, rlc):
 
     # create the informative record
     template = RecordTemplate.objects.filter(rlc=rlc).first()
-    record = Record.objects.create(template=template)
+    pk = create_a_record_and_a_folder(
+        main_user.rlc_user, "Informative Record", template.pk
+    )
+    record = Record.objects.get(pk=pk)
+
     record_users = [choice(users), main_user]
     aes_key = AESEncryption.generate_secure_key()
     for user in record_users:
-        if not RecordEncryptionNew.objects.filter(
-            user=user.rlc_user, record=record
-        ).exists():
-            record_encryption = RecordEncryptionNew(
-                user=user.rlc_user, record=record, key=aes_key
-            )
-            record_encryption.encrypt(user.get_public_key())
-            record_encryption.save()
+        record.grant_access(user.rlc_user, main_user.rlc_user)
+
     # first contact date
     field = RecordStandardField.objects.get(
         template=template, name="First contact date"
@@ -668,34 +670,19 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     entry.value.set([u.rlc_user for u in record_users])
 
     # add some documents
-    EncryptedRecordDocument.objects.create(
-        name="7_1_19__pass.jpg",
-        record=record,
-        file_size=18839,
-        created="2019-1-7",
-        org=rlc
+    file_content = io.BytesIO(bytes("What an awesome file :)", "utf-8"))
+    file = InMemoryUploadedFile(
+        file=file_content,
+        field_name=None,
+        name="Test",
+        content_type="TXT",
+        size=sys.getsizeof(file_content),
+        charset="utf-8",
     )
-    EncryptedRecordDocument.objects.create(
-        name="3_10_18__geburtsurkunde.pdf",
-        record=record,
-        file_size=488383,
-        created="2018-10-3",
-        org=rlc
-    )
-    EncryptedRecordDocument.objects.create(
-        name="3_12_18__Ablehnungbescheid.pdf",
-        record=record,
-        file_size=343433,
-        created="2018-12-3",
-        org=rlc
-    )
-    EncryptedRecordDocument.objects.create(
-        name="1_1_19__Klageschrift.docx",
-        record=record,
-        file_size=444444,
-        created="2019-1-1",
-        org=rlc
-    )
+    upload_a_file(main_user.rlc_user, file, record.folder.uuid)
+    upload_a_file(main_user.rlc_user, file, record.folder.uuid)
+    upload_a_file(main_user.rlc_user, file, record.folder.uuid)
+    upload_a_file(main_user.rlc_user, file, record.folder.uuid)
 
     # add some messages
     message1 = EncryptedRecordMessage(

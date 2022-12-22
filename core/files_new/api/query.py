@@ -22,17 +22,17 @@ def query__download_file(rlc_user: RlcUser, data: schemas.InputQueryFile):
     f = get_object_or_404(
         EncryptedRecordDocument, org_id=rlc_user.org_id, uuid=data.uuid
     )
-    assert f.folder is not None
-    key = f.folder.get_decryption_key(requestor=rlc_user).get_key()
+
     try:
-        file = f.download(key)
+        file = f.download(rlc_user)
     except ParseError:
         raise ApiError(
             "The file could not be found on the server. "
             "Please delete it or contact it@law-orga.de "
             "to have it recovered."
         )
-    response = FileResponse(file, content_type=mimetypes.guess_type(f.get_key())[0])
+
+    response = FileResponse(file, content_type=mimetypes.guess_type(f.name)[0])
     response["Content-Disposition"] = 'attachment; filename="{}"'.format(f.name)
     return response
 

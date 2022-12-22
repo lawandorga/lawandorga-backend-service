@@ -20,8 +20,9 @@ def upload_a_file(
         name = file.name
     f = EncryptedRecordDocument(folder_uuid=folder.uuid, org_id=__actor.org_id)
     f.set_name(name)
+    f.generate_key(__actor)
     f.save()
-    f.upload(file, folder.get_encryption_key(requestor=__actor).get_key())
+    f.upload(file, __actor)
 
 
 @use_case

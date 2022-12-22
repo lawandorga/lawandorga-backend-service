@@ -26,9 +26,15 @@ def change_record_name(__actor: RlcUser, name: str, record=find(record_from_id))
 def create_a_record_and_a_folder(
     __actor: RlcUser,
     name: str,
-    parent_folder=find(folder_from_uuid),
     template=find(template_from_id),
 ):
+    folder_repository = cast(
+        FolderRepository, RepositoryWarehouse.get(FolderRepository)
+    )
+    parent_folder = folder_repository.get_or_create_records_folder(
+        __actor.org_id, __actor
+    )
+
     if not parent_folder.has_access(__actor):
         raise UseCaseError(
             "You can not create a record in this folder, because you have no access to this folder."
