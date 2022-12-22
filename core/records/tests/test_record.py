@@ -5,6 +5,7 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 from core.models import HasPermission, Org, Permission, RlcUser, UserProfile
 from core.records.models import Record, RecordTemplate
 from core.records.views import RecordTemplateViewSet, RecordViewSet
+from core.seedwork import test_helpers
 from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
     PERMISSION_RECORDS_ADD_RECORD,
@@ -102,12 +103,6 @@ class RecordTemplateViewSetWorking(BaseRecord, TestCase):
 
 
 ###
-# Fields
-###
-pass
-
-
-###
 # Record
 ###
 class RecordViewSetWorking(BaseRecord, TestCase):
@@ -118,7 +113,8 @@ class RecordViewSetWorking(BaseRecord, TestCase):
         )
 
     def setup_record(self):
-        self.record = Record.objects.create(template=self.template)
+        self.record = test_helpers.create_record(template=self.template, users=[self.user])["record"]
+        self.record.put_in_folder(self.rlc_user)
 
     def test_record_delete(self):
         self.setup_record()
@@ -128,9 +124,3 @@ class RecordViewSetWorking(BaseRecord, TestCase):
         response = view(request, pk=self.record.pk)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Record.objects.filter(pk=self.record.pk).count(), 0)
-
-
-###
-# Entries
-###
-pass
