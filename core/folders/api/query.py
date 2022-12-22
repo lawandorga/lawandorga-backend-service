@@ -51,6 +51,9 @@ def query__detail_folder(rlc_user: RlcUser, data: schemas.InputFolderDetail):
             record = cast(Record, item_repository.retrieve(item.uuid, folder.org_pk))
             with transaction.atomic():
                 for file in list(record.documents.all()):
+                    if file.key is None and file.record:
+                        file.key = file.record.key
+                        file.save()
                     if file.folder_uuid is None:
                         file.folder_uuid = folder.uuid
                         folder.add_item(file)

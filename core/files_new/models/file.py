@@ -1,20 +1,23 @@
-import re
-import unicodedata
 from typing import Optional, cast
 from uuid import UUID, uuid4
 
 from django.core.files.storage import default_storage
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import models
 
+from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.repositiories.item import ItemRepository
+from core.folders.domain.value_objects.symmetric_key import (
+    EncryptedSymmetricKey,
+    SymmetricKey,
+)
 from core.folders.infrastructure.django_item import DjangoItem
 from core.records.models.record import Record
 from core.rlc.models import Org
 from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_file
-from core.seedwork.storage_folders import get_storage_folder_encrypted_record_document
 
 
 class DjangoFileRepository(ItemRepository):
@@ -41,8 +44,9 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     file_size = models.BigIntegerField(null=True)
-    key = models.SlugField(allow_unicode=True, max_length=1000, unique=True)
+    location = models.SlugField(allow_unicode=True, max_length=1000, unique=True)
     exists = models.BooleanField(default=True)
+    key = models.JSONField(null=True)
 
     class Meta:
         verbose_name = "RecordDocument"
@@ -77,60 +81,48 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
         super().set_name(name)
         self.name = name
 
+    def generate_key(self, user: RlcUser):
+        assert self.folder is not None and self.key is None
+        key = SymmetricKey.generate()
+        lock_key = self.folder.get_encryption_key(requestor=user)
+        enc_key = EncryptedSymmetricKey.create(key, lock_key)
+        self.key = enc_key.as_dict()
+
     def save(self, *args, **kwargs):
         if self.pk is None:
-            self.key = self.slugify()
+            self.set_location()
         super().save(*args, **kwargs)
 
-    def slugify(self, unique=""):
-        key = "core/files_new/{}/{}".format(unique, self.name)
-        special_char_map = {
-            ord("ä"): "ae",
-            ord("ü"): "ue",
-            ord("ö"): "oe",
-            ord("ß"): "ss",
-            ord("Ä"): "AE",
-            ord("Ö"): "OE",
-            ord("Ü"): "UE",
-        }
-        key = key.translate(special_char_map)
-        key = (
-            unicodedata.normalize("NFKC", key).encode("ascii", "ignore").decode("ascii")
-        )
-        key = re.sub(r"[^/.\w\s-]", "", key.lower()).strip()
-        key = re.sub(r"[-\s]+", "-", key)
-        if not EncryptedRecordDocument.objects.filter(key=key).exists():
-            return key
-        else:
-            unique = 1 if unique == "" else int(unique) + 1
-            return self.slugify(unique=unique)
+    def set_location(self):
+        assert self.location is None or self.location == ''
+        self.location = "core/files_new/{}/{}".format(self.folder.uuid, uuid4())
 
-    def get_key(self):
-        if not self.key:
-            self.key = "{}{}".format(
-                get_storage_folder_encrypted_record_document(
-                    self.record.template.rlc.pk, self.record.id
-                ),
-                self.name,
-            )
-            self.save()
-        return self.key
+    def __get_file_key(self):
+        return "{}.enc".format(self.location)
 
-    def get_file_key(self):
-        return "{}.enc".format(self.get_key())
+    def __get_key(self, user: RlcUser):
+        assert self.folder is not None
 
-    def upload(self, file, record_key):
-        key = self.get_file_key()
-        encrypt_and_upload_file(file, key, record_key)
+        decryption_key = self.folder.get_decryption_key(requestor=user)
+        enc_key = EncryptedSymmetricKey.create_from_dict(self.key)
+        key = enc_key.decrypt(decryption_key)
 
-    def download(self, record_key):
-        key = self.get_file_key()
-        return download_and_decrypt_file(key, record_key)
+        return key.get_key()
+
+    def upload(self, file: InMemoryUploadedFile, by: RlcUser):
+        key = self.__get_key(by)
+        location = self.__get_file_key()
+        encrypt_and_upload_file(file, location, key)
+
+    def download(self, by: RlcUser):
+        key = self.__get_key(by)
+        location = self.__get_file_key()
+        return download_and_decrypt_file(location, key)
 
     def delete_on_cloud(self):
-        key = self.get_file_key()
+        key = self.__get_file_key()
         default_storage.delete(key)
 
     def exists_on_s3(self):
-        key = self.get_file_key()
+        key = self.__get_file_key()
         return default_storage.exists(key)
