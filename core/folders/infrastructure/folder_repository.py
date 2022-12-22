@@ -160,8 +160,13 @@ class DjangoFolderRepository(FolderRepository):
         if FoldersFolder.objects.filter(
             org_id=org_pk, name=name, _parent=None
         ).exists():
-            f = FoldersFolder.objects.get(org_id=org_pk, name=name, _parent=None)
-            return cls.get_dict(org_pk)[f.uuid]
+            fs = FoldersFolder.objects.filter(org_id=org_pk, name=name, _parent=None)
+            f1 = fs[0]
+            if len(fs) > 1:
+                for f2 in fs:
+                    if len(f2.keys) > len(f1.keys):
+                        f1 = f2
+            return cls.get_dict(org_pk)[f1.uuid]
         folder = Folder.create(name=name, org_pk=org_pk)
         folder.grant_access(user)
         for u in RlcUser.objects.filter(org_id=org_pk).exclude(uuid=user.uuid):
