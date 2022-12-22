@@ -25,7 +25,6 @@ def test_create_record_and_folder(user, record_template, folder):
     user["rlc_user"].grant(PERMISSION_RECORDS_ADD_RECORD)
     create_a_record_and_a_folder(
         user["rlc_user"],
-        parent_folder=folder.uuid,
         name="My folder that contains a record",
         template=record_template["template"].pk,
     )
