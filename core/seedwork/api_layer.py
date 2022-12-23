@@ -94,8 +94,14 @@ def _validation_error_handler(validation_error: ValidationError) -> RFC7807:
 def _validate(request: HttpRequest, schema: Type[BaseModel]) -> BaseModel:
     data: Dict[str, Any] = {}
     # query params
-    data.update(request.GET.dict())
-    data.update(request.FILES.dict())
+    get_dict = request.GET.dict()
+    data.update(get_dict)
+    file = request.FILES.get("file", None)
+    if file:
+        data["file"] = file
+    files = request.FILES.getlist("files", None)
+    if files:
+        data["files"] = files
     # request resolver
     if request.resolver_match is not None:
         data.update(request.resolver_match.kwargs)
