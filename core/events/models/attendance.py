@@ -18,17 +18,17 @@ class Attendance(models.Model):
         (UNSURE, 'Unsure'),
         (ABSENT, 'Absent')
     ]
-    attendance = models.CharField(
-        max_length=1,
+    status = models.CharField(
         choices=ATTENDANCE_CHOICES,
         default=UNSURE,
+        max_length=1
     )
 
     @staticmethod
     def get_all_attendances_for_user(rlc_user: RlcUser):
         raw_attendances: List[Attendance] = (
             list(
-                Attendance.objects.filter(rlc_user=rlc_user.uuid)
+                Attendance.objects.filter(rlc_user=rlc_user)
             )
         )
         return raw_attendances
@@ -46,5 +46,4 @@ class Attendance(models.Model):
         self,
         attendance=None
     ):
-        self.attendance = attendance
-        self.save()
+        self.status = attendance

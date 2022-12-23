@@ -1,9 +1,10 @@
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Literal
 
 from pydantic import BaseModel
 
+from core.events.models import Attendance
 from core.seedwork.api_layer import format_datetime, make_datetime_aware
 
 
@@ -67,14 +68,32 @@ class CalendarUuidUser(BaseModel):
 
 
 class InputAttendanceUpdate(BaseModel):
-    event_id: int
-    attendance: int
-
-
-class OutputAttendanceResponse(BaseModel):  # TODO: Not sure if correct
-    event_id: int
-    attendance: int
+    status: Literal[Attendance.ATTENDING, Attendance.UNSURE, Attendance.ABSENT]
+    id: int
 
 
 class InputAttendanceCreate(BaseModel):
     event_id: int
+    status: Literal[Attendance.ATTENDING, Attendance.UNSURE, Attendance.ABSENT]
+
+
+class InputAttendanceDelete(BaseModel):
+    id: int
+
+
+class OutputRLCUser(BaseModel):
+    name: str
+    email: str
+
+    class Config:
+        orm_mode = True
+
+
+class OutputAttendanceResponse(BaseModel):
+    event: OutputEventResponse
+    rlc_user: OutputRLCUser
+    status: str
+    id: int
+
+    class Config:
+        orm_mode = True
