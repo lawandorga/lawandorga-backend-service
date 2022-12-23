@@ -9,11 +9,15 @@ from . import schemas
 router = Router()
 
 
-@router.post(url='multiple/', input_schema=schemas.InputUploadMultipleFiles)
-def command__upload_multiple_file(rlc_user: RlcUser, data: schemas.InputUploadMultipleFiles):
+@router.post(url="multiple/", input_schema=schemas.InputUploadMultipleFiles)
+def command__upload_multiple_file(
+    rlc_user: RlcUser, data: schemas.InputUploadMultipleFiles
+):
     for file in data.files:
         if not isinstance(file, InMemoryUploadedFile):
-            raise ApiError({'files': ['One of the files does not have the right format.']})
+            raise ApiError(
+                {"files": ["One of the files does not have the right format."]}
+            )
 
     for file in data.files:
         upload_a_file(rlc_user, file, data.folder)
