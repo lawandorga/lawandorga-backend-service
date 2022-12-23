@@ -5,6 +5,11 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
+class InputUploadMultipleFiles(BaseModel):
+    files: Any
+    folder: UUID
+
+
 class InputUploadFile(BaseModel):
     file: Any
     folder: UUID
