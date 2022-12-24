@@ -81,6 +81,7 @@ class OutputRecord(BaseModel):
     attributes: dict[str, Union[str, list[str]]]
     delete_requested: bool
     has_access: bool
+    folder_uuid: Optional[UUID]
 
     class Config:
         orm_mode = True

@@ -216,6 +216,11 @@ class RecordViewSet(
             return RecordCreateSerializer
         return super().get_serializer_class()
 
+    def retrieve(self, request, *args, **kwargs) -> Response:
+        instance = self.get_queryset().get(uuid=kwargs['pk'])
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     def get_queryset(self):
         if self.action in ["retrieve"]:
             return (
