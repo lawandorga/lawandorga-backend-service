@@ -19,6 +19,7 @@ def query__records_page(rlc_user: RlcUser):
     records_2 = [
         {
             "id": r.id,
+            "uuid": r.uuid,
             "folder_uuid": r.folder_uuid,
             "attributes": r.attributes,
             "delete_requested": r.delete_requested,

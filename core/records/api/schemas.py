@@ -78,6 +78,7 @@ class OutputEntry(BaseModel):
 
 class OutputRecord(BaseModel):
     id: int
+    uuid: UUID
     attributes: dict[str, Union[str, list[str]]]
     delete_requested: bool
     has_access: bool
