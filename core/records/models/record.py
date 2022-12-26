@@ -4,6 +4,7 @@ from uuid import UUID, uuid4
 
 from django.core.files import File as DjangoFile
 from django.db import models, transaction
+from django.urls import reverse
 from django.utils.timezone import localtime
 
 from core.auth.models import RlcUser
@@ -113,10 +114,48 @@ class Record(DjangoItem, models.Model):
             "Created": localtime(self.created).strftime("%d.%m.%y %H:%M"),
             "Updated": localtime(self.updated).strftime("%d.%m.%y %H:%M"),
         }
-        for entry_type in self.get_unencrypted_entry_types():
+        for entry_type in [
+            "state_entries",
+            "standard_entries",
+            "select_entries",
+            "users_entries",
+        ]:
             for entry in getattr(self, entry_type).all():
                 entries[entry.field.name] = entry.get_value()
         return entries
+
+    @staticmethod
+    def get_encrypted_prefetch_related():
+        return [
+            "state_entries",
+            "state_entries__field",
+            "select_entries",
+            "select_entries__field",
+            "standard_entries",
+            "standard_entries__field",
+            "multiple_entries",
+            "multiple_entries__field",
+            "users_entries",
+            "users_entries__field",
+            "users_entries__value",
+            "encrypted_select_entries",
+            "encrypted_select_entries__field",
+            "encrypted_standard_entries",
+            "encrypted_standard_entries__field",
+            "encrypted_file_entries",
+            "encrypted_file_entries__field",
+            "statistic_entries",
+            "statistic_entries__field",
+            "template",
+            "template__rlc__users",
+            "template__standard_fields",
+            "template__select_fields",
+            "template__users_fields",
+            "template__state_fields",
+            "template__encrypted_file_fields",
+            "template__encrypted_select_fields",
+            "template__encrypted_standard_fields",
+        ]
 
     @staticmethod
     def get_unencrypted_prefetch_related():
@@ -202,7 +241,14 @@ class Record(DjangoItem, models.Model):
         return key
 
     def get_unencrypted_entry_types(self):
-        return ["state_entries", "standard_entries", "select_entries", "users_entries"]
+        return [
+            "state_entries",
+            "statistic_entries",
+            "multiple_entries",
+            "standard_entries",
+            "select_entries",
+            "users_entries",
+        ]
 
     def get_encrypted_entry_types(self):
         return [
@@ -231,6 +277,22 @@ class Record(DjangoItem, models.Model):
                 ).data
         if sort:
             entries = dict(sorted(entries.items(), key=lambda item: item[1]["order"]))
+        return entries
+
+    def get_entries_new(self, user: RlcUser):
+        entries = {}
+        aes_key_record = self.get_aes_key(user)
+        for entry_type in self.get_all_entry_types():
+            for entry in getattr(self, entry_type).all():
+                if entry.encrypted_entry:
+                    entry.decrypt(aes_key_record=aes_key_record)
+                entries[entry.field.name] = {
+                    "name": entry.field.name,
+                    "type": entry.field.type,
+                    "url": entry.url,
+                    "field": entry.field.pk,
+                    "value": entry.get_raw_value(),
+                }
         return entries
 
     def put_in_folder(self, user: RlcUser):
@@ -264,12 +326,19 @@ class Record(DjangoItem, models.Model):
 class RecordEntry(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-
+    view_name: str
     # used in record for get_entries
     encrypted_entry = False
 
     class Meta:
         abstract = True
+
+    @property
+    def url(self):
+        return reverse(self.view_name, kwargs={"pk": self.pk})
+
+    def get_raw_value(self):
+        return self.get_value()
 
     def get_value(self, *args, **kwargs):
         raise NotImplementedError("This method needs to be implemented")
@@ -277,7 +346,6 @@ class RecordEntry(models.Model):
 
 class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
     encryption_class = AESEncryption
-
     # used in record for get entries
     encrypted_entry = True
 
@@ -319,6 +387,7 @@ class RecordStateEntry(RecordEntry):
     )
     value = models.CharField(max_length=1000)
     closed_at = models.DateTimeField(blank=True, null=True, default=None)
+    view_name = "recordstateentry-detail"
 
     class Meta:
         unique_together = ["record", "field"]
@@ -340,6 +409,7 @@ class RecordUsersEntry(RecordEntry):
         RecordUsersField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.ManyToManyField(RlcUser, blank=True)
+    view_name = "recordusersentry-detail"
 
     class Meta:
         unique_together = ["record", "field"]
@@ -348,6 +418,12 @@ class RecordUsersEntry(RecordEntry):
 
     def __str__(self):
         return "recordUsersEntry: {};".format(self.pk)
+
+    def get_raw_value(self):
+        users = []
+        for user in getattr(self, "value").all():
+            users.append(user.pk)
+        return users
 
     def get_value(self, *args, **kwargs):
         # this might look weird, but i've done it this way to optimize performance
@@ -366,6 +442,7 @@ class RecordSelectEntry(RecordEntry):
         RecordSelectField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.CharField(max_length=200)
+    view_name = "recordselectentry-detail"
 
     class Meta:
         unique_together = ["record", "field"]
@@ -387,6 +464,7 @@ class RecordMultipleEntry(RecordEntry):
         RecordMultipleField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.JSONField()
+    view_name = "recordmultipleentry-detail"
 
     class Meta:
         unique_together = ["record", "field"]
@@ -395,6 +473,9 @@ class RecordMultipleEntry(RecordEntry):
 
     def __str__(self):
         return "recordMultipleEntry: {}".format(self.pk)
+
+    def get_value(self):
+        return self.value
 
 
 class RecordEncryptedSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
@@ -405,6 +486,7 @@ class RecordEncryptedSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
         RecordEncryptedSelectField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.BinaryField()
+    view_name = "recordencryptedselectentry-detail"
 
     # encryption
     encrypted_fields = ["value"]
@@ -439,6 +521,7 @@ class RecordEncryptedFileEntry(RecordEntry):
         RecordEncryptedFileField, related_name="entries", on_delete=models.PROTECT
     )
     file = models.FileField(upload_to="recordmanagement/recordencryptedfileentry/")
+    view_name = "recordencryptedfileentry-detail"
 
     class Meta:
         unique_together = ["record", "field"]
@@ -498,6 +581,7 @@ class RecordStandardEntry(RecordEntry):
         RecordStandardField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.TextField(max_length=20000)
+    view_name = "recordstandardentry-detail"
 
     class Meta:
         unique_together = ["record", "field"]
@@ -519,6 +603,7 @@ class RecordEncryptedStandardEntry(RecordEntryEncryptedModelMixin, RecordEntry):
         RecordEncryptedStandardField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.BinaryField()
+    view_name = "recordencryptedstandardentry-detail"
 
     # encryption
     encryption_class = AESEncryption
@@ -546,6 +631,7 @@ class RecordStatisticEntry(RecordEntry):
         RecordStatisticField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.CharField(max_length=200)
+    view_name = "recordstatisticentry-detail"
 
     class Meta:
         unique_together = ["record", "field"]

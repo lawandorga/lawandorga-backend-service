@@ -121,7 +121,7 @@ class RecordMultipleFieldSerializer(RecordFieldSerializer):
 
 
 class RecordEncryptedStandardFieldSerializer(RecordFieldSerializer):
-    entry_view_name = "recordencryptedstandardentry-list"
+    entry_view_name = "recordmultipleentry-list"
     view_name = "recordencryptedstandardfield-detail"
 
     class Meta:

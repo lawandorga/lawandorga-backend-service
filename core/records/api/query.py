@@ -37,3 +37,39 @@ def query__records_page(rlc_user: RlcUser):
     columns_3 = list(dict.fromkeys(columns_2))
 
     return {"columns": columns_3, "records": records_2}
+
+
+@router.get(
+    url="<uuid:uuid>/",
+    output_schema=schemas.OutputRecordDetail,
+    input_schema=schemas.InputQueryRecord,
+)
+def query__record(rlc_user: RlcUser, data: schemas.InputQueryRecord):
+    record = (
+        Record.objects.prefetch_related(*Record.get_encrypted_prefetch_related())
+        .select_related("old_client", "template")
+        .filter(template__rlc_id=rlc_user.org_id)
+        .get(uuid=data.uuid)
+    )
+
+    client = None
+    if record.old_client:
+        client = record.old_client
+        private_key_user = rlc_user.get_private_key()
+        client.decrypt(
+            private_key_rlc=rlc_user.org.get_private_key(
+                user=rlc_user.user, private_key_user=private_key_user
+            )
+        )
+
+    return {
+        "id": record.pk,
+        "name": record.name,
+        "uuid": record.uuid,
+        "folder_uuid": record.folder_uuid,
+        "created": record.created,
+        "updated": record.updated,
+        "client": client,
+        "fields": record.template.get_fields_new(),
+        "entries": record.get_entries_new(rlc_user),
+    }

@@ -12,6 +12,10 @@ class InputPublishQuestionnaire(BaseModel):
     record: int
 
 
+class InputQueryRecord(BaseModel):
+    uuid: UUID
+
+
 class InputRecordCreate(BaseModel):
     name: str
     template: int
@@ -71,6 +75,49 @@ class OutputQuestionnaire(BaseModel):
 
 class OutputEntry(BaseModel):
     value: str
+
+    class Config:
+        orm_mode = True
+
+
+class OutputOption(BaseModel):
+    name: str
+    id: int
+
+
+class OutputField(BaseModel):
+    id: int
+    entry_url: str
+    kind: str
+    label: str
+    name: str
+    options: Optional[list[OutputOption | str]]
+    type: str
+
+
+class OutputDetailEntry(BaseModel):
+    name: str
+    type: str
+    url: str
+    value: str | int | list[int] | list[str]
+
+
+class OutputClient(BaseModel):
+    name: str
+    phone_number: str
+    note: str
+
+
+class OutputRecordDetail(BaseModel):
+    created: datetime
+    updated: datetime
+    id: int
+    uuid: UUID
+    folder_uuid: UUID
+    name: str
+    client: Optional[dict]
+    fields: list[OutputField]
+    entries: dict[str, OutputDetailEntry]
 
     class Config:
         orm_mode = True
