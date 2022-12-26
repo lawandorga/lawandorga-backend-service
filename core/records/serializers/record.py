@@ -1,21 +1,17 @@
 from typing import Optional
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import ValidationError
 from rest_framework.reverse import reverse
 
 from core.records.models import (
-    EncryptedClient,
-    Record,
     RecordEncryptedFileEntry,
     RecordEncryptedFileField,
     RecordEncryptedSelectEntry,
     RecordEncryptedSelectField,
     RecordEncryptedStandardEntry,
     RecordEncryptedStandardField,
-    RecordEncryptionNew,
     RecordMultipleEntry,
     RecordMultipleField,
     RecordSelectEntry,
@@ -485,94 +481,15 @@ FIELD_TYPES_AND_SERIALIZERS = [
 ###
 # Record
 ###
-class RecordSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Record
-        fields = "__all__"
-
-
-class RecordCreateSerializer(RecordSerializer):
-    pass
-
-
-class ClientSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(allow_blank=True)
-    note = serializers.CharField(allow_blank=True)
-    phone_number = serializers.CharField(allow_blank=True)
-
-    class Meta:
-        model = EncryptedClient
-        exclude = ["encrypted_client_key"]
-
-
-class RecordEncryptionNewSerializer(serializers.ModelSerializer):
-    user_detail = serializers.SerializerMethodField()
-
-    class Meta:
-        model = RecordEncryptionNew
-        fields = ["created", "user", "user_detail", "id"]
-
-    def get_user_detail(self, obj):
-        return obj.user.name
-
-
-class RecordDetailSerializer(RecordSerializer):
-    entries = serializers.SerializerMethodField()
-    fields = serializers.SerializerMethodField(method_name="get_form_fields")  # type: ignore
-    client = serializers.SerializerMethodField()
-    url = serializers.HyperlinkedIdentityField(view_name="record-detail")
-    encryptions = RecordEncryptionNewSerializer(many=True)
-    folder = serializers.SerializerMethodField()
-
-    def get_folder(self, obj):
-        return obj.folder_uuid
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        request = self.context["request"]
-        self.user = request.user
-        self.private_key_user = self.user.get_private_key(request=request)
-
-    def get_entries(self, obj):
-        try:
-            aes_key_record = self.instance.get_aes_key(
-                user=self.user.rlc_user, private_key_user=self.private_key_user
-            )
-        except ObjectDoesNotExist:
-            raise PermissionDenied(
-                "No encryption keys were found to decrypt this record."
-            )
-        entry_types_and_serializers = [
-            ("state_entries", RecordStateEntrySerializer),
-            ("standard_entries", RecordStandardEntrySerializer),
-            ("select_entries", RecordSelectEntrySerializer),
-            ("multiple_entries", RecordMultipleEntrySerializer),
-            ("users_entries", RecordUsersEntrySerializer),
-            ("encrypted_select_entries", RecordEncryptedSelectEntrySerializer),
-            ("encrypted_file_entries", RecordEncryptedFileEntrySerializer),
-            ("encrypted_standard_entries", RecordEncryptedStandardEntrySerializer),
-            ("statistic_entries", RecordStatisticEntrySerializer),
-        ]
-        return obj.get_entries(
-            entry_types_and_serializers,
-            aes_key_record=aes_key_record,
-            request=self.context["request"],
-            sort=True,
-        )
-
-    def get_form_fields(self, obj):
-        return obj.template.get_fields(
-            FIELD_TYPES_AND_SERIALIZERS, request=self.context["request"]
-        )
-
-    def get_client(self, obj):
-        if obj.old_client is None:
-            return {}
-        private_key_rlc = self.user.rlc.get_private_key(
-            user=self.user, private_key_user=self.private_key_user
-        )
-        obj.old_client.decrypt(private_key_rlc=private_key_rlc)
-        return ClientSerializer(instance=obj.old_client).data
+# class RecordEncryptionNewSerializer(serializers.ModelSerializer):
+#     user_detail = serializers.SerializerMethodField()
+#
+#     class Meta:
+#         model = RecordEncryptionNew
+#         fields = ["created", "user", "user_detail", "id"]
+#
+#     def get_user_detail(self, obj):
+#         return obj.user.name
 
 
 ###

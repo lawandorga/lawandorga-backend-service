@@ -19,9 +19,8 @@ router.register("questionnaire_fields", views.QuestionnaireFieldsViewSet)
 router.register("questionnaire_files", views.QuestionnaireFilesViewSet)
 # records
 router.register("recordtemplates", views.RecordTemplateViewSet)
-router.register("records", views.RecordViewSet)
 # encryptions
-router.register("encryptions", views.RecordEncryptionNewViewSet)
+# router.register("encryptions", views.RecordEncryptionNewViewSet)
 # fields
 router.register("recordstatefields", views.RecordStateFieldViewSet)
 router.register("recordusersfields", views.RecordUsersFieldViewSet)

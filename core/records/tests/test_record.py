@@ -3,8 +3,8 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from core.models import HasPermission, Org, Permission, RlcUser, UserProfile
-from core.records.models import Record, RecordTemplate
-from core.records.views import RecordTemplateViewSet, RecordViewSet
+from core.records.models import RecordTemplate
+from core.records.views import RecordTemplateViewSet
 from core.seedwork import test_helpers
 from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
@@ -117,12 +117,3 @@ class RecordViewSetWorking(BaseRecord, TestCase):
             template=self.template, users=[self.user]
         )["record"]
         self.record.put_in_folder(self.rlc_user)
-
-    def test_record_delete(self):
-        self.setup_record()
-        view = RecordViewSet.as_view(actions={"delete": "destroy"})
-        request = self.factory.delete("")
-        force_authenticate(request, self.user)
-        response = view(request, pk=self.record.pk)
-        self.assertEqual(response.status_code, 204)
-        self.assertEqual(Record.objects.filter(pk=self.record.pk).count(), 0)

@@ -12,7 +12,6 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from core.records.models import (
-    Record,
     RecordEncryptedFileEntry,
     RecordEncryptedFileField,
     RecordEncryptedSelectEntry,
@@ -35,8 +34,6 @@ from core.records.models import (
 )
 from core.records.serializers.record import (
     FIELD_TYPES_AND_SERIALIZERS,
-    RecordCreateSerializer,
-    RecordDetailSerializer,
     RecordEncryptedFileEntrySerializer,
     RecordEncryptedFileFieldSerializer,
     RecordEncryptedSelectEntrySerializer,
@@ -47,7 +44,6 @@ from core.records.serializers.record import (
     RecordMultipleFieldSerializer,
     RecordSelectEntrySerializer,
     RecordSelectFieldSerializer,
-    RecordSerializer,
     RecordStandardEntrySerializer,
     RecordStandardFieldSerializer,
     RecordStateEntrySerializer,
@@ -58,10 +54,7 @@ from core.records.serializers.record import (
     RecordUsersFieldSerializer,
 )
 from core.seedwork.permission import CheckPermissionWall
-from core.static import (
-    PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
-    PERMISSION_RECORDS_ADD_RECORD,
-)
+from core.static import PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
 
 
 ###
@@ -194,71 +187,6 @@ class RecordUsersFieldViewSet(RecordFieldViewSet):
     queryset = RecordUsersField.objects.none()
     serializer_class = RecordUsersFieldSerializer
     model = RecordUsersField
-
-
-###
-# Record
-###
-class RecordViewSet(
-    CheckPermissionWall,
-    mixins.RetrieveModelMixin,
-    mixins.DestroyModelMixin,
-    GenericViewSet,
-):
-    queryset = Record.objects.none()
-    serializer_class = RecordSerializer
-    permission_wall = {"create": PERMISSION_RECORDS_ADD_RECORD}
-
-    def get_serializer_class(self):
-        if self.action in ["retrieve"]:
-            return RecordDetailSerializer
-        elif self.action in ["create"]:
-            return RecordCreateSerializer
-        return super().get_serializer_class()
-
-    def retrieve(self, request, *args, **kwargs) -> Response:
-        instance = self.get_queryset().get(uuid=kwargs["pk"])
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
-    def get_queryset(self):
-        if self.action in ["retrieve"]:
-            return (
-                Record.objects.filter(template__rlc=self.request.user.rlc)
-                .prefetch_related(
-                    "state_entries",
-                    "state_entries__field",
-                    "select_entries",
-                    "select_entries__field",
-                    "standard_entries",
-                    "standard_entries__field",
-                    "multiple_entries",
-                    "multiple_entries__field",
-                    "users_entries",
-                    "users_entries__field",
-                    "users_entries__value",
-                    "encrypted_select_entries",
-                    "encrypted_select_entries__field",
-                    "encrypted_standard_entries",
-                    "encrypted_standard_entries__field",
-                    "encrypted_file_entries",
-                    "encrypted_file_entries__field",
-                    "statistic_entries",
-                    "statistic_entries__field",
-                    "template",
-                    "template__standard_fields",
-                    "template__select_fields",
-                    "template__users_fields",
-                    "template__state_fields",
-                    "template__encrypted_file_fields",
-                    "template__encrypted_select_fields",
-                    "template__encrypted_standard_fields",
-                    "encryptions",
-                    "encryptions__user",
-                )
-                .select_related("old_client")
-            )
-        return Record.objects.filter(template__rlc=self.request.user.rlc)
 
 
 ###

@@ -19,7 +19,6 @@ from core.records.views import (
     RecordTemplateViewSet,
     RecordUsersEntryViewSet,
     RecordUsersFieldViewSet,
-    RecordViewSet,
 )
 
 
@@ -61,8 +60,6 @@ class RecordViewSetsPermissions(TestCase):
         ),
         (RecordStateFieldViewSet, "create", "partial_update", "update", "destroy"),
         (RecordUsersFieldViewSet, "create", "partial_update", "update", "destroy"),
-        # record
-        (RecordViewSet, "retrieve", "destroy"),
         # entry
         (
             RecordEncryptedSelectEntryViewSet,
