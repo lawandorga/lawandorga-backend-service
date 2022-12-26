@@ -119,9 +119,6 @@ class OutputRecordDetail(BaseModel):
     fields: list[OutputField]
     entries: dict[str, OutputDetailEntry]
 
-    class Config:
-        orm_mode = True
-
 
 class OutputRecord(BaseModel):
     id: int

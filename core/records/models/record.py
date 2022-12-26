@@ -68,6 +68,23 @@ class Record(DjangoItem, models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+    UNENCRYPTED_ENTRY_TYPES = [
+        "state_entries",
+        "statistic_entries",
+        "multiple_entries",
+        "standard_entries",
+        "select_entries",
+        "users_entries",
+    ]
+
+    ENCRYPTED_ENTRY_TYPES = [
+        "encrypted_select_entries",
+        "encrypted_file_entries",
+        "encrypted_standard_entries",
+    ]
+
+    ALL_ENTRY_TYPES = ENCRYPTED_ENTRY_TYPES + UNENCRYPTED_ENTRY_TYPES
+
     class Meta:
         ordering = ["-created"]
         verbose_name = "Record"
@@ -240,49 +257,10 @@ class Record(DjangoItem, models.Model):
         key = encryption.key
         return key
 
-    def get_unencrypted_entry_types(self):
-        return [
-            "state_entries",
-            "statistic_entries",
-            "multiple_entries",
-            "standard_entries",
-            "select_entries",
-            "users_entries",
-        ]
-
-    def get_encrypted_entry_types(self):
-        return [
-            "encrypted_select_entries",
-            "encrypted_file_entries",
-            "encrypted_standard_entries",
-        ]
-
-    def get_all_entry_types(self):
-        return self.get_unencrypted_entry_types() + self.get_encrypted_entry_types()
-
-    def get_entries(
-        self, entry_types_and_serializers, aes_key_record=None, request=None, sort=False
-    ):
-        # this might look weird, but i've done it this way to optimize performance
-        # with prefetch related
-        # and watch out this expects a self from a query which has prefetched
-        # all the relevant unencrypted entries otherwise the queries explode
-        entries = {}
-        for (entry_type, serializer) in entry_types_and_serializers:
-            for entry in getattr(self, entry_type).all():
-                if entry.encrypted_entry:
-                    entry.decrypt(aes_key_record=aes_key_record)
-                entries[entry.field.name] = serializer(
-                    instance=entry, context={"request": request}
-                ).data
-        if sort:
-            entries = dict(sorted(entries.items(), key=lambda item: item[1]["order"]))
-        return entries
-
     def get_entries_new(self, user: RlcUser):
         entries = {}
         aes_key_record = self.get_aes_key(user)
-        for entry_type in self.get_all_entry_types():
+        for entry_type in self.ALL_ENTRY_TYPES:
             for entry in getattr(self, entry_type).all():
                 if entry.encrypted_entry:
                     entry.decrypt(aes_key_record=aes_key_record)

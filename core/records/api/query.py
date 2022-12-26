@@ -3,7 +3,7 @@ import itertools
 from core.auth.models import RlcUser
 from core.records.api import schemas
 from core.records.models import Record, RecordTemplate
-from core.seedwork.api_layer import Router
+from core.seedwork.api_layer import ApiError, Router
 
 router = Router()
 
@@ -51,6 +51,12 @@ def query__record(rlc_user: RlcUser, data: schemas.InputQueryRecord):
         .filter(template__rlc_id=rlc_user.org_id)
         .get(uuid=data.uuid)
     )
+
+    if not record.has_access(rlc_user):
+        raise ApiError("You have no access to this folder.")
+
+    if not record.folder_uuid:
+        record.put_in_folder(rlc_user)
 
     client = None
     if record.old_client:
