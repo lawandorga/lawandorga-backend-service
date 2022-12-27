@@ -6,8 +6,12 @@ from core.static import PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS
 
 
 @use_case
-def create_deletion_request(__actor: RlcUser, explanation: str, record=find(record_from_id)):
-    deletion = RecordDeletion(requested_by=__actor.user, state='re', record=record, explanation=explanation)
+def create_deletion_request(
+    __actor: RlcUser, explanation: str, record=find(record_from_id)
+):
+    deletion = RecordDeletion(
+        requested_by=__actor.user, state="re", record=record, explanation=explanation
+    )
     deletion.save()
 
 
@@ -21,4 +25,3 @@ def accept_deletion_request(__actor: RlcUser, deletion=find(deletion_from_id)):
 def decline_deletion_request(__actor: RlcUser, deletion=find(deletion_from_id)):
     deletion.decline(__actor)
     deletion.save()
-    print(deletion.record)
