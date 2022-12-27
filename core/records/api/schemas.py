@@ -27,6 +27,29 @@ class InputRecordChangeName(BaseModel):
     name: str
 
 
+class InputDeletion(BaseModel):
+    id: int
+
+
+class InputCreateDeletion(BaseModel):
+    record: int
+    explanation: str
+
+
+class OutputRecordDeletion(BaseModel):
+    created: datetime
+    explanation: str
+    id: int
+    processed_by_detail: str
+    record_detail: str
+    requested_by_detail: str
+    state: str
+    processed: Optional[datetime]
+
+    class Config:
+        orm_mode = True
+
+
 class OutputRecordCreate(BaseModel):
     id: int
 

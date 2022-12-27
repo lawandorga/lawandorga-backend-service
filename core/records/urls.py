@@ -8,8 +8,7 @@ router = DefaultRouter()
 router.register("messages", views.MessageViewSet)
 router.register("pool_records", views.PoolRecordViewSet)
 router.register("pool_consultants", views.PoolConsultantViewSet)
-# record access and deletion
-router.register("deletions", views.RecordDeletionViewSet)
+# record access
 router.register("accesses", views.RecordAccessViewSet)
 # questionnaires
 router.register("questionnairetemplates", views.QuestionnaireTemplateViewSet)
@@ -52,5 +51,6 @@ urlpatterns = [
     path("records/v2/", include(api.records_router.urls)),
     path("", include(router.urls)),
     path("query/", include(api.query_router.urls)),
+    path('deletions/', include(api.deletions_router.urls)),
     path("questionnaires/v2/", include(api.questionnaire_router.urls)),
 ]
