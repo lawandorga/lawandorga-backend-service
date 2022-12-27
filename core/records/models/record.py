@@ -4,6 +4,7 @@ from uuid import UUID, uuid4
 
 from django.core.files import File as DjangoFile
 from django.db import models, transaction
+from django.urls import reverse
 from django.utils.timezone import localtime
 
 from core.auth.models import RlcUser
@@ -67,6 +68,59 @@ class Record(DjangoItem, models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+    UNENCRYPTED_ENTRY_TYPES = [
+        "state_entries",
+        "statistic_entries",
+        "multiple_entries",
+        "standard_entries",
+        "select_entries",
+        "users_entries",
+    ]
+
+    ENCRYPTED_ENTRY_TYPES = [
+        "encrypted_select_entries",
+        "encrypted_file_entries",
+        "encrypted_standard_entries",
+    ]
+
+    UNENCRYPTED_PREFETCH_RELATED = [
+        "state_entries",
+        "state_entries__field",
+        "select_entries",
+        "select_entries__field",
+        "standard_entries",
+        "standard_entries__field",
+        "users_entries",
+        "users_entries__value",
+        "users_entries__field",
+        "multiple_entries",
+        "multiple_entries__field",
+        "encryptions",
+        "deletions",
+    ]
+
+    ALL_PREFETCH_RELATED = [
+        "encrypted_select_entries",
+        "encrypted_select_entries__field",
+        "encrypted_standard_entries",
+        "encrypted_standard_entries__field",
+        "encrypted_file_entries",
+        "encrypted_file_entries__field",
+        "statistic_entries",
+        "statistic_entries__field",
+        "template",
+        "template__rlc__users",
+        "template__standard_fields",
+        "template__select_fields",
+        "template__users_fields",
+        "template__state_fields",
+        "template__encrypted_file_fields",
+        "template__encrypted_select_fields",
+        "template__encrypted_standard_fields",
+    ] + UNENCRYPTED_PREFETCH_RELATED
+
+    ALL_ENTRY_TYPES = ENCRYPTED_ENTRY_TYPES + UNENCRYPTED_ENTRY_TYPES
+
     class Meta:
         ordering = ["-created"]
         verbose_name = "Record"
@@ -113,42 +167,28 @@ class Record(DjangoItem, models.Model):
             "Created": localtime(self.created).strftime("%d.%m.%y %H:%M"),
             "Updated": localtime(self.updated).strftime("%d.%m.%y %H:%M"),
         }
-        for entry_type in self.get_unencrypted_entry_types():
+        for entry_type in [
+            "state_entries",
+            "standard_entries",
+            "select_entries",
+            "users_entries",
+        ]:
             for entry in getattr(self, entry_type).all():
                 entries[entry.field.name] = entry.get_value()
         return entries
-
-    @staticmethod
-    def get_unencrypted_prefetch_related():
-        return [
-            "state_entries",
-            "state_entries__field",
-            "select_entries",
-            "select_entries__field",
-            "standard_entries",
-            "standard_entries__field",
-            "users_entries",
-            "users_entries__value",
-            "users_entries__field",
-            "multiple_entries",
-            "multiple_entries__field",
-            "encryptions",
-            "deletions",
-        ]
 
     def set_name(self, name: str):
         super().set_name(name)
         self.name = name
 
     def grant_access(self, to: RlcUser, by: Optional[RlcUser]):
-        if self.folder is not None:
-            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-            folder = self.folder
-            if not folder.has_access(to) and (by is None or folder.has_access(by)):
-                folder.grant_access(to=to, by=by)
-                r.save(folder)
-        else:
-            raise ValueError("This record has no upgrade.")
+        assert self.folder is not None
+
+        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+        folder = self.folder
+        if not folder.has_access(to) and (by is None or folder.has_access(by)):
+            folder.grant_access(to=to, by=by)
+            r.save(folder)
 
     def has_access(self, user: RlcUser) -> bool:
         if self.folder is None:
@@ -161,6 +201,10 @@ class Record(DjangoItem, models.Model):
 
     def generate_key(self, user: RlcUser):
         assert self.folder is not None
+
+        if self.key is not None:
+            raise ValueError("This record already has a key.")
+
         key = SymmetricKey.generate()
         lock_key = self.folder.get_encryption_key(requestor=user)
         enc_key = EncryptedSymmetricKey.create(key, lock_key)
@@ -171,71 +215,36 @@ class Record(DjangoItem, models.Model):
         self._folder = folder
 
     def get_aes_key(self, user: RlcUser, *args, **kwargs):
-        if self.folder is None:
-            self.put_in_folder(user)
-
-        assert self.folder is not None
-
-        if self.key is None:
-            aes_key = self.get_aes_key_old(user)
-            aes_key_box = OpenBox(data=bytes(aes_key, "utf-8"))
-            key = SymmetricKey(key=aes_key_box, origin=SymmetricEncryptionV1.VERSION)
-            folder = self.folder
-            encryption_key = folder.get_encryption_key(requestor=user)
-            self.key = EncryptedSymmetricKey.create(key, encryption_key).as_dict()
-
-            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-            with transaction.atomic():
-                r.save(folder)
-                self.save()
-
+        assert self.folder is not None and self.key is not None
         decryption_key = self.folder.get_decryption_key(requestor=user)
         enc_key = EncryptedSymmetricKey.create_from_dict(self.key)
         key = enc_key.decrypt(decryption_key)
         return key.get_key()
 
-    def get_aes_key_old(self, user: RlcUser):
-        private_key_user = user.get_decryption_key().get_private_key()
-        encryption = self.encryptions.get(user=user)
-        encryption.decrypt(private_key_user)
-        key = encryption.key
-        return key
-
-    def get_unencrypted_entry_types(self):
-        return ["state_entries", "standard_entries", "select_entries", "users_entries"]
-
-    def get_encrypted_entry_types(self):
-        return [
-            "encrypted_select_entries",
-            "encrypted_file_entries",
-            "encrypted_standard_entries",
-        ]
-
-    def get_all_entry_types(self):
-        return self.get_unencrypted_entry_types() + self.get_encrypted_entry_types()
-
-    def get_entries(
-        self, entry_types_and_serializers, aes_key_record=None, request=None, sort=False
-    ):
-        # this might look weird, but i've done it this way to optimize performance
-        # with prefetch related
-        # and watch out this expects a self from a query which has prefetched
-        # all the relevant unencrypted entries otherwise the queries explode
+    def get_entries(self, user: RlcUser):
         entries = {}
-        for (entry_type, serializer) in entry_types_and_serializers:
+        aes_key_record = self.get_aes_key(user)
+        for entry_type in self.ALL_ENTRY_TYPES:
             for entry in getattr(self, entry_type).all():
                 if entry.encrypted_entry:
                     entry.decrypt(aes_key_record=aes_key_record)
-                entries[entry.field.name] = serializer(
-                    instance=entry, context={"request": request}
-                ).data
-        if sort:
-            entries = dict(sorted(entries.items(), key=lambda item: item[1]["order"]))
+                entries[entry.field.name] = {
+                    "name": entry.field.name,
+                    "type": entry.field.type,
+                    "url": entry.url,
+                    "field": entry.field.pk,
+                    "value": entry.get_raw_value(),
+                }
         return entries
 
     def put_in_folder(self, user: RlcUser):
         if not self.has_access(user):
             raise ValueError("User has no access to this folder.")
+
+        if self.folder is not None:
+            raise ValueError("This record is already inside a folder.")
+
+        # put the record inside a folder
         r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
 
         records_folder = r.get_or_create_records_folder(
@@ -248,11 +257,23 @@ class Record(DjangoItem, models.Model):
         )
         folder.grant_access(user)
         folder.set_parent(records_folder, user)
+
         for encryption in list(self.encryptions.exclude(user_id=user.id)):
             folder.grant_access(to=encryption.user, by=user)
 
         folder.add_item(self)
 
+        # get the key of the record
+        private_key_user = user.get_decryption_key().get_private_key()
+        encryption = self.encryptions.get(user=user)
+        encryption.decrypt(private_key_user)
+        aes_key: str = encryption.key  # type: ignore
+        aes_key_box = OpenBox(data=bytes(aes_key, "utf-8"))
+        key = SymmetricKey(key=aes_key_box, origin=SymmetricEncryptionV1.VERSION)
+        encryption_key = folder.get_encryption_key(requestor=user)
+        self.key = EncryptedSymmetricKey.create(key, encryption_key).as_dict()
+
+        # save the record and the folder
         with transaction.atomic():
             r.save(folder)
             self.save()
@@ -264,12 +285,19 @@ class Record(DjangoItem, models.Model):
 class RecordEntry(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-
+    view_name: str
     # used in record for get_entries
     encrypted_entry = False
 
     class Meta:
         abstract = True
+
+    @property
+    def url(self):
+        return reverse(self.view_name, kwargs={"pk": self.pk})
+
+    def get_raw_value(self):
+        return self.get_value()
 
     def get_value(self, *args, **kwargs):
         raise NotImplementedError("This method needs to be implemented")
@@ -277,7 +305,6 @@ class RecordEntry(models.Model):
 
 class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
     encryption_class = AESEncryption
-
     # used in record for get entries
     encrypted_entry = True
 
@@ -319,6 +346,7 @@ class RecordStateEntry(RecordEntry):
     )
     value = models.CharField(max_length=1000)
     closed_at = models.DateTimeField(blank=True, null=True, default=None)
+    view_name = "recordstateentry-detail"
 
     class Meta:
         unique_together = ["record", "field"]
@@ -340,6 +368,7 @@ class RecordUsersEntry(RecordEntry):
         RecordUsersField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.ManyToManyField(RlcUser, blank=True)
+    view_name = "recordusersentry-detail"
 
     class Meta:
         unique_together = ["record", "field"]
@@ -348,6 +377,12 @@ class RecordUsersEntry(RecordEntry):
 
     def __str__(self):
         return "recordUsersEntry: {};".format(self.pk)
+
+    def get_raw_value(self):
+        users = []
+        for user in getattr(self, "value").all():
+            users.append(user.pk)
+        return users
 
     def get_value(self, *args, **kwargs):
         # this might look weird, but i've done it this way to optimize performance
@@ -366,6 +401,7 @@ class RecordSelectEntry(RecordEntry):
         RecordSelectField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.CharField(max_length=200)
+    view_name = "recordselectentry-detail"
 
     class Meta:
         unique_together = ["record", "field"]
@@ -387,6 +423,7 @@ class RecordMultipleEntry(RecordEntry):
         RecordMultipleField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.JSONField()
+    view_name = "recordmultipleentry-detail"
 
     class Meta:
         unique_together = ["record", "field"]
@@ -395,6 +432,9 @@ class RecordMultipleEntry(RecordEntry):
 
     def __str__(self):
         return "recordMultipleEntry: {}".format(self.pk)
+
+    def get_value(self):
+        return self.value
 
 
 class RecordEncryptedSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
@@ -405,6 +445,7 @@ class RecordEncryptedSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
         RecordEncryptedSelectField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.BinaryField()
+    view_name = "recordencryptedselectentry-detail"
 
     # encryption
     encrypted_fields = ["value"]
@@ -439,6 +480,7 @@ class RecordEncryptedFileEntry(RecordEntry):
         RecordEncryptedFileField, related_name="entries", on_delete=models.PROTECT
     )
     file = models.FileField(upload_to="recordmanagement/recordencryptedfileentry/")
+    view_name = "recordencryptedfileentry-detail"
 
     class Meta:
         unique_together = ["record", "field"]
@@ -498,6 +540,7 @@ class RecordStandardEntry(RecordEntry):
         RecordStandardField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.TextField(max_length=20000)
+    view_name = "recordstandardentry-detail"
 
     class Meta:
         unique_together = ["record", "field"]
@@ -519,6 +562,7 @@ class RecordEncryptedStandardEntry(RecordEntryEncryptedModelMixin, RecordEntry):
         RecordEncryptedStandardField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.BinaryField()
+    view_name = "recordencryptedstandardentry-detail"
 
     # encryption
     encryption_class = AESEncryption
@@ -546,6 +590,7 @@ class RecordStatisticEntry(RecordEntry):
         RecordStatisticField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.CharField(max_length=200)
+    view_name = "recordstatisticentry-detail"
 
     class Meta:
         unique_together = ["record", "field"]

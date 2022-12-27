@@ -13,6 +13,9 @@ router = Router()
 def command__upload_multiple_file(
     rlc_user: RlcUser, data: schemas.InputUploadMultipleFiles
 ):
+    if data.files is None:
+        raise ApiError({"files": ["No file was submitted."]})
+
     for file in data.files:
         if not isinstance(file, InMemoryUploadedFile):
             raise ApiError(

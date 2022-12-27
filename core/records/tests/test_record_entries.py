@@ -67,6 +67,7 @@ class BaseRecordEntry(BaseRecord):
         )
         encryption.encrypt(public_key_user=public_key_user)
         encryption.save()
+        self.record.put_in_folder(self.user.rlc_user)
 
 
 class GenericRecordEntry(BaseRecordEntry):
@@ -226,7 +227,6 @@ class RecordUsersEntryViewSetWorking(GenericRecordEntry, TestCase):
         self.setup_entry()
         view = RecordUsersEntryViewSet.as_view(actions={"patch": "partial_update"})
         data = {"value": []}
-        self.record.put_in_folder(self.user.rlc_user)
         request = self.factory.patch("", data=data, format="json")
         force_authenticate(request, self.user)
         response = view(request, pk=self.entry.pk)

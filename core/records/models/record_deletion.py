@@ -1,8 +1,10 @@
 from django.db import models
 from django.utils import timezone
 
+from core.auth.models import RlcUser
 from core.models import UserProfile
 from core.records.models.record import Record
+from core.seedwork.domain_layer import DomainError
 
 
 class RecordDeletion(models.Model):
@@ -38,12 +40,47 @@ class RecordDeletion(models.Model):
     class Meta:
         verbose_name = "RecordDeletion"
         verbose_name_plural = "RecordDeletions"
-        ordering = ["-state", "-created"]
+        ordering = ["-created"]
+
+    @property
+    def record_detail(self):
+        if self.record:
+            return self.record.name
+        return "Deleted"
+
+    @property
+    def processed_by_detail(self):
+        if self.processed_by:
+            return self.processed_by.name
+        return ""
+
+    @property
+    def requested_by_detail(self):
+        if self.requested_by:
+            return self.requested_by.name
+        return ""
 
     def save(self, *args, **kwargs):
         if self.state == "gr" and self.record:
-            self.processed_on = timezone.now()
             super().save(*args, **kwargs)
             self.record.delete()
         else:
             super().save(*args, **kwargs)
+
+    def accept(self, by: RlcUser):
+        if self.state != "re":
+            raise DomainError(
+                "This deletion request can not be accepted, because it is not in a requested state."
+            )
+        self.processed_by = by.user
+        self.processed = timezone.now()
+        self.state = "gr"
+
+    def decline(self, by: RlcUser):
+        if self.state != "re":
+            raise DomainError(
+                "This deletion request can not be declined, because it is not in a requested state."
+            )
+        self.processed_by = by.user
+        self.processed = timezone.now()
+        self.state = "de"

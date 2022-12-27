@@ -1,5 +1,6 @@
 from django.apps import apps
 from django.db import models
+from django.urls import reverse
 
 from core.models import Group, Org
 
@@ -34,6 +35,7 @@ class RecordTemplate(models.Model):
             "users_fields",
             "select_fields",
             "multiple_fields",
+            "statistic_fields",
             "encrypted_standard_fields",
             "encrypted_select_fields",
             "encrypted_file_fields",
@@ -50,6 +52,25 @@ class RecordTemplate(models.Model):
                 fields.append(
                     serializer(instance=field, context={"request": request}).data
                 )
+        fields = list(sorted(fields, key=lambda i: i["order"]))
+        return fields
+
+    def get_fields_new(self):
+        fields = []
+        for field_type in self.get_field_types():
+            for field in getattr(self, field_type).all():
+                data = {
+                    "entry_url": field.entry_url,
+                    "label": field.name,
+                    "name": field.name,
+                    "type": field.type,
+                    "kind": field.kind,
+                    "id": field.pk,
+                    "order": field.order,
+                }
+                if hasattr(field, "options"):
+                    data["options"] = field.options
+                fields.append(data)
         fields = list(sorted(fields, key=lambda i: i["order"]))
         return fields
 
@@ -122,6 +143,7 @@ class RecordField(models.Model):
     order = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    entry_view_name: str
 
     class Meta:
         abstract = True
@@ -129,6 +151,11 @@ class RecordField(models.Model):
     @property
     def type(self):
         raise NotImplementedError("This property needs to be implemented.")
+
+    @property
+    def entry_url(self):
+        url = reverse(self.entry_view_name)
+        return url
 
     @classmethod
     def get_entry_model(cls):
@@ -142,6 +169,7 @@ class RecordStateField(RecordField):
         RecordTemplate, on_delete=models.CASCADE, related_name="state_fields"
     )
     options = models.JSONField(default=list)
+    entry_view_name = "recordstateentry-list"
 
     class Meta:
         verbose_name = "RecordStateField"
@@ -150,6 +178,10 @@ class RecordStateField(RecordField):
     @property
     def type(self):
         return "select"
+
+    @property
+    def kind(self):
+        return "State"
 
     def __str__(self):
         return "recordStateField: {}; name: {};".format(self.pk, self.name)
@@ -163,10 +195,15 @@ class RecordUsersField(RecordField):
     group = models.ForeignKey(
         Group, blank=True, null=True, default=None, on_delete=models.SET_NULL
     )
+    entry_view_name = "recordusersentry-list"
 
     class Meta:
         verbose_name = "RecordUsersField"
         verbose_name_plural = "RecordUsersFields"
+
+    @property
+    def kind(self):
+        return "Users"
 
     @property
     def type(self):
@@ -190,6 +227,7 @@ class RecordSelectField(RecordField):
         RecordTemplate, on_delete=models.CASCADE, related_name="select_fields"
     )
     options = models.JSONField(default=list)
+    entry_view_name = "recordselectentry-list"
 
     class Meta:
         verbose_name = "RecordSelectField"
@@ -198,6 +236,10 @@ class RecordSelectField(RecordField):
     @property
     def type(self):
         return "select"
+
+    @property
+    def kind(self):
+        return "Select"
 
     def __str__(self):
         return "recordSelectField: {}; name: {};".format(self.pk, self.name)
@@ -208,6 +250,7 @@ class RecordMultipleField(RecordField):
         RecordTemplate, on_delete=models.CASCADE, related_name="multiple_fields"
     )
     options = models.JSONField(default=list)
+    entry_view_name = "recordmultipleentry-list"
 
     class Meta:
         verbose_name = "RecordMultipleField"
@@ -216,6 +259,10 @@ class RecordMultipleField(RecordField):
     @property
     def type(self):
         return "multiple"
+
+    @property
+    def kind(self):
+        return "Multiple"
 
     def __str__(self):
         return "recordMultipleField: {}; name: {};".format(self.pk, self.name)
@@ -226,6 +273,7 @@ class RecordEncryptedSelectField(RecordField):
         RecordTemplate, on_delete=models.CASCADE, related_name="encrypted_select_fields"
     )
     options = models.JSONField(default=list)
+    entry_view_name = "recordencryptedselectentry-list"
 
     class Meta:
         verbose_name = "RecordEncryptedSelectField"
@@ -235,6 +283,10 @@ class RecordEncryptedSelectField(RecordField):
     def type(self):
         return "select"
 
+    @property
+    def kind(self):
+        return "Encrypted Select"
+
     def __str__(self):
         return "recordEncryptedSelectField: {}; name: {};".format(self.pk, self.name)
 
@@ -243,6 +295,7 @@ class RecordEncryptedFileField(RecordField):
     template = models.ForeignKey(
         RecordTemplate, on_delete=models.CASCADE, related_name="encrypted_file_fields"
     )
+    entry_view_name = "recordencryptedfileentry-list"
 
     class Meta:
         verbose_name = "RecordEncryptedFileField"
@@ -251,6 +304,10 @@ class RecordEncryptedFileField(RecordField):
     @property
     def type(self):
         return "file"
+
+    @property
+    def kind(self):
+        return "Encrypted File"
 
     def __str__(self):
         return "recordEncryptedFileField: {}; name: {};".format(self.pk, self.name)
@@ -267,6 +324,7 @@ class RecordStandardField(RecordField):
         ("DATE", "Date"),
     )
     field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default="TEXT")
+    entry_view_name = "recordstandardentry-list"
 
     class Meta:
         verbose_name = "RecordStandardField"
@@ -276,8 +334,26 @@ class RecordStandardField(RecordField):
     def type(self):
         return self.field_type.lower()
 
+    @property
+    def kind(self):
+        return "Standard"
+
     def __str__(self):
         return "recordStandardField: {}; name: {};".format(self.pk, self.name)
+
+    @staticmethod
+    def get_field_types():
+        return [
+            "state_fields",
+            "standard_fields",
+            "select_fields",
+            "multiple_fields",
+            "users_fields",
+            "encrypted_standard_fields",
+            "encrypted_select_fields",
+            "encrypted_file_fields",
+            "statistic_fields",
+        ]
 
 
 class RecordEncryptedStandardField(RecordField):
@@ -292,6 +368,7 @@ class RecordEncryptedStandardField(RecordField):
         ("DATE", "Date"),
     )
     field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default="TEXT")
+    entry_view_name = "recordencryptedstandardentry-list"
 
     class Meta:
         verbose_name = "RecordEncryptedStandardField"
@@ -300,6 +377,10 @@ class RecordEncryptedStandardField(RecordField):
     @property
     def type(self):
         return self.field_type.lower()
+
+    @property
+    def kind(self):
+        return "Encrypted Standard"
 
     def __str__(self):
         return "recordEncryptedStandardField: {}; name: {};".format(self.pk, self.name)
@@ -311,6 +392,7 @@ class RecordStatisticField(RecordField):
     )
     options = models.JSONField(default=list)
     helptext = models.CharField(max_length=1000)
+    entry_view_name = "recordstatisticentry-list"
 
     class Meta:
         verbose_name = "RecordStatisticField"
@@ -319,6 +401,10 @@ class RecordStatisticField(RecordField):
     @property
     def type(self):
         return "select"
+
+    @property
+    def kind(self):
+        return "Statistic"
 
     def __str__(self):
         return "recordStatisticField: {}; name: {};".format(self.pk, self.name)
