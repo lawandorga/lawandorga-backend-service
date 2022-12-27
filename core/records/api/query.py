@@ -12,7 +12,7 @@ router = Router()
 def query__records_page(rlc_user: RlcUser):
     records_1 = list(
         Record.objects.filter(template__rlc_id=rlc_user.org_id)
-        .prefetch_related(*Record.get_unencrypted_prefetch_related())
+        .prefetch_related(*Record.UNENCRYPTED_PREFETCH_RELATED)
         .select_related("template")
     )
 
@@ -46,7 +46,7 @@ def query__records_page(rlc_user: RlcUser):
 )
 def query__record(rlc_user: RlcUser, data: schemas.InputQueryRecord):
     record = (
-        Record.objects.prefetch_related(*Record.get_encrypted_prefetch_related())
+        Record.objects.prefetch_related(*Record.ALL_PREFETCH_RELATED)
         .select_related("old_client", "template")
         .filter(template__rlc_id=rlc_user.org_id)
         .get(uuid=data.uuid)
@@ -77,5 +77,5 @@ def query__record(rlc_user: RlcUser, data: schemas.InputQueryRecord):
         "updated": record.updated,
         "client": client,
         "fields": record.template.get_fields_new(),
-        "entries": record.get_entries_new(rlc_user),
+        "entries": record.get_entries(rlc_user),
     }
