@@ -6,14 +6,14 @@
 version: 2
 updates:
   - package-ecosystem: "pip" # See documentation for possible values
-    directory: "/Pipfile" # Location of package manifests
+    directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
   - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/package.json" # Location of package manifests
+    directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
   - package-ecosystem: "docker" # See documentation for possible values
-    directory: "/Dockerfile" # Location of package manifests
+    directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
