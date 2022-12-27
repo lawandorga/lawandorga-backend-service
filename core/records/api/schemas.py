@@ -130,6 +130,9 @@ class OutputClient(BaseModel):
     phone_number: str
     note: str
 
+    class Config:
+        orm_mode = True
+
 
 class OutputRecordDetail(BaseModel):
     created: datetime
@@ -138,7 +141,7 @@ class OutputRecordDetail(BaseModel):
     uuid: UUID
     folder_uuid: UUID
     name: str
-    client: Optional[dict]
+    client: Optional[OutputClient]
     fields: list[OutputField]
     entries: dict[str, OutputDetailEntry]
 
