@@ -1,12 +1,13 @@
-from typing import Union
+from typing import Literal, Union
 
 import dns.resolver
 
 from core.mail.api import schemas
 from core.mail.models import MailUser
+from core.mail.models.domain import DnsResults, DnsSetting
 from core.mail.use_cases.domain import add_domain, change_domain, check_domain_settings
 from core.mail.use_cases.finders import mail_domain_from_uuid
-from core.seedwork.api_layer import ApiError, Router
+from core.seedwork.api_layer import Router
 
 router = Router()
 
@@ -27,24 +28,33 @@ def command__change_domain(mail_user: MailUser, data: schemas.InputChangeDomain)
     output_schema=schemas.OutputDomainCheck,
 )
 def command__check_domain_settings(mail_user: MailUser, data: schemas.InputCheckDomain):
-    records: list[str] = []
+    results: DnsResults = {"MX": "", "DKIM": "", "SPF": "", "DMARC": ""}
 
     domain = mail_domain_from_uuid(mail_user, data.domain)
 
-    try:
-        for setting in domain.get_settings():
-            for item in dns.resolver.resolve(setting["host"], setting["type"]):
-                text = item.to_text().replace('"', "")
-                records.append(text)
-    except dns.exception.DNSException as e:
-        raise ApiError(str(e), status=422)
+    for key, setting in domain.get_settings().items():
+        k: Literal["MX", "DKIM", "DMARC", "SPF"] = key  # type: ignore
+        s: DnsSetting = setting  # type: ignore
 
-    wrong_setting = check_domain_settings(mail_user, records, data.domain)
+        try:
+            dns_result = dns.resolver.resolve(s["host"], s["type"])
+        except dns.exception.DNSException as e:
+            dns_result = None
+            results[k] = str(e)
+
+        if dns_result is not None:
+            local_results = []
+            for item in dns_result:
+                text = item.to_text().replace('"', "")
+                local_results.append(text)
+
+            results[k] = local_results
+
+    wrong_setting = check_domain_settings(mail_user, results, data.domain)
 
     domain = mail_domain_from_uuid(mail_user, data.domain)
 
     ret_data: dict[str, Union[list[str], bool]] = {
-        "mx_records": records,
         "wrong_setting": wrong_setting,
         "valid": domain.is_active,
     }

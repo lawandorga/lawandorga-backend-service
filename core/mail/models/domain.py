@@ -1,11 +1,31 @@
 import re
-from typing import Optional
+from typing import Literal, TypedDict, Union
 from uuid import uuid4
 
 from django.conf import settings
 from django.db import models
 
 from core.mail.models.org import MailOrg
+
+
+class DnsSetting(TypedDict):
+    type: str
+    host: str
+    check: str
+
+
+class DnsSettings(TypedDict):
+    MX: DnsSetting
+    DKIM: DnsSetting
+    DMARC: DnsSetting
+    SPF: DnsSetting
+
+
+class DnsResults(TypedDict):
+    MX: Union[str, list[str]]
+    DKIM: Union[str, list[str]]
+    DMARC: Union[str, list[str]]
+    SPF: Union[str, list[str]]
 
 
 class MailDomain(models.Model):
@@ -61,47 +81,72 @@ class MailDomain(models.Model):
     def deactivate(self):
         self.is_active = False
 
-    def __check_setting(self, setting: dict, dns_results: list[str]) -> bool:
+    def __check_setting(
+        self, setting: DnsSetting, dns_results: list[str]
+    ) -> tuple[bool, str]:
+
         p = re.compile(setting["check"])
+
         for result in dns_results:
-            match: Optional[re.Match] = p.match(result)
+            match = p.match(result)
             if match is not None:
-                return True
+                return True, ""
 
-        return False
+        return (
+            False,
+            "'{}' setting should pass the regex check '{}' but did not. Your setting is: '{}'.".format(
+                setting["type"], setting["check"], ", ".join(dns_results)
+            ),
+        )
 
-    def check_settings(self, records: list[str]) -> tuple[bool, None | dict]:
-        for setting in self.get_settings():
-            result = self.__check_setting(setting, records)
-            if result is False:
+    def check_settings(self, dns_results: DnsResults) -> tuple[bool, None | str]:
+        dns_settings = self.get_settings()
+
+        for key in dns_settings.keys():
+            k: Literal["MX", "DKIM", "DMARC", "SPF"] = key  # type: ignore
+            results: str | list[str] = dns_results[k]
+
+            if isinstance(results, str):
                 self.deactivate()
-                return False, setting
+                return (
+                    False,
+                    "While checking the '{}' setting the following error happened: '{}'.".format(
+                        k, results
+                    ),
+                )
+
+            result, error = self.__check_setting(dns_settings[k], results)
+
+            if not result:
+                self.deactivate()
+                return False, error
 
         self.activate()
         return True, None
 
-    def get_settings(self):
-        return [
-            {
+    def get_settings(self) -> DnsSettings:
+        ret: DnsSettings = {
+            "MX": {
                 "type": "MX",
                 "host": self.name,
                 "check": r"^\d\d? {}.$".format(settings.MAIL_MX_RECORD),
             },
-            {
+            "SPF": {
                 "type": "TXT",
                 "host": self.name,
-                "check": r"^v=spf1 +(.+ +)?include:{} +(.+ +)?-all$".format(
-                    settings.MAIL_SPF_RECORD
+                "check": r"^v=spf1 +(.+ +)?include:spf.{} +(.+ +)?-all$".format(
+                    self.name
                 ),
             },
-            {
+            "DMARC": {
                 "type": "CNAME",
                 "host": f"_dmarc.{self.name}",
                 "check": r"^{}\.$".format(settings.MAIL_DMARC_RECORD),
             },
-            {
+            "DKIM": {
                 "type": "CNAME",
                 "host": f"2022-12._domainkey.{self.name}",
                 "check": r"^{}\.$".format(settings.MAIL_DKIM_RECORD),
             },
-        ]
+        }
+        return ret

@@ -203,7 +203,6 @@ CALENDAR_URL = "http://localhost:8000/api/events/ics/"
 
 # this is used to check the domain settings for the email application
 MAIL_MX_RECORD = "mail.law-orga.de"
-MAIL_SPF_RECORD = "spf.mail-test.law-orga.de"
 MAIL_DMARC_RECORD = "dmarc.mail.law-orga.de"
 MAIL_DKIM_RECORD = "2022-12.dkim.mail.law-orga.de"
 

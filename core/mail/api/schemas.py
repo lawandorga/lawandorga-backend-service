@@ -207,13 +207,6 @@ class OutputPageUser(BaseModel):
     __ = qs_to_list("addresses")
 
 
-class OutputWrongSetting(BaseModel):
-    type: str
-    check: str
-    host: str
-
-
 class OutputDomainCheck(BaseModel):
-    mx_records: list[str]
     valid: bool
-    wrong_setting: None | OutputWrongSetting
+    wrong_setting: None | str
