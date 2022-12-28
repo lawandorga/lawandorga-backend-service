@@ -202,7 +202,9 @@ TIMEOUT_TIMEDELTA = timedelta(minutes=30)
 CALENDAR_URL = "http://localhost:8000/api/events/ics/"
 
 # this is used to check the domain settings for the email application
-MAIL_MX_RECORD = "mail.law-orga.de."
+MAIL_MX_RECORD = "mail.law-orga.de"
+MAIL_DMARC_RECORD = "dmarc.mail.law-orga.de"
+MAIL_DKIM_RECORD = "2022-12.dkim.mail.law-orga.de"
 
 # General settings displayed on the index page
 RUNTIME = datetime.now(pytz.timezone("Europe/Berlin")).strftime("%Y-%m-%d--%H:%M:%S")

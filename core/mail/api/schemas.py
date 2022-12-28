@@ -208,5 +208,5 @@ class OutputPageUser(BaseModel):
 
 
 class OutputDomainCheck(BaseModel):
-    mx_records: list[str]
     valid: bool
+    wrong_setting: None | str

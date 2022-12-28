@@ -1,4 +1,5 @@
 import pytest
+from django.conf import settings
 
 from core.mail.models import MailDomain
 
@@ -39,3 +40,39 @@ def test_domain_legal():
     MailDomain.check_domain("abc.def.xyz.law-orga.de")
     MailDomain.check_domain("abc.def.xyz.law-orga.com")
     MailDomain.check_domain("law-orga.org")
+
+
+def test_check_settings():
+    domain = MailDomain(name="mail-abc.mydomain.de")
+    correct_settings = {
+        "MX": [f"20 {settings.MAIL_MX_RECORD}."],
+        "SPF": [f"v=spf1 include:spf.{domain.name} -all"],
+        "DMARC": [f"{settings.MAIL_DMARC_RECORD}."],
+        "DKIM": [f"{settings.MAIL_DKIM_RECORD}."],
+    }
+    result, error = domain.check_settings(correct_settings)
+    assert result and domain.is_active
+
+
+def test_wrong_settings():
+    domain = MailDomain(name="mail-abc.mydomain.de")
+    correct_settings = {
+        "MX": [f"20 {settings.MAIL_MX_RECORD}."],
+        "SPF": "the error is here",
+        "DMARC": "none",
+        "DKIM": "none",
+    }
+    result, error = domain.check_settings(correct_settings)
+    assert result is False and not domain.is_active
+
+
+def test_wrong_setting():
+    domain = MailDomain(name="mail-abc.mydomain.de")
+    correct_settings = {
+        "MX": [f"20 {settings.MAIL_MX_RECORD}."],
+        "SPF": ["my-wrong-setting"],
+        "DMARC": [],
+        "DKIM": [],
+    }
+    result, error = domain.check_settings(correct_settings)
+    assert result is False and not domain.is_active and "my-wrong-setting" in error
