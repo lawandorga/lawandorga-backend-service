@@ -25,7 +25,7 @@ def deliver_access_to_users_who_should_have_access(__actor: RlcUser):
 
             # do this in order to put the record inside a folder
             if not record.folder_uuid:
-                record.get_aes_key(__actor)
+                record.put_in_folder(__actor)
 
             for user in users_3:
                 if not record.has_access(user):
