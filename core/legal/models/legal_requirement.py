@@ -8,9 +8,11 @@ class LegalRequirement(models.Model):
     title = models.CharField(max_length=1000)
     content = tinymce_models.HTMLField()
     accept_required = models.BooleanField()
+    show_on_register = models.BooleanField(default=False)
     rlc_users = models.ManyToManyField(
         RlcUser, through="LegalRequirementUser", related_name="legal_requirements"
     )
+    order = models.IntegerField(default=0)
     button_text = models.CharField(default="Accept", max_length=1000)
     accept_text = models.CharField(default="Accepted", max_length=1000)
     created = models.DateTimeField(auto_now_add=True)
@@ -20,6 +22,7 @@ class LegalRequirement(models.Model):
         return "legalRequirement: {}; title: {};".format(self.id, self.title)
 
     class Meta:
+        ordering = ["order"]
         verbose_name = "LegalRequirement"
         verbose_name_plural = "LegalRequirements"
 

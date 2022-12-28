@@ -1,3 +1,5 @@
+from django.db.models import Q
+
 from core.auth.api import schemas
 from core.legal.models import LegalRequirement
 from core.rlc.models import Org
@@ -10,6 +12,8 @@ router = Router()
 def query__register_page():
     data = {
         "orgs": Org.objects.all(),
-        "legal_requirements": LegalRequirement.objects.filter(accept_required=True),
+        "legal_requirements": LegalRequirement.objects.filter(
+            Q(accept_required=True) | Q(show_on_register=True)
+        ),
     }
     return data
