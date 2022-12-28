@@ -25,6 +25,13 @@ class MailDomain(models.Model):
 
     @staticmethod
     def check_domain(domain: str):
+        if domain == settings.MAIL_MX_RECORD:
+            raise ValueError(
+                "You are not allowed to use '{}' as your domain.".format(
+                    settings.MAIL_MX_RECORD
+                )
+            )
+
         if not isinstance(domain, str):
             raise TypeError(
                 "The domain should be of type 'str' but is '{}'.".format(type(domain))
@@ -78,7 +85,7 @@ class MailDomain(models.Model):
             {
                 "type": "MX",
                 "host": self.name,
-                "check": r"^\d\d? {}$".format(settings.MAIL_MX_RECORD),
+                "check": r"^\d\d? {}.$".format(settings.MAIL_MX_RECORD),
             },
             {
                 "type": "TXT",
