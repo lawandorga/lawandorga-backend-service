@@ -68,7 +68,7 @@ def mail_group(db, mail_user, domain):
 
 @pytest.fixture
 def domain(db, mail_org):
-    yield MailDomain.objects.create(name="mail.law-orga.de", org=mail_org)
+    yield MailDomain.objects.create(name="mail-abc-xyz.law-orga.de", org=mail_org)
 
 
 @pytest.fixture
