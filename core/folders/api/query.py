@@ -17,7 +17,7 @@ router = Router()
 @router.get(output_schema=schemas.OutputFolderPage)
 def query__list_folders(rlc_user: RlcUser):
     r = get_repository()
-    tree = r.tree(rlc_user.org_id)
+    tree = r.tree(rlc_user, rlc_user.org_id)
 
     available_persons = RlcUser.objects.filter(org_id=rlc_user.org_id)
 

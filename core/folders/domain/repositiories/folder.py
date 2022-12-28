@@ -42,5 +42,5 @@ class FolderRepository(Repository, abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def tree(cls, org_pk: int) -> FolderTree:
+    def tree(cls, user: IOwner, org_pk: int) -> FolderTree:
         pass

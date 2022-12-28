@@ -226,5 +226,5 @@ class DjangoFolderRepository(FolderRepository):
         delete_cache_of_object(cls, folder.org_pk)
 
     @classmethod
-    def tree(cls, org_pk: int) -> FolderTree:
-        return FolderTree(cls.get_list(org_pk))
+    def tree(cls, user: IOwner, org_pk: int) -> FolderTree:
+        return FolderTree(user, cls.get_list(org_pk))

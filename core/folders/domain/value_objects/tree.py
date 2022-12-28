@@ -2,6 +2,7 @@ from typing import Optional, Union
 from uuid import UUID
 
 from core.folders.domain.aggregates.folder import Folder
+from core.folders.domain.external import IOwner
 from core.folders.domain.types import StrDict
 from core.folders.domain.value_objects.folder_key import FolderKey
 from core.folders.domain.value_objects.parent_key import ParentKey
@@ -76,18 +77,19 @@ class Node:
             children.append(node)
         return children
 
-    def as_dict(self):
+    def as_dict(self, user: IOwner):
         return {
             "folder": self.folder.as_dict(),
-            "children": [child.as_dict() for child in self.children],
-            "content": self.folder.items,
+            "children": [child.as_dict(user) for child in self.children],
+            "content": self.folder.items if self.folder.has_access(user) else [],
             "access": self.access.as_dict(),
         }
 
 
 class FolderTree:
-    def __init__(self, folders: list[Folder]):
+    def __init__(self, user: IOwner, folders: list[Folder]):
         self.folders = folders
+        self.user = user
 
         if len(folders) == 0:
             self.__tree = []
@@ -99,7 +101,7 @@ class FolderTree:
         tree = []
         for folder in parent_dict[None]:
             root_node = Node(folders_dict, parent_dict, folder)
-            tree.append(root_node.as_dict())
+            tree.append(root_node.as_dict(self.user))
 
         self.__tree = tree
 
