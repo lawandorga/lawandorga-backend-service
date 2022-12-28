@@ -1,4 +1,4 @@
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.uploadedfile import UploadedFile
 
 from core.auth.models import RlcUser
 from core.files_new.use_cases.file import delete_a_file, upload_a_file
@@ -17,7 +17,7 @@ def command__upload_multiple_file(
         raise ApiError({"files": ["No file was submitted."]})
 
     for file in data.files:
-        if not isinstance(file, InMemoryUploadedFile):
+        if not isinstance(file, UploadedFile):
             raise ApiError(
                 {"files": ["One of the files does not have the right format."]}
             )
@@ -28,7 +28,7 @@ def command__upload_multiple_file(
 
 @router.post(input_schema=schemas.InputUploadFile)
 def command__upload_file(rlc_user: RlcUser, data: schemas.InputUploadFile):
-    if not isinstance(data.file, InMemoryUploadedFile):
+    if not isinstance(data.file, UploadedFile):
         raise ApiError({"file": ["You need to submit a file"]})
 
     upload_a_file(rlc_user, data.file, data.folder)
