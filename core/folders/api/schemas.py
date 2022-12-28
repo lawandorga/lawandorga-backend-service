@@ -77,8 +77,16 @@ class OutputPerson(BaseModel):
         orm_mode = True
 
 
+class OutputTreeFolder(BaseModel):
+    name: str
+    uuid: UUID
+    stop_inherit: bool
+    has_access: bool
+    actions: dict[str, dict] = {}
+
+
 class OutputFolderTreeNode(BaseModel):
-    folder: OutputFolder
+    folder: OutputTreeFolder
     children: list["OutputFolderTreeNode"]
     content: list[OutputContent]
     access: list[OutputAccess]

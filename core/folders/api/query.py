@@ -5,7 +5,7 @@ from django.db import transaction
 from core.auth.models import RlcUser
 from core.folders.api import schemas
 from core.folders.domain.repositiories.item import ItemRepository
-from core.folders.domain.value_objects.tree import Access
+from core.folders.domain.value_objects.tree import TreeAccess
 from core.folders.use_cases.folder import get_repository
 from core.records.models import Record
 from core.seedwork.api_layer import Router
@@ -41,7 +41,7 @@ def query__detail_folder(rlc_user: RlcUser, data: schemas.InputFolderDetail):
     r = get_repository()
     folder = r.retrieve(rlc_user.org_id, data.id)
     folders_dict = r.get_dict(rlc_user.org_id)
-    access = Access(folders_dict, folder)
+    access = TreeAccess(folders_dict, folder)
 
     for item in folder.items:
         if item.repository == "RECORD":

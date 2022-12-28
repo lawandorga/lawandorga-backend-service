@@ -8,7 +8,7 @@ from core.folders.domain.value_objects.folder_key import FolderKey
 from core.folders.domain.value_objects.parent_key import ParentKey
 
 
-class Access:
+class TreeAccess:
     def __init__(self, folders_dict: dict[UUID, Folder], folder: Folder):
         self.__folders_dict = folders_dict
 
@@ -46,6 +46,23 @@ class Access:
         return self.access
 
 
+class TreeFolder:
+    def __init__(self, folder: Folder):
+        self.__folder = folder
+
+    def get_actions(self, has_access: bool):
+        if has_access:
+            return {"OPEN": {"uuid": self.__folder.uuid}}
+        return {}
+
+    def as_dict(self, user: IOwner) -> StrDict:
+        data = self.__folder.as_dict()
+        has_access = self.__folder.has_access(user)
+        data["has_access"] = has_access
+        data["actions"] = self.get_actions(has_access)
+        return data
+
+
 class Node:
     def __init__(
         self,
@@ -59,7 +76,7 @@ class Node:
         self.folder = folder
         self.children = self.get_children(folder)
         self.content = folder.items
-        self.access = Access(folders_dict, folder)
+        self.access = TreeAccess(folders_dict, folder)
 
     def get_children(self, folder) -> list["Node"]:
         if folder.uuid not in self.__parent_dict:
@@ -79,7 +96,7 @@ class Node:
 
     def as_dict(self, user: IOwner):
         return {
-            "folder": self.folder.as_dict(),
+            "folder": TreeFolder(self.folder).as_dict(user),
             "children": [child.as_dict(user) for child in self.children],
             "content": self.folder.items if self.folder.has_access(user) else [],
             "access": self.access.as_dict(),
