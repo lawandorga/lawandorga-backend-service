@@ -75,4 +75,4 @@ def test_wrong_setting():
         "DKIM": [],
     }
     result, error = domain.check_settings(correct_settings)
-    assert result is False and not domain.is_active and 'my-wrong-setting' in error
+    assert result is False and not domain.is_active and "my-wrong-setting" in error
