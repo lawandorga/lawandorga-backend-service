@@ -1,4 +1,5 @@
 from core.mail.models import MailDomain, MailUser
+from core.mail.models.domain import DnsResults
 from core.mail.use_cases.finders import mail_domain_from_uuid
 from core.seedwork.use_case_layer import UseCaseError, find, use_case
 
@@ -25,7 +26,7 @@ def change_domain(__actor: MailUser, name: str, domain=find(mail_domain_from_uui
 
 @use_case
 def check_domain_settings(
-    __actor: MailUser, dns_results: list[str], domain=find(mail_domain_from_uuid)
+    __actor: MailUser, dns_results: DnsResults, domain=find(mail_domain_from_uuid)
 ):
     _, wrong_setting = domain.check_settings(dns_results)
     domain.save()
