@@ -27,23 +27,25 @@ def command__change_domain(mail_user: MailUser, data: schemas.InputChangeDomain)
     output_schema=schemas.OutputDomainCheck,
 )
 def command__check_domain_settings(mail_user: MailUser, data: schemas.InputCheckDomain):
-    mx_records: list[str] = []
+    records: list[str] = []
 
     domain = mail_domain_from_uuid(mail_user, data.domain)
 
     try:
-        for record in dns.resolver.resolve(domain.name, "MX"):
-            exchange = str(record.exchange)
-            mx_records.append(exchange)
-    except dns.exception.DNSException:
-        raise ApiError("Your domain seems to be wrong.")
+        for setting in domain.get_settings():
+            for item in dns.resolver.resolve(setting["host"], setting["type"]):
+                text = item.to_text().replace('"', "")
+                records.append(text)
+    except dns.exception.DNSException as e:
+        raise ApiError(str(e), status=422)
 
-    check_domain_settings(mail_user, mx_records, data.domain)
+    wrong_setting = check_domain_settings(mail_user, records, data.domain)
 
     domain = mail_domain_from_uuid(mail_user, data.domain)
 
     ret_data: dict[str, Union[list[str], bool]] = {
-        "mx_records": mx_records,
+        "mx_records": records,
+        "wrong_setting": wrong_setting,
         "valid": domain.is_active,
     }
 

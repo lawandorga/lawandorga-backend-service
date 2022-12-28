@@ -1,6 +1,8 @@
 import re
+from typing import Optional
 from uuid import uuid4
 
+from django.conf import settings
 from django.db import models
 
 from core.mail.models.org import MailOrg
@@ -51,3 +53,48 @@ class MailDomain(models.Model):
 
     def deactivate(self):
         self.is_active = False
+
+    def __check_setting(self, setting: dict, dns_results: list[str]) -> bool:
+        p = re.compile(setting["check"])
+        for result in dns_results:
+            match: Optional[re.Match] = p.match(result)
+            if match is not None:
+                return True
+
+        return False
+
+    def check_settings(self, records: list[str]) -> tuple[bool, None | dict]:
+        for setting in self.get_settings():
+            result = self.__check_setting(setting, records)
+            if result is False:
+                self.deactivate()
+                return False, setting
+
+        self.activate()
+        return True, None
+
+    def get_settings(self):
+        return [
+            {
+                "type": "MX",
+                "host": self.name,
+                "check": r"^\d\d? {}$".format(settings.MAIL_MX_RECORD),
+            },
+            {
+                "type": "TXT",
+                "host": self.name,
+                "check": r"^v=spf1 +(.+ +)?include:{} +(.+ +)?-all$".format(
+                    settings.MAIL_SPF_RECORD
+                ),
+            },
+            {
+                "type": "CNAME",
+                "host": f"_dmarc.{self.name}",
+                "check": r"^{}\.$".format(settings.MAIL_DMARC_RECORD),
+            },
+            {
+                "type": "CNAME",
+                "host": f"2022-12._domainkey.{self.name}",
+                "check": r"^{}\.$".format(settings.MAIL_DKIM_RECORD),
+            },
+        ]
