@@ -64,3 +64,15 @@ def test_wrong_settings():
     }
     result, error = domain.check_settings(correct_settings)
     assert result is False and not domain.is_active
+
+
+def test_wrong_setting():
+    domain = MailDomain(name="mail-abc.mydomain.de")
+    correct_settings = {
+        "MX": [f"20 {settings.MAIL_MX_RECORD}."],
+        "SPF": ["my-wrong-setting"],
+        "DMARC": [],
+        "DKIM": [],
+    }
+    result, error = domain.check_settings(correct_settings)
+    assert result is False and not domain.is_active and 'my-wrong-setting' in error
