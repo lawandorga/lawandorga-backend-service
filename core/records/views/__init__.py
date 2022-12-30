@@ -1,5 +1,4 @@
 from .encryption import *
-from .message import *
 from .pool import *
 from .questionnaire import *
 from .record import *
