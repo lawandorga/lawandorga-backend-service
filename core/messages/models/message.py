@@ -76,7 +76,7 @@ class EncryptedRecordMessage(models.Model):
         return "Deleted"
 
     def save(self, *args, **kwargs):
-        self.message = b''
+        self.message = b""
         super().save(*args, **kwargs)
 
     def encrypt(self, user: RlcUser):
