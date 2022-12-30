@@ -5,7 +5,6 @@ from . import api, views
 
 router = DefaultRouter()
 
-router.register("messages", views.MessageViewSet)
 router.register("pool_records", views.PoolRecordViewSet)
 router.register("pool_consultants", views.PoolConsultantViewSet)
 # record access

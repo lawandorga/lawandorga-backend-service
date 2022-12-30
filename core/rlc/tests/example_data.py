@@ -16,6 +16,7 @@ from core.fixtures import (
     create_folder_permissions,
     create_permissions,
 )
+from core.messages.models import EncryptedRecordMessage
 from core.models import (
     CollabDocument,
     Group,
@@ -28,7 +29,6 @@ from core.models import (
 )
 from core.records.fixtures import create_default_record_template
 from core.records.models import (
-    EncryptedRecordMessage,
     QuestionnaireQuestion,
     QuestionnaireTemplate,
     Record,
@@ -685,37 +685,33 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     upload_a_file(main_user.rlc_user, file, record.folder.uuid)
 
     # add some messages
-    message1 = EncryptedRecordMessage(
+    message1 = EncryptedRecordMessage.create(
         sender=main_user.rlc_user,
-        record=record,
-        created="2019-3-11T10:12:21+00:00",
+        folder_uuid=record.folder.uuid,
         message="Bitte dringend die Kontaktdaten des Mandanten eintragen.",
     )
-    message1.encrypt(main_user.rlc_user, main_user.get_private_key(main_user_password))
+    message1.encrypt(main_user.rlc_user)
     message1.save()
-    message2 = EncryptedRecordMessage(
-        sender=choice(users).rlc_user,
-        record=record,
-        created="2019-3-12T9:32:21",
+    message2 = EncryptedRecordMessage.create(
+        sender=main_user.rlc_user,
+        folder_uuid=record.folder.uuid,
         message="Ist erledigt! Koennen wir uns morgen treffen um das zu besprechen?",
     )
-    message2.encrypt(main_user.rlc_user, main_user.get_private_key(main_user_password))
+    message2.encrypt(main_user.rlc_user)
     message2.save()
-    message3 = EncryptedRecordMessage(
+    message3 = EncryptedRecordMessage.create(
         sender=main_user.rlc_user,
-        record=record,
-        created="2019-3-12T14:7:21",
+        folder_uuid=record.folder.uuid,
         message="Klar, einfach direkt in der Mittagspause in der Mensa.",
     )
-    message3.encrypt(main_user.rlc_user, main_user.get_private_key(main_user_password))
+    message3.encrypt(main_user.rlc_user)
     message3.save()
-    message4 = EncryptedRecordMessage(
-        sender=choice(users).rlc_user,
-        record=record,
-        created="2019-3-13T18:7:21",
+    message4 = EncryptedRecordMessage.create(
+        sender=main_user.rlc_user,
+        folder_uuid=record.folder.uuid,
         message="Gut, jetzt faellt mir aber auch nichts mehr ein.",
     )
-    message4.encrypt(main_user.rlc_user, main_user.get_private_key(main_user_password))
+    message4.encrypt(main_user.rlc_user)
     message4.save()
 
     # return
