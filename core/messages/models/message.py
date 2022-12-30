@@ -38,9 +38,7 @@ class EncryptedRecordMessage(models.Model):
     record = models.ForeignKey(
         Record, related_name="messages", on_delete=models.CASCADE, null=True
     )
-    org = models.ForeignKey(
-        Org, related_name="messages", on_delete=models.CASCADE, null=True
-    )
+    org = models.ForeignKey(Org, related_name="messages", on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     folder_uuid = models.UUIDField(null=True)
