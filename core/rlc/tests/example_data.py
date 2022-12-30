@@ -16,6 +16,7 @@ from core.fixtures import (
     create_folder_permissions,
     create_permissions,
 )
+from core.messages.models import EncryptedRecordMessage
 from core.models import (
     CollabDocument,
     Group,
@@ -28,7 +29,6 @@ from core.models import (
 )
 from core.records.fixtures import create_default_record_template
 from core.records.models import (
-    EncryptedRecordMessage,
     QuestionnaireQuestion,
     QuestionnaireTemplate,
     Record,

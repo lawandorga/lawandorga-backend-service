@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from core.auth.models import RlcUser
-from core.records.models import EncryptedRecordMessage
+from core.messages.models import EncryptedRecordMessage
 
 
 class EncryptedRecordMessageSerializer(serializers.ModelSerializer):

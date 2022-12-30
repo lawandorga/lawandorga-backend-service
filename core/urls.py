@@ -10,6 +10,7 @@ from core.folders.urls import urlpatterns as folders_urlpatterns
 from core.internal.urls import router as internal_router
 from core.legal.urls import urlpatterns as legal_urlpatterns
 from core.mail.urls import urlpatterns as mail_urlpatterns
+from core.messages.urls import urlpatterns as messages_urlpatterns
 from core.records.urls import urlpatterns as records_urlpatterns
 from core.rlc.urls import urlpatterns as org_urlpatterns
 from core.statistics.urls import urlpatterns as statistics_urlpatterns
@@ -17,6 +18,7 @@ from core.statistics.urls import urlpatterns as statistics_urlpatterns
 urlpatterns = [
     path("api/mail/", include(mail_urlpatterns)),
     path("api/", include(statistics_urlpatterns)),
+    path("api/messages/", include(messages_urlpatterns)),
     path("", include(auth_urlpatterns)),
     path("api/folders/", include(folders_urlpatterns)),
     path("api/events/", include(events_urlpatterns)),

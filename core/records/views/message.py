@@ -2,7 +2,7 @@ from rest_framework import mixins, status
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from core.records.models import EncryptedRecordMessage
+from core.messages.models import EncryptedRecordMessage
 from core.records.serializers import (
     EncryptedRecordMessageDetailSerializer,
     EncryptedRecordMessageSerializer,

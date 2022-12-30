@@ -1,5 +1,4 @@
 from .encrypted_client import *
-from .encrypted_record_message import *
 from .pool import *
 from .questionnaire import *
 from .record import (
