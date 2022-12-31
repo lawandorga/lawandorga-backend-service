@@ -52,6 +52,7 @@ class OutputRecordDeletion(BaseModel):
 
 class OutputRecordCreate(BaseModel):
     id: int
+    folder_uuid: UUID
 
 
 class OutputQuestionnaireTemplate(BaseModel):

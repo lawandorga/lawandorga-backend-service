@@ -1,5 +1,6 @@
 from core.auth.models import RlcUser
 from core.records.api import schemas
+from core.records.models import Record
 from core.records.use_cases.access_delivery import (
     deliver_access_to_users_who_should_have_access,
 )
@@ -18,7 +19,8 @@ router = Router()
 )
 def command__create_record(rlc_user: RlcUser, data: schemas.InputRecordCreate):
     record_pk = create_a_record_and_a_folder(rlc_user, data.name, data.template)
-    return {"id": record_pk}
+    record = Record.objects.get(pk=record_pk)
+    return {"id": record.pk, "folder_uuid": record.folder_uuid}
 
 
 @router.post(
@@ -32,7 +34,8 @@ def command__create_record_within_folder(
     record_pk = create_a_record_within_a_folder(
         rlc_user, data.name, folder=data.folder, template=data.template
     )
-    return {"id": record_pk}
+    record = Record.objects.get(pk=record_pk)
+    return {"id": record.pk, "folder_uuid": record.folder_uuid}
 
 
 @router.post(url="<int:id>/change_name/", input_schema=schemas.InputRecordChangeName)
