@@ -134,8 +134,8 @@ class MailDomain(models.Model):
             "SPF": {
                 "type": "TXT",
                 "host": self.name,
-                "check": r"^v=spf1 +(.+ +)?include:spf.{} +(.+ +)?-all$".format(
-                    self.name
+                "check": r"^v=spf1 +(.+ +)?include:{} +(.+ +)?-all$".format(
+                    settings.MAIL_SPF_RECORD
                 ),
             },
             "DMARC": {
