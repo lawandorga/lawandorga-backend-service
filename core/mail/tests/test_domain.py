@@ -46,7 +46,7 @@ def test_check_settings():
     domain = MailDomain(name="mail-abc.mydomain.de")
     correct_settings = {
         "MX": [f"20 {settings.MAIL_MX_RECORD}."],
-        "SPF": [f"v=spf1 include:spf.{domain.name} -all"],
+        "SPF": [f"v=spf1 include:{settings.MAIL_SPF_RECORD} -all"],
         "DMARC": [f"{settings.MAIL_DMARC_RECORD}."],
         "DKIM": [f"{settings.MAIL_DKIM_RECORD}."],
     }
