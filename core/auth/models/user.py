@@ -148,7 +148,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return None
 
     def get_questionnaire_information(self):
-        from core.records.models.questionnaire import Questionnaire
+        from core.questionnaires.models.questionnaire import Questionnaire
 
         questionnaires = Questionnaire.objects.filter(
             record__in=self.get_own_records()

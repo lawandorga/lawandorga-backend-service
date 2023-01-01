@@ -1,9 +1,7 @@
 from core.auth.models import RlcUser
-from core.records.models import Questionnaire
-from core.records.use_cases.finders import (
-    questionnaire_template_from_id,
-    record_from_id,
-)
+from core.questionnaires.models import Questionnaire
+from core.questionnaires.use_cases.finders import questionnaire_template_from_id
+from core.records.use_cases.finders import record_from_id
 from core.seedwork.use_case_layer import find, use_case
 from core.static import PERMISSION_RECORDS_ADD_RECORD
 

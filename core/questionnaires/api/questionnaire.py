@@ -1,8 +1,7 @@
+from core.auth.models import RlcUser
+from core.questionnaires.use_cases.questionnaire import publish_a_questionnaire
+from core.records.api import schemas
 from core.seedwork.api_layer import Router
-
-from ...auth.models import RlcUser
-from ..use_cases.questionnaire import publish_a_questionnaire
-from . import schemas
 
 router = Router()
 

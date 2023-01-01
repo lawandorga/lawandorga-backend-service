@@ -27,10 +27,9 @@ from core.models import (
     TextDocumentVersion,
     UserProfile,
 )
+from core.questionnaires.models import QuestionnaireQuestion, QuestionnaireTemplate
 from core.records.fixtures import create_default_record_template
 from core.records.models import (
-    QuestionnaireQuestion,
-    QuestionnaireTemplate,
     Record,
     RecordEncryptedStandardEntry,
     RecordEncryptedStandardField,

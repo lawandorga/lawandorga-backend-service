@@ -1,6 +1,5 @@
 from .encrypted_client import *
 from .pool import *
-from .questionnaire import *
 from .record import (
     Record,
     RecordEncryptedFileEntry,

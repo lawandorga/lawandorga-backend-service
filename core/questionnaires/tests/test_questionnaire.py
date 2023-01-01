@@ -3,9 +3,8 @@ import json
 import pytest
 from django.test import Client
 
-from core.records.models import QuestionnaireTemplate
-
-from ...static import PERMISSION_RECORDS_ADD_RECORD
+from core.questionnaires.models import QuestionnaireTemplate
+from core.static import PERMISSION_RECORDS_ADD_RECORD
 
 
 @pytest.fixture

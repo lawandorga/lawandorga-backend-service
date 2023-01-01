@@ -7,14 +7,14 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.response import Response
 
-from core.records.models import (
+from core.questionnaires.models import (
     Questionnaire,
     QuestionnaireAnswer,
     QuestionnaireQuestion,
     QuestionnaireTemplate,
     QuestionnaireTemplateFile,
 )
-from core.records.serializers.questionnaire import (
+from core.questionnaires.views.serializers import (
     CodeSerializer,
     QuestionnaireAnswerRetrieveSerializer,
     QuestionnaireFileAnswerSerializer,
