@@ -1,15 +1,14 @@
+from uuid import uuid4
+
 from django.core.management import BaseCommand
 
-from core.messages.models import EncryptedRecordMessage
+from core.questionnaires.models import Questionnaire
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        messages = list(
-            EncryptedRecordMessage.objects.all().select_related(
-                "record", "record__template"
-            )
-        )
-        for message in messages:
-            message.org_id = message.record.template.rlc_id
-        EncryptedRecordMessage.objects.bulk_update(messages, ["org_id"])
+        qs = Questionnaire.objects.all()
+        qs = list(qs)
+        for q in qs:
+            q.uuid = uuid4()
+        Questionnaire.objects.bulk_update(qs, ["uuid"])

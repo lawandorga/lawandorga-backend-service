@@ -41,7 +41,7 @@ class InputFolderDelete(BaseModel):
 class OutputContent(BaseModel):
     uuid: UUID
     name: Optional[str]
-    actions: dict[str, str]
+    # actions: dict[str, str]
     repository: str
 
     class Config:
@@ -63,7 +63,7 @@ class OutputAccess(BaseModel):
     name: str
     uuid: Optional[UUID]
     source: str
-    actions: dict[str, dict] = {}
+    # actions: dict[str, dict] = {}
 
     class Config:
         orm_mode = True
@@ -82,7 +82,7 @@ class OutputTreeFolder(BaseModel):
     uuid: UUID
     stop_inherit: bool
     has_access: bool
-    actions: dict[str, dict] = {}
+    # actions: dict[str, dict] = {}
 
 
 class OutputFolderTreeNode(BaseModel):
