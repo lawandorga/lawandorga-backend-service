@@ -145,7 +145,7 @@ class MailDomain(models.Model):
             },
             "DKIM": {
                 "type": "CNAME",
-                "host": f"2022-12._domainkey.{self.name}",
+                "host": f"2022-12.law-orga._domainkey.{self.name}",
                 "check": r"^{}\.$".format(settings.MAIL_DKIM_RECORD),
             },
         }
