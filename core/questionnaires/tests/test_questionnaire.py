@@ -18,7 +18,7 @@ def test_publish_questionnaire(user, db, template, record):
     c = Client()
     c.login(**user)
     response = c.post(
-        "/api/records/questionnaires/v2/publish/",
+        "/api/questionnaires/questionnaires/v2/publish/",
         data=json.dumps({"record": record.id, "template": template.id}),
         content_type="application/json",
     )
