@@ -4,11 +4,6 @@ from core.records.models import (
     EncryptedClient,
     PoolConsultant,
     PoolRecord,
-    Questionnaire,
-    QuestionnaireAnswer,
-    QuestionnaireQuestion,
-    QuestionnaireTemplate,
-    QuestionnaireTemplateFile,
     Record,
     RecordAccess,
     RecordDeletion,
@@ -37,11 +32,6 @@ admin.site.register(RecordAccess)
 admin.site.register(RecordDeletion)
 admin.site.register(PoolConsultant)
 admin.site.register(PoolRecord)
-admin.site.register(QuestionnaireTemplate)
-admin.site.register(Questionnaire)
-admin.site.register(QuestionnaireQuestion)
-admin.site.register(QuestionnaireAnswer)
-admin.site.register(QuestionnaireTemplateFile)
 
 admin.site.register(RecordTemplate)
 admin.site.register(Record)

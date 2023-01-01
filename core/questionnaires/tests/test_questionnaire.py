@@ -3,9 +3,8 @@ import json
 import pytest
 from django.test import Client
 
-from core.records.models import QuestionnaireTemplate
-
-from ...static import PERMISSION_RECORDS_ADD_RECORD
+from core.questionnaires.models import QuestionnaireTemplate
+from core.static import PERMISSION_RECORDS_ADD_RECORD
 
 
 @pytest.fixture
@@ -19,7 +18,7 @@ def test_publish_questionnaire(user, db, template, record):
     c = Client()
     c.login(**user)
     response = c.post(
-        "/api/records/questionnaires/v2/publish/",
+        "/api/questionnaires/questionnaires/v2/publish/",
         data=json.dumps({"record": record.id, "template": template.id}),
         content_type="application/json",
     )

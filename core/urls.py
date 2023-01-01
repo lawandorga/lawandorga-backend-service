@@ -11,6 +11,7 @@ from core.internal.urls import router as internal_router
 from core.legal.urls import urlpatterns as legal_urlpatterns
 from core.mail.urls import urlpatterns as mail_urlpatterns
 from core.messages.urls import urlpatterns as messages_urlpatterns
+from core.questionnaires.urls import urlpatterns as questionnaires_urlpatterns
 from core.records.urls import urlpatterns as records_urlpatterns
 from core.rlc.urls import urlpatterns as org_urlpatterns
 from core.statistics.urls import urlpatterns as statistics_urlpatterns
@@ -30,4 +31,5 @@ urlpatterns = [
     path("api/files/", include(files_router.urls)),
     path("api/files/v2/", include(files_new_urlpatterns)),
     path("api/records/", include(records_urlpatterns)),
+    path("api/questionnaires/", include(questionnaires_urlpatterns)),
 ]
