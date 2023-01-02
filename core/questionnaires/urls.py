@@ -14,5 +14,6 @@ router.register("questionnaire_files", views.QuestionnaireFilesViewSet)
 
 urlpatterns = [
     path("questionnaires/v2/", include(api.questionnaire_router.urls)),
+    path("query/", include(api.query_router.urls)),
     path("", include(router.urls)),
 ]

@@ -8,7 +8,7 @@ logger = getLogger("messagebus")
 
 
 class MessageBus:
-    handler: dict[str, set[Callable]] = {}
+    handlers: dict[str, set[Callable]] = {}
     repository: Type[MessageBusRepository]
 
     @classmethod
@@ -17,16 +17,16 @@ class MessageBus:
 
     @classmethod
     def register_handler(cls, action: str, handler: Callable):
-        if action not in cls.handler:
-            cls.handler[action] = set()
-        cls.handler[action].add(handler)
+        if action not in cls.handlers:
+            cls.handlers[action] = set()
+        cls.handlers[action].add(handler)
         logger.info(f"Handler {handler.__name__} registered for action '{action}'.")
 
     @classmethod
     def handle(cls, message: Event):
-        if message.name in cls.handler:
-            for h in cls.handler[message.name]:
-                h(message)
+        if message.name in cls.handlers:
+            for handler in cls.handlers[message.name]:
+                handler(message)
 
     @classmethod
     def save_event(cls, event: Event, position: Optional[int] = None) -> Event:

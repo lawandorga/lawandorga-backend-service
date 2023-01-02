@@ -82,7 +82,7 @@ class OutputTreeFolder(BaseModel):
     uuid: UUID
     stop_inherit: bool
     has_access: bool
-    # actions: dict[str, dict] = {}
+    actions: dict[str, dict] = {}
 
 
 class OutputFolderTreeNode(BaseModel):

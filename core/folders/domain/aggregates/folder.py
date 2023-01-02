@@ -170,7 +170,6 @@ class Folder:
         if isinstance(item, FolderItem):
             folder_item = item
         else:
-            item.set_folder(self)
             folder_item = FolderItem.create_from_item(item)
 
         self.__items.append(folder_item)

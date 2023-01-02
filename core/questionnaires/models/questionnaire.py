@@ -1,7 +1,7 @@
 from typing import Optional, cast
 from uuid import UUID, uuid4
 
-from django.db import models, transaction
+from django.db import models
 
 from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
@@ -22,7 +22,7 @@ from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_file
 
 
-class QuestionnaireRepository(ItemRepository):
+class DjangoQuestionnaireRepository(ItemRepository):
     IDENTIFIER = "QUESTIONNAIRE"
 
     @classmethod
@@ -31,7 +31,7 @@ class QuestionnaireRepository(ItemRepository):
 
 
 class Questionnaire(DjangoItem, models.Model):
-    REPOSITORY = QuestionnaireRepository.IDENTIFIER
+    REPOSITORY = DjangoQuestionnaireRepository.IDENTIFIER
 
     record = models.ForeignKey(
         Record,
@@ -90,8 +90,16 @@ class Questionnaire(DjangoItem, models.Model):
             user=user.user, private_key_user=private_key_user
         )
 
+    def generate_key(self, user: RlcUser):
+        assert self.folder is not None
+
+        key = AsymmetricKey.generate()
+        lock_key = self.folder.get_encryption_key(requestor=user)
+        enc_key = EncryptedAsymmetricKey.create(key, lock_key)
+        self.key = enc_key.as_dict()
+
     def get_key(
-        self, user: Optional[RlcUser]
+        self, user: Optional[RlcUser] = None
     ) -> AsymmetricKey | EncryptedAsymmetricKey:
         assert self.folder is not None
 
@@ -105,9 +113,9 @@ class Questionnaire(DjangoItem, models.Model):
 
     def put_in_folder(self, user: RlcUser):
         if self.record and self.record.folder and self.record.folder.has_access(user):
+            # set folder
             folder: Folder = self.record.folder
             self.set_folder(folder)
-            folder.add_item(self)
 
             # copy key
             public_key = self.get_public_key().decode("utf-8")
@@ -120,11 +128,8 @@ class Questionnaire(DjangoItem, models.Model):
             enc_key = EncryptedAsymmetricKey.create(key, lock_key)
             self.key = enc_key.as_dict()
 
-            #
-            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-            with transaction.atomic():
-                r.save(folder)
-                self.save()
+            # save
+            self.save()
 
 
 class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
@@ -159,6 +164,7 @@ class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
     def decrypt(self, user=None):
         key = self.questionnaire.get_key(user=user).get_private_key().decode("utf-8")
         super().decrypt(key)
+        return self
 
     def generate_key(self):
         key = "rlcs/{}/record_questionnaires/{}/{}/{}".format(

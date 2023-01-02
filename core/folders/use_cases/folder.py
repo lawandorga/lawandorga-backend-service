@@ -139,6 +139,20 @@ def item_deleted_handler(event: Event):
     r.save(folder)
 
 
+@use_case(on_event="ItemAddedToFolder")
+def item_added_to_folder_handler(event: Event):
+    org_pk = event.data["org_pk"]
+    uuid = UUID(event.data["uuid"])
+    folder_uuid = UUID(event.data["folder_uuid"])
+    repository = event.data["repository"]
+    item_repository = cast(ItemRepository, RepositoryWarehouse.get(repository))
+    folder_repository = get_repository()
+    folder = folder_repository.retrieve(org_pk=org_pk, uuid=folder_uuid)
+    item = item_repository.retrieve(uuid, org_pk)
+    folder.add_item(item)
+    folder_repository.save(folder)
+
+
 @use_case(on_event="OrgUserLocked")
 def invalidate_folder_keys_handler(event: Event):
     org_user = RlcUser.objects.get(uuid=event.data["org_user_uuid"])
