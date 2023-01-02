@@ -19,7 +19,6 @@ data/
 test*.sh
 .coverage
 test.sh
-coverage.xml
 .env
 .env.local
 .env.prod
