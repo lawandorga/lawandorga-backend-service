@@ -206,7 +206,7 @@ class CustomItem(Item):
 def test_item(folder_user):
     folder, user = folder_user
     item = CustomItem()
-
+    item.set_folder(folder)
     folder.add_item(item)
     assert item.uuid in [i.uuid for i in folder.items] and item.folder == folder
     folder.remove_item(item)

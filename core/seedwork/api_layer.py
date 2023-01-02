@@ -21,7 +21,9 @@ from core.seedwork.use_case_layer import UseCaseError, UseCaseInputError
 def __qs_to_list_validator(qs) -> List:
     if hasattr(qs, "all"):
         return list(qs.all())
-    raise ValueError("The value is not a queryset")
+    if isinstance(qs, list):
+        return qs
+    raise ValueError("The value is not a queryset or a list.")
 
 
 def qs_to_list(x):

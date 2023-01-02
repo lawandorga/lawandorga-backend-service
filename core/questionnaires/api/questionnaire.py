@@ -1,7 +1,11 @@
 from core.auth.models import RlcUser
-from core.questionnaires.use_cases.questionnaire import publish_a_questionnaire
-from core.records.api import schemas
+from core.questionnaires.use_cases.questionnaire import (
+    optimize_questionnaires,
+    publish_a_questionnaire,
+)
 from core.seedwork.api_layer import Router
+
+from . import schemas
 
 router = Router()
 
@@ -13,6 +17,13 @@ router = Router()
 )
 def publish_questionnaire(data: schemas.InputPublishQuestionnaire, rlc_user: RlcUser):
     questionnaire = publish_a_questionnaire(
-        rlc_user, record=data.record, template=data.template
+        rlc_user, folder=data.folder, template=data.template
     )
     return questionnaire
+
+
+@router.post(
+    url="optimize/",
+)
+def command__optimize(rlc_user: RlcUser):
+    optimize_questionnaires(rlc_user)

@@ -1,13 +1,25 @@
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from django.conf import settings
 
 from core.auth.domain.user_key import UserKey
 from core.auth.models import StatisticUser
+from core.folders.domain.aggregates.folder import Folder
+from core.folders.domain.repositiories.folder import FolderRepository
 from core.models import RlcUser, UserProfile
-from core.records.models import Record, RecordEncryptionNew, RecordTemplate
+from core.records.models import Record, RecordTemplate
 from core.rlc.models import Org
-from core.seedwork.encryption import AESEncryption
+from core.seedwork.repository import RepositoryWarehouse
+
+
+def create_folder(name="Test Folder", user: RlcUser | None = None):
+    assert user is not None
+
+    folder = Folder.create(name=name, org_pk=user.org_id)
+    folder.grant_access(to=user)
+    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    r.save(folder)
+    return {"folder": folder}
 
 
 def create_org(name="Dummy RLC"):
@@ -72,17 +84,20 @@ def create_record_template(org=None):
 
 
 def create_record(template=None, users: Optional[List[UserProfile]] = None):
-    if template is None and users is not None and len(users):
+    assert users and len(users) > 0
+    if template is None:
         template = RecordTemplate.objects.create(
             rlc=users[0].rlc, name="Record Template"
         )
-    record = Record.objects.create(template=template)
-    aes_key_record = AESEncryption.generate_secure_key()
-    for user in users if users else []:
-        public_key_user = user.get_public_key()
-        encryption = RecordEncryptionNew(
-            record=record, user=user.rlc_user, key=aes_key_record
-        )
-        encryption.encrypt(public_key_user=public_key_user)
-        encryption.save()
-    return {"record": record, "aes_key": aes_key_record}
+    user = users[0].rlc_user
+    folder = create_folder(user=user)["folder"]
+
+    record = Record(template=template)
+    record.set_folder(folder)
+    record.generate_key(user)
+    record.save()
+
+    for u in users[1:]:
+        record.grant_access(u.rlc_user, user)
+
+    return {"record": record}

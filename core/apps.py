@@ -14,6 +14,9 @@ class CoreConfig(AppConfig):
         from core.folders.infrastructure.symmetric_encryptions import (
             SymmetricEncryptionV1,
         )
+        from core.questionnaires.models.questionnaire import (
+            DjangoQuestionnaireRepository,
+        )
         from core.records.models.record import DjangoRecordRepository
         from core.seedwork.repository import RepositoryWarehouse
 
@@ -22,6 +25,7 @@ class CoreConfig(AppConfig):
         RepositoryWarehouse.add_repository(DjangoFolderRepository)
         RepositoryWarehouse.add_repository(DjangoRecordRepository)
         RepositoryWarehouse.add_repository(DjangoFileRepository)
+        RepositoryWarehouse.add_repository(DjangoQuestionnaireRepository)
 
         # call the sub ready methods
         from core.folders.ready import ready

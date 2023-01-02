@@ -1,7 +1,5 @@
 from typing import cast
 
-from django.db import transaction
-
 from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
@@ -43,6 +41,7 @@ def create_a_record_and_a_folder(
     folder = Folder.create(name=name, org_pk=__actor.org_id, stop_inherit=True)
     folder.grant_access(__actor)
     folder.set_parent(parent_folder, __actor)
+    folder_repository.save(folder)
 
     return __create(__actor, name, folder, template)
 
@@ -72,14 +71,8 @@ def __create(
             folder.grant_access(user, __actor)
 
     record = Record(template=template, name=name)
-
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-
-    folder.add_item(record)
-
-    with transaction.atomic():
-        r.save(folder)
-        record.generate_key(__actor)
-        record.save()
+    record.set_folder(folder)
+    record.generate_key(__actor)
+    record.save()
 
     return record.id

@@ -98,12 +98,9 @@ class DjangoFolderRepository(FolderRepository):
         # revive items
         for item in db_folder.items:
             name = item["name"] if "name" in item else "-"
-            actions = item["actions"] if "actions" in item else {}
             uuid = UUID(item["uuid"])
             repository = item["repository"]
-            folder_item = FolderItem(
-                name=name, actions=actions, repository=repository, uuid=uuid
-            )
+            folder_item = FolderItem(name=name, repository=repository, uuid=uuid)
             folder.add_item(folder_item)
 
         # return

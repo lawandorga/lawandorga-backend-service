@@ -218,10 +218,10 @@ class QuestionnaireViewSet(
     def list(self, request, *args, **kwargs):
         questionnaires = self.get_queryset()
         data = QuestionnaireListSerializer(questionnaires, many=True).data
-        private_key_rlc = request.user.get_private_key_rlc(request=request)
+        # private_key_rlc = request.user.get_private_key_rlc(request=request)
         for index, questionnaire in enumerate(questionnaires):
             answers = questionnaire.answers.all()
-            [answer.decrypt(private_key_rlc) for answer in answers]
+            [answer.decrypt(request.user.rlc_user) for answer in answers]
             data[index]["answers"] = QuestionnaireAnswerRetrieveSerializer(
                 answers, many=True
             ).data
