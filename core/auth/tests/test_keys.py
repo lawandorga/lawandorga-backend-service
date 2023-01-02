@@ -50,28 +50,29 @@ class TestUserKeys(TestCase):
         self.get_user_rlc_keys(self.user_1).test(self.user_1["private_key"])
         assert self.get_user_rlc_keys(self.user_1).correct
 
-    def test_record_key_check(self):
-        self.get_user_record_key(self.record_1, self.user_1).test(
-            self.user_1["private_key"]
-        )
-        assert self.get_user_rlc_keys(self.user_1).correct
-        keys = self.get_user_record_key(self.record_1, self.user_1)
-        keys.key = b"1234"
-        private, public = RSAEncryption.generate_keys()
-        keys.encrypt(public)
-        keys.save()
-        self.get_user_record_key(self.record_1, self.user_1).test(
-            self.user_1["private_key"]
-        )
-        assert not self.get_user_record_key(self.record_1, self.user_1).correct
-        keys = self.get_user_record_key(self.record_1, self.user_1)
-        keys.key = b"1234"
-        keys.encrypt(self.user_1["public_key"])
-        keys.save()
-        self.get_user_record_key(self.record_1, self.user_1).test(
-            self.user_1["private_key"]
-        )
-        assert self.get_user_record_key(self.record_1, self.user_1).correct
+    # deprecated: RecordEncryption will not be used in the future
+    # def test_record_key_check(self):
+    #     self.get_user_record_key(self.record_1, self.user_1).test(
+    #         self.user_1["private_key"]
+    #     )
+    #     assert self.get_user_rlc_keys(self.user_1).correct
+    #     keys = self.get_user_record_key(self.record_1, self.user_1)
+    #     keys.key = b"1234"
+    #     private, public = RSAEncryption.generate_keys()
+    #     keys.encrypt(public)
+    #     keys.save()
+    #     self.get_user_record_key(self.record_1, self.user_1).test(
+    #         self.user_1["private_key"]
+    #     )
+    #     assert not self.get_user_record_key(self.record_1, self.user_1).correct
+    #     keys = self.get_user_record_key(self.record_1, self.user_1)
+    #     keys.key = b"1234"
+    #     keys.encrypt(self.user_1["public_key"])
+    #     keys.save()
+    #     self.get_user_record_key(self.record_1, self.user_1).test(
+    #         self.user_1["private_key"]
+    #     )
+    #     assert self.get_user_record_key(self.record_1, self.user_1).correct
 
     def test_list_keys(self):
         c = Client()
@@ -82,33 +83,34 @@ class TestUserKeys(TestCase):
             user=self.user_1["rlc_user"]
         ).count() + 1 == len(response_data)
 
-    def test_delete_key(self):
-        c = Client()
-        c.login(**self.user_1)
-        key_id = self.get_user_record_key(self.record_1, self.user_1).pk
-        response = c.delete("/api/keys/{}/".format(key_id))
-        assert response.status_code == 400
-        response = c.delete("/api/keys/999999/")
-        assert response.status_code == 400
-        keys = self.get_user_record_key(self.record_1, self.user_1)
-        keys.key = b"1234"
-        private, public = RSAEncryption.generate_keys()
-        keys.encrypt(public)
-        keys.save()
-        response = c.delete("/api/keys/{}/".format(key_id))
-        assert response.status_code == 400
-        encryption = RecordEncryptionNew(
-            record=self.record_1["record"],
-            user=self.user_3["rlc_user"],
-            key=self.record_1["aes_key"],
-        )
-        encryption.encrypt(public_key_user=self.user_3["public_key"])
-        encryption.save()
-        response = c.delete("/api/keys/{}/".format(key_id))
-        assert response.status_code == 400
-        keys.test(self.user_1["private_key"])
-        response = c.delete("/api/keys/{}/".format(key_id))
-        assert response.status_code == 200
+    # deprecated: RecordEncryption will not be used in the future
+    # def test_delete_key(self):
+    #     c = Client()
+    #     c.login(**self.user_1)
+    #     key_id = self.get_user_record_key(self.record_1, self.user_1).pk
+    #     response = c.delete("/api/keys/{}/".format(key_id))
+    #     assert response.status_code == 400
+    #     response = c.delete("/api/keys/999999/")
+    #     assert response.status_code == 400
+    #     keys = self.get_user_record_key(self.record_1, self.user_1)
+    #     keys.key = b"1234"
+    #     private, public = RSAEncryption.generate_keys()
+    #     keys.encrypt(public)
+    #     keys.save()
+    #     response = c.delete("/api/keys/{}/".format(key_id))
+    #     assert response.status_code == 400
+    #     encryption = RecordEncryptionNew(
+    #         record=self.record_1["record"],
+    #         user=self.user_3["rlc_user"],
+    #         key=self.record_1["aes_key"],
+    #     )
+    #     encryption.encrypt(public_key_user=self.user_3["public_key"])
+    #     encryption.save()
+    #     response = c.delete("/api/keys/{}/".format(key_id))
+    #     assert response.status_code == 400
+    #     keys.test(self.user_1["private_key"])
+    #     response = c.delete("/api/keys/{}/".format(key_id))
+    #     assert response.status_code == 200
 
     def test_keys_test(self):
         response = self.client.post("/api/keys/test/")
