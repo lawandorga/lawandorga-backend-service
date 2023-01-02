@@ -51,6 +51,7 @@ from core.seedwork.encryption import AESEncryption
 ###
 from ...auth.models import RlcUser
 from .test_record import BaseRecord
+from ...seedwork import test_helpers
 
 
 class BaseRecordEntry(BaseRecord):
@@ -59,15 +60,8 @@ class BaseRecordEntry(BaseRecord):
         self.template = RecordTemplate.objects.create(
             rlc=self.rlc, name="Record Template"
         )
-        self.record = Record.objects.create(template=self.template)
-        self.aes_key_record = AESEncryption.generate_secure_key()
-        public_key_user = self.user.get_public_key()
-        encryption = RecordEncryptionNew(
-            record=self.record, user=self.user.rlc_user, key=self.aes_key_record
-        )
-        encryption.encrypt(public_key_user=public_key_user)
-        encryption.save()
-        self.record.put_in_folder(self.user.rlc_user)
+        self.record = test_helpers.create_record(self.template, [self.user])["record"]
+        self.aes_key_record = self.record.get_aes_key(self.user.rlc_user)
 
 
 class GenericRecordEntry(BaseRecordEntry):
