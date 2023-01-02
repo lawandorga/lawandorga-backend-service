@@ -261,7 +261,7 @@ class Record(DjangoItem, models.Model):
         for encryption in list(self.encryptions.exclude(user_id=user.id)):
             folder.grant_access(to=encryption.user, by=user)
 
-        folder.add_item(self)
+        self.set_folder(folder)
 
         # get the key of the record
         private_key_user = user.get_decryption_key().get_private_key()
@@ -274,9 +274,8 @@ class Record(DjangoItem, models.Model):
         self.key = EncryptedSymmetricKey.create(key, encryption_key).as_dict()
 
         # save the record and the folder
-        with transaction.atomic():
-            r.save(folder)
-            self.save()
+        r.save(folder)
+        self.save()
 
 
 ###
