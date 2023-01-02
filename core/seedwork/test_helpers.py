@@ -13,16 +13,14 @@ from core.seedwork.encryption import AESEncryption
 from core.seedwork.repository import RepositoryWarehouse
 
 
-def create_folder(name='Test Folder', user: RlcUser = None):
+def create_folder(name="Test Folder", user: RlcUser = None):
     assert user is not None
 
     folder = Folder.create(name=name, org_pk=user.org_id)
     folder.grant_access(to=user)
     r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
     r.save(folder)
-    return {
-        "folder": folder
-    }
+    return {"folder": folder}
 
 
 def create_org(name="Dummy RLC"):
@@ -66,9 +64,9 @@ def create_rlc_user(
     rlc_user.save()
     private_key = (
         UserKey.create_from_dict(rlc_user.key)
-            .decrypt_self(password)
-            .key.get_private_key()
-            .decode("utf-8")
+        .decrypt_self(password)
+        .key.get_private_key()
+        .decode("utf-8")
     )
     return {
         "user": user,

@@ -25,7 +25,7 @@ class TestRlcUser(TestCase):
         # setup
         key = OrgEncryption.objects.get(user=self.user_1["user"])
         key.correct = False
-        key.encrypted_key = b''
+        key.encrypted_key = b""
         key.save()
         # check
         response = self.client.post("/api/rlc_users/unlock_self/")

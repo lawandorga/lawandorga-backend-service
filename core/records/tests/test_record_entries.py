@@ -50,8 +50,8 @@ from core.seedwork.encryption import AESEncryption
 # Base
 ###
 from ...auth.models import RlcUser
-from .test_record import BaseRecord
 from ...seedwork import test_helpers
+from .test_record import BaseRecord
 
 
 class BaseRecordEntry(BaseRecord):
