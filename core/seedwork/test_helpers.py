@@ -7,13 +7,12 @@ from core.auth.models import StatisticUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.models import RlcUser, UserProfile
-from core.records.models import Record, RecordEncryptionNew, RecordTemplate
+from core.records.models import Record, RecordTemplate
 from core.rlc.models import Org
-from core.seedwork.encryption import AESEncryption
 from core.seedwork.repository import RepositoryWarehouse
 
 
-def create_folder(name="Test Folder", user: RlcUser = None):
+def create_folder(name="Test Folder", user: RlcUser | None = None):
     assert user is not None
 
     folder = Folder.create(name=name, org_pk=user.org_id)

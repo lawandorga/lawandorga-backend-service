@@ -11,7 +11,6 @@ from rest_framework.viewsets import GenericViewSet
 
 from core.models import UserProfile
 from core.records.models import (
-    Record,
     RecordEncryptedFileEntry,
     RecordEncryptedFileField,
     RecordEncryptedSelectEntry,
@@ -44,7 +43,6 @@ from core.records.views import (
     RecordStatisticEntryViewSet,
     RecordUsersEntryViewSet,
 )
-from core.seedwork.encryption import AESEncryption
 
 ###
 # Base
