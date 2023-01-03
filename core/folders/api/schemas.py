@@ -63,7 +63,7 @@ class OutputAccess(BaseModel):
     name: str
     uuid: Optional[UUID]
     source: str
-    # actions: dict[str, dict] = {}
+    actions: dict[str, dict] = {}
 
     class Config:
         orm_mode = True

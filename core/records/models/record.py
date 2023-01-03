@@ -3,7 +3,7 @@ from typing import Optional, Union, cast
 from uuid import UUID, uuid4
 
 from django.core.files import File as DjangoFile
-from django.db import models, transaction
+from django.db import models
 from django.urls import reverse
 from django.utils.timezone import localtime
 

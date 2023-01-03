@@ -27,7 +27,6 @@ from core.static import (
 )
 from messagebus import DjangoAggregate
 
-from ...folders.domain.types import StrDict
 from .user import UserProfile
 
 
@@ -260,7 +259,7 @@ class RlcUser(DjangoAggregate, IOwner, models.Model):
     def delete_keys(self):
         self.private_key = None
         self.public_key = None
-        self.key: Optional[StrDict] = None
+        self.key = None
         self.is_private_key_encrypted = False
 
     def __get_as_user_permissions(self) -> List[str]:
@@ -300,7 +299,9 @@ class RlcUser(DjangoAggregate, IOwner, models.Model):
 
     def lock(self) -> None:
         self.locked = True
-        self.add_event("OrgUserLocked", {"org_user_uuid": str(self.uuid)})
+        self.add_event(
+            "OrgUserLocked", {"org_user_uuid": str(self.uuid), "org_pk": self.org_id}
+        )
 
     def change_password_for_keys(self, new_password: str):
         key = self.get_decryption_key()
@@ -476,5 +477,9 @@ class RlcUser(DjangoAggregate, IOwner, models.Model):
         self.locked = False
         self.add_event(
             "OrgUserUnlocked",
-            data={"org_user_uuid": str(self.uuid), "by_org_user_uuid": str(by.uuid)},
+            data={
+                "org_user_uuid": str(self.uuid),
+                "by_org_user_uuid": str(by.uuid),
+                "org_pk": self.org_id,
+            },
         )

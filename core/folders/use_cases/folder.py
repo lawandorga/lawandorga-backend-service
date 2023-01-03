@@ -2,14 +2,18 @@ from typing import Optional, cast
 from uuid import UUID
 
 from core.auth.models import RlcUser
+from core.auth.use_cases.finders import org_user_from_uuid
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
-from core.folders.domain.repositiories.item import ItemRepository
-from core.folders.use_cases.finders import folder_from_uuid, rlc_user_from_slug
+from core.folders.use_cases.finders import (
+    folder_from_uuid,
+    item_from_repository_and_uuid,
+    rlc_user_from_slug,
+)
 from core.seedwork.api_layer import ApiError
+from core.seedwork.message_layer import MessageBusActor
 from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.use_case_layer import UseCaseError, find, use_case
-from messagebus import Event
 
 
 def get_repository() -> FolderRepository:
@@ -115,58 +119,58 @@ def toggle_inheritance(__actor: RlcUser, folder=find(folder_from_uuid)):
     r.save(folder)
 
 
-@use_case(on_event="ItemRenamed")
-def item_name_changed_handler(event: Event):
-    org_pk = event.data["org_pk"]
-    item_repository = cast(
-        ItemRepository, RepositoryWarehouse.get(event.data["repository"])
-    )
-    item = item_repository.retrieve(uuid=UUID(event.data["uuid"]), org_pk=org_pk)
+@use_case()
+def rename_item_in_folder(
+    __actor: MessageBusActor,
+    repository_name: str,
+    item_uuid: UUID,
+    folder_uuid: UUID,
+):
+    item = item_from_repository_and_uuid(__actor.org_pk, repository_name, item_uuid)
+    folder = folder_from_uuid(__actor, folder_uuid)
     r = get_repository()
-    folder = r.retrieve(org_pk=org_pk, uuid=UUID(event.data["folder_uuid"]))
     folder.update_item(item)
     r.save(folder)
 
 
-@use_case(on_event="ItemDeleted")
-def item_deleted_handler(event: Event):
-    org_pk = event.data["org_pk"]
-    uuid = UUID(event.data["uuid"])
-    folder_uuid = UUID(event.data["folder_uuid"])
+@use_case
+def delete_item_from_folder(__actor: MessageBusActor, uuid: UUID, folder_uuid: UUID):
+    folder = folder_from_uuid(__actor, folder_uuid)
     r = get_repository()
-    folder = r.retrieve(org_pk=org_pk, uuid=folder_uuid)
     folder.remove_item(uuid)
     r.save(folder)
 
 
-@use_case(on_event="ItemAddedToFolder")
-def item_added_to_folder_handler(event: Event):
-    org_pk = event.data["org_pk"]
-    uuid = UUID(event.data["uuid"])
-    folder_uuid = UUID(event.data["folder_uuid"])
-    repository = event.data["repository"]
-    item_repository = cast(ItemRepository, RepositoryWarehouse.get(repository))
-    folder_repository = get_repository()
-    folder = folder_repository.retrieve(org_pk=org_pk, uuid=folder_uuid)
-    item = item_repository.retrieve(uuid, org_pk)
-    folder.add_item(item)
-    folder_repository.save(folder)
-
-
-@use_case(on_event="OrgUserLocked")
-def invalidate_folder_keys_handler(event: Event):
-    org_user = RlcUser.objects.get(uuid=event.data["org_user_uuid"])
+@use_case
+def add_item_to_folder(
+    __actor: MessageBusActor,
+    repository_name: str,
+    item_uuid: UUID,
+    folder_uuid: UUID,
+):
+    item = item_from_repository_and_uuid(__actor.org_pk, repository_name, item_uuid)
+    folder = folder_from_uuid(__actor, folder_uuid)
     r = get_repository()
-    folders = r.get_list(org_user.org_id)
+    folder.add_item(item)
+    r.save(folder)
+
+
+@use_case
+def invalidate_keys_of_user(__actor: MessageBusActor, user_uuid: UUID):
+    user = org_user_from_uuid(__actor, user_uuid)
+    r = get_repository()
+    folders = r.get_list(user.org_id)
     for folder in folders:
-        folder.invalidate_keys_of(org_user)
+        folder.invalidate_keys_of(user)
         r.save(folder)
 
 
-@use_case(on_event="OrgUserUnlocked")
-def correct_folder_keys_handler(event: Event):
-    of = RlcUser.objects.get(uuid=event.data["org_user_uuid"])
-    by = RlcUser.objects.get(uuid=event.data["by_org_user_uuid"])
+@use_case
+def correct_keys_of_user_by_user(
+    __actor: MessageBusActor, of_uuid: UUID, by_uuid: UUID
+):
+    of = org_user_from_uuid(__actor, of_uuid)
+    by = org_user_from_uuid(__actor, by_uuid)
     assert of.org_id == by.org_id
 
     r = get_repository()

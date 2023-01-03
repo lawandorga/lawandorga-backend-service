@@ -2,7 +2,7 @@ from typing import Optional, cast
 from uuid import UUID, uuid4
 
 from django.core.files.storage import default_storage
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 
 from core.auth.models import RlcUser
@@ -109,7 +109,7 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
 
         return key.get_key()
 
-    def upload(self, file: InMemoryUploadedFile, by: RlcUser):
+    def upload(self, file: UploadedFile, by: RlcUser):
         key = self.__get_key(by)
         location = self.__get_file_key()
         encrypt_and_upload_file(file, location, key)

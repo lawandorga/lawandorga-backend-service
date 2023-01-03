@@ -1,11 +1,10 @@
 import inspect
 from logging import INFO, WARNING, getLogger
-from typing import Any, Callable, Optional, TypeVar, get_type_hints
+from typing import Any, Callable, ParamSpec, TypeVar, get_type_hints, overload
 
 from django.core.exceptions import ObjectDoesNotExist
 
 from core.seedwork.domain_layer import DomainError
-from messagebus import MessageBus
 
 logger = getLogger("usecase")
 
@@ -34,6 +33,20 @@ class UseCaseError(Exception):
 class UseCaseInputError(Exception):
     def __init__(self, message):
         self.message = message
+
+
+P1 = ParamSpec("P1")
+
+
+def finder_function(function: Callable[P1, Any]) -> Callable[P1, Any]:
+    def decorator(*args, **kwargs):
+        try:
+            return function(*args, **kwargs)
+        except ObjectDoesNotExist:
+            message = "The object could not be found."
+            raise UseCaseInputError(message)
+
+    return decorator
 
 
 __all__ = [
@@ -122,28 +135,50 @@ def __check_permissions(actor, permissions):
             raise UseCaseError(message)
 
 
-def use_case(permissions=None, on_event: Optional[str] = None):
-    if on_event and permissions is not None:
-        raise ValueError(
-            "There is a conflict, this function can not be an event handler and use permissions."
-        )
+Param = ParamSpec("Param")
+RetType = TypeVar("RetType")
 
-    def wrapper(usecase_func):
+
+@overload
+def use_case(
+    func: Callable[Param, RetType],
+    *,
+    permissions: None = ...,
+) -> Callable[Param, RetType]:
+    ...
+
+
+@overload
+def use_case(
+    func: None = ...,
+    *,
+    permissions: list[str] | None = ...,
+) -> Callable[[Callable[Param, RetType]], Callable[Param, RetType]]:
+    ...
+
+
+def use_case(
+    func: Callable[Param, RetType] | None = None,
+    *,
+    permissions: list[str] | None = None,
+) -> Callable[Param, RetType] | Callable[
+    [Callable[Param, RetType]], Callable[Param, RetType]
+]:
+    if permissions is None:
+        permissions = []
+
+    def decorator(usecase_func: Callable[Param, RetType]) -> Callable[Param, RetType]:
         type_hints = get_type_hints(usecase_func)
 
-        def execute(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> RetType:
             func_code = usecase_func.__code__
             func_name = func_code.co_name
 
-            if not on_event:
-                actor = __check_actor(args, kwargs, func_code, type_hints)
+            actor = __check_actor(args, kwargs, func_code, type_hints)
 
-                __check_permissions(actor, permissions)
+            __check_permissions(actor, permissions)
 
-                args, kwargs = __update_parameters(args, kwargs, usecase_func, actor)
-
-            else:
-                actor = "MessageBus"
+            args, kwargs = __update_parameters(args, kwargs, usecase_func, actor)
 
             try:
                 ret = usecase_func(*args, **kwargs)
@@ -157,18 +192,10 @@ def use_case(permissions=None, on_event: Optional[str] = None):
                 logger.log(WARNING, msg)
                 raise e
 
-        if on_event:
-            MessageBus.register_handler(on_event, execute)
+        return wrapper
 
-        return execute
-
-    if callable(permissions):
+    if func:
         # this happens when use_case is used like @use_case instead of @use_case()
-        func = permissions
-        permissions = []
-        return wrapper(func)
+        return decorator(func)
 
-    if permissions is None:
-        permissions = []
-
-    return wrapper
+    return decorator
