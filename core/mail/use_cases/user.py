@@ -7,7 +7,8 @@ from core.mail.use_cases.finders import (
     mail_domain_from_uuid,
     mail_user_from_id,
 )
-from core.seedwork.use_case_layer import UseCaseError, find, use_case
+from core.seedwork.use_case_layer import UseCaseError, check_permissions, find, use_case
+from core.static import PERMISSION_MAIL_MANAGE_ACCOUNTS
 
 
 @use_case
@@ -42,6 +43,8 @@ def create_address(
     domain=find(mail_domain_from_uuid),
 ):
     MailAddress.check_localpart(localpart)
+    if __actor.id != user.id:
+        check_permissions(__actor, [PERMISSION_MAIL_MANAGE_ACCOUNTS])
 
     if MailAddress.objects.filter(localpart=localpart, domain=domain).exists():
         raise UseCaseError(
@@ -56,6 +59,9 @@ def create_address(
 
 @use_case
 def set_address_as_default(__actor: MailUser, address=find(mail_address_from_id)):
+    if __actor.id != address.account.user.id:
+        check_permissions(__actor, [PERMISSION_MAIL_MANAGE_ACCOUNTS])
+
     with transaction.atomic():
         MailAddress.objects.filter(account=address.account).update(is_default=False)
         address.is_default = True
@@ -64,6 +70,9 @@ def set_address_as_default(__actor: MailUser, address=find(mail_address_from_id)
 
 @use_case
 def delete_address(__actor: MailUser, address=find(mail_address_from_id)):
+    if __actor.id != address.account.user.id:
+        check_permissions(__actor, [PERMISSION_MAIL_MANAGE_ACCOUNTS])
+
     if address.is_default:
         raise UseCaseError("You can not delete the default address.")
 

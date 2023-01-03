@@ -21,6 +21,8 @@ PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS = (
 PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS = "admin__manage_record_access_requests"
 # dashboard
 PERMISSION_DASHBOARD_MANAGE_NOTES = "dashboard__manage_notes"
+# mail
+PERMISSION_MAIL_MANAGE_ACCOUNTS = "mail__manage_accounts"
 
 
 def get_all_permission_strings():
@@ -36,6 +38,8 @@ def get_all_permission_strings():
         PERMISSION_COLLAB_MANAGE_PERMISSIONS,
         PERMISSION_COLLAB_READ_ALL_DOCUMENTS,
         PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS,
+        # mail
+        PERMISSION_MAIL_MANAGE_ACCOUNTS,
         # admin
         PERMISSION_ADMIN_MANAGE_GROUPS,
         PERMISSION_ADMIN_MANAGE_USERS,
@@ -44,6 +48,7 @@ def get_all_permission_strings():
         PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
         PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
         PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
+        # dashboard
         PERMISSION_DASHBOARD_MANAGE_NOTES,
     ]
 

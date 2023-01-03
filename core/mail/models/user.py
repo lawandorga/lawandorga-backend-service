@@ -43,6 +43,13 @@ class MailUser(models.Model):
         addresses_3 = list(addresses_2)
         return addresses_3
 
+    def has_permission(self, permission: str):
+        user = self.user
+        if hasattr(user, "rlc_user"):
+            return user.rlc_user.has_permission(permission)
+
+        return True
+
     def check_login_allowed(self):
         return True
 
