@@ -12,6 +12,20 @@ class MessageBus:
     repository: Type[MessageBusRepository]
 
     @classmethod
+    def register(
+        cls, on: str | list[str]
+    ) -> Callable[[Callable[[Event], None]], Callable[[Event], None]]:
+        def wrapper(handler: Callable[[Event], None]) -> Callable[[Event], None]:
+            when = [on] if isinstance(on, str) else on
+
+            for name in when:
+                cls.register_handler(name, handler)
+
+            return handler
+
+        return wrapper
+
+    @classmethod
     def set_repository(cls, repository: Type[MessageBusRepository]):
         cls.repository = repository
 
