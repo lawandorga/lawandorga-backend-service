@@ -1,5 +1,6 @@
 from typing import List
 
+import bleach
 from django.core.exceptions import ObjectDoesNotExist
 
 from core.auth.models import RlcUser
@@ -28,10 +29,15 @@ def get_all_events_for_user(rlc_user: RlcUser):
 )
 def create_event(data: InputEventCreate, rlc_user: RlcUser):
     org_list = Org.objects.filter(id=rlc_user.org.id)
+    clean_description = bleach.clean(
+        data.description,
+        tags=["a", "p", "strong", "em", "ul", "ol", "li", "s"],
+        attributes={"a": ["href"]},
+    )
     event = org_list[0].events.create(
         is_global=data.is_global,
         name=data.name,
-        description=data.description,
+        description=clean_description,
         start_time=data.start_time,
         end_time=data.end_time,
     )
@@ -55,6 +61,12 @@ def update_event(data: InputEventUpdate, rlc_user: RlcUser):
             "You do not have the permission to edit this event.",
         )
 
+    if data.description is not None:
+        data.description = bleach.clean(
+            data.description,
+            tags=["a", "p", "strong", "em", "ul", "ol", "li", "s"],
+            attributes={"a": ["href"]},
+        )
     update_data = data.dict()
     update_data.pop("id")
     event.update_information(**update_data)
