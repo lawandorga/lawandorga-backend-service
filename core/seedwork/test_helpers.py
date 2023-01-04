@@ -12,6 +12,42 @@ from core.rlc.models import Org
 from core.seedwork.repository import RepositoryWarehouse
 
 
+def create_raw_org(name="Dummy's Org", pk=1):
+    org = Org.create(name=name, pk=pk)
+    return org
+
+
+def create_raw_org_user(
+    org=None,
+    email="dummy@law-orga.de",
+    name="Mr. Dummy",
+    password=settings.DUMMY_USER_PASSWORD,
+    email_confirmed=True,
+    accepted=True,
+    user_pk=1,
+    pk=1,
+):
+    if org is None:
+        org = create_raw_org()
+    user = RlcUser.create(
+        org=org,
+        email=email,
+        name=name,
+        password=password,
+        email_confirmed=email_confirmed,
+        accepted=accepted,
+        user_pk=user_pk,
+        pk=pk,
+    )
+    return user
+
+
+def create_raw_folder(user=None, name="Dummy's Folder", stop_inherit=False):
+    folder = Folder.create(name, user.org_id, stop_inherit=stop_inherit)
+    folder.grant_access(user)
+    return folder
+
+
 def create_folder(name="Test Folder", user: RlcUser | None = None):
     assert user is not None
 
@@ -24,7 +60,7 @@ def create_folder(name="Test Folder", user: RlcUser | None = None):
 
 def create_org(name="Dummy RLC"):
     org = Org.objects.create(name=name)
-    return org
+    return {"org": org}
 
 
 def create_statistics_user(email="dummy@law-orga.de", name="Dummy 1"):
@@ -55,6 +91,8 @@ def create_rlc_user(
     accepted=True,
     password=settings.DUMMY_USER_PASSWORD,
 ):
+    if rlc is None:
+        rlc = create_org("Dummy's Org")["org"]
     user = UserProfile.objects.create(email=email, name=name)
     user.set_password(password)
     user.save()

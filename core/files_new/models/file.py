@@ -34,6 +34,24 @@ class DjangoFileRepository(ItemRepository):
 class EncryptedRecordDocument(DjangoItem, models.Model):
     REPOSITORY = "FILE"
 
+    @classmethod
+    def create(
+        cls, file: UploadedFile, folder: Folder, by: RlcUser, upload=False, pk=0
+    ) -> "EncryptedRecordDocument":
+        name = "Unknown"
+        if file.name:
+            name = file.name
+        f = EncryptedRecordDocument(folder_uuid=folder.uuid, org_id=folder.org_pk)
+        if pk:
+            f.pk = pk
+        f._folder = folder
+        f.set_name(name)
+        f.set_location()
+        f.generate_key(by)
+        if upload:
+            f.upload(file, by)
+        return f
+
     name = models.CharField(max_length=200)
     record = models.ForeignKey(
         Record, related_name="documents", on_delete=models.CASCADE, null=True
@@ -77,7 +95,6 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
         return {}
 
     def set_name(self, name: str):
-        assert self.org_id is not None
         super().set_name(name)
         self.name = name
 
@@ -122,7 +139,8 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
     def delete_on_cloud(self):
         key = self.__get_file_key()
         default_storage.delete(key)
+        self.exists = False
 
-    def exists_on_s3(self):
+    def update_exists(self):
         key = self.__get_file_key()
-        return default_storage.exists(key)
+        self.exists = default_storage.exists(key)

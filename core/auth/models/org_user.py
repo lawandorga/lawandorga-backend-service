@@ -36,6 +36,29 @@ class RlcUserManager(models.Manager):
 
 
 class RlcUser(DjangoAggregate, IOwner, models.Model):
+    @staticmethod
+    def create(
+        org: Org,
+        email: str,
+        name: str,
+        password: str,
+        email_confirmed=False,
+        accepted=False,
+        pk=0,
+        user_pk=0,
+    ) -> "RlcUser":
+        user = UserProfile(email=email, name=name)
+        if user_pk:
+            user.pk = user_pk
+        user.set_password(password)
+        rlc_user = RlcUser(
+            user=user, email_confirmed=email_confirmed, accepted=accepted, org=org
+        )
+        if pk:
+            rlc_user.pk = pk
+        rlc_user.generate_keys(password)
+        return rlc_user
+
     STUDY_CHOICES = (
         ("LAW", "Law Sciences"),
         ("PSYCH", "Psychology"),
@@ -199,18 +222,20 @@ class RlcUser(DjangoAggregate, IOwner, models.Model):
         assert self.key is not None
 
         private_key: Optional[str] = None
-        session = self.__get_session()
-        if session:
-            decoded: dict[str, str] = session.get_decoded()
-            if (
-                "_auth_user_id" in decoded
-                and decoded["_auth_user_id"] == str(self.user_id)
-                and "private_key" in decoded
-            ):
-                private_key = decoded["private_key"]
 
         if settings.TESTING and self.email == "dummy@law-orga.de":
             private_key = RlcUser.get_dummy_user_private_key(self)
+
+        if private_key is None:
+            session = self.__get_session()
+            if session:
+                decoded: dict[str, str] = session.get_decoded()
+                if (
+                    "_auth_user_id" in decoded
+                    and decoded["_auth_user_id"] == str(self.user_id)
+                    and "private_key" in decoded
+                ):
+                    private_key = decoded["private_key"]
 
         if private_key is None:
             raise ValueError(
