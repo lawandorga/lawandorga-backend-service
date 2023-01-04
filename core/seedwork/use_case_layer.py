@@ -51,6 +51,8 @@ def finder_function(function: Callable[P1, Any]) -> Callable[P1, Any]:
 
 __all__ = [
     "use_case",
+    "check_permissions",
+    "finder_function",
     "find",
     "UseCaseError",
     "UseCaseInputError",
@@ -128,7 +130,7 @@ def __update_parameters(args, kwargs, func, actor):
     return args, kwargs
 
 
-def __check_permissions(actor, permissions):
+def check_permissions(actor, permissions):
     for permission in permissions:
         if not actor.has_permission(permission):
             message = "You need the permission '{}' to do this.".format(permission)
@@ -176,7 +178,7 @@ def use_case(
 
             actor = __check_actor(args, kwargs, func_code, type_hints)
 
-            __check_permissions(actor, permissions)
+            check_permissions(actor, permissions)
 
             args, kwargs = __update_parameters(args, kwargs, usecase_func, actor)
 

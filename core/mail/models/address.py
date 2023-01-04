@@ -21,6 +21,7 @@ class MailAddress(models.Model):
     class Meta:
         verbose_name = "MailAddress"
         verbose_name_plural = "MailAddress"
+        ordering = ["localpart"]
 
     def __str__(self):
         return "address: {}; email: {}@{};".format(

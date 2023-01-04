@@ -9,9 +9,10 @@ from core.mail.use_cases.finders import (
     mail_user_from_id,
 )
 from core.seedwork.use_case_layer import UseCaseError, find, use_case
+from core.static import PERMISSION_MAIL_MANAGE_ACCOUNTS
 
 
-@use_case
+@use_case(permissions=[PERMISSION_MAIL_MANAGE_ACCOUNTS])
 def create_group_mail(
     __actor: MailUser, localpart: str, domain=find(mail_domain_from_uuid)
 ):
@@ -32,26 +33,26 @@ def create_group_mail(
         group.members.add(__actor)
 
 
-@use_case
+@use_case(permissions=[PERMISSION_MAIL_MANAGE_ACCOUNTS])
 def delete_group_mail(__actor: MailUser, group=find(mail_group_from_id)):
     group.delete()
 
 
-@use_case
+@use_case(permissions=[PERMISSION_MAIL_MANAGE_ACCOUNTS])
 def add_member_to_group(
     __actor: MailUser, group=find(mail_group_from_id), member=find(mail_user_from_id)
 ):
     group.members.add(member)
 
 
-@use_case
+@use_case(permissions=[PERMISSION_MAIL_MANAGE_ACCOUNTS])
 def remove_member_from_group(
     __actor: MailUser, group=find(mail_group_from_id), member=find(mail_user_from_id)
 ):
     group.members.remove(member)
 
 
-@use_case
+@use_case(permissions=[PERMISSION_MAIL_MANAGE_ACCOUNTS])
 def add_address_to_group(
     __actor: MailUser,
     localpart: str,
@@ -71,7 +72,7 @@ def add_address_to_group(
     )
 
 
-@use_case
+@use_case(permissions=[PERMISSION_MAIL_MANAGE_ACCOUNTS])
 def set_group_address_as_default(__actor: MailUser, address=find(mail_address_from_id)):
     with transaction.atomic():
         MailAddress.objects.filter(account=address.account).update(is_default=False)
@@ -79,7 +80,7 @@ def set_group_address_as_default(__actor: MailUser, address=find(mail_address_fr
         address.save()
 
 
-@use_case
+@use_case(permissions=[PERMISSION_MAIL_MANAGE_ACCOUNTS])
 def delete_group_address(__actor: MailUser, address=find(mail_address_from_id)):
     if address.is_default:
         raise UseCaseError("You can not delete the default address.")
