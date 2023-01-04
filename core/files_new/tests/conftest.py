@@ -1,11 +1,10 @@
 import pytest
 
-from core.rlc.models import Org
 from core.seedwork import test_helpers
 
 
 @pytest.fixture
-def org() -> Org:
+def org():
     org = test_helpers.create_raw_org()
     yield org
 
