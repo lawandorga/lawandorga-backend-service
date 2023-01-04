@@ -25,11 +25,11 @@ def command__create_record(rlc_user: RlcUser, data: schemas.InputRecordCreate):
 
 @router.post(
     url="within_folder/",
-    input_schema=schemas.InputRecordCreate,
+    input_schema=schemas.InputRecordCreateWithinFolder,
     output_schema=schemas.OutputRecordCreate,
 )
 def command__create_record_within_folder(
-    rlc_user: RlcUser, data: schemas.InputRecordCreate
+    rlc_user: RlcUser, data: schemas.InputRecordCreateWithinFolder
 ):
     record_pk = create_a_record_within_a_folder(
         rlc_user, data.name, folder=data.folder, template=data.template

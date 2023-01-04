@@ -12,7 +12,12 @@ class InputQueryRecord(BaseModel):
 class InputRecordCreate(BaseModel):
     name: str
     template: int
-    folder: Optional[UUID]
+
+
+class InputRecordCreateWithinFolder(BaseModel):
+    name: str
+    template: int
+    folder: UUID
 
 
 class InputAccess(BaseModel):
