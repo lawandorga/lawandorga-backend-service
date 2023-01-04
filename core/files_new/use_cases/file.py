@@ -13,14 +13,10 @@ def upload_a_file(__actor: RlcUser, file: UploadedFile, folder=find(folder_from_
         raise UseCaseError(
             "You can not upload a file into this folder, because you have no access to this folder."
         )
-    name = "Unknown"
-    if file.name:
-        name = file.name
-    f = EncryptedRecordDocument(folder_uuid=folder.uuid, org_id=__actor.org_id)
-    f.set_name(name)
-    f.generate_key(__actor)
-    f.save()
+
+    f = EncryptedRecordDocument.create(file, folder, __actor)
     f.upload(file, __actor)
+    f.save()
 
 
 @use_case

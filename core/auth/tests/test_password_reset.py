@@ -8,7 +8,7 @@ from core.seedwork import test_helpers
 
 def test_password_reset_works(db):
     # setup
-    org = test_helpers.create_org()
+    org = test_helpers.create_org()["org"]
     rlc_user = test_helpers.create_rlc_user(rlc=org)
     org.generate_keys()
     c = Client()

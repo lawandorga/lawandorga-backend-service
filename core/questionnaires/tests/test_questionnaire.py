@@ -6,9 +6,25 @@ from django.test import Client
 
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
-from core.questionnaires.models import QuestionnaireTemplate
+from core.models import Org
+from core.questionnaires.models import Questionnaire, QuestionnaireTemplate
+from core.seedwork import test_helpers
+from core.seedwork import test_helpers as data
 from core.seedwork.repository import RepositoryWarehouse
 from core.static import PERMISSION_RECORDS_ADD_RECORD
+
+
+@pytest.fixture
+def org(db):
+    org = Org.objects.create(name="Test RLC")
+    yield org
+
+
+@pytest.fixture
+def user(db, org):
+    user_1 = data.create_rlc_user(rlc=org)
+    org.generate_keys()
+    yield user_1
 
 
 @pytest.fixture
@@ -26,6 +42,36 @@ def folder(db, org, user):
     yield r.retrieve(org.pk, folder.uuid)
 
 
+@pytest.fixture
+def raw_org():
+    yield test_helpers.create_raw_org()
+
+
+@pytest.fixture
+def raw_user(raw_org):
+    yield test_helpers.create_raw_org_user(raw_org)
+
+
+@pytest.fixture
+def raw_template(raw_org):
+    yield QuestionnaireTemplate.create("Dummy's Template", raw_org)
+
+
+@pytest.fixture
+def raw_folder(raw_user):
+    yield test_helpers.create_raw_folder(raw_user)
+
+
+@pytest.fixture
+def raw_questionnaire(raw_template, raw_user, raw_folder):
+    yield Questionnaire.create(raw_template, raw_folder, raw_user)
+
+
+@pytest.fixture
+def raw_question(raw_template):
+    yield raw_template.add_question("TEXTAREA", "How old is Mr. Dummy?")
+
+
 def test_publish_questionnaire(user, db, template, folder):
     user["rlc_user"].grant(PERMISSION_RECORDS_ADD_RECORD)
     c = Client()
@@ -36,3 +82,11 @@ def test_publish_questionnaire(user, db, template, folder):
         content_type="application/json",
     )
     assert response.status_code == 200
+
+
+def test_answer_question(raw_user, raw_question, raw_questionnaire):
+    text = "Mr. Dummy is older than the universe."
+    answer = raw_questionnaire.add_answer(raw_question, text)
+    assert answer.data != text
+    answer.decrypt(raw_user)
+    assert answer.data == text

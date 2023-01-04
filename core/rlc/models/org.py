@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING, Optional, cast
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
 
+from core.folders.domain.repositiories.folder import FolderRepository
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
+from core.seedwork.repository import RepositoryWarehouse
 
-from ...folders.domain.repositiories.folder import FolderRepository
-from ...seedwork.repository import RepositoryWarehouse
 from .meta import Meta
 
 if TYPE_CHECKING:
@@ -15,6 +15,13 @@ if TYPE_CHECKING:
 
 
 class Org(EncryptedModelMixin, models.Model):
+    @classmethod
+    def create(cls, name: str, pk=0) -> "Org":
+        org = Org(name=name)
+        if pk:
+            org.pk = pk
+        return org
+
     meta = models.ForeignKey(Meta, on_delete=models.CASCADE, null=True, blank=True)
     FEDERAL_STATE_CHOICES = (
         ("BW", "Baden-Württemberg"),
