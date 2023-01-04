@@ -1,9 +1,16 @@
+from typing import Literal
+
 from django.db import models
 
 from core.models import Org
 
 
 class QuestionnaireTemplate(models.Model):
+    @classmethod
+    def create(cls, name: str, org: Org, notes="") -> "QuestionnaireTemplate":
+        template = QuestionnaireTemplate(name=name, rlc=org, notes=notes)
+        return template
+
     name = models.CharField(max_length=100)
     rlc = models.ForeignKey(
         Org, related_name="questionnaires", on_delete=models.CASCADE, blank=True
@@ -19,6 +26,14 @@ class QuestionnaireTemplate(models.Model):
 
     def __str__(self):
         return "questionnaire: {}; rlc: {};".format(self.name, self.rlc.name)
+
+    def add_question(
+        self, question_type: Literal["FILE", "TEXTAREA"], question: str, order=1
+    ) -> "QuestionnaireQuestion":
+        q = QuestionnaireQuestion(
+            type=question_type, question=question, order=order, questionnaire=self
+        )
+        return q
 
 
 class QuestionnaireTemplateFile(models.Model):

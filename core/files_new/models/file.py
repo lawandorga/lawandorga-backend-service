@@ -44,6 +44,7 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
         f = EncryptedRecordDocument(folder_uuid=folder.uuid, org_id=folder.org_pk)
         if pk:
             f.pk = pk
+        f.set_folder(folder)
         f._folder = folder
         f.set_name(name)
         f.set_location()
@@ -104,11 +105,6 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
         lock_key = self.folder.get_encryption_key(requestor=user)
         enc_key = EncryptedSymmetricKey.create(key, lock_key)
         self.key = enc_key.as_dict()
-
-    def save(self, *args, **kwargs):
-        if self.pk is None:
-            self.set_location()
-        super().save(*args, **kwargs)
 
     def set_location(self):
         assert self.location is None or self.location == ""

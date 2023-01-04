@@ -1,5 +1,3 @@
-from django.utils import timezone
-
 from core.auth.models import RlcUser
 from core.folders.use_cases.finders import folder_from_uuid
 from core.questionnaires.models import Questionnaire
@@ -14,10 +12,7 @@ def publish_a_questionnaire(
     folder=find(folder_from_uuid),
     template=find(questionnaire_template_from_id),
 ):
-    name = f"{template.name}: {timezone.now().strftime('%d.%m.%Y')}"
-    questionnaire = Questionnaire(template=template, name=name)
-    questionnaire.set_folder(folder)
-    questionnaire.generate_key(__actor)
+    questionnaire = Questionnaire.create(template, folder, __actor)
     questionnaire.save()
 
     return questionnaire

@@ -2,6 +2,7 @@ from typing import Optional, cast
 from uuid import UUID, uuid4
 
 from django.db import models
+from django.utils import timezone
 
 from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
@@ -33,6 +34,17 @@ class DjangoQuestionnaireRepository(ItemRepository):
 class Questionnaire(DjangoItem, models.Model):
     REPOSITORY = DjangoQuestionnaireRepository.IDENTIFIER
 
+    @classmethod
+    def create(
+        cls, template: QuestionnaireTemplate, folder: Folder, user: RlcUser
+    ) -> "Questionnaire":
+        name = f"{template.name}: {timezone.now().strftime('%d.%m.%Y')}"
+        questionnaire = Questionnaire(template=template, name=name)
+        questionnaire.set_folder(folder)
+        questionnaire._folder = folder
+        questionnaire.generate_key(user)
+        return questionnaire
+
     record = models.ForeignKey(
         Record,
         on_delete=models.CASCADE,
@@ -58,11 +70,6 @@ class Questionnaire(DjangoItem, models.Model):
     def __str__(self):
         return "recordQuestionnaire: {};".format(self.pk)
 
-    def save(self, *args, **kwargs):
-        if not self.code:
-            self.code = str(uuid4())[:6].upper()
-        super().save(*args, **kwargs)
-
     @property
     def org_pk(self) -> int:
         return self.template.rlc_id
@@ -79,6 +86,10 @@ class Questionnaire(DjangoItem, models.Model):
             r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
             self._folder = r.retrieve(self.template.rlc_id, self.folder_uuid)
         return self._folder
+
+    def generate_code(self):
+        assert self.code is None
+        self.code = str(uuid4())[:6].upper()
 
     def get_public_key(self):
         assert self.key is None
@@ -130,6 +141,13 @@ class Questionnaire(DjangoItem, models.Model):
 
             # save
             self.save()
+
+    def add_answer(
+        self, question: QuestionnaireQuestion, answer: str
+    ) -> "QuestionnaireAnswer":
+        a = QuestionnaireAnswer(questionnaire=self, field=question, data=answer)
+        a.encrypt()
+        return a
 
 
 class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
