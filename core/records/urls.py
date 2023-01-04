@@ -7,8 +7,6 @@ router = DefaultRouter()
 
 router.register("pool_records", views.PoolRecordViewSet)
 router.register("pool_consultants", views.PoolConsultantViewSet)
-# record access
-router.register("accesses", views.RecordAccessViewSet)
 # records
 router.register("recordtemplates", views.RecordTemplateViewSet)
 # fields
@@ -43,4 +41,5 @@ urlpatterns = [
     path("", include(router.urls)),
     path("query/", include(api.query_router.urls)),
     path("deletions/", include(api.deletions_router.urls)),
+    path("accesses/", include(api.accesses_router.urls)),
 ]

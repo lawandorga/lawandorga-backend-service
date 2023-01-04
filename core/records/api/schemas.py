@@ -15,6 +15,15 @@ class InputRecordCreate(BaseModel):
     folder: Optional[UUID]
 
 
+class InputAccess(BaseModel):
+    id: int
+
+
+class InputCreateAccess(BaseModel):
+    record: int
+    explanation: str
+
+
 class InputRecordChangeName(BaseModel):
     id: int
     name: str
@@ -38,6 +47,20 @@ class OutputRecordDeletion(BaseModel):
     requested_by_detail: str
     state: str
     processed: Optional[datetime]
+
+    class Config:
+        orm_mode = True
+
+
+class OutputRecordAccess(BaseModel):
+    created: datetime
+    id: int
+    processed_by_detail: str
+    requested_by_detail: str
+    record_detail: str
+    state: str
+    processed_on: Optional[datetime]
+    explanation: str
 
     class Config:
         orm_mode = True

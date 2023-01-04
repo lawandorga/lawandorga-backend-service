@@ -4,7 +4,7 @@ from django.db.models import Q
 
 from core.auth.models import RlcUser
 from core.records.api import schemas
-from core.records.models import Record, RecordDeletion, RecordTemplate
+from core.records.models import Record, RecordAccess, RecordDeletion, RecordTemplate
 from core.seedwork.api_layer import ApiError, Router
 
 router = Router()
@@ -86,8 +86,19 @@ def query__record(rlc_user: RlcUser, data: schemas.InputQueryRecord):
 @router.get("deletions/", output_schema=list[schemas.OutputRecordDeletion])
 def query__deletions(rlc_user: RlcUser):
     deletions_1 = RecordDeletion.objects.filter(
-        Q(requested_by__rlc_user__org_id=rlc_user.org_id)
-        | Q(processed_by__rlc_user__org_id=rlc_user.org_id)
+        Q(requestor__org_id=rlc_user.org_id)
+        | Q(processor__org_id=rlc_user.org_id)
+        | Q(record__template__rlc_id=rlc_user.org_id)
+    )
+    deletions_2 = list(deletions_1)
+    return deletions_2
+
+
+@router.get("accesses/", output_schema=list[schemas.OutputRecordAccess])
+def query__accesses(rlc_user: RlcUser):
+    deletions_1 = RecordAccess.objects.filter(
+        Q(requestor__org_id=rlc_user.org_id)
+        | Q(processor__org_id=rlc_user.org_id)
         | Q(record__template__rlc_id=rlc_user.org_id)
     )
     deletions_2 = list(deletions_1)
