@@ -37,6 +37,7 @@ from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncr
 # Record
 ###
 from core.seedwork.repository import RepositoryWarehouse
+from core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 
 
 class DjangoRecordRepository(ItemRepository):
@@ -50,6 +51,34 @@ class DjangoRecordRepository(ItemRepository):
 
 class Record(DjangoItem, models.Model):
     REPOSITORY = "RECORD"
+
+    @classmethod
+    def create(
+        cls,
+        user: RlcUser,
+        folder: Folder,
+        template: RecordTemplate,
+        name: str,
+        users: list[RlcUser] | None = None,
+        pk=0,
+    ) -> "Record":
+        if users is None:
+            users = []
+
+        for u in users:
+            if u.has_permission(
+                PERMISSION_RECORDS_ACCESS_ALL_RECORDS
+            ) and not folder.has_access(user):
+                folder.grant_access(u, user)
+
+        record = Record(template=template, name=name)
+        record.set_folder(folder)
+        record.generate_key(user)
+
+        if pk:
+            record.pk = pk
+
+        return record
 
     template = models.ForeignKey(
         RecordTemplate, related_name="records", on_delete=models.PROTECT

@@ -13,6 +13,13 @@ def get_default_show():
 
 
 class RecordTemplate(models.Model):
+    @classmethod
+    def create(cls, name: str, org: Org, pk=0) -> "RecordTemplate":
+        template = RecordTemplate(name=name, rlc=org)
+        if pk:
+            template.pk = pk
+        return template
+
     name = models.CharField(max_length=200)
     rlc = models.ForeignKey(
         Org, related_name="recordtemplates", on_delete=models.CASCADE, blank=True
