@@ -401,7 +401,7 @@ class RlcUser(DjangoAggregate, IOwner, models.Model):
             group_has_permission__pk__in=groups, permission=permission
         ).exists()
 
-    def has_permission(self, permission: Union[str, "Permission"]):
+    def has_permission(self, permission: Union[str, "Permission"]) -> bool:
         if isinstance(permission, str):
             try:
                 from core.models import Permission
@@ -417,6 +417,8 @@ class RlcUser(DjangoAggregate, IOwner, models.Model):
         as_group = self.__has_as_group_member_permission(permission)
         if as_group:
             return True
+
+        return False
 
     def get_badges(self):
         from core.records.models import RecordAccess, RecordDeletion

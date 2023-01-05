@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 from core.auth.models import RlcUser
@@ -8,6 +8,11 @@ from core.seedwork.domain_layer import DomainError
 
 
 class RecordDeletion(models.Model):
+    @classmethod
+    def create(cls, record: Record, user: RlcUser):
+        deletion = RecordDeletion(requestor=user, record=record)
+        return deletion
+
     record = models.ForeignKey(
         Record, related_name="deletions", on_delete=models.SET_NULL, null=True
     )
@@ -18,11 +23,25 @@ class RecordDeletion(models.Model):
         related_name="requestedrecorddeletions",
         blank=True,
     )
+    requestor = models.ForeignKey(
+        RlcUser,
+        related_name="requested_record_deletions",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
     processed_by = models.ForeignKey(
         UserProfile,
         on_delete=models.CASCADE,
         related_name="processedrecorddeletions",
         null=True,
+    )
+    processor = models.ForeignKey(
+        RlcUser,
+        related_name="processed_record_deletions",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     processed = models.DateTimeField(null=True, blank=True)
     STATE_CHOICES = (
@@ -50,29 +69,30 @@ class RecordDeletion(models.Model):
 
     @property
     def processed_by_detail(self):
-        if self.processed_by:
-            return self.processed_by.name
+        if self.processor:
+            return self.processor.name
         return ""
 
     @property
     def requested_by_detail(self):
-        if self.requested_by:
-            return self.requested_by.name
+        if self.requestor:
+            return self.requestor.name
         return ""
 
     def save(self, *args, **kwargs):
-        if self.state == "gr" and self.record:
-            super().save(*args, **kwargs)
-            self.record.delete()
-        else:
-            super().save(*args, **kwargs)
+        with transaction.atomic():
+            if self.state == "gr" and self.record:
+                super().save(*args, **kwargs)
+                self.record.delete()
+            else:
+                super().save(*args, **kwargs)
 
     def accept(self, by: RlcUser):
         if self.state != "re":
             raise DomainError(
                 "This deletion request can not be accepted, because it is not in a requested state."
             )
-        self.processed_by = by.user
+        self.processor = by
         self.processed = timezone.now()
         self.state = "gr"
 
@@ -81,6 +101,6 @@ class RecordDeletion(models.Model):
             raise DomainError(
                 "This deletion request can not be declined, because it is not in a requested state."
             )
-        self.processed_by = by.user
+        self.processor = by
         self.processed = timezone.now()
         self.state = "de"
