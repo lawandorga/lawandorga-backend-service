@@ -19,8 +19,8 @@ def deletion_from_id(actor, v) -> RecordDeletion:
     return RecordDeletion.objects.get(
         Q(id=v)
         & (
-            Q(requested_by__rlc_user__org_id=actor.org_id)
-            | Q(processed_by__rlc_user__org_id=actor.org_id)
+            Q(requestor__org_id=actor.org_id)
+            | Q(processor__org_id=actor.org_id)
             | Q(record__template__rlc_id=actor.org_id)
         )
     )
@@ -31,8 +31,8 @@ def access_from_id(actor, v) -> RecordAccess:
     return RecordAccess.objects.get(
         Q(id=v)
         & (
-            Q(requested_by__rlc_user__org_id=actor.org_id)
-            | Q(processed_by__rlc_user__org_id=actor.org_id)
+            Q(requestor__org_id=actor.org_id)
+            | Q(processor__org_id=actor.org_id)
             | Q(record__template__rlc_id=actor.org_id)
         )
     )
