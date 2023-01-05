@@ -17,24 +17,10 @@ class RecordDeletion(models.Model):
         Record, related_name="deletions", on_delete=models.SET_NULL, null=True
     )
     explanation = models.TextField()
-    requested_by = models.ForeignKey(
-        UserProfile,
-        on_delete=models.CASCADE,
-        related_name="requestedrecorddeletions",
-        blank=True,
-    )
     requestor = models.ForeignKey(
         RlcUser,
         related_name="requested_record_deletions",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
-    processed_by = models.ForeignKey(
-        UserProfile,
         on_delete=models.CASCADE,
-        related_name="processedrecorddeletions",
-        null=True,
     )
     processor = models.ForeignKey(
         RlcUser,
