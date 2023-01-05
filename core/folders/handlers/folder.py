@@ -8,11 +8,11 @@ from core.folders.use_cases.folder import (
     rename_item_in_folder,
 )
 from core.seedwork.message_layer import MessageBusActor
-from messagebus import Event, MessageBus
+from messagebus import MessageBus, RawEvent
 
 
-@MessageBus.register(on="ItemRenamed")
-def handler__item_renamed(event: Event):
+@MessageBus.handler(on="ItemRenamed")
+def handler__item_renamed(event: RawEvent):
     rename_item_in_folder(
         MessageBusActor(event.data["org_pk"]),
         event.data["repository"],
@@ -21,8 +21,8 @@ def handler__item_renamed(event: Event):
     )
 
 
-@MessageBus.register(on="ItemDeleted")
-def handler__item_deleted(event: Event):
+@MessageBus.handler(on="ItemDeleted")
+def handler__item_deleted(event: RawEvent):
     delete_item_from_folder(
         MessageBusActor(event.data["org_pk"]),
         UUID(event.data["uuid"]),
@@ -30,8 +30,8 @@ def handler__item_deleted(event: Event):
     )
 
 
-@MessageBus.register(on="ItemAddedToFolder")
-def handler__item_added_to_folder(event: Event):
+@MessageBus.handler(on="ItemAddedToFolder")
+def handler__item_added_to_folder(event: RawEvent):
     add_item_to_folder(
         MessageBusActor(event.data["org_pk"]),
         event.data["repository"],
@@ -40,15 +40,15 @@ def handler__item_added_to_folder(event: Event):
     )
 
 
-@MessageBus.register(on="OrgUserLocked")
-def handler__org_user_locked(event: Event):
+@MessageBus.handler(on="OrgUserLocked")
+def handler__org_user_locked(event: RawEvent):
     invalidate_keys_of_user(
         MessageBusActor(event.data["org_pk"]), UUID(event.data["org_user_uuid"])
     )
 
 
-@MessageBus.register(on="OrgUserUnlocked")
-def handler__org_user_unlocked(event: Event):
+@MessageBus.handler(on="OrgUserUnlocked")
+def handler__org_user_unlocked(event: RawEvent):
     of_uuid = event.data["org_user_uuid"]
     by_uuid = event.data["by_org_user_uuid"]
     correct_keys_of_user_by_user(

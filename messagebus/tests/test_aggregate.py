@@ -1,7 +1,13 @@
 from uuid import uuid4
 
-from messagebus import DjangoAggregate, Event, MessageBus
+from messagebus import DjangoAggregate, MessageBus, RawEvent
+from messagebus.domain.data import EventData
 from messagebus.impl.repository import Message
+
+
+@MessageBus.event
+class DrivenToLocation(EventData):
+    miles: int
 
 
 def test_django_aggregate_event_handling(db):
@@ -18,12 +24,12 @@ def test_django_aggregate_event_handling(db):
             self.uuid = uuid4()
 
         def drive_to_location(self):
-            self.add_event("DrivenToLocation", {"miles": 500}, metadata)
+            self.add_event(DrivenToLocation(miles=500), metadata)
 
-    def change_state(event: Event):
-        event.metadata["total_miles"] += event.data["miles"]
+    def change_state(event: RawEvent):
+        event.metadata["total_miles"] += event.data.miles
 
-    MessageBus.register_handler("DrivenToLocation", change_state)
+    MessageBus.register_handler(DrivenToLocation, change_state)
 
     car = Car()
     car.drive_to_location()

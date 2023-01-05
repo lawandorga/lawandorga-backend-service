@@ -3,13 +3,14 @@ from typing import Any, Callable, Optional
 from django.db import transaction
 
 from messagebus.domain.bus import MessageBus
-from messagebus.domain.event import Event, JsonDict
+from messagebus.domain.data import EventData
+from messagebus.domain.event import JsonDict, RawEvent
 from messagebus.impl.factory import create_event_from_aggregate
 
 
 class DjangoAggregate:
     uuid: Any  # Any because of django's models.UUIDField
-    events: list[Event]
+    events: list[RawEvent]
 
     def __save_or_delete(self, func: Callable, *args, **kwargs):
         events = []
@@ -19,8 +20,8 @@ class DjangoAggregate:
 
         with transaction.atomic():
             func(*args, **kwargs)
-            for event in self.events:
-                event = MessageBus.save_event(event)
+            for raw_event in self.events:
+                event = MessageBus.save_event(raw_event)
                 events.append(event)
 
         # reset the events so that a second save does not trigger them again
@@ -38,13 +39,12 @@ class DjangoAggregate:
 
     def add_event(
         self,
-        name: str,
-        data: Optional[JsonDict] = None,
+        data: EventData,
         metadata: Optional[JsonDict] = None,
     ):
         if not hasattr(self, "events"):
             self.events = []
 
         # create the event
-        event = create_event_from_aggregate(self, name, data, metadata)
+        event = create_event_from_aggregate(self, data, metadata)
         self.events.append(event)

@@ -4,7 +4,7 @@ from django.db import models
 from django.db.models import Max
 from django.utils import timezone
 
-from messagebus.domain.event import Event
+from messagebus.domain.event import Event, RawEvent
 from messagebus.domain.repository import MessageBusRepository
 from messagebus.impl.factory import create_event_from_message
 
@@ -25,7 +25,7 @@ class Message(models.Model):
 
 class DjangoMessageBusRepository(MessageBusRepository):
     @classmethod
-    def save_event(cls, event: Event, position: Optional[int] = None) -> Event:
+    def save_event(cls, event: RawEvent, position: Optional[int] = None) -> Event:
         if position is None:
             messages_max = Message.objects.filter(
                 stream_name=event.stream_name

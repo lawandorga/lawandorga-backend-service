@@ -1,6 +1,6 @@
 from datetime import timedelta
 from typing import Any, Dict, List, Optional, Union
-from uuid import uuid4, UUID
+from uuid import UUID, uuid4
 
 import ics
 from django.conf import settings
