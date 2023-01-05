@@ -10,7 +10,7 @@ def create_deletion_request(
     __actor: RlcUser, explanation: str, record=find(record_from_id)
 ):
     deletion = RecordDeletion(
-        requested_by=__actor.user, state="re", record=record, explanation=explanation
+        requestor=__actor, state="re", record=record, explanation=explanation
     )
     deletion.save()
 

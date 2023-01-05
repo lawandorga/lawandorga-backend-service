@@ -5,7 +5,6 @@ from django.utils import timezone
 
 from core.auth.models import RlcUser
 from core.folders.domain.repositiories.folder import FolderRepository
-from core.models import UserProfile
 from core.records.models.record import Record
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.repository import RepositoryWarehouse
@@ -21,25 +20,10 @@ class RecordAccess(models.Model):
         )
         return access
 
-    requested_by = models.ForeignKey(
-        UserProfile,
-        related_name="requestedrecordaccesses",
-        on_delete=models.CASCADE,
-        null=True,
-    )
     requestor = models.ForeignKey(
         RlcUser,
         related_name="requested_record_accesses",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
-    processed_by = models.ForeignKey(
-        UserProfile,
-        related_name="processedrecordaccesses",
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
     )
     processor = models.ForeignKey(
         RlcUser,

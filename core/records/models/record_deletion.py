@@ -2,7 +2,6 @@ from django.db import models, transaction
 from django.utils import timezone
 
 from core.auth.models import RlcUser
-from core.models import UserProfile
 from core.records.models.record import Record
 from core.seedwork.domain_layer import DomainError
 
