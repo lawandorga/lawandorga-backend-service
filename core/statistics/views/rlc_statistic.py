@@ -15,7 +15,7 @@ class RlcStatisticsViewSet(viewsets.GenericViewSet):
 
     @action(detail=False)
     def user_actions_month(self, request, *args, **kwargs):
-        if settings.DEBUG:
+        if 'sqlite' in settings.DATABASES['default']['ENGINE']:
             statement = """
                 select u.email as email, count(*) as actions
                 from core_userprofile as u

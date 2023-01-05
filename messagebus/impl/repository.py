@@ -38,7 +38,7 @@ class DjangoMessageBusRepository(MessageBusRepository):
             stream_name=event.stream_name,
             action=event.name,
             position=position,
-            data=event.data,
+            data=event.data.to_dict(),
             metadata=event.metadata,
         )
         message.save()

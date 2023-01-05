@@ -1,6 +1,7 @@
 from logging import getLogger
-from typing import Callable, Optional, Type
+from typing import Callable, Optional, Type, Union
 
+from messagebus.domain.data import EventData
 from messagebus.domain.event import Event
 from messagebus.domain.repository import MessageBusRepository
 
@@ -8,15 +9,15 @@ logger = getLogger("messagebus")
 
 
 class MessageBus:
-    handlers: dict[str, set[Callable]] = {}
+    handlers: dict[Type[EventData], set[Callable]] = {}
     repository: Type[MessageBusRepository]
 
     @classmethod
     def register(
-        cls, on: str | list[str]
+        cls, on: Type[EventData] | list[Type[EventData]]
     ) -> Callable[[Callable[[Event], None]], Callable[[Event], None]]:
         def wrapper(handler: Callable[[Event], None]) -> Callable[[Event], None]:
-            when = [on] if isinstance(on, str) else on
+            when = on if isinstance(on, list) else [on]
 
             for name in when:
                 cls.register_handler(name, handler)
@@ -30,10 +31,12 @@ class MessageBus:
         cls.repository = repository
 
     @classmethod
-    def register_handler(cls, action: str, handler: Callable):
+    def register_handler(cls, action: Type[EventData], handler: Callable):
         if action not in cls.handlers:
             cls.handlers[action] = set()
+
         cls.handlers[action].add(handler)
+
         logger.info(f"Handler {handler.__name__} registered for action '{action}'.")
 
     @classmethod

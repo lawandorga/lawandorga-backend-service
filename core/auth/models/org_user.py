@@ -1,6 +1,6 @@
 from datetime import timedelta
 from typing import Any, Dict, List, Optional, Union
-from uuid import uuid4
+from uuid import uuid4, UUID
 
 import ics
 from django.conf import settings
@@ -10,6 +10,7 @@ from django.core.mail import send_mail
 from django.db import models
 from django.template import loader
 from django.utils import timezone
+from pydantic import BaseModel
 
 from core.auth.domain.user_key import UserKey
 from core.auth.token_generator import EmailConfirmationTokenGenerator
@@ -28,6 +29,17 @@ from core.static import (
 from messagebus import DjangoAggregate
 
 from .user import UserProfile
+
+
+class OrgUserLocked(BaseModel):
+    org_user_uuid: UUID
+    org_pk: int
+
+
+class OrgUserUnlocked(BaseModel):
+    org_user_uuid: UUID
+    by_org_user_uuid: UUID
+    org_pk: int
 
 
 class RlcUserManager(models.Manager):

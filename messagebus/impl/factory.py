@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Optional
 
+from messagebus.domain.data import EventData
 from messagebus.domain.event import Event, JsonDict
 
 if TYPE_CHECKING:
@@ -13,8 +14,7 @@ def create_event_from_message(message: "Message") -> "Event":
 
 def create_event_from_aggregate(
     aggregate: "DjangoAggregate",
-    name: str,
-    data: Optional[JsonDict] = None,
+    data: EventData,
     metadata: Optional[JsonDict] = None,
 ) -> "Event":
     aggregate_name = aggregate.__class__.__name__
@@ -27,4 +27,4 @@ def create_event_from_aggregate(
     if metadata is None:
         metadata = {}
 
-    return Event(stream_name, name, data, metadata)
+    return Event(stream_name, data, metadata)

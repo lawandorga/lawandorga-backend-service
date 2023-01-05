@@ -1,12 +1,13 @@
-from typing import Union
+from typing import Generic, TypeVar
 
-JsonDict = dict[str, Union[str, bool, int, "JsonDict"]]
+from messagebus.domain.data import EventData, JsonDict
+
+D = TypeVar('D', bound=EventData)
 
 
-class Event:
-    def __init__(self, stream_name: str, name: str, data: JsonDict, metadata: JsonDict):
+class Event(Generic[D]):
+    def __init__(self, stream_name: str, data: D, metadata: JsonDict):
         self.__stream_name = stream_name
-        self.__name = name
         self.__data = data
         self.__metadata = metadata
 
@@ -14,12 +15,12 @@ class Event:
         return self.name
 
     @property
-    def data(self):
+    def data(self) -> D:
         return self.__data
 
     @property
     def name(self):
-        return self.__name
+        return self.__data.__class__.__name__
 
     @property
     def metadata(self):
