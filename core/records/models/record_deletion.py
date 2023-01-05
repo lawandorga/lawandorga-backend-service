@@ -8,6 +8,11 @@ from core.seedwork.domain_layer import DomainError
 
 
 class RecordDeletion(models.Model):
+    @classmethod
+    def create(cls, record: Record, user: RlcUser):
+        deletion = RecordDeletion(requestor=user, record=record)
+        return deletion
+
     record = models.ForeignKey(
         Record, related_name="deletions", on_delete=models.SET_NULL, null=True
     )

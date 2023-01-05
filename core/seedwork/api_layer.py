@@ -152,14 +152,6 @@ def _catch_error(func: Callable[..., Awaitable[JsonResponse | FileResponse]]):
                 err_type="DomainError",
             )
 
-        except ValidationError as e:
-            return ErrorResponse(
-                err_type="OutputError",
-                title="Server Error",
-                internal=e.errors(),
-                status=500,
-            )
-
     return catch
 
 
