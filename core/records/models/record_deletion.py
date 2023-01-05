@@ -2,7 +2,6 @@ from django.db import models, transaction
 from django.utils import timezone
 
 from core.auth.models import RlcUser
-from core.models import UserProfile
 from core.records.models.record import Record
 from core.seedwork.domain_layer import DomainError
 
@@ -17,24 +16,10 @@ class RecordDeletion(models.Model):
         Record, related_name="deletions", on_delete=models.SET_NULL, null=True
     )
     explanation = models.TextField()
-    requested_by = models.ForeignKey(
-        UserProfile,
-        on_delete=models.CASCADE,
-        related_name="requestedrecorddeletions",
-        blank=True,
-    )
     requestor = models.ForeignKey(
         RlcUser,
         related_name="requested_record_deletions",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
-    processed_by = models.ForeignKey(
-        UserProfile,
         on_delete=models.CASCADE,
-        related_name="processedrecorddeletions",
-        null=True,
     )
     processor = models.ForeignKey(
         RlcUser,
