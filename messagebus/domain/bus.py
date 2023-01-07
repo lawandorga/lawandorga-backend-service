@@ -36,8 +36,8 @@ class MessageBus:
     @classmethod
     def handler(
         cls, on: Type[EventData] | list[Type[EventData]]
-    ) -> Callable[[Callable[[RawEvent], None]], Callable[[RawEvent], None]]:
-        def wrapper(handler: Callable[[RawEvent], None]) -> Callable[[RawEvent], None]:
+    ) -> Callable[[Callable[[Event], None]], Callable[[Event], None]]:
+        def wrapper(handler: Callable[[Event], None]) -> Callable[[Event], None]:
             when = on if isinstance(on, list) else [on]
 
             for name in when:

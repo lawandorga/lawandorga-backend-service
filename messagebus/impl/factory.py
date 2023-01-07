@@ -2,9 +2,9 @@ from typing import TYPE_CHECKING, Optional
 
 from messagebus.domain.data import EventData
 from messagebus.domain.event import Event, JsonDict, RawEvent
+from messagebus.domain.object import Object
 
 if TYPE_CHECKING:
-    from messagebus.impl.aggregate import DjangoAggregate
     from messagebus.impl.repository import Message
 
 
@@ -20,7 +20,7 @@ def create_event_from_message(message: "Message") -> Event:
 
 
 def create_event_from_aggregate(
-    aggregate: "DjangoAggregate",
+    aggregate: Object,
     data: EventData,
     metadata: Optional[JsonDict] = None,
 ) -> "RawEvent":

@@ -2,7 +2,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from messagebus.domain.data import EventData, serialize
+from messagebus.impl.event import EventData, serialize
 
 
 def test_serialize_uuid():
@@ -31,6 +31,6 @@ def test_model_to_json_and_back():
 
 
 def test_data_raises_error_on_unknown_data_type():
-    data = {'working': 1, 'not-working': str}
+    data = {"working": 1, "not-working": str}
     with pytest.raises(ValueError):
         serialize(data)

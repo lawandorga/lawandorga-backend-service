@@ -1,4 +1,4 @@
-from typing import Optional, cast
+from typing import Optional
 from uuid import UUID, uuid4
 
 from django.core.files.storage import default_storage
@@ -7,16 +7,16 @@ from django.db import models
 
 from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.repositiories.item import ItemRepository
 from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
-from core.folders.infrastructure.django_item import DjangoItem
+from core.folders.infrastructure.folder_addon import FolderAddon
 from core.records.models.record import Record
 from core.rlc.models import Org
-from core.seedwork.repository import RepositoryWarehouse
+from core.seedwork.aggregate import Aggregate
+from core.seedwork.events_addon import EventsAddon
 from core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_file
 
 
@@ -31,7 +31,7 @@ class DjangoFileRepository(ItemRepository):
         return EncryptedRecordDocument.objects.get(uuid=uuid)
 
 
-class EncryptedRecordDocument(DjangoItem, models.Model):
+class EncryptedRecordDocument(Aggregate, models.Model):
     REPOSITORY = "FILE"
 
     @classmethod
@@ -44,8 +44,7 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
         f = EncryptedRecordDocument(folder_uuid=folder.uuid, org_id=folder.org_pk)
         if pk:
             f.pk = pk
-        f.set_folder(folder)
-        f._folder = folder
+        f.folder.put_obj_in_folder(folder)
         f.set_name(name)
         f.set_location()
         f.generate_key(by)
@@ -54,7 +53,7 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
         return f
 
     name = models.CharField(max_length=200)
-    record = models.ForeignKey(
+    record: Optional[Record] = models.ForeignKey(  # type: ignore
         Record, related_name="documents", on_delete=models.CASCADE, null=True
     )
     org = models.ForeignKey(Org, related_name="files", on_delete=models.CASCADE)
@@ -66,6 +65,10 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
     location = models.SlugField(allow_unicode=True, max_length=1000, unique=True)
     exists = models.BooleanField(default=True)
     key = models.JSONField(null=True)
+
+    addons = dict(events=EventsAddon, folder=FolderAddon)
+    events: EventsAddon
+    folder: FolderAddon
 
     class Meta:
         verbose_name = "RecordDocument"
@@ -81,23 +84,23 @@ class EncryptedRecordDocument(DjangoItem, models.Model):
         assert self.org_id is not None
         return self.org_id
 
-    @property
-    def folder(self) -> Optional[Folder]:
-        assert self.org_id is not None
-        if self.folder_uuid is None:
-            return None
-        if not hasattr(self, "_folder"):
-            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-            self._folder = r.retrieve(self.org_id, self.folder_uuid)
-        return self._folder
+    # @property
+    # def folder(self) -> Optional[Folder]:
+    #     assert self.org_id is not None
+    #     if self.folder_uuid is None:
+    #         return None
+    #     if not hasattr(self, "_folder"):
+    #         r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    #         self._folder = r.retrieve(self.org_id, self.folder_uuid)
+    #     return self._folder
 
     @property
     def actions(self):
         return {}
 
     def set_name(self, name: str):
-        super().set_name(name)
         self.name = name
+        self.folder.obj_renamed()
 
     def generate_key(self, user: RlcUser):
         assert self.folder is not None and self.key is None

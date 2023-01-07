@@ -189,7 +189,6 @@ class CustomItem(Item):
     folder_uuid = None
     name = "CustomItem"
     REPOSITORY = "NONE"
-    actions = {}
 
     def __init__(self):
         self.uuid = uuid4()

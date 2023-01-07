@@ -16,7 +16,7 @@ from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
-from core.folders.infrastructure.django_item import DjangoItem
+from core.folders.infrastructure.folder_addon import FolderAddon
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.records.models import EncryptedClient  # type: ignore
 from core.records.models.template import (
@@ -31,11 +31,13 @@ from core.records.models.template import (
     RecordTemplate,
     RecordUsersField,
 )
+from core.seedwork.aggregate import Aggregate
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 ###
 # Record
 ###
+from core.seedwork.events_addon import EventsAddon
 from core.seedwork.repository import RepositoryWarehouse
 from core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 
@@ -49,8 +51,8 @@ class DjangoRecordRepository(ItemRepository):
         return Record.objects.get(uuid=uuid)
 
 
-class Record(DjangoItem, models.Model):
-    REPOSITORY = "RECORD"
+class Record(Aggregate):
+    REPOSITORY = DjangoRecordRepository.IDENTIFIER
 
     @classmethod
     def create(
@@ -96,6 +98,10 @@ class Record(DjangoItem, models.Model):
     key = models.JSONField(null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+
+    addons = {"events": EventsAddon, "folder": FolderAddon}
+    events: EventsAddon
+    folder: FolderAddon
 
     UNENCRYPTED_ENTRY_TYPES = [
         "state_entries",
@@ -162,14 +168,14 @@ class Record(DjangoItem, models.Model):
     def org_pk(self) -> int:
         return self.template.rlc_id
 
-    @property
-    def folder(self) -> Optional[Folder]:
-        if self.folder_uuid is None:
-            return None
-        if not hasattr(self, "_folder"):
-            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-            self._folder = r.retrieve(self.template.rlc_id, self.folder_uuid)
-        return self._folder
+    # @property
+    # def folder(self) -> Optional[Folder]:
+    #     if self.folder_uuid is None:
+    #         return None
+    #     if not hasattr(self, "_folder"):
+    #         r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    #         self._folder = r.retrieve(self.template.rlc_id, self.folder_uuid)
+    #     return self._folder
 
     @property
     def actions(self):
@@ -207,8 +213,8 @@ class Record(DjangoItem, models.Model):
         return entries
 
     def set_name(self, name: str):
-        super().set_name(name)
         self.name = name
+        self.folder.obj_renamed()
 
     def grant_access(self, to: RlcUser, by: Optional[RlcUser]):
         assert self.folder is not None
@@ -220,13 +226,8 @@ class Record(DjangoItem, models.Model):
             r.save(folder)
 
     def has_access(self, user: RlcUser) -> bool:
-        if self.folder is None:
-            for enc in getattr(self, "encryptions").all():
-                if enc.user_id == user.id:
-                    return True
-        else:
-            return self.folder.has_access(user)
-        return False
+        assert self.folder.folder is not None
+        return self.folder.has_access(user)
 
     def generate_key(self, user: RlcUser):
         assert self.folder is not None
@@ -240,8 +241,7 @@ class Record(DjangoItem, models.Model):
         self.key = enc_key.as_dict()
 
     def set_folder(self, folder: "Folder"):
-        super().set_folder(folder)
-        self._folder = folder
+        self.folder.put_obj_in_folder(folder)
 
     def get_aes_key(self, user: RlcUser, *args, **kwargs):
         assert self.folder is not None and self.key is not None
