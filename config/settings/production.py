@@ -90,9 +90,7 @@ CORS_ALLOWED_ORIGINS = [MAIN_FRONTEND_URL, STATISTICS_FRONTEND_URL]
 
 # add header baggage because of sentry
 # see: https://pypi.org/project/django-cors-headers/
-CORS_ALLOW_HEADERS = list(default_headers) + [
-    "baggage",
-]
+CORS_ALLOW_HEADERS = list(default_headers) + ["baggage", "sentry-trace"]
 
 # Storage
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
