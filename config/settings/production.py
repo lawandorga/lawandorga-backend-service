@@ -2,6 +2,7 @@ import logging
 
 import environs
 import sentry_sdk
+from corsheaders.defaults import default_headers
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
@@ -86,6 +87,12 @@ EMAIL_USE_SSL = False
 # Installed app django-cors-headers
 # https://pypi.org/project/django-cors-headers/
 CORS_ALLOWED_ORIGINS = [MAIN_FRONTEND_URL, STATISTICS_FRONTEND_URL]
+
+# add header baggage because of sentry
+# see: https://pypi.org/project/django-cors-headers/
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "baggage",
+]
 
 # Storage
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
