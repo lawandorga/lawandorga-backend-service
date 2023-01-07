@@ -35,3 +35,4 @@ pydantic = {extras = ["email"], version = "*"}
 dnspython = "*"
 bleach = "*"
 types-bleach = "*"
+sentry-sdk = "*"
