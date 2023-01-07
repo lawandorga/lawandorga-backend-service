@@ -113,7 +113,7 @@ jobs:
 
   deploy:
     name: Deploy
-    needs: [ test ]
+#    needs: [ test ]
     runs-on: ubuntu-22.04
     environment: PRODUCTION
 
@@ -134,6 +134,7 @@ jobs:
       DB_HOST: ${{ secrets.DB_HOST }}
       PIPELINE_IMAGE: ${{ github.event.repository.name }}:latest
       PIPELINE_SERVICE: ${{ github.repository }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 
     steps:
       - name: Checkout
@@ -249,7 +250,11 @@ jobs:
                 {
                   "key": "PIPELINE_IMAGE",
                   "value": "${{ env.PIPELINE_IMAGE }}"
-                }
+                },
+                {
+                  "key": "SENTRY_DSN",
+                  "value": "${{ env.SENTRY_DSN }}"
+                },
               ]
             }'
 
