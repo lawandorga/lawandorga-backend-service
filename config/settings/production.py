@@ -114,10 +114,10 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "level": "WARNING",
         },
-        "mail_admins": {
-            "class": "django.utils.log.AdminEmailHandler",
-            "level": "ERROR",
-        },
+        # "mail_admins": {
+        #     "class": "django.utils.log.AdminEmailHandler",
+        #     "level": "ERROR",
+        # },
         "null": {
             "class": "logging.NullHandler",
         },
