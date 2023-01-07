@@ -31,7 +31,7 @@ class DjangoQuestionnaireRepository(ItemRepository):
         return Questionnaire.objects.get(uuid=uuid, template__rlc_id=org_pk)
 
 
-class Questionnaire(Aggregate):
+class Questionnaire(Aggregate, models.Model):
     REPOSITORY = DjangoQuestionnaireRepository.IDENTIFIER
 
     @classmethod

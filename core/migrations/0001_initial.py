@@ -760,9 +760,9 @@ class Migration(migrations.Migration):
                 "ordering": ["accepted", "locked", "is_active", "user__name"],
             },
             bases=(
-                core.seedwork.encryption.EncryptedModelMixin,
+                # core.seedwork.encryption.EncryptedModelMixin,
                 models.Model,
-                core.folders.domain.external.IOwner,
+                # core.folders.domain.external.IOwner,
             ),
         ),
         migrations.CreateModel(

@@ -51,7 +51,7 @@ class DjangoRecordRepository(ItemRepository):
         return Record.objects.get(uuid=uuid)
 
 
-class Record(Aggregate):
+class Record(Aggregate, models.Model):
     REPOSITORY = DjangoRecordRepository.IDENTIFIER
 
     @classmethod

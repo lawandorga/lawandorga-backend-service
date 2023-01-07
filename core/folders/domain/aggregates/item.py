@@ -28,7 +28,7 @@ class ItemDeleted(EventData):
     folder_uuid: UUID
 
 
-class Item(Protocol):
+class Item:
     REPOSITORY: str
     uuid: Any
     folder_uuid: Any

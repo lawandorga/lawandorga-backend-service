@@ -25,8 +25,10 @@ from core.static import (
     PERMISSION_ADMIN_MANAGE_USERS,
 )
 from messagebus import EventData
+from ...folders.domain.external import IOwner
 
 from ...seedwork.aggregate import Aggregate
+from ...seedwork.encryption import EncryptedModelMixin
 from ...seedwork.events_addon import EventsAddon
 from .user import UserProfile
 
@@ -47,7 +49,20 @@ class RlcUserManager(models.Manager):
         return super().get_queryset().select_related("user")
 
 
-class RlcUser(Aggregate):
+from core.folders.domain.external import IOwner
+
+django_model_type: Any = type(models.Model)
+protocol_type: Any = type(IOwner)
+
+
+class ModelProtocolMeta(django_model_type, protocol_type):
+    """
+    This technique allows us to use Protocol with Django models without metaclass conflict
+    """
+    pass
+
+
+class RlcUser(Aggregate, models.Model):
     @staticmethod
     def create(
         org: Org,

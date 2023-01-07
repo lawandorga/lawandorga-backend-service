@@ -12,13 +12,11 @@ if TYPE_CHECKING:
 class IOwner(Protocol):
     uuid: Any
 
-    @abc.abstractmethod
     def get_encryption_key(
         self, *args, **kwargs
     ) -> Union["AsymmetricKey", "SymmetricKey", "EncryptedAsymmetricKey"]:
         ...
 
-    @abc.abstractmethod
     def get_decryption_key(
         self, *args, **kwargs
     ) -> Union["AsymmetricKey", "SymmetricKey"]:
