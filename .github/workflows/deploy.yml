@@ -259,7 +259,7 @@ jobs:
                 {
                   "key": "SENTRY_RELEASE",
                   "value": "${{ env.SENTRY_RELEASE }}"
-                },
+                }
               ]
             }'
 
