@@ -6,8 +6,12 @@ from messagebus.domain.data import EventData, JsonDict
 from messagebus.impl.factory import create_event_from_aggregate
 
 
+class Object(Aggregate):
+    pass
+
+
 class EventsAddon(Addon):
-    def __init__(self, obj: Aggregate):
+    def __init__(self, obj: Object):
         super().__init__(obj)
         self.__raw_events: list[RawEvent] = []
         self.__events: list[Event] = []

@@ -1,6 +1,10 @@
+from typing import cast
+
 from core.auth.models import RlcUser
+from core.folders.domain.repositiories.folder import FolderRepository
 from core.records.models import Record
 from core.rlc.models import Permission
+from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.use_case_layer import use_case
 from core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 
@@ -29,4 +33,10 @@ def deliver_access_to_users_who_should_have_access(__actor: RlcUser):
 
             for user in users_3:
                 if not record.has_access(user):
-                    record.grant_access(user, __actor)
+                    assert record.folder_uuid is not None
+                    r = cast(
+                        FolderRepository, RepositoryWarehouse.get(FolderRepository)
+                    )
+                    folder = r.retrieve(__actor.org_id, record.folder_uuid)
+                    folder.grant_access(user, __actor)
+                    r.save(folder)

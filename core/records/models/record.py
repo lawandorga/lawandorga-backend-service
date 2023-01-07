@@ -168,15 +168,6 @@ class Record(Aggregate):
     def org_pk(self) -> int:
         return self.template.rlc_id
 
-    # @property
-    # def folder(self) -> Optional[Folder]:
-    #     if self.folder_uuid is None:
-    #         return None
-    #     if not hasattr(self, "_folder"):
-    #         r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-    #         self._folder = r.retrieve(self.template.rlc_id, self.folder_uuid)
-    #     return self._folder
-
     @property
     def actions(self):
         return {"OPEN": "/records/{}/".format(self.pk)}
@@ -215,15 +206,6 @@ class Record(Aggregate):
     def set_name(self, name: str):
         self.name = name
         self.folder.obj_renamed()
-
-    def grant_access(self, to: RlcUser, by: Optional[RlcUser]):
-        assert self.folder is not None
-
-        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-        folder = self.folder
-        if not folder.has_access(to) and (by is None or folder.has_access(by)):
-            folder.grant_access(to=to, by=by)
-            r.save(folder)
 
     def has_access(self, user: RlcUser) -> bool:
         assert self.folder.folder is not None

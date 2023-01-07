@@ -2,7 +2,7 @@ from typing import Optional, Type
 
 from messagebus import MessageBus, RawEvent
 from messagebus.domain.data import EventData, JsonDict
-from messagebus.domain.object import Object
+from messagebus.impl.object import Object
 from messagebus.impl.factory import create_event_from_aggregate
 
 

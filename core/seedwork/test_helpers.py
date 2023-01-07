@@ -136,6 +136,8 @@ def create_record(template=None, users: Optional[List[UserProfile]] = None):
     record.save()
 
     for u in users[1:]:
-        record.grant_access(u.rlc_user, user)
+        folder.grant_access(u.rlc_user, user)
+    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    r.save(folder)
 
     return {"record": record}

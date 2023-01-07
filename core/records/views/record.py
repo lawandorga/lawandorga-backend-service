@@ -1,5 +1,5 @@
 import mimetypes
-from typing import Optional, Type
+from typing import Optional, Type, cast
 
 from django.conf import settings
 from django.db import IntegrityError
@@ -11,6 +11,7 @@ from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from core.folders.domain.repositiories.folder import FolderRepository
 from core.records.models import (
     RecordEncryptedFileEntry,
     RecordEncryptedFileField,
@@ -54,6 +55,7 @@ from core.records.serializers.record import (
     RecordUsersFieldSerializer,
 )
 from core.seedwork.permission import CheckPermissionWall
+from core.seedwork.repository import RepositoryWarehouse
 from core.static import PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
 
 
@@ -309,8 +311,13 @@ class RecordUsersEntryViewSet(RecordEntryViewSet):
 
     def create_encryptions(self, share_keys, record, users):
         if share_keys:
-            for user in users:
-                record.grant_access(user, self.request.user.rlc_user)
+            user = self.request.user.rlc_user
+            assert record.folder_uuid is not None
+            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+            folder = r.retrieve(user.org_id, record.folder_uuid)
+            for u in users:
+                folder.grant_access(u, user)
+            r.save(folder)
 
     def perform_create(self, serializer):
         instance = super().perform_create(serializer)

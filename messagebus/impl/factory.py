@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Optional
 
 from messagebus.domain.data import EventData
 from messagebus.domain.event import Event, JsonDict, RawEvent
-from messagebus.domain.object import Object
+from messagebus.impl.object import Object
 
 if TYPE_CHECKING:
     from messagebus.impl.repository import Message
