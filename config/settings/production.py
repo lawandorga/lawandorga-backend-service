@@ -1,10 +1,7 @@
-import logging
-
 import environs
 import sentry_sdk
 from corsheaders.defaults import default_headers
 from sentry_sdk.integrations.django import DjangoIntegration
-from sentry_sdk.integrations.logging import LoggingIntegration
 
 from .base import *
 
@@ -147,7 +144,6 @@ CALENDAR_URL = "https://calendar.law-orga.de/api/events/ics/"
 sentry_sdk.init(
     dsn=env.str("SENTRY_DSN"),
     integrations=[
-        LoggingIntegration(event_level=logging.INFO),
         DjangoIntegration(),
     ],
     # Set traces_sample_rate to 1.0 to capture 100%

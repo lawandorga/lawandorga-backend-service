@@ -113,7 +113,7 @@ jobs:
 
   deploy:
     name: Deploy
-#    needs: [ test ]
+    needs: [ test ]
     runs-on: ubuntu-22.04
     environment: PRODUCTION
 
