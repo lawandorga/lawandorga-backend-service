@@ -128,7 +128,7 @@ LOGGING = {
             "propagate": False,
         },
         "django": {
-            "handlers": ["console", "mail_admins"],
+            "handlers": ["console"],
             "propagate": False,
             "level": "INFO",
         },
