@@ -159,7 +159,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         questionnaire_data = []
 
         for questionnaire in list(questionnaires):
-            if not questionnaire.answered and questionnaire.folder.has_access(self.rlc_user):
+            if (
+                not questionnaire.answered
+                and questionnaire.folder
+                and questionnaire.folder.has_access(self.rlc_user)
+            ):
                 questionnaire_data.append(
                     {
                         "name": questionnaire.name,
@@ -171,9 +175,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def get_changed_records_information(self):
         records = self.get_own_records()
-        records = records.filter(
-            updated__gt=timezone.now() - timedelta(days=10)
-        )
+        records = records.filter(updated__gt=timezone.now() - timedelta(days=10))
         changed_records_data = []
         for record in list(records):
             changed_records_data.append(
