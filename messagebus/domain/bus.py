@@ -15,9 +15,6 @@ class MessageBus:
 
     @classmethod
     def register_event_model(cls, model_class: Type[EventData]):
-        if model_class.get_name() in cls.event_models:
-            raise ValueError("This event is already registered.")
-
         cls.event_models[model_class.get_name()] = model_class
 
     @classmethod
