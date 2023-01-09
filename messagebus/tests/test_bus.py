@@ -1,5 +1,3 @@
-import pytest
-
 from messagebus import MessageBus, RawEvent
 from messagebus.domain.data import EventData
 
