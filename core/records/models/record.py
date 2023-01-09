@@ -208,8 +208,13 @@ class Record(Aggregate, models.Model):
         self.folder.obj_renamed()
 
     def has_access(self, user: RlcUser) -> bool:
-        assert self.folder.folder is not None
-        return self.folder.has_access(user)
+        if self.folder_uuid is None:
+            for enc in getattr(self, "encryptions").all():
+                if enc.user_id == user.id:
+                    return True
+        else:
+            return self.folder.has_access(user)
+        return False
 
     def generate_key(self, user: RlcUser):
         assert self.folder is not None

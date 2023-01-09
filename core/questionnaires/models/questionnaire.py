@@ -42,6 +42,7 @@ class Questionnaire(Aggregate, models.Model):
         questionnaire = Questionnaire(template=template, name=name)
         questionnaire.folder.put_obj_in_folder(folder)
         questionnaire.generate_key(user)
+        questionnaire.generate_code()
         return questionnaire
 
     record: Optional[Record] = models.ForeignKey(  # type: ignore
@@ -82,7 +83,7 @@ class Questionnaire(Aggregate, models.Model):
         return self.answers.all().count() - self.template.fields.all().count() == 0
 
     def generate_code(self):
-        assert self.code is None
+        assert self.code is None or self.code == ""
         self.code = str(uuid4())[:6].upper()
 
     def get_public_key(self):
