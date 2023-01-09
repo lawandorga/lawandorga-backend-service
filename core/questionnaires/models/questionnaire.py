@@ -117,6 +117,7 @@ class Questionnaire(Aggregate, models.Model):
         return key
 
     def put_in_folder(self, user: RlcUser):
+        assert self.folder_uuid is None
         if self.record and self.record.folder and self.record.folder.has_access(user):
             # set folder
             folder = self.record.folder.folder

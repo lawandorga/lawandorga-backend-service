@@ -132,6 +132,8 @@ jobs:
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       DB_PORT: ${{ secrets.DB_PORT }}
       DB_HOST: ${{ secrets.DB_HOST }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      SENTRY_RELEASE: ${{ github.sha }}
       PIPELINE_IMAGE: ${{ github.event.repository.name }}:latest
       PIPELINE_SERVICE: ${{ github.repository }}
 
@@ -249,6 +251,14 @@ jobs:
                 {
                   "key": "PIPELINE_IMAGE",
                   "value": "${{ env.PIPELINE_IMAGE }}"
+                },
+                {
+                  "key": "SENTRY_DSN",
+                  "value": "${{ env.SENTRY_DSN }}"
+                },
+                {
+                  "key": "SENTRY_RELEASE",
+                  "value": "${{ env.SENTRY_RELEASE }}"
                 }
               ]
             }'

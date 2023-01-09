@@ -1,4 +1,7 @@
 import environs
+import sentry_sdk
+from corsheaders.defaults import default_headers
+from sentry_sdk.integrations.django import DjangoIntegration
 
 from .base import *
 
@@ -82,6 +85,10 @@ EMAIL_USE_SSL = False
 # https://pypi.org/project/django-cors-headers/
 CORS_ALLOWED_ORIGINS = [MAIN_FRONTEND_URL, STATISTICS_FRONTEND_URL]
 
+# add header baggage because of sentry
+# see: https://pypi.org/project/django-cors-headers/
+CORS_ALLOW_HEADERS = list(default_headers) + ["baggage", "sentry-trace"]
+
 # Storage
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
 DEFAULT_FILE_STORAGE = "config.storage.CustomS3Boto3Storage"
@@ -107,10 +114,10 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "level": "WARNING",
         },
-        "mail_admins": {
-            "class": "django.utils.log.AdminEmailHandler",
-            "level": "ERROR",
-        },
+        # "mail_admins": {
+        #     "class": "django.utils.log.AdminEmailHandler",
+        #     "level": "ERROR",
+        # },
         "null": {
             "class": "logging.NullHandler",
         },
@@ -121,7 +128,7 @@ LOGGING = {
             "propagate": False,
         },
         "django": {
-            "handlers": ["console", "mail_admins"],
+            "handlers": ["console"],
             "propagate": False,
             "level": "INFO",
         },
@@ -130,3 +137,21 @@ LOGGING = {
 
 # This is used for ics calendar integration links
 CALENDAR_URL = "https://calendar.law-orga.de/api/events/ics/"
+
+
+# sentry
+# see: https://sentry.law-orga.de/sentry/lawandorga-backend-service/getting-started/python-django/
+sentry_sdk.init(
+    dsn=env.str("SENTRY_DSN"),
+    integrations=[
+        DjangoIntegration(),
+    ],
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0,
+    # If you wish to associate users to errors (assuming you are using
+    # django.contrib.auth) you may enable sending PII data.
+    send_default_pii=True,
+    environment="production",
+)

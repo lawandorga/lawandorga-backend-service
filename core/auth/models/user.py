@@ -96,7 +96,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             if len(users_entries) <= 0:
                 continue
             users = list(users_entries[0].value.all())
-            if self.id in map(lambda x: x.id, users):
+            if self.rlc_user.id in map(lambda x: x.id, users):
                 record_pks.append(record.id)
 
         return Record.objects.filter(pk__in=record_pks)
@@ -111,16 +111,18 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         for record in list(records):
             state_entries = list(record.state_entries.all())
             users_entries = list(record.users_entries.all())
+
             if len(users_entries) <= 0 or len(state_entries) <= 0:
                 continue
             users = list(users_entries[0].value.all())
-            if self.id not in map(lambda x: x.id, users):
+            if self.rlc_user.id not in map(lambda x: x.id, users):
                 continue
             state = state_entries[0].value
             if state == "Open":
                 records_data.append(
                     {
                         "id": record.id,
+                        "uuid": record.uuid,
                         "identifier": record.identifier,
                         "state": state,
                     }
@@ -151,32 +153,35 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         from core.questionnaires.models.questionnaire import Questionnaire
 
         questionnaires = Questionnaire.objects.filter(
-            record__in=self.get_own_records()
+            template__rlc_id=self.rlc_user.org_id
         ).select_related("template", "record")
 
         questionnaire_data = []
 
         for questionnaire in list(questionnaires):
-            if not questionnaire.answered:
+            if (
+                not questionnaire.answered
+                and questionnaire.folder
+                and questionnaire.folder.has_access(self.rlc_user)
+            ):
                 questionnaire_data.append(
                     {
-                        "name": questionnaire.template.name,
-                        "record": questionnaire.record.identifier,
-                        "record_id": questionnaire.record.id,
+                        "name": questionnaire.name,
+                        "folder_uuid": questionnaire.folder_uuid,
                     }
                 )
 
         return questionnaire_data
 
     def get_changed_records_information(self):
-        records = self.get_own_records().filter(
-            updated__gt=timezone.now() - timedelta(days=10)
-        )
+        records = self.get_own_records()
+        records = records.filter(updated__gt=timezone.now() - timedelta(days=10))
         changed_records_data = []
         for record in list(records):
             changed_records_data.append(
                 {
                     "id": record.id,
+                    "uuid": record.uuid,
                     "identifier": record.identifier,
                     "updated": record.updated,
                 }
