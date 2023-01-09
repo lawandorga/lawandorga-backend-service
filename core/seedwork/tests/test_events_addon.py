@@ -16,6 +16,7 @@ from messagebus.impl.repository import (
 def inmemory():
     MessageBus.set_repository(InMemoryMessageBusRepository)
     InMemoryMessageBusRepository.messages = []
+    MessageBus.handlers = {}
     yield
     MessageBus.set_repository(DjangoMessageBusRepository)
 
