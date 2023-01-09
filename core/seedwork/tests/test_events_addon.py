@@ -6,7 +6,10 @@ import pytest
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.events_addon import EventsAddon
 from messagebus import Event, EventData, MessageBus
-from messagebus.impl.repository import Message, InMemoryMessageBusRepository, DjangoMessageBusRepository
+from messagebus.impl.repository import (
+    DjangoMessageBusRepository,
+    InMemoryMessageBusRepository,
+)
 
 
 @pytest.fixture
@@ -32,7 +35,7 @@ class Atomic(ContextDecorator):
 
 class StubModel:
     def save(self, raise_exception=False):
-        assert Atomic.inside == 'Y'
+        assert Atomic.inside == "Y"
         if raise_exception:
             raise ValueError("It was supposed to happen.")
 
@@ -61,7 +64,7 @@ def test_events_are_handled_and_saved(inmemory):
 
     @MessageBus.handler(on=Driven)
     def calculate_miles(event: Event[Driven]):
-        assert Atomic.inside == 'N'
+        assert Atomic.inside == "N"
         nonlocal miles
         miles += event.data.miles
 
@@ -90,7 +93,7 @@ def test_events_are_saved_atomic(inmemory):
 def test_events_are_handled_non_atomic(inmemory):
     @MessageBus.handler(on=Driven)
     def calculate_miles(_: Event[Driven]):
-        assert Atomic.inside == 'N'
+        assert Atomic.inside == "N"
         raise ValueError("It is supposed to happen.")
 
     car = Car(atomic_context=Atomic)

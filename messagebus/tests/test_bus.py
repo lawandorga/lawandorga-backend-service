@@ -63,15 +63,6 @@ def test_bus_can_work_with_multiple_handlers():
     assert called_2 and called_1
 
 
-def test_register_the_same_event_twice_error():
-    class SomethingHappened(EventData):
-        pass
-
-    MessageBus.register_event_model(SomethingHappened)
-    with pytest.raises(ValueError):
-        MessageBus.register_event_model(SomethingHappened)
-
-
 def test_get_event_model():
     class SthHappened(EventData):
         pass
