@@ -2,7 +2,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from messagebus.impl.event import EventData, serialize
+from messagebus.domain.data import EventData, serialize
 
 
 def test_serialize_uuid():
