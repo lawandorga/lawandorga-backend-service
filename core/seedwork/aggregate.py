@@ -1,3 +1,4 @@
+from contextlib import ContextDecorator
 from typing import Any, Callable, Literal, Type
 
 from django.db import transaction
@@ -32,8 +33,14 @@ class Aggregate:
     class Meta:
         abstract = True
 
-    def __init__(self, *args, **kwargs):
+    def __init__(
+        self,
+        *args,
+        atomic_context: Callable[..., ContextDecorator] = transaction.atomic,
+        **kwargs
+    ):
         super().__init__(*args, **kwargs)
+        self.__atomic = atomic_context
         for key, addon_class in self.__class__.addons.items():
             assert not hasattr(self, key)
             addon = addon_class(self)
@@ -46,14 +53,14 @@ class Aggregate:
 
     def save(self, *args, **kwargs):
         self.__call_addons("pre_save")
-        with transaction.atomic():
-            self.__call_addons("on_save")
+        with self.__atomic():
             super().save(*args, **kwargs)
+            self.__call_addons("on_save")
         self.__call_addons("post_save")
 
     def delete(self, *args, **kwargs):
         self.__call_addons("pre_delete")
-        with transaction.atomic():
-            self.__call_addons("on_delete")
+        with self.__atomic():
             super().delete(*args, **kwargs)
+            self.__call_addons("on_delete")
         self.__call_addons("post_delete")
