@@ -316,7 +316,8 @@ class RecordUsersEntryViewSet(RecordEntryViewSet):
             r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
             folder = r.retrieve(user.org_id, record.folder_uuid)
             for u in users:
-                folder.grant_access(u, user)
+                if not folder.has_access(u):
+                    folder.grant_access(u, user)
             r.save(folder)
 
     def perform_create(self, serializer):

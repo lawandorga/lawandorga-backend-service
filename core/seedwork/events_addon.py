@@ -7,8 +7,7 @@ from messagebus.impl.factory import create_event_from_aggregate
 
 
 class Object(Aggregate):
-    class Meta:
-        abstract = True
+    pass
 
 
 class EventsAddon(Addon):

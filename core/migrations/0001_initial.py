@@ -522,7 +522,6 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "Records",
                 "ordering": ["-created"],
             },
-            bases=(core.folders.domain.aggregates.folder.Item, models.Model),
         ),
         migrations.CreateModel(
             name="RecordTemplate",
@@ -759,11 +758,6 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "RlcUsers",
                 "ordering": ["accepted", "locked", "is_active", "user__name"],
             },
-            bases=(
-                # core.seedwork.encryption.EncryptedModelMixin,
-                models.Model,
-                # core.folders.domain.external.IOwner,
-            ),
         ),
         migrations.CreateModel(
             name="RecordUsersField",

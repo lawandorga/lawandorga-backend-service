@@ -1,4 +1,3 @@
-import abc
 from typing import TYPE_CHECKING, Any, Protocol, Union
 
 if TYPE_CHECKING:

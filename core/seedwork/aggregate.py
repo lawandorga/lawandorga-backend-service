@@ -1,6 +1,6 @@
 from typing import Any, Callable, Literal, Type
 
-from django.db import models, transaction
+from django.db import transaction
 
 Handler = Callable[[Any], None]
 OnOptions = Literal[
@@ -23,7 +23,7 @@ class Addon:
     def call(self, on: OnOptions):
         handlers = getattr(self, on)
         for handler in handlers:
-            handler()
+            handler(self)
 
 
 class Aggregate:
@@ -48,12 +48,12 @@ class Aggregate:
         self.__call_addons("pre_save")
         with transaction.atomic():
             self.__call_addons("on_save")
-            super().save()
+            super().save(*args, **kwargs)
         self.__call_addons("post_save")
 
     def delete(self, *args, **kwargs):
         self.__call_addons("pre_delete")
         with transaction.atomic():
             self.__call_addons("on_delete")
-            super().delete()
+            super().delete(*args, **kwargs)
         self.__call_addons("post_delete")

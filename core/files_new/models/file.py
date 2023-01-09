@@ -41,7 +41,7 @@ class EncryptedRecordDocument(Aggregate, models.Model):
         name = "Unknown"
         if file.name:
             name = file.name
-        f = EncryptedRecordDocument(folder_uuid=folder.uuid, org_id=folder.org_pk)
+        f = EncryptedRecordDocument(org_id=folder.org_pk)
         if pk:
             f.pk = pk
         f.folder.put_obj_in_folder(folder)
@@ -111,7 +111,7 @@ class EncryptedRecordDocument(Aggregate, models.Model):
 
     def set_location(self):
         assert self.location is None or self.location == ""
-        self.location = "core/files_new/{}/{}".format(self.folder.uuid, uuid4())
+        self.location = "core/files_new/{}/{}".format(self.folder_uuid, uuid4())
 
     def __get_file_key(self):
         return "{}.enc".format(self.location)

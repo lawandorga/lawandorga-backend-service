@@ -18,18 +18,16 @@ from core.folders.domain.value_objects.asymmetric_key import (
     EncryptedAsymmetricKey,
 )
 from core.rlc.models import HasPermission, Org, OrgEncryption, Permission
+from core.seedwork.aggregate import Aggregate
 from core.seedwork.domain_layer import DomainError
+from core.seedwork.events_addon import EventsAddon
 from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
 from messagebus import EventData
-from ...folders.domain.external import IOwner
 
-from ...seedwork.aggregate import Aggregate
-from ...seedwork.encryption import EncryptedModelMixin
-from ...seedwork.events_addon import EventsAddon
 from .user import UserProfile
 
 
@@ -47,19 +45,6 @@ class OrgUserUnlocked(EventData):
 class RlcUserManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().select_related("user")
-
-
-from core.folders.domain.external import IOwner
-
-django_model_type: Any = type(models.Model)
-protocol_type: Any = type(IOwner)
-
-
-class ModelProtocolMeta(django_model_type, protocol_type):
-    """
-    This technique allows us to use Protocol with Django models without metaclass conflict
-    """
-    pass
 
 
 class RlcUser(Aggregate, models.Model):

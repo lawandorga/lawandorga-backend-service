@@ -40,8 +40,9 @@ class MessageBus:
         def wrapper(handler: Callable[[Event], None]) -> Callable[[Event], None]:
             when = on if isinstance(on, list) else [on]
 
-            for name in when:
-                cls.register_handler(name, handler)
+            for model in when:
+                cls.register_event_model(model)
+                cls.register_handler(model, handler)
 
             return handler
 
