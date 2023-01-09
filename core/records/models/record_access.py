@@ -74,9 +74,11 @@ class RecordAccess(models.Model):
 
     def save(self, *args, **kwargs):
         with transaction.atomic():
-            if hasattr(self, "_folder"):
+            if self.state == "gr" and not self.record.folder.has_access(self.requestor):
                 r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-                r.save(self._folder)
+                folder = r.retrieve(self.requestor.org_id, self.record.folder_uuid)
+                folder.grant_access(self.requestor, self.processor)
+                r.save(folder)
             super().save(*args, **kwargs)
 
     def grant(self, by: RlcUser):
@@ -85,15 +87,10 @@ class RecordAccess(models.Model):
                 "This access request can not be granted, because it is not in a requested state."
             )
 
-        folder = self.record.folder
-        assert folder is not None
-        if not folder.has_access(by):
+        if not self.record.folder.has_access(by):
             raise DomainError(
                 "You can not give access to this record, because you have no access to this record."
             )
-
-        folder.grant_access(self.requestor, by)  # type: ignore
-        self._folder = folder
 
         self.state = "gr"
         self.processed_on = timezone.now()

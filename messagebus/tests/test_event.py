@@ -1,13 +1,16 @@
-from messagebus import Event
+from messagebus import RawEvent
+from messagebus.domain.data import EventData
+
+
+class SomethingHappened(EventData):
+    pass
 
 
 def test_event_attributes():
-    data = {"a": 1}
     metadata = {"b": 2}
-    event = Event(
-        stream_name="stream", name="AbcHappened", data=data, metadata=metadata
-    )
+    event = RawEvent(stream_name="stream", data=SomethingHappened(), metadata=metadata)
     assert event.stream_name == "stream"
-    assert event.name == "AbcHappened"
-    assert event.data == data
+    assert event.name == "SomethingHappened"
+    assert event.data == SomethingHappened()
     assert event.metadata == metadata
+    assert str(event) == event.name

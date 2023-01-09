@@ -1,4 +1,4 @@
-from typing import Optional, cast
+from typing import Optional
 from uuid import UUID, uuid4
 
 from django.db import models
@@ -6,20 +6,20 @@ from django.utils import timezone
 
 from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.repositiories.item import ItemRepository
 from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
 )
-from core.folders.infrastructure.django_item import DjangoItem
+from core.folders.infrastructure.folder_addon import FolderAddon
 from core.questionnaires.models.template import (
     QuestionnaireQuestion,
     QuestionnaireTemplate,
 )
 from core.records.models import Record
+from core.seedwork.aggregate import Aggregate
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
-from core.seedwork.repository import RepositoryWarehouse
+from core.seedwork.events_addon import EventsAddon
 from core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_file
 
 
@@ -31,7 +31,7 @@ class DjangoQuestionnaireRepository(ItemRepository):
         return Questionnaire.objects.get(uuid=uuid, template__rlc_id=org_pk)
 
 
-class Questionnaire(DjangoItem, models.Model):
+class Questionnaire(Aggregate, models.Model):
     REPOSITORY = DjangoQuestionnaireRepository.IDENTIFIER
 
     @classmethod
@@ -40,12 +40,12 @@ class Questionnaire(DjangoItem, models.Model):
     ) -> "Questionnaire":
         name = f"{template.name}: {timezone.now().strftime('%d.%m.%Y')}"
         questionnaire = Questionnaire(template=template, name=name)
-        questionnaire.set_folder(folder)
-        questionnaire._folder = folder
+        questionnaire.folder.put_obj_in_folder(folder)
         questionnaire.generate_key(user)
+        questionnaire.generate_code()
         return questionnaire
 
-    record = models.ForeignKey(
+    record: Optional[Record] = models.ForeignKey(  # type: ignore
         Record,
         on_delete=models.CASCADE,
         related_name="questionnaires",
@@ -63,6 +63,10 @@ class Questionnaire(DjangoItem, models.Model):
     folder_uuid = models.UUIDField(null=True)
     key = models.JSONField(null=True)
 
+    addons = dict(events=EventsAddon, folder=FolderAddon)
+    events: EventsAddon
+    folder: FolderAddon
+
     class Meta:
         verbose_name = "RecordQuestionnaire"
         verbose_name_plural = "RecordQuestionnaires"
@@ -78,17 +82,8 @@ class Questionnaire(DjangoItem, models.Model):
     def answered(self):
         return self.answers.all().count() - self.template.fields.all().count() == 0
 
-    @property
-    def folder(self) -> Optional[Folder]:
-        if self.folder_uuid is None:
-            return None
-        if not hasattr(self, "_folder"):
-            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-            self._folder = r.retrieve(self.template.rlc_id, self.folder_uuid)
-        return self._folder
-
     def generate_code(self):
-        assert self.code is None
+        assert self.code is None or self.code == ""
         self.code = str(uuid4())[:6].upper()
 
     def get_public_key(self):
@@ -126,8 +121,8 @@ class Questionnaire(DjangoItem, models.Model):
         assert self.folder_uuid is None
         if self.record and self.record.folder and self.record.folder.has_access(user):
             # set folder
-            folder: Folder = self.record.folder
-            self.set_folder(folder)
+            folder = self.record.folder.folder
+            self.folder.put_obj_in_folder(folder)
 
             # copy key
             public_key = self.get_public_key().decode("utf-8")

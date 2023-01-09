@@ -1,7 +1,7 @@
 import io
 import sys
 from random import choice, randint
-from typing import List
+from typing import List, cast
 
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -16,6 +16,7 @@ from core.fixtures import (
     create_folder_permissions,
     create_permissions,
 )
+from core.folders.domain.repositiories.folder import FolderRepository
 from core.messages.models import EncryptedRecordMessage
 from core.models import (
     CollabDocument,
@@ -50,8 +51,10 @@ from core.records.use_cases.record import create_a_record_and_a_folder
 from core.rlc.models import Org
 from core.seedwork.encryption import AESEncryption
 
-
 # helpers
+from core.seedwork.repository import RepositoryWarehouse
+
+
 def add_permissions_to_group(group: Group, permission_name):
     HasPermission.objects.create(
         group_has_permission=group,
@@ -486,8 +489,13 @@ def create_informative_record(main_user, main_user_password, users, rlc):
 
     record_users = [choice(users), main_user]
     aes_key = AESEncryption.generate_secure_key()
+
+    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    folder = r.retrieve(main_user.rlc_user.org_id, record.folder_uuid)
     for user in record_users:
-        record.grant_access(user.rlc_user, main_user.rlc_user)
+        if not folder.has_access(user.rlc_user):
+            folder.grant_access(user.rlc_user, main_user.rlc_user)
+    r.save(folder)
 
     # first contact date
     field = RecordStandardField.objects.get(
@@ -678,36 +686,36 @@ def create_informative_record(main_user, main_user_password, users, rlc):
         size=sys.getsizeof(file_content),
         charset="utf-8",
     )
-    upload_a_file(main_user.rlc_user, file, record.folder.uuid)
-    upload_a_file(main_user.rlc_user, file, record.folder.uuid)
-    upload_a_file(main_user.rlc_user, file, record.folder.uuid)
-    upload_a_file(main_user.rlc_user, file, record.folder.uuid)
+    upload_a_file(main_user.rlc_user, file, record.folder_uuid)
+    upload_a_file(main_user.rlc_user, file, record.folder_uuid)
+    upload_a_file(main_user.rlc_user, file, record.folder_uuid)
+    upload_a_file(main_user.rlc_user, file, record.folder_uuid)
 
     # add some messages
     message1 = EncryptedRecordMessage.create(
         sender=main_user.rlc_user,
-        folder_uuid=record.folder.uuid,
+        folder_uuid=record.folder_uuid,
         message="Bitte dringend die Kontaktdaten des Mandanten eintragen.",
     )
     message1.encrypt(main_user.rlc_user)
     message1.save()
     message2 = EncryptedRecordMessage.create(
         sender=main_user.rlc_user,
-        folder_uuid=record.folder.uuid,
+        folder_uuid=record.folder_uuid,
         message="Ist erledigt! Koennen wir uns morgen treffen um das zu besprechen?",
     )
     message2.encrypt(main_user.rlc_user)
     message2.save()
     message3 = EncryptedRecordMessage.create(
         sender=main_user.rlc_user,
-        folder_uuid=record.folder.uuid,
+        folder_uuid=record.folder_uuid,
         message="Klar, einfach direkt in der Mittagspause in der Mensa.",
     )
     message3.encrypt(main_user.rlc_user)
     message3.save()
     message4 = EncryptedRecordMessage.create(
         sender=main_user.rlc_user,
-        folder_uuid=record.folder.uuid,
+        folder_uuid=record.folder_uuid,
         message="Gut, jetzt faellt mir aber auch nichts mehr ein.",
     )
     message4.encrypt(main_user.rlc_user)

@@ -1,6 +1,6 @@
 from datetime import timedelta
 from typing import Any, Dict, List, Optional, Union
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import ics
 from django.conf import settings
@@ -13,21 +13,33 @@ from django.utils import timezone
 
 from core.auth.domain.user_key import UserKey
 from core.auth.token_generator import EmailConfirmationTokenGenerator
-from core.folders.domain.external import IOwner
 from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
 )
 from core.rlc.models import HasPermission, Org, OrgEncryption, Permission
+from core.seedwork.aggregate import Aggregate
 from core.seedwork.domain_layer import DomainError
+from core.seedwork.events_addon import EventsAddon
 from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
-from messagebus import DjangoAggregate
+from messagebus import EventData
 
 from .user import UserProfile
+
+
+class OrgUserLocked(EventData):
+    org_user_uuid: UUID
+    org_pk: int
+
+
+class OrgUserUnlocked(EventData):
+    org_user_uuid: UUID
+    by_org_user_uuid: UUID
+    org_pk: int
 
 
 class RlcUserManager(models.Manager):
@@ -35,7 +47,7 @@ class RlcUserManager(models.Manager):
         return super().get_queryset().select_related("user")
 
 
-class RlcUser(DjangoAggregate, IOwner, models.Model):
+class RlcUser(Aggregate, models.Model):
     @staticmethod
     def create(
         org: Org,
@@ -106,6 +118,9 @@ class RlcUser(DjangoAggregate, IOwner, models.Model):
     updated = models.DateTimeField(auto_now=True)
     # custom manager
     objects = RlcUserManager()
+    # addons
+    addons = {"events": EventsAddon}
+    events: EventsAddon
 
     class Meta:
         verbose_name = "RlcUser"
@@ -324,9 +339,7 @@ class RlcUser(DjangoAggregate, IOwner, models.Model):
 
     def lock(self) -> None:
         self.locked = True
-        self.add_event(
-            "OrgUserLocked", {"org_user_uuid": str(self.uuid), "org_pk": self.org_id}
-        )
+        self.events.add(OrgUserLocked(org_user_uuid=self.uuid, org_pk=self.org_id))
 
     def change_password_for_keys(self, new_password: str):
         key = self.get_decryption_key()
@@ -502,11 +515,10 @@ class RlcUser(DjangoAggregate, IOwner, models.Model):
     def unlock(self, by: "RlcUser"):
         self.fix_keys(by)
         self.locked = False
-        self.add_event(
-            "OrgUserUnlocked",
-            data={
-                "org_user_uuid": str(self.uuid),
-                "by_org_user_uuid": str(by.uuid),
-                "org_pk": self.org_id,
-            },
+        self.events.add(
+            OrgUserUnlocked(
+                org_user_uuid=self.uuid,
+                by_org_user_uuid=by.uuid,
+                org_pk=self.org_id,
+            )
         )
