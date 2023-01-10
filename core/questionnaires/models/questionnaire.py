@@ -182,8 +182,7 @@ class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
 
     def generate_key(self):
         key = "core/questionnaires/{}/{}".format(
-            self.questionnaire.folder_uuid,
-            uuid4()
+            self.questionnaire.folder_uuid, uuid4()
         )
         return key
 
