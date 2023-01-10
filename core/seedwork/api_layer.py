@@ -67,9 +67,10 @@ class RFC7807(BaseModel):
     err_type: str
     title: str
     status: int
-    detail: Optional[Any] = None
+    detail: Optional[str] = None
     instance: Optional[str] = None
     internal: Optional[Any] = None
+    general_errors: Optional[list[str]] = None
     param_errors: Optional[Dict[str, List[str]]] = None
 
 
@@ -83,9 +84,9 @@ def _validation_error_handler(validation_error: ValidationError) -> RFC7807:
             else:
                 field_errors[name] = [error["msg"]]
 
-    form_error = {"non_field_errors": [], "field_errors": field_errors}
     return RFC7807(
-        detail=form_error,
+        param_errors=field_errors,
+        general_errors=[],
         status=422,
         err_type="RequestValidationError",
         title="Malformed Request",
@@ -161,28 +162,21 @@ class ErrorResponse(JsonResponse):
         err_type: str,
         title: str,
         status: int,
-        detail: Optional[Any] = None,
+        detail: Optional[str] = None,
+        general_errors: Optional[list[str]] = None,
         instance: Optional[str] = None,
         internal: Optional[Any] = None,
         param_errors: Optional[Dict[str, List[str]]] = None,
     ):
-        if param_errors is not None:
-            assert detail is None
-            detail = {"field_errors": {}, "non_field_errors": []}
-            for key, item in param_errors.items():
-                detail["field_errors"][key] = item
-            detail["non_field_errors"] = (
-                param_errors["general"] if "general" in param_errors else []
-            )
-
         error = RFC7807(
             err_type=err_type,
             title=title,
             status=status,
-            detail=detail or title,
+            detail=detail,
             instance=instance,
             internal=internal,
             param_errors=param_errors,
+            general_errors=general_errors,
         )
         super().__init__(data=error.dict(), status=error.status)
 

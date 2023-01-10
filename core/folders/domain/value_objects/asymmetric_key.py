@@ -185,5 +185,8 @@ class EncryptedAsymmetricKey(Key):
             private_key=private_key, public_key=self.__public_key, origin=self.origin
         )
 
+    def get_private_key(self):
+        raise ValueError('This key is encrypted you can not get its private key.')
+
     def get_public_key(self) -> str:
         return self.__public_key

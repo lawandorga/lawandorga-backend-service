@@ -181,11 +181,9 @@ class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
         return self
 
     def generate_key(self):
-        key = "rlcs/{}/record_questionnaires/{}/{}/{}".format(
-            self.questionnaire.template.rlc.pk,
-            self.questionnaire.template.id,
-            self.field.id,
-            self.id,
+        key = "core/questionnaires/{}/{}".format(
+            self.questionnaire.folder_uuid,
+            uuid4()
         )
         return key
 

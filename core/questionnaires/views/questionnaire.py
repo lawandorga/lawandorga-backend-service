@@ -242,9 +242,7 @@ class QuestionnaireAnswersViewSet(viewsets.GenericViewSet):
     @action(detail=True)
     def download_file(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.decrypt(
-            private_key_rlc=request.user.get_private_key_rlc(request=request)
-        )
+        instance.decrypt(request.user.rlc_user)
         if instance.data is None:
             raise NotFound("This file does not exist.")
         file = instance.download_file(instance.aes_key)
