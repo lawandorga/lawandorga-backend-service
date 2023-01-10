@@ -161,7 +161,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         for questionnaire in list(questionnaires):
             if (
                 not questionnaire.answered
-                and questionnaire.folder
+                and questionnaire.folder_uuid
                 and questionnaire.folder.has_access(self.rlc_user)
             ):
                 questionnaire_data.append(
