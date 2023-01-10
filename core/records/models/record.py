@@ -257,7 +257,7 @@ class Record(Aggregate, models.Model):
         if not self.has_access(user):
             raise ValueError("User has no access to this folder.")
 
-        if self.folder is not None:
+        if self.folder_uuid is not None:
             raise ValueError("This record is already inside a folder.")
 
         # put the record inside a folder
