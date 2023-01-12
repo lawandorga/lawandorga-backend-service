@@ -80,7 +80,7 @@ class TestUserKeys(TestCase):
     def test_list_keys(self):
         c = Client()
         c.login(**self.user_1)
-        response = c.get("/api/keys/")
+        c.get("/api/keys/")
 
     # deprecated: RecordEncryption will not be used in the future
     # def test_delete_key(self):
