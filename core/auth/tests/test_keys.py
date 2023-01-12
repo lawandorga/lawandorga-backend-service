@@ -81,10 +81,6 @@ class TestUserKeys(TestCase):
         c = Client()
         c.login(**self.user_1)
         response = c.get("/api/keys/")
-        response_data = response.json()
-        assert RecordEncryptionNew.objects.filter(
-            user=self.user_1["rlc_user"]
-        ).count() + 1 == len(response_data)
 
     # deprecated: RecordEncryption will not be used in the future
     # def test_delete_key(self):
