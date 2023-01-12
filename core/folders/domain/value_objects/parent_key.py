@@ -9,6 +9,8 @@ from core.folders.domain.value_objects.symmetric_key import (
 
 
 class ParentKey:
+    TYPE = "PARENT"
+
     @staticmethod
     def create_from_dict(d: StrDict) -> "ParentKey":
         assert (

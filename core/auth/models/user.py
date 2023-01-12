@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Dict, Union, cast
 
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -11,6 +11,7 @@ from django.db import models, transaction
 from django.utils import timezone
 from rest_framework.exceptions import ParseError
 
+from core.seedwork.repository import RepositoryWarehouse
 from core.static import PERMISSION_ADMIN_MANAGE_USERS
 
 if TYPE_CHECKING:
@@ -232,14 +233,26 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             raise ValueError("You need to set (private_key_user).")
 
     def test_all_keys(self, private_key_user):
-        from core.records.models import RecordEncryptionNew
-
-        for key in RecordEncryptionNew.objects.filter(user=self.rlc_user):
-            key.test(private_key_user)
         self.users_rlc_keys.first().test(private_key_user)
 
     def __get_all_keys_raw(self):
+        from core.folders.infrastructure.folder_repository import FolderRepository
         from core.records.models import RecordEncryptionNew
+
+        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+        folders = r.get_list(self.rlc_user.org_id)
+
+        folder_keys = []
+        for folder in folders:
+            for key in folder.keys:
+                if key.TYPE == "FOLDER" and key.owner.uuid == self.rlc_user.uuid:
+                    key = {
+                        "id": 0,
+                        "correct": key.is_valid,
+                        "source": "FOLDER",
+                        "information": folder.name,
+                    }
+                    folder_keys.append(key)
 
         ret = {
             "record_keys": list(
@@ -248,6 +261,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                 )
             ),
             "rlc_keys": self.users_rlc_keys.select_related("rlc").all(),
+            "folder_keys": folder_keys,
         }
 
         return ret
@@ -279,6 +293,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                 "information": "{}".format(key.rlc.name),
             }
             all_keys.append(d)
+
+        all_keys += keys["folder_keys"]
 
         return all_keys
 

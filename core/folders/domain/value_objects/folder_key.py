@@ -13,6 +13,8 @@ from core.folders.domain.value_objects.symmetric_key import (
 
 
 class FolderKey:
+    TYPE = "FOLDER"
+
     @staticmethod
     def create_from_dict(d: StrDict, owner: IOwner) -> "FolderKey":
         assert (
@@ -57,7 +59,7 @@ class FolderKey:
         data: StrDict = {
             "owner": str(self.__owner.uuid),
             "key": self.__key.as_dict(),
-            "type": "FOLDER",
+            "type": self.TYPE,
             "is_valid": self.__is_valid,
         }
 
