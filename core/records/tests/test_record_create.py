@@ -1,5 +1,6 @@
 import pytest
 
+from core.records.models import Record
 from core.records.use_cases.record import (
     create_a_record_and_a_folder,
     create_a_record_within_a_folder,
@@ -75,12 +76,41 @@ def test_grant_to_users_with_general_permission(
 ):
     user["rlc_user"].grant(PERMISSION_RECORDS_ADD_RECORD)
     another_user["rlc_user"].grant(PERMISSION_RECORDS_ACCESS_ALL_RECORDS)
-    create_a_record_within_a_folder(
+
+    assert folder.has_access(user["rlc_user"]) and not folder.has_access(
+        another_user["rlc_user"]
+    )
+
+    record_id = create_a_record_within_a_folder(
         user["rlc_user"],
         "record123",
         folder=folder.uuid,
         template=record_template["template"].pk,
     )
-    assert folder_repo.retrieve(folder.org_pk, folder.uuid).has_access(
+    folder_uuid = Record.objects.get(id=record_id).folder_uuid
+
+    assert folder_repo.retrieve(folder.org_pk, folder_uuid).has_access(
+        another_user["rlc_user"]
+    )
+
+
+def test_grant_to_users_with_general_permission_two(
+    user, folder, record_template, another_user, folder_repo
+):
+    user["rlc_user"].grant(PERMISSION_RECORDS_ADD_RECORD)
+    another_user["rlc_user"].grant(PERMISSION_RECORDS_ACCESS_ALL_RECORDS)
+
+    assert folder.has_access(user["rlc_user"]) and not folder.has_access(
+        another_user["rlc_user"]
+    )
+
+    record_id = create_a_record_and_a_folder(
+        user["rlc_user"],
+        "record123",
+        template=record_template["template"].pk,
+    )
+    folder_uuid = Record.objects.get(id=record_id).folder_uuid
+
+    assert folder_repo.retrieve(folder.org_pk, folder_uuid).has_access(
         another_user["rlc_user"]
     )

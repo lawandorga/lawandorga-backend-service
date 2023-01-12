@@ -64,11 +64,19 @@ def create_a_record_within_a_folder(
 def __create(
     __actor: RlcUser, name: str, folder: Folder, template: RecordTemplate
 ) -> int:
+    access_granted = False
     for user in list(__actor.org.users.all()):
-        if user.has_permission(
-            PERMISSION_RECORDS_ACCESS_ALL_RECORDS
-        ) and not folder.has_access(user):
+        should_access = user.has_permission(PERMISSION_RECORDS_ACCESS_ALL_RECORDS)
+        has_access = folder.has_access(user)
+        if should_access and not has_access:
             folder.grant_access(user, __actor)
+            access_granted = True
+
+    if access_granted:
+        folder_repository = cast(
+            FolderRepository, RepositoryWarehouse.get(FolderRepository)
+        )
+        folder_repository.save(folder)
 
     record = Record(template=template, name=name)
     record.set_folder(folder)
