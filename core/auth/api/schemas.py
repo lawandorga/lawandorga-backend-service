@@ -54,7 +54,7 @@ class InputRlcUserCreate(BaseModel):
 class OutputKey(BaseModel):
     id: int
     correct: bool
-    source: Literal["RECORD", "RLC", "FOLDER"]
+    source: Literal["RECORD", "ORG", "FOLDER"]
     information: str
 
     class Config:

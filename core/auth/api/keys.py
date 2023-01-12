@@ -11,16 +11,14 @@ router = Router()
 # list keys
 @router.api(output_schema=List[OutputKey])
 def list_keys(rlc_user: RlcUser):
-    all_keys: List[OutputKey] = rlc_user.user.get_all_keys()
-    return all_keys
+    return rlc_user.keys
 
 
 # test keys
 @router.post(url="test/", output_schema=List[OutputKey])
 def test_keys(rlc_user: RlcUser, private_key_user: str):
     rlc_user.user.test_all_keys(private_key_user)
-    all_keys: List[OutputKey] = rlc_user.user.get_all_keys()
-    return all_keys
+    return rlc_user.keys
 
 
 # delete key

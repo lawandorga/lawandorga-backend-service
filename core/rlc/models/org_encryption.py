@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 
 from core.auth.models import UserProfile
 from core.rlc.models import Org
@@ -37,20 +37,23 @@ class OrgEncryption(EncryptedModelMixin, models.Model):
         key.save()
         self.correct = value
 
-    def test(self, private_key_user):
+    def test(self, private_key_user) -> bool:
         try:
             super().decrypt(private_key_user)
             self.set_correct(True)
+            return True
         except ValueError:
             self.set_correct(False)
-            self.user.rlc_user.locked = True
-            self.user.rlc_user.save(update_fields=["locked"])
+            return False
 
     def decrypt(self, private_key_user):
         try:
             super().decrypt(private_key_user)
         except Exception as e:
-            self.test(private_key_user)
+            objs = self.user.rlc_user.test_keys()
+            with transaction.atomic():
+                for obj in objs:
+                    obj.save()
             raise e
 
     def encrypt(self, public_key_user):

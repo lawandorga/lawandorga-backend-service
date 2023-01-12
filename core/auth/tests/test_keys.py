@@ -34,20 +34,23 @@ class TestUserKeys(TestCase):
         return key
 
     def test_rlc_key_check(self):
-        self.get_user_rlc_keys(self.user_1).test(self.user_1["private_key"])
+        objs = self.user_1["rlc_user"].test_keys()
+        [obj.save() for obj in objs]
         assert self.get_user_rlc_keys(self.user_1).correct
         keys = self.get_user_rlc_keys(self.user_1)
         keys.encrypted_key = b"1234"
         private, public = RSAEncryption.generate_keys()
         keys.encrypt(public)
         keys.save()
-        self.get_user_rlc_keys(self.user_1).test(self.user_1["private_key"])
+        objs = self.user_1["rlc_user"].test_keys()
+        [obj.save() for obj in objs]
         assert not self.get_user_rlc_keys(self.user_1).correct
         keys = self.get_user_rlc_keys(self.user_1)
         keys.encrypted_key = b"1234"
         keys.encrypt(self.user_1["public_key"])
         keys.save()
-        self.get_user_rlc_keys(self.user_1).test(self.user_1["private_key"])
+        objs = self.user_1["rlc_user"].test_keys()
+        [obj.save() for obj in objs]
         assert self.get_user_rlc_keys(self.user_1).correct
 
     # deprecated: RecordEncryption will not be used in the future
