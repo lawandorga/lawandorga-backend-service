@@ -43,14 +43,21 @@ def test_account_constraints_2(db):
 
 
 def test_create_alias(db, mail_user, domain):
-    create_address(mail_user, localpart="test", user=mail_user.uuid, domain=domain.uuid)
+    create_address(
+        mail_user, localpart="test", user_uuid=mail_user.uuid, domain_uuid=domain.uuid
+    )
 
 
 def test_create_alias_exists(db, mail_user, domain):
-    create_address(mail_user, localpart="test", user=mail_user.uuid, domain=domain.uuid)
+    create_address(
+        mail_user, localpart="test", user_uuid=mail_user.uuid, domain_uuid=domain.uuid
+    )
     with pytest.raises(UseCaseError):
         create_address(
-            mail_user, localpart="test", user=mail_user.uuid, domain=domain.uuid
+            mail_user,
+            localpart="test",
+            user_uuid=mail_user.uuid,
+            domain_uuid=domain.uuid,
         )
 
 
@@ -83,6 +90,6 @@ def test_create_alias_invalid_schema(db, mail_user, domain):
         create_address(
             mail_user,
             localpart="invalid#localpart",
-            user=mail_user.uuid,
-            domain=domain.uuid,
+            user_uuid=mail_user.uuid,
+            domain_uuid=domain.uuid,
         )

@@ -3,13 +3,13 @@ from smtplib import SMTPRecipientsRefused
 from django.db import transaction
 
 from core.auth.models import RlcUser, UserProfile
-from core.auth.use_cases.finders import org_from_id, rlc_user_from_id
+from core.auth.use_cases.finders import org_from_id_dangerous, rlc_user_from_id
 from core.legal.models import (
     LegalRequirement,
     LegalRequirementEvent,
     LegalRequirementUser,
 )
-from core.seedwork.use_case_layer import UseCaseError, find, use_case
+from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case
@@ -19,8 +19,10 @@ def register_rlc_user(
     password: str,
     name: str,
     accepted_legal_requirements: list[int],
-    org=find(org_from_id),
+    org_id: int,
 ):
+    org = org_from_id_dangerous(__actor, org_id)
+
     # error validation
     if UserProfile.objects.filter(email=email).exists():
         raise UseCaseError("An account already exists with this email.")
@@ -72,7 +74,8 @@ def register_rlc_user(
 
 
 @use_case
-def unlock_user(__actor: RlcUser, another_rlc_user=find(rlc_user_from_id)):
+def unlock_user(__actor: RlcUser, another_rlc_user_id: int):
+    another_rlc_user = rlc_user_from_id(__actor, another_rlc_user_id)
     another_rlc_user.fix_keys(__actor)
     another_rlc_user.unlock(__actor)
     another_rlc_user.save()

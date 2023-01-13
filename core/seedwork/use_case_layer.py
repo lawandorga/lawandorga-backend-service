@@ -1,4 +1,3 @@
-import inspect
 from logging import INFO, WARNING, getLogger
 from typing import Any, Callable, ParamSpec, TypeVar, get_type_hints, overload
 
@@ -9,20 +8,6 @@ from core.seedwork.domain_layer import DomainError
 logger = getLogger("usecase")
 
 T = TypeVar("T")
-
-
-class Findable:
-    def __init__(self, func):
-        self.__func = func
-
-    def __call__(self, *args, **kwargs):
-        return self.__func(*args, **kwargs)
-
-
-def find(func: Callable[[Any, Any], T]) -> T:
-    # The use case wrapper calls this function and makes this function return T
-
-    return Findable(func)  # type: ignore
 
 
 class UseCaseError(Exception):
@@ -53,7 +38,6 @@ __all__ = [
     "use_case",
     "check_permissions",
     "finder_function",
-    "find",
     "UseCaseError",
     "UseCaseInputError",
 ]
@@ -95,39 +79,6 @@ def __check_type(value, type_hint):
                 value, value_type, type_hint
             )
         )
-
-
-def __update_parameters(args, kwargs, func, actor):
-    args = list(args)
-
-    signature = inspect.signature(func)
-    data = {k: v.default for k, v in signature.parameters.items()}
-
-    for index, (key, value) in enumerate(data.items()):
-        if isinstance(value, Findable):
-
-            try:
-                if index < len(args):
-                    old_value = args[index]
-                else:
-                    old_value = kwargs[key]
-            except (IndexError, KeyError):
-                raise ValueError("You need to submit '{}'.".format(key))
-
-            try:
-                new_value = value(actor, old_value)
-            except ObjectDoesNotExist as e:
-                message = "The object with identifier '{}' could not be found.".format(
-                    old_value
-                )
-                raise UseCaseInputError(message) from e
-
-            if index < len(args):
-                args[index] = new_value
-            else:
-                kwargs[key] = new_value
-
-    return args, kwargs
 
 
 def check_permissions(actor, permissions, message_addition=""):
@@ -182,8 +133,6 @@ def use_case(
             actor = __check_actor(args, kwargs, func_code, type_hints)
 
             check_permissions(actor, permissions)
-
-            args, kwargs = __update_parameters(args, kwargs, usecase_func, actor)
 
             try:
                 ret = usecase_func(*args, **kwargs)
