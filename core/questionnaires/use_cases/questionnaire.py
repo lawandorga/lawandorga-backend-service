@@ -1,17 +1,21 @@
+from uuid import UUID
+
 from core.auth.models import RlcUser
 from core.folders.use_cases.finders import folder_from_uuid
 from core.questionnaires.models import Questionnaire
 from core.questionnaires.use_cases.finders import questionnaire_template_from_id
-from core.seedwork.use_case_layer import find, use_case
+from core.seedwork.use_case_layer import use_case
 from core.static import PERMISSION_RECORDS_ADD_RECORD
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
 def publish_a_questionnaire(
     __actor: RlcUser,
-    folder=find(folder_from_uuid),
-    template=find(questionnaire_template_from_id),
+    folder_uuid: UUID,
+    template_id: int,
 ):
+    folder = folder_from_uuid(__actor, folder_uuid)
+    template = questionnaire_template_from_id(__actor, template_id)
     questionnaire = Questionnaire.create(template, folder, __actor)
     questionnaire.save()
 
