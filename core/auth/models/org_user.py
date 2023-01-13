@@ -152,6 +152,11 @@ class RlcUser(Aggregate, models.Model):
         }
 
     @property
+    def user_key(self) -> KeyOfUser:
+        self.get_private_key()
+        return {"id": 0, "information": self.name, "source": "USER", "correct": True}
+
+    @property
     def record_keys(self) -> list[KeyOfUser]:
         from core.records.models import RecordEncryptionNew
 
@@ -202,7 +207,7 @@ class RlcUser(Aggregate, models.Model):
 
     @property
     def keys(self) -> list[KeyOfUser]:
-        return [self.org_key] + self.record_keys + self.folder_keys
+        return [self.org_key, self.user_key] + self.record_keys + self.folder_keys
 
     @property
     def name(self):
