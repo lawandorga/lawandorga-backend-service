@@ -3,7 +3,7 @@ from django.db import transaction
 from core.auth.models import UserProfile
 from core.mail.models import MailAccount, MailAddress, MailOrg, MailUser
 from core.mail.use_cases.finders import (
-    mail_address_from_id,
+    mail_address_from_uuid,
     mail_domain_from_uuid,
     mail_user_from_id,
 )
@@ -58,7 +58,7 @@ def create_address(
 
 
 @use_case
-def set_address_as_default(__actor: MailUser, address=find(mail_address_from_id)):
+def set_address_as_default(__actor: MailUser, address=find(mail_address_from_uuid)):
     if __actor.id != address.account.user.id:
         check_permissions(__actor, [PERMISSION_MAIL_MANAGE_ACCOUNTS])
 
@@ -69,7 +69,7 @@ def set_address_as_default(__actor: MailUser, address=find(mail_address_from_id)
 
 
 @use_case
-def delete_address(__actor: MailUser, address=find(mail_address_from_id)):
+def delete_address(__actor: MailUser, address=find(mail_address_from_uuid)):
     if __actor.id != address.account.user.id:
         check_permissions(__actor, [PERMISSION_MAIL_MANAGE_ACCOUNTS])
 

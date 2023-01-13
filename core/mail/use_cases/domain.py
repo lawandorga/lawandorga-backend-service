@@ -1,7 +1,9 @@
+from uuid import UUID
+
 from core.mail.models import MailDomain, MailUser
 from core.mail.models.domain import DnsResults
 from core.mail.use_cases.finders import mail_domain_from_uuid
-from core.seedwork.use_case_layer import UseCaseError, find, use_case
+from core.seedwork.use_case_layer import UseCaseError, use_case
 from core.static import PERMISSION_MAIL_MANAGE_ACCOUNTS
 
 
@@ -18,7 +20,8 @@ def add_domain(__actor: MailUser, domain: str):
 
 
 @use_case(permissions=[PERMISSION_MAIL_MANAGE_ACCOUNTS])
-def change_domain(__actor: MailUser, name: str, domain=find(mail_domain_from_uuid)):
+def change_domain(__actor: MailUser, name: str, domain_uuid: UUID):
+    domain = mail_domain_from_uuid(__actor, domain_uuid)
     MailDomain.check_domain(name)
 
     domain.set_name(name)
@@ -27,8 +30,9 @@ def change_domain(__actor: MailUser, name: str, domain=find(mail_domain_from_uui
 
 @use_case
 def check_domain_settings(
-    __actor: MailUser, dns_results: DnsResults, domain=find(mail_domain_from_uuid)
+    __actor: MailUser, dns_results: DnsResults, domain_uuid: UUID
 ):
+    domain = mail_domain_from_uuid(__actor, domain_uuid)
     _, wrong_setting = domain.check_settings(dns_results)
     domain.save()
     return wrong_setting
