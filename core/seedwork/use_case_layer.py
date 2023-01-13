@@ -11,20 +11,6 @@ logger = getLogger("usecase")
 T = TypeVar("T")
 
 
-class Findable:
-    def __init__(self, func):
-        self.__func = func
-
-    def __call__(self, *args, **kwargs):
-        return self.__func(*args, **kwargs)
-
-
-def find(func: Callable[[Any, Any], T]) -> T:
-    # The use case wrapper calls this function and makes this function return T
-
-    return Findable(func)  # type: ignore
-
-
 class UseCaseError(Exception):
     def __init__(self, message):
         self.message = message
@@ -53,7 +39,6 @@ __all__ = [
     "use_case",
     "check_permissions",
     "finder_function",
-    "find",
     "UseCaseError",
     "UseCaseInputError",
 ]
