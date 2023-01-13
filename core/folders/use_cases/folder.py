@@ -13,7 +13,8 @@ from core.folders.use_cases.finders import (
 from core.seedwork.api_layer import ApiError
 from core.seedwork.message_layer import MessageBusActor
 from core.seedwork.repository import RepositoryWarehouse
-from core.seedwork.use_case_layer import UseCaseError, find, use_case
+from core.seedwork.use_case_layer import UseCaseError, check_permissions, find, use_case
+from core.static import PERMISSION_FOLDERS_TOGGLE_INHERITANCE
 
 
 def get_repository() -> FolderRepository:
@@ -109,7 +110,11 @@ def move_folder(
 @use_case
 def toggle_inheritance(__actor: RlcUser, folder=find(folder_from_uuid)):
     if not folder.has_access(__actor):
-        raise ApiError("You need access to this folder in order to do that.")
+        check_permissions(
+            __actor,
+            [PERMISSION_FOLDERS_TOGGLE_INHERITANCE],
+            message_addition="Or access to this folder.",
+        )
 
     if folder.stop_inherit:
         folder.allow_inheritance()

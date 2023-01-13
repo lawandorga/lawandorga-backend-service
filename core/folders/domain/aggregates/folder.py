@@ -380,7 +380,7 @@ class Folder:
 
         if (self.__stop_inherit and len(new_keys) <= 1) or len(new_keys) == 0:
             raise DomainError(
-                "You can not revoke access of this user as there would be not enough keys left."
+                "You can not revoke access of this user as there would not be enough keys left."
             )
 
         self.__keys = new_keys

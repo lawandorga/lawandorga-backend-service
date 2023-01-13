@@ -130,10 +130,13 @@ def __update_parameters(args, kwargs, func, actor):
     return args, kwargs
 
 
-def check_permissions(actor, permissions):
+def check_permissions(actor, permissions, message_addition=""):
+    assert isinstance(permissions, list)
     for permission in permissions:
         if not actor.has_permission(permission):
             message = "You need the permission '{}' to do this.".format(permission)
+            if message_addition:
+                message = "{} {}".format(message, message_addition)
             raise UseCaseError(message)
 
 
