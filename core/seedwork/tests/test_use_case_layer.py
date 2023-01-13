@@ -83,8 +83,8 @@ def test_actor_works():
 
 def test_findable():
     @use_case()
-    def f1(__actor: Actor, x: str):
-        assert x == "test"
+    def f1(__actor: Actor, x: int):
+        assert x == 5
 
     f1(Actor(), 5)
     f1(__actor=Actor(), x=5)
@@ -95,8 +95,8 @@ def test_findable_errors():
     def f1(__actor: Actor, x: str):
         assert x == "test"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         f1(Actor())
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         f1(__actor=Actor())

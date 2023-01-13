@@ -41,10 +41,10 @@ def create_mail_user(__actor: UserProfile):
 def create_address(
     __actor: MailUser,
     localpart: str,
-    user_id: UUID,
+    user_uuid: UUID,
     domain_uuid: UUID,
 ):
-    user = mail_user_from_uuid(__actor, user_id)
+    user = mail_user_from_uuid(__actor, user_uuid)
     domain = mail_domain_from_uuid(__actor, domain_uuid)
 
     MailAddress.check_localpart(localpart)
