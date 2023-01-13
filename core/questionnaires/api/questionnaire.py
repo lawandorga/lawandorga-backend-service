@@ -17,7 +17,7 @@ router = Router()
 )
 def publish_questionnaire(data: schemas.InputPublishQuestionnaire, rlc_user: RlcUser):
     questionnaire = publish_a_questionnaire(
-        rlc_user, folder=data.folder, template=data.template
+        rlc_user, folder_uuid=data.folder, template_id=data.template
     )
     return questionnaire
 
