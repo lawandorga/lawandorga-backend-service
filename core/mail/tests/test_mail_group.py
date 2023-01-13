@@ -14,13 +14,13 @@ from core.mail.use_cases.group import (
 
 
 def test_create_group(db, mail_user, domain):
-    create_group_mail(mail_user, localpart="test", domain=domain.uuid)
+    create_group_mail(mail_user, localpart="test", domain_uuid=domain.uuid)
     address = MailAddress.objects.get(localpart="test", domain=domain)
     assert mail_user in address.account.group.members.all()
 
 
 def test_delete_group(db, mail_user, mail_group):
-    delete_group_mail(mail_user, group=mail_group.uuid)
+    delete_group_mail(mail_user, group_uuid=mail_group.uuid)
     assert not MailGroup.objects.filter(id=mail_group.id)
 
 
@@ -65,4 +65,4 @@ def test_add_address_block_with_invalid_format(db, mail_user, mail_group, domain
 
 def test_create_group_with_invalid_localpart(db, mail_user, domain):
     with pytest.raises(ValueError):
-        create_group_mail(mail_user, localpart="AFLJKFD", domain=domain.uuid)
+        create_group_mail(mail_user, localpart="AFLJKFD", domain_uuid=domain.uuid)
