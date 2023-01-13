@@ -1,3 +1,5 @@
+# folders
+PERMISSION_FOLDERS_TOGGLE_INHERITANCE = "folders__toggle_inheritance"
 # records
 PERMISSION_RECORDS_ADD_RECORD = "records__add_record"
 PERMISSION_RECORDS_ACCESS_ALL_RECORDS = "records__access_all_records"
@@ -27,6 +29,8 @@ PERMISSION_MAIL_MANAGE_ACCOUNTS = "mail__manage_accounts"
 
 def get_all_permission_strings():
     return [
+        # folders
+        PERMISSION_FOLDERS_TOGGLE_INHERITANCE,
         # records
         PERMISSION_RECORDS_ADD_RECORD,
         PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
