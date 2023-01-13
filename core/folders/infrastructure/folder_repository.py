@@ -38,7 +38,7 @@ def get_cache_of_object(obj, key: Union[int, str]) -> Optional[Any]:
     return None
 
 
-def set_cache_on_object(obj, key: Union[int, str], value, seconds=10) -> None:
+def set_cache_on_object(obj, key: Union[int, str], value, seconds=4) -> None:
     value_key, time_key = get_cache_keys(key)
 
     time_value = timezone.now() + timedelta(seconds=seconds)
