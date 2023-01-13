@@ -232,55 +232,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             raise ValueError("You need to set (private_key_user).")
 
     def test_all_keys(self, private_key_user):
-        from core.records.models import RecordEncryptionNew
-
-        for key in RecordEncryptionNew.objects.filter(user=self.rlc_user):
-            key.test(private_key_user)
         self.users_rlc_keys.first().test(private_key_user)
-
-    def __get_all_keys_raw(self):
-        from core.records.models import RecordEncryptionNew
-
-        ret = {
-            "record_keys": list(
-                RecordEncryptionNew.objects.filter(user=self.rlc_user).select_related(
-                    "record"
-                )
-            ),
-            "rlc_keys": self.users_rlc_keys.select_related("rlc").all(),
-        }
-
-        return ret
-
-    def check_all_keys_correct(self):
-        keys = self.get_all_keys()
-        for key in keys:
-            if not key["correct"]:
-                return False
-        return True
-
-    def get_all_keys(self):
-        keys = self.__get_all_keys_raw()
-        all_keys = []
-
-        for key in keys["record_keys"]:
-            d = {
-                "id": key.id,
-                "correct": key.correct,
-                "source": "RECORD",
-                "information": "{}".format(key.record.identifier),
-            }
-            all_keys.append(d)
-        for key in keys["rlc_keys"]:
-            d = {
-                "id": key.id,
-                "correct": key.correct,
-                "source": "RLC",
-                "information": "{}".format(key.rlc.name),
-            }
-            all_keys.append(d)
-
-        return all_keys
 
     def generate_keys_for_user(self, private_key_self, user_to_unlock):
         """

@@ -64,7 +64,7 @@ def retrieve(data: schemas.InputRlcUserGet, rlc_user: RlcUser):
 @router.api(method="POST", url="unlock_self/", output_schema=schemas.OutputRlcUser)
 def command__unlock_myself(rlc_user: RlcUser):
     rlc_user.user.test_all_keys(rlc_user.get_private_key())
-    if not rlc_user.user.check_all_keys_correct():
+    if not rlc_user.all_keys_correct:
         raise ApiError(
             "You can only unlock yourself when all your keys are correct.",
         )

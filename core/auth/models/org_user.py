@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, TypedDict, Union, cast
 from uuid import UUID, uuid4
 
 import ics
@@ -28,6 +28,7 @@ from core.static import (
 )
 from messagebus import EventData
 
+from ...seedwork.repository import RepositoryWarehouse
 from .user import UserProfile
 
 
@@ -40,6 +41,13 @@ class OrgUserUnlocked(EventData):
     org_user_uuid: UUID
     by_org_user_uuid: UUID
     org_pk: int
+
+
+class KeyOfUser(TypedDict):
+    id: int
+    correct: bool
+    source: str
+    information: str
 
 
 class RlcUserManager(models.Manager):
@@ -131,6 +139,77 @@ class RlcUser(Aggregate, models.Model):
         return "rlcUser: {}; email: {};".format(self.pk, self.user.email)
 
     @property
+    def org_key(self) -> KeyOfUser:
+        _keys1 = self.user.users_rlc_keys.select_related("rlc").all()
+        _keys2 = list(_keys1)
+        assert len(_keys2) == 1
+        key = _keys2[0]
+        return {
+            "id": key.id,
+            "information": self.org.name,
+            "source": "ORG",
+            "correct": key.correct,
+        }
+
+    @property
+    def user_key(self) -> KeyOfUser:
+        self.get_private_key()
+        return {"id": 0, "information": self.name, "source": "USER", "correct": True}
+
+    @property
+    def record_keys(self) -> list[KeyOfUser]:
+        from core.records.models import RecordEncryptionNew
+
+        _keys1 = RecordEncryptionNew.objects.filter(user_id=self.id).select_related(
+            "record"
+        )
+        _keys2 = list(_keys1)
+        _keys3: list[KeyOfUser] = []
+        for key in _keys2:
+            _keys3.append(
+                {
+                    "id": key.id,
+                    "correct": key.correct,
+                    "source": "RECORD",
+                    "information": "{}".format(key.record.identifier),
+                }
+            )
+        return _keys3
+
+    @property
+    def folder_keys(self) -> list[KeyOfUser]:
+        from core.folders.infrastructure.folder_repository import FolderRepository
+
+        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+        folders = r.get_list(self.org_id)
+
+        folder_keys = []
+        for folder in folders:
+            for key in folder.keys:
+                if key.TYPE == "FOLDER" and key.owner.uuid == self.uuid:
+                    key = {
+                        "id": 0,
+                        "correct": key.is_valid,
+                        "source": "FOLDER",
+                        "information": folder.name,
+                    }
+                    folder_keys.append(key)
+
+        return folder_keys
+
+    @property
+    def all_keys_correct(self):
+        _keys = self.keys
+        for key in _keys:
+            if not key["correct"]:
+                return False
+        return True
+
+    @property
+    def keys(self) -> list[KeyOfUser]:
+        return [self.org_key, self.user_key] + self.record_keys + self.folder_keys
+
+    @property
     def name(self):
         return self.user.name
 
@@ -154,6 +233,15 @@ class RlcUser(Aggregate, models.Model):
             if not lr.accepted:
                 return True
         return False
+
+    def test_keys(self) -> list[models.Model]:
+        org_key: Optional[OrgEncryption] = self.user.users_rlc_keys.first()
+        assert org_key is not None
+        correct = org_key.test(self.get_private_key())
+        if not correct:
+            self.locked = True
+            return [org_key, self]
+        return []
 
     def get_decrypted_key_from_password(self, password: str) -> UserKey:
         enc_user_key = UserKey.create_from_dict(self.key)
