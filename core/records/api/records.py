@@ -32,7 +32,7 @@ def command__create_record_within_folder(
     rlc_user: RlcUser, data: schemas.InputRecordCreateWithinFolder
 ):
     record_pk = create_a_record_within_a_folder(
-        rlc_user, data.name, folder=data.folder, template=data.template
+        rlc_user, data.name, folder_uuid=data.folder, template_id=data.template
     )
     record = Record.objects.get(pk=record_pk)
     return {"id": record.pk, "folder_uuid": record.folder_uuid}
