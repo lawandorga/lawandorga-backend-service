@@ -7,8 +7,8 @@ from core.mail.models.group import MailGroup
 from core.mail.use_cases.finders import (
     mail_address_from_uuid,
     mail_domain_from_uuid,
-    mail_group_from_id,
-    mail_user_from_id,
+    mail_group_from_uuid,
+    mail_user_from_uuid,
 )
 from core.seedwork.use_case_layer import UseCaseError, use_case
 from core.static import PERMISSION_MAIL_MANAGE_ACCOUNTS
@@ -36,21 +36,21 @@ def create_group_mail(__actor: MailUser, localpart: str, domain_uuid: UUID):
 
 @use_case(permissions=[PERMISSION_MAIL_MANAGE_ACCOUNTS])
 def delete_group_mail(__actor: MailUser, group_uuid: UUID):
-    group = mail_group_from_id(__actor, group_uuid)
+    group = mail_group_from_uuid(__actor, group_uuid)
     group.delete()
 
 
 @use_case(permissions=[PERMISSION_MAIL_MANAGE_ACCOUNTS])
 def add_member_to_group(__actor: MailUser, group_uuid: UUID, member_uuid: UUID):
-    group = mail_group_from_id(__actor, group_uuid)
-    member = mail_user_from_id(__actor, member_uuid)
+    group = mail_group_from_uuid(__actor, group_uuid)
+    member = mail_user_from_uuid(__actor, member_uuid)
     group.members.add(member)
 
 
 @use_case(permissions=[PERMISSION_MAIL_MANAGE_ACCOUNTS])
 def remove_member_from_group(__actor: MailUser, group_uuid: UUID, member_uuid: UUID):
-    group = mail_group_from_id(__actor, group_uuid)
-    member = mail_user_from_id(__actor, member_uuid)
+    group = mail_group_from_uuid(__actor, group_uuid)
+    member = mail_user_from_uuid(__actor, member_uuid)
     group.members.remove(member)
 
 
@@ -61,7 +61,7 @@ def add_address_to_group(
     group_uuid: UUID,
     domain_uuid: UUID,
 ):
-    group = mail_group_from_id(__actor, group_uuid)
+    group = mail_group_from_uuid(__actor, group_uuid)
     domain = mail_domain_from_uuid(__actor, domain_uuid)
     MailAddress.check_localpart(localpart)
 

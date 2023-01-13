@@ -1,11 +1,15 @@
+from uuid import UUID
+
 from core.auth.models import RlcUser
 from core.folders.use_cases.finders import folder_from_uuid
 from core.messages.models import EncryptedRecordMessage
-from core.seedwork.use_case_layer import find, use_case
+from core.seedwork.use_case_layer import use_case
 
 
 @use_case
-def create_a_message(__actor: RlcUser, message: str, folder=find(folder_from_uuid)):
+def create_a_message(__actor: RlcUser, message: str, folder_uuid: UUID):
+    folder = folder_from_uuid(__actor, folder_uuid)
+
     m = EncryptedRecordMessage.create(
         sender=__actor, folder_uuid=folder.uuid, message=message
     )

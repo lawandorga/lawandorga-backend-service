@@ -1,6 +1,6 @@
 import pytest
 
-from core.seedwork.use_case_layer import find, use_case
+from core.seedwork.use_case_layer import use_case
 
 
 class Actor:
@@ -83,7 +83,7 @@ def test_actor_works():
 
 def test_findable():
     @use_case()
-    def f1(__actor: Actor, x=find(lambda a, x: "test")):
+    def f1(__actor: Actor, x: str):
         assert x == "test"
 
     f1(Actor(), 5)
@@ -92,7 +92,7 @@ def test_findable():
 
 def test_findable_errors():
     @use_case()
-    def f1(__actor: Actor, x=find(lambda a, x: "test")):
+    def f1(__actor: Actor, x: str):
         assert x == "test"
 
     with pytest.raises(ValueError):

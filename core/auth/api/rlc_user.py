@@ -18,7 +18,7 @@ router = Router()
 def command__create_user(data: schemas.InputRlcUserCreate):
     register_rlc_user(
         None,
-        org=data.org,
+        org_id=data.org,
         name=data.name,
         password=data.password,
         email=data.email,

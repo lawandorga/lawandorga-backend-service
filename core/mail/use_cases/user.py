@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from django.db import transaction
 
 from core.auth.models import UserProfile
@@ -5,9 +7,9 @@ from core.mail.models import MailAccount, MailAddress, MailOrg, MailUser
 from core.mail.use_cases.finders import (
     mail_address_from_uuid,
     mail_domain_from_uuid,
-    mail_user_from_id,
+    mail_user_from_uuid,
 )
-from core.seedwork.use_case_layer import UseCaseError, check_permissions, find, use_case
+from core.seedwork.use_case_layer import UseCaseError, check_permissions, use_case
 from core.static import PERMISSION_MAIL_MANAGE_ACCOUNTS
 
 
@@ -39,9 +41,12 @@ def create_mail_user(__actor: UserProfile):
 def create_address(
     __actor: MailUser,
     localpart: str,
-    user=find(mail_user_from_id),
-    domain=find(mail_domain_from_uuid),
+    user_id: UUID,
+    domain_uuid: UUID,
 ):
+    user = mail_user_from_uuid(__actor, user_id)
+    domain = mail_domain_from_uuid(__actor, domain_uuid)
+
     MailAddress.check_localpart(localpart)
     if __actor.id != user.id:
         check_permissions(__actor, [PERMISSION_MAIL_MANAGE_ACCOUNTS])
@@ -58,7 +63,9 @@ def create_address(
 
 
 @use_case
-def set_address_as_default(__actor: MailUser, address=find(mail_address_from_uuid)):
+def set_address_as_default(__actor: MailUser, address_uuid: UUID):
+    address = mail_address_from_uuid(__actor, address_uuid)
+
     if __actor.id != address.account.user.id:
         check_permissions(__actor, [PERMISSION_MAIL_MANAGE_ACCOUNTS])
 
@@ -69,7 +76,9 @@ def set_address_as_default(__actor: MailUser, address=find(mail_address_from_uui
 
 
 @use_case
-def delete_address(__actor: MailUser, address=find(mail_address_from_uuid)):
+def delete_address(__actor: MailUser, address_uuid: UUID):
+    address = mail_address_from_uuid(__actor, address_uuid)
+
     if __actor.id != address.account.user.id:
         check_permissions(__actor, [PERMISSION_MAIL_MANAGE_ACCOUNTS])
 

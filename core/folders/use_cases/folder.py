@@ -8,12 +8,12 @@ from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.use_cases.finders import (
     folder_from_uuid,
     item_from_repository_and_uuid,
-    rlc_user_from_slug,
+    rlc_user_from_uuid,
 )
 from core.seedwork.api_layer import ApiError
 from core.seedwork.message_layer import MessageBusActor
 from core.seedwork.repository import RepositoryWarehouse
-from core.seedwork.use_case_layer import UseCaseError, check_permissions, find, use_case
+from core.seedwork.use_case_layer import UseCaseError, check_permissions, use_case
 from core.static import PERMISSION_FOLDERS_TOGGLE_INHERITANCE
 
 
@@ -35,7 +35,8 @@ def create_folder(__actor: RlcUser, name: str, parent: Optional[UUID]):
 
 
 @use_case
-def rename_folder(__actor: RlcUser, name: str, folder=find(folder_from_uuid)):
+def rename_folder(__actor: RlcUser, name: str, folder_uuid: UUID):
+    folder = folder_from_uuid(__actor, folder_uuid)
     r = get_repository()
     folder.update_information(name=name)
     r.save(folder)
@@ -62,9 +63,10 @@ def delete_folder(__actor: RlcUser, folder_pk: UUID):
 
 
 @use_case
-def grant_access(
-    __actor: RlcUser, to=find(rlc_user_from_slug), folder=find(folder_from_uuid)
-):
+def grant_access(__actor: RlcUser, to_uuid: UUID, folder_uuid: UUID):
+    to = rlc_user_from_uuid(__actor, to_uuid)
+    folder = folder_from_uuid(__actor, folder_uuid)
+
     if not folder.has_access(__actor):
         raise ApiError("You need access to this folder in order to do that.")
 
@@ -74,9 +76,10 @@ def grant_access(
 
 
 @use_case
-def revoke_access(
-    __actor: RlcUser, of=find(rlc_user_from_slug), folder=find(folder_from_uuid)
-):
+def revoke_access(__actor: RlcUser, of_uuid: UUID, folder_uuid: UUID):
+    of = rlc_user_from_uuid(__actor, of_uuid)
+    folder = folder_from_uuid(__actor, folder_uuid)
+
     if not folder.has_access(__actor):
         raise ApiError("You need access to this folder in order to do that.")
 
@@ -99,16 +102,19 @@ def correct_folder_keys_of_others(__actor: RlcUser):
 
 
 @use_case
-def move_folder(
-    __actor: RlcUser, folder=find(folder_from_uuid), target=find(folder_from_uuid)
-):
+def move_folder(__actor: RlcUser, folder_uuid: UUID, target_uuid: UUID):
+    folder = folder_from_uuid(__actor, folder_uuid)
+    target = folder_from_uuid(__actor, target_uuid)
+
     folder.move(target, __actor)
     r = get_repository()
     r.save(folder)
 
 
 @use_case
-def toggle_inheritance(__actor: RlcUser, folder=find(folder_from_uuid)):
+def toggle_inheritance(__actor: RlcUser, folder_uuid: UUID):
+    folder = folder_from_uuid(__actor, folder_uuid)
+
     if not folder.has_access(__actor):
         check_permissions(
             __actor,
