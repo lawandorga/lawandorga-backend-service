@@ -1,4 +1,5 @@
 from typing import cast
+from uuid import UUID
 
 from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
@@ -7,7 +8,7 @@ from core.folders.use_cases.finders import folder_from_uuid
 from core.records.models import Record, RecordTemplate
 from core.records.use_cases.finders import record_from_id, template_from_id
 from core.seedwork.repository import RepositoryWarehouse
-from core.seedwork.use_case_layer import UseCaseError, find, use_case
+from core.seedwork.use_case_layer import UseCaseError, use_case
 from core.static import (
     PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
     PERMISSION_RECORDS_ADD_RECORD,
@@ -15,7 +16,8 @@ from core.static import (
 
 
 @use_case
-def change_record_name(__actor: RlcUser, name: str, record=find(record_from_id)):
+def change_record_name(__actor: RlcUser, name: str, record_id: int):
+    record = record_from_id(__actor, record_id)
     record.set_name(name)
     record.save()
 
@@ -24,8 +26,10 @@ def change_record_name(__actor: RlcUser, name: str, record=find(record_from_id))
 def create_a_record_and_a_folder(
     __actor: RlcUser,
     name: str,
-    template=find(template_from_id),
+    template_id: int,
 ):
+    template = template_from_id(__actor, template_id)
+
     folder_repository = cast(
         FolderRepository, RepositoryWarehouse.get(FolderRepository)
     )
@@ -50,9 +54,12 @@ def create_a_record_and_a_folder(
 def create_a_record_within_a_folder(
     __actor: RlcUser,
     name: str,
-    folder=find(folder_from_uuid),
-    template=find(template_from_id),
+    folder_uuid: UUID,
+    template_id: int,
 ):
+    folder = folder_from_uuid(__actor, folder_uuid)
+    template = template_from_id(__actor, template_id)
+
     if not folder.has_access(__actor):
         raise UseCaseError(
             "You can not create a record in this folder, because you have no access to this folder."

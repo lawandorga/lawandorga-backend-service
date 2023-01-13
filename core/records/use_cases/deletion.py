@@ -1,14 +1,14 @@
 from core.auth.models import RlcUser
 from core.records.models import RecordDeletion
 from core.records.use_cases.finders import deletion_from_id, record_from_id
-from core.seedwork.use_case_layer import find, use_case
+from core.seedwork.use_case_layer import use_case
 from core.static import PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS
 
 
 @use_case
-def create_deletion_request(
-    __actor: RlcUser, explanation: str, record=find(record_from_id)
-):
+def create_deletion_request(__actor: RlcUser, explanation: str, record_id: int):
+    record = record_from_id(__actor, record_id)
+
     deletion = RecordDeletion(
         requestor=__actor, state="re", record=record, explanation=explanation
     )
@@ -16,12 +16,16 @@ def create_deletion_request(
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS])
-def accept_deletion_request(__actor: RlcUser, deletion=find(deletion_from_id)):
+def accept_deletion_request(__actor: RlcUser, deletion_id: int):
+    deletion = deletion_from_id(__actor, deletion_id)
+
     deletion.accept(__actor)
     deletion.save()
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS])
-def decline_deletion_request(__actor: RlcUser, deletion=find(deletion_from_id)):
+def decline_deletion_request(__actor: RlcUser, deletion_id: int):
+    deletion = deletion_from_id(__actor, deletion_id)
+
     deletion.decline(__actor)
     deletion.save()
