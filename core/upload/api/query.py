@@ -1,5 +1,6 @@
 import mimetypes
 
+from django.contrib.auth.models import AnonymousUser
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 
@@ -19,6 +20,16 @@ router = Router()
 )
 def query__link(rlc_user: RlcUser, data: schemas.InputQueryLink):
     link = get_object_or_404(UploadLink, org_id=rlc_user.org_id, uuid=data.uuid)
+    return link
+
+
+@router.get(
+    url="<uuid:uuid>/public/",
+    input_schema=schemas.InputQueryLink,
+    output_schema=schemas.OutputQueryLinkPublic,
+)
+def query__link_public(anonymous_user: AnonymousUser, data: schemas.InputQueryLink):
+    link = get_object_or_404(UploadLink, uuid=data.uuid)
     return link
 
 

@@ -46,7 +46,7 @@ def test_upload_link_can_be_created():
 def test_data_can_be_uploaded(link, file, user):
     file = link.upload("MyFile.txt", file)
     name, f = link.download(file.uuid, user)
-    assert b"My Secret Document" in f.read() and name == 'MyFile.txt'
+    assert b"My Secret Document" in f.read() and name == "MyFile.txt"
 
 
 def test_data_is_encrypted(link, file):

@@ -56,3 +56,14 @@ class OutputQueryLink(BaseModel):
         orm_mode = True
 
     _ = qs_to_list("files")
+
+
+class OutputQueryLinkPublic(BaseModel):
+    uuid: UUID
+    name: str
+    link: str
+    created: datetime
+    disabled: bool
+
+    class Config:
+        orm_mode = True

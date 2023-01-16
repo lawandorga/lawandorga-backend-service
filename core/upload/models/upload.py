@@ -125,10 +125,12 @@ class UploadLink(Aggregate, models.Model):
 
 
 def file_path(instance: "UploadFile", filename: str):
-    return f"core/upload/{instance.link.folder_uuid}/${filename}"
+    return f"{UploadFile.UPLOAD_PATH}/{instance.link.folder_uuid}/${filename}"
 
 
 class UploadFile(models.Model):
+    UPLOAD_PATH = "core/upload"
+
     @staticmethod
     def create(name: str, link: UploadLink, f: UploadedFile) -> "UploadFile":
         file = UploadFile()
