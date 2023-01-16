@@ -15,6 +15,7 @@ from core.questionnaires.urls import urlpatterns as questionnaires_urlpatterns
 from core.records.urls import urlpatterns as records_urlpatterns
 from core.rlc.urls import urlpatterns as org_urlpatterns
 from core.statistics.urls import urlpatterns as statistics_urlpatterns
+from core.upload.urls import urlpatterns as upload_urlpatterns
 
 urlpatterns = [
     path("api/mail/", include(mail_urlpatterns)),
@@ -32,4 +33,5 @@ urlpatterns = [
     path("api/files/v2/", include(files_new_urlpatterns)),
     path("api/records/", include(records_urlpatterns)),
     path("api/questionnaires/", include(questionnaires_urlpatterns)),
+    path("api/upload/", include(upload_urlpatterns)),
 ]
