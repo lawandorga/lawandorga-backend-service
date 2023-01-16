@@ -33,5 +33,5 @@ urlpatterns = [
     path("api/files/v2/", include(files_new_urlpatterns)),
     path("api/records/", include(records_urlpatterns)),
     path("api/questionnaires/", include(questionnaires_urlpatterns)),
-    path("api/upload/", include(upload_urlpatterns)),
+    path("api/uploads/", include(upload_urlpatterns)),
 ]

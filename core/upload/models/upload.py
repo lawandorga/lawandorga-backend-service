@@ -2,6 +2,7 @@ from tempfile import _TemporaryFileWrapper
 from typing import IO, Optional
 from uuid import UUID, uuid4
 
+from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 
@@ -25,7 +26,7 @@ from core.seedwork.events_addon import EventsAddon
 
 
 class DjangoUploadLinkRepository(ItemRepository):
-    IDENTIFIER = "UPLOAD_LINK"
+    IDENTIFIER = "UPLOAD"
 
     @classmethod
     def retrieve(cls, uuid: UUID, org_pk: Optional[int] = None) -> "UploadLink":
@@ -73,6 +74,12 @@ class UploadLink(Aggregate, models.Model):
         return enc_key
 
     @property
+    def link(self) -> str:
+        if self.disabled:
+            return ""
+        return f"{settings.MAIN_FRONTEND_URL}/uploads/{self.uuid}"
+
+    @property
     def upload_files(self) -> dict[UUID, "UploadFile"]:
         if not hasattr(self, "_upload_files"):
             files = list(self.files.all())
@@ -107,12 +114,14 @@ class UploadLink(Aggregate, models.Model):
 
         return file
 
-    def download(self, uuid: UUID, user: RlcUser) -> IO | _TemporaryFileWrapper:
+    def download(
+        self, uuid: UUID, user: RlcUser
+    ) -> tuple[str, IO | _TemporaryFileWrapper]:
         file = self.upload_files[uuid]
         enc_key = EncryptedAsymmetricKey.create_from_dict(self.key)
         unlock_key = self.folder.get_decryption_key(requestor=user)
         key = enc_key.decrypt(unlock_key)
-        return file.download(key)
+        return file.name, file.download(key)
 
 
 def file_path(instance: "UploadFile", filename: str):
@@ -164,7 +173,7 @@ class UploadFile(models.Model):
 
         if self.name.split(".")[-1] != file.name.split(".")[-1]:
             raise DomainError(
-                "The suffix of the name of the file does not match the provided name."
+                "The filename needs to end with '.{}'.".format(file.name.split(".")[-1])
             )
 
         file_name = f"{uuid4()}.enc"

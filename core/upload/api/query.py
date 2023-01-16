@@ -13,12 +13,13 @@ router = Router()
 
 
 @router.get(
-    url="<uuid:link>/",
+    url="<uuid:uuid>/",
     input_schema=schemas.InputQueryLink,
     output_schema=schemas.OutputQueryLink,
 )
 def query__link(rlc_user: RlcUser, data: schemas.InputQueryLink):
-    pass
+    link = get_object_or_404(UploadLink, org_id=rlc_user.org_id, uuid=data.uuid)
+    return link
 
 
 @router.get(
@@ -29,10 +30,10 @@ def query__link(rlc_user: RlcUser, data: schemas.InputQueryLink):
 def query__download_file(rlc_user: RlcUser, data: schemas.InputDownloadFile):
     link = get_object_or_404(UploadLink, org_id=rlc_user.org_id, uuid=data.link)
 
-    f = link.download(data.file, rlc_user)
+    filename, file = link.download(data.file, rlc_user)
 
     response = FileResponse(
-        f, filename=f.name, content_type=mimetypes.guess_type(f.name)[0]
+        file, filename=filename, content_type=mimetypes.guess_type(filename)[0]
     )
-    response["Content-Disposition"] = 'attachment; filename="{}"'.format(f.name)
+    response["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
     return response

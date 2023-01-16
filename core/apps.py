@@ -19,6 +19,7 @@ class CoreConfig(AppConfig):
         )
         from core.records.models.record import DjangoRecordRepository
         from core.seedwork.repository import RepositoryWarehouse
+        from core.upload.models.upload import DjangoUploadLinkRepository
 
         EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionV1)
         EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
@@ -26,6 +27,7 @@ class CoreConfig(AppConfig):
         RepositoryWarehouse.add_repository(DjangoRecordRepository)
         RepositoryWarehouse.add_repository(DjangoFileRepository)
         RepositoryWarehouse.add_repository(DjangoQuestionnaireRepository)
+        RepositoryWarehouse.add_repository(DjangoUploadLinkRepository)
 
         # call the sub ready methods
         from core.folders.ready import ready
