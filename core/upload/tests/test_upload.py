@@ -50,7 +50,7 @@ def test_filename_error(link, user):
     bytes_io = io.BytesIO(bytes(text, "utf-8"))
     file = UploadedFile(bytes_io, "secret", "text/plain", sys.getsizeof(bytes_io), None)
     with pytest.raises(DomainError) as e:
-        link.upload("MyFile.txt", file)
+        link.upload("MyFile4.txt", file)
     assert "not correct" in str(e)
 
 
