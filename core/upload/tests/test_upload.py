@@ -38,7 +38,7 @@ def file():
 
 def test_name_error(link, file, user):
     with pytest.raises(DomainError) as e:
-        link.upload("MyFile.pdf", file)
+        link.upload("MyFile3.pdf", file)
     assert "needs to end with" in str(e)
     with pytest.raises(DomainError) as e:
         link.upload("MyFile", file)
@@ -68,7 +68,7 @@ def test_data_can_be_uploaded(link, file, user):
 
 
 def test_data_is_encrypted(link, file):
-    file = link.upload("MyFile.txt", file)
+    file = link.upload("MyFile2.txt", file)
     f = file.file.file
     assert b"My Secret Document" not in f.read()
 
