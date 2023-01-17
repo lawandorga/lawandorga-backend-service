@@ -165,13 +165,15 @@ class UploadFile(models.Model):
 
     def set_name(self, name: str):
         if "." not in name:
-            raise DomainError("The file name needs to contain '.'.")
+            raise DomainError(
+                "The filename needs to have an extension like '.pdf' or '.txt'."
+            )
 
         self.name = name
 
     def set_file(self, file: UploadedFile):
         if file.name is None or "." not in file.name:
-            raise DomainError("The file name is not correct.")
+            raise DomainError("The filename is not correct.")
 
         if self.name.split(".")[-1] != file.name.split(".")[-1]:
             raise DomainError(

@@ -36,6 +36,24 @@ def file():
     yield file
 
 
+def test_name_error(link, file, user):
+    with pytest.raises(DomainError) as e:
+        link.upload("MyFile.pdf", file)
+    assert "needs to end with" in str(e)
+    with pytest.raises(DomainError) as e:
+        link.upload("MyFile", file)
+    assert "have an extension" in str(e)
+
+
+def test_filename_error(link, user):
+    text = "My Secret Document"
+    bytes_io = io.BytesIO(bytes(text, "utf-8"))
+    file = UploadedFile(bytes_io, "secret", "text/plain", sys.getsizeof(bytes_io), None)
+    with pytest.raises(DomainError) as e:
+        link.upload("MyFile.txt", file)
+    assert "not correct" in str(e)
+
+
 def test_upload_link_can_be_created():
     org = test_helpers.create_raw_org()
     user = test_helpers.create_raw_org_user(org=org)
@@ -59,3 +77,10 @@ def test_link_can_be_disabled_and_upload_fails(link, file):
     link.disable()
     with pytest.raises(DomainError):
         link.upload("NewFile.txt", file)
+
+
+def test_link_property(link):
+    url = link.link
+    link.disable()
+    assert "" == link.link
+    assert url != link.link
