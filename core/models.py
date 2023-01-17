@@ -3,7 +3,7 @@ from .collab.models import *
 from .events.models import *
 from .files.models import *
 from .files_new.models import *
-from .folders.models import FoldersFolder
+from .folders.models import *
 from .internal.models import *
 from .legal.models import *
 from .mail.models import *
@@ -11,3 +11,4 @@ from .other.models import *
 from .playground.models import *
 from .records.models import *
 from .rlc.models import *
+from .upload.models import *

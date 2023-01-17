@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padding
 from cryptography.hazmat.primitives.asymmetric import rsa
 from django.core.files import File
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.uploadedfile import UploadedFile
 
 
 def to_bytes(val: Union[bytes, str, memoryview, None]) -> bytes:
@@ -91,7 +91,7 @@ class AESEncryption:
         return plain
 
     @staticmethod
-    def encrypt_in_memory_file(file: InMemoryUploadedFile, aes_key: str):
+    def encrypt_in_memory_file(file: UploadedFile, aes_key: str):
         # fix the aes key
         bytes_aes_key = to_bytes(aes_key)
         # stuff needed

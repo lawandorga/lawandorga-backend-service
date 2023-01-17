@@ -42,7 +42,10 @@ def create_raw_org_user(
     return user
 
 
-def create_raw_folder(user=None, name="Dummy's Folder", stop_inherit=False):
+def create_raw_folder(
+    user: Optional[RlcUser] = None, name="Dummy's Folder", stop_inherit=False
+):
+    assert user is not None
     folder = Folder.create(name, user.org_id, stop_inherit=stop_inherit)
     folder.grant_access(user)
     return folder

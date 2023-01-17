@@ -1,0 +1,15 @@
+from uuid import UUID
+
+from core.auth.models import RlcUser
+from core.seedwork.use_case_layer import finder_function
+from core.upload.models import UploadLink
+
+
+@finder_function
+def link_from_uuid(actor: RlcUser, uuid: UUID) -> UploadLink:
+    return UploadLink.objects.get(org_id=actor.org_id, uuid=uuid)
+
+
+@finder_function
+def link_from_uuid_dangerous(uuid: UUID) -> UploadLink:
+    return UploadLink.objects.get(uuid=uuid)

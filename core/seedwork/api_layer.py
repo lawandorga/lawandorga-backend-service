@@ -252,6 +252,9 @@ class Router:
             if is_authenticated:
                 user: UserProfile = request.user  # type: ignore
 
+            if "anonymous_user" in func_input:
+                func_kwargs["anonymous_user"] = AnonymousUser()
+
             if "user" in func_input:
                 if not is_authenticated:
                     return not_authenticated_error
