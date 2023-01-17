@@ -54,6 +54,11 @@ def update_folder(__actor: RlcUser, folder_pk: UUID, name: str):
 def delete_folder(__actor: RlcUser, folder_pk: UUID):
     r = get_repository()
     folder = r.retrieve(org_pk=__actor.org_id, uuid=folder_pk)
+    for f in r.get_list(__actor.org_id):
+        if f.parent_uuid == folder.uuid:
+            raise UseCaseError(
+                "You can not delete this folder because it still has subfolders. Delete the subfolders first."
+            )
     if folder.has_access(__actor):
         r.delete(folder)
     else:
