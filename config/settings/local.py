@@ -3,7 +3,7 @@ from .base import *
 # This is used for links in activation emails and so on
 #
 MAIN_FRONTEND_URL = "http://localhost:4200"
-STATISTICS_FRONTEND_URL = "http://127.0.0.1:4300"
+STATISTICS_FRONTEND_URL = "http://localhost:4300"
 
 # This is used for ics calendar integration links
 #
