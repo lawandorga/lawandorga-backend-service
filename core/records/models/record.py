@@ -196,6 +196,7 @@ class Record(Aggregate, models.Model):
         for entry_type in [
             "state_entries",
             "standard_entries",
+            "multiple_entries",
             "select_entries",
             "users_entries",
         ]:
