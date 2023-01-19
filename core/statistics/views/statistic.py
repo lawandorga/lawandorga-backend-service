@@ -201,13 +201,13 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         select
         baseuser.id,
         rlckeys.id is not null as rlckeys,
-        rlcuser.public_key is not null as userkeys,
+        rlcuser.key is not null as userkeys,
         rlcuser.accepted,
         rlcuser.locked
         from core_userprofile baseuser
         inner join core_rlcuser rlcuser on baseuser.id = rlcuser.user_id
         left join core_orgencryption rlckeys on baseuser.id = rlckeys.user_id
-        where rlckeys.id is null or rlcuser.public_key is null
+        where rlckeys.id is null or rlcuser.key is null or rlcuser.key = ''
         """
         data = self.execute_statement(statement)
         data = map(

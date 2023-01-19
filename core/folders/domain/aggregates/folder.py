@@ -87,7 +87,7 @@ class Folder:
         return self.__name
 
     @property
-    def items(self):
+    def items(self) -> list[FolderItem]:
         return self.__items
 
     @property
