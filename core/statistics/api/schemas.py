@@ -3,6 +3,15 @@ from typing import Any, List, Optional
 from pydantic import BaseModel
 
 
+class OutputMigrationStatistic(BaseModel):
+    records: float
+    records_togo: int
+    questionnaires: float
+    questionnaires_togo: int
+    documents: float
+    documents_togo: int
+
+
 class InputRecordStats(BaseModel):
     field_1: str
     value_1: str
