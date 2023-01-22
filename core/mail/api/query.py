@@ -14,9 +14,7 @@ def query__page_dashboard(user: UserProfile):
     if hasattr(user, "mail_user"):
         mail_user = user.mail_user
 
-        available_domains = list(
-            MailDomain.objects.filter(org=mail_user.org, is_active=True)
-        )
+        available_domains = list(MailDomain.objects.filter(org=mail_user.org))
         domain = MailDomain.objects.filter(org=mail_user.org).first()
         users = MailUser.objects.filter(org=mail_user.org).select_related("account")
         groups = MailGroup.objects.filter(org=mail_user.org).select_related("account")
@@ -43,7 +41,7 @@ def query__page_group(mail_user: MailUser, data: schemas.InputPageGroup):
     except ObjectDoesNotExist:
         raise ApiError("Group was not found.")
 
-    available_domains = MailDomain.objects.filter(org=mail_user.org, is_active=True)
+    available_domains = MailDomain.objects.filter(org=mail_user.org)
     addresses = group.account.addresses.all()
     members = group.members.all()
     available_users = MailUser.objects.exclude(
@@ -69,7 +67,7 @@ def query__page_user(mail_user: MailUser, data: schemas.InputPageUser):
     except ObjectDoesNotExist:
         raise ApiError("User was not found.")
 
-    available_domains = MailDomain.objects.filter(org=mail_user.org, is_active=True)
+    available_domains = MailDomain.objects.filter(org=mail_user.org)
     addresses = user.account.addresses.all()
 
     return {"addresses": addresses, "available_domains": available_domains}
