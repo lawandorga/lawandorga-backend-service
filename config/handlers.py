@@ -28,7 +28,7 @@ def handler404(request, exception, template_name=""):
         err_type="DjangoNotFound",
         title="Not Found",
         status=404,
-        internal=str(exception),
+        internal=str(exception)[:10],
     )
     return JsonResponse(error.dict(), status=404)
 

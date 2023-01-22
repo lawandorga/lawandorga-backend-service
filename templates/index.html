@@ -20,6 +20,18 @@
         <th style="text-align: left; border: 1px solid #dddddd; padding: 8px 12px;">Runtime</th>
         <td style="text-align: left; border: 1px solid #dddddd; padding: 8px 12px;">{{ RUNTIME }}</td>
     </tr>
+    <tr>
+        <th style="text-align: left; border: 1px solid #dddddd; padding: 8px 12px;">Admin</th>
+        <td style="text-align: left; border: 1px solid #dddddd; padding: 8px 12px;">
+            <a href="{% url 'admin:index' %}">To the panel</a>
+        </td>
+    </tr>
+    <tr>
+         <th style="text-align: left; border: 1px solid #dddddd; padding: 8px 12px;">Robots.txt</th>
+        <td style="text-align: left; border: 1px solid #dddddd; padding: 8px 12px;">
+            <a href="{% url 'robots.txt' %}">To the file</a>
+        </td>
+    </tr>
     <caption></caption>
 </table>
 </body>
