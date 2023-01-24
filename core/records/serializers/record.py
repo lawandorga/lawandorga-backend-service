@@ -60,6 +60,11 @@ class RecordFieldSerializer(serializers.ModelSerializer):
             return "Yes"
         return "No"
 
+    def validate_name(self, val: str):
+        if val == "Name":
+            raise ValidationError("You are not allowed to use 'Name' as field name.")
+        return val
+
 
 class RecordStateFieldSerializer(RecordFieldSerializer):
     entry_view_name = "recordstateentry-list"

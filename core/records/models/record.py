@@ -192,6 +192,7 @@ class Record(Aggregate, models.Model):
         entries: dict[str, Union[list[str], str]] = {
             "Created": localtime(self.created).strftime("%d.%m.%y %H:%M"),
             "Updated": localtime(self.updated).strftime("%d.%m.%y %H:%M"),
+            "Name": self.name,
         }
         for entry_type in [
             "state_entries",
