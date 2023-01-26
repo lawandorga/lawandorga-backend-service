@@ -69,6 +69,11 @@ MIDDLEWARE = [
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-ROOT_URLCONF
 ROOT_URLCONF = "config.urls"
 
+# csrf failure
+# https://stackoverflow.com/questions/40758711/how-to-set-a-default-handler-for-csrf-verification-failed-in-django
+CSRF_FAILURE_VIEW = "config.handlers.handler_csrf_error"
+
+
 # Templates
 # https://docs.djangoproject.com/en/dev/topics/templates/#configuration
 TEMPLATES = [

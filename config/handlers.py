@@ -36,3 +36,14 @@ def handler404(request, exception, template_name=""):
 def handler500(request, template_name=""):
     error = RFC7807(err_type="DjangoServerError", title="Server Error", status=500)
     return JsonResponse(error.dict(), status=500)
+
+
+def handler_csrf_error(request, reason=""):
+    error = RFC7807(
+        err_type="DjangoCsrfTokenError",
+        title="Csrf Cookie Missing - Please make sure your browser does not block any cookies from Law&Orga",
+        status=400,
+        detail="Please make sure your browser does not block any cookies from Law&Orga.",
+        internal=reason,
+    )
+    return JsonResponse(error.dict(), status=400)
