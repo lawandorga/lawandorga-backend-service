@@ -20,7 +20,7 @@ router = Router()
 def command__create_record(rlc_user: RlcUser, data: schemas.InputRecordCreate):
     record_pk = create_a_record_and_a_folder(rlc_user, data.name, data.template)
     record = Record.objects.get(pk=record_pk)
-    return {"id": record.pk, "folder_uuid": record.folder_uuid}
+    return {"id": record.pk, "uuid": record.uuid, "folder_uuid": record.folder_uuid}
 
 
 @router.post(
@@ -35,7 +35,7 @@ def command__create_record_within_folder(
         rlc_user, data.name, folder_uuid=data.folder, template_id=data.template
     )
     record = Record.objects.get(pk=record_pk)
-    return {"id": record.pk, "folder_uuid": record.folder_uuid}
+    return {"id": record.pk, "uuid": record.uuid, "folder_uuid": record.folder_uuid}
 
 
 @router.post(url="<int:id>/change_name/", input_schema=schemas.InputRecordChangeName)

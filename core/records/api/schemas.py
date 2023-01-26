@@ -74,6 +74,7 @@ class OutputRecordAccess(BaseModel):
 class OutputRecordCreate(BaseModel):
     id: int
     folder_uuid: UUID
+    uuid: UUID
 
 
 class OutputEntry(BaseModel):
