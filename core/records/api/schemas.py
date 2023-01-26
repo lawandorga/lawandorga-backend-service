@@ -26,7 +26,7 @@ class InputAccess(BaseModel):
 
 class InputCreateAccess(BaseModel):
     record: int
-    explanation: str
+    explanation: str = ""
 
 
 class InputRecordChangeName(BaseModel):
