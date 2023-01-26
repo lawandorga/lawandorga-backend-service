@@ -15,7 +15,7 @@ class RecordDeletion(models.Model):
     record = models.ForeignKey(
         Record, related_name="deletions", on_delete=models.SET_NULL, null=True
     )
-    explanation = models.TextField()
+    explanation = models.TextField(blank=True)
     requestor = models.ForeignKey(
         RlcUser,
         related_name="requested_record_deletions",

@@ -40,7 +40,7 @@ class InputDeletion(BaseModel):
 
 class InputCreateDeletion(BaseModel):
     record: int
-    explanation: str
+    explanation: str = ""
 
 
 class OutputRecordDeletion(BaseModel):
