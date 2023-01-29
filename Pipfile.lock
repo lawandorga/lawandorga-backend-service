@@ -428,11 +428,11 @@
         },
         "django-stubs": {
             "hashes": [
-                "sha256:bcc618ba353dabc540d982b9dac1d5a1921652f8fc2a13653d545a57d5e3cc0f",
-                "sha256:fbf2ee6a4bce76c3eb5f6707ccadb4cf1c2f1ec485e8c44701ca8de2d0a5df18"
+                "sha256:19e97efecfaf80e42c479ee7ed6179f3120c1b2c11e665b2e8305457e41ee069",
+                "sha256:f9edb3ef09ac2a014b111d894d86376a70b447f13fe7905ea6c0752e08a1514a"
             ],
             "index": "pypi",
-            "version": "==1.13.1"
+            "version": "==1.13.2"
         },
         "django-stubs-ext": {
             "hashes": [
