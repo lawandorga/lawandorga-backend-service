@@ -11,7 +11,7 @@ router = Router()
 @router.get(output_schema=List[schemas.OutputLegalRequirementUser])
 def api_list_legal_requirements(rlc_user: RlcUser):
     legal_requirements = list(
-        rlc_user.legal_requirements_user.order_by("-legal_requirement__accept_required")
+        rlc_user.legal_requirements_user.order_by("legal_requirement__order")
     )
     return legal_requirements
 

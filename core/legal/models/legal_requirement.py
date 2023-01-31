@@ -48,6 +48,7 @@ class LegalRequirementUser(models.Model):
         verbose_name = "LegalRequirementUser"
         verbose_name_plural = "LegalRequirementUsers"
         unique_together = ["legal_requirement", "rlc_user"]
+        ordering = ["legal_requirement__order"]
 
     @property
     def accepted(self):

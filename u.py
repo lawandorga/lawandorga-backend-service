@@ -1,38 +1,55 @@
-# from typing import cast
+# import inspect
+# from typing import Callable, Any, ForwardRef
 #
-# from django.db import transaction
-#
-# from core.folders.domain.aggregates.folder import Folder
-# from core.folders.domain.repositiories.folder import FolderRepository
-# from core.models import FoldersFolder, Record
-# from core.seedwork.repository import RepositoryWarehouse
-#
-# all_records = list(
-#     Record.objects.exclude(folder_uuid=None).select_related("template", "template__rlc")
-# )
-# all_folders = list(FoldersFolder.objects.all())
-#
-# item_uuids = []
-# for folder in all_folders:
-#     for item in folder.items:
-#         item_uuids.append(item["uuid"])
-#
-# error_records = []
-# for record in all_records:
-#     if str(record.uuid) not in item_uuids:
-#         error_records.append(record)
+# from pydantic.typing import evaluate_forwardref
 #
 #
-# r = cast(FolderRepository, RepositoryWarehouse.get("FOLDER"))
+# class Injection:
+#     def __init__(self, call):
+#         self.call = call
 #
-# folders = {}
 #
-# with transaction.atomic():
-#     i = 0
-#     for record in error_records:
-#         if record.template.rlc_id not in folders:
-#             folders[record.template.rlc_id] = r.get_dict(record.template.rlc_id)
-#         i += 1
-#         folder: Folder = folders[record.template.rlc_id][record.folder_uuid]
-#         folder.add_item(record)
-#         r.save(folder)
+# def Depends(x):
+#     print(x)
+#     return Injection(x)
+#
+#
+# def wrap(func):
+#     def new_func(*args, **kwargs):
+#         func(*args, **kwargs)
+#
+#     return new_func
+#
+#
+# # @wrap
+# def a_plus_b(a, b=Depends(8)):
+#     return a + b
+#
+#
+# def get_typed_annotation(annotation: Any, globalns: dict[str, Any]) -> Any:
+#     if isinstance(annotation, str):
+#         annotation = ForwardRef(annotation)
+#         annotation = evaluate_forwardref(annotation, globalns, globalns)
+#     return annotation
+#
+#
+# def get_typed_signature(call: Callable[..., Any]) -> inspect.Signature:
+#     signature = inspect.signature(call)
+#     globalns = getattr(call, "__globals__", {})
+#     typed_params = [
+#         inspect.Parameter(
+#             name=param.name,
+#             kind=param.kind,
+#             default=param.default,
+#             annotation=get_typed_annotation(param.annotation, globalns),
+#         )
+#         for param in signature.parameters.values()
+#     ]
+#     typed_signature = inspect.Signature(typed_params)
+#     return typed_signature
+#
+#
+# print(get_typed_signature(a_plus_b).parameters.items())
+#
+#
+# a_plus_b(**{'a': 1, 'b': 2, 'c': 3})
