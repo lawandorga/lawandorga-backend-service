@@ -525,6 +525,7 @@ class RecordTemplateSerializer(serializers.ModelSerializer):
             possible_names = list(map(lambda f: f["name"], fields))
             possible_names.append("Created")
             possible_names.append("Updated")
+            possible_names.append("Name")
             for name in val:
                 if name not in possible_names:
                     raise ValidationError(
