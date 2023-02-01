@@ -168,6 +168,10 @@ class UploadFile(models.Model):
             raise DomainError(
                 "The filename needs to have an extension like '.pdf' or '.txt'."
             )
+        if len(name.split(".")[0]) == 0 or len(name.split(".")[1]) == 0:
+            raise DomainError(
+                "The filename needs to have a name and an extension for example 'sample.pdf'."
+            )
 
         self.name = name
 
