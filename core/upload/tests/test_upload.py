@@ -43,6 +43,9 @@ def test_name_error(link, file, user):
     with pytest.raises(DomainError) as e:
         link.upload("MyFile", file)
     assert "have an extension" in str(e)
+    with pytest.raises(DomainError) as e:
+        link.upload(".txt", file)
+    assert "name and an extension" in str(e)
 
 
 def test_filename_error(link, user):
