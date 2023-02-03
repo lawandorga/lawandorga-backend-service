@@ -7,8 +7,6 @@ router = DefaultRouter()
 
 router.register("pool_records", views.PoolRecordViewSet)
 router.register("pool_consultants", views.PoolConsultantViewSet)
-# records
-router.register("recordtemplates", views.RecordTemplateViewSet)
 # fields
 router.register("recordstatefields", views.RecordStateFieldViewSet)
 router.register("recordusersfields", views.RecordUsersFieldViewSet)
