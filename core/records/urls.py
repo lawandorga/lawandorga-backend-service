@@ -42,4 +42,5 @@ urlpatterns = [
     path("query/", include(api.query_router.urls)),
     path("deletions/", include(api.deletions_router.urls)),
     path("accesses/", include(api.accesses_router.urls)),
+    path("templates/", include(api.templates_router.urls)),
 ]

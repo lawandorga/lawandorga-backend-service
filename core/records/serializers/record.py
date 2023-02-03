@@ -484,20 +484,6 @@ FIELD_TYPES_AND_SERIALIZERS = [
 
 
 ###
-# Record
-###
-# class RecordEncryptionNewSerializer(serializers.ModelSerializer):
-#     user_detail = serializers.SerializerMethodField()
-#
-#     class Meta:
-#         model = RecordEncryptionNew
-#         fields = ["created", "user", "user_detail", "id"]
-#
-#     def get_user_detail(self, obj):
-#         return obj.user.name
-
-
-###
 # RecordTemplate
 ###
 class RecordTemplateSerializer(serializers.ModelSerializer):
@@ -536,12 +522,3 @@ class RecordTemplateSerializer(serializers.ModelSerializer):
         else:
             val = []
         return val
-
-
-class RecordTemplateDetailSerializer(RecordTemplateSerializer):
-    fields = serializers.SerializerMethodField(method_name="get_form_fields")  # type: ignore
-
-    def get_form_fields(self, obj):
-        return obj.get_fields(
-            FIELD_TYPES_AND_SERIALIZERS, request=self.context["request"]
-        )

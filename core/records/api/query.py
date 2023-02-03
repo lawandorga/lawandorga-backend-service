@@ -10,6 +10,21 @@ from core.seedwork.api_layer import ApiError, Router
 router = Router()
 
 
+@router.get(url="templates/", output_schema=list[schemas.OutputTemplate])
+def query__templates(rlc_user: RlcUser):
+    templates = RecordTemplate.objects.filter(rlc_id=rlc_user.org_id)
+    return list(templates)
+
+
+@router.get(
+    url="templates/<int:id>/",
+    input_schema=schemas.InputTemplateDetail,
+    output_schema=schemas.OutputTemplateDetail,
+)
+def query__template(rlc_user: RlcUser, data: schemas.InputTemplateDetail):
+    return RecordTemplate.objects.get(rlc_id=rlc_user.org_id, id=data.id)
+
+
 @router.get(output_schema=schemas.OutputRecordsPage)
 def query__records_page(rlc_user: RlcUser):
     records_1 = list(
