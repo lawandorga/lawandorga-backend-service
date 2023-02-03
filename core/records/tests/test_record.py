@@ -1,10 +1,8 @@
 from django.conf import settings
-from django.test import TestCase
-from rest_framework.test import APIRequestFactory, force_authenticate
+from rest_framework.test import APIRequestFactory
 
 from core.models import HasPermission, Org, Permission, RlcUser, UserProfile
 from core.records.models import RecordTemplate
-from core.seedwork import test_helpers
 from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
     PERMISSION_RECORDS_ADD_RECORD,
@@ -99,20 +97,3 @@ class BaseRecord:
 #         self.assertEqual(
 #             RecordTemplate.objects.filter(name="RecordTemplate 145").count(), 1
 #         )
-
-
-###
-# Record
-###
-class RecordViewSetWorking(BaseRecord, TestCase):
-    def setUp(self):
-        super().setUp()
-        self.template = RecordTemplate.objects.create(
-            rlc=self.rlc, name="Record Template"
-        )
-
-    def setup_record(self):
-        self.record = test_helpers.create_record(
-            template=self.template, users=[self.user]
-        )["record"]
-        self.record.put_in_folder(self.rlc_user)
