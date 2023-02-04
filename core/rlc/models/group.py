@@ -10,6 +10,12 @@ if TYPE_CHECKING:
 
 
 class Group(models.Model):
+    @classmethod
+    def create(cls, org: Org, name: str, description: str | None):
+        group = Group(from_rlc=org, name=name)
+        group.description = description if description is not None else ""
+        return group
+
     from_rlc = models.ForeignKey(
         Org, related_name="group_from_rlc", on_delete=models.CASCADE, blank=True
     )
@@ -26,6 +32,18 @@ class Group(models.Model):
         return "group: {}; name: {}; rlc: {};".format(
             self.id, self.name, self.from_rlc.name
         )
+
+    @property
+    def permissions(self):
+        return self.group_has_permission.order_by("permission__name")
+
+    def update_information(
+        self, name: str | None = None, description: str | None = None
+    ):
+        if name is not None:
+            self.name = name
+        if description is not None:
+            self.description = description
 
     def add_member(self, new_member: "RlcUser"):
         if new_member.org_id != self.from_rlc_id:

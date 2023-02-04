@@ -1,36 +1,38 @@
-from typing import List
-
 from core.auth.models import RlcUser
-from core.rlc.api import schemas
-from core.rlc.models import Group
-from core.rlc.use_cases.group import add_member_to_group, remove_member_from_group
+from core.rlc.use_cases.group import (
+    add_member_to_group,
+    create_group,
+    delete_group,
+    remove_member_from_group,
+    update_group,
+)
 from core.seedwork.api_layer import Router
+
+from . import schemas
 
 router = Router()
 
 
-# list
-@router.get(
-    url="<int:id>/users/",
-    input_schema=schemas.InputListUsersGet,
-    output_schema=List[schemas.OutputGroupMember],
-)
-def list_users(data: schemas.InputListUsersGet, rlc_user: RlcUser):
-    group = Group.objects.get(from_rlc=rlc_user.org, id=data.id)
-
-    users = group.members.all()
-    users_list = list(users)
-
-    return users_list
+@router.post(input_schema=schemas.InputGroupCreate)
+def command__create_group(rlc_user: RlcUser, data: schemas.InputGroupCreate):
+    create_group(rlc_user, data.name, data.description)
 
 
-# add member
+@router.put(url="<int:id>/", input_schema=schemas.InputGroupUpdate)
+def command__update_group(rlc_user: RlcUser, data: schemas.InputGroupUpdate):
+    update_group(rlc_user, data.id, data.name, data.description)
+
+
+@router.delete(url="<int:id>/", input_schema=schemas.InputGroupDelete)
+def command__delete_group(rlc_user: RlcUser, data: schemas.InputGroupDelete):
+    delete_group(rlc_user, data.id)
+
+
 @router.post(url="<int:id>/add_member/", input_schema=schemas.InputAddMember)
-def add_member(data: schemas.InputAddMember, rlc_user: RlcUser):
+def command__add_member(data: schemas.InputAddMember, rlc_user: RlcUser):
     add_member_to_group(rlc_user, data.id, data.new_member)
 
 
-# remove member
 @router.post(url="<int:id>/remove_member/", input_schema=schemas.InputRemoveMember)
-def remove_member(data: schemas.InputRemoveMember, rlc_user: RlcUser):
+def command__remove_member(data: schemas.InputRemoveMember, rlc_user: RlcUser):
     remove_member_from_group(rlc_user, data.id, data.member)

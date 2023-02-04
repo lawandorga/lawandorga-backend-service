@@ -85,6 +85,7 @@ class OutputTemplateField(BaseModel):
     order: int
     kind: str
     url: str
+    group_id: int | None
     options: Optional[list[OutputOption | str]]
     share_keys: bool | None
 
