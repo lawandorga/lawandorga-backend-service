@@ -41,7 +41,7 @@ class InputQueryGroup(BaseModel):
 class OutputGroup(BaseModel):
     id: int
     name: str
-    description: str
+    description: str | None
 
     class Config:
         orm_mode = True
@@ -67,7 +67,7 @@ class OutputMember(BaseModel):
 class OutputSingleGroup(BaseModel):
     id: int
     name: str
-    description: str
+    description: str | None
     permissions: list[OutputPermission]
     members: list[OutputMember]
 

@@ -4,10 +4,9 @@ import pytest
 from django.test import Client
 
 from core.models import Org
+from core.rlc.models import Group
 from core.seedwork import test_helpers as data
-
-from ...static import PERMISSION_ADMIN_MANAGE_GROUPS
-from ..models import Group
+from core.static import PERMISSION_ADMIN_MANAGE_GROUPS
 
 
 @pytest.fixture
@@ -40,9 +39,8 @@ def user(db, group, user_2, org):
 def test_list_users(user, group, db):
     c = Client()
     c.login(**user)
-    response = c.get("/api/groups/{}/users/".format(group.id))
-    # response_data = response.json()
-    assert response.status_code == 200
+    response = c.get("/api/query/group/{}/".format(group.id))
+    assert response.status_code == 200 and "members" in response.json()
 
 
 def test_add_member(user, group, db, user_2):

@@ -8,7 +8,7 @@ from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.models import RlcUser, UserProfile
 from core.records.models import Record, RecordTemplate
-from core.rlc.models import Org
+from core.rlc.models import Group, Org
 from core.seedwork.repository import RepositoryWarehouse
 
 
@@ -40,6 +40,15 @@ def create_raw_org_user(
         pk=pk,
     )
     return user
+
+
+def create_raw_group(
+    org=None, name="Test Group", description="A group for testing purposes."
+):
+    if org is None:
+        org = create_raw_org()
+    group = Group.create(org=org, name=name, description=description)
+    return group
 
 
 def create_raw_folder(
