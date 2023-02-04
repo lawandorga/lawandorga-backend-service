@@ -21,17 +21,3 @@ def query__get_group(rlc_user: RlcUser, data: schemas.InputQueryGroup):
 def query__list_groups(rlc_user: RlcUser):
     groups = Group.objects.filter(from_rlc__id=rlc_user.org_id)
     return list(groups)
-
-
-@router.get(
-    url="group/<int:id>/users/",
-    input_schema=schemas.InputListUsersGet,
-    output_schema=list[schemas.OutputGroupMember],
-)
-def query__list_group_users(data: schemas.InputListUsersGet, rlc_user: RlcUser):
-    group = Group.objects.get(from_rlc=rlc_user.org, id=data.id)
-
-    users = group.members.all()
-    users_list = list(users)
-
-    return users_list
