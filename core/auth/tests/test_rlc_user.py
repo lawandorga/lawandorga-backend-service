@@ -48,7 +48,7 @@ def test_user_can_not_delete_someone_else(db, rlc_user):
     client.login(**rlc_user)
     user = rlc_user["rlc_user"]
     another_user = test_helpers.create_rlc_user(
-        email="test2@law-orga.de", rlc=user.org
+        email="test122@law-orga.de", rlc=user.org
     )["rlc_user"]
     response = client.delete("/api/rlc_users/{}/".format(another_user.pk))
     assert response.status_code == 400
@@ -59,7 +59,7 @@ def test_unlock_works(db, rlc_user):
     client.login(**rlc_user)
     user = rlc_user["rlc_user"]
     another_user = test_helpers.create_rlc_user(
-        email="test2@law-orga.de", rlc=user.org
+        email="test5692@law-orga.de", rlc=user.org
     )["rlc_user"]
     another_user.locked = True
     another_user.save()
