@@ -1,6 +1,5 @@
 from typing import Any, Dict, List, Optional
 
-from core.auth.api import schemas
 from core.auth.models import RlcUser
 from core.auth.use_cases.rlc_user import register_rlc_user, unlock_user
 from core.rlc.models import Permission
@@ -9,6 +8,9 @@ from core.static import (
     PERMISSION_ADMIN_MANAGE_PERMISSIONS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
+
+from ..token_generator import EmailConfirmationTokenGenerator
+from . import schemas
 
 router = Router()
 
@@ -24,6 +26,13 @@ def command__create_user(data: schemas.InputRlcUserCreate):
         email=data.email,
         accepted_legal_requirements=data.accepted_legal_requirements,
     )
+
+
+@router.post(url="<int:id>/confirm_email/<str:token>/", input_schema=schemas.InputConfirmEmail)
+def command__confirm_email(data: schemas.InputConfirmEmail):
+    rlc_user = RlcUser.objects.get(pk=data.id)
+    rlc_user.confirm_email(EmailConfirmationTokenGenerator, data.token)
+    rlc_user.save()
 
 
 # list

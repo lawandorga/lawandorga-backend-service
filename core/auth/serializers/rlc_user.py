@@ -1,64 +1,9 @@
-from smtplib import SMTPRecipientsRefused
-
-from django.db import transaction
 from rest_framework import serializers
-from rest_framework.exceptions import ParseError, ValidationError
+from rest_framework.exceptions import ParseError
 
-from core.models import Org, RlcUser, UserProfile
-
-
-###
-# UserProfile
-###
-class RlcUserCreateSerializer(serializers.ModelSerializer):
-    password_confirm = serializers.CharField(write_only=True)
-    rlc = serializers.PrimaryKeyRelatedField(queryset=Org.objects.all(), required=True)
-
-    class Meta:
-        model = UserProfile
-        fields = [
-            "password",
-            "password_confirm",
-            "email",
-            "name",
-            "rlc",
-        ]
-        extra_kwargs = {"password": {"write_only": True}}
-
-    def validate(self, attrs):
-        if attrs["password"] != attrs["password_confirm"]:
-            raise ValidationError("Both passwords must be equal.")
-        return attrs
-
-    def create(self, validated_data):
-        password = validated_data.pop("password")
-        validated_data.pop("password_confirm")
-        user = UserProfile(email=validated_data["email"], name=validated_data["name"])
-        user.set_password(password)
-        with transaction.atomic():
-            user.save()
-            rlc_user = RlcUser(
-                user=user, email_confirmed=False, org=validated_data["rlc"]
-            )
-            rlc_user.save()
-        try:
-            rlc_user.send_email_confirmation_email()
-        except SMTPRecipientsRefused:
-            user.delete()
-            raise ValidationError(
-                {
-                    "email": [
-                        "We could not send a confirmation email to this address. "
-                        "Please check if this email is correct."
-                    ]
-                }
-            )
-        return user
+from core.models import RlcUser
 
 
-###
-# RlcUser
-###
 class RlcUserSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField("get_name")
     email = serializers.SerializerMethodField("get_email")
@@ -130,22 +75,3 @@ class RlcUserForeignSerializer(RlcUserSerializer):
             "locked",
             "is_active",
         ]
-
-
-###
-# Other
-###
-class EmailSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
-
-
-class UserPasswordResetConfirmSerializer(serializers.Serializer):
-    token = serializers.CharField()
-    new_password = serializers.CharField()
-    new_password_confirm = serializers.CharField()
-
-    def validate(self, attrs):
-        attrs = super().validate(attrs)
-        if attrs["new_password"] != attrs["new_password_confirm"]:
-            raise ValidationError("The passwords do not match.")
-        return attrs

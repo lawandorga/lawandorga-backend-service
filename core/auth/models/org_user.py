@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Dict, List, Optional, TypedDict, Union, cast
+from typing import Any, Dict, List, Optional, TypedDict, Union, cast, Protocol, Type
 from uuid import UUID, uuid4
 
 import ics
@@ -48,6 +48,11 @@ class KeyOfUser(TypedDict):
     correct: bool
     source: str
     information: str
+
+
+class EmailTokenValidator(Protocol):
+    def check_token(self, rlc_user: "RlcUser", token: str) -> bool:
+        ...
 
 
 class RlcUserManager(models.Manager):
@@ -233,6 +238,136 @@ class RlcUser(Aggregate, models.Model):
             if not lr.accepted:
                 return True
         return False
+
+    @property
+    def records_information(self):
+        from core.records.models import Record
+
+        records = Record.objects.filter(template__rlc=self.org).prefetch_related(
+            "state_entries", "users_entries", "users_entries__value"
+        )
+        records_data = []
+        for record in list(records):
+            state_entries = list(record.state_entries.all())
+            users_entries = list(record.users_entries.all())
+
+            if len(users_entries) <= 0 or len(state_entries) <= 0:
+                continue
+            users = list(users_entries[0].value.all())
+            if self.id not in map(lambda x: x.id, users):
+                continue
+            state = state_entries[0].value
+            if state == "Open":
+                records_data.append(
+                    {
+                        "id": record.id,
+                        "uuid": record.uuid,
+                        "identifier": record.identifier,
+                        "state": state,
+                    }
+                )
+
+        return records_data
+
+    @property
+    def members_information(self):
+        if self.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
+            members_data = []
+            users = RlcUser.objects.filter(
+                org=self.org, created__gt=(timezone.now() - timedelta(days=14))
+            )
+            for rlc_user in list(users):
+                if rlc_user.groups.all().count() == 0:
+                    members_data.append(
+                        {
+                            "name": rlc_user.user.name,
+                            "id": rlc_user.user.id,
+                            "rlcuserid": rlc_user.id,
+                        }
+                    )
+            return members_data
+        return None
+
+    @property
+    def questionnaire_information(self):
+        from core.questionnaires.models.questionnaire import Questionnaire
+
+        questionnaires = Questionnaire.objects.filter(
+            template__rlc_id=self.org_id
+        ).select_related("template", "record")
+
+        questionnaire_data = []
+
+        for questionnaire in list(questionnaires):
+            if (
+                not questionnaire.answered
+                and questionnaire.folder_uuid
+                and questionnaire.folder.has_access(self)
+            ):
+                questionnaire_data.append(
+                    {
+                        "name": questionnaire.name,
+                        "folder_uuid": questionnaire.folder_uuid,
+                    }
+                )
+
+        return questionnaire_data
+
+    @property
+    def own_records(self):
+        from core.records.models import Record
+
+        records = Record.objects.filter(template__rlc=self.org).prefetch_related(
+            "users_entries", "users_entries__value"
+        )
+        record_pks = []
+        for record in list(records):
+            users_entries = list(record.users_entries.all())
+            if len(users_entries) <= 0:
+                continue
+            users = list(users_entries[0].value.all())
+            if self.id in map(lambda x: x.id, users):
+                record_pks.append(record.id)
+
+        return Record.objects.filter(pk__in=record_pks)
+
+    @property
+    def changed_records_information(self):
+        records = self.own_records
+        records = records.filter(updated__gt=timezone.now() - timedelta(days=10))
+        changed_records_data = []
+        for record in list(records):
+            changed_records_data.append(
+                {
+                    "id": record.id,
+                    "uuid": record.uuid,
+                    "identifier": record.identifier,
+                    "updated": record.updated,
+                }
+            )
+        return changed_records_data
+
+    @property
+    def information(self) -> Dict[str, Any]:
+        return_dict = {}
+        # records
+        records_data = self.records_information
+        if records_data:
+            return_dict["records"] = records_data
+        # members
+        members_data = self.members_information
+        if members_data:
+            return_dict["members"] = members_data
+        # questionnaires
+        questionnaire_data = self.questionnaire_information
+        if questionnaire_data:
+            return_dict["questionnaires"] = questionnaire_data
+        # changed records
+        changed_records_data = self.changed_records_information
+        if changed_records_data:
+            return_dict["changed_records"] = changed_records_data
+            # return
+        return return_dict
 
     def test_keys(self) -> list[models.Model]:
         org_key: Optional[OrgEncryption] = self.user.users_rlc_keys.first()
@@ -479,6 +614,14 @@ class RlcUser(Aggregate, models.Model):
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[self.user.email],
         )
+
+    def confirm_email(self, token_validator: Type[EmailTokenValidator], token: str):
+        if token_validator().check_token(self, token):
+            self.email_confirmed = True
+        else:
+            raise DomainError(
+                "The confirmation link is invalid, possibly because it has already been used."
+            )
 
     def grant(self, permission_name=None, permission=None):
         if permission_name:

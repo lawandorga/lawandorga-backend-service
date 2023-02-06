@@ -92,11 +92,6 @@ class RlcUserViewSet(
         )
         return Response(RlcUserSerializer(user.rlc_user).data)
 
-    @action(detail=False, methods=["get"])
-    def dashboard(self, request, *args, **kwargs):
-        user = request.user
-        return Response(user.get_information())
-
     @action(
         detail=True,
         methods=["post"],

@@ -8,6 +8,7 @@ from typing import Any, Awaitable, Callable, Dict, List, Literal, Optional, Type
 import pytz
 from asgiref.sync import sync_to_async
 from django.contrib.auth.models import AnonymousUser
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import FileResponse, HttpRequest, JsonResponse, RawPostDataException
 from django.urls import path
 from django.utils.timezone import localtime, make_aware
@@ -130,6 +131,14 @@ def _catch_error(func: Callable[..., Awaitable[JsonResponse | FileResponse]]):
                 title=e.message,
                 status=e.status,
                 err_type="ApiError",
+            )
+
+        except ObjectDoesNotExist as e:
+            return ErrorResponse(
+                title='404',
+                status=404,
+                err_type='NotFoundError',
+                internal=str(e)
             )
 
         except UseCaseInputError as e:

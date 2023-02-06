@@ -1,9 +1,11 @@
 from django.db.models import Q
 
-from core.auth.api import schemas
+from core.auth.models import RlcUser
 from core.legal.models import LegalRequirement
 from core.rlc.models import Org
 from core.seedwork.api_layer import Router
+
+from . import schemas
 
 router = Router()
 
@@ -17,3 +19,8 @@ def query__register_page():
         ),
     }
     return data
+
+
+@router.get(url="page/dashboard/", output_schema=schemas.OutputDashboardPage)
+def query__dashboard_page(rlc_user: RlcUser):
+    return rlc_user.information

@@ -15,6 +15,41 @@ class OutputOrg(BaseModel):
         orm_mode = True
 
 
+class OutputDashboardRecord(BaseModel):
+    id: int
+    uuid: UUID
+    identifier: str
+    state: str
+
+
+class OutputDashboardMember(BaseModel):
+    name: str
+    id: int
+    rlcuserid: int
+
+
+class OutputDashboardQuestionnaire(BaseModel):
+    name: str
+    folder_uuid: UUID
+
+
+class OutputDashboardChangedRecord(BaseModel):
+    id: int
+    uuid: UUID
+    identifier: str
+    updated: datetime
+
+
+class OutputDashboardPage(BaseModel):
+    records: None | list[OutputDashboardRecord]
+    members: None | list[OutputDashboardMember]
+    questionnaires: None | list[OutputDashboardQuestionnaire]
+    changed_records: None | list[OutputDashboardChangedRecord]
+
+    class Config:
+        orm_mode = True
+
+
 class OutputLegalRequirement(BaseModel):
     title: str
     id: int
@@ -49,6 +84,11 @@ class InputRlcUserCreate(BaseModel):
         if "password" not in values or "password" in values and v != values["password"]:
             raise ValueError("The passwords do not match.")
         return v
+
+
+class InputConfirmEmail(BaseModel):
+    id: int
+    token: str
 
 
 class OutputKey(BaseModel):
