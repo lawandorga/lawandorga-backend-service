@@ -3,13 +3,12 @@ from django.db import models
 from django.urls import reverse
 
 from core.models import Group, Org
+from core.seedwork.domain_layer import DomainError
+
 
 ###
 # RecordTemplate
 ###
-from core.seedwork.domain_layer import DomainError
-
-
 def get_default_show():
     return ["Token", "State", "Consultants", "Tags", "Official Note"]
 
