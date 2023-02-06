@@ -1,6 +1,4 @@
-from rest_framework import mixins, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import ParseError
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -12,31 +10,13 @@ from core.auth.serializers import (
     RlcUserUpdateSerializer,
 )
 from core.models import RlcUser, UserProfile
-from core.seedwork.permission import CheckPermissionWall
-from core.static import PERMISSION_ADMIN_MANAGE_USERS
 
 
 class RlcUserViewSet(
-    CheckPermissionWall,
-    mixins.DestroyModelMixin,
     GenericViewSet,
 ):
     serializer_class = RlcUserSerializer
     queryset = RlcUser.objects.none()
-    permission_wall = {
-        "destroy": PERMISSION_ADMIN_MANAGE_USERS,
-        "accept": PERMISSION_ADMIN_MANAGE_USERS,
-    }
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if not instance.check_delete_is_safe():
-            raise ParseError(
-                "You can not delete this user right now, because you could loose access to one or "
-                "more records. This user is one of the two only persons with access to those records."
-            )
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def perform_authentication(self, request):
         super().perform_authentication(request)

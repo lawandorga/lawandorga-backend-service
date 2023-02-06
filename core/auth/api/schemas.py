@@ -91,6 +91,10 @@ class InputConfirmEmail(BaseModel):
     token: str
 
 
+class InputRlcUserDelete(BaseModel):
+    id: int
+
+
 class OutputKey(BaseModel):
     id: int
     correct: bool

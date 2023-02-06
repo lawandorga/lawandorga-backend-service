@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Dict, List, Optional, TypedDict, Union, cast, Protocol, Type
+from typing import Any, Dict, List, Optional, Protocol, Type, TypedDict, Union, cast
 from uuid import UUID, uuid4
 
 import ics
@@ -27,6 +27,7 @@ from core.static import (
     PERMISSION_ADMIN_MANAGE_USERS,
 )
 from messagebus import EventData
+from ...folders.domain.repositiories.folder import FolderRepository
 
 from ...seedwork.repository import RepositoryWarehouse
 from .user import UserProfile
@@ -577,14 +578,13 @@ class RlcUser(Aggregate, models.Model):
         user.delete()
 
     def check_delete_is_safe(self):
-        from core.records.models import RecordEncryptionNew
+        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+        folders = r.get_list(self.org_id)
 
-        for encryption in self.user.rlc_user.recordencryptions.all():
-            if (
-                RecordEncryptionNew.objects.filter(record=encryption.record).count()
-                <= 2
-            ):
+        for folder in folders:
+            if folder.has_access(self) and len(folder.keys) <= 3:
                 return False
+
         return True
 
     def get_email_confirmation_token(self):

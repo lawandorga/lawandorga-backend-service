@@ -135,10 +135,7 @@ def _catch_error(func: Callable[..., Awaitable[JsonResponse | FileResponse]]):
 
         except ObjectDoesNotExist as e:
             return ErrorResponse(
-                title='404',
-                status=404,
-                err_type='NotFoundError',
-                internal=str(e)
+                title="404", status=404, err_type="NotFoundError", internal=str(e)
             )
 
         except UseCaseInputError as e:
