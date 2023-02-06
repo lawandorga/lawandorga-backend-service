@@ -1,11 +1,12 @@
 from typing import Optional
 
+from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 
 from core.auth.domain.user_key import UserKey
 from core.auth.models import RlcUser, UserProfile
 from core.folders.domain.types import StrDict
-from core.seedwork.use_case_layer import use_case
+from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case
@@ -48,3 +49,16 @@ def run_user_login_checks(__actor: UserProfile, password: str):
             u2 = u1.encrypt_self(password)
             rlc_user.key = u2.as_dict()
             rlc_user.save()
+
+
+@use_case
+def change_password_of_user(
+    __actor: UserProfile, current_password: str, new_password: str
+):
+    validate_password(new_password)
+
+    if not __actor.check_password(current_password):
+        raise UseCaseError("Your current password is not correct.")
+
+    objs = __actor.change_password(current_password, new_password)
+    [obj.save() for obj in objs]

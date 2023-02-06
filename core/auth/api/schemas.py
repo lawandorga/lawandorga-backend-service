@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
 from uuid import UUID
 
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from pydantic import AnyUrl, BaseModel, EmailStr, validator
 
 from core.seedwork.api_layer import qs_to_list
@@ -93,6 +95,27 @@ class InputConfirmEmail(BaseModel):
 
 class InputRlcUserDelete(BaseModel):
     id: int
+
+
+class InputPasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+    new_password_confirm: str
+
+    @validator("new_password")
+    def validate_password(cls, v):
+        try:
+            validate_password(v)
+        except ValidationError as e:
+            error = " ".join([str(e) for e in e])
+            raise ValueError(error)
+        return v
+
+    @validator("new_password_confirm")
+    def validate_passwords(cls, v, values):
+        if "new_password" in values and v != values["new_password"]:
+            raise ValueError("The two passwords do not match.")
+        return v
 
 
 class OutputKey(BaseModel):

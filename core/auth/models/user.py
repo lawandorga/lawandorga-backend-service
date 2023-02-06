@@ -6,8 +6,9 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import models, transaction
-from rest_framework.exceptions import ParseError
+from django.db import models
+
+from core.seedwork.domain_layer import DomainError
 
 if TYPE_CHECKING:
     from core.models import MailUser, MatrixUser, Permission, RlcUser, StatisticUser
@@ -60,13 +61,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def change_password(self, old_password, new_password):
         if not self.check_password(old_password):
-            raise ParseError("The password is not correct.")
-        rlc_user = self.rlc_user
+            raise DomainError("The password is not correct.")
         self.set_password(new_password)
-        rlc_user.change_password_for_keys(new_password)
-        with transaction.atomic():
-            rlc_user.save()
-            self.save()
+        if hasattr(self, "rlc_user"):
+            rlc_user = self.rlc_user
+            rlc_user.change_password_for_keys(new_password)
+            return [self, rlc_user]
+        return [self]
 
     def has_permission(self, permission: Union[str, "Permission"]) -> bool:
         return self.rlc_user.has_permission(permission)

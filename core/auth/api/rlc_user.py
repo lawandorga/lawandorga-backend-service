@@ -1,7 +1,12 @@
 from typing import Any, Dict, List, Optional
 
 from core.auth.models import RlcUser
-from core.auth.use_cases.rlc_user import confirm_email, register_rlc_user, unlock_user, delete_user
+from core.auth.use_cases.rlc_user import (
+    confirm_email,
+    delete_user,
+    register_rlc_user,
+    unlock_user,
+)
 from core.rlc.models import Permission
 from core.seedwork.api_layer import ApiError, Router
 from core.static import (

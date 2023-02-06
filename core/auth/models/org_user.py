@@ -27,8 +27,8 @@ from core.static import (
     PERMISSION_ADMIN_MANAGE_USERS,
 )
 from messagebus import EventData
-from ...folders.domain.repositiories.folder import FolderRepository
 
+from ...folders.domain.repositiories.folder import FolderRepository
 from ...seedwork.repository import RepositoryWarehouse
 from .user import UserProfile
 
