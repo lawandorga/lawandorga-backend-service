@@ -62,7 +62,6 @@ class DjangoFolderRepository(FolderRepository):
         folders: dict[UUID, FoldersFolder],
         users: dict[UUID, RlcUser],
     ) -> Folder:
-
         # find the parent
         parent: Optional[Folder] = None
         if db_folder.parent is not None:

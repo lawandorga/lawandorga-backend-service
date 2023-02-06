@@ -10,7 +10,6 @@ import core.upload.models.upload
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0027_remove_recordaccess_processed_by_and_more"),
     ]
