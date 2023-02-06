@@ -733,13 +733,15 @@ class RlcUser(Aggregate, models.Model):
     def fix_keys(self, by: "RlcUser"):
         assert self.org_id == by.org_id
 
-        self.user.users_rlc_keys.all().delete()
         aes_key_rlc = by.org.get_aes_key(
             user=by.user, private_key_user=by.get_private_key()
         )
         new_keys = OrgEncryption(
             user=self.user, rlc=self.org, encrypted_key=aes_key_rlc
         )
+
+        self.user.users_rlc_keys.all().delete()
+
         new_keys.encrypt(self.get_public_key())
         new_keys.save()
 

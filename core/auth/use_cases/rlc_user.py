@@ -100,6 +100,5 @@ def confirm_email(__actor: None, rlc_user_id: int, token: str):
 @use_case
 def unlock_user(__actor: RlcUser, another_rlc_user_id: int):
     another_rlc_user = rlc_user_from_id(__actor, another_rlc_user_id)
-    another_rlc_user.fix_keys(__actor)
     another_rlc_user.unlock(__actor)
     another_rlc_user.save()

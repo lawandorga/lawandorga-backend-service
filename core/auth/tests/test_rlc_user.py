@@ -1,162 +1,112 @@
-from django.conf import settings
-from django.test import Client, TestCase
-from rest_framework.test import APIRequestFactory, force_authenticate
+import json
 
-from core.models import Org, RlcUser, UserProfile
+import pytest
+from django.conf import settings
+from django.test import Client
+
+from core.folders.domain.value_objects.asymmetric_key import EncryptedAsymmetricKey
+from core.models import RlcUser, UserProfile
 from core.seedwork import test_helpers
 from core.static import PERMISSION_ADMIN_MANAGE_USERS
-from core.views import RlcUserViewSet
 
 
-class UserBase:
-    def setUp(self):
-        self.rlc = Org.objects.create(name="Test RLC")
-        self.user = UserProfile.objects.create(
-            email="dummy@law-orga.de", name="Dummy 1"
-        )
-        self.user.set_password(settings.DUMMY_USER_PASSWORD)
-        self.user.save()
-        self.rlc_user = RlcUser(
-            user=self.user, email_confirmed=True, accepted=True, org=self.rlc
-        )
-        self.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
-        self.rlc_user.save()
-        self.rlc.generate_keys()
-        self.rlc_user = RlcUser.objects.get(pk=self.rlc_user.pk)
-        self.private_key = self.rlc_user.user.get_private_key(
-            password_user=settings.DUMMY_USER_PASSWORD
-        )
+@pytest.fixture
+def rlc_user(db):
+    user = test_helpers.create_rlc_user()
+    yield user
 
 
-class UserViewSetBase(UserBase):
-    def setUp(self):
-        super().setUp()
-        self.factory = APIRequestFactory()
+def test_email_confirmation_token_works(db, rlc_user):
+    token = rlc_user["rlc_user"].get_email_confirmation_token()
+    c = Client()
+    c.login(**rlc_user)
+    url = "/api/rlc_users/{}/confirm_email/{}/".format(rlc_user["rlc_user"].id, token)
+    response = c.post(url)
+    assert 200 == response.status_code
 
 
-class UserViewSetWorkingTests(UserViewSetBase, TestCase):
-    def setUp(self):
-        super().setUp()
-        self.another_user = UserProfile.objects.create(
-            email="test_new@test.de", name="Dummy 2"
-        )
-        self.another_user.set_password("test")
-        self.another_user.save()
-        self.another_rlc_user = RlcUser(
-            user=self.another_user, email_confirmed=True, accepted=True, org=self.rlc
-        )
-        self.another_rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
-        self.another_rlc_user.save()
-        self.user.generate_keys_for_user(self.private_key, self.another_user)
-
-    def test_email_confirmation_token_works(self):
-        view = RlcUserViewSet.as_view(actions={"post": "activate"})
-        rlc_user = self.rlc_user
-        token = rlc_user.get_email_confirmation_token()
-        request = self.factory.post("")
-        response = view(request, pk=rlc_user.id, token=token)
-        self.assertEqual(200, response.status_code)
-
-    def test_change_password_works(self):
-        view = RlcUserViewSet.as_view(actions={"post": "change_password"})
-        private_key = self.user.rlc_user.get_private_key()
-        data = {
-            "current_password": settings.DUMMY_USER_PASSWORD,
-            "new_password": "pass1234!",
-            "new_password_confirm": "pass1234!",
-        }
-        request = self.factory.post("", data)
-        force_authenticate(request, self.user)
-        response = view(request)
-        self.assertEqual(200, response.status_code)
-        rlc_user = RlcUser.objects.get(user__pk=self.user.pk)
-        user_key = rlc_user.get_decrypted_key_from_password("pass1234!")
-        self.assertEqual(private_key, user_key.key.get_private_key().decode("utf-8"))
-
-    def test_destroy_works(self):
-        rlc_users = RlcUser.objects.count()
-        user_profiles = UserProfile.objects.count()
-        view = RlcUserViewSet.as_view(actions={"delete": "destroy"})
-        rlc_user = self.rlc_user
-        another_rlc_user = self.another_rlc_user
-        rlc_user.grant(PERMISSION_ADMIN_MANAGE_USERS)
-        request = self.factory.delete("")
-        force_authenticate(request, rlc_user.user)
-        response = view(request, pk=another_rlc_user.pk)
-        self.assertEqual(204, response.status_code)
-        self.assertEqual(RlcUser.objects.count(), rlc_users - 1)
-        self.assertEqual(UserProfile.objects.count(), user_profiles - 1)
-
-    def test_keys_are_generated(self):
-        user = UserProfile.objects.create(email="test3@law-orga.de")
-        rlc_user = RlcUser(user=user, org=self.rlc)
-        rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
-        rlc_user.save()
-        user = UserProfile.objects.get(email="test3@law-orga.de")
-        assert user.rlc_user.key is not None
-
-    def test_unlock_works(self):
-        rlc_user = self.rlc_user
-        self.another_rlc_user.locked = True
-        self.another_rlc_user.save()
-        c = Client()
-        c.login(email=rlc_user.email, password=settings.DUMMY_USER_PASSWORD)
-        response = c.post("/api/profiles/{}/unlock/".format(self.another_rlc_user.pk))
-        assert response.status_code == 200
+def test_not_everybody_can_hit_destroy(db):
+    client = Client()
+    response = client.delete("/api/rlc_users/1/")
+    assert 401 == response.status_code
 
 
-class UserViewSetErrorTests(TestCase):
-    def setUp(self):
-        self.factory = APIRequestFactory()
-        self.rlc = Org.objects.create(name="Test RLC")
-        user = test_helpers.create_rlc_user(
-            email="test@test.de", name="Dummy 1", rlc=self.rlc
-        )
-        self.user = user["user"]
-        self.rlc_user = user["rlc_user"]
-        another_user = test_helpers.create_rlc_user(
-            email="test_new@test.de", name="Dummy 2", rlc=self.rlc
-        )
-        self.another_user = another_user["user"]
-        self.another_rlc_user = another_user["rlc_user"]
-
-    def test_user_can_not_delete_someone_else(self):
-        view = RlcUserViewSet.as_view(actions={"delete": "destroy"})
-        url = "/api/users/{}/".format(self.another_rlc_user.pk)
-        request = self.factory.delete(url)
-        force_authenticate(request, self.rlc_user.user)
-        response = view(request, pk=self.another_rlc_user.pk)
-        self.assertNotEqual(204, response.status_code)
+def test_everybody_can_hit_email_confirm(db):
+    client = Client()
+    response = client.post("/api/rlc_users/1/confirm_email/token-123/")
+    assert response.status_code != 403 and response.status_code != 401
 
 
-class UserViewSetAccessTests(TestCase):
-    def setUp(self):
-        self.factory = APIRequestFactory()
-        self.rlc = Org.objects.create(name="Test RLC")
-        self.user = UserProfile.objects.create(email="test@test.de", name="Dummy 1")
-        self.user.set_password("test")
-        self.user.save()
-        self.rlc_user = RlcUser(
-            pk=1, user=self.user, email_confirmed=True, accepted=True, org=self.rlc
-        )
-        self.rlc_user.generate_keys("test")
-        self.rlc_user.save()
+def test_not_everybody_can_hit_unlock(db):
+    client = Client()
+    response = client.post("/api/rlc_users/1/unlock_user/")
+    assert 401 == response.status_code
 
-    def test_not_everytbody_can_hit_destroy(self):
-        view = RlcUserViewSet.as_view(actions={"delete": "destroy"})
-        request = self.factory.delete("/api/users/1/")
-        response = view(request, pk=1)
-        self.assertEqual(401, response.status_code)
 
-    def test_everybody_can_hit_activate(self):
-        view = RlcUserViewSet.as_view(actions={"post": "activate"})
-        request = self.factory.post("/api/users/1/activate/token-123/")
-        response = view(request, pk=1, token="token-123")
-        self.assertNotEqual(403, response.status_code)
-        self.assertNotEqual(401, response.status_code)
+def test_user_can_not_delete_someone_else(db, rlc_user):
+    client = Client()
+    client.login(**rlc_user)
+    user = rlc_user["rlc_user"]
+    another_user = test_helpers.create_rlc_user(
+        email="test2@law-orga.de", rlc=user.org
+    )["rlc_user"]
+    response = client.delete("/api/rlc_users/{}/".format(another_user.pk))
+    assert response.status_code == 400
 
-    def test_not_everybody_can_hit_unlock(self):
-        view = RlcUserViewSet.as_view(actions={"post": "unlock"})
-        request = self.factory.post("/api/users/1/unlock/")
-        response = view(request, pk=1)
-        self.assertEqual(401, response.status_code)
+
+def test_unlock_works(db, rlc_user):
+    client = Client()
+    client.login(**rlc_user)
+    user = rlc_user["rlc_user"]
+    another_user = test_helpers.create_rlc_user(
+        email="test2@law-orga.de", rlc=user.org
+    )["rlc_user"]
+    another_user.locked = True
+    another_user.save()
+    response = client.post("/api/rlc_users/{}/unlock_user/".format(another_user.pk))
+    assert response.status_code == 200
+
+
+def test_change_password_works(db, rlc_user):
+    client = Client()
+    client.login(**rlc_user)
+    user = rlc_user["rlc_user"]
+    private_key = user.get_private_key()
+    data = {
+        "current_password": settings.DUMMY_USER_PASSWORD,
+        "new_password": "pass1234!",
+        "new_password_confirm": "pass1234!",
+    }
+    response = client.post(
+        "/api/users/change_password/",
+        data=json.dumps(data),
+        content_type="application/json",
+    )
+    assert response.status_code == 200
+    rlc_user = RlcUser.objects.get(pk=user.pk)
+    user_key = rlc_user.get_decrypted_key_from_password("pass1234!")
+    assert private_key == user_key.key.get_private_key().decode("utf-8")
+
+
+def test_delete_works(db, rlc_user):
+    client = Client()
+    client.login(**rlc_user)
+    user = rlc_user["rlc_user"]
+    user.grant(PERMISSION_ADMIN_MANAGE_USERS)
+    another_user = test_helpers.create_rlc_user(
+        email="test2@law-orga.de", rlc=user.org
+    )["rlc_user"]
+    rlc_users = RlcUser.objects.count()
+    user_profiles = UserProfile.objects.count()
+    response = client.delete("/api/rlc_users/{}/".format(another_user.pk))
+    assert response.status_code == 200
+    assert RlcUser.objects.count() == rlc_users - 1
+    assert UserProfile.objects.count() == user_profiles - 1
+
+
+def test_keys_are_generated(rlc_user):
+    user = rlc_user["rlc_user"]
+    user.generate_keys(settings.DUMMY_USER_PASSWORD)
+    user.save()
+    user = RlcUser.objects.get(pk=user.pk)
+    assert isinstance(user.get_encryption_key(), EncryptedAsymmetricKey)
