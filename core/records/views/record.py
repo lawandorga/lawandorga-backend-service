@@ -8,7 +8,6 @@ from django.http import FileResponse
 from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError
-from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from core.folders.domain.repositiories.folder import FolderRepository
@@ -29,12 +28,10 @@ from core.records.models import (
     RecordStateEntry,
     RecordStateField,
     RecordStatisticEntry,
-    RecordTemplate,
     RecordUsersEntry,
     RecordUsersField,
 )
 from core.records.serializers.record import (
-    FIELD_TYPES_AND_SERIALIZERS,
     RecordEncryptedFileEntrySerializer,
     RecordEncryptedFileFieldSerializer,
     RecordEncryptedSelectEntrySerializer,
@@ -50,7 +47,6 @@ from core.records.serializers.record import (
     RecordStateEntrySerializer,
     RecordStateFieldSerializer,
     RecordStatisticEntrySerializer,
-    RecordTemplateSerializer,
     RecordUsersEntrySerializer,
     RecordUsersFieldSerializer,
 )
@@ -59,49 +55,6 @@ from core.seedwork.repository import RepositoryWarehouse
 from core.static import PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
 
 
-###
-# Template
-###
-class RecordTemplateViewSet(
-    CheckPermissionWall,
-    mixins.CreateModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    GenericViewSet,
-):
-    queryset = RecordTemplate.objects.none()
-    serializer_class = RecordTemplateSerializer
-    permission_wall = {
-        "create": PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
-        "partial_update": PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
-        "update": PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
-        "destroy": PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
-    }
-
-    def get_queryset(self):
-        return RecordTemplate.objects.filter(rlc=self.request.user.rlc)
-
-    @action(detail=True, methods=["get"])
-    def fields(self, request, *args, **kwargs):
-        instance = self.get_object()
-        fields = instance.get_fields(FIELD_TYPES_AND_SERIALIZERS, request=request)
-        return Response(fields)
-
-    def perform_destroy(self, instance):
-        try:
-            instance.delete()
-        except ProtectedError:
-            raise ParseError(
-                "There are records that use this template. "
-                "You can only delete templates that are not used."
-            )
-
-
-###
-# Fields
-###
 class RecordFieldViewSet(
     CheckPermissionWall,
     mixins.CreateModelMixin,

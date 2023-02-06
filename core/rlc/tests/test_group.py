@@ -4,10 +4,9 @@ import pytest
 from django.test import Client
 
 from core.models import Org
+from core.rlc.models import Group
 from core.seedwork import test_helpers as data
-
-from ...static import PERMISSION_ADMIN_MANAGE_GROUPS
-from ..models import Group
+from core.static import PERMISSION_ADMIN_MANAGE_GROUPS
 
 
 @pytest.fixture
@@ -32,7 +31,7 @@ def user_2(db, org):
 def user(db, group, user_2, org):
     user_1 = data.create_rlc_user(rlc=org)
     org.generate_keys()
-    group.members.add(user_1["rlc_user"])
+    group._members.add(user_1["rlc_user"])
     group.save()
     yield user_1
 
@@ -40,9 +39,8 @@ def user(db, group, user_2, org):
 def test_list_users(user, group, db):
     c = Client()
     c.login(**user)
-    response = c.get("/api/groups/{}/users/".format(group.id))
-    # response_data = response.json()
-    assert response.status_code == 200
+    response = c.get("/api/query/group/{}/".format(group.id))
+    assert response.status_code == 200 and "members" in response.json()
 
 
 def test_add_member(user, group, db, user_2):
@@ -74,6 +72,7 @@ def test_remove_member(user, group, db, user_2):
     c.login(**user)
     user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     group.add_member(user_2["rlc_user"])
+    group.save()
     response = c.post(
         "/api/groups/{}/remove_member/".format(group.id),
         data=json.dumps({"member": user_2["rlc_user"].id}),
@@ -103,6 +102,7 @@ def test_add_member_already_member(user, group, db, user_2):
     c.login(**user)
     user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     group.add_member(user_2["rlc_user"])
+    group.save()
     response = c.post(
         "/api/groups/{}/add_member/".format(group.id),
         data=json.dumps({"new_member": user_2["rlc_user"].id}),

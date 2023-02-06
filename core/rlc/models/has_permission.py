@@ -29,3 +29,27 @@ class HasPermission(models.Model):
 
     def __str__(self):
         return "hasPermission: {}; name: {};".format(self.pk, self.permission.name)
+
+    @property
+    def permission_name(self):
+        return self.permission.name
+
+    @property
+    def user_name(self):
+        return self.user.name
+
+    @property
+    def group_name(self):
+        return self.group_has_permission.name
+
+    @property
+    def group_id(self):
+        return self.group_has_permission_id
+
+    @property
+    def source(self):
+        if self.user and not self.group_has_permission:
+            return "USER"
+        if not self.user and self.group_has_permission:
+            return "GROUP"
+        raise ValueError("No valid source on this permission.")

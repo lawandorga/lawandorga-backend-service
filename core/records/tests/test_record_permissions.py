@@ -16,7 +16,6 @@ from core.records.views import (
     RecordStandardFieldViewSet,
     RecordStateEntryViewSet,
     RecordStateFieldViewSet,
-    RecordTemplateViewSet,
     RecordUsersEntryViewSet,
     RecordUsersFieldViewSet,
 )
@@ -24,16 +23,6 @@ from core.records.views import (
 
 class RecordViewSetsPermissions(TestCase):
     views = [
-        # template
-        (
-            RecordTemplateViewSet,
-            "create",
-            "partial_update",
-            "update",
-            "destroy",
-            "list",
-            "retrieve",
-        ),
         # fields
         (
             RecordEncryptedStandardFieldViewSet,

@@ -21,7 +21,6 @@ from core.records.models import (
     RecordStateEntry,
     RecordStateField,
     RecordStatisticEntry,
-    RecordTemplate,
     RecordUsersEntry,
     RecordUsersField,
 )
@@ -465,83 +464,3 @@ class RecordStatisticEntrySerializer(RecordEntrySerializer):
         if attrs["value"] not in set(field.options):
             raise ValidationError("The selected value is not a valid choice.")
         return attrs
-
-
-###
-# CONSTANTS
-###
-FIELD_TYPES_AND_SERIALIZERS = [
-    ("state_fields", RecordStateFieldSerializer),
-    ("standard_fields", RecordStandardFieldSerializer),
-    ("select_fields", RecordSelectFieldSerializer),
-    ("multiple_fields", RecordMultipleFieldSerializer),
-    ("users_fields", RecordUsersFieldSerializer),
-    ("encrypted_standard_fields", RecordEncryptedStandardFieldSerializer),
-    ("encrypted_select_fields", RecordEncryptedSelectFieldSerializer),
-    ("encrypted_file_fields", RecordEncryptedFileFieldSerializer),
-    ("statistic_fields", RecordStatisticFieldSerializer),
-]
-
-
-###
-# Record
-###
-# class RecordEncryptionNewSerializer(serializers.ModelSerializer):
-#     user_detail = serializers.SerializerMethodField()
-#
-#     class Meta:
-#         model = RecordEncryptionNew
-#         fields = ["created", "user", "user_detail", "id"]
-#
-#     def get_user_detail(self, obj):
-#         return obj.user.name
-
-
-###
-# RecordTemplate
-###
-class RecordTemplateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RecordTemplate
-        fields = "__all__"
-
-    def validate(self, attrs):
-        attrs = super().validate(attrs)
-        attrs["rlc"] = self.context["request"].user.rlc
-        return attrs
-
-    def validate_show(self, val):
-        if self.instance:
-            field_types_and_serializer = [
-                ("state_fields", RecordStateFieldSerializer),
-                ("standard_fields", RecordStandardFieldSerializer),
-                ("select_fields", RecordSelectFieldSerializer),
-                ("multiple_fields", RecordMultipleFieldSerializer),
-                ("users_fields", RecordUsersFieldSerializer),
-            ]
-            fields = self.instance.get_fields(
-                field_types_and_serializer, request=self.context["request"]
-            )
-            possible_names = list(map(lambda f: f["name"], fields))
-            possible_names.append("Created")
-            possible_names.append("Updated")
-            possible_names.append("Name")
-            for name in val:
-                if name not in possible_names:
-                    raise ValidationError(
-                        "The value '{}' is not contained within the possible fields. "
-                        "Please check upper or lower case and whitespaces.\n"
-                        "Possible fields: \n{}".format(name, possible_names)
-                    )
-        else:
-            val = []
-        return val
-
-
-class RecordTemplateDetailSerializer(RecordTemplateSerializer):
-    fields = serializers.SerializerMethodField(method_name="get_form_fields")  # type: ignore
-
-    def get_form_fields(self, obj):
-        return obj.get_fields(
-            FIELD_TYPES_AND_SERIALIZERS, request=self.context["request"]
-        )

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from django.db import models
+from django.db import models, transaction
 
 from core.rlc.models.org import Org
 from core.seedwork.domain_layer import DomainError
@@ -10,12 +10,21 @@ if TYPE_CHECKING:
 
 
 class Group(models.Model):
+    @classmethod
+    def create(cls, org: Org, name: str, description: str | None, pk=0):
+        group = Group(from_rlc=org, name=name)
+        group.description = description if description is not None else ""
+        if pk:
+            group.pk = pk
+        group._members_list = []
+        return group
+
     from_rlc = models.ForeignKey(
         Org, related_name="group_from_rlc", on_delete=models.CASCADE, blank=True
     )
     name = models.CharField(max_length=200, null=False)
     visible = models.BooleanField(null=False, default=True)
-    members = models.ManyToManyField("RlcUser", related_name="groups", blank=True)
+    _members = models.ManyToManyField("RlcUser", related_name="groups", blank=True)
     description = models.TextField(blank=True, null=True)
 
     class Meta:
@@ -27,19 +36,49 @@ class Group(models.Model):
             self.id, self.name, self.from_rlc.name
         )
 
+    @property
+    def permissions(self):
+        return self.group_has_permission.order_by("permission__name")
+
+    @property
+    def members(self):
+        if not hasattr(self, "_members_list"):
+            self._members_list = list(self._members.all())
+        return self._members_list
+
+    @property
+    def member_ids(self):
+        return list(map(lambda x: x.pk, self.members))
+
+    def save(self, *args, **kwargs):
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            self._members.clear()
+            for member in self.members:
+                self._members.add(member)
+
+    def update_information(
+        self, name: str | None = None, description: str | None = None
+    ):
+        if name is not None:
+            self.name = name
+        if description is not None:
+            self.description = description
+
+    def has_member(self, user: "RlcUser") -> bool:
+        return user.id in self.member_ids
+
     def add_member(self, new_member: "RlcUser"):
         if new_member.org_id != self.from_rlc_id:
             raise DomainError("The user is not in the same org.")
 
-        if self.members.filter(id=new_member.id).exists():
+        if self.has_member(new_member):
             raise DomainError("The user is already a member of this group.")
 
-        self.members.add(new_member)
-        self.save()
+        self.members.append(new_member)
 
     def remove_member(self, member: "RlcUser"):
-        if not self.members.filter(id=member.id).exists():
+        if not self.has_member(member):
             raise DomainError("The user is not a member of this group.")
 
         self.members.remove(member)
-        self.save()

@@ -3,6 +3,7 @@ from django.db import models
 from django.urls import reverse
 
 from core.models import Group, Org
+from core.seedwork.domain_layer import DomainError
 
 
 ###
@@ -35,6 +36,29 @@ class RecordTemplate(models.Model):
     def __str__(self):
         return "recordTemplate: {}; rlc: {};".format(self.pk, self.rlc)
 
+    @property
+    def show_options(self):
+        fields = [
+            *list(self.state_fields.all()),
+            *list(self.standard_fields.all()),
+            *list(self.select_fields.all()),
+            *list(self.multiple_fields.all()),
+            *list(self.users_fields.all()),
+        ]
+        possible_names = list(map(lambda f: f.name, fields))
+        possible_names.append("Created")
+        possible_names.append("Updated")
+        possible_names.append("Name")
+        return possible_names
+
+    @property
+    def fields(self):
+        fields = []
+        for field in self.get_field_types():
+            fields += list(getattr(self, field).all())
+        fields = list(sorted(fields, key=lambda i: i.order))
+        return fields
+
     def get_field_types(self):
         return [
             "standard_fields",
@@ -48,19 +72,19 @@ class RecordTemplate(models.Model):
             "encrypted_file_fields",
         ]
 
-    def get_fields(self, entry_types_and_serializers, request=None):
-        # this might look weird, but i've done it this way to optimize performance
-        # with prefetch related
-        # and watch out this expects a self from a query which has prefetched
-        # all the relevant unencrypted entries otherwise the queries explode
-        fields = []
-        for (field_type, serializer) in entry_types_and_serializers:
-            for field in getattr(self, field_type).all():
-                fields.append(
-                    serializer(instance=field, context={"request": request}).data
+    def update_name(self, name: str):
+        self.name = name
+
+    def update_show(self, show: list[str]):
+        possible = self.show_options
+        for name in show:
+            if name not in possible:
+                raise DomainError(
+                    "The field name '{}' is not allowed.\n\nPossible names are: '{}'.".format(
+                        name, ", ".join(possible)
+                    )
                 )
-        fields = list(sorted(fields, key=lambda i: i["order"]))
-        return fields
+        self.show = show
 
     def get_fields_new(self):
         fields = []
@@ -151,9 +175,16 @@ class RecordField(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     entry_view_name: str
+    view_name: str
 
     class Meta:
         abstract = True
+
+    @property
+    def encrypted(self):
+        if "encrypted" in self.entry_view_name:
+            return "Yes"
+        return "No"
 
     @property
     def type(self):
@@ -162,6 +193,14 @@ class RecordField(models.Model):
     @property
     def entry_url(self):
         url = reverse(self.entry_view_name)
+        return url
+
+    @property
+    def url(self):
+        view_name = self.view_name.replace("list", "detail")
+        if not view_name:
+            return ""
+        url = reverse(view_name, kwargs={"pk": self.pk})
         return url
 
     @classmethod
@@ -177,6 +216,7 @@ class RecordStateField(RecordField):
     )
     options = models.JSONField(default=list)
     entry_view_name = "recordstateentry-list"
+    view_name = "recordstatefield-list"
 
     class Meta:
         verbose_name = "RecordStateField"
@@ -203,6 +243,7 @@ class RecordUsersField(RecordField):
         Group, blank=True, null=True, default=None, on_delete=models.SET_NULL
     )
     entry_view_name = "recordusersentry-list"
+    view_name = "recordusersfield-list"
 
     class Meta:
         verbose_name = "RecordUsersField"
@@ -222,7 +263,7 @@ class RecordUsersField(RecordField):
     @property
     def options(self):
         if self.group:
-            users = list(self.group.members.all())
+            users = list(self.group._members.all())
         else:
             users = list(self.template.rlc.users.all())
 
@@ -235,6 +276,7 @@ class RecordSelectField(RecordField):
     )
     options = models.JSONField(default=list)
     entry_view_name = "recordselectentry-list"
+    view_name = "recordselectfield-list"
 
     class Meta:
         verbose_name = "RecordSelectField"
@@ -258,6 +300,7 @@ class RecordMultipleField(RecordField):
     )
     options = models.JSONField(default=list)
     entry_view_name = "recordmultipleentry-list"
+    view_name = "recordmultiplefield-list"
 
     class Meta:
         verbose_name = "RecordMultipleField"
@@ -281,6 +324,7 @@ class RecordEncryptedSelectField(RecordField):
     )
     options = models.JSONField(default=list)
     entry_view_name = "recordencryptedselectentry-list"
+    view_name = "recordencryptedselectfield-list"
 
     class Meta:
         verbose_name = "RecordEncryptedSelectField"
@@ -303,6 +347,7 @@ class RecordEncryptedFileField(RecordField):
         RecordTemplate, on_delete=models.CASCADE, related_name="encrypted_file_fields"
     )
     entry_view_name = "recordencryptedfileentry-list"
+    view_name = "recordencryptedfilefield-list"
 
     class Meta:
         verbose_name = "RecordEncryptedFileField"
@@ -332,6 +377,7 @@ class RecordStandardField(RecordField):
     )
     field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default="TEXT")
     entry_view_name = "recordstandardentry-list"
+    view_name = "recordstandardfield-list"
 
     class Meta:
         verbose_name = "RecordStandardField"
@@ -376,6 +422,7 @@ class RecordEncryptedStandardField(RecordField):
     )
     field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default="TEXT")
     entry_view_name = "recordencryptedstandardentry-list"
+    view_name = "recordencryptedstandardfield-list"
 
     class Meta:
         verbose_name = "RecordEncryptedStandardField"
@@ -400,6 +447,7 @@ class RecordStatisticField(RecordField):
     options = models.JSONField(default=list)
     helptext = models.CharField(max_length=1000)
     entry_view_name = "recordstatisticentry-list"
+    view_name = ""
 
     class Meta:
         verbose_name = "RecordStatisticField"

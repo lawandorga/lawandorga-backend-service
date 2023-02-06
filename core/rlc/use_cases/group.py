@@ -1,8 +1,28 @@
 from core.auth.models import RlcUser
 from core.auth.use_cases.finders import rlc_user_from_id
+from core.rlc.models import Group
 from core.rlc.use_cases.finders import group_from_id
 from core.seedwork.use_case_layer import UseCaseError, use_case
 from core.static import PERMISSION_ADMIN_MANAGE_GROUPS
+
+
+@use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
+def create_group(__actor: RlcUser, name: str, description: str | None):
+    group = Group.create(org=__actor.org, name=name, description=description)
+    group.save()
+
+
+@use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
+def update_group(__actor: RlcUser, group_id: int, name: str, description: str | None):
+    group = group_from_id(__actor, group_id)
+    group.update_information(name=name, description=description)
+    group.save()
+
+
+@use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
+def delete_group(__actor: RlcUser, group_id: int):
+    group = group_from_id(__actor, group_id)
+    group.delete()
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
@@ -14,6 +34,7 @@ def add_member_to_group(__actor: RlcUser, group_id: int, new_member_id: int):
         raise UseCaseError("You can not edit a member from another org.")
 
     group.add_member(new_member)
+    group.save()
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
@@ -25,3 +46,4 @@ def remove_member_from_group(__actor: RlcUser, group_id: int, member_id: int):
         raise UseCaseError("You can not edit a member from another org.")
 
     group.remove_member(member)
+    group.save()

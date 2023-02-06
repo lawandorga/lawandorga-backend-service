@@ -5,7 +5,6 @@ from . import api, views
 
 router = DefaultRouter()
 
-router.register("groups", views.GroupViewSet, basename="groups")
 router.register(
     "has_permissions", views.HasPermissionViewSet, basename="has_permission"
 )
@@ -18,4 +17,5 @@ urlpatterns = [
     path("", include(router.urls)),
     path("org/", include(api.org_router.urls)),
     path("groups/", include(api.group_router.urls)),
+    path("query/", include(api.query_router.urls)),
 ]

@@ -5,6 +5,10 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
+class InputTemplateDetail(BaseModel):
+    id: int
+
+
 class InputQueryRecord(BaseModel):
     uuid: UUID
 
@@ -41,6 +45,59 @@ class InputDeletion(BaseModel):
 class InputCreateDeletion(BaseModel):
     record: int
     explanation: str = ""
+
+
+class InputTemplateCreate(BaseModel):
+    name: str
+
+
+class InputTemplateDelete(BaseModel):
+    id: int
+
+
+class InputTemplateUpdate(BaseModel):
+    id: int
+    name: str
+    show: list[str]
+
+
+class OutputOption(BaseModel):
+    name: str
+    id: int
+
+
+class OutputTemplate(BaseModel):
+    show: list[str]
+    name: str
+    rlc_id: int
+    id: int
+    created: datetime
+    updated: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class OutputTemplateField(BaseModel):
+    encrypted: str
+    type: str
+    name: str
+    order: int
+    kind: str
+    url: str
+    group_id: int | None
+    options: Optional[list[OutputOption | str]]
+    share_keys: bool | None
+
+    class Config:
+        orm_mode = True
+
+
+class OutputTemplateDetail(OutputTemplate):
+    fields: list[OutputTemplateField]
+
+    class Config:
+        orm_mode = True
 
 
 class OutputRecordDeletion(BaseModel):
@@ -82,11 +139,6 @@ class OutputEntry(BaseModel):
 
     class Config:
         orm_mode = True
-
-
-class OutputOption(BaseModel):
-    name: str
-    id: int
 
 
 class OutputField(BaseModel):
