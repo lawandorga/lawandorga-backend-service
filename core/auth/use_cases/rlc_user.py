@@ -3,7 +3,12 @@ from smtplib import SMTPRecipientsRefused
 from django.db import transaction
 
 from core.auth.models import RlcUser, UserProfile
-from core.auth.use_cases.finders import org_from_id_dangerous, rlc_user_from_id
+from core.auth.token_generator import EmailConfirmationTokenGenerator
+from core.auth.use_cases.finders import (
+    org_from_id_dangerous,
+    org_user_from_id_dangerous,
+    rlc_user_from_id,
+)
 from core.legal.models import (
     LegalRequirement,
     LegalRequirementEvent,
@@ -71,6 +76,13 @@ def register_rlc_user(
             "We could not send a confirmation email to this address. "
             "Please check if this email is correct."
         )
+
+
+@use_case
+def confirm_email(__actor: None, rlc_user_id: int, token: str):
+    rlc_user = org_user_from_id_dangerous(__actor, rlc_user_id)
+    rlc_user.confirm_email(EmailConfirmationTokenGenerator, token)
+    rlc_user.save()
 
 
 @use_case
