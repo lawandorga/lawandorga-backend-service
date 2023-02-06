@@ -40,11 +40,11 @@ class RecordTemplate(models.Model):
     @property
     def show_options(self):
         fields = [
-            *self.state_fields.all(),
-            *self.standard_fields.all(),
-            *self.select_fields.all(),
-            *self.multiple_fields.all(),
-            *self.users_fields.all(),
+            *list(self.state_fields.all()),
+            *list(self.standard_fields.all()),
+            *list(self.select_fields.all()),
+            *list(self.multiple_fields.all()),
+            *list(self.users_fields.all()),
         ]
         possible_names = list(map(lambda f: f.name, fields))
         possible_names.append("Created")
@@ -86,20 +86,6 @@ class RecordTemplate(models.Model):
                     )
                 )
         self.show = show
-
-    def get_fields(self, entry_types_and_serializers, request=None):
-        # this might look weird, but i've done it this way to optimize performance
-        # with prefetch related
-        # and watch out this expects a self from a query which has prefetched
-        # all the relevant unencrypted entries otherwise the queries explode
-        fields = []
-        for (field_type, serializer) in entry_types_and_serializers:
-            for field in getattr(self, field_type).all():
-                fields.append(
-                    serializer(instance=field, context={"request": request}).data
-                )
-        fields = list(sorted(fields, key=lambda i: i["order"]))
-        return fields
 
     def get_fields_new(self):
         fields = []
@@ -278,7 +264,7 @@ class RecordUsersField(RecordField):
     @property
     def options(self):
         if self.group:
-            users = list(self.group.members.all())
+            users = list(self.group._members.all())
         else:
             users = list(self.template.rlc.users.all())
 

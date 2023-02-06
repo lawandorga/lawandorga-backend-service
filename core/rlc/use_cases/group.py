@@ -34,6 +34,7 @@ def add_member_to_group(__actor: RlcUser, group_id: int, new_member_id: int):
         raise UseCaseError("You can not edit a member from another org.")
 
     group.add_member(new_member)
+    group.save()
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
@@ -45,3 +46,4 @@ def remove_member_from_group(__actor: RlcUser, group_id: int, member_id: int):
         raise UseCaseError("You can not edit a member from another org.")
 
     group.remove_member(member)
+    group.save()

@@ -17,6 +17,10 @@ def create_raw_org(name="Dummy's Org", pk=1):
     return org
 
 
+def create_raw_template(org=None, name="Test Template", pk=1):
+    return RecordTemplate.create(name=name, org=org, pk=pk)
+
+
 def create_raw_org_user(
     org=None,
     email="dummy@law-orga.de",
@@ -43,11 +47,11 @@ def create_raw_org_user(
 
 
 def create_raw_group(
-    org=None, name="Test Group", description="A group for testing purposes."
+    org=None, name="Test Group", description="A group for testing purposes.", pk=1
 ):
     if org is None:
         org = create_raw_org()
-    group = Group.create(org=org, name=name, description=description)
+    group = Group.create(org=org, name=name, description=description, pk=pk)
     return group
 
 
