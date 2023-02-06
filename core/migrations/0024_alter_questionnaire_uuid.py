@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0023_questionnaire_folder_uuid_questionnaire_key_and_more"),
     ]

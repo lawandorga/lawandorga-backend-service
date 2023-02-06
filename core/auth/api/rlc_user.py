@@ -1,8 +1,12 @@
 from typing import Any, Dict, List, Optional
 
-from core.auth.api import schemas
 from core.auth.models import RlcUser
-from core.auth.use_cases.rlc_user import register_rlc_user, unlock_user
+from core.auth.use_cases.rlc_user import (
+    confirm_email,
+    delete_user,
+    register_rlc_user,
+    unlock_user,
+)
 from core.rlc.models import Permission
 from core.seedwork.api_layer import ApiError, Router
 from core.static import (
@@ -10,7 +14,14 @@ from core.static import (
     PERMISSION_ADMIN_MANAGE_USERS,
 )
 
+from . import schemas
+
 router = Router()
+
+
+@router.delete(url="<int:id>/", input_schema=schemas.InputRlcUserDelete)
+def command__delete_user(rlc_user: RlcUser, data: schemas.InputRlcUserDelete):
+    delete_user(rlc_user, data.id)
 
 
 # register
@@ -24,6 +35,13 @@ def command__create_user(data: schemas.InputRlcUserCreate):
         email=data.email,
         accepted_legal_requirements=data.accepted_legal_requirements,
     )
+
+
+@router.post(
+    url="<int:id>/confirm_email/<str:token>/", input_schema=schemas.InputConfirmEmail
+)
+def command__confirm_email(data: schemas.InputConfirmEmail):
+    confirm_email(None, data.id, data.token)
 
 
 # list

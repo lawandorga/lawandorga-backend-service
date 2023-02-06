@@ -3,13 +3,19 @@ from smtplib import SMTPRecipientsRefused
 from django.db import transaction
 
 from core.auth.models import RlcUser, UserProfile
-from core.auth.use_cases.finders import org_from_id_dangerous, rlc_user_from_id
+from core.auth.token_generator import EmailConfirmationTokenGenerator
+from core.auth.use_cases.finders import (
+    org_from_id_dangerous,
+    org_user_from_id_dangerous,
+    rlc_user_from_id,
+)
 from core.legal.models import (
     LegalRequirement,
     LegalRequirementEvent,
     LegalRequirementUser,
 )
 from core.seedwork.use_case_layer import UseCaseError, use_case
+from core.static import PERMISSION_ADMIN_MANAGE_USERS
 
 
 @use_case
@@ -73,9 +79,26 @@ def register_rlc_user(
         )
 
 
+@use_case(permissions=[PERMISSION_ADMIN_MANAGE_USERS])
+def delete_user(__actor: RlcUser, other_user_id: int):
+    other_user = rlc_user_from_id(__actor, other_user_id)
+    if not other_user.check_delete_is_safe():
+        raise UseCaseError(
+            "You can not delete this user right now, because you could loose access to one or "
+            "more folders. This user is one of the only two persons with access to those folders."
+        )
+    other_user.user.delete()
+
+
+@use_case
+def confirm_email(__actor: None, rlc_user_id: int, token: str):
+    rlc_user = org_user_from_id_dangerous(__actor, rlc_user_id)
+    rlc_user.confirm_email(EmailConfirmationTokenGenerator, token)
+    rlc_user.save()
+
+
 @use_case
 def unlock_user(__actor: RlcUser, another_rlc_user_id: int):
     another_rlc_user = rlc_user_from_id(__actor, another_rlc_user_id)
-    another_rlc_user.fix_keys(__actor)
     another_rlc_user.unlock(__actor)
     another_rlc_user.save()

@@ -20,3 +20,8 @@ def org_from_id_dangerous(_: None, v: int) -> Org:
 def org_user_from_uuid(actor: RlcUser | MessageBusActor, v: UUID) -> RlcUser:
     org_id: int = actor.org_id  # type: ignore
     return RlcUser.objects.get(org_id=org_id, uuid=v)
+
+
+@finder_function
+def org_user_from_id_dangerous(actor: None, v: int) -> RlcUser:
+    return RlcUser.objects.get(pk=v)

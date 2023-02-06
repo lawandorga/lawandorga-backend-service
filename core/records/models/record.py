@@ -173,11 +173,11 @@ class Record(Aggregate, models.Model):
         return {"OPEN": "/records/{}/".format(self.pk)}
 
     @property
-    def identifier(self):
+    def identifier(self) -> str:
         first_standard_entry = self.standard_entries.order_by("field__order").first()
         if first_standard_entry:
             return first_standard_entry.value
-        return None
+        return "NOT-SET"
 
     @property
     def delete_requested(self) -> bool:

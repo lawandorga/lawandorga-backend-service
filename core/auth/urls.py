@@ -7,13 +7,13 @@ from . import api, views
 
 router = DefaultRouter()
 
-router.register("profiles", views.RlcUserViewSet, basename="profiles")
 router.register("statistic_users", views.StatisticsUserViewSet)
 
 urlpatterns: list[Union[URLPattern, URLResolver]] = [
     path("api/", include(router.urls)),
     path("api/logout/", api.command__logout),
     path("api/rlc_users/", include(api.rlc_user_router.urls)),
+    path("api/users/", include(api.users_router.urls)),
     path("api/statistics_users/", include(api.statistics_user_router.urls)),
     path("api/keys/", include(api.keys_router.urls)),
     path("api/auth/query/", include(api.query_router.urls)),

@@ -84,7 +84,6 @@ class MailDomain(models.Model):
     def __check_setting(
         self, setting: DnsSetting, dns_results: list[str]
     ) -> tuple[bool, str]:
-
         p = re.compile(setting["check"])
 
         for result in dns_results:

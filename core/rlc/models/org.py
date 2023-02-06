@@ -123,7 +123,6 @@ class Org(EncryptedModelMixin, models.Model):
             self.generate_keys()
 
         if user and private_key_user:
-
             try:
                 keys = user.users_rlc_keys.get(rlc=self)
             except ObjectDoesNotExist:

@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
 from uuid import UUID
 
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from pydantic import AnyUrl, BaseModel, EmailStr, validator
 
 from core.seedwork.api_layer import qs_to_list
@@ -10,6 +12,41 @@ from core.seedwork.api_layer import qs_to_list
 class OutputOrg(BaseModel):
     name: str
     id: int
+
+    class Config:
+        orm_mode = True
+
+
+class OutputDashboardRecord(BaseModel):
+    id: int
+    uuid: UUID
+    identifier: str
+    state: str
+
+
+class OutputDashboardMember(BaseModel):
+    name: str
+    id: int
+    rlcuserid: int
+
+
+class OutputDashboardQuestionnaire(BaseModel):
+    name: str
+    folder_uuid: UUID
+
+
+class OutputDashboardChangedRecord(BaseModel):
+    id: int
+    uuid: UUID
+    identifier: str
+    updated: datetime
+
+
+class OutputDashboardPage(BaseModel):
+    records: None | list[OutputDashboardRecord]
+    members: None | list[OutputDashboardMember]
+    questionnaires: None | list[OutputDashboardQuestionnaire]
+    changed_records: None | list[OutputDashboardChangedRecord]
 
     class Config:
         orm_mode = True
@@ -48,6 +85,36 @@ class InputRlcUserCreate(BaseModel):
     def passwords_match(cls, v, values, **kwargs):
         if "password" not in values or "password" in values and v != values["password"]:
             raise ValueError("The passwords do not match.")
+        return v
+
+
+class InputConfirmEmail(BaseModel):
+    id: int
+    token: str
+
+
+class InputRlcUserDelete(BaseModel):
+    id: int
+
+
+class InputPasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+    new_password_confirm: str
+
+    @validator("new_password")
+    def validate_password(cls, v):
+        try:
+            validate_password(v)
+        except ValidationError as e:
+            error = " ".join([str(e) for e in e])
+            raise ValueError(error)
+        return v
+
+    @validator("new_password_confirm")
+    def validate_passwords(cls, v, values):
+        if "new_password" in values and v != values["new_password"]:
+            raise ValueError("The two passwords do not match.")
         return v
 
 

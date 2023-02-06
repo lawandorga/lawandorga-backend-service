@@ -117,9 +117,10 @@ def use_case(
     func: Callable[Param, RetType] | None = None,
     *,
     permissions: list[str] | None = None,
-) -> Callable[Param, RetType] | Callable[
-    [Callable[Param, RetType]], Callable[Param, RetType]
-]:
+) -> (
+    Callable[Param, RetType]
+    | Callable[[Callable[Param, RetType]], Callable[Param, RetType]]
+):
     if permissions is None:
         permissions = []
 

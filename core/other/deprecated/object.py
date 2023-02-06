@@ -11,7 +11,6 @@ class EncryptedObject(abc.ABC):
 
     @property
     def is_encrypted(self) -> Optional[bool]:
-
         is_encrypted = all(
             map(
                 lambda f: isinstance(getattr(self, f, None), LockedBox),
