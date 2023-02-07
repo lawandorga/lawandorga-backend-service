@@ -16,13 +16,14 @@ def list_keys(rlc_user: RlcUser):
 
 # test keys
 @router.post(url="test/", output_schema=List[OutputKey])
-def test_keys(rlc_user: RlcUser, private_key_user: str):
+def command__test_keys(rlc_user: RlcUser):
+    private_key_user = rlc_user.get_private_key()
     rlc_user.user.test_all_keys(private_key_user)
     return rlc_user.keys
 
 
 # delete key
-@router.delete(url="<int:id>/", input_schema=InputKeyDelete)
+@router.delete(url="<int:id>/")
 def delete_key(data: InputKeyDelete, rlc_user: RlcUser):
     key = RecordEncryptionNew.objects.filter(user=rlc_user, pk=data.id).first()
     if key is None:

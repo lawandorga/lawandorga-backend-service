@@ -17,14 +17,13 @@ def command__create_user(user: UserProfile):
     create_mail_user(user)
 
 
-@router.post(url="<uuid:user>/add_address/", input_schema=schemas.InputCreateAddress)
+@router.post(url="<uuid:user>/add_address/")
 def command__create_address(mail_user: MailUser, data: schemas.InputCreateAddress):
     create_address(mail_user, data.localpart, data.user, data.domain)
 
 
 @router.delete(
     url="<uuid:user>/delete_address/<uuid:address>/",
-    input_schema=schemas.InputDeleteAddress,
 )
 def command__delete_address(mail_user: MailUser, data: schemas.InputDeleteAddress):
     delete_address(mail_user, data.address)
@@ -32,7 +31,6 @@ def command__delete_address(mail_user: MailUser, data: schemas.InputDeleteAddres
 
 @router.post(
     url="<uuid:user>/set_default_address/<uuid:address>/",
-    input_schema=schemas.InputSetDefaultAddress,
 )
 def command__set_address_as_default(
     mail_user: MailUser, data: schemas.InputSetDefaultAddress

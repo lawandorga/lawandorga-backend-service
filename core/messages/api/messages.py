@@ -7,7 +7,7 @@ from . import schemas
 router = Router()
 
 
-@router.post(input_schema=schemas.InputSendMessage)
+@router.post()
 def command__send_message(rlc_user: RlcUser, data: schemas.InputSendMessage):
     create_a_message(rlc_user, data.message, data.folder)
 

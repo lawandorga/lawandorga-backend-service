@@ -18,7 +18,6 @@ def query__templates(rlc_user: RlcUser):
 
 @router.get(
     url="templates/<int:id>/",
-    input_schema=schemas.InputTemplateDetail,
     output_schema=schemas.OutputTemplateDetail,
 )
 def query__template(rlc_user: RlcUser, data: schemas.InputTemplateDetail):
@@ -59,7 +58,6 @@ def query__records_page(rlc_user: RlcUser):
 @router.get(
     url="<uuid:uuid>/",
     output_schema=schemas.OutputRecordDetail,
-    input_schema=schemas.InputQueryRecord,
 )
 def query__record(rlc_user: RlcUser, data: schemas.InputQueryRecord):
     record = (

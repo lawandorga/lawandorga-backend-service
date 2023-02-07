@@ -18,6 +18,6 @@ def command__logout(request):
     return HttpResponse()
 
 
-@router.post(url="change_password/", input_schema=schemas.InputPasswordChange)
+@router.post(url="change_password/")
 def command__change_password(user: UserProfile, data: schemas.InputPasswordChange):
     change_password_of_user(user, data.current_password, data.new_password)

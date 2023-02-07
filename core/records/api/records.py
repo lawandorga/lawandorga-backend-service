@@ -14,9 +14,7 @@ from core.seedwork.api_layer import Router
 router = Router()
 
 
-@router.post(
-    input_schema=schemas.InputRecordCreate, output_schema=schemas.OutputRecordCreate
-)
+@router.post(output_schema=schemas.OutputRecordCreate)
 def command__create_record(rlc_user: RlcUser, data: schemas.InputRecordCreate):
     record_pk = create_a_record_and_a_folder(rlc_user, data.name, data.template)
     record = Record.objects.get(pk=record_pk)
@@ -25,7 +23,6 @@ def command__create_record(rlc_user: RlcUser, data: schemas.InputRecordCreate):
 
 @router.post(
     url="within_folder/",
-    input_schema=schemas.InputRecordCreateWithinFolder,
     output_schema=schemas.OutputRecordCreate,
 )
 def command__create_record_within_folder(
@@ -38,7 +35,7 @@ def command__create_record_within_folder(
     return {"id": record.pk, "uuid": record.uuid, "folder_uuid": record.folder_uuid}
 
 
-@router.post(url="<int:id>/change_name/", input_schema=schemas.InputRecordChangeName)
+@router.post(url="<int:id>/change_name/")
 def command__change_record_name(rlc_user: RlcUser, data: schemas.InputRecordChangeName):
     change_record_name(rlc_user, data.name, data.id)
 

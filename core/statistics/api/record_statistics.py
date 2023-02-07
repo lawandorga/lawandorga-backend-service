@@ -82,7 +82,6 @@ def get_record_fields_amount(statistics_user: StatisticUser):
 # build a dynamic statistic
 @router.post(
     url="dynamic/",
-    input_schema=schemas.InputRecordStats,
     output_schema=schemas.OutputRecordStats,
 )
 def get_dynamic_record_stats(

@@ -32,7 +32,6 @@ def query__page_dashboard(user: UserProfile):
 
 @router.get(
     url="page/group/<uuid:group>/",
-    input_schema=schemas.InputPageGroup,
     output_schema=schemas.OutputPageGroup,
 )
 def query__page_group(mail_user: MailUser, data: schemas.InputPageGroup):
@@ -58,7 +57,6 @@ def query__page_group(mail_user: MailUser, data: schemas.InputPageGroup):
 
 @router.get(
     url="page/user/<uuid:user>/",
-    input_schema=schemas.InputPageUser,
     output_schema=schemas.OutputPageUser,
 )
 def query__page_user(mail_user: MailUser, data: schemas.InputPageUser):

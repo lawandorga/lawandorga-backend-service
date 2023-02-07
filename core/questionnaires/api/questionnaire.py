@@ -12,7 +12,6 @@ router = Router()
 
 @router.post(
     url="publish/",
-    input_schema=schemas.InputPublishQuestionnaire,
     output_schema=schemas.OutputQuestionnaire,
 )
 def publish_questionnaire(data: schemas.InputPublishQuestionnaire, rlc_user: RlcUser):

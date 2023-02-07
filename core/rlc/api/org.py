@@ -20,7 +20,6 @@ def _list(rlc_user: RlcUser):
 # create link
 @router.post(
     url="links/",
-    input_schema=schemas.InputExternalLinkCreate,
     output_schema=schemas.OutputExternalLink,
 )
 def _create(data: schemas.InputExternalLinkCreate, rlc_user: RlcUser):
@@ -29,7 +28,7 @@ def _create(data: schemas.InputExternalLinkCreate, rlc_user: RlcUser):
 
 
 # delete link
-@router.delete(url="links/<uuid:id>/", input_schema=schemas.InputExternalLinkDelete)
+@router.delete(url="links/<uuid:id>/")
 def _delete(data: schemas.InputExternalLinkDelete, rlc_user: RlcUser):
     link = ExternalLink.objects.filter(org=rlc_user.org, id=data.id).first()
     if link is None:
@@ -42,7 +41,6 @@ def _delete(data: schemas.InputExternalLinkDelete, rlc_user: RlcUser):
 # accept member
 @router.post(
     url="accept_member/",
-    input_schema=schemas.InputAcceptMember,
 )
 def command__accept_member(data: schemas.InputAcceptMember, rlc_user: RlcUser):
     accept_member_to_org(rlc_user, data.user)

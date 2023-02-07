@@ -34,7 +34,6 @@ def query__available_folders(rlc_user: RlcUser):
 
 @router.get(
     url="<uuid:id>/",
-    input_schema=schemas.InputFolderDetail,
     output_schema=schemas.OutputFolderDetail,
 )
 def query__detail_folder(rlc_user: RlcUser, data: schemas.InputFolderDetail):

@@ -9,7 +9,6 @@ router = Router()
 
 @router.get(
     url="group/<int:id>/",
-    input_schema=schemas.InputQueryGroup,
     output_schema=schemas.OutputSingleGroup,
 )
 def query__get_group(rlc_user: RlcUser, data: schemas.InputQueryGroup):

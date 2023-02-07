@@ -15,7 +15,6 @@ router = Router()
 
 @router.get(
     url="<uuid:uuid>/",
-    input_schema=schemas.InputQueryLink,
     output_schema=schemas.OutputQueryLink,
 )
 def query__link(rlc_user: RlcUser, data: schemas.InputQueryLink):
@@ -25,7 +24,6 @@ def query__link(rlc_user: RlcUser, data: schemas.InputQueryLink):
 
 @router.get(
     url="<uuid:uuid>/public/",
-    input_schema=schemas.InputQueryLink,
     output_schema=schemas.OutputQueryLinkPublic,
 )
 def query__link_public(anonymous_user: AnonymousUser, data: schemas.InputQueryLink):
@@ -35,7 +33,6 @@ def query__link_public(anonymous_user: AnonymousUser, data: schemas.InputQueryLi
 
 @router.get(
     url="<uuid:link>/<uuid:file>/",
-    input_schema=schemas.InputDownloadFile,
     output_schema=FileResponse,
 )
 def query__download_file(rlc_user: RlcUser, data: schemas.InputDownloadFile):
