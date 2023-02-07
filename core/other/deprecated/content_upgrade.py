@@ -108,8 +108,6 @@ class ContentUpgrade(Upgrade):
         lock_key = self.folder.get_encryption_key(requestor=user)
         enc_key = EncryptedSymmetricKey.create(original=key, key=lock_key)
         self.__content[content.name] = (content, enc_key)
-        # check
-        self.folder.check_encryption_version(user)
 
     def add_content(self, content: Content, key: SymmetricKey, user: IOwner):
         if content.name in self.__content:
