@@ -1,8 +1,10 @@
 import asyncio
 import inspect
 import json
+import logging
 from datetime import datetime
 from json import JSONDecodeError
+from types import GenericAlias
 from typing import (
     Any,
     Awaitable,
@@ -28,6 +30,9 @@ from pydantic import BaseModel, ValidationError, create_model, validator
 
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.use_case_layer import UseCaseError, UseCaseInputError
+
+
+api_logger = logging.getLogger('api')
 
 
 def __qs_to_list_validator(qs) -> List:
@@ -229,8 +234,9 @@ class Router:
         ret: dict[InjectT, InjectorF] = {}
         for injector in cls._injectors:
             s = inspect.signature(injector)
-            if s.return_annotation is None:
-                raise TypeError("Api injectors need a return type annotation.")
+            if s.return_annotation == inspect.Parameter.empty:
+                injector_name = injector.__code__.co_name
+                api_logger.error("Api injector '{}' is missing a return type annotation.".format(injector_name))
             ret[s.return_annotation] = injector
         return ret
 
@@ -274,30 +280,32 @@ class Router:
     def generate_view(
         cls,
         func: Callable[..., Union[Union[Awaitable[Any], Any], None]],
-        input_schema: Optional[Type] = None,
+        input_schema=None,
         output_schema: Optional[Type] = None,
     ) -> Callable:
         s = inspect.signature(func)
 
         # error handling
-        for parameter in s.parameters.values():
-            annotation = parameter.annotation
-            if annotation in cls._injectors_by_return_type and parameter.name == "data":
+        for p in s.parameters.values():
+            a = p.annotation
+            if a in cls._injectors_by_return_type and p.name == "data":
                 raise TypeError(
-                    "It is not allowed to have have a variable named 'data' injected with the api injectors. "
+                    "It is not allowed that the 'data' variable has the same type hint as "
+                    "one of the injectors has as return type. "
                     "'data' is populated by the api with the submitted data."
                 )
-            # if parameter.name == 'data' and not issubclass(annotation, BaseModel):
-            #     raise TypeError(
-            #         "The variable named 'data' must be typed with a pydantic model or a subclass of Type."
-            #     )
+            if p.name == "data" and not (
+                isinstance(a, GenericAlias) or issubclass(a, BaseModel)
+            ):
+                raise TypeError(
+                    "The variable named 'data' must be typed with a pydantic model, or 'list' or 'dict'."
+                )
 
         async def wrapper(
             request: HttpRequest, *args, **kwargs
         ) -> JsonResponse | FileResponse:
             # set up input
             func_kwargs: Dict[str, Any] = {}
-            func_input = func.__code__.co_varnames[: func.__code__.co_argcount]
 
             # handle injections
             for parameter in s.parameters.values():
@@ -308,19 +316,19 @@ class Router:
                         request
                     )
 
-            # validate the input
-            if input_schema:
+            # add data input
+            if "data" in s.parameters:
+                data_parameter = s.parameters["data"]
                 try:
                     model = create_model(
                         "Input",
-                        root=(input_schema, ...),
+                        root=(data_parameter.annotation, ...),
                     )
                     data = _validate(request, model)
                 except ValidationError as e:
                     return ErrorResponse(**_validation_error_handler(e).dict())
 
-                if "data" in func_input:
-                    func_kwargs["data"] = data.root  # type: ignore
+                func_kwargs["data"] = data.root  # type: ignore
 
             # different layer errors
             if asyncio.iscoroutinefunction(func):

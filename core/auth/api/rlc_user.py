@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 from core.auth.models import RlcUser
 from core.auth.use_cases.rlc_user import (
@@ -123,8 +123,8 @@ def activate_rlc_user(data: schemas.InputRlcUserActivate, rlc_user: RlcUser):
 
 
 # update settings
-@router.put(url="settings_self/", input_schema=Dict[str, Any])
-def update_settings(data: Dict[str, Any], rlc_user: RlcUser):
+@router.put(url="settings_self/", input_schema=dict[str, Any])
+def update_settings(data: dict[str, Any], rlc_user: RlcUser):
     rlc_user.set_frontend_settings(data)
 
 
