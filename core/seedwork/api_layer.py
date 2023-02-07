@@ -3,18 +3,29 @@ import inspect
 import json
 from datetime import datetime
 from json import JSONDecodeError
-from typing import Any, Awaitable, Callable, Dict, List, Literal, Optional, Type, Union
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+)
 
 import pytz
 from asgiref.sync import sync_to_async
-from django.contrib.auth.models import AnonymousUser
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import FileResponse, HttpRequest, JsonResponse, RawPostDataException
 from django.urls import path
+from django.utils.module_loading import import_string
 from django.utils.timezone import localtime, make_aware
 from pydantic import BaseModel, ValidationError, create_model, validator
 
-from core.models import UserProfile
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.use_case_layer import UseCaseError, UseCaseInputError
 
@@ -53,7 +64,11 @@ def make_datetime_aware(x):
 
 
 class ApiError(Exception):
-    def __init__(self, message, status=None):
+    param_errors: dict | None
+
+    def __init__(
+        self, message: dict | str, detail: str | None = None, status: int | None = None
+    ):
         if isinstance(message, dict):
             self.param_errors = message
             self.message = "An input error happened."
@@ -62,6 +77,8 @@ class ApiError(Exception):
             self.param_errors = None
             self.message = message
             self.status = status if status else 400
+        self.title: str = self.message
+        self.detail: None | str = detail if detail else None
 
 
 class RFC7807(BaseModel):
@@ -128,7 +145,8 @@ def _catch_error(func: Callable[..., Awaitable[JsonResponse | FileResponse]]):
         except ApiError as e:
             return ErrorResponse(
                 param_errors=e.param_errors,
-                title=e.message,
+                title=e.title,
+                detail=e.message,
                 status=e.status,
                 err_type="ApiError",
             )
@@ -187,9 +205,34 @@ class ErrorResponse(JsonResponse):
         super().__init__(data=error.dict(), status=error.status)
 
 
+InjectT = TypeVar("InjectT", bound=Any)
+InjectorF = Callable[[HttpRequest], InjectT]
+
+
 class Router:
+    _injectors: list[InjectorF]
+    _injectors_by_return_type: dict
+
     def __init__(self):
+        super().__init__()
         self.__routes = []
+        if not hasattr(self.__class__, "_injectors"):
+            self.__class__._injectors = [
+                import_string(i) for i in settings.API_INJECTORS
+            ]
+            self.__class__._injectors_by_return_type = (
+                self.__class__.__get_injectors_by_return_type()
+            )
+
+    @classmethod
+    def __get_injectors_by_return_type(cls) -> dict[InjectT, InjectorF]:
+        ret: dict[InjectT, InjectorF] = {}
+        for injector in cls._injectors:
+            s = inspect.signature(injector)
+            if s.return_annotation is None:
+                raise TypeError("Api injectors need a return type annotation.")
+            ret[s.return_annotation] = injector
+        return ret
 
     @staticmethod
     def generate_view_func(
@@ -227,12 +270,28 @@ class Router:
 
         return ret
 
-    @staticmethod
+    @classmethod
     def generate_view(
+        cls,
         func: Callable[..., Union[Union[Awaitable[Any], Any], None]],
         input_schema: Optional[Type] = None,
         output_schema: Optional[Type] = None,
     ) -> Callable:
+        s = inspect.signature(func)
+
+        # error handling
+        for parameter in s.parameters.values():
+            annotation = parameter.annotation
+            if annotation in cls._injectors_by_return_type and parameter.name == "data":
+                raise TypeError(
+                    "It is not allowed to have have a variable named 'data' injected with the api injectors. "
+                    "'data' is populated by the api with the submitted data."
+                )
+            # if parameter.name == 'data' and not issubclass(annotation, BaseModel):
+            #     raise TypeError(
+            #         "The variable named 'data' must be typed with a pydantic model or a subclass of Type."
+            #     )
+
         async def wrapper(
             request: HttpRequest, *args, **kwargs
         ) -> JsonResponse | FileResponse:
@@ -240,89 +299,14 @@ class Router:
             func_kwargs: Dict[str, Any] = {}
             func_input = func.__code__.co_varnames[: func.__code__.co_argcount]
 
-            # handle auth
-            @sync_to_async
-            def get_user_from_request(
-                r: HttpRequest,
-            ) -> Union[UserProfile, AnonymousUser, None]:
-                return r.user if bool(r.user) else None
-
-            is_authenticated = (await get_user_from_request(request)).is_authenticated
-            not_authenticated_error = ErrorResponse(
-                err_type="NotAuthenticated",
-                title="Login Required",
-                detail="You need to be logged in.",
-                status=401,
-            )
-
-            if is_authenticated:
-                user: UserProfile = request.user  # type: ignore
-
-            if "anonymous_user" in func_input:
-                func_kwargs["anonymous_user"] = AnonymousUser()
-
-            if "user" in func_input:
-                if not is_authenticated:
-                    return not_authenticated_error
-
-                # wake up the lazy object
-                func_kwargs["user"] = await UserProfile.objects.aget(pk=user.id)
-
-            if "mail_user" in func_input:
-                if not is_authenticated:
-                    return not_authenticated_error
-
-                if not hasattr(user, "mail_user"):
-                    return ErrorResponse(
-                        err_type="RoleRequired",
-                        title="Mail User Required",
-                        detail="You need to have the mail user role.",
-                        status=403,
+            # handle injections
+            for parameter in s.parameters.values():
+                annotation = parameter.annotation
+                if annotation in cls._injectors_by_return_type:
+                    inject_function = cls._injectors_by_return_type[annotation]
+                    func_kwargs[parameter.name] = await sync_to_async(inject_function)(
+                        request
                     )
-
-                user.mail_user.check_login_allowed()
-
-                func_kwargs["mail_user"] = user.mail_user
-
-            if "rlc_user" in func_input:
-                if not is_authenticated:
-                    return not_authenticated_error
-
-                if not hasattr(user, "rlc_user"):
-                    return ErrorResponse(
-                        err_type="RoleRequired",
-                        title="Org User Required",
-                        detail="You need to have the rlc user role.",
-                        status=403,
-                    )
-
-                user.rlc_user.check_login_allowed()
-
-                func_kwargs["rlc_user"] = user.rlc_user
-
-            if "private_key_user" in func_input:
-                if not is_authenticated:
-                    return not_authenticated_error
-
-                func_kwargs["private_key_user"] = await sync_to_async(
-                    user.rlc_user.get_private_key
-                )()
-
-            if "statistics_user" in func_input:
-                if not is_authenticated:
-                    return not_authenticated_error
-
-                if not hasattr(user, "statistic_user"):
-                    return ErrorResponse(
-                        err_type="RoleRequired",
-                        title="Statistics User Required",
-                        detail="You need to have the statistics user role.",
-                        status=403,
-                    )
-
-                user.statistic_user.check_login_allowed()
-
-                func_kwargs["statistics_user"] = user.statistic_user
 
             # validate the input
             if input_schema:
