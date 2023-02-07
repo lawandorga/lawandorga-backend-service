@@ -18,7 +18,6 @@ def api_list_legal_requirements(rlc_user: RlcUser):
 
 @router.post(
     url="<int:id>/accept/",
-    input_schema=schemas.InputLegalRequirementEventCreate,
     output_schema=schemas.OutputLegalRequirementUser,
 )
 def api_accept_legal_requirement(

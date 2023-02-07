@@ -23,7 +23,7 @@ def command__test_keys(rlc_user: RlcUser):
 
 
 # delete key
-@router.delete(url="<int:id>/", input_schema=InputKeyDelete)
+@router.delete(url="<int:id>/")
 def delete_key(data: InputKeyDelete, rlc_user: RlcUser):
     key = RecordEncryptionNew.objects.filter(user=rlc_user, pk=data.id).first()
     if key is None:

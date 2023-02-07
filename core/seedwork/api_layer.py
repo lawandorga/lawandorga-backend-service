@@ -31,8 +31,7 @@ from pydantic import BaseModel, ValidationError, create_model, validator
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.use_case_layer import UseCaseError, UseCaseInputError
 
-
-api_logger = logging.getLogger('api')
+api_logger = logging.getLogger("api")
 
 
 def __qs_to_list_validator(qs) -> List:
@@ -236,7 +235,11 @@ class Router:
             s = inspect.signature(injector)
             if s.return_annotation == inspect.Parameter.empty:
                 injector_name = injector.__code__.co_name
-                api_logger.error("Api injector '{}' is missing a return type annotation.".format(injector_name))
+                api_logger.error(
+                    "Api injector '{}' is missing a return type annotation.".format(
+                        injector_name
+                    )
+                )
             ret[s.return_annotation] = injector
         return ret
 
@@ -280,7 +283,6 @@ class Router:
     def generate_view(
         cls,
         func: Callable[..., Union[Union[Awaitable[Any], Any], None]],
-        input_schema=None,
         output_schema: Optional[Type] = None,
     ) -> Callable:
         s = inspect.signature(func)
@@ -360,44 +362,39 @@ class Router:
     def get(
         self,
         url: str = "",
-        input_schema: Optional[Type] = None,
         output_schema: Optional[Type] = None,
     ):
-        return self.api(url, "GET", input_schema, output_schema)
+        return self.api(url, "GET", output_schema)
 
     def post(
         self,
         url: str = "",
-        input_schema: Optional[Type] = None,
         output_schema: Optional[Type] = None,
     ):
-        return self.api(url, "POST", input_schema, output_schema)
+        return self.api(url, "POST", output_schema)
 
     def put(
         self,
         url: str = "",
-        input_schema: Optional[Type] = None,
         output_schema: Optional[Type] = None,
     ):
-        return self.api(url, "PUT", input_schema, output_schema)
+        return self.api(url, "PUT", output_schema)
 
     def delete(
         self,
         url: str = "",
-        input_schema: Optional[Type] = None,
         output_schema: Optional[Type] = None,
     ):
-        return self.api(url, "DELETE", input_schema, output_schema)
+        return self.api(url, "DELETE", output_schema)
 
     def api(
         self,
         url: str = "",
         method: Literal["GET", "POST", "PUT", "DELETE"] = "GET",
-        input_schema: Optional[Type] = None,
         output_schema: Optional[Type] = None,
     ):
         def decorator(func: Callable[..., Union[Any, None]]):
-            view = Router.generate_view(func, input_schema, output_schema)
+            view = Router.generate_view(func, output_schema)
             self.__routes.append({"url": url, "method": method, "view": view})
 
         return decorator

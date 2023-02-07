@@ -19,13 +19,13 @@ from . import schemas
 router = Router()
 
 
-@router.delete(url="<int:id>/", input_schema=schemas.InputRlcUserDelete)
+@router.delete(url="<int:id>/")
 def command__delete_user(rlc_user: RlcUser, data: schemas.InputRlcUserDelete):
     delete_user(rlc_user, data.id)
 
 
 # register
-@router.post(input_schema=schemas.InputRlcUserCreate)
+@router.post()
 def command__create_user(data: schemas.InputRlcUserCreate):
     register_rlc_user(
         None,
@@ -37,9 +37,7 @@ def command__create_user(data: schemas.InputRlcUserCreate):
     )
 
 
-@router.post(
-    url="<int:id>/confirm_email/<str:token>/", input_schema=schemas.InputConfirmEmail
-)
+@router.post(url="<int:id>/confirm_email/<str:token>/")
 def command__confirm_email(data: schemas.InputConfirmEmail):
     confirm_email(None, data.id, data.token)
 
@@ -55,7 +53,6 @@ def list_rlc_users(rlc_user: RlcUser):
 # retrieve
 @router.get(
     url="<int:id>/",
-    input_schema=schemas.InputRlcUserGet,
     output_schema=schemas.OutputRlcUserOptional,
 )
 def retrieve(data: schemas.InputRlcUserGet, rlc_user: RlcUser):
@@ -94,7 +91,6 @@ def command__unlock_myself(rlc_user: RlcUser):
 # activate user
 @router.put(
     url="<int:id>/activate/",
-    input_schema=schemas.InputRlcUserActivate,
     output_schema=schemas.OutputRlcUserSmall,
 )
 def activate_rlc_user(data: schemas.InputRlcUserActivate, rlc_user: RlcUser):
@@ -123,7 +119,7 @@ def activate_rlc_user(data: schemas.InputRlcUserActivate, rlc_user: RlcUser):
 
 
 # update settings
-@router.put(url="settings_self/", input_schema=dict[str, Any])
+@router.put(url="settings_self/")
 def update_settings(data: dict[str, Any], rlc_user: RlcUser):
     rlc_user.set_frontend_settings(data)
 
@@ -144,7 +140,6 @@ def query__data(rlc_user: RlcUser):
 # update user
 @router.put(
     url="<int:id>/update_information/",
-    input_schema=schemas.InputRlcUserUpdate,
     output_schema=schemas.OutputRlcUser,
 )
 def update_user(data: schemas.InputRlcUserUpdate, rlc_user: RlcUser):
@@ -180,9 +175,7 @@ def update_user(data: schemas.InputRlcUserUpdate, rlc_user: RlcUser):
 
 
 # grant permission
-@router.post(
-    url="<int:id>/grant_permission/", input_schema=schemas.InputRlcUserGrantPermission
-)
+@router.post(url="<int:id>/grant_permission/")
 def grant_permission(data: schemas.InputRlcUserGrantPermission, rlc_user: RlcUser):
     rlc_user_to_grant: Optional[RlcUser] = RlcUser.objects.filter(
         id=data.id, org=rlc_user.org
@@ -213,6 +206,6 @@ def grant_permission(data: schemas.InputRlcUserGrantPermission, rlc_user: RlcUse
 
 
 # unlock user
-@router.post(url="<int:id>/unlock_user/", input_schema=schemas.InputUnlockOrgUser)
+@router.post(url="<int:id>/unlock_user/")
 def command__unlock_user(rlc_user: RlcUser, data: schemas.InputUnlockOrgUser):
     unlock_user(rlc_user, data.id)

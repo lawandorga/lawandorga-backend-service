@@ -11,16 +11,16 @@ from . import schemas
 router = Router()
 
 
-@router.post(input_schema=schemas.InputCreateAccess)
+@router.post()
 def command__create_access(rlc_user: RlcUser, data: schemas.InputCreateAccess):
     create_access_request(rlc_user, data.explanation, data.record)
 
 
-@router.post(url="<int:id>/grant/", input_schema=schemas.InputAccess)
+@router.post(url="<int:id>/grant/")
 def command__grant_access(rlc_user: RlcUser, data: schemas.InputAccess):
     grant_access_request(rlc_user, data.id)
 
 
-@router.post(url="<int:id>/decline/", input_schema=schemas.InputAccess)
+@router.post(url="<int:id>/decline/")
 def command__decline_access(rlc_user: RlcUser, data: schemas.InputAccess):
     decline_access_request(rlc_user, data.id)

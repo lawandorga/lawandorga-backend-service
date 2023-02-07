@@ -15,7 +15,6 @@ router = Router()
 
 @router.get(
     url="<uuid:uuid>/download/",
-    input_schema=schemas.InputQueryFile,
     output_schema=FileResponse,
 )
 def query__download_file(rlc_user: RlcUser, data: schemas.InputQueryFile):
@@ -39,7 +38,6 @@ def query__download_file(rlc_user: RlcUser, data: schemas.InputQueryFile):
 
 @router.get(
     url="<uuid:uuid>/",
-    input_schema=schemas.InputQueryFile,
     output_schema=schemas.OutputFile,
 )
 def query__retrieve_file(rlc_user: RlcUser, data: schemas.InputQueryFile):

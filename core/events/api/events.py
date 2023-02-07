@@ -25,7 +25,6 @@ def get_all_events_for_user(rlc_user: RlcUser):
 
 @router.api(
     method="POST",
-    input_schema=InputEventCreate,
 )
 def create_event(data: InputEventCreate, rlc_user: RlcUser):
     org_list = Org.objects.filter(id=rlc_user.org.id)
@@ -47,7 +46,6 @@ def create_event(data: InputEventCreate, rlc_user: RlcUser):
 @router.api(
     url="<int:id>/",
     method="PUT",
-    input_schema=InputEventUpdate,
     output_schema=OutputEventResponse,
 )
 def update_event(data: InputEventUpdate, rlc_user: RlcUser):
@@ -74,7 +72,7 @@ def update_event(data: InputEventUpdate, rlc_user: RlcUser):
     return event
 
 
-@router.api(url="<int:id>/", method="DELETE", input_schema=InputEventDelete)
+@router.api(url="<int:id>/", method="DELETE")
 def delete_event(data: InputEventDelete, rlc_user: RlcUser):
     try:
         event = Event.objects.get(id=data.id)

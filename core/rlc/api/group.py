@@ -13,26 +13,26 @@ from . import schemas
 router = Router()
 
 
-@router.post(input_schema=schemas.InputGroupCreate)
+@router.post()
 def command__create_group(rlc_user: RlcUser, data: schemas.InputGroupCreate):
     create_group(rlc_user, data.name, data.description)
 
 
-@router.put(url="<int:id>/", input_schema=schemas.InputGroupUpdate)
+@router.put(url="<int:id>/")
 def command__update_group(rlc_user: RlcUser, data: schemas.InputGroupUpdate):
     update_group(rlc_user, data.id, data.name, data.description)
 
 
-@router.delete(url="<int:id>/", input_schema=schemas.InputGroupDelete)
+@router.delete(url="<int:id>/")
 def command__delete_group(rlc_user: RlcUser, data: schemas.InputGroupDelete):
     delete_group(rlc_user, data.id)
 
 
-@router.post(url="<int:id>/add_member/", input_schema=schemas.InputAddMember)
+@router.post(url="<int:id>/add_member/")
 def command__add_member(data: schemas.InputAddMember, rlc_user: RlcUser):
     add_member_to_group(rlc_user, data.id, data.new_member)
 
 
-@router.post(url="<int:id>/remove_member/", input_schema=schemas.InputRemoveMember)
+@router.post(url="<int:id>/remove_member/")
 def command__remove_member(data: schemas.InputRemoveMember, rlc_user: RlcUser):
     remove_member_from_group(rlc_user, data.id, data.member)

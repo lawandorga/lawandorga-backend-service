@@ -9,7 +9,6 @@ router = Router()
 
 @router.get(
     url="<uuid:folder>/",
-    input_schema=schemas.InputGetMessages,
     output_schema=list[schemas.OutputMessage],
 )
 def query__get_messages(rlc_user: RlcUser, data: schemas.InputGetMessages):

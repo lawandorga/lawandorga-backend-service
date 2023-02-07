@@ -13,7 +13,7 @@ from . import schemas
 router = Router()
 
 
-@router.post(url="multiple/", input_schema=schemas.InputUploadMultipleFiles)
+@router.post(url="multiple/")
 def command__upload_multiple_file(
     rlc_user: RlcUser, data: schemas.InputUploadMultipleFiles
 ):
@@ -30,7 +30,7 @@ def command__upload_multiple_file(
         upload_a_file(rlc_user, file, data.folder)
 
 
-@router.post(input_schema=schemas.InputUploadFile)
+@router.post()
 def command__upload_file(rlc_user: RlcUser, data: schemas.InputUploadFile):
     if not isinstance(data.file, UploadedFile):
         raise ApiError({"file": ["You need to submit a file"]})
@@ -38,7 +38,7 @@ def command__upload_file(rlc_user: RlcUser, data: schemas.InputUploadFile):
     upload_a_file(rlc_user, data.file, data.folder)
 
 
-@router.delete(url="<uuid:uuid>/", input_schema=schemas.InputDeleteFile)
+@router.delete(url="<uuid:uuid>/")
 def command__delete_file(rlc_user: RlcUser, data: schemas.InputDeleteFile):
     delete_a_file(rlc_user, data.uuid)
 

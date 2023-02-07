@@ -12,19 +12,18 @@ from core.seedwork.api_layer import Router
 router = Router()
 
 
-@router.post(input_schema=schemas.InputAddDomain)
+@router.post()
 def command__add_domain(mail_user: MailUser, data: schemas.InputAddDomain):
     add_domain(mail_user, data.name)
 
 
-@router.post(url="<uuid:domain>/", input_schema=schemas.InputChangeDomain)
+@router.post(url="<uuid:domain>/")
 def command__change_domain(mail_user: MailUser, data: schemas.InputChangeDomain):
     change_domain(mail_user, data.name, data.uuid)
 
 
 @router.post(
     url="<uuid:domain>/check_domain/",
-    input_schema=schemas.InputCheckDomain,
     output_schema=schemas.OutputDomainCheck,
 )
 def command__check_domain_settings(mail_user: MailUser, data: schemas.InputCheckDomain):

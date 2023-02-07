@@ -9,7 +9,6 @@ router = Router()
 
 @router.get(
     url="<uuid:uuid>/",
-    input_schema=schemas.InputQuestionnaire,
     output_schema=schemas.OutputQuestionnaire,
 )
 def query__retrieve_questionnaire(rlc_user: RlcUser, data: schemas.InputQuestionnaire):
