@@ -43,7 +43,7 @@ def query__page_group(mail_user: MailUser, data: schemas.InputPageGroup):
     available_domains = MailDomain.objects.filter(org=mail_user.org)
     addresses = group.account.addresses.all()
     members = group.members.all()
-    available_users = MailUser.objects.exclude(
+    available_users = MailUser.objects.filter(org=mail_user.org).exclude(
         pk__in=members.values_list("pk", flat=True)
     )
 
