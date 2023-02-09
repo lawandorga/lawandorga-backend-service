@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c67b4b454cb72cfb013346f2cf9129f05be8621c19cdd1da5e577c86890e5691"
+            "sha256": "9025a484881661017caa9a60c27c8e8d3af3f2e695a63d05bef06fd21720734e"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -419,7 +419,6 @@
             "version": "==3.8.1"
         },
         "django-oidc-provider": {
-            "editable": true,
             "git": "https://github.com/lawandorga/django-oidc-provider",
             "ref": "22fc31f7f58a7526b9e11887e331477077286eee"
         },
