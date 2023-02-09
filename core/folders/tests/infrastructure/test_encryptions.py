@@ -73,3 +73,5 @@ def test_asymmetric_encryption_decode():
 
     assert locked.decode("ISO-8859-1").encode("ISO-8859-1") == locked.value
     locked.as_dict()
+    EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionV1)
+    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
