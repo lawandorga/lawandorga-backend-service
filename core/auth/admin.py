@@ -8,14 +8,15 @@ from .models import InternalUser, MatrixUser, RlcUser, StatisticUser, UserProfil
 class UserAdmin(DjangoUserAdmin):
     fieldsets = [
         (None, {"fields": ("email",)}),
-        (_("Personal info"), {"fields": ("name",)}),  # type: ignore
+        (_("Personal info"), {"fields": ("name",)}),
         (  # type: ignore
             _("Permissions"),
             {
                 "fields": ("groups",),
             },
         ),
-        (_("Important dates"), {"fields": ("last_login",)}),  # type: ignore
+        (_("Important dates"), {"fields": ("last_login",)}),
+        (_("Other"), {"fields": ("is_superuser",)}),
     ]
     add_fieldsets = (
         (

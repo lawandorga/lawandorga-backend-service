@@ -200,46 +200,8 @@ class Folder:
         new_items_2 = list(new_items_1)
         self.__items = new_items_2
 
-    def __todo_reencrypt_all_keys(self, user: IOwner):
-        # this method is not ready yet, because the keys of the children need to be reencrypted as well
-
-        # old_key = self.get_encryption_key(requestor=user)
-
-        # get a new folder key
-        new_key = SymmetricKey.generate()
-
-        # reencrypt keys
-        new_keys: list[Union[FolderKey, ParentKey]] = []
-        for key in self.__keys:
-            if isinstance(key, ParentKey) and self.__parent is not None:
-                new_parent_key = ParentKey(folder_uuid=self.uuid, key=new_key)
-                enc_new_parent_key = new_parent_key.encrypt_self(
-                    self.__parent.get_encryption_key(requestor=user)
-                )
-                new_keys.append(enc_new_parent_key)
-
-            elif isinstance(key, FolderKey):
-                new_folder_key = FolderKey(owner=key.owner, key=new_key)
-                enc_new_folder_key = new_folder_key.encrypt_self(
-                    key.owner.get_encryption_key(requestor=user)
-                )
-                new_keys.append(enc_new_folder_key)
-
-            else:
-                raise ValueError(
-                    "This folder might have an parent key but its parent is None."
-                )
-
-        # set
-        self.__keys = new_keys
-
     def update_information(self, name=None):
         self.__name = name if name is not None else self.__name
-
-    def check_encryption_version(self, user: IOwner):
-        # if self.encryption_version not in EncryptionWarehouse.get_highest_versions():
-        #     self.__reencrypt_all_keys(user)
-        pass
 
     def __find_folder_key(self, user: IOwner) -> Optional[FolderKey]:
         for key in self.__keys:

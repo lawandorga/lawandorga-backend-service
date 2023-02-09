@@ -10,6 +10,8 @@ from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
+from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
+from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.folders.tests.helpers.encryptions import (
     AsymmetricEncryptionTest1,
     SymmetricEncryptionTest1,
@@ -21,6 +23,9 @@ def encryption():
     EncryptionWarehouse.reset_encryption_hierarchies()
     EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest1)
     EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionTest1)
+    yield
+    EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionV1)
+    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
 
 
 @pytest.fixture

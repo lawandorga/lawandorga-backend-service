@@ -14,24 +14,6 @@ from core.folders.tests.helpers.user import ForeignUserObject, UserObject
 from core.seedwork.domain_layer import DomainError
 
 
-def todo_test_keys_are_regenerated():
-    user = UserObject()
-
-    folder_key = FolderKey(owner=user, key=SymmetricKey.generate())
-    folder = Folder(
-        name="My Folder",
-        uuid=uuid4(),
-        keys=[folder_key.encrypt_self(user.get_encryption_key())],
-    )
-
-    assert folder.encryption_version == "ST1"
-
-    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest2)
-    folder.check_encryption_version(user)
-
-    assert folder.encryption_version == "ST2"
-
-
 def test_grant_access(single_encryption):
     user = UserObject()
 
