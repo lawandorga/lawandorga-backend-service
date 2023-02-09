@@ -2,6 +2,7 @@ import environs
 import sentry_sdk
 from corsheaders.defaults import default_headers
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import ignore_logger
 
 from .base import *
 
@@ -155,3 +156,7 @@ sentry_sdk.init(
     send_default_pii=True,
     environment="production",
 )
+
+# sentry ignore disallowed host
+# see: https://github.com/getsentry/sentry-python/issues/641#issuecomment-595391423
+ignore_logger("django.security.DisallowedHost")
