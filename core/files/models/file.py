@@ -11,7 +11,7 @@ from .folder import Folder
 
 
 class File(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=1000)
     creator = models.ForeignKey(
         UserProfile, related_name="files_created", on_delete=models.SET_NULL, null=True
     )
