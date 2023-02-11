@@ -1,11 +1,8 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
-main.tf
 .pytest_cache
 .mypy_cache
-**secrets**
 tmp/static
 tmp/media
-tmp/venv
 tmp/cache
 /.idea
 .c9/
@@ -15,7 +12,11 @@ staticfiles/
 .vscode/
 backend/static/tests/test_files/
 data/
-
+/node_modules
+tmp/venv
+main.tf
+*.tf
+**secrets**
 test*.sh
 .coverage
 test.sh
@@ -27,7 +28,6 @@ tmp/s3backup
 *.log
 /out-tsc
 db.sqlite3
-/node_modules
 /venv
 /environments
 .project
