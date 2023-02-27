@@ -5,6 +5,30 @@ from pydantic import AnyUrl, BaseModel
 from core.seedwork.api_layer import qs_to_list
 
 
+class InputNoteCreate(BaseModel):
+    title: str
+    note: str
+
+
+class InputNoteUpdate(BaseModel):
+    title: str
+    note: str
+    id: int
+
+
+class InputNoteDelete(BaseModel):
+    id: int
+
+
+class OutputNote(BaseModel):
+    id: int
+    title: str
+    note: str
+
+    class Config:
+        orm_mode = True
+
+
 class InputAcceptMember(BaseModel):
     user: int
 

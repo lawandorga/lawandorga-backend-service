@@ -10,7 +10,6 @@ router.register(
 )
 router.register("rlcs", views.RlcViewSet)
 router.register("permissions", views.PermissionViewSet)
-router.register("notes", views.NoteViewSet)
 
 
 urlpatterns = [
@@ -18,4 +17,5 @@ urlpatterns = [
     path("org/", include(api.org_router.urls)),
     path("groups/", include(api.group_router.urls)),
     path("query/", include(api.query_router.urls)),
+    path("notes/", include(api.note_router.urls)),
 ]
