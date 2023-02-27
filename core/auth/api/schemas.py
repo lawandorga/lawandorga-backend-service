@@ -62,6 +62,18 @@ class OutputLegalRequirement(BaseModel):
         orm_mode = True
 
 
+class OutputMatrixUser(BaseModel):
+    _group: str
+    matrix_id: str
+
+    class Config:
+        orm_mode = True
+
+
+class OutputChatPage(BaseModel):
+    matrix_user: OutputMatrixUser | None
+
+
 class OutputRegisterPage(BaseModel):
     orgs: list[OutputOrg]
     legal_requirements: list[OutputLegalRequirement]

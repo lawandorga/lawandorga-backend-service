@@ -1,6 +1,6 @@
 from django.db.models import Q
 
-from core.auth.models import RlcUser
+from core.auth.models import RlcUser, UserProfile
 from core.legal.models import LegalRequirement
 from core.rlc.models import Org
 from core.seedwork.api_layer import Router
@@ -8,6 +8,13 @@ from core.seedwork.api_layer import Router
 from . import schemas
 
 router = Router()
+
+
+@router.get(url="page/chat/", output_schema=schemas.OutputChatPage)
+def query__chat_page(user: UserProfile):
+    if hasattr(user, 'matrix_user'):
+        return {'matrix_user': user.matrix_user}
+    return {'matrix_user': None}
 
 
 @router.get(url="page/register/", output_schema=schemas.OutputRegisterPage)
