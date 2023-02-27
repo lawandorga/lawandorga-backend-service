@@ -1,51 +1,44 @@
-from django.conf import settings
-from django.test import TestCase
+import pytest
 
 from core.auth.oidc_provider_settings import userinfo
-from core.models import MatrixUser, Org, RlcUser, UserProfile
+from core.models import MatrixUser, Org, UserProfile
+from core.seedwork import test_helpers
 
 
-class MatrixUserBase:
-    def setUp(self):
-        rlc = Org.objects.create(name="Test RLC")
-
-        self.user1 = UserProfile.objects.create(email="dummy@law-orga.de", name="Dummy")
-        self.user1.set_password(settings.DUMMY_USER_PASSWORD)
-        self.user1.save()
-        self.rlc_user1 = RlcUser(
-            user=self.user1, email_confirmed=True, accepted=True, org=rlc
-        )
-        self.rlc_user1.generate_keys(settings.DUMMY_USER_PASSWORD)
-        self.rlc_user1.save()
-        self.matrix_user1 = MatrixUser.objects.create(user=self.user1)
-
-        user2 = UserProfile.objects.create(email="tester1@law-orga.de", name="Tester1")
-        user2.set_password("pass1234")
-        user2.save()
-        self.rlc_user2 = RlcUser(
-            user=user2, email_confirmed=True, accepted=True, org=rlc
-        )
-        self.rlc_user2.generate_keys("pass1234")
-        self.rlc_user2.save()
-        self.matrix_user2 = MatrixUser.objects.create(
-            user=user2, _group="Different group"
-        )
-
-        user3 = UserProfile.objects.create(email="tester2@law-orga.de", name="Tester2")
-        user3.set_password("pass1234")
-        user3.save()
-        self.matrix_user3 = MatrixUser.objects.create(user=user3)
+@pytest.fixture
+def user1(db):
+    org = Org.objects.create(name="Test RLC")
+    rlc_user = test_helpers.create_rlc_user(rlc=org)
+    user = rlc_user["user"]
+    m_user = MatrixUser.objects.create(user=user)
+    yield m_user
 
 
-class MatrixUserTests(MatrixUserBase, TestCase):
-    def test_user_groups(self):
-        assert self.matrix_user1.group == "Test RLC"
-        assert self.matrix_user2.group == "Different group"
-        assert self.matrix_user3.group == ""
+@pytest.fixture
+def user2(db):
+    org = Org.objects.create(name="Test RLC")
+    rlc_user = test_helpers.create_rlc_user(rlc=org, email="tester1@law-orga.de")
+    user = rlc_user["user"]
+    m_user = MatrixUser.objects.create(user=user, _group="Different Group")
+    yield m_user
 
 
-class OIDCTests(MatrixUserBase, TestCase):
-    def test_userinfo(self):
-        claims = userinfo({}, self.user1)
-        assert claims["name"] == "Dummy"
-        assert claims["email"] == "dummy@law-orga.de"
+@pytest.fixture
+def user3(db):
+    user = UserProfile.objects.create(email="tester2@law-orga.de", name="Tester2")
+    user.set_password("pass1234")
+    user.save()
+    m_user = MatrixUser.objects.create(user=user)
+    yield m_user
+
+
+def test_groups_of_users(db, user1, user2, user3):
+    assert user1.group == "Test RLC"
+    assert user2.group == "Different Group"
+    assert user3.group == ""
+
+
+def test_userinfo(db, user1):
+    claims = userinfo({}, user1.user)
+    assert claims["name"] == "Dummy 1"
+    assert claims["email"] == "dummy@law-orga.de"
