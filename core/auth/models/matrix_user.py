@@ -9,6 +9,13 @@ from .user import UserProfile
 
 
 class MatrixUser(models.Model):
+    @staticmethod
+    def create(user: UserProfile, group: str | None = None) -> "MatrixUser":
+        matrix_user = MatrixUser(user=user)
+        if group is not None:
+            matrix_user._group = group
+        return matrix_user
+
     user = models.OneToOneField(
         UserProfile, on_delete=models.CASCADE, related_name="matrix_user"
     )

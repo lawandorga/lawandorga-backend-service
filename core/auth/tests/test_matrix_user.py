@@ -1,6 +1,7 @@
 import pytest
 
 from core.auth.oidc_provider_settings import userinfo
+from core.auth.use_cases.matrix_user import create_matrix_user
 from core.models import MatrixUser, Org, UserProfile
 from core.seedwork import test_helpers
 
@@ -42,3 +43,9 @@ def test_userinfo(db, user1):
     claims = userinfo({}, user1.user)
     assert claims["name"] == "Dummy 1"
     assert claims["email"] == "dummy@law-orga.de"
+
+
+def test_matrix_user_create(db):
+    user = test_helpers.create_rlc_user()
+    create_matrix_user(user["rlc_user"])
+    assert MatrixUser.objects.filter(user=user["user"]).count()
