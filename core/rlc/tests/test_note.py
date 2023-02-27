@@ -1,85 +1,59 @@
-from django.conf import settings
-from django.test import TestCase
-from rest_framework.test import APIRequestFactory, force_authenticate
+import json
 
-from core.auth.domain.user_key import UserKey
-from core.models import Note, Org, RlcUser, UserProfile
+import pytest
+from django.test import Client
+
+from core.models import Note, Org
+from core.seedwork import test_helpers
 from core.static import PERMISSION_DASHBOARD_MANAGE_NOTES
-from core.views import NoteViewSet
 
 
-class NoteUserBase:
-    def setUp(self):
-        self.rlc = Org.objects.create(name="Test RLC")
-        self.user = UserProfile.objects.create(
-            email="dummy@law-orga.de", name="Dummy 1"
-        )
-        self.user.set_password(settings.DUMMY_USER_PASSWORD)
-        self.user.save()
-        self.rlc_user = RlcUser(
-            user=self.user, email_confirmed=True, accepted=True, org=self.rlc
-        )
-        self.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
-        self.rlc_user.save()
-        self.rlc.generate_keys()
-        self.rlc_user = RlcUser.objects.get(pk=self.rlc_user.pk)
-        self.private_key = (
-            UserKey.create_from_dict(self.rlc_user.key)
-            .decrypt_self(settings.DUMMY_USER_PASSWORD)
-            .key.get_private_key()
-            .decode("utf-8")
-        )
+@pytest.fixture
+def user(db):
+    rlc = Org.objects.create(name="Test RLC")
+    user = test_helpers.create_rlc_user(rlc=rlc)
+    user["rlc_user"].grant(PERMISSION_DASHBOARD_MANAGE_NOTES)
+    yield user
 
 
-class NoteUserViewSetBase(NoteUserBase):
-    def setUp(self):
-        super().setUp()
-        self.factory = APIRequestFactory()
+@pytest.fixture
+def note(db, user):
+    note = Note.create(org=user["rlc_user"].org, title="Test", note="Content")
+    note.save()
+    yield note
 
 
-class NoteViewSetWorking(NoteUserViewSetBase, TestCase):
-    def setUp(self):
-        super().setUp()
-        self.rlc_user.grant(PERMISSION_DASHBOARD_MANAGE_NOTES)
+def test_note_create(db, user):
+    c = Client()
+    c.login(**user)
+    response = c.post(
+        "/api/notes/",
+        data=json.dumps({"title": "Test", "note": "Content"}),
+        content_type="application/json",
+    )
+    assert response.status_code == 200
 
-    def create_note(self):
-        self.note = Note.objects.create(rlc=self.rlc, title="Update 2022")
 
-    def test_create_works(self):
-        view = NoteViewSet.as_view(actions={"post": "create"})
-        data = {"title": "My Note", "note": "My awesome text within this note."}
-        request = self.factory.post("", data)
-        force_authenticate(request, self.user)
-        response = view(request)
-        self.assertContains(response, "My Note", status_code=201)
+def test_note_update(db, user, note):
+    c = Client()
+    c.login(**user)
+    response = c.put(
+        "/api/notes/{}/".format(note.id),
+        data=json.dumps({"title": "New", "note": "New"}),
+        content_type="application/json",
+    )
+    assert response.status_code == 200 and Note.objects.get(pk=note.pk).title == "New"
 
-    def test_update_works(self):
-        view = NoteViewSet.as_view(actions={"patch": "partial_update"})
-        self.create_note()
-        data = {
-            "title": "New Title",
-        }
-        request = self.factory.patch("", data)
-        force_authenticate(request, self.user)
-        response = view(request, pk=self.note.pk)
-        self.assertContains(response, "New Title", status_code=200)
 
-    def test_destroy_works(self):
-        self.create_note()
-        pk = self.note.pk
-        view = NoteViewSet.as_view(actions={"delete": "destroy"})
-        data = {
-            "title": "New Title",
-        }
-        request = self.factory.delete("", data)
-        force_authenticate(request, self.user)
-        response = view(request, pk=pk)
-        self.assertContains(response, "", status_code=204)
+def test_note_delete(db, user, note):
+    c = Client()
+    c.login(**user)
+    response = c.delete("/api/notes/{}/".format(note.id))
+    assert response.status_code == 200 and Note.objects.filter(pk=note.pk).count() == 0
 
-    def test_list_works(self):
-        self.create_note()
-        view = NoteViewSet.as_view(actions={"get": "list"})
-        request = self.factory.get("")
-        force_authenticate(request, self.user)
-        response = view(request)
-        self.assertContains(response, "Update 2022", status_code=200)
+
+def test_list_works(db, user, note):
+    c = Client()
+    c.login(**user)
+    response = c.get("/api/notes/")
+    assert response.json()
