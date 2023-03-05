@@ -38,7 +38,10 @@ class MatrixUser(models.Model):
     def save(self, **kwargs):
         if not self.matrix_id:
             matrix_id = hexlify(randbytes(4)).decode()
-            while MatrixUser.objects.filter(matrix_id=matrix_id).exists():
+            while (
+                MatrixUser.objects.filter(matrix_id=matrix_id).exists()
+                or matrix_id.isnumeric()
+            ):
                 matrix_id = hexlify(randbytes(4)).decode()
             self.matrix_id = matrix_id
         super().save(**kwargs)

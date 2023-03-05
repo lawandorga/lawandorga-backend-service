@@ -12,9 +12,9 @@ router = Router()
 
 @router.get(url="page/chat/", output_schema=schemas.OutputChatPage)
 def query__chat_page(user: UserProfile):
-    if hasattr(user, 'matrix_user'):
-        return {'matrix_user': user.matrix_user}
-    return {'matrix_user': None}
+    if hasattr(user, "matrix_user"):
+        return {"matrix_user": user.matrix_user}
+    return {"matrix_user": None}
 
 
 @router.get(url="page/register/", output_schema=schemas.OutputRegisterPage)
