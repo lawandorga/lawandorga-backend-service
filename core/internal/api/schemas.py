@@ -29,9 +29,20 @@ class OutputHelpPage(BaseModel):
         orm_mode = True
 
 
+class OutputArticleList(BaseModel):
+    id: int
+    title: str
+    description: str
+    date: date
+
+    class Config:
+        orm_mode = True
+
+
 class OutputIndexPage(BaseModel):
     content: str
     roadmap_items: list[OutputRoadmapItem]
+    articles: list[OutputArticleList]
 
     class Config:
         orm_mode = True
