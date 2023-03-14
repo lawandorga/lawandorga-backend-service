@@ -8,6 +8,11 @@ class OutputUserLogins(BaseModel):
     logins: int
 
 
+class OutputUserLoginsMonth(BaseModel):
+    month: str
+    logins: int
+
+
 class OutputOrgUsage(BaseModel):
     lc: str
     records: int
