@@ -46,34 +46,6 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         return Response(data)
 
     @action(detail=False)
-    def errors_month(self, request, *args, **kwargs):
-        if settings.DEBUG:
-            statement = """
-            select status, path, count(*) as count
-            from core_loggedpath
-            where status > 300
-            and status <> 401
-            and time > date('now', '-1 month')
-            group by status, path
-            order by count(*) desc
-            limit 20
-            """
-        else:
-            statement = """
-            select status, path, count(*) as count
-            from core_loggedpath
-            where status > 300
-            and status <> 401
-            and time > current_date - interval '30' day
-            group by status, path
-            order by count(*) desc
-            limit 20
-            """
-        data = self.execute_statement(statement)
-        data = map(lambda x: {"status": x[0], "path": x[1], "count": x[2]}, data)
-        return Response(data)
-
-    @action(detail=False)
     def raw_numbers(self, request, *args, **kwargs):
         statement = """
         select

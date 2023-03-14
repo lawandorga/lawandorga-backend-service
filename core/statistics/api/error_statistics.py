@@ -1,3 +1,5 @@
+from django.db import connection
+
 from core.auth.models import StatisticUser
 from core.seedwork.api_layer import Router
 from core.seedwork.statistics import execute_statement
@@ -5,6 +7,35 @@ from core.seedwork.statistics import execute_statement
 from . import schemas
 
 router = Router()
+
+
+@router.get("errors_month/", output_schema=list[schemas.OutputErrorsMonth])
+def query__errors_month(statistics_user: StatisticUser):
+    if connection.vendor == "sqlite":
+        statement = """
+        select status, path, count(*) as count
+        from core_loggedpath
+        where status > 300
+        and status <> 401
+        and time > date('now', '-1 month')
+        group by status, path
+        order by count(*) desc
+        limit 20
+        """
+    else:
+        statement = """
+        select status, path, count(*) as count
+        from core_loggedpath
+        where status > 300
+        and status <> 401
+        and time > current_date - interval '30' day
+        group by status, path
+        order by count(*) desc
+        limit 20
+        """
+    data = execute_statement(statement)
+    data = map(lambda x: {"status": x[0], "path": x[1], "count": x[2]}, data)
+    return list(data)
 
 
 @router.get("errors_user/", output_schema=list[schemas.OutputErrorsUser])

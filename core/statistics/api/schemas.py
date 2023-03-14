@@ -3,6 +3,12 @@ from typing import Any, List, Optional
 from pydantic import BaseModel
 
 
+class OutputErrorsMonth(BaseModel):
+    status: int
+    path: str
+    count: int
+
+
 class OutputErrorsUser(BaseModel):
     email: str
     rlckeys: int
