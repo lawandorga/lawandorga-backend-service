@@ -8,6 +8,11 @@ class OutputTag(BaseModel):
     count: int
 
 
+class OutputRecordStates(BaseModel):
+    state: str
+    amount: int
+
+
 class OutputState(BaseModel):
     state: str
     count: int
