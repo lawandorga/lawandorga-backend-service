@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import connection
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -37,10 +36,6 @@ class RlcStatisticsViewSet(viewsets.GenericViewSet):
         data = self.execute_statement(statement)
         data = map(lambda x: {"state": x[0], "amount": x[1]}, data)
         return Response(data)
-
-    @action(detail=False)
-    def tag_stats(self, request, *args, **kwargs):
-        return Response(ret)
 
     @action(detail=False)
     def record_client_sex(self, request, *args, **kwargs):

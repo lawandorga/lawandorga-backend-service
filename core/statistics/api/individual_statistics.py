@@ -46,6 +46,32 @@ def query__user_actions_month(rlc_user: RlcUser):
     return list(data)
 
 
+@router.get("record_states/", output_schema=list[schemas.OutputRecordStates])
+def query__record_states(rlc_user: RlcUser):
+    statement = """
+             select state, count(amount) as amount
+             from (
+                 select count(state.record_id) as amount,
+                     state.record_id,
+                     case
+                         when count(state.record_id) <> 1 or state.value = '' or state.value is null then 'Unknown'
+                         else state.value
+                     end as state
+                 from core_record as record
+                 left join core_recordstateentry as state on state.record_id = record.id
+                 left join core_recordtemplate as template on template.id = record.template_id
+                 where template.rlc_id = {}
+                 group by record.id, state.record_id, state.value
+             ) as tmp
+             group by state
+             """.format(
+        rlc_user.org_id
+    )
+    data = execute_statement(statement)
+    data = map(lambda x: {"state": x[0], "amount": x[1]}, data)
+    return list(data)
+
+
 @router.get("tag_stats/", output_schema=schemas.OutputRecordTagStats)
 def query__tag_stats(rlc_user: RlcUser):
     if connection.vendor == "sqlite":
