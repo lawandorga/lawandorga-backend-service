@@ -15,6 +15,10 @@ env.read_env()
 MAIN_FRONTEND_URL = "https://www.law-orga.de"
 STATISTICS_FRONTEND_URL = "https://statistics.law-orga.de"
 
+# This is used internally to access media or similar stuff
+#
+MAIN_BACKEND_URL = "https:/backend.law-orga.de"
+
 # Debug
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEBUG
 DEBUG = False

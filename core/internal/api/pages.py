@@ -23,7 +23,7 @@ def query__article_page(data: schemas.InputArticleDetail):
 @router.get("help/", output_schema=schemas.OutputHelpPage)
 def query__help_page():
     page = HelpPage.get_solo()
-    return {"id": page.id, "manual": page.manual.url if page.manual else ""}
+    return page
 
 
 @router.get("index/", output_schema=schemas.OutputIndexPage)

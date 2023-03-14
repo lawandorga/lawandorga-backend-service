@@ -5,6 +5,10 @@ from .base import *
 MAIN_FRONTEND_URL = "http://localhost:4200"
 STATISTICS_FRONTEND_URL = "http://localhost:4300"
 
+# This is used internally to access media or similar stuff
+#
+MAIN_BACKEND_URL = "http://localhost:8000"
+
 # This is used for ics calendar integration links
 #
 CALENDAR_URL = "http://localhost:8000"

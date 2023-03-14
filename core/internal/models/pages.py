@@ -1,3 +1,6 @@
+from typing import Optional
+
+from django.conf import settings
 from django.db import models
 from solo.models import SingletonModel
 from tinymce.models import HTMLField
@@ -45,3 +48,9 @@ class HelpPage(SingletonModel):
 
     def __str__(self):
         return "HelpPage"
+
+    @property
+    def manual_url(self) -> Optional[str]:
+        if self.manual is None:
+            return None
+        return f"{settings.MAIN_BACKEND_URL}{self.manual.url}"

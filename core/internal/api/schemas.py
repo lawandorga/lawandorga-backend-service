@@ -24,7 +24,7 @@ class OutputImprintPage(BaseModel):
 
 class OutputHelpPage(BaseModel):
     id: int
-    manual: str
+    manual_url: Optional[str]
 
     class Config:
         orm_mode = True
