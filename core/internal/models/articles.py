@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.db import models
 from tinymce.models import HTMLField
 
@@ -22,3 +24,9 @@ class Article(models.Model):
 
     def __str__(self):
         return "article: {};".format(self.title)
+
+    @property
+    def author_name(self) -> Optional[str]:
+        if self.author is None:
+            return None
+        return self.author.user.name

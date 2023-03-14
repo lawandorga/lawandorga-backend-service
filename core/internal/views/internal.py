@@ -2,15 +2,16 @@ from typing import List
 
 from rest_framework import mixins
 from rest_framework.response import Response
+from rest_framework.serializers import ModelSerializer
 from rest_framework.viewsets import GenericViewSet
 
-from core.models import Article, HelpPage
+from core.models import HelpPage
 
-from ..serializers import (
-    ArticleDetailSerializer,
-    ArticleSerializer,
-    HelpPageSerializer,
-)
+
+class HelpPageSerializer(ModelSerializer):
+    class Meta:
+        model = HelpPage
+        fields = "__all__"
 
 
 class PageViewSet(mixins.ListModelMixin, GenericViewSet):
@@ -18,18 +19,6 @@ class PageViewSet(mixins.ListModelMixin, GenericViewSet):
         instance = self.get_queryset().model.get_solo()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
-
-
-class ArticleViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
-    queryset = Article.objects.all()
-    serializer_class = ArticleSerializer
-    permission_classes: List = []
-    authentication_classes: List = []
-
-    def get_serializer_class(self):
-        if self.action == "retrieve":
-            return ArticleDetailSerializer
-        return super().get_serializer_class()
 
 
 class HelpPageViewSet(PageViewSet):

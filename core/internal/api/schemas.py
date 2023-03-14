@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -34,6 +35,22 @@ class OutputArticleList(BaseModel):
     title: str
     description: str
     date: date
+
+    class Config:
+        orm_mode = True
+
+
+class InputArticleDetail(BaseModel):
+    id: int
+
+
+class OutputArticleDetail(BaseModel):
+    id: int
+    title: str
+    description: str
+    date: date
+    content: str = ""
+    author_name: Optional[str] = None
 
     class Config:
         orm_mode = True
