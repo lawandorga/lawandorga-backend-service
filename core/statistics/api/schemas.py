@@ -8,6 +8,11 @@ class OutputRecordClientSex(BaseModel):
     count: int
 
 
+class OutputRecordClientState(BaseModel):
+    value: str
+    count: int
+
+
 class OutputRecordClientAge(BaseModel):
     value: str
     count: int

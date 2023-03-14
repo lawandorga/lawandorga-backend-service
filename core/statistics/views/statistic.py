@@ -47,19 +47,3 @@ class StatisticsViewSet(viewsets.GenericViewSet):
             )
         )
         return Response(data[0])
-
-    @action(detail=False)
-    def record_client_state(self, request, *args, **kwargs):
-        statement = """
-        select
-        case when entry.value is null then 'Unset' else entry.value end as value,
-        count(*) as count
-        from core_record record
-        left join core_recordstatisticentry entry on record.id = entry.record_id
-        left join core_recordstatisticfield field on entry.field_id = field.id
-        where field.name='Current status of the client' or field.name is null
-        group by value
-        """
-        data = self.execute_statement(statement)
-        data = map(lambda x: {"value": x[0], "count": x[1]}, data)
-        return Response(data)
