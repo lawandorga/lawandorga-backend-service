@@ -3,6 +3,14 @@ from typing import Any, List, Optional
 from pydantic import BaseModel
 
 
+class OutputRawNumbers(BaseModel):
+    records: int
+    files: int
+    collabs: int
+    users: int
+    lcs: int
+
+
 class OutputRecordClientSex(BaseModel):
     value: str
     count: int
