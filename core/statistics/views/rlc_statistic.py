@@ -38,25 +38,6 @@ class RlcStatisticsViewSet(viewsets.GenericViewSet):
         return Response(data)
 
     @action(detail=False)
-    def record_client_sex(self, request, *args, **kwargs):
-        statement = """
-            select
-            case when entry.value is null then 'Unknown' else entry.value end as value,
-            count(*) as count
-            from core_record record
-            left join core_recordstatisticentry entry on record.id = entry.record_id
-            left join core_recordstatisticfield field on entry.field_id = field.id
-            left join core_recordtemplate as template on template.id = field.template_id
-            where (field.name='Sex of the client' or field.name is null) and template.rlc_id = {}
-            group by value
-            """.format(
-            request.user.rlc.id
-        )
-        data = self.execute_statement(statement)
-        data = map(lambda x: {"value": x[0], "count": x[1]}, data)
-        return Response(data)
-
-    @action(detail=False)
     def record_client_nationality(self, request, *args, **kwargs):
         statement = """
             select

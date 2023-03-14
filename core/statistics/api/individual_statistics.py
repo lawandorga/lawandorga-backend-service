@@ -72,6 +72,26 @@ def query__record_states(rlc_user: RlcUser):
     return list(data)
 
 
+@router.get("record_client_sex/", output_schema=list[schemas.OutputRecordClientSex])
+def query__record_client_sex(rlc_user: RlcUser):
+    statement = """
+               select
+               case when entry.value is null then 'Unknown' else entry.value end as value,
+               count(*) as count
+               from core_record record
+               left join core_recordstatisticentry entry on record.id = entry.record_id
+               left join core_recordstatisticfield field on entry.field_id = field.id
+               left join core_recordtemplate as template on template.id = field.template_id
+               where (field.name='Sex of the client' or field.name is null) and template.rlc_id = {}
+               group by value
+               """.format(
+        rlc_user.org_id
+    )
+    data = execute_statement(statement)
+    data = map(lambda x: {"value": x[0], "count": x[1]}, data)
+    return list(data)
+
+
 @router.get("tag_stats/", output_schema=schemas.OutputRecordTagStats)
 def query__tag_stats(rlc_user: RlcUser):
     if connection.vendor == "sqlite":
