@@ -1,13 +1,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from core.models import Article, HelpPage, RoadmapItem
-
-
-class RoadmapItemSerializer(ModelSerializer):
-    class Meta:
-        model = RoadmapItem
-        fields = ["title", "description", "date", "id"]
+from core.models import Article, HelpPage
 
 
 class ArticleSerializer(ModelSerializer):

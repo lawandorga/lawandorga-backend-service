@@ -4,13 +4,12 @@ from rest_framework import mixins
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from core.models import Article, HelpPage, RoadmapItem
+from core.models import Article, HelpPage
 
 from ..serializers import (
     ArticleDetailSerializer,
     ArticleSerializer,
     HelpPageSerializer,
-    RoadmapItemSerializer,
 )
 
 
@@ -19,13 +18,6 @@ class PageViewSet(mixins.ListModelMixin, GenericViewSet):
         instance = self.get_queryset().model.get_solo()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
-
-
-class RoadmapItemViewSet(mixins.ListModelMixin, GenericViewSet):
-    queryset = RoadmapItem.objects.all()
-    serializer_class = RoadmapItemSerializer
-    permission_classes: List = []
-    authentication_classes: List = []
 
 
 class ArticleViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):

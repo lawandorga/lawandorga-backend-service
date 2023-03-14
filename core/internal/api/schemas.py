@@ -1,4 +1,16 @@
+from datetime import date
+
 from pydantic import BaseModel
+
+
+class OutputRoadmapItem(BaseModel):
+    title: str
+    description: str
+    date: date
+    id: int
+
+    class Config:
+        orm_mode = True
 
 
 class OutputImprintPage(BaseModel):
@@ -18,8 +30,8 @@ class OutputHelpPage(BaseModel):
 
 
 class OutputIndexPage(BaseModel):
-    id: int
     content: str
+    roadmap_items: list[OutputRoadmapItem]
 
     class Config:
         orm_mode = True

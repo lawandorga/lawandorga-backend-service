@@ -1,4 +1,4 @@
-from core.internal.models import HelpPage, ImprintPage, IndexPage, TomsPage
+from core.internal.models import HelpPage, ImprintPage, IndexPage, TomsPage, RoadmapItem
 from core.seedwork.api_layer import Router
 
 from . import schemas
@@ -14,7 +14,12 @@ def query__help_page():
 
 @router.get("index/", output_schema=schemas.OutputIndexPage)
 def query__index_page():
-    return IndexPage.get_solo()
+    page = IndexPage.get_solo()
+    roadmap_items = list(RoadmapItem.objects.all())
+    return {
+        "content": page.content,
+        "roadmap_items": roadmap_items
+    }
 
 
 @router.get("imprint/", output_schema=schemas.OutputImprintPage)
