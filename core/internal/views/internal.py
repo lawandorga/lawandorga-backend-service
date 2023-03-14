@@ -4,15 +4,13 @@ from rest_framework import mixins
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from core.models import Article, HelpPage, ImprintPage, IndexPage, RoadmapItem, TomsPage
+from core.models import Article, HelpPage, RoadmapItem
 
 from ..serializers import (
     ArticleDetailSerializer,
     ArticleSerializer,
     HelpPageSerializer,
-    IndexPageSerializer,
     RoadmapItemSerializer,
-    TomsPageSerializer,
 )
 
 
@@ -40,27 +38,6 @@ class ArticleViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericVi
         if self.action == "retrieve":
             return ArticleDetailSerializer
         return super().get_serializer_class()
-
-
-class IndexPageViewSet(PageViewSet):
-    queryset = IndexPage.objects.none()
-    serializer_class = IndexPageSerializer
-    permission_classes: List = []
-    authentication_classes: List = []
-
-
-class ImprintPageViewSet(PageViewSet):
-    queryset = ImprintPage.objects.none()
-    serializer_class = IndexPageSerializer
-    permission_classes: List = []
-    authentication_classes: List = []
-
-
-class TomsPageViewSet(PageViewSet):
-    queryset = TomsPage.objects.none()
-    serializer_class = TomsPageSerializer
-    permission_classes: List = []
-    authentication_classes: List = []
 
 
 class HelpPageViewSet(PageViewSet):

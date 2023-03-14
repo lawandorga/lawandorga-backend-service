@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from core.models import Article, HelpPage, IndexPage, RoadmapItem, TomsPage
+from core.models import Article, HelpPage, RoadmapItem
 
 
 class RoadmapItemSerializer(ModelSerializer):
@@ -27,18 +27,6 @@ class ArticleDetailSerializer(ModelSerializer):
         if obj.author:
             return obj.author.user.name
         return None
-
-
-class IndexPageSerializer(ModelSerializer):
-    class Meta:
-        model = IndexPage
-        fields = "__all__"
-
-
-class TomsPageSerializer(ModelSerializer):
-    class Meta:
-        model = TomsPage
-        fields = "__all__"
 
 
 class HelpPageSerializer(ModelSerializer):
