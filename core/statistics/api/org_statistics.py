@@ -11,6 +11,33 @@ from . import schemas
 router = Router()
 
 
+@router.get(url="user_actions_month/", output_schema=list[schemas.OutputUserActions])
+def query__user_actions(statistics_user: StatisticUser):
+    if connection.vendor == "sqlite":
+        statement = """
+        select u.id as email, count(*) as actions
+        from core_userprofile as u
+        left join core_loggedpath path on u.id = path.user_id
+        where user_id is not null
+        and path.time > date('now', '-1 month')
+        group by u.email, u.id
+        order by count(*) desc;
+        """
+    else:
+        statement = """
+        select u.id as email, count(*) as actions
+        from core_userprofile as u
+        left join core_loggedpath path on u.id = path.user_id
+        where user_id is not null
+        and path.time > date_trunc('day', NOW() - interval '1 month')
+        group by u.email, u.id
+        order by count(*) desc;
+        """
+    data = execute_statement(statement)
+    data = map(lambda x: {"email": x[0], "actions": x[1]}, data)
+    return list(data)
+
+
 @router.get(url="unique_users_month/", output_schema=list[schemas.OutputUniqueUsers])
 def query__unique_users(statistics_user: StatisticUser):
     if connection.vendor == "sqlite":

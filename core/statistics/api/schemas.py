@@ -3,6 +3,11 @@ from typing import Any, List, Optional
 from pydantic import BaseModel
 
 
+class OutputUserActions(BaseModel):
+    email: str
+    actions: int
+
+
 class OutputUniqueUsers(BaseModel):
     month: str
     logins: int

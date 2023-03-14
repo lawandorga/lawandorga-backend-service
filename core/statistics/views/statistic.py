@@ -46,32 +46,6 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         return Response(data)
 
     @action(detail=False)
-    def user_actions_month(self, request, *args, **kwargs):
-        if settings.DEBUG:
-            statement = """
-            select u.id as email, count(*) as actions
-            from core_userprofile as u
-            left join core_loggedpath path on u.id = path.user_id
-            where user_id is not null
-            and path.time > date('now', '-1 month')
-            group by u.email, u.id
-            order by count(*) desc;
-            """
-        else:
-            statement = """
-            select u.id as email, count(*) as actions
-            from core_userprofile as u
-            left join core_loggedpath path on u.id = path.user_id
-            where user_id is not null
-            and path.time > date_trunc('day', NOW() - interval '1 month')
-            group by u.email, u.id
-            order by count(*) desc;
-            """
-        data = self.execute_statement(statement)
-        data = map(lambda x: {"email": x[0], "actions": x[1]}, data)
-        return Response(data)
-
-    @action(detail=False)
     def errors_month(self, request, *args, **kwargs):
         if settings.DEBUG:
             statement = """
