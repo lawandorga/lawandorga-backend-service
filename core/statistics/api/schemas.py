@@ -3,6 +3,12 @@ from typing import Any, List, Optional
 from pydantic import BaseModel
 
 
+class OutputUsersWithMissingAccess(BaseModel):
+    user: int
+    records: int
+    access: int
+
+
 class OutputErrorsMonth(BaseModel):
     status: int
     path: str
