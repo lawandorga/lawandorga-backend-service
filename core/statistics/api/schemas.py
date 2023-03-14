@@ -3,6 +3,11 @@ from typing import Any, List, Optional
 from pydantic import BaseModel
 
 
+class OutputRecordClientSex(BaseModel):
+    value: str
+    count: int
+
+
 class OutputTag(BaseModel):
     tag: str
     count: int
