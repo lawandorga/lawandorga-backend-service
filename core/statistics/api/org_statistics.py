@@ -5,15 +5,13 @@ from django.db import connection
 from core.auth.models import RlcUser, StatisticUser
 from core.seedwork.api_layer import Router
 from core.seedwork.statistics import execute_statement
+
 from . import schemas
 
 router = Router()
 
 
-@router.api(
-    url='rlc_members/',
-    output_schema=list[schemas.OutputOrgMembers]
-)
+@router.get(url="rlc_members/", output_schema=list[schemas.OutputOrgMembers])
 def query__org_members(statistics_user: StatisticUser):
     statement = """
             select
@@ -25,6 +23,32 @@ def query__org_members(statistics_user: StatisticUser):
             """
     data = execute_statement(statement)
     data = list(map(lambda x: {"name": x[0], "amount": x[1]}, data))
+    return data
+
+
+@router.get(url="lc_usage/", output_schema=list[schemas.OutputOrgUsage])
+def query__org_usage(statistics_user: StatisticUser):
+    statement = """
+    select
+        rlc.name as name,
+        count(distinct record.id) as records,
+        count(distinct file.id) as files,
+        count(distinct document.id) as documents
+    from core_org as rlc
+    left join core_recordtemplate template on rlc.id = template.rlc_id
+    left join core_record record on record.template_id = template.id
+    left join core_folder folder on rlc.id = folder.rlc_id
+    left join core_file file on file.folder_id = folder.id
+    left join core_collabdocument document on rlc.id = document.rlc_id
+    group by rlc.id, rlc.name;
+    """
+    data = execute_statement(statement)
+    data = list(
+        map(
+            lambda x: {"lc": x[0], "records": x[1], "files": x[2], "documents": x[3]},
+            data,
+        )
+    )
     return data
 
 

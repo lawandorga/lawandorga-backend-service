@@ -3,6 +3,13 @@ from typing import Any, List, Optional
 from pydantic import BaseModel
 
 
+class OutputOrgUsage(BaseModel):
+    lc: str
+    records: int
+    files: int
+    documents: int
+
+
 class OutputOrgMembers(BaseModel):
     name: str
     amount: int
