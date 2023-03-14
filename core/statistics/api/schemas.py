@@ -3,6 +3,11 @@ from typing import Any, List, Optional
 from pydantic import BaseModel
 
 
+class OutputOrgMembers(BaseModel):
+    name: str
+    amount: int
+
+
 class OutputMigrationStatistic(BaseModel):
     records: float
     records_togo: int

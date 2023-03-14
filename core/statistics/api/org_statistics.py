@@ -2,18 +2,35 @@ from typing import List
 
 from django.db import connection
 
-from core.auth.models import RlcUser
+from core.auth.models import RlcUser, StatisticUser
 from core.seedwork.api_layer import Router
 from core.seedwork.statistics import execute_statement
-from core.statistics.api.schemas import OutputRecordsCreatedClosed
+from . import schemas
 
 router = Router()
 
 
-# records field amount statistic
+@router.api(
+    url='rlc_members/',
+    output_schema=list[schemas.OutputOrgMembers]
+)
+def query__org_members(statistics_user: StatisticUser):
+    statement = """
+            select
+                core_org.name as rlc_name,
+                count(distinct core_rlcuser.id) as member_amount
+            from core_rlcuser
+            inner join core_org on core_org.id = core_rlcuser.org_id
+            group by core_rlcuser.org_id, core_org.name;
+            """
+    data = execute_statement(statement)
+    data = list(map(lambda x: {"name": x[0], "amount": x[1]}, data))
+    return data
+
+
 @router.api(
     url="records_created_and_closed/",
-    output_schema=List[OutputRecordsCreatedClosed],
+    output_schema=List[schemas.OutputRecordsCreatedClosed],
 )
 def get_records_created_and_closed(rlc_user: RlcUser):
     if connection.vendor == "sqlite":

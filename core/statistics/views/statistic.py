@@ -25,20 +25,6 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         return data
 
     @action(detail=False)
-    def rlc_members(self, request, *args, **kwargs):
-        statement = """
-        select
-            core_org.name as rlc_name,
-            count(distinct core_rlcuser.id) as member_amount
-        from core_rlcuser
-        inner join core_org on core_org.id = core_rlcuser.org_id
-        group by core_rlcuser.org_id, core_org.name;
-        """
-        data = self.execute_statement(statement)
-        data = map(lambda x: {"name": x[0], "amount": x[1]}, data)
-        return Response(data)
-
-    @action(detail=False)
     def record_states(self, request, *args, **kwargs):
         statement = """
         select state, count(amount) as amount
