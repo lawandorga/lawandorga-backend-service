@@ -13,22 +13,9 @@ class StatisticsUserViewSet(viewsets.GenericViewSet):
     serializer_class = StatisticUserSerializer
     queryset = StatisticUser.objects.none()
 
-    def perform_authentication(self, request):
-        if self.action in ["login", "refresh"]:
-            pass
-        else:
-            super().perform_authentication(request)
-
     def get_permissions(self):
         if self.action in [
             "statics",
-            "create",
-            "logout",
-            "login",
-            "password_reset",
-            "password_reset_confirm",
-            "activate",
-            "refresh",
         ]:
             return []
         return super().get_permissions()
