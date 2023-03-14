@@ -3,6 +3,14 @@ from typing import Any, List, Optional
 from pydantic import BaseModel
 
 
+class OutputErrorsUser(BaseModel):
+    email: str
+    rlckeys: int
+    userkeys: int
+    accepted: bool
+    locked: bool
+
+
 class OutputUserActions(BaseModel):
     email: str
     actions: int

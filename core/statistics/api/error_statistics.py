@@ -7,6 +7,34 @@ from . import schemas
 router = Router()
 
 
+@router.get("errors_user/", output_schema=list[schemas.OutputErrorsUser])
+def query__errors_user(statistics_user: StatisticUser):
+    statement = """
+            select
+            baseuser.id,
+            rlckeys.id is not null as rlckeys,
+            rlcuser.key is not null as userkeys,
+            rlcuser.accepted,
+            rlcuser.locked
+            from core_userprofile baseuser
+            inner join core_rlcuser rlcuser on baseuser.id = rlcuser.user_id
+            left join core_orgencryption rlckeys on baseuser.id = rlckeys.user_id
+            where rlckeys.id is null or rlcuser.key is null or rlcuser.key = ''
+            """
+    data = execute_statement(statement)
+    data = map(
+        lambda x: {
+            "email": x[0],
+            "rlckeys": x[1],
+            "userkeys": x[2],
+            "accepted": x[3],
+            "locked": x[4],
+        },
+        data,
+    )
+    return list(data)
+
+
 @router.get("migration/", output_schema=schemas.OutputMigrationStatistic)
 def query__migration_statistic(statistics_user: StatisticUser):
     statement = """
