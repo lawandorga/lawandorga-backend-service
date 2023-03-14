@@ -72,51 +72,6 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         return Response(data)
 
     @action(detail=False)
-    def user_logins_month(self, request, *args, **kwargs):
-        if settings.DEBUG:
-            statement = """
-            select strftime('%Y/%m', time) as month, count(*) as logins
-            from core_loggedpath as path
-            where path.path like '%login%'
-            and (path.status = 200 or path.status = 0)
-            group by strftime('%Y/%m', time)
-            order by date(time) asc;
-            """
-        else:
-            statement = """
-            select to_char(time, 'YYYY/MM') as month, count(*) as logins
-            from core_loggedpath as path
-            where path.path like '%login%'
-            and (path.status = 200 or path.status = 0)
-            group by to_char(time, 'YYYY/MM')
-            order by to_char(time, 'YYYY/MM') asc;
-            """
-        data = self.execute_statement(statement)
-        data = map(lambda x: {"month": x[0], "logins": x[1]}, data)
-        return Response(data)
-
-    # unique users month
-    @action(detail=False)
-    def unique_users_month(self, request, *args, **kwargs):
-        if settings.DEBUG:
-            statement = """
-            select strftime('%Y/%m', time) as month, count(distinct path.user_id) as logins
-            from core_loggedpath as path
-            group by strftime('%Y/%m', time)
-            order by date(time) asc
-            """
-        else:
-            statement = """
-            select to_char(time, 'YYYY/MM') as month, count(distinct path.user_id) as logins
-            from core_loggedpath as path
-            group by to_char(time, 'YYYY/MM')
-            order by to_char(time, 'YYYY/MM') asc;
-            """
-        data = self.execute_statement(statement)
-        data = map(lambda x: {"month": x[0], "logins": x[1]}, data)
-        return Response(data)
-
-    @action(detail=False)
     def errors_month(self, request, *args, **kwargs):
         if settings.DEBUG:
             statement = """
