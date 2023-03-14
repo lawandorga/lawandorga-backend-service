@@ -3,6 +3,21 @@ from typing import Any, List, Optional
 from pydantic import BaseModel
 
 
+class OutputTag(BaseModel):
+    tag: str
+    count: int
+
+
+class OutputState(BaseModel):
+    state: str
+    count: int
+
+
+class OutputRecordTagStats(BaseModel):
+    tags: list[OutputTag]
+    state: list[OutputState]
+
+
 class OutputUsersWithMissingAccess(BaseModel):
     user: int
     records: int
