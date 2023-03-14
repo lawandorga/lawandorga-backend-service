@@ -8,6 +8,11 @@ class OutputRecordClientSex(BaseModel):
     count: int
 
 
+class OutputRecordClientNationality(BaseModel):
+    value: str
+    count: int
+
+
 class OutputTag(BaseModel):
     tag: str
     count: int

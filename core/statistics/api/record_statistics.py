@@ -12,6 +12,26 @@ router = Router()
 
 
 @router.get(
+    url="record_client_nationality/",
+    output_schema=list[schemas.OutputRecordClientNationality],
+)
+def query__record_client_nationality(statistics_user: StatisticUser):
+    statement = """
+            select
+            case when entry.value is null then 'Unset' else entry.value end as value,
+            count(*) as count
+            from core_record record
+            left join core_recordstatisticentry entry on record.id = entry.record_id
+            left join core_recordstatisticfield field on entry.field_id = field.id
+            where field.name='Nationality of the client' or field.name is null
+            group by value
+            """
+    data = execute_statement(statement)
+    data = map(lambda x: {"value": x[0], "count": x[1]}, data)
+    return list(data)
+
+
+@router.get(
     url="record_client_sex/",
     output_schema=list[schemas.OutputRecordClientSex],
 )
