@@ -11,6 +11,21 @@ from . import schemas
 router = Router()
 
 
+@router.get(url="user_logins/", output_schema=list[schemas.OutputUserLogins])
+def query__user_logins(statistics_user: StatisticUser):
+    statement = """
+            select date(time) as date, count(*) as logins
+            from core_loggedpath as path
+            where path.path like '%login%'
+            and (path.status = 200 or path.status = 0)
+            group by date(time)
+            order by date(time) asc;
+            """
+    data = execute_statement(statement)
+    data = map(lambda x: {"date": x[0], "logins": x[1]}, data)
+    return list(data)
+
+
 @router.get(url="rlc_members/", output_schema=list[schemas.OutputOrgMembers])
 def query__org_members(statistics_user: StatisticUser):
     statement = """

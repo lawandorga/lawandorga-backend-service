@@ -72,20 +72,6 @@ class StatisticsViewSet(viewsets.GenericViewSet):
         return Response(data)
 
     @action(detail=False)
-    def user_logins(self, request, *args, **kwargs):
-        statement = """
-        select date(time) as date, count(*) as logins
-        from core_loggedpath as path
-        where path.path like '%login%'
-        and (path.status = 200 or path.status = 0)
-        group by date(time)
-        order by date(time) asc;
-        """
-        data = self.execute_statement(statement)
-        data = map(lambda x: {"date": x[0], "logins": x[1]}, data)
-        return Response(data)
-
-    @action(detail=False)
     def user_logins_month(self, request, *args, **kwargs):
         if settings.DEBUG:
             statement = """

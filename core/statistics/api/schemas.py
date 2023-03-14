@@ -3,6 +3,11 @@ from typing import Any, List, Optional
 from pydantic import BaseModel
 
 
+class OutputUserLogins(BaseModel):
+    date: str
+    logins: int
+
+
 class OutputOrgUsage(BaseModel):
     lc: str
     records: int
