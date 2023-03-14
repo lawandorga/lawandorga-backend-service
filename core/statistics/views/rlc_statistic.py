@@ -14,40 +14,6 @@ class RlcStatisticsViewSet(viewsets.GenericViewSet):
         return data
 
     @action(detail=False)
-    def user_actions_month(self, request, *args, **kwargs):
-        if "sqlite" in settings.DATABASES["default"]["ENGINE"]:
-            statement = """
-                select u.email as email, count(*) as actions
-                from core_userprofile as u
-                left join core_rlcuser ru on ru.user_id = u.id
-                left join core_loggedpath path on u.id = path.user_id
-                where path.user_id is not null
-                and path.time > date('now', '-1 month')
-                and ru.org_id = {}
-                group by u.email
-                order by count(*) desc;
-                """.format(
-                request.user.rlc.id
-            )
-        else:
-            statement = """
-                select u.email as email, count(*) as actions
-                from core_userprofile as u
-                left join core_rlcuser ru on ru.user_id = u.id
-                left join core_loggedpath path on u.id = path.user_id
-                where path.user_id is not null
-                and path.time > date_trunc('day', NOW() - interval '1 month')
-                and ru.org_id = {}
-                group by u.email
-                order by count(*) desc;
-                """.format(
-                request.user.rlc.id
-            )
-        data = self.execute_statement(statement)
-        data = map(lambda x: {"email": x[0], "actions": x[1]}, data)
-        return Response(data)
-
-    @action(detail=False)
     def record_states(self, request, *args, **kwargs):
         statement = """
          select state, count(amount) as amount
