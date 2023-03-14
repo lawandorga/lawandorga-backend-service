@@ -7,7 +7,6 @@ from core.events.urls import urlpatterns as events_urlpatterns
 from core.files.urls import router as files_router
 from core.files_new.urls import urlpatterns as files_new_urlpatterns
 from core.folders.urls import urlpatterns as folders_urlpatterns
-from core.internal.urls import router as internal_router
 from core.internal.urls import urlpatterns as internal_urlpatterns
 from core.legal.urls import urlpatterns as legal_urlpatterns
 from core.mail.urls import urlpatterns as mail_urlpatterns
@@ -28,7 +27,6 @@ urlpatterns = [
     path("api/legal/", include(legal_urlpatterns)),
     path("api/cronjobs/", include(cronjobs_router.urls)),
     path("api/", include(org_urlpatterns)),
-    path("api/", include(internal_router.urls)),
     path("api/internal/", include(internal_urlpatterns)),
     path("api/collab/", include(collab_router.urls)),
     path("api/files/", include(files_router.urls)),
