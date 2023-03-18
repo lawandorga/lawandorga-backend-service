@@ -146,6 +146,6 @@ class OutputRecordFieldAmount(BaseModel):
 
 
 class OutputRecordsCreatedClosed(BaseModel):
-    month: str
+    month: Optional[str]
     created: int
     closed: int
