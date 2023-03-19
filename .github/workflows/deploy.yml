@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     branches:
-      - main
+      - never
 
 env:
   UPDATE_NAME: lawandorga-backend-service:${{ github.sha }}
