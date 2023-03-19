@@ -119,7 +119,6 @@ jobs:
 
     env:
       DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-      DJANGO_JWT_SIGNING_KEY: ${{ secrets.DJANGO_JWT_SIGNING_KEY }}
       EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
       EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
       EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
@@ -187,10 +186,6 @@ jobs:
                 {
                   "key": "DJANGO_SECRET_KEY",
                   "value": "${{ env.DJANGO_SECRET_KEY }}"
-                },
-                {
-                  "key": "DJANGO_JWT_SIGNING_KEY",
-                  "value": "${{ env.DJANGO_JWT_SIGNING_KEY }}"
                 },
                 {
                   "key": "DB_HOST",

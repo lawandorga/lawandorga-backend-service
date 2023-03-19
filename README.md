@@ -37,7 +37,6 @@ hoster of your choice. Some environment variables need to be set within the runn
 DJANGO_ALLOWED_HOSTS=""
 DJANGO_CORS_ALLOWED_ORIGINS=""
 DJANGO_SECRET_KEY=""
-DJANGO_JWT_SIGNING_KEY=""
 EMAIL_ADDRESS=""
 EMAIL_HOST=""
 EMAIL_PASSWORD=""

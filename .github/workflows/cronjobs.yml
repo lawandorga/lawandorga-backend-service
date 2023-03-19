@@ -40,7 +40,6 @@ jobs:
 
     env:
       DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-      DJANGO_JWT_SIGNING_KEY: ${{ secrets.DJANGO_JWT_SIGNING_KEY }}
       EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
       EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
       EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
