@@ -2,8 +2,7 @@ name: Commit Stage
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   build:

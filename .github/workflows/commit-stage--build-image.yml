@@ -9,9 +9,6 @@ on:
       version:
         required: true
         type: string
-      image:
-        required: true
-        type: string
     secrets:
       SCW_DOCKER_REGISTRY:
         required: true
