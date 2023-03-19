@@ -1,12 +1,15 @@
-name: Commit Stage - Build Artifact
+name: Commit Stage - Build Image
 
 on:
   workflow_call:
     inputs:
-      artifact:
+      image:
         required: true
         type: string
       version:
+        required: true
+        type: string
+      image:
         required: true
         type: string
     secrets:
@@ -15,23 +18,23 @@ on:
       SCW_TOKEN:
         required: true
     outputs:
-      artifact:
-        description: The Name Of The Artifact
-        value: ${{ jobs.build.outputs.artifact }}
+      image:
+        description: The Name Of The Image
+        value: ${{ jobs.build.outputs.image }}
       version:
-        description: The Version Of The Build Artifact
+        description: The Version Of The Build Image
         value: ${{ jobs.build.outputs.version }}
 
 jobs:
   build:
-    name: Build Artifact
+    name: Build Image
     runs-on: ubuntu-22.04
 
     env:
       VITE_SENTRY_RELEASE: ${{ inputs.version }}
 
     outputs:
-      artifact: ${{ steps.output.outputs.artifact }}
+      image: ${{ steps.output.outputs.image }}
       version: ${{ steps.output.outputs.version }}
 
     steps:
@@ -69,8 +72,8 @@ jobs:
       - name: Push The Docker Container
         run: docker push ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ inputs.image }}:${{ inputs.version }}
 
-      - name: Output Artifact Name
+      - name: Output Image Name
         id: output
         run: |
-          echo "artifact=${{ inputs.artifact }}" >> $GITHUB_OUTPUT
+          echo "Image=${{ inputs.image }}" >> $GITHUB_OUTPUT
           echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT

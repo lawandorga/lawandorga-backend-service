@@ -8,9 +8,9 @@ on:
 jobs:
   build:
     name: Build
-    uses: ./.github/workflows/commit-stage--build-artifact.yml
+    uses: ./.github/workflows/commit-stage--build-image.yml
     with:
-      artifact: ${{ github.event.repository.name }}
+      image: ${{ github.event.repository.name }}
       version: ${{ github.sha }}
     secrets:
       SCW_DOCKER_REGISTRY: ${{ secrets.SCW_DOCKER_REGISTRY }}
