@@ -1,4 +1,3 @@
-# See http://help.github.com/ignore-files/ for more about ignoring files.
 .pytest_cache
 .mypy_cache
 tmp/static
@@ -9,13 +8,10 @@ tmp/cache
 .settings/
 .pytest_cache/
 staticfiles/
-.vscode/
 backend/static/tests/test_files/
 data/
 /node_modules
 tmp/venv
-main.tf
-*.tf
 **secrets**
 test*.sh
 .coverage
@@ -54,3 +50,16 @@ testem.log
 Thumbs.db
 /staticfiles
 backend/static/tests/test_file.png
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc

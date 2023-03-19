@@ -1,0 +1,71 @@
+name: Commit Stage - Build Artifact
+
+on:
+  workflow_call:
+    inputs:
+      artifact:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+    outputs:
+      artifact:
+        description: The Name Of The Artifact
+        value: ${{ jobs.build.outputs.artifact }}
+      version:
+        description: The Version Of The Build Artifact
+        value: ${{ jobs.build.outputs.version }}
+
+jobs:
+  build:
+    name: Build Artifact
+    runs-on: ubuntu-22.04
+
+    env:
+      VITE_SENTRY_RELEASE: ${{ inputs.version }}
+
+    outputs:
+      artifact: ${{ steps.output.outputs.artifact }}
+      version: ${{ steps.output.outputs.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - uses: actions/cache@v3
+        id: cache-packages
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
+
+      - name: Install Dependencies
+        if: steps.cache-packages.outputs.cache-hit != 'true'
+        run: |
+          pip install --upgrade pip pipenv
+          pipenv requirements > requirements.txt
+          pip install -r requirements.txt
+
+      - name: Build The Docker Container
+        run: docker build -t ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ inputs.image }}:${{ inputs.version }} .
+
+      - name: Login to docker
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.SCW_DOCKER_REGISTRY }}
+          username: ${{ secrets.SCW_TOKEN }}
+          password: ${{ secrets.SCW_TOKEN }}
+
+      - name: Push The Docker Container
+        run: docker push ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ inputs.image }}:${{ inputs.version }}
+
+      - name: Output Artifact Name
+        id: output
+        run: |
+          echo "artifact=${{ inputs.artifact }}" >> $GITHUB_OUTPUT
+          echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT

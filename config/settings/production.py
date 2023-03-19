@@ -106,7 +106,7 @@ AWS_S3_FILE_OVERWRITE = False
 
 # https
 # https://docs.djangoproject.com/en/dev/ref/settings/#std-setting-SECURE_SSL_REDIRECT
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 
 # Logging
 # https://docs.djangoproject.com/en/dev/topics/logging/

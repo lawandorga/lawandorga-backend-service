@@ -1,0 +1,14 @@
+name: Commit Stage
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    uses: ./.github/workflows/commit-stage--build-artifact.yml
+    with:
+      artifact: ${{ github.event.repository.name }}
+      version: ${{ github.sha }}
