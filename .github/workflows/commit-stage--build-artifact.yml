@@ -9,6 +9,11 @@ on:
       version:
         required: true
         type: string
+    secrets:
+      SCW_DOCKER_REGISTRY:
+        required: true
+      SCW_TOKEN:
+        required: true
     outputs:
       artifact:
         description: The Name Of The Artifact
