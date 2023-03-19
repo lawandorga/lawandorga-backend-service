@@ -3,4 +3,7 @@
     "editor.defaultFormatter": "hashicorp.terraform",
     "editor.formatOnSave": true
   },
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": "file:///Users/danielmossner/Documents/lawandorga-backend/.github/workflows/deploy.yml"
+  },
 }
