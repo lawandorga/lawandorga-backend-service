@@ -3,7 +3,7 @@ name: Analyze
 on:
   pull_request:
     branches:
-      - main
+      - never
 
 jobs:
   build:
