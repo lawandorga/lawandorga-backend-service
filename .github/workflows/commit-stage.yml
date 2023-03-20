@@ -24,12 +24,3 @@ jobs:
     name: Pre-Commit
     needs: [build]
     uses: ./.github/workflows/commit-stage--precommit-analyze.yml
-
-  analyze:
-    name: Analyze
-    needs: [build]
-    uses: ./.github/workflows/commit-stage--sonarcloud-analyze-code.yml
-    with:
-      include_test_results: false
-    secrets:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

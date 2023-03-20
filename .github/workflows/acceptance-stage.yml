@@ -8,8 +8,6 @@ on:
 jobs:
   analyze:
     name: Analyze
-    uses: ./.github/workflows/commit-stage--sonarcloud-analyze-code.yml
-    with:
-      include_test_results: true
+    uses: ./.github/workflows/acceptance-stage--sonarcloud-analyze-code.yml
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

@@ -2,10 +2,6 @@ name: Commit Stage - Analyze Code With Sonarcloud
 
 on:
   workflow_call:
-    inputs:
-      include_test_results:
-        required: true
-        type: boolean
     secrets:
       SONAR_TOKEN:
         required: true
@@ -32,7 +28,6 @@ jobs:
           key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
 
       - name: Download Test Results
-        if: ${{ inputs.include_test_results }}
         uses: actions/download-artifact@v3
         with:
           name: coverage
