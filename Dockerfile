@@ -1,15 +1,18 @@
 FROM python:3.10
 
+RUN pip install --upgrade pip pipenv
+
+RUN adduser -D worker
+USER worker
 WORKDIR /django
 
-COPY Pipfile /django/Pipfile
-COPY Pipfile.lock /django/Pipfile.lock
+COPY --chown worker:worker Pipfile /django/Pipfile
+COPY --chown worker:worker Pipfile.lock /django/Pipfile.lock
 
-RUN pip install --upgrade pip pipenv
 RUN pipenv requirements > requirements.txt
 RUN pip install -r requirements.txt
 
-COPY . /django
+COPY --chown worker:worker . /django
 
 RUN python manage.py collectstatic --noinput
 
