@@ -1,21 +1,25 @@
 FROM python:3.10
 
+RUN adduser nonroot
+
 RUN pip install --upgrade pip pipenv
 
-RUN adduser -D worker
-USER worker
+RUN mkdir -p /django
+RUN chown nonroot /django
 WORKDIR /django
 
-COPY --chown worker:worker Pipfile /django/Pipfile
-COPY --chown worker:worker Pipfile.lock /django/Pipfile.lock
+COPY --chown=nonroot:nonroot Pipfile /django/Pipfile
+COPY --chown=nonroot:nonroot Pipfile.lock /django/Pipfile.lock
 
-RUN pipenv requirements > requirements.txt
-RUN pip install -r requirements.txt
+USER nonroot
 
-COPY --chown worker:worker . /django
+RUN pipenv requirements > /django/requirements.txt
+RUN pip install -r /django/requirements.txt
+
+COPY --chown=nonroot:nonroot . /django
 
 RUN python manage.py collectstatic --noinput
 
 EXPOSE 8080
 
-CMD ["gunicorn", "config.asgi:application", "--bind", "0.0.0.0:8080", "--timeout", "240", "-w", "4", "-k", "config.workers.UvicornWorker"]
+CMD ["gunicorn", "config.asgi:application", "--bind", "0.0.0.0:8080", "--timeout", "240", "-w", "4", "-k", "config.nonroots.Uvicornnonroot"]
