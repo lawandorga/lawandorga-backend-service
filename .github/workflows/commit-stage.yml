@@ -17,10 +17,8 @@ jobs:
 
   test:
     name: Run Tests
-    needs: [build]
     uses: ./.github/workflows/commit-stage--run-tests.yml
 
   precommit:
     name: Pre-Commit
-    needs: [build]
     uses: ./.github/workflows/commit-stage--precommit-analyze.yml
