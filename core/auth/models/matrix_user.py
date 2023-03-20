@@ -1,5 +1,5 @@
 from binascii import hexlify
-from random import randbytes
+from secrets import token_bytes
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -36,14 +36,13 @@ class MatrixUser(models.Model):
         )
 
     def save(self, **kwargs):
-        if not self.matrix_id:
-            matrix_id = hexlify(randbytes(4)).decode()
-            while (
-                MatrixUser.objects.filter(matrix_id=matrix_id).exists()
-                or matrix_id.isnumeric()
-            ):
-                matrix_id = hexlify(randbytes(4)).decode()
-            self.matrix_id = matrix_id
+        matrix_id = self.matrix_id
+        while self.matrix_id is None or (
+            MatrixUser.objects.filter(matrix_id=matrix_id).exists()
+            or matrix_id.isnumeric()
+        ):
+            matrix_id = hexlify(token_bytes(4)).decode()
+        self.matrix_id = matrix_id
         super().save(**kwargs)
 
     @property
