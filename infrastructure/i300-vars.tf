@@ -5,7 +5,6 @@ variable "certificate_name" {
 
 variable "image_version" {
   type = string
-  default = "a241561509f92f42f583d438ee76277f4df8eb50"
 }
 
 variable "env_vars" {

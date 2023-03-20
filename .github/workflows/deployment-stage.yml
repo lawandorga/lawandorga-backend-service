@@ -2,7 +2,7 @@ name: Deployment Stage
 
 on:
   workflow_run:
-    workflows: ["Acceptance Stage"]
+    workflows: ["Commit Stage"]
     types: [completed]
 
 jobs:
@@ -29,6 +29,21 @@ jobs:
       scw_access_key: ${{ secrets.SCW_ACCESS_KEY }}
       scw_project_id: ${{ secrets.SCW_PROJECT_ID }}
       scw_secret_key: ${{ secrets.SCW_SECRET_KEY }}
+
+      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+      EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_TOKEN }}
+      S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 
   # sentry:
   #   name: Sentry
