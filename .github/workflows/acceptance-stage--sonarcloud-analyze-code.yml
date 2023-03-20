@@ -1,4 +1,4 @@
-name: Commit Stage - Analyze Code With Sonarcloud
+name: Acceptance Stage - Analyze Code With Sonarcloud
 
 on:
   workflow_call:

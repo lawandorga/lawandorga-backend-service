@@ -1,4 +1,4 @@
-name: Commit Stage - Query Quality Gate Status
+name: Acceptance Stage - Query Quality Gate Status
 
 on:
   workflow_call:
