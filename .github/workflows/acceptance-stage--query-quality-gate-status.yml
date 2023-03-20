@@ -8,7 +8,7 @@ on:
 
 jobs:
   check:
-    name: Check
+    name: Check Quality Gate
     runs-on: ubuntu-22.04
     steps:
       - name: Query Quality Gate Status
