@@ -1,4 +1,4 @@
-name: Run Tests
+name: Commit Stage - Run Tests
 
 on:
   workflow_call
