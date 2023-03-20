@@ -9,7 +9,7 @@ jobs:
     name: Build Image
     uses: ./.github/workflows/commit-stage--build-image.yml
     with:
-      image: ${{ github.event.repository.name }}
+      image: ${{ github.repository }}
       version: ${{ github.sha }}
     secrets:
       SCW_DOCKER_REGISTRY: ${{ secrets.SCW_DOCKER_REGISTRY }}

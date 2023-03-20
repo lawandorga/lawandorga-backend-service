@@ -1,0 +1,18 @@
+name: Commit Stage - Query Quality Gate Status
+
+on:
+  workflow_call:
+    secrets:
+      SONAR_TOKEN:
+        required: true
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Query Quality Gate Status
+        run: |
+          if (curl -u ${{ secrets.SONAR_TOKEN }}: "https://sonarcloud.io/api/qualitygates/project_status?projectKey=lawandorga_lawandorga-backend&branch=main" | grep "ERROR"); then
+          exit 1
+          fi
