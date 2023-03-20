@@ -1,4 +1,4 @@
-name: Deployment Stage - Deploy Frontend
+name: Deployment Stage - Deploy Service
 
 on:
   workflow_call:
@@ -23,15 +23,33 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-22.04
-
+    environment: PRODUCTION
     env:
+      TF_VAR_env_vars: '{
+        "DJANGO_SECRET_KEY": "${{ secrets.DJANGO_SECRET_KEY }}",
+        "EMAIL_ADDRESS": "${{ secrets.EMAIL_ADDRESS }}",
+        "EMAIL_HOST": "${{ secrets.EMAIL_HOST }}",
+        "EMAIL_PASSWORD": "${{ secrets.EMAIL_PASSWORD }}",
+        "EMAIL_PORT": "${{ secrets.EMAIL_PORT }}",
+        "S3_BUCKET_NAME": "${{ secrets.S3_BUCKET_NAME }}",
+        "S3_ACCESS_KEY": "${{ secrets.S3_ACCESS_KEY }}",
+        "S3_SECRET_KEY": "{{ secrets.S3_SECRET_KEY }}",
+        "DB_NAME": "${{ secrets.DB_NAME}}",
+        "DB_USER": "${{ secrets.DB_USER }}",
+        "DB_PASSWORD": "${{ secrets.DB_PASSWORD }}",
+        "DB_PORT": "${{ secrets.DB_PORT }}",
+        "DB_HOST": "${{ secrets.DB_HOST }}",
+        "SENTRY_DSN": "${{ secrets.SENTRY_DSN }}",
+        "PIPELINE_IMAGE": "${{ github.event.repository.name }}:${{ github.sha }}",
+        "PIPELINE_SERVICE": "${{ github.repository }}",
+        "SENTRY_RELEASE": "${{ github.sha }}"
+        }'
       TF_VAR_scw_access_key: ${{ secrets.scw_access_key }}
       TF_VAR_scw_secret_key: ${{ secrets.scw_secret_key }}
       TF_VAR_scw_project_id: ${{ secrets.scw_project_id }}
       AWS_ACCESS_KEY_ID: ${{ secrets.scw_access_key }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.scw_secret_key }}
       TF_VAR_image_version: ${{ github.sha }}
-      TF_VAR_env_vars: ${{ secrets.env_vars }}
 
     steps:
       - name: Checkout
