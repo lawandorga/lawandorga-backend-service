@@ -18,6 +18,10 @@ jobs:
     environment: PRODUCTION
     needs: [check]
     uses: ./.github/workflows/deployment-stage--terraform-apply.yml
+    # runs-on: ubuntu-22.04
+    # steps:
+    #   - name: "Null"
+    #     run: echo "null"
     with:
       service: ${{ github.repository }}
       image: ${{ github.sha }}
