@@ -27,6 +27,7 @@
 #         raise NotImplementedError
 #
 #
+
 # class AnswerGenerator:
 #     def __init__(self):
 #         self.end_conversation = False
