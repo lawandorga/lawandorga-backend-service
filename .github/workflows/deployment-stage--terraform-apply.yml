@@ -11,6 +11,34 @@ on:
         required: true
       # env_vars:
       #   required: true
+      DJANGO_SECRET_KEY: 
+        required: true
+      EMAIL_ADDRESS: 
+        required: true
+      EMAIL_HOST: 
+        required: true
+      EMAIL_PASSWORD: 
+        required: true
+      EMAIL_PORT: 
+        required: true
+      S3_BUCKET_NAME: 
+        required: true
+      S3_ACCESS_KEY: 
+        required: true
+      S3_SECRET_KEY: 
+        required: true
+      DB_NAME: 
+        required: true
+      DB_USER: 
+        required: true
+      DB_PASSWORD: 
+        required: true
+      DB_PORT: 
+        required: true
+      DB_HOST: 
+        required: true
+      SENTRY_DSN: 
+        required: true
     inputs:
       image:
         required: true
