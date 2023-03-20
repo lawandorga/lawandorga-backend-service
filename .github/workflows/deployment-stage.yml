@@ -2,7 +2,7 @@ name: Deployment Stage
 
 on:
   workflow_run:
-    workflows: ["Commit Stage"]
+    workflows: ["Acceptance Stage"]
     types: [completed]
 
 jobs:

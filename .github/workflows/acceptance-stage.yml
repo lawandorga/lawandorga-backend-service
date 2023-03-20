@@ -1,0 +1,15 @@
+name: Acceptance Stage
+
+on:
+  workflow_run:
+    workflows: ["Commit Stage"]
+    types: [completed]
+
+jobs:
+  analyze:
+    name: Analyze
+    uses: ./.github/workflows/commit-stage--sonarcloud-analyze-code.yml
+    with:
+      include_test_results: true
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
