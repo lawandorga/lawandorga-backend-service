@@ -16,3 +16,5 @@ jobs:
     name: Check If Quality Gate Passed
     needs: [analyze]
     uses: ./.github/workflows/acceptance-stage--query-quality-gate-status.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
