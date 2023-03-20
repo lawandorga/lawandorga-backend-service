@@ -15,9 +15,9 @@ jobs:
 
   deploy:
     name: Deploy
-    environment: PRODUCTION
     needs: [check]
     uses: ./.github/workflows/deployment-stage--terraform-apply.yml
+    environment: PRODUCTION
     # runs-on: ubuntu-22.04
     # steps:
     #   - name: "Null"
