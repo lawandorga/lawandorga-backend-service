@@ -14,3 +14,13 @@ jobs:
     secrets:
       SCW_DOCKER_REGISTRY: ${{ secrets.SCW_DOCKER_REGISTRY }}
       SCW_TOKEN: ${{ secrets.SCW_TOKEN }}
+
+  precommit:
+    name: Pre-Commit
+    uses: ./.github/workflows/commit-stage--precommit-analyze.yml
+
+  analyze:
+    name: Analyze
+    uses: ./.github/workflows/commit-stage--sonarcloud-analyze-code.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
