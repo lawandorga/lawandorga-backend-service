@@ -14,7 +14,7 @@ RUN pipenv requirements > /django/requirements.txt
 RUN pip install -r /django/requirements.txt
 
 # build image
-FROM python:3.10-bullseye
+FROM python:3.10
 
 # least privilege user
 RUN groupadd -g 999 python && useradd -r -u 999 -g python python
@@ -31,9 +31,9 @@ COPY --chown=python:python templates /django/templates
 COPY --chown=python:python tmp /django/tmp
 COPY --chown=python:python manage.py /django/manage.py
 
-#
-RUN apt-get update && apt-get -y upgrade
-RUN apt-get install -y iputils-ping telnet
+# tests
+# RUN apt-get update && apt-get -y upgrade
+# RUN apt-get install -y iputils-ping telnet
 
 # change to nonroot user
 USER 999
