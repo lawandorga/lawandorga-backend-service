@@ -9,8 +9,8 @@ on:
         required: true
       scw_project_id:
         required: true
-      env_vars:
-        required: true
+      # env_vars:
+      #   required: true
     inputs:
       image:
         required: true
