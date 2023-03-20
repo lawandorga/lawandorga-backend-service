@@ -18,8 +18,7 @@ jobs:
     needs: [check]
     uses: ./.github/workflows/deployment-stage--terraform-apply.yml
     with:
-      service: ${{ github.repository }}
-      image: ${{ github.sha }}
+      image_version: ${{ github.sha }}
       environment: PRODUCTION
     secrets:
       scw_access_key: ${{ secrets.SCW_ACCESS_KEY }}
@@ -41,7 +40,7 @@ jobs:
         "DB_HOST": "${{ secrets.DB_HOST }}",
         "SENTRY_DSN": "${{ secrets.SENTRY_DSN }}",
         "PIPELINE_IMAGE": "${{ github.event.repository.name }}:${{ github.sha }}",
-        "PIPELINE_SERVICE": "${{ github.repository }}",
+        "PIPELINE_SERVICE": "${{ github.event.repository.name }}",
         "SENTRY_RELEASE": "${{ github.sha }}"
         }'
 

@@ -12,10 +12,7 @@ on:
       env_vars:
         required: true
     inputs:
-      image:
-        required: true
-        type: string
-      service:
+      image_version:
         required: true
         type: string
       environment:
@@ -34,7 +31,7 @@ jobs:
       TF_VAR_scw_project_id: ${{ secrets.scw_project_id }}
       AWS_ACCESS_KEY_ID: ${{ secrets.scw_access_key }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.scw_secret_key }}
-      TF_VAR_image_version: ${{ github.sha }}
+      TF_VAR_image_version: ${{ inputs.image_version }}
 
     steps:
       - name: Checkout
