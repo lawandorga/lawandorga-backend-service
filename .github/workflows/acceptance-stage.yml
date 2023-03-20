@@ -11,7 +11,7 @@ jobs:
     uses: ./.github/workflows/acceptance-stage--sonarcloud-analyze-code.yml
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  
+
   check:
     name: Check If Quality Gate Passed
     needs: [analyze]
