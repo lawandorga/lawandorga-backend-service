@@ -1,4 +1,4 @@
-name: Analyze
+name: Old - Analyze
 
 on:
   pull_request:

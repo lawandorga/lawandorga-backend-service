@@ -1,4 +1,4 @@
-name: Cronjobs
+name: Other - Cronjobs
 
 on:
   schedule:
