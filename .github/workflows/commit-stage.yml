@@ -15,12 +15,19 @@ jobs:
       SCW_DOCKER_REGISTRY: ${{ secrets.SCW_DOCKER_REGISTRY }}
       SCW_TOKEN: ${{ secrets.SCW_TOKEN }}
 
+  test:
+    name: Run Tests
+    needs: [build]
+    uses: ./.github/workflows/commit-stage--run-tests.yml
+
   precommit:
     name: Pre-Commit
+    needs: [build]
     uses: ./.github/workflows/commit-stage--precommit-analyze.yml
 
   analyze:
     name: Analyze
+    needs: [build]
     uses: ./.github/workflows/commit-stage--sonarcloud-analyze-code.yml
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
