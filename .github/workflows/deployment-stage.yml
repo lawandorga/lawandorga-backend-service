@@ -15,6 +15,7 @@ jobs:
 
   deploy:
     name: Deploy
+    environment: PRODUCTION
     needs: [check]
     uses: ./.github/workflows/deployment-stage--terraform-apply.yml
     with:

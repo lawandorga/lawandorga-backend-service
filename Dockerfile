@@ -23,7 +23,13 @@ RUN groupadd -g 999 python && useradd -r -u 999 -g python python
 RUN mkdir /django && chown python:python /django
 WORKDIR /django
 COPY --chown=python:python --from=build /django/venv /django/venv
-COPY --chown=python:python . /django
+COPY --chown=python:python config /django/config
+COPY --chown=python:python core /django/core
+COPY --chown=python:python messagebus /django/messagebus
+COPY --chown=python:python static /django/static
+COPY --chown=python:python templates /django/templates
+COPY --chown=python:python tmp /django/tmp
+COPY --chown=python:python manage.py /django/manage.py
 
 # change to nonroot user
 USER 999
