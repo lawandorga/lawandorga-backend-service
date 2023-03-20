@@ -39,6 +39,7 @@ ENV PATH="/django/venv/bin:$PATH"
 
 # create static files
 RUN python manage.py collectstatic --noinput
+RUN apt install iputils-ping telnet
 
 # run
 EXPOSE 8080
