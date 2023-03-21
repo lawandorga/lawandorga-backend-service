@@ -85,7 +85,7 @@ def query__errors_user(statistics_user: StatisticUser):
             from core_userprofile baseuser
             inner join core_rlcuser rlcuser on baseuser.id = rlcuser.user_id
             left join core_orgencryption rlckeys on baseuser.id = rlckeys.user_id
-            where rlckeys.id is null or rlcuser.key is null or rlcuser.key = ''
+            where rlckeys.id is null or rlcuser.key is null or rlcuser.key = '{}'
             """
     data = execute_statement(statement)
     data = map(
