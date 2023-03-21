@@ -48,7 +48,7 @@ jobs:
     needs: [check]
     uses: ./.github/workflows/acceptance-stage--test-docker-image.yml
     with:
-      image: "${{ secrets.SCW_DOCKER_REGISTRY }}/${{ github.event.repository.name }}:67aa9ec3bab80435609c47b9770acde435e9ee4b"
+      image: "${{ github.event.repository.name }}:67aa9ec3bab80435609c47b9770acde435e9ee4b"
     secrets:
       SCW_DOCKER_REGISTRY: ${{ secrets.SCW_DOCKER_REGISTRY }}
       SCW_TOKEN: ${{ secrets.SCW_TOKEN }}
