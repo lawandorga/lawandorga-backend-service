@@ -14,7 +14,7 @@ RUN pipenv requirements > /django/requirements.txt
 RUN pip install -r /django/requirements.txt
 
 # build image
-FROM python:3.10-slim as build
+FROM python:3.10 as build
 
 # least privilege user
 RUN groupadd -g 999 python && useradd -r -u 999 -g python python
