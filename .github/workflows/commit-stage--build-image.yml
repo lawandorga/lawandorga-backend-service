@@ -66,6 +66,12 @@ jobs:
           username: ${{ secrets.SCW_TOKEN }}
           password: ${{ secrets.SCW_TOKEN }}
 
+      - name: Upload Image Artifact
+        uses: ishworkh/docker-image-artifact-upload@v1
+        with:
+          image: "${{ inputs.image }}:${{ inputs.version }}"
+          retention_days: 2
+
       - name: Push The Docker Container
         run: docker push ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ inputs.image }}:${{ inputs.version }}
 

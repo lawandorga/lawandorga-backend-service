@@ -1,0 +1,21 @@
+name: Acceptance Stage - Analyze Code With Sonarcloud
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        required: true
+        type: string
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Download Docker Image
+        uses: ishworkh/docker-image-artifact-download@v1
+        with:
+          image: ${{ inputs.image }}
+
+      - name: Run Docker Image Tests
+        run: docker run -it --rm --name test-container ${{ inputs.image }} python manage.py test
