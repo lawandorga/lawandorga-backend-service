@@ -32,7 +32,7 @@ jobs:
     name: Test
     runs-on: ubuntu-22.04
     container:
-      image: "${{ secrets.SCW_DOCKER_REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}"
+      image: "rg.fr-par.scw.cloud/lawandorga-registry/${{ github.event.repository.name }}:${{ github.sha }}"
       credentials:
           username: ${{ secrets.SCW_TOKEN }}
           password: ${{ secrets.SCW_TOKEN }}
