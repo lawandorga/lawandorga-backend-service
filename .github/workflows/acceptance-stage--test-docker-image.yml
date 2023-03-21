@@ -1,4 +1,4 @@
-name: Acceptance Stage - Analyze Code With Sonarcloud
+name: Acceptance Stage - Test Docker Image From Inside
 
 on:
   workflow_call:
@@ -6,16 +6,22 @@ on:
       image:
         required: true
         type: string
+    secrets:
+      SCW_DOCKER_REGISTRY:
+        required: true
+      SCW_TOKEN:
+        required: true
 
 jobs:
   test:
     name: Test
     runs-on: ubuntu-22.04
+    container:
+      image: ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ inputs.image }}
+      credentials:
+          username: ${{ secrets.SCW_TOKEN }}
+          password: ${{ secrets.SCW_TOKEN }}
     steps:
-      - name: Download Docker Image
-        uses: ishworkh/docker-image-artifact-download@v1
-        with:
-          image: ${{ inputs.image }}
-
       - name: Run Docker Image Tests
-        run: docker run -it --rm --name test-container ${{ inputs.image }} python manage.py test
+        shell: bash
+        run: python manage.py test

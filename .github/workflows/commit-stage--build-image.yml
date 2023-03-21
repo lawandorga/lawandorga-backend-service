@@ -57,7 +57,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build The Docker Container
-        run: docker build -t ${{ inputs.image }}:${{ inputs.version }} .
+        run: docker build -t ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ inputs.image }}:${{ inputs.version }} .
 
       - name: Login to docker
         uses: docker/login-action@v2
@@ -66,14 +66,8 @@ jobs:
           username: ${{ secrets.SCW_TOKEN }}
           password: ${{ secrets.SCW_TOKEN }}
 
-      - name: Upload Image Artifact
-        uses: ishworkh/docker-image-artifact-upload@v1
-        with:
-          image: "${{ inputs.image }}:${{ inputs.version }}"
-          retention_days: 2
-
       - name: Push The Docker Container
-        run: docker push ${{ inputs.image }}:${{ inputs.version }}
+        run: docker push ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ inputs.image }}:${{ inputs.version }}
 
       - name: Output Image Name
         id: output
