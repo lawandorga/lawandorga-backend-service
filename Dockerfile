@@ -1,5 +1,5 @@
 # inspired by: https://snyk.io/blog/best-practices-containerizing-python-docker/
-FROM python:3.10 as build
+FROM python:3.10 as base
 
 # workdir related stuff stuff
 WORKDIR /django
@@ -14,7 +14,7 @@ RUN pipenv requirements > /django/requirements.txt
 RUN pip install -r /django/requirements.txt
 
 # build image
-FROM python:3.10
+FROM python:3.10 as build
 
 # least privilege user
 RUN groupadd -g 999 python && useradd -r -u 999 -g python python
@@ -22,7 +22,7 @@ RUN groupadd -g 999 python && useradd -r -u 999 -g python python
 # copy files
 RUN mkdir /django && chown python:python /django
 WORKDIR /django
-COPY --chown=python:python --from=build /django/venv /django/venv
+COPY --chown=python:python --from=base /django/venv /django/venv
 COPY --chown=python:python config /django/config
 COPY --chown=python:python core /django/core
 COPY --chown=python:python messagebus /django/messagebus
@@ -30,10 +30,6 @@ COPY --chown=python:python static /django/static
 COPY --chown=python:python templates /django/templates
 COPY --chown=python:python tmp /django/tmp
 COPY --chown=python:python manage.py /django/manage.py
-
-# tests
-# RUN apt-get update && apt-get -y upgrade
-# RUN apt-get install -y iputils-ping telnet
 
 # change to nonroot user
 USER 999

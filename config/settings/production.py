@@ -104,9 +104,13 @@ AWS_S3_REGION_NAME = "fr-par"
 AWS_S3_ENDPOINT_URL = "https://s3.fr-par.scw.cloud"
 AWS_S3_FILE_OVERWRITE = False
 
-# https
+# https not needed anymore as kubernetes is used now
 # https://docs.djangoproject.com/en/dev/ref/settings/#std-setting-SECURE_SSL_REDIRECT
 SECURE_SSL_REDIRECT = False
+
+# this tells django to realize it is called to via https
+# https://docs.djangoproject.com/en/4.1/ref/settings/#secure-proxy-ssl-header
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Logging
 # https://docs.djangoproject.com/en/dev/topics/logging/
