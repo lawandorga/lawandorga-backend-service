@@ -14,7 +14,7 @@ RUN pipenv requirements > /django/requirements.txt
 RUN pip install -r /django/requirements.txt
 
 # build image
-FROM python:3.10 as build
+FROM python:3.10-slim as build
 
 # least privilege user
 RUN groupadd -g 999 python && useradd -r -u 999 -g python python
@@ -31,6 +31,9 @@ COPY --chown=python:python templates /django/templates
 COPY --chown=python:python tmp /django/tmp
 COPY --chown=python:python manage.py /django/manage.py
 
+# install library for psycopg2
+RUN apt-get update && apt-get install libpq5 -y
+
 # change to nonroot user
 USER 999
 
@@ -39,6 +42,8 @@ ENV PATH="/django/venv/bin:$PATH"
 
 # create static files
 RUN python manage.py collectstatic --noinput
+
+# install 
 
 # run
 EXPOSE 8080
