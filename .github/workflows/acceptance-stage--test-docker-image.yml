@@ -28,4 +28,4 @@ jobs:
         run: docker pull ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ inputs.image }}
 
       - name: Run Docker Image Tests
-        run: docker run -it --rm --name test-image ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ inputs.image }} python manage.py test
+        run: docker run --rm --name test-image ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ inputs.image }} python manage.py test
