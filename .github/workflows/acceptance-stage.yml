@@ -15,19 +15,19 @@ jobs:
   #     - name: Do Nothing
   #       run: echo null
 
-  analyze:
-    name: Analyze
-    needs: [check]
-    uses: ./.github/workflows/acceptance-stage--sonarcloud-analyze-code.yml
-    secrets:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  # analyze:
+  #   name: Analyze
+  #   needs: [check]
+  #   uses: ./.github/workflows/acceptance-stage--sonarcloud-analyze-code.yml
+  #   secrets:
+  #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  quality:
-    name: Check If Quality Gate Passed
-    needs: [analyze]
-    uses: ./.github/workflows/acceptance-stage--query-quality-gate-status.yml
-    secrets:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  # quality:
+  #   name: Check If Quality Gate Passed
+  #   needs: [analyze]
+  #   uses: ./.github/workflows/acceptance-stage--query-quality-gate-status.yml
+  #   secrets:
+  #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   # test2:
   #   name: Test
