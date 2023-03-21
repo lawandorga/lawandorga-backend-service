@@ -28,12 +28,25 @@ jobs:
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  test:
-    name: Test The Docker Container
-    needs: [check]
-    uses: ./.github/workflows/acceptance-stage--test-docker-image.yml
-    with:
-      image: "${{ inputs.image }}:${{ inputs.version }}"
-    secrets:
-      SCW_DOCKER_REGISTRY: ${{ secrets.SCW_DOCKER_REGISTRY }}
-      SCW_TOKEN: ${{ secrets.SCW_TOKEN }}
+  test2:
+    name: Test
+    runs-on: ubuntu-22.04
+    container:
+      image: "${{ secrets.SCW_DOCKER_REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}"
+      credentials:
+          username: ${{ secrets.SCW_TOKEN }}
+          password: ${{ secrets.SCW_TOKEN }}
+    steps:
+      - name: Run Docker Image Tests
+        shell: bash
+        run: python manage.py test
+
+  # test:
+  #   name: Test The Docker Container
+  #   needs: [check]
+  #   uses: ./.github/workflows/acceptance-stage--test-docker-image.yml
+  #   with:
+  #     image: "${{ inputs.image }}:${{ inputs.version }}"
+  #   secrets:
+  #     SCW_DOCKER_REGISTRY: ${{ secrets.SCW_DOCKER_REGISTRY }}
+  #     SCW_TOKEN: ${{ secrets.SCW_TOKEN }}
