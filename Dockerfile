@@ -43,8 +43,6 @@ ENV PATH="/django/venv/bin:$PATH"
 # create static files
 RUN python manage.py collectstatic --noinput
 
-# install 
-
 # run
 EXPOSE 8080
 CMD ["gunicorn", "config.asgi:application", "--bind", "0.0.0.0:8080", "--timeout", "240", "-w", "4", "-k", "config.workers.UvicornWorker"]
