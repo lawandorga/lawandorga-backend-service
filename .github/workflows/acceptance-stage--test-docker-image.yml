@@ -22,6 +22,15 @@ jobs:
           username: ${{ secrets.SCW_TOKEN }}
           password: ${{ secrets.SCW_TOKEN }}
     steps:
+      - name: Login to docker
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.SCW_DOCKER_REGISTRY }}
+          username: ${{ secrets.SCW_TOKEN }}
+          password: ${{ secrets.SCW_TOKEN }}
+
+      - name: Pull Docker Image
+        run: docker pull ${{ inputs.image }}
+
       - name: Run Docker Image Tests
-        shell: bash
-        run: python manage.py test
+        run: docker run -it --rm --name test-image ${{ inputs.image }} python manage.py test
