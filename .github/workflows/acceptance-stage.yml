@@ -1,52 +1,36 @@
 name: Acceptance Stage
 
 on:
-  # workflow_run:
-  #   workflows: ["Commit Stage"]
-  #   types: [completed]
-  push:
-    branches: [main]
+  workflow_run:
+    workflows: ["Commit Stage"]
+    types: [completed]
 
 jobs:
-  # check:
-  #   name: Check
-  #   if: ${{ github.event.workflow_run.conclusion == 'success' }}
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Do Nothing
-  #       run: echo null
+  check:
+    name: Check
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Do Nothing
+        run: echo null
 
-  # analyze:
-  #   name: Analyze
-  #   needs: [check]
-  #   uses: ./.github/workflows/acceptance-stage--sonarcloud-analyze-code.yml
-  #   secrets:
-  #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  analyze:
+    name: Analyze
+    needs: [check]
+    uses: ./.github/workflows/acceptance-stage--sonarcloud-analyze-code.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  # quality:
-  #   name: Check If Quality Gate Passed
-  #   needs: [analyze]
-  #   uses: ./.github/workflows/acceptance-stage--query-quality-gate-status.yml
-  #   secrets:
-  #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  # test2:
-  #   name: Test
-  #   runs-on: ubuntu-22.04
-  #   container:
-  #     image: "rg.fr-par.scw.cloud/lawandorga-registry/${{ github.event.repository.name }}:${{ github.sha }}"
-  #     credentials:
-  #         username: ${{ secrets.SCW_TOKEN }}
-  #         password: ${{ secrets.SCW_TOKEN }}
-  #   steps:
-  #     - name: Run Docker Image Tests
-  #       shell: bash
-  #       run: python manage.py test
-  #       # docker run -it --rm --name test-image lo:latest
+  quality:
+    name: Check If Quality Gate Passed
+    needs: [analyze]
+    uses: ./.github/workflows/acceptance-stage--query-quality-gate-status.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   test:
     name: Test The Docker Container
-    # needs: [check]
+    needs: [check]
     uses: ./.github/workflows/acceptance-stage--test-docker-image.yml
     with:
       image: "${{ github.event.repository.name }}:67aa9ec3bab80435609c47b9770acde435e9ee4b"
