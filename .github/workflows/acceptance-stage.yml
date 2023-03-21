@@ -34,3 +34,6 @@ jobs:
     uses: ./.github/workflows/acceptance-stage--test-docker-image.yml
     with:
       image: "${{ inputs.image }}:${{ inputs.version }}"
+    secrets:
+      SCW_DOCKER_REGISTRY: ${{ secrets.SCW_DOCKER_REGISTRY }}
+      SCW_TOKEN: ${{ secrets.SCW_TOKEN }}
