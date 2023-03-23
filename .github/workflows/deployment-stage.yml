@@ -13,9 +13,14 @@ jobs:
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+  migrate:
+    name: Migrate
+    needs: [check]
+    uses: ./.github/workflows/deployment-stage--run-migrations.yml
+
   deploy:
     name: Deploy
-    needs: [check]
+    needs: [check, migrate]
     uses: ./.github/workflows/deployment-stage--terraform-apply.yml
     with:
       image_version: ${{ github.sha }}
