@@ -27,7 +27,7 @@ def test_mfa_creation():
     user = test_helpers.create_raw_org_user()
     secret = "1234"
     mfa = MultiFactorAuthenticationSecret.create(user, lambda: secret)
-    assert mfa.__get_secret() == secret
+    assert mfa._MultiFactorAuthenticationSecret__get_secret() == secret
 
 
 def test_mfa_url(mfa):
