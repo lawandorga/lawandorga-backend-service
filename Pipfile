@@ -37,3 +37,4 @@ types-bleach = "6.0.0.0"
 sentry-sdk = "*"
 pytest-xdist = "*"
 django-oidc-provider = {git = "https://github.com/lawandorga/django-oidc-provider"}
+pyotp = "*"

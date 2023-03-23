@@ -32,4 +32,11 @@ urlpatterns: list[Union[URLPattern, URLResolver]] = [
         views.CustomPasswordResetCompleteView.as_view(),
         name="password_reset_complete",
     ),
+    path("auth/mfa/status/", views.MfaStatusView.as_view(), name="mfa_status"),
+    path("auth/mfa/setup/", views.MfaSetupView.as_view(), name="mfa_setup"),
+    path("auth/mfa/enable/<int:pk>/", views.MfaEnableView.as_view(), name="mfa_enable"),
+    # path('auth/mfa/login/', views.MfaLoginView.as_view(),
+    # name="mfa_login"),
+    # path('auth/mfa/remove/', views.MfaRemoveView.as_view(),
+    # name="mfa_remove"),
 ]

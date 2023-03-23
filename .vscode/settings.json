@@ -3,4 +3,6 @@
     "editor.defaultFormatter": "hashicorp.terraform",
     "editor.formatOnSave": true
   },
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
 }

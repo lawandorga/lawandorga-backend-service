@@ -1,5 +1,16 @@
 from datetime import timedelta
-from typing import Any, Dict, List, Optional, Protocol, Type, TypedDict, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    List,
+    Optional,
+    Protocol,
+    Type,
+    TypedDict,
+    Union,
+    cast,
+)
 from uuid import UUID, uuid4
 
 import ics
@@ -31,6 +42,9 @@ from messagebus import EventData
 from ...folders.domain.repositiories.folder import FolderRepository
 from ...seedwork.repository import RepositoryWarehouse
 from .user import UserProfile
+
+if TYPE_CHECKING:
+    from core.auth.models.mfa import MultiFactorAuthenticationSecret
 
 
 class OrgUserLocked(EventData):
@@ -135,6 +149,8 @@ class RlcUser(Aggregate, models.Model):
     # addons
     addons = {"events": EventsAddon}
     events: EventsAddon
+    # typing
+    mfa_secret: "MultiFactorAuthenticationSecret"
 
     class Meta:
         verbose_name = "RlcUser"
