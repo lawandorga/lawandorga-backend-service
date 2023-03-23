@@ -1,7 +1,7 @@
-
 import pytest
-from core.seedwork import test_helpers 
+
 from core.auth.models.mfa import MultiFactorAuthenticationSecret
+from core.seedwork import test_helpers
 
 
 @pytest.fixture
@@ -27,7 +27,7 @@ def test_mfa_creation():
     user = test_helpers.create_raw_org_user()
     secret = "1234"
     mfa = MultiFactorAuthenticationSecret.create(user, lambda: secret)
-    assert mfa.get_secret() == secret
+    assert mfa.__get_secret() == secret
 
 
 def test_mfa_url(mfa):

@@ -1,0 +1,24 @@
+{% extends 'registration/base.html' %}
+
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block body %}
+    <div class="flex flex-col justify-center min-h-full py-12 sm:px-6 lg:px-8">
+        <div class="sm:mx-auto sm:w-full sm:max-w-md">
+            <img class="w-auto h-12 mx-auto" src="{% static 'logo256blue.png' %}"
+                 alt="Law&Orga">
+            <h1 class="mt-6 text-3xl font-bold tracking-tight text-center text-gray-900">Sign in to Law&Orga</h1>
+        </div>
+        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+            <div class="px-4 py-8 bg-white shadow sm:rounded-lg sm:px-10">
+                {% if request.user.is_authenticated %}
+                    <p class="text-lg font-medium text-center text-gray-700">You are logged in already.</p>
+                {% else %}
+                    {% include 'symbols/form.html' with submit="Check" form=form %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock body %}

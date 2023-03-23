@@ -9,6 +9,8 @@ from django.contrib.auth.views import (
     PasswordResetDoneView,
     PasswordResetView,
 )
+from django.http import HttpResponseRedirect
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -31,15 +33,20 @@ class CustomLoginView(LoginView):
     redirect_authenticated_user = True
 
     def form_valid(self, form):
-        response = super().form_valid(form)
-        user = self.request.user
+        user: UserProfile = form.get_user()  # type: ignore
+
+        uk = user.rlc_user.get_decrypted_key_from_password(form.data["password"])
         run_user_login_checks(user, form.data["password"])
 
+        if hasattr(user, "rlc_user") and hasattr(user.rlc_user, "mfa_secret"):
+            run_user_login_checks(user, form.data["password"])
+            self.request.session["user_pk"] = user.pk
+            self.request.session["user_key"] = uk.as_unsafe_dict()
+            return HttpResponseRedirect(reverse_lazy("mfa_login"))
+
+        response = super().form_valid(form)
         if hasattr(user, "rlc_user"):
-            uk = user.rlc_user.get_decrypted_key_from_password(form.data["password"])
-            self.request.session["private_key"] = uk.key.get_private_key().decode(
-                "utf-8"
-            )
+            self.request.session["user_key"] = uk.as_unsafe_dict()
 
         return response
 

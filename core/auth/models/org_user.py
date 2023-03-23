@@ -476,37 +476,26 @@ class RlcUser(Aggregate, models.Model):
     def get_decryption_key(self, *args, **kwargs) -> AsymmetricKey:
         assert self.key is not None
 
-        private_key: Optional[str] = None
-
         if settings.TESTING and self.email == "dummy@law-orga.de":
+            public_key = self.key["key"]["public_key"]
             private_key = RlcUser.get_dummy_user_private_key(self)
+            origin = self.key["key"]["origin"]
+            return AsymmetricKey.create(
+                private_key=private_key, origin=origin, public_key=public_key
+            )
 
-        if private_key is None:
-            session = self.__get_session()
-            if session:
-                decoded: dict[str, str] = session.get_decoded()
-                if (
-                    "_auth_user_id" in decoded
-                    and decoded["_auth_user_id"] == str(self.user_id)
-                    and "private_key" in decoded
-                ):
-                    private_key = decoded["private_key"]
+        session = self.__get_session()
 
-        if private_key is None:
+        if session is None:
             raise ValueError(
                 "No private key could be found for user '{}'.".format(self.pk)
             )
 
-        if "key" in self.key:
-            public_key = self.key["key"]["public_key"]
-        else:
-            public_key = self.key["public_key"]
+        decoded = session.get_decoded()
+        key = UserKey.create_from_unsafe_dict(decoded["user_key"])
 
-        origin = "A1"
-
-        return AsymmetricKey.create(
-            public_key=public_key, private_key=private_key, origin=origin
-        )
+        ret: AsymmetricKey = key.key  # type: ignore
+        return ret
 
     def activate_or_deactivate(self):
         self.is_active = not self.is_active

@@ -70,3 +70,26 @@ def test_key_is_pickleable():
     u2 = pickle.dumps(u1)
     u3 = pickle.loads(u2)
     assert_key_works(u3.key)
+
+
+def test_key_unsafe_works():
+    key = AsymmetricKey.generate()
+    u1 = UserKey(key=key)
+    key_dict = u1.as_unsafe_dict()
+    u2 = UserKey.create_from_unsafe_dict(key_dict)
+    assert u1 == u2
+
+
+def test_key_unsafe_works_with_encryption():
+    key = AsymmetricKey.generate()
+    u1 = UserKey(key=key)
+
+    o1 = OpenBox(data=b"CIA Secret")
+    l1 = u1.key.lock(o1)
+
+    key_dict = u1.as_unsafe_dict()
+    u2 = UserKey.create_from_unsafe_dict(key_dict)
+
+    o2 = u2.key.unlock(l1)
+
+    assert o1 == o2

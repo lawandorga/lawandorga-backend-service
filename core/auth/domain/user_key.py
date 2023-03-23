@@ -11,6 +11,26 @@ from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 
 class UserKey:
     @staticmethod
+    def create_from_unsafe_dict(d: StrDict) -> "UserKey":
+        assert "type" in d and d["type"] == "USER_UNSAFE"
+        assert (
+            "private_key" in d
+            and "public_key" in d
+            and "origin" in d
+            and isinstance(d["private_key"], str)
+            and isinstance(d["public_key"], str)
+            and isinstance(d["origin"], str)
+        )
+
+        key = AsymmetricKey.create(
+            private_key=d["private_key"],
+            public_key=d["public_key"],
+            origin=d["origin"],
+        )
+
+        return UserKey(key)
+
+    @staticmethod
     def create_from_dict(d: StrDict) -> "UserKey":
         assert "type" in d and d["type"] == "USER"
         assert ("key" in d and isinstance(d["key"], dict)) or (
@@ -49,12 +69,30 @@ class UserKey:
     def __str__(self):
         return "UserKey"
 
+    def __eq__(self, other):
+        if type(other) == type(self):
+            return hash(other) == hash(self)
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(self.__key)
+
     def as_dict(self) -> StrDict:
         assert isinstance(self.__key, EncryptedAsymmetricKey)
 
         return {
             "key": self.__key.as_dict(),
             "type": "USER",
+        }
+
+    def as_unsafe_dict(self) -> StrDict:
+        assert isinstance(self.__key, AsymmetricKey)
+
+        return {
+            "type": "USER_UNSAFE",
+            "private_key": self.__key.get_private_key().decode("utf-8"),
+            "public_key": self.__key.get_public_key(),
+            "origin": self.__key.origin,
         }
 
     @property
