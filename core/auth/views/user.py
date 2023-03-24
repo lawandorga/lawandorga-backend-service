@@ -35,9 +35,9 @@ class CustomLoginView(LoginView):
     def form_valid(self, form):
         user: UserProfile = form.get_user()  # type: ignore
 
-        uk = user.rlc_user.get_decrypted_key_from_password(form.data["password"])
-        run_user_login_checks(user, form.data["password"])
         if hasattr(user, "rlc_user"):
+            run_user_login_checks(user, form.data["password"])
+            uk = user.rlc_user.get_decrypted_key_from_password(form.data["password"])
             self.request.session["user_key"] = uk.as_unsafe_dict()
 
         if (

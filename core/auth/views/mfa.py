@@ -22,6 +22,9 @@ class MfaStatusView(LoginRequiredMixin, views.generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+        if not hasattr(user, "rlc_user"):
+            context["mfa_impossible"] = True
+            return context
         context["mfa_setup"] = hasattr(user.rlc_user, "mfa_secret")
         context["mfa_enabled"] = (
             context["mfa_setup"] and user.rlc_user.mfa_secret.enabled
