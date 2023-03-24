@@ -2,16 +2,11 @@ from django import forms
 from django.contrib.auth import get_user_model
 
 from core.auth.domain.user_key import UserKey
-from core.auth.models.mfa import MultiFactorAuthenticationSecret
 from core.auth.models.user import UserProfile
 from core.folders.domain.types import StrDict
 
 
-class SetupMfaForm(forms.ModelForm):
-    class Meta:
-        model = MultiFactorAuthenticationSecret
-        fields: list[str] = []
-
+class SetupMfaForm(forms.Form):
     def __init__(self, user: UserProfile, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
@@ -26,12 +21,8 @@ class SetupMfaForm(forms.ModelForm):
         return super().clean()
 
 
-class CheckMfaForm(forms.ModelForm):
+class CheckMfaForm(forms.Form):
     code = forms.IntegerField(required=True)
-
-    class Meta:
-        model = MultiFactorAuthenticationSecret
-        fields: list[str] = []
 
     def __init__(self, user: UserProfile, *args, **kwargs):
         super().__init__(*args, **kwargs)
