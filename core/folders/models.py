@@ -19,6 +19,7 @@ class FoldersFolder(models.Model):
     keys = models.JSONField(blank=True)
     items = models.JSONField(blank=True)
     stop_inherit = models.BooleanField(default=False)
+    name_change_disabled = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
 

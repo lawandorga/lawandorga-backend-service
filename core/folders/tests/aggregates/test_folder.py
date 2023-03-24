@@ -280,3 +280,19 @@ def test_folder_move_inside_child_error():
     folder_3.set_parent(folder_2, user)
     with pytest.raises(DomainError):
         folder_1.move(folder_3, user)
+
+
+def test_folder_name_change_disabled():
+    folder = Folder.create("3")
+    folder.disable_name_change()
+    assert folder.name_change_disabled is True
+    with pytest.raises(DomainError):
+        folder.update_information(name="New Name")
+
+
+def test_folder_name_change_with_force():
+    folder = Folder.create("5")
+    folder.disable_name_change()
+    assert folder.name_change_disabled is True
+    folder.update_information(name="New Name", force=True)
+    assert folder.name == "New Name"

@@ -34,6 +34,7 @@ class Folder:
         parent: Optional["Folder"] = None,
         items: Optional[list[FolderItem]] = None,
         stop_inherit: bool = False,
+        name_change_disabled: bool = False,
     ):
         assert name is not None and uuid is not None
         assert all([k.is_encrypted for k in keys or []])
@@ -45,6 +46,7 @@ class Folder:
         self.__stop_inherit = stop_inherit
         self.__keys = keys if keys is not None else []
         self.__items = items if items is not None else []
+        self.__name_change_disabled = name_change_disabled
 
     def __str__(self):
         return "Folder {}".format(self.name)
@@ -55,6 +57,10 @@ class Folder:
             "uuid": str(self.__uuid),
             "stop_inherit": self.stop_inherit,
         }
+
+    @property
+    def name_change_disabled(self):
+        return self.__name_change_disabled
 
     @property
     def org_pk(self):
@@ -158,6 +164,9 @@ class Folder:
             return False
         return self.__parent.has_access(owner)
 
+    def disable_name_change(self) -> None:
+        self.__name_change_disabled = True
+
     def _has_keys(self, owner: IOwner) -> bool:
         for key in self.__keys:
             if isinstance(key, FolderKey) and key.owner.uuid == owner.uuid:
@@ -200,7 +209,11 @@ class Folder:
         new_items_2 = list(new_items_1)
         self.__items = new_items_2
 
-    def update_information(self, name=None):
+    def update_information(self, name=None, force=False):
+        if not force and name is not None and self.__name_change_disabled:
+            raise DomainError(
+                "The name of this folder can not changed as it contains a record."
+            )
         self.__name = name if name is not None else self.__name
 
     def __find_folder_key(self, user: IOwner) -> Optional[FolderKey]:

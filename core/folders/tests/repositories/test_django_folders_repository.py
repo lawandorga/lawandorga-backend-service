@@ -79,3 +79,11 @@ def test_stop_inherit_saved(db, user, repository):
     repository.save(folder1)
     folder2 = repository.retrieve(user.org_id, folder1.uuid)
     assert folder2.stop_inherit
+
+
+def test_name_change_disable_saved(db, user, repository):
+    folder1 = Folder.create(name="New Folder", org_pk=user.org_id, stop_inherit=True)
+    folder1.disable_name_change()
+    repository.save(folder1)
+    folder2 = repository.retrieve(user.org_id, folder1.uuid)
+    assert folder2.name_change_disabled

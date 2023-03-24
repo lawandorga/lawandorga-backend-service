@@ -1,0 +1,68 @@
+from django.db import models
+from typing import Optional
+from uuid import UUID, uuid4
+
+from django.db import models
+
+from core.auth.models import RlcUser
+from core.folders.domain.aggregates.folder import Folder
+from core.folders.domain.repositiories.item import ItemRepository
+from core.folders.infrastructure.folder_addon import FolderAddon
+from core.rlc.models import Org
+from core.seedwork.events_addon import EventsAddon
+
+
+class DjangoRecordsRecordRepository(ItemRepository):
+    IDENTIFIER = "RECORDS_RECORD"
+
+    @classmethod
+    def retrieve(
+        cls, uuid: UUID, org_pk: Optional[int] = None
+    ) -> "RecordsRecord":
+        assert isinstance(uuid, UUID)
+        return RecordsRecord.objects.get(uuid=uuid, org_id=org_pk)
+
+
+class RecordsRecord(models.Model):
+    REPOSITORY = "RECORDS_RECORD"
+
+    @classmethod
+    def create(cls, token: str, user: RlcUser, folder: Folder, pk=0) -> "RecordsRecord":
+        record = RecordsRecord(token=token, org=user.org)
+        if pk:
+            record.pk = pk
+        record.folder.put_obj_in_folder(folder)
+        return record
+
+    token = models.CharField(max_length=200)
+    org = models.ForeignKey(Org, related_name="records", on_delete=models.CASCADE)
+    uuid = models.UUIDField(db_index=True, unique=True, default=uuid4)
+    folder_uuid = models.UUIDField(db_index=True, null=True)
+    is_archived = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    addons = dict(events=EventsAddon, folder=FolderAddon)
+    events: EventsAddon
+    folder: FolderAddon
+
+    class Meta:
+        verbose_name = "RecordsRecord"
+        verbose_name_plural = "RecordsRecord"
+
+    def __str__(self):
+        return "recordsRecord: {}; token: {}; org: {};".format(
+            self.uuid, self.token, self.org_id
+        )
+
+    @property
+    def org_pk(self) -> int:
+        return self.org_id
+
+    @property
+    def name(self) -> str:
+        return self.token
+
+    def change_token(self, token: str):
+        self.token = token
+        self.folder.obj_renamed()
