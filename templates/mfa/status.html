@@ -6,9 +6,9 @@
 <div class="{% include 'symbols/prose.class' %}">
     <h1>Multi-factor Authentication - Status</h1>
     {% if mfa_setup and mfa_enabled %}
-    <p>You have Multi-factor Authentication enabled. You can disable it <a href="{% url 'mfa_disable' %}">here</a>.</p>
+    <p>You have Multi-factor Authentication enabled. You can disable it <a href="{% url 'mfa_disable' mfa_secret.uuid %}">here</a>.</p>
     {% elif mfa_setup %}
-    <p>You have Multi-factor Authentication setup but not enabled. You can enable it <a href="{% url 'mfa_enable' 0 %}">here</a>.</p>
+    <p>You have Multi-factor Authentication setup but not enabled. You can enable it <a href="{% url 'mfa_enable' mfa_secret.uuid %}">here</a>.</p>
     {% else %}
     <p>
         You do not have Multi-factor Authentication enabled. We recommend you to enable it.

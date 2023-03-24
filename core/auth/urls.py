@@ -34,7 +34,15 @@ urlpatterns: list[Union[URLPattern, URLResolver]] = [
     ),
     path("auth/mfa/status/", views.MfaStatusView.as_view(), name="mfa_status"),
     path("auth/mfa/setup/", views.MfaSetupView.as_view(), name="mfa_setup"),
-    path("auth/mfa/enable/<int:pk>/", views.MfaEnableView.as_view(), name="mfa_enable"),
+    path(
+        "auth/mfa/<uuid:uuid>/enable/",
+        views.MfaEnableView.as_view(),
+        name="mfa_enable",
+    ),
+    path(
+        "auth/mfa/<uuid:uuid>/disable/",
+        views.MfaDisableView.as_view(),
+        name="mfa_disable",
+    ),
     path("auth/mfa/login/", views.MfaLoginView.as_view(), name="mfa_login"),
-    path('auth/mfa/disable/', views.MfaDisableView.as_view(), name="mfa_disable"),
 ]

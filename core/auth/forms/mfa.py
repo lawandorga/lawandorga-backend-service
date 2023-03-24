@@ -59,11 +59,7 @@ class EnableMfaForm(forms.ModelForm):
 
 
 class CheckMfaForm(forms.Form):
-    code = forms.IntegerField()
-
-    class Meta:
-        model = MultiFactorAuthenticationSecret
-        fields = ["code"]
+    code = forms.IntegerField(required=True)
 
     def __init__(self, user: UserProfile, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -71,7 +67,15 @@ class CheckMfaForm(forms.Form):
 
     def clean(self):
         attrs = super().clean()
+        if "code" not in attrs:
+            return attrs
         code = attrs["code"]
+        if not hasattr(self.user, "rlc_user"):
+            raise forms.ValidationError("You need the Org User Role.")
+        if not hasattr(self.user.rlc_user, "mfa_secret"):
+            raise forms.ValidationError(
+                "You have no Multi-factor Authentication setup."
+            )
         if str(code) != self.user.rlc_user.mfa_secret.get_code():
             raise forms.ValidationError("The code is not valid.")
         return attrs

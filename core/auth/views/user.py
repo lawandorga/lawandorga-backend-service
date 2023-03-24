@@ -40,7 +40,11 @@ class CustomLoginView(LoginView):
         if hasattr(user, "rlc_user"):
             self.request.session["user_key"] = uk.as_unsafe_dict()
 
-        if hasattr(user, "rlc_user") and hasattr(user.rlc_user, "mfa_secret") and user.rlc_user.mfa_secret.enabled:
+        if (
+            hasattr(user, "rlc_user")
+            and hasattr(user.rlc_user, "mfa_secret")
+            and user.rlc_user.mfa_secret.enabled
+        ):
             self.request.session["user_pk"] = user.pk
             return HttpResponseRedirect(reverse_lazy("mfa_login"))
 
