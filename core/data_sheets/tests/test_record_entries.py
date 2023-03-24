@@ -9,7 +9,6 @@ from django.test import Client, TestCase
 from rest_framework.test import force_authenticate
 from rest_framework.viewsets import GenericViewSet
 
-from core.models import UserProfile
 from core.data_sheets.models import (
     RecordEncryptedFileEntry,
     RecordEncryptedFileField,
@@ -43,6 +42,7 @@ from core.data_sheets.views import (
     RecordStatisticEntryViewSet,
     RecordUsersEntryViewSet,
 )
+from core.models import UserProfile
 
 ###
 # Base

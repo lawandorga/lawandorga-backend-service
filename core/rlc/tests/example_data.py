@@ -9,6 +9,25 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from core import static
 from core.auth.domain.user_key import UserKey
 from core.collab.models import CollabPermission
+from core.data_sheets.fixtures import create_default_record_template
+from core.data_sheets.models import (
+    Record,
+    RecordEncryptedStandardEntry,
+    RecordEncryptedStandardField,
+    RecordEncryptionNew,
+    RecordMultipleEntry,
+    RecordMultipleField,
+    RecordSelectEntry,
+    RecordSelectField,
+    RecordStandardEntry,
+    RecordStandardField,
+    RecordStateEntry,
+    RecordStateField,
+    RecordTemplate,
+    RecordUsersEntry,
+    RecordUsersField,
+)
+from core.data_sheets.use_cases.record import create_a_record_and_a_folder
 from core.files.models import FolderPermission
 from core.files_new.use_cases.file import upload_a_file
 from core.fixtures import (
@@ -29,25 +48,6 @@ from core.models import (
     UserProfile,
 )
 from core.questionnaires.models import QuestionnaireQuestion, QuestionnaireTemplate
-from core.data_sheets.fixtures import create_default_record_template
-from core.data_sheets.models import (
-    Record,
-    RecordEncryptedStandardEntry,
-    RecordEncryptedStandardField,
-    RecordEncryptionNew,
-    RecordMultipleEntry,
-    RecordMultipleField,
-    RecordSelectEntry,
-    RecordSelectField,
-    RecordStandardEntry,
-    RecordStandardField,
-    RecordStateEntry,
-    RecordStateField,
-    RecordTemplate,
-    RecordUsersEntry,
-    RecordUsersField,
-)
-from core.data_sheets.use_cases.record import create_a_record_and_a_folder
 from core.rlc.models import Org
 from core.seedwork.encryption import AESEncryption
 

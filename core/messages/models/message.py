@@ -4,6 +4,7 @@ from uuid import UUID
 from django.db import models
 
 from core.auth.models import RlcUser
+from core.data_sheets.models.record import Record
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
@@ -11,7 +12,6 @@ from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
-from core.data_sheets.models.record import Record
 from core.rlc.models import Org
 from core.seedwork.encryption import AESEncryption
 from core.seedwork.repository import RepositoryWarehouse

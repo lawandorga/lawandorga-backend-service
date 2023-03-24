@@ -5,6 +5,7 @@ class CoreConfig(AppConfig):
     name = "core"
 
     def ready(self) -> None:
+        from core.data_sheets.models.record import DjangoRecordRepository
         from core.files_new.models.file import DjangoFileRepository
         from core.folders.domain.value_objects.encryption import EncryptionWarehouse
         from core.folders.infrastructure.asymmetric_encryptions import (
@@ -17,7 +18,6 @@ class CoreConfig(AppConfig):
         from core.questionnaires.models.questionnaire import (
             DjangoQuestionnaireRepository,
         )
-        from core.data_sheets.models.record import DjangoRecordRepository
         from core.seedwork.repository import RepositoryWarehouse
         from core.upload.models.upload import DjangoUploadLinkRepository
 

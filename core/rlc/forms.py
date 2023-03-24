@@ -2,8 +2,8 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
-from core.models import RlcUser, UserProfile
 from core.data_sheets.fixtures import create_default_record_template
+from core.models import RlcUser, UserProfile
 from core.static import get_all_permission_strings
 
 

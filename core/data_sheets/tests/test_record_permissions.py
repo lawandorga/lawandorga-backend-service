@@ -2,7 +2,6 @@ from django.conf import settings
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
-from core.models import Org, RlcUser, UserProfile
 from core.data_sheets.views import (
     RecordEncryptedFileEntryViewSet,
     RecordEncryptedFileFieldViewSet,
@@ -19,6 +18,7 @@ from core.data_sheets.views import (
     RecordUsersEntryViewSet,
     RecordUsersFieldViewSet,
 )
+from core.models import Org, RlcUser, UserProfile
 
 
 class RecordViewSetsPermissions(TestCase):

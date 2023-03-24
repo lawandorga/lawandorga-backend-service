@@ -4,8 +4,8 @@ from django.db import models, transaction
 from django.utils import timezone
 
 from core.auth.models import RlcUser
-from core.folders.domain.repositiories.folder import FolderRepository
 from core.data_sheets.models.record import Record
+from core.folders.domain.repositiories.folder import FolderRepository
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.repository import RepositoryWarehouse
 

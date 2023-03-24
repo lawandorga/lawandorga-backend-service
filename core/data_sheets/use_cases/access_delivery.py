@@ -1,8 +1,8 @@
 from typing import cast
 
 from core.auth.models import RlcUser
-from core.folders.domain.repositiories.folder import FolderRepository
 from core.data_sheets.models import Record
+from core.folders.domain.repositiories.folder import FolderRepository
 from core.rlc.models import Permission
 from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.use_case_layer import use_case

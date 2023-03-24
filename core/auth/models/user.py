@@ -109,8 +109,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         """
         this method assumes that a valid public key exists for user_to_unlock
         """
-        from core.models import OrgEncryption
         from core.data_sheets.models import RecordEncryptionNew
+        from core.models import OrgEncryption
 
         # check if all keys can be handed over
         success = True

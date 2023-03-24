@@ -1,7 +1,7 @@
 from django.db import models
 
-from core.models import UserProfile
 from core.data_sheets.models.record import Record
+from core.models import UserProfile
 
 
 class PoolConsultant(models.Model):

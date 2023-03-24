@@ -4,10 +4,10 @@ from django.conf import settings
 
 from core.auth.domain.user_key import UserKey
 from core.auth.models import StatisticUser
+from core.data_sheets.models import Record, RecordTemplate
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.models import RlcUser, UserProfile
-from core.data_sheets.models import Record, RecordTemplate
 from core.rlc.models import Group, Org
 from core.seedwork.repository import RepositoryWarehouse
 

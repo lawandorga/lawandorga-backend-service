@@ -2,9 +2,9 @@ from django.conf import settings
 from django.test import TestCase
 
 from core.auth.domain.user_key import UserKey
-from core.models import Org, RlcUser, UserProfile
 from core.data_sheets.fixtures import create_default_record_template
 from core.data_sheets.models import Record, RecordEncryptionNew, RecordTemplate
+from core.models import Org, RlcUser, UserProfile
 from core.seedwork.encryption import AESEncryption
 
 

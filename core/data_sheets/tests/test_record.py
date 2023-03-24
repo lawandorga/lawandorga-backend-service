@@ -1,8 +1,8 @@
 from django.conf import settings
 from rest_framework.test import APIRequestFactory
 
-from core.models import HasPermission, Org, Permission, RlcUser, UserProfile
 from core.data_sheets.models import RecordTemplate
+from core.models import HasPermission, Org, Permission, RlcUser, UserProfile
 from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
     PERMISSION_RECORDS_ADD_RECORD,

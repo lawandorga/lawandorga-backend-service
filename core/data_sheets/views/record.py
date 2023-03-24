@@ -10,7 +10,6 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError
 from rest_framework.viewsets import GenericViewSet
 
-from core.folders.domain.repositiories.folder import FolderRepository
 from core.data_sheets.models import (
     RecordEncryptedFileEntry,
     RecordEncryptedFileField,
@@ -50,6 +49,7 @@ from core.data_sheets.serializers.record import (
     RecordUsersEntrySerializer,
     RecordUsersFieldSerializer,
 )
+from core.folders.domain.repositiories.folder import FolderRepository
 from core.seedwork.permission import CheckPermissionWall
 from core.seedwork.repository import RepositoryWarehouse
 from core.static import PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES

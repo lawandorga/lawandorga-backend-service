@@ -6,6 +6,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 
 from core.auth.models import RlcUser
+from core.data_sheets.models.record import Record
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.item import ItemRepository
 from core.folders.domain.value_objects.symmetric_key import (
@@ -13,7 +14,6 @@ from core.folders.domain.value_objects.symmetric_key import (
     SymmetricKey,
 )
 from core.folders.infrastructure.folder_addon import FolderAddon
-from core.data_sheets.models.record import Record
 from core.rlc.models import Org
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.events_addon import EventsAddon

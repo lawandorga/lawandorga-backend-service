@@ -8,16 +8,6 @@ from django.urls import reverse
 from django.utils.timezone import localtime
 
 from core.auth.models import RlcUser
-from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.folder import FolderRepository
-from core.folders.domain.repositiories.item import ItemRepository
-from core.folders.domain.value_objects.box import OpenBox
-from core.folders.domain.value_objects.symmetric_key import (
-    EncryptedSymmetricKey,
-    SymmetricKey,
-)
-from core.folders.infrastructure.folder_addon import FolderAddon
-from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.data_sheets.models import EncryptedClient  # type: ignore
 from core.data_sheets.models.template import (
     RecordEncryptedFileField,
@@ -31,17 +21,26 @@ from core.data_sheets.models.template import (
     RecordTemplate,
     RecordUsersField,
 )
+from core.folders.domain.aggregates.folder import Folder
+from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositiories.item import ItemRepository
+from core.folders.domain.value_objects.box import OpenBox
+from core.folders.domain.value_objects.symmetric_key import (
+    EncryptedSymmetricKey,
+    SymmetricKey,
+)
+from core.folders.infrastructure.folder_addon import FolderAddon
+from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
-
-###
-# Record
-###
 from core.seedwork.events_addon import EventsAddon
 from core.seedwork.repository import RepositoryWarehouse
 from core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 
 
+###
+# Record
+###
 class DjangoRecordRepository(ItemRepository):
     IDENTIFIER = "RECORD"
 

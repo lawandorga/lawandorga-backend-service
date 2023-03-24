@@ -7,10 +7,10 @@ import tinymce.models
 from django.conf import settings
 from django.db import migrations, models
 
-import core.folders.domain.aggregates.folder
-import core.folders.domain.external
 import core.data_sheets.models.record
 import core.data_sheets.models.template
+import core.folders.domain.aggregates.folder
+import core.folders.domain.external
 import core.seedwork.encryption
 
 
