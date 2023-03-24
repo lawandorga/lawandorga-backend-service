@@ -21,7 +21,7 @@ class DjangoRecordsRecordRepository(ItemRepository):
 
 
 class RecordsRecord(models.Model):
-    REPOSITORY = "RECORDS_RECORD"
+    REPOSITORY = DjangoRecordsRecordRepository.IDENTIFIER
 
     @classmethod
     def create(cls, token: str, user: RlcUser, folder: Folder, pk=0) -> "RecordsRecord":
@@ -31,7 +31,7 @@ class RecordsRecord(models.Model):
         record.folder.put_obj_in_folder(folder)
         return record
 
-    token = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
     org = models.ForeignKey(Org, related_name="records", on_delete=models.CASCADE)
     uuid = models.UUIDField(db_index=True, unique=True, default=uuid4)
     folder_uuid = models.UUIDField(db_index=True, null=True)
@@ -54,12 +54,12 @@ class RecordsRecord(models.Model):
 
     @property
     def org_pk(self) -> int:
-        return self.org_id
+        return self.org.id
 
     @property
-    def name(self) -> str:
-        return self.token
+    def token(self) -> str:
+        return self.name
 
     def change_token(self, token: str):
-        self.token = token
+        self.name = token
         self.folder.obj_renamed()
