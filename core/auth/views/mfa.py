@@ -110,7 +110,6 @@ class MfaLoginView(RedirectURLMixin, views.generic.FormView):
         strip_scheme(settings.STATISTICS_FRONTEND_URL),
     }
 
-
     def get_form(self, form_class=None):
         if form_class is None:
             form_class = self.get_form_class()
