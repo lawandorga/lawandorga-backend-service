@@ -46,7 +46,8 @@ class CustomLoginView(LoginView):
             and user.rlc_user.mfa_secret.enabled
         ):
             self.request.session["user_pk"] = user.pk
-            return HttpResponseRedirect(reverse_lazy("mfa_login"))
+            url = f"{reverse_lazy('mfa_login')}?next={self.request.GET.get('next')}"
+            return HttpResponseRedirect(url)
 
         return super().form_valid(form)
 

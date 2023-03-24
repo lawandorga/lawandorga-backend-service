@@ -4,7 +4,6 @@ from django.contrib.auth import get_user_model
 from core.auth.domain.user_key import UserKey
 from core.auth.models.mfa import MultiFactorAuthenticationSecret
 from core.auth.models.user import UserProfile
-from core.auth.use_cases.mfa import create_mfa_secret, enable_mfa_secret
 from core.folders.domain.types import StrDict
 
 
@@ -26,40 +25,13 @@ class SetupMfaForm(forms.ModelForm):
             raise forms.ValidationError("You already have MfA setup.")
         return super().clean()
 
-    def save(self, commit: bool = True) -> MultiFactorAuthenticationSecret:
-        if not commit:
-            raise ValueError("This form does not support commit=False")
-        create_mfa_secret(self.user.rlc_user)
-        return self.user.rlc_user.mfa_secret
 
-
-class EnableMfaForm(forms.ModelForm):
-    code = forms.IntegerField()
+class CheckMfaForm(forms.ModelForm):
+    code = forms.IntegerField(required=True)
 
     class Meta:
         model = MultiFactorAuthenticationSecret
-        fields = ["code"]
-
-    def __init__(self, user: UserProfile, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.user = user
-
-    def clean(self):
-        attrs = super().clean()
-        code = attrs["code"]
-        if str(code) != self.user.rlc_user.mfa_secret.get_code():
-            raise forms.ValidationError("The code is not valid.")
-        return attrs
-
-    def save(self, commit: bool = True) -> MultiFactorAuthenticationSecret:
-        if not commit:
-            raise ValueError("This form does not support commit=False")
-        enable_mfa_secret(self.user.rlc_user)
-        return self.user.rlc_user.mfa_secret
-
-
-class CheckMfaForm(forms.Form):
-    code = forms.IntegerField(required=True)
+        fields: list[str] = []
 
     def __init__(self, user: UserProfile, *args, **kwargs):
         super().__init__(*args, **kwargs)

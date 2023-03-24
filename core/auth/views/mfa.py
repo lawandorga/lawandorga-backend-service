@@ -2,17 +2,17 @@ from django import views
 from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import RedirectURLMixin  # type: ignore
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
-from core.auth.forms.mfa import (
-    CheckMfaForm,
-    EnableMfaForm,
-    MfaAuthenticationForm,
-    SetupMfaForm,
-)
+from core.auth.forms.mfa import CheckMfaForm, MfaAuthenticationForm, SetupMfaForm
 from core.auth.models.mfa import MultiFactorAuthenticationSecret
-from core.auth.use_cases.mfa import delete_mfa_secret
+from core.auth.use_cases.mfa import (
+    create_mfa_secret,
+    delete_mfa_secret,
+    enable_mfa_secret,
+)
 from core.auth.views.user import strip_scheme
 
 
@@ -44,10 +44,14 @@ class MfaSetupView(LoginRequiredMixin, views.generic.CreateView):
             form_class = self.get_form_class()
         return form_class(self.request.user, **self.get_form_kwargs())
 
+    def form_valid(self, form):
+        create_mfa_secret(self.request.user.rlc_user)
+        return HttpResponseRedirect(self.get_success_url())
+
 
 class MfaEnableView(LoginRequiredMixin, views.generic.UpdateView):
     template_name = "mfa/enable.html"
-    form_class = EnableMfaForm
+    form_class = CheckMfaForm
     success_url = reverse_lazy("mfa_status")
     slug_url_kwarg = "uuid"
     slug_field = "uuid"
@@ -64,33 +68,8 @@ class MfaEnableView(LoginRequiredMixin, views.generic.UpdateView):
             form_class = self.get_form_class()
         return form_class(self.request.user, **self.get_form_kwargs())
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        url = self.object.url
-        context["uri"] = url
-        return context
-
-
-class MfaLoginView(views.generic.FormView):
-    template_name = "mfa/login.html"
-    form_class = MfaAuthenticationForm
-    success_url = settings.MAIN_FRONTEND_URL
-    success_url_allowed_hosts = {
-        strip_scheme(settings.MAIN_FRONTEND_URL),
-        strip_scheme(settings.STATISTICS_FRONTEND_URL),
-    }
-
-    def get_form(self, form_class=None):
-        if form_class is None:
-            form_class = self.get_form_class()
-        return form_class(
-            self.request.session["user_pk"],
-            self.request.session["user_key"],
-            **self.get_form_kwargs()
-        )
-
     def form_valid(self, form):
-        login(self.request, form.get_user())
+        enable_mfa_secret(self.request.user.rlc_user)
         return HttpResponseRedirect(self.get_success_url())
 
 
@@ -116,4 +95,27 @@ class MfaDisableView(LoginRequiredMixin, views.generic.DeleteView):
 
     def form_valid(self, form):
         delete_mfa_secret(self.request.user.rlc_user)
+        return HttpResponseRedirect(self.get_success_url())
+
+
+class MfaLoginView(RedirectURLMixin, views.generic.FormView):
+    template_name = "mfa/login.html"
+    form_class = MfaAuthenticationForm
+    success_url = settings.MAIN_FRONTEND_URL
+    success_url_allowed_hosts = {
+        strip_scheme(settings.MAIN_FRONTEND_URL),
+        strip_scheme(settings.STATISTICS_FRONTEND_URL),
+    }
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            form_class = self.get_form_class()
+        return form_class(
+            self.request.session["user_pk"],
+            self.request.session["user_key"],
+            **self.get_form_kwargs()
+        )
+
+    def form_valid(self, form):
+        login(self.request, form.get_user())
         return HttpResponseRedirect(self.get_success_url())
