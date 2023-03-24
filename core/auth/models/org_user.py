@@ -429,8 +429,8 @@ class RlcUser(Aggregate, models.Model):
         return u.key
 
     @staticmethod
-    def get_dummy_user_private_key(dummy: "RlcUser") -> str:
-        if settings.TESTING and dummy.email == "dummy@law-orga.de":
+    def get_dummy_user_private_key(dummy: "RlcUser", email="dummy@law-orga.de") -> str:
+        if settings.TESTING and dummy.email == email:
             u1 = UserKey.create_from_dict(dummy.key)
             u2 = u1.decrypt_self(settings.DUMMY_USER_PASSWORD)
             key = u2.key
@@ -476,9 +476,11 @@ class RlcUser(Aggregate, models.Model):
     def get_decryption_key(self, *args, **kwargs) -> AsymmetricKey:
         assert self.key is not None
 
-        if settings.TESTING and self.email == "dummy@law-orga.de":
+        if settings.TESTING and (
+            self.email == "dummy@law-orga.de" or self.email == "tester@law-orga.de"
+        ):
             public_key = self.key["key"]["public_key"]
-            private_key = RlcUser.get_dummy_user_private_key(self)
+            private_key = RlcUser.get_dummy_user_private_key(self, self.email)
             origin = self.key["key"]["origin"]
             return AsymmetricKey.create(
                 private_key=private_key, origin=origin, public_key=public_key

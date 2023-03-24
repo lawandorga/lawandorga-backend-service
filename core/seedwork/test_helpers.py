@@ -122,6 +122,7 @@ def create_rlc_user(
         .decode("utf-8")
     )
     return {
+        "org": rlc,
         "user": user,
         "username": user.email,
         "email": user.email,

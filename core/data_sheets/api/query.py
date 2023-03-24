@@ -5,6 +5,7 @@ from django.db.models import Q
 from core.auth.models import RlcUser
 from core.data_sheets.api import schemas
 from core.data_sheets.models import Record, RecordAccess, RecordDeletion, RecordTemplate
+from core.data_sheets.use_cases.record import migrate_record_into_folder
 from core.seedwork.api_layer import ApiError, Router
 
 router = Router()
@@ -71,7 +72,7 @@ def query__record(rlc_user: RlcUser, data: schemas.InputQueryRecord):
         raise ApiError("You have no access to this folder.")
 
     if not record.folder_uuid:
-        record.put_in_folder(rlc_user)
+        migrate_record_into_folder(rlc_user, record)
 
     client = None
     if record.old_client:

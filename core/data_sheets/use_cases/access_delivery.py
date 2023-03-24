@@ -2,6 +2,7 @@ from typing import cast
 
 from core.auth.models import RlcUser
 from core.data_sheets.models import Record
+from core.data_sheets.use_cases.record import migrate_record_into_folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.rlc.models import Permission
 from core.seedwork.repository import RepositoryWarehouse
@@ -28,7 +29,7 @@ def deliver_access_to_users_who_should_have_access(__actor: RlcUser):
         if record.has_access(__actor):
             # do this in order to put the record inside a folder
             if not record.folder_uuid:
-                record.put_in_folder(__actor)
+                migrate_record_into_folder(__actor, record)
 
             for user in users_3:
                 if not record.has_access(user):

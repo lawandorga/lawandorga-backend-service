@@ -1,5 +1,5 @@
 import json
-from typing import Optional, Union, cast
+from typing import Optional, Union
 from uuid import UUID, uuid4
 
 from django.core.files import File as DjangoFile
@@ -22,19 +22,15 @@ from core.data_sheets.models.template import (
     RecordUsersField,
 )
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.repositiories.item import ItemRepository
-from core.folders.domain.value_objects.box import OpenBox
 from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
 from core.folders.infrastructure.folder_addon import FolderAddon
-from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 from core.seedwork.events_addon import EventsAddon
-from core.seedwork.repository import RepositoryWarehouse
 from core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 
 
@@ -253,46 +249,6 @@ class Record(Aggregate, models.Model):
                     "value": entry.get_raw_value(),
                 }
         return entries
-
-    def put_in_folder(self, user: RlcUser):
-        if not self.has_access(user):
-            raise ValueError("User has no access to this folder.")
-
-        if self.folder_uuid is not None:
-            raise ValueError("This record is already inside a folder.")
-
-        # put the record inside a folder
-        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-
-        records_folder = r.get_or_create_records_folder(
-            org_pk=self.template.rlc_id, user=user
-        )
-
-        folder_name = "{}".format(self.identifier or "Not-Set")
-        folder = Folder.create(
-            folder_name, org_pk=self.template.rlc_id, stop_inherit=True
-        )
-        folder.grant_access(user)
-        folder.set_parent(records_folder, user)
-
-        for encryption in list(self.encryptions.exclude(user_id=user.id)):
-            folder.grant_access(to=encryption.user, by=user)
-
-        self.set_folder(folder)
-
-        # get the key of the record
-        private_key_user = user.get_decryption_key().get_private_key()
-        encryption = self.encryptions.get(user=user)
-        encryption.decrypt(private_key_user)
-        aes_key: str = encryption.key  # type: ignore
-        aes_key_box = OpenBox(data=bytes(aes_key, "utf-8"))
-        key = SymmetricKey(key=aes_key_box, origin=SymmetricEncryptionV1.VERSION)
-        encryption_key = folder.get_encryption_key(requestor=user)
-        self.key = EncryptedSymmetricKey.create(key, encryption_key).as_dict()
-
-        # save the record and the folder
-        r.save(folder)
-        self.save()
 
 
 ###
