@@ -5,7 +5,7 @@ import pytest
 from django.test import Client
 
 from core.models import Org
-from core.records.models import RecordTemplate
+from core.data_sheets.models import RecordTemplate
 from core.seedwork import test_helpers as data
 
 from ...rlc.models import Permission

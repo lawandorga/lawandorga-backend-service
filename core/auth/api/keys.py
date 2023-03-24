@@ -2,7 +2,7 @@ from typing import List
 
 from core.auth.api.schemas import InputKeyDelete, OutputKey
 from core.auth.models import RlcUser
-from core.records.models import RecordEncryptionNew
+from core.data_sheets.models import RecordEncryptionNew
 from core.seedwork.api_layer import ApiError, Router
 
 router = Router()

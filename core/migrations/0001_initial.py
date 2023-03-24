@@ -9,8 +9,8 @@ from django.db import migrations, models
 
 import core.folders.domain.aggregates.folder
 import core.folders.domain.external
-import core.records.models.record
-import core.records.models.template
+import core.data_sheets.models.record
+import core.data_sheets.models.template
 import core.seedwork.encryption
 
 
@@ -540,7 +540,7 @@ class Migration(migrations.Migration):
                 (
                     "show",
                     models.JSONField(
-                        default=core.records.models.template.get_default_show
+                        default=core.data_sheets.models.template.get_default_show
                     ),
                 ),
                 (
@@ -2596,7 +2596,7 @@ class Migration(migrations.Migration):
                 "unique_together": {("record", "field")},
             },
             bases=(
-                core.records.models.record.RecordEntryEncryptedModelMixin,
+                core.data_sheets.models.record.RecordEntryEncryptedModelMixin,
                 models.Model,
             ),
         ),
@@ -2638,7 +2638,7 @@ class Migration(migrations.Migration):
                 "unique_together": {("record", "field")},
             },
             bases=(
-                core.records.models.record.RecordEntryEncryptedModelMixin,
+                core.data_sheets.models.record.RecordEntryEncryptedModelMixin,
                 models.Model,
             ),
         ),

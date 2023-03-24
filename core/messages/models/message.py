@@ -11,7 +11,7 @@ from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
-from core.records.models.record import Record
+from core.data_sheets.models.record import Record
 from core.rlc.models import Org
 from core.seedwork.encryption import AESEncryption
 from core.seedwork.repository import RepositoryWarehouse

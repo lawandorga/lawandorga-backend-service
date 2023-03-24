@@ -7,7 +7,7 @@ from core.folders.api import schemas
 from core.folders.domain.repositiories.item import ItemRepository
 from core.folders.domain.value_objects.tree import TreeAccess
 from core.folders.use_cases.folder import get_repository
-from core.records.models import Record
+from core.data_sheets.models import Record
 from core.seedwork.api_layer import Router
 from core.seedwork.repository import RepositoryWarehouse
 

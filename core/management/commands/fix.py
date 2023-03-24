@@ -1,6 +1,6 @@
 from django.core.management import BaseCommand
 
-from core.records.models import RecordAccess, RecordDeletion
+from core.data_sheets.models import RecordAccess, RecordDeletion
 
 
 class Command(BaseCommand):

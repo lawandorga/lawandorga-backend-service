@@ -9,6 +9,6 @@ from .legal.models import *
 from .mail.models import *
 from .other.models import *
 from .playground.models import *
-from .records.models import *
+from .data_sheets.models import *
 from .rlc.models import *
 from .upload.models import *

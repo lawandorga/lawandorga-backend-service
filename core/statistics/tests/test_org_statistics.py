@@ -1,7 +1,7 @@
 import pytest
 from django.test import Client
 
-from core.records.models import RecordTemplate
+from core.data_sheets.models import RecordTemplate
 from core.rlc.models import Org
 from core.seedwork import test_helpers as data
 

@@ -3,8 +3,8 @@ from django.test import TestCase
 
 from core.auth.domain.user_key import UserKey
 from core.models import Org, RlcUser, UserProfile
-from core.records.fixtures import create_default_record_template
-from core.records.models import Record, RecordEncryptionNew, RecordTemplate
+from core.data_sheets.fixtures import create_default_record_template
+from core.data_sheets.models import Record, RecordEncryptionNew, RecordTemplate
 from core.seedwork.encryption import AESEncryption
 
 

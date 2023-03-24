@@ -16,7 +16,7 @@ from core.questionnaires.models.template import (
     QuestionnaireQuestion,
     QuestionnaireTemplate,
 )
-from core.records.models import Record
+from core.data_sheets.models import Record
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 from core.seedwork.events_addon import EventsAddon

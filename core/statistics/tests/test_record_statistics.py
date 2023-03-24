@@ -4,7 +4,7 @@ import pytest
 from django.test import Client
 from django.utils import timezone
 
-from core.records.models import RecordStateEntry, RecordStateField, RecordTemplate
+from core.data_sheets.models import RecordStateEntry, RecordStateField, RecordTemplate
 from core.rlc.models import Org
 from core.seedwork import test_helpers as data
 

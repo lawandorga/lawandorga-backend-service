@@ -180,7 +180,7 @@ class RlcUser(Aggregate, models.Model):
 
     @property
     def record_keys(self) -> list[KeyOfUser]:
-        from core.records.models import RecordEncryptionNew
+        from core.data_sheets.models import RecordEncryptionNew
 
         _keys1 = RecordEncryptionNew.objects.filter(user_id=self.id).select_related(
             "record"
@@ -258,7 +258,7 @@ class RlcUser(Aggregate, models.Model):
 
     @property
     def records_information(self):
-        from core.records.models import Record
+        from core.data_sheets.models import Record
 
         records = Record.objects.filter(template__rlc=self.org).prefetch_related(
             "state_entries", "users_entries", "users_entries__value"
@@ -332,7 +332,7 @@ class RlcUser(Aggregate, models.Model):
 
     @property
     def own_records(self):
-        from core.records.models import Record
+        from core.data_sheets.models import Record
 
         records = Record.objects.filter(template__rlc=self.org).prefetch_related(
             "users_entries", "users_entries__value"
@@ -670,7 +670,7 @@ class RlcUser(Aggregate, models.Model):
         return False
 
     def get_badges(self):
-        from core.records.models import RecordAccess, RecordDeletion
+        from core.data_sheets.models import RecordAccess, RecordDeletion
 
         # profiles
         profiles = RlcUser.objects.filter(org=self.org, locked=True).count()

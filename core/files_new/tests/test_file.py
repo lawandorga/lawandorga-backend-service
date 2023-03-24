@@ -6,8 +6,8 @@ from django.core.files.uploadedfile import UploadedFile
 
 from core.files_new.models import EncryptedRecordDocument
 from core.files_new.use_cases.file import put_files_inside_of_folders
-from core.records.models import Record, RecordEncryptionNew, RecordTemplate
-from core.records.use_cases.access_delivery import (
+from core.data_sheets.models import Record, RecordEncryptionNew, RecordTemplate
+from core.data_sheets.use_cases.access_delivery import (
     deliver_access_to_users_who_should_have_access,
 )
 from core.seedwork.encryption import AESEncryption

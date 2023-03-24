@@ -13,7 +13,7 @@ from core.folders.domain.value_objects.symmetric_key import (
     SymmetricKey,
 )
 from core.folders.infrastructure.folder_addon import FolderAddon
-from core.records.models.record import Record
+from core.data_sheets.models.record import Record
 from core.rlc.models import Org
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.events_addon import EventsAddon

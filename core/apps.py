@@ -17,7 +17,7 @@ class CoreConfig(AppConfig):
         from core.questionnaires.models.questionnaire import (
             DjangoQuestionnaireRepository,
         )
-        from core.records.models.record import DjangoRecordRepository
+        from core.data_sheets.models.record import DjangoRecordRepository
         from core.seedwork.repository import RepositoryWarehouse
         from core.upload.models.upload import DjangoUploadLinkRepository
 

@@ -29,8 +29,8 @@ from core.models import (
     UserProfile,
 )
 from core.questionnaires.models import QuestionnaireQuestion, QuestionnaireTemplate
-from core.records.fixtures import create_default_record_template
-from core.records.models import (
+from core.data_sheets.fixtures import create_default_record_template
+from core.data_sheets.models import (
     Record,
     RecordEncryptedStandardEntry,
     RecordEncryptedStandardField,
@@ -47,7 +47,7 @@ from core.records.models import (
     RecordUsersEntry,
     RecordUsersField,
 )
-from core.records.use_cases.record import create_a_record_and_a_folder
+from core.data_sheets.use_cases.record import create_a_record_and_a_folder
 from core.rlc.models import Org
 from core.seedwork.encryption import AESEncryption
 
