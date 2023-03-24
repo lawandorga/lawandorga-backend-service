@@ -104,11 +104,12 @@ class MfaDisableView(LoginRequiredMixin, views.generic.DeleteView):
 class MfaLoginView(RedirectURLMixin, views.generic.FormView):
     template_name = "mfa/login.html"
     form_class = MfaAuthenticationForm
-    success_url = settings.MAIN_FRONTEND_URL
+    next_page = settings.MAIN_FRONTEND_URL
     success_url_allowed_hosts = {
         strip_scheme(settings.MAIN_FRONTEND_URL),
         strip_scheme(settings.STATISTICS_FRONTEND_URL),
     }
+
 
     def get_form(self, form_class=None):
         if form_class is None:
