@@ -1,4 +1,3 @@
-from django.db import models
 from typing import Optional
 from uuid import UUID, uuid4
 
@@ -16,9 +15,7 @@ class DjangoRecordsRecordRepository(ItemRepository):
     IDENTIFIER = "RECORDS_RECORD"
 
     @classmethod
-    def retrieve(
-        cls, uuid: UUID, org_pk: Optional[int] = None
-    ) -> "RecordsRecord":
+    def retrieve(cls, uuid: UUID, org_pk: Optional[int] = None) -> "RecordsRecord":
         assert isinstance(uuid, UUID)
         return RecordsRecord.objects.get(uuid=uuid, org_id=org_pk)
 
