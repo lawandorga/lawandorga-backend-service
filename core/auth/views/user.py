@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth.views import (
     LoginView,
+    LogoutView,
     PasswordResetCompleteView,
     PasswordResetConfirmView,
     PasswordResetDoneView,
@@ -50,6 +51,10 @@ class CustomLoginView(LoginView):
             return HttpResponseRedirect(url)
 
         return super().form_valid(form)
+
+
+class CustomLogoutView(LogoutView):
+    pass
 
 
 class CustomPasswordResetForm(PasswordResetForm):

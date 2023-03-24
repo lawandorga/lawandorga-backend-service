@@ -6,6 +6,8 @@ from .mfa import (
     MfaStatusView,
 )
 from .user import (
+    CustomLoginView,
+    CustomLogoutView,
     CustomPasswordResetCompleteView,
     CustomPasswordResetConfirmView,
     CustomPasswordResetDoneView,

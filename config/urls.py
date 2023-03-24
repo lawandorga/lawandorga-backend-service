@@ -36,8 +36,9 @@ urlpatterns = [
     path("email/", EmailView.as_view()),
     path("", include(api_urls)),
     path("admin/login/", RedirectView.as_view(pattern_name="login", query_string=True)),
+    path("logout/", RedirectView.as_view(pattern_name="logout", query_string=True)),
     path("admin/", admin.site.urls),
-    path("login/", CustomLoginView.as_view(), name="login"),
+    path("login/", CustomLoginView.as_view()),
     path("redirect/", CustomRedirectView.as_view(), name="redirect"),
     path(
         "",
