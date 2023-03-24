@@ -14,3 +14,9 @@ def enable_mfa_secret(__actor: RlcUser):
     mfa = __actor.mfa_secret
     mfa.enable()
     mfa.save()
+
+
+@use_case
+def delete_mfa_secret(__actor: RlcUser):
+    mfa = __actor.mfa_secret
+    mfa.delete()

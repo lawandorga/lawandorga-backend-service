@@ -1,21 +1,8 @@
-{% extends "registration/base.html" %}
-{#
-<!-- hello setup
-<br><br><br><br><br>
-<img alt="MFA Setup QR Code" src="https://chart.apis.google.com/chart?cht=qr&chs=250x250&chl={{ uri }}">
+{% extends 'symbols/base.html' %}
 
-<form method="post">
-{{ form.as_p }}
-{% csrf_token %}
-<button type="submit">submit</button>
-</form> -->
-#}
+{% block title %}MfA - Enable{% endblock %}
 
-
-
-{% block title %}MFA - Setup{% endblock %}
-
-{% block body %}
+{% block content %}
     <div class="{% include 'symbols/prose.class' %}">
         <h1>Multi-factor Authentication - Enable</h1>
         <p>

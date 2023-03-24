@@ -58,6 +58,25 @@ class EnableMfaForm(forms.ModelForm):
         return self.user.rlc_user.mfa_secret
 
 
+class CheckMfaForm(forms.Form):
+    code = forms.IntegerField()
+
+    class Meta:
+        model = MultiFactorAuthenticationSecret
+        fields = ["code"]
+
+    def __init__(self, user: UserProfile, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean(self):
+        attrs = super().clean()
+        code = attrs["code"]
+        if str(code) != self.user.rlc_user.mfa_secret.get_code():
+            raise forms.ValidationError("The code is not valid.")
+        return attrs
+
+
 class MfaAuthenticationForm(forms.Form):
     code = forms.IntegerField(label="MfA Code")
 

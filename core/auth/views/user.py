@@ -37,18 +37,14 @@ class CustomLoginView(LoginView):
 
         uk = user.rlc_user.get_decrypted_key_from_password(form.data["password"])
         run_user_login_checks(user, form.data["password"])
-
-        if hasattr(user, "rlc_user") and hasattr(user.rlc_user, "mfa_secret"):
-            run_user_login_checks(user, form.data["password"])
-            self.request.session["user_pk"] = user.pk
-            self.request.session["user_key"] = uk.as_unsafe_dict()
-            return HttpResponseRedirect(reverse_lazy("mfa_login"))
-
-        response = super().form_valid(form)
         if hasattr(user, "rlc_user"):
             self.request.session["user_key"] = uk.as_unsafe_dict()
 
-        return response
+        if hasattr(user, "rlc_user") and hasattr(user.rlc_user, "mfa_secret") and user.rlc_user.mfa_secret.enabled:
+            self.request.session["user_pk"] = user.pk
+            return HttpResponseRedirect(reverse_lazy("mfa_login"))
+
+        return super().form_valid(form)
 
 
 class CustomPasswordResetForm(PasswordResetForm):

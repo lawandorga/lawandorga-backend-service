@@ -1,7 +1,11 @@
+from django.conf import settings
 import pytest
 
 from core.auth.models.mfa import MultiFactorAuthenticationSecret
+from core.auth.models.org_user import RlcUser
+from core.auth.use_cases.mfa import create_mfa_secret, enable_mfa_secret
 from core.seedwork import test_helpers
+from django.test.client import Client
 
 
 @pytest.fixture
@@ -44,3 +48,17 @@ def test_mfa_code(real_mfa):
     code1 = mfa.get_code()
     code2 = mfa.get_code()
     assert code1 == code2
+
+
+def test_mfa_login(db):
+    full_user = test_helpers.create_rlc_user()
+    user: RlcUser = full_user['rlc_user']
+    create_mfa_secret(user)
+    enable_mfa_secret(user)
+    client = Client()
+    response1 = client.post("/login/", {"username": user.email, "password": settings.DUMMY_USER_PASSWORD}, follow=True)
+    assert response1.status_code == 200
+    code = user.mfa_secret.get_code()
+    response2 = client.post("/auth/mfa/login/", {"code": code}, follow=True) 
+    assert response2.context["user"].id == user.user_id
+    assert response2.status_code == 200

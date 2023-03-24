@@ -1,7 +1,7 @@
 {
     "scripts": {
         "css": "tailwindcss -i ./static/src/tailwind.css -o ./static/dist/tailwind.css",
-        "watch": "tailwindcss -i ./static/src/tailwind.css -o ./static/dist/tailwind.css --watch"
+        "css:watch": "tailwindcss -i ./static/src/tailwind.css -o ./static/dist/tailwind.css --watch"
     },
     "dependencies": {
         "@tailwindcss/forms": "^0.5.3",

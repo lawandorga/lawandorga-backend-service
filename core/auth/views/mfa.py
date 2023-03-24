@@ -5,8 +5,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
-from core.auth.forms.mfa import EnableMfaForm, MfaAuthenticationForm, SetupMfaForm
+from core.auth.forms.mfa import CheckMfaForm, EnableMfaForm, MfaAuthenticationForm, SetupMfaForm
 from core.auth.models.mfa import MultiFactorAuthenticationSecret
+from core.auth.use_cases.mfa import delete_mfa_secret
 from core.auth.views.user import strip_scheme
 
 
@@ -19,6 +20,7 @@ class MfaStatusView(LoginRequiredMixin, views.generic.TemplateView):
         context["mfa_enabled"] = (
             context["mfa_setup"] and self.request.user.rlc_user.mfa_secret.enabled
         )
+        context["frontend_url"] = settings.MAIN_FRONTEND_URL
         return context
 
 
@@ -75,3 +77,18 @@ class MfaLoginView(views.generic.FormView):
     def form_valid(self, form):
         login(self.request, form.get_user())
         return HttpResponseRedirect(self.get_success_url())
+
+
+class MfaDisableView(views.generic.FormView):
+    template_name = "mfa/disable.html"
+    form_class = CheckMfaForm
+    success_url = reverse_lazy("mfa_status")
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            form_class = self.get_form_class()
+        return form_class(self.request.user, **self.get_form_kwargs())
+
+    def form_valid(self, form):
+        delete_mfa_secret(self.request.user.rlc_user)
+        return super().form_valid(form)
