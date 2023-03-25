@@ -8,6 +8,7 @@ from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.item import ItemRepository
 from core.folders.infrastructure.folder_addon import FolderAddon
 from core.rlc.models import Org
+from core.seedwork.aggregate import Aggregate
 from core.seedwork.events_addon import EventsAddon
 
 
@@ -16,16 +17,16 @@ class DjangoRecordsRecordRepository(ItemRepository):
 
     @classmethod
     def retrieve(cls, uuid: UUID, org_pk: Optional[int] = None) -> "RecordsRecord":
-        assert isinstance(uuid, UUID)
-        return RecordsRecord.objects.get(uuid=uuid, org_id=org_pk)
+        assert isinstance(uuid, UUID) and isinstance(org_pk, int)
+        return RecordsRecord.objects.filter(uuid=uuid, org_id=org_pk).get()
 
 
-class RecordsRecord(models.Model):
+class RecordsRecord(Aggregate, models.Model):
     REPOSITORY = DjangoRecordsRecordRepository.IDENTIFIER
 
     @classmethod
     def create(cls, token: str, user: RlcUser, folder: Folder, pk=0) -> "RecordsRecord":
-        record = RecordsRecord(token=token, org=user.org)
+        record = RecordsRecord(name=token, org=user.org)
         if pk:
             record.pk = pk
         record.folder.put_obj_in_folder(folder)

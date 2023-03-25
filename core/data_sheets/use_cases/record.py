@@ -57,7 +57,7 @@ def create_a_record_and_a_folder(
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
-def create_a_record_within_a_folder(
+def create_a_data_sheet_within_a_folder(
     __actor: RlcUser,
     name: str,
     folder_uuid: UUID,

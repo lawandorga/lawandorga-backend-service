@@ -2,8 +2,8 @@ import pytest
 
 from core.data_sheets.models import Record
 from core.data_sheets.use_cases.record import (
+    create_a_data_sheet_within_a_folder,
     create_a_record_and_a_folder,
-    create_a_record_within_a_folder,
 )
 from core.seedwork.use_case_layer import UseCaseError
 from core.static import (
@@ -14,7 +14,7 @@ from core.static import (
 
 def test_create_within_folder(user, record_template, folder):
     user["rlc_user"].grant(PERMISSION_RECORDS_ADD_RECORD)
-    create_a_record_within_a_folder(
+    create_a_data_sheet_within_a_folder(
         user["rlc_user"],
         "record123",
         folder_uuid=folder.uuid,
@@ -33,7 +33,7 @@ def test_create_record_and_folder(user, record_template, folder):
 
 def test_create_no_permission(user, record_template, folder):
     with pytest.raises(UseCaseError):
-        create_a_record_within_a_folder(
+        create_a_data_sheet_within_a_folder(
             user["rlc_user"],
             "record123",
             folder_uuid=folder.uuid,
@@ -43,13 +43,13 @@ def test_create_no_permission(user, record_template, folder):
 
 def test_records_are_added_to_folder(user, record_template, folder, folder_repo):
     user["rlc_user"].grant(PERMISSION_RECORDS_ADD_RECORD)
-    create_a_record_within_a_folder(
+    create_a_data_sheet_within_a_folder(
         user["rlc_user"],
         "record123",
         folder_uuid=folder.uuid,
         template_id=record_template["template"].pk,
     )
-    create_a_record_within_a_folder(
+    create_a_data_sheet_within_a_folder(
         user["rlc_user"],
         "record123",
         folder_uuid=folder.uuid,
@@ -63,7 +63,7 @@ def test_no_access_to_folder(user, record_template, folder, another_user):
     user["rlc_user"].grant(PERMISSION_RECORDS_ADD_RECORD)
     another_user["rlc_user"].grant(PERMISSION_RECORDS_ADD_RECORD)
     with pytest.raises(UseCaseError):
-        create_a_record_within_a_folder(
+        create_a_data_sheet_within_a_folder(
             another_user["rlc_user"],
             "record123",
             folder_uuid=folder.uuid,
@@ -81,7 +81,7 @@ def test_grant_to_users_with_general_permission(
         another_user["rlc_user"]
     )
 
-    record_id = create_a_record_within_a_folder(
+    record_id = create_a_data_sheet_within_a_folder(
         user["rlc_user"],
         "record123",
         folder_uuid=folder.uuid,

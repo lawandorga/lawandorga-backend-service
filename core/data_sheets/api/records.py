@@ -6,8 +6,8 @@ from core.data_sheets.use_cases.access_delivery import (
 )
 from core.data_sheets.use_cases.record import (
     change_record_name,
+    create_a_data_sheet_within_a_folder,
     create_a_record_and_a_folder,
-    create_a_record_within_a_folder,
 )
 from core.seedwork.api_layer import Router
 
@@ -28,7 +28,7 @@ def command__create_record(rlc_user: RlcUser, data: schemas.InputRecordCreate):
 def command__create_record_within_folder(
     rlc_user: RlcUser, data: schemas.InputRecordCreateWithinFolder
 ):
-    record_pk = create_a_record_within_a_folder(
+    record_pk = create_a_data_sheet_within_a_folder(
         rlc_user, data.name, folder_uuid=data.folder, template_id=data.template
     )
     record = Record.objects.get(pk=record_pk)

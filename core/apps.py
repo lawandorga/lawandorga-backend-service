@@ -18,6 +18,7 @@ class CoreConfig(AppConfig):
         from core.questionnaires.models.questionnaire import (
             DjangoQuestionnaireRepository,
         )
+        from core.records.models.record import DjangoRecordsRecordRepository
         from core.seedwork.repository import RepositoryWarehouse
         from core.upload.models.upload import DjangoUploadLinkRepository
 
@@ -28,6 +29,7 @@ class CoreConfig(AppConfig):
         RepositoryWarehouse.add_repository(DjangoFileRepository)
         RepositoryWarehouse.add_repository(DjangoQuestionnaireRepository)
         RepositoryWarehouse.add_repository(DjangoUploadLinkRepository)
+        RepositoryWarehouse.add_repository(DjangoRecordsRecordRepository)
 
         # call the sub ready methods
         from core.folders.ready import ready

@@ -3,7 +3,7 @@ from django.urls import include, path
 from core.auth.urls import urlpatterns as auth_urlpatterns
 from core.collab.urls import router as collab_router
 from core.cronjobs import router as cronjobs_router
-from core.data_sheets.urls import urlpatterns as records_urlpatterns
+from core.data_sheets.urls import urlpatterns as data_sheets_urlpatterns
 from core.events.urls import urlpatterns as events_urlpatterns
 from core.files.urls import router as files_router
 from core.files_new.urls import urlpatterns as files_new_urlpatterns
@@ -13,6 +13,7 @@ from core.legal.urls import urlpatterns as legal_urlpatterns
 from core.mail.urls import urlpatterns as mail_urlpatterns
 from core.messages.urls import urlpatterns as messages_urlpatterns
 from core.questionnaires.urls import urlpatterns as questionnaires_urlpatterns
+from core.records.urls import urlpatterns as records_urlpatterns
 from core.rlc.urls import urlpatterns as org_urlpatterns
 from core.statistics.urls import urlpatterns as statistics_urlpatterns
 from core.upload.urls import urlpatterns as upload_urlpatterns
@@ -31,7 +32,8 @@ urlpatterns = [
     path("api/collab/", include(collab_router.urls)),
     path("api/files/", include(files_router.urls)),
     path("api/files/v2/", include(files_new_urlpatterns)),
-    path("api/records/", include(records_urlpatterns)),
+    path("api/records/", include(data_sheets_urlpatterns)),
+    path("api/records/v2/", include(records_urlpatterns)),
     path("api/questionnaires/", include(questionnaires_urlpatterns)),
     path("api/uploads/", include(upload_urlpatterns)),
 ]
