@@ -35,7 +35,7 @@ class RecordsRecord(Aggregate, models.Model):
     name = models.CharField(max_length=200)
     org = models.ForeignKey(Org, related_name="records", on_delete=models.CASCADE)
     uuid = models.UUIDField(db_index=True, unique=True, default=uuid4)
-    folder_uuid = models.UUIDField(db_index=True, null=True)
+    folder_uuid = models.UUIDField(db_index=True)
     is_archived = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
