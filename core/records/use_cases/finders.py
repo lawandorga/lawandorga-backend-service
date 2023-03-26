@@ -12,5 +12,5 @@ def find_view_by_uuid(__actor: RlcUser, uuid: UUID) -> RecordsView:
 
 
 @finder_function
-def find_record_by_uuid(__actor: RlcUser, uuid: UUID) -> RecordsView:
+def find_record_by_uuid(__actor: RlcUser, uuid: UUID) -> RecordsRecord:
     return RecordsRecord.objects.get(uuid=uuid, org_id=__actor.org_id)

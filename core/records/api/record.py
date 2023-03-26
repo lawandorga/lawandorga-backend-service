@@ -19,5 +19,7 @@ def command__create_record(rlc_user: RlcUser, data: schemas.InputCreateRecord):
 
 
 @router.put(url="<uuid:uuid>/change_token/")
-def command__change_record_token(rlc_user: RlcUser, data: schemas.InputChangeRecordToken):
+def command__change_record_token(
+    rlc_user: RlcUser, data: schemas.InputChangeRecordToken
+):
     change_record_token(rlc_user, data.uuid, data.token)
