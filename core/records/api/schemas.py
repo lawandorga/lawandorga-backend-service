@@ -4,6 +4,11 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
+class InputCreateView(BaseModel):
+    name: str
+    columns: list[str]
+
+
 class InputCreateRecord(BaseModel):
     token: str
     template: Optional[int]
