@@ -24,6 +24,11 @@ class InputCreateRecord(BaseModel):
     template: Optional[int]
 
 
+class InputChangeRecordToken(BaseModel):
+    uuid: UUID
+    token: str
+
+
 class OutputCreateRecord(BaseModel):
     folder_uuid: UUID
 
