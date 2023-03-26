@@ -89,4 +89,6 @@ def query__records_page(rlc_user: RlcUser):
     columns_2 = itertools.chain(*columns_1)
     columns_3 = list(dict.fromkeys(columns_2))
 
-    return {"columns": columns_3, "records": records_2}
+    views = list(rlc_user.records_views.all())
+
+    return {"columns": columns_3, "records": records_2, "views": views}

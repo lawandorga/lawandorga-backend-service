@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import uuid4
 
 from django.db import models
@@ -28,3 +29,9 @@ class RecordsView(models.Model):
 
     def __str__(self):
         return "recordsView: {}; user: {};".format(self.uuid, self.user.email)
+
+    def update_information(self, name: Optional[str], columns: Optional[list[str]]):
+        if name is not None:
+            self.name = name
+        if columns is not None:
+            self.columns = columns

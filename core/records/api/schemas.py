@@ -9,6 +9,16 @@ class InputCreateView(BaseModel):
     columns: list[str]
 
 
+class InputUpdateView(BaseModel):
+    uuid: UUID
+    name: str
+    columns: list[str]
+
+
+class InputDeleteView(BaseModel):
+    uuid: UUID
+
+
 class InputCreateRecord(BaseModel):
     token: str
     template: Optional[int]
@@ -30,6 +40,16 @@ class OutputRecord(BaseModel):
         orm_mode = True
 
 
+class OutputView(BaseModel):
+    name: str
+    columns: list[str]
+    uuid: UUID
+
+    class Config:
+        orm_mode = True
+
+
 class OutputRecordsPage(BaseModel):
     columns: list[str]
     records: list[OutputRecord]
+    views: list[OutputView]
