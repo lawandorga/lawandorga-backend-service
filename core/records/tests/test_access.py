@@ -1,8 +1,10 @@
 import pytest
 
 from core.records.models import RecordsAccessRequest, RecordsRecord
+from core.records.use_cases.access import create_access_request, grant_access_request
 from core.seedwork import test_helpers
 from core.seedwork.domain_layer import DomainError
+from core.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
 
 
 @pytest.fixture
@@ -49,3 +51,23 @@ def test_access_raises(record, another_user, user):
         access.grant(user)
     with pytest.raises(DomainError):
         access.decline(user)
+
+
+def test_access_works(db):
+    full_record = test_helpers.create_record()
+    record = full_record["record"]
+    user = full_record["user"]
+
+    full_other_user = test_helpers.create_rlc_user(
+        email="tester@law-orga.de", rlc=user.org
+    )
+    other_user = full_other_user["rlc_user"]
+
+    create_access_request(other_user, "testing", record.uuid)
+
+    access = RecordsAccessRequest.objects.get(requestor=other_user, record=record)
+    user.grant(PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS)
+
+    assert not RecordsRecord.objects.get(pk=record.pk).folder.has_access(other_user)
+    grant_access_request(user, access.uuid)
+    assert RecordsRecord.objects.get(pk=record.pk).folder.has_access(other_user)

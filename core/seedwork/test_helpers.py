@@ -168,4 +168,4 @@ def create_record(token="AZ-TEST", user: Optional[RlcUser] = None):
         user = full_user["rlc_user"]
     folder_uuid = uc_create_record(user, token)
     record = RecordsRecord.objects.get(folder_uuid=folder_uuid)
-    return {"record": record}
+    return {"record": record, "user": user}

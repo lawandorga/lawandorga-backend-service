@@ -23,7 +23,7 @@ def grant_access_request(__actor: RlcUser, access_uuid: UUID):
     record = access.record
     r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
     folder = r.retrieve(__actor.org_id, record.folder_uuid)
-    folder.grant_access(access.requestor)
+    folder.grant_access(access.requestor, __actor)
     r.save(folder)
     access.grant(__actor)
     access.save()
