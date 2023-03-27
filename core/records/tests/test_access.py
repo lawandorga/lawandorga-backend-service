@@ -33,7 +33,7 @@ def another_user(org):
 @pytest.fixture
 def record(org, user):
     folder = test_helpers.create_raw_folder(user)
-    record  = RecordsRecord.create(token="AZ-TEST", user=user, folder=folder, pk=1)
+    record = RecordsRecord.create(token="AZ-TEST", user=user, folder=folder, pk=1)
     yield record
 
 
