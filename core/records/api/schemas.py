@@ -26,12 +26,14 @@ class InputCreateDeletion(BaseModel):
 class InputCreateView(BaseModel):
     name: str
     columns: list[str]
+    shared = False
 
 
 class InputUpdateView(BaseModel):
     uuid: UUID
     name: str
     columns: list[str]
+    ordering: int
 
 
 class InputDeleteView(BaseModel):

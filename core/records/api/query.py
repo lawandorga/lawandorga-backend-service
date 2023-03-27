@@ -13,6 +13,7 @@ from core.records.helpers import merge_attrs
 from core.records.models.access import RecordsAccessRequest
 from core.records.models.deletion import RecordsDeletion
 from core.records.models.record import RecordsRecord
+from core.records.models.setting import RecordsView
 from core.seedwork.api_layer import Router
 from core.seedwork.repository import RepositoryWarehouse
 
@@ -94,7 +95,7 @@ def query__records_page(rlc_user: RlcUser):
     columns_2 = itertools.chain(*columns_1)
     columns_3 = list(dict.fromkeys(columns_2))
 
-    views = list(rlc_user.records_views.all())
+    views = list(RecordsView.objects.filter(Q(org_id=rlc_user.org_id) | Q(user=rlc_user)))
 
     deletions = list(
         RecordsDeletion.objects.filter(

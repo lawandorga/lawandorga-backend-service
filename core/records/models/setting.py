@@ -2,36 +2,68 @@ from typing import Optional
 from uuid import uuid4
 
 from django.db import models
+from django.db.models import Q
 
 from core.auth.models import RlcUser
+from core.rlc.models.org import Org
 
 
 class RecordsView(models.Model):
     @classmethod
-    def create(cls, name: str, user: RlcUser, columns=list[str], pk=0) -> "RecordsView":
-        record = RecordsView(name=name, columns=columns, user=user)
+    def create(
+        cls, name: str, user: RlcUser, columns=list[str], shared=False, pk=0
+    ) -> "RecordsView":
+        view = RecordsView(name=name, columns=columns)
+        if shared is True:
+            view.org = user.org
+        else:
+            view.user = user
         if pk:
-            record.pk = pk
-        return record
+            view.pk = pk
+        return view
 
     name = models.CharField(max_length=200)
+    org = models.ForeignKey(
+        Org,
+        related_name="records_views",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     user = models.ForeignKey(
-        RlcUser, related_name="records_views", on_delete=models.CASCADE
+        RlcUser,
+        related_name="records_views",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
     columns = models.JSONField()
     uuid = models.UUIDField(db_index=True, unique=True, default=uuid4)
+    ordering = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Records-View"
         verbose_name_plural = "Records-Views"
+        ordering = ["-org", "ordering"]
+        constraints = [
+            models.CheckConstraint(
+                check=(Q(org__isnull=True) & Q(user__isnull=False))
+                | (Q(org__isnull=False) & Q(user__isnull=True)),
+                name="records_view_one_of_both_is_set",
+            )
+        ]
 
     def __str__(self):
-        return "recordsView: {}; user: {};".format(self.uuid, self.user.email)
+        return "recordsView: {}; of: {};".format(self.uuid, self.user.email if self.user else self.org.name)
 
-    def update_information(self, name: Optional[str], columns: Optional[list[str]]):
+    def update_information(
+        self, name: Optional[str], columns: Optional[list[str]], ordering: int
+    ):
         if name is not None:
             self.name = name
         if columns is not None:
             self.columns = columns
+        if ordering is not None:
+            self.ordering = ordering

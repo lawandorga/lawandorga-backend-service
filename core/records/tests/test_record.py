@@ -51,7 +51,9 @@ def test_merge_attrs_to_list_deep():
 def test_grant_to_users_with_general_permission(db):
     full_user = test_helpers.create_rlc_user()
     user = full_user["rlc_user"]
-    full_another_user = test_helpers.create_rlc_user(email="tester@law-orga.de", rlc=user.org)
+    full_another_user = test_helpers.create_rlc_user(
+        email="tester@law-orga.de", rlc=user.org
+    )
     another_user = full_another_user["rlc_user"]
 
     user.grant(PERMISSION_RECORDS_ADD_RECORD)
