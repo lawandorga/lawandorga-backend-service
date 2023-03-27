@@ -1,8 +1,11 @@
+from typing import cast
 from uuid import UUID
 
 from core.auth.models import RlcUser
+from core.folders.domain.repositiories.folder import FolderRepository
 from core.records.models import RecordsAccessRequest
 from core.records.use_cases.finders import find_access_by_uuid, find_record_by_uuid
+from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.use_case_layer import use_case
 from core.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
 
@@ -17,6 +20,11 @@ def create_access_request(__actor: RlcUser, explanation: str, record_uuid: UUID)
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS])
 def grant_access_request(__actor: RlcUser, access_uuid: UUID):
     access = find_access_by_uuid(__actor, access_uuid)
+    record = access.record
+    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    folder = r.retrieve(__actor.org_id, record.folder_uuid)
+    folder.grant_access(access.requestor)
+    r.save(folder)
     access.grant(__actor)
     access.save()
 

@@ -10,6 +10,7 @@ from core.data_sheets.models import Record, RecordTemplate
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.records.helpers import merge_attrs
+from core.records.models.access import RecordsAccessRequest
 from core.records.models.deletion import RecordsDeletion
 from core.records.models.record import RecordsRecord
 from core.seedwork.api_layer import Router
@@ -103,9 +104,18 @@ def query__records_page(rlc_user: RlcUser):
         )
     )
 
+    access_requests = list(
+        RecordsAccessRequest.objects.filter(
+            Q(requestor__org_id=rlc_user.org_id)
+            | Q(processor__org_id=rlc_user.org_id)
+            | Q(record__org_id=rlc_user.org_id)
+        )
+    )
+
     return {
         "columns": columns_3,
         "records": records_2,
         "views": views,
         "deletions": deletions,
+        "access_requests": access_requests,
     }

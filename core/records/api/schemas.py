@@ -88,8 +88,23 @@ class OutputDeletion(BaseModel):
         orm_mode = True
 
 
+class OutputAccessRequest(BaseModel):
+    created: datetime
+    uuid: UUID
+    processed_by_detail: str
+    requested_by_detail: str
+    record_detail: str
+    state: str
+    processed_on: Optional[datetime]
+    explanation: str
+
+    class Config:
+        orm_mode = True
+
+
 class OutputRecordsPage(BaseModel):
     columns: list[str]
     records: list[OutputRecord]
     views: list[OutputView]
     deletions: list[OutputDeletion]
+    access_requests: list[OutputAccessRequest]
