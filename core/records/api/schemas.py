@@ -5,6 +5,15 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
+class InputAccess(BaseModel):
+    uuid: UUID
+
+
+class InputCreateAccess(BaseModel):
+    record_uuid: UUID
+    explanation: str = ""
+
+
 class InputDeletion(BaseModel):
     uuid: UUID
 
