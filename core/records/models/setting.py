@@ -56,7 +56,9 @@ class RecordsView(models.Model):
         ]
 
     def __str__(self):
-        return "recordsView: {}; of: {};".format(self.uuid, self.user.email if self.user else self.org.name)
+        return "recordsView: {}; of: {};".format(
+            self.uuid, self.user.email if self.user else self.org.name
+        )
 
     def update_information(
         self, name: Optional[str], columns: Optional[list[str]], ordering: int

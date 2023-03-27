@@ -95,7 +95,9 @@ def query__records_page(rlc_user: RlcUser):
     columns_2 = itertools.chain(*columns_1)
     columns_3 = list(dict.fromkeys(columns_2))
 
-    views = list(RecordsView.objects.filter(Q(org_id=rlc_user.org_id) | Q(user=rlc_user)))
+    views = list(
+        RecordsView.objects.filter(Q(org_id=rlc_user.org_id) | Q(user=rlc_user))
+    )
 
     deletions = list(
         RecordsDeletion.objects.filter(

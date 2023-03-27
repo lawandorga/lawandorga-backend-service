@@ -12,7 +12,9 @@ from core.seedwork.use_case_layer import finder_function
 
 @finder_function
 def find_view_by_uuid(__actor: RlcUser, uuid: UUID) -> RecordsView:
-    return RecordsView.objects.filter(Q(user=__actor) | Q(org_id=__actor.org_id)).get(uuid=uuid)
+    return RecordsView.objects.filter(Q(user=__actor) | Q(org_id=__actor.org_id)).get(
+        uuid=uuid
+    )
 
 
 @finder_function
