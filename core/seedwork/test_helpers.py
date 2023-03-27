@@ -12,6 +12,7 @@ from core.records.models.record import RecordsRecord
 from core.records.use_cases.record import create_record as uc_create_record
 from core.rlc.models import Group, Org
 from core.seedwork.repository import RepositoryWarehouse
+from core.static import PERMISSION_RECORDS_ADD_RECORD
 
 
 def create_raw_org(name="Dummy's Org", pk=1):
@@ -166,6 +167,7 @@ def create_record(token="AZ-TEST", user: Optional[RlcUser] = None):
     if user is None:
         full_user = create_rlc_user()
         user = full_user["rlc_user"]
+    user.grant(PERMISSION_RECORDS_ADD_RECORD)
     folder_uuid = uc_create_record(user, token)
     record = RecordsRecord.objects.get(folder_uuid=folder_uuid)
     return {"record": record, "user": user}

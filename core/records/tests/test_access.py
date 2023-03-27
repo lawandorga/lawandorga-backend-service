@@ -30,6 +30,13 @@ def another_user(org):
     )
 
 
+@pytest.fixture
+def record(org, user):
+    folder = test_helpers.create_raw_folder(user)
+    record  = RecordsRecord.create(token="AZ-TEST", user=user, folder=folder, pk=1)
+    yield record
+
+
 def test_grant_access(record, another_user, user):
     access = RecordsAccessRequest.create(record, another_user)
     access.grant(user)
