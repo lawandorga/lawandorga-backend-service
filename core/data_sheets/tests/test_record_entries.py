@@ -58,7 +58,9 @@ class BaseRecordEntry(BaseRecord):
         self.template = RecordTemplate.objects.create(
             rlc=self.rlc, name="Record Template"
         )
-        self.record = test_helpers.create_record(self.template, [self.user])["record"]
+        self.record = test_helpers.create_data_sheet(self.template, [self.user])[
+            "record"
+        ]
         self.aes_key_record = self.record.get_aes_key(self.user.rlc_user)
 
 

@@ -9,7 +9,7 @@ class TestRlcUser(TestCase):
         self.rlc = Org.objects.create(name="Test RLC")
         self.user_1 = data.create_rlc_user(rlc=self.rlc)
         self.rlc.generate_keys()
-        self.record_1 = data.create_record(users=[self.user_1["user"]])
+        self.record_1 = data.create_data_sheet(users=[self.user_1["user"]])
         self.client = Client()
         self.client.login(**self.user_1)
 

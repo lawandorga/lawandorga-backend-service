@@ -25,6 +25,7 @@ def create_record(__actor: RlcUser, token: str):
 
     folder = Folder.create(name=token, org_pk=__actor.org_id, stop_inherit=True)
     folder.grant_access(__actor)
+    # todo: grant access to all users who should have
     folder.set_parent(parent_folder, __actor)
     folder.disable_name_change()
     r.save(folder)

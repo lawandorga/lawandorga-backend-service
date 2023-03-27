@@ -14,8 +14,8 @@ def user(db):
     data.create_rlc_user(email="dummy3@law-orga.de", rlc=rlc)
     rlc.generate_keys()
     template = RecordTemplate.objects.create(rlc=rlc, name="Record Template")
-    data.create_record(template=template, users=[user_1["user"], user_2["user"]])
-    data.create_record(template=template, users=[user_1["user"], user_2["user"]])
+    data.create_data_sheet(template=template, users=[user_1["user"], user_2["user"]])
+    data.create_data_sheet(template=template, users=[user_1["user"], user_2["user"]])
     yield user_1
 
 

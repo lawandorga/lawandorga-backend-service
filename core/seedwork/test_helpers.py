@@ -8,6 +8,8 @@ from core.data_sheets.models import Record, RecordTemplate
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.models import RlcUser, UserProfile
+from core.records.models.record import RecordsRecord
+from core.records.use_cases.record import create_record as uc_create_record
 from core.rlc.models import Group, Org
 from core.seedwork.repository import RepositoryWarehouse
 
@@ -138,7 +140,7 @@ def create_record_template(org=None):
     return {"template": template}
 
 
-def create_record(template=None, users: Optional[List[UserProfile]] = None):
+def create_data_sheet(template=None, users: Optional[List[UserProfile]] = None):
     assert users and len(users) > 0
     if template is None:
         template = RecordTemplate.objects.create(
@@ -157,4 +159,13 @@ def create_record(template=None, users: Optional[List[UserProfile]] = None):
     r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
     r.save(folder)
 
+    return {"record": record}
+
+
+def create_record(token="AZ-TEST", user: Optional[RlcUser] = None):
+    if user is None:
+        full_user = create_rlc_user()
+        user = full_user["rlc_user"]
+    folder_uuid = uc_create_record(user, token)
+    record = RecordsRecord.objects.get(folder_uuid=folder_uuid)
     return {"record": record}

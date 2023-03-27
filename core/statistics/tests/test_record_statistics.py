@@ -21,11 +21,11 @@ def user(db):
     field = RecordStateField.objects.create(
         template=template, options=["Open", "Closed"]
     )
-    record1 = data.create_record(template=template, users=[user_1["user"]])
+    record1 = data.create_data_sheet(template=template, users=[user_1["user"]])
     RecordStateEntry.objects.create(
         field=field, record=record1["record"], value="Closed", closed_at=timezone.now()
     )
-    record2 = data.create_record(template=template, users=[user_1["user"]])
+    record2 = data.create_data_sheet(template=template, users=[user_1["user"]])
     RecordStateEntry.objects.create(
         field=field, record=record2["record"], value="Closed"
     )

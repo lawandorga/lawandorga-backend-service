@@ -48,7 +48,7 @@ def record_template(db, org):
 
 @pytest.fixture
 def record(db, org, user, record_template):
-    record = data.create_record(record_template["template"], [user["user"]])
+    record = data.create_data_sheet(record_template["template"], [user["user"]])
     yield record["record"]
 
 

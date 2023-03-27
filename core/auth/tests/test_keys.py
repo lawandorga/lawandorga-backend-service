@@ -16,10 +16,10 @@ class TestUserKeys(TestCase):
         self.template = RecordTemplate.objects.create(
             rlc=self.rlc, name="Record Template"
         )
-        self.record_1 = data.create_record(
+        self.record_1 = data.create_data_sheet(
             template=self.template, users=[self.user_1["user"], self.user_2["user"]]
         )
-        self.record_2 = data.create_record(
+        self.record_2 = data.create_data_sheet(
             template=self.template, users=[self.user_1["user"], self.user_2["user"]]
         )
         self.client = Client()
