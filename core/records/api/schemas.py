@@ -1,7 +1,17 @@
+from datetime import datetime
 from typing import Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel
+
+
+class InputDeletion(BaseModel):
+    uuid: UUID
+
+
+class InputCreateDeletion(BaseModel):
+    record_uuid: UUID
+    explanation: str = ""
 
 
 class InputCreateView(BaseModel):
@@ -34,6 +44,7 @@ class OutputCreateRecord(BaseModel):
 
 
 class OutputRecord(BaseModel):
+    uuid: UUID
     token: str
     attributes: dict[str, Union[str, list[str]]]
     delete_requested: bool
@@ -54,7 +65,22 @@ class OutputView(BaseModel):
         orm_mode = True
 
 
+class OutputDeletion(BaseModel):
+    created: datetime
+    explanation: str
+    uuid: UUID
+    processed_by_detail: str
+    record_detail: str
+    requested_by_detail: str
+    state: str
+    processed: Optional[datetime]
+
+    class Config:
+        orm_mode = True
+
+
 class OutputRecordsPage(BaseModel):
     columns: list[str]
     records: list[OutputRecord]
     views: list[OutputView]
+    deletions: list[OutputDeletion]

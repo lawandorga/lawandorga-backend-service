@@ -66,6 +66,8 @@ def create_address(
 def set_address_as_default(__actor: MailUser, address_uuid: UUID):
     address = mail_address_from_uuid(__actor, address_uuid)
 
+    assert address.account.user is not None
+
     if __actor.id != address.account.user.id:
         check_permissions(__actor, [PERMISSION_MAIL_MANAGE_ACCOUNTS])
 
@@ -78,6 +80,8 @@ def set_address_as_default(__actor: MailUser, address_uuid: UUID):
 @use_case
 def delete_address(__actor: MailUser, address_uuid: UUID):
     address = mail_address_from_uuid(__actor, address_uuid)
+
+    assert address.account.user is not None
 
     if __actor.id != address.account.user.id:
         check_permissions(__actor, [PERMISSION_MAIL_MANAGE_ACCOUNTS])

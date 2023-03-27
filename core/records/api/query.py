@@ -3,11 +3,14 @@ from dataclasses import dataclass
 from typing import Optional, cast
 from uuid import UUID
 
+from django.db.models import Q
+
 from core.auth.models import RlcUser
 from core.data_sheets.models import Record, RecordTemplate
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.records.helpers import merge_attrs
+from core.records.models.deletion import RecordsDeletion
 from core.records.models.record import RecordsRecord
 from core.seedwork.api_layer import Router
 from core.seedwork.repository import RepositoryWarehouse
@@ -71,6 +74,7 @@ def query__records_page(rlc_user: RlcUser):
 
     records_2 = [
         {
+            "uuid": p.record.uuid,
             "token": p.token,
             "folder_uuid": p.folder_uuid,
             "attributes": p.attributes,
@@ -91,4 +95,17 @@ def query__records_page(rlc_user: RlcUser):
 
     views = list(rlc_user.records_views.all())
 
-    return {"columns": columns_3, "records": records_2, "views": views}
+    deletions = list(
+        RecordsDeletion.objects.filter(
+            Q(requestor__org_id=rlc_user.org_id)
+            | Q(processor__org_id=rlc_user.org_id)
+            | Q(record__org_id=rlc_user.org_id)
+        )
+    )
+
+    return {
+        "columns": columns_3,
+        "records": records_2,
+        "views": views,
+        "deletions": deletions,
+    }

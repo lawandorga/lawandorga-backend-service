@@ -33,7 +33,9 @@ class RecordsRecord(Aggregate, models.Model):
         return record
 
     name = models.CharField(max_length=200)
-    org = models.ForeignKey(Org, related_name="records", on_delete=models.CASCADE)
+    org = models.ForeignKey(
+        Org, related_name="records_records", on_delete=models.CASCADE
+    )
     uuid = models.UUIDField(db_index=True, unique=True, default=uuid4)
     folder_uuid = models.UUIDField(db_index=True)
     is_archived = models.BooleanField(default=False)
@@ -45,8 +47,8 @@ class RecordsRecord(Aggregate, models.Model):
     folder: FolderAddon
 
     class Meta:
-        verbose_name = "RecordsRecord"
-        verbose_name_plural = "RecordsRecord"
+        verbose_name = "Records-Record"
+        verbose_name_plural = "Records-Records"
 
     def __str__(self):
         return "recordsRecord: {}; token: {}; org: {};".format(

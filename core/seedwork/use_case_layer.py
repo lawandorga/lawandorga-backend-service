@@ -1,5 +1,5 @@
 from logging import INFO, WARNING, getLogger
-from typing import Any, Callable, ParamSpec, TypeVar, get_type_hints, overload
+from typing import Callable, ParamSpec, TypeVar, get_type_hints, overload
 
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -21,9 +21,10 @@ class UseCaseInputError(Exception):
 
 
 P1 = ParamSpec("P1")
+T1 = TypeVar("T1")
 
 
-def finder_function(function: Callable[P1, Any]) -> Callable[P1, Any]:
+def finder_function(function: Callable[P1, T1]) -> Callable[P1, T1]:
     def decorator(*args, **kwargs):
         try:
             return function(*args, **kwargs)
