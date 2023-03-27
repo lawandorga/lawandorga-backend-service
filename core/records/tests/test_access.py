@@ -1,6 +1,6 @@
 import pytest
 
-from core.records.models import RecordsRecord, RecordsAccessRequest
+from core.records.models import RecordsAccessRequest, RecordsRecord
 from core.seedwork import test_helpers
 from core.seedwork.domain_layer import DomainError
 
