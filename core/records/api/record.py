@@ -11,7 +11,7 @@ router = Router()
 @router.post(output_schema=schemas.OutputCreateRecord)
 def command__create_record(rlc_user: RlcUser, data: schemas.InputCreateRecord):
     folder_uuid = create_record(rlc_user, data.token)
-    if data.template:
+    if data.template is not None:
         create_a_data_sheet_within_a_folder(
             rlc_user, data.token, folder_uuid, data.template
         )

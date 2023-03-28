@@ -15,6 +15,8 @@ from core.static import (
 
 def test_record_creation(db):
     full_user = test_helpers.create_rlc_user()
+    user = full_user["rlc_user"]
+    user.grant(PERMISSION_RECORDS_ADD_RECORD)
     client = Client()
     client.login(**full_user)
     response = client.post(

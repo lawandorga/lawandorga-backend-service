@@ -42,7 +42,7 @@ class InputDeleteView(BaseModel):
 
 class InputCreateRecord(BaseModel):
     token: str
-    template: Optional[int]
+    template: Optional[int] = None
 
 
 class InputChangeRecordToken(BaseModel):
