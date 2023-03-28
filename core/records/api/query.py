@@ -99,26 +99,28 @@ def query__records_page(rlc_user: RlcUser):
         RecordsView.objects.filter(Q(org_id=rlc_user.org_id) | Q(user=rlc_user))
     )
 
-    deletions = list(
-        RecordsDeletion.objects.filter(
-            Q(requestor__org_id=rlc_user.org_id)
-            | Q(processor__org_id=rlc_user.org_id)
-            | Q(record__org_id=rlc_user.org_id)
-        )
+    deletions = RecordsDeletion.objects.filter(
+        Q(requestor__org_id=rlc_user.org_id)
+        | Q(processor__org_id=rlc_user.org_id)
+        | Q(record__org_id=rlc_user.org_id)
     )
 
-    access_requests = list(
-        RecordsAccessRequest.objects.filter(
-            Q(requestor__org_id=rlc_user.org_id)
-            | Q(processor__org_id=rlc_user.org_id)
-            | Q(record__org_id=rlc_user.org_id)
-        )
+    access_requests = RecordsAccessRequest.objects.filter(
+        Q(requestor__org_id=rlc_user.org_id)
+        | Q(processor__org_id=rlc_user.org_id)
+        | Q(record__org_id=rlc_user.org_id)
     )
+
+    badges = {
+        "deletion_requests": deletions.filter(state="re").count(),
+        "access_requests": access_requests.filter(state="re").count(),
+    }
 
     return {
         "columns": columns_3,
         "records": records_2,
         "views": views,
-        "deletions": deletions,
-        "access_requests": access_requests,
+        "deletions": list(deletions),
+        "access_requests": list(access_requests),
+        "badges": badges,
     }

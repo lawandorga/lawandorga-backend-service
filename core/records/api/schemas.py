@@ -106,9 +106,15 @@ class OutputAccessRequest(BaseModel):
         orm_mode = True
 
 
+class OutputBadges(BaseModel):
+    deletion_requests: int
+    access_requests: int
+
+
 class OutputRecordsPage(BaseModel):
     columns: list[str]
     records: list[OutputRecord]
     views: list[OutputView]
     deletions: list[OutputDeletion]
     access_requests: list[OutputAccessRequest]
+    badges: OutputBadges
