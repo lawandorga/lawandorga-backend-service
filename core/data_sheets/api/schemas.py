@@ -66,6 +66,18 @@ class OutputOption(BaseModel):
     id: int
 
 
+class OutputAccessPerson(BaseModel):
+    name: str
+    uuid: UUID
+
+
+class OutputNonMigratedDataSheet(BaseModel):
+    attributes: dict[str, Union[str, list[str]]]
+    name: str
+    uuid: UUID
+    persons_with_access: list[OutputAccessPerson]
+
+
 class OutputTemplate(BaseModel):
     show: list[str]
     name: str

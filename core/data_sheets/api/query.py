@@ -11,6 +11,31 @@ from core.seedwork.api_layer import ApiError, Router
 router = Router()
 
 
+@router.get(url="non_migrated/", output_schema=list[schemas.OutputNonMigratedDataSheet])
+def query__non_migrated(rlc_user: RlcUser):
+    sheets_1 = list(
+        Record.objects.filter(template__rlc_id=rlc_user.org_id)
+        .filter(folder_uuid=None)
+        .prefetch_related(*Record.UNENCRYPTED_PREFETCH_RELATED, "encryptions__user")
+        .select_related("template")
+    )
+
+    sheets_2 = [
+        {
+            "name": r.name,
+            "uuid": r.uuid,
+            "attributes": r.attributes,
+            "persons_with_access": [
+                {"name": e.user.name, "uuid": e.user.uuid}
+                for e in list(r.encryptions.all())
+            ],
+        }
+        for r in sheets_1
+    ]
+
+    return sheets_2
+
+
 @router.get(url="templates/", output_schema=list[schemas.OutputTemplate])
 def query__templates(rlc_user: RlcUser):
     templates = RecordTemplate.objects.filter(rlc_id=rlc_user.org_id)
