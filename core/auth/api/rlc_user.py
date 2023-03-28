@@ -130,7 +130,7 @@ def query__data(rlc_user: RlcUser):
     data = {
         "user": rlc_user,
         "rlc": rlc_user.org,
-        "badges": rlc_user.get_badges(),
+        "badges": rlc_user.badges,
         "permissions": rlc_user.get_permissions(),
         "settings": rlc_user.frontend_settings,
     }

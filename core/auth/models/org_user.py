@@ -671,8 +671,11 @@ class RlcUser(Aggregate, models.Model):
 
         return False
 
-    def get_badges(self):
+    @property
+    def badges(self):
         from core.data_sheets.models import RecordAccess, RecordDeletion
+        from core.records.models.access import RecordsAccessRequest
+        from core.records.models.deletion import RecordsDeletion
 
         # profiles
         profiles = RlcUser.objects.filter(org=self.org, locked=True).count()
@@ -701,12 +704,22 @@ class RlcUser(Aggregate, models.Model):
             if not lr.accepted:
                 legal += 1
 
+        # record
+        record = 0
+        record += RecordsAccessRequest.objects.filter(
+            requestor__org_id=self.org_id, state="re"
+        ).count()
+        record += RecordsDeletion.objects.filter(
+            requestor__org_id=self.org_id, state="re"
+        ).count()
+
         # return
         data = {
             "profiles": profiles,
             "record_deletion_requests": record_deletion_requests,
             "record_permit_requests": record_permit_requests,
             "legal": legal,
+            "record": record,
         }
         return data
 

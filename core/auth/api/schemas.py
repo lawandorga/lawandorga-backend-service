@@ -263,6 +263,7 @@ class Badges(BaseModel):
     record_deletion_requests: int
     record_permit_requests: int
     legal: int
+    record: int
 
 
 class OutputRlcUserData(BaseModel):
