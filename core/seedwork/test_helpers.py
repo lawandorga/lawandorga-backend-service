@@ -137,8 +137,10 @@ def create_rlc_user(
 
 
 def create_record_template(org=None):
+    if org is None:
+        org = create_org()["org"]
     template = RecordTemplate.objects.create(rlc=org, name="Record Template")
-    return {"template": template}
+    return {"template": template, "org": org}
 
 
 def create_data_sheet(template=None, users: Optional[List[UserProfile]] = None):

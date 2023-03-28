@@ -3,11 +3,16 @@ from typing import cast
 
 from django.test import Client
 
+from core.data_sheets.models.record import Record
 from core.folders.domain.repositiories.folder import FolderRepository
+from core.records.models.deletion import RecordsDeletion
+from core.records.models.record import RecordsRecord
+from core.records.use_cases.deletion import accept_deletion_request
 from core.records.use_cases.record import create_record
 from core.seedwork import test_helpers
 from core.seedwork.repository import RepositoryWarehouse
 from core.static import (
+    PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
     PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
     PERMISSION_RECORDS_ADD_RECORD,
 )
@@ -44,3 +49,27 @@ def test_grant_to_users_with_general_permission(db):
     folder = r.retrieve(user.org_id, folder_uuid)
 
     assert folder.has_access(another_user)
+
+
+def test_delete_deletes_data_sheet_as_well(db):
+    full_user = test_helpers.create_rlc_user()
+    user = full_user["rlc_user"]
+    template = test_helpers.create_record_template(user.org)["template"]
+    user.grant(PERMISSION_RECORDS_ADD_RECORD)
+    user.grant(PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS)
+    client = Client()
+    client.login(**full_user)
+    TOKEN = "AZ-001"
+    data_sheet_count = Record.objects.count()
+    response = client.post(
+        "/api/records/v2/records/",
+        data=json.dumps({"token": TOKEN, "template": template.pk}),
+        content_type="application/json",
+    )
+    assert response.status_code == 200
+    assert Record.objects.count() == data_sheet_count + 1
+    record = RecordsRecord.objects.get(name=TOKEN)
+    deletion = RecordsDeletion.create(record=record, user=user)
+    deletion.save()
+    accept_deletion_request(user, deletion.uuid)
+    assert Record.objects.count() == data_sheet_count

@@ -37,3 +37,6 @@ class Item(Protocol):
     @property
     def org_pk(self) -> int:
         ...
+
+    def delete(self, *args, **kwargs):
+        ...

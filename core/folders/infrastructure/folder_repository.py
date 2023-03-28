@@ -1,6 +1,6 @@
 import os.path
 from datetime import timedelta
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, cast
 from uuid import UUID
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -10,11 +10,13 @@ from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.external import IOwner
 from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositiories.item import ItemRepository
 from core.folders.domain.value_objects.folder_item import FolderItem
 from core.folders.domain.value_objects.folder_key import FolderKey
 from core.folders.domain.value_objects.parent_key import ParentKey
 from core.folders.domain.value_objects.tree import FolderTree
 from core.folders.models import FoldersFolder
+from core.seedwork.repository import RepositoryWarehouse
 
 PATH = os.path.abspath(__file__)
 
@@ -219,6 +221,10 @@ class DjangoFolderRepository(FolderRepository):
     @classmethod
     def delete(cls, folder: Folder):
         f = cls.__db_folder_from_domain(folder)
+        for raw_item in folder.items:
+            r = cast(ItemRepository, RepositoryWarehouse.get(raw_item.repository))
+            item = r.retrieve(raw_item.uuid)
+            item.delete()
         f.deleted = True
         f.deleted_at = timezone.now()
         f.save()
