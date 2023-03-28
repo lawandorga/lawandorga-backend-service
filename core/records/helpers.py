@@ -5,13 +5,13 @@ def merge_attrs(attrs1, attrs2):
         if key not in attrs:
             attrs[key] = value
             continue
-        
+
         if not isinstance(value, list):
             value = [value]
 
         if not isinstance(attrs[key], list):
             attrs[key] = [attrs[key]]
-        
+
         attrs[key] = attrs[key] + value
-                
+
     return attrs

@@ -38,7 +38,7 @@ def create_record(__actor: RlcUser, token: str):
 
     # todo: grant access to all users who should have
     folder.set_parent(parent_folder, __actor)
-    folder.disable_name_change()
+    folder.restrict()
     r.save(folder)
 
     record = RecordsRecord.create(token, __actor, folder)

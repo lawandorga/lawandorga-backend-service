@@ -282,17 +282,27 @@ def test_folder_move_inside_child_error():
         folder_1.move(folder_3, user)
 
 
-def test_folder_name_change_disabled():
+def test_folder_restricted():
     folder = Folder.create("3")
-    folder.disable_name_change()
-    assert folder.name_change_disabled is True
+    folder.restrict()
+    assert folder.restricted is True
     with pytest.raises(DomainError):
         folder.update_information(name="New Name")
 
 
 def test_folder_name_change_with_force():
     folder = Folder.create("5")
-    folder.disable_name_change()
-    assert folder.name_change_disabled is True
+    folder.restrict()
+    assert folder.restricted is True
     folder.update_information(name="New Name", force=True)
     assert folder.name == "New Name"
+
+
+def test_restricted_folder_can_not_have_children():
+    user = UserObject()
+    folder1 = Folder.create("3")
+    folder1.grant_access(user)
+    folder1.restrict()
+    folder2 = Folder.create("4")
+    with pytest.raises(DomainError):
+        folder2.set_parent(folder1, user)

@@ -60,6 +60,10 @@ class RecordsView(models.Model):
             self.uuid, self.user.email if self.user else self.org.name
         )
 
+    @property
+    def shared(self):
+        return self.org is not None
+
     def update_information(
         self, name: Optional[str], columns: Optional[list[str]], ordering: int
     ):

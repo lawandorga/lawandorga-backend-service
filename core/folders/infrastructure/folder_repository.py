@@ -92,7 +92,7 @@ class DjangoFolderRepository(FolderRepository):
             org_pk=db_folder.org_id,
             keys=keys,
             stop_inherit=db_folder.stop_inherit,
-            name_change_disabled=db_folder.name_change_disabled,
+            restricted=db_folder.restricted,
         )
 
         # revive items
@@ -123,7 +123,7 @@ class DjangoFolderRepository(FolderRepository):
             f.keys = keys
             f.items = items
             f.stop_inherit = folder.stop_inherit
-            f.name_change_disabled = folder.name_change_disabled
+            f.restricted = folder.restricted
 
         else:
             f = FoldersFolder(
@@ -134,7 +134,7 @@ class DjangoFolderRepository(FolderRepository):
                 keys=keys,
                 items=items,
                 stop_inherit=folder.stop_inherit,
-                name_change_disabled=folder.name_change_disabled,
+                restricted=folder.restricted,
             )
 
         return f

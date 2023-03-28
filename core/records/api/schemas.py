@@ -71,6 +71,8 @@ class OutputView(BaseModel):
     name: str
     columns: list[str]
     uuid: UUID
+    shared: bool
+    ordering: int
 
     class Config:
         orm_mode = True

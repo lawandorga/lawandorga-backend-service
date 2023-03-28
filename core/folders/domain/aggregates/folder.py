@@ -34,7 +34,7 @@ class Folder:
         parent: Optional["Folder"] = None,
         items: Optional[list[FolderItem]] = None,
         stop_inherit: bool = False,
-        name_change_disabled: bool = False,
+        restricted: bool = False,
     ):
         assert name is not None and uuid is not None
         assert all([k.is_encrypted for k in keys or []])
@@ -46,7 +46,7 @@ class Folder:
         self.__stop_inherit = stop_inherit
         self.__keys = keys if keys is not None else []
         self.__items = items if items is not None else []
-        self.__name_change_disabled = name_change_disabled
+        self.__restricted = restricted
 
     def __str__(self):
         return "Folder {}".format(self.name)
@@ -59,8 +59,8 @@ class Folder:
         }
 
     @property
-    def name_change_disabled(self):
-        return self.__name_change_disabled
+    def restricted(self):
+        return self.__restricted
 
     @property
     def org_pk(self):
@@ -164,8 +164,8 @@ class Folder:
             return False
         return self.__parent.has_access(owner)
 
-    def disable_name_change(self) -> None:
-        self.__name_change_disabled = True
+    def restrict(self) -> None:
+        self.__restricted = True
 
     def _has_keys(self, owner: IOwner) -> bool:
         for key in self.__keys:
@@ -210,7 +210,7 @@ class Folder:
         self.__items = new_items_2
 
     def update_information(self, name=None, force=False):
-        if not force and name is not None and self.__name_change_disabled:
+        if not force and name is not None and self.__restricted:
             raise DomainError(
                 "The name of this folder can not changed as it contains a record."
             )
@@ -286,6 +286,12 @@ class Folder:
 
         if self.__parent is not None:
             raise DomainError("This folder already has a parent folder.")
+
+        if parent.restricted:
+            raise DomainError(
+                "The parent folder is restricted, probably contains a "
+                "record and therefore you can not add subfolders."
+            )
 
         self.__set_parent(parent, by)
 
