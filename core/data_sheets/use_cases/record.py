@@ -3,7 +3,11 @@ from uuid import UUID
 
 from core.auth.models import RlcUser
 from core.data_sheets.models import Record, RecordTemplate
-from core.data_sheets.use_cases.finders import record_from_id, template_from_id
+from core.data_sheets.use_cases.finders import (
+    record_from_id,
+    record_from_uuid,
+    template_from_id,
+)
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.value_objects.box import OpenBox
@@ -141,3 +145,9 @@ def migrate_record_into_folder(__actor: RlcUser, record: Record):
     # save the record and the folder
     r.save(folder)
     record.save()
+
+
+@use_case(permissions=[PERMISSION_RECORDS_ACCESS_ALL_RECORDS])
+def delete_data_sheet(__actor: RlcUser, sheet_uuid: UUID):
+    record = record_from_uuid(__actor, sheet_uuid)
+    record.delete()

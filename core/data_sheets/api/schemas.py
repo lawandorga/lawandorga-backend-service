@@ -28,6 +28,10 @@ class InputAccess(BaseModel):
     id: int
 
 
+class InputDeleteDataSheet(BaseModel):
+    uuid: UUID
+
+
 class InputCreateAccess(BaseModel):
     record: int
     explanation: str = ""
@@ -74,8 +78,12 @@ class OutputAccessPerson(BaseModel):
 class OutputNonMigratedDataSheet(BaseModel):
     attributes: dict[str, Union[str, list[str]]]
     name: str
+    token: str
     uuid: UUID
     persons_with_access: list[OutputAccessPerson]
+
+    class Config:
+        orm_mode = True
 
 
 class OutputTemplate(BaseModel):

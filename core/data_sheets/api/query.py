@@ -1,4 +1,6 @@
 import itertools
+from dataclasses import dataclass
+from uuid import UUID
 
 from django.db.models import Q
 
@@ -7,8 +9,45 @@ from core.data_sheets.api import schemas
 from core.data_sheets.models import Record, RecordAccess, RecordDeletion, RecordTemplate
 from core.data_sheets.use_cases.record import migrate_record_into_folder
 from core.seedwork.api_layer import ApiError, Router
+from core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 
 router = Router()
+
+
+@dataclass
+class SheetMigrate:
+    sheet: Record
+    current_user: RlcUser
+    SHOW: bool
+
+    @property
+    def name(self) -> str:
+        return self.sheet.name
+
+    @property
+    def uuid(self) -> UUID:
+        return self.sheet.uuid
+
+    @property
+    def token(self) -> str:
+        if "Token" in self.sheet.attributes:
+            return str(self.sheet.attributes["Token"])
+        return "-"
+
+    @property
+    def attributes(self) -> dict:
+        if self.SHOW or self.current_user.uuid in map(
+            lambda x: x["uuid"], self.persons_with_access
+        ):
+            return self.sheet.attributes
+        return {}
+
+    @property
+    def persons_with_access(self) -> list:
+        return [
+            {"name": e.user.name, "uuid": e.user.uuid}
+            for e in list(self.sheet.encryptions.all())
+        ]
 
 
 @router.get(url="non_migrated/", output_schema=list[schemas.OutputNonMigratedDataSheet])
@@ -20,17 +59,10 @@ def query__non_migrated(rlc_user: RlcUser):
         .select_related("template")
     )
 
+    show = rlc_user.has_permission(PERMISSION_RECORDS_ACCESS_ALL_RECORDS)
+
     sheets_2 = [
-        {
-            "name": r.name,
-            "uuid": r.uuid,
-            "attributes": r.attributes,
-            "persons_with_access": [
-                {"name": e.user.name, "uuid": e.user.uuid}
-                for e in list(r.encryptions.all())
-            ],
-        }
-        for r in sheets_1
+        SheetMigrate(sheet=s, current_user=rlc_user, SHOW=show) for s in sheets_1
     ]
 
     return sheets_2

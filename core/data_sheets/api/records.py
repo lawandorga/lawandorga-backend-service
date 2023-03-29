@@ -8,6 +8,7 @@ from core.data_sheets.use_cases.record import (
     change_record_name,
     create_a_data_sheet_within_a_folder,
     create_a_record_and_a_folder,
+    delete_data_sheet,
 )
 from core.seedwork.api_layer import Router
 
@@ -43,3 +44,8 @@ def command__change_record_name(rlc_user: RlcUser, data: schemas.InputRecordChan
 @router.post(url="optimize/")
 def command__records_optimize(rlc_user: RlcUser):
     deliver_access_to_users_who_should_have_access(rlc_user)
+
+
+@router.delete(url="<uuid:uuid>/")
+def command__delete_data_sheet(rlc_user: RlcUser, data: schemas.InputDeleteDataSheet):
+    delete_data_sheet(rlc_user, data.uuid)

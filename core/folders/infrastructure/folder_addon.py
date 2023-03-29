@@ -70,14 +70,15 @@ class FolderAddon(Addon):
         )
 
     def obj_deleted(self):
-        self._obj.events.add(
-            ItemDeleted(
-                org_pk=self._obj.org_pk,
-                uuid=self._obj.uuid,
-                repository=self._obj.REPOSITORY,
-                name=self._obj.name,
-                folder_uuid=self._obj.folder_uuid,
+        if self._obj.folder_uuid:
+            self._obj.events.add(
+                ItemDeleted(
+                    org_pk=self._obj.org_pk,
+                    uuid=self._obj.uuid,
+                    repository=self._obj.REPOSITORY,
+                    name=self._obj.name,
+                    folder_uuid=self._obj.folder_uuid,
+                )
             )
-        )
 
     pre_delete = [obj_deleted]
