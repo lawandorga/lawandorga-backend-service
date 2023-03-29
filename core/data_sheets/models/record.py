@@ -169,9 +169,17 @@ class Record(Aggregate, models.Model):
 
     @property
     def identifier(self) -> str:
-        first_standard_entry = self.standard_entries.order_by("field__order").first()
-        if first_standard_entry:
-            return first_standard_entry.value
+        entries = list(self.standard_entries.all())
+        lowest_entry = None
+        for entry in entries:
+            if lowest_entry is None:
+                lowest_entry = entry
+            if entry.field.order < lowest_entry.field.order:
+                lowest_entry = entry
+
+        if lowest_entry:
+            return lowest_entry.value
+
         return "NOT-SET"
 
     @property

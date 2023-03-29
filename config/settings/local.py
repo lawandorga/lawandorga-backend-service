@@ -79,19 +79,24 @@ LOGGING = {
     "disable_existing_loggers": True,
     "formatters": {
         "console": {
-            "format": "{levelname:8s}I | {name:14s} | {message}",
+            "format": "{levelname:8s} | {name:14s} | {message}",
             "style": "{",
         }
     },
     "handlers": {
         "console": {
-            "class": "logging.StreamHandler",
             "level": "DEBUG",
+            "class": "logging.StreamHandler",
             "formatter": "console",
         },
     },
     "loggers": {
         "": {"handlers": ["console"], "level": "DEBUG"},
+        # log database queries
+        # "django.db.backends": {
+        #     "level": "DEBUG",
+        #     "handlers": ["console"],
+        # },
         "uvicorn": {
             "handlers": ["console"],
             "propagate": False,
