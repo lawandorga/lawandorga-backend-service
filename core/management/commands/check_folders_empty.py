@@ -10,7 +10,7 @@ class Command(BaseCommand):
         t1 = time.time()
 
         folders = list(FoldersFolder.objects.filter())
-        
+
         for folder in folders:
             contains_files = False
             contains_record = False
@@ -20,7 +20,9 @@ class Command(BaseCommand):
                 if item["repository"] == "RECORDS_RECORD":
                     contains_record = True
             if contains_files and not contains_record:
-                self.stdout.write(f"Folder '{folder.name}' contains files but no records.")
+                self.stdout.write(
+                    f"Folder '{folder.name}' contains files but no records."
+                )
 
         t2 = time.time()
 
