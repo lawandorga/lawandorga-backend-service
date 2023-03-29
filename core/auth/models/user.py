@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -54,6 +54,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def is_staff(self):
         # django intern stuff
         return hasattr(self, "internal_user")
+
+    @property
+    def last_login_month(self) -> Optional[str]:
+        if self.last_login is None:
+            return None
+        return self.last_login.strftime("%b %Y")
 
     @property
     def rlc(self):

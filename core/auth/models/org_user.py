@@ -174,6 +174,10 @@ class RlcUser(Aggregate, models.Model):
         }
 
     @property
+    def last_login_month(self):
+        return self.user.last_login_month
+
+    @property
     def user_key(self) -> KeyOfUser:
         self.get_private_key()
         return {"id": 0, "information": self.name, "source": "USER", "correct": True}

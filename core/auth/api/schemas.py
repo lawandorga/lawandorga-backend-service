@@ -228,6 +228,7 @@ class OutputRlcUserSmall(BaseModel):
     email_confirmed: bool
     locked: bool
     is_active: bool
+    last_login_month: Optional[str]
 
     class Config:
         orm_mode = True
