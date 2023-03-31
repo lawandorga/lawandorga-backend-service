@@ -42,6 +42,16 @@ resource "kubernetes_deployment_v1" "deployment" {
           port {
             container_port = 8080
           }
+
+          readiness_probe {
+            http_get {
+              port = 8080
+              http_header {
+                name  = "Host"
+                value = "backend.law-orga.de"
+              }
+            }
+          }
         }
       }
     }
