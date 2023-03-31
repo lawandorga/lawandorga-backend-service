@@ -3,7 +3,6 @@ resource "kubernetes_service_v1" "service" {
     name = "lawandorga-backend-service"
   }
   spec {
-    # type = "NodePort"
     selector = {
       app = kubernetes_deployment_v1.deployment.spec.0.selector.0.match_labels.app
     }
