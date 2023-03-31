@@ -29,7 +29,7 @@ COPY --chown=python:python messagebus /django/messagebus
 COPY --chown=python:python static /django/static
 COPY --chown=python:python templates /django/templates
 COPY --chown=python:python tmp /django/tmp
-COPY --chown=python:python manage.py /django/manage.py
+COPY manage.py /django/manage.py
 
 # install library for psycopg2
 RUN apt-get update && apt-get install libpq5 -y
