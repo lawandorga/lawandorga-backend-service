@@ -13,8 +13,8 @@ jobs:
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  migrate:
-    name: Migrate
+  run_migrations:
+    name: Run Migratations
     needs: [check]
     uses: ./.github/workflows/deployment-stage--run-migrations.yml
     secrets:
@@ -33,10 +33,30 @@ jobs:
       DB_HOST: ${{ secrets.DB_HOST }}
       SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 
+  migrate_data:
+    name: Migrate Data
+    needs: [run_migrations]
+    uses: ./.github/workflows/deployment-stage--migrate-data.yml
+    secrets:
+      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+      EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_TOKEN }}
+      S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+
   deploy:
     name: Deploy
-    needs: [check, migrate]
-    uses: ./.github/workflows/deployment-stage--terraform-apply.yml
+    needs: [check, migrate_data, run_migrations]
+    uses: ./.github/workflows/deployment-stage--migrate-data.yml
     with:
       image_version: ${{ github.sha }}
       environment: PRODUCTION

@@ -1,4 +1,4 @@
-name: Deployment Stage - Run Migrations
+name: Deployment Stage - Migrate Data
 
 on:
   workflow_call:
@@ -34,7 +34,7 @@ on:
 
 jobs:
   migrate:
-    name: Migrate
+    name: Migrate Data
     runs-on: ubuntu-22.04
     environment: PRODUCTION
 
@@ -69,5 +69,5 @@ jobs:
           path: ${{ env.pythonLocation }}
           key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
 
-      - name: Run migrations
-        run: python production_manage.py migrate
+      - name: Migrate Data
+        run: python production_manage.py migrate_data
