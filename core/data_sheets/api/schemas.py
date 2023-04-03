@@ -5,6 +5,11 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
+class InputFieldDelete(BaseModel):
+    uuid: UUID
+    force_delete = False
+
+
 class InputTemplateDetail(BaseModel):
     id: int
 
@@ -102,6 +107,8 @@ class OutputTemplateField(BaseModel):
     encrypted: str
     type: str
     name: str
+    uuid: UUID
+    field_type: str
     order: int
     kind: str
     url: str
