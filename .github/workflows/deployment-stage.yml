@@ -56,7 +56,7 @@ jobs:
   deploy:
     name: Deploy
     needs: [check, migrate_data, run_migrations]
-    uses: ./.github/workflows/deployment-stage--migrate-data.yml
+    uses: ./.github/workflows/deployment-stage--terraform-apply.yml
     with:
       image_version: ${{ github.sha }}
       environment: PRODUCTION
