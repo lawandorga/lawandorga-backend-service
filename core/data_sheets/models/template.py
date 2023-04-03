@@ -1,3 +1,4 @@
+from uuid import UUID, uuid4
 from django.apps import apps
 from django.db import models
 from django.urls import reverse
@@ -170,6 +171,7 @@ class RecordTemplate(models.Model):
 # RecordField
 ###
 class RecordField(models.Model):
+    uuid = models.UUIDField(default=uuid4, editable=False, unique=False)
     name = models.CharField(max_length=200)
     order = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
