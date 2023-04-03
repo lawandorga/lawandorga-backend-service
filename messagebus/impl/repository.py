@@ -1,4 +1,5 @@
 from typing import Any, Optional
+from uuid import UUID
 
 from django.db import models
 from django.db.models import Max
@@ -58,7 +59,7 @@ class InMemoryMessageBusRepository(MessageBusRepository):
 
 class DjangoMessageBusRepository(MessageBusRepository):
     @classmethod
-    def save_event(cls, raw_event: RawEvent, position: Optional[int] = None) -> Event:
+    def save_event(cls, raw_event: RawEvent, stream_name: str, position: Optional[int] = None) -> Event:
         if position is None:
             messages_max = Message.objects.filter(
                 stream_name=raw_event.stream_name

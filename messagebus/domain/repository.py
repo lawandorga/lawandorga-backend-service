@@ -1,5 +1,6 @@
 import abc
 from typing import Any, Optional
+from uuid import UUID
 
 from messagebus.domain.event import Event, RawEvent
 
@@ -7,7 +8,7 @@ from messagebus.domain.event import Event, RawEvent
 class MessageBusRepository(abc.ABC):
     @classmethod
     @abc.abstractmethod
-    def save_event(cls, event: RawEvent, position: Optional[int]) -> Event:
+    def save_event(cls, event: RawEvent, stream_name: str, aggregate_id: UUID, position: Optional[int]) -> Event:
         raise NotImplementedError()
 
     @classmethod
