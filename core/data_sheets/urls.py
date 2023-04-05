@@ -41,4 +41,5 @@ urlpatterns = [
     path("deletions/", include(api.deletions_router.urls)),
     path("accesses/", include(api.accesses_router.urls)),
     path("templates/", include(api.templates_router.urls)),
+    path("fields/", include(api.fields_router.urls)),
 ]

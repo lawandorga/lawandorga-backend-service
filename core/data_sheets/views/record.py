@@ -84,7 +84,7 @@ class RecordFieldViewSet(
             )
             records = [e.record for e in entries]
             record_urls = [
-                "{}/records/{}/".format(settings.MAIN_FRONTEND_URL, record.pk)
+                "{}/folders/{}/".format(settings.MAIN_FRONTEND_URL, record.folder_uuid)
                 for record in records
             ]
             record_text = "\n".join(record_urls)

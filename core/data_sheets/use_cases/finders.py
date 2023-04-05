@@ -1,9 +1,11 @@
 from uuid import UUID
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
 from core.auth.models import RlcUser
 from core.data_sheets.models import Record, RecordAccess, RecordDeletion, RecordTemplate
+from core.data_sheets.models.template import RecordField
 from core.seedwork.use_case_layer import finder_function
 
 
@@ -44,3 +46,13 @@ def access_from_id(actor: RlcUser, v: int) -> RecordAccess:
             | Q(record__template__rlc_id=actor.org_id)
         )
     )
+
+
+@finder_function
+def find_field_from_id(actor: RlcUser, uuid: UUID) -> RecordField:
+    for subclass in RecordField.__subclasses__():
+        try:
+            return subclass.objects.get(uuid=uuid, template__rlc_id=actor.org_id)
+        except subclass.DoesNotExist:
+            pass
+    raise ObjectDoesNotExist()

@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from django.apps import apps
 from django.db import models
 from django.urls import reverse
@@ -170,6 +172,7 @@ class RecordTemplate(models.Model):
 # RecordField
 ###
 class RecordField(models.Model):
+    uuid = models.UUIDField(default=uuid4, editable=False, unique=True)
     name = models.CharField(max_length=200)
     order = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
@@ -189,6 +192,10 @@ class RecordField(models.Model):
     @property
     def type(self):
         raise NotImplementedError("This property needs to be implemented.")
+
+    @property
+    def field_type(self):
+        return self.type
 
     @property
     def entry_url(self):
