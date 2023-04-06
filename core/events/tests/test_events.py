@@ -1,7 +1,7 @@
 from django.test import Client, TestCase
 from django.utils import timezone
 
-from core.events.models import Event
+from core.events.models import EventsEvent
 from core.rlc.models import Meta, Org
 from core.seedwork import test_helpers as data
 
@@ -16,7 +16,7 @@ class TestEvents(TestCase):
         self.user_1 = data.create_rlc_user(rlc=self.rlc)
         self.user_2 = data.create_rlc_user(email="dummy2@law-orga.de", rlc=self.rlc)
 
-        self.event_1 = Event.objects.create(
+        self.event_1 = EventsEvent.objects.create(
             org=self.rlc,
             name="Test Event",
             description="",
@@ -24,7 +24,7 @@ class TestEvents(TestCase):
             start_time=timezone.now(),
             end_time=timezone.now(),
         )
-        self.event_2 = Event.objects.create(
+        self.event_2 = EventsEvent.objects.create(
             org=self.rlc2,
             name="Test Event 2",
             description="",
@@ -32,7 +32,7 @@ class TestEvents(TestCase):
             start_time=timezone.now(),
             end_time=timezone.now(),
         )
-        self.event_3 = Event.objects.create(
+        self.event_3 = EventsEvent.objects.create(
             org=self.rlc2,
             name="Test Event 3",
             description="",
@@ -40,7 +40,7 @@ class TestEvents(TestCase):
             start_time=timezone.now(),
             end_time=timezone.now(),
         )
-        self.event_of_other_meta_org = Event.objects.create(
+        self.event_of_other_meta_org = EventsEvent.objects.create(
             org=self.other_org,
             name="Test Event of other meta org",
             description="",
@@ -70,7 +70,7 @@ class TestEvents(TestCase):
             "/api/events/", data=event_data, content_type="application/json"
         )
         assert res.status_code == 200
-        created = Event.objects.filter(name="Test Event Create")
+        created = EventsEvent.objects.filter(name="Test Event Create")
         assert len(created) == 1
 
     def test_event_update_unauthorized(self):
@@ -80,7 +80,7 @@ class TestEvents(TestCase):
             f"/api/events/{id}/", data=update_data, content_type="application/json"
         )
         assert res.status_code == 400
-        updated = Event.objects.get(id=id)
+        updated = EventsEvent.objects.get(id=id)
         assert updated.description == ""
 
     def test_event_update(self):
@@ -90,21 +90,21 @@ class TestEvents(TestCase):
             f"/api/events/{id}/", data=update_data, content_type="application/json"
         )
         assert res.status_code == 200
-        updated = Event.objects.get(id=id)
+        updated = EventsEvent.objects.get(id=id)
         assert updated.description == "Updated"
 
     def test_event_delete_unauthorized(self):
         id = self.event_3.id
         res = self.client.delete(f"/api/events/{id}/")
         assert res.status_code == 400
-        all_events = Event.objects.all()
+        all_events = EventsEvent.objects.all()
         assert len(all_events) == 4
 
     def test_event_delete(self):
         id = self.event_1.id
         res = self.client.delete(f"/api/events/{id}/")
         assert res.status_code == 200
-        all_events = Event.objects.all()
+        all_events = EventsEvent.objects.all()
         assert len(all_events) == 3
 
     def test_ics_calendar(self):
