@@ -13,21 +13,28 @@ E = TypeVar("E", bound=Event)
 class MessageBus:
     handlers: dict[Type[Event], set[Callable]] = {}
     repository: Type[MessageBusRepository]
-    event_models: dict[str, Type[Event]] = {}
+    event_models: Optional[dict[str, Type[Event]]] = None
+
+    @classmethod
+    def _run_nesting_check(cls, event_class: Type[Event]) -> None:
+        if event_class.__qualname__.count(".") != 1:
+            raise ValueError(
+                f"Event '{event_class.__name__}' is not nested correctly inside a class. The qualname is '{event_class.__qualname__}' but should contain exactly one dot."
+            )
+
+    @classmethod
+    def _run_duplicate_check(cls, event_class: Type[Event]) -> None:
+        cls_names = [cls._get_name() for cls in Event.__subclasses__()]
+        if cls_names.count(event_class._get_name()) > 1:
+            raise ValueError(
+                f"Event '{event_class._get_name()}' is defined more than once."
+            )
 
     @classmethod
     def run_checks(cls):
-        for cls in Event.__subclasses__():
-            if cls.__qualname__.count(".") != 1:
-                raise ValueError(
-                    f"Event '{cls.__name__}' is not nested correctly inside a class. The qualname is '{cls.__qualname__}' but should contain exactly one dot."
-                )
-
-            cls_names = [cls.__qualname__ for cls in Event.__subclasses__()]
-            if cls_names.count(cls.__qualname__) > 1:
-                raise ValueError(
-                    f"Event '{cls.__qualname__}' is defined more than once."
-                )
+        for event_type in Event.__subclasses__():
+            cls._run_nesting_check(event_type)
+            cls._run_duplicate_check(event_type)
 
     @classmethod
     def handler(
@@ -64,11 +71,37 @@ class MessageBus:
         )
 
     @classmethod
-    def get_event_model(cls, name: str) -> Type[Event]:
+    def load(cls) -> None:
+        if cls.event_models is not None:
+            return
+
+        cls.event_models = {}
+
         for sc in Event.__subclasses__():
-            cls.event_models = {sc._get_name(): sc}
-        # raise Exception(cls.event_models)
-        return cls.event_models[sc._get_name()]
+            cls._run_nesting_check(sc)
+            cls._run_duplicate_check(sc)
+
+            if sc._get_name() in cls.event_models:
+                raise ValueError(f"Event '{sc._get_name()}' is defined more than once.")
+            cls.event_models[sc._get_name()] = sc
+            logger.info(f"Event {sc._get_name()} loaded.")
+
+    @classmethod
+    def get_event_model(cls, name: str) -> Type[Event]:
+        if cls.event_models is None:
+            cls.load()
+
+        assert cls.event_models is not None
+
+        try:
+            model = cls.event_models[name]
+        except KeyError:
+            cls.event_models = None
+            cls.load()
+            assert cls.event_models is not None
+            model = cls.event_models[name]
+
+        return model
 
     @classmethod
     def handle(cls, message: Event):

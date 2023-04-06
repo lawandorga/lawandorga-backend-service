@@ -53,7 +53,7 @@ class Event(BaseModel):
         parts = cls.__qualname__.split(".")
         if len(parts) < 2:
             return "later"
-        return f"{parts[-2]}:{parts[-1]}"
+        return f"{parts[-2]}.{parts[-1]}"
 
     @staticmethod
     def _clean_data(data: dict) -> JsonDict:

@@ -1,3 +1,5 @@
+import pytest
+
 from messagebus import Event, MessageBus
 
 
@@ -58,9 +60,30 @@ def test_bus_can_work_with_multiple_handlers():
 
 
 def test_get_event_model():
-    class ObjectInWhichStuffHappens:
-        class SthHappened(Event):
+    model = MessageBus.get_event_model("ObjectInWhichStuffHappens.StuffHappened")
+    assert model == ObjectInWhichStuffHappens.StuffHappened
+
+
+def test_bus_run_checks_raises_error_on_nesting_error():
+    class EventWithoutParent(Event):
+        pass
+
+    with pytest.raises(ValueError) as e:
+        MessageBus.run_checks()
+
+    assert "not nested correctly" in str(e.value)
+
+
+def test_bus_run_checks_raises_error_on_duplicate():
+    class Car:
+        class Driven(Event):
             pass
 
-    model = MessageBus.get_event_model("ObjectInWhichStuffHappens.SthHappened")
-    assert model == ObjectInWhichStuffHappens.SthHappened
+    class Car:  # noqa: F811
+        class Driven(Event):
+            pass
+
+    with pytest.raises(ValueError) as e:
+        MessageBus._run_duplicate_check(Car.Driven)
+
+    assert "defined more than once" in str(e.value)

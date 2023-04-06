@@ -10,4 +10,3 @@ class MessagebusConfig(AppConfig):
         from messagebus.impl.repository import DjangoMessageBusRepository
 
         MessageBus.set_repository(DjangoMessageBusRepository)
-        MessageBus.run_checks()
