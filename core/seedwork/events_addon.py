@@ -1,19 +1,18 @@
-from typing import Optional
+from typing import Any, Optional
 
 from core.seedwork.aggregate import Addon, Aggregate
-from messagebus import Event, MessageBus, RawEvent
-from messagebus.domain.data import EventData, JsonDict
-from messagebus.impl.factory import create_event_from_aggregate
+from messagebus import Event, MessageBus
+from messagebus.domain.data import JsonDict
 
 
 class Object(Aggregate):
-    pass
+    uuid: Any
 
 
 class EventsAddon(Addon):
     def __init__(self, obj: Object):
         super().__init__(obj)
-        self.__raw_events: list[RawEvent] = []
+        self.__raw_events: list[Event] = []
         self.__events: list[Event] = []
 
     def __save(self) -> None:
@@ -29,8 +28,8 @@ class EventsAddon(Addon):
 
         self.__events = []
 
-    def add(self, data: EventData, metadata: Optional[JsonDict] = None):
-        event = create_event_from_aggregate(self._obj, data, metadata)
+    def add(self, event: Event, metadata: Optional[JsonDict] = None):
+        event.set_aggregate_uuid(self._obj.uuid)
         self.__raw_events.append(event)
 
     on_save = [__save]

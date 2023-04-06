@@ -1,45 +1,40 @@
 from logging import getLogger
-from typing import Callable, Optional, Type
+from typing import Callable, Optional, Type, TypeVar
 
-from messagebus.domain.data import EventData
-from messagebus.domain.event import Event, RawEvent
+from messagebus.domain.event import Event
 from messagebus.domain.repository import MessageBusRepository
 
 logger = getLogger("messagebus")
 
 
+E = TypeVar("E", bound=Event)
+
+
 class MessageBus:
-    handlers: dict[Type[EventData], set[Callable]] = {}
+    handlers: dict[Type[Event], set[Callable]] = {}
     repository: Type[MessageBusRepository]
-    event_models: dict[str, Type[EventData]] = {}
+    event_models: dict[str, Type[Event]] = {}
 
     @classmethod
-    def register_event_model(cls, model_class: Type[EventData]):
-        cls.event_models[model_class.get_name()] = model_class
+    def run_checks(cls):
+        cls_names = [cls.__name__ for cls in Event.__subclasses__()]
 
-    @classmethod
-    def get_event_model(cls, name: str):
-        if name not in cls.event_models:
-            raise ValueError("Event data could not be found.")
+        for cls in Event.__subclasses__():
+            if cls.__qualname__.count(".") == 0:
+                raise ValueError(f"Event '{cls.__name__}' is not nested in a class.")
 
-        return cls.event_models[name]
-
-    @classmethod
-    def event(cls, model_class: Type[EventData]):
-        cls.register_event_model(model_class)
-
-        return model_class
+            if cls_names.count(cls.__name__) > 1:
+                raise ValueError(f"Event '{cls.__name__}' is defined more than once.")
 
     @classmethod
     def handler(
-        cls, on: Type[EventData] | list[Type[EventData]]
-    ) -> Callable[[Callable[[Event], None]], Callable[[Event], None]]:
-        def wrapper(handler: Callable[[Event], None]) -> Callable[[Event], None]:
+        cls, on: Type[E] | list[Type[E]]
+    ) -> Callable[[Callable[[E], None]], Callable[[E], None]]:
+        def wrapper(handler: Callable[[E], None]) -> Callable[[E], None]:
             when = on if isinstance(on, list) else [on]
 
-            for model in when:
-                cls.register_event_model(model)
-                cls.register_handler(model, handler)
+            for event_class in when:
+                cls.register_handler(event_class, handler)
 
             return handler
 
@@ -50,27 +45,37 @@ class MessageBus:
         cls.repository = repository
 
     @classmethod
-    def register_handler(cls, action: Type[EventData], handler: Callable):
-        if isinstance(action, str):
-            return
+    def register_handler(cls, event_class: Type[Event], handler: Callable):
+        if not issubclass(event_class, Event):
+            raise TypeError(
+                f"The event class is of type '{event_class}' but should be a subclass of '{Event}' does not fit."
+            )
 
-        if action.get_name() not in cls.handlers:
-            cls.handlers[action.get_name()] = set()
+        if event_class not in cls.handlers:
+            cls.handlers[event_class] = set()
 
-        cls.handlers[action.get_name()].add(handler)
+        cls.handlers[event_class].add(handler)
 
         logger.info(
-            f"Handler {handler.__name__} registered for action '{action.get_name()}'."
+            f"Handler {handler.__name__} registered for action '{event_class}'."
         )
 
     @classmethod
-    def handle(cls, message: RawEvent | Event):
-        if message.name in cls.handlers:
-            for handler in cls.handlers[message.name]:
+    def get_event_model(cls, name: str) -> Type[Event]:
+        for sc in Event.__subclasses__():
+            cls.event_models = {sc._get_name(): sc}
+        # raise Exception(cls.event_models)
+        return cls.event_models[sc._get_name()]
+
+    @classmethod
+    def handle(cls, message: Event):
+        message_type = type(message)
+        if message_type in cls.handlers:
+            for handler in cls.handlers[message_type]:
                 handler(message)
 
     @classmethod
-    def save_event(cls, event: RawEvent, position: Optional[int] = None) -> Event:
+    def save_event(cls, event: Event, position: Optional[int] = None) -> Event:
         return cls.repository.save_event(event, position)
 
     @classmethod

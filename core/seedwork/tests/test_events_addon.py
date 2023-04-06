@@ -5,7 +5,7 @@ import pytest
 
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.events_addon import EventsAddon
-from messagebus import Event, EventData, MessageBus
+from messagebus import Event, MessageBus
 from messagebus.impl.repository import (
     DjangoMessageBusRepository,
     InMemoryMessageBusRepository,
@@ -44,11 +44,10 @@ class StubModel:
         pass
 
 
-class Driven(EventData):
-    miles: int
-
-
 class Car(Aggregate, StubModel):
+    class Driven(Event):
+        miles: int
+
     addons = {"events": EventsAddon}
     events: EventsAddon
 
@@ -57,17 +56,17 @@ class Car(Aggregate, StubModel):
         self.uuid = uuid4()
 
     def drive(self, miles=100):
-        self.events.add(Driven(miles=miles))
+        self.events.add(Car.Driven(miles=miles))
 
 
 def test_events_are_handled_and_saved(inmemory):
     miles = 0
 
-    @MessageBus.handler(on=Driven)
-    def calculate_miles(event: Event[Driven]):
+    @MessageBus.handler(on=Car.Driven)
+    def calculate_miles(event: Car.Driven):
         assert Atomic.inside == "N"
         nonlocal miles
-        miles += event.data.miles
+        miles += event.miles
 
     car = Car(atomic_context=Atomic)
     car.drive(500)
@@ -77,8 +76,8 @@ def test_events_are_handled_and_saved(inmemory):
 
 
 def test_events_are_saved_atomic(inmemory):
-    @MessageBus.handler(on=Driven)
-    def calculate_miles(_: Event[Driven]):
+    @MessageBus.handler(on=Car.Driven)
+    def calculate_miles(_: Car.Driven):
         assert False
 
     car = Car(atomic_context=Atomic)
@@ -92,8 +91,8 @@ def test_events_are_saved_atomic(inmemory):
 
 
 def test_events_are_handled_non_atomic(inmemory):
-    @MessageBus.handler(on=Driven)
-    def calculate_miles(_: Event[Driven]):
+    @MessageBus.handler(on=Car.Driven)
+    def calculate_miles(_: Car.Driven):
         assert Atomic.inside == "N"
         raise ValueError("It is supposed to happen.")
 

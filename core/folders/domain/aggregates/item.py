@@ -1,10 +1,10 @@
 from typing import Any, Protocol
 from uuid import UUID
 
-from messagebus import EventData
+from messagebus import Event
 
 
-class ItemAddedToFolder(EventData):
+class ItemAddedToFolder(Event):
     org_pk: int
     uuid: UUID
     repository: str
@@ -12,7 +12,7 @@ class ItemAddedToFolder(EventData):
     folder_uuid: UUID
 
 
-class ItemRenamed(EventData):
+class ItemRenamed(Event):
     org_pk: int
     uuid: UUID
     repository: str
@@ -20,7 +20,7 @@ class ItemRenamed(EventData):
     folder_uuid: UUID
 
 
-class ItemDeleted(EventData):
+class ItemDeleted(Event):
     org_pk: int
     uuid: UUID
     repository: str

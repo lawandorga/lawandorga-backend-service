@@ -1,16 +1,20 @@
-from messagebus import RawEvent
-from messagebus.domain.data import EventData
+from uuid import uuid4
+
+from messagebus import Event
 
 
-class SomethingHappened(EventData):
-    pass
+class ObjectInWhichSomethingHappens:
+    class SomethingHappened(Event):
+        pass
 
 
 def test_event_attributes():
-    metadata = {"b": 2}
-    event = RawEvent(stream_name="stream", data=SomethingHappened(), metadata=metadata)
-    assert event.stream_name == "stream"
-    assert event.name == "SomethingHappened"
-    assert event.data == SomethingHappened()
-    assert event.metadata == metadata
-    assert str(event) == event.name
+    uuid = uuid4()
+    event = ObjectInWhichSomethingHappens.SomethingHappened()
+    event.set_aggregate_uuid(uuid)
+    assert event.stream_name == f"ObjectInWhichSomethingHappens-{uuid}"
+    assert event.action == "SomethingHappened"
+    assert event.aggregate_name == "ObjectInWhichSomethingHappens"
+    assert event.metadata == {}
+    assert str(event) == "SomethingHappened"
+    assert event._name == "ObjectInWhichSomethingHappens.SomethingHappened"

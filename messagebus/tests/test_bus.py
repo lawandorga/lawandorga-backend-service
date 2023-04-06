@@ -1,39 +1,37 @@
-from messagebus import MessageBus, RawEvent
-from messagebus.domain.data import EventData
+from messagebus import Event, MessageBus
 
 
-@MessageBus.event
-class StuffHappened(EventData):
-    happened: str
+class ObjectInWhichStuffHappens:
+    class StuffHappened(Event):
+        happened: str
+
+    class NothingHappened(Event):
+        pass
 
 
 def test_bus_can_handle_events():
     # helper stuff
     called = False
 
-    def change_state(e: RawEvent[StuffHappened]):
+    def change_state(e: ObjectInWhichStuffHappens.StuffHappened):
         nonlocal called
         called = True
 
     # check messagebus can handle events
-    MessageBus.register_handler(StuffHappened, change_state)
-    event = RawEvent(
-        stream_name="stream", data=StuffHappened(happened="AbcHappened"), metadata={}
-    )
+    MessageBus.register_handler(ObjectInWhichStuffHappens.StuffHappened, change_state)
+    event = ObjectInWhichStuffHappens.StuffHappened(happened="AbcHappened")
     MessageBus.handle(event)
 
     assert called
 
 
 def test_messagebus_does_not_call_the_wrong_handler():
-    def change_state(e: RawEvent):
+    def change_state(e: ObjectInWhichStuffHappens.StuffHappened):
         assert False
 
     # check that the AbcHappened handler is not called
-    MessageBus.register_handler("AbcHappened", change_state)
-    event = RawEvent(
-        stream_name="stream", data=StuffHappened(happened="XyzHappened"), metadata={}
-    )
+    MessageBus.register_handler(ObjectInWhichStuffHappens.NothingHappened, change_state)
+    event = ObjectInWhichStuffHappens.StuffHappened(happened="XyzHappened")
     MessageBus.handle(event)
 
 
@@ -42,29 +40,27 @@ def test_bus_can_work_with_multiple_handlers():
     called_1 = False
     called_2 = False
 
-    def change_state_1(e: RawEvent):
+    def change_state_1(e: Event):
         nonlocal called_1
         called_1 = True
 
-    def change_state_2(e: RawEvent):
+    def change_state_2(e: Event):
         nonlocal called_2
         called_2 = True
 
     # check messagebus can work with multiple handlers
-    MessageBus.register_handler(StuffHappened, change_state_1)
-    MessageBus.register_handler(StuffHappened, change_state_2)
-    event = RawEvent(
-        stream_name="stream", data=StuffHappened(happened="abcde"), metadata={}
-    )
+    MessageBus.register_handler(ObjectInWhichStuffHappens.StuffHappened, change_state_1)
+    MessageBus.register_handler(ObjectInWhichStuffHappens.StuffHappened, change_state_2)
+    event = ObjectInWhichStuffHappens.StuffHappened(happened="abcde")
     MessageBus.handle(event)
 
     assert called_2 and called_1
 
 
 def test_get_event_model():
-    class SthHappened(EventData):
-        pass
+    class ObjectInWhichStuffHappens:
+        class SthHappened(Event):
+            pass
 
-    MessageBus.register_event_model(SthHappened)
-    model = MessageBus.get_event_model(SthHappened.get_name())
-    assert model == SthHappened
+    model = MessageBus.get_event_model("ObjectInWhichStuffHappens.SthHappened")
+    assert model == ObjectInWhichStuffHappens.SthHappened

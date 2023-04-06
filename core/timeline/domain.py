@@ -1,27 +1,27 @@
-from uuid import uuid4, UUID
+from uuid import UUID, uuid4
+
 from messagebus import Event
-from messagebus.domain.data import EventData
 
 
 class EventSourced:
     def __init__(self, events: list[Event]) -> None:
         for event in events:
             self.mutate(event)
-        self.new_events = []
+        self.new_events: list[Event] = []
 
     def mutate(self, event: Event):
         func = getattr(self, f"when_{event.action}")
         func(**event.data)
 
-    def generate_event(self, event: EventData) -> Event:
-        pass
+    # def generate_event(self, event: Event) -> Event:
+    #     pass
 
-    def apply(self, event: EventData):
+    def apply(self, event: Event):
         self.new_events.append(event)
         self.mutate(event)
 
 
-class Created(EventData):
+class Created(Event):
     text: str
     uuid: UUID = uuid4()
 
@@ -29,7 +29,7 @@ class Created(EventData):
 class TimelineEvent(EventSourced):
     def __init__(self, events: list[Event] = []):
         super().__init__(events)
-    
+
     def create(self, text: str):
         self.apply(Created(text=text))
 

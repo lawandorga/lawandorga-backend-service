@@ -37,7 +37,7 @@ from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
-from messagebus import EventData
+from messagebus import Event
 
 from ...folders.domain.repositiories.folder import FolderRepository
 from ...seedwork.repository import RepositoryWarehouse
@@ -47,12 +47,12 @@ if TYPE_CHECKING:
     from core.auth.models.mfa import MultiFactorAuthenticationSecret
 
 
-class OrgUserLocked(EventData):
+class OrgUserLocked(Event):
     org_user_uuid: UUID
     org_pk: int
 
 
-class OrgUserUnlocked(EventData):
+class OrgUserUnlocked(Event):
     org_user_uuid: UUID
     by_org_user_uuid: UUID
     org_pk: int

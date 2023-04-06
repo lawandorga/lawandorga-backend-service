@@ -1,14 +1,7 @@
 from uuid import UUID, uuid4
 
 from messagebus import Event, MessageBus
-from messagebus.domain.data import EventData
-from messagebus.impl.factory import create_event_from_aggregate
 from messagebus.impl.repository import Message
-
-
-@MessageBus.event
-class DrivenToLocation(EventData):
-    miles: int
 
 
 class StubModel:
@@ -31,26 +24,30 @@ class StubModel:
         for event in events:
             MessageBus.handle(event)
 
-    def add_event(self, data: EventData, metadata: dict):
-        event = create_event_from_aggregate(self, data, metadata)
+    def add_event(self, event: Event, metadata: dict):
+        event.set_aggregate_uuid(self.uuid)
         self.events.append(event)
+
+
+class Car(StubModel):
+    class DrivenToLocation(Event):
+        miles: int
+
+    def __init__(self):
+        super().__init__()
+        self.uuid = uuid4()
+
+    def drive_to_location(self):
+        self.add_event(Car.DrivenToLocation(miles=500), metadata={})
 
 
 def test_django_aggregate_event_handling(db):
     metadata = {"total_miles": 0}
 
-    class Car(StubModel):
-        def __init__(self):
-            super().__init__()
-            self.uuid = uuid4()
+    def change_state(event: Car.DrivenToLocation):
+        metadata["total_miles"] += event.miles
 
-        def drive_to_location(self):
-            self.add_event(DrivenToLocation(miles=500), metadata)
-
-    def change_state(event: Event):
-        event.metadata["total_miles"] += event.data.miles
-
-    MessageBus.register_handler(DrivenToLocation, change_state)
+    MessageBus.register_handler(Car.DrivenToLocation, change_state)
 
     car = Car()
     car.drive_to_location()
