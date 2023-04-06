@@ -10,7 +10,7 @@ from core.events.api.schemas import (
     InputEventUpdate,
     OutputEventResponse,
 )
-from core.events.models import Event
+from core.events.models import EventsEvent
 from core.rlc.models import Org
 from core.seedwork.api_layer import ApiError, Router
 
@@ -19,7 +19,7 @@ router = Router()
 
 @router.api(output_schema=List[OutputEventResponse])
 def get_all_events_for_user(rlc_user: RlcUser):
-    events: List[OutputEventResponse] = Event.get_all_events_for_user(rlc_user)
+    events: List[OutputEventResponse] = EventsEvent.get_all_events_for_user(rlc_user)
     return events
 
 
@@ -50,7 +50,7 @@ def create_event(data: InputEventCreate, rlc_user: RlcUser):
 )
 def update_event(data: InputEventUpdate, rlc_user: RlcUser):
     try:
-        event = Event.objects.get(id=data.id)
+        event = EventsEvent.objects.get(id=data.id)
     except ObjectDoesNotExist:
         raise ApiError("The event you want to edit does not exist.")
 
@@ -75,7 +75,7 @@ def update_event(data: InputEventUpdate, rlc_user: RlcUser):
 @router.api(url="<int:id>/", method="DELETE")
 def delete_event(data: InputEventDelete, rlc_user: RlcUser):
     try:
-        event = Event.objects.get(id=data.id)
+        event = EventsEvent.objects.get(id=data.id)
     except ObjectDoesNotExist:
         raise ApiError("The event you want to delete does not exist.")
     if rlc_user.org.id != event.org.id:

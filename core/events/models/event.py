@@ -6,7 +6,7 @@ from core.auth.models import RlcUser
 from core.rlc.models import Org
 
 
-class Event(models.Model):
+class EventsEvent(models.Model):
     org = models.ForeignKey(Org, related_name="events", on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -21,15 +21,15 @@ class Event(models.Model):
 
     @staticmethod
     def get_all_events_for_user(rlc_user: RlcUser):
-        raw_events: List[Event] = (
+        raw_events: List[EventsEvent] = (
             list(
-                Event.objects.filter(org=rlc_user.org)
-                | Event.objects.filter(is_global=True).filter(
+                EventsEvent.objects.filter(org=rlc_user.org)
+                | EventsEvent.objects.filter(is_global=True).filter(
                     org__meta=rlc_user.org.meta
                 )
             )
             if (rlc_user.org.meta is not None)
-            else list(Event.objects.filter(org=rlc_user.org))
+            else list(EventsEvent.objects.filter(org=rlc_user.org))
         )
         return raw_events
 

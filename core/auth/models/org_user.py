@@ -728,12 +728,12 @@ class RlcUser(Aggregate, models.Model):
         return data
 
     def get_ics_calendar(self):
-        from ...events.models import Event
+        from ...events.models import EventsEvent
 
         events = (
             (
                 self.org.events.all()
-                | Event.objects.filter(is_global=True).filter(org__meta=self.org.meta)
+                | EventsEvent.objects.filter(is_global=True).filter(org__meta=self.org.meta)
             )
             if (self.org.meta is not None)
             else self.org.events.all()
