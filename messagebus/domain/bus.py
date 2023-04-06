@@ -17,14 +17,17 @@ class MessageBus:
 
     @classmethod
     def run_checks(cls):
-        cls_names = [cls.__name__ for cls in Event.__subclasses__()]
-
         for cls in Event.__subclasses__():
-            if cls.__qualname__.count(".") == 0:
-                raise ValueError(f"Event '{cls.__name__}' is not nested in a class.")
+            if cls.__qualname__.count(".") != 1:
+                raise ValueError(
+                    f"Event '{cls.__name__}' is not nested correctly inside a class. The qualname is '{cls.__qualname__}' but should contain exactly one dot."
+                )
 
-            if cls_names.count(cls.__name__) > 1:
-                raise ValueError(f"Event '{cls.__name__}' is defined more than once.")
+            cls_names = [cls.__qualname__ for cls in Event.__subclasses__()]
+            if cls_names.count(cls.__qualname__) > 1:
+                raise ValueError(
+                    f"Event '{cls.__qualname__}' is defined more than once."
+                )
 
     @classmethod
     def handler(
