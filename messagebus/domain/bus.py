@@ -1,45 +1,50 @@
 from logging import getLogger
-from typing import Callable, Optional, Type
+from typing import Callable, Optional, Type, TypeVar
 
-from messagebus.domain.data import EventData
-from messagebus.domain.event import Event, RawEvent
+from messagebus.domain.event import Event
 from messagebus.domain.repository import MessageBusRepository
 
 logger = getLogger("messagebus")
 
 
+E = TypeVar("E", bound=Event)
+
+
 class MessageBus:
-    handlers: dict[Type[EventData], set[Callable]] = {}
+    handlers: dict[Type[Event], set[Callable]] = {}
     repository: Type[MessageBusRepository]
-    event_models: dict[str, Type[EventData]] = {}
+    event_models: Optional[dict[str, Type[Event]]] = None
 
     @classmethod
-    def register_event_model(cls, model_class: Type[EventData]):
-        cls.event_models[model_class.get_name()] = model_class
+    def _run_nesting_check(cls, event_class: Type[Event]) -> None:
+        if event_class.__qualname__.count(".") != 1:
+            raise ValueError(
+                f"Event '{event_class.__name__}' is not nested correctly inside a class. The qualname is '{event_class.__qualname__}' but should contain exactly one dot."
+            )
 
     @classmethod
-    def get_event_model(cls, name: str):
-        if name not in cls.event_models:
-            raise ValueError("Event data could not be found.")
-
-        return cls.event_models[name]
+    def _run_duplicate_check(cls, event_class: Type[Event]) -> None:
+        cls_names = [cls._get_name() for cls in Event.__subclasses__()]
+        if cls_names.count(event_class._get_name()) > 1:
+            raise ValueError(
+                f"Event '{event_class._get_name()}' is defined more than once."
+            )
 
     @classmethod
-    def event(cls, model_class: Type[EventData]):
-        cls.register_event_model(model_class)
-
-        return model_class
+    def run_checks(cls):
+        for event_type in Event.__subclasses__():
+            cls._run_nesting_check(event_type)
+            cls._run_duplicate_check(event_type)
 
     @classmethod
     def handler(
-        cls, on: Type[EventData] | list[Type[EventData]]
-    ) -> Callable[[Callable[[Event], None]], Callable[[Event], None]]:
-        def wrapper(handler: Callable[[Event], None]) -> Callable[[Event], None]:
+        cls, on: Type[E] | list[Type[E]]
+    ) -> Callable[[Callable[[E], None]], Callable[[E], None]]:
+        def wrapper(handler: Callable[[E], None]) -> Callable[[E], None]:
             when = on if isinstance(on, list) else [on]
 
-            for model in when:
-                cls.register_event_model(model)
-                cls.register_handler(model, handler)
+            for event_class in when:
+                cls.register_handler(event_class, handler)
 
             return handler
 
@@ -50,27 +55,63 @@ class MessageBus:
         cls.repository = repository
 
     @classmethod
-    def register_handler(cls, action: Type[EventData], handler: Callable):
-        if isinstance(action, str):
-            return
+    def register_handler(cls, event_class: Type[Event], handler: Callable):
+        if not issubclass(event_class, Event):
+            raise TypeError(
+                f"The event class is of type '{event_class}' but should be a subclass of '{Event}' does not fit."
+            )
 
-        if action.get_name() not in cls.handlers:
-            cls.handlers[action.get_name()] = set()
+        if event_class not in cls.handlers:
+            cls.handlers[event_class] = set()
 
-        cls.handlers[action.get_name()].add(handler)
+        cls.handlers[event_class].add(handler)
 
         logger.info(
-            f"Handler {handler.__name__} registered for action '{action.get_name()}'."
+            f"Handler {handler.__name__} registered for action '{event_class}'."
         )
 
     @classmethod
-    def handle(cls, message: RawEvent | Event):
-        if message.name in cls.handlers:
-            for handler in cls.handlers[message.name]:
+    def load(cls) -> None:
+        if cls.event_models is not None:
+            return
+
+        cls.event_models = {}
+
+        for sc in Event.__subclasses__():
+            cls._run_nesting_check(sc)
+            cls._run_duplicate_check(sc)
+
+            if sc._get_name() in cls.event_models:
+                raise ValueError(f"Event '{sc._get_name()}' is defined more than once.")
+            cls.event_models[sc._get_name()] = sc
+            logger.info(f"Event {sc._get_name()} loaded.")
+
+    @classmethod
+    def get_event_model(cls, name: str) -> Type[Event]:
+        if cls.event_models is None:
+            cls.load()
+
+        assert cls.event_models is not None
+
+        try:
+            model = cls.event_models[name]
+        except KeyError:
+            cls.event_models = None
+            cls.load()
+            assert cls.event_models is not None
+            model = cls.event_models[name]
+
+        return model
+
+    @classmethod
+    def handle(cls, message: Event):
+        message_type = type(message)
+        if message_type in cls.handlers:
+            for handler in cls.handlers[message_type]:
                 handler(message)
 
     @classmethod
-    def save_event(cls, event: RawEvent, position: Optional[int] = None) -> Event:
+    def save_event(cls, event: Event, position: Optional[int] = None) -> Event:
         return cls.repository.save_event(event, position)
 
     @classmethod

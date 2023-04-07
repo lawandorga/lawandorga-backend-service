@@ -1,31 +1,30 @@
 from typing import Any, Protocol
 from uuid import UUID
 
-from messagebus import EventData
+from messagebus import Event
 
 
-class ItemAddedToFolder(EventData):
-    org_pk: int
-    uuid: UUID
-    repository: str
-    name: str
-    folder_uuid: UUID
+class FolderItem:
+    class ItemAddedToFolder(Event):
+        org_pk: int
+        uuid: UUID
+        repository: str
+        name: str
+        folder_uuid: UUID
 
+    class ItemRenamed(Event):
+        org_pk: int
+        uuid: UUID
+        repository: str
+        name: str
+        folder_uuid: UUID
 
-class ItemRenamed(EventData):
-    org_pk: int
-    uuid: UUID
-    repository: str
-    name: str
-    folder_uuid: UUID
-
-
-class ItemDeleted(EventData):
-    org_pk: int
-    uuid: UUID
-    repository: str
-    name: str
-    folder_uuid: UUID
+    class ItemDeleted(Event):
+        org_pk: int
+        uuid: UUID
+        repository: str
+        name: str
+        folder_uuid: UUID
 
 
 class Item(Protocol):

@@ -37,7 +37,7 @@ from core.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
-from messagebus import EventData
+from messagebus import Event
 
 from ...folders.domain.repositiories.folder import FolderRepository
 from ...seedwork.repository import RepositoryWarehouse
@@ -45,17 +45,6 @@ from .user import UserProfile
 
 if TYPE_CHECKING:
     from core.auth.models.mfa import MultiFactorAuthenticationSecret
-
-
-class OrgUserLocked(EventData):
-    org_user_uuid: UUID
-    org_pk: int
-
-
-class OrgUserUnlocked(EventData):
-    org_user_uuid: UUID
-    by_org_user_uuid: UUID
-    org_pk: int
 
 
 class KeyOfUser(TypedDict):
@@ -76,6 +65,15 @@ class RlcUserManager(models.Manager):
 
 
 class RlcUser(Aggregate, models.Model):
+    class OrgUserLocked(Event):
+        org_user_uuid: UUID
+        org_pk: int
+
+    class OrgUserUnlocked(Event):
+        org_user_uuid: UUID
+        by_org_user_uuid: UUID
+        org_pk: int
+
     @staticmethod
     def create(
         org: Org,
@@ -574,7 +572,9 @@ class RlcUser(Aggregate, models.Model):
 
     def lock(self) -> None:
         self.locked = True
-        self.events.add(OrgUserLocked(org_user_uuid=self.uuid, org_pk=self.org_id))
+        self.events.add(
+            RlcUser.OrgUserLocked(org_user_uuid=self.uuid, org_pk=self.org_id)
+        )
 
     def change_password_for_keys(self, new_password: str):
         key = self.get_decryption_key()
@@ -775,7 +775,7 @@ class RlcUser(Aggregate, models.Model):
         self.fix_keys(by)
         self.locked = False
         self.events.add(
-            OrgUserUnlocked(
+            RlcUser.OrgUserUnlocked(
                 org_user_uuid=self.uuid,
                 by_org_user_uuid=by.uuid,
                 org_pk=self.org_id,
