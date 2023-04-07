@@ -733,7 +733,9 @@ class RlcUser(Aggregate, models.Model):
         events = (
             (
                 self.org.events.all()
-                | EventsEvent.objects.filter(is_global=True).filter(org__meta=self.org.meta)
+                | EventsEvent.objects.filter(is_global=True).filter(
+                    org__meta=self.org.meta
+                )
             )
             if (self.org.meta is not None)
             else self.org.events.all()
