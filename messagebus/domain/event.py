@@ -23,7 +23,9 @@ class Event(BaseModel):
     def _qualname_splits(self) -> list[str]:
         splits = self._name.split(".")
         if len(splits) != 2:
-            raise ValueError(f"Event {self._name} is not nested correctly. Make sure it inside a class.")
+            raise ValueError(
+                f"Event {self._name} is not nested correctly. Make sure it inside a class."
+            )
         return splits
 
     @property

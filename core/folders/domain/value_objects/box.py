@@ -92,6 +92,10 @@ class OpenBox(Box):
 
         return OpenBox(data=data)
 
+    @staticmethod
+    def create_from_str(data: str) -> "OpenBox":
+        return OpenBox(data=data.encode("utf-8"))
+
     def __init__(self, data: bytes):
         self.__data = data
         super().__init__()
