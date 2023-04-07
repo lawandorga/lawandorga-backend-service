@@ -20,8 +20,15 @@ class Event(BaseModel):
         return self.__class__.__qualname__
 
     @property
+    def _qualname_splits(self) -> list[str]:
+        splits = self._name.split(".")
+        if len(splits) != 2:
+            raise ValueError(f"Event {self._name} is not nested correctly. Make sure it inside a class.")
+        return splits
+
+    @property
     def action(self) -> str:
-        return self.__class__.__qualname__.split(".")[1]
+        return self._qualname_splits[1]
 
     # @property
     # def name(self) -> str:
@@ -29,7 +36,7 @@ class Event(BaseModel):
 
     @property
     def aggregate_name(self) -> str:
-        return self.__class__.__qualname__.split(".")[0]
+        return self._qualname_splits[0]
 
     @property
     def stream_name(self) -> str:
