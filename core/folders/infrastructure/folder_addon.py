@@ -1,7 +1,7 @@
 from typing import Optional, cast
 
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.aggregates.item import Item
+from core.folders.domain.aggregates.item import FolderItem, Item
 from core.folders.domain.external import IOwner
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.seedwork.aggregate import Addon
@@ -44,7 +44,7 @@ class FolderAddon(Addon):
 
     def obj_placed(self):
         self._obj.events.add(
-            Item.ItemAddedToFolder(
+            FolderItem.ItemAddedToFolder(
                 org_pk=self._obj.org_pk,
                 uuid=self._obj.uuid,
                 repository=self._obj.REPOSITORY,
@@ -55,7 +55,7 @@ class FolderAddon(Addon):
 
     def obj_renamed(self):
         self._obj.events.add(
-            Item.ItemRenamed(
+            FolderItem.ItemRenamed(
                 org_pk=self._obj.org_pk,
                 uuid=self._obj.uuid,
                 repository=self._obj.REPOSITORY,
@@ -67,7 +67,7 @@ class FolderAddon(Addon):
     def obj_deleted(self):
         if self._obj.folder_uuid:
             self._obj.events.add(
-                Item.ItemDeleted(
+                FolderItem.ItemDeleted(
                     org_pk=self._obj.org_pk,
                     uuid=self._obj.uuid,
                     repository=self._obj.REPOSITORY,
