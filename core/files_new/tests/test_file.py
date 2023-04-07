@@ -1,8 +1,4 @@
-import io
-import sys
-
 import pytest
-from django.core.files.uploadedfile import UploadedFile
 
 from core.data_sheets.models import Record, RecordEncryptionNew, RecordTemplate
 from core.data_sheets.use_cases.access_delivery import (
@@ -11,17 +7,6 @@ from core.data_sheets.use_cases.access_delivery import (
 from core.files_new.models import EncryptedRecordDocument
 from core.files_new.use_cases.file import put_files_inside_of_folders
 from core.seedwork.encryption import AESEncryption
-
-
-@pytest.fixture
-def file(user, folder):
-    text = "My Secret Document"
-    bytes_io = io.BytesIO(bytes(text, "utf-8"))
-    f = UploadedFile(
-        bytes_io, "secret.txt", "text/plain", sys.getsizeof(bytes_io), None
-    )
-    file = EncryptedRecordDocument.create(f, folder, user, upload=True, pk=1)
-    yield file
 
 
 def test_file_upload(file, user, folder):
