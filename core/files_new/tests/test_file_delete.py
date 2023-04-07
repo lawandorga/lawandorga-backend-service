@@ -15,9 +15,7 @@ def test_delete_removes_it_from_folder(db, user, file):
     folder.grant_access(user)
     r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
     r.save(folder)
-    file = EncryptedRecordDocument.create(
-        file=file, folder=folder, by=user
-    )
+    file = EncryptedRecordDocument.create(file=file, folder=folder, by=user)
     file.save()
     delete_a_file(user, file.uuid)
     folder = r.retrieve(user.org.pk, folder.uuid)
