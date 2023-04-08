@@ -5,8 +5,8 @@ from django.db import transaction
 
 from core.auth.domain.user_key import UserKey
 from core.auth.models import RlcUser, UserProfile
-from core.folders.domain.types import StrDict
 from core.seedwork.use_case_layer import UseCaseError, use_case
+from seedwork.types import JsonDict
 
 
 @use_case
@@ -43,7 +43,7 @@ def run_user_login_checks(__actor: UserProfile, password: str):
             rlc_user.save()
 
         # check if key is encrypted
-        key: StrDict = rlc_user.key  # type: ignore
+        key: JsonDict = rlc_user.key  # type: ignore
         u1 = UserKey.create_from_dict(key)
         if not u1.is_encrypted:
             u2 = u1.encrypt_self(password)

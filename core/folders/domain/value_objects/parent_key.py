@@ -1,18 +1,18 @@
 from typing import Optional, Union
 from uuid import UUID
 
-from core.folders.domain.types import StrDict
 from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
+from seedwork.types import JsonDict
 
 
 class ParentKey:
     TYPE = "PARENT"
 
     @staticmethod
-    def create_from_dict(d: StrDict) -> "ParentKey":
+    def create_from_dict(d: JsonDict) -> "ParentKey":
         assert (
             "key" in d
             and isinstance(d["key"], dict)
@@ -40,7 +40,7 @@ class ParentKey:
     def __str__(self):
         return "ParentKey of {}".format(self.__folder_uuid)
 
-    def as_dict(self) -> StrDict:
+    def as_dict(self) -> JsonDict:
         assert isinstance(self.__key, EncryptedSymmetricKey)
 
         return {

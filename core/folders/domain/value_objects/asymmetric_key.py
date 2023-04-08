@@ -1,6 +1,5 @@
 from typing import Optional, Union
 
-from core.folders.domain.types import StrDict
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import (
     AsymmetricEncryption,
@@ -11,6 +10,7 @@ from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
+from seedwork.types import JsonDict
 
 
 class AsymmetricKey(Key):
@@ -100,7 +100,7 @@ class EncryptedAsymmetricKey(Key):
         )
 
     @staticmethod
-    def create_from_dict(d: StrDict):
+    def create_from_dict(d: JsonDict):
         assert (
             "enc_private_key" in d
             and "public_key" in d
@@ -141,11 +141,11 @@ class EncryptedAsymmetricKey(Key):
 
         super().__init__(origin=origin)
 
-    def as_dict(self) -> StrDict:
+    def as_dict(self) -> JsonDict:
         if self.__enc_private_key is None:
             raise ValueError("The private key of this key is of type 'None'.")
 
-        data: StrDict = {
+        data: JsonDict = {
             "enc_private_key": self.__enc_private_key.as_dict(),
             "public_key": self.__public_key,
             "origin": self.origin,

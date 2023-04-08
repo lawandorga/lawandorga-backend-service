@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING, Optional, Union
 
-from core.folders.domain.types import StrDict
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import (
     AsymmetricEncryption,
@@ -8,6 +7,7 @@ from core.folders.domain.value_objects.encryption import (
     SymmetricEncryption,
 )
 from core.folders.domain.value_objects.key import Key
+from seedwork.types import JsonDict
 
 if TYPE_CHECKING:
     from core.folders.domain.value_objects.asymmetric_key import (
@@ -66,7 +66,7 @@ class EncryptedSymmetricKey(Key):
         return EncryptedSymmetricKey(enc_key=enc_key, origin=original.origin)
 
     @staticmethod
-    def create_from_dict(d: StrDict):
+    def create_from_dict(d: JsonDict):
         assert (
             "enc_key" in d
             and "origin" in d
@@ -88,7 +88,7 @@ class EncryptedSymmetricKey(Key):
 
         super().__init__(origin=origin)
 
-    def as_dict(self) -> StrDict:
+    def as_dict(self) -> JsonDict:
         return {
             "enc_key": self.__enc_key.as_dict(),
             "origin": self.origin,

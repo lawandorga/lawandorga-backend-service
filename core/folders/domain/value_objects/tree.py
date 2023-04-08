@@ -3,9 +3,9 @@ from uuid import UUID
 
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.external import IOwner
-from core.folders.domain.types import StrDict
 from core.folders.domain.value_objects.folder_key import FolderKey
 from core.folders.domain.value_objects.parent_key import ParentKey
+from seedwork.types import JsonDict
 
 
 class TreeAccess:
@@ -42,7 +42,7 @@ class TreeAccess:
             return {"REVOKE_ACCESS": {"url": url, "user_uuid": key.owner.uuid}}
         return {}
 
-    def as_dict(self) -> list[StrDict]:
+    def as_dict(self) -> list[JsonDict]:
         return self.access
 
 
@@ -55,7 +55,7 @@ class TreeFolder:
             return {"OPEN": {"uuid": self.__folder.uuid}}
         return {}
 
-    def as_dict(self, user: IOwner) -> StrDict:
+    def as_dict(self, user: IOwner) -> JsonDict:
         data = self.__folder.as_dict()
         has_access = self.__folder.has_access(user)
         data["has_access"] = has_access

@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from core.folders.domain.aggregates.item import Item
-from core.folders.domain.types import StrDict
+from seedwork.types import JsonDict
 
 
 class FolderItem:
@@ -14,7 +14,7 @@ class FolderItem:
         )
 
     @staticmethod
-    def create_from_dict(d: StrDict):
+    def create_from_dict(d: JsonDict):
         assert (
             "repository" in d
             and isinstance(d["repository"], str)
@@ -37,7 +37,7 @@ class FolderItem:
         self.uuid = uuid
         self.repository = repository
 
-    def as_dict(self) -> StrDict:
+    def as_dict(self) -> JsonDict:
         return {
             "repository": self.repository,
             "uuid": str(self.uuid),

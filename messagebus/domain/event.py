@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from messagebus.domain.data import JsonDict
+from seedwork.types import JsonDict
 
 
 class Event(BaseModel):
@@ -32,10 +32,6 @@ class Event(BaseModel):
     def action(self) -> str:
         return self._qualname_splits[1]
 
-    # @property
-    # def name(self) -> str:
-    #     return self.action
-
     @property
     def aggregate_name(self) -> str:
         return self._qualname_splits[0]
@@ -56,6 +52,12 @@ class Event(BaseModel):
 
     def set_aggregate_uuid(self, uuid: UUID) -> None:
         self.aggregate_uuid = uuid
+
+    def set_position(self, position: int) -> None:
+        self.position = position
+
+    def set_time(self, time: datetime) -> None:
+        self.time = time
 
     @classmethod
     def _get_name(cls) -> str:
@@ -87,53 +89,3 @@ class Event(BaseModel):
             else:
                 raise ValueError("unknown type in event data can not be put in data")
         return new_data
-
-
-# D = TypeVar("D", bound=EventData)
-
-
-# class Event(Generic[D], Message):
-#     def __init__(
-#         self,
-#         stream_name: str,
-#         data: JsonDict,
-#         metadata: JsonDict,
-#         position: int,
-#         time: datetime,
-#         action: str,
-#     ):
-#         super().__init__(stream_name, data, metadata, time, position, action)
-
-#     @property
-#     def data(self) -> D:
-#         from messagebus import MessageBus
-
-#         model = MessageBus.get_event_model(self.action)
-#         data = model(**self._data)
-#         return data
-
-
-# class RawEvent(Generic[D]):
-#     def __init__(self, stream_name: str, data: D, metadata: JsonDict):
-#         self.__stream_name = stream_name
-#         self.__data = data
-#         self.__metadata = metadata
-
-#     def __str__(self):
-#         return self.name
-
-#     @property
-#     def data(self) -> D:
-#         return self.__data
-
-#     @property
-#     def name(self):
-#         return self.__data.__class__.__name__
-
-#     @property
-#     def metadata(self):
-#         return self.__metadata
-
-#     @property
-#     def stream_name(self):
-#         return self.__stream_name

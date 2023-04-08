@@ -1,10 +1,9 @@
+from typing import Optional, cast
 from uuid import UUID, uuid4
 
-from folders.domain.value_objects.box import OpenBox
-
-from core.auth.models.org_user import RlcUser
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.types import StrDict
+from core.folders.domain.repositiories.folder import FolderRepository
+from core.seedwork.repository import RepositoryWarehouse
 from core.timeline.utils import camel_to_snake_case
 from messagebus import Event
 
@@ -20,9 +19,6 @@ class EventSourced:
         func = getattr(self, f"when_{action}")
         func(event)
 
-    # def generate_event(self, event: Event) -> Event:
-    #     pass
-
     def apply(self, event: Event):
         self.new_events.append(event)
         self.mutate(event)
@@ -30,24 +26,36 @@ class EventSourced:
 
 class TimelineEvent(EventSourced):
     class Created(Event):
-        text_box: StrDict
+        text: str
+        folder_uuid: UUID
+        org_pk: int
         uuid: UUID = uuid4()
 
     @classmethod
-    def create(cls, text: str, folder: Folder, by: RlcUser):
+    def create(cls, text: str, folder: Folder, org_pk: int):
         event = TimelineEvent()
-        open_box = OpenBox.create_from_string(text)
-        key = folder.get_encryption_key(requestor=by)
-        locked_box = key.lock(open_box)
-        event.apply(TimelineEvent.Created(text_box=locked_box.as_dict()))
+        event.apply(
+            TimelineEvent.Created(text=text, folder_uuid=folder.uuid, org_pk=org_pk)
+        )
+        event._folder = folder
         return event
 
     def __init__(self, events: list[Event] = []):
         super().__init__(events)
+        self._folder: Optional[Folder] = None
+
+    @property
+    def folder(self) -> Folder:
+        if self._folder is None:
+            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+            self._folder = r.retrieve(self.org_pk, self.folder_uuid)
+        return self._folder
 
     def when_created(self, event: Created):
-        # self.text = event.text
+        self.text = event.text
+        self.folder_uuid = event.folder_uuid
         self.uuid = event.uuid
+        self.org_pk = event.org_pk
 
     def when_information_updated(self, text=None):
         if text is not None:

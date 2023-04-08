@@ -1,8 +1,10 @@
 from logging import getLogger
 from typing import Callable, Optional, Type, TypeVar
+from uuid import UUID
 
 from messagebus.domain.event import Event
-from messagebus.domain.repository import MessageBusRepository
+from messagebus.domain.message import Message
+from messagebus.domain.repository import M, MessageBusRepository
 
 logger = getLogger("messagebus")
 
@@ -111,9 +113,21 @@ class MessageBus:
                 handler(message)
 
     @classmethod
-    def save_event(cls, event: Event, position: Optional[int] = None) -> Event:
-        return cls.repository.save_event(event, position)
+    def save_message(cls, event: M, position: Optional[int] = None) -> M:
+        return cls.repository.save_message(event, position)
 
     @classmethod
-    def save_command(cls, *args, **kwargs):
-        raise NotImplementedError()
+    def get_event_from_message(cls, message: Message) -> Event:
+        name = f"{message.stream_name.split('-')[0]}.{message.action}"
+        event_model = cls.get_event_model(name)
+
+        aggregate_uuid = UUID("".join(message.stream_name.split("-")[1:]))
+
+        event = event_model(
+            aggregate_uuid=aggregate_uuid,
+            position=message.position,
+            time=message.time,
+            **message.data,
+        )
+
+        return event

@@ -2,7 +2,7 @@ from typing import Any, Optional
 
 from core.seedwork.aggregate import Addon, Aggregate
 from messagebus import Event, MessageBus
-from messagebus.domain.data import JsonDict
+from seedwork.types import JsonDict
 
 
 class Object(Aggregate):
@@ -17,7 +17,7 @@ class EventsAddon(Addon):
 
     def __save(self) -> None:
         for raw_event in self.__raw_events:
-            event = MessageBus.save_event(raw_event)
+            event = MessageBus.save_message(raw_event)
             self.__events.append(event)
 
         self.__raw_events = []

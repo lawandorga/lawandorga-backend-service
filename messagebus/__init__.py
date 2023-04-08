@@ -1,4 +1,4 @@
 from . import utils
 from .domain.bus import MessageBus
-from .domain.data import JsonDict
 from .domain.event import Event
+from .domain.message import Message

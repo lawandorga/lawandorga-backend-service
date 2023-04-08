@@ -1,7 +1,7 @@
 import abc
 import base64
 
-from core.folders.domain.types import StrDict
+from seedwork.types import JsonDict
 
 
 class Box(bytes):
@@ -44,7 +44,7 @@ class LockedBox(Box):
         return data_3
 
     @staticmethod
-    def create_from_dict(d: StrDict) -> "LockedBox":
+    def create_from_dict(d: JsonDict) -> "LockedBox":
         assert (
             "enc_data" in d
             and "key_origin" in d
@@ -65,7 +65,7 @@ class LockedBox(Box):
     def __repr__(self):
         return "LockedBox({}, '{}')".format(self.__enc_data, self.__key_origin)
 
-    def as_dict(self) -> StrDict:
+    def as_dict(self) -> JsonDict:
         return {
             "enc_data": LockedBox.to_str(self.__enc_data),
             "key_origin": self.__key_origin,
@@ -85,7 +85,7 @@ class LockedBox(Box):
 
 class OpenBox(Box):
     @staticmethod
-    def create_from_dict(d: StrDict) -> "OpenBox":
+    def create_from_dict(d: JsonDict) -> "OpenBox":
         assert "data" in d and isinstance(d["data"], str)
 
         data = d["data"].encode("utf-8")
@@ -103,7 +103,7 @@ class OpenBox(Box):
     def __repr__(self):
         return "OpenBox({})".format(self.__data)
 
-    def as_dict(self) -> StrDict:  # type: ignore
+    def as_dict(self) -> JsonDict:  # type: ignore
         return {"data": self.__data.decode("utf-8")}
 
     def __hash__(self):
@@ -115,3 +115,7 @@ class OpenBox(Box):
     @property
     def value(self) -> bytes:
         return self.__data
+
+    @property
+    def value_as_str(self) -> str:
+        return self.__data.decode("utf-8")

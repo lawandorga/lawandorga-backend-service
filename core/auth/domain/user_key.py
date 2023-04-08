@@ -1,17 +1,17 @@
 from typing import Union
 
-from core.folders.domain.types import StrDict
 from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
 )
 from core.folders.domain.value_objects.box import OpenBox
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
+from seedwork.types import JsonDict
 
 
 class UserKey:
     @staticmethod
-    def create_from_unsafe_dict(d: StrDict) -> "UserKey":
+    def create_from_unsafe_dict(d: JsonDict) -> "UserKey":
         assert "type" in d and d["type"] == "USER_UNSAFE"
         assert (
             "private_key" in d
@@ -31,7 +31,7 @@ class UserKey:
         return UserKey(key)
 
     @staticmethod
-    def create_from_dict(d: StrDict) -> "UserKey":
+    def create_from_dict(d: JsonDict) -> "UserKey":
         assert "type" in d and d["type"] == "USER"
         assert ("key" in d and isinstance(d["key"], dict)) or (
             "private_key" in d
@@ -77,7 +77,7 @@ class UserKey:
     def __hash__(self):
         return hash(self.__key)
 
-    def as_dict(self) -> StrDict:
+    def as_dict(self) -> JsonDict:
         assert isinstance(self.__key, EncryptedAsymmetricKey)
 
         return {
@@ -85,7 +85,7 @@ class UserKey:
             "type": "USER",
         }
 
-    def as_unsafe_dict(self) -> StrDict:
+    def as_unsafe_dict(self) -> JsonDict:
         assert isinstance(self.__key, AsymmetricKey)
 
         return {

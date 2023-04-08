@@ -1,7 +1,6 @@
 from typing import Optional, Union
 
 from core.folders.domain.external import IOwner
-from core.folders.domain.types import StrDict
 from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
@@ -10,13 +9,14 @@ from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
+from seedwork.types import JsonDict
 
 
 class FolderKey:
     TYPE = "FOLDER"
 
     @staticmethod
-    def create_from_dict(d: StrDict, owner: IOwner) -> "FolderKey":
+    def create_from_dict(d: JsonDict, owner: IOwner) -> "FolderKey":
         assert (
             "key" in d
             and isinstance(d["key"], dict)
@@ -53,10 +53,10 @@ class FolderKey:
     def __str__(self):
         return "FolderKey of {}".format(self.__owner.uuid)
 
-    def as_dict(self) -> StrDict:
+    def as_dict(self) -> JsonDict:
         assert isinstance(self.__key, EncryptedSymmetricKey)
 
-        data: StrDict = {
+        data: JsonDict = {
             "owner": str(self.__owner.uuid),
             "key": self.__key.as_dict(),
             "type": self.TYPE,

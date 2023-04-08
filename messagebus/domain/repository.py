@@ -1,20 +1,17 @@
 import abc
-from typing import Any, Optional
+from typing import Optional, TypeVar
 
-from messagebus.domain.event import Event
+from messagebus.domain.message import Message
+
+M = TypeVar("M", bound=Message)
 
 
 class MessageBusRepository(abc.ABC):
     @classmethod
     @abc.abstractmethod
-    def save_event(
+    def save_message(
         cls,
-        event: Event,
+        event: M,
         position: Optional[int],
-    ) -> Event:
-        raise NotImplementedError()
-
-    @classmethod
-    @abc.abstractmethod
-    def save_command(cls, command: Any, position: Optional[int]) -> Any:
+    ) -> M:
         raise NotImplementedError()

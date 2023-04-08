@@ -1,13 +1,11 @@
-from typing import Any, Optional
+from typing import Optional
 from uuid import UUID
 
 from django.db import models
 from django.db.models import Max
 from django.utils import timezone
 
-from messagebus.domain.event import Event
-from messagebus.domain.repository import MessageBusRepository
-from messagebus.impl.factory import create_event_from_message
+from messagebus.domain.repository import M, MessageBusRepository
 
 
 class Message(models.Model):
@@ -39,53 +37,52 @@ class InMemoryMessageBusRepository(MessageBusRepository):
     messages: list[Message] = []
 
     @classmethod
-    def save_event(cls, event: Event, position: Optional[int] = None) -> Event:
+    def save_message(cls, m: M, position: Optional[int] = None) -> M:
         if not hasattr(cls, "messages"):
             cls.messages = []
 
         if position is None:
             position = 1
-            for m in cls.messages:
-                if m.stream_name == event.stream_name:
+            for saved_message in cls.messages:
+                if saved_message.stream_name == m.stream_name:
                     position += 1
 
         message: Message = Message(
-            stream_name=event.stream_name,
-            action=event.action,
+            stream_name=m.stream_name,
+            action=m.action,
             position=position,
-            data=event.data,
-            metadata=event.metadata,
+            data=m.data,
+            metadata=m.metadata,
         )
         cls.messages.append(message)
-        event = create_event_from_message(message)
-        return event
 
-    @classmethod
-    def save_command(cls, command: Any, position: Optional[int]) -> Any:
-        raise NotImplementedError()
+        m.set_position(message.position)
+        m.set_time(message.time)
+
+        return m
 
 
 class DjangoMessageBusRepository(MessageBusRepository):
     @classmethod
-    def save_event(cls, raw_event: Event, position: Optional[int] = None) -> Event:
+    def save_message(cls, m: M, position: Optional[int] = None) -> M:
         if position is None:
-            messages_max = Message.objects.filter(
-                stream_name=raw_event.stream_name
-            ).aggregate(max_position=Max("position"))
+            messages_max = Message.objects.filter(stream_name=m.stream_name).aggregate(
+                max_position=Max("position")
+            )
             position = (
                 messages_max["max_position"] + 1 if messages_max["max_position"] else 1
             )
 
         message = Message(
-            stream_name=raw_event.stream_name,
-            action=raw_event.action,
+            stream_name=m.stream_name,
+            action=m.action,
             position=position,
-            data=raw_event.data,
-            metadata=raw_event.metadata,
+            data=m.data,
+            metadata=m.metadata,
         )
         message.save()
-        return create_event_from_message(message)
 
-    @classmethod
-    def save_command(cls, command: Any, position: Optional[int]) -> Any:
-        raise NotImplementedError()
+        m.set_position(message.position)
+        m.set_time(message.time)
+
+        return m

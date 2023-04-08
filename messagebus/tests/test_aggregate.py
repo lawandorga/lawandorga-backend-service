@@ -14,7 +14,7 @@ class StubModel:
         events = []
 
         for raw_event in self.events:
-            event = MessageBus.save_event(raw_event)
+            event = MessageBus.save_message(raw_event)
             events.append(event)
 
         # reset the events so that a second save does not trigger them again

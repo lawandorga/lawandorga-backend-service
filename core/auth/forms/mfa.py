@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 
 from core.auth.domain.user_key import UserKey
 from core.auth.models.user import UserProfile
-from core.folders.domain.types import StrDict
+from seedwork.types import JsonDict
 
 
 class SetupMfaForm(forms.Form):
@@ -47,7 +47,7 @@ class CheckMfaForm(forms.Form):
 class MfaAuthenticationForm(forms.Form):
     code = forms.IntegerField(label="MfA Code")
 
-    def __init__(self, user_pk: int, user_key: StrDict, *args, **kwargs):
+    def __init__(self, user_pk: int, user_key: JsonDict, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user: UserProfile = get_user_model().objects.get(pk=user_pk)
         self.key = UserKey.create_from_unsafe_dict(user_key)
