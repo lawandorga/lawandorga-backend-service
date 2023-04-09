@@ -75,7 +75,9 @@ class EncryptedEvent:
         self._encrypted = False
 
 
-def encrypt_events(events: list[Event], key: SymmetricKey, fields: list[str]) -> list[EncryptedEvent]:
+def encrypt_events(
+    events: list[Event], key: SymmetricKey, fields: list[str]
+) -> list[EncryptedEvent]:
     enc_events: list[EncryptedEvent] = []
 
     for e1 in events:
@@ -84,7 +86,9 @@ def encrypt_events(events: list[Event], key: SymmetricKey, fields: list[str]) ->
     return enc_events
 
 
-def decrypt_events(events: list[EncryptedEvent], key: SymmetricKey, fields: list[str]) -> list[Event]:
+def decrypt_events(
+    events: list[EncryptedEvent], key: SymmetricKey, fields: list[str]
+) -> list[Event]:
     for e2 in events:
         e2.decrypt(key, fields)
 

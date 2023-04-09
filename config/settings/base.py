@@ -239,3 +239,6 @@ CRONJOBS = [
 
 # testing
 TESTING = os.getenv("TESTING", False)
+
+# repositories
+REPOSITORY_TIMELINE_EVENT = "core.timeline.repository.DjangoTimelineEventRepository"
