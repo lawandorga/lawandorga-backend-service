@@ -42,7 +42,7 @@ class DomainMessage(BaseModel):
     stream_name: str
     action: str
     data: dict
-    metadata: dict
+    metadata: dict = {}
     position: Optional[int] = None
     time: Optional[datetime] = None
 
