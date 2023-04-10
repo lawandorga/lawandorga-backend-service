@@ -7,7 +7,6 @@ from django.conf import settings
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.events_addon import EventsAddon
 from messagebus import Event, MessageBus
-from messagebus.impl.repository import InMemoryMessageBusRepository
 from messagebus.impl.store import InMemoryEventStore
 
 
@@ -85,7 +84,7 @@ def test_events_are_saved_atomic(inmemory):
     except ValueError:
         pass
 
-    assert len(InMemoryMessageBusRepository.messages) == 0
+    assert len(InMemoryEventStore()._messages) == 0
 
 
 def test_events_are_handled_non_atomic(inmemory):
