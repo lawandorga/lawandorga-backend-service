@@ -1,10 +1,10 @@
 from typing import Optional
-from uuid import UUID
 
 from django.db import models
 from django.db.models import Max
 from django.utils import timezone
 
+from messagebus.domain.message import DomainMessage
 from messagebus.domain.repository import M, MessageBusRepository
 
 
@@ -24,13 +24,15 @@ class Message(models.Model):
     def __str__(self):
         return f"{self.stream_name}: {self.data}"
 
-    @property
-    def _name(self):
-        return f"{self.stream_name.split('-')[0]}.{self.action}"
-
-    @property
-    def _aggregate_uuid(self):
-        return UUID("".join(self.stream_name.split("-")[1:]))
+    def to_domain_message(self):
+        return DomainMessage(
+            stream_name=self.stream_name,
+            action=self.action,
+            data=self.data,
+            metadata=self.metadata,
+            position=self.position,
+            time=self.time,
+        )
 
 
 class InMemoryMessageBusRepository(MessageBusRepository):

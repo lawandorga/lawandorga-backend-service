@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Optional, Protocol
 
+from pydantic import BaseModel
+
 from seedwork.types import JsonDict
 
 
@@ -34,3 +36,18 @@ class Message(Protocol):
 
     def set_time(self, time: datetime) -> None:
         ...
+
+
+class DomainMessage(BaseModel):
+    stream_name: str
+    action: str
+    data: dict
+    metadata: dict
+    position: Optional[int] = None
+    time: Optional[datetime] = None
+
+    def set_position(self, position: int) -> None:
+        self.position = position
+
+    def set_time(self, time: datetime) -> None:
+        self.time = time

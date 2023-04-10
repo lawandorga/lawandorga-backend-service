@@ -8,6 +8,7 @@ from core.timeline.repository import (
     InMemoryTimelineEventRepository,
     TimelineEventRepository,
 )
+from messagebus.impl.store import InMemoryEventStore
 
 
 @pytest.fixture
@@ -32,7 +33,6 @@ def test_settings_repository():
         "core.timeline.repository.InMemoryTimelineEventRepository"
     )
     r = TimelineEventRepository(None)
-    print(r)
     assert isinstance(r, InMemoryTimelineEventRepository)
 
 
@@ -43,11 +43,11 @@ def test_create():
     assert event.text == "test"
 
 
-def test_repository(in_memory):
+def test_repository():
     user = test_helpers.create_raw_org_user()
     folder = test_helpers.create_raw_folder(user)
     event1 = TimelineEvent.create(text="test", folder=folder, org_pk=user.org_id)
-    r = TimelineEventRepository(None)
+    r = InMemoryTimelineEventRepository(InMemoryEventStore())
     r.save(event1, by=user)
     event2 = r.load(event1.uuid, user, folder)
     assert event2.text == "test"

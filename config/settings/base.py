@@ -242,3 +242,6 @@ TESTING = os.getenv("TESTING", False)
 
 # repositories
 REPOSITORY_TIMELINE_EVENT = "core.timeline.repository.DjangoTimelineEventRepository"
+
+# messagebus
+MESSAGEBUS_EVENT_STORE = "messagebus.impl.store.DjangoEventStore"

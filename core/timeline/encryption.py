@@ -1,28 +1,55 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Sequence
 
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from messagebus import Event, MessageBus
+from messagebus.domain.message import Message
 from seedwork.types import JsonDict
 
 
 class EncryptedEvent:
     @classmethod
-    def create_from_event(
-        cls, event: Event, key: SymmetricKey, fields: list[str]
-    ) -> "EncryptedEvent":
-        enc_event = EncryptedEvent(event)
-        enc_event.encrypt(key, fields)
+    def create_from_event(cls, event: Event, encrypted=False) -> "EncryptedEvent":
+        enc_event = EncryptedEvent(
+            event.stream_name,
+            event.action,
+            event.data,
+            event.metadata,
+            event.time,
+            event.position,
+        )
+        enc_event._encrypted = encrypted
         return enc_event
 
-    def __init__(self, event: Event):
-        self._stream_name = event.stream_name
-        self._action = event.action
-        self._data = event.data
-        self._metadata = event.metadata
-        self._time = event.time
-        self._position = event.position
+    @classmethod
+    def create_from_message(cls, message: Message, encrypted=False) -> "EncryptedEvent":
+        enc_event = EncryptedEvent(
+            message.stream_name,
+            message.action,
+            message.data,
+            message.metadata,
+            message.time,
+            message.position,
+        )
+        enc_event._encrypted = encrypted
+        return enc_event
+
+    def __init__(
+        self,
+        stream_name: str,
+        action: str,
+        data: JsonDict,
+        metadata: JsonDict,
+        time: Optional[datetime] = None,
+        position: Optional[int] = None,
+    ):
+        self._stream_name = stream_name
+        self._action = action
+        self._data = data
+        self._metadata = metadata
+        self._time = time
+        self._position = position
         self._encrypted = False
 
     @property
@@ -75,22 +102,27 @@ class EncryptedEvent:
         self._encrypted = False
 
 
-def encrypt_events(
+def encrypt(
     events: list[Event], key: SymmetricKey, fields: list[str]
 ) -> list[EncryptedEvent]:
     enc_events: list[EncryptedEvent] = []
 
     for e1 in events:
-        enc_events.append(EncryptedEvent.create_from_event(e1, key, fields))
+        enc_event = EncryptedEvent.create_from_event(e1)
+        enc_event.encrypt(key, fields)
+        enc_events.append(enc_event)
 
     return enc_events
 
 
-def decrypt_events(
-    events: list[EncryptedEvent], key: SymmetricKey, fields: list[str]
+def decrypt(
+    messages: Sequence[Message], key: SymmetricKey, fields: list[str]
 ) -> list[Event]:
-    for e2 in events:
-        e2.decrypt(key, fields)
+    events: list[EncryptedEvent] = []
+    for m1 in messages:
+        enc_event = EncryptedEvent.create_from_message(m1, encrypted=True)
+        enc_event.decrypt(key, fields)
+        events.append(enc_event)
 
     real_events = [MessageBus.get_event_from_message(e) for e in events]
 
