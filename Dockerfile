@@ -26,6 +26,7 @@ COPY --chown=python:python --from=base /django/venv /django/venv
 COPY --chown=python:python config /django/config
 COPY --chown=python:python core /django/core
 COPY --chown=python:python messagebus /django/messagebus
+COPY --chown=python:python seedwork /django/seedwork
 COPY --chown=python:python static /django/static
 COPY --chown=python:python templates /django/templates
 COPY --chown=python:python tmp /django/tmp
