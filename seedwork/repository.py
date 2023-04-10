@@ -10,8 +10,19 @@ class SingletonRepository(abc.ABC):
     SETTING: str
     _instance: Optional["SingletonRepository"] = None
 
+    @classmethod
+    def get_setting(cls) -> str:
+        return settings.__getattr__(cls.SETTING)
+
+    @classmethod
+    def get_module(cls) -> type:
+        return import_string(cls.get_setting())
+
     def __new__(cls, *args, **kwargs):
-        if len(cls.mro()) == 5:
+        if isinstance(cls._instance, cls.mro()[0]):
+            return cls._instance
+
+        if cls._instance is None and len(cls.mro()) == 5:
             # this might look weird, because why 5?
             # the reason is we got the following resolution order:
             # InMemoryAggregateRespository -> AggreagateRepository -> SingletonRepository -> abc.ABC -> object
@@ -21,11 +32,12 @@ class SingletonRepository(abc.ABC):
             # and with import string we get the correct settings class
             # or it is also possible to use a implemented class directly
             # like InMemoryAggregateRepository() instead of AggregateRepository()
-            return super().__new__(cls)
+            cls._instance = super().__new__(cls)
+            return cls._instance
 
-        module = import_string(settings.__getattr__(cls.SETTING))
-
-        if cls._instance is None or not isinstance(cls._instance, module):
+        module = cls.get_module()
+        if not isinstance(cls._instance, module):
+            cls._instance = None
             cls._instance = module.__new__(module, *args, **kwargs)
 
         assert isinstance(cls._instance, module)

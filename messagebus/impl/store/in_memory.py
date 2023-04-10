@@ -9,7 +9,8 @@ from messagebus.domain.store import EventStore
 class InMemoryEventStore(EventStore):
     def __init__(self) -> None:
         super().__init__()
-        self.__messages: list[DomainMessage] = []
+        if not hasattr(self, "_messages"):
+            self._messages: list[DomainMessage] = []
 
     def append(self, messages: Sequence[Message], position: Optional[int] = None):
         if len(messages) == 0:
@@ -20,7 +21,7 @@ class InMemoryEventStore(EventStore):
                 list(
                     filter(
                         lambda m: m.stream_name == messages[0].stream_name,
-                        self.__messages,
+                        self._messages,
                     )
                 )
             )
@@ -39,9 +40,9 @@ class InMemoryEventStore(EventStore):
             )
             to_be_saved.append(message)
 
-        self.__messages += to_be_saved
+        self._messages += to_be_saved
 
     def load(self, stream_name: str) -> list[DomainMessage]:
-        messages1 = filter(lambda m: m.stream_name == stream_name, self.__messages)
+        messages1 = filter(lambda m: m.stream_name == stream_name, self._messages)
         messages2 = list(messages1)
         return messages2

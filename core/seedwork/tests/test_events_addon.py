@@ -2,23 +2,21 @@ from contextlib import ContextDecorator
 from uuid import uuid4
 
 import pytest
+from django.conf import settings
 
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.events_addon import EventsAddon
 from messagebus import Event, MessageBus
-from messagebus.impl.repository import (
-    DjangoMessageBusRepository,
-    InMemoryMessageBusRepository,
-)
+from messagebus.impl.repository import InMemoryMessageBusRepository
+from messagebus.impl.store import InMemoryEventStore
 
 
 @pytest.fixture
 def inmemory():
-    MessageBus.set_repository(InMemoryMessageBusRepository)
-    InMemoryMessageBusRepository.messages = []
-    MessageBus.handlers = {}
+    default = settings.MESSAGEBUS_EVENT_STORE
+    settings.MESSAGEBUS_EVENT_STORE = "messagebus.impl.store.InMemoryEventStore"
     yield
-    MessageBus.set_repository(DjangoMessageBusRepository)
+    settings.MESSAGEBUS_EVENT_STORE = default
 
 
 class Atomic(ContextDecorator):
@@ -72,7 +70,7 @@ def test_events_are_handled_and_saved(inmemory):
     car.drive(500)
     car.save()
 
-    assert miles == 500 and len(InMemoryMessageBusRepository.messages) == 1
+    assert miles == 500 and len(InMemoryEventStore()._messages) == 1
 
 
 def test_events_are_saved_atomic(inmemory):
@@ -103,4 +101,4 @@ def test_events_are_handled_non_atomic(inmemory):
     except ValueError:
         pass
 
-    assert len(InMemoryMessageBusRepository.messages) == 1
+    assert len(InMemoryEventStore()._messages) == 1

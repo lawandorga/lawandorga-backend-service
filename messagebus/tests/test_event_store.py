@@ -24,6 +24,12 @@ def test_in_memory_event_store_position():
     assert len(events) == 2 and events[0].position == 1 and events[1].position == 2
 
 
+def test_singleton_pattern():
+    r1 = InMemoryEventStore()
+    r2 = InMemoryEventStore()
+    assert r1 is r2
+
+
 def test_django_event_store_position(db):
     r = DjangoEventStore()
     events = [

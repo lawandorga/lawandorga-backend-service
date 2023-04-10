@@ -4,7 +4,7 @@ from uuid import UUID
 
 from messagebus.domain.event import Event
 from messagebus.domain.message import Message
-from messagebus.domain.repository import M, MessageBusRepository
+from messagebus.domain.repository import MessageBusRepository
 
 logger = getLogger("messagebus")
 
@@ -51,10 +51,6 @@ class MessageBus:
             return handler
 
         return wrapper
-
-    @classmethod
-    def set_repository(cls, repository: Type[MessageBusRepository]):
-        cls.repository = repository
 
     @classmethod
     def register_handler(cls, event_class: Type[Event], handler: Callable):
@@ -111,10 +107,6 @@ class MessageBus:
         if message_type in cls.handlers:
             for handler in cls.handlers[message_type]:
                 handler(message)
-
-    @classmethod
-    def save_message(cls, event: M, position: Optional[int] = None) -> M:
-        return cls.repository.save_message(event, position)
 
     @classmethod
     def get_event_from_message(cls, message: Message) -> Event:
