@@ -69,7 +69,7 @@ def test_events_are_handled_and_saved(inmemory):
     car.drive(500)
     car.save()
 
-    assert miles == 500 and len(InMemoryEventStore()._messages) == 1
+    assert miles == 500 and len(InMemoryEventStore().load(f"Car-{car.uuid}")) == 1
 
 
 def test_events_are_saved_atomic(inmemory):
@@ -84,10 +84,12 @@ def test_events_are_saved_atomic(inmemory):
     except ValueError:
         pass
 
-    assert len(InMemoryEventStore()._messages) == 0
+    assert len(InMemoryEventStore().load(f"Car-{car.uuid}")) == 0
 
 
 def test_events_are_handled_non_atomic(inmemory):
+    MessageBus.reset()
+
     @MessageBus.handler(on=Car.Driven)
     def calculate_miles(_: Car.Driven):
         assert Atomic.inside == "N"
@@ -100,4 +102,4 @@ def test_events_are_handled_non_atomic(inmemory):
     except ValueError:
         pass
 
-    assert len(InMemoryEventStore()._messages) == 1
+    assert len(InMemoryEventStore().load(f"Car-{car.uuid}")) == 1

@@ -56,6 +56,11 @@ class MessageBus:
         return wrapper
 
     @classmethod
+    def reset(cls) -> None:
+        cls.handlers = {}
+        cls.event_models = None
+
+    @classmethod
     def register_handler(cls, event_class: Type[Event], handler: Callable):
         if not issubclass(event_class, Event):
             raise TypeError(
