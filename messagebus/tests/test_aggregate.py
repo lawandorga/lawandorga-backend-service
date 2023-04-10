@@ -1,7 +1,7 @@
 from uuid import UUID, uuid4
 
 from messagebus import Event, MessageBus
-from messagebus.impl.repository import Message
+from messagebus.impl.message import Message
 
 
 class StubModel:

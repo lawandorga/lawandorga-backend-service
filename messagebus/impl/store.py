@@ -5,8 +5,7 @@ from django.utils import timezone
 
 from messagebus.domain.message import DomainMessage, Message
 from messagebus.domain.store import EventStore
-
-from .repository import Message as DjangoMessage
+from messagebus.impl.message import Message as DjangoMessage
 
 
 class InMemoryEventStore(EventStore):

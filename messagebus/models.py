@@ -1,3 +1,3 @@
-from .impl.repository import Message
+from .impl.message import Message
 
 __all__ = ["Message"]
