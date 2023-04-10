@@ -7,9 +7,8 @@ from seedwork.types import JsonDict
 
 
 class Message(Protocol):
-    @property
-    def stream_name(self) -> str:
-        pass
+    # inspired by: http://docs.eventide-project.org/user-guide/message-db/anatomy.html#messages-table
+    # stream names: http://docs.eventide-project.org/user-guide/stream-names/#parts
 
     @property
     def action(self) -> str:
@@ -39,7 +38,6 @@ class Message(Protocol):
 
 
 class DomainMessage(BaseModel):
-    stream_name: str
     action: str
     data: dict
     metadata: dict = {}

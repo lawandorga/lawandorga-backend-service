@@ -14,7 +14,12 @@ class EventStore(SingletonRepository):
 
     SETTING = "MESSAGEBUS_EVENT_STORE"
 
-    def append(self, messages: Sequence[Message], position: Optional[int] = None):
+    def append(
+        self,
+        stream_name: str,
+        messages: Sequence[Message],
+        position: Optional[int] = None,
+    ):
         raise NotImplementedError()
 
     def load(self, stream_name: str) -> list[DomainMessage]:

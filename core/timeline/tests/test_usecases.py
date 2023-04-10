@@ -16,14 +16,18 @@ def test_repository():
 def test_create_raw():
     user = test_helpers.create_raw_org_user()
     folder = test_helpers.create_raw_folder(user)
-    event = TimelineEvent.create(text="test", folder=folder, org_pk=user.org_id)
+    event = TimelineEvent.create(
+        text="test", folder=folder, org_pk=user.org_id, by=user.uuid
+    )
     assert event.text == "test"
 
 
 def test_create_in_memory():
     user = test_helpers.create_raw_org_user()
     folder = test_helpers.create_raw_folder(user)
-    event1 = TimelineEvent.create(text="test", folder=folder, org_pk=user.org_id)
+    event1 = TimelineEvent.create(
+        text="test", folder=folder, org_pk=user.org_id, by=user.uuid
+    )
     r = EventStoreTimelineEventRepository(InMemoryEventStore())
     r.save(event1, by=user)
     event2 = r.load(event1.uuid, user, folder)
@@ -33,7 +37,9 @@ def test_create_in_memory():
 def test_create_in_db(db):
     user = test_helpers.create_raw_org_user()
     folder = test_helpers.create_raw_folder(user)
-    event1 = TimelineEvent.create(text="test", folder=folder, org_pk=user.org_id)
+    event1 = TimelineEvent.create(
+        text="test", folder=folder, org_pk=user.org_id, by=user.uuid
+    )
     r = EventStoreTimelineEventRepository(DjangoEventStore())
     r.save(event1, by=user)
     event2 = r.load(event1.uuid, user, folder)

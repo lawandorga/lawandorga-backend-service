@@ -8,7 +8,12 @@ from messagebus.impl.message import Message as DjangoMessage
 
 
 class DjangoEventStore(EventStore):
-    def append(self, messages: Sequence[Message], position: Optional[int] = None):
+    def append(
+        self,
+        stream_name: str,
+        messages: Sequence[Message],
+        position: Optional[int] = None,
+    ):
         if len(messages) == 0:
             return
 
@@ -16,7 +21,7 @@ class DjangoEventStore(EventStore):
 
         if position is None:
             messages_max = DjangoMessage.objects.filter(
-                stream_name=messages[0].stream_name
+                stream_name=stream_name
             ).aggregate(max_position=Max("position"))
             position = (
                 messages_max["max_position"] + 1 if messages_max["max_position"] else 1
@@ -24,7 +29,7 @@ class DjangoEventStore(EventStore):
 
         for message in messages:
             message_to_save = DjangoMessage(
-                stream_name=message.stream_name,
+                stream_name=stream_name,
                 action=message.action,
                 position=position,
                 data=message.data,

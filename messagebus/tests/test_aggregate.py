@@ -15,7 +15,8 @@ class StubModel:
         events = []
 
         for raw_event in self.events:
-            EventStore().append([raw_event])
+            stream_name = f"{self.__class__.__name__}-{self.uuid}"
+            EventStore().append(stream_name, [raw_event])
             events.append(raw_event)
 
         # reset the events so that a second save does not trigger them again

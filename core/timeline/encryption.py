@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Optional, Sequence
+from uuid import UUID
 
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
@@ -12,7 +13,6 @@ class EncryptedEvent:
     @classmethod
     def create_from_event(cls, event: Event, encrypted=False) -> "EncryptedEvent":
         enc_event = EncryptedEvent(
-            event.stream_name,
             event.action,
             event.data,
             event.metadata,
@@ -25,7 +25,6 @@ class EncryptedEvent:
     @classmethod
     def create_from_message(cls, message: Message, encrypted=False) -> "EncryptedEvent":
         enc_event = EncryptedEvent(
-            message.stream_name,
             message.action,
             message.data,
             message.metadata,
@@ -37,24 +36,18 @@ class EncryptedEvent:
 
     def __init__(
         self,
-        stream_name: str,
         action: str,
         data: JsonDict,
         metadata: JsonDict,
         time: Optional[datetime] = None,
         position: Optional[int] = None,
     ):
-        self._stream_name = stream_name
         self._action = action
         self._data = data
         self._metadata = metadata
         self._time = time
         self._position = position
         self._encrypted = False
-
-    @property
-    def stream_name(self) -> str:
-        return self._stream_name
 
     @property
     def action(self) -> str:
@@ -116,7 +109,11 @@ def encrypt(
 
 
 def decrypt(
-    messages: Sequence[Message], key: SymmetricKey, fields: list[str]
+    aggregate_name: str,
+    aggregate_uuid: UUID,
+    messages: Sequence[Message],
+    key: SymmetricKey,
+    fields: list[str],
 ) -> list[Event]:
     events: list[EncryptedEvent] = []
     for m1 in messages:
@@ -124,6 +121,9 @@ def decrypt(
         enc_event.decrypt(key, fields)
         events.append(enc_event)
 
-    real_events = [MessageBus.get_event_from_message(e) for e in events]
+    real_events = [
+        MessageBus.get_event_from_message(aggregate_name, aggregate_uuid, e)
+        for e in events
+    ]
 
     return real_events

@@ -117,11 +117,11 @@ class MessageBus:
                 handler(message)
 
     @classmethod
-    def get_event_from_message(cls, message: Message) -> Event:
-        name = f"{message.stream_name.split('-')[0]}.{message.action}"
+    def get_event_from_message(
+        cls, aggregate_name: str, aggregate_uuid: UUID, message: Message
+    ) -> Event:
+        name = f"{aggregate_name}.{message.action}"
         event_model = cls.get_event_model(name)
-
-        aggregate_uuid = UUID("".join(message.stream_name.split("-")[1:]))
 
         event = event_model(
             aggregate_uuid=aggregate_uuid,

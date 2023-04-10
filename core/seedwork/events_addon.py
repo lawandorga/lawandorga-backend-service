@@ -17,9 +17,10 @@ class EventsAddon(Addon):
         self.__events: list[Event] = []
 
     def __save(self) -> None:
+        stream_name = f"{self._obj.__class__.__name__}-{self._obj.uuid}"
         for raw_event in self.__raw_events:
             store = EventStore()
-            store.append([raw_event])
+            store.append(stream_name, [raw_event])
             self.__events.append(raw_event)
 
         self.__raw_events = []

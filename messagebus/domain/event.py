@@ -37,12 +37,6 @@ class Event(BaseModel):
         return self._qualname_splits[0]
 
     @property
-    def stream_name(self) -> str:
-        if self.aggregate_uuid is None:
-            raise ValueError("Streamname can not be generated without aggregate_uuid.")
-        return f"{self.aggregate_name}-{self.aggregate_uuid}"
-
-    @property
     def data(self) -> JsonDict:
         return self._clean_data(self.dict())
 

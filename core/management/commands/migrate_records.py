@@ -44,7 +44,7 @@ class Command(BaseCommand):
 
                 self.stdout.write(f"Working on sheet: {sheet.id}")
 
-                folder: FoldersFolder = folders[sheet.folder_uuid]
+                folder = folders[sheet.folder_uuid]
 
                 if folder.uuid not in created_records_inside_folders_uuids:
                     record = RecordsRecord(

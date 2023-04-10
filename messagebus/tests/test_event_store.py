@@ -16,10 +16,10 @@ def test_settings_repository():
 def test_in_memory_event_store_position():
     r = InMemoryEventStore()
     events = [
-        DomainMessage(stream_name="test", action="action1", data={"this": "that"}),
-        DomainMessage(stream_name="test", action="action2", data={"this": "that"}),
+        DomainMessage(action="action1", data={"this": "that"}),
+        DomainMessage(action="action2", data={"this": "that"}),
     ]
-    r.append(events)
+    r.append("test", events)
     events = r.load("test")
     assert len(events) == 2 and events[0].position == 1 and events[1].position == 2
 
@@ -33,18 +33,18 @@ def test_singleton_pattern():
 def test_django_event_store_position(db):
     r = DjangoEventStore()
     events = [
-        DomainMessage(stream_name="test", action="action1", data={"this": "that"}),
-        DomainMessage(stream_name="test", action="action2", data={"this": "that"}),
+        DomainMessage(action="action1", data={"this": "that"}),
+        DomainMessage(action="action2", data={"this": "that"}),
     ]
-    r.append(events)
-    events = r.load("test")
+    r.append("teststream", events)
+    events = r.load("teststream")
     assert len(events) == 2 and events[0].position == 1 and events[1].position == 2
 
 
 def test_empty_array(db):
     r1 = DjangoEventStore()
     assert isinstance(r1, DjangoEventStore)
-    r1.append([])
+    r1.append("none", [])
     r2 = InMemoryEventStore()
     assert isinstance(r2, InMemoryEventStore)
-    r2.append([])
+    r2.append("none", [])
