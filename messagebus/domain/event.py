@@ -63,7 +63,7 @@ class Event(BaseModel):
     def _get_name(cls) -> str:
         parts = cls.__qualname__.split(".")
         if len(parts) < 2:
-            return "later"
+            raise ValueError(f"The Event '{cls}' is not nested correctly.")
         return f"{parts[-2]}.{parts[-1]}"
 
     @staticmethod

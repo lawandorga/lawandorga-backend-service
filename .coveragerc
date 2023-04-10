@@ -13,6 +13,9 @@ omit =
     runserver.py
     u.py
 
+exclude_lines =
+    # see: https://github.com/pytest-dev/pytest-cov/issues/428#issuecomment-821063750
+
     # Skip any pass lines such as may be used for @abstractmethod
     pass
 

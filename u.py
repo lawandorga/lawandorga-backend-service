@@ -23,14 +23,18 @@ class A:
 class B(A):
     def __new__(cls, *args, **kwargs):
         print("B.__new__", cls, cls.mro())
+        cls.test = "B"
         return super().__new__(cls)
 
 
 class C(B):
     def __new__(cls, *args, **kwargs):
         print("C.__new__", cls, cls.mro())
+        cls.test = "C"
         return super().__new__(cls)
 
 
 c = C()
+print(c.test)
 b = B()
+print(c.test)

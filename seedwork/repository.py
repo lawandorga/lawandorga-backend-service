@@ -22,7 +22,7 @@ class SingletonRepository(abc.ABC):
         if type(cls._instance) == cls.mro()[0]:
             return cls._instance
 
-        if cls._instance is None and len(cls.mro()) == 5:
+        if len(cls.mro()) == 5:
             # this might look weird, because why 5?
             # the reason is we got the following resolution order:
             # InMemoryAggregateRespository -> AggreagateRepository -> SingletonRepository -> abc.ABC -> object

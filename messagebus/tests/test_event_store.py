@@ -39,3 +39,12 @@ def test_django_event_store_position(db):
     r.append(events)
     events = r.load("test")
     assert len(events) == 2 and events[0].position == 1 and events[1].position == 2
+
+
+def test_empty_array(db):
+    r1 = DjangoEventStore()
+    assert isinstance(r1, DjangoEventStore)
+    r1.append([])
+    r2 = InMemoryEventStore()
+    assert isinstance(r2, InMemoryEventStore)
+    r2.append([])

@@ -9,33 +9,33 @@ from seedwork.types import JsonDict
 class Message(Protocol):
     @property
     def stream_name(self) -> str:
-        ...
+        pass
 
     @property
     def action(self) -> str:
-        ...
+        pass
 
     @property
     def data(self) -> JsonDict:
-        ...
+        pass
 
     @property
     def metadata(self) -> JsonDict:
-        ...
+        pass
 
     @property
     def position(self) -> Optional[int]:
-        ...
+        pass
 
     @property
     def time(self) -> Optional[datetime]:
-        ...
+        pass
 
     def set_position(self, position: int) -> None:
-        ...
+        pass
 
     def set_time(self, time: datetime) -> None:
-        ...
+        pass
 
 
 class DomainMessage(BaseModel):
