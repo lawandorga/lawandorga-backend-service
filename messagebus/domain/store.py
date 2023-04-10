@@ -7,6 +7,8 @@ M = TypeVar("M", bound=Message)
 
 
 class EventStore(SingletonRepository):
+    SETTING = "MESSAGEBUS_EVENT_STORE"
+
     def append(self, messages: Sequence[Message], position: Optional[int] = None):
         raise NotImplementedError()
 

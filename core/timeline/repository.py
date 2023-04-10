@@ -12,11 +12,6 @@ class TimelineEventRepository(SingletonRepository):
     IDENTIFIER = "TIMELINE_EVENT"
     ENCRYPTED = ["text"]
     SETTING = "REPOSITORY_TIMELINE_EVENT"
-    CLASS = "TimelineEventRepository"
-
-    def __init__(self, event_store: EventStore) -> None:
-        super().__init__()
-        self._event_store = event_store
 
     def save(self, event: TimelineEvent, by: RlcUser) -> None:
         raise NotImplementedError()
@@ -25,7 +20,11 @@ class TimelineEventRepository(SingletonRepository):
         raise NotImplementedError()
 
 
-class InMemoryTimelineEventRepository(TimelineEventRepository):
+class EventStoreTimelineEventRepository(TimelineEventRepository):
+    def __init__(self, event_store: EventStore) -> None:
+        super().__init__()
+        self._event_store = event_store
+
     def save(self, event: TimelineEvent, by: RlcUser):
         folder = event.folder
         key = folder.get_encryption_key(requestor=by)
@@ -36,7 +35,6 @@ class InMemoryTimelineEventRepository(TimelineEventRepository):
 
     def load(self, uuid: UUID, by: RlcUser, folder: Folder):
         messages = self._event_store.load(f"TimelineEvent-{uuid}")
-        print(messages)
 
         if len(messages) == 0:
             raise ValueError(f"TimelineEvent with uuid {uuid} does not exist.")
@@ -49,11 +47,3 @@ class InMemoryTimelineEventRepository(TimelineEventRepository):
         event = TimelineEvent(events)
 
         return event
-
-
-class DjangoTimelineEventRepository(TimelineEventRepository):
-    def save(self, event: TimelineEvent, by: RlcUser):
-        raise NotImplementedError()
-
-    def load(self, uuid: UUID, by: RlcUser, folder: Folder) -> TimelineEvent:
-        raise NotImplementedError()
