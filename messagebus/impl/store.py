@@ -3,8 +3,9 @@ from typing import Optional, Sequence
 from django.db.models import Max
 
 from messagebus.domain.message import DomainMessage, Message
-from .repository import Message as DjangoMessage
 from messagebus.domain.store import EventStore
+
+from .repository import Message as DjangoMessage
 
 
 class InMemoryEventStore(EventStore):
@@ -17,7 +18,14 @@ class InMemoryEventStore(EventStore):
             return
 
         if position is None:
-            position = len(list(filter(lambda m: m.stream_name == messages[0].stream_name, self.__messages)))
+            position = len(
+                list(
+                    filter(
+                        lambda m: m.stream_name == messages[0].stream_name,
+                        self.__messages,
+                    )
+                )
+            )
 
         to_be_saved: list[DjangoMessage] = []
 
@@ -69,7 +77,9 @@ class DjangoEventStore(EventStore):
         DjangoMessage.objects.bulk_create(messages_to_save)
 
     def load(self, stream_name: str) -> list[DomainMessage]:
-        messages1 = DjangoMessage.objects.filter(stream_name=stream_name).order_by("position")
+        messages1 = DjangoMessage.objects.filter(stream_name=stream_name).order_by(
+            "position"
+        )
         messages2 = list(messages1)
         messages3 = [m.to_domain_message() for m in messages2]
         return messages3
