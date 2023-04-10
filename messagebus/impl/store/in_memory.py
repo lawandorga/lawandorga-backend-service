@@ -45,4 +45,3 @@ class InMemoryEventStore(EventStore):
         messages1 = filter(lambda m: m.stream_name == stream_name, self.__messages)
         messages2 = list(messages1)
         return messages2
-

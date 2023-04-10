@@ -1,6 +1,7 @@
 from uuid import UUID, uuid4
 
 from messagebus import Event, MessageBus
+from messagebus.domain.store import EventStore
 from messagebus.impl.message import Message
 
 
@@ -14,8 +15,8 @@ class StubModel:
         events = []
 
         for raw_event in self.events:
-            event = MessageBus.save_message(raw_event)
-            events.append(event)
+            EventStore().append([raw_event])
+            events.append(raw_event)
 
         # reset the events so that a second save does not trigger them again
         self.events = []
