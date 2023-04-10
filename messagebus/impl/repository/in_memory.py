@@ -1,7 +1,7 @@
 from typing import Optional
 
-from messagebus.impl.message import Message
 from messagebus.domain.repository import M, MessageBusRepository
+from messagebus.impl.message import Message
 
 
 class InMemoryMessageBusRepository(MessageBusRepository):

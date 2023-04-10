@@ -2,8 +2,8 @@ from typing import Optional
 
 from django.db.models import Max
 
-from messagebus.impl.message import Message
 from messagebus.domain.repository import M, MessageBusRepository
+from messagebus.impl.message import Message
 
 
 class DjangoMessageBusRepository(MessageBusRepository):
