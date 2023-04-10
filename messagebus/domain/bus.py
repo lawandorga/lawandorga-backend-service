@@ -4,7 +4,6 @@ from uuid import UUID
 
 from messagebus.domain.event import Event
 from messagebus.domain.message import Message
-from messagebus.domain.repository import MessageBusRepository
 
 logger = getLogger("messagebus")
 
@@ -13,8 +12,12 @@ E = TypeVar("E", bound=Event)
 
 
 class MessageBus:
+    """
+    The MessageBus is the central point of the messagebus package.
+    It is responsible for registering handlers and dispatching events to them.
+    """
+
     handlers: dict[Type[Event], set[Callable]] = {}
-    repository: Type[MessageBusRepository]
     event_models: Optional[dict[str, Type[Event]]] = None
 
     @classmethod
