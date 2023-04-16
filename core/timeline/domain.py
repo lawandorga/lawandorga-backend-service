@@ -33,21 +33,38 @@ class TimelineEvent(EventSourced):
         by: UUID
 
     class InformationUpdated(Event):
+        uuid: UUID
         text: Optional[str] = None
         by: UUID
 
     class Deleted(Event):
+        uuid: UUID
         by: UUID
 
     @classmethod
-    def create(cls, text: str, folder: Folder, org_pk: int, by: UUID):
+    def create(
+        cls,
+        text: str,
+        org_pk: int,
+        by: UUID,
+        folder: Optional[Folder] = None,
+        folder_uuid: Optional[UUID] = None,
+    ):
+        assert folder is not None or folder_uuid is not None
+        if folder is not None:
+            folder_uuid = folder.uuid  # type: ignore
+        assert folder_uuid is not None
+
         event = TimelineEvent()
         event.apply(
             TimelineEvent.Created(
-                text=text, folder_uuid=folder.uuid, org_pk=org_pk, by=by
+                text=text, folder_uuid=folder_uuid, org_pk=org_pk, by=by
             )
         )
-        event._folder = folder
+
+        if folder is not None:
+            event._folder = folder
+
         return event
 
     def __init__(self, events: list[Event] = []):

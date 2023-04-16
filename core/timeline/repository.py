@@ -19,23 +19,24 @@ class TimelineEventRepository(SingletonRepository):
     def load(self, uuid: UUID, by: RlcUser, folder: Folder) -> TimelineEvent:
         raise NotImplementedError()
 
+    def list(self, folder: Folder, by: RlcUser) -> list[TimelineEvent]:
+        raise NotImplementedError()
+
 
 class EventStoreTimelineEventRepository(TimelineEventRepository):
     def __init__(self, event_store: EventStore) -> None:
         super().__init__()
         self._event_store = event_store
 
-    def save(self, event: TimelineEvent, by: RlcUser):
-        stream_name = f"TimelineEvent-{event.uuid}+{event.org_pk}"
+    def save(self, event: TimelineEvent, by: RlcUser) -> None:
+        stream_name = f"TimelineEvent-{event.uuid}+{event.folder_uuid}"
         folder = event.folder
         key = folder.get_encryption_key(requestor=by)
-        for e in event.new_events:
-            e.set_aggregate_uuid(event.uuid)
         enc_events = encrypt(event.new_events, key, self.ENCRYPTED)
         self._event_store.append(stream_name, enc_events)
 
-    def load(self, uuid: UUID, by: RlcUser, folder: Folder):
-        stream_name = f"TimelineEvent-{uuid}+{folder.org_pk}"
+    def load(self, uuid: UUID, by: RlcUser, folder: Folder) -> TimelineEvent:
+        stream_name = f"TimelineEvent-{uuid}+{folder.uuid}"
 
         messages = self._event_store.load(stream_name)
 
@@ -45,8 +46,25 @@ class EventStoreTimelineEventRepository(TimelineEventRepository):
         assert str(folder.uuid) == messages[0].data["folder_uuid"]
         key = folder.get_encryption_key(requestor=by)
 
-        events = decrypt("TimelineEvent", uuid, messages, key, self.ENCRYPTED)
+        events = decrypt("TimelineEvent", messages, key, self.ENCRYPTED)
 
         event = TimelineEvent(events)
 
         return event
+
+    def list(self, folder: Folder, by: RlcUser) -> list[TimelineEvent]:
+        stream_name = f"TimelineEvent-%+{folder.uuid}"
+        messages = self._event_store.load(stream_name)
+
+        key = folder.get_encryption_key(requestor=by)
+
+        events = decrypt("TimelineEvent", messages, key, self.ENCRYPTED)
+
+        timeline_events: dict[UUID, TimelineEvent] = {}
+
+        for event in events:
+            if event.uuid not in timeline_events:
+                timeline_events[event.uuid] = TimelineEvent([])
+            timeline_events[event.uuid].mutate(event)
+
+        return list(timeline_events.values())

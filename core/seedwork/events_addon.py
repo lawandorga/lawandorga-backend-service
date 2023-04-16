@@ -32,7 +32,6 @@ class EventsAddon(Addon):
         self.__events = []
 
     def add(self, event: Event, metadata: Optional[JsonDict] = None):
-        event.set_aggregate_uuid(self._obj.uuid)
         self.__raw_events.append(event)
 
     on_save = [__save]

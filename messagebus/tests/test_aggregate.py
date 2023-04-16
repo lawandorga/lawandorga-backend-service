@@ -27,7 +27,6 @@ class StubModel:
             MessageBus.handle(event)
 
     def add_event(self, event: Event, metadata: dict):
-        event.set_aggregate_uuid(self.uuid)
         self.events.append(event)
 
 

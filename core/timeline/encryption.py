@@ -1,6 +1,5 @@
 from datetime import datetime
 from typing import Optional, Sequence
-from uuid import UUID
 
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
@@ -110,7 +109,6 @@ def encrypt(
 
 def decrypt(
     aggregate_name: str,
-    aggregate_uuid: UUID,
     messages: Sequence[Message],
     key: SymmetricKey,
     fields: list[str],
@@ -121,9 +119,6 @@ def decrypt(
         enc_event.decrypt(key, fields)
         events.append(enc_event)
 
-    real_events = [
-        MessageBus.get_event_from_message(aggregate_name, aggregate_uuid, e)
-        for e in events
-    ]
+    real_events = [MessageBus.get_event_from_message(aggregate_name, e) for e in events]
 
     return real_events

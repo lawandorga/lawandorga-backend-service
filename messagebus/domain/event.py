@@ -8,7 +8,6 @@ from seedwork.types import JsonDict
 
 
 class Event(BaseModel):
-    aggregate_uuid: Optional[UUID] = None
     position: Optional[int] = None
     time: Optional[datetime] = None
 
@@ -43,9 +42,6 @@ class Event(BaseModel):
     @property
     def metadata(self) -> JsonDict:
         return {}
-
-    def set_aggregate_uuid(self, uuid: UUID) -> None:
-        self.aggregate_uuid = uuid
 
     def set_position(self, position: int) -> None:
         self.position = position

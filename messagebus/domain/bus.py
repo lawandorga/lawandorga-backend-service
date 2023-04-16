@@ -1,6 +1,5 @@
 from logging import getLogger
 from typing import Callable, Optional, Type, TypeVar
-from uuid import UUID
 
 from messagebus.domain.event import Event
 from messagebus.domain.message import Message
@@ -117,14 +116,11 @@ class MessageBus:
                 handler(message)
 
     @classmethod
-    def get_event_from_message(
-        cls, aggregate_name: str, aggregate_uuid: UUID, message: Message
-    ) -> Event:
+    def get_event_from_message(cls, aggregate_name: str, message: Message) -> Event:
         name = f"{aggregate_name}.{message.action}"
         event_model = cls.get_event_model(name)
 
         event = event_model(
-            aggregate_uuid=aggregate_uuid,
             position=message.position,
             time=message.time,
             **message.data,

@@ -1,16 +1,19 @@
 import abc
-from typing import Type, Union
+from typing import Any, Type, TypeVar, Union
 
 
 class Repository(abc.ABC):
     IDENTIFIER: str
 
 
+T = TypeVar("T", bound=Repository)
+
+
 class RepositoryWarehouse:
-    repositories: dict[str, Type[Repository]] = {}
+    repositories: dict[str, Type[Any]] = {}
 
     @classmethod
-    def get(cls, item: Union[str, Type[Repository]]) -> Type[Repository]:
+    def get(cls, item: Union[str, Type[T]]) -> Type[T]:
         if isinstance(item, str):
             identifier = item
         elif issubclass(item, Repository):
@@ -20,7 +23,7 @@ class RepositoryWarehouse:
         return cls.repositories[identifier]
 
     @classmethod
-    def add_repository(cls, repository: Type[Repository]):
+    def add_repository(cls, repository: Type[T]):
         if (
             repository.IDENTIFIER in cls.repositories
             and cls.repositories[repository.IDENTIFIER] != repository
