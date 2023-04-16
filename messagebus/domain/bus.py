@@ -121,9 +121,8 @@ class MessageBus:
         event_model = cls.get_event_model(name)
 
         event = event_model(
-            position=message.position,
-            time=message.time,
             **message.data,
+            metadata=message.metadata,
         )
 
         return event

@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import Optional, Sequence
+from typing import Any, Optional, Sequence
 
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
@@ -15,8 +14,6 @@ class EncryptedEvent:
             event.action,
             event.data,
             event.metadata,
-            event.time,
-            event.position,
         )
         enc_event._encrypted = encrypted
         return enc_event
@@ -27,8 +24,6 @@ class EncryptedEvent:
             message.action,
             message.data,
             message.metadata,
-            message.time,
-            message.position,
         )
         enc_event._encrypted = encrypted
         return enc_event
@@ -37,24 +32,16 @@ class EncryptedEvent:
         self,
         action: str,
         data: JsonDict,
-        metadata: JsonDict,
-        time: Optional[datetime] = None,
-        position: Optional[int] = None,
+        metadata: dict[str, Any],
     ):
         self._action = action
         self._data = data
         self._metadata = metadata
-        self._time = time
-        self._position = position
         self._encrypted = False
 
     @property
     def action(self) -> str:
         return self._action
-
-    @property
-    def time(self) -> Optional[datetime]:
-        return self._time
 
     @property
     def data(self) -> JsonDict:
@@ -65,14 +52,11 @@ class EncryptedEvent:
         return self._metadata
 
     @property
-    def position(self) -> Optional[int]:
-        return self._position
+    def stream_name(self) -> Optional[str]:
+        return self._metadata.get("stream_name")
 
-    def set_position(self, position: int) -> None:
-        self._position = position
-
-    def set_time(self, time: datetime) -> None:
-        self._time = time
+    def add_to_metadata(self, key: str, value: Any) -> None:
+        self._metadata[key] = value
 
     def encrypt(self, key: SymmetricKey, fields: list[str]):
         for field in fields:
@@ -119,6 +103,9 @@ def decrypt(
         enc_event.decrypt(key, fields)
         events.append(enc_event)
 
-    real_events = [MessageBus.get_event_from_message(aggregate_name, e) for e in events]
+    real_events: list[Event] = []
+    for e in events:
+        real_event = MessageBus.get_event_from_message(aggregate_name, e)
+        real_events.append(real_event)
 
     return real_events

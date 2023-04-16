@@ -45,5 +45,11 @@ class DjangoEventStore(EventStore):
             "position"
         )
         messages2 = list(messages1)
-        messages3 = [m.to_domain_message() for m in messages2]
+        messages3: list[DomainMessage] = []
+        for message1 in messages2:
+            message2 = message1.to_domain_message()
+            message2.add_to_metadata("position", message1.position)
+            message2.add_to_metadata("time", message1.time)
+            message2.add_to_metadata("stream_name", message1.stream_name)
+            messages3.append(message2)
         return messages3

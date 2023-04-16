@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import Optional, Protocol
+from typing import Any, Protocol
 
 from pydantic import BaseModel
 
@@ -22,18 +21,7 @@ class Message(Protocol):
     def metadata(self) -> JsonDict:
         pass
 
-    @property
-    def position(self) -> Optional[int]:
-        pass
-
-    @property
-    def time(self) -> Optional[datetime]:
-        pass
-
-    def set_position(self, position: int) -> None:
-        pass
-
-    def set_time(self, time: datetime) -> None:
+    def add_to_metadata(self, key: str, value: Any) -> None:
         pass
 
 
@@ -41,11 +29,6 @@ class DomainMessage(BaseModel):
     action: str
     data: dict
     metadata: dict = {}
-    position: Optional[int] = None
-    time: Optional[datetime] = None
 
-    def set_position(self, position: int) -> None:
-        self.position = position
-
-    def set_time(self, time: datetime) -> None:
-        self.time = time
+    def add_to_metadata(self, key: str, value: Any) -> None:
+        self.metadata[key] = value

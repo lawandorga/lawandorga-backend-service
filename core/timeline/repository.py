@@ -60,11 +60,12 @@ class EventStoreTimelineEventRepository(TimelineEventRepository):
 
         events = decrypt("TimelineEvent", messages, key, self.ENCRYPTED)
 
-        timeline_events: dict[UUID, TimelineEvent] = {}
+        timeline_events: dict[str, TimelineEvent] = {}
 
         for event in events:
-            if event.uuid not in timeline_events:
-                timeline_events[event.uuid] = TimelineEvent([])
-            timeline_events[event.uuid].mutate(event)
+            stream_name = event.metadata["stream_name"]
+            if stream_name not in timeline_events:
+                timeline_events[stream_name] = TimelineEvent([])
+            timeline_events[stream_name].mutate(event)
 
         return list(timeline_events.values())

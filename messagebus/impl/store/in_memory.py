@@ -25,20 +25,23 @@ class InMemoryEventStore(EventStore):
             position = 1
             if stream_name in self._messages and len(self._messages[stream_name]):
                 last_message: DomainMessage = self._messages[stream_name][-1]
-                if last_message.position is None:
+                if last_message.metadata["position"] is None:
                     raise ValueError("Last message has no position.")
-                position = (last_message).position + 1
+                position = last_message.metadata["position"] + 1
 
         to_be_saved: list[DomainMessage] = []
+
+        assert position is not None
 
         for event in messages:
             message = DomainMessage(
                 action=event.action,
-                position=position,
                 data=event.data,
                 metadata=event.metadata,
-                time=timezone.now(),
             )
+            message.metadata["position"] = position
+            message.metadata["time"] = timezone.now()
+            message.metadata["stream_name"] = stream_name
             to_be_saved.append(message)
             position += 1
 

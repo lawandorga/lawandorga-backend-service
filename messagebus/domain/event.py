@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import Optional
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -8,8 +7,7 @@ from seedwork.types import JsonDict
 
 
 class Event(BaseModel):
-    position: Optional[int] = None
-    time: Optional[datetime] = None
+    metadata: dict = {}
 
     def __str__(self):
         return self.action
@@ -39,16 +37,6 @@ class Event(BaseModel):
     def data(self) -> JsonDict:
         return self._clean_data(self.dict())
 
-    @property
-    def metadata(self) -> JsonDict:
-        return {}
-
-    def set_position(self, position: int) -> None:
-        self.position = position
-
-    def set_time(self, time: datetime) -> None:
-        self.time = time
-
     @classmethod
     def _get_name(cls) -> str:
         parts = cls.__qualname__.split(".")
@@ -61,7 +49,7 @@ class Event(BaseModel):
         new_data: JsonDict = {}
         for key, item in data.items():
             assert isinstance(key, str)
-            if key == "aggregate_uuid":
+            if key == "metadata":
                 continue
             elif isinstance(item, UUID):
                 new_data[key] = str(item)
@@ -79,3 +67,6 @@ class Event(BaseModel):
             else:
                 raise ValueError("unknown type in event data can not be put in data")
         return new_data
+
+    def add_to_metadata(self, key: str, value: Any) -> None:
+        self.metadata[key] = value
