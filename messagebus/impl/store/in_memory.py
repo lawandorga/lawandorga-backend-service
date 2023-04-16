@@ -50,10 +50,18 @@ class InMemoryEventStore(EventStore):
 
         self._messages[stream_name] += to_be_saved
 
-    def load(self, stream_name: str) -> list[DomainMessage]:
-        try:
-            messages1 = self._messages[stream_name]
-        except KeyError:
-            return []
-        messages2 = list(messages1)
-        return messages2
+    def load(self, stream_name: str, exact=True) -> list[DomainMessage]:
+        if exact:
+            try:
+                messages1 = self._messages[stream_name]
+            except KeyError:
+                return []
+            messages2 = list(messages1)
+            return messages2
+
+        else:
+            messages: list[DomainMessage] = []
+            for key in self._messages:
+                if stream_name in key:
+                    messages += self._messages[key]
+            return messages

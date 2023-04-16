@@ -35,3 +35,21 @@ def test_create_in_db(db):
     r.save(event1, by=user)
     event2 = r.load(event1.uuid, user, folder)
     assert event2.text == "test"
+
+
+def test_list_in_memory():
+    user = test_helpers.create_raw_org_user()
+    folder = test_helpers.create_raw_folder(user)
+    event1 = TimelineEvent.create(
+        text="test", folder=folder, org_pk=user.org_id, by=user.uuid
+    )
+    event2 = TimelineEvent.create(
+        text="test2", folder=folder, org_pk=user.org_id, by=user.uuid
+    )
+    assert event1.uuid != event2.uuid
+    r = EventStoreTimelineEventRepository(InMemoryEventStore())
+    r.save(event1, by=user)
+    r.save(event2, by=user)
+    events = r.list(folder, user)
+    assert len(events) == 2
+    assert events[0].text == "test" and events[1].text == "test2"

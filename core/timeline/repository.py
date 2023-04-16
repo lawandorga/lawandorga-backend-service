@@ -29,14 +29,14 @@ class EventStoreTimelineEventRepository(TimelineEventRepository):
         self._event_store = event_store
 
     def save(self, event: TimelineEvent, by: RlcUser) -> None:
-        stream_name = f"TimelineEvent-{event.uuid}+{event.folder_uuid}"
+        stream_name = f"TimelineEvent-{event.folder_uuid}+{event.uuid}"
         folder = event.folder
         key = folder.get_encryption_key(requestor=by)
         enc_events = encrypt(event.new_events, key, self.ENCRYPTED)
         self._event_store.append(stream_name, enc_events)
 
     def load(self, uuid: UUID, by: RlcUser, folder: Folder) -> TimelineEvent:
-        stream_name = f"TimelineEvent-{uuid}+{folder.uuid}"
+        stream_name = f"TimelineEvent-{folder.uuid}+{uuid}"
 
         messages = self._event_store.load(stream_name)
 
@@ -53,8 +53,8 @@ class EventStoreTimelineEventRepository(TimelineEventRepository):
         return event
 
     def list(self, folder: Folder, by: RlcUser) -> list[TimelineEvent]:
-        stream_name = f"TimelineEvent-%+{folder.uuid}"
-        messages = self._event_store.load(stream_name)
+        stream_name = f"TimelineEvent-{folder.uuid}+"
+        messages = self._event_store.load(stream_name, exact=False)
 
         key = folder.get_encryption_key(requestor=by)
 

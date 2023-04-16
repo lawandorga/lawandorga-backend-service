@@ -1,6 +1,8 @@
 from typing import Optional, cast
 from uuid import UUID, uuid4
 
+from pydantic import Field
+
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.seedwork.repository import RepositoryWarehouse
@@ -29,7 +31,7 @@ class TimelineEvent(EventSourced):
         text: str
         folder_uuid: UUID
         org_pk: int
-        uuid: UUID = uuid4()
+        uuid: UUID = Field(default_factory=uuid4)
         by: UUID
 
     class InformationUpdated(Event):

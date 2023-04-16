@@ -93,3 +93,23 @@ def test_metadata_contains_time_position_and_stream_name(db):
             and events[0].metadata["time"] is not None
         )
         i += 1
+
+
+def test_like_query(db):
+    r = DjangoEventStore()
+    events = [
+        DomainMessage(action="action1", data={"this": "that"}),
+    ]
+    r.append("testlike1", events)
+    events = r.load("testli", exact=False)
+    assert len(events) == 1
+
+
+def test_like_query_memory(db):
+    r = DjangoEventStore()
+    events = [
+        DomainMessage(action="action1", data={"this": "that"}),
+    ]
+    r.append("testab1", events)
+    events = r.load("testab", exact=False)
+    assert len(events) == 1

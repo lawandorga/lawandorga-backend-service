@@ -22,5 +22,5 @@ class EventStore(SingletonRepository):
     ):
         raise NotImplementedError()
 
-    def load(self, stream_name: str) -> list[DomainMessage]:
+    def load(self, stream_name: str, exact=True) -> list[DomainMessage]:
         raise NotImplementedError()

@@ -1,6 +1,6 @@
 from typing import Optional, Sequence
 
-from django.db.models import Max
+from django.db.models import Max, Q
 
 from messagebus.domain.message import DomainMessage, Message
 from messagebus.domain.store import EventStore
@@ -40,10 +40,12 @@ class DjangoEventStore(EventStore):
 
         DjangoMessage.objects.bulk_create(messages_to_save)
 
-    def load(self, stream_name: str) -> list[DomainMessage]:
-        messages1 = DjangoMessage.objects.filter(stream_name=stream_name).order_by(
-            "position"
-        )
+    def load(self, stream_name: str, exact=True) -> list[DomainMessage]:
+        if exact:
+            query_filter = Q(stream_name=stream_name)
+        else:
+            query_filter = Q(stream_name__contains=stream_name)
+        messages1 = DjangoMessage.objects.filter(query_filter).order_by("position")
         messages2 = list(messages1)
         messages3: list[DomainMessage] = []
         for message1 in messages2:
