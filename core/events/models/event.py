@@ -1,16 +1,24 @@
 from typing import List
 
 from django.db import models
+from django.db.models import Q
 
 from core.auth.models import RlcUser
 from core.rlc.models import Org
 
 
 class EventsEvent(models.Model):
+    LEVEL_CHOICES = [
+        ("ORG", "Organization"),
+        ("META", "Meta"),
+        ("GLOBAL", "Global"),
+    ]
+
     org = models.ForeignKey(Org, related_name="events", on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    is_global = models.BooleanField(default=False)  # level
+    is_global = models.BooleanField(default=False)  # deprecated: remove after migration
+    level = models.CharField(max_length=200, choices=LEVEL_CHOICES, default="ORG")
     name = models.CharField(null=False, max_length=200)
     description = models.TextField(blank=True, default="")
     start_time = models.DateTimeField()
@@ -21,17 +29,12 @@ class EventsEvent(models.Model):
 
     @staticmethod
     def get_all_events_for_user(rlc_user: RlcUser):
-        raw_events: List[EventsEvent] = (
-            list(
-                EventsEvent.objects.filter(org=rlc_user.org)
-                | EventsEvent.objects.filter(is_global=True).filter(
-                    org__meta=rlc_user.org.meta
-                )
-            )
-            if (rlc_user.org.meta is not None)
-            else list(EventsEvent.objects.filter(org=rlc_user.org))
+        events = EventsEvent.objects.filter(
+            Q(org=rlc_user.org)
+            | Q(level="GLOBAL")
+            | Q(level="META", org__meta=rlc_user.org.meta)
         )
-        return raw_events
+        return events
 
     def update_information(
         self,

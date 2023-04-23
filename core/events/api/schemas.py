@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 
@@ -25,6 +25,7 @@ class OutputEventResponse(BaseModel):
     start_time: datetime
     end_time: datetime
     org: OutputRlc
+    level: str
 
     class Config:
         orm_mode = True
@@ -34,9 +35,9 @@ class OutputEventResponse(BaseModel):
 
 
 class InputEventCreate(BaseModel):
-    is_global: bool = False
     name: str
     description: str = ""
+    level: Literal["ORG", "META", "GLOBAL"]
     start_time: datetime
     end_time: datetime
 

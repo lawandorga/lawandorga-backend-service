@@ -17,10 +17,9 @@ from core.seedwork.api_layer import ApiError, Router
 router = Router()
 
 
-@router.api(output_schema=List[OutputEventResponse])
+@router.api(output_schema=list[OutputEventResponse])
 def get_all_events_for_user(rlc_user: RlcUser):
-    events: List[OutputEventResponse] = EventsEvent.get_all_events_for_user(rlc_user)
-    return events
+    return list(EventsEvent.get_all_events_for_user(rlc_user))
 
 
 @router.api(
@@ -34,7 +33,7 @@ def create_event(data: InputEventCreate, rlc_user: RlcUser):
         attributes={"a": ["href"]},
     )
     event = org_list[0].events.create(
-        is_global=data.is_global,
+        level=data.level,
         name=data.name,
         description=clean_description,
         start_time=data.start_time,
