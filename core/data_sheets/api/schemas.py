@@ -204,6 +204,7 @@ class OutputRecordDetail(BaseModel):
     client: Optional[OutputClient]
     fields: list[OutputField]
     entries: dict[str, OutputDetailEntry]
+    template_name: str
 
 
 class OutputRecord(BaseModel):

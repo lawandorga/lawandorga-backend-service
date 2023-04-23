@@ -151,6 +151,7 @@ def query__record(rlc_user: RlcUser, data: schemas.InputQueryRecord):
         "client": client,
         "fields": record.template.get_fields_new(),
         "entries": record.get_entries(rlc_user),
+        "template_name": record.template.name,
     }
 
 
