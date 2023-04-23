@@ -37,7 +37,7 @@ def create_a_record_and_a_folder(
     __actor: RlcUser,
     name: str,
     template_id: int,
-):
+) -> UUID:
     template = template_from_id(__actor, template_id)
 
     folder_repository = cast(
@@ -66,7 +66,7 @@ def create_a_data_sheet_within_a_folder(
     name: str,
     folder_uuid: UUID,
     template_id: int,
-):
+) -> UUID:
     folder = folder_from_uuid(__actor, folder_uuid)
     template = template_from_id(__actor, template_id)
 
@@ -80,7 +80,7 @@ def create_a_data_sheet_within_a_folder(
 
 def __create(
     __actor: RlcUser, name: str, folder: Folder, template: RecordTemplate
-) -> int:
+) -> UUID:
     access_granted = False
     for user in list(__actor.org.users.all()):
         should_access = user.has_permission(PERMISSION_RECORDS_ACCESS_ALL_RECORDS)
@@ -100,7 +100,7 @@ def __create(
     record.generate_key(__actor)
     record.save()
 
-    return record.id
+    return record.uuid
 
 
 @use_case

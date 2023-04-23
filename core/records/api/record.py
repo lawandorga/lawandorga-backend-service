@@ -12,10 +12,10 @@ router = Router()
 def command__create_record(rlc_user: RlcUser, data: schemas.InputCreateRecord):
     folder_uuid = create_record(rlc_user, data.token)
     if data.template is not None:
-        create_a_data_sheet_within_a_folder(
+        record_uuid = create_a_data_sheet_within_a_folder(
             rlc_user, data.token, folder_uuid, data.template
         )
-    return {"folder_uuid": folder_uuid}
+    return {"folder_uuid": folder_uuid, "record_uuid": record_uuid}
 
 
 @router.put(url="<uuid:uuid>/change_token/")
