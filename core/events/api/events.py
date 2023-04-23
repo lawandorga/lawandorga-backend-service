@@ -1,5 +1,3 @@
-from typing import List
-
 import bleach
 from django.core.exceptions import ObjectDoesNotExist
 
