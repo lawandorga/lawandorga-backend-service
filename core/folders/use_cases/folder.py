@@ -26,11 +26,10 @@ def get_repository() -> FolderRepository:
 def create_folder(__actor: RlcUser, name: str, parent: Optional[UUID]):
     r = get_repository()
     folder = Folder.create(name=name, org_pk=__actor.org_id)
+    folder.grant_access(to=__actor)
     if parent:
         parent_folder = r.retrieve(__actor.org_id, parent)
         folder.set_parent(parent=parent_folder, by=__actor)
-    else:
-        folder.grant_access(to=__actor)
     r.save(folder)
 
 
