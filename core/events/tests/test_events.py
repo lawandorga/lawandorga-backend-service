@@ -20,7 +20,7 @@ class TestEvents(TestCase):
             org=self.rlc,
             name="Test Event",
             description="",
-            is_global=False,
+            level="ORG",
             start_time=timezone.now(),
             end_time=timezone.now(),
         )
@@ -28,7 +28,7 @@ class TestEvents(TestCase):
             org=self.rlc2,
             name="Test Event 2",
             description="",
-            is_global=True,
+            level="META",
             start_time=timezone.now(),
             end_time=timezone.now(),
         )
@@ -36,7 +36,7 @@ class TestEvents(TestCase):
             org=self.rlc2,
             name="Test Event 3",
             description="",
-            is_global=False,
+            level="ORG",
             start_time=timezone.now(),
             end_time=timezone.now(),
         )
@@ -44,7 +44,7 @@ class TestEvents(TestCase):
             org=self.other_org,
             name="Test Event of other meta org",
             description="",
-            is_global=True,
+            level="META",
             start_time=timezone.now(),
             end_time=timezone.now(),
         )
@@ -62,7 +62,7 @@ class TestEvents(TestCase):
         event_data = {
             "name": "Test Event Create",
             "description": "",
-            "is_global": False,
+            "level": "ORG",
             "start_time": timezone.now().isoformat(),
             "end_time": timezone.now().isoformat(),
         }
