@@ -52,7 +52,7 @@ class InputChangeRecordToken(BaseModel):
 
 class OutputCreateRecord(BaseModel):
     folder_uuid: UUID
-    record_uuid: UUID
+    record_uuid: UUID | None
 
 
 class OutputRecord(BaseModel):

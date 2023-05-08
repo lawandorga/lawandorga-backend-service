@@ -87,7 +87,7 @@ def test_grant_to_users_with_general_permission(
         folder_uuid=folder.uuid,
         template_id=record_template["template"].pk,
     )
-    folder_uuid = Record.objects.get(id=record_id).folder_uuid
+    folder_uuid = Record.objects.get(uuid=record_id).folder_uuid
 
     assert folder_repo.retrieve(folder.org_pk, folder_uuid).has_access(
         another_user["rlc_user"]
@@ -109,7 +109,7 @@ def test_grant_to_users_with_general_permission_two(
         "record123",
         template_id=record_template["template"].pk,
     )
-    folder_uuid = Record.objects.get(id=record_id).folder_uuid
+    folder_uuid = Record.objects.get(uuid=record_id).folder_uuid
 
     assert folder_repo.retrieve(folder.org_pk, folder_uuid).has_access(
         another_user["rlc_user"]

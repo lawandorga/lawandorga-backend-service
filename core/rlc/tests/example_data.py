@@ -482,10 +482,10 @@ def create_informative_record(main_user, main_user_password, users, rlc):
 
     # create the informative record
     template = RecordTemplate.objects.filter(rlc=rlc).first()
-    pk = create_a_record_and_a_folder(
+    uuid = create_a_record_and_a_folder(
         main_user.rlc_user, "Informative Record", template.pk
     )
-    record = Record.objects.get(pk=pk)
+    record = Record.objects.get(uuid=uuid)
 
     record_users = [choice(users), main_user]
     aes_key = AESEncryption.generate_secure_key()

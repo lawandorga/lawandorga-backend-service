@@ -109,4 +109,4 @@ class TestEvents(TestCase):
 
     def test_ics_calendar(self):
         ics_cal = self.user_1["rlc_user"].get_ics_calendar()
-        assert ics_cal.count("\n") == 17
+        assert ics_cal.count("BEGIN:VEVENT") == 2
