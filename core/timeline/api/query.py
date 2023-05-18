@@ -1,6 +1,3 @@
-from django.db import connection
-
-from core.auth.models import StatisticUser
 from core.auth.models.org_user import RlcUser
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.seedwork.api_layer import Router
