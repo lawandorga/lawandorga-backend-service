@@ -5,6 +5,7 @@ tmp/media
 tmp/cache
 /.idea
 .c9/
+.kubeconfig
 .settings/
 .pytest_cache/
 staticfiles/

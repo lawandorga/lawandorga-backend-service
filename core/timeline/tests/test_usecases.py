@@ -2,7 +2,11 @@ from uuid import uuid4
 
 from core.seedwork import test_helpers
 from core.timeline.domain import TimelineEvent
-from core.timeline.use_cases import create_timeline_event
+from core.timeline.use_cases import (
+    create_timeline_event,
+    delete_timeline_event,
+    update_timeline_event,
+)
 
 
 def test_create_raw():
@@ -37,3 +41,19 @@ def test_created_events_uuid_different():
     e1 = TimelineEvent.Created(text="test", by=uuid4(), folder_uuid=uuid4(), org_pk=1)
     e2 = TimelineEvent.Created(text="test", by=uuid4(), folder_uuid=uuid4(), org_pk=1)
     assert e1.uuid != e2.uuid
+
+
+def test_update(db):
+    user = test_helpers.create_rlc_user()["rlc_user"]
+    folder = test_helpers.create_folder(user=user)["folder"]
+    event1 = create_timeline_event(user, "test", folder.uuid)
+    event2 = update_timeline_event(user, event1.uuid, "test2", folder.uuid)
+    assert event2.text == "test2"
+
+
+def test_delete(db):
+    user = test_helpers.create_rlc_user()["rlc_user"]
+    folder = test_helpers.create_folder(user=user)["folder"]
+    event1 = create_timeline_event(user, "test", folder.uuid)
+    event2 = delete_timeline_event(user, event1.uuid, folder.uuid)
+    assert event2.deleted

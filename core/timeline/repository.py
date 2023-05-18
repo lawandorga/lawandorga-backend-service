@@ -68,4 +68,6 @@ class EventStoreTimelineEventRepository(TimelineEventRepository):
                 timeline_events[stream_name] = TimelineEvent([])
             timeline_events[stream_name].mutate(event)
 
-        return list(timeline_events.values())
+        final_events = [e for e in timeline_events.values() if not e.deleted]
+
+        return final_events

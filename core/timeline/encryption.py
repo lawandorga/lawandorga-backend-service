@@ -60,6 +60,8 @@ class EncryptedEvent:
 
     def encrypt(self, key: SymmetricKey, fields: list[str]):
         for field in fields:
+            if field not in self._data:
+                continue
             value = self._data[field]
             if not isinstance(value, str):
                 raise ValueError(
@@ -71,6 +73,8 @@ class EncryptedEvent:
 
     def decrypt(self, key: SymmetricKey, fields: list[str]):
         for field in fields:
+            if field not in self._data:
+                continue
             value = self._data[field]
             locked_box = LockedBox.create_from_dict(value)  # type: ignore
             box = key.unlock(locked_box)
