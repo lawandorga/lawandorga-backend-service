@@ -218,6 +218,7 @@ class Org(EncryptedModelMixin, models.Model):
         }
 
     def force_delete(self):
+        from core.auth.models import UserProfile
         from core.data_sheets.models import Record
         from core.files.models import File
 
@@ -231,7 +232,11 @@ class Org(EncryptedModelMixin, models.Model):
         for c in self.collab_documents.all():
             c.delete()
         # delete users
-        for u in self.rlc_members.all():
+        user_ids = []
+        for u in self.users.all():
+            user_ids.append(u.user_id)
+            u.delete()
+        for u in list(UserProfile.objects.filter(id__in=user_ids)):
             u.delete()
         # delete self
         self.delete()
