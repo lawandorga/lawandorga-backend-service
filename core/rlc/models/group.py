@@ -41,7 +41,7 @@ class Group(models.Model):
 
     @property
     def member_ids(self) -> list[int]:
-        return self.members.values_list("id", flat=True)
+        return list(self.members.values_list("id", flat=True))
 
     def update_information(
         self, name: str | None = None, description: str | None = None
