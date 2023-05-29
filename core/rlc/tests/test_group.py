@@ -31,7 +31,7 @@ def user_2(db, org):
 def user(db, group, user_2, org):
     user_1 = data.create_rlc_user(rlc=org)
     org.generate_keys()
-    group._members.add(user_1["rlc_user"])
+    group.members.add(user_1["rlc_user"])
     group.save()
     yield user_1
 
