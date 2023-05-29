@@ -25,7 +25,11 @@ def test_group_update_information(group):
     assert group.name == "New Name" and group.description == "New Description"
 
 
-def test_add_member_and_remove(group, user):
+def test_add_member_and_remove(db, group, user):
+    user.user.save()
+    user.org.save()
+    user.save()
+    group.save()
     group.add_member(user)
     group.remove_member(user)
     assert not group.has_member(user)
