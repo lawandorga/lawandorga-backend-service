@@ -16,7 +16,6 @@ def create_default_record_template(rlc):
         template = RecordTemplate.objects.create(
             name="Default Record Template", rlc=rlc
         )
-        RecordStandardField.objects.create(template=template, order=10, name="Token")
         RecordStandardField.objects.create(
             template=template, order=20, name="First contact date", field_type="DATE"
         )
