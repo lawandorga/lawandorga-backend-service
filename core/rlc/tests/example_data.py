@@ -421,7 +421,7 @@ def create_records(users, rlc):
     created_records = []
     for record in records:
         # create
-        created_record = Record.objects.create(template=template)
+        created_record = Record.objects.create(template=template, name=record[2])
         # first contact date
         field = RecordStandardField.objects.get(
             template=template, name="First contact date"
@@ -435,11 +435,6 @@ def create_records(users, rlc):
         )
         RecordStandardEntry.objects.create(
             record=created_record, field=field, value=record[1]
-        )
-        # token
-        field = RecordStandardField.objects.get(template=template, name="Token")
-        RecordStandardEntry.objects.create(
-            record=created_record, field=field, value=record[2]
         )
         # official note
         field = RecordStandardField.objects.get(template=template, name="Official Note")
@@ -507,9 +502,6 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     RecordStandardEntry.objects.create(
         record=record, field=field, value="2019-03-11T09:32:21"
     )
-    # token
-    field = RecordStandardField.objects.get(template=template, name="Token")
-    RecordStandardEntry.objects.create(field=field, record=record, value="AZ-001/18")
     # state
     field = RecordStateField.objects.get(template=template, name="State")
     RecordStateEntry.objects.create(field=field, record=record, value="Open")
