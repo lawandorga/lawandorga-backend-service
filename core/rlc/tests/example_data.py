@@ -263,7 +263,7 @@ def create_groups(rlc: Org, users: List[UserProfile]):
     )
 
     for i in range(0, randint(0, len(users))):
-        users_group._members.add(users[i].rlc_user)
+        users_group.members.add(users[i].rlc_user)
 
     # create ag group
     ag_group = Group.objects.create(
@@ -274,7 +274,7 @@ def create_groups(rlc: Org, users: List[UserProfile]):
     )
 
     for i in range(0, randint(0, int(len(users) / 2))):
-        ag_group._members.add(users[i].rlc_user)
+        ag_group.members.add(users[i].rlc_user)
 
     # return
     return [users_group, ag_group]
@@ -288,7 +288,7 @@ def create_admin_group(rlc: Org, main_user: UserProfile):
         visible=False,
         description="haben alle Berechtigungen",
     )
-    admin_group._members.add(main_user.rlc_user)
+    admin_group.members.add(main_user.rlc_user)
 
     add_permissions_to_group(admin_group, static.PERMISSION_ADMIN_MANAGE_PERMISSIONS)
     add_permissions_to_group(admin_group, static.PERMISSION_ADMIN_MANAGE_GROUPS)

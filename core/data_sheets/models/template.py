@@ -270,7 +270,7 @@ class RecordUsersField(RecordField):
     @property
     def options(self):
         if self.group:
-            users = list(self.group._members.all())
+            users = list(self.group.members.all())
         else:
             users = list(self.template.rlc.users.all())
 

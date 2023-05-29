@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from django.db import models, transaction
+from django.db import models
 
 from core.rlc.models.org import Org
 from core.seedwork.domain_layer import DomainError
@@ -16,7 +16,6 @@ class Group(models.Model):
         group.description = description if description is not None else ""
         if pk:
             group.pk = pk
-        group._members_list = []
         return group
 
     from_rlc = models.ForeignKey(
@@ -24,7 +23,7 @@ class Group(models.Model):
     )
     name = models.CharField(max_length=200, null=False)
     visible = models.BooleanField(null=False, default=True)
-    _members = models.ManyToManyField("RlcUser", related_name="groups", blank=True)
+    members = models.ManyToManyField("RlcUser", related_name="groups", blank=True)
     description = models.TextField(blank=True, null=True)
 
     class Meta:
@@ -41,21 +40,8 @@ class Group(models.Model):
         return self.group_has_permission.order_by("permission__name")
 
     @property
-    def members(self):
-        if not hasattr(self, "_members_list"):
-            self._members_list = list(self._members.all())
-        return self._members_list
-
-    @property
-    def member_ids(self):
-        return list(map(lambda x: x.pk, self.members))
-
-    def save(self, *args, **kwargs):
-        with transaction.atomic():
-            super().save(*args, **kwargs)
-            self._members.clear()
-            for member in self.members:
-                self._members.add(member)
+    def member_ids(self) -> list[int]:
+        return self.members.values_list("id", flat=True)
 
     def update_information(
         self, name: str | None = None, description: str | None = None
@@ -75,7 +61,7 @@ class Group(models.Model):
         if self.has_member(new_member):
             raise DomainError("The user is already a member of this group.")
 
-        self.members.append(new_member)
+        self.members.add(new_member)
 
     def remove_member(self, member: "RlcUser"):
         if not self.has_member(member):
