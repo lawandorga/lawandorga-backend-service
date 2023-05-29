@@ -159,9 +159,11 @@ class DjangoFolderRepository(FolderRepository):
     def get_or_create_records_folder(cls, org_pk: int, user: IOwner) -> Folder:
         name = "Records"
         if FoldersFolder.objects.filter(
-            org_id=org_pk, name=name, _parent=None
+            org_id=org_pk, name=name, _parent=None, deleted=False
         ).exists():
-            fs = FoldersFolder.objects.filter(org_id=org_pk, name=name, _parent=None)
+            fs = FoldersFolder.objects.filter(
+                org_id=org_pk, name=name, _parent=None, deleted=False
+            )
             f1 = fs[0]
             if len(fs) > 1:
                 for f2 in fs:
