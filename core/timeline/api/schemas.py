@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -10,6 +11,14 @@ class InputTimelineList(BaseModel):
 class InputTimelineEventCreate(BaseModel):
     folder_uuid: UUID
     text: str
+    time: datetime
+
+
+class InputTimelineEventUpdate(BaseModel):
+    uuid: UUID
+    folder_uuid: UUID
+    text: str | None = None
+    time: datetime | None = None
 
 
 class InputTimelineEventDelete(BaseModel):
@@ -21,6 +30,7 @@ class OutputTimelineEvent(BaseModel):
     uuid: UUID
     text: str
     deleted: bool
+    time: datetime
 
     class Config:
         orm_mode = True

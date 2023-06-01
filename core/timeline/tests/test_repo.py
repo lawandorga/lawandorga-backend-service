@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from core.seedwork import test_helpers
 from core.timeline.domain import TimelineEvent
 from core.timeline.repository import (
@@ -17,7 +19,11 @@ def test_create_in_memory():
     user = test_helpers.create_raw_org_user()
     folder = test_helpers.create_raw_folder(user)
     event1 = TimelineEvent.create(
-        text="test", folder=folder, org_pk=user.org_id, by=user.uuid
+        text="test",
+        folder=folder,
+        org_pk=user.org_id,
+        by=user.uuid,
+        time=timezone.now(),
     )
     r = EventStoreTimelineEventRepository(InMemoryEventStore())
     r.save(event1, by=user)
@@ -29,7 +35,11 @@ def test_create_in_db(db):
     user = test_helpers.create_raw_org_user()
     folder = test_helpers.create_raw_folder(user)
     event1 = TimelineEvent.create(
-        text="test", folder=folder, org_pk=user.org_id, by=user.uuid
+        text="test",
+        folder=folder,
+        org_pk=user.org_id,
+        by=user.uuid,
+        time=timezone.now(),
     )
     r = EventStoreTimelineEventRepository(DjangoEventStore())
     r.save(event1, by=user)

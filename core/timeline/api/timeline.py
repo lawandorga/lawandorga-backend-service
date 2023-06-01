@@ -1,6 +1,10 @@
 from core.auth.models.org_user import RlcUser
 from core.seedwork.api_layer import Router
-from core.timeline.use_cases import create_timeline_event, delete_timeline_event
+from core.timeline.use_cases import (
+    create_timeline_event,
+    delete_timeline_event,
+    update_timeline_event,
+)
 
 from . import schemas
 
@@ -11,7 +15,14 @@ router = Router()
 def command__create_timeline_event(
     rlc_user: RlcUser, data: schemas.InputTimelineEventCreate
 ):
-    create_timeline_event(rlc_user, data.text, data.folder_uuid)
+    create_timeline_event(rlc_user, data.text, data.time, data.folder_uuid)
+
+
+@router.post("update/")
+def command__update_timeline_event(
+    rlc_user: RlcUser, data: schemas.InputTimelineEventUpdate
+):
+    update_timeline_event(rlc_user, data.uuid, data.text, data.time, data.folder_uuid)
 
 
 @router.post("delete/")

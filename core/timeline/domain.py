@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, cast
 from uuid import UUID, uuid4
 
@@ -29,6 +30,7 @@ class EventSourced:
 class TimelineEvent(EventSourced):
     class Created(Event):
         text: str
+        time: datetime = datetime(year=2023, month=1, day=1)
         folder_uuid: UUID
         org_pk: int
         uuid: UUID = Field(default_factory=uuid4)
@@ -37,6 +39,7 @@ class TimelineEvent(EventSourced):
     class InformationUpdated(Event):
         uuid: UUID
         text: Optional[str] = None
+        time: Optional[datetime] = None
         by: UUID
 
     class Deleted(Event):
@@ -47,6 +50,7 @@ class TimelineEvent(EventSourced):
     def create(
         cls,
         text: str,
+        time: datetime,
         org_pk: int,
         by: UUID,
         folder: Optional[Folder] = None,
@@ -60,7 +64,7 @@ class TimelineEvent(EventSourced):
         event = TimelineEvent()
         event.apply(
             TimelineEvent.Created(
-                text=text, folder_uuid=folder_uuid, org_pk=org_pk, by=by
+                text=text, folder_uuid=folder_uuid, org_pk=org_pk, by=by, time=time
             )
         )
 
@@ -85,11 +89,14 @@ class TimelineEvent(EventSourced):
         self.folder_uuid = event.folder_uuid
         self.uuid = event.uuid
         self.org_pk = event.org_pk
+        self.time = event.time
         self.deleted = False
 
     def when_information_updated(self, event: InformationUpdated):
         if event.text is not None:
             self.text = event.text
+        if event.time is not None:
+            self.time = event.time
 
     def when_deleted(self, event: Deleted):
         self.text = ""

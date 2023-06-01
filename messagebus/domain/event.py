@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 
@@ -53,6 +54,8 @@ class Event(BaseModel):
                 continue
             elif isinstance(item, UUID):
                 new_data[key] = str(item)
+            elif isinstance(item, datetime):
+                new_data[key] = item.isoformat()
             elif (
                 isinstance(item, str)
                 or isinstance(item, int)
