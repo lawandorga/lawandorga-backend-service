@@ -51,10 +51,18 @@ def test_list_in_memory():
     user = test_helpers.create_raw_org_user()
     folder = test_helpers.create_raw_folder(user)
     event1 = TimelineEvent.create(
-        text="test", folder=folder, org_pk=user.org_id, by=user.uuid
+        text="test",
+        folder=folder,
+        org_pk=user.org_id,
+        by=user.uuid,
+        time=timezone.now(),
     )
     event2 = TimelineEvent.create(
-        text="test2", folder=folder, org_pk=user.org_id, by=user.uuid
+        text="test2",
+        folder=folder,
+        org_pk=user.org_id,
+        by=user.uuid,
+        time=timezone.now(),
     )
     assert event1.uuid != event2.uuid
     r = EventStoreTimelineEventRepository(InMemoryEventStore())
