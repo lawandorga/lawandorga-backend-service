@@ -16,7 +16,7 @@ jobs:
         run: |
           aws configure set plugins.endpoint awscli_plugin_endpoint
           aws configure << EOF
-          ${{ secrets.S3_ACCESS_KEY }}
+          ${{ secrets.S3_ACCESS_TOKEN }}
           ${{ secrets.S3_SECRET_KEY }}
           fr-par
 
