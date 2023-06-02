@@ -76,6 +76,9 @@ class EncryptedEvent:
             if field not in self._data:
                 continue
             value = self._data[field]
+            if not isinstance(value, dict):
+                self._data[field] = value
+                continue
             locked_box = LockedBox.create_from_dict(value)  # type: ignore
             box = key.unlock(locked_box)
             self._data[field] = box.value_as_str

@@ -10,7 +10,7 @@ from seedwork.repository import SingletonRepository
 
 class TimelineEventRepository(SingletonRepository):
     IDENTIFIER = "TIMELINE_EVENT"
-    ENCRYPTED = ["text"]
+    ENCRYPTED = ["text", "title", "time"]
     SETTING = "REPOSITORY_TIMELINE_EVENT"
 
     def save(self, event: TimelineEvent, by: RlcUser) -> None:
