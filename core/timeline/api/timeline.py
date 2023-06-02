@@ -15,18 +15,31 @@ router = Router()
 def command__create_timeline_event(
     rlc_user: RlcUser, data: schemas.InputTimelineEventCreate
 ):
-    create_timeline_event(rlc_user, data.text, data.time, data.folder_uuid)
+    create_timeline_event(
+        rlc_user,
+        title=data.title,
+        text=data.text,
+        time=data.time,
+        folder_uuid=data.folder_uuid,
+    )
 
 
 @router.post("update/")
 def command__update_timeline_event(
     rlc_user: RlcUser, data: schemas.InputTimelineEventUpdate
 ):
-    update_timeline_event(rlc_user, data.uuid, data.text, data.time, data.folder_uuid)
+    update_timeline_event(
+        rlc_user,
+        uuid=data.uuid,
+        title=data.title,
+        text=data.text,
+        time=data.time,
+        folder_uuid=data.folder_uuid,
+    )
 
 
 @router.post("delete/")
 def command__delete_timeline_event(
     rlc_user: RlcUser, data: schemas.InputTimelineEventDelete
 ):
-    delete_timeline_event(rlc_user, data.uuid, data.folder_uuid)
+    delete_timeline_event(rlc_user, uuid=data.uuid, folder_uuid=data.folder_uuid)

@@ -30,6 +30,7 @@ class EventSourced:
 class TimelineEvent(EventSourced):
     class Created(Event):
         text: str
+        title: str = ""
         time: datetime = datetime(year=2023, month=1, day=1)
         folder_uuid: UUID
         org_pk: int
@@ -40,6 +41,7 @@ class TimelineEvent(EventSourced):
         uuid: UUID
         text: Optional[str] = None
         time: Optional[datetime] = None
+        title: Optional[str] = None
         by: UUID
 
     class Deleted(Event):
@@ -49,6 +51,7 @@ class TimelineEvent(EventSourced):
     @classmethod
     def create(
         cls,
+        title: str,
         text: str,
         time: datetime,
         org_pk: int,
@@ -64,7 +67,12 @@ class TimelineEvent(EventSourced):
         event = TimelineEvent()
         event.apply(
             TimelineEvent.Created(
-                text=text, folder_uuid=folder_uuid, org_pk=org_pk, by=by, time=time
+                text=text,
+                folder_uuid=folder_uuid,
+                org_pk=org_pk,
+                by=by,
+                time=time,
+                title=title,
             )
         )
 
@@ -90,6 +98,7 @@ class TimelineEvent(EventSourced):
         self.uuid = event.uuid
         self.org_pk = event.org_pk
         self.time = event.time
+        self.title = event.title
         self.deleted = False
 
     def when_information_updated(self, event: InformationUpdated):
@@ -97,7 +106,10 @@ class TimelineEvent(EventSourced):
             self.text = event.text
         if event.time is not None:
             self.time = event.time
+        if event.title is not None:
+            self.title = event.title
 
     def when_deleted(self, event: Deleted):
         self.text = ""
+        self.title = ""
         self.deleted = True

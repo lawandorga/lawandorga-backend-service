@@ -20,6 +20,7 @@ def test_create_in_memory():
     folder = test_helpers.create_raw_folder(user)
     event1 = TimelineEvent.create(
         text="test",
+        title="Title",
         folder=folder,
         org_pk=user.org_id,
         by=user.uuid,
@@ -36,6 +37,7 @@ def test_create_in_db(db):
     folder = test_helpers.create_raw_folder(user)
     event1 = TimelineEvent.create(
         text="test",
+        title="Title",
         folder=folder,
         org_pk=user.org_id,
         by=user.uuid,
@@ -53,12 +55,14 @@ def test_list_in_memory():
     event1 = TimelineEvent.create(
         text="test",
         folder=folder,
+        title="Title",
         org_pk=user.org_id,
         by=user.uuid,
         time=timezone.now(),
     )
     event2 = TimelineEvent.create(
         text="test2",
+        title="Title",
         folder=folder,
         org_pk=user.org_id,
         by=user.uuid,

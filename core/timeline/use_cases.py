@@ -11,9 +11,10 @@ from messagebus.domain.store import EventStore
 
 @use_case
 def create_timeline_event(
-    __actor: RlcUser, text: str, time: datetime, folder_uuid: UUID
+    __actor: RlcUser, title: str, text: str, time: datetime, folder_uuid: UUID
 ):
     event = TimelineEvent.create(
+        title=title,
         text=text,
         folder_uuid=folder_uuid,
         org_pk=__actor.org_id,
@@ -28,6 +29,7 @@ def create_timeline_event(
 def update_timeline_event(
     __actor: RlcUser,
     uuid: UUID,
+    title: str | None,
     text: str | None,
     time: datetime | None,
     folder_uuid: UUID,
@@ -37,7 +39,7 @@ def update_timeline_event(
         uuid=uuid, by=__actor, folder=folder
     )
     e = TimelineEvent.InformationUpdated(
-        text=text, by=__actor.uuid, uuid=uuid, time=time
+        title=title, text=text, by=__actor.uuid, uuid=uuid, time=time
     )
     event.apply(e)
     TimelineEventRepository(EventStore()).save(event, by=__actor)
