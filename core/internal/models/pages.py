@@ -50,4 +50,6 @@ class HelpPage(SingletonModel):
 
     @property
     def manual_url(self) -> Optional[str]:
-        return self.manual.url
+        if self.manual:
+            return self.manual.url
+        return None
