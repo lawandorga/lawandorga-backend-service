@@ -8,6 +8,7 @@ from .internal.admin import *
 from .legal.admin import *
 from .mail.admin import *
 from .other.admin import *
+from .permissions.admin import *
 from .questionnaires.admin import *
 from .records.admin import *
 from .rlc.admin import *

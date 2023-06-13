@@ -1,6 +1,6 @@
 from django.db import models
 
-from .permission import Permission
+from core.permissions.models import Permission
 
 
 class HasPermission(models.Model):

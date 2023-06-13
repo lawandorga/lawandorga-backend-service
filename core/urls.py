@@ -37,4 +37,5 @@ urlpatterns = [
     path("api/questionnaires/", include(questionnaires_urlpatterns)),
     path("api/uploads/", include(upload_urlpatterns)),
     path("api/timeline/", include("core.timeline.urls")),
+    path("api/permissions/", include("core.permissions.urls")),
 ]

@@ -9,7 +9,6 @@ router.register(
     "has_permissions", views.HasPermissionViewSet, basename="has_permission"
 )
 router.register("rlcs", views.RlcViewSet)
-router.register("permissions", views.PermissionViewSet)
 
 
 urlpatterns = [
