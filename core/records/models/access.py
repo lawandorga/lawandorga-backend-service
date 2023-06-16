@@ -74,12 +74,14 @@ class RecordsAccessRequest(models.Model):
     def grant(self, by: RlcUser):
         if self.state != "re":
             raise DomainError(
-                "This access request can not be granted, because it is not in a requested state."
+                "This access request can not be granted, because "
+                "it is not in a requested state."
             )
 
         if not self.record.folder.has_access(by):
             raise DomainError(
-                "You can not give access to this record, because you have no access to this record."
+                "You can not give access to this record, because you "
+                "have no access to this record."
             )
 
         self.state = "gr"
@@ -89,7 +91,8 @@ class RecordsAccessRequest(models.Model):
     def decline(self, by: RlcUser):
         if self.state != "re":
             raise DomainError(
-                "This access request can not be declined, because it is not in a requested state."
+                "This access request can not be declined, because it "
+                "is not in a requested state."
             )
 
         self.state = "de"

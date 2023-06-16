@@ -4,6 +4,7 @@ from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from messagebus import Event, MessageBus
 from messagebus.domain.message import Message
+
 from seedwork.types import JsonDict
 
 

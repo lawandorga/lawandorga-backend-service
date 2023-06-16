@@ -8,8 +8,11 @@ from core.data_sheets.models import RecordTemplate
 from core.models import Org
 from core.seedwork import test_helpers as data
 
+from ...permissions.static import (
+    PERMISSION_ADMIN_MANAGE_PERMISSIONS,
+    PERMISSION_ADMIN_MANAGE_USERS,
+)
 from ...rlc.models import Permission
-from ...static import PERMISSION_ADMIN_MANAGE_PERMISSIONS, PERMISSION_ADMIN_MANAGE_USERS
 from ..models import RlcUser
 from ..token_generator import EmailConfirmationTokenGenerator
 
@@ -125,7 +128,7 @@ def test_retrieve_rlc_user(user, db):
     ru = user["rlc_user"]
     response = c.get("/api/rlc_users/{}/".format(ru.id))
     response_data = response.json()
-    assert response.status_code == 200 and response_data["street"] is None
+    assert response.status_code == 200 and response_data["user"]["street"] is None
 
 
 def test_retrieve_another_rlc_user(user, rlc_user_2, db):
@@ -137,7 +140,7 @@ def test_retrieve_another_rlc_user(user, rlc_user_2, db):
     ru_update.save()
     response = c.get("/api/rlc_users/{}/".format(ru.id))
     response_data = response.json()
-    assert response.status_code == 200 and response_data["street"] is None
+    assert response.status_code == 200 and response_data["user"]["street"] is None
 
 
 def test_retrieve_another_rlc_user_with_permission(user, rlc_user_2, db):
@@ -150,7 +153,7 @@ def test_retrieve_another_rlc_user_with_permission(user, rlc_user_2, db):
     ru_update.save()
     response = c.get("/api/rlc_users/{}/".format(ru.id))
     response_data = response.json()
-    assert response.status_code == 200 and response_data["street"] == "ABC"
+    assert response.status_code == 200 and response_data["user"]["street"] == "ABC"
 
 
 def test_activate_error(user, db):

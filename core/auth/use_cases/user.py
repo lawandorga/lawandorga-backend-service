@@ -6,6 +6,7 @@ from django.db import transaction
 from core.auth.domain.user_key import UserKey
 from core.auth.models import RlcUser, UserProfile
 from core.seedwork.use_case_layer import UseCaseError, use_case
+
 from seedwork.types import JsonDict
 
 

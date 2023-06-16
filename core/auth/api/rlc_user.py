@@ -1,5 +1,8 @@
 from typing import Any, List, Optional
 
+from django.db.models import Q
+from pydantic import BaseModel
+
 from core.auth.models import RlcUser
 from core.auth.use_cases.rlc_user import (
     confirm_email,
@@ -7,12 +10,13 @@ from core.auth.use_cases.rlc_user import (
     register_rlc_user,
     unlock_user,
 )
-from core.rlc.models import Permission
-from core.seedwork.api_layer import ApiError, Router
-from core.static import (
+from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_PERMISSIONS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
+from core.rlc.models import Permission
+from core.rlc.models.has_permission import HasPermission
+from core.seedwork.api_layer import ApiError, Router
 
 from . import schemas
 
@@ -51,9 +55,26 @@ def list_rlc_users(rlc_user: RlcUser):
 
 
 # retrieve
+class OutputPermission(BaseModel):
+    id: int
+    permission_name: str
+    source: str
+    group_name: str | None
+    user_name: str | None
+    group_id: int | None
+
+    class Config:
+        orm_mode = True
+
+
+class OutputUser(BaseModel):
+    user: schemas.OutputRlcUserOptional
+    permissions: Optional[list[OutputPermission]]
+
+
 @router.get(
     url="<int:id>/",
-    output_schema=schemas.OutputRlcUserOptional,
+    output_schema=OutputUser,
 )
 def retrieve(data: schemas.InputRlcUserGet, rlc_user: RlcUser):
     found_rlc_user = RlcUser.objects.filter(id=data.id).first()
@@ -72,7 +93,20 @@ def retrieve(data: schemas.InputRlcUserGet, rlc_user: RlcUser):
     else:
         found_rlc_user_ret = found_rlc_user
 
-    return found_rlc_user_ret
+    permissions: Optional[list[HasPermission]] = None
+    if rlc_user.has_permission(PERMISSION_ADMIN_MANAGE_PERMISSIONS):
+        queryset = HasPermission.objects.filter(
+            Q(user__org=found_rlc_user.org)
+            | Q(group_has_permission__from_rlc=found_rlc_user.org)
+        )
+        queryset = queryset.select_related("permission", "group_has_permission", "user")
+        groups = found_rlc_user.groups.all()
+        queryset = queryset.filter(
+            Q(user=found_rlc_user) | Q(group_has_permission__in=groups)
+        )
+        permissions = list(queryset)
+
+    return {"user": found_rlc_user_ret, "permissions": permissions}
 
 
 # unlock user

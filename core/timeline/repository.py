@@ -5,6 +5,7 @@ from core.folders.domain.aggregates.folder import Folder
 from core.timeline.domain import TimelineEvent
 from core.timeline.encryption import decrypt, encrypt
 from messagebus.domain.store import EventStore
+
 from seedwork.repository import SingletonRepository
 
 

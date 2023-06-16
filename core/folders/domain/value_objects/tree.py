@@ -5,6 +5,7 @@ from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.external import IOwner
 from core.folders.domain.value_objects.folder_key import FolderKey
 from core.folders.domain.value_objects.parent_key import ParentKey
+
 from seedwork.types import JsonDict
 
 

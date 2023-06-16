@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Type
 if TYPE_CHECKING:
     from core.models import CollabPermission, FolderPermission, Permission
 
-from core.static import (
+from core.permissions.static import (
     get_all_collab_permission_strings,
     get_all_files_permission_strings,
     get_all_permission_strings,

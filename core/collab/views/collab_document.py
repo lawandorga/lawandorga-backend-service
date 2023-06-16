@@ -7,7 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from core.models import CollabDocument, PermissionForCollabDocument
-from core.static import (
+from core.permissions.static import (
     PERMISSION_COLLAB_MANAGE_PERMISSIONS,
     PERMISSION_COLLAB_READ_ALL_DOCUMENTS,
     PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS,

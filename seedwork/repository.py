@@ -25,7 +25,8 @@ class SingletonRepository(abc.ABC):
         if len(cls.mro()) == 5:
             # this might look weird, because why 5?
             # the reason is we got the following resolution order:
-            # InMemoryAggregateRespository -> AggreagateRepository -> SingletonRepository -> abc.ABC -> object
+            # InMemoryAggregateRespository -> AggreagateRepository ->
+            # SingletonRepository -> abc.ABC -> object
             # in case the number is 5 we are already in the correct class
             # otherwise we need to check the settings to get the correct class
             # because the AggregateRepository is supposed to be interface like

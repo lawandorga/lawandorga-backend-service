@@ -1,5 +1,13 @@
-from .internal_user import *
-from .matrix_user import *
-from .org_user import *
-from .statistics_user import *
-from .user import *
+from .internal_user import InternalUser
+from .matrix_user import MatrixUser
+from .org_user import RlcUser
+from .statistics_user import StatisticUser
+from .user import UserProfile
+
+__all__ = [
+    "InternalUser",
+    "MatrixUser",
+    "RlcUser",
+    "StatisticUser",
+    "UserProfile",
+]

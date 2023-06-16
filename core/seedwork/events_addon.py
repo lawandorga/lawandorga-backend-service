@@ -3,6 +3,7 @@ from typing import Any, Optional
 from core.seedwork.aggregate import Addon, Aggregate
 from messagebus import Event, MessageBus
 from messagebus.domain.store import EventStore
+
 from seedwork.types import JsonDict
 
 

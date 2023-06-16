@@ -5,17 +5,17 @@ from django.test import Client
 
 from core.data_sheets.models.record import Record
 from core.folders.domain.repositiories.folder import FolderRepository
+from core.permissions.static import (
+    PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
+    PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
+    PERMISSION_RECORDS_ADD_RECORD,
+)
 from core.records.models.deletion import RecordsDeletion
 from core.records.models.record import RecordsRecord
 from core.records.use_cases.deletion import accept_deletion_request
 from core.records.use_cases.record import create_record
 from core.seedwork import test_helpers
 from core.seedwork.repository import RepositoryWarehouse
-from core.static import (
-    PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
-    PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
-    PERMISSION_RECORDS_ADD_RECORD,
-)
 
 
 def test_record_creation(db):

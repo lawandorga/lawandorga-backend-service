@@ -28,10 +28,10 @@ from core.folders.domain.value_objects.symmetric_key import (
     SymmetricKey,
 )
 from core.folders.infrastructure.folder_addon import FolderAddon
+from core.permissions.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 from core.seedwork.events_addon import EventsAddon
-from core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 
 
 ###

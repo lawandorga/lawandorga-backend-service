@@ -1,0 +1,72 @@
+[tool.black]
+
+line-length = 88
+
+[tool.mypy]
+
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+ignore_missing_imports = true
+exclude = ["migrations", "__pypackages__", "venv"]
+
+[tool.django-stubs]
+
+django_settings_module = "config.settings.local"
+ignore_missing_settings = true
+
+[tool.isort]
+
+known_local_folder = ["dms", "seedwork"]
+profile = "black"
+
+[tool.flake8]
+
+max-line-length = 500
+extend-ignore = ["E203"]
+exclude = [
+    "__init__.py",
+    "config/settings/local.py",
+    "config/settings/local_postgres.py",
+    "config/settings/local_production.py",
+    "config/settings/production.py",
+    "config/settings/testing.py",
+    "core/forms.py",
+    "core/views.py",
+    "core/models.py",
+    "core/tests.py",
+    "core/admin.py"
+]
+
+[tool.ruff]
+
+line-length = 500
+exclude = [
+    "__init__.py",
+    "config/settings/local.py",
+    "config/settings/local_postgres.py",
+    "config/settings/local_production.py",
+    "config/settings/production.py",
+    "config/settings/testing.py",
+    "core/forms.py",
+    "core/views.py",
+    "core/models.py",
+    "core/tests.py",
+    "core/admin.py"
+]
+
+[tool.pytest.ini_options]
+
+DJANGO_SETTINGS_MODULE = "config.settings.testing"
+addopts = "--ignore=__pypackages__"
+markers = [
+    "db: marks tests as hitting the database (deselect with '-m \"not db\"')"
+]
+env = [ "TESTING = true" ]
+
+[project]
+
+name = "lawandorga-backend-service"
+version = "0.0.0"
+description = "Law&Orga Backend Service"
+requires-python = ">=3.11"
+readme = "README.md"
+license = { text = "GNU Affero General Public License v3.0" }

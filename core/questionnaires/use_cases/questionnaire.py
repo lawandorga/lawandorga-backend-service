@@ -2,10 +2,10 @@ from uuid import UUID
 
 from core.auth.models import RlcUser
 from core.folders.use_cases.finders import folder_from_uuid
+from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models import Questionnaire
 from core.questionnaires.use_cases.finders import questionnaire_template_from_id
 from core.seedwork.use_case_layer import use_case
-from core.static import PERMISSION_RECORDS_ADD_RECORD
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])

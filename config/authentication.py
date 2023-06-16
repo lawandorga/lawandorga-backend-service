@@ -3,8 +3,10 @@ from rest_framework import exceptions, permissions, status, views
 
 class IsAuthenticatedAndEverything(permissions.IsAuthenticated):  # type: ignore
     message = (
-        "You need to be logged in, your account needs to be active, your email needs to be confirmed, your"
-        "account should not be locked and you should be accepted as a member of your law clinic."
+        "You need to be logged in, your account needs to be active, "
+        "your email needs to be confirmed, your"
+        "account should not be locked and you should be "
+        "accepted as a member of your law clinic."
     )
 
     def has_permission(self, request, view):

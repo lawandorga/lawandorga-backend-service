@@ -35,17 +35,21 @@ def create_statistic(__actor: StatisticUser, field_1: str, value_1: str, field_2
 
             select name, value, record_id
             from core_recordstatefield state_field
-            inner join core_recordstateentry state_entry on state_field.id = state_entry.field_id
+            inner join core_recordstateentry state_entry
+                on state_field.id = state_entry.field_id
             union all
             select name, value, record_id from core_recordstatisticfield statistic_field
-            inner join core_recordstatisticentry statistic_entry on statistic_field.id = statistic_entry.field_id
+            inner join core_recordstatisticentry statistic_entry
+                on statistic_field.id = statistic_entry.field_id
             union all
             select name, value, record_id from core_recordselectfield select_field
-            inner join core_recordselectentry select_entry on select_field.id = select_entry.field_id
+            inner join core_recordselectentry select_entry
+                on select_field.id = select_entry.field_id
             union all
             select name, value, record_id
             from core_recordstandardfield standard_field
-            inner join core_recordstandardentry standard_entry on standard_field.id = standard_entry.field_id
+            inner join core_recordstandardentry standard_entry
+                on standard_field.id = standard_entry.field_id
 
         ) k on k.record_id = record.id
     )

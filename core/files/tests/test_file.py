@@ -15,7 +15,7 @@ from core.models import (
     RlcUser,
     UserProfile,
 )
-from core.static import PERMISSION_FILES_WRITE_ALL_FOLDERS
+from core.permissions.static import PERMISSION_FILES_WRITE_ALL_FOLDERS
 from core.views import FileViewSet
 
 settings.DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"

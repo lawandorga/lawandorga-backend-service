@@ -41,9 +41,14 @@ def handler500(request, template_name=""):
 def handler_csrf_error(request, reason=""):
     error = RFC7807(
         err_type="DjangoCsrfTokenError",
-        title="Csrf Cookie Missing - Please make sure your browser does not block any cookies from Law&Orga",
+        title=(
+            "Csrf Cookie Missing - Please make sure your browser "
+            "does not block any cookies from Law&Orga"
+        ),
         status=400,
-        detail="Please make sure your browser does not block any cookies from Law&Orga.",
+        detail=(
+            "Please make sure your browser does not block " "any cookies from Law&Orga."
+        ),
         internal=reason,
     )
     return JsonResponse(error.dict(), status=400)

@@ -12,6 +12,7 @@ from core.folders.domain.value_objects.folder_key import FolderKey
 from core.folders.domain.value_objects.parent_key import ParentKey
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from core.seedwork.domain_layer import DomainError
+
 from seedwork.types import JsonDict
 
 

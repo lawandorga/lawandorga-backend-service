@@ -1,10 +1,10 @@
 from uuid import UUID
 
 from core.auth.models.org_user import RlcUser
+from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
 from core.records.models.setting import RecordsView
 from core.records.use_cases.finders import find_view_by_uuid
 from core.seedwork.use_case_layer import UseCaseError, check_permissions, use_case
-from core.static import PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
 
 
 @use_case

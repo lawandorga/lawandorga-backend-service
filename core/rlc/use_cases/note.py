@@ -1,8 +1,8 @@
 from core.auth.models import RlcUser
+from core.permissions.static import PERMISSION_DASHBOARD_MANAGE_NOTES
 from core.rlc.models import Note
 from core.rlc.use_cases.finders import note_from_id
 from core.seedwork.use_case_layer import use_case
-from core.static import PERMISSION_DASHBOARD_MANAGE_NOTES
 
 
 @use_case(permissions=[PERMISSION_DASHBOARD_MANAGE_NOTES])

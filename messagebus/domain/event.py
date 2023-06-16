@@ -22,7 +22,8 @@ class Event(BaseModel):
         splits = self._name.split(".")
         if len(splits) != 2:
             raise ValueError(
-                f"Event {self._name} is not nested correctly. Make sure it inside a class."
+                f"Event {self._name} is not nested correctly. "
+                "Make sure it inside a class."
             )
         return splits
 

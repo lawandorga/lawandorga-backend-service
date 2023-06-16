@@ -10,6 +10,7 @@ from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
+
 from seedwork.types import JsonDict
 
 

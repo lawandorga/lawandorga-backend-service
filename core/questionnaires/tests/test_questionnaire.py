@@ -7,11 +7,11 @@ from django.test import Client
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.models import Org
+from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models import Questionnaire, QuestionnaireTemplate
 from core.seedwork import test_helpers
 from core.seedwork import test_helpers as data
 from core.seedwork.repository import RepositoryWarehouse
-from core.static import PERMISSION_RECORDS_ADD_RECORD
 
 
 @pytest.fixture

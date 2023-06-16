@@ -1,2 +1,3 @@
-from .has_permission import *
-from .rlc import *
+from .rlc import RlcViewSet
+
+__all__ = ["RlcViewSet"]

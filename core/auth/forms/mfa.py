@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 
 from core.auth.domain.user_key import UserKey
 from core.auth.models.user import UserProfile
+
 from seedwork.types import JsonDict
 
 

@@ -29,15 +29,15 @@ from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
 )
-from core.rlc.models import HasPermission, Org, OrgEncryption, Permission
-from core.seedwork.aggregate import Aggregate
-from core.seedwork.domain_layer import DomainError
-from core.seedwork.events_addon import EventsAddon
-from core.static import (
+from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
+from core.rlc.models import HasPermission, Org, OrgEncryption, Permission
+from core.seedwork.aggregate import Aggregate
+from core.seedwork.domain_layer import DomainError
+from core.seedwork.events_addon import EventsAddon
 from messagebus import Event
 
 from ...folders.domain.repositiories.folder import FolderRepository

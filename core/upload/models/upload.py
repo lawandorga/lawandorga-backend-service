@@ -89,7 +89,8 @@ class UploadLink(Aggregate, models.Model):
     @staticmethod
     def clean_up_storage() -> None:
         """
-        This method should loop over the storage and look for files that are not connected anymore and delete them.
+        This method should loop over the storage and look for files
+        that are not connected anymore and delete them.
         """
         pass
 
@@ -170,7 +171,8 @@ class UploadFile(models.Model):
             )
         if len(name.split(".")[0]) == 0 or len(name.split(".")[1]) == 0:
             raise DomainError(
-                "The filename needs to have a name and an extension for example 'sample.pdf'."
+                "The filename needs to have a name and "
+                "an extension for example 'sample.pdf'."
             )
 
         self.name = name

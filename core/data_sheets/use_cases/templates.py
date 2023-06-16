@@ -1,8 +1,8 @@
 from core.auth.models import RlcUser
 from core.data_sheets.models import RecordTemplate
 from core.data_sheets.use_cases.finders import template_from_id
+from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
 from core.seedwork.use_case_layer import UseCaseError, use_case
-from core.static import PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES])

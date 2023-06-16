@@ -17,12 +17,12 @@ from core.folders.domain.value_objects.symmetric_key import (
 )
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.folders.use_cases.finders import folder_from_uuid
-from core.seedwork.repository import RepositoryWarehouse
-from core.seedwork.use_case_layer import UseCaseError, use_case
-from core.static import (
+from core.permissions.static import (
     PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
     PERMISSION_RECORDS_ADD_RECORD,
 )
+from core.seedwork.repository import RepositoryWarehouse
+from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case

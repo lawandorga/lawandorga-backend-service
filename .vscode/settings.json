@@ -1,8 +1,25 @@
 {
-  "[tf]": {
-    "editor.defaultFormatter": "hashicorp.terraform",
-    "editor.formatOnSave": true
+  "editor.codeActionsOnSave": {
+      "source.fixAll": true
   },
+  "tailwindCSS.emmetCompletions": true,
+  "python.testing.pytestArgs": [
+      "backend"
+  ],
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
+  "python.formatting.provider": "black",
+  "[terraform]": {
+      "editor.defaultFormatter": "hashicorp.terraform"
+  },
+  "[html]": {
+      "editor.defaultFormatter": "vscode.html-language-features"
+  },
+  "[json]": {
+      "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "files.exclude": {
+      "**/.git": false
+  },
+  "python.analysis.typeCheckingMode": "basic"
 }

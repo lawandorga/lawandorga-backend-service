@@ -37,7 +37,7 @@ class Aggregate:
         self,
         *args,
         atomic_context: Callable[..., ContextDecorator] = transaction.atomic,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.__atomic = atomic_context

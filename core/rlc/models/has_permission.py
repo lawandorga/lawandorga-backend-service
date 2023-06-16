@@ -1,9 +1,29 @@
+from typing import TYPE_CHECKING, Union
+
 from django.db import models
 
 from core.permissions.models import Permission
 
+if TYPE_CHECKING:
+    from core.auth.models.org_user import RlcUser
+    from core.rlc.models.group import Group
+
 
 class HasPermission(models.Model):
+    @classmethod
+    def create(
+        cls,
+        permission: Permission,
+        user: Union["RlcUser", None] = None,
+        group: Union["Group", None] = None,
+    ):
+        assert user or group
+        assert not (user and group)
+        has_permission = cls(
+            permission=permission, user=user, group_has_permission=group
+        )
+        return has_permission
+
     permission = models.ForeignKey(
         Permission, related_name="in_has_permission", on_delete=models.CASCADE
     )
@@ -36,15 +56,27 @@ class HasPermission(models.Model):
 
     @property
     def user_name(self):
-        return self.user.name
+        if self.user:
+            return self.user.name
+        return None
 
     @property
     def group_name(self):
-        return self.group_has_permission.name
+        if self.group_has_permission:
+            return self.group_has_permission.name
+        return None
 
     @property
     def group_id(self):
-        return self.group_has_permission_id
+        if self.group_has_permission_id:
+            return self.group_has_permission_id
+        return None
+
+    @property
+    def user_id(self):
+        if self.user_id:
+            return self.user_id
+        return None
 
     @property
     def source(self):

@@ -1,8 +1,8 @@
 from core.auth.models import RlcUser
 from core.data_sheets.models import RecordAccess
 from core.data_sheets.use_cases.finders import access_from_id, record_from_id
+from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
 from core.seedwork.use_case_layer import use_case
-from core.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
 
 
 @use_case

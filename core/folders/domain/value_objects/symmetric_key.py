@@ -7,6 +7,7 @@ from core.folders.domain.value_objects.encryption import (
     SymmetricEncryption,
 )
 from core.folders.domain.value_objects.key import Key
+
 from seedwork.types import JsonDict
 
 if TYPE_CHECKING:

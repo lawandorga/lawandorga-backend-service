@@ -4,9 +4,9 @@ import pytest
 from django.test import Client
 
 from core.models import Org
+from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS
 from core.rlc.models import ExternalLink
 from core.seedwork import test_helpers as data
-from core.static import PERMISSION_ADMIN_MANAGE_USERS
 
 
 @pytest.fixture

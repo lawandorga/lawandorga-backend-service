@@ -5,9 +5,6 @@ from . import api, views
 
 router = DefaultRouter()
 
-router.register(
-    "has_permissions", views.HasPermissionViewSet, basename="has_permission"
-)
 router.register("rlcs", views.RlcViewSet)
 
 

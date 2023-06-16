@@ -38,3 +38,6 @@ sentry-sdk = "*"
 pytest-xdist = "*"
 django-oidc-provider = {git = "https://github.com/lawandorga/django-oidc-provider"}
 pyotp = "*"
+ruff = "*"
+isort = "*"
+flake8-pyproject = "*"

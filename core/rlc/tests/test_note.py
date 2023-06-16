@@ -4,8 +4,8 @@ import pytest
 from django.test import Client
 
 from core.models import Note, Org
+from core.permissions.static import PERMISSION_DASHBOARD_MANAGE_NOTES
 from core.seedwork import test_helpers
-from core.static import PERMISSION_DASHBOARD_MANAGE_NOTES
 
 
 @pytest.fixture

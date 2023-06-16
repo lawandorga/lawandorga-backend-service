@@ -14,8 +14,8 @@ from core.legal.models import (
     LegalRequirementEvent,
     LegalRequirementUser,
 )
+from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS
 from core.seedwork.use_case_layer import UseCaseError, use_case
-from core.static import PERMISSION_ADMIN_MANAGE_USERS
 
 
 @use_case
@@ -84,8 +84,10 @@ def delete_user(__actor: RlcUser, other_user_id: int):
     other_user = rlc_user_from_id(__actor, other_user_id)
     if not other_user.check_delete_is_safe():
         raise UseCaseError(
-            "You can not delete this user right now, because you could loose access to one or "
-            "more folders. This user is one of the only two persons with access to those folders."
+            "You can not delete this user right now, because "
+            "you could loose access to one or "
+            "more folders. This user is one of the only two "
+            "persons with access to those folders."
         )
     other_user.user.delete()
 

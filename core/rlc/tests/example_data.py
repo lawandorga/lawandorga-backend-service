@@ -6,7 +6,6 @@ from typing import List, cast
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
-from core import static
 from core.auth.domain.user_key import UserKey
 from core.collab.models import CollabPermission
 from core.data_sheets.fixtures import create_default_record_template
@@ -47,6 +46,7 @@ from core.models import (
     TextDocumentVersion,
     UserProfile,
 )
+from core.permissions import static
 from core.questionnaires.models import QuestionnaireQuestion, QuestionnaireTemplate
 from core.rlc.models import Org
 from core.seedwork.encryption import AESEncryption
@@ -384,7 +384,8 @@ def create_records(users, rlc):
             "2017-9-10",
             "2018-12-2T16:3:0+00:00",
             "AZ-131/18",
-            "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
+            "Frau noch im Herkunftsland, gut recherchiert "
+            "und ausfuehrlich dokumentiert",
             "Waiting",
             [choice(users), choice(users)],
             [choice(tags), choice(tags)],
@@ -393,7 +394,8 @@ def create_records(users, rlc):
             "2017-9-10",
             "2018-10-2T16:3:0+00:00",
             "AZ-132/18",
-            "Frau noch im Herkunftsland, gut recherchiert und ausfuehrlich dokumentiert",
+            "Frau noch im Herkunftsland, gut recherchiert "
+            "und ausfuehrlich dokumentiert",
             "Open",
             [choice(users), choice(users)],
             [choice(tags), choice(tags)],

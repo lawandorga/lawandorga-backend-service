@@ -10,7 +10,7 @@ from core.models import (
     TextDocumentVersion,
     UserProfile,
 )
-from core.static import PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS
+from core.permissions.static import PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS
 
 
 class BaseCollab:

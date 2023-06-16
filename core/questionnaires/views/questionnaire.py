@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.response import Response
 
+from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES
 from core.questionnaires.models import (
     Questionnaire,
     QuestionnaireAnswer,
@@ -27,7 +28,6 @@ from core.questionnaires.views.serializers import (
     RecordQuestionnaireDetailSerializer,
 )
 from core.seedwork.permission import CheckPermissionWall
-from core.static import PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES
 
 
 ###

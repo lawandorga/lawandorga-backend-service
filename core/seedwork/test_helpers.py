@@ -8,11 +8,11 @@ from core.data_sheets.models import Record, RecordTemplate
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.models import RlcUser, UserProfile
+from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.records.models.record import RecordsRecord
 from core.records.use_cases.record import create_record as uc_create_record
 from core.rlc.models import Group, Org
 from core.seedwork.repository import RepositoryWarehouse
-from core.static import PERMISSION_RECORDS_ADD_RECORD
 
 
 def create_raw_org(name="Dummy's Org", pk=1):

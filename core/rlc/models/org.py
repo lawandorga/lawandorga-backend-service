@@ -11,7 +11,10 @@ from core.seedwork.repository import RepositoryWarehouse
 from .meta import Meta
 
 if TYPE_CHECKING:
+    from django.db.models.manager import RelatedManager
+
     from core.auth.models import RlcUser, UserProfile
+    from core.rlc.models.group import Group
 
 
 class Org(EncryptedModelMixin, models.Model):
@@ -52,6 +55,10 @@ class Org(EncryptedModelMixin, models.Model):
     private_key = models.BinaryField(null=True)
     encrypted_fields = ["private_key"]
     encryption_class = AESEncryption
+
+    if TYPE_CHECKING:
+        users: RelatedManager[RlcUser]
+        group_from_rlc: RelatedManager[Group]
 
     class Meta:
         ordering = ["name"]

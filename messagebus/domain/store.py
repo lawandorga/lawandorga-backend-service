@@ -1,6 +1,7 @@
 from typing import Optional, Sequence, TypeVar
 
 from messagebus.domain.message import DomainMessage, Message
+
 from seedwork.repository import SingletonRepository
 
 M = TypeVar("M", bound=Message)

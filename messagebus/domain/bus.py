@@ -23,7 +23,9 @@ class MessageBus:
     def _run_nesting_check(cls, event_class: Type[Event]) -> None:
         if event_class.__qualname__.count(".") != 1:
             raise ValueError(
-                f"Event '{event_class.__name__}' is not nested correctly inside a class. The qualname is '{event_class.__qualname__}' but should contain exactly one dot."
+                f"Event '{event_class.__name__}' is not nested correctly inside a "
+                "class. The qualname is '{event_class.__qualname__}' but should "
+                "contain exactly one dot."
             )
 
     @classmethod
@@ -63,7 +65,8 @@ class MessageBus:
     def register_handler(cls, event_class: Type[Event], handler: Callable):
         if not issubclass(event_class, Event):
             raise TypeError(
-                f"The event class is of type '{event_class}' but should be a subclass of '{Event}' does not fit."
+                f"The event class is of type '{event_class}' but should "
+                f"be a subclass of '{Event}' does not fit."
             )
 
         if event_class not in cls.handlers:

@@ -100,7 +100,7 @@ class MfaLoginView(RedirectURLMixin, views.generic.FormView):
         return form_class(
             self.request.session["user_pk"],
             self.request.session["user_key"],
-            **self.get_form_kwargs()
+            **self.get_form_kwargs(),
         )
 
     def form_valid(self, form):

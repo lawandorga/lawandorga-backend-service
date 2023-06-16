@@ -5,11 +5,11 @@ from core.data_sheets.use_cases.record import (
     create_a_data_sheet_within_a_folder,
     create_a_record_and_a_folder,
 )
-from core.seedwork.use_case_layer import UseCaseError
-from core.static import (
+from core.permissions.static import (
     PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
     PERMISSION_RECORDS_ADD_RECORD,
 )
+from core.seedwork.use_case_layer import UseCaseError
 
 
 def test_create_within_folder(user, record_template, folder):

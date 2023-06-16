@@ -10,11 +10,11 @@ from core.folders.use_cases.finders import (
     item_from_repository_and_uuid,
     rlc_user_from_uuid,
 )
+from core.permissions.static import PERMISSION_FOLDERS_TOGGLE_INHERITANCE
 from core.seedwork.api_layer import ApiError
 from core.seedwork.message_layer import MessageBusActor
 from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.use_case_layer import UseCaseError, check_permissions, use_case
-from core.static import PERMISSION_FOLDERS_TOGGLE_INHERITANCE
 
 
 def get_repository() -> FolderRepository:

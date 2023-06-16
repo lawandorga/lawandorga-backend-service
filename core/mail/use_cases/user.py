@@ -9,8 +9,8 @@ from core.mail.use_cases.finders import (
     mail_domain_from_uuid,
     mail_user_from_uuid,
 )
+from core.permissions.static import PERMISSION_MAIL_MANAGE_ACCOUNTS
 from core.seedwork.use_case_layer import UseCaseError, check_permissions, use_case
-from core.static import PERMISSION_MAIL_MANAGE_ACCOUNTS
 
 
 @use_case

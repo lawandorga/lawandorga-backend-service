@@ -4,7 +4,7 @@ from django.db import transaction
 
 from core.data_sheets.fixtures import create_default_record_template
 from core.models import RlcUser, UserProfile
-from core.static import get_all_permission_strings
+from core.permissions.static import get_all_permission_strings
 
 
 class OrgAdminForm(forms.ModelForm):

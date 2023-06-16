@@ -50,9 +50,9 @@ from core.data_sheets.serializers.record import (
     RecordUsersFieldSerializer,
 )
 from core.folders.domain.repositiories.folder import FolderRepository
+from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
 from core.seedwork.permission import CheckPermissionWall
 from core.seedwork.repository import RepositoryWarehouse
-from core.static import PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
 
 
 class RecordFieldViewSet(

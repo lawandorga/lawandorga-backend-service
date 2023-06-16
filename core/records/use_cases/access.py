@@ -3,11 +3,11 @@ from uuid import UUID
 
 from core.auth.models import RlcUser
 from core.folders.domain.repositiories.folder import FolderRepository
+from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
 from core.records.models import RecordsAccessRequest
 from core.records.use_cases.finders import find_access_by_uuid, find_record_by_uuid
 from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.use_case_layer import use_case
-from core.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
 
 
 @use_case

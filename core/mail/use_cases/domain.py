@@ -3,8 +3,8 @@ from uuid import UUID
 from core.mail.models import MailDomain, MailUser
 from core.mail.models.domain import DnsResults
 from core.mail.use_cases.finders import mail_domain_from_uuid
+from core.permissions.static import PERMISSION_MAIL_MANAGE_ACCOUNTS
 from core.seedwork.use_case_layer import UseCaseError, use_case
-from core.static import PERMISSION_MAIL_MANAGE_ACCOUNTS
 
 
 @use_case(permissions=[PERMISSION_MAIL_MANAGE_ACCOUNTS])

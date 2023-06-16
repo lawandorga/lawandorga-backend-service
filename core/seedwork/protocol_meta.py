@@ -10,7 +10,8 @@ protocol_type: Any = type(IOwner)
 
 class ModelProtocolMeta(django_model_type, protocol_type):
     """
-    This technique allows us to use Protocol with Django models without metaclass conflict
+    This technique allows us to use Protocol with
+    Django models without metaclass conflict
     """
 
     pass

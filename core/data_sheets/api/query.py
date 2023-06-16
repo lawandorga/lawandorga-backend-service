@@ -8,8 +8,8 @@ from core.auth.models import RlcUser
 from core.data_sheets.api import schemas
 from core.data_sheets.models import Record, RecordAccess, RecordDeletion, RecordTemplate
 from core.data_sheets.use_cases.record import migrate_record_into_folder
+from core.permissions.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from core.seedwork.api_layer import ApiError, Router
-from core.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 
 router = Router()
 
