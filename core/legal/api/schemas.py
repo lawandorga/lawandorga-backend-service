@@ -1,29 +1,11 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel
 
 
-class OutputRlcUser(BaseModel):
-    name: str
-    id: int
-
-    class Config:
-        orm_mode = True
-
-
-class OutputLegalRequirement(BaseModel):
-    title: str
-    content: str
-    accept_text: str
-    button_text: str
-
-    class Config:
-        orm_mode = True
-
-
 class OutputLegalRequirementEvent(BaseModel):
-    actor: Optional[OutputRlcUser]
+    actor: str
     text: Optional[str]
     accepted: bool
     created: datetime
@@ -32,12 +14,14 @@ class OutputLegalRequirementEvent(BaseModel):
         orm_mode = True
 
 
-class OutputLegalRequirementUser(BaseModel):
-    legal_requirement: OutputLegalRequirement
-    rlc_user_id: int
-    accepted: bool
+class OutputLegalRequirement(BaseModel):
     id: int
-    events_list: List[OutputLegalRequirementEvent]
+    title: str
+    content: str
+    accept_text: str
+    button_text: str
+    events_of_user: list[OutputLegalRequirementEvent]
+    accepted_of_user: bool
 
     class Config:
         orm_mode = True

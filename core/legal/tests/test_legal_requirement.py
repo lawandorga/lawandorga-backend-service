@@ -1,12 +1,11 @@
-import json
-
 import pytest
 from django.test import Client
 
+from core.legal.models.legal_requirement import LegalRequirementEvent
 from core.models import Org
 from core.seedwork import test_helpers
 
-from ..models import LegalRequirement, LegalRequirementUser
+from ..models import LegalRequirement
 
 
 @pytest.fixture
@@ -17,37 +16,37 @@ def user(db):
 
 
 @pytest.fixture()
-def legal_requirement_user(user):
+def legal_requirement(user):
     legal_requirement = LegalRequirement.objects.create(
         title="Test", content="Accept this please", accept_required=True
     )
-    legal_requirement_user = LegalRequirementUser.objects.create(
-        legal_requirement=legal_requirement, rlc_user=user["rlc_user"]
-    )
-    yield legal_requirement_user
+    yield legal_requirement
 
 
-def test_get_data_works(user, db, legal_requirement_user):
+def test_get_data_works(user, db, legal_requirement):
     c = Client()
     c.login(**user)
     response = c.get("/api/legal/legal_requirements/")
     d = response.json()
     assert (
         response.status_code == 200
-        and d[0]["accepted"] is False
-        and d[0]["legal_requirement"]["content"]
+        and d[0]["accepted_of_user"] is False
+        and d[0]["content"]
     )
 
 
-def test_accept_legal_requirement(user, db, legal_requirement_user):
+def test_accept_legal_requirement(user, db, legal_requirement):
     c = Client()
     c.login(**user)
 
     response = c.post(
-        "/api/legal/legal_requirements/{}/accept/".format(legal_requirement_user.pk),
-        data=json.dumps({"accepted": True, "actor": user["rlc_user"].id}),
+        "/api/legal/legal_requirements/{}/accept/".format(legal_requirement.id),
         content_type="application/json",
     )
 
-    d = response.json()
-    assert response.status_code == 200 and d["accepted"] is True
+    assert (
+        response.status_code == 200
+        and LegalRequirementEvent.objects.filter(
+            user=user["rlc_user"], legal_requirement=legal_requirement
+        ).exists()
+    )

@@ -9,11 +9,7 @@ from core.auth.use_cases.finders import (
     org_user_from_id_dangerous,
     rlc_user_from_id,
 )
-from core.legal.models import (
-    LegalRequirement,
-    LegalRequirementEvent,
-    LegalRequirementUser,
-)
+from core.legal.models import LegalRequirement, LegalRequirementEvent
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS
 from core.seedwork.use_case_layer import UseCaseError, use_case
 
@@ -40,30 +36,25 @@ def register_rlc_user(
     rlc_user.generate_keys(password)
 
     # legal stuff
-    lr_users = []
+    lr_events = []
     for lr in list(LegalRequirement.objects.all()):
         if lr.accept_required and lr.pk not in accepted_legal_requirements:
             raise UseCaseError(
                 "You need to accept the legal requirement: '{}'.".format(lr.title)
             )
-        lr_user = LegalRequirementUser(legal_requirement=lr, rlc_user=rlc_user)
-        lr_users.append(lr_user)
-    lr_events = []
-    for lr_user in lr_users:
-        lr_event = LegalRequirementEvent(
-            legal_requirement_user=lr_user,
-            actor=rlc_user,
-            text="Accepted on registration.",
+        event = LegalRequirementEvent(
+            legal_requirement=lr,
+            user=rlc_user,
+            actor=email,
             accepted=True,
+            text="Accepted on registration.",
         )
-        lr_events.append(lr_event)
+        lr_events.append(event)
 
     # save
     with transaction.atomic():
         user.save()
         rlc_user.save()
-        for lru in lr_users:
-            lru.save()
         for lre in lr_events:
             lre.save()
         assert rlc_user.key is not None

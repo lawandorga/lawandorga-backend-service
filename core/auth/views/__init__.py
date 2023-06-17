@@ -12,4 +12,22 @@ from .user import (
     CustomPasswordResetConfirmView,
     CustomPasswordResetDoneView,
     CustomPasswordResetView,
+    CustomRegisterDoneView,
+    CustomRegisterView,
 )
+
+__all__ = [
+    "CustomLoginView",
+    "CustomLogoutView",
+    "CustomPasswordResetCompleteView",
+    "CustomPasswordResetConfirmView",
+    "CustomPasswordResetDoneView",
+    "CustomPasswordResetView",
+    "CustomRegisterDoneView",
+    "CustomRegisterView",
+    "MfaDisableView",
+    "MfaEnableView",
+    "MfaLoginView",
+    "MfaSetupView",
+    "MfaStatusView",
+]

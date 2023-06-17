@@ -72,11 +72,11 @@ class HasPermission(models.Model):
             return self.group_has_permission_id
         return None
 
-    @property
-    def user_id(self):
-        if self.user_id:
-            return self.user_id
-        return None
+    # @property
+    # def user_id(self):
+    #     if self.user_id:
+    #         return self.user_id
+    #     return None
 
     @property
     def source(self):

@@ -1,7 +1,12 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
 from tinymce import models as tinymce_models
 
 from core.auth.models import RlcUser
+
+if TYPE_CHECKING:
+    from django.db.models.manager import RelatedManager
 
 
 class LegalRequirement(models.Model):
@@ -18,6 +23,9 @@ class LegalRequirement(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+    if TYPE_CHECKING:
+        events: RelatedManager["LegalRequirementEvent"]
+
     def __str__(self):
         return "legalRequirement: {}; title: {};".format(self.id, self.title)
 
@@ -25,6 +33,19 @@ class LegalRequirement(models.Model):
         ordering = ["order"]
         verbose_name = "LegalRequirement"
         verbose_name_plural = "LegalRequirements"
+
+    def _set_accepted_of_user(self, user: RlcUser):
+        if (
+            hasattr(self, "events_of_user")
+            and len(self.events_of_user)
+            and self.events_of_user[-1].accepted
+        ):
+            self.accepted_of_user = True
+        else:
+            self.accepted_of_user = False
+
+    def _set_events_of_user(self, user: RlcUser):
+        self.events_of_user = list(self.events.filter(user=user).order_by("-created"))
 
 
 class LegalRequirementUser(models.Model):
@@ -65,9 +86,30 @@ class LegalRequirementUser(models.Model):
 
 class LegalRequirementEvent(models.Model):
     legal_requirement_user = models.ForeignKey(
-        LegalRequirementUser, on_delete=models.CASCADE, related_name="events"
+        LegalRequirementUser,
+        on_delete=models.CASCADE,
+        related_name="events",
+        blank=True,
+        null=True,
     )
-    actor = models.ForeignKey(RlcUser, on_delete=models.CASCADE, blank=True, null=True)
+    legal_requirement = models.ForeignKey(
+        LegalRequirement,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="events",
+    )
+    user = models.ForeignKey(
+        RlcUser,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="legal_requirement_events",
+    )
+    actor = models.CharField(max_length=1000, blank=True)
+    actor_old = models.ForeignKey(
+        RlcUser, on_delete=models.CASCADE, blank=True, null=True
+    )
     text = models.TextField(blank=True)
     accepted = models.BooleanField()
     created = models.DateTimeField(auto_now_add=True)
@@ -75,7 +117,7 @@ class LegalRequirementEvent(models.Model):
 
     def __str__(self):
         return "event: {}; legalRequirement: {};".format(
-            self.id, self.legal_requirement_user.legal_requirement.title
+            self.id, self.legal_requirement.title
         )
 
     class Meta:

@@ -12,6 +12,12 @@ urlpatterns: list[Union[URLPattern, URLResolver]] = [
     path("api/matrix_users/", include(api.matrix_user_router.urls)),
     path("api/keys/", include(api.keys_router.urls)),
     path("api/auth/query/", include(api.query_router.urls)),
+    path("auth/user/register/", views.CustomRegisterView.as_view(), name="register"),
+    path(
+        "auth/user/register/successful/",
+        views.CustomRegisterDoneView.as_view(),
+        name="register_done",
+    ),
     path("auth/user/logout/", views.CustomLogoutView.as_view(), name="logout"),
     path("auth/user/login/", views.CustomLoginView.as_view(), name="login"),
     path(

@@ -1,0 +1,19 @@
+{% extends 'symbols/base.html' %}
+
+{% block title %}Registration Successful{% endblock %}
+
+{% block content %}
+<div class="{% include 'symbols/prose.class' %}">
+    <h1>Account Created</h1>
+    <p>
+        Your account was created. 2 things need to happen before you can
+        login:
+    </p>
+    <ol>
+        <li>An admin from your LC needs to accept you as a member.</li>
+        <li>
+            You need to confirm your email. We've sent you an email to do that.
+        </li>
+    </ol>
+</div>
+{% endblock %}

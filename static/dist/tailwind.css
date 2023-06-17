@@ -1,6 +1,6 @@
 /* https://tailwindcss.com/blog/standalone-cli */
 
-/* ! tailwindcss v3.2.4 | MIT License | https://tailwindcss.com */
+/* ! tailwindcss v3.3.1 | MIT License | https://tailwindcss.com */
 
 /*
 1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)
@@ -31,6 +31,7 @@
 3. Use a more readable tab size.
 4. Use the user's configured `sans` font-family by default.
 5. Use the user's configured `sans` font-feature-settings by default.
+6. Use the user's configured `sans` font-variation-settings by default.
 */
 
 html {
@@ -47,6 +48,8 @@ html {
   /* 4 */
   font-feature-settings: normal;
   /* 5 */
+  font-variation-settings: normal;
+  /* 6 */
 }
 
 /*
@@ -518,6 +521,11 @@ video {
   max-width: 65ch;
 }
 
+.prose :where(p):not(:where([class~="not-prose"] *)) {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+}
+
 .prose :where([class~="lead"]):not(:where([class~="not-prose"] *)) {
   color: var(--tw-prose-lead);
   font-size: 1.25em;
@@ -870,11 +878,6 @@ video {
   line-height: 1.75;
 }
 
-.prose :where(p):not(:where([class~="not-prose"] *)) {
-  margin-top: 1.25em;
-  margin-bottom: 1.25em;
-}
-
 .prose :where(video):not(:where([class~="not-prose"] *)) {
   margin-top: 2em;
   margin-bottom: 2em;
@@ -984,24 +987,20 @@ video {
   margin-right: auto;
 }
 
-.mt-6 {
-  margin-top: 1.5rem;
-}
-
-.mt-8 {
-  margin-top: 2rem;
+.mt-20 {
+  margin-top: 5rem;
 }
 
 .mt-3 {
   margin-top: 0.75rem;
 }
 
-.mt-12 {
-  margin-top: 3rem;
+.mt-6 {
+  margin-top: 1.5rem;
 }
 
-.mt-20 {
-  margin-top: 5rem;
+.mt-8 {
+  margin-top: 2rem;
 }
 
 .block {
@@ -1036,10 +1035,6 @@ video {
   width: auto;
 }
 
-.max-w-5xl {
-  max-width: 64rem;
-}
-
 .border-collapse {
   border-collapse: collapse;
 }
@@ -1056,24 +1051,24 @@ video {
   border-width: 1px;
 }
 
-.bg-white {
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
-}
-
 .bg-gray-50 {
   --tw-bg-opacity: 1;
   background-color: rgb(249 250 251 / var(--tw-bg-opacity));
 }
 
-.py-12 {
-  padding-top: 3rem;
-  padding-bottom: 3rem;
+.bg-white {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 
 .px-4 {
   padding-left: 1rem;
   padding-right: 1rem;
+}
+
+.py-12 {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
 }
 
 .py-8 {
@@ -1104,11 +1099,6 @@ video {
   line-height: 1.25rem;
 }
 
-.text-base {
-  font-size: 1rem;
-  line-height: 1.5rem;
-}
-
 .font-bold {
   font-weight: 700;
 }
@@ -1121,9 +1111,9 @@ video {
   letter-spacing: -0.025em;
 }
 
-.text-gray-900 {
+.text-blue-600 {
   --tw-text-opacity: 1;
-  color: rgb(17 24 39 / var(--tw-text-opacity));
+  color: rgb(39 95 111 / var(--tw-text-opacity));
 }
 
 .text-gray-700 {
@@ -1131,9 +1121,9 @@ video {
   color: rgb(55 65 81 / var(--tw-text-opacity));
 }
 
-.text-blue-600 {
+.text-gray-900 {
   --tw-text-opacity: 1;
-  color: rgb(39 95 111 / var(--tw-text-opacity));
+  color: rgb(17 24 39 / var(--tw-text-opacity));
 }
 
 .shadow {
@@ -1150,7 +1140,17 @@ video {
   margin-bottom: calc(1rem * var(--tw-space-y-reverse));
 }
 
-.tailwind-form input:not([type=suhbmit]) {
+/* input */
+
+.tailwind-form input[type=hidden] {
+  display: none;
+}
+
+.tailwind-form input[name=csrfmiddlewaretoken] + p {
+  margin-top: 0!important;
+}
+
+.tailwind-form input:not([type=submit]):not([type="checkbox"]), .tailwind-form select {
   display: block;
   width: 100%;
   -webkit-appearance: none;
@@ -1166,23 +1166,23 @@ video {
   padding-bottom: 0.5rem;
 }
 
-.tailwind-form input:not([type=suhbmit])::-moz-placeholder {
+.tailwind-form input:not([type=submit]):not([type="checkbox"])::-moz-placeholder, .tailwind-form select::-moz-placeholder {
   --tw-placeholder-opacity: 1;
   color: rgb(156 163 175 / var(--tw-placeholder-opacity));
 }
 
-.tailwind-form input:not([type=suhbmit])::placeholder {
+.tailwind-form input:not([type=submit]):not([type="checkbox"])::placeholder, .tailwind-form select::placeholder {
   --tw-placeholder-opacity: 1;
   color: rgb(156 163 175 / var(--tw-placeholder-opacity));
 }
 
-.tailwind-form input:not([type=suhbmit]) {
+.tailwind-form input:not([type=submit]):not([type="checkbox"]), .tailwind-form select {
   --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
-.tailwind-form input:not([type=suhbmit]):focus-within {
+.tailwind-form input:not([type=submit]):not([type="checkbox"]):focus-within, .tailwind-form select:focus-within {
   --tw-border-opacity: 1;
   border-color: rgb(0 60 77 / var(--tw-border-opacity));
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
@@ -1192,7 +1192,7 @@ video {
   --tw-ring-color: rgb(0 60 77 / var(--tw-ring-opacity));
 }
 
-.tailwind-form input:not([type=suhbmit]):focus {
+.tailwind-form input:not([type=submit]):not([type="checkbox"]):focus, .tailwind-form select:focus {
   --tw-border-opacity: 1;
   border-color: rgb(0 60 77 / var(--tw-border-opacity));
   outline: 2px solid transparent;
@@ -1205,7 +1205,7 @@ video {
 }
 
 @media (min-width: 640px) {
-  .tailwind-form input:not([type=suhbmit]) {
+  .tailwind-form input:not([type=submit]):not([type="checkbox"]), .tailwind-form select {
     font-size: 0.875rem;
     line-height: 1.25rem;
   }
@@ -1251,19 +1251,75 @@ video {
   --tw-ring-offset-width: 2px;
 }
 
-.tailwind-form input[type=hidden] {
-  display: none;
+/* select */
+
+.tailwind-form select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
 }
 
-.tailwind-form input[name=csrfmiddlewaretoken] + p {
-  margin-top: 0!important;
+/* checkbox */
+
+.tailwind-form input[type="checkbox"] {
+  /* @apply inline-block w-auto mr-1 border-gray-300 rounded text-lorgablue focus:ring-lorgablue; */
+  margin-right: 0.25rem;
+  border-radius: 0.25rem;
+  --tw-border-opacity: 1;
+  border-color: rgb(209 213 219 / var(--tw-border-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(0 60 77 / var(--tw-text-opacity));
+  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
+
+.tailwind-form input[type="checkbox"]:focus {
+  --tw-border-opacity: 1;
+  border-color: rgb(0 60 77 / var(--tw-border-opacity));
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+  --tw-ring-color: rgb(0 60 77 / var(--tw-ring-opacity));
+  --tw-ring-opacity: 0.5;
+  --tw-ring-offset-width: 0px;
+}
+
+.tailwind-form input[type="checkbox"] {
+  display: inline-block;
+  height: 1rem;
+  width: 1rem;
+  flex-shrink: 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  border-width: 1px;
+  padding: 0px;
+  vertical-align: middle;
+}
+
+.tailwind-form input[type='checkbox']:checked, input[type='radio']:checked {
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+  border-color: transparent;
+  background-color: currentColor;
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* label */
 
 .tailwind-form label {
   font-weight: 500;
   --tw-text-opacity: 1;
   color: rgb(55 65 81 / var(--tw-text-opacity));
 }
+
+/* error */
 
 .tailwind-form .errorlist {
   margin-top: 0.25rem !important;
@@ -1280,7 +1336,11 @@ video {
   color: rgb(185 28 28 / var(--tw-text-opacity));
 }
 
+/* help */
+
 .tailwind-form .help {
+  --tw-text-opacity: 1;
+  color: rgb(75 85 99 / var(--tw-text-opacity));
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
@@ -1318,25 +1378,25 @@ video {
     border-radius: 0.5rem;
   }
 
-  .sm\:px-6 {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-
   .sm\:px-10 {
     padding-left: 2.5rem;
     padding-right: 2.5rem;
   }
+
+  .sm\:px-6 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
 }
 
 @media (min-width: 1024px) {
-  .lg\:px-8 {
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
-
   .lg\:px-0 {
     padding-left: 0px;
     padding-right: 0px;
+  }
+
+  .lg\:px-8 {
+    padding-left: 2rem;
+    padding-right: 2rem;
   }
 }

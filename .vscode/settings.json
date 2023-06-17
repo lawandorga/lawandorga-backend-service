@@ -3,9 +3,6 @@
       "source.fixAll": true
   },
   "tailwindCSS.emmetCompletions": true,
-  "python.testing.pytestArgs": [
-      "backend"
-  ],
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
   "python.formatting.provider": "black",
