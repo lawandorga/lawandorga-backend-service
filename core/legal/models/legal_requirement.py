@@ -34,6 +34,21 @@ class LegalRequirement(models.Model):
         verbose_name = "LegalRequirement"
         verbose_name_plural = "LegalRequirements"
 
+    @classmethod
+    def is_locked(cls, user: RlcUser) -> bool:
+        lrs = LegalRequirement.objects.filter(accept_required=True)
+        lrs_list = list(lrs)
+        for lr in lrs_list:
+            if not lr.is_accepted(user):
+                return True
+        return False
+
+    def is_accepted(self, user: RlcUser) -> bool:
+        event = self.events.filter(user=user).order_by("-created").last()
+        if event:
+            return event.accepted
+        return False
+
     def _set_accepted_of_user(self, user: RlcUser):
         if (
             hasattr(self, "events_of_user")

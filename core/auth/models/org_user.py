@@ -252,12 +252,9 @@ class RlcUser(Aggregate, models.Model):
 
     @property
     def locked_legal(self):
-        for lr in list(
-            self.legal_requirements_user.filter(legal_requirement__accept_required=True)
-        ):
-            if not lr.accepted:
-                return True
-        return False
+        from core.legal.models import LegalRequirement
+
+        return LegalRequirement.is_locked(self)
 
     @property
     def records_information(self):
