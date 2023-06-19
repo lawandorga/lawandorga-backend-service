@@ -32,16 +32,16 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Black
-        run: pdm run black . --check
+        run: black . --check
   
       - name: Run Ruff
-        run: pdm run ruff check .
+        run: ruff check .
 
       - name: Run Isort
-        run: pdm run isort .
+        run: isort .
       
       - name: Run Flake
-        run: pdm run flake8 .
+        run: flake8 .
 
       - name: Run MyPy
-        run: pdm run mypy .
+        run: mypy .
