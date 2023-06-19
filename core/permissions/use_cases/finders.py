@@ -1,8 +1,7 @@
 from django.db.models import Q
 
 from core.auth.models.org_user import RlcUser
-from core.permissions.models import Permission
-from core.rlc.models.has_permission import HasPermission
+from core.permissions.models import HasPermission, Permission
 from core.seedwork.use_case_layer import finder_function
 
 

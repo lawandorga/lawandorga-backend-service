@@ -60,7 +60,7 @@ def delete_folder(__actor: RlcUser, folder_pk: UUID):
                 "You can not delete this folder because it has subfolders. Delete the subfolders first."
             )
 
-    if "RECORD" in map(lambda i: i.repository, folder.items):
+    if "RECORDS_RECORD" in map(lambda i: i.repository, folder.items):
         raise UseCaseError(
             "You can not delete this folder because it contains a record. Delete the record first."
         )

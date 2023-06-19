@@ -14,9 +14,6 @@ class LegalRequirement(models.Model):
     content = tinymce_models.HTMLField()
     accept_required = models.BooleanField()
     show_on_register = models.BooleanField(default=False)
-    rlc_users = models.ManyToManyField(
-        RlcUser, through="LegalRequirementUser", related_name="legal_requirements"
-    )
     order = models.IntegerField(default=0)
     button_text = models.CharField(default="Accept", max_length=1000)
     accept_text = models.CharField(default="Accepted", max_length=1000)
@@ -63,68 +60,18 @@ class LegalRequirement(models.Model):
         self.events_of_user = list(self.events.filter(user=user).order_by("-created"))
 
 
-class LegalRequirementUser(models.Model):
-    legal_requirement = models.ForeignKey(
-        LegalRequirement,
-        on_delete=models.CASCADE,
-        related_name="legal_requirements_user",
-    )
-    rlc_user = models.ForeignKey(
-        RlcUser, on_delete=models.CASCADE, related_name="legal_requirements_user"
-    )
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return "legalRequirementUser: {}; legalRequirement: {}; user: {};".format(
-            self.id, self.legal_requirement.title, self.rlc_user.id
-        )
-
-    class Meta:
-        verbose_name = "LegalRequirementUser"
-        verbose_name_plural = "LegalRequirementUsers"
-        unique_together = ["legal_requirement", "rlc_user"]
-        ordering = ["legal_requirement__order"]
-
-    @property
-    def accepted(self):
-        last_event = self.events.order_by("created").last()
-        if last_event:
-            return last_event.accepted
-        return False
-
-    @property
-    def events_list(self):
-        events = list(self.events.order_by("created"))
-        return events
-
-
 class LegalRequirementEvent(models.Model):
-    legal_requirement_user = models.ForeignKey(
-        LegalRequirementUser,
-        on_delete=models.CASCADE,
-        related_name="events",
-        blank=True,
-        null=True,
-    )
     legal_requirement = models.ForeignKey(
         LegalRequirement,
         on_delete=models.CASCADE,
-        blank=True,
-        null=True,
         related_name="events",
     )
     user = models.ForeignKey(
         RlcUser,
         on_delete=models.CASCADE,
-        blank=True,
-        null=True,
         related_name="legal_requirement_events",
     )
     actor = models.CharField(max_length=1000, blank=True)
-    actor_old = models.ForeignKey(
-        RlcUser, on_delete=models.CASCADE, blank=True, null=True
-    )
     text = models.TextField(blank=True)
     accepted = models.BooleanField()
     created = models.DateTimeField(auto_now_add=True)

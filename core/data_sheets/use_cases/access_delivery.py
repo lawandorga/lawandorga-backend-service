@@ -4,8 +4,8 @@ from core.auth.models import RlcUser
 from core.data_sheets.models import Record
 from core.data_sheets.use_cases.record import migrate_record_into_folder
 from core.folders.domain.repositiories.folder import FolderRepository
+from core.permissions.models import Permission
 from core.permissions.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
-from core.rlc.models import Permission
 from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.use_case_layer import use_case
 

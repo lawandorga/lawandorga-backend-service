@@ -4,7 +4,7 @@ from uuid import UUID
 
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from pydantic import AnyUrl, BaseModel, EmailStr, validator
+from pydantic import AnyUrl, BaseModel, validator
 
 from core.seedwork.api_layer import qs_to_list
 
@@ -83,21 +83,6 @@ class OutputRegisterPage(BaseModel):
 
     class Config:
         orm_mode = True
-
-
-class InputRlcUserCreate(BaseModel):
-    org: int
-    name: str
-    email: EmailStr
-    password: str
-    password_confirm: str
-    accepted_legal_requirements: list[int] = []
-
-    @validator("password_confirm")
-    def passwords_match(cls, v, values, **kwargs):
-        if "password" not in values or "password" in values and v != values["password"]:
-            raise ValueError("The passwords do not match.")
-        return v
 
 
 class InputConfirmEmail(BaseModel):

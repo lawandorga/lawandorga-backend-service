@@ -29,12 +29,13 @@ from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
 )
+from core.permissions.models import HasPermission, Permission
 from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
-from core.rlc.models import HasPermission, Org, OrgEncryption, Permission
+from core.rlc.models import Org, OrgEncryption
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.events_addon import EventsAddon
@@ -534,15 +535,11 @@ class RlcUser(Aggregate, models.Model):
         self.is_private_key_encrypted = False
 
     def __get_as_user_permissions(self) -> List[str]:
-        from core.models import HasPermission
-
         permissions = list(HasPermission.objects.filter(user__id=self.pk))
 
         return [has_permission.permission.name for has_permission in permissions]
 
     def __get_as_group_member_permissions(self) -> List[str]:
-        from core.models import HasPermission
-
         groups = [groups["id"] for groups in list(self.groups.values("id"))]
 
         return [
@@ -642,13 +639,10 @@ class RlcUser(Aggregate, models.Model):
         HasPermission.objects.create(user=self, permission=p)
 
     def __has_as_user_permission(self, permission):
-        from core.models import HasPermission
-
         return HasPermission.objects.filter(user=self, permission=permission).exists()
 
     def __has_as_group_member_permission(self, permission):
         groups = [group.pk for group in self.groups.all()]
-        from core.models import HasPermission
 
         return HasPermission.objects.filter(
             group_has_permission__pk__in=groups, permission=permission
@@ -676,6 +670,7 @@ class RlcUser(Aggregate, models.Model):
     @property
     def badges(self):
         from core.data_sheets.models import RecordAccess, RecordDeletion
+        from core.legal.models.legal_requirement import LegalRequirement
         from core.records.models.access import RecordsAccessRequest
         from core.records.models.deletion import RecordsDeletion
 
@@ -702,8 +697,8 @@ class RlcUser(Aggregate, models.Model):
 
         # legal
         legal = 0
-        for lr in list(self.legal_requirements_user.all()):
-            if not lr.accepted:
+        for lr in list(LegalRequirement.objects.all()):
+            if not lr.is_accepted(self):
                 legal += 1
 
         # record

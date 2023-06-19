@@ -1,8 +1,7 @@
-import json
-
 import pytest
 from django.test.client import Client
 
+from core.auth.models.org_user import RlcUser
 from core.legal.models import LegalRequirement
 
 
@@ -12,17 +11,17 @@ def data(org):
         "org": org.pk,
         "name": "Mr. Test",
         "email": "test@law-orga.de",
-        "password": "pass1234",
-        "password_confirm": "pass1234",
+        "password1": "pass1234!!",
+        "password2": "pass1234!!",
+        "lrs": [],
     }
 
 
 def test_register_works(org, data):
     c = Client()
-    response = c.post(
-        "/api/rlc_users/", data=json.dumps(data), content_type="application/json"
-    )
-    assert response.status_code == 200
+    response = c.post("/auth/user/register/", data=data)
+    assert response.status_code == 302
+    assert RlcUser.objects.filter(user__email=data["email"]).exists()
 
 
 def test_create_returns_error_message_on_different_passwords(org):
@@ -31,21 +30,19 @@ def test_create_returns_error_message_on_different_passwords(org):
         "org": org.pk,
         "name": "Test",
         "email": "test@law-orga.de",
-        "password": "test1",
-        "password_confirm": "test2",
+        "password1": "test1",
+        "password2": "test2",
+        "lrs": [],
     }
-    response = c.post(
-        "/api/rlc_users/", data=json.dumps(data), content_type="application/json"
-    )
-    assert response.status_code == 422
+    response = c.post("/auth/user/register/", data=data)
+    assert "password fields didn" in response.content.decode()
+    assert not RlcUser.objects.filter(user__email=data["email"]).exists()
 
 
-def test_everybody_can_post_to_user_create(db):
+def test_everybody_can_get_to_user_create(db):
     client = Client()
-    response = client.post(
-        "/api/rlc_users/", data=json.dumps({}), content_type="application/json"
-    )
-    assert response.status_code == 422
+    response = client.get("/auth/user/register/")
+    assert response.status_code == 200
 
 
 def test_with_legal_requirement_blocks(db, data):
@@ -54,10 +51,9 @@ def test_with_legal_requirement_blocks(db, data):
         title="Not required", accept_required=False, content=""
     )
     client = Client()
-    response = client.post(
-        "/api/rlc_users/", data=json.dumps(data), content_type="application/json"
-    )
-    assert response.status_code == 400
+    response = client.post("/auth/user/register/", data=data)
+    assert response.status_code == 200
+    assert not RlcUser.objects.filter(user__email=data["email"]).exists()
 
 
 def test_with_legal_requirement_works(db, data):
@@ -70,6 +66,7 @@ def test_with_legal_requirement_works(db, data):
     )
     client = Client()
     response = client.post(
-        "/api/rlc_users/", data=json.dumps(data), content_type="application/json"
+        "/auth/user/register/", data={**data, "lrs": [lr_required.pk]}
     )
-    assert response.status_code == 200
+    assert response.status_code == 302
+    assert RlcUser.objects.filter(user__email=data["email"]).exists()

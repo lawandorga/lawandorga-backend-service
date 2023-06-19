@@ -28,6 +28,7 @@ class CustomUserCreationForm(UserCreationForm):
             Q(accept_required=True) | Q(show_on_register=True)
         ),
         label="Accept Legal Requirements",
+        required=False,
     )
 
     class Meta:
@@ -48,3 +49,14 @@ class CustomUserCreationForm(UserCreationForm):
             self.cleaned_data["org"].pk,
         )
         return RlcUser.objects.get(user__email=self.cleaned_data["email"])
+
+    def clean_lrs(self):
+        value = self.cleaned_data["lrs"]
+        lrs_list = list(value)
+        required_lrs = LegalRequirement.objects.filter(accept_required=True)
+        for lr in required_lrs:
+            if lr not in lrs_list:
+                raise forms.ValidationError(
+                    f"You have to accept the legal requirement '{lr.title}'"
+                )
+        return value

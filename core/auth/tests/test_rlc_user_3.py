@@ -4,17 +4,16 @@ from datetime import datetime, timedelta
 import pytest
 from django.test import Client
 
+from core.auth.models import RlcUser
+from core.auth.token_generator import EmailConfirmationTokenGenerator
 from core.data_sheets.models import RecordTemplate
 from core.models import Org
-from core.seedwork import test_helpers as data
-
-from ...permissions.static import (
+from core.permissions.models import Permission
+from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_PERMISSIONS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
-from ...rlc.models import Permission
-from ..models import RlcUser
-from ..token_generator import EmailConfirmationTokenGenerator
+from core.seedwork import test_helpers as data
 
 
 @pytest.fixture

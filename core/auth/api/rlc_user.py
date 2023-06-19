@@ -4,18 +4,12 @@ from django.db.models import Q
 from pydantic import BaseModel
 
 from core.auth.models import RlcUser
-from core.auth.use_cases.rlc_user import (
-    confirm_email,
-    delete_user,
-    register_rlc_user,
-    unlock_user,
-)
+from core.auth.use_cases.rlc_user import confirm_email, delete_user, unlock_user
+from core.permissions.models import HasPermission, Permission
 from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_PERMISSIONS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
-from core.rlc.models import Permission
-from core.rlc.models.has_permission import HasPermission
 from core.seedwork.api_layer import ApiError, Router
 
 from . import schemas
@@ -26,19 +20,6 @@ router = Router()
 @router.delete(url="<int:id>/")
 def command__delete_user(rlc_user: RlcUser, data: schemas.InputRlcUserDelete):
     delete_user(rlc_user, data.id)
-
-
-# register
-@router.post()
-def command__create_user(data: schemas.InputRlcUserCreate):
-    register_rlc_user(
-        None,
-        org_id=data.org,
-        name=data.name,
-        password=data.password,
-        email=data.email,
-        accepted_legal_requirements=data.accepted_legal_requirements,
-    )
 
 
 @router.post(url="<int:id>/confirm_email/<str:token>/")

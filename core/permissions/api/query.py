@@ -2,14 +2,13 @@ from django.db.models.query_utils import Q
 from pydantic import BaseModel
 
 from core.auth.models.org_user import RlcUser
-from core.permissions.models import Permission
+from core.permissions.models import HasPermission, Permission
 from core.permissions.static import (
     get_all_admin_permissions,
     get_all_collab_permissions,
     get_all_files_permissions,
     get_all_records_permissions,
 )
-from core.rlc.models.has_permission import HasPermission
 from core.seedwork.api_layer import Router
 
 router = Router()

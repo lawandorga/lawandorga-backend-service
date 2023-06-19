@@ -1,11 +1,7 @@
 from django.contrib import admin
 
 from .forms import OrgAdminForm
-from .models import Group, HasPermission, Meta, Note, Org, OrgEncryption, Permission
-
-
-class HasPermissionAdmin(admin.ModelAdmin):
-    autocomplete_fields = ["user"]
+from .models import Group, Meta, Note, Org, OrgEncryption
 
 
 class UsersRlcKeysAdmin(admin.ModelAdmin):
@@ -35,7 +31,5 @@ class OrgAdmin(admin.ModelAdmin):
 admin.site.register(Note)
 admin.site.register(Org, OrgAdmin)
 admin.site.register(Group)
-admin.site.register(Permission)
-admin.site.register(HasPermission, HasPermissionAdmin)
 admin.site.register(OrgEncryption, UsersRlcKeysAdmin)
 admin.site.register(Meta)

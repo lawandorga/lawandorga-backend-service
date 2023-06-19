@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from .models import LegalRequirement, LegalRequirementEvent, LegalRequirementUser
+from .models import LegalRequirement, LegalRequirementEvent
 
 admin.site.register(LegalRequirement)
-admin.site.register(LegalRequirementUser)
 admin.site.register(LegalRequirementEvent)
