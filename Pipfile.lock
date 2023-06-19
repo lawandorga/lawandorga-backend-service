@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d9f0d562d9eddc2d3614900c06504514f8fc026044fb22f3acbf6f7c88e25f53"
+            "sha256": "0d46795b799626c3a8be2c071f657fb3a8f05d47ea9736e1415f6bceb8e429f3"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -401,11 +401,11 @@
         },
         "django-cors-headers": {
             "hashes": [
-                "sha256:37e42883b5f1f2295df6b4bba96eb2417a14a03270cb24b2a07f021cd4487cf4",
-                "sha256:f9dc6b4e3f611c3199700b3e5f3398c28757dcd559c2f82932687f3d0443cfdf"
+                "sha256:36a8d7a6dee6a85f872fe5916cc878a36d0812043866355438dfeda0b20b6b78",
+                "sha256:88a4bfae24b6404dd0e0640203cb27704a2a57fd546a429e5d821dfa53dd1acf"
             ],
             "index": "pypi",
-            "version": "==3.13.0"
+            "version": "==4.1.0"
         },
         "django-debug-toolbar": {
             "hashes": [
@@ -448,7 +448,7 @@
                 "sha256:2696d6f7d8538341b060cffa9565c72ea797e866687e040b86d29cad8799e5fe",
                 "sha256:4b6b63e49f4ba30d93ec46f87507648c99c9de6911e651ad69db7084fd5b2f4e"
             ],
-            "markers": "python_version >= '3.8'",
+            "markers": "python_full_version >= '3.8.0'",
             "version": "==4.2.1"
         },
         "django-tinymce": {
@@ -904,7 +904,7 @@
                 "sha256:a8df96034aae6d2d50a4ebe8216326c61c3eb64836776504fcca410e5937a3ba",
                 "sha256:f5971a9226b701070a4bf2c38c89e5a3f0d64de8debda981d1db98583009122a"
             ],
-            "markers": "python_version >= '3.8'",
+            "markers": "python_full_version >= '3.8.0'",
             "version": "==1.0.0"
         },
         "pytz": {
@@ -991,7 +991,7 @@
                 "sha256:0a836692e67247cad9f251e083b045b13345cc715e69a7fbc16522beaa0f2163",
                 "sha256:571ecbcdf33b7828c05e5cd95a8e8ad06af111c2c83a6a245be4d8f7c43de7bb"
             ],
-            "markers": "python_version >= '3.8'",
+            "markers": "python_full_version >= '3.8.0'",
             "version": "==5.8.3"
         },
         "tomli": {
