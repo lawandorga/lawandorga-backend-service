@@ -33,11 +33,17 @@ from core.seedwork.permission import CheckPermissionWall
 ###
 # QuestionnaireTemplate
 ###
-class QuestionnaireTemplateViewSet(CheckPermissionWall, viewsets.ModelViewSet):
+class QuestionnaireTemplateViewSet(
+    CheckPermissionWall,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = QuestionnaireTemplate.objects.none()
     serializer_class = QuestionnaireTemplateSerializer
     permission_wall = {
-        "create": PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
         "partial_update": PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
         "update": PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
         "destroy": PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
@@ -45,9 +51,6 @@ class QuestionnaireTemplateViewSet(CheckPermissionWall, viewsets.ModelViewSet):
 
     def get_queryset(self):
         return QuestionnaireTemplate.objects.filter(rlc=self.request.user.rlc)
-
-    def perform_create(self, serializer):
-        return serializer.save()
 
     def perform_destroy(self, instance):
         try:

@@ -15,8 +15,10 @@ from core.rlc.models import Group, Org
 from core.seedwork.repository import RepositoryWarehouse
 
 
-def create_raw_org(name="Dummy's Org", pk=1):
+def create_raw_org(name="Dummy's Org", pk=1, save=False):
     org = Org.create(name=name, pk=pk)
+    if save:
+        org.save()
     return org
 
 
@@ -33,9 +35,10 @@ def create_raw_org_user(
     accepted=True,
     user_pk=1,
     pk=1,
+    save=False,
 ):
     if org is None:
-        org = create_raw_org()
+        org = create_raw_org(save=save)
     user = RlcUser.create(
         org=org,
         email=email,
@@ -46,6 +49,8 @@ def create_raw_org_user(
         user_pk=user_pk,
         pk=pk,
     )
+    if save:
+        user.save()
     return user
 
 
