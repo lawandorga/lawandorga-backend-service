@@ -9,10 +9,23 @@ from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.models import RlcUser, UserProfile
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
+from core.questionnaires.models.template import QuestionnaireTemplate
 from core.records.models.record import RecordsRecord
 from core.records.use_cases.record import create_record as uc_create_record
 from core.rlc.models import Group, Org
 from core.seedwork.repository import RepositoryWarehouse
+
+
+def create_questionnaire_template(
+    org: Org,
+    name="Test Template",
+    notes="Notes of the test template.",
+    save=False,
+):
+    template = QuestionnaireTemplate.create(name=name, org=org, notes=notes)
+    if save:
+        template.save()
+    return template
 
 
 def create_raw_org(name="Dummy's Org", pk=1, save=False):
@@ -82,8 +95,10 @@ def create_folder(name="Test Folder", user: RlcUser | None = None):
     return {"folder": folder}
 
 
-def create_org(name="Dummy RLC"):
-    org = Org.objects.create(name=name)
+def create_org(name="Dummy RLC", save=True):
+    org = Org.create(name=name)
+    if save:
+        org.save()
     return {"org": org}
 
 
@@ -114,15 +129,18 @@ def create_rlc_user(
     rlc=None,
     accepted=True,
     password=settings.DUMMY_USER_PASSWORD,
+    save=True,
 ):
     if rlc is None:
-        rlc = create_org("Dummy's Org")["org"]
+        rlc = create_org("Dummy's Org", save=save)["org"]
     user = UserProfile.objects.create(email=email, name=name)
     user.set_password(password)
-    user.save()
+    if save:
+        user.save()
     rlc_user = RlcUser(user=user, email_confirmed=True, accepted=accepted, org=rlc)
     rlc_user.generate_keys(password)
-    rlc_user.save()
+    if save:
+        rlc_user.save()
     private_key = (
         UserKey.create_from_dict(rlc_user.key)
         .decrypt_self(password)

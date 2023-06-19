@@ -35,6 +35,12 @@ class QuestionnaireTemplate(models.Model):
         )
         return q
 
+    def update(self, name: str | None, notes: str | None):
+        if name is not None:
+            self.name = name
+        if notes is not None:
+            self.notes = notes
+
 
 class QuestionnaireTemplateFile(models.Model):
     questionnaire = models.ForeignKey(
