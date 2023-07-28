@@ -5,12 +5,23 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Django",
+            "name": "Runserver",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",
             "args": [
                 "runserver"
+            ],
+            "django": true
+        },
+        {
+            "name": "Production: Check E-Mail Token",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/production_manage.py",
+            "args": [
+                "testemailkey",
+                "bjmskb-c531c6d206159095f8442c1771ae94fb"
             ],
             "django": true
         }
