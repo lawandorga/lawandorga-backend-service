@@ -23,7 +23,18 @@ This project uses Django, which is based on python.
 3. `pipenv install`
 4. Create `tmp/media/`, `tmp/static/`, `tmp/logs`
 5. Run `pipenv shell`
-6. Run `python manage.py runserver`
+6. Run `python manage.py migrate`
+7. Run `python manage.py create_dummy_data`
+8. Run `python manage.py runserver`
+
+The command `create_dummy_data` creates an user with email `dummy@law-orga.de` and password `qwe123`. You can use it to login into the development frontend.
+
+### Local Dev
+
+1. `git pull`
+2. `pipenv install`
+3. `python manage.py migrate`
+4. `python manage.py runserver`
 
 ### Server Setup
 
