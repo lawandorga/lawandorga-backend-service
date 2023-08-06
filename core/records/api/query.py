@@ -41,6 +41,8 @@ class RecordDataPoint:
         attrs: dict = {}
         for ds in self.data_sheets:
             attrs = merge_attrs(attrs, ds.attributes)
+        attrs["Created"] = self.record.created.strftime("%d.%m.%Y %H:%M:%S")
+        attrs["Updated"] = self.record.updated.strftime("%d.%m.%Y %H:%M:%S")
         return attrs
 
     def has_access(self, user: RlcUser) -> bool:
