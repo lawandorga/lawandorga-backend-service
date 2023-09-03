@@ -1,19 +1,15 @@
 from django.conf import settings
 from django.contrib import admin
 from django.core.mail import send_mail
+from django.http import JsonResponse
 from django.urls import include, path
-from django.views.generic import RedirectView, TemplateView
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from django.views.generic import RedirectView, TemplateView, View
 
 from core import urls as api_urls
 from core.auth.views.user import CustomLoginView, CustomRedirectView
 
 
-class EmailView(APIView):
-    def get_permissions(self):
-        return []
-
+class EmailView(View):
     def get(self, request, *args, **kwargs):
         send_mail(
             "Test Mail",
@@ -22,7 +18,7 @@ class EmailView(APIView):
             [a[1] for a in settings.ADMINS],
             fail_silently=False,
         )
-        return Response({"status": "email sent"})
+        return JsonResponse({"status": "email sent"})
 
 
 handler400 = "config.handlers.handler400"
