@@ -1,10 +1,13 @@
 import environs
-import sentry_sdk
+
+# import sentry_sdk
 from corsheaders.defaults import default_headers
-from sentry_sdk.integrations.django import DjangoIntegration
-from sentry_sdk.integrations.logging import ignore_logger
 
 from .base import *
+
+# from sentry_sdk.integrations.django import DjangoIntegration
+# from sentry_sdk.integrations.logging import ignore_logger
+
 
 # Environment
 # https://github.com/sloria/environs/blob/master/examples/django_example.py
@@ -152,21 +155,21 @@ CALENDAR_URL = "https://calendar.law-orga.de/api/events/ics/"
 
 # sentry
 # see: https://sentry.law-orga.de/sentry/lawandorga-backend-service/getting-started/python-django/
-sentry_sdk.init(
-    dsn=env.str("SENTRY_DSN"),
-    integrations=[
-        DjangoIntegration(),
-    ],
-    # Set traces_sample_rate to 1.0 to capture 100%
-    # of transactions for performance monitoring.
-    # We recommend adjusting this value in production.
-    traces_sample_rate=1.0,
-    # If you wish to associate users to errors (assuming you are using
-    # django.contrib.auth) you may enable sending PII data.
-    send_default_pii=True,
-    environment="production",
-)
+# sentry_sdk.init(
+#     dsn=env.str("SENTRY_DSN"),
+#     integrations=[
+#         DjangoIntegration(),
+#     ],
+#     # Set traces_sample_rate to 1.0 to capture 100%
+#     # of transactions for performance monitoring.
+#     # We recommend adjusting this value in production.
+#     traces_sample_rate=1.0,
+#     # If you wish to associate users to errors (assuming you are using
+#     # django.contrib.auth) you may enable sending PII data.
+#     send_default_pii=True,
+#     environment="production",
+# )
 
 # sentry ignore disallowed host
 # see: https://github.com/getsentry/sentry-python/issues/641#issuecomment-595391423
-ignore_logger("django.security.DisallowedHost")
+# ignore_logger("django.security.DisallowedHost")
