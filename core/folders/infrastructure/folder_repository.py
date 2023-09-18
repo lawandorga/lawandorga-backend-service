@@ -44,8 +44,8 @@ def set_cache_on_object(obj, key: Union[int, str], value, seconds=4) -> None:
     value_key, time_key = get_cache_keys(key)
 
     time_value = timezone.now() + timedelta(seconds=seconds)
-    # setattr(obj, time_key, time_value)
-    # setattr(obj, value_key, value)
+    setattr(obj, time_key, time_value)
+    setattr(obj, value_key, value)
 
 
 def delete_cache_of_object(obj, key: Union[int, str]) -> None:
@@ -244,7 +244,6 @@ class DjangoFolderRepository(FolderRepository):
                 children.append(folder)
 
         return children
-        
 
     @classmethod
     def tree(cls, user: IOwner, org_pk: int) -> FolderTree:

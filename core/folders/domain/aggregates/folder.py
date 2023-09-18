@@ -59,6 +59,11 @@ class Folder:
             "stop_inherit": self.stop_inherit,
         }
 
+    def __eq__(self, other):
+        if not isinstance(other, Folder):
+            return False
+        return self.uuid == other.uuid
+
     @property
     def restricted(self):
         return self.__restricted

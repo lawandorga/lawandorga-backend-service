@@ -17,7 +17,8 @@ class DjangoRecordsRecordRepository(ItemRepository):
 
     @classmethod
     def retrieve(cls, uuid: UUID, org_pk: Optional[int] = None) -> "RecordsRecord":
-        assert isinstance(uuid, UUID) and isinstance(org_pk, int)
+        assert isinstance(uuid, UUID), f"uuid must be a UUID but is {type(uuid)}"
+        assert isinstance(org_pk, int), f"org_pk must be an int but is {type(org_pk)}"
         return RecordsRecord.objects.filter(uuid=uuid, org_id=org_pk).get()
 
 
