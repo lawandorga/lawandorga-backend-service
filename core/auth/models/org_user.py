@@ -47,6 +47,7 @@ from .user import UserProfile
 
 if TYPE_CHECKING:
     from core.auth.models.mfa import MultiFactorAuthenticationSecret
+    from core.rlc.models.group import Group
 
 
 class KeyOfUser(TypedDict):
@@ -149,8 +150,12 @@ class RlcUser(Aggregate, models.Model):
     # addons
     addons = {"events": EventsAddon}
     events: EventsAddon
-    # typing
-    mfa_secret: "MultiFactorAuthenticationSecret"
+
+    if TYPE_CHECKING:
+        mfa_secret: "MultiFactorAuthenticationSecret"
+        id: int
+        groups: models.QuerySet[Group]
+        org_id: int
 
     class Meta:
         verbose_name = "RlcUser"

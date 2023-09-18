@@ -12,6 +12,7 @@ from core.seedwork.domain_layer import DomainError
 
 if TYPE_CHECKING:
     from core.models import MailUser, MatrixUser, Permission, RlcUser, StatisticUser
+    from core.rlc.models.org_encryption import OrgEncryption
 
 
 class UserProfileManager(BaseUserManager):
@@ -41,6 +42,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     statistic_user: "StatisticUser"
     matrix_user: "MatrixUser"
     mail_user: "MailUser"
+
+    if TYPE_CHECKING:
+        users_rlc_keys: models.QuerySet["OrgEncryption"]
 
     class Meta:
         verbose_name = "UserProfile"
@@ -109,7 +113,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             raise ValueError("You need to set (private_key_user).")
 
     def test_all_keys(self, private_key_user):
-        self.users_rlc_keys.first().test(private_key_user)
+        self.users_rlc_keys.get().test(private_key_user)
 
     def generate_keys_for_user(self, private_key_self, user_to_unlock):
         """
