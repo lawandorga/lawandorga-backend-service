@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Any, List, Optional
 
 from pydantic import BaseModel
@@ -87,7 +88,7 @@ class OutputUniqueUsers(BaseModel):
 
 
 class OutputUserLogins(BaseModel):
-    date: str
+    date: str | date
     logins: int
 
 
