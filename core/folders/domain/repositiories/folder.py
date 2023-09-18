@@ -11,36 +11,33 @@ class FolderRepository(Repository, abc.ABC):
     IDENTIFIER = "FOLDER"
 
     @classmethod
-    @abc.abstractmethod
     def retrieve(cls, org_pk: int, uuid: UUID) -> Folder:
-        pass
+        raise NotImplementedError()
 
     @classmethod
-    @abc.abstractmethod
     def get_or_create_records_folder(cls, org_pk: int, user: IOwner) -> Folder:
-        pass
+        raise NotImplementedError()
 
     @classmethod
-    @abc.abstractmethod
     def get_dict(cls, org_pk: int) -> dict[UUID, Folder]:
-        pass
+        raise NotImplementedError()
 
     @classmethod
-    @abc.abstractmethod
     def get_list(cls, org_pk: int) -> list[Folder]:
-        pass
+        raise NotImplementedError()
 
     @classmethod
-    @abc.abstractmethod
     def save(cls, folder: Folder):
-        pass
+        raise NotImplementedError()
 
     @classmethod
-    @abc.abstractmethod
     def delete(cls, folder: Folder):
-        pass
+        raise NotImplementedError()
 
     @classmethod
-    @abc.abstractmethod
+    def get_children(cls, org_pk: int, uuid: UUID) -> list[Folder]:
+        raise NotImplementedError()
+
+    @classmethod
     def tree(cls, user: IOwner, org_pk: int) -> FolderTree:
-        pass
+        raise NotImplementedError()

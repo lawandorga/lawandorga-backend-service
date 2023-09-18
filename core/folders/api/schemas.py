@@ -99,7 +99,16 @@ class OutputFolderPage(BaseModel):
     _ = qs_to_list("available_persons")
 
 
+class OutputSubfolder(BaseModel):
+    name: str
+    uuid: UUID
+
+    class Config:
+        orm_mode = True
+
+
 class OutputFolderDetail(BaseModel):
     folder: OutputFolder
     access: list[OutputAccess]
     content: list[OutputContent]
+    subfolders: list[OutputSubfolder]

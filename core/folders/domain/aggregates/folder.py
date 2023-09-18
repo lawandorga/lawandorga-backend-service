@@ -213,7 +213,7 @@ class Folder:
     def update_information(self, name=None, force=False):
         if not force and name is not None and self.__restricted:
             raise DomainError(
-                "The name of this folder can not changed as it contains a record."
+                "The name of this folder can not be changed as it contains a record."
             )
         self.__name = name if name is not None else self.__name
 
@@ -244,6 +244,7 @@ class Folder:
         if enc_folder_key:
             folder_key = enc_folder_key.decrypt_self(requestor)
             key = folder_key.key
+            assert isinstance(key, SymmetricKey)
             return key
 
         if not self.__stop_inherit:
@@ -252,6 +253,7 @@ class Folder:
                 unlock_key = self.__parent.get_decryption_key(requestor=requestor)
                 parent_key = enc_parent_key.decrypt_self(unlock_key)
                 key = parent_key.key
+                assert isinstance(key, SymmetricKey)
                 return key
 
         raise DomainError("No key was found for this folder.")

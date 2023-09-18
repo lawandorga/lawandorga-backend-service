@@ -59,8 +59,11 @@ def query__detail_folder(rlc_user: RlcUser, data: schemas.InputFolderDetail):
                         file.save()
                 r.save(folder)
 
+    subfolders = r.get_children(rlc_user.org_id, folder.uuid)
+
     return {
         "folder": folder.as_dict(),
         "content": folder.items,
+        "subfolders": subfolders,
         "access": access.as_dict(),
     }

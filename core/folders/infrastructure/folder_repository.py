@@ -233,5 +233,18 @@ class DjangoFolderRepository(FolderRepository):
         delete_cache_of_object(cls, folder.org_pk)
 
     @classmethod
+    def get_children(cls, org_pk: int, uuid: UUID) -> list[Folder]:
+        folders = cls.get_dict(org_pk)
+        if uuid not in folders:
+            raise ObjectDoesNotExist()
+
+        children = []
+        for folder in folders.values():
+            if folder.parent is not None and folder.parent.uuid == uuid:
+                children.append(folder)
+
+        return children
+
+    @classmethod
     def tree(cls, user: IOwner, org_pk: int) -> FolderTree:
         return FolderTree(user, cls.get_list(org_pk))
