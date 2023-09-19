@@ -1,7 +1,7 @@
 from typing import Any, List, Optional
 
 from django.db.models import Q
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import RlcUser
 from core.auth.use_cases.rlc_user import confirm_email, delete_user, unlock_user
@@ -44,8 +44,7 @@ class OutputPermission(BaseModel):
     user_name: str | None
     group_id: int | None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputUser(BaseModel):
@@ -68,9 +67,9 @@ def retrieve(data: schemas.InputRlcUserGet, rlc_user: RlcUser):
     if found_rlc_user.id != rlc_user.id and not rlc_user.has_permission(
         PERMISSION_ADMIN_MANAGE_USERS
     ):
-        found_rlc_user_ret: Any = schemas.OutputRlcUserSmall.from_orm(
+        found_rlc_user_ret: Any = schemas.OutputRlcUserSmall.model_validate(
             found_rlc_user
-        ).dict()
+        ).model_dump()
     else:
         found_rlc_user_ret = found_rlc_user
 
@@ -177,7 +176,7 @@ def update_user(data: schemas.InputRlcUserUpdate, rlc_user: RlcUser):
             "The user to be updated could not be found.",
         )
 
-    update_data = data.dict()
+    update_data = data.model_dump()
     update_data.pop("id")
     update_data.pop("name")
     rlc_user_to_update.update_information(**update_data)

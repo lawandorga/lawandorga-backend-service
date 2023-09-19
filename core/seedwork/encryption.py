@@ -12,7 +12,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padding
 from cryptography.hazmat.primitives.asymmetric import rsa
-from django.core.files import File
+from django.core.files.base import File
 from django.core.files.uploadedfile import UploadedFile
 
 

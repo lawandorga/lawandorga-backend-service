@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class InputSendMessage(BaseModel):
@@ -18,5 +18,4 @@ class OutputMessage(BaseModel):
     created: datetime
     sender_name: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

@@ -15,9 +15,9 @@ class Key(abc.ABC):
         self.__origin = origin
 
     def __eq__(self, other):
-        if type(other) == type(self):
-            return hash(other) == hash(self)
-        return NotImplemented
+        if not isinstance(other, Key):
+            return NotImplemented
+        return hash(other) == hash(self)
 
     @property
     def origin(self):

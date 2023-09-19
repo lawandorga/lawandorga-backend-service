@@ -1,4 +1,4 @@
-from typing import List, Optional, cast
+from typing import List, Optional, TypedDict, cast
 
 from django.conf import settings
 
@@ -123,6 +123,17 @@ def create_user(email="dummy@law-orga.de", name="Mr. Dummy"):
     return user
 
 
+class CreateRlcUserData(TypedDict):
+    org: Org
+    user: UserProfile
+    username: str
+    email: str
+    password: str
+    rlc_user: RlcUser
+    private_key: str
+    public_key: bytes
+
+
 def create_rlc_user(
     email="dummy@law-orga.de",
     name="Dummy 1",
@@ -130,7 +141,7 @@ def create_rlc_user(
     accepted=True,
     password=settings.DUMMY_USER_PASSWORD,
     save=True,
-):
+) -> CreateRlcUserData:
     if rlc is None:
         rlc = create_org("Dummy's Org", save=save)["org"]
     user = UserProfile.objects.create(email=email, name=name)

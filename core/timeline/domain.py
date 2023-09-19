@@ -70,6 +70,10 @@ class TimelineEvent(EventSourced):
         self._folder: Optional[Folder] = None
 
     @property
+    def type(self) -> str:
+        return "old"
+
+    @property
     def folder(self) -> Folder:
         if self._folder is None:
             r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))

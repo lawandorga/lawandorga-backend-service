@@ -2,12 +2,12 @@ from datetime import datetime
 from typing import Optional, Union
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class InputFieldDelete(BaseModel):
     uuid: UUID
-    force_delete = False
+    force_delete: bool = False
 
 
 class InputTemplateDetail(BaseModel):
@@ -87,8 +87,7 @@ class OutputNonMigratedDataSheet(BaseModel):
     uuid: UUID
     persons_with_access: list[OutputAccessPerson]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputTemplate(BaseModel):
@@ -99,8 +98,7 @@ class OutputTemplate(BaseModel):
     created: datetime
     updated: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputTemplateField(BaseModel):
@@ -113,18 +111,16 @@ class OutputTemplateField(BaseModel):
     kind: str
     url: str
     group_id: int | None
-    options: Optional[list[OutputOption | str]]
+    options: Optional[list[OutputOption | str]] = None
     share_keys: bool | None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputTemplateDetail(OutputTemplate):
     fields: list[OutputTemplateField]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputRecordDeletion(BaseModel):
@@ -137,8 +133,7 @@ class OutputRecordDeletion(BaseModel):
     state: str
     processed: Optional[datetime]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputRecordAccess(BaseModel):
@@ -151,8 +146,7 @@ class OutputRecordAccess(BaseModel):
     processed_on: Optional[datetime]
     explanation: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputRecordCreate(BaseModel):
@@ -164,8 +158,7 @@ class OutputRecordCreate(BaseModel):
 class OutputEntry(BaseModel):
     value: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputField(BaseModel):
@@ -174,7 +167,7 @@ class OutputField(BaseModel):
     kind: str
     label: str
     name: str
-    options: Optional[list[OutputOption | str]]
+    options: Optional[list[OutputOption | str]] = None
     type: str
 
 
@@ -190,8 +183,7 @@ class OutputClient(BaseModel):
     phone_number: str
     note: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputRecordDetail(BaseModel):
@@ -215,8 +207,7 @@ class OutputRecord(BaseModel):
     has_access: bool
     folder_uuid: Optional[UUID]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputRecordsPage(BaseModel):

@@ -10,7 +10,9 @@ def test_settings_repository():
     assert isinstance(r, DjangoEventStore)
     settings.MESSAGEBUS_EVENT_STORE = "messagebus.impl.store.InMemoryEventStore"
     r = EventStore()
-    assert isinstance(r, InMemoryEventStore)
+    assert isinstance(
+        r, InMemoryEventStore
+    ), f"{r} is not InMemoryEventStore but {type(r)}"
 
 
 def test_in_memory_event_store_position():

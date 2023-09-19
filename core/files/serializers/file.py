@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
@@ -38,7 +40,7 @@ class FileUpdateSerializer(FileSerializer):
 
 class FileCreateSerializer(AddUserMixin, FileSerializer):
     name = serializers.CharField(required=False)
-    folder = serializers.PrimaryKeyRelatedField(
+    folder: Any = serializers.PrimaryKeyRelatedField(
         required=False, queryset=Folder.objects.all()
     )
 

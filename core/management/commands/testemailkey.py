@@ -11,4 +11,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         token = options["token"][0]
         rlc_user = RlcUser.objects.get(id=2574)
-        print(EmailConfirmationTokenGenerator().check_token(rlc_user, token))
+        EmailConfirmationTokenGenerator().check_token(rlc_user, token)

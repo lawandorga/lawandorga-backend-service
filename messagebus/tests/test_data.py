@@ -21,7 +21,7 @@ class Driver(BaseModel):
 class Car:
     class WhatIsThis(Event):
         wheels: int
-        doors = 2
+        doors: int = 2
         driver: Driver
 
 

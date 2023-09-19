@@ -1,9 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel
-
-from core.seedwork.api_layer import qs_to_list
+from pydantic import BaseModel, ConfigDict
 
 
 class InputQuestionnaire(BaseModel):
@@ -20,8 +18,7 @@ class OutputQuestionnaireTemplate(BaseModel):
     name: str
     notes: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputQuestionnaireField(BaseModel):
@@ -30,8 +27,7 @@ class OutputQuestionnaireField(BaseModel):
     name: str
     question: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputQuestionnaireAnswer(BaseModel):
@@ -39,8 +35,7 @@ class OutputQuestionnaireAnswer(BaseModel):
     data: str
     field: OutputQuestionnaireField
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputQuestionnaire(BaseModel):
@@ -52,7 +47,4 @@ class OutputQuestionnaire(BaseModel):
     created: datetime
     updated: datetime
 
-    class Config:
-        orm_mode = True
-
-    _ = qs_to_list("answers")
+    model_config = ConfigDict(from_attributes=True)

@@ -1,7 +1,7 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from core.mail.models import MailAddress, MailDomain
 from core.seedwork.api_layer import qs_to_list
@@ -21,7 +21,7 @@ class InputCreateGroupMail(BaseModel):
     localpart: str
     domain: UUID
 
-    @validator("localpart")
+    @field_validator("localpart")
     def localpart_validation(cls, v):
         MailAddress.check_localpart(v)
         return v
@@ -46,7 +46,7 @@ class InputAddAddressToGroup(BaseModel):
     group: UUID
     domain: UUID
 
-    @validator("localpart")
+    @field_validator("localpart")
     def localpart_validation(cls, v):
         MailAddress.check_localpart(v)
         return v
@@ -66,7 +66,7 @@ class InputDeleteGroupAddress(BaseModel):
 class InputAddDomain(BaseModel):
     name: str
 
-    @validator("name")
+    @field_validator("name")
     def domain_validation(cls, v):
         MailDomain.check_domain(v)
         return v
@@ -76,7 +76,7 @@ class InputChangeDomain(BaseModel):
     uuid: UUID
     name: str
 
-    @validator("name")
+    @field_validator("name")
     def domain_validation(cls, v):
         MailDomain.check_domain(v)
         return v
@@ -92,7 +92,7 @@ class InputCreateAddress(BaseModel):
     domain: UUID
     user: UUID
 
-    @validator("localpart")
+    @field_validator("localpart")
     def localpart_validation(cls, v):
         MailAddress.check_localpart(v)
         return v
@@ -112,8 +112,7 @@ class OutputDomain(BaseModel):
     name: str
     is_active: bool
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputAddress(BaseModel):
@@ -122,8 +121,7 @@ class OutputAddress(BaseModel):
     domain: OutputDomain
     is_default: bool
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputUser(BaseModel):
@@ -131,8 +129,7 @@ class OutputUser(BaseModel):
     uuid: UUID
     email: Optional[str]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputPassword(BaseModel):
@@ -144,15 +141,13 @@ class OutputSelfAccount(BaseModel):
 
     _ = qs_to_list("addresses")
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputSelfGroup(BaseModel):
     email: Optional[str]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputSelfMailUser(BaseModel):
@@ -162,8 +157,7 @@ class OutputSelfMailUser(BaseModel):
     aliases: list[str]
     groups: list[OutputSelfGroup]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
     _ = qs_to_list("groups")
 
@@ -172,8 +166,7 @@ class OutputGroup(BaseModel):
     uuid: UUID
     email: Optional[str]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputPageMail(BaseModel):

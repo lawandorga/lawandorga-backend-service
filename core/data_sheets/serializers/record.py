@@ -74,7 +74,9 @@ class RecordStateFieldSerializer(RecordFieldSerializer):
         fields = "__all__"
 
     def validate_options(self, options):
-        if type(options) != list or any([type(s) is not str for s in options]):
+        if not isinstance(options, list) or any(
+            [not isinstance(s, str) for s in options]
+        ):
             raise ValidationError("States need to be a list of strings.")
         if "Closed" not in options:
             raise ValidationError("Closed needs to be added to states.")
@@ -95,7 +97,9 @@ class RecordSelectFieldSerializer(RecordFieldSerializer):
         fields = "__all__"
 
     def validate_options(self, options):
-        if type(options) != list or any([type(o) is not str for o in options]):
+        if not isinstance(options, list) or any(
+            [not isinstance(o, str) for o in options]
+        ):
             raise ValidationError("Options need to be a list of strings.")
         return options
 
@@ -112,7 +116,9 @@ class RecordMultipleFieldSerializer(RecordFieldSerializer):
         fields = "__all__"
 
     def validate_options(self, options):
-        if type(options) != list or any([type(o) is not str for o in options]):
+        if not isinstance(options, list) or any(
+            [not isinstance(o, str) for o in options]
+        ):
             raise ValidationError("Options need to be a list of strings.")
         return options
 
@@ -178,7 +184,9 @@ class RecordEncryptedSelectFieldSerializer(RecordFieldSerializer):
         fields = "__all__"
 
     def validate_options(self, options):
-        if type(options) != list or any([type(o) is not str for o in options]):
+        if not isinstance(options, list) or any(
+            [not isinstance(o, str) for o in options]
+        ):
             raise ValidationError("Options need to be a list of strings.")
         return options
 

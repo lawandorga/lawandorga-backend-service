@@ -37,14 +37,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name"]
 
-    # mypy stuff
-    rlc_user: "RlcUser"
-    statistic_user: "StatisticUser"
-    matrix_user: "MatrixUser"
-    mail_user: "MailUser"
-
     if TYPE_CHECKING:
         users_rlc_keys: models.QuerySet["OrgEncryption"]
+        rlc_user: "RlcUser"
+        statistic_user: "StatisticUser"
+        matrix_user: "MatrixUser"
+        mail_user: "MailUser"
 
     class Meta:
         verbose_name = "UserProfile"

@@ -18,7 +18,10 @@ from core.rlc.urls import urlpatterns as org_urlpatterns
 from core.statistics.urls import urlpatterns as statistics_urlpatterns
 from core.upload.urls import urlpatterns as upload_urlpatterns
 
+from .command import router as command_router
+
 urlpatterns = [
+    path("api/command/", include(command_router.urls)),
     path("api/mail/", include(mail_urlpatterns)),
     path("api/", include(statistics_urlpatterns)),
     path("api/messages/", include(messages_urlpatterns)),

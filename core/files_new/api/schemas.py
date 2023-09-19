@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class InputUploadMultipleFiles(BaseModel):
@@ -29,5 +29,4 @@ class OutputFile(BaseModel):
     created: datetime
     updated: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

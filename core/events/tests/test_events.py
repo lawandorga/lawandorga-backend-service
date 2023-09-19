@@ -75,7 +75,7 @@ class TestEvents(TestCase):
 
     def test_event_update_unauthorized(self):
         update_data = {"description": "Updated"}
-        id = self.event_3.id
+        id = self.event_3.pk
         res = self.client.put(
             f"/api/events/{id}/", data=update_data, content_type="application/json"
         )
@@ -85,7 +85,7 @@ class TestEvents(TestCase):
 
     def test_event_update(self):
         update_data = {"description": "Updated"}
-        id = self.event_1.id
+        id = self.event_1.pk
         res = self.client.put(
             f"/api/events/{id}/", data=update_data, content_type="application/json"
         )
@@ -94,14 +94,14 @@ class TestEvents(TestCase):
         assert updated.description == "Updated"
 
     def test_event_delete_unauthorized(self):
-        id = self.event_3.id
+        id = self.event_3.pk
         res = self.client.delete(f"/api/events/{id}/")
         assert res.status_code == 400
         all_events = EventsEvent.objects.all()
         assert len(all_events) == 4
 
     def test_event_delete(self):
-        id = self.event_1.id
+        id = self.event_1.pk
         res = self.client.delete(f"/api/events/{id}/")
         assert res.status_code == 200
         all_events = EventsEvent.objects.all()

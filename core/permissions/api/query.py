@@ -1,5 +1,5 @@
 from django.db.models.query_utils import Q
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from core.auth.models.org_user import RlcUser
 from core.permissions.models import HasPermission, Permission
@@ -20,8 +20,7 @@ class OutputPermission(BaseModel):
     description: str
     recommended_for: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 @router.get("permissions/", output_schema=list[OutputPermission])
@@ -35,8 +34,7 @@ class OutputHasPermission(BaseModel):
     user_name: str | None
     permission_name: str | None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 def get_has_permissions_of(

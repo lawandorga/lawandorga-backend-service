@@ -2,9 +2,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel
-
-from core.seedwork.api_layer import qs_to_list
+from pydantic import BaseModel, ConfigDict
 
 
 class InputCreateLink(BaseModel):
@@ -40,8 +38,7 @@ class OutputUploadFile(BaseModel):
     uuid: UUID
     created: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputQueryLink(BaseModel):
@@ -52,10 +49,7 @@ class OutputQueryLink(BaseModel):
     disabled: bool
     files: list[OutputUploadFile]
 
-    class Config:
-        orm_mode = True
-
-    _ = qs_to_list("files")
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputQueryLinkPublic(BaseModel):
@@ -65,5 +59,4 @@ class OutputQueryLinkPublic(BaseModel):
     created: datetime
     disabled: bool
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

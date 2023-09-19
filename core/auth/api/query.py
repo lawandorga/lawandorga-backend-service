@@ -20,9 +20,11 @@ def query__chat_page(user: UserProfile):
 @router.get(url="page/register/", output_schema=schemas.OutputRegisterPage)
 def query__register_page():
     data = {
-        "orgs": Org.objects.all(),
-        "legal_requirements": LegalRequirement.objects.filter(
-            Q(accept_required=True) | Q(show_on_register=True)
+        "orgs": list(Org.objects.all()),
+        "legal_requirements": list(
+            LegalRequirement.objects.filter(
+                Q(accept_required=True) | Q(show_on_register=True)
+            )
         ),
     }
     return data

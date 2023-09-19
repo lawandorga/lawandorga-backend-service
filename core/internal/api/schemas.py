@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class OutputRoadmapItem(BaseModel):
@@ -10,24 +10,21 @@ class OutputRoadmapItem(BaseModel):
     date: date
     id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputImprintPage(BaseModel):
     id: int
     content: str = ""
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputHelpPage(BaseModel):
     id: int
     manual_url: Optional[str]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputArticleList(BaseModel):
@@ -36,8 +33,7 @@ class OutputArticleList(BaseModel):
     description: str
     date: date
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InputArticleDetail(BaseModel):
@@ -52,8 +48,7 @@ class OutputArticleDetail(BaseModel):
     content: str = ""
     author_name: Optional[str] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputIndexPage(BaseModel):
@@ -61,13 +56,11 @@ class OutputIndexPage(BaseModel):
     roadmap_items: list[OutputRoadmapItem]
     articles: list[OutputArticleList]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputTomsPage(BaseModel):
     id: int
     content: str = ""
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

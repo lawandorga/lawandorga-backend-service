@@ -1,9 +1,7 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel
-
-from core.seedwork.api_layer import qs_to_list
+from pydantic import BaseModel, ConfigDict
 
 
 class InputFolderMove(BaseModel):
@@ -44,8 +42,7 @@ class OutputContent(BaseModel):
     # actions: dict[str, str]
     repository: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputAvailableFolder(BaseModel):
@@ -65,16 +62,14 @@ class OutputAccess(BaseModel):
     source: str
     actions: dict[str, dict] = {}
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputPerson(BaseModel):
     name: str
     uuid: Optional[UUID]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputTreeFolder(BaseModel):
@@ -96,15 +91,12 @@ class OutputFolderPage(BaseModel):
     tree: list[OutputFolderTreeNode]
     available_persons: list[OutputPerson]
 
-    _ = qs_to_list("available_persons")
-
 
 class OutputSubfolder(BaseModel):
     name: str
     uuid: UUID
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputFolderDetail(BaseModel):

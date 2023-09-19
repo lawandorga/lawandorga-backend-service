@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional, Union
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class InputAccess(BaseModel):
@@ -26,7 +26,7 @@ class InputCreateDeletion(BaseModel):
 class InputCreateView(BaseModel):
     name: str
     columns: list[str]
-    shared = False
+    shared: bool = False
 
 
 class InputUpdateView(BaseModel):
@@ -64,8 +64,7 @@ class OutputRecord(BaseModel):
     folder_uuid: UUID
     data_sheet_uuid: Optional[UUID]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputView(BaseModel):
@@ -75,8 +74,7 @@ class OutputView(BaseModel):
     shared: bool
     ordering: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputDeletion(BaseModel):
@@ -89,8 +87,7 @@ class OutputDeletion(BaseModel):
     state: str
     processed: Optional[datetime]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputAccessRequest(BaseModel):
@@ -103,8 +100,7 @@ class OutputAccessRequest(BaseModel):
     processed_on: Optional[datetime]
     explanation: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputBadges(BaseModel):

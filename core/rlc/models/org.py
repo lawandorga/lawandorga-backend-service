@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from django.db.models.manager import RelatedManager
 
     from core.auth.models import RlcUser, UserProfile
+    from core.events.models import EventsEvent
     from core.rlc.models.group import Group
 
 
@@ -59,6 +60,7 @@ class Org(EncryptedModelMixin, models.Model):
     if TYPE_CHECKING:
         users: RelatedManager[RlcUser]
         group_from_rlc: RelatedManager[Group]
+        events: RelatedManager[EventsEvent]
 
     class Meta:
         ordering = ["name"]

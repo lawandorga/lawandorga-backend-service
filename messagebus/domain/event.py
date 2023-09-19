@@ -37,7 +37,7 @@ class Event(BaseModel):
 
     @property
     def data(self) -> JsonDict:
-        return self._clean_data(self.dict())
+        return self._clean_data(self.model_dump())
 
     @classmethod
     def _get_name(cls) -> str:

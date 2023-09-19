@@ -16,9 +16,9 @@ class Box(bytes):
         return super().__new__(cls, value)
 
     def __eq__(self, other):
-        if type(other) == type(self):
-            return hash(other) == hash(self)
-        return NotImplemented
+        if not isinstance(other, Box):
+            return NotImplemented
+        return hash(other) == hash(self)
 
     @property
     @abc.abstractmethod

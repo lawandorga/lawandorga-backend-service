@@ -18,7 +18,15 @@ def publish_questionnaire(data: schemas.InputPublishQuestionnaire, rlc_user: Rlc
     questionnaire = publish_a_questionnaire(
         rlc_user, folder_uuid=data.folder, template_id=data.template
     )
-    return questionnaire
+    return {
+        "id": questionnaire.pk,
+        "uuid": questionnaire.uuid,
+        "code": questionnaire.code,
+        "template": questionnaire.template,
+        "answers": list(questionnaire.answers.all()),
+        "created": questionnaire.created,
+        "updated": questionnaire.updated,
+    }
 
 
 @router.post(

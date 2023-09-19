@@ -71,9 +71,9 @@ class UserKey:
         return "UserKey"
 
     def __eq__(self, other):
-        if type(other) == type(self):
-            return hash(other) == hash(self)
-        return NotImplemented
+        if isinstance(other, UserKey):
+            return hash(self) == hash(other)
+        return False
 
     def __hash__(self):
         return hash(self.__key)

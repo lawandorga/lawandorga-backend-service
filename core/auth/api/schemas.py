@@ -4,17 +4,14 @@ from uuid import UUID
 
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from pydantic import AnyUrl, BaseModel, validator
-
-from core.seedwork.api_layer import qs_to_list
+from pydantic import AnyUrl, BaseModel, ConfigDict, FieldValidationInfo, field_validator
 
 
 class OutputOrg(BaseModel):
     name: str
     id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputDashboardRecord(BaseModel):
@@ -42,14 +39,20 @@ class OutputDashboardChangedRecord(BaseModel):
     updated: datetime
 
 
-class OutputDashboardPage(BaseModel):
-    records: None | list[OutputDashboardRecord]
-    members: None | list[OutputDashboardMember]
-    questionnaires: None | list[OutputDashboardQuestionnaire]
-    changed_records: None | list[OutputDashboardChangedRecord]
+class OutputFollowUp(BaseModel):
+    time: datetime
+    title: str
+    folder_uuid: UUID
 
-    class Config:
-        orm_mode = True
+
+class OutputDashboardPage(BaseModel):
+    records: None | list[OutputDashboardRecord] = None
+    members: None | list[OutputDashboardMember] = None
+    questionnaires: None | list[OutputDashboardQuestionnaire] = None
+    changed_records: None | list[OutputDashboardChangedRecord] = None
+    follow_ups: None | list[OutputFollowUp] = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputLegalRequirement(BaseModel):
@@ -58,16 +61,14 @@ class OutputLegalRequirement(BaseModel):
     content: str
     accept_required: bool
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputMatrixUser(BaseModel):
     _group: str
     matrix_id: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputChatPage(BaseModel):
@@ -78,11 +79,7 @@ class OutputRegisterPage(BaseModel):
     orgs: list[OutputOrg]
     legal_requirements: list[OutputLegalRequirement]
 
-    _ = qs_to_list("orgs")
-    __ = qs_to_list("legal_requirements")
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InputConfirmEmail(BaseModel):
@@ -99,8 +96,8 @@ class InputPasswordChange(BaseModel):
     new_password: str
     new_password_confirm: str
 
-    @validator("new_password")
-    def validate_password(cls, v):
+    @field_validator("new_password")
+    def field_validate_password(cls, v):
         try:
             validate_password(v)
         except ValidationError as e:
@@ -108,9 +105,9 @@ class InputPasswordChange(BaseModel):
             raise ValueError(error)
         return v
 
-    @validator("new_password_confirm")
-    def validate_passwords(cls, v, values):
-        if "new_password" in values and v != values["new_password"]:
+    @field_validator("new_password_confirm")
+    def field_validate_passwords(cls, v, info: FieldValidationInfo):
+        if "new_password" in info.data and v != info.data["new_password"]:
             raise ValueError("The two passwords do not match.")
         return v
 
@@ -121,8 +118,7 @@ class OutputKey(BaseModel):
     source: Literal["RECORD", "ORG", "FOLDER", "USER"]
     information: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InputKeyDelete(BaseModel):
@@ -139,8 +135,7 @@ class Link(BaseModel):
     link: AnyUrl
     order: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Rlc(BaseModel):
@@ -149,20 +144,19 @@ class Rlc(BaseModel):
     use_record_pool: bool
     links: List[Link]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InputRlcUserUpdate(BaseModel):
     id: int
-    name: Optional[str]
-    birthday: Optional[Any]
-    phone_number: Optional[str]
-    street: Optional[str]
-    city: Optional[str]
-    postal_code: Optional[str]
-    speciality_of_study: Optional[str]
-    note: Optional[str]
+    name: Optional[str] = None
+    birthday: Optional[Any] = None
+    phone_number: Optional[str] = None
+    street: Optional[str] = None
+    city: Optional[str] = None
+    postal_code: Optional[str] = None
+    speciality_of_study: Optional[str] = None
+    note: Optional[str] = None
 
 
 class InputRlcUserGrantPermission(BaseModel):
@@ -181,26 +175,25 @@ class InputRlcUserActivate(BaseModel):
 class OutputRlcUserOptional(BaseModel):
     id: int
     user_id: int
-    birthday: Optional[Any]
-    phone_number: Optional[str]
-    street: Optional[str]
-    city: Optional[str]
-    postal_code: Optional[str]
-    locked: Optional[bool]
-    locked_legal: Optional[bool]
-    email_confirmed: Optional[bool]
-    is_active: Optional[bool]
-    accepted: Optional[bool]
-    updated: Optional[datetime]
-    note: Optional[str]
-    name: Optional[str]
-    email: Optional[str]
-    created: Optional[datetime]
-    speciality_of_study: Optional[str]
-    speciality_of_study_display: Optional[str]
+    birthday: Optional[Any] = None
+    phone_number: Optional[str] = None
+    street: Optional[str] = None
+    city: Optional[str] = None
+    postal_code: Optional[str] = None
+    locked: Optional[bool] = None
+    locked_legal: Optional[bool] = None
+    email_confirmed: Optional[bool] = None
+    is_active: Optional[bool] = None
+    accepted: Optional[bool] = None
+    updated: Optional[datetime] = None
+    note: Optional[str] = None
+    name: Optional[str] = None
+    email: Optional[str] = None
+    created: Optional[datetime] = None
+    speciality_of_study: Optional[str] = None
+    speciality_of_study_display: Optional[str] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputRlcUserSmall(BaseModel):
@@ -215,8 +208,7 @@ class OutputRlcUserSmall(BaseModel):
     is_active: bool
     last_login_month: Optional[str]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputRlcUser(BaseModel):
@@ -240,8 +232,7 @@ class OutputRlcUser(BaseModel):
     speciality_of_study: Optional[str]
     speciality_of_study_display: Optional[str]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Badges(BaseModel):
@@ -266,8 +257,7 @@ class OutputStatisticsUser(BaseModel):
     name: str
     email: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputStatisticsUserData(BaseModel):

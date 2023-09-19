@@ -114,7 +114,14 @@ LOGOUT_REDIRECT_URL = "/login/"
 
 # Static Files Storage
 # http://whitenoise.evans.io/en/stable/
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    },
+}
 
 # Static Files
 # https://docs.djangoproject.com/en/dev/howto/static-files/
@@ -244,3 +251,7 @@ REPOSITORY_TIMELINE_EVENT = "core.timeline.repository.EventStoreTimelineEventRep
 
 # messagebus
 MESSAGEBUS_EVENT_STORE = "messagebus.impl.store.DjangoEventStore"
+
+# use case settings
+USECASE_INJECTIONS = "core.injections.INJECTIONS"
+USECASE_FUNCTIONS = "core.usecases.USECASES"

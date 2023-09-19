@@ -2,17 +2,15 @@ import uuid
 from datetime import datetime
 from typing import Literal, Optional
 
-from pydantic import BaseModel
-
-from core.seedwork.api_layer import format_datetime, make_datetime_aware
+from django.utils.timezone import localtime
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class OutputRlc(BaseModel):
     id: int
     name: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputEventResponse(BaseModel):
@@ -27,11 +25,12 @@ class OutputEventResponse(BaseModel):
     org: OutputRlc
     level: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
-    _ = format_datetime("start_time")
-    __ = format_datetime("end_time")
+    @field_validator("start_time", "end_time")
+    def format_datetime_validator(cls, v: datetime) -> datetime:
+        v = localtime(v)
+        return v
 
 
 class InputEventCreate(BaseModel):
@@ -41,20 +40,20 @@ class InputEventCreate(BaseModel):
     start_time: datetime
     end_time: datetime
 
-    _ = make_datetime_aware("start_time")
-    __ = make_datetime_aware("end_time")
+    # _ = make_datetime_aware("start_time")
+    # __ = make_datetime_aware("end_time")
 
 
 class InputEventUpdate(BaseModel):
     id: int
-    is_global: Optional[bool]
-    name: Optional[str]
-    description: Optional[str]
-    start_time: Optional[datetime]
-    end_time: Optional[datetime]
+    is_global: Optional[bool] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
 
-    _ = make_datetime_aware("start_time")
-    __ = make_datetime_aware("end_time")
+    # _ = make_datetime_aware("start_time")
+    # __ = make_datetime_aware("end_time")
 
 
 class InputEventDelete(BaseModel):

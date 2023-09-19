@@ -13,4 +13,6 @@ from .permissions.models import *
 from .playground.models import *
 from .records.models import *
 from .rlc.models import *
+from .timeline.models.event import TimelineEvent
+from .timeline.models.follow_up import TimelineFollowUp
 from .upload.models import *

@@ -1,9 +1,10 @@
 import re
-from typing import Literal, TypedDict, Union
+from typing import Literal, Union
 from uuid import uuid4
 
 from django.conf import settings
 from django.db import models
+from typing_extensions import TypedDict
 
 from core.mail.models.org import MailOrg
 

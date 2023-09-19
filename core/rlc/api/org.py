@@ -23,8 +23,13 @@ def _list(rlc_user: RlcUser):
     output_schema=schemas.OutputExternalLink,
 )
 def _create(data: schemas.InputExternalLinkCreate, rlc_user: RlcUser):
-    link = ExternalLink.objects.create(org=rlc_user.org, **data.dict())
-    return link
+    link = ExternalLink.objects.create(org=rlc_user.org, **data.model_dump())
+    return {
+        "id": link.id,
+        "name": link.name,
+        "link": str(link.link),
+        "order": link.order,
+    }
 
 
 # delete link

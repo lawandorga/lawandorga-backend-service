@@ -21,14 +21,14 @@ def get_user(request: HttpRequest) -> UserProfile:
     if not request.user.is_authenticated:
         raise not_authenticated_error
 
-    return UserProfile.objects.get(pk=request.user.id)
+    return UserProfile.objects.get(pk=request.user.pk)
 
 
 def get_mail_user(request: HttpRequest) -> MailUser:
     if not request.user.is_authenticated:
         raise not_authenticated_error
 
-    user = request.user
+    user: UserProfile = request.user  # type: ignore
     if not hasattr(user, "mail_user"):
         raise ApiError(
             message="Mail User Required",
@@ -45,7 +45,7 @@ def get_org_user(request: HttpRequest) -> RlcUser:
     if not request.user.is_authenticated:
         raise not_authenticated_error
 
-    user = request.user
+    user: UserProfile = request.user  # type: ignore
     if not hasattr(user, "rlc_user"):
         raise ApiError(
             message="Org User Required",
@@ -62,7 +62,7 @@ def get_statistics_user(request: HttpRequest) -> StatisticUser:
     if not request.user.is_authenticated:
         raise not_authenticated_error
 
-    user = request.user
+    user: UserProfile = request.user  # type: ignore
     if not hasattr(user, "statistic_user"):
         raise ApiError(
             message="Statistics User Required",

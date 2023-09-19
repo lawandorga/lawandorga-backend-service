@@ -1,8 +1,6 @@
 from uuid import UUID
 
-from pydantic import AnyUrl, BaseModel
-
-from core.seedwork.api_layer import qs_to_list
+from pydantic import AnyUrl, BaseModel, ConfigDict
 
 
 class InputNoteCreate(BaseModel):
@@ -25,8 +23,7 @@ class OutputNote(BaseModel):
     title: str
     note: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InputAcceptMember(BaseModel):
@@ -67,16 +64,14 @@ class OutputGroup(BaseModel):
     name: str
     description: str | None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputPermission(BaseModel):
     id: int
     permission_name: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputMember(BaseModel):
@@ -84,8 +79,7 @@ class OutputMember(BaseModel):
     name: str
     email: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputSingleGroup(BaseModel):
@@ -95,21 +89,16 @@ class OutputSingleGroup(BaseModel):
     permissions: list[OutputPermission]
     members: list[OutputMember]
 
-    _ = qs_to_list("members")
-    __ = qs_to_list("permissions")
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputExternalLink(BaseModel):
     id: UUID
     name: str
-    link: AnyUrl
+    link: str
     order: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InputListUsersGet(BaseModel):
@@ -121,8 +110,7 @@ class OutputGroupMember(BaseModel):
     email: str
     name: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InputAddMember(BaseModel):

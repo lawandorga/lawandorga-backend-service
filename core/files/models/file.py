@@ -1,6 +1,6 @@
 import mimetypes
 
-from django.core.files import File as DjangoFile
+from django.core.files.base import File as DjangoFile
 from django.db import models
 from django.utils import timezone
 

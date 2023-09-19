@@ -13,7 +13,13 @@ router = Router()
 )
 def query__get_group(rlc_user: RlcUser, data: schemas.InputQueryGroup):
     group = Group.objects.get(from_rlc__id=rlc_user.org_id, id=data.id)
-    return group
+    return {
+        "id": group.id,
+        "name": group.name,
+        "description": group.description,
+        "members": list(group.members.all()),
+        "permissions": list(group.permissions.all()),
+    }
 
 
 @router.get(url="groups/", output_schema=list[schemas.OutputGroup])

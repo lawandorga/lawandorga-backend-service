@@ -1,40 +1,33 @@
-# from typing import Optional
+import inspect
+from functools import partial, wraps
+from typing import Callable, ParamSpec, TypeVar, get_type_hints
 
-# from pydantic import BaseModel
-
-
-# class Car(BaseModel):
-#     driver: Optional[str] = None
-#     wheels: int
+from pydantic import validate_call
 
 
-# car = Car(wheels=4)
-# car.driver = "Max Maier"
-
-# print(car)
+def validate_this(user: str, num1: int, num2: float):
+    return num1, num2
 
 
-class A:
-    def __new__(cls, *args, **kwargs):
-        print("A.__new__", cls, cls.mro())
-        return super().__new__(cls)
+Param = ParamSpec("Param")
+RetType = TypeVar("RetType")
 
 
-class B(A):
-    def __new__(cls, *args, **kwargs):
-        print("B.__new__", cls, cls.mro())
-        cls.test = "B"
-        return super().__new__(cls)
+def wrapper(fn: Callable[..., RetType]) -> Callable[..., RetType]:
+    p_fn = partial(fn, num2=12)
+    p_fn.__annotations__ = fn.__annotations__
+
+    @wraps(p_fn)
+    def inner(*args, **kwargs):
+        return p_fn(*args, **kwargs)
+
+    return inner
 
 
-class C(B):
-    def __new__(cls, *args, **kwargs):
-        print("C.__new__", cls, cls.mro())
-        cls.test = "C"
-        return super().__new__(cls)
+w_fn = wrapper(validate_this)
+hints = get_type_hints(w_fn)
 
-
-c = C()
-print(c.test)
-b = B()
-print(c.test)
+print("hin", hints)
+print("wfn", w_fn(2, 3))
+print("sig", inspect.signature(w_fn).parameters)
+print("val", validate_call(w_fn)("mr. x", 3))

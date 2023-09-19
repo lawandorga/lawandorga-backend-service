@@ -19,7 +19,7 @@ class SingletonRepository(abc.ABC):
         return import_string(cls.get_setting())
 
     def __new__(cls, *args, **kwargs):
-        if type(cls._instance) == cls.mro()[0]:
+        if type(cls._instance) == cls.mro()[0]:  # noqa
             return cls._instance
 
         if len(cls.mro()) == 5:

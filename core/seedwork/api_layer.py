@@ -2,7 +2,6 @@ import asyncio
 import inspect
 import json
 import logging
-from datetime import datetime
 from json import JSONDecodeError
 from types import GenericAlias
 from typing import (
@@ -18,15 +17,13 @@ from typing import (
     Union,
 )
 
-import pytz
 from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import FileResponse, HttpRequest, JsonResponse, RawPostDataException
 from django.urls import path
 from django.utils.module_loading import import_string
-from django.utils.timezone import localtime, make_aware
-from pydantic import BaseModel, ValidationError, create_model, validator
+from pydantic import BaseModel, ValidationError, create_model, model_validator
 
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.use_case_layer import UseCaseError, UseCaseInputError
@@ -43,28 +40,70 @@ def __qs_to_list_validator(qs) -> List:
 
 
 def qs_to_list(x):
-    return validator(x, pre=True, allow_reuse=True)(__qs_to_list_validator)
+    def adapt(cls, data) -> List:
+        return __qs_to_list_validator(getattr(data, x))
+
+    return model_validator(mode="before")(adapt)
 
 
-def __format_datetime_validator(v: datetime) -> str:
-    datetime_format = "%Y-%m-%dT%H:%M:%S"
-    if v.utcoffset() is None:
-        return v.strftime(datetime_format)
-    return localtime(v).strftime(datetime_format)
+class RFC7807(BaseModel):
+    err_type: str
+    title: str
+    status: int
+    detail: Optional[str] = None
+    instance: Optional[str] = None
+    internal: Optional[Any] = None
+    general_errors: Optional[list[str]] = None
+    param_errors: Optional[Dict[str, List[str]]] = None
 
 
-def format_datetime(x):
-    return validator(x, allow_reuse=True)(__format_datetime_validator)
+class ErrorResponse(JsonResponse):
+    def __init__(
+        self,
+        err_type: str,
+        title: str,
+        status: int,
+        detail: Optional[str] = None,
+        general_errors: Optional[list[str]] = None,
+        instance: Optional[str] = None,
+        internal: Optional[Any] = None,
+        param_errors: Optional[Dict[str, List[str]]] = None,
+    ):
+        error = RFC7807(
+            err_type=err_type,
+            title=title,
+            status=status,
+            detail=detail,
+            instance=instance,
+            internal=internal,
+            param_errors=param_errors,
+            general_errors=general_errors,
+        )
+        super().__init__(data=error.model_dump(), status=error.status)
 
 
-def __make_datetime_aware_validator(v: datetime) -> datetime:
-    if v.utcoffset() is None:
-        return make_aware(v, pytz.timezone("Europe/Berlin"))
-    return v
+class ApiValidationError(Exception):
+    def __init__(self, validation_error: ValidationError):
+        self.validation_error = validation_error
 
+    def to_error_response(self) -> ErrorResponse:
+        field_errors: Dict[str, List[str]] = {}
+        for error in self.validation_error.errors():
+            # if len(error["loc"]) == 2:
+            name = str(error["loc"][-1])
+            if name in field_errors:
+                field_errors[name].append(error["msg"])
+            else:
+                field_errors[name] = [error["msg"]]
 
-def make_datetime_aware(x):
-    return validator(x, allow_reuse=True)(__make_datetime_aware_validator)
+        return ErrorResponse(
+            param_errors=field_errors,
+            general_errors=[],
+            status=422,
+            err_type="RequestValidationError",
+            title="Malformed Request",
+            internal={},  # validation_error.errors(include_context=False),
+        )
 
 
 class ApiError(Exception):
@@ -83,37 +122,6 @@ class ApiError(Exception):
             self.status = status if status else 400
         self.title: str = self.message
         self.detail: None | str = detail if detail else None
-
-
-class RFC7807(BaseModel):
-    err_type: str
-    title: str
-    status: int
-    detail: Optional[str] = None
-    instance: Optional[str] = None
-    internal: Optional[Any] = None
-    general_errors: Optional[list[str]] = None
-    param_errors: Optional[Dict[str, List[str]]] = None
-
-
-def _validation_error_handler(validation_error: ValidationError) -> RFC7807:
-    field_errors: Dict[str, List[str]] = {}
-    for error in validation_error.errors():
-        if len(error["loc"]) == 2:
-            name = str(error["loc"][1])
-            if name in field_errors:
-                field_errors[name].append(error["msg"])
-            else:
-                field_errors[name] = [error["msg"]]
-
-    return RFC7807(
-        param_errors=field_errors,
-        general_errors=[],
-        status=422,
-        err_type="RequestValidationError",
-        title="Malformed Request",
-        internal=validation_error.errors(),
-    )
 
 
 def _validate(request: HttpRequest, schema: Type[BaseModel]) -> BaseModel:
@@ -145,6 +153,9 @@ def _catch_error(func: Callable[..., Awaitable[JsonResponse | FileResponse]]):
     async def catch(*args, **kwargs):
         try:
             return await func(*args, **kwargs)
+
+        except ApiValidationError as e:
+            return e.to_error_response()
 
         except ApiError as e:
             return ErrorResponse(
@@ -182,31 +193,6 @@ def _catch_error(func: Callable[..., Awaitable[JsonResponse | FileResponse]]):
             )
 
     return catch
-
-
-class ErrorResponse(JsonResponse):
-    def __init__(
-        self,
-        err_type: str,
-        title: str,
-        status: int,
-        detail: Optional[str] = None,
-        general_errors: Optional[list[str]] = None,
-        instance: Optional[str] = None,
-        internal: Optional[Any] = None,
-        param_errors: Optional[Dict[str, List[str]]] = None,
-    ):
-        error = RFC7807(
-            err_type=err_type,
-            title=title,
-            status=status,
-            detail=detail,
-            instance=instance,
-            internal=internal,
-            param_errors=param_errors,
-            general_errors=general_errors,
-        )
-        super().__init__(data=error.dict(), status=error.status)
 
 
 InjectT = TypeVar("InjectT", bound=Any)
@@ -275,7 +261,7 @@ class Router:
         ret = []
         for url, method_route in urls.items():
             view = Router.generate_view_func(method_route)
-            ret.append(path(url, view))
+            ret.append(path(url, view))  # remove the async stuff and it will work
 
         return ret
 
@@ -328,7 +314,7 @@ class Router:
                     )
                     data = _validate(request, model)
                 except ValidationError as e:
-                    return ErrorResponse(**_validation_error_handler(e).dict())
+                    raise ApiValidationError(e)
 
                 func_kwargs["data"] = data.root  # type: ignore
 
@@ -352,7 +338,7 @@ class Router:
                     root=(output_schema, ...),
                 )
                 output_data = await sync_to_async(model)(root=result)
-                return JsonResponse(output_data.dict()["root"], safe=False)
+                return JsonResponse(output_data.model_dump()["root"], safe=False)
 
             # default
             return JsonResponse({})

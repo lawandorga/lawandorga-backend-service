@@ -19,7 +19,14 @@ router = Router()
 )
 def query__link(rlc_user: RlcUser, data: schemas.InputQueryLink):
     link = get_object_or_404(UploadLink, org_id=rlc_user.org_id, uuid=data.uuid)
-    return link
+    return {
+        "uuid": link.uuid,
+        "name": link.name,
+        "link": link.link,
+        "created": link.created,
+        "disabled": link.disabled,
+        "files": list(link.files.all()),
+    }
 
 
 @router.get(

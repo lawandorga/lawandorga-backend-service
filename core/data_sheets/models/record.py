@@ -2,7 +2,7 @@ import json
 from typing import Optional, Union
 from uuid import UUID, uuid4
 
-from django.core.files import File as DjangoFile
+from django.core.files.base import File as DjangoFile
 from django.db import models
 from django.urls import reverse
 from django.utils.timezone import localtime
