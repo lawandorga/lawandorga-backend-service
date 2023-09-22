@@ -29,8 +29,6 @@ on:
         required: true
       DB_HOST:
         required: true
-      SENTRY_DSN:
-        required: true
 
 jobs:
   migrate:
