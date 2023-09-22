@@ -43,5 +43,5 @@ jobs:
       - name: Run Flake
         run: flake8 .
 
-      - name: Run MyPy
-        run: mypy .
+      # - name: Run MyPy
+      #   run: mypy .

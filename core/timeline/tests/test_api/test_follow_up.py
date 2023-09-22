@@ -14,7 +14,7 @@ def test_follow_up_creation_on_api(db):
     response = client.post(
         "/api/command/",
         data={
-            "action": "create_follow_up",
+            "action": "timeline/create_follow_up",
             "title": "Title",
             "text": "test",
             "time": timezone.now(),
@@ -22,5 +22,6 @@ def test_follow_up_creation_on_api(db):
         },
         content_type="application/json",
     )
+    print(response.json())
     assert response.status_code == 200
     assert TimelineFollowUp.objects.count() == 1

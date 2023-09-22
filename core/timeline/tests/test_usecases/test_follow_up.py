@@ -34,6 +34,7 @@ def test_update_follow_up(db):
         title="New Title",
         text=None,
         time=None,
+        is_done=None,
     )
     assert follow_up.title == "New Title"
 
