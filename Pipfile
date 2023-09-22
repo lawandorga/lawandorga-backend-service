@@ -36,7 +36,7 @@ types-bleach = "==6.0.*"
 pytest-xdist = "==3.3.*"
 django-oidc-provider = {git = "https://github.com/lawandorga/django-oidc-provider"}
 pyotp = "==2.9.*"
-ruff = "*"
+ruff = "==0.0.*"
 isort = "==6.0.*"
 flake8-pyproject = "==1.2.*"
 django-stubs = "==4.2.*"
