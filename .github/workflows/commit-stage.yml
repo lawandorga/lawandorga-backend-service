@@ -1,8 +1,12 @@
 name: Commit Stage
 
 on:
-  push:
-    branches: [main]
+  workflow_call:
+    secrets:
+      SCW_DOCKER_REGISTRY:
+        required: true
+      SCW_TOKEN:
+        required: true
 
 jobs:
   build:

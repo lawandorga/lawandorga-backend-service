@@ -1,22 +1,18 @@
 name: Acceptance Stage
 
 on:
-  workflow_run:
-    workflows: ["Commit Stage"]
-    types: [completed]
+  workflow_call:
+    secrets:
+      SONAR_TOKEN:
+        required: true
+      SCW_DOCKER_REGISTRY:
+        required: true
+      SCW_TOKEN:
+        required: true
 
 jobs:
-  check:
-    name: Check
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Do Nothing
-        run: echo null
-
   analyze:
     name: Analyze
-    needs: [check]
     uses: ./.github/workflows/acceptance-stage--sonarcloud-analyze-code.yml
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -30,7 +26,6 @@ jobs:
 
   test:
     name: Test The Docker Container
-    needs: [check]
     uses: ./.github/workflows/acceptance-stage--test-docker-image.yml
     with:
       image: "${{ github.event.repository.name }}:${{ github.sha }}"
