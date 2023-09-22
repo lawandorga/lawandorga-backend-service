@@ -1,10 +1,8 @@
-import asyncio
 import json
 
-from asgiref.sync import sync_to_async
 from django.db.transaction import TransactionManagementError
 from django.template.response import TemplateResponse
-from django.utils.decorators import async_only_middleware, sync_and_async_middleware
+from django.utils.decorators import sync_only_middleware
 
 from core.models import LoggedPath
 
@@ -14,19 +12,16 @@ __all__ = [
 ]
 
 
-@async_only_middleware
+@sync_only_middleware
 def custom_debug_toolbar_middleware(get_response):
-    async def middleware(request):
-        response = await get_response(request)
+    def middleware(request):
+        response = get_response(request)
 
         if "debug" in request.GET and response["content-type"] == "application/json":
             content = json.dumps(json.loads(response.content), sort_keys=True, indent=2)
-            new_response = await sync_to_async(
-                TemplateResponse(
-                    request, "api_debug.html", context={"content": content}
-                ).render,
-                thread_sensitive=True,
-            )()
+            new_response = TemplateResponse(
+                request, "api_debug.html", context={"content": content}
+            ).render()
             return new_response
 
         return response
@@ -34,7 +29,7 @@ def custom_debug_toolbar_middleware(get_response):
     return middleware
 
 
-@sync_and_async_middleware
+@sync_only_middleware
 def logging_middleware(get_response):
     def create_data(request, response):
         data = {
@@ -45,28 +40,14 @@ def logging_middleware(get_response):
         }
         return data
 
-    if asyncio.iscoroutinefunction(get_response):
-
-        async def middleware(request):
-            response = await get_response(request)
-            data = await sync_to_async(create_data)(request, response)
-            try:
-                await LoggedPath.objects.acreate(**data)
-            except TransactionManagementError:
-                # happens if an error happens in an atomic block
-                pass
-            return response
-
-    else:
-
-        def middleware(request):
-            response = get_response(request)
-            data = create_data(request, response)
-            try:
-                LoggedPath.objects.create(**data)
-            except TransactionManagementError:
-                # happens if an error happens in an atomic block
-                pass
-            return response
+    def middleware(request):
+        response = get_response(request)
+        data = create_data(request, response)
+        try:
+            LoggedPath.objects.create(**data)
+        except TransactionManagementError:
+            # happens if an error happens in an atomic block
+            pass
+        return response
 
     return middleware

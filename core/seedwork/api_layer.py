@@ -1,4 +1,3 @@
-import asyncio
 import inspect
 import json
 import logging
@@ -17,7 +16,6 @@ from typing import (
     Union,
 )
 
-from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import FileResponse, HttpRequest, JsonResponse, RawPostDataException
@@ -149,10 +147,10 @@ def _validate(request: HttpRequest, schema: Type[BaseModel]) -> BaseModel:
     return schema(root=data)
 
 
-def _catch_error(func: Callable[..., Awaitable[JsonResponse | FileResponse]]):
-    async def catch(*args, **kwargs):
+def _catch_error(func: Callable[..., JsonResponse | FileResponse]):
+    def catch(*args, **kwargs):
         try:
-            return await func(*args, **kwargs)
+            return func(*args, **kwargs)
 
         except ApiValidationError as e:
             return e.to_error_response()
@@ -232,12 +230,10 @@ class Router:
     @staticmethod
     def generate_view_func(
         method_route: Dict,
-    ) -> Callable[..., Awaitable[JsonResponse]]:
-        async def decorator(request: HttpRequest, *args, **kwargs) -> JsonResponse:
+    ) -> Callable[..., JsonResponse | FileResponse]:
+        def decorator(request: HttpRequest, *args, **kwargs) -> JsonResponse:
             if request.method in method_route:
-                return await method_route[request.method]["view"](
-                    request, *args, **kwargs
-                )
+                return method_route[request.method]["view"](request, *args, **kwargs)
             else:
                 return ErrorResponse(
                     title="Method not allowed", status=405, err_type="MethodNotAllowed"
@@ -261,7 +257,7 @@ class Router:
         ret = []
         for url, method_route in urls.items():
             view = Router.generate_view_func(method_route)
-            ret.append(path(url, view))  # remove the async stuff and it will work
+            ret.append(path(url, view))
 
         return ret
 
@@ -289,7 +285,7 @@ class Router:
                     "The variable named 'data' must be typed with a pydantic model, or 'list' or 'dict'."
                 )
 
-        async def wrapper(
+        def wrapper(
             request: HttpRequest, *args, **kwargs
         ) -> JsonResponse | FileResponse:
             # set up input
@@ -300,9 +296,7 @@ class Router:
                 annotation = parameter.annotation
                 if annotation in cls._injectors_by_return_type:
                     inject_function = cls._injectors_by_return_type[annotation]
-                    func_kwargs[parameter.name] = await sync_to_async(inject_function)(
-                        request
-                    )
+                    func_kwargs[parameter.name] = inject_function(request)
 
             # add data input
             if "data" in s.parameters:
@@ -319,11 +313,7 @@ class Router:
                 func_kwargs["data"] = data.root  # type: ignore
 
             # different layer errors
-            if asyncio.iscoroutinefunction(func):
-                async_func: Callable[..., Awaitable[Any]] = func
-            else:
-                async_func: Callable[..., Awaitable[Any]] = sync_to_async(func)  # type: ignore
-            result: Any = await async_func(**func_kwargs)
+            result = func(**func_kwargs)
 
             # validate the output
             if (
@@ -337,7 +327,7 @@ class Router:
                     "Output",
                     root=(output_schema, ...),
                 )
-                output_data = await sync_to_async(model)(root=result)
+                output_data = model(root=result)
                 return JsonResponse(output_data.model_dump()["root"], safe=False)
 
             # default

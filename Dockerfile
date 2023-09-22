@@ -46,4 +46,4 @@ RUN python manage.py collectstatic --noinput
 
 # run
 EXPOSE 8080
-CMD ["gunicorn", "config.asgi:application", "--bind", "0.0.0.0:8080", "--timeout", "240", "-w", "4", "-k", "config.workers.UvicornWorker"]
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8080", "--timeout", "240", "-w", "4"]
