@@ -28,7 +28,13 @@ on:
       DB_PORT:
         required: true
       DB_HOST:
-        required: true    
+        required: true
+      SCW_ACCESS_KEY: 
+        required: true
+      SCW_PROJECT_ID: 
+        required: true
+      SCW_SECRET_KEY: 
+        required: true
 
 jobs:
   run_migrations:
