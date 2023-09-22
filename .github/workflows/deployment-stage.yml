@@ -31,7 +31,6 @@ jobs:
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       DB_PORT: ${{ secrets.DB_PORT }}
       DB_HOST: ${{ secrets.DB_HOST }}
-      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 
   # migrate_data:
   #   name: Migrate Data
@@ -51,8 +50,6 @@ jobs:
   #     DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
   #     DB_PORT: ${{ secrets.DB_PORT }}
   #     DB_HOST: ${{ secrets.DB_HOST }}
-  #     SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-
   deploy:
     name: Deploy
     needs: [check, run_migrations]
@@ -78,21 +75,6 @@ jobs:
         "DB_PASSWORD": "${{ secrets.DB_PASSWORD }}",
         "DB_PORT": "${{ secrets.DB_PORT }}",
         "DB_HOST": "${{ secrets.DB_HOST }}",
-        "SENTRY_DSN": "${{ secrets.SENTRY_DSN }}",
         "PIPELINE_IMAGE": "${{ github.event.repository.name }}:${{ github.sha }}",
-        "PIPELINE_SERVICE": "${{ github.event.repository.name }}",
-        "SENTRY_RELEASE": "${{ github.sha }}"
+        "PIPELINE_SERVICE": "${{ github.event.repository.name }}"
         }'
-
-  # sentry:
-  #   name: Sentry
-  #   needs: [check]
-  #   if: ${{ github.event.workflow_run.conclusion == 'success' }}
-  #   uses: ./.github/workflows/deployment-stage--create-a-sentry-release.yml
-  #   with:
-  #     artifact: ${{ github.event.repository.name }}
-  #     version: ${{ github.sha }}
-  #     project: lawandorga-main-frontend
-  #     org: sentry
-  #   secrets:
-  #     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}

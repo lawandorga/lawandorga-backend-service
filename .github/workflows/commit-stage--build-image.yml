@@ -27,9 +27,6 @@ jobs:
     name: Build Image
     runs-on: ubuntu-22.04
 
-    env:
-      VITE_SENTRY_RELEASE: ${{ inputs.version }}
-
     outputs:
       image: ${{ steps.output.outputs.image }}
       version: ${{ steps.output.outputs.version }}
