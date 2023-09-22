@@ -1,4 +1,4 @@
-from typing import Optional, cast
+from typing import TYPE_CHECKING, Optional, cast
 from uuid import UUID
 
 from django.db import models
@@ -50,6 +50,9 @@ class EncryptedRecordMessage(models.Model):
 
     encryption_class = AESEncryption
     encrypted_fields = ["message"]
+
+    if TYPE_CHECKING:
+        objects: models.Manager["EncryptedRecordMessage"]
 
     class Meta:
         ordering = ["created"]

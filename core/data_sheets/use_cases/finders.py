@@ -52,7 +52,7 @@ def access_from_id(actor: RlcUser, v: int) -> RecordAccess:
 def find_field_from_id(actor: RlcUser, uuid: UUID) -> RecordField:
     for subclass in RecordField.__subclasses__():
         try:
-            return subclass.objects.get(uuid=uuid, template__rlc_id=actor.org_id)
+            return subclass.objects.get(uuid=uuid, template__rlc_id=actor.org_id)  # type: ignore
         except subclass.DoesNotExist:
             pass
     raise ObjectDoesNotExist()
