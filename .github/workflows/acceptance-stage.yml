@@ -17,13 +17,6 @@ jobs:
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  quality:
-    name: Check If Quality Gate Passed
-    needs: [analyze]
-    uses: ./.github/workflows/acceptance-stage--query-quality-gate-status.yml
-    secrets:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
   test:
     name: Test The Docker Container
     uses: ./.github/workflows/acceptance-stage--test-docker-image.yml

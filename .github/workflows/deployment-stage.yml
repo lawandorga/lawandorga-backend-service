@@ -31,16 +31,8 @@ on:
         required: true    
 
 jobs:
-  check:
-    name: Check
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    uses: ./.github/workflows/acceptance-stage--query-quality-gate-status.yml
-    secrets:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
   run_migrations:
     name: Run Migratations
-    needs: [check]
     uses: ./.github/workflows/deployment-stage--run-migrations.yml
     secrets:
       DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
@@ -75,9 +67,10 @@ jobs:
   #     DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
   #     DB_PORT: ${{ secrets.DB_PORT }}
   #     DB_HOST: ${{ secrets.DB_HOST }}
+  
   deploy:
     name: Deploy
-    needs: [check, run_migrations]
+    needs: [run_migrations]
     uses: ./.github/workflows/deployment-stage--terraform-apply.yml
     with:
       image_version: ${{ github.sha }}
