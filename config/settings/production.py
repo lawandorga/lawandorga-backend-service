@@ -1,5 +1,4 @@
 import environs
-from corsheaders.defaults import default_headers
 
 from .base import *
 
@@ -89,7 +88,7 @@ CORS_ALLOWED_ORIGINS = [MAIN_FRONTEND_URL, STATISTICS_FRONTEND_URL]
 
 # Storage
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
-DEFAULT_FILE_STORAGE = "config.storage.CustomS3Boto3Storage"
+STORAGES["default"]["BACKEND"] = "config.storage.CustomS3Boto3Storage"
 AWS_S3_SECRET_ACCESS_KEY = env.str("S3_SECRET_KEY")
 AWS_S3_ACCESS_KEY_ID = env.str("S3_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = env.str("S3_BUCKET_NAME")
