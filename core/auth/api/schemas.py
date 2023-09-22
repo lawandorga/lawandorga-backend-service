@@ -4,7 +4,7 @@ from uuid import UUID
 
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from pydantic import AnyUrl, BaseModel, ConfigDict, FieldValidationInfo, field_validator
+from pydantic import BaseModel, ConfigDict, FieldValidationInfo, field_validator
 
 
 class OutputOrg(BaseModel):
@@ -132,7 +132,7 @@ class InputUnlockOrgUser(BaseModel):
 class Link(BaseModel):
     id: UUID
     name: str
-    link: AnyUrl
+    link: str
     order: int
 
     model_config = ConfigDict(from_attributes=True)
