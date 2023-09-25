@@ -220,7 +220,7 @@ API_INJECTORS = [
 TIMEOUT_TIMEDELTA = timedelta(minutes=30)
 
 # This is used for ics calendar integration links
-CALENDAR_URL = "http://localhost:8000/api/events/ics/"
+CALENDAR_URL = "http://localhost:4205/api/events/ics/"
 
 # this is used to check the domain settings for the email application
 MAIL_MX_RECORD = "mail.law-orga.de"

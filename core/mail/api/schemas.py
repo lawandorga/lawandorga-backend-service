@@ -4,7 +4,6 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from core.mail.models import MailAddress, MailDomain
-from core.seedwork.api_layer import qs_to_list
 
 
 # page
@@ -139,8 +138,6 @@ class OutputPassword(BaseModel):
 class OutputSelfAccount(BaseModel):
     addresses: list[OutputAddress]
 
-    _ = qs_to_list("addresses")
-
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -159,8 +156,6 @@ class OutputSelfMailUser(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-    _ = qs_to_list("groups")
-
 
 class OutputGroup(BaseModel):
     uuid: UUID
@@ -176,9 +171,6 @@ class OutputPageMail(BaseModel):
     users: list[OutputUser]
     groups: list[OutputGroup]
 
-    __ = qs_to_list("users")
-    _ = qs_to_list("groups")
-
 
 class OutputPageGroup(BaseModel):
     available_domains: list[OutputDomain]
@@ -186,18 +178,10 @@ class OutputPageGroup(BaseModel):
     addresses: list[OutputAddress]
     members: list[OutputUser]
 
-    _ = qs_to_list("available_domains")
-    __ = qs_to_list("addresses")
-    ___ = qs_to_list("members")
-    ____ = qs_to_list("available_users")
-
 
 class OutputPageUser(BaseModel):
     available_domains: list[OutputDomain]
     addresses: list[OutputAddress]
-
-    _ = qs_to_list("available_domains")
-    __ = qs_to_list("addresses")
 
 
 class OutputDomainCheck(BaseModel):

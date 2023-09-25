@@ -14,13 +14,29 @@ def query__page_dashboard(user: UserProfile):
     if hasattr(user, "mail_user"):
         mail_user = user.mail_user
 
+        mail_user_account_data = {
+            "addresses": list(mail_user.account.addresses.all()),
+        }
+
+        mail_user_data = {
+            "uuid": mail_user.uuid,
+            "email": mail_user.email,
+            "account": mail_user_account_data,
+            "aliases": mail_user.aliases,
+            "groups": list(mail_user.groups.all()),
+        }
+
         available_domains = list(MailDomain.objects.filter(org=mail_user.org))
         domain = MailDomain.objects.filter(org=mail_user.org).first()
-        users = MailUser.objects.filter(org=mail_user.org).select_related("account")
-        groups = MailGroup.objects.filter(org=mail_user.org).select_related("account")
+        users = list(
+            MailUser.objects.filter(org=mail_user.org).select_related("account")
+        )
+        groups = list(
+            MailGroup.objects.filter(org=mail_user.org).select_related("account")
+        )
 
         return {
-            "user": mail_user,
+            "user": mail_user_data,
             "available_domains": available_domains,
             "domain": domain,
             "users": users,
@@ -48,9 +64,9 @@ def query__page_group(mail_user: MailUser, data: schemas.InputPageGroup):
     )
 
     return {
-        "addresses": addresses,
-        "available_domains": available_domains,
-        "members": members,
+        "addresses": list(addresses),
+        "available_domains": list(available_domains),
+        "members": list(members),
         "available_users": available_users,
     }
 
@@ -68,4 +84,4 @@ def query__page_user(mail_user: MailUser, data: schemas.InputPageUser):
     available_domains = MailDomain.objects.filter(org=mail_user.org)
     addresses = user.account.addresses.all()
 
-    return {"addresses": addresses, "available_domains": available_domains}
+    return {"addresses": list(addresses), "available_domains": list(available_domains)}

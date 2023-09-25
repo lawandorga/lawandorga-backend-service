@@ -2,16 +2,16 @@ from .base import *
 
 # This is used for links in activation emails and so on
 #
-MAIN_FRONTEND_URL = "http://localhost:4200"
+MAIN_FRONTEND_URL = "http://localhost:4204"
 STATISTICS_FRONTEND_URL = "http://localhost:4300"
 
 # This is used internally to access media or similar stuff
 #
-MAIN_BACKEND_URL = "http://localhost:8000"
+MAIN_BACKEND_URL = "http://localhost:4205"
 
 # This is used for ics calendar integration links
 #
-CALENDAR_URL = "http://localhost:8000"
+CALENDAR_URL = "http://localhost:4205"
 
 # Debug
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEBUG

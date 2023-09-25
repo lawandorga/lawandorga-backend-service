@@ -1,1 +1,1 @@
-python manage.py runserver
+pipenv run python manage.py runserver localhost:4205

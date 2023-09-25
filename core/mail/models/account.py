@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from django.db import models
@@ -5,6 +6,9 @@ from django.db.models import Q
 
 from core.mail.models.group import MailGroup
 from core.mail.models.user import MailUser
+
+if TYPE_CHECKING:
+    from core.mail.models.address import MailAddress
 
 
 class MailAccount(models.Model):
@@ -16,6 +20,9 @@ class MailAccount(models.Model):
     user = models.OneToOneField(
         MailUser, related_name="account", on_delete=models.CASCADE, null=True
     )
+
+    if TYPE_CHECKING:
+        addresses: models.QuerySet["MailAddress"]
 
     class Meta:
         verbose_name = "MailAccount"

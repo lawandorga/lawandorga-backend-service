@@ -21,27 +21,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import FileResponse, HttpRequest, JsonResponse, RawPostDataException
 from django.urls import path
 from django.utils.module_loading import import_string
-from pydantic import BaseModel, ValidationError, create_model, model_validator
+from pydantic import BaseModel, ValidationError, create_model
 
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.use_case_layer import UseCaseError, UseCaseInputError
 
 api_logger = logging.getLogger("api")
-
-
-def __qs_to_list_validator(qs) -> List:
-    if hasattr(qs, "all"):
-        return list(qs.all())
-    if isinstance(qs, list):
-        return qs
-    raise ValueError("The value is not a queryset or a list.")
-
-
-def qs_to_list(x):
-    def adapt(cls, data) -> List:
-        return __qs_to_list_validator(getattr(data, x))
-
-    return model_validator(mode="before")(adapt)
 
 
 class RFC7807(BaseModel):

@@ -1,4 +1,5 @@
 import secrets
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from django.contrib.auth.hashers import make_password
@@ -6,6 +7,10 @@ from django.db import models
 
 from core.auth.models import UserProfile
 from core.mail.models.org import MailOrg
+
+if TYPE_CHECKING:
+    from core.mail.models.account import MailAccount
+    from core.mail.models.group import MailGroup
 
 
 class MailUser(models.Model):
@@ -15,6 +20,10 @@ class MailUser(models.Model):
     )
     pw_hash = models.CharField(max_length=1000)
     org = models.ForeignKey(MailOrg, related_name="members", on_delete=models.CASCADE)
+
+    if TYPE_CHECKING:
+        account: "MailAccount"
+        groups: models.QuerySet["MailGroup"]
 
     class Meta:
         verbose_name = "MailUser"
