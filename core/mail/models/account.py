@@ -36,4 +36,4 @@ class MailAccount(models.Model):
         ]
 
     def __str__(self):
-        return "mailAccount: {};".format(self.id)
+        return "mailAccount: {};".format(self.pk)
