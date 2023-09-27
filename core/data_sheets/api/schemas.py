@@ -110,9 +110,9 @@ class OutputTemplateField(BaseModel):
     order: int
     kind: str
     url: str
-    group_id: int | None
+    group_id: int | None = None
     options: Optional[list[OutputOption | str]] = None
-    share_keys: bool | None
+    share_keys: bool | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
