@@ -12,8 +12,8 @@ router = Router()
 
 class InputHasPermissionCreate(BaseModel):
     permission_id: int
-    group_id: int | None
-    user_id: int | None
+    group_id: int | None = None
+    user_id: int | None = None
 
 
 @router.post()
