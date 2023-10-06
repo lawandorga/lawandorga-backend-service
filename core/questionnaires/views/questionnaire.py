@@ -38,7 +38,6 @@ class QuestionnaireTemplateViewSet(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
     queryset = QuestionnaireTemplate.objects.none()

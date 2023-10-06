@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID, uuid4
 
 from django.db import models
@@ -66,6 +66,9 @@ class Questionnaire(Aggregate, models.Model):
     addons = dict(events=EventsAddon, folder=FolderAddon)
     events: EventsAddon
     folder: FolderAddon
+
+    if TYPE_CHECKING:
+        answers: models.QuerySet["QuestionnaireAnswer"]
 
     class Meta:
         verbose_name = "RecordQuestionnaire"
