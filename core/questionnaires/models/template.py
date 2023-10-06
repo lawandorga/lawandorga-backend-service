@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from django.db import models
 
@@ -19,6 +19,10 @@ class QuestionnaireTemplate(models.Model):
     records = models.ManyToManyField("Record", through="Questionnaire")
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+
+    if TYPE_CHECKING:
+        fields: models.QuerySet["QuestionnaireQuestion"]
+        files: models.QuerySet["QuestionnaireTemplateFile"]
 
     class Meta:
         verbose_name = "Questionnaire"

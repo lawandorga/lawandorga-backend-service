@@ -76,7 +76,7 @@ def query__retrieve_questionnaire(rlc_user: RlcUser, data: InputQuestionnaire):
     }
 
 
-class OutputTemplate(BaseModel):
+class OutputTemplateList(BaseModel):
     id: int
     name: str
     notes: str
@@ -84,6 +84,49 @@ class OutputTemplate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-@router.get(output_schema=list[OutputTemplate])
+@router.get("templates/", output_schema=list[OutputTemplateList])
 def query__list_templates(rlc_user: RlcUser):
     return QuestionnaireTemplate.objects.filter(rlc=rlc_user.org)
+
+
+class OutputTemplateDetailField(BaseModel):
+    id: int
+    name: str
+    order: int
+    question: str
+    type: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OutputTemplateDetailFile(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OutputTemplateDetail(BaseModel):
+    id: int
+    name: str
+    notes: str
+    fields: list[OutputTemplateDetailField]
+    files: list[OutputTemplateDetailFile]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class InputRetrieveTemplate(BaseModel):
+    id: int
+
+
+@router.get("template/<int:id>/", output_schema=OutputTemplateDetail)
+def query__retrieve_template(rlc_user: RlcUser, data: InputRetrieveTemplate):
+    template = QuestionnaireTemplate.objects.filter(rlc=rlc_user.org).get(id=data.id)
+    return {
+        "id": template.pk,
+        "name": template.name,
+        "notes": template.notes,
+        "fields": list(template.fields.all()),
+        "files": list(template.files.all()),
+    }
