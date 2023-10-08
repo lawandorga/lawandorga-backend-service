@@ -1,3 +1,4 @@
+from core.questionnaires.commands import COMMANDS as QUESTIONNAIRE_COMMANDS
 from core.timeline.usecases.event import create_event, delete_event, update_event
 from core.timeline.usecases.follow_up import (
     create_follow_up,
@@ -15,3 +16,4 @@ USECASES = {
     "timeline/update_event": update_event,
     "timeline/delete_event": delete_event,
 }
+USECASES.update(QUESTIONNAIRE_COMMANDS)

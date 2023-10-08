@@ -4,7 +4,7 @@ from core.auth.models import RlcUser
 from core.folders.use_cases.finders import folder_from_uuid
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models import Questionnaire
-from core.questionnaires.use_cases.finders import questionnaire_template_from_id
+from core.questionnaires.use_cases.finders import template_from_id
 from core.seedwork.use_case_layer import use_case
 
 
@@ -15,7 +15,7 @@ def publish_a_questionnaire(
     template_id: int,
 ):
     folder = folder_from_uuid(__actor, folder_uuid)
-    template = questionnaire_template_from_id(__actor, template_id)
+    template = template_from_id(__actor, template_id)
     questionnaire = Questionnaire.create(template, folder, __actor)
     questionnaire.save()
 

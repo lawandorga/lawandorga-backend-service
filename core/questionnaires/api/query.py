@@ -1,11 +1,16 @@
+import mimetypes
 from datetime import datetime
 from uuid import UUID
 
+from django.http import FileResponse
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import RlcUser
 from core.questionnaires.models import Questionnaire
-from core.questionnaires.models.template import QuestionnaireTemplate
+from core.questionnaires.models.template import (
+    QuestionnaireTemplate,
+    QuestionnaireTemplateFile,
+)
 from core.seedwork.api_layer import Router
 
 router = Router()
@@ -130,3 +135,19 @@ def query__retrieve_template(rlc_user: RlcUser, data: InputRetrieveTemplate):
         "fields": list(template.fields.all()),
         "files": list(template.files.all()),
     }
+
+
+class InputDownloadFile(BaseModel):
+    id: int
+
+
+@router.get("download_template_file/<int:id>/", output_schema=FileResponse)
+def query__retrieve_file(rlc_user: RlcUser, data: InputDownloadFile):
+    file = QuestionnaireTemplateFile.objects.get(
+        id=data.id, questionnaire__rlc__id=rlc_user.org_id
+    )
+    response = FileResponse(
+        file.file, content_type=mimetypes.guess_type(file.file.name)[0]
+    )
+    response["Content-Disposition"] = 'attachment; filename="{}"'.format(file.name)
+    return response

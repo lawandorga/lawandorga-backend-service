@@ -1,157 +1,20 @@
 import mimetypes
 
-from django.db.models import ProtectedError
 from django.http import FileResponse
-from rest_framework import mixins, status, viewsets
+from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.response import Response
 
-from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES
-from core.questionnaires.models import (
-    Questionnaire,
-    QuestionnaireAnswer,
-    QuestionnaireQuestion,
-    QuestionnaireTemplate,
-    QuestionnaireTemplateFile,
-)
+from core.questionnaires.models import Questionnaire, QuestionnaireAnswer
 from core.questionnaires.views.serializers import (
-    CodeSerializer,
     QuestionnaireAnswerRetrieveSerializer,
     QuestionnaireFileAnswerSerializer,
     QuestionnaireListSerializer,
-    QuestionnaireQuestionSerializer,
     QuestionnaireSerializer,
-    QuestionnaireTemplateFileSerializer,
-    QuestionnaireTemplateSerializer,
     QuestionnaireTextAnswerSerializer,
     RecordQuestionnaireDetailSerializer,
 )
-from core.seedwork.permission import CheckPermissionWall
-
-
-###
-# QuestionnaireTemplate
-###
-class QuestionnaireTemplateViewSet(
-    CheckPermissionWall,
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
-):
-    queryset = QuestionnaireTemplate.objects.none()
-    serializer_class = QuestionnaireTemplateSerializer
-    permission_wall = {
-        "partial_update": PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
-        "update": PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
-        "destroy": PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
-    }
-
-    def get_queryset(self):
-        return QuestionnaireTemplate.objects.filter(rlc=self.request.user.rlc)
-
-    def perform_destroy(self, instance):
-        try:
-            instance.delete()
-        except ProtectedError:
-            raise ParseError(
-                "This questionnaire template can not be deleted, because there are questionnaires "
-                "within records that use it."
-            )
-
-    @action(detail=True, methods=["get"])
-    def fields(self, request, *args, **kwargs):
-        instance = self.get_object()
-        queryset = instance.fields.all()
-        serializer = QuestionnaireQuestionSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-    @action(detail=True, methods=["get"])
-    def files(self, request, *args, **kwargs):
-        instance = self.get_object()
-        queryset = instance.files.all()
-        serializer = QuestionnaireTemplateFileSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-    @action(detail=False, methods=["post"], permission_classes=[])
-    def code(self, request, *args, **kwargs):
-        serializer = CodeSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        if Questionnaire.objects.filter(
-            code=serializer.validated_data["code"]
-        ).exists():
-            return Response(
-                {"code": serializer.validated_data["code"]}, status=status.HTTP_200_OK
-            )
-        return Response(
-            {"non_field_errors": "There is no questionnaire with this code."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-
-###
-# QuestionnaireFile
-###
-class QuestionnaireFilesViewSet(
-    CheckPermissionWall,
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
-):
-    queryset = QuestionnaireTemplateFile.objects.none()
-    serializer_class = QuestionnaireTemplateFileSerializer
-    permission_wall = {
-        "create": PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
-        "destroy": PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
-    }
-
-    def get_permissions(self):
-        if self.action in ["retrieve"]:
-            return []
-        return super().get_permissions()
-
-    def get_queryset(self):
-        if self.action in ["retrieve"]:
-            return QuestionnaireTemplateFile.objects.all()
-        return QuestionnaireTemplateFile.objects.filter(
-            questionnaire__rlc=self.request.user.rlc
-        )
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        response = FileResponse(
-            instance.file, content_type=mimetypes.guess_type(instance.file.name)[0]
-        )
-        response["Content-Disposition"] = 'attachment; filename="{}"'.format(
-            instance.name
-        )
-        return response
-
-
-###
-# QuestionnaireField
-###
-class QuestionnaireFieldsViewSet(
-    CheckPermissionWall,
-    mixins.CreateModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
-):
-    queryset = QuestionnaireQuestion.objects.none()
-    serializer_class = QuestionnaireQuestionSerializer
-    permission_wall = {
-        "create": PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
-        "partial_update": PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
-        "update": PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
-        "destroy": PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES,
-    }
-
-    def get_queryset(self):
-        return QuestionnaireQuestion.objects.filter(
-            questionnaire__rlc=self.request.user.rlc
-        )
 
 
 ###

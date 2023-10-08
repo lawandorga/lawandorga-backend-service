@@ -39,11 +39,35 @@ class QuestionnaireTemplate(models.Model):
         )
         return q
 
+    def get_question(self, question_id: int) -> "QuestionnaireQuestion":
+        return self.fields.get(id=question_id)
+
+    def update_question(
+        self,
+        question_id: int,
+        question_type: Literal["FILE", "TEXTAREA"],
+        question: str,
+        order=1,
+    ) -> "QuestionnaireQuestion":
+        q = self.get_question(question_id)
+        q.update(question_type, question, order)
+        return q
+
     def update(self, name: str | None, notes: str | None):
         if name is not None:
             self.name = name
         if notes is not None:
             self.notes = notes
+
+    def add_file(self, name: str, file) -> None:
+        f = QuestionnaireTemplateFile(name=name, questionnaire=self)
+        f.save()
+        filename = f"{name}.{file.name.split('.')[-1]}"
+        f.file.save(filename, file)
+
+    def get_file(self, file_id: int) -> "QuestionnaireTemplateFile":
+        f = self.files.get(id=file_id)
+        return f
 
 
 class QuestionnaireTemplateFile(models.Model):
@@ -89,4 +113,11 @@ class QuestionnaireQuestion(models.Model):
 
     @property
     def name(self):
-        return "{}_{}".format(self.type.lower(), self.id)
+        return "{}_{}".format(self.type.lower(), self.pk)
+
+    def update(
+        self, question_type: Literal["FILE", "TEXTAREA"], question: str, order=1
+    ):
+        self.question = question
+        self.type = question_type
+        self.order = order
