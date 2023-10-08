@@ -23,6 +23,7 @@ class QuestionnaireTemplate(models.Model):
     if TYPE_CHECKING:
         fields: models.QuerySet["QuestionnaireQuestion"]
         files: models.QuerySet["QuestionnaireTemplateFile"]
+        rlc_id: int
 
     class Meta:
         verbose_name = "Questionnaire"

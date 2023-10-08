@@ -4,7 +4,10 @@ from core.auth.models import RlcUser
 from core.folders.use_cases.finders import folder_from_uuid
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models import Questionnaire
-from core.questionnaires.use_cases.finders import template_from_id
+from core.questionnaires.use_cases.finders import (
+    questionnaire_from_id,
+    template_from_id,
+)
 from core.seedwork.use_case_layer import use_case
 
 
@@ -20,6 +23,12 @@ def publish_a_questionnaire(
     questionnaire.save()
 
     return questionnaire
+
+
+@use_case
+def delete_a_questionnaire(__actor: RlcUser, questionnaire_id: int):
+    questionnaire = questionnaire_from_id(__actor, questionnaire_id)
+    questionnaire.delete()
 
 
 @use_case

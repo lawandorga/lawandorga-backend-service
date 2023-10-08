@@ -93,8 +93,9 @@ class Questionnaire(Aggregate, models.Model):
         assert self.key is None
         return self.template.rlc.get_public_key()
 
-    def get_private_key(self, private_key_user=None, user=None):
+    def get_private_key(self, private_key_user=None, user: RlcUser | None = None):
         assert self.key is None
+        assert user is not None
         return self.template.rlc.get_private_key(
             user=user.user, private_key_user=private_key_user
         )
@@ -111,6 +112,7 @@ class Questionnaire(Aggregate, models.Model):
         self, user: Optional[RlcUser] = None
     ) -> AsymmetricKey | EncryptedAsymmetricKey:
         assert self.folder is not None
+        assert self.key is not None
 
         enc_key = EncryptedAsymmetricKey.create_from_dict(self.key)
         if user is None:
@@ -173,6 +175,13 @@ class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
 
     def __str__(self):
         return "questionnaireAnswer: {};".format(self.pk)
+
+    @property
+    def filename(self) -> str:
+        if not self.field.type == "FILE":
+            raise ValueError("This field is not a file.")
+        assert isinstance(self.data, str)
+        return self.data.split("/")[-1]
 
     def encrypt(self, *args):
         key = self.questionnaire.get_key().get_public_key().encode("utf-8")

@@ -1,3 +1,4 @@
+from core.questionnaires.use_cases.questionnaire import delete_a_questionnaire
 from core.questionnaires.use_cases.template import (
     add_file,
     create_question,
@@ -12,4 +13,5 @@ COMMANDS = {
     "questionnaires/delete_question": delete_question,
     "questionnaires/add_file": add_file,
     "questionnaires/delete_file": delete_file,
+    "questionnaires/delete_questionnaire": delete_a_questionnaire,
 }

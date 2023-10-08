@@ -7,11 +7,12 @@ from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import RlcUser
 from core.questionnaires.models import Questionnaire
+from core.questionnaires.models.questionnaire import QuestionnaireAnswer
 from core.questionnaires.models.template import (
     QuestionnaireTemplate,
     QuestionnaireTemplateFile,
 )
-from core.seedwork.api_layer import Router
+from core.seedwork.api_layer import ApiError, Router
 
 router = Router()
 
@@ -142,12 +143,85 @@ class InputDownloadFile(BaseModel):
 
 
 @router.get("download_template_file/<int:id>/", output_schema=FileResponse)
-def query__retrieve_file(rlc_user: RlcUser, data: InputDownloadFile):
-    file = QuestionnaireTemplateFile.objects.get(
-        id=data.id, questionnaire__rlc__id=rlc_user.org_id
-    )
+def query__retrieve_file(data: InputDownloadFile):
+    file = QuestionnaireTemplateFile.objects.get(id=data.id)
     response = FileResponse(
         file.file, content_type=mimetypes.guess_type(file.file.name)[0]
     )
     response["Content-Disposition"] = 'attachment; filename="{}"'.format(file.name)
     return response
+
+
+class InputDownloadAnswerFile(BaseModel):
+    id: int
+
+
+@router.get("download_answer_file/<int:id>/", output_schema=FileResponse)
+def query__retrieve_answer_file(rlc_user: RlcUser, data: InputDownloadAnswerFile):
+    answer = QuestionnaireAnswer.objects.get(
+        id=data.id, questionnaire__template__rlc__id=rlc_user.org_id
+    )
+    answer.decrypt(user=rlc_user)
+    if answer.data is None:
+        raise ApiError("This file does not exist.")
+    file = answer.download_file(answer.aes_key)
+    assert isinstance(answer.data, str)
+    response = FileResponse(file, content_type=mimetypes.guess_type(answer.data)[0])
+    response["Content-Disposition"] = 'attachment; filename="{}"'.format(
+        answer.filename
+    )
+    return response
+
+
+class InputFillOutQuestionnaire(BaseModel):
+    code: str
+
+
+class OutputFillOutTemplateDetailFile(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OutputFillOutTemplateDetail(BaseModel):
+    id: int
+    name: str
+    notes: str
+    files: list[OutputFillOutTemplateDetailFile]
+
+
+class OutputFillOutTemplateDetailField(BaseModel):
+    id: int
+    name: str
+    question: str
+    type: str
+    # required: bool
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OutputFillOutQuestionnaire(BaseModel):
+    id: int
+    template: OutputFillOutTemplateDetail
+    fields: list[OutputFillOutTemplateDetailField]
+
+
+@router.get(
+    "fill_out_questionnaire/<str:code>/", output_schema=OutputFillOutQuestionnaire
+)
+def query__fill_out_questionnaire(data: InputFillOutQuestionnaire):
+    questionnaire = Questionnaire.objects.get(code=data.code)
+    fields = list(questionnaire.template.fields.all())
+    answers = list(questionnaire.answers.values_list("field", flat=True))
+    fields = list(filter(lambda field: field.pk not in answers, fields))
+    return {
+        "id": questionnaire.pk,
+        "template": {
+            "id": questionnaire.template.pk,
+            "name": questionnaire.template.name,
+            "notes": questionnaire.template.notes,
+            "files": list(questionnaire.template.files.all()),
+        },
+        "fields": fields,
+    }
