@@ -112,12 +112,13 @@ def _validate(request: HttpRequest, schema: Type[BaseModel]) -> BaseModel:
     # query params
     get_dict = request.GET.dict()
     data.update(get_dict)
-    file = request.FILES.get("file", None)
-    if file:
-        data["file"] = file
-    files = request.FILES.getlist("files", None)
-    if files:
-        data["files"] = files
+    # files
+    for key in request.FILES.dict():
+        values = request.FILES.getlist(key)
+        if len(values) == 1:
+            data[key] = values[0]
+        else:
+            data[key] = values
     # request resolver
     if request.resolver_match is not None:
         data.update(request.resolver_match.kwargs)

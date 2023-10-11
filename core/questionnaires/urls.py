@@ -1,11 +1,10 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from core.questionnaires import api, views
+from core.questionnaires import api
 
 router = DefaultRouter()
 
-router.register("questionnaires", views.QuestionnaireViewSet)
 
 urlpatterns = [
     path("questionnaires/v2/", include(api.questionnaire_router.urls)),
