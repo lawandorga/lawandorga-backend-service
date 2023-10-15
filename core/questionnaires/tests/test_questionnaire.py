@@ -77,10 +77,17 @@ def test_publish_questionnaire(user, db, template, folder):
     c = Client()
     c.login(**user)
     response = c.post(
-        "/api/questionnaires/questionnaires/v2/publish/",
-        data=json.dumps({"folder": str(folder.uuid), "template": template.id}),
+        "/api/command/",
+        data=json.dumps(
+            {
+                "folder_uuid": str(folder.uuid),
+                "template_id": template.id,
+                "action": "questionnaires/publish_questionnaire",
+            }
+        ),
         content_type="application/json",
     )
+    print(response.json())
     assert response.status_code == 200
 
 
