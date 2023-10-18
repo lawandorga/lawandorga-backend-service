@@ -1,5 +1,4 @@
 from .encrypted_client import *
-from .pool import *
 from .record import (
     Record,
     RecordEncryptedFileEntry,

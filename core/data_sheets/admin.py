@@ -2,8 +2,6 @@ from django.contrib import admin
 
 from core.data_sheets.models import (
     EncryptedClient,
-    PoolConsultant,
-    PoolRecord,
     Record,
     RecordAccess,
     RecordDeletion,
@@ -30,8 +28,6 @@ from core.data_sheets.models import (
 admin.site.register(EncryptedClient)
 admin.site.register(RecordAccess)
 admin.site.register(RecordDeletion)
-admin.site.register(PoolConsultant)
-admin.site.register(PoolRecord)
 
 admin.site.register(RecordTemplate)
 admin.site.register(Record)
