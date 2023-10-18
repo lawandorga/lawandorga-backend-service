@@ -1,4 +1,3 @@
-import itertools
 from dataclasses import dataclass
 from typing import Optional, cast
 from uuid import UUID
@@ -6,7 +5,7 @@ from uuid import UUID
 from django.db.models import Q
 
 from core.auth.models import RlcUser
-from core.data_sheets.models import Record, RecordTemplate
+from core.data_sheets.models import Record
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.records.helpers import merge_attrs
@@ -89,14 +88,6 @@ def query__records_page(rlc_user: RlcUser):
         for p in points_1
     ]
 
-    columns_1 = list(
-        RecordTemplate.objects.filter(rlc_id=rlc_user.org_id).values_list(
-            "show", flat=True
-        )
-    )
-    columns_2 = itertools.chain(*columns_1)
-    columns_3 = list(dict.fromkeys(columns_2))
-
     views = list(
         RecordsView.objects.filter(Q(org_id=rlc_user.org_id) | Q(user=rlc_user))
     )
@@ -119,7 +110,6 @@ def query__records_page(rlc_user: RlcUser):
     }
 
     return {
-        "columns": columns_3,
         "records": records_2,
         "views": views,
         "deletions": list(deletions),

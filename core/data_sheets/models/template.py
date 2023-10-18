@@ -15,10 +15,6 @@ if TYPE_CHECKING:
 ###
 # RecordTemplate
 ###
-def get_default_show():
-    return ["Token", "State", "Consultants", "Tags", "Official Note"]
-
-
 class RecordTemplate(models.Model):
     @classmethod
     def create(cls, name: str, org: Org, pk=0) -> "RecordTemplate":
@@ -33,10 +29,14 @@ class RecordTemplate(models.Model):
     )
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    show = models.JSONField(default=get_default_show)
 
     if TYPE_CHECKING:
         records: models.QuerySet[Record]
+        state_fields: models.QuerySet["RecordStateField"]
+        standard_fields: models.QuerySet["RecordStandardField"]
+        select_fields: models.QuerySet["RecordSelectField"]
+        multiple_fields: models.QuerySet["RecordMultipleField"]
+        users_fields: models.QuerySet["RecordUsersField"]
 
     class Meta:
         verbose_name = "RecordTemplate"
@@ -200,10 +200,6 @@ class RecordField(models.Model):
         raise NotImplementedError("This property needs to be implemented.")
 
     @property
-    def field_type(self):
-        return self.type
-
-    @property
     def entry_url(self):
         url = reverse(self.entry_view_name)
         return url
@@ -225,6 +221,10 @@ class RecordStateField(RecordField):
     class Meta:
         verbose_name = "RecordStateField"
         verbose_name_plural = "RecordStateFields"
+
+    @property
+    def field_type(self):
+        return self.type
 
     @property
     def type(self):
@@ -257,6 +257,10 @@ class RecordUsersField(RecordField):
         return "Users"
 
     @property
+    def field_type(self):
+        return self.type
+
+    @property
     def type(self):
         return "multiple"
 
@@ -285,6 +289,10 @@ class RecordSelectField(RecordField):
         verbose_name_plural = "RecordSelectFields"
 
     @property
+    def field_type(self):
+        return self.type
+
+    @property
     def type(self):
         return "select"
 
@@ -306,6 +314,10 @@ class RecordMultipleField(RecordField):
     class Meta:
         verbose_name = "RecordMultipleField"
         verbose_name_plural = "RecordMultipleFields"
+
+    @property
+    def field_type(self):
+        return self.type
 
     @property
     def type(self):
@@ -331,6 +343,10 @@ class RecordEncryptedSelectField(RecordField):
         verbose_name_plural = "RecordEncryptedSelectFields"
 
     @property
+    def field_type(self):
+        return self.type
+
+    @property
     def type(self):
         return "select"
 
@@ -352,6 +368,10 @@ class RecordEncryptedFileField(RecordField):
     class Meta:
         verbose_name = "RecordEncryptedFileField"
         verbose_name_plural = "RecordEncryptedFileFields"
+
+    @property
+    def field_type(self):
+        return self.type
 
     @property
     def type(self):
@@ -449,6 +469,10 @@ class RecordStatisticField(RecordField):
     class Meta:
         verbose_name = "RecordStatisticField"
         verbose_name_plural = "RecordStatisticFields"
+
+    @property
+    def field_type(self):
+        return self.type
 
     @property
     def type(self):

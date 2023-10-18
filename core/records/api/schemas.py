@@ -109,7 +109,6 @@ class OutputBadges(BaseModel):
 
 
 class OutputRecordsPage(BaseModel):
-    columns: list[str]
     records: list[OutputRecord]
     views: list[OutputView]
     deletions: list[OutputDeletion]

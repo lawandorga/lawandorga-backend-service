@@ -35,7 +35,8 @@ def create_raw_org(name="Dummy's Org", pk=1, save=False):
     return org
 
 
-def create_raw_template(org=None, name="Test Template", pk=1):
+def create_raw_template(org: Org | None = None, name="Test Template", pk=1):
+    assert org is not None
     return RecordTemplate.create(name=name, org=org, pk=pk)
 
 

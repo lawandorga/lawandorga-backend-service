@@ -1,4 +1,3 @@
-import itertools
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -80,37 +79,6 @@ def query__templates(rlc_user: RlcUser):
 )
 def query__template(rlc_user: RlcUser, data: schemas.InputTemplateDetail):
     return RecordTemplate.objects.get(rlc_id=rlc_user.org_id, id=data.id)
-
-
-@router.get(output_schema=schemas.OutputRecordsPage)
-def query__records_page(rlc_user: RlcUser):
-    records_1 = list(
-        Record.objects.filter(template__rlc_id=rlc_user.org_id)
-        .prefetch_related(*Record.UNENCRYPTED_PREFETCH_RELATED)
-        .select_related("template")
-    )
-
-    records_2 = [
-        {
-            "id": r.pk,
-            "uuid": r.uuid,
-            "folder_uuid": r.folder_uuid,
-            "attributes": r.attributes,
-            "delete_requested": r.delete_requested,
-            "has_access": r.has_access(rlc_user),
-        }
-        for r in records_1
-    ]
-
-    columns_1 = list(
-        RecordTemplate.objects.filter(rlc_id=rlc_user.org_id).values_list(
-            "show", flat=True
-        )
-    )
-    columns_2 = itertools.chain(*columns_1)
-    columns_3 = list(dict.fromkeys(columns_2))
-
-    return {"columns": columns_3, "records": records_2}
 
 
 @router.get(

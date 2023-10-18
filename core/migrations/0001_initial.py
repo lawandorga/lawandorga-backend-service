@@ -539,9 +539,7 @@ class Migration(migrations.Migration):
                 ("updated", models.DateTimeField(auto_now=True)),
                 (
                     "show",
-                    models.JSONField(
-                        default=core.data_sheets.models.template.get_default_show
-                    ),
+                    models.JSONField(default=lambda: []),
                 ),
                 (
                     "rlc",
