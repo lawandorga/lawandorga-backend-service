@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from django.apps import apps
@@ -6,6 +7,9 @@ from django.urls import reverse
 
 from core.models import Group, Org
 from core.seedwork.domain_layer import DomainError
+
+if TYPE_CHECKING:
+    from .record import Record
 
 
 ###
@@ -30,6 +34,9 @@ class RecordTemplate(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     show = models.JSONField(default=get_default_show)
+
+    if TYPE_CHECKING:
+        records: models.QuerySet[Record]
 
     class Meta:
         verbose_name = "RecordTemplate"
@@ -178,7 +185,6 @@ class RecordField(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     entry_view_name: str
-    view_name: str
 
     class Meta:
         abstract = True
@@ -202,14 +208,6 @@ class RecordField(models.Model):
         url = reverse(self.entry_view_name)
         return url
 
-    @property
-    def url(self):
-        view_name = self.view_name.replace("list", "detail")
-        if not view_name:
-            return ""
-        url = reverse(view_name, kwargs={"pk": self.pk})
-        return url
-
     @classmethod
     def get_entry_model(cls):
         name = cls.__name__.replace("Field", "Entry")
@@ -223,7 +221,6 @@ class RecordStateField(RecordField):
     )
     options = models.JSONField(default=list)
     entry_view_name = "recordstateentry-list"
-    view_name = "recordstatefield-list"
 
     class Meta:
         verbose_name = "RecordStateField"
@@ -250,7 +247,6 @@ class RecordUsersField(RecordField):
         Group, blank=True, null=True, default=None, on_delete=models.SET_NULL
     )
     entry_view_name = "recordusersentry-list"
-    view_name = "recordusersfield-list"
 
     class Meta:
         verbose_name = "RecordUsersField"
@@ -283,7 +279,6 @@ class RecordSelectField(RecordField):
     )
     options = models.JSONField(default=list)
     entry_view_name = "recordselectentry-list"
-    view_name = "recordselectfield-list"
 
     class Meta:
         verbose_name = "RecordSelectField"
@@ -307,7 +302,6 @@ class RecordMultipleField(RecordField):
     )
     options = models.JSONField(default=list)
     entry_view_name = "recordmultipleentry-list"
-    view_name = "recordmultiplefield-list"
 
     class Meta:
         verbose_name = "RecordMultipleField"
@@ -331,7 +325,6 @@ class RecordEncryptedSelectField(RecordField):
     )
     options = models.JSONField(default=list)
     entry_view_name = "recordencryptedselectentry-list"
-    view_name = "recordencryptedselectfield-list"
 
     class Meta:
         verbose_name = "RecordEncryptedSelectField"
@@ -384,7 +377,6 @@ class RecordStandardField(RecordField):
     )
     field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default="TEXT")
     entry_view_name = "recordstandardentry-list"
-    view_name = "recordstandardfield-list"
 
     class Meta:
         verbose_name = "RecordStandardField"
@@ -429,7 +421,6 @@ class RecordEncryptedStandardField(RecordField):
     )
     field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default="TEXT")
     entry_view_name = "recordencryptedstandardentry-list"
-    view_name = "recordencryptedstandardfield-list"
 
     class Meta:
         verbose_name = "RecordEncryptedStandardField"
@@ -454,7 +445,6 @@ class RecordStatisticField(RecordField):
     options = models.JSONField(default=list)
     helptext = models.CharField(max_length=1000)
     entry_view_name = "recordstatisticentry-list"
-    view_name = ""
 
     class Meta:
         verbose_name = "RecordStatisticField"

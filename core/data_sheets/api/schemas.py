@@ -91,12 +91,8 @@ class OutputNonMigratedDataSheet(BaseModel):
 
 
 class OutputTemplate(BaseModel):
-    show: list[str]
     name: str
-    rlc_id: int
     id: int
-    created: datetime
-    updated: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -109,9 +105,7 @@ class OutputTemplateField(BaseModel):
     field_type: str
     order: int
     kind: str
-    url: str
     group_id: int | None = None
-    options: Optional[list[OutputOption | str]] = None
     share_keys: bool | None = None
 
     model_config = ConfigDict(from_attributes=True)
@@ -119,8 +113,6 @@ class OutputTemplateField(BaseModel):
 
 class OutputTemplateDetail(OutputTemplate):
     fields: list[OutputTemplateField]
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputRecordDeletion(BaseModel):

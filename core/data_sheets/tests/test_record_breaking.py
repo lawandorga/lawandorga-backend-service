@@ -27,70 +27,7 @@ from core.data_sheets.views import (
     RecordSelectEntryViewSet,
     RecordStandardEntryViewSet,
     RecordStateEntryViewSet,
-    RecordStateFieldViewSet,
 )
-
-from .test_record import BaseRecord
-
-
-###
-# Fields
-###
-class RecordStateFieldViewSetErrors(BaseRecord, TestCase):
-    def setup_field(self):
-        self.field = RecordStateField.objects.create(
-            template=self.template, options=["Closed", "Option 2"]
-        )
-
-    def test_field_can_not_be_created_without_closed(self):
-        view = RecordStateFieldViewSet.as_view(actions={"post": "create"})
-        data = {
-            "name": "Field",
-            "template": self.template.pk,
-            "options": json.dumps(["Option 1", "Option 2", "Open"]),
-        }
-        request = self.factory.post("", data)
-        force_authenticate(request, self.user)
-        response = view(request)
-        self.assertContains(response, "options", status_code=400)
-
-    def test_field_can_not_be_updated_without_closed(self):
-        self.setup_field()
-        view = RecordStateFieldViewSet.as_view(actions={"patch": "partial_update"})
-        data = {
-            "name": "Field",
-            "template": self.template.pk,
-            "options": json.dumps(["Option 1", "Option 2", "Open"]),
-        }
-        request = self.factory.patch("", data)
-        force_authenticate(request, self.user)
-        response = view(request, pk=self.field.pk)
-        self.assertContains(response, "options", status_code=400)
-
-    def test_field_can_not_be_created_without_open(self):
-        view = RecordStateFieldViewSet.as_view(actions={"post": "create"})
-        data = {
-            "name": "Field",
-            "template": self.template.pk,
-            "options": json.dumps(["Option 1", "Option 2", "Closed"]),
-        }
-        request = self.factory.post("", data)
-        force_authenticate(request, self.user)
-        response = view(request)
-        self.assertContains(response, "options", status_code=400)
-
-    def test_field_can_not_be_updated_without_open(self):
-        self.setup_field()
-        view = RecordStateFieldViewSet.as_view(actions={"patch": "partial_update"})
-        data = {
-            "name": "Field",
-            "template": self.template.pk,
-            "options": json.dumps(["Option 1", "Option 2", "Closed"]),
-        }
-        request = self.factory.patch("", data)
-        force_authenticate(request, self.user)
-        response = view(request, pk=self.field.pk)
-        self.assertContains(response, "options", status_code=400)
 
 
 ###

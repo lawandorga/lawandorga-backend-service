@@ -4,51 +4,18 @@ from rest_framework.test import APIRequestFactory
 
 from core.data_sheets.views import (
     RecordEncryptedFileEntryViewSet,
-    RecordEncryptedFileFieldViewSet,
     RecordEncryptedSelectEntryViewSet,
-    RecordEncryptedSelectFieldViewSet,
     RecordEncryptedStandardEntryViewSet,
-    RecordEncryptedStandardFieldViewSet,
     RecordSelectEntryViewSet,
-    RecordSelectFieldViewSet,
     RecordStandardEntryViewSet,
-    RecordStandardFieldViewSet,
     RecordStateEntryViewSet,
-    RecordStateFieldViewSet,
     RecordUsersEntryViewSet,
-    RecordUsersFieldViewSet,
 )
 from core.models import Org, RlcUser, UserProfile
 
 
 class RecordViewSetsPermissions(TestCase):
     views = [
-        # fields
-        (
-            RecordEncryptedStandardFieldViewSet,
-            "create",
-            "partial_update",
-            "update",
-            "destroy",
-        ),
-        (RecordStandardFieldViewSet, "create", "partial_update", "update", "destroy"),
-        (
-            RecordEncryptedFileFieldViewSet,
-            "create",
-            "partial_update",
-            "update",
-            "destroy",
-        ),
-        (RecordSelectFieldViewSet, "create", "partial_update", "update", "destroy"),
-        (
-            RecordEncryptedSelectFieldViewSet,
-            "create",
-            "partial_update",
-            "update",
-            "destroy",
-        ),
-        (RecordStateFieldViewSet, "create", "partial_update", "update", "destroy"),
-        (RecordUsersFieldViewSet, "create", "partial_update", "update", "destroy"),
         # entry
         (
             RecordEncryptedSelectEntryViewSet,

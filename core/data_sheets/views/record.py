@@ -1,9 +1,7 @@
 import mimetypes
-from typing import Optional, Type, cast
+from typing import cast
 
-from django.conf import settings
 from django.db import IntegrityError
-from django.db.models import ProtectedError
 from django.http import FileResponse
 from rest_framework import mixins
 from rest_framework.decorators import action
@@ -12,136 +10,28 @@ from rest_framework.viewsets import GenericViewSet
 
 from core.data_sheets.models import (
     RecordEncryptedFileEntry,
-    RecordEncryptedFileField,
     RecordEncryptedSelectEntry,
-    RecordEncryptedSelectField,
     RecordEncryptedStandardEntry,
-    RecordEncryptedStandardField,
-    RecordField,
     RecordMultipleEntry,
-    RecordMultipleField,
     RecordSelectEntry,
-    RecordSelectField,
     RecordStandardEntry,
-    RecordStandardField,
     RecordStateEntry,
-    RecordStateField,
     RecordStatisticEntry,
     RecordUsersEntry,
-    RecordUsersField,
 )
 from core.data_sheets.serializers.record import (
     RecordEncryptedFileEntrySerializer,
-    RecordEncryptedFileFieldSerializer,
     RecordEncryptedSelectEntrySerializer,
-    RecordEncryptedSelectFieldSerializer,
     RecordEncryptedStandardEntrySerializer,
-    RecordEncryptedStandardFieldSerializer,
     RecordMultipleEntrySerializer,
-    RecordMultipleFieldSerializer,
     RecordSelectEntrySerializer,
-    RecordSelectFieldSerializer,
     RecordStandardEntrySerializer,
-    RecordStandardFieldSerializer,
     RecordStateEntrySerializer,
-    RecordStateFieldSerializer,
     RecordStatisticEntrySerializer,
     RecordUsersEntrySerializer,
-    RecordUsersFieldSerializer,
 )
 from core.folders.domain.repositiories.folder import FolderRepository
-from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
-from core.seedwork.permission import CheckPermissionWall
 from core.seedwork.repository import RepositoryWarehouse
-
-
-class RecordFieldViewSet(
-    CheckPermissionWall,
-    mixins.CreateModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-    GenericViewSet,
-):
-    permission_wall = {
-        "create": PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
-        "partial_update": PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
-        "update": PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
-        "destroy": PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
-    }
-    model: Optional[Type[RecordField]] = None
-
-    def get_queryset(self):
-        return self.model.objects.filter(template__rlc=self.request.user.rlc)
-
-    def perform_destroy(self, instance):
-        try:
-            instance.delete()
-        except ProtectedError:
-            entries = (
-                self.model.get_entry_model()
-                .objects.filter(field=instance)
-                .select_related("record")
-            )
-            records = [e.record for e in entries]
-            record_urls = [
-                "{}/folders/{}/".format(settings.MAIN_FRONTEND_URL, record.folder_uuid)
-                for record in records
-            ]
-            record_text = "\n".join(record_urls)
-            raise ParseError(
-                "This field has associated data from one or more records. "
-                "Please empty this field in the following records:\n{}".format(
-                    record_text
-                )
-            )
-
-
-class RecordStateFieldViewSet(RecordFieldViewSet):
-    queryset = RecordStateField.objects.none()
-    serializer_class = RecordStateFieldSerializer
-    model = RecordStateField
-
-
-class RecordEncryptedStandardFieldViewSet(RecordFieldViewSet):
-    queryset = RecordEncryptedStandardField.objects.none()
-    serializer_class = RecordEncryptedStandardFieldSerializer
-    model = RecordEncryptedStandardField
-
-
-class RecordStandardFieldViewSet(RecordFieldViewSet):
-    queryset = RecordStandardField.objects.none()
-    serializer_class = RecordStandardFieldSerializer
-    model = RecordStandardField
-
-
-class RecordSelectFieldViewSet(RecordFieldViewSet):
-    queryset = RecordSelectField.objects.none()
-    serializer_class = RecordSelectFieldSerializer
-    model = RecordSelectField
-
-
-class RecordMultipleFieldViewSet(RecordFieldViewSet):
-    queryset = RecordMultipleField.objects.none()
-    serializer_class = RecordMultipleFieldSerializer
-    model = RecordMultipleField
-
-
-class RecordEncryptedFileFieldViewSet(RecordFieldViewSet):
-    queryset = RecordEncryptedFileField.objects.none()
-    serializer_class = RecordEncryptedFileFieldSerializer
-    model = RecordEncryptedFileField
-
-
-class RecordEncryptedSelectFieldViewSet(RecordFieldViewSet):
-    queryset = RecordEncryptedSelectField.objects.none()
-    serializer_class = RecordEncryptedSelectFieldSerializer
-    model = RecordEncryptedSelectField
-
-
-class RecordUsersFieldViewSet(RecordFieldViewSet):
-    queryset = RecordUsersField.objects.none()
-    serializer_class = RecordUsersFieldSerializer
-    model = RecordUsersField
 
 
 ###

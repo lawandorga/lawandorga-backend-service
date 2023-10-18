@@ -5,18 +5,6 @@ from . import api, views
 
 router = DefaultRouter()
 
-# fields
-router.register("recordstatefields", views.RecordStateFieldViewSet)
-router.register("recordusersfields", views.RecordUsersFieldViewSet)
-router.register("recordselectfields", views.RecordSelectFieldViewSet)
-router.register("recordstandardfields", views.RecordStandardFieldViewSet)
-router.register("recordmultiplefields", views.RecordMultipleFieldViewSet)
-# fields encrypted
-router.register("recordencryptedselectfields", views.RecordEncryptedSelectFieldViewSet)
-router.register("recordencryptedfilefields", views.RecordEncryptedFileFieldViewSet)
-router.register(
-    "recordencryptedstandardfields", views.RecordEncryptedStandardFieldViewSet
-)
 # entries
 router.register("recordstateentries", views.RecordStateEntryViewSet)
 router.register("recordusersentries", views.RecordUsersEntryViewSet)
@@ -38,6 +26,4 @@ urlpatterns = [
     path("query/", include(api.query_router.urls)),
     path("deletions/", include(api.deletions_router.urls)),
     path("accesses/", include(api.accesses_router.urls)),
-    path("templates/", include(api.templates_router.urls)),
-    path("fields/", include(api.fields_router.urls)),
 ]
