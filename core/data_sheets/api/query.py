@@ -1,11 +1,15 @@
+import mimetypes
 from dataclasses import dataclass
 from uuid import UUID
 
 from django.db.models import Q
+from django.http import FileResponse
+from pydantic import BaseModel
 
 from core.auth.models import RlcUser
 from core.data_sheets.api import schemas
 from core.data_sheets.models import Record, RecordAccess, RecordDeletion, RecordTemplate
+from core.data_sheets.models.record import RecordEncryptedFileEntry
 from core.data_sheets.use_cases.record import migrate_record_into_folder
 from core.permissions.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from core.seedwork.api_layer import ApiError, Router
@@ -143,3 +147,20 @@ def query__accesses(rlc_user: RlcUser):
     )
     deletions_2 = list(deletions_1)
     return deletions_2
+
+
+class InputFileEntryDownload(BaseModel):
+    id: int
+
+
+@router.get("file_entry_download/<int:id>/", output_schema=FileResponse)
+def query__download_file_entry(rlc_user: RlcUser, data: InputFileEntryDownload):
+    entry = RecordEncryptedFileEntry.objects.get(
+        id=data.id, field__template__rlc_id=rlc_user.org_id
+    )
+    file = entry.decrypt_file(user=rlc_user)
+    response = FileResponse(file, content_type=mimetypes.guess_type(entry.file.name)[0])
+    response["Content-Disposition"] = 'attachment; filename="{}"'.format(
+        entry.file.name
+    )
+    return response

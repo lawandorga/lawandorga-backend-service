@@ -268,7 +268,7 @@ class RecordEncryptedFileEntrySerializer(RecordEntrySerializer):
                 raise ValueError("A record needs to be set.")
         private_key_user = user.get_private_key(request=self.context["request"])
         attrs["file"] = RecordEncryptedFileEntry.encrypt_file(
-            file, record, user=user, private_key_user=private_key_user
+            file, record, user=user.rlc_user, private_key_user=private_key_user
         )
         # return
         return attrs

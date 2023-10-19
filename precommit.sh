@@ -1,12 +1,12 @@
 #!/bin/bash
 
-printf "\nisort:\n" && isort . --profile black
+printf "\nisort:\n" && pipenv run isort . --profile black
 printf "\n\n"
-printf "black:\n" && black .
+printf "black:\n" && pipenv run black .
 printf "\n\n"
-printf "flake8:\n"  && flake8 .
+printf "flake8:\n"  && pipenv run flake8 .
 printf "\n\n"
-printf "ruff:\n"  && ruff check .
+printf "ruff:\n"  && pipenv run ruff check .
 printf "\n\n"
-printf "mypy:\n"  && mypy .
+printf "mypy:\n"  && pipenv run mypy .
 printf "\n\n"

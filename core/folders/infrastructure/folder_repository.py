@@ -225,7 +225,7 @@ class DjangoFolderRepository(FolderRepository):
         f = cls.__db_folder_from_domain(folder)
         for raw_item in folder.items:
             r = cast(ItemRepository, RepositoryWarehouse.get(raw_item.repository))
-            item = r.retrieve(raw_item.uuid)
+            item = r.retrieve(raw_item.uuid, folder.org_pk)
             item.delete()
         f.deleted = True
         f.deleted_at = timezone.now()

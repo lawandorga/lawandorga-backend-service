@@ -1,5 +1,5 @@
 import json
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 from uuid import UUID, uuid4
 
 from django.core.files.base import File as DjangoFile
@@ -151,6 +151,9 @@ class Record(Aggregate, models.Model):
 
     ALL_ENTRY_TYPES = ENCRYPTED_ENTRY_TYPES + UNENCRYPTED_ENTRY_TYPES
 
+    if TYPE_CHECKING:
+        standard_entries: models.QuerySet["RecordStandardEntry"]
+
     class Meta:
         ordering = ["-created"]
         verbose_name = "Record"
@@ -250,9 +253,9 @@ class Record(Aggregate, models.Model):
                 if entry.encrypted_entry:
                     entry.decrypt(aes_key_record=aes_key_record)
                 entries[entry.field.name] = {
+                    "id": entry.id,
                     "name": entry.field.name,
                     "type": entry.field.type,
-                    "url": entry.url,
                     "field": entry.field.pk,
                     "value": entry.get_raw_value(),
                 }
@@ -272,10 +275,6 @@ class RecordEntry(models.Model):
     class Meta:
         abstract = True
 
-    @property
-    def url(self):
-        return reverse(self.view_name, kwargs={"pk": self.pk})
-
     def get_raw_value(self):
         return self.get_value()
 
@@ -292,6 +291,8 @@ class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
         self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None
     ):
         record: Record = self.record  # type: ignore
+        if user and not private_key_user:
+            private_key_user = user.get_private_key()
         if user and private_key_user:
             key = record.get_aes_key(user=user, private_key_user=private_key_user)
         elif aes_key_record:
@@ -479,12 +480,14 @@ class RecordEncryptedFileEntry(RecordEntry):
 
     @staticmethod
     def encrypt_file(
-        file, record, user=None, private_key_user=None, aes_key_record=None
+        file,
+        record: Record,
+        user: RlcUser | None = None,
+        private_key_user=None,
+        aes_key_record=None,
     ):
         if user and private_key_user:
-            key = record.get_aes_key(
-                user=user.rlc_user, private_key_user=private_key_user
-            )
+            key = record.get_aes_key(user=user, private_key_user=private_key_user)
         elif aes_key_record:
             key = aes_key_record
         else:
@@ -499,6 +502,8 @@ class RecordEncryptedFileEntry(RecordEntry):
     def decrypt_file(
         self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None
     ):
+        if user and not private_key_user:
+            private_key_user = user.get_private_key()
         if user and private_key_user:
             key = self.record.get_aes_key(user=user, private_key_user=private_key_user)
         elif aes_key_record:

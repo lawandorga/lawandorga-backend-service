@@ -1,15 +1,30 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 from uuid import uuid4
 
 from django.apps import apps
-from django.db import models
-from django.urls import reverse
+from django.core.files.uploadedfile import UploadedFile
+from django.db import models, transaction
+from django.utils import timezone
 
+from core.auth.models.org_user import RlcUser
+from core.folders.domain.repositiories.folder import FolderRepository
 from core.models import Group, Org
 from core.seedwork.domain_layer import DomainError
+from core.seedwork.repository import RepositoryWarehouse
 
 if TYPE_CHECKING:
-    from .record import Record
+    from .record import (
+        Record,
+        RecordEncryptedFileEntry,
+        RecordEncryptedSelectEntry,
+        RecordEncryptedStandardEntry,
+        RecordMultipleEntry,
+        RecordSelectEntry,
+        RecordStandardEntry,
+        RecordStateEntry,
+        RecordStatisticEntry,
+        RecordUsersEntry,
+    )
 
 
 ###
@@ -31,6 +46,7 @@ class RecordTemplate(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     if TYPE_CHECKING:
+        rlc_id: int
         records: models.QuerySet[Record]
         state_fields: models.QuerySet["RecordStateField"]
         standard_fields: models.QuerySet["RecordStandardField"]
@@ -100,12 +116,12 @@ class RecordTemplate(models.Model):
         for field_type in self.get_field_types():
             for field in getattr(self, field_type).all():
                 data = {
-                    "entry_url": field.entry_url,
                     "label": field.name,
                     "name": field.name,
                     "type": field.type,
                     "kind": field.kind,
                     "id": field.pk,
+                    "uuid": field.uuid,
                     "order": field.order,
                 }
                 if hasattr(field, "options"):
@@ -184,25 +200,13 @@ class RecordField(models.Model):
     order = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    entry_view_name: str
 
     class Meta:
         abstract = True
 
     @property
-    def encrypted(self):
-        if "encrypted" in self.entry_view_name:
-            return "Yes"
-        return "No"
-
-    @property
     def type(self):
         raise NotImplementedError("This property needs to be implemented.")
-
-    @property
-    def entry_url(self):
-        url = reverse(self.entry_view_name)
-        return url
 
     @classmethod
     def get_entry_model(cls):
@@ -210,13 +214,24 @@ class RecordField(models.Model):
         model = apps.get_model("core", name)
         return model
 
+    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        raise NotImplementedError()
+
+    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        raise NotImplementedError()
+
+    def delete_entry(self, record_id: int):
+        raise NotImplementedError()
+
 
 class RecordStateField(RecordField):
     template = models.ForeignKey(
         RecordTemplate, on_delete=models.CASCADE, related_name="state_fields"
     )
     options = models.JSONField(default=list)
-    entry_view_name = "recordstateentry-list"
+
+    if TYPE_CHECKING:
+        entries: models.QuerySet["RecordStateEntry"]
 
     class Meta:
         verbose_name = "RecordStateField"
@@ -237,6 +252,34 @@ class RecordStateField(RecordField):
     def __str__(self):
         return "recordStateField: {}; name: {};".format(self.pk, self.name)
 
+    def validate_value(self, value: str):
+        if value not in self.options:
+            raise DomainError(
+                "The value is not in the options: {}.".format(self.options)
+            )
+
+    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        from .record import RecordStateEntry
+
+        assert isinstance(value, str)
+        self.validate_value(value)
+        entry = RecordStateEntry(field_id=self.pk, record_id=record_id, value=value)
+        if value == "Closed":
+            entry.closed_at = timezone.now()
+        entry.save()
+
+    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        assert isinstance(value, str)
+        self.validate_value(value)
+        entry = self.entries.get(record_id=record_id)
+        if entry.value != "Closed" and value == "Closed":
+            entry.closed_at = timezone.now()
+        entry.value = value
+        entry.save()
+
+    def delete_entry(self, record_id: int):
+        self.entries.get(record_id=record_id).delete()
+
 
 class RecordUsersField(RecordField):
     template = models.ForeignKey(
@@ -246,7 +289,9 @@ class RecordUsersField(RecordField):
     group = models.ForeignKey(
         Group, blank=True, null=True, default=None, on_delete=models.SET_NULL
     )
-    entry_view_name = "recordusersentry-list"
+
+    if TYPE_CHECKING:
+        entries: models.QuerySet["RecordUsersEntry"]
 
     class Meta:
         verbose_name = "RecordUsersField"
@@ -276,13 +321,44 @@ class RecordUsersField(RecordField):
 
         return [{"name": i.name, "id": i.pk} for i in users]
 
+    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        from .record import RecordUsersEntry
+
+        assert isinstance(value, list)
+        entry = RecordUsersEntry(field_id=self.pk, record_id=record_id)
+        with transaction.atomic():
+            entry.save()
+            entry.value.set(value)  # type: ignore
+        self.do_share_keys(user, entry)
+
+    def do_share_keys(self, user: RlcUser, entry: "RecordUsersEntry"):
+        if self.share_keys:
+            record = entry.record
+            assert record.folder_uuid is not None
+            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+            folder = r.retrieve(user.org_id, record.folder_uuid)
+            for u in list(entry.value.all()):
+                if not folder.has_access(u):
+                    folder.grant_access(u, user)
+            r.save(folder)
+
+    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        entry = self.entries.get(record_id=record_id)
+        entry.value.set(value)  # type: ignore
+        self.do_share_keys(user, entry)
+
+    def delete_entry(self, record_id: int):
+        self.entries.get(record_id=record_id).delete()
+
 
 class RecordSelectField(RecordField):
     template = models.ForeignKey(
         RecordTemplate, on_delete=models.CASCADE, related_name="select_fields"
     )
     options = models.JSONField(default=list)
-    entry_view_name = "recordselectentry-list"
+
+    if TYPE_CHECKING:
+        entries: models.QuerySet["RecordSelectEntry"]
 
     class Meta:
         verbose_name = "RecordSelectField"
@@ -303,13 +379,40 @@ class RecordSelectField(RecordField):
     def __str__(self):
         return "recordSelectField: {}; name: {};".format(self.pk, self.name)
 
+    def validate_value(self, value: str | list[str]):
+        assert isinstance(value, str)
+        if value not in self.options:
+            raise DomainError(
+                "The value is not in the options: {}.".format(self.options)
+            )
+
+    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        from .record import RecordSelectEntry
+
+        self.validate_value(value)
+        assert isinstance(value, str)
+        entry = RecordSelectEntry(field_id=self.pk, record_id=record_id, value=value)
+        entry.save()
+
+    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        self.validate_value(value)
+        entry = self.entries.get(record_id=record_id)
+        assert isinstance(value, str)
+        entry.value = value
+        entry.save()
+
+    def delete_entry(self, record_id: int):
+        self.entries.get(record_id=record_id).delete()
+
 
 class RecordMultipleField(RecordField):
     template = models.ForeignKey(
         RecordTemplate, on_delete=models.CASCADE, related_name="multiple_fields"
     )
     options = models.JSONField(default=list)
-    entry_view_name = "recordmultipleentry-list"
+
+    if TYPE_CHECKING:
+        entries: models.QuerySet["RecordMultipleEntry"]
 
     class Meta:
         verbose_name = "RecordMultipleField"
@@ -330,13 +433,38 @@ class RecordMultipleField(RecordField):
     def __str__(self):
         return "recordMultipleField: {}; name: {};".format(self.pk, self.name)
 
+    def validate_value(self, value: str | list[str]):
+        assert isinstance(value, list)
+        if not all([i in self.options for i in value]):
+            raise DomainError(
+                "The value is not in the options: {}.".format(self.options)
+            )
+
+    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        from .record import RecordMultipleEntry
+
+        self.validate_value(value)
+        entry = RecordMultipleEntry(field_id=self.pk, record_id=record_id, value=value)
+        entry.save()
+
+    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        self.validate_value(value)
+        entry = self.entries.get(record_id=record_id)
+        entry.value = value
+        entry.save()
+
+    def delete_entry(self, record_id: int):
+        self.entries.get(record_id=record_id).delete()
+
 
 class RecordEncryptedSelectField(RecordField):
     template = models.ForeignKey(
         RecordTemplate, on_delete=models.CASCADE, related_name="encrypted_select_fields"
     )
     options = models.JSONField(default=list)
-    entry_view_name = "recordencryptedselectentry-list"
+
+    if TYPE_CHECKING:
+        entries: models.QuerySet["RecordEncryptedSelectEntry"]
 
     class Meta:
         verbose_name = "RecordEncryptedSelectField"
@@ -357,13 +485,43 @@ class RecordEncryptedSelectField(RecordField):
     def __str__(self):
         return "recordEncryptedSelectField: {}; name: {};".format(self.pk, self.name)
 
+    def validate_value(self, value: str | list[str]):
+        assert isinstance(value, str)
+        if value not in self.options:
+            raise DomainError(
+                "The value is not in the options: {}.".format(self.options)
+            )
+
+    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        from .record import RecordEncryptedSelectEntry
+
+        self.validate_value(value)
+        entry = RecordEncryptedSelectEntry(
+            field_id=self.pk, record_id=record_id, value=value
+        )
+        entry.encrypt(user=user)
+        entry.save()
+
+    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        self.validate_value(value)
+        entry = self.entries.get(record_id=record_id)
+        entry.value = value  # type: ignore
+        entry.encrypt(user=user)
+        entry.save()
+
+    def delete_entry(self, record_id: int):
+        self.entries.get(record_id=record_id).delete()
+
 
 class RecordEncryptedFileField(RecordField):
     template = models.ForeignKey(
         RecordTemplate, on_delete=models.CASCADE, related_name="encrypted_file_fields"
     )
-    entry_view_name = "recordencryptedfileentry-list"
+
     view_name = "recordencryptedfilefield-list"
+
+    if TYPE_CHECKING:
+        entries: models.QuerySet["RecordEncryptedFileEntry"]
 
     class Meta:
         verbose_name = "RecordEncryptedFileField"
@@ -384,6 +542,30 @@ class RecordEncryptedFileField(RecordField):
     def __str__(self):
         return "recordEncryptedFileField: {}; name: {};".format(self.pk, self.name)
 
+    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        raise Exception("this is not supported")
+
+    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        raise Exception("this is not supported")
+
+    def upload_file(self, user: RlcUser, record_id: int, file: UploadedFile) -> None:
+        from .record import RecordEncryptedFileEntry
+
+        if file.size and file.size > 10000000:
+            raise DomainError("The size of the file needs to be less than 10 MB.")
+
+        private_key_user = user.get_private_key()
+        record = self.template.records.get(id=record_id)
+        enc_file = RecordEncryptedFileEntry.encrypt_file(
+            file, record, user=user, private_key_user=private_key_user
+        )
+        entry = RecordEncryptedFileEntry(record_id=record_id, field_id=self.pk)
+        entry.save()
+        entry.file.save(file.name, enc_file)
+
+    def delete_entry(self, record_id: int):
+        self.entries.get(record_id=record_id).delete()
+
 
 class RecordStandardField(RecordField):
     template = models.ForeignKey(
@@ -396,7 +578,9 @@ class RecordStandardField(RecordField):
         ("DATE", "Date"),
     )
     field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default="TEXT")
-    entry_view_name = "recordstandardentry-list"
+
+    if TYPE_CHECKING:
+        entries: models.QuerySet["RecordStandardEntry"]
 
     class Meta:
         verbose_name = "RecordStandardField"
@@ -427,6 +611,27 @@ class RecordStandardField(RecordField):
             "statistic_fields",
         ]
 
+    def validate_value(self, value: str | list[str]):
+        assert isinstance(value, str)
+
+    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        from .record import RecordStandardEntry
+
+        self.validate_value(value)
+        assert isinstance(value, str)
+        entry = RecordStandardEntry(field_id=self.pk, record_id=record_id, value=value)
+        entry.save()
+
+    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        self.validate_value(value)
+        entry = self.entries.get(record_id=record_id)
+        assert isinstance(value, str)
+        entry.value = value
+        entry.save()
+
+    def delete_entry(self, record_id: int):
+        self.entries.get(record_id=record_id).delete()
+
 
 class RecordEncryptedStandardField(RecordField):
     template = models.ForeignKey(
@@ -440,7 +645,9 @@ class RecordEncryptedStandardField(RecordField):
         ("DATE", "Date"),
     )
     field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default="TEXT")
-    entry_view_name = "recordencryptedstandardentry-list"
+
+    if TYPE_CHECKING:
+        entries: models.QuerySet["RecordEncryptedStandardEntry"]
 
     class Meta:
         verbose_name = "RecordEncryptedStandardField"
@@ -457,6 +664,29 @@ class RecordEncryptedStandardField(RecordField):
     def __str__(self):
         return "recordEncryptedStandardField: {}; name: {};".format(self.pk, self.name)
 
+    def validate_value(self, value: str | list[str]):
+        assert isinstance(value, str)
+
+    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        from .record import RecordEncryptedStandardEntry
+
+        self.validate_value(value)
+        entry = RecordEncryptedStandardEntry(
+            field_id=self.pk, record_id=record_id, value=value
+        )
+        entry.encrypt(user=user)
+        entry.save()
+
+    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        self.validate_value(value)
+        entry = self.entries.get(record_id=record_id)
+        entry.value = value  # type: ignore
+        entry.encrypt(user)
+        entry.save()
+
+    def delete_entry(self, record_id: int):
+        self.entries.get(record_id=record_id).delete()
+
 
 class RecordStatisticField(RecordField):
     template = models.ForeignKey(
@@ -464,7 +694,9 @@ class RecordStatisticField(RecordField):
     )
     options = models.JSONField(default=list)
     helptext = models.CharField(max_length=1000)
-    entry_view_name = "recordstatisticentry-list"
+
+    if TYPE_CHECKING:
+        entries: models.QuerySet["RecordStatisticEntry"]
 
     class Meta:
         verbose_name = "RecordStatisticField"
@@ -484,3 +716,24 @@ class RecordStatisticField(RecordField):
 
     def __str__(self):
         return "recordStatisticField: {}; name: {};".format(self.pk, self.name)
+
+    def validate_value(self, value: str | list[str]):
+        assert isinstance(value, str)
+
+    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        from .record import RecordStatisticEntry
+
+        self.validate_value(value)
+        assert isinstance(value, str)
+        entry = RecordStatisticEntry(record_id=record_id, field_id=self.pk, value=value)
+        entry.save()
+
+    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+        self.validate_value(value)
+        entry = self.entries.get(record_id=record_id)
+        assert isinstance(value, str)
+        entry.value = value
+        entry.save()
+
+    def delete_entry(self, record_id: int):
+        self.entries.get(record_id=record_id).delete()

@@ -17,7 +17,7 @@ from core.data_sheets.models.template import (
     RecordStateField,
     RecordUsersField,
 )
-from core.data_sheets.use_cases.finders import find_field_from_id, template_from_id
+from core.data_sheets.use_cases.finders import find_field_from_uuid, template_from_id
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
 from core.seedwork.use_case_layer import UseCaseError, use_case
 
@@ -89,7 +89,7 @@ def update_field(
     group_id: int | None = None,
     field_type: str | None = None,
 ):
-    field = find_field_from_id(__actor, field_uuid)
+    field = find_field_from_uuid(__actor, field_uuid)
     field.name = name
     field.order = order
     kind = getattr(field, "kind", None)
@@ -106,7 +106,7 @@ def update_field(
 
 @use_case
 def delete_field(__actor: RlcUser, field_uuid: UUID, force_delete: bool):
-    field = find_field_from_id(__actor, field_uuid)
+    field = find_field_from_uuid(__actor, field_uuid)
 
     if force_delete:
         field.get_entry_model().objects.filter(field=field).delete()

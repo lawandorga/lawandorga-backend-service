@@ -221,7 +221,7 @@ class EncryptedModelMixin:
                 or isinstance(data_in_field, memoryview)
             ):
                 raise ValueError(
-                    "The field {} of object {} is not encrypted. "
+                    "The field '{}' of object '{}' is not encrypted. "
                     "Do not save unencrypted data. "
                     "Value of the field: {}.".format(field, self, data_in_field)
                 )

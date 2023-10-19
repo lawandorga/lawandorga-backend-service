@@ -155,7 +155,7 @@ class OutputEntry(BaseModel):
 
 class OutputField(BaseModel):
     id: int
-    entry_url: str
+    uuid: UUID
     kind: str
     label: str
     name: str
@@ -164,9 +164,9 @@ class OutputField(BaseModel):
 
 
 class OutputDetailEntry(BaseModel):
+    id: int
     name: str
     type: str
-    url: str
     value: str | int | list[int] | list[str]
 
 
