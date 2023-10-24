@@ -4,7 +4,6 @@ from uuid import UUID, uuid4
 
 from django.core.files.base import File as DjangoFile
 from django.db import models
-from django.urls import reverse
 from django.utils.timezone import localtime
 
 from core.auth.models import RlcUser
