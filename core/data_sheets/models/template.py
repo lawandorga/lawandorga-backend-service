@@ -208,6 +208,12 @@ class RecordField(models.Model):
     def type(self):
         raise NotImplementedError("This property needs to be implemented.")
 
+    @property
+    def encrypted(self):
+        if "Encrypted" in self.__class__.__name__:
+            return "Yes"
+        return "No"
+
     @classmethod
     def get_entry_model(cls):
         name = cls.__name__.replace("Field", "Entry")
