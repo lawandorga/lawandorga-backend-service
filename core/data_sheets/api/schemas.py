@@ -56,6 +56,7 @@ class OutputTemplateField(BaseModel):
     kind: str
     group_id: int | None = None
     share_keys: bool | None = None
+    options: Optional[list[OutputOption | str]] = None
 
     model_config = ConfigDict(from_attributes=True)
 
