@@ -12,6 +12,4 @@ from .record import (
     RecordStatisticEntry,
     RecordUsersEntry,
 )
-from .record_access import *
-from .record_deletion import *
 from .template import *

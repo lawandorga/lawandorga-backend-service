@@ -3,8 +3,6 @@ from django.contrib import admin
 from core.data_sheets.models import (
     EncryptedClient,
     Record,
-    RecordAccess,
-    RecordDeletion,
     RecordEncryptedFileEntry,
     RecordEncryptedFileField,
     RecordEncryptedSelectEntry,
@@ -26,8 +24,6 @@ from core.data_sheets.models import (
 )
 
 admin.site.register(EncryptedClient)
-admin.site.register(RecordAccess)
-admin.site.register(RecordDeletion)
 
 admin.site.register(RecordTemplate)
 admin.site.register(Record)

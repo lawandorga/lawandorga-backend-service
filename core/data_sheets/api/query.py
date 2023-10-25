@@ -2,13 +2,12 @@ import mimetypes
 from dataclasses import dataclass
 from uuid import UUID
 
-from django.db.models import Q
 from django.http import FileResponse
 from pydantic import BaseModel
 
 from core.auth.models import RlcUser
 from core.data_sheets.api import schemas
-from core.data_sheets.models import Record, RecordAccess, RecordDeletion, RecordTemplate
+from core.data_sheets.models import Record, RecordTemplate
 from core.data_sheets.models.record import RecordEncryptedFileEntry
 from core.data_sheets.use_cases.record import migrate_record_into_folder
 from core.permissions.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
@@ -125,28 +124,6 @@ def query__record(rlc_user: RlcUser, data: schemas.InputQueryRecord):
         "entries": record.get_entries(rlc_user),
         "template_name": record.template.name,
     }
-
-
-@router.get("deletions/", output_schema=list[schemas.OutputRecordDeletion])
-def query__deletions(rlc_user: RlcUser):
-    deletions_1 = RecordDeletion.objects.filter(
-        Q(requestor__org_id=rlc_user.org_id)
-        | Q(processor__org_id=rlc_user.org_id)
-        | Q(record__template__rlc_id=rlc_user.org_id)
-    )
-    deletions_2 = list(deletions_1)
-    return deletions_2
-
-
-@router.get("accesses/", output_schema=list[schemas.OutputRecordAccess])
-def query__accesses(rlc_user: RlcUser):
-    deletions_1 = RecordAccess.objects.filter(
-        Q(requestor__org_id=rlc_user.org_id)
-        | Q(processor__org_id=rlc_user.org_id)
-        | Q(record__template__rlc_id=rlc_user.org_id)
-    )
-    deletions_2 = list(deletions_1)
-    return deletions_2
 
 
 class InputFileEntryDownload(BaseModel):
