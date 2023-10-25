@@ -6,7 +6,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 
 from core.auth.models import RlcUser
-from core.data_sheets.models.record import Record
+from core.data_sheets.models.data_sheet import DataSheet
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.item import ItemRepository
 from core.folders.domain.value_objects.symmetric_key import (
@@ -53,8 +53,8 @@ class EncryptedRecordDocument(Aggregate, models.Model):
         return f
 
     name = models.CharField(max_length=200)
-    record: Optional[Record] = models.ForeignKey(  # type: ignore
-        Record, related_name="documents", on_delete=models.CASCADE, null=True
+    record: Optional[DataSheet] = models.ForeignKey(  # type: ignore
+        DataSheet, related_name="documents", on_delete=models.CASCADE, null=True
     )
     org = models.ForeignKey(Org, related_name="files", on_delete=models.CASCADE)
     uuid = models.UUIDField(db_index=True, unique=True, default=uuid4)

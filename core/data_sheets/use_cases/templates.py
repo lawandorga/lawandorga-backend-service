@@ -6,16 +6,16 @@ from django.db import models
 from django.db.models import ProtectedError
 
 from core.auth.models import RlcUser
-from core.data_sheets.models import RecordTemplate
+from core.data_sheets.models import DataSheetTemplate
 from core.data_sheets.models.template import (
-    RecordEncryptedFileField,
-    RecordEncryptedSelectField,
-    RecordEncryptedStandardField,
-    RecordMultipleField,
-    RecordSelectField,
-    RecordStandardField,
-    RecordStateField,
-    RecordUsersField,
+    DataSheetEncryptedFileField,
+    DataSheetEncryptedSelectField,
+    DataSheetEncryptedStandardField,
+    DataSheetMultipleField,
+    DataSheetSelectField,
+    DataSheetStandardField,
+    DataSheetStateField,
+    DataSheetUsersField,
 )
 from core.data_sheets.use_cases.finders import find_field_from_uuid, template_from_id
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
@@ -24,7 +24,7 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES])
 def create_template(__actor: RlcUser, name: str):
-    template = RecordTemplate.create(name=name, org=__actor.org)
+    template = DataSheetTemplate.create(name=name, org=__actor.org)
     template.save()
 
 
@@ -46,14 +46,14 @@ def delete_template(__actor: RlcUser, template_id: int):
 
 
 FIELDS: dict[str, type[models.Model]] = {
-    "standard": RecordStandardField,
-    "select": RecordSelectField,
-    "multiple": RecordMultipleField,
-    "state": RecordStateField,
-    "users": RecordUsersField,
-    "encryptedstandard": RecordEncryptedStandardField,
-    "encryptedselect": RecordEncryptedSelectField,
-    "encryptedfile": RecordEncryptedFileField,
+    "standard": DataSheetStandardField,
+    "select": DataSheetSelectField,
+    "multiple": DataSheetMultipleField,
+    "state": DataSheetStateField,
+    "users": DataSheetUsersField,
+    "encryptedstandard": DataSheetEncryptedStandardField,
+    "encryptedselect": DataSheetEncryptedSelectField,
+    "encryptedfile": DataSheetEncryptedFileField,
 }
 
 FIELD_TYPES = Literal[

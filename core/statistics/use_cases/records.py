@@ -30,25 +30,25 @@ def create_statistic(__actor: StatisticUser, field_1: str, value_1: str, field_2
     statement = """
     with t as (
         select id, k.name as field, value from
-        core_record record
+        core_datasheet record
         left join (
 
             select name, value, record_id
-            from core_recordstatefield state_field
-            inner join core_recordstateentry state_entry
+            from core_datasheetstatefield state_field
+            inner join core_datasheetstateentry state_entry
                 on state_field.id = state_entry.field_id
             union all
-            select name, value, record_id from core_recordstatisticfield statistic_field
-            inner join core_recordstatisticentry statistic_entry
+            select name, value, record_id from core_datasheetstatisticfield statistic_field
+            inner join core_datasheetstatisticentry statistic_entry
                 on statistic_field.id = statistic_entry.field_id
             union all
-            select name, value, record_id from core_recordselectfield select_field
-            inner join core_recordselectentry select_entry
+            select name, value, record_id from core_datasheetselectfield select_field
+            inner join core_datasheetselectentry select_entry
                 on select_field.id = select_entry.field_id
             union all
             select name, value, record_id
-            from core_recordstandardfield standard_field
-            inner join core_recordstandardentry standard_entry
+            from core_datasheetstandardfield standard_field
+            inner join core_datasheetstandardentry standard_entry
                 on standard_field.id = standard_entry.field_id
 
         ) k on k.record_id = record.id

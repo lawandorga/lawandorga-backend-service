@@ -20,9 +20,9 @@ def query__record_client_state(statistics_user: StatisticUser):
            select
            case when entry.value is null then 'Unset' else entry.value end as value,
            count(*) as count
-           from core_record record
-           left join core_recordstatisticentry entry on record.id = entry.record_id
-           left join core_recordstatisticfield field on entry.field_id = field.id
+           from core_datasheet record
+           left join core_datasheetstatisticentry entry on record.id = entry.record_id
+           left join core_datasheetstatisticfield field on entry.field_id = field.id
            where field.name='Current status of the client' or field.name is null
            group by value
            """
@@ -40,9 +40,9 @@ def query__record_client_age(statistics_user: StatisticUser):
             select
             case when entry.value is null then 'Unset' else entry.value end as value,
             count(*) as count
-            from core_record record
-            left join core_recordstatisticentry entry on record.id = entry.record_id
-            left join core_recordstatisticfield field on entry.field_id = field.id
+            from core_datasheet record
+            left join core_datasheetstatisticentry entry on record.id = entry.record_id
+            left join core_datasheetstatisticfield field on entry.field_id = field.id
             where field.name='Age in years of the client' or field.name is null
             group by value
             """
@@ -60,9 +60,9 @@ def query__record_client_nationality(statistics_user: StatisticUser):
             select
             case when entry.value is null then 'Unset' else entry.value end as value,
             count(*) as count
-            from core_record record
-            left join core_recordstatisticentry entry on record.id = entry.record_id
-            left join core_recordstatisticfield field on entry.field_id = field.id
+            from core_datasheet record
+            left join core_datasheetstatisticentry entry on record.id = entry.record_id
+            left join core_datasheetstatisticfield field on entry.field_id = field.id
             where field.name='Nationality of the client' or field.name is null
             group by value
             """
@@ -80,9 +80,9 @@ def query__record_client_sex(statistics_user: StatisticUser):
             select
             case when entry.value is null then 'Unset' else entry.value end as value,
             count(*) as count
-            from core_record record
-            left join core_recordstatisticentry entry on record.id = entry.record_id
-            left join core_recordstatisticfield field on entry.field_id = field.id
+            from core_datasheet record
+            left join core_datasheetstatisticentry entry on record.id = entry.record_id
+            left join core_datasheetstatisticfield field on entry.field_id = field.id
             where field.name='Sex of the client' or field.name is null
             group by value
             """
@@ -105,8 +105,8 @@ def query__record_states(statistics_user: StatisticUser):
                         when count(state.record_id) <> 1 or state.value = '' or state.value is null then 'Unknown'
                         else state.value
                     end as state
-                from core_record as record
-                left join core_recordstateentry as state on state.record_id = record.id
+                from core_datasheet as record
+                left join core_datasheetstateentry as state on state.record_id = record.id
                 group by record.id, state.record_id, state.value
             ) as tmp
             group by state
@@ -136,8 +136,8 @@ def query__tag_stats(statistics_user: StatisticUser):
     statement = """
     select tag, count(*) as count from (
     select json_array_elements(value::json)::varchar as tag
-    from core_recordmultipleentry entry
-    left join core_recordmultiplefield field on entry.field_id = field.id
+    from core_datasheetmultipleentry entry
+    left join core_datasheetmultiplefield field on entry.field_id = field.id
     where field.name='Tags'
     ) tmp
     group by tag
@@ -164,9 +164,9 @@ def query__tag_stats(statistics_user: StatisticUser):
     from (
     select record.id,
     case when field.name = 'Tags' then 'Tags' else 'Unknown' end as name
-    from core_record record
-    left join core_recordtemplate template on record.template_id = template.id
-    left join core_recordmultiplefield field on template.id = field.template_id
+    from core_datasheet record
+    left join core_datasheettemplate template on record.template_id = template.id
+    left join core_datasheetmultiplefield field on template.id = field.template_id
     ) tmp1
     group by id
     ) tmp2
@@ -189,8 +189,8 @@ def get_records_closed_statistic(statistics_user: StatisticUser):
             select
             round(julianday(se.closed_at) - julianday(r.created) + 1) as days,
             count(*) as count
-            from core_record r
-            left join core_recordstateentry se on r.id = se.record_id
+            from core_datasheet r
+            left join core_datasheetstateentry se on r.id = se.record_id
             where se.value = 'Closed'
             group by round(julianday(se.closed_at) - julianday(r.created) + 1)
             order by days;
@@ -200,8 +200,8 @@ def get_records_closed_statistic(statistics_user: StatisticUser):
             select
             date_part('day', se.closed_at - r.created) + 1 as days,
             count(*)
-            from core_record r
-            left join core_recordstateentry se on r.id = se.record_id
+            from core_datasheet r
+            left join core_datasheetstateentry se on r.id = se.record_id
             where se.value = 'Closed'
             group by date_part('day', se.closed_at - r.created)
             order by days;
@@ -219,21 +219,21 @@ def get_records_closed_statistic(statistics_user: StatisticUser):
 def get_record_fields_amount(statistics_user: StatisticUser):
     statement = """
     select name, count(*) as amount from (
-        select name from core_recordstatefield
+        select name from core_datasheetstatefield
         union all
-        select name from core_recordstatisticfield
+        select name from core_datasheetstatisticfield
         union all
-        select name from core_recordencryptedfilefield
+        select name from core_datasheetencryptedfilefield
         union all
-        select name from core_recordselectfield
+        select name from core_datasheetselectfield
         union all
-        select name from core_recordencryptedselectfield
+        select name from core_datasheetencryptedselectfield
         union all
-        select name from core_recordstandardfield
+        select name from core_datasheetstandardfield
         union all
-        select name from core_recordusersfield
+        select name from core_datasheetusersfield
         union all
-        select name from core_recordmultiplefield
+        select name from core_datasheetmultiplefield
         ) t1
     group by name
     order by count(*) desc;

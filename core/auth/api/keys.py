@@ -2,7 +2,7 @@ from typing import List
 
 from core.auth.api.schemas import InputKeyDelete, OutputKey
 from core.auth.models import RlcUser
-from core.data_sheets.models import RecordEncryptionNew
+from core.data_sheets.models import DataSheetEncryptionNew
 from core.seedwork.api_layer import ApiError, Router
 
 router = Router()
@@ -25,7 +25,7 @@ def command__test_keys(rlc_user: RlcUser):
 # delete key
 @router.delete(url="<int:id>/")
 def delete_key(data: InputKeyDelete, rlc_user: RlcUser):
-    key = RecordEncryptionNew.objects.filter(user=rlc_user, pk=data.id).first()
+    key = DataSheetEncryptionNew.objects.filter(user=rlc_user, pk=data.id).first()
     if key is None:
         raise ApiError(
             "The key you want to delete does not exist.",

@@ -3,7 +3,7 @@ from django.test import TestCase
 
 from core.auth.domain.user_key import UserKey
 from core.data_sheets.fixtures import create_default_record_template
-from core.data_sheets.models import Record, RecordEncryptionNew, RecordTemplate
+from core.data_sheets.models import DataSheet, DataSheetEncryptionNew, DataSheetTemplate
 from core.models import Org, RlcUser, UserProfile
 from core.seedwork.encryption import AESEncryption
 
@@ -34,7 +34,7 @@ class UserUnitUserBase:
         )
 
         create_default_record_template(self.rlc)
-        self.template = RecordTemplate.objects.filter(rlc=self.rlc).first()
+        self.template = DataSheetTemplate.objects.filter(rlc=self.rlc).first()
 
     def get_user(self, pk):
         return UserProfile.objects.get(pk=pk)
@@ -51,17 +51,17 @@ class UserUnitUserBase:
 
 class UserUnitTests(UserUnitUserBase, TestCase):
     def generate_record_with_keys_for_users(self, users):
-        record = Record.objects.create(template=self.template)
+        record = DataSheet.objects.create(template=self.template)
         key = AESEncryption.generate_secure_key()
         for user in users:
-            enc = RecordEncryptionNew(record=record, key=key, user=user.rlc_user)
+            enc = DataSheetEncryptionNew(record=record, key=key, user=user.rlc_user)
             enc.encrypt(user.get_public_key())
             enc.save()
         return record
 
     def test_generate_keys_for_user_works_with_unlocking_user_having_the_keys(self):
         record = self.generate_record_with_keys_for_users([self.user1, self.user2])
-        RecordEncryptionNew.objects.filter(user=self.user2.rlc_user).update(
+        DataSheetEncryptionNew.objects.filter(user=self.user2.rlc_user).update(
             correct=False
         )
         self.user2.set_password("pass12345")
@@ -80,13 +80,15 @@ class UserUnitTests(UserUnitUserBase, TestCase):
             self.private_key1, UserProfile.objects.get(pk=self.user2.pk)
         )
         assert success is True
-        enc = RecordEncryptionNew.objects.get(record=record, user=self.user2.rlc_user)
+        enc = DataSheetEncryptionNew.objects.get(
+            record=record, user=self.user2.rlc_user
+        )
         enc.decrypt(private_key_user=private_key)
 
     def test_generate_keys_for_user_works_with_unlocking_user_not_having_the_keys(self):
         record = self.generate_record_with_keys_for_users([self.user2])
         # set all of those keys as incorrect
-        RecordEncryptionNew.objects.filter(user=self.user2.rlc_user).update(
+        DataSheetEncryptionNew.objects.filter(user=self.user2.rlc_user).update(
             correct=False
         )
 
@@ -106,6 +108,8 @@ class UserUnitTests(UserUnitUserBase, TestCase):
             self.private_key1, UserProfile.objects.get(pk=self.user2.pk)
         )
         assert success is False
-        enc = RecordEncryptionNew.objects.get(record=record, user=self.user2.rlc_user)
+        enc = DataSheetEncryptionNew.objects.get(
+            record=record, user=self.user2.rlc_user
+        )
         with self.assertRaises(Exception):
             enc.decrypt(private_key_user=private_key)

@@ -1,6 +1,6 @@
 from django.test import Client, TestCase
 
-from core.data_sheets.models import RecordTemplate
+from core.data_sheets.models import DataSheetTemplate
 from core.models import Org, OrgEncryption
 from core.seedwork import test_helpers as data
 from core.seedwork.encryption import RSAEncryption
@@ -13,7 +13,7 @@ class TestUserKeys(TestCase):
         self.user_2 = data.create_rlc_user(email="dummy2@law-orga.de", rlc=self.rlc)
         self.user_3 = data.create_rlc_user(email="dummy3@law-orga.de", rlc=self.rlc)
         self.rlc.generate_keys()
-        self.template = RecordTemplate.objects.create(
+        self.template = DataSheetTemplate.objects.create(
             rlc=self.rlc, name="Record Template"
         )
         self.record_1 = data.create_data_sheet(

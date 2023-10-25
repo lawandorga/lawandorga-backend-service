@@ -1,6 +1,6 @@
 import pytest
 
-from core.data_sheets.models import Record
+from core.data_sheets.models import DataSheet
 from core.data_sheets.use_cases.record import (
     create_a_data_sheet_within_a_folder,
     create_a_record_and_a_folder,
@@ -87,7 +87,7 @@ def test_grant_to_users_with_general_permission(
         folder_uuid=folder.uuid,
         template_id=record_template["template"].pk,
     )
-    folder_uuid = Record.objects.get(uuid=record_id).folder_uuid
+    folder_uuid = DataSheet.objects.get(uuid=record_id).folder_uuid
 
     assert folder_repo.retrieve(folder.org_pk, folder_uuid).has_access(
         another_user["rlc_user"]
@@ -109,7 +109,7 @@ def test_grant_to_users_with_general_permission_two(
         "record123",
         template_id=record_template["template"].pk,
     )
-    folder_uuid = Record.objects.get(uuid=record_id).folder_uuid
+    folder_uuid = DataSheet.objects.get(uuid=record_id).folder_uuid
 
     assert folder_repo.retrieve(folder.org_pk, folder_uuid).has_access(
         another_user["rlc_user"]

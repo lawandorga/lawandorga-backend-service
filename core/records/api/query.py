@@ -5,7 +5,7 @@ from uuid import UUID
 from django.db.models import Q
 
 from core.auth.models import RlcUser
-from core.data_sheets.models import Record
+from core.data_sheets.models import DataSheet
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.records.helpers import merge_attrs
@@ -25,10 +25,10 @@ router = Router()
 class RecordDataPoint:
     record: RecordsRecord
     folder: Folder
-    ALL_DATA_SHEETS: list[Record]
+    ALL_DATA_SHEETS: list[DataSheet]
 
     @property
-    def data_sheets(self) -> list[Record]:
+    def data_sheets(self) -> list[DataSheet]:
         return [ds for ds in self.ALL_DATA_SHEETS if ds.folder_uuid == self.folder.uuid]
 
     @property
@@ -64,8 +64,8 @@ class RecordDataPoint:
 def query__records_page(rlc_user: RlcUser):
     records_1 = list(RecordsRecord.objects.filter(org_id=rlc_user.org_id))
     data_sheets_1 = list(
-        Record.objects.filter(template__rlc_id=rlc_user.org_id)
-        .prefetch_related(*Record.UNENCRYPTED_PREFETCH_RELATED)
+        DataSheet.objects.filter(template__rlc_id=rlc_user.org_id)
+        .prefetch_related(*DataSheet.UNENCRYPTED_PREFETCH_RELATED)
         .select_related("template")
     )
     r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))

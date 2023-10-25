@@ -228,11 +228,11 @@ class Org(EncryptedModelMixin, models.Model):
 
     def force_delete(self):
         from core.auth.models import UserProfile
-        from core.data_sheets.models import Record
+        from core.data_sheets.models import DataSheet
         from core.files.models import File
 
         # delete records
-        for r in Record.objects.filter(template__in=self.recordtemplates.all()):
+        for r in DataSheet.objects.filter(template__in=self.recordtemplates.all()):
             r.delete()
         # delete files
         for f in File.objects.filter(folder__in=self.folders.all()):

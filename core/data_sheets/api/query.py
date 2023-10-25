@@ -7,8 +7,8 @@ from pydantic import BaseModel
 
 from core.auth.models import RlcUser
 from core.data_sheets.api import schemas
-from core.data_sheets.models import Record, RecordTemplate
-from core.data_sheets.models.record import RecordEncryptedFileEntry
+from core.data_sheets.models import DataSheet, DataSheetTemplate
+from core.data_sheets.models.data_sheet import DataSheetEncryptedFileEntry
 from core.data_sheets.use_cases.record import migrate_record_into_folder
 from core.permissions.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from core.seedwork.api_layer import ApiError, Router
@@ -18,7 +18,7 @@ router = Router()
 
 @dataclass
 class SheetMigrate:
-    sheet: Record
+    sheet: DataSheet
     current_user: RlcUser
     SHOW: bool
 
@@ -55,9 +55,9 @@ class SheetMigrate:
 @router.get(url="non_migrated/", output_schema=list[schemas.OutputNonMigratedDataSheet])
 def query__non_migrated(rlc_user: RlcUser):
     sheets_1 = list(
-        Record.objects.filter(template__rlc_id=rlc_user.org_id)
+        DataSheet.objects.filter(template__rlc_id=rlc_user.org_id)
         .filter(folder_uuid=None)
-        .prefetch_related(*Record.UNENCRYPTED_PREFETCH_RELATED, "encryptions__user")
+        .prefetch_related(*DataSheet.UNENCRYPTED_PREFETCH_RELATED, "encryptions__user")
         .select_related("template")
     )
 
@@ -72,7 +72,7 @@ def query__non_migrated(rlc_user: RlcUser):
 
 @router.get(url="templates/", output_schema=list[schemas.OutputTemplate])
 def query__templates(rlc_user: RlcUser):
-    templates = RecordTemplate.objects.filter(rlc_id=rlc_user.org_id)
+    templates = DataSheetTemplate.objects.filter(rlc_id=rlc_user.org_id)
     return list(templates)
 
 
@@ -81,16 +81,16 @@ def query__templates(rlc_user: RlcUser):
     output_schema=schemas.OutputTemplateDetail,
 )
 def query__template(rlc_user: RlcUser, data: schemas.InputTemplateDetail):
-    return RecordTemplate.objects.get(rlc_id=rlc_user.org_id, id=data.id)
+    return DataSheetTemplate.objects.get(rlc_id=rlc_user.org_id, id=data.id)
 
 
 @router.get(
     url="<uuid:uuid>/",
     output_schema=schemas.OutputRecordDetail,
 )
-def query__record(rlc_user: RlcUser, data: schemas.InputQueryRecord):
+def query__data_sheet(rlc_user: RlcUser, data: schemas.InputQueryRecord):
     record = (
-        Record.objects.prefetch_related(*Record.ALL_PREFETCH_RELATED)
+        DataSheet.objects.prefetch_related(*DataSheet.ALL_PREFETCH_RELATED)
         .select_related("old_client", "template")
         .filter(template__rlc_id=rlc_user.org_id)
         .get(uuid=data.uuid)
@@ -132,7 +132,7 @@ class InputFileEntryDownload(BaseModel):
 
 @router.get("file_entry_download/<int:id>/", output_schema=FileResponse)
 def query__download_file_entry(rlc_user: RlcUser, data: InputFileEntryDownload):
-    entry = RecordEncryptedFileEntry.objects.get(
+    entry = DataSheetEncryptedFileEntry.objects.get(
         id=data.id, field__template__rlc_id=rlc_user.org_id
     )
     file = entry.decrypt_file(user=rlc_user)

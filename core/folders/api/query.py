@@ -3,7 +3,7 @@ from typing import cast
 from django.db import transaction
 
 from core.auth.models import RlcUser
-from core.data_sheets.models import Record
+from core.data_sheets.models import DataSheet
 from core.folders.api import schemas
 from core.folders.domain.repositiories.item import ItemRepository
 from core.folders.domain.value_objects.tree import TreeAccess
@@ -47,7 +47,7 @@ def query__detail_folder(rlc_user: RlcUser, data: schemas.InputFolderDetail):
             item_repository = cast(
                 ItemRepository, RepositoryWarehouse.get(item.repository)
             )
-            record = cast(Record, item_repository.retrieve(item.uuid, folder.org_pk))
+            record = cast(DataSheet, item_repository.retrieve(item.uuid, folder.org_pk))
             with transaction.atomic():
                 for file in list(record.documents.all()):
                     if file.key is None and file.record:

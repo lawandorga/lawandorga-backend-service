@@ -16,7 +16,7 @@ class QuestionnaireTemplate(models.Model):
         Org, related_name="questionnaires", on_delete=models.CASCADE, blank=True
     )
     notes = models.TextField(blank=True)
-    records = models.ManyToManyField("Record", through="Questionnaire")
+    records = models.ManyToManyField("DataSheet", through="Questionnaire")
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 

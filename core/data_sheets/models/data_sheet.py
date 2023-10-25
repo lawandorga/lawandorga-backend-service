@@ -7,18 +7,18 @@ from django.db import models
 from django.utils.timezone import localtime
 
 from core.auth.models import RlcUser
-from core.data_sheets.models import EncryptedClient  # type: ignore
+from core.data_sheets.models.encrypted_client import EncryptedClient  # type: ignore
 from core.data_sheets.models.template import (
-    RecordEncryptedFileField,
-    RecordEncryptedSelectField,
-    RecordEncryptedStandardField,
-    RecordMultipleField,
-    RecordSelectField,
-    RecordStandardField,
-    RecordStateField,
-    RecordStatisticField,
-    RecordTemplate,
-    RecordUsersField,
+    DataSheetEncryptedFileField,
+    DataSheetEncryptedSelectField,
+    DataSheetEncryptedStandardField,
+    DataSheetMultipleField,
+    DataSheetSelectField,
+    DataSheetStandardField,
+    DataSheetStateField,
+    DataSheetStatisticField,
+    DataSheetTemplate,
+    DataSheetUsersField,
 )
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.item import ItemRepository
@@ -40,12 +40,12 @@ class DjangoRecordRepository(ItemRepository):
     IDENTIFIER = "RECORD"
 
     @classmethod
-    def retrieve(cls, uuid: UUID, org_pk: Optional[int] = None) -> "Record":
+    def retrieve(cls, uuid: UUID, org_pk: Optional[int] = None) -> "DataSheet":
         assert isinstance(uuid, UUID)
-        return Record.objects.get(uuid=uuid)
+        return DataSheet.objects.get(uuid=uuid)
 
 
-class Record(Aggregate, models.Model):
+class DataSheet(Aggregate, models.Model):
     REPOSITORY = DjangoRecordRepository.IDENTIFIER
 
     @classmethod
@@ -53,11 +53,11 @@ class Record(Aggregate, models.Model):
         cls,
         user: RlcUser,
         folder: Folder,
-        template: RecordTemplate,
+        template: DataSheetTemplate,
         name: str,
         users: list[RlcUser] | None = None,
         pk=0,
-    ) -> "Record":
+    ) -> "DataSheet":
         if users is None:
             users = []
 
@@ -67,7 +67,7 @@ class Record(Aggregate, models.Model):
             ) and not folder.has_access(user):
                 folder.grant_access(u, user)
 
-        record = Record(template=template, name=name)
+        record = DataSheet(template=template, name=name)
         record.set_folder(folder)
         record.generate_key(user)
 
@@ -77,7 +77,7 @@ class Record(Aggregate, models.Model):
         return record
 
     template = models.ForeignKey(
-        RecordTemplate, related_name="records", on_delete=models.PROTECT
+        DataSheetTemplate, related_name="records", on_delete=models.PROTECT
     )
     folder_uuid = models.UUIDField(db_index=True, null=True)
     uuid = models.UUIDField(default=uuid4, unique=True, db_index=True)
@@ -125,7 +125,6 @@ class Record(Aggregate, models.Model):
         "multiple_entries",
         "multiple_entries__field",
         "encryptions",
-        "deletions",
     ]
 
     ALL_PREFETCH_RELATED = [
@@ -151,7 +150,8 @@ class Record(Aggregate, models.Model):
     ALL_ENTRY_TYPES = ENCRYPTED_ENTRY_TYPES + UNENCRYPTED_ENTRY_TYPES
 
     if TYPE_CHECKING:
-        standard_entries: models.QuerySet["RecordStandardEntry"]
+        standard_entries: models.QuerySet["DataSheetStandardEntry"]
+        encryptions: models.QuerySet["DataSheetEncryptionNew"]
 
     class Meta:
         ordering = ["-created"]
@@ -183,14 +183,6 @@ class Record(Aggregate, models.Model):
             return lowest_entry.value
 
         return "NOT-SET"
-
-    @property
-    def delete_requested(self) -> bool:
-        deletions = getattr(self, "deletions").all()
-        for deletion in deletions:
-            if deletion.state == "re":
-                return True
-        return False
 
     @property
     def attributes(self) -> dict[str, Union[list[str], str]]:
@@ -264,7 +256,7 @@ class Record(Aggregate, models.Model):
 ###
 # RecordEntry
 ###
-class RecordEntry(models.Model):
+class DataSheetEntry(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     view_name: str
@@ -281,7 +273,7 @@ class RecordEntry(models.Model):
         raise NotImplementedError("This method needs to be implemented")
 
 
-class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
+class DataSheetEntryEncryptedModelMixin(EncryptedModelMixin):
     encryption_class = AESEncryption
     # used in record for get entries
     encrypted_entry = True
@@ -289,7 +281,7 @@ class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
     def encrypt(
         self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None
     ):
-        record: Record = self.record  # type: ignore
+        record: DataSheet = self.record  # type: ignore
         if user and not private_key_user:
             private_key_user = user.get_private_key()
         if user and private_key_user:
@@ -305,7 +297,7 @@ class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
     def decrypt(
         self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None
     ):
-        record: Record = self.record  # type: ignore
+        record: DataSheet = self.record  # type: ignore
         if user and private_key_user:
             key = record.get_aes_key(user=user, private_key_user=private_key_user)
         elif aes_key_record:
@@ -317,12 +309,12 @@ class RecordEntryEncryptedModelMixin(EncryptedModelMixin):
         super().decrypt(key)
 
 
-class RecordStateEntry(RecordEntry):
+class DataSheetStateEntry(DataSheetEntry):
     record = models.ForeignKey(
-        Record, on_delete=models.CASCADE, related_name="state_entries"
+        DataSheet, on_delete=models.CASCADE, related_name="state_entries"
     )
     field = models.ForeignKey(
-        RecordStateField, related_name="entries", on_delete=models.PROTECT
+        DataSheetStateField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.CharField(max_length=1000)
     closed_at = models.DateTimeField(blank=True, null=True, default=None)
@@ -340,12 +332,12 @@ class RecordStateEntry(RecordEntry):
         return self.value
 
 
-class RecordUsersEntry(RecordEntry):
+class DataSheetUsersEntry(DataSheetEntry):
     record = models.ForeignKey(
-        Record, on_delete=models.CASCADE, related_name="users_entries"
+        DataSheet, on_delete=models.CASCADE, related_name="users_entries"
     )
     field = models.ForeignKey(
-        RecordUsersField, related_name="entries", on_delete=models.PROTECT
+        DataSheetUsersField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.ManyToManyField(RlcUser, blank=True)
     view_name = "recordusersentry-detail"
@@ -373,12 +365,12 @@ class RecordUsersEntry(RecordEntry):
         return users
 
 
-class RecordSelectEntry(RecordEntry):
+class DataSheetSelectEntry(DataSheetEntry):
     record = models.ForeignKey(
-        Record, on_delete=models.CASCADE, related_name="select_entries"
+        DataSheet, on_delete=models.CASCADE, related_name="select_entries"
     )
     field = models.ForeignKey(
-        RecordSelectField, related_name="entries", on_delete=models.PROTECT
+        DataSheetSelectField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.CharField(max_length=200)
     view_name = "recordselectentry-detail"
@@ -395,12 +387,12 @@ class RecordSelectEntry(RecordEntry):
         return self.value
 
 
-class RecordMultipleEntry(RecordEntry):
+class DataSheetMultipleEntry(DataSheetEntry):
     record = models.ForeignKey(
-        Record, on_delete=models.CASCADE, related_name="multiple_entries"
+        DataSheet, on_delete=models.CASCADE, related_name="multiple_entries"
     )
     field = models.ForeignKey(
-        RecordMultipleField, related_name="entries", on_delete=models.PROTECT
+        DataSheetMultipleField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.JSONField()
     view_name = "recordmultipleentry-detail"
@@ -417,12 +409,12 @@ class RecordMultipleEntry(RecordEntry):
         return self.value
 
 
-class RecordEncryptedSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
+class DataSheetEncryptedSelectEntry(DataSheetEntryEncryptedModelMixin, DataSheetEntry):
     record = models.ForeignKey(
-        Record, on_delete=models.CASCADE, related_name="encrypted_select_entries"
+        DataSheet, on_delete=models.CASCADE, related_name="encrypted_select_entries"
     )
     field = models.ForeignKey(
-        RecordEncryptedSelectField, related_name="entries", on_delete=models.PROTECT
+        DataSheetEncryptedSelectField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.BinaryField()
     view_name = "recordencryptedselectentry-detail"
@@ -452,12 +444,12 @@ class RecordEncryptedSelectEntry(RecordEntryEncryptedModelMixin, RecordEntry):
         self.value = json.loads(self.value)
 
 
-class RecordEncryptedFileEntry(RecordEntry):
+class DataSheetEncryptedFileEntry(DataSheetEntry):
     record = models.ForeignKey(
-        Record, on_delete=models.CASCADE, related_name="encrypted_file_entries"
+        DataSheet, on_delete=models.CASCADE, related_name="encrypted_file_entries"
     )
     field = models.ForeignKey(
-        RecordEncryptedFileField, related_name="entries", on_delete=models.PROTECT
+        DataSheetEncryptedFileField, related_name="entries", on_delete=models.PROTECT
     )
     file = models.FileField(upload_to="recordmanagement/recordencryptedfileentry/")
     view_name = "recordencryptedfileentry-detail"
@@ -480,13 +472,15 @@ class RecordEncryptedFileEntry(RecordEntry):
     @staticmethod
     def encrypt_file(
         file,
-        record: Record,
+        record: DataSheet,
         user: RlcUser | None = None,
         private_key_user=None,
         aes_key_record=None,
     ):
         if user and private_key_user:
-            key = record.get_aes_key(user=user, private_key_user=private_key_user)
+            key = record.get_aes_key(
+                user=user, private_key_user=private_key_user
+            ).value_as_str
         elif aes_key_record:
             key = aes_key_record
         else:
@@ -504,7 +498,9 @@ class RecordEncryptedFileEntry(RecordEntry):
         if user and not private_key_user:
             private_key_user = user.get_private_key()
         if user and private_key_user:
-            key = self.record.get_aes_key(user=user, private_key_user=private_key_user)
+            key = self.record.get_aes_key(
+                user=user, private_key_user=private_key_user
+            ).value_as_str
         elif aes_key_record:
             key = aes_key_record
         else:
@@ -516,12 +512,12 @@ class RecordEncryptedFileEntry(RecordEntry):
         return file
 
 
-class RecordStandardEntry(RecordEntry):
+class DataSheetStandardEntry(DataSheetEntry):
     record = models.ForeignKey(
-        Record, on_delete=models.CASCADE, related_name="standard_entries"
+        DataSheet, on_delete=models.CASCADE, related_name="standard_entries"
     )
     field = models.ForeignKey(
-        RecordStandardField, related_name="entries", on_delete=models.PROTECT
+        DataSheetStandardField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.TextField(max_length=20000)
     view_name = "recordstandardentry-detail"
@@ -538,12 +534,16 @@ class RecordStandardEntry(RecordEntry):
         return self.value
 
 
-class RecordEncryptedStandardEntry(RecordEntryEncryptedModelMixin, RecordEntry):
+class DataSheetEncryptedStandardEntry(
+    DataSheetEntryEncryptedModelMixin, DataSheetEntry
+):
     record = models.ForeignKey(
-        Record, on_delete=models.CASCADE, related_name="encrypted_standard_entries"
+        DataSheet, on_delete=models.CASCADE, related_name="encrypted_standard_entries"
     )
     field = models.ForeignKey(
-        RecordEncryptedStandardField, related_name="entries", on_delete=models.PROTECT
+        DataSheetEncryptedStandardField,
+        related_name="entries",
+        on_delete=models.PROTECT,
     )
     value = models.BinaryField()
     view_name = "recordencryptedstandardentry-detail"
@@ -566,12 +566,12 @@ class RecordEncryptedStandardEntry(RecordEntryEncryptedModelMixin, RecordEntry):
         return self.value
 
 
-class RecordStatisticEntry(RecordEntry):
+class DataSheetStatisticEntry(DataSheetEntry):
     record = models.ForeignKey(
-        Record, on_delete=models.CASCADE, related_name="statistic_entries"
+        DataSheet, on_delete=models.CASCADE, related_name="statistic_entries"
     )
     field = models.ForeignKey(
-        RecordStatisticField, related_name="entries", on_delete=models.PROTECT
+        DataSheetStatisticField, related_name="entries", on_delete=models.PROTECT
     )
     value = models.CharField(max_length=200)
     view_name = "recordstatisticentry-detail"
@@ -591,12 +591,12 @@ class RecordStatisticEntry(RecordEntry):
 ###
 # RecordEncryption
 ###
-class RecordEncryptionNew(EncryptedModelMixin, models.Model):
+class DataSheetEncryptionNew(EncryptedModelMixin, models.Model):
     user = models.ForeignKey(
         RlcUser, related_name="recordencryptions", on_delete=models.CASCADE
     )
     record = models.ForeignKey(
-        Record, related_name="encryptions", on_delete=models.CASCADE
+        DataSheet, related_name="encryptions", on_delete=models.CASCADE
     )
     key = models.BinaryField()
     correct = models.BooleanField(default=True)
@@ -616,7 +616,7 @@ class RecordEncryptionNew(EncryptedModelMixin, models.Model):
         )
 
     def set_correct(self, value):
-        key = RecordEncryptionNew.objects.get(pk=self.pk)
+        key = DataSheetEncryptionNew.objects.get(pk=self.pk)
         key.correct = value
         key.save()
         self.correct = value

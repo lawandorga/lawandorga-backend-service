@@ -1,12 +1,8 @@
 from django.urls import include, path
-from rest_framework.routers import DefaultRouter
 
 from . import api
 
-router = DefaultRouter()
-
 urlpatterns = [
-    path("", include(router.urls)),
     path("statistics/individual/", include(api.individual_statistics_router.urls)),
     path("statistics/general/", include(api.general_statistics_router.urls)),
     path("statistics/error/", include(api.error_statistics_router.urls)),

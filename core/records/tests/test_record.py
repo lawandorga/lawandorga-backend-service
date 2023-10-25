@@ -3,7 +3,7 @@ from typing import cast
 
 from django.test import Client
 
-from core.data_sheets.models.record import Record
+from core.data_sheets.models.data_sheet import DataSheet
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
@@ -25,7 +25,7 @@ def test_record_creation(db):
     client = Client()
     client.login(**full_user)
     response = client.post(
-        "/api/records/v2/records/",
+        "/api/records/records/",
         data=json.dumps({"token": "AZ-001"}),
         content_type="application/json",
     )
@@ -60,16 +60,16 @@ def test_delete_deletes_data_sheet_as_well(db):
     client = Client()
     client.login(**full_user)
     TOKEN = "AZ-001"
-    data_sheet_count = Record.objects.count()
+    data_sheet_count = DataSheet.objects.count()
     response = client.post(
-        "/api/records/v2/records/",
+        "/api/records/records/",
         data=json.dumps({"token": TOKEN, "template": template.pk}),
         content_type="application/json",
     )
     assert response.status_code == 200
-    assert Record.objects.count() == data_sheet_count + 1
+    assert DataSheet.objects.count() == data_sheet_count + 1
     record = RecordsRecord.objects.get(name=TOKEN)
     deletion = RecordsDeletion.create(record=record, user=user)
     deletion.save()
     accept_deletion_request(user, deletion.uuid)
-    assert Record.objects.count() == data_sheet_count
+    assert DataSheet.objects.count() == data_sheet_count

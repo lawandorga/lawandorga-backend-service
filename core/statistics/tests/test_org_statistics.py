@@ -1,7 +1,7 @@
 import pytest
 from django.test import Client
 
-from core.data_sheets.models import RecordTemplate
+from core.data_sheets.models import DataSheetTemplate
 from core.rlc.models import Org
 from core.seedwork import test_helpers as data
 
@@ -13,7 +13,7 @@ def user(db):
     user_2 = data.create_rlc_user(email="dummy2@law-orga.de", rlc=rlc)
     data.create_rlc_user(email="dummy3@law-orga.de", rlc=rlc)
     rlc.generate_keys()
-    template = RecordTemplate.objects.create(rlc=rlc, name="Record Template")
+    template = DataSheetTemplate.objects.create(rlc=rlc, name="Record Template")
     data.create_data_sheet(template=template, users=[user_1["user"], user_2["user"]])
     data.create_data_sheet(template=template, users=[user_1["user"], user_2["user"]])
     yield user_1

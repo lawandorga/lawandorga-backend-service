@@ -7,7 +7,7 @@ import tinymce.models
 from django.conf import settings
 from django.db import migrations, models
 
-import core.data_sheets.models.record
+import core.data_sheets.models.data_sheet
 import core.data_sheets.models.template
 import core.folders.domain.aggregates.folder
 import core.folders.domain.external
@@ -2594,7 +2594,7 @@ class Migration(migrations.Migration):
                 "unique_together": {("record", "field")},
             },
             bases=(
-                core.data_sheets.models.record.RecordEntryEncryptedModelMixin,
+                core.data_sheets.models.data_sheet.DataSheetEntryEncryptedModelMixin,
                 models.Model,
             ),
         ),
@@ -2636,7 +2636,7 @@ class Migration(migrations.Migration):
                 "unique_together": {("record", "field")},
             },
             bases=(
-                core.data_sheets.models.record.RecordEntryEncryptedModelMixin,
+                core.data_sheets.models.data_sheet.DataSheetEntryEncryptedModelMixin,
                 models.Model,
             ),
         ),

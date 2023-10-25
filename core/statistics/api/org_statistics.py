@@ -123,8 +123,8 @@ def query__org_usage(statistics_user: StatisticUser):
         count(distinct file.id) as files,
         count(distinct document.id) as documents
     from core_org as rlc
-    left join core_recordtemplate template on rlc.id = template.rlc_id
-    left join core_record record on record.template_id = template.id
+    left join core_datasheettemplate template on rlc.id = template.rlc_id
+    left join core_datasheet record on record.template_id = template.id
     left join core_folder folder on rlc.id = folder.rlc_id
     left join core_file file on file.folder_id = folder.id
     left join core_collabdocument document on rlc.id = document.rlc_id
@@ -150,16 +150,16 @@ def get_records_created_and_closed(rlc_user: RlcUser):
         select t1.month as month, t2.month as month, created, closed
         from (
         select strftime('%Y/%m', r.created) as month, count(*) as created
-        from core_record r
-        left join core_recordtemplate t on t.id = r.template_id
+        from core_datasheet r
+        left join core_datasheettemplate t on t.id = r.template_id
         where t.rlc_id = {}
         group by strftime('%Y/%m', r.created), t.rlc_id
         ) t1
         left outer join (
         select strftime('%Y/%m', se.closed_at) as month, count(*) as closed
-        from core_recordstateentry se
-        left join core_record r on se.record_id = r.id
-        left join core_recordtemplate t on t.id = r.template_id
+        from core_datasheetstateentry se
+        left join core_datasheet r on se.record_id = r.id
+        left join core_datasheettemplate t on t.id = r.template_id
         where se.value = 'Closed'
         and t.rlc_id = {}
         group by strftime('%Y/%m', se.closed_at), t.rlc_id
@@ -173,16 +173,16 @@ def get_records_created_and_closed(rlc_user: RlcUser):
         select t1.month as month, t2.month as month, created, closed
         from (
         select to_char(r.created, 'YYYY/MM') as month, count(*) as created
-        from core_record r
-        left join core_recordtemplate t on t.id = r.template_id
+        from core_datasheet r
+        left join core_datasheettemplate t on t.id = r.template_id
         where t.rlc_id = {}
         group by to_char(r.created, 'YYYY/MM'), t.rlc_id
         ) t1
         full outer join (
         select to_char(se.closed_at, 'YYYY/MM') as month, count(*) as closed
-        from core_recordstateentry se
-        left join core_record r on se.record_id = r.id
-        left join core_recordtemplate t on t.id = r.template_id
+        from core_datasheetstateentry se
+        left join core_datasheet r on se.record_id = r.id
+        left join core_datasheettemplate t on t.id = r.template_id
         where se.value = 'Closed'
         and t.rlc_id = {}
         group by to_char(se.closed_at, 'YYYY/MM'), t.rlc_id

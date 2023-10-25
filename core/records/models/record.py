@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID, uuid4
 
 from django.db import models
@@ -44,8 +44,10 @@ class RecordsRecord(Aggregate, models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     addons = dict(events=EventsAddon, folder=FolderAddon)
-    events: EventsAddon
-    folder: FolderAddon
+
+    if TYPE_CHECKING:
+        events: EventsAddon
+        folder: FolderAddon
 
     class Meta:
         verbose_name = "Records-Record"
@@ -53,12 +55,12 @@ class RecordsRecord(Aggregate, models.Model):
 
     def __str__(self):
         return "recordsRecord: {}; token: {}; org: {};".format(
-            self.uuid, self.token, self.org_id
+            self.uuid, self.token, self.org_pk
         )
 
     @property
     def org_pk(self) -> int:
-        return self.org.id
+        return self.org.pk
 
     @property
     def token(self) -> str:

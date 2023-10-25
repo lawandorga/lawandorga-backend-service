@@ -49,6 +49,7 @@ class SymmetricKey(Key):
 
     def get_encryption(self) -> SymmetricEncryption:
         encryption_class = EncryptionWarehouse.get_encryption_class(self.origin)
+        assert issubclass(encryption_class, SymmetricEncryption)
         return encryption_class(key=self.get_key().decode("utf-8"))
 
 

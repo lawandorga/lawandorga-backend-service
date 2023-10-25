@@ -4,7 +4,7 @@ from django.conf import settings
 
 from core.auth.domain.user_key import UserKey
 from core.auth.models import StatisticUser
-from core.data_sheets.models import Record, RecordTemplate
+from core.data_sheets.models import DataSheet, DataSheetTemplate
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.models import RlcUser, UserProfile
@@ -37,7 +37,7 @@ def create_raw_org(name="Dummy's Org", pk=1, save=False):
 
 def create_raw_template(org: Org | None = None, name="Test Template", pk=1):
     assert org is not None
-    return RecordTemplate.create(name=name, org=org, pk=pk)
+    return DataSheetTemplate.create(name=name, org=org, pk=pk)
 
 
 def create_raw_org_user(
@@ -174,20 +174,20 @@ def create_rlc_user(
 def create_record_template(org=None):
     if org is None:
         org = create_org()["org"]
-    template = RecordTemplate.objects.create(rlc=org, name="Record Template")
+    template = DataSheetTemplate.objects.create(rlc=org, name="Record Template")
     return {"template": template, "org": org}
 
 
 def create_data_sheet(template=None, users: Optional[List[UserProfile]] = None):
     assert users and len(users) > 0
     if template is None:
-        template = RecordTemplate.objects.create(
+        template = DataSheetTemplate.objects.create(
             rlc=users[0].rlc, name="Record Template"
         )
     user = users[0].rlc_user
     folder = create_folder(user=user)["folder"]
 
-    record = Record(template=template)
+    record = DataSheet(template=template)
     record.set_folder(folder)
     record.generate_key(user)
     record.save()

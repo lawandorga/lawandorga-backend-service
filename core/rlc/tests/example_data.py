@@ -10,21 +10,21 @@ from core.auth.domain.user_key import UserKey
 from core.collab.models import CollabPermission
 from core.data_sheets.fixtures import create_default_record_template
 from core.data_sheets.models import (
-    Record,
-    RecordEncryptedStandardEntry,
-    RecordEncryptedStandardField,
-    RecordEncryptionNew,
-    RecordMultipleEntry,
-    RecordMultipleField,
-    RecordSelectEntry,
-    RecordSelectField,
-    RecordStandardEntry,
-    RecordStandardField,
-    RecordStateEntry,
-    RecordStateField,
-    RecordTemplate,
-    RecordUsersEntry,
-    RecordUsersField,
+    DataSheet,
+    DataSheetEncryptedStandardEntry,
+    DataSheetEncryptedStandardField,
+    DataSheetEncryptionNew,
+    DataSheetMultipleEntry,
+    DataSheetMultipleField,
+    DataSheetSelectEntry,
+    DataSheetSelectField,
+    DataSheetStandardEntry,
+    DataSheetStandardField,
+    DataSheetStateEntry,
+    DataSheetStateField,
+    DataSheetTemplate,
+    DataSheetUsersEntry,
+    DataSheetUsersField,
 )
 from core.data_sheets.use_cases.record import create_a_record_and_a_folder
 from core.files.models import FolderPermission
@@ -303,7 +303,7 @@ def create_admin_group(rlc: Org, main_user: UserProfile):
 
 def create_records(users, rlc):
     tags = (
-        RecordMultipleField.objects.filter(template__rlc=rlc, name="Tags")
+        DataSheetMultipleField.objects.filter(template__rlc=rlc, name="Tags")
         .first()
         .options
     )
@@ -419,49 +419,51 @@ def create_records(users, rlc):
     # 5 users
     # 6 tags
 
-    template = RecordTemplate.objects.first()
+    template = DataSheetTemplate.objects.first()
     created_records = []
     for record in records:
         # create
-        created_record = Record.objects.create(template=template, name=record[2])
+        created_record = DataSheet.objects.create(template=template, name=record[2])
         # first contact date
-        field = RecordStandardField.objects.get(
+        field = DataSheetStandardField.objects.get(
             template=template, name="First contact date"
         )
-        RecordStandardEntry.objects.create(
+        DataSheetStandardEntry.objects.create(
             record=created_record, field=field, value=record[0]
         )
         # last contact date
-        field = RecordStandardField.objects.get(
+        field = DataSheetStandardField.objects.get(
             template=template, name="Last contact date"
         )
-        RecordStandardEntry.objects.create(
+        DataSheetStandardEntry.objects.create(
             record=created_record, field=field, value=record[1]
         )
         # official note
-        field = RecordStandardField.objects.get(template=template, name="Official Note")
-        RecordStandardEntry.objects.create(
+        field = DataSheetStandardField.objects.get(
+            template=template, name="Official Note"
+        )
+        DataSheetStandardEntry.objects.create(
             record=created_record, field=field, value=record[3]
         )
         # state
-        field = RecordStateField.objects.get(template=template, name="State")
-        RecordStateEntry.objects.create(
+        field = DataSheetStateField.objects.get(template=template, name="State")
+        DataSheetStateEntry.objects.create(
             record=created_record, field=field, value=record[4]
         )
         # consultants
-        field = RecordUsersField.objects.get(template=template, name="Consultants")
-        entry = RecordUsersEntry.objects.create(record=created_record, field=field)
+        field = DataSheetUsersField.objects.get(template=template, name="Consultants")
+        entry = DataSheetUsersEntry.objects.create(record=created_record, field=field)
         entry.value.set([u.rlc_user for u in record[5]])
         # tags
-        field = RecordMultipleField.objects.get(template=template, name="Tags")
-        RecordMultipleEntry.objects.create(
+        field = DataSheetMultipleField.objects.get(template=template, name="Tags")
+        DataSheetMultipleEntry.objects.create(
             record=created_record, field=field, value=record[6]
         )
 
         # secure the record
         aes_key = AESEncryption.generate_secure_key()
         for user in set(record[5]):
-            record_encryption = RecordEncryptionNew(
+            record_encryption = DataSheetEncryptionNew(
                 user=user.rlc_user, record=created_record, key=aes_key
             )
             record_encryption.encrypt(user.get_public_key())
@@ -478,11 +480,11 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     users = [main_user] + users
 
     # create the informative record
-    template = RecordTemplate.objects.filter(rlc=rlc).first()
+    template = DataSheetTemplate.objects.filter(rlc=rlc).first()
     uuid = create_a_record_and_a_folder(
         main_user.rlc_user, "Informative Record", template.pk
     )
-    record = Record.objects.get(uuid=uuid)
+    record = DataSheet.objects.get(uuid=uuid)
 
     record_users = [choice(users), main_user]
     aes_key = AESEncryption.generate_secure_key()
@@ -495,57 +497,65 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     r.save(folder)
 
     # first contact date
-    field = RecordStandardField.objects.get(
+    field = DataSheetStandardField.objects.get(
         template=template, name="First contact date"
     )
-    RecordStandardEntry.objects.create(record=record, field=field, value="2018-01-03")
+    DataSheetStandardEntry.objects.create(
+        record=record, field=field, value="2018-01-03"
+    )
     # last contact date
-    field = RecordStandardField.objects.get(template=template, name="Last contact date")
-    RecordStandardEntry.objects.create(
+    field = DataSheetStandardField.objects.get(
+        template=template, name="Last contact date"
+    )
+    DataSheetStandardEntry.objects.create(
         record=record, field=field, value="2019-03-11T09:32:21"
     )
     # state
-    field = RecordStateField.objects.get(template=template, name="State")
-    RecordStateEntry.objects.create(field=field, record=record, value="Open")
+    field = DataSheetStateField.objects.get(template=template, name="State")
+    DataSheetStateEntry.objects.create(field=field, record=record, value="Open")
     # official note
-    field = RecordStandardField.objects.get(template=template, name="Official Note")
-    RecordStandardEntry.objects.create(
+    field = DataSheetStandardField.objects.get(template=template, name="Official Note")
+    DataSheetStandardEntry.objects.create(
         field=field, record=record, value="Best record ever created."
     )
     # client name
-    field = RecordEncryptedStandardField.objects.get(
+    field = DataSheetEncryptedStandardField.objects.get(
         template=template, name="Client name"
     )
-    entry = RecordEncryptedStandardEntry(field=field, record=record, value="Bibi Aisha")
+    entry = DataSheetEncryptedStandardEntry(
+        field=field, record=record, value="Bibi Aisha"
+    )
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
     # client note
-    field = RecordEncryptedStandardField.objects.get(
+    field = DataSheetEncryptedStandardField.objects.get(
         template=template, name="Client Note"
     )
-    entry = RecordEncryptedStandardEntry(
+    entry = DataSheetEncryptedStandardEntry(
         field=field, record=record, value="Auf der Flucht von Ehemann getrennt worden."
     )
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
     # client phone
-    field = RecordEncryptedStandardField.objects.get(template=template, name="Phone")
-    entry = RecordEncryptedStandardEntry(
+    field = DataSheetEncryptedStandardField.objects.get(template=template, name="Phone")
+    entry = DataSheetEncryptedStandardEntry(
         field=field, record=record, value="01793456542"
     )
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
     # client birthday
-    field = RecordStandardField.objects.get(template=template, name="Birthday")
-    RecordStandardEntry.objects.create(field=field, record=record, value="1990-05-01")
+    field = DataSheetStandardField.objects.get(template=template, name="Birthday")
+    DataSheetStandardEntry.objects.create(
+        field=field, record=record, value="1990-05-01"
+    )
     # client origin country
-    field = RecordSelectField.objects.get(template=template, name="Origin Country")
-    RecordSelectEntry.objects.create(record=record, field=field, value="Afghanistan")
+    field = DataSheetSelectField.objects.get(template=template, name="Origin Country")
+    DataSheetSelectEntry.objects.create(record=record, field=field, value="Afghanistan")
     # note
-    field = RecordEncryptedStandardField.objects.get(template=template, name="Note")
-    entry = RecordEncryptedStandardEntry(
+    field = DataSheetEncryptedStandardField.objects.get(template=template, name="Note")
+    entry = DataSheetEncryptedStandardEntry(
         field=field,
         record=record,
         value="Mandant moechte dass wir ihn vor Gericht vertreten. "
@@ -554,26 +564,28 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
     # consultant team
-    field = RecordEncryptedStandardField.objects.get(
+    field = DataSheetEncryptedStandardField.objects.get(
         template=template, name="Consultant Team"
     )
-    entry = RecordEncryptedStandardEntry(
+    entry = DataSheetEncryptedStandardEntry(
         field=field, record=record, value="Taskforce 417"
     )
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
     # lawyer
-    field = RecordEncryptedStandardField.objects.get(template=template, name="Lawyer")
-    entry = RecordEncryptedStandardEntry(
+    field = DataSheetEncryptedStandardField.objects.get(
+        template=template, name="Lawyer"
+    )
+    entry = DataSheetEncryptedStandardEntry(
         field=field, record=record, value="RA Guenther-Klaus, Kiesweg 3"
     )
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
     # related persons
-    field = RecordEncryptedStandardField.objects.get(
+    field = DataSheetEncryptedStandardField.objects.get(
         template=template, name="Related Persons"
     )
-    entry = RecordEncryptedStandardEntry(
+    entry = DataSheetEncryptedStandardEntry(
         field=field,
         record=record,
         value="Sozialarbeiter Apfel (Direkt in der Unterkunft)",
@@ -581,8 +593,10 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
     # contact
-    field = RecordEncryptedStandardField.objects.get(template=template, name="Contact")
-    entry = RecordEncryptedStandardEntry(
+    field = DataSheetEncryptedStandardField.objects.get(
+        template=template, name="Contact"
+    )
+    entry = DataSheetEncryptedStandardEntry(
         field=field,
         record=record,
         value="Mail: asksk1@beispiel.de,\n Telefon: 0800 444 55 444",
@@ -590,28 +604,28 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
     # bamf token
-    field = RecordEncryptedStandardField.objects.get(
+    field = DataSheetEncryptedStandardField.objects.get(
         template=template, name="BAMF Token"
     )
-    entry = RecordEncryptedStandardEntry(
+    entry = DataSheetEncryptedStandardEntry(
         field=field, record=record, value="QRS-232/2018"
     )
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
     # foreign token
-    field = RecordEncryptedStandardField.objects.get(
+    field = DataSheetEncryptedStandardField.objects.get(
         template=template, name="Foreign Token"
     )
-    entry = RecordEncryptedStandardEntry(
+    entry = DataSheetEncryptedStandardEntry(
         field=field, record=record, value="Vor Gericht: FA93932-1320"
     )
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
     # first correspondence
-    field = RecordEncryptedStandardField.objects.get(
+    field = DataSheetEncryptedStandardField.objects.get(
         template=template, name="First Correspondence"
     )
-    entry = RecordEncryptedStandardEntry(
+    entry = DataSheetEncryptedStandardEntry(
         field=field,
         record=record,
         value="Hallo Liebes Team der RLC,\n ich habe folgendes Problem."
@@ -620,10 +634,10 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
     # circumstances
-    field = RecordEncryptedStandardField.objects.get(
+    field = DataSheetEncryptedStandardField.objects.get(
         template=template, name="Circumstances"
     )
-    entry = RecordEncryptedStandardEntry(
+    entry = DataSheetEncryptedStandardEntry(
         field=field,
         record=record,
         value="Kam ueber die Balkanroute, Bruder auf dem Weg verloren, "
@@ -632,19 +646,19 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
     # next steps
-    field = RecordEncryptedStandardField.objects.get(
+    field = DataSheetEncryptedStandardField.objects.get(
         template=template, name="Next Steps"
     )
-    entry = RecordEncryptedStandardEntry(
+    entry = DataSheetEncryptedStandardEntry(
         field=field, record=record, value="Klage einreichen und gewinnen!"
     )
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
     # status described
-    field = RecordEncryptedStandardField.objects.get(
+    field = DataSheetEncryptedStandardField.objects.get(
         template=template, name="Status described"
     )
-    entry = RecordEncryptedStandardEntry(
+    entry = DataSheetEncryptedStandardEntry(
         field=field,
         record=record,
         value="Auf Antwort wartend, anschliessend weitere Bearbeitung.",
@@ -652,22 +666,22 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
     # additional facts
-    field = RecordEncryptedStandardField.objects.get(
+    field = DataSheetEncryptedStandardField.objects.get(
         template=template, name="Additional facts"
     )
-    entry = RecordEncryptedStandardEntry(
+    entry = DataSheetEncryptedStandardEntry(
         field=field, record=record, value="Hat noch nie ne Schweinshaxe gegessen."
     )
     entry.encrypt(aes_key_record=aes_key)
     entry.save()
     # tags
-    field = RecordMultipleField.objects.get(template=template, name="Tags")
-    RecordMultipleEntry.objects.create(
+    field = DataSheetMultipleField.objects.get(template=template, name="Tags")
+    DataSheetMultipleEntry.objects.create(
         record=record, field=field, value=[choice(field.options), choice(field.options)]
     )
     # consultants
-    field = RecordUsersField.objects.get(template=template, name="Consultants")
-    entry = RecordUsersEntry.objects.create(record=record, field=field)
+    field = DataSheetUsersField.objects.get(template=template, name="Consultants")
+    entry = DataSheetUsersEntry.objects.create(record=record, field=field)
     entry.value.set([u.rlc_user for u in record_users])
 
     # add some documents

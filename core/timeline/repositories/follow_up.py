@@ -29,7 +29,7 @@ class FollowUpRepository:
     def list_follow_ups_of_user(
         self, user: RlcUser, fr: FolderRepository
     ) -> list[TimelineFollowUp]:
-        from core.data_sheets.models import RecordUsersEntry
+        from core.data_sheets.models import DataSheetUsersEntry
 
         follow_ups = list(
             TimelineFollowUp.objects.filter(
@@ -41,7 +41,7 @@ class FollowUpRepository:
         for follow_up in follow_ups:
             folder = folders[follow_up.folder_uuid]
             if folder.has_access(owner=user):
-                entry = RecordUsersEntry.objects.filter(
+                entry = DataSheetUsersEntry.objects.filter(
                     record__folder_uuid=follow_up.folder_uuid
                 ).first()
                 if entry is not None:

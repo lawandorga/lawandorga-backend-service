@@ -6,7 +6,7 @@ from django.test import Client
 
 from core.auth.models import RlcUser
 from core.auth.token_generator import EmailConfirmationTokenGenerator
-from core.data_sheets.models import RecordTemplate
+from core.data_sheets.models import DataSheetTemplate
 from core.models import Org
 from core.permissions.models import Permission
 from core.permissions.static import (
@@ -33,7 +33,7 @@ def user(db, rlc_user_2, org):
     user_1 = data.create_rlc_user(rlc=org)
     data.create_rlc_user(email="dummy3@law-orga.de", rlc=org)
     org.generate_keys()
-    template = RecordTemplate.objects.create(rlc=org, name="Record Template")
+    template = DataSheetTemplate.objects.create(rlc=org, name="Record Template")
     data.create_data_sheet(
         template=template, users=[user_1["user"], rlc_user_2["user"]]
     )

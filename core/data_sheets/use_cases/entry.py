@@ -3,7 +3,7 @@ from uuid import UUID
 from django.core.files.uploadedfile import UploadedFile
 
 from core.auth.models.org_user import RlcUser
-from core.data_sheets.models.record import Record
+from core.data_sheets.models.data_sheet import DataSheet
 from core.data_sheets.use_cases.finders import (
     find_field_from_uuid,
     find_file_field_from_uuid,
@@ -12,7 +12,7 @@ from core.seedwork.use_case_layer import use_case
 
 
 def update_record_updated_time(record_id: int):
-    Record.objects.get(pk=record_id).save()
+    DataSheet.objects.get(pk=record_id).save()
 
 
 @use_case

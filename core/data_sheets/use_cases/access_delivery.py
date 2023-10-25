@@ -1,7 +1,7 @@
 from typing import cast
 
 from core.auth.models import RlcUser
-from core.data_sheets.models import Record
+from core.data_sheets.models import DataSheet
 from core.data_sheets.use_cases.record import migrate_record_into_folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.permissions.models import Permission
@@ -13,7 +13,7 @@ from core.seedwork.use_case_layer import use_case
 @use_case
 def deliver_access_to_users_who_should_have_access(__actor: RlcUser):
     records_1 = (
-        Record.objects.filter(template__rlc_id=__actor.org_id)
+        DataSheet.objects.filter(template__rlc_id=__actor.org_id)
         .select_related("template")
         .prefetch_related("encryptions")
     )

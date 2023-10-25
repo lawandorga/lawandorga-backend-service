@@ -3,7 +3,7 @@ from uuid import UUID
 
 from django.core.management.base import BaseCommand
 
-from core.data_sheets.models.record import Record
+from core.data_sheets.models.data_sheet import DataSheet
 from core.folders.models import FoldersFolder
 
 
@@ -13,7 +13,7 @@ class Command(BaseCommand):
 
         folders = list(FoldersFolder.objects.all())
         records = list(
-            Record.objects.exclude(folder_uuid=None)
+            DataSheet.objects.exclude(folder_uuid=None)
             .all()
             .prefetch_related("standard_entries", "standard_entries__field")
             .select_related("template", "template__rlc")

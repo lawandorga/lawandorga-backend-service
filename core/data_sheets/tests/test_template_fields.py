@@ -1,4 +1,4 @@
-from core.data_sheets.models.template import RecordTemplate
+from core.data_sheets.models.template import DataSheetTemplate
 from core.data_sheets.use_cases.templates import (
     create_field,
     delete_field,
@@ -12,7 +12,9 @@ def test_create_field(db):
     user = test_helpers.create_rlc_user()
     rlc_user = user["rlc_user"]
     rlc_user.grant(PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES)
-    template = RecordTemplate.objects.create(rlc=rlc_user.org, name="Record Template")
+    template = DataSheetTemplate.objects.create(
+        rlc=rlc_user.org, name="Record Template"
+    )
     create_field(rlc_user, template.pk, "standard", "Standard Field", 1)
     assert len(template.fields) == 5
 
@@ -21,7 +23,9 @@ def test_update_field(db):
     user = test_helpers.create_rlc_user()
     rlc_user = user["rlc_user"]
     rlc_user.grant(PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES)
-    template = RecordTemplate.objects.create(rlc=rlc_user.org, name="Record Template")
+    template = DataSheetTemplate.objects.create(
+        rlc=rlc_user.org, name="Record Template"
+    )
     create_field(rlc_user, template.pk, "standard", "Standard Field", 1)
     field = template.fields[0]
     assert field.name == "Standard Field"
@@ -33,7 +37,9 @@ def test_delete_field(db):
     user = test_helpers.create_rlc_user()
     rlc_user = user["rlc_user"]
     rlc_user.grant(PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES)
-    template = RecordTemplate.objects.create(rlc=rlc_user.org, name="Record Template")
+    template = DataSheetTemplate.objects.create(
+        rlc=rlc_user.org, name="Record Template"
+    )
     create_field(rlc_user, template.pk, "standard", "Standard Field", 1)
     field = template.fields[0]
     delete_field(rlc_user, field.uuid, False)

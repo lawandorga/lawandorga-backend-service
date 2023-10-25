@@ -1,6 +1,6 @@
 import pytest
 
-from core.data_sheets.models import Record, RecordEncryptionNew, RecordTemplate
+from core.data_sheets.models import DataSheet, DataSheetEncryptionNew, DataSheetTemplate
 from core.data_sheets.use_cases.access_delivery import (
     deliver_access_to_users_who_should_have_access,
 )
@@ -33,10 +33,10 @@ def test_put_inside_folders(db, user):
     user.user.save()
     user.org.save()
     user.save()
-    template = RecordTemplate.objects.create(name="test", rlc=user.org)
-    record = Record.objects.create(template=template)
+    template = DataSheetTemplate.objects.create(name="test", rlc=user.org)
+    record = DataSheet.objects.create(template=template)
     key = AESEncryption.generate_secure_key()
-    enc = RecordEncryptionNew(record=record, user=user, key=key)
+    enc = DataSheetEncryptionNew(record=record, user=user, key=key)
     enc.encrypt(user.get_public_key())
     enc.save()
     file = EncryptedRecordDocument.objects.create(
@@ -44,11 +44,11 @@ def test_put_inside_folders(db, user):
     )
     assert file.folder_uuid is None and record.folder_uuid is None
     deliver_access_to_users_who_should_have_access(user)
-    record = Record.objects.get(pk=record.pk)
+    record = DataSheet.objects.get(pk=record.pk)
     file = EncryptedRecordDocument.objects.get(pk=file.pk)
     assert record.folder_uuid is not None and file.folder_uuid is None
     put_files_inside_of_folders(user)
-    record = Record.objects.get(pk=record.pk)
+    record = DataSheet.objects.get(pk=record.pk)
     file = EncryptedRecordDocument.objects.get(pk=file.pk)
     assert record.folder_uuid is not None and file.folder_uuid is not None
     assert file.folder.has_access(user)

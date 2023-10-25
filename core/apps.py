@@ -5,7 +5,7 @@ class CoreConfig(AppConfig):
     name = "core"
 
     def ready(self) -> None:
-        from core.data_sheets.models.record import DjangoRecordRepository
+        from core.data_sheets.models.data_sheet import DjangoRecordRepository
         from core.files_new.models.file import DjangoFileRepository
         from core.folders.domain.value_objects.encryption import EncryptionWarehouse
         from core.folders.infrastructure.asymmetric_encryptions import (

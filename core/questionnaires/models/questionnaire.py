@@ -5,7 +5,7 @@ from django.db import models
 from django.utils import timezone
 
 from core.auth.models import RlcUser
-from core.data_sheets.models import Record
+from core.data_sheets.models import DataSheet
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.item import ItemRepository
 from core.folders.domain.value_objects.asymmetric_key import (
@@ -45,8 +45,8 @@ class Questionnaire(Aggregate, models.Model):
         questionnaire.generate_code()
         return questionnaire
 
-    record: Optional[Record] = models.ForeignKey(  # type: ignore
-        Record,
+    record = models.ForeignKey(
+        DataSheet,
         on_delete=models.CASCADE,
         related_name="questionnaires",
         null=True,

@@ -189,9 +189,9 @@ class RlcUser(Aggregate, models.Model):
 
     @property
     def record_keys(self) -> list[KeyOfUser]:
-        from core.data_sheets.models import RecordEncryptionNew
+        from core.data_sheets.models import DataSheetEncryptionNew
 
-        _keys1 = RecordEncryptionNew.objects.filter(user_id=self.id).select_related(
+        _keys1 = DataSheetEncryptionNew.objects.filter(user_id=self.id).select_related(
             "record"
         )
         _keys2 = list(_keys1)
@@ -264,9 +264,9 @@ class RlcUser(Aggregate, models.Model):
 
     @property
     def records_information(self):
-        from core.data_sheets.models import Record
+        from core.data_sheets.models import DataSheet
 
-        records = Record.objects.filter(template__rlc=self.org).prefetch_related(
+        records = DataSheet.objects.filter(template__rlc=self.org).prefetch_related(
             "state_entries", "users_entries", "users_entries__value"
         )
         records_data = []
@@ -338,9 +338,9 @@ class RlcUser(Aggregate, models.Model):
 
     @property
     def own_records(self):
-        from core.data_sheets.models import Record
+        from core.data_sheets.models import DataSheet
 
-        records = Record.objects.filter(template__rlc=self.org).prefetch_related(
+        records = DataSheet.objects.filter(template__rlc=self.org).prefetch_related(
             "users_entries", "users_entries__value"
         )
         record_pks = []
@@ -352,7 +352,7 @@ class RlcUser(Aggregate, models.Model):
             if self.id in map(lambda x: x.id, users):
                 record_pks.append(record.id)
 
-        return Record.objects.filter(pk__in=record_pks)
+        return DataSheet.objects.filter(pk__in=record_pks)
 
     @property
     def changed_records_information(self):
@@ -696,7 +696,6 @@ class RlcUser(Aggregate, models.Model):
 
     @property
     def badges(self):
-        from core.data_sheets.models import RecordAccess, RecordDeletion
         from core.legal.models.legal_requirement import LegalRequirement
         from core.records.models.access import RecordsAccessRequest
         from core.records.models.deletion import RecordsDeletion
@@ -708,16 +707,16 @@ class RlcUser(Aggregate, models.Model):
 
         # deletion requests
         if self.has_permission(PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS):
-            record_deletion_requests = RecordDeletion.objects.filter(
-                record__template__rlc=self.org, state="re"
+            record_deletion_requests = RecordsDeletion.objects.filter(
+                requestor__org=self.org, state="re"
             ).count()
         else:
             record_deletion_requests = 0
 
         # permit requests
         if self.has_permission(PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS):
-            record_permit_requests = RecordAccess.objects.filter(
-                record__template__rlc=self.org, state="re"
+            record_permit_requests = RecordsAccessRequest.objects.filter(
+                requestor__org=self.org, state="re"
             ).count()
         else:
             record_permit_requests = 0

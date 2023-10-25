@@ -1,102 +1,104 @@
 from django.db import transaction
 
 from core.data_sheets.models import (
-    RecordEncryptedStandardField,
-    RecordMultipleField,
-    RecordSelectField,
-    RecordStandardField,
-    RecordStateField,
-    RecordTemplate,
-    RecordUsersField,
+    DataSheetEncryptedStandardField,
+    DataSheetMultipleField,
+    DataSheetSelectField,
+    DataSheetStandardField,
+    DataSheetStateField,
+    DataSheetTemplate,
+    DataSheetUsersField,
 )
 
 
 def create_default_record_template(rlc):
     with transaction.atomic():
-        template = RecordTemplate.objects.create(
+        template = DataSheetTemplate.objects.create(
             name="Default Record Template", rlc=rlc
         )
-        RecordStandardField.objects.create(
+        DataSheetStandardField.objects.create(
             template=template, order=20, name="First contact date", field_type="DATE"
         )
-        RecordStandardField.objects.create(
+        DataSheetStandardField.objects.create(
             template=template,
             order=30,
             name="Last contact date",
             field_type="DATETIME-LOCAL",
         )
-        RecordStandardField.objects.create(
+        DataSheetStandardField.objects.create(
             template=template,
             order=40,
             name="First consultation",
             field_type="DATETIME-LOCAL",
         )
-        RecordStandardField.objects.create(
+        DataSheetStandardField.objects.create(
             template=template, order=50, name="Official Note"
         )
-        RecordUsersField.objects.create(template=template, order=60, name="Consultants")
-        RecordMultipleField.objects.create(
+        DataSheetUsersField.objects.create(
+            template=template, order=60, name="Consultants"
+        )
+        DataSheetMultipleField.objects.create(
             template=template, order=70, name="Tags", options=get_all_tags()
         )
         options = ["Open", "Closed", "Waiting", "Working"]
-        RecordStateField.objects.create(
+        DataSheetStateField.objects.create(
             template=template, order=80, name="State", options=options
         )
-        RecordEncryptedStandardField.objects.create(
+        DataSheetEncryptedStandardField.objects.create(
             template=template, order=90, name="Note", field_type="TEXTAREA"
         )
-        RecordEncryptedStandardField.objects.create(
+        DataSheetEncryptedStandardField.objects.create(
             template=template, order=100, name="Consultant Team"
         )
-        RecordEncryptedStandardField.objects.create(
+        DataSheetEncryptedStandardField.objects.create(
             template=template, order=110, name="Lawyer"
         )
-        RecordEncryptedStandardField.objects.create(
+        DataSheetEncryptedStandardField.objects.create(
             template=template, order=120, name="Related Persons"
         )
-        RecordEncryptedStandardField.objects.create(
+        DataSheetEncryptedStandardField.objects.create(
             template=template, order=130, name="Contact"
         )
-        RecordEncryptedStandardField.objects.create(
+        DataSheetEncryptedStandardField.objects.create(
             template=template, order=135, name="Foreign Token"
         )
-        RecordEncryptedStandardField.objects.create(
+        DataSheetEncryptedStandardField.objects.create(
             template=template, order=140, name="BAMF Token"
         )
-        RecordEncryptedStandardField.objects.create(
+        DataSheetEncryptedStandardField.objects.create(
             template=template, order=145, name="Circumstances"
         )
-        RecordEncryptedStandardField.objects.create(
+        DataSheetEncryptedStandardField.objects.create(
             template=template,
             order=150,
             name="First Correspondence",
             field_type="TEXTAREA",
         )
-        RecordEncryptedStandardField.objects.create(
+        DataSheetEncryptedStandardField.objects.create(
             template=template, order=160, name="Next Steps", field_type="TEXTAREA"
         )
-        RecordEncryptedStandardField.objects.create(
+        DataSheetEncryptedStandardField.objects.create(
             template=template, order=170, name="Status described", field_type="TEXTAREA"
         )
-        RecordEncryptedStandardField.objects.create(
+        DataSheetEncryptedStandardField.objects.create(
             template=template, order=180, name="Additional facts", field_type="TEXTAREA"
         )
-        RecordEncryptedStandardField.objects.create(
+        DataSheetEncryptedStandardField.objects.create(
             template=template, order=190, name="Client name"
         )
-        RecordStandardField.objects.create(
+        DataSheetStandardField.objects.create(
             template=template, order=200, name="Birthday", field_type="DATE"
         )
-        RecordSelectField.objects.create(
+        DataSheetSelectField.objects.create(
             template=template,
             order=210,
             name="Origin Country",
             options=get_all_countries(),
         )
-        RecordEncryptedStandardField.objects.create(
+        DataSheetEncryptedStandardField.objects.create(
             template=template, order=220, name="Phone"
         )
-        RecordEncryptedStandardField.objects.create(
+        DataSheetEncryptedStandardField.objects.create(
             template=template, order=230, name="Client Note", field_type="TEXTAREA"
         )
 

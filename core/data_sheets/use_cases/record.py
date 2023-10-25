@@ -2,7 +2,7 @@ from typing import cast
 from uuid import UUID
 
 from core.auth.models import RlcUser
-from core.data_sheets.models import Record, RecordTemplate
+from core.data_sheets.models import DataSheet, DataSheetTemplate
 from core.data_sheets.use_cases.finders import (
     record_from_id,
     record_from_uuid,
@@ -79,7 +79,7 @@ def create_a_data_sheet_within_a_folder(
 
 
 def __create(
-    __actor: RlcUser, name: str, folder: Folder, template: RecordTemplate
+    __actor: RlcUser, name: str, folder: Folder, template: DataSheetTemplate
 ) -> UUID:
     access_granted = False
     for user in list(__actor.org.users.all()):
@@ -95,7 +95,7 @@ def __create(
         )
         folder_repository.save(folder)
 
-    record = Record(template=template, name=name)
+    record = DataSheet(template=template, name=name)
     record.set_folder(folder)
     record.generate_key(__actor)
     record.save()
@@ -104,7 +104,7 @@ def __create(
 
 
 @use_case
-def migrate_record_into_folder(__actor: RlcUser, record: Record):
+def migrate_record_into_folder(__actor: RlcUser, record: DataSheet):
     user = __actor
 
     if not record.has_access(user):

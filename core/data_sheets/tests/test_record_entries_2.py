@@ -10,29 +10,29 @@ from django.test import Client
 
 from core.auth.models import RlcUser
 from core.data_sheets.models import (
-    RecordEncryptedFileEntry,
-    RecordEncryptedFileField,
-    RecordTemplate,
+    DataSheetEncryptedFileEntry,
+    DataSheetEncryptedFileField,
+    DataSheetTemplate,
 )
-from core.data_sheets.models.record import (
-    RecordEncryptedSelectEntry,
-    RecordEncryptedStandardEntry,
-    RecordMultipleEntry,
-    RecordSelectEntry,
-    RecordStandardEntry,
-    RecordStateEntry,
-    RecordStatisticEntry,
-    RecordUsersEntry,
+from core.data_sheets.models.data_sheet import (
+    DataSheetEncryptedSelectEntry,
+    DataSheetEncryptedStandardEntry,
+    DataSheetMultipleEntry,
+    DataSheetSelectEntry,
+    DataSheetStandardEntry,
+    DataSheetStateEntry,
+    DataSheetStatisticEntry,
+    DataSheetUsersEntry,
 )
 from core.data_sheets.models.template import (
-    RecordEncryptedSelectField,
-    RecordEncryptedStandardField,
-    RecordMultipleField,
-    RecordSelectField,
-    RecordStandardField,
-    RecordStateField,
-    RecordStatisticField,
-    RecordUsersField,
+    DataSheetEncryptedSelectField,
+    DataSheetEncryptedStandardField,
+    DataSheetMultipleField,
+    DataSheetSelectField,
+    DataSheetStandardField,
+    DataSheetStateField,
+    DataSheetStatisticField,
+    DataSheetUsersField,
 )
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.models import UserProfile
@@ -63,12 +63,12 @@ def setup():
     rlc_user = RlcUser(user=user, email_confirmed=True, accepted=True, org=rlc)
     rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
     rlc_user.save()
-    template = RecordTemplate.objects.create(rlc=rlc, name="Record Template")
+    template = DataSheetTemplate.objects.create(rlc=rlc, name="Record Template")
     permission = Permission.objects.get(name=PERMISSION_RECORDS_ADD_RECORD)
     HasPermission.objects.create(user=user.rlc_user, permission=permission)
     permission = Permission.objects.get(name=PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES)
     HasPermission.objects.create(user=rlc_user, permission=permission)
-    template = RecordTemplate.objects.create(rlc=rlc, name="Record Template")
+    template = DataSheetTemplate.objects.create(rlc=rlc, name="Record Template")
     record = test_helpers.create_data_sheet(template, [user])["record"]
     aes_key_record = record.get_aes_key(user.rlc_user)
     yield {
@@ -103,7 +103,7 @@ def template(setup):
 
 @pytest.fixture
 def file_field(setup):
-    field = RecordEncryptedFileField.objects.create(template=setup["template"])
+    field = DataSheetEncryptedFileField.objects.create(template=setup["template"])
     yield field
 
 
@@ -114,7 +114,7 @@ def aes_key_record(setup):
 
 @pytest.fixture
 def file_entry(setup, file_field):
-    entry = RecordEncryptedFileEntry.objects.create(
+    entry = DataSheetEncryptedFileEntry.objects.create(
         record=setup["record"], field=file_field
     )
     file = entry.encrypt_file(
@@ -147,8 +147,8 @@ def test_file_entry_create(db, setup, file_field):
     }
     response = client.post("/api/command/", data)
     assert response.status_code == 200
-    assert RecordEncryptedFileEntry.objects.count() == 1
-    entry = RecordEncryptedFileEntry.objects.get()
+    assert DataSheetEncryptedFileEntry.objects.count() == 1
+    entry = DataSheetEncryptedFileEntry.objects.get()
     assert entry.file.read() != "test-string"
     entry.file.seek(0)
     file = entry.decrypt_file(aes_key_record=aes_key_record)
@@ -167,21 +167,21 @@ def test_file_entry_delete(db, setup, file_field, file_entry):
         "field_id": file_field.uuid,
         "action": "data_sheets/delete_entry",
     }
-    assert RecordEncryptedFileEntry.objects.count() == 1
+    assert DataSheetEncryptedFileEntry.objects.count() == 1
     response = client.post("/api/command/", data)
     assert response.status_code == 200
-    assert RecordEncryptedFileEntry.objects.count() == 0
+    assert DataSheetEncryptedFileEntry.objects.count() == 0
 
 
 @pytest.fixture
 def standard_field(template):
-    field = RecordStandardField.objects.create(template=template)
+    field = DataSheetStandardField.objects.create(template=template)
     yield field
 
 
 @pytest.fixture
 def standard_entry(standard_field, record):
-    entry = RecordStandardEntry.objects.create(
+    entry = DataSheetStandardEntry.objects.create(
         record=record, field=standard_field, value="test text"
     )
     yield entry
@@ -196,8 +196,8 @@ def test_standard_entry_create(db, standard_field, record, auth_client):
     }
     response = auth_client.post("/api/command/", data)
     assert response.status_code == 200
-    assert RecordStandardEntry.objects.count() == 1
-    assert RecordStandardEntry.objects.get().value == "Hallo"
+    assert DataSheetStandardEntry.objects.count() == 1
+    assert DataSheetStandardEntry.objects.get().value == "Hallo"
 
 
 def test_standard_entry_update(db, standard_entry, post):
@@ -207,10 +207,10 @@ def test_standard_entry_update(db, standard_entry, post):
         "record_id": standard_entry.record.pk,
         "field_id": standard_entry.field.uuid,
     }
-    assert RecordStandardEntry.objects.count() == 1
+    assert DataSheetStandardEntry.objects.count() == 1
     response = post(data)
     assert response.status_code == 200
-    entry = RecordStandardEntry.objects.get()
+    entry = DataSheetStandardEntry.objects.get()
     assert entry.value == "Hallo 2"
 
 
@@ -222,12 +222,12 @@ def test_standard_entry_delete(db, standard_entry, post):
     }
     response = post(data)
     assert response.status_code == 200
-    assert RecordStandardEntry.objects.count() == 0
+    assert DataSheetStandardEntry.objects.count() == 0
 
 
 @pytest.fixture
 def select_field(db, template):
-    field = RecordSelectField.objects.create(
+    field = DataSheetSelectField.objects.create(
         template=template, options=["Option 1", "Option 2"]
     )
     yield field
@@ -235,7 +235,7 @@ def select_field(db, template):
 
 @pytest.fixture
 def select_entry(db, select_field, record):
-    entry = RecordSelectEntry.objects.create(
+    entry = DataSheetSelectEntry.objects.create(
         record=record, field=select_field, value="Option 1"
     )
     yield entry
@@ -250,8 +250,8 @@ def test_select_entry_create(db, record, select_field, post):
     }
     response = post(data)
     assert response.status_code == 200
-    assert RecordSelectEntry.objects.count() == 1
-    entry = RecordSelectEntry.objects.get()
+    assert DataSheetSelectEntry.objects.count() == 1
+    entry = DataSheetSelectEntry.objects.get()
     assert entry.value == "Option 1"
 
 
@@ -262,10 +262,10 @@ def test_select_entry_update(db, record, select_field, post, select_entry):
         "field_id": select_field.uuid,
         "value": "Option 2",
     }
-    assert RecordSelectEntry.objects.count() == 1
+    assert DataSheetSelectEntry.objects.count() == 1
     response = post(data)
     assert response.status_code == 200
-    entry = RecordSelectEntry.objects.get()
+    entry = DataSheetSelectEntry.objects.get()
     assert entry.value == "Option 2"
 
 
@@ -275,10 +275,10 @@ def test_select_entry_delete(db, record, select_field, post, select_entry):
         "record_id": record.pk,
         "field_id": select_field.uuid,
     }
-    assert RecordSelectEntry.objects.count() == 1
+    assert DataSheetSelectEntry.objects.count() == 1
     response = post(data)
     assert response.status_code == 200
-    assert RecordSelectEntry.objects.count() == 0
+    assert DataSheetSelectEntry.objects.count() == 0
 
 
 def test_select_entry_create_value_in_options(db, record, select_field, post):
@@ -290,7 +290,7 @@ def test_select_entry_create_value_in_options(db, record, select_field, post):
     }
     response = post(data)
     assert response.status_code == 400
-    assert RecordSelectEntry.objects.count() == 0
+    assert DataSheetSelectEntry.objects.count() == 0
 
 
 def test_select_entry_update_value_in_options(
@@ -302,16 +302,16 @@ def test_select_entry_update_value_in_options(
         "field_id": select_field.uuid,
         "value": "Option 3",
     }
-    assert RecordSelectEntry.objects.count() == 1
+    assert DataSheetSelectEntry.objects.count() == 1
     response = post(data)
     assert response.status_code == 400
-    entry = RecordSelectEntry.objects.get()
+    entry = DataSheetSelectEntry.objects.get()
     assert entry.value == "Option 1"
 
 
 @pytest.fixture
 def state_field(template):
-    field = RecordStateField.objects.create(
+    field = DataSheetStateField.objects.create(
         template=template, options=["Closed", "Option 2"]
     )
     yield field
@@ -319,7 +319,7 @@ def state_field(template):
 
 @pytest.fixture
 def state_entry(state_field, record):
-    entry = RecordStateEntry.objects.create(
+    entry = DataSheetStateEntry.objects.create(
         record=record, field=state_field, value="Option 1"
     )
     yield entry
@@ -334,8 +334,8 @@ def test_state_entry_create(db, record, state_field, post):
     }
     response = post(data)
     assert response.status_code == 200
-    assert RecordStateEntry.objects.count() == 1
-    entry = RecordStateEntry.objects.get()
+    assert DataSheetStateEntry.objects.count() == 1
+    entry = DataSheetStateEntry.objects.get()
     assert entry.value == "Option 2"
 
 
@@ -346,10 +346,10 @@ def test_state_entry_update(db, record, state_field, post, state_entry):
         "field_id": state_field.uuid,
         "value": "Option 2",
     }
-    assert RecordStateEntry.objects.count() == 1
+    assert DataSheetStateEntry.objects.count() == 1
     response = post(data)
     assert response.status_code == 200
-    entry = RecordStateEntry.objects.get()
+    entry = DataSheetStateEntry.objects.get()
     assert entry.value == "Option 2"
 
 
@@ -359,10 +359,10 @@ def test_state_entry_delete(db, record, state_field, post, state_entry):
         "record_id": record.pk,
         "field_id": state_field.uuid,
     }
-    assert RecordStateEntry.objects.count() == 1
+    assert DataSheetStateEntry.objects.count() == 1
     response = post(data)
     assert response.status_code == 200
-    assert RecordStateEntry.objects.count() == 0
+    assert DataSheetStateEntry.objects.count() == 0
 
 
 def test_state_entry_create_value_in_options(db, record, state_field, post):
@@ -374,7 +374,7 @@ def test_state_entry_create_value_in_options(db, record, state_field, post):
     }
     response = post(data)
     assert response.status_code == 400
-    assert RecordStateEntry.objects.count() == 0
+    assert DataSheetStateEntry.objects.count() == 0
 
 
 def test_state_entry_create_value_empty(db, record, state_field, post):
@@ -386,7 +386,7 @@ def test_state_entry_create_value_empty(db, record, state_field, post):
     }
     response = post(data)
     assert response.status_code == 400
-    assert RecordStateEntry.objects.count() == 0
+    assert DataSheetStateEntry.objects.count() == 0
 
 
 def test_state_entry_update_value_in_options(
@@ -398,16 +398,16 @@ def test_state_entry_update_value_in_options(
         "field_id": state_field.uuid,
         "value": "Option 3",
     }
-    assert RecordStateEntry.objects.count() == 1
+    assert DataSheetStateEntry.objects.count() == 1
     response = post(data)
     assert response.status_code == 400
-    entry = RecordStateEntry.objects.get()
+    entry = DataSheetStateEntry.objects.get()
     assert entry.value == "Option 1"
 
 
 @pytest.fixture
 def multiple_field(template):
-    field = RecordMultipleField.objects.create(
+    field = DataSheetMultipleField.objects.create(
         template=template, options=["Option 1", "Option 2"]
     )
     yield field
@@ -415,7 +415,7 @@ def multiple_field(template):
 
 @pytest.fixture
 def multiple_entry(multiple_field, record):
-    entry = RecordMultipleEntry.objects.create(
+    entry = DataSheetMultipleEntry.objects.create(
         record=record, field=multiple_field, value=["Option 1", "Option 2"]
     )
     yield entry
@@ -432,8 +432,8 @@ def test_multiple_entry_create(db, record, multiple_field, auth_client):
         "/api/command/", json.dumps(data), content_type="application/json"
     )
     assert response.status_code == 200
-    assert RecordMultipleEntry.objects.count() == 1
-    entry = RecordMultipleEntry.objects.get()
+    assert DataSheetMultipleEntry.objects.count() == 1
+    entry = DataSheetMultipleEntry.objects.get()
     assert entry.value == ["Option 1"]
 
 
@@ -444,12 +444,12 @@ def test_multiple_entry_update(db, record, multiple_field, auth_client, multiple
         "field_id": str(multiple_field.uuid),
         "value": ["Option 2"],
     }
-    assert RecordMultipleEntry.objects.count() == 1
+    assert DataSheetMultipleEntry.objects.count() == 1
     response = auth_client.post(
         "/api/command/", json.dumps(data), content_type="application/json"
     )
     assert response.status_code == 200
-    entry = RecordMultipleEntry.objects.get()
+    entry = DataSheetMultipleEntry.objects.get()
     assert entry.value == ["Option 2"]
 
 
@@ -459,12 +459,12 @@ def test_multiple_entry_delete(db, record, multiple_field, auth_client, multiple
         "record_id": record.pk,
         "field_id": str(multiple_field.uuid),
     }
-    assert RecordMultipleEntry.objects.count() == 1
+    assert DataSheetMultipleEntry.objects.count() == 1
     response = auth_client.post(
         "/api/command/", json.dumps(data), content_type="application/json"
     )
     assert response.status_code == 200
-    assert RecordMultipleEntry.objects.count() == 0
+    assert DataSheetMultipleEntry.objects.count() == 0
 
 
 def test_multiple_entry_create_values_must_be_in_options(
@@ -480,7 +480,7 @@ def test_multiple_entry_create_values_must_be_in_options(
         "/api/command/", json.dumps(data), content_type="application/json"
     )
     assert response.status_code == 400
-    assert RecordMultipleEntry.objects.count() == 0
+    assert DataSheetMultipleEntry.objects.count() == 0
 
 
 def test_multiple_entry_update_values_must_be_in_options(
@@ -492,18 +492,18 @@ def test_multiple_entry_update_values_must_be_in_options(
         "field_id": str(multiple_field.uuid),
         "value": ["Option 2", "Option 3"],
     }
-    assert RecordMultipleEntry.objects.count() == 1
+    assert DataSheetMultipleEntry.objects.count() == 1
     response = auth_client.post(
         "/api/command/", json.dumps(data), content_type="application/json"
     )
     assert response.status_code == 400
-    entry = RecordMultipleEntry.objects.get()
+    entry = DataSheetMultipleEntry.objects.get()
     assert entry.value == ["Option 1", "Option 2"]
 
 
 @pytest.fixture
 def statistic_field(template):
-    field = RecordStatisticField.objects.create(
+    field = DataSheetStatisticField.objects.create(
         template=template, options=["Option 1", "Option 2"]
     )
     yield field
@@ -511,7 +511,7 @@ def statistic_field(template):
 
 @pytest.fixture
 def statistic_entry(statistic_field, record):
-    entry = RecordStatisticEntry.objects.create(
+    entry = DataSheetStatisticEntry.objects.create(
         record=record, field=statistic_field, value="Option 1"
     )
     yield entry
@@ -526,8 +526,8 @@ def test_statistic_entry_create(db, record, statistic_field, post):
     }
     response = post(data)
     assert response.status_code == 200
-    assert RecordStatisticEntry.objects.count() == 1
-    entry = RecordStatisticEntry.objects.get()
+    assert DataSheetStatisticEntry.objects.count() == 1
+    entry = DataSheetStatisticEntry.objects.get()
     assert entry.value == "Option 1"
 
 
@@ -538,10 +538,10 @@ def test_statistic_entry_update(db, record, statistic_field, post, statistic_ent
         "field_id": statistic_field.uuid,
         "value": "Option 2",
     }
-    assert RecordStatisticEntry.objects.count() == 1
+    assert DataSheetStatisticEntry.objects.count() == 1
     response = post(data)
     assert response.status_code == 200
-    entry = RecordStatisticEntry.objects.get()
+    entry = DataSheetStatisticEntry.objects.get()
     assert entry.value == "Option 2"
 
 
@@ -551,21 +551,21 @@ def test_statistic_entry_delete(db, record, statistic_field, post, statistic_ent
         "record_id": record.pk,
         "field_id": statistic_field.uuid,
     }
-    assert RecordStatisticEntry.objects.count() == 1
+    assert DataSheetStatisticEntry.objects.count() == 1
     response = post(data)
     assert response.status_code == 200
-    assert RecordStatisticEntry.objects.count() == 0
+    assert DataSheetStatisticEntry.objects.count() == 0
 
 
 @pytest.fixture
 def users_field(template):
-    field = RecordUsersField.objects.create(template=template)
+    field = DataSheetUsersField.objects.create(template=template)
     yield field
 
 
 @pytest.fixture
 def users_entry(users_field, record):
-    entry = RecordUsersEntry.objects.create(record=record, field=users_field)
+    entry = DataSheetUsersEntry.objects.create(record=record, field=users_field)
     yield entry
 
 
@@ -587,8 +587,8 @@ def test_users_entry_create(db, record, users_field, auth_client):
         "/api/command/", json.dumps(data), content_type="application/json"
     )
     assert response.status_code == 200
-    assert RecordUsersEntry.objects.count() == 1
-    entry = RecordUsersEntry.objects.get()
+    assert DataSheetUsersEntry.objects.count() == 1
+    entry = DataSheetUsersEntry.objects.get()
     assert entry.value.all().count() == 2
 
 
@@ -603,12 +603,12 @@ def test_users_entry_udpate(db, record, users_field, auth_client, users_entry):
         "field_id": str(users_field.uuid),
         "value": [str(user2.pk)],
     }
-    assert RecordUsersEntry.objects.count() == 1
+    assert DataSheetUsersEntry.objects.count() == 1
     response = auth_client.post(
         "/api/command/", json.dumps(data), content_type="application/json"
     )
     assert response.status_code == 200
-    entry = RecordUsersEntry.objects.get()
+    entry = DataSheetUsersEntry.objects.get()
     assert entry.value.all().count() == 1
 
 
@@ -618,12 +618,12 @@ def test_entry_delete(db, record, users_field, auth_client, users_entry):
         "record_id": record.pk,
         "field_id": str(users_field.uuid),
     }
-    assert RecordUsersEntry.objects.count() == 1
+    assert DataSheetUsersEntry.objects.count() == 1
     response = auth_client.post(
         "/api/command/", json.dumps(data), content_type="application/json"
     )
     assert response.status_code == 200
-    assert RecordUsersEntry.objects.count() == 0
+    assert DataSheetUsersEntry.objects.count() == 0
 
 
 def test_entry_keys_sharing_true(db, record, users_field, auth_client):
@@ -712,13 +712,13 @@ def test_entry_keys_sharing_false(db, record, users_field, auth_client):
 
 @pytest.fixture
 def enc_standard_field(template):
-    field = RecordEncryptedStandardField.objects.create(template=template)
+    field = DataSheetEncryptedStandardField.objects.create(template=template)
     yield field
 
 
 @pytest.fixture
 def enc_standard_entry(enc_standard_field, record):
-    entry = RecordEncryptedStandardEntry.objects.create(
+    entry = DataSheetEncryptedStandardEntry.objects.create(
         record=record, field=enc_standard_field, value=b""
     )
     yield entry
@@ -735,8 +735,8 @@ def test_enc_standard_entry_create(
     }
     response = post(data)
     assert response.status_code == 200
-    assert RecordEncryptedStandardEntry.objects.count() == 1
-    entry = RecordEncryptedStandardEntry.objects.get()
+    assert DataSheetEncryptedStandardEntry.objects.count() == 1
+    entry = DataSheetEncryptedStandardEntry.objects.get()
     assert entry.value != b"Hallo" and entry.value != "Hallo"
     entry.decrypt(aes_key_record=aes_key_record)
     assert entry.value == "Hallo"
@@ -751,10 +751,10 @@ def test_enc_standard_entry_update(
         "field_id": enc_standard_field.uuid,
         "value": "Hallo 2",
     }
-    assert RecordEncryptedStandardEntry.objects.count() == 1
+    assert DataSheetEncryptedStandardEntry.objects.count() == 1
     response = post(data)
     assert response.status_code == 200
-    entry = RecordEncryptedStandardEntry.objects.get()
+    entry = DataSheetEncryptedStandardEntry.objects.get()
     assert entry.value != b"Hallo 2" and entry.value != "Hallo 2"
     entry.decrypt(aes_key_record=aes_key_record)
     assert entry.value == "Hallo 2"
@@ -768,15 +768,15 @@ def test_enc_standard_entry_delete(
         "record_id": record.pk,
         "field_id": enc_standard_field.uuid,
     }
-    assert RecordEncryptedStandardEntry.objects.count() == 1
+    assert DataSheetEncryptedStandardEntry.objects.count() == 1
     response = post(data)
     assert response.status_code == 200
-    assert RecordEncryptedStandardEntry.objects.count() == 0
+    assert DataSheetEncryptedStandardEntry.objects.count() == 0
 
 
 @pytest.fixture
 def enc_select_field(template):
-    field = RecordEncryptedSelectField.objects.create(
+    field = DataSheetEncryptedSelectField.objects.create(
         template=template, options=["Option 1", "Option 2"]
     )
     yield field
@@ -784,7 +784,7 @@ def enc_select_field(template):
 
 @pytest.fixture
 def enc_select_entry(enc_select_field, record, aes_key_record):
-    entry = RecordEncryptedSelectEntry(
+    entry = DataSheetEncryptedSelectEntry(
         record=record, field=enc_select_field, value="Option 1"
     )
     entry.encrypt(aes_key_record=aes_key_record)
@@ -801,8 +801,8 @@ def test_enc_select_entry_create(db, record, enc_select_field, post, aes_key_rec
     }
     response = post(data)
     assert response.status_code == 200
-    assert RecordEncryptedSelectEntry.objects.count() == 1
-    entry = RecordEncryptedSelectEntry.objects.get()
+    assert DataSheetEncryptedSelectEntry.objects.count() == 1
+    entry = DataSheetEncryptedSelectEntry.objects.get()
     assert entry.value != "Option 1" and entry.value != b"Option 1"
     entry.decrypt(aes_key_record=aes_key_record)
     assert entry.value == "Option 1"
@@ -817,10 +817,10 @@ def test_enc_select_entry_update(
         "field_id": enc_select_field.uuid,
         "value": "Option 2",
     }
-    assert RecordEncryptedSelectEntry.objects.count() == 1
+    assert DataSheetEncryptedSelectEntry.objects.count() == 1
     response = post(data)
     assert response.status_code == 200
-    entry = RecordEncryptedSelectEntry.objects.get()
+    entry = DataSheetEncryptedSelectEntry.objects.get()
     assert entry.value != "Option 2" and entry.value != b"Option 2"
     entry.decrypt(aes_key_record=aes_key_record)
     assert entry.value == "Option 2"
@@ -832,10 +832,10 @@ def test_enc_select_entry_delete(db, record, enc_select_field, post, enc_select_
         "record_id": record.pk,
         "field_id": enc_select_field.uuid,
     }
-    assert RecordEncryptedSelectEntry.objects.count() == 1
+    assert DataSheetEncryptedSelectEntry.objects.count() == 1
     response = post(data)
     assert response.status_code == 200
-    assert RecordEncryptedSelectEntry.objects.count() == 0
+    assert DataSheetEncryptedSelectEntry.objects.count() == 0
 
 
 def test_enc_select_entry_create_value_in_options(
@@ -849,7 +849,7 @@ def test_enc_select_entry_create_value_in_options(
     }
     response = post(data)
     assert response.status_code == 400
-    assert RecordEncryptedSelectEntry.objects.count() == 0
+    assert DataSheetEncryptedSelectEntry.objects.count() == 0
 
 
 def test_enc_select_entry_update_value_in_options(
@@ -861,17 +861,17 @@ def test_enc_select_entry_update_value_in_options(
         "field_id": enc_select_field.uuid,
         "value": "Option 3",
     }
-    assert RecordEncryptedSelectEntry.objects.count() == 1
+    assert DataSheetEncryptedSelectEntry.objects.count() == 1
     response = post(data)
     assert response.status_code == 400
-    entry = RecordEncryptedSelectEntry.objects.get()
+    entry = DataSheetEncryptedSelectEntry.objects.get()
     entry.decrypt(aes_key_record=aes_key_record)
     assert entry.value == "Option 1"
 
 
 def test_file_entry_download(db, auth_client, file_entry):
     response = auth_client.get(
-        "/api/records/query/file_entry_download/{}/".format(file_entry.pk)
+        "/api/data_sheets/query/file_entry_download/{}/".format(file_entry.pk)
     )
     assert response.status_code == 200
     assert b"test-file-text" in response.getvalue()

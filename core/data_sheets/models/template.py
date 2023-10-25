@@ -13,27 +13,27 @@ from core.seedwork.domain_layer import DomainError
 from core.seedwork.repository import RepositoryWarehouse
 
 if TYPE_CHECKING:
-    from .record import (
-        Record,
-        RecordEncryptedFileEntry,
-        RecordEncryptedSelectEntry,
-        RecordEncryptedStandardEntry,
-        RecordMultipleEntry,
-        RecordSelectEntry,
-        RecordStandardEntry,
-        RecordStateEntry,
-        RecordStatisticEntry,
-        RecordUsersEntry,
+    from .data_sheet import (
+        DataSheet,
+        DataSheetEncryptedFileEntry,
+        DataSheetEncryptedSelectEntry,
+        DataSheetEncryptedStandardEntry,
+        DataSheetMultipleEntry,
+        DataSheetSelectEntry,
+        DataSheetStandardEntry,
+        DataSheetStateEntry,
+        DataSheetStatisticEntry,
+        DataSheetUsersEntry,
     )
 
 
 ###
 # RecordTemplate
 ###
-class RecordTemplate(models.Model):
+class DataSheetTemplate(models.Model):
     @classmethod
-    def create(cls, name: str, org: Org, pk=0) -> "RecordTemplate":
-        template = RecordTemplate(name=name, rlc=org)
+    def create(cls, name: str, org: Org, pk=0) -> "DataSheetTemplate":
+        template = DataSheetTemplate(name=name, rlc=org)
         if pk:
             template.pk = pk
         return template
@@ -47,12 +47,12 @@ class RecordTemplate(models.Model):
 
     if TYPE_CHECKING:
         rlc_id: int
-        records: models.QuerySet[Record]
-        state_fields: models.QuerySet["RecordStateField"]
-        standard_fields: models.QuerySet["RecordStandardField"]
-        select_fields: models.QuerySet["RecordSelectField"]
-        multiple_fields: models.QuerySet["RecordMultipleField"]
-        users_fields: models.QuerySet["RecordUsersField"]
+        records: models.QuerySet[DataSheet]
+        state_fields: models.QuerySet["DataSheetStateField"]
+        standard_fields: models.QuerySet["DataSheetStandardField"]
+        select_fields: models.QuerySet["DataSheetSelectField"]
+        multiple_fields: models.QuerySet["DataSheetMultipleField"]
+        users_fields: models.QuerySet["DataSheetUsersField"]
 
     class Meta:
         verbose_name = "RecordTemplate"
@@ -185,10 +185,10 @@ class RecordTemplate(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         for field in self.get_statistic_fields_meta():
-            if not RecordStatisticField.objects.filter(
+            if not DataSheetStatisticField.objects.filter(
                 name=field["name"], template=self
             ).exists():
-                RecordStatisticField.objects.create(template=self, **field)
+                DataSheetStatisticField.objects.create(template=self, **field)
 
 
 ###
@@ -230,14 +230,14 @@ class RecordField(models.Model):
         raise NotImplementedError()
 
 
-class RecordStateField(RecordField):
+class DataSheetStateField(RecordField):
     template = models.ForeignKey(
-        RecordTemplate, on_delete=models.CASCADE, related_name="state_fields"
+        DataSheetTemplate, on_delete=models.CASCADE, related_name="state_fields"
     )
     options = models.JSONField(default=list)
 
     if TYPE_CHECKING:
-        entries: models.QuerySet["RecordStateEntry"]
+        entries: models.QuerySet["DataSheetStateEntry"]
 
     class Meta:
         verbose_name = "RecordStateField"
@@ -265,11 +265,11 @@ class RecordStateField(RecordField):
             )
 
     def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
-        from .record import RecordStateEntry
+        from .data_sheet import DataSheetStateEntry
 
         assert isinstance(value, str)
         self.validate_value(value)
-        entry = RecordStateEntry(field_id=self.pk, record_id=record_id, value=value)
+        entry = DataSheetStateEntry(field_id=self.pk, record_id=record_id, value=value)
         if value == "Closed":
             entry.closed_at = timezone.now()
         entry.save()
@@ -287,9 +287,9 @@ class RecordStateField(RecordField):
         self.entries.get(record_id=record_id).delete()
 
 
-class RecordUsersField(RecordField):
+class DataSheetUsersField(RecordField):
     template = models.ForeignKey(
-        RecordTemplate, on_delete=models.CASCADE, related_name="users_fields"
+        DataSheetTemplate, on_delete=models.CASCADE, related_name="users_fields"
     )
     share_keys = models.BooleanField(default=True)
     group = models.ForeignKey(
@@ -297,7 +297,7 @@ class RecordUsersField(RecordField):
     )
 
     if TYPE_CHECKING:
-        entries: models.QuerySet["RecordUsersEntry"]
+        entries: models.QuerySet["DataSheetUsersEntry"]
 
     class Meta:
         verbose_name = "RecordUsersField"
@@ -328,16 +328,16 @@ class RecordUsersField(RecordField):
         return [{"name": i.name, "id": i.pk} for i in users]
 
     def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
-        from .record import RecordUsersEntry
+        from .data_sheet import DataSheetUsersEntry
 
         assert isinstance(value, list)
-        entry = RecordUsersEntry(field_id=self.pk, record_id=record_id)
+        entry = DataSheetUsersEntry(field_id=self.pk, record_id=record_id)
         with transaction.atomic():
             entry.save()
             entry.value.set(value)  # type: ignore
         self.do_share_keys(user, entry)
 
-    def do_share_keys(self, user: RlcUser, entry: "RecordUsersEntry"):
+    def do_share_keys(self, user: RlcUser, entry: "DataSheetUsersEntry"):
         if self.share_keys:
             record = entry.record
             assert record.folder_uuid is not None
@@ -357,14 +357,14 @@ class RecordUsersField(RecordField):
         self.entries.get(record_id=record_id).delete()
 
 
-class RecordSelectField(RecordField):
+class DataSheetSelectField(RecordField):
     template = models.ForeignKey(
-        RecordTemplate, on_delete=models.CASCADE, related_name="select_fields"
+        DataSheetTemplate, on_delete=models.CASCADE, related_name="select_fields"
     )
     options = models.JSONField(default=list)
 
     if TYPE_CHECKING:
-        entries: models.QuerySet["RecordSelectEntry"]
+        entries: models.QuerySet["DataSheetSelectEntry"]
 
     class Meta:
         verbose_name = "RecordSelectField"
@@ -393,11 +393,11 @@ class RecordSelectField(RecordField):
             )
 
     def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
-        from .record import RecordSelectEntry
+        from .data_sheet import DataSheetSelectEntry
 
         self.validate_value(value)
         assert isinstance(value, str)
-        entry = RecordSelectEntry(field_id=self.pk, record_id=record_id, value=value)
+        entry = DataSheetSelectEntry(field_id=self.pk, record_id=record_id, value=value)
         entry.save()
 
     def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
@@ -411,14 +411,14 @@ class RecordSelectField(RecordField):
         self.entries.get(record_id=record_id).delete()
 
 
-class RecordMultipleField(RecordField):
+class DataSheetMultipleField(RecordField):
     template = models.ForeignKey(
-        RecordTemplate, on_delete=models.CASCADE, related_name="multiple_fields"
+        DataSheetTemplate, on_delete=models.CASCADE, related_name="multiple_fields"
     )
     options = models.JSONField(default=list)
 
     if TYPE_CHECKING:
-        entries: models.QuerySet["RecordMultipleEntry"]
+        entries: models.QuerySet["DataSheetMultipleEntry"]
 
     class Meta:
         verbose_name = "RecordMultipleField"
@@ -447,10 +447,12 @@ class RecordMultipleField(RecordField):
             )
 
     def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
-        from .record import RecordMultipleEntry
+        from .data_sheet import DataSheetMultipleEntry
 
         self.validate_value(value)
-        entry = RecordMultipleEntry(field_id=self.pk, record_id=record_id, value=value)
+        entry = DataSheetMultipleEntry(
+            field_id=self.pk, record_id=record_id, value=value
+        )
         entry.save()
 
     def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
@@ -463,14 +465,16 @@ class RecordMultipleField(RecordField):
         self.entries.get(record_id=record_id).delete()
 
 
-class RecordEncryptedSelectField(RecordField):
+class DataSheetEncryptedSelectField(RecordField):
     template = models.ForeignKey(
-        RecordTemplate, on_delete=models.CASCADE, related_name="encrypted_select_fields"
+        DataSheetTemplate,
+        on_delete=models.CASCADE,
+        related_name="encrypted_select_fields",
     )
     options = models.JSONField(default=list)
 
     if TYPE_CHECKING:
-        entries: models.QuerySet["RecordEncryptedSelectEntry"]
+        entries: models.QuerySet["DataSheetEncryptedSelectEntry"]
 
     class Meta:
         verbose_name = "RecordEncryptedSelectField"
@@ -499,10 +503,10 @@ class RecordEncryptedSelectField(RecordField):
             )
 
     def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
-        from .record import RecordEncryptedSelectEntry
+        from .data_sheet import DataSheetEncryptedSelectEntry
 
         self.validate_value(value)
-        entry = RecordEncryptedSelectEntry(
+        entry = DataSheetEncryptedSelectEntry(
             field_id=self.pk, record_id=record_id, value=value
         )
         entry.encrypt(user=user)
@@ -519,15 +523,17 @@ class RecordEncryptedSelectField(RecordField):
         self.entries.get(record_id=record_id).delete()
 
 
-class RecordEncryptedFileField(RecordField):
+class DataSheetEncryptedFileField(RecordField):
     template = models.ForeignKey(
-        RecordTemplate, on_delete=models.CASCADE, related_name="encrypted_file_fields"
+        DataSheetTemplate,
+        on_delete=models.CASCADE,
+        related_name="encrypted_file_fields",
     )
 
     view_name = "recordencryptedfilefield-list"
 
     if TYPE_CHECKING:
-        entries: models.QuerySet["RecordEncryptedFileEntry"]
+        entries: models.QuerySet["DataSheetEncryptedFileEntry"]
 
     class Meta:
         verbose_name = "RecordEncryptedFileField"
@@ -555,17 +561,17 @@ class RecordEncryptedFileField(RecordField):
         raise Exception("this is not supported")
 
     def upload_file(self, user: RlcUser, record_id: int, file: UploadedFile) -> None:
-        from .record import RecordEncryptedFileEntry
+        from .data_sheet import DataSheetEncryptedFileEntry
 
         if file.size and file.size > 10000000:
             raise DomainError("The size of the file needs to be less than 10 MB.")
 
         private_key_user = user.get_private_key()
         record = self.template.records.get(id=record_id)
-        enc_file = RecordEncryptedFileEntry.encrypt_file(
+        enc_file = DataSheetEncryptedFileEntry.encrypt_file(
             file, record, user=user, private_key_user=private_key_user
         )
-        entry = RecordEncryptedFileEntry(record_id=record_id, field_id=self.pk)
+        entry = DataSheetEncryptedFileEntry(record_id=record_id, field_id=self.pk)
         entry.save()
         entry.file.save(file.name, enc_file)
 
@@ -573,9 +579,9 @@ class RecordEncryptedFileField(RecordField):
         self.entries.get(record_id=record_id).delete()
 
 
-class RecordStandardField(RecordField):
+class DataSheetStandardField(RecordField):
     template = models.ForeignKey(
-        RecordTemplate, on_delete=models.CASCADE, related_name="standard_fields"
+        DataSheetTemplate, on_delete=models.CASCADE, related_name="standard_fields"
     )
     TYPE_CHOICES = (
         ("TEXTAREA", "Multi Line"),
@@ -586,7 +592,7 @@ class RecordStandardField(RecordField):
     field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default="TEXT")
 
     if TYPE_CHECKING:
-        entries: models.QuerySet["RecordStandardEntry"]
+        entries: models.QuerySet["DataSheetStandardEntry"]
 
     class Meta:
         verbose_name = "RecordStandardField"
@@ -621,11 +627,13 @@ class RecordStandardField(RecordField):
         assert isinstance(value, str)
 
     def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
-        from .record import RecordStandardEntry
+        from .data_sheet import DataSheetStandardEntry
 
         self.validate_value(value)
         assert isinstance(value, str)
-        entry = RecordStandardEntry(field_id=self.pk, record_id=record_id, value=value)
+        entry = DataSheetStandardEntry(
+            field_id=self.pk, record_id=record_id, value=value
+        )
         entry.save()
 
     def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
@@ -639,9 +647,9 @@ class RecordStandardField(RecordField):
         self.entries.get(record_id=record_id).delete()
 
 
-class RecordEncryptedStandardField(RecordField):
+class DataSheetEncryptedStandardField(RecordField):
     template = models.ForeignKey(
-        RecordTemplate,
+        DataSheetTemplate,
         on_delete=models.CASCADE,
         related_name="encrypted_standard_fields",
     )
@@ -653,7 +661,7 @@ class RecordEncryptedStandardField(RecordField):
     field_type = models.CharField(choices=TYPE_CHOICES, max_length=20, default="TEXT")
 
     if TYPE_CHECKING:
-        entries: models.QuerySet["RecordEncryptedStandardEntry"]
+        entries: models.QuerySet["DataSheetEncryptedStandardEntry"]
 
     class Meta:
         verbose_name = "RecordEncryptedStandardField"
@@ -674,10 +682,10 @@ class RecordEncryptedStandardField(RecordField):
         assert isinstance(value, str)
 
     def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
-        from .record import RecordEncryptedStandardEntry
+        from .data_sheet import DataSheetEncryptedStandardEntry
 
         self.validate_value(value)
-        entry = RecordEncryptedStandardEntry(
+        entry = DataSheetEncryptedStandardEntry(
             field_id=self.pk, record_id=record_id, value=value
         )
         entry.encrypt(user=user)
@@ -694,15 +702,15 @@ class RecordEncryptedStandardField(RecordField):
         self.entries.get(record_id=record_id).delete()
 
 
-class RecordStatisticField(RecordField):
+class DataSheetStatisticField(RecordField):
     template = models.ForeignKey(
-        RecordTemplate, on_delete=models.CASCADE, related_name="statistic_fields"
+        DataSheetTemplate, on_delete=models.CASCADE, related_name="statistic_fields"
     )
     options = models.JSONField(default=list)
     helptext = models.CharField(max_length=1000)
 
     if TYPE_CHECKING:
-        entries: models.QuerySet["RecordStatisticEntry"]
+        entries: models.QuerySet["DataSheetStatisticEntry"]
 
     class Meta:
         verbose_name = "RecordStatisticField"
@@ -727,11 +735,13 @@ class RecordStatisticField(RecordField):
         assert isinstance(value, str)
 
     def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
-        from .record import RecordStatisticEntry
+        from .data_sheet import DataSheetStatisticEntry
 
         self.validate_value(value)
         assert isinstance(value, str)
-        entry = RecordStatisticEntry(record_id=record_id, field_id=self.pk, value=value)
+        entry = DataSheetStatisticEntry(
+            record_id=record_id, field_id=self.pk, value=value
+        )
         entry.save()
 
     def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):

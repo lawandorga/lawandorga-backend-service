@@ -22,12 +22,12 @@ def query__users_with_missing_access(statistics_user: StatisticUser):
                             count(distinct enc.id) as enc
 
                      from core_userprofile u
-                              cross join core_record r
+                              cross join core_datasheet r
 
-                              left join core_recordencryptionnew enc
+                              left join core_datasheetencryptionnew enc
                                         on enc.user_id = u.id and enc.record_id = r.id
 
-                              left join core_recordtemplate t on t.id = r.template_id
+                              left join core_datasheettemplate t on t.id = r.template_id
                               left join core_group_group_members cggm on u.id = cggm.userprofile_id
                               left join core_haspermission ch1 on u.id = ch1.user_has_permission_id
                               left join core_haspermission ch2 on cggm.group_id = ch2.group_has_permission_id
@@ -106,7 +106,7 @@ def query__migration_statistic(statistics_user: StatisticUser):
     statement = """
     select * from (
     select avg(case when folder_uuid is not null then 1 else 0 end), sum(case when folder_uuid is null then 1 else 0 end) as togo
-    from core_record
+    from core_datasheet
     union all
     select avg(case when folder_uuid is not null then 1 else 0 end), sum(case when folder_uuid is null then 1 else 0 end) as togo
     from core_questionnaire

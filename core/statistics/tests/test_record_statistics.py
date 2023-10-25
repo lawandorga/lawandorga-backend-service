@@ -4,7 +4,11 @@ import pytest
 from django.test import Client
 from django.utils import timezone
 
-from core.data_sheets.models import RecordStateEntry, RecordStateField, RecordTemplate
+from core.data_sheets.models import (
+    DataSheetStateEntry,
+    DataSheetStateField,
+    DataSheetTemplate,
+)
 from core.rlc.models import Org
 from core.seedwork import test_helpers as data
 
@@ -17,16 +21,16 @@ def user(db):
         email="statistics@law-orga.de", name="Mr. Statistics"
     )
     rlc.generate_keys()
-    template = RecordTemplate.objects.create(rlc=rlc, name="Record Template")
-    field = RecordStateField.objects.create(
+    template = DataSheetTemplate.objects.create(rlc=rlc, name="Record Template")
+    field = DataSheetStateField.objects.create(
         template=template, options=["Open", "Closed"]
     )
     record1 = data.create_data_sheet(template=template, users=[user_1["user"]])
-    RecordStateEntry.objects.create(
+    DataSheetStateEntry.objects.create(
         field=field, record=record1["record"], value="Closed", closed_at=timezone.now()
     )
     record2 = data.create_data_sheet(template=template, users=[user_1["user"]])
-    RecordStateEntry.objects.create(
+    DataSheetStateEntry.objects.create(
         field=field, record=record2["record"], value="Closed"
     )
     yield statistics_user

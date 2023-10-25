@@ -117,7 +117,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         """
         this method assumes that a valid public key exists for user_to_unlock
         """
-        from core.data_sheets.models import RecordEncryptionNew
+        from core.data_sheets.models import DataSheetEncryptionNew
         from core.models import OrgEncryption
 
         # check if all keys can be handed over
@@ -140,7 +140,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         for old_keys in list(record_encryptions):
             # change the keys to the new keys
             try:
-                encryption = RecordEncryptionNew.objects.get(
+                encryption = DataSheetEncryptionNew.objects.get(
                     user=self.rlc_user, record=old_keys.record
                 )
             except ObjectDoesNotExist:

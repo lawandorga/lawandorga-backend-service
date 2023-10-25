@@ -4,7 +4,7 @@ from uuid import UUID
 from django.db import models
 
 from core.auth.models import RlcUser
-from core.data_sheets.models.record import Record
+from core.data_sheets.models.data_sheet import DataSheet
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
@@ -36,7 +36,7 @@ class EncryptedRecordMessage(models.Model):
         blank=True,
     )
     record = models.ForeignKey(
-        Record, related_name="messages", on_delete=models.CASCADE, null=True
+        DataSheet, related_name="messages", on_delete=models.CASCADE, null=True
     )
     org = models.ForeignKey(Org, related_name="messages", on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)

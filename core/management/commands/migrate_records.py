@@ -3,7 +3,7 @@ import time
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from core.data_sheets.models.record import Record
+from core.data_sheets.models.data_sheet import DataSheet
 from core.folders.domain.value_objects.folder_item import FolderItem
 from core.folders.models import FoldersFolder
 from core.records.models.record import RecordsRecord
@@ -16,7 +16,7 @@ class Command(BaseCommand):
         # folder_repository = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
 
         sheets = list(
-            Record.objects.exclude(folder_uuid=None)
+            DataSheet.objects.exclude(folder_uuid=None)
             .select_related("template", "template__rlc")
             .prefetch_related("standard_entries", "standard_entries__field")
             .order_by("id")

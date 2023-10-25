@@ -1,48 +1,48 @@
 from django.contrib import admin
 
 from core.data_sheets.models import (
+    DataSheet,
+    DataSheetEncryptedFileEntry,
+    DataSheetEncryptedFileField,
+    DataSheetEncryptedSelectEntry,
+    DataSheetEncryptedSelectField,
+    DataSheetEncryptedStandardEntry,
+    DataSheetEncryptedStandardField,
+    DataSheetEncryptionNew,
+    DataSheetMultipleEntry,
+    DataSheetMultipleField,
+    DataSheetSelectEntry,
+    DataSheetSelectField,
+    DataSheetStandardEntry,
+    DataSheetStandardField,
+    DataSheetStateEntry,
+    DataSheetStateField,
+    DataSheetTemplate,
+    DataSheetUsersEntry,
+    DataSheetUsersField,
     EncryptedClient,
-    Record,
-    RecordEncryptedFileEntry,
-    RecordEncryptedFileField,
-    RecordEncryptedSelectEntry,
-    RecordEncryptedSelectField,
-    RecordEncryptedStandardEntry,
-    RecordEncryptedStandardField,
-    RecordEncryptionNew,
-    RecordMultipleEntry,
-    RecordMultipleField,
-    RecordSelectEntry,
-    RecordSelectField,
-    RecordStandardEntry,
-    RecordStandardField,
-    RecordStateEntry,
-    RecordStateField,
-    RecordTemplate,
-    RecordUsersEntry,
-    RecordUsersField,
 )
 
 admin.site.register(EncryptedClient)
 
-admin.site.register(RecordTemplate)
-admin.site.register(Record)
-admin.site.register(RecordEncryptionNew)
+admin.site.register(DataSheetTemplate)
+admin.site.register(DataSheet)
+admin.site.register(DataSheetEncryptionNew)
 
-admin.site.register(RecordStandardField)
-admin.site.register(RecordSelectField)
-admin.site.register(RecordUsersField)
-admin.site.register(RecordStateField)
-admin.site.register(RecordMultipleField)
-admin.site.register(RecordEncryptedSelectField)
-admin.site.register(RecordEncryptedFileField)
-admin.site.register(RecordEncryptedStandardField)
+admin.site.register(DataSheetStandardField)
+admin.site.register(DataSheetSelectField)
+admin.site.register(DataSheetUsersField)
+admin.site.register(DataSheetStateField)
+admin.site.register(DataSheetMultipleField)
+admin.site.register(DataSheetEncryptedSelectField)
+admin.site.register(DataSheetEncryptedFileField)
+admin.site.register(DataSheetEncryptedStandardField)
 
-admin.site.register(RecordStandardEntry)
-admin.site.register(RecordStateEntry)
-admin.site.register(RecordSelectEntry)
-admin.site.register(RecordUsersEntry)
-admin.site.register(RecordMultipleEntry)
-admin.site.register(RecordEncryptedSelectEntry)
-admin.site.register(RecordEncryptedFileEntry)
-admin.site.register(RecordEncryptedStandardEntry)
+admin.site.register(DataSheetStandardEntry)
+admin.site.register(DataSheetStateEntry)
+admin.site.register(DataSheetSelectEntry)
+admin.site.register(DataSheetUsersEntry)
+admin.site.register(DataSheetMultipleEntry)
+admin.site.register(DataSheetEncryptedSelectEntry)
+admin.site.register(DataSheetEncryptedFileEntry)
+admin.site.register(DataSheetEncryptedStandardEntry)
