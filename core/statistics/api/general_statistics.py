@@ -11,7 +11,7 @@ router = Router()
 def query__raw_numbers(statistics_user: StatisticUser):
     statement = """
            select
-           (select count(*) as records from core_record) as records,
+           (select count(*) as records from core_datasheets) as records,
            (select count(*) as files from core_file) as files,
            (select count(*) as collab from core_collabdocument as collab),
            (select count(*) as users from core_rlcuser as users),

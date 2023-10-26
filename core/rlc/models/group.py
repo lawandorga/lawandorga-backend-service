@@ -32,7 +32,7 @@ class Group(models.Model):
 
     def __str__(self):
         return "group: {}; name: {}; rlc: {};".format(
-            self.id, self.name, self.from_rlc.name
+            self.pk, self.name, self.from_rlc.name
         )
 
     @property
@@ -55,7 +55,7 @@ class Group(models.Model):
         return user.id in self.member_ids
 
     def add_member(self, new_member: "RlcUser"):
-        if new_member.org_id != self.from_rlc_id:
+        if new_member.org_id != self.from_rlc.pk:
             raise DomainError("The user is not in the same org.")
 
         if self.has_member(new_member):

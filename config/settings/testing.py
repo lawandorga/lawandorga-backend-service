@@ -26,3 +26,7 @@ DATABASES = {
 # E-Mail
 # https://docs.djangoproject.com/en/dev/topics/email/#smtp-backend
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# Static Files
+# https://docs.djangoproject.com/en/dev/howto/static-files/
+MEDIA_ROOT = os.path.join(BASE_DIR, "tmp/media/testing/")

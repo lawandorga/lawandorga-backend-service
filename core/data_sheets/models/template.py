@@ -62,21 +62,6 @@ class DataSheetTemplate(models.Model):
         return "recordTemplate: {}; rlc: {};".format(self.pk, self.rlc)
 
     @property
-    def show_options(self):
-        fields = [
-            *list(self.state_fields.all()),
-            *list(self.standard_fields.all()),
-            *list(self.select_fields.all()),
-            *list(self.multiple_fields.all()),
-            *list(self.users_fields.all()),
-        ]
-        possible_names = list(map(lambda f: f.name, fields))
-        possible_names.append("Created")
-        possible_names.append("Updated")
-        possible_names.append("Name")
-        return possible_names
-
-    @property
     def fields(self):
         fields = []
         for field in self.get_field_types():
@@ -99,17 +84,6 @@ class DataSheetTemplate(models.Model):
 
     def update_name(self, name: str):
         self.name = name
-
-    def update_show(self, show: list[str]):
-        possible = self.show_options
-        for name in show:
-            if name not in possible:
-                raise DomainError(
-                    "The field name '{}' is not allowed.\n\nPossible names are: '{}'.".format(
-                        name, ", ".join(possible)
-                    )
-                )
-        self.show = show
 
     def get_fields_new(self):
         fields = []
@@ -559,6 +533,12 @@ class DataSheetEncryptedFileField(RecordField):
 
     def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
         raise Exception("this is not supported")
+
+    def delete_old_entries(self, record_id: int):
+        entries = self.entries.filter(record_id=record_id)
+        for entry in entries:
+            entry.file.delete()
+        entries.delete()
 
     def upload_file(self, user: RlcUser, record_id: int, file: UploadedFile) -> None:
         from .data_sheet import DataSheetEncryptedFileEntry

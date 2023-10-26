@@ -29,6 +29,7 @@ def create_file_entry(
     __actor: RlcUser, field_id: UUID, record_id: int, file: UploadedFile
 ):
     field = find_file_field_from_uuid(__actor, field_id)
+    field.delete_old_entries(record_id)
     field.upload_file(__actor, record_id, file)
     update_record_updated_time(record_id)
 

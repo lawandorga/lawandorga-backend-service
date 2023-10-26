@@ -86,7 +86,7 @@ def query__template(rlc_user: RlcUser, data: schemas.InputTemplateDetail):
 
 @router.get(
     url="<uuid:uuid>/",
-    output_schema=schemas.OutputRecordDetail,
+    output_schema=schemas.OutputDataSheetDetail,
 )
 def query__data_sheet(rlc_user: RlcUser, data: schemas.InputQueryRecord):
     record = (
@@ -121,19 +121,24 @@ def query__data_sheet(rlc_user: RlcUser, data: schemas.InputQueryRecord):
         "updated": record.updated,
         "client": client,
         "fields": record.template.get_fields_new(),
-        "entries": record.get_entries(rlc_user),
+        "entries": record.get_entries_new(rlc_user),
         "template_name": record.template.name,
     }
 
 
 class InputFileEntryDownload(BaseModel):
-    id: int
+    uuid: UUID
+    record_id: int
 
 
-@router.get("file_entry_download/<int:id>/", output_schema=FileResponse)
+@router.get(
+    "file_entry_download/<int:record_id>/<uuid:uuid>/", output_schema=FileResponse
+)
 def query__download_file_entry(rlc_user: RlcUser, data: InputFileEntryDownload):
     entry = DataSheetEncryptedFileEntry.objects.get(
-        id=data.id, field__template__rlc_id=rlc_user.org_id
+        record_id=data.record_id,
+        field__uuid=data.uuid,
+        field__template__rlc_id=rlc_user.org_id,
     )
     file = entry.decrypt_file(user=rlc_user)
     response = FileResponse(file, content_type=mimetypes.guess_type(entry.file.name)[0])

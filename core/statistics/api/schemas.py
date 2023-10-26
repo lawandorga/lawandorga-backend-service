@@ -70,7 +70,7 @@ class OutputErrorsMonth(BaseModel):
 
 
 class OutputErrorsUser(BaseModel):
-    email: str
+    email: str | int
     rlckeys: int
     userkeys: int
     accepted: bool
@@ -78,7 +78,7 @@ class OutputErrorsUser(BaseModel):
 
 
 class OutputUserActions(BaseModel):
-    email: str
+    email: str | int
     actions: int
 
 

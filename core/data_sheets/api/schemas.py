@@ -81,29 +81,16 @@ class OutputField(BaseModel):
     type: str
 
 
-class OutputDetailEntry(BaseModel):
-    id: int
-    name: str
-    type: str
-    value: str | int | list[int] | list[str]
+ENTRY_VALUE = str | int | list[int] | list[str]
 
 
-class OutputClient(BaseModel):
-    name: str
-    phone_number: str
-    note: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class OutputRecordDetail(BaseModel):
+class OutputDataSheetDetail(BaseModel):
     created: datetime
     updated: datetime
     id: int
     uuid: UUID
     folder_uuid: UUID
     name: str
-    client: Optional[OutputClient]
     fields: list[OutputField]
-    entries: dict[str, OutputDetailEntry]
+    entries: dict[str, ENTRY_VALUE]
     template_name: str

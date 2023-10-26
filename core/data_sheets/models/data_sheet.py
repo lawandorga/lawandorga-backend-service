@@ -252,6 +252,16 @@ class DataSheet(Aggregate, models.Model):
                 }
         return entries
 
+    def get_entries_new(self, user: RlcUser):
+        entries = {}
+        aes_key_record = self.get_aes_key(user)
+        for entry_type in self.ALL_ENTRY_TYPES:
+            for entry in getattr(self, entry_type).all():
+                if entry.encrypted_entry:
+                    entry.decrypt(aes_key_record=aes_key_record)
+                entries[str(entry.field.uuid)] = entry.get_raw_value()
+        return entries
+
 
 ###
 # RecordEntry
