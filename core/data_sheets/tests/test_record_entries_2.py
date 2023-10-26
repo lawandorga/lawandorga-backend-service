@@ -871,7 +871,9 @@ def test_enc_select_entry_update_value_in_options(
 
 def test_file_entry_download(db, auth_client, file_entry):
     response = auth_client.get(
-        "/api/data_sheets/query/file_entry_download/{}/{}/".format(file_entry.record.pk, file_entry.field.uuid)
+        "/api/data_sheets/query/file_entry_download/{}/{}/".format(
+            file_entry.record.pk, file_entry.field.uuid
+        )
     )
     assert response.status_code == 200
     assert b"test-file-text" in response.getvalue()
