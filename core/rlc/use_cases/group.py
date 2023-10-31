@@ -7,9 +7,13 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
-def create_group(__actor: RlcUser, name: str, description: str | None):
+def create_group(__actor: RlcUser, name: str, description: str | None) -> Group:
     group = Group.create(org=__actor.org, name=name, description=description)
     group.save()
+    group.add_member(__actor)
+    group.generate_keys()
+    group.save()
+    return group
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
@@ -33,8 +37,7 @@ def add_member_to_group(__actor: RlcUser, group_id: int, new_member_id: int):
     if group.from_rlc_id != new_member.org_id:
         raise UseCaseError("You can not edit a member from another org.")
 
-    group.add_member(new_member)
-    group.save()
+    group.add_member(new_member, by=__actor)
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
@@ -46,4 +49,3 @@ def remove_member_from_group(__actor: RlcUser, group_id: int, member_id: int):
         raise UseCaseError("You can not edit a member from another org.")
 
     group.remove_member(member)
-    group.save()

@@ -1,7 +1,9 @@
 import pytest
 
 from core.auth.models import RlcUser
+from core.permissions.static import PERMISSION_ADMIN_MANAGE_GROUPS
 from core.rlc.models import Group
+from core.rlc.use_cases.group import create_group
 from core.seedwork import test_helpers
 
 
@@ -47,3 +49,36 @@ def test_add_member_is_saved(db, group, user):
     group.save()
     group = Group.objects.get(pk=group.pk)
     assert user.id in group.member_ids
+
+
+def test_group_create_creates_keys(db):
+    user = test_helpers.create_rlc_user()["rlc_user"]
+    user.grant(PERMISSION_ADMIN_MANAGE_GROUPS)
+    group = create_group(user, "Test Group", None)
+    assert len(group.keys) == 1, group.keys
+    assert group.has_keys(user)
+
+
+def test_group_add_member_gets_key(db):
+    user = test_helpers.create_rlc_user()["rlc_user"]
+    user.grant(PERMISSION_ADMIN_MANAGE_GROUPS)
+    group = create_group(user, "Test Group", None)
+    user2 = test_helpers.create_rlc_user(email="dummy2@law-orga.de", rlc=user.org)[
+        "rlc_user"
+    ]
+    group.add_member(user2, user)
+    assert len(group.keys) == 2, group.keys
+    assert group.has_keys(user2)
+
+
+def test_group_remove_member_removes_key(db):
+    user = test_helpers.create_rlc_user()["rlc_user"]
+    user.grant(PERMISSION_ADMIN_MANAGE_GROUPS)
+    group = create_group(user, "Test Group", None)
+    user2 = test_helpers.create_rlc_user(email="dummy2@law-orga.de", rlc=user.org)[
+        "rlc_user"
+    ]
+    group.add_member(user2, user)
+    group.remove_member(user)
+    assert len(group.keys) == 1, group.keys
+    assert not group.has_keys(user)

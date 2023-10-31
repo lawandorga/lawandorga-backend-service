@@ -52,13 +52,18 @@ class SymmetricKey(Key):
         assert issubclass(encryption_class, SymmetricEncryption)
         return encryption_class(key=self.get_key().decode("utf-8"))
 
+    def encrypt_self(
+        self, key: Union["SymmetricKey", "AsymmetricKey", "EncryptedAsymmetricKey"]
+    ) -> "EncryptedSymmetricKey":
+        return EncryptedSymmetricKey.create(original=self, key=key)
+
 
 class EncryptedSymmetricKey(Key):
     @staticmethod
     def create(
         original: Optional[SymmetricKey] = None,
-        key: Optional[
-            Union["AsymmetricKey", SymmetricKey, "EncryptedAsymmetricKey"]
+        key: Union[
+            "AsymmetricKey", SymmetricKey, "EncryptedAsymmetricKey", None
         ] = None,
     ) -> "EncryptedSymmetricKey":
         assert original is not None and key is not None
