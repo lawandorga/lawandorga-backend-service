@@ -17,7 +17,8 @@ def org(db):
 
 @pytest.fixture
 def group(db, org):
-    g = Group.objects.create(name="Test Group", from_rlc=org)
+    g = Group.create(name="Test Group", org=org, description="Just testing.")
+    g.save()
     yield g
 
 
@@ -28,10 +29,17 @@ def user_2(db, org):
 
 
 @pytest.fixture
+def user_3(db, org):
+    user_3 = data.create_rlc_user(email="dummy3@law-orga.de", name="Dummy 3", rlc=org)
+    yield user_3
+
+
+@pytest.fixture
 def user(db, group, user_2, org):
     user_1 = data.create_rlc_user(rlc=org)
     org.generate_keys()
     group.members.add(user_1["rlc_user"])
+    group.generate_keys()
     group.save()
     yield user_1
 
@@ -48,37 +56,55 @@ def test_add_member(user, group, db, user_2):
     c.login(**user)
     user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     response = c.post(
-        "/api/groups/{}/add_member/".format(group.id),
-        data=json.dumps({"new_member": user_2["rlc_user"].id}),
+        "/api/command/",
+        data=json.dumps(
+            {
+                "new_member_id": user_2["rlc_user"].id,
+                "group_id": group.id,
+                "action": "org/add_member_to_group",
+            }
+        ),
         content_type="application/json",
     )
-    # response_data = response.json()
-    assert response.status_code == 200
+    assert response.status_code == 200, response.json()
 
 
 def test_add_member_permission_error(user, group, db, user_2):
     c = Client()
     c.login(**user)
     response = c.post(
-        "/api/groups/{}/add_member/".format(group.id),
-        data=json.dumps({"new_member": user_2["rlc_user"].id}),
+        "/api/command/",
+        data=json.dumps(
+            {
+                "new_member_id": user_2["rlc_user"].id,
+                "group_id": group.id,
+                "action": "org/add_member_to_group",
+            }
+        ),
         content_type="application/json",
     )
-    assert response.status_code == 400
+    assert response.status_code == 400, response.json()
 
 
-def test_remove_member(user, group, db, user_2):
+def test_remove_member(user, group, db, user_2, user_3):
     c = Client()
     c.login(**user)
     user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
-    group.add_member(user_2["rlc_user"])
+    group.add_member(user_2["rlc_user"], by=user["rlc_user"])
+    group.add_member(user_3["rlc_user"], by=user["rlc_user"])
     group.save()
     response = c.post(
-        "/api/groups/{}/remove_member/".format(group.id),
-        data=json.dumps({"member": user_2["rlc_user"].id}),
+        "/api/command/",
+        data=json.dumps(
+            {
+                "member_id": user_2["rlc_user"].id,
+                "group_id": group.id,
+                "action": "org/remove_member_from_group",
+            }
+        ),
         content_type="application/json",
     )
-    assert response.status_code == 200
+    assert response.status_code == 200, response.json()
 
 
 def test_add_member_fails_different_org(user, group, db):
@@ -90,22 +116,34 @@ def test_add_member_fails_different_org(user, group, db):
         email="another@law-orga.de", name="Another", rlc=org2
     )
     response = c.post(
-        "/api/groups/{}/add_member/".format(group.id),
-        data=json.dumps({"new_member": another_user["rlc_user"].id}),
+        "/api/command/",
+        data=json.dumps(
+            {
+                "new_member_id": another_user["rlc_user"].id,
+                "group_id": group.id,
+                "action": "org/add_member_to_group",
+            }
+        ),
         content_type="application/json",
     )
-    assert response.status_code == 400
+    assert response.status_code == 400, response.json()
 
 
 def test_add_member_already_member(user, group, db, user_2):
     c = Client()
     c.login(**user)
     user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
-    group.add_member(user_2["rlc_user"])
+    group.add_member(user_2["rlc_user"], by=user["rlc_user"])
     group.save()
     response = c.post(
-        "/api/groups/{}/add_member/".format(group.id),
-        data=json.dumps({"new_member": user_2["rlc_user"].id}),
+        "/api/command/",
+        data=json.dumps(
+            {
+                "new_member_id": user_2["rlc_user"].id,
+                "group_id": group.id,
+                "action": "org/add_member_to_group",
+            }
+        ),
         content_type="application/json",
     )
-    assert response.status_code == 400
+    assert response.status_code == 400, response.json()

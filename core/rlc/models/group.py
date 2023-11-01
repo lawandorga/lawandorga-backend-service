@@ -174,7 +174,7 @@ class Group(models.Model):
         if not self.has_member(member):
             raise DomainError("The user is not a member of this group.")
 
-        assert self.keys is not None, "keys have not been generated for this group"
+        assert len(self.keys), "keys have not been generated for this group"
         old_length = len(self.keys)
         for key in self.keys:
             if key["owner_uuid"] == str(member.uuid):

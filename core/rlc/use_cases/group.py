@@ -32,6 +32,12 @@ def delete_group(__actor: RlcUser, group_id: int):
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
 def add_member_to_group(__actor: RlcUser, group_id: int, new_member_id: int):
     group = group_from_id(__actor, group_id)
+    if not group.has_keys(__actor):
+        raise UseCaseError(
+            "You do not have keys for this group. Therefore you can not add members. "
+            "You need to be part of this group in order to add members."
+        )
+
     new_member = rlc_user_from_id(__actor, new_member_id)
 
     if group.from_rlc_id != new_member.org_id:
@@ -43,6 +49,13 @@ def add_member_to_group(__actor: RlcUser, group_id: int, new_member_id: int):
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
 def remove_member_from_group(__actor: RlcUser, group_id: int, member_id: int):
     group = group_from_id(__actor, group_id)
+
+    if group.members.count() <= 2:
+        raise UseCaseError(
+            "You can not remove the last members of a group. "
+            "But you can always delete the group."
+        )
+
     member = rlc_user_from_id(__actor, member_id)
 
     if group.from_rlc_id != member.org_id:

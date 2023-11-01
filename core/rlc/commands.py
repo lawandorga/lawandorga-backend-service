@@ -1,5 +1,10 @@
-from core.mail.use_cases.group import add_member_to_group, remove_member_from_group
-from core.rlc.use_cases.group import create_group, delete_group, update_group
+from core.rlc.use_cases.group import (
+    add_member_to_group,
+    create_group,
+    delete_group,
+    remove_member_from_group,
+    update_group,
+)
 
 COMMANDS = {
     "org/create_group": create_group,
