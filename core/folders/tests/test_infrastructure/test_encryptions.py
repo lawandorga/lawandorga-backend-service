@@ -3,7 +3,7 @@ from uuid import uuid4
 from core.folders.domain.value_objects.asymmetric_key import AsymmetricKey, SymmetricKey
 from core.folders.domain.value_objects.box import OpenBox
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
-from core.folders.domain.value_objects.folder_key import EncryptedFolderKeyOfUser
+from core.folders.domain.value_objects.folder_key import FolderKeyOfUser
 from core.folders.domain.value_objects.symmetric_key import EncryptedSymmetricKey
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
@@ -17,7 +17,7 @@ def test_asymmetric_encryption():
     s_key = SymmetricKey.generate()
 
     a_key = AsymmetricKey.generate()
-    folder_key = EncryptedFolderKeyOfUser(key=a_key, owner_uuid=uuid4())
+    folder_key = FolderKeyOfUser(key=a_key, owner_uuid=uuid4())
 
     enc_content_key = EncryptedSymmetricKey.create(s_key, folder_key.key)
     dec_content_key = enc_content_key.decrypt(folder_key.key)

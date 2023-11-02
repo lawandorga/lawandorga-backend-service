@@ -7,7 +7,10 @@ from core.folders.domain.value_objects.asymmetric_key import (
     EncryptedAsymmetricKey,
 )
 from core.folders.domain.value_objects.folder_item import FolderItem
-from core.folders.domain.value_objects.folder_key import EncryptedFolderKeyOfUser
+from core.folders.domain.value_objects.folder_key import (
+    EncryptedFolderKeyOfUser,
+    FolderKeyOfUser,
+)
 from core.folders.domain.value_objects.parent_key import ParentKey
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from core.seedwork.domain_layer import DomainError
@@ -118,7 +121,7 @@ class Folder:
 
         versions = []
         for key in self.__keys:
-            versions.append(key.key.origin)
+            versions.append(key.key_origin)
 
         if not all([v == versions[0] for v in versions]):
             raise Exception("Not all folder keys have the same encryption version.")
@@ -159,7 +162,7 @@ class Folder:
                 and not key.is_valid
             ):
                 s_key = self.get_decryption_key(requestor=by)
-                new_key = EncryptedFolderKeyOfUser(owner_uuid=of.uuid, key=s_key)
+                new_key = FolderKeyOfUser(owner_uuid=of.uuid, key=s_key)
                 enc_key = of.get_encryption_key()
                 enc_new_key = new_key.encrypt_self(enc_key)
                 fixed = True
@@ -376,7 +379,7 @@ class Folder:
             assert by is not None
             key = self.get_decryption_key(requestor=by)
 
-        folder_key = EncryptedFolderKeyOfUser(
+        folder_key = FolderKeyOfUser(
             owner_uuid=to.uuid,
             key=key,
         )

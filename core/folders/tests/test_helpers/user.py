@@ -1,7 +1,7 @@
-# type: ignore
 from typing import Union
 from uuid import uuid4
 
+from core.auth.models.org_user import RlcUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.external import IOwner
 from core.folders.domain.value_objects.asymmetric_key import (
@@ -11,19 +11,18 @@ from core.folders.domain.value_objects.asymmetric_key import (
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 
 
-class UserObject(IOwner):
+class UserObject(RlcUser):
+    class Meta:
+        abstract = True
+
     def __init__(self):
         self.uuid = uuid4()
         self.key = AsymmetricKey.generate()
 
-    def get_decryption_key(
-        self, *args, **kwargs
-    ) -> Union["AsymmetricKey", "SymmetricKey"]:
+    def get_decryption_key(self, *args, **kwargs) -> "AsymmetricKey":
         return self.key
 
-    def get_encryption_key(
-        self, *args, **kwargs
-    ) -> Union["AsymmetricKey", "SymmetricKey", "EncryptedAsymmetricKey"]:
+    def get_encryption_key(self, *args, **kwargs) -> "AsymmetricKey":
         return self.key
 
     def check_has_invalid_keys(self, folders: list["Folder"]):
@@ -32,7 +31,7 @@ class UserObject(IOwner):
                 return True
         return False
 
-    def fix_keys_of(self, someone_else: "IOwner", folders: list["Folder"]):
+    def fix_keys_of(self, someone_else: "UserObject", folders: list["Folder"]):
         for folder in folders:
             if folder.has_access(self) and folder.has_invalid_keys(someone_else):
                 folder.fix_keys(someone_else, self)
