@@ -34,7 +34,8 @@ class Folder:
         name: Optional[str] = None,
         uuid: Optional[UUID] = None,
         org_pk: Optional[int] = None,
-        keys: Optional[list[Union[FolderKey, ParentKey]]] = None,
+        keys: Optional[list[FolderKey]] = None,
+        enc_parent_key: Optional[ParentKey] = None,
         parent: Optional["Folder"] = None,
         items: Optional[list[FolderItem]] = None,
         stop_inherit: bool = False,
@@ -47,6 +48,7 @@ class Folder:
         self.__uuid = uuid
         self.__name = name
         self.__org_pk = org_pk
+        self.__enc_parent_key = enc_parent_key
         self.__stop_inherit = stop_inherit
         self.__keys = keys if keys is not None else []
         self.__items = items if items is not None else []
@@ -80,6 +82,10 @@ class Folder:
         return self.__stop_inherit
 
     @property
+    def enc_parent_key(self):
+        return self.__enc_parent_key
+
+    @property
     def keys(self):
         return self.__keys
 
@@ -107,7 +113,7 @@ class Folder:
 
     @property
     def encryption_version(self) -> Optional[str]:
-        if len(self.__keys) == 0:
+        if len(self.__keys) == 0 and self.enc_parent_key is None:
             return None
 
         versions = []
@@ -120,7 +126,7 @@ class Folder:
         return versions[0]
 
     def invalidate_keys_of(self, owner: "RlcUser"):
-        new_keys: list[Union[FolderKey, ParentKey]] = []
+        new_keys: list[FolderKey] = []
         for key in self.__keys:
             new_key = key
             if isinstance(key, FolderKey) and key.owner_uuid == owner.uuid:
@@ -139,7 +145,7 @@ class Folder:
         return False
 
     def fix_keys(self, of: "RlcUser", by: "RlcUser"):
-        new_keys: list[Union[FolderKey, ParentKey]] = []
+        new_keys: list[FolderKey] = []
         fixed = False
 
         for key in self.__keys:
@@ -243,24 +249,43 @@ class Folder:
 
         return None
 
-    def get_encryption_key(self, requestor: "RlcUser") -> "SymmetricKey":
-        assert len(self.__keys) > 0
-
+    def __get_encryption_key_from_user_keys(
+        self, requestor: "RlcUser"
+    ) -> Optional["SymmetricKey"]:
         enc_folder_key = self.__find_folder_key(requestor)
         if enc_folder_key:
             folder_key = enc_folder_key.decrypt_self(requestor)
             key = folder_key.key
             assert isinstance(key, SymmetricKey)
             return key
+        return None
 
-        if not self.__stop_inherit:
-            enc_parent_key = self.__find_parent_key()
-            if self.__parent is not None and enc_parent_key:
-                unlock_key = self.__parent.get_decryption_key(requestor=requestor)
-                parent_key = enc_parent_key.decrypt_self(unlock_key)
-                key = parent_key.key
-                assert isinstance(key, SymmetricKey)
-                return key
+    def __get_encryption_key_from_parent(
+        self, requestor: "RlcUser"
+    ) -> Optional["SymmetricKey"]:
+        if self.__stop_inherit:
+            return None
+
+        enc_parent_key = self.__enc_parent_key
+        if self.__parent is not None and enc_parent_key:
+            unlock_key = self.__parent.get_encryption_key(requestor=requestor)
+            parent_key = enc_parent_key.decrypt_self(unlock_key)
+            key = parent_key.key
+            assert isinstance(key, SymmetricKey)
+            return key
+
+        return None
+
+    def get_encryption_key(self, requestor: "RlcUser") -> "SymmetricKey":
+        assert len(self.__keys) or self.enc_parent_key is not None
+
+        key = self.__get_encryption_key_from_user_keys(requestor)
+        if key:
+            return key
+
+        key = self.__get_encryption_key_from_parent(requestor)
+        if key:
+            return key
 
         raise DomainError("No key was found for this folder.")
 
@@ -272,7 +297,7 @@ class Folder:
         self.__parent = parent
 
         # get the key of self
-        if len(self.__keys) == 0:
+        if len(self.__keys) == 0 and self.__enc_parent_key is None:
             key = SymmetricKey.generate()
 
         else:
@@ -288,7 +313,7 @@ class Folder:
         enc_parent_key = parent_key.encrypt_self(lock_key)
 
         # add the parent key to keys
-        self.__keys.append(enc_parent_key)
+        self.__enc_parent_key = enc_parent_key
 
     def set_parent(self, parent: "Folder", by: "RlcUser"):
         assert by is not None
@@ -325,10 +350,7 @@ class Folder:
                 )
             parent = parent.parent
 
-        keys: list[Union[FolderKey, ParentKey]] = [
-            k for k in self.__keys if isinstance(k, FolderKey)
-        ]
-        self.__keys = keys
+        self.__enc_parent_key = None
 
         self.__parent = None
         self.set_parent(target, by)
@@ -341,7 +363,7 @@ class Folder:
         if self._has_keys(to):
             raise DomainError("This entity already has keys for this folder.")
 
-        if len(self.__keys) == 0:
+        if len(self.__keys) == 0 and self.__enc_parent_key is None:
             key = SymmetricKey.generate()
 
         else:
@@ -364,9 +386,9 @@ class Folder:
     def revoke_access(self, of: Union["RlcUser", "Group"]):
         prev_length = len(self.__keys)
 
-        new_keys: list[Union[FolderKey, ParentKey]] = list(
+        new_keys: list[FolderKey] = list(
             filter(
-                lambda x: isinstance(x, ParentKey) or x.owner_uuid != of.uuid,
+                lambda x: x.owner_uuid != of.uuid,
                 self.__keys,
             )
         )

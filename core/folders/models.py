@@ -16,6 +16,7 @@ class FoldersFolder(models.Model):
     org = models.ForeignKey(
         Org, related_name="folders_folders", on_delete=models.CASCADE
     )
+    enc_parent_key = models.JSONField(null=True, blank=True)
     keys = models.JSONField(blank=True)
     items = models.JSONField(blank=True)
     stop_inherit = models.BooleanField(default=False)

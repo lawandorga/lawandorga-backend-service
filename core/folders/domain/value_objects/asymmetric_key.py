@@ -60,6 +60,7 @@ class AsymmetricKey(Key):
 
     def get_encryption(self) -> AsymmetricEncryption:
         encryption_class = EncryptionWarehouse.get_encryption_class(self.origin)
+        assert issubclass(encryption_class, AsymmetricEncryption)
         return encryption_class(
             public_key=self.__public_key, private_key=self.__private_key.decode("utf-8")
         )
@@ -169,6 +170,7 @@ class EncryptedAsymmetricKey(Key):
 
     def get_encryption(self) -> AsymmetricEncryption:
         encryption_class = EncryptionWarehouse.get_encryption_class(self.origin)
+        assert issubclass(encryption_class, AsymmetricEncryption)
         return encryption_class(public_key=self.__public_key)
 
     def unlock(self, box: LockedBox) -> OpenBox:

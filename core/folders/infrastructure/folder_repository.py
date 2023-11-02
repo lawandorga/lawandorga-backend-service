@@ -71,15 +71,18 @@ class DjangoFolderRepository(FolderRepository):
             )
 
         # revive keys
-        keys: list[Union[ParentKey, FolderKey]] = []
+        enc_parent_key: Optional[ParentKey] = None
+        if db_folder.enc_parent_key is not None:
+            enc_parent_key = ParentKey.create_from_dict(db_folder.enc_parent_key)
+        keys: list[FolderKey] = []
         for key in db_folder.keys:
             if key["type"] == "FOLDER":
-                fk = FolderKey.create_from_dict(key)
-                keys.append(fk)
+                f_key = FolderKey.create_from_dict(key)
+                keys.append(f_key)
 
             elif key["type"] == "PARENT":
-                pk = ParentKey.create_from_dict(key)
-                keys.append(pk)
+                p_key = ParentKey.create_from_dict(key)
+                enc_parent_key = p_key
 
         # revive folder
         folder = Folder(
@@ -88,6 +91,7 @@ class DjangoFolderRepository(FolderRepository):
             uuid=db_folder.uuid,
             org_pk=db_folder.org_id,
             keys=keys,
+            enc_parent_key=enc_parent_key,
             stop_inherit=db_folder.stop_inherit,
             restricted=db_folder.restricted,
         )
@@ -112,6 +116,10 @@ class DjangoFolderRepository(FolderRepository):
         if folder.parent is not None:
             parent_id = cls.__db_folder_from_domain(folder.parent).pk
 
+        enc_parent_key: Optional[dict[str, Any]] = None
+        if folder.enc_parent_key is not None:
+            enc_parent_key = folder.enc_parent_key.as_dict()
+
         if FoldersFolder.objects.filter(uuid=folder.uuid).exists():
             f = FoldersFolder.objects.get(uuid=folder.uuid)
             f._parent_id = parent_id
@@ -122,6 +130,7 @@ class DjangoFolderRepository(FolderRepository):
             f.items = items
             f.stop_inherit = folder.stop_inherit
             f.restricted = folder.restricted
+            f.enc_parent_key = enc_parent_key  # type: ignore
 
         else:
             f = FoldersFolder(
@@ -133,6 +142,7 @@ class DjangoFolderRepository(FolderRepository):
                 items=items,
                 stop_inherit=folder.stop_inherit,
                 restricted=folder.restricted,
+                enc_parent_key=enc_parent_key,
             )
 
         return f
