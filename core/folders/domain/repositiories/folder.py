@@ -1,10 +1,13 @@
 import abc
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.external import IOwner
 from core.folders.domain.value_objects.tree import FolderTree
 from core.seedwork.repository import Repository
+
+if TYPE_CHECKING:
+    from core.auth.models.org_user import RlcUser
 
 
 class FolderRepository(Repository, abc.ABC):
@@ -15,7 +18,7 @@ class FolderRepository(Repository, abc.ABC):
         raise NotImplementedError()
 
     @classmethod
-    def get_or_create_records_folder(cls, org_pk: int, user: IOwner) -> Folder:
+    def get_or_create_records_folder(cls, org_pk: int, user: "RlcUser") -> Folder:
         raise NotImplementedError()
 
     @classmethod
@@ -39,5 +42,5 @@ class FolderRepository(Repository, abc.ABC):
         raise NotImplementedError()
 
     @classmethod
-    def tree(cls, user: IOwner, org_pk: int) -> FolderTree:
+    def tree(cls, user: "RlcUser", org_pk: int) -> FolderTree:
         raise NotImplementedError()

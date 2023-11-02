@@ -8,7 +8,6 @@ from django.utils import timezone
 
 from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.external import IOwner
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.domain.repositiories.item import ItemRepository
 from core.folders.domain.value_objects.folder_item import FolderItem
@@ -75,11 +74,7 @@ class DjangoFolderRepository(FolderRepository):
         keys: list[Union[ParentKey, FolderKey]] = []
         for key in db_folder.keys:
             if key["type"] == "FOLDER":
-                try:
-                    owner = users[UUID(key["owner"])]
-                except KeyError:
-                    continue
-                fk = FolderKey.create_from_dict(key, owner)
+                fk = FolderKey.create_from_dict(key)
                 keys.append(fk)
 
             elif key["type"] == "PARENT":
@@ -121,6 +116,7 @@ class DjangoFolderRepository(FolderRepository):
             f = FoldersFolder.objects.get(uuid=folder.uuid)
             f._parent_id = parent_id
             f.name = folder.name
+            assert folder.org_pk is not None
             f.org_id = folder.org_pk
             f.keys = keys
             f.items = items
@@ -156,7 +152,7 @@ class DjangoFolderRepository(FolderRepository):
         return users
 
     @classmethod
-    def get_or_create_records_folder(cls, org_pk: int, user: IOwner) -> Folder:
+    def get_or_create_records_folder(cls, org_pk: int, user: "RlcUser") -> Folder:
         name = "Records"
         if FoldersFolder.objects.filter(
             org_id=org_pk, name=name, _parent=None, deleted=False
@@ -218,6 +214,7 @@ class DjangoFolderRepository(FolderRepository):
     def save(cls, folder: Folder):
         db_folder = cls.__db_folder_from_domain(folder)
         db_folder.save()
+        assert folder.org_pk is not None
         delete_cache_of_object(cls, folder.org_pk)
 
     @classmethod
@@ -230,6 +227,7 @@ class DjangoFolderRepository(FolderRepository):
         f.deleted = True
         f.deleted_at = timezone.now()
         f.save()
+        assert folder.org_pk is not None
         delete_cache_of_object(cls, folder.org_pk)
 
     @classmethod
@@ -246,5 +244,5 @@ class DjangoFolderRepository(FolderRepository):
         return children
 
     @classmethod
-    def tree(cls, user: IOwner, org_pk: int) -> FolderTree:
+    def tree(cls, user: "RlcUser", org_pk: int) -> FolderTree:
         return FolderTree(user, cls.get_list(org_pk))

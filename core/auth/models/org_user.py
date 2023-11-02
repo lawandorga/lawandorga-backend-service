@@ -217,7 +217,7 @@ class RlcUser(Aggregate, models.Model):
         folder_keys = []
         for folder in folders:
             for key in folder.keys:
-                if key.TYPE == "FOLDER" and key.owner.uuid == self.uuid:
+                if key.TYPE == "FOLDER" and key.owner_uuid == self.uuid:
                     key = {
                         "id": 0,
                         "correct": key.is_valid,
@@ -413,6 +413,9 @@ class RlcUser(Aggregate, models.Model):
         if follow_ups_data:
             return_dict["follow_ups"] = follow_ups_data
         return return_dict
+
+    def get_groups(self) -> list["Group"]:
+        return list(self.groups.all())
 
     def test_keys(self) -> list[models.Model]:
         org_key: Optional[OrgEncryption] = self.user.users_rlc_keys.first()

@@ -17,28 +17,28 @@ jobs:
     name: Acceptance Stage
     uses: ./.github/workflows/acceptance-stage.yml
     secrets:
-        SCW_DOCKER_REGISTRY: ${{ secrets.SCW_DOCKER_REGISTRY }}
-        SCW_TOKEN: ${{ secrets.SCW_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SCW_DOCKER_REGISTRY: ${{ secrets.SCW_DOCKER_REGISTRY }}
+      SCW_TOKEN: ${{ secrets.SCW_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   deployment:
     needs: [acceptance]
     name: Deployment Stage
     uses: ./.github/workflows/deployment-stage.yml
     secrets:
-        DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-        EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
-        EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
-        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-        EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
-        S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
-        S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_TOKEN }}
-        S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
-        DB_NAME: ${{ secrets.DB_NAME }}
-        DB_USER: ${{ secrets.DB_USER }}
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        DB_PORT: ${{ secrets.DB_PORT }}
-        DB_HOST: ${{ secrets.DB_HOST }}
-        SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
-        SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
-        SCW_PROJECT_ID: ${{ secrets.SCW_PROJECT_ID }}
+      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+      EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_TOKEN }}
+      S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+      SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+      SCW_PROJECT_ID: ${{ secrets.SCW_PROJECT_ID }}

@@ -171,6 +171,21 @@ def create_rlc_user(
     }
 
 
+class CreateGroupData(TypedDict):
+    group: Group
+
+
+def create_group(
+    user: RlcUser, name="Test Group", description="Just for testing."
+) -> CreateGroupData:
+    group = Group.create(org=user.org, name=name, description=description)
+    group.save()
+    group.add_member(user)
+    group.generate_keys()
+    group.save()
+    return {"group": group}
+
+
 def create_record_template(org=None):
     if org is None:
         org = create_org()["org"]

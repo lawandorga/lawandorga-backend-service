@@ -291,11 +291,11 @@ class DataSheetEntryEncryptedModelMixin(EncryptedModelMixin):
     def encrypt(
         self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None
     ):
-        record: DataSheet = self.record  # type: ignore
+        data_sheet: DataSheet = self.record  # type: ignore
         if user and not private_key_user:
             private_key_user = user.get_private_key()
         if user and private_key_user:
-            key = record.get_aes_key(user=user, private_key_user=private_key_user)
+            key = data_sheet.get_aes_key(user=user, private_key_user=private_key_user)
         elif aes_key_record:
             key = aes_key_record
         else:

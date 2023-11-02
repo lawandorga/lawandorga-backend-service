@@ -1,3 +1,4 @@
+# type: ignore
 from typing import Optional
 from uuid import uuid4
 
@@ -43,13 +44,13 @@ def test_encryption_version(single_encryption):
 
     s_key = SymmetricKey.generate()
     folder_key_1 = FolderKey(
-        owner=user,
+        owner_uuid=user.uuid,
         key=s_key,
     )
     EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest2)
     s_key = SymmetricKey.generate()
     folder_key_2 = FolderKey(
-        owner=user,
+        owner_uuid=user.uuid,
         key=s_key,
     )
     folder = Folder(
@@ -77,16 +78,16 @@ def test_str_method():
 
 def test_folder_key_decryption_error(single_encryption):
     user1 = ForeignUserObject()
-    key = FolderKey(key=SymmetricKey.generate(), owner=user1)
+    key = FolderKey(key=SymmetricKey.generate(), owner_uuid=user1.uuid)
     enc_key = key.encrypt_self(user1.get_encryption_key())
     user2 = UserObject()
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         enc_key.decrypt_self(user2)
 
 
 def test_folder_key_str_method(single_encryption):
     user1 = UserObject()
-    key = FolderKey(owner=user1, key=AsymmetricKey.generate())
+    key = FolderKey(owner_uuid=user1.uuid, key=AsymmetricKey.generate())
     assert str(key) == "FolderKey of {}".format(user1.uuid)
 
 
@@ -96,11 +97,11 @@ def test_folder_access(single_encryption):
 
     s_key = SymmetricKey.generate()
     folder_key_1 = FolderKey(
-        owner=user_1,
+        owner_uuid=user_1.uuid,
         key=s_key,
     )
     folder_key_2 = FolderKey(
-        owner=user_2,
+        owner_uuid=user_2.uuid,
         key=s_key,
     )
 

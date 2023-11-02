@@ -7,6 +7,7 @@ from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.folders.use_cases.finders import (
     folder_from_uuid,
+    group_from_uuid,
     item_from_repository_and_uuid,
     rlc_user_from_uuid,
 )
@@ -83,6 +84,32 @@ def grant_access(__actor: RlcUser, to_uuid: UUID, folder_uuid: UUID):
 
     r = get_repository()
     folder.grant_access(to=to, by=__actor)
+    r.save(folder)
+
+
+@use_case
+def grant_access_to_group(__actor: RlcUser, group_uuid: UUID, folder_uuid: UUID):
+    to = group_from_uuid(__actor, group_uuid)
+    folder = folder_from_uuid(__actor, folder_uuid)
+
+    if not folder.has_access(__actor):
+        raise ApiError("You need access to this folder in order to do that.")
+
+    r = get_repository()
+    folder.grant_access(to=to, by=__actor)
+    r.save(folder)
+
+
+@use_case
+def revoke_access_from_group(__actor: RlcUser, group_uuid: UUID, folder_uuid: UUID):
+    group = group_from_uuid(__actor, group_uuid)
+    folder = folder_from_uuid(__actor, folder_uuid)
+
+    if not folder.has_access(__actor):
+        raise ApiError("You need access to this folder in order to do that.")
+
+    r = get_repository()
+    folder.revoke_access(of=group)
     r.save(folder)
 
 

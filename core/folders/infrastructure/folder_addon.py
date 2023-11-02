@@ -1,15 +1,17 @@
-from typing import Optional, cast
+from typing import TYPE_CHECKING, Optional, Protocol, cast
 
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.aggregates.item import FolderItem, Item
-from core.folders.domain.external import IOwner
 from core.folders.domain.repositiories.folder import FolderRepository
 from core.seedwork.aggregate import Addon
 from core.seedwork.events_addon import EventsAddon
 from core.seedwork.repository import RepositoryWarehouse
 
+if TYPE_CHECKING:
+    from core.auth.models.org_user import RlcUser
 
-class Object(Item):
+
+class Object(Item, Protocol):
     events: EventsAddon
 
 
@@ -27,13 +29,13 @@ class FolderAddon(Addon):
         assert self._folder is not None
         return self._folder
 
-    def get_decryption_key(self, requestor: IOwner):
+    def get_decryption_key(self, requestor: "RlcUser"):
         return self.folder.get_decryption_key(requestor=requestor)
 
-    def get_encryption_key(self, requestor: IOwner):
+    def get_encryption_key(self, requestor: "RlcUser"):
         return self.folder.get_encryption_key(requestor=requestor)
 
-    def has_access(self, user: IOwner):
+    def has_access(self, user: "RlcUser"):
         return self.folder.has_access(user)
 
     def put_obj_in_folder(self, folder: Folder):

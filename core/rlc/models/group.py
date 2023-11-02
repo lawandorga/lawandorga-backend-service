@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, Union
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from django.db import models, transaction
 
@@ -74,6 +74,7 @@ class Group(models.Model):
             group.pk = pk
         return group
 
+    uuid = models.UUIDField(default=uuid4, unique=True, editable=False)
     from_rlc = models.ForeignKey(
         Org, related_name="group_from_rlc", on_delete=models.CASCADE, blank=True
     )

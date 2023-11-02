@@ -1,3 +1,4 @@
+# type: ignore
 import pytest
 
 from core.folders.domain.aggregates.folder import Folder

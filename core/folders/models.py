@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID, uuid4
 
 from django.db import models
@@ -22,6 +22,10 @@ class FoldersFolder(models.Model):
     restricted = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
+
+    if TYPE_CHECKING:
+        org_id: int
+        _parent_id: int | None
 
     class Meta:
         verbose_name = "FoldersFolder"

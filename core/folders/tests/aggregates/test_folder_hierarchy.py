@@ -1,3 +1,4 @@
+# type: ignore
 import pytest
 
 from core.folders.domain.aggregates.folder import Folder
@@ -48,9 +49,9 @@ def test_deep_hierarchy(single_encryption):
 
 def test_no_keys_error(single_encryption):
     folder1 = Folder.create("My Folder")
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         folder1.get_encryption_key()
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         folder1.get_decryption_key()
 
 
