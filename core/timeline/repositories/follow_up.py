@@ -3,7 +3,7 @@ from uuid import UUID
 from django.utils import timezone
 
 from core.auth.models.org_user import RlcUser
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.timeline.models.follow_up import TimelineFollowUp
 
 

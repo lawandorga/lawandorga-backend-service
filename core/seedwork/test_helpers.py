@@ -6,7 +6,7 @@ from core.auth.domain.user_key import UserKey
 from core.auth.models import StatisticUser
 from core.data_sheets.models import DataSheet, DataSheetTemplate
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.models import RlcUser, UserProfile
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models.template import QuestionnaireTemplate

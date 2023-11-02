@@ -5,7 +5,7 @@ import pytest
 from django.test import Client
 
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.models import Org
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models import Questionnaire, QuestionnaireTemplate

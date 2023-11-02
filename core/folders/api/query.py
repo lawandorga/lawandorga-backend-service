@@ -5,7 +5,7 @@ from django.db import transaction
 from core.auth.models import RlcUser
 from core.data_sheets.models import DataSheet
 from core.folders.api import schemas
-from core.folders.domain.repositiories.item import ItemRepository
+from core.folders.domain.repositories.item import ItemRepository
 from core.folders.domain.value_objects.tree import TreeAccess
 from core.folders.use_cases.folder import get_repository
 from core.seedwork.api_layer import Router

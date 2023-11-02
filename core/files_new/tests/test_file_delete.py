@@ -3,7 +3,7 @@ from typing import cast
 from core.files_new.models import EncryptedRecordDocument
 from core.files_new.use_cases.file import delete_a_file
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.seedwork.repository import RepositoryWarehouse
 
 

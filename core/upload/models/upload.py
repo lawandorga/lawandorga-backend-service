@@ -8,7 +8,7 @@ from django.db import models
 
 from core.auth.models import RlcUser
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.item import ItemRepository
+from core.folders.domain.repositories.item import ItemRepository
 from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,

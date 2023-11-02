@@ -7,7 +7,7 @@ from django.db.models import Q
 from core.auth.models import RlcUser
 from core.data_sheets.models import DataSheet
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.records.helpers import merge_attrs
 from core.records.models.access import RecordsAccessRequest
 from core.records.models.deletion import RecordsDeletion

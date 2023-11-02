@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, cast
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
 
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 from core.seedwork.repository import RepositoryWarehouse
 

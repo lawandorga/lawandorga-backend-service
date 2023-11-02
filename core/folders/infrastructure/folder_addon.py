@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Optional, Protocol, cast
 
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.aggregates.item import FolderItem, Item
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.seedwork.aggregate import Addon
 from core.seedwork.events_addon import EventsAddon
 from core.seedwork.repository import RepositoryWarehouse

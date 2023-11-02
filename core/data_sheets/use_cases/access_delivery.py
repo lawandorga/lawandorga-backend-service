@@ -3,7 +3,7 @@ from typing import cast
 from core.auth.models import RlcUser
 from core.data_sheets.models import DataSheet
 from core.data_sheets.use_cases.record import migrate_record_into_folder
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.permissions.models import Permission
 from core.permissions.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from core.seedwork.repository import RepositoryWarehouse

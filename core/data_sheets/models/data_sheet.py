@@ -21,7 +21,7 @@ from core.data_sheets.models.template import (
     DataSheetUsersField,
 )
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.item import ItemRepository
+from core.folders.domain.repositories.item import ItemRepository
 from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,

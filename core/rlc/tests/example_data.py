@@ -34,7 +34,7 @@ from core.fixtures import (
     create_folder_permissions,
     create_permissions,
 )
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.messages.models import EncryptedRecordMessage
 from core.models import (
     CollabDocument,

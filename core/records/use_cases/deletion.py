@@ -2,7 +2,7 @@ from typing import cast
 from uuid import UUID
 
 from core.auth.models import RlcUser
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS
 from core.records.models.deletion import RecordsDeletion
 from core.records.use_cases.finders import find_deletion_by_uuid, find_record_by_uuid

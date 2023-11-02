@@ -3,7 +3,7 @@ from typing import cast
 import pytest
 
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository

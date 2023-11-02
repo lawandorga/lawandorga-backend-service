@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 from pydantic import Field
 
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.seedwork.eventsourcing import EventSourced
 from core.seedwork.repository import RepositoryWarehouse
 from messagebus import Event

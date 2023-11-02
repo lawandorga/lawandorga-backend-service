@@ -9,7 +9,7 @@ from core.data_sheets.use_cases.finders import (
     template_from_id,
 )
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.domain.value_objects.box import OpenBox
 from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,

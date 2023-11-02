@@ -4,7 +4,7 @@ from typing import cast
 from django.test import Client
 
 from core.data_sheets.models.data_sheet import DataSheet
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
     PERMISSION_RECORDS_ACCESS_ALL_RECORDS,

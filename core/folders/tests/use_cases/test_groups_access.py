@@ -1,7 +1,7 @@
 from typing import cast
 
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.use_cases.folder import (
     grant_access_to_group,
     revoke_access_from_group,

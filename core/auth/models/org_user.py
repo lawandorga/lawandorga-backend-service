@@ -41,7 +41,7 @@ from core.seedwork.domain_layer import DomainError
 from core.seedwork.events_addon import EventsAddon
 from messagebus import Event
 
-from ...folders.domain.repositiories.folder import FolderRepository
+from ...folders.domain.repositories.folder import FolderRepository
 from ...seedwork.repository import RepositoryWarehouse
 from .user import UserProfile
 

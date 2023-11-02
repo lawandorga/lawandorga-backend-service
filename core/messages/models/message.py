@@ -6,7 +6,7 @@ from django.db import models
 from core.auth.models import RlcUser
 from core.data_sheets.models.data_sheet import DataSheet
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,

@@ -4,7 +4,7 @@ from uuid import UUID
 from core.auth.models import RlcUser
 from core.auth.use_cases.finders import org_user_from_uuid
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.use_cases.finders import (
     folder_from_uuid,
     group_from_uuid,

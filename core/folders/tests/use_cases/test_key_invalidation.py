@@ -1,7 +1,7 @@
 from typing import cast
 
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.seedwork import test_helpers
 from core.seedwork.repository import RepositoryWarehouse
 

@@ -2,7 +2,7 @@ from datetime import datetime
 from uuid import UUID
 
 from core.auth.models.org_user import RlcUser
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.use_cases.finders import folder_from_uuid
 from core.seedwork.use_case_layer import use_case
 from core.timeline.models.follow_up import TimelineFollowUp

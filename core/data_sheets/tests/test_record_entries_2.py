@@ -34,7 +34,7 @@ from core.data_sheets.models.template import (
     DataSheetStatisticField,
     DataSheetUsersField,
 )
-from core.folders.domain.repositiories.folder import FolderRepository
+from core.folders.domain.repositories.folder import FolderRepository
 from core.models import UserProfile
 from core.permissions.models import HasPermission, Permission
 from core.permissions.static import (
