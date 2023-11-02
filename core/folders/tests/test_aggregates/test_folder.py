@@ -8,7 +8,7 @@ from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.aggregates.item import Item
 from core.folders.domain.value_objects.asymmetric_key import AsymmetricKey
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
-from core.folders.domain.value_objects.folder_key import FolderKey
+from core.folders.domain.value_objects.folder_key import EncryptedFolderKeyOfUser
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from core.folders.tests.test_helpers.encryptions import SymmetricEncryptionTest2
 from core.folders.tests.test_helpers.user import ForeignUserObject, UserObject
@@ -43,13 +43,13 @@ def test_encryption_version(single_encryption):
     assert folder.encryption_version == "AT1" or folder.encryption_version == "ST1"
 
     s_key = SymmetricKey.generate()
-    folder_key_1 = FolderKey(
+    folder_key_1 = EncryptedFolderKeyOfUser(
         owner_uuid=user.uuid,
         key=s_key,
     )
     EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest2)
     s_key = SymmetricKey.generate()
-    folder_key_2 = FolderKey(
+    folder_key_2 = EncryptedFolderKeyOfUser(
         owner_uuid=user.uuid,
         key=s_key,
     )
@@ -78,7 +78,7 @@ def test_str_method():
 
 def test_folder_key_decryption_error(single_encryption):
     user1 = ForeignUserObject()
-    key = FolderKey(key=SymmetricKey.generate(), owner_uuid=user1.uuid)
+    key = EncryptedFolderKeyOfUser(key=SymmetricKey.generate(), owner_uuid=user1.uuid)
     enc_key = key.encrypt_self(user1.get_encryption_key())
     user2 = UserObject()
     with pytest.raises(KeyError):
@@ -87,7 +87,7 @@ def test_folder_key_decryption_error(single_encryption):
 
 def test_folder_key_str_method(single_encryption):
     user1 = UserObject()
-    key = FolderKey(owner_uuid=user1.uuid, key=AsymmetricKey.generate())
+    key = EncryptedFolderKeyOfUser(owner_uuid=user1.uuid, key=AsymmetricKey.generate())
     assert str(key) == "FolderKey of {}".format(user1.uuid)
 
 
@@ -96,11 +96,11 @@ def test_folder_access(single_encryption):
     user_2 = UserObject()
 
     s_key = SymmetricKey.generate()
-    folder_key_1 = FolderKey(
+    folder_key_1 = EncryptedFolderKeyOfUser(
         owner_uuid=user_1.uuid,
         key=s_key,
     )
-    folder_key_2 = FolderKey(
+    folder_key_2 = EncryptedFolderKeyOfUser(
         owner_uuid=user_2.uuid,
         key=s_key,
     )

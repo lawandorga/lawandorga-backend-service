@@ -7,7 +7,7 @@ from core.folders.domain.value_objects.asymmetric_key import (
     EncryptedAsymmetricKey,
 )
 from core.folders.domain.value_objects.folder_item import FolderItem
-from core.folders.domain.value_objects.folder_key import FolderKey
+from core.folders.domain.value_objects.folder_key import EncryptedFolderKeyOfUser
 from core.folders.domain.value_objects.parent_key import ParentKey
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from core.seedwork.domain_layer import DomainError
@@ -34,7 +34,7 @@ class Folder:
         name: Optional[str] = None,
         uuid: Optional[UUID] = None,
         org_pk: Optional[int] = None,
-        keys: Optional[list[FolderKey]] = None,
+        keys: Optional[list[EncryptedFolderKeyOfUser]] = None,
         enc_parent_key: Optional[ParentKey] = None,
         parent: Optional["Folder"] = None,
         items: Optional[list[FolderItem]] = None,
@@ -126,10 +126,13 @@ class Folder:
         return versions[0]
 
     def invalidate_keys_of(self, owner: "RlcUser"):
-        new_keys: list[FolderKey] = []
+        new_keys: list[EncryptedFolderKeyOfUser] = []
         for key in self.__keys:
             new_key = key
-            if isinstance(key, FolderKey) and key.owner_uuid == owner.uuid:
+            if (
+                isinstance(key, EncryptedFolderKeyOfUser)
+                and key.owner_uuid == owner.uuid
+            ):
                 new_key = key.invalidate_self()
             new_keys.append(new_key)
         self.__keys = new_keys
@@ -137,7 +140,7 @@ class Folder:
     def has_invalid_keys(self, owner: "RlcUser") -> bool:
         for key in self.__keys:
             if (
-                isinstance(key, FolderKey)
+                isinstance(key, EncryptedFolderKeyOfUser)
                 and key.owner_uuid == owner.uuid
                 and not key.is_valid
             ):
@@ -145,18 +148,18 @@ class Folder:
         return False
 
     def fix_keys(self, of: "RlcUser", by: "RlcUser"):
-        new_keys: list[FolderKey] = []
+        new_keys: list[EncryptedFolderKeyOfUser] = []
         fixed = False
 
         for key in self.__keys:
             enc_new_key = key
             if (
-                isinstance(key, FolderKey)
+                isinstance(key, EncryptedFolderKeyOfUser)
                 and key.owner_uuid == of.uuid
                 and not key.is_valid
             ):
                 s_key = self.get_decryption_key(requestor=by)
-                new_key = FolderKey(owner_uuid=of.uuid, key=s_key)
+                new_key = EncryptedFolderKeyOfUser(owner_uuid=of.uuid, key=s_key)
                 enc_key = of.get_encryption_key()
                 enc_new_key = new_key.encrypt_self(enc_key)
                 fixed = True
@@ -170,7 +173,7 @@ class Folder:
     def has_access(self, owner: Union["RlcUser", "Group"]) -> bool:
         for key in self.__keys:
             if (
-                isinstance(key, FolderKey)
+                isinstance(key, EncryptedFolderKeyOfUser)
                 and key.owner_uuid == owner.uuid
                 and key.is_valid
             ):
@@ -184,7 +187,10 @@ class Folder:
 
     def _has_keys(self, owner: Union["RlcUser", "Group"]) -> bool:
         for key in self.__keys:
-            if isinstance(key, FolderKey) and key.owner_uuid == owner.uuid:
+            if (
+                isinstance(key, EncryptedFolderKeyOfUser)
+                and key.owner_uuid == owner.uuid
+            ):
                 return True
         if self.__parent is None or self.__stop_inherit:
             return False
@@ -231,10 +237,10 @@ class Folder:
             )
         self.__name = name if name is not None else self.__name
 
-    def __find_folder_key(self, user: "RlcUser") -> Optional[FolderKey]:
+    def __find_folder_key(self, user: "RlcUser") -> Optional[EncryptedFolderKeyOfUser]:
         for key in self.__keys:
             if (
-                isinstance(key, FolderKey)
+                isinstance(key, EncryptedFolderKeyOfUser)
                 and key.owner_uuid == user.uuid
                 and key.is_valid
             ):
@@ -370,7 +376,7 @@ class Folder:
             assert by is not None
             key = self.get_decryption_key(requestor=by)
 
-        folder_key = FolderKey(
+        folder_key = EncryptedFolderKeyOfUser(
             owner_uuid=to.uuid,
             key=key,
         )
@@ -386,7 +392,7 @@ class Folder:
     def revoke_access(self, of: Union["RlcUser", "Group"]):
         prev_length = len(self.__keys)
 
-        new_keys: list[FolderKey] = list(
+        new_keys: list[EncryptedFolderKeyOfUser] = list(
             filter(
                 lambda x: x.owner_uuid != of.uuid,
                 self.__keys,

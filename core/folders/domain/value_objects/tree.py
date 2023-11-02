@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Optional, Union
 from uuid import UUID
 
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.value_objects.folder_key import FolderKey
+from core.folders.domain.value_objects.folder_key import EncryptedFolderKeyOfUser
 from core.folders.domain.value_objects.parent_key import ParentKey
 
 from seedwork.types import JsonDict
@@ -20,7 +20,7 @@ class TreeAccess:
     def get_owners_with_access(self, folder: Folder, source="direct"):
         access = []
         for key in folder.keys:
-            if isinstance(key, FolderKey):
+            if isinstance(key, EncryptedFolderKeyOfUser):
                 access.append(
                     {
                         "name": str(key.owner_uuid),  # TODO: change to name

@@ -16,11 +16,11 @@ if TYPE_CHECKING:
     from core.auth.models.org_user import RlcUser
 
 
-class FolderKey:
+class EncryptedFolderKeyOfUser:
     TYPE = "FOLDER"
 
     @staticmethod
-    def create_from_dict(d: JsonDict) -> "FolderKey":
+    def create_from_dict(d: JsonDict) -> "EncryptedFolderKeyOfUser":
         assert (
             "key" in d
             and isinstance(d["key"], dict)
@@ -38,7 +38,9 @@ class FolderKey:
             assert isinstance(d["is_valid"], bool)
             is_valid = d["is_valid"]
 
-        return FolderKey(key=key, owner_uuid=owner_uuid, is_valid=is_valid)
+        return EncryptedFolderKeyOfUser(
+            key=key, owner_uuid=owner_uuid, is_valid=is_valid
+        )
 
     def __init__(
         self,
@@ -88,12 +90,14 @@ class FolderKey:
     def is_encrypted(self):
         return isinstance(self.__key, EncryptedSymmetricKey)
 
-    def invalidate_self(self) -> "FolderKey":
-        return FolderKey(owner_uuid=self.__owner_uuid, key=self.__key, is_valid=False)
+    def invalidate_self(self) -> "EncryptedFolderKeyOfUser":
+        return EncryptedFolderKeyOfUser(
+            owner_uuid=self.__owner_uuid, key=self.__key, is_valid=False
+        )
 
     def encrypt_self(
         self, key: Union[AsymmetricKey, EncryptedAsymmetricKey, SymmetricKey]
-    ) -> "FolderKey":
+    ) -> "EncryptedFolderKeyOfUser":
         if not self.__is_valid:
             raise ValueError("This key is not valid.")
 
@@ -101,12 +105,12 @@ class FolderKey:
 
         enc_key = EncryptedSymmetricKey.create(original=self.__key, key=key)
 
-        return FolderKey(
+        return EncryptedFolderKeyOfUser(
             owner_uuid=self.__owner_uuid,
             key=enc_key,
         )
 
-    def decrypt_self(self, user: "RlcUser") -> "FolderKey":
+    def decrypt_self(self, user: "RlcUser") -> "EncryptedFolderKeyOfUser":
         if not self.__is_valid:
             raise ValueError("This key is not valid.")
 
@@ -116,7 +120,7 @@ class FolderKey:
 
         key = self.__key.decrypt(unlock_key)
 
-        return FolderKey(
+        return EncryptedFolderKeyOfUser(
             owner_uuid=self.__owner_uuid,
             key=key,
         )

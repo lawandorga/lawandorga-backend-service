@@ -11,7 +11,7 @@ from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.domain.repositories.item import ItemRepository
 from core.folders.domain.value_objects.folder_item import FolderItem
-from core.folders.domain.value_objects.folder_key import FolderKey
+from core.folders.domain.value_objects.folder_key import EncryptedFolderKeyOfUser
 from core.folders.domain.value_objects.parent_key import ParentKey
 from core.folders.domain.value_objects.tree import FolderTree
 from core.folders.models import FoldersFolder
@@ -74,10 +74,10 @@ class DjangoFolderRepository(FolderRepository):
         enc_parent_key: Optional[ParentKey] = None
         if db_folder.enc_parent_key is not None:
             enc_parent_key = ParentKey.create_from_dict(db_folder.enc_parent_key)
-        keys: list[FolderKey] = []
+        keys: list[EncryptedFolderKeyOfUser] = []
         for key in db_folder.keys:
             if key["type"] == "FOLDER":
-                f_key = FolderKey.create_from_dict(key)
+                f_key = EncryptedFolderKeyOfUser.create_from_dict(key)
                 keys.append(f_key)
 
             elif key["type"] == "PARENT":
