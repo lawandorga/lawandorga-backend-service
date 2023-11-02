@@ -7,7 +7,7 @@ from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
-from core.folders.tests.helpers.encryptions import SymmetricEncryptionTest1
+from core.folders.tests.test_helpers.encryptions import SymmetricEncryptionTest1
 
 
 @pytest.fixture

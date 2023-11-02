@@ -3,7 +3,7 @@ import pytest
 
 from core.folders.domain.value_objects.folder_key import FolderKey
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
-from core.folders.tests.helpers.user import UserObject
+from core.folders.tests.test_helpers.user import UserObject
 
 
 def test_dict_valid_false(single_encryption):

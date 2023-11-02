@@ -4,7 +4,7 @@ from typing import Generator
 import pytest
 
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.tests.helpers.user import UserObject
+from core.folders.tests.test_helpers.user import UserObject
 
 
 @pytest.fixture

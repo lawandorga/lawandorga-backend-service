@@ -12,7 +12,7 @@ from core.folders.domain.value_objects.symmetric_key import (
 )
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
-from core.folders.tests.helpers.encryptions import (
+from core.folders.tests.test_helpers.encryptions import (
     AsymmetricEncryptionTest1,
     SymmetricEncryptionTest1,
 )
