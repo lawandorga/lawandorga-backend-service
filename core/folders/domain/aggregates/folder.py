@@ -355,7 +355,7 @@ class Folder:
 
         lock_key: Union[AsymmetricKey, SymmetricKey, EncryptedAsymmetricKey]
 
-        lock_key = to.get_encryption_key(user=by)
+        lock_key = to.get_encryption_key(user=by)  # type: ignore
 
         enc_key = folder_key.encrypt_self(lock_key)
 
