@@ -62,17 +62,6 @@ def test_list(db, user, repository, folder_uuid):
     assert folders[0].has_access(user)
 
 
-def test_tree(db):
-    pass
-
-
-# def test_find_key_owner(db, folder_uuid, user, repository):
-#     folder = repository.retrieve(user.org_id, folder_uuid)
-#     key = folder.keys[0]
-#     user2 = repository.find_key_owner(key.owner.uuid)
-#     assert user2.pk == user.pk
-
-
 def test_stop_inherit_saved(db, user, repository):
     folder1 = Folder.create(name="New Folder", org_pk=user.org_id, stop_inherit=True)
     folder1.grant_access(to=user)

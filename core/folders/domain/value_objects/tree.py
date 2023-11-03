@@ -43,7 +43,7 @@ class TreeAccess:
     def get_actions(self, folder, key, source):
         if source == "direct":
             url = "/folders/folders/{}/revoke_access/".format(folder.uuid)
-            return {"REVOKE_ACCESS": {"url": url, "user_uuid": key.owner.uuid}}
+            return {"REVOKE_ACCESS": {"url": url, "user_uuid": key.owner_uuid}}
         return {}
 
     def as_dict(self) -> list[JsonDict]:
