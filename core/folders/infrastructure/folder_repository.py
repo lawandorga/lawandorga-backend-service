@@ -11,7 +11,10 @@ from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.domain.repositories.item import ItemRepository
 from core.folders.domain.value_objects.folder_item import FolderItem
-from core.folders.domain.value_objects.folder_key import EncryptedFolderKeyOfUser
+from core.folders.domain.value_objects.folder_key import (
+    EncryptedFolderKeyOfGroup,
+    EncryptedFolderKeyOfUser,
+)
 from core.folders.domain.value_objects.parent_key import ParentKey
 from core.folders.domain.value_objects.tree import FolderTree
 from core.folders.models import FoldersFolder
@@ -74,15 +77,21 @@ class DjangoFolderRepository(FolderRepository):
         enc_parent_key: Optional[ParentKey] = None
         if db_folder.enc_parent_key is not None:
             enc_parent_key = ParentKey.create_from_dict(db_folder.enc_parent_key)
-        keys: list[EncryptedFolderKeyOfUser] = []
-        for key in db_folder.keys:
-            if key["type"] == "FOLDER":
-                f_key = EncryptedFolderKeyOfUser.create_from_dict(key)
-                keys.append(f_key)
 
-            elif key["type"] == "PARENT":
+        user_keys: list[EncryptedFolderKeyOfUser] = []
+        for key in db_folder.keys:
+            if key["type"] == "PARENT":
                 p_key = ParentKey.create_from_dict(key)
                 enc_parent_key = p_key
+                continue
+
+            f_key = EncryptedFolderKeyOfUser.create_from_dict(key)
+            user_keys.append(f_key)
+
+        group_keys: list[EncryptedFolderKeyOfGroup] = []
+        for key in db_folder.group_keys if db_folder.group_keys else []:
+            g_key = EncryptedFolderKeyOfGroup.create_from_dict(key)
+            group_keys.append(g_key)
 
         # revive folder
         folder = Folder(
@@ -90,8 +99,9 @@ class DjangoFolderRepository(FolderRepository):
             parent=parent,
             uuid=db_folder.uuid,
             org_pk=db_folder.org_id,
-            keys=keys,
+            keys=user_keys,
             enc_parent_key=enc_parent_key,
+            group_keys=group_keys,
             stop_inherit=db_folder.stop_inherit,
             restricted=db_folder.restricted,
         )
@@ -111,6 +121,7 @@ class DjangoFolderRepository(FolderRepository):
     def __db_folder_from_domain(cls, folder: Folder) -> FoldersFolder:
         keys = [k.as_dict() for k in folder.keys]
         items = [i.as_dict() for i in folder.items]
+        group_keys = [k.as_dict() for k in folder.group_keys]
 
         parent_id: Optional[int] = None
         if folder.parent is not None:
@@ -127,6 +138,7 @@ class DjangoFolderRepository(FolderRepository):
             assert folder.org_pk is not None
             f.org_id = folder.org_pk
             f.keys = keys
+            f.group_keys = group_keys  # type: ignore
             f.items = items
             f.stop_inherit = folder.stop_inherit
             f.restricted = folder.restricted
@@ -139,6 +151,7 @@ class DjangoFolderRepository(FolderRepository):
                 name=folder.name,
                 org_id=folder.org_pk,
                 keys=keys,
+                group_keys=group_keys,
                 items=items,
                 stop_inherit=folder.stop_inherit,
                 restricted=folder.restricted,

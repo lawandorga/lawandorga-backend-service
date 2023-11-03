@@ -96,7 +96,7 @@ def grant_access_to_group(__actor: RlcUser, group_uuid: UUID, folder_uuid: UUID)
         raise ApiError("You need access to this folder in order to do that.")
 
     r = get_repository()
-    folder.grant_access(to=to, by=__actor)
+    folder.grant_access_to_group(group=to, by=__actor)
     r.save(folder)
 
 
@@ -109,7 +109,7 @@ def revoke_access_from_group(__actor: RlcUser, group_uuid: UUID, folder_uuid: UU
         raise ApiError("You need access to this folder in order to do that.")
 
     r = get_repository()
-    folder.revoke_access(of=group)
+    folder.revoke_access_from_group(of=group)
     r.save(folder)
 
 

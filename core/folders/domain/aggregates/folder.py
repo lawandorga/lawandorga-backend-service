@@ -2,14 +2,11 @@ from typing import TYPE_CHECKING, Optional, Union
 from uuid import UUID, uuid4
 
 from core.folders.domain.aggregates.item import Item
-from core.folders.domain.value_objects.asymmetric_key import (
-    AsymmetricKey,
-    EncryptedAsymmetricKey,
-)
 from core.folders.domain.value_objects.folder_item import FolderItem
 from core.folders.domain.value_objects.folder_key import (
+    EncryptedFolderKeyOfGroup,
     EncryptedFolderKeyOfUser,
-    FolderKeyOfUser,
+    FolderKey,
 )
 from core.folders.domain.value_objects.parent_key import ParentKey
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
@@ -38,6 +35,7 @@ class Folder:
         uuid: Optional[UUID] = None,
         org_pk: Optional[int] = None,
         keys: Optional[list[EncryptedFolderKeyOfUser]] = None,
+        group_keys: Optional[list[EncryptedFolderKeyOfGroup]] = None,
         enc_parent_key: Optional[ParentKey] = None,
         parent: Optional["Folder"] = None,
         items: Optional[list[FolderItem]] = None,
@@ -55,6 +53,7 @@ class Folder:
         self.__stop_inherit = stop_inherit
         self.__keys = keys if keys is not None else []
         self.__items = items if items is not None else []
+        self.__group_keys = group_keys if group_keys is not None else []
         self.__restricted = restricted
 
     def __str__(self):
@@ -91,6 +90,10 @@ class Folder:
     @property
     def keys(self):
         return self.__keys
+
+    @property
+    def group_keys(self):
+        return self.__group_keys
 
     @property
     def parent(self):
@@ -162,9 +165,9 @@ class Folder:
                 and not key.is_valid
             ):
                 s_key = self.get_decryption_key(requestor=by)
-                new_key = FolderKeyOfUser(owner_uuid=of.uuid, key=s_key)
+                new_key = FolderKey(owner_uuid=of.uuid, key=s_key)
                 enc_key = of.get_encryption_key()
-                enc_new_key = new_key.encrypt_self(enc_key)
+                enc_new_key = EncryptedFolderKeyOfUser.create_from_key(new_key, enc_key)
                 fixed = True
             new_keys.append(enc_new_key)
 
@@ -174,30 +177,29 @@ class Folder:
         self.__keys = new_keys
 
     def has_access(self, owner: Union["RlcUser", "Group"]) -> bool:
-        for key in self.__keys:
-            if (
-                isinstance(key, EncryptedFolderKeyOfUser)
-                and key.owner_uuid == owner.uuid
-                and key.is_valid
-            ):
-                return True
-        if self.__parent is None or self.__stop_inherit:
-            return False
-        return self.__parent.has_access(owner)
+        key = self._get_key(owner)
+        if key is not None and key.is_valid:
+            return True
+        return False
 
     def restrict(self) -> None:
         self.__restricted = True
 
-    def _has_keys(self, owner: Union["RlcUser", "Group"]) -> bool:
-        for key in self.__keys:
-            if (
-                isinstance(key, EncryptedFolderKeyOfUser)
-                and key.owner_uuid == owner.uuid
-            ):
-                return True
+    def _get_key(
+        self, owner: Union["RlcUser", "Group"]
+    ) -> Union[EncryptedFolderKeyOfGroup, EncryptedFolderKeyOfUser, None]:
+        for u_key in self.__keys:
+            if u_key.owner_uuid == owner.uuid:
+                return u_key
+        for g_key in self.__group_keys:
+            if g_key.owner_uuid == owner.uuid:
+                return g_key
         if self.__parent is None or self.__stop_inherit:
-            return False
-        return self.__parent._has_keys(owner)
+            return None
+        return self.__parent._get_key(owner)
+
+    def _has_keys(self, owner: Union["RlcUser", "Group"]) -> bool:
+        return self._get_key(owner) is not None
 
     def __contains(self, item: Union[Item, FolderItem]):
         contains = False
@@ -247,13 +249,6 @@ class Folder:
                 and key.owner_uuid == user.uuid
                 and key.is_valid
             ):
-                return key
-
-        return None
-
-    def __find_parent_key(self) -> Optional[ParentKey]:
-        for key in self.__keys:
-            if isinstance(key, ParentKey):
                 return key
 
         return None
@@ -364,11 +359,9 @@ class Folder:
         self.__parent = None
         self.set_parent(target, by)
 
-    def grant_access(
+    def __grant_access(
         self, to: Union["RlcUser", "Group"], by: Optional["RlcUser"] = None
-    ):
-        key: Union[AsymmetricKey, SymmetricKey]
-
+    ) -> SymmetricKey:
         if self._has_keys(to):
             raise DomainError("This entity already has keys for this folder.")
 
@@ -379,20 +372,37 @@ class Folder:
             assert by is not None
             key = self.get_decryption_key(requestor=by)
 
-        folder_key = FolderKeyOfUser(
+        return key
+
+    def grant_access(self, to: "RlcUser", by: Optional["RlcUser"] = None):
+        key = self.__grant_access(to, by)
+
+        folder_key = FolderKey(
             owner_uuid=to.uuid,
             key=key,
         )
 
-        lock_key: Union[AsymmetricKey, SymmetricKey, EncryptedAsymmetricKey]
+        lock_key = to.get_encryption_key()
 
-        lock_key = to.get_encryption_key(user=by)  # type: ignore
-
-        enc_key = folder_key.encrypt_self(lock_key)
+        enc_key = EncryptedFolderKeyOfUser.create_from_key(folder_key, lock_key)
 
         self.__keys.append(enc_key)
 
-    def revoke_access(self, of: Union["RlcUser", "Group"]):
+    def grant_access_to_group(self, group: "Group", by: "RlcUser"):
+        key = self.__grant_access(group, by)
+
+        folder_key = FolderKey(
+            owner_uuid=group.uuid,
+            key=key,
+        )
+
+        lock_key = group.get_encryption_key(user=by)
+
+        enc_key = EncryptedFolderKeyOfGroup.create_from_key(folder_key, lock_key)
+
+        self.__group_keys.append(enc_key)
+
+    def revoke_access(self, of: "RlcUser"):
         prev_length = len(self.__keys)
 
         new_keys: list[EncryptedFolderKeyOfUser] = list(
@@ -411,3 +421,18 @@ class Folder:
             )
 
         self.__keys = new_keys
+
+    def revoke_access_from_group(self, of: "Group"):
+        prev_length = len(self.__keys)
+
+        new_keys: list[EncryptedFolderKeyOfGroup] = list(
+            filter(
+                lambda x: x.owner_uuid != of.uuid,
+                self.__group_keys,
+            )
+        )
+
+        if prev_length == len(new_keys):
+            raise DomainError("This user has no direct access to this folder.")
+
+        self.__group_keys = new_keys

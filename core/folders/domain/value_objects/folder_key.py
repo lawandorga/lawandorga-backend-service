@@ -1,3 +1,4 @@
+import abc
 from typing import TYPE_CHECKING, Union
 from uuid import UUID
 
@@ -14,13 +15,50 @@ from seedwork.types import JsonDict
 
 if TYPE_CHECKING:
     from core.auth.models.org_user import RlcUser
+    from core.rlc.models.group import Group
 
 
-class EncryptedFolderKeyOfUser:
+class FolderKey(abc.ABC):
+    def __init__(
+        self,
+        owner_uuid: UUID,
+        key: SymmetricKey,
+    ):
+        super().__init__()
+
+        assert owner_uuid is not None and key is not None
+
+        self._owner_uuid = owner_uuid
+        self._key = key
+
+    def __str__(self):
+        return "FolderKey of '{}'".format(self._owner_uuid)
+
+    def __repr__(self):
+        return str(self)
+
+    @property
+    def key(self):
+        return self._key
+
+    @property
+    def owner_uuid(self) -> UUID:
+        return self._owner_uuid
+
+    @property
+    def is_valid(self):
+        return True
+
+    @property
+    def is_encrypted(self):
+        return False
+
+
+class EncryptedFolderKey(abc.ABC):
     TYPE = "FOLDER"
 
-    @staticmethod
-    def create_from_dict(d: JsonDict) -> "EncryptedFolderKeyOfUser":
+    @classmethod
+    def create_from_dict(cls, d: JsonDict):
         assert (
             "key" in d
             and isinstance(d["key"], dict)
@@ -38,9 +76,7 @@ class EncryptedFolderKeyOfUser:
             assert isinstance(d["is_valid"], bool)
             is_valid = d["is_valid"]
 
-        return EncryptedFolderKeyOfUser(
-            key=key, owner_uuid=owner_uuid, is_valid=is_valid
-        )
+        return cls(key=key, owner_uuid=owner_uuid, is_valid=is_valid)
 
     def __init__(
         self,
@@ -48,39 +84,24 @@ class EncryptedFolderKeyOfUser:
         key: EncryptedSymmetricKey,
         is_valid: bool = True,
     ):
-        assert owner_uuid is not None and key is not None
-
-        self.__is_valid = is_valid
-        self.__owner_uuid = owner_uuid
-        self.__key = key
-
         super().__init__()
 
-    def __str__(self):
-        return "FolderKey of {}".format(self.__owner_uuid)
+        assert owner_uuid is not None and key is not None
+
+        self._is_valid = is_valid
+        self._owner_uuid = owner_uuid
+        self._key = key
 
     def __repr__(self):
         return str(self)
 
-    def as_dict(self) -> JsonDict:
-        assert isinstance(self.__key, EncryptedSymmetricKey)
-
-        data: JsonDict = {
-            "owner": str(self.__owner_uuid),
-            "key": self.__key.as_dict(),
-            "type": self.TYPE,
-            "is_valid": self.__is_valid,
-        }
-
-        return data
-
     @property
     def owner_uuid(self) -> UUID:
-        return self.__owner_uuid
+        return self._owner_uuid
 
     @property
     def is_valid(self):
-        return self.__is_valid
+        return self._is_valid
 
     @property
     def is_encrypted(self):
@@ -88,72 +109,97 @@ class EncryptedFolderKeyOfUser:
 
     @property
     def key_origin(self):
-        return self.__key.origin
+        return self._key.origin
 
-    def invalidate_self(self) -> "EncryptedFolderKeyOfUser":
+    def as_dict(self) -> JsonDict:
+        assert isinstance(self._key, EncryptedSymmetricKey)
+
+        data: JsonDict = {
+            "owner": str(self._owner_uuid),
+            "key": self._key.as_dict(),
+            "type": self.TYPE,
+            "is_valid": self._is_valid,
+        }
+
+        return data
+
+    def invalidate_self(self) -> "EncryptedFolderKey":
+        raise NotImplementedError()
+
+
+class EncryptedFolderKeyOfUser(EncryptedFolderKey):
+    @classmethod
+    def create_from_key(
+        cls,
+        key: FolderKey,
+        lock_key: Union[AsymmetricKey, EncryptedAsymmetricKey, SymmetricKey],
+    ) -> "EncryptedFolderKeyOfUser":
+        assert isinstance(key.key, SymmetricKey)
+
+        enc_key = EncryptedSymmetricKey.create(original=key.key, key=lock_key)
+
         return EncryptedFolderKeyOfUser(
-            owner_uuid=self.__owner_uuid, key=self.__key, is_valid=False
+            owner_uuid=key.owner_uuid,
+            key=enc_key,
         )
 
-    def decrypt_self(self, user: "RlcUser") -> "FolderKeyOfUser":
-        if not self.__is_valid:
+    def __str__(self):
+        return "EncryptedFolderKeyOfUser '{}'".format(self._owner_uuid)
+
+    def decrypt_self(self, user: "RlcUser") -> "FolderKey":
+        if not self._is_valid:
             raise ValueError("This key is not valid.")
 
-        assert isinstance(self.__key, EncryptedSymmetricKey)
+        assert isinstance(self._key, EncryptedSymmetricKey)
 
         unlock_key = user.get_decryption_key()
 
-        key = self.__key.decrypt(unlock_key)
+        key = self._key.decrypt(unlock_key)
 
-        return FolderKeyOfUser(
-            owner_uuid=self.__owner_uuid,
+        return FolderKey(
+            owner_uuid=self._owner_uuid,
             key=key,
         )
 
-
-class FolderKeyOfUser:
-    def __init__(
-        self,
-        owner_uuid: UUID,
-        key: SymmetricKey,
-    ):
-        super().__init__()
-
-        assert owner_uuid is not None and key is not None
-
-        self.__owner_uuid = owner_uuid
-        self.__key = key
-
-    def __str__(self):
-        return "FolderKey of {}".format(self.__owner_uuid)
-
-    def __repr__(self):
-        return str(self)
-
-    @property
-    def key(self):
-        return self.__key
-
-    @property
-    def owner_uuid(self) -> UUID:
-        return self.__owner_uuid
-
-    @property
-    def is_valid(self):
-        return True
-
-    @property
-    def is_encrypted(self):
-        return True
-
-    def encrypt_self(
-        self, key: Union[AsymmetricKey, EncryptedAsymmetricKey, SymmetricKey]
-    ) -> "EncryptedFolderKeyOfUser":
-        assert isinstance(self.__key, SymmetricKey)
-
-        enc_key = EncryptedSymmetricKey.create(original=self.__key, key=key)
-
+    def invalidate_self(self) -> "EncryptedFolderKeyOfUser":
         return EncryptedFolderKeyOfUser(
-            owner_uuid=self.__owner_uuid,
+            owner_uuid=self._owner_uuid, key=self._key, is_valid=False
+        )
+
+
+class EncryptedFolderKeyOfGroup(EncryptedFolderKey):
+    @classmethod
+    def create_from_key(
+        cls,
+        key: FolderKey,
+        lock_key: Union[AsymmetricKey, EncryptedAsymmetricKey, SymmetricKey],
+    ) -> "EncryptedFolderKeyOfGroup":
+        assert isinstance(key.key, SymmetricKey)
+
+        enc_key = EncryptedSymmetricKey.create(original=key.key, key=lock_key)
+
+        return EncryptedFolderKeyOfGroup(
+            owner_uuid=key.owner_uuid,
             key=enc_key,
         )
+
+    def __str__(self):
+        return "EncryptedFolderKeyOfGroup '{}'".format(self._owner_uuid)
+
+    def decrypt_self(self, group: "Group", user: "RlcUser") -> "FolderKey":
+        if not self._is_valid:
+            raise ValueError("This key is not valid.")
+
+        assert isinstance(self._key, EncryptedSymmetricKey)
+
+        unlock_key = group.get_decryption_key(user=user)
+
+        key = self._key.decrypt(unlock_key)
+
+        return FolderKey(
+            owner_uuid=self._owner_uuid,
+            key=key,
+        )
+
+    def invalidate_self(self) -> EncryptedFolderKey:
+        raise ValueError("Group keys can not be invalidated.")

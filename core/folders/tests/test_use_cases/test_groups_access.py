@@ -22,8 +22,8 @@ def test_grant_access_to_group(db):
     r.save(folder)
 
     group = test_helpers.create_group(u)["group"]
-    folder.grant_access(group, u)
-    assert len(folder.keys) == 2
+    folder.grant_access_to_group(group, u)
+    assert len(folder.group_keys) == 1
 
     assert folder.has_access(group)
     r.save(folder)
@@ -31,7 +31,7 @@ def test_grant_access_to_group(db):
     new_folder = r.retrieve(u.org_id, folder.uuid)
     assert new_folder.has_access(group), new_folder.keys
 
-    new_folder.revoke_access(group)
+    new_folder.revoke_access_from_group(group)
     assert not new_folder.has_access(group)
     r.save(new_folder)
 
@@ -73,7 +73,7 @@ def test_revoke_access_from_group(db):
     r.save(folder)
 
     group = test_helpers.create_group(u)["group"]
-    folder.grant_access(group, u)
+    folder.grant_access_to_group(group, u)
     r.save(folder)
 
     assert folder.has_access(group)

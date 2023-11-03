@@ -18,6 +18,7 @@ class FoldersFolder(models.Model):
     )
     enc_parent_key = models.JSONField(null=True, blank=True)
     keys = models.JSONField(blank=True)
+    group_keys = models.JSONField(blank=True, null=True)
     items = models.JSONField(blank=True)
     stop_inherit = models.BooleanField(default=False)
     restricted = models.BooleanField(default=False)
