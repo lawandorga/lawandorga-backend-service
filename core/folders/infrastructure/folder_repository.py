@@ -268,4 +268,5 @@ class DjangoFolderRepository(FolderRepository):
 
     @classmethod
     def tree(cls, user: "RlcUser", org_pk: int) -> FolderTree:
-        return FolderTree(user, cls.get_list(org_pk))
+        users = list(RlcUser.objects.filter(org_id=org_pk))
+        return FolderTree(user, cls.get_list(org_pk), users)

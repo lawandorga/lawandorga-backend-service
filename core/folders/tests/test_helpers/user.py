@@ -24,6 +24,7 @@ class UserObject(RlcUser):
         class Fake:
             def all(self):
                 return []
+
         return Fake()
 
     def get_decryption_key(self, *args, **kwargs) -> "AsymmetricKey":

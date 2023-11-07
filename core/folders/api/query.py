@@ -40,7 +40,9 @@ def query__detail_folder(rlc_user: RlcUser, data: schemas.InputFolderDetail):
     r = get_repository()
     folder = r.retrieve(rlc_user.org_id, data.id)
     folders_dict = r.get_dict(rlc_user.org_id)
-    access = TreeAccess(folders_dict, folder)
+    users = list(RlcUser.objects.filter(org_id=rlc_user.org_id))
+    users_dict = {u.uuid: u for u in users}
+    access = TreeAccess(folders_dict, folder, users_dict)
 
     for item in folder.items:
         if item.repository == "RECORD":

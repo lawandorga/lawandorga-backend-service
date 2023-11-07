@@ -12,8 +12,14 @@ if TYPE_CHECKING:
 
 
 class TreeAccess:
-    def __init__(self, folders_dict: dict[UUID, Folder], folder: Folder):
+    def __init__(
+        self,
+        folders_dict: dict[UUID, Folder],
+        folder: Folder,
+        users_dict: dict[UUID, "RlcUser"],
+    ):
         self.__folders_dict = folders_dict
+        self.__users_dict = users_dict
 
         self.access = self.get_owners_with_access(folder)
 
@@ -21,9 +27,10 @@ class TreeAccess:
         access = []
         for key in folder.keys:
             if isinstance(key, EncryptedFolderKeyOfUser):
+                user = self.__users_dict[key.owner_uuid]
                 access.append(
                     {
-                        "name": str(key.owner_uuid),  # TODO: change to name
+                        "name": user.name,
                         "uuid": str(key.owner_uuid),
                         "is_valid": key.is_valid,
                         "source": source,
@@ -59,8 +66,8 @@ class TreeFolder:
             return {"OPEN": {"uuid": self.__folder.uuid}}
         return {}
 
-    def as_dict(self, user: "RlcUser") -> JsonDict:
-        data = self.__folder.as_dict()
+    def as_dict(self, user: "RlcUser") -> dict:
+        data: dict = self.__folder.as_dict()
         has_access = self.__folder.has_access(user)
         data["has_access"] = has_access
         data["actions"] = self.get_actions(has_access)
@@ -72,15 +79,17 @@ class Node:
         self,
         folders_dict: dict[UUID, Folder],
         parent_dict: dict[Optional[UUID], list[Folder]],
+        users_dict: dict[UUID, "RlcUser"],
         folder: Folder,
     ):
         self.__folders_dict = folders_dict
         self.__parent_dict = parent_dict
+        self.__users_dict = users_dict
 
         self.folder = folder
         self.children = self.get_children(folder)
         self.content = folder.items
-        self.access = TreeAccess(folders_dict, folder)
+        self.access = TreeAccess(folders_dict, folder, users_dict)
 
     def get_children(self, folder) -> list["Node"]:
         if folder.uuid not in self.__parent_dict:
@@ -94,6 +103,7 @@ class Node:
                 folders_dict=self.__folders_dict,
                 parent_dict=self.__parent_dict,
                 folder=child,
+                users_dict=self.__users_dict,
             )
             children.append(node)
         return children
@@ -108,9 +118,10 @@ class Node:
 
 
 class FolderTree:
-    def __init__(self, user: "RlcUser", folders: list[Folder]):
+    def __init__(self, user: "RlcUser", folders: list[Folder], users: list["RlcUser"]):
         self.folders = folders
         self.user = user
+        self.users = users
 
         if len(folders) == 0:
             self.__tree = []
@@ -118,13 +129,18 @@ class FolderTree:
 
         folders_dict = self.__generate_folders_dict()
         parent_dict = self.__generate_parent_dict()
+        users_dict = self.__generate_users_dict()
 
         tree = []
         for folder in parent_dict[None]:
-            root_node = Node(folders_dict, parent_dict, folder)
+            root_node = Node(folders_dict, parent_dict, users_dict, folder)
             tree.append(root_node.as_dict(self.user))
 
         self.__tree = tree
+
+    def __generate_users_dict(self) -> dict[UUID, "RlcUser"]:
+        users_dict = {u.uuid: u for u in self.user.org.users.all()}
+        return users_dict
 
     def __generate_folders_dict(self) -> dict[UUID, Folder]:
         folders_dict = {f.uuid: f for f in self.folders}
