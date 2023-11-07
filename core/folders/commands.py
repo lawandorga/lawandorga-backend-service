@@ -8,13 +8,11 @@ from core.folders.use_cases.folder import (
     revoke_access,
     revoke_access_from_group,
     toggle_inheritance,
-    update_folder,
 )
 
 COMMANDS = {
     "folders/create_folder": create_folder,
     "folders/rename_folder": rename_folder,
-    "folders/update_folder": update_folder,
     "folders/delete_folder": delete_folder,
     "folders/move_folder": move_folder,
     "folders/toggle_inheritance_folder": toggle_inheritance,

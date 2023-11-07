@@ -43,17 +43,9 @@ def rename_folder(__actor: RlcUser, name: str, folder_uuid: UUID):
 
 
 @use_case()
-def update_folder(__actor: RlcUser, folder_pk: UUID, name: str):
+def delete_folder(__actor: RlcUser, folder_uuid: UUID):
     r = get_repository()
-    folder = r.retrieve(org_pk=__actor.org_id, uuid=folder_pk)
-    folder.update_information(name=name)
-    r.save(folder)
-
-
-@use_case()
-def delete_folder(__actor: RlcUser, folder_pk: UUID):
-    r = get_repository()
-    folder = r.retrieve(org_pk=__actor.org_id, uuid=folder_pk)
+    folder = r.retrieve(org_pk=__actor.org_id, uuid=folder_uuid)
 
     for f in r.get_list(__actor.org_id):
         if f.parent_uuid == folder.uuid:
