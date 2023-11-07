@@ -4,35 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 
-class InputFolderMove(BaseModel):
-    folder: UUID
-    target: UUID
-
-
-class InputFolderToggleInheritance(BaseModel):
-    folder: UUID
-
-
 class InputFolderDetail(BaseModel):
-    id: UUID
-
-
-class InputFolderCreate(BaseModel):
-    name: str
-    parent: Optional[UUID]
-
-
-class InputFolderUpdate(BaseModel):
-    name: str
-    id: UUID
-
-
-class InputFolderAccess(BaseModel):
-    user_uuid: UUID
-    id: UUID
-
-
-class InputFolderDelete(BaseModel):
     id: UUID
 
 

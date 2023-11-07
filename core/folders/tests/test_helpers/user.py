@@ -19,6 +19,13 @@ class UserObject(RlcUser):
         self.uuid = uuid4()
         self.key = AsymmetricKey.generate()
 
+    @property
+    def groups(self):
+        class Fake:
+            def all(self):
+                return []
+        return Fake()
+
     def get_decryption_key(self, *args, **kwargs) -> "AsymmetricKey":
         return self.key
 

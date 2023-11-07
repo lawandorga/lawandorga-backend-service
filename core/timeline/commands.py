@@ -6,7 +6,7 @@ from core.timeline.usecases.follow_up import (
     update_follow_up,
 )
 
-USECASES = {
+COMMANDS = {
     "timeline/create_follow_up": create_follow_up,
     "timeline/update_follow_up": update_follow_up,
     "timeline/delete_follow_up": delete_follow_up,
