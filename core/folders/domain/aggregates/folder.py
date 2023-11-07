@@ -280,6 +280,23 @@ class Folder:
 
         return None
 
+    def __get_encryption_key_from_group(
+        self, requestor: "RlcUser"
+    ) -> Optional["SymmetricKey"]:
+        groups = list(requestor.groups.all())
+        for group in groups:
+            for key in self.__group_keys:
+                if (
+                    isinstance(key, EncryptedFolderKeyOfGroup)
+                    and key.owner_uuid == group.uuid
+                    and key.is_valid
+                ):
+                    folder_key = key.decrypt_self(group, requestor)
+                    symmetric_key = folder_key.key
+                    assert isinstance(symmetric_key, SymmetricKey)
+                    return symmetric_key
+        return None
+
     def get_encryption_key(self, requestor: "RlcUser") -> "SymmetricKey":
         assert len(self.__keys) or self.enc_parent_key is not None
 
@@ -288,6 +305,10 @@ class Folder:
             return key
 
         key = self.__get_encryption_key_from_parent(requestor)
+        if key:
+            return key
+
+        key = self.__get_encryption_key_from_group(requestor)
         if key:
             return key
 

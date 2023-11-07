@@ -137,7 +137,7 @@ class Group(models.Model):
         return key.get_key()
 
     def get_decryption_key(self, user: "RlcUser") -> SymmetricKey:
-        return self.get_decryption_key(user)
+        return self.get_encryption_key(user)
 
     def update_information(
         self, name: str | None = None, description: str | None = None

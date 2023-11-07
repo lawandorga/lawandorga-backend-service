@@ -82,3 +82,19 @@ def test_revoke_access_from_group(db):
 
     new_folder = r.retrieve(u.org_id, folder.uuid)
     assert not new_folder.has_access(group)
+
+
+def test_get_keys_with_group(db):
+    org = test_helpers.create_org("Test Org")["org"]
+    org_user_1 = test_helpers.create_rlc_user(rlc=org)
+    u1 = org_user_1["rlc_user"]
+    org_user_2 = test_helpers.create_rlc_user(email="tester@law-orga.de", rlc=org)
+    u2 = org_user_2["rlc_user"]
+    group = test_helpers.create_group(u1)["group"]
+    group.add_member(u2, u1)
+    folder = Folder.create(name="Test Folder", org_pk=u1.org_id)
+    folder.grant_access(u1)
+    folder.grant_access_to_group(group, u1)
+    key1 = folder.get_decryption_key(u1)
+    key2 = folder.get_decryption_key(u2)
+    assert key1 == key2
