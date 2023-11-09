@@ -414,6 +414,11 @@ class RlcUser(Aggregate, models.Model):
             return_dict["follow_ups"] = follow_ups_data
         return return_dict
 
+    def get_group_uuids(self) -> list[UUID]:
+        if not hasattr(self, "_group_uuids"):
+            self._group_uuids = list(self.groups.values_list("uuid", flat=True))
+        return self._group_uuids
+
     def get_groups(self) -> list["Group"]:
         return list(self.groups.all())
 

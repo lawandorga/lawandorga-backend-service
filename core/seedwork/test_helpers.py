@@ -63,6 +63,7 @@ def create_raw_org_user(
         user_pk=user_pk,
         pk=pk,
     )
+    user._group_uuids = []
     if save:
         user.save()
     return user

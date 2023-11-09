@@ -1,5 +1,5 @@
 from typing import Union
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from core.auth.models.org_user import RlcUser
 from core.folders.domain.aggregates.folder import Folder
@@ -26,6 +26,9 @@ class UserObject(RlcUser):
                 return []
 
         return Fake()
+
+    def get_group_uuids(self) -> list[UUID]:
+        return []
 
     def get_decryption_key(self, *args, **kwargs) -> "AsymmetricKey":
         return self.key

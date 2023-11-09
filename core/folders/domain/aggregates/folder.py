@@ -176,30 +176,43 @@ class Folder:
 
         self.__keys = new_keys
 
-    def has_access(self, owner: Union["RlcUser", "Group"]) -> bool:
+    def has_access(self, owner: "RlcUser") -> bool:
         key = self._get_key(owner)
         if key is not None and key.is_valid:
             return True
         return False
+    
+    def has_access_group(self, owner: "Group") -> bool:
+        return self._has_keys_group(owner)
 
     def restrict(self) -> None:
         self.__restricted = True
 
     def _get_key(
-        self, owner: Union["RlcUser", "Group"]
+        self, owner: "RlcUser"
     ) -> Union[EncryptedFolderKeyOfGroup, EncryptedFolderKeyOfUser, None]:
         for u_key in self.__keys:
             if u_key.owner_uuid == owner.uuid:
                 return u_key
+        group_uuids = owner.get_group_uuids()
         for g_key in self.__group_keys:
-            if g_key.owner_uuid == owner.uuid:
+            if g_key.owner_uuid in group_uuids:
                 return g_key
         if self.__parent is None or self.__stop_inherit:
             return None
         return self.__parent._get_key(owner)
 
-    def _has_keys(self, owner: Union["RlcUser", "Group"]) -> bool:
+    def _get_key_by_group(self, owner: "Group") -> Optional[EncryptedFolderKeyOfGroup]:
+        for key in self.__group_keys:
+            if key.owner_uuid == owner.uuid:
+                return key
+        return None
+
+    def _has_keys(self, owner: "RlcUser") -> bool:
         return self._get_key(owner) is not None
+
+    def _has_keys_group(self, group: "Group") -> bool:
+        return self._get_key_by_group(group) is not None
 
     def __contains(self, item: Union[Item, FolderItem]):
         contains = False
@@ -380,12 +393,7 @@ class Folder:
         self.__parent = None
         self.set_parent(target, by)
 
-    def __grant_access(
-        self, to: Union["RlcUser", "Group"], by: Optional["RlcUser"] = None
-    ) -> SymmetricKey:
-        if self._has_keys(to):
-            raise DomainError("This entity already has keys for this folder.")
-
+    def __grant_access(self, by: Optional["RlcUser"] = None) -> SymmetricKey:
         if len(self.__keys) == 0 and self.__enc_parent_key is None:
             key = SymmetricKey.generate()
 
@@ -396,7 +404,10 @@ class Folder:
         return key
 
     def grant_access(self, to: "RlcUser", by: Optional["RlcUser"] = None):
-        key = self.__grant_access(to, by)
+        if self.has_access(to):
+            raise DomainError("This user already has access to this folder.")
+
+        key = self.__grant_access(by)
 
         folder_key = FolderKey(
             owner_uuid=to.uuid,
@@ -410,7 +421,10 @@ class Folder:
         self.__keys.append(enc_key)
 
     def grant_access_to_group(self, group: "Group", by: "RlcUser"):
-        key = self.__grant_access(group, by)
+        if self._has_keys_group(group):
+            raise DomainError("This group already has keys for this folder.")
+
+        key = self.__grant_access(by)
 
         folder_key = FolderKey(
             owner_uuid=group.uuid,
@@ -454,6 +468,6 @@ class Folder:
         )
 
         if prev_length == len(new_keys):
-            raise DomainError("This user has no direct access to this folder.")
+            raise DomainError("This group has no direct access to this folder.")
 
         self.__group_keys = new_keys

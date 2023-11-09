@@ -14,7 +14,7 @@ router = Router()
 def query__get_group(rlc_user: RlcUser, data: schemas.InputQueryGroup):
     group = Group.objects.get(from_rlc__id=rlc_user.org_id, id=data.id)
     return {
-        "id": group.id,
+        "id": group.pk,
         "name": group.name,
         "description": group.description,
         "members": list(group.members.all()),

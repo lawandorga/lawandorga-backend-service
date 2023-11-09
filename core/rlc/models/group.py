@@ -128,7 +128,9 @@ class Group(models.Model):
     def __get_group_key(self, user: "RlcUser") -> GroupKey:
         enc_key = self.__get_enc_group_key_of_user(user)
         if enc_key is None:
-            raise DomainError("The user does not have a key for this group.")
+            raise DomainError(
+                "You have no keys for this group, because you are not a member of this group."
+            )
         key = enc_key.decrypt(user)
         return key
 
