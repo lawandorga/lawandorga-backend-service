@@ -181,7 +181,7 @@ class Folder:
         if key is not None and key.is_valid:
             return True
         return False
-    
+
     def has_access_group(self, owner: "Group") -> bool:
         return self._has_keys_group(owner)
 
