@@ -6,7 +6,6 @@ from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import RlcUser
 from core.data_sheets.models import DataSheet
-from core.folders.api import schemas
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.item import ItemRepository
 from core.folders.use_cases.folder import get_repository
@@ -243,7 +242,12 @@ def query__list_folders(rlc_user: RlcUser):
     return get_page(context, rlc_user)
 
 
-@router.get(url="available_folders/", output_schema=list[schemas.OutputAvailableFolder])
+class OutputAvailableFolder(BaseModel):
+    name: str
+    id: UUID
+
+
+@router.get(url="available_folders/", output_schema=list[OutputAvailableFolder])
 def query__available_folders(rlc_user: RlcUser):
     r = get_repository()
     folders_1 = r.get_list(rlc_user.org_id)
@@ -251,11 +255,68 @@ def query__available_folders(rlc_user: RlcUser):
     return folders_2
 
 
+class InputFolderDetail(BaseModel):
+    id: UUID
+
+
+class OutputDetailContent(BaseModel):
+    uuid: UUID
+    name: Optional[str]
+    repository: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OutputDetailFolder(BaseModel):
+    name: str
+    uuid: UUID
+    stop_inherit: bool
+
+
+class OutputDetailAccess(BaseModel):
+    name: str
+    uuid: Optional[UUID]
+    source: str
+    actions: list[str]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OutputDetailTreeFolder(BaseModel):
+    name: str
+    uuid: UUID
+    stop_inherit: bool
+    has_access: bool
+    actions: dict[str, dict] = {}
+
+
+class OutputDetailFolderTreeNode(BaseModel):
+    folder: OutputDetailTreeFolder
+    children: list["OutputDetailFolderTreeNode"]
+    content: list[OutputDetailContent]
+    access: list[OutputDetailAccess]
+
+
+class OutputDetailSubfolder(BaseModel):
+    name: str
+    uuid: UUID
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OutputDetailFolderDetail(BaseModel):
+    folder: OutputDetailFolder
+    access: list[OutputDetailAccess]
+    group_access: list[OutputDetailAccess]
+    content: list[OutputDetailContent]
+    subfolders: list[OutputDetailSubfolder]
+
+
 @router.get(
     url="<uuid:id>/",
-    output_schema=schemas.OutputFolderDetail,
+    output_schema=OutputDetailFolderDetail,
 )
-def query__detail_folder(rlc_user: RlcUser, data: schemas.InputFolderDetail):
+def query__detail_folder(rlc_user: RlcUser, data: InputFolderDetail):
     r = get_repository()
     builder = ContextBuilder()
     builder.build_available_users(rlc_user.org_id).buid_users_dict()
