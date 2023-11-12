@@ -166,7 +166,9 @@ def build_children(context: Context, folder: Folder, user: RlcUser):
 def build_access(context: Context, folder: Folder, source="direct"):
     access = []
     for key in folder.keys:
-        user = context["users_dict"][key.owner_uuid]
+        user = context["users_dict"].get(key.owner_uuid, None)
+        if user is None:
+            continue
         access.append(
             {
                 "name": user.name,
@@ -186,7 +188,9 @@ def build_access(context: Context, folder: Folder, source="direct"):
 def build_group_access(context: Context, folder: Folder, source="direct"):
     access = []
     for key in folder.group_keys:
-        group = context["groups_dict"][key.owner_uuid]
+        group = context["groups_dict"].get(key.owner_uuid, None)
+        if group is None:
+            continue
         access.append(
             {
                 "name": group.name,
