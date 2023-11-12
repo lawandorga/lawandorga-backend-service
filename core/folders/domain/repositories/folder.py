@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.value_objects.tree import FolderTree
 from core.seedwork.repository import Repository
 
 if TYPE_CHECKING:
@@ -39,8 +38,4 @@ class FolderRepository(Repository, abc.ABC):
 
     @classmethod
     def get_children(cls, org_pk: int, uuid: UUID) -> list[Folder]:
-        raise NotImplementedError()
-
-    @classmethod
-    def tree(cls, user: "RlcUser", org_pk: int) -> FolderTree:
         raise NotImplementedError()

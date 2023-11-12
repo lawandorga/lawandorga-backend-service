@@ -9,7 +9,6 @@ from core.data_sheets.models import DataSheet
 from core.folders.api import schemas
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.item import ItemRepository
-from core.folders.domain.value_objects.tree import TreeAccess
 from core.folders.use_cases.folder import get_repository
 from core.rlc.models.group import Group
 from core.seedwork.api_layer import Router
@@ -163,7 +162,7 @@ def build_children(context: Context, folder: Folder, user: RlcUser):
     return children
 
 
-def build_access(context: Context, folder: Folder, source="direct"):
+def build_user_access(context: Context, folder: Folder, source="direct"):
     access = []
     for key in folder.keys:
         user = context["users_dict"].get(key.owner_uuid, None)
@@ -179,7 +178,7 @@ def build_access(context: Context, folder: Folder, source="direct"):
             }
         )
     if not folder.stop_inherit and folder.parent_uuid is not None:
-        access += build_access(
+        access += build_user_access(
             context, context["folders_dict"][folder.parent_uuid], "parent"
         )
     return access
@@ -213,7 +212,7 @@ def build_node(context: Context, folder: Folder, user: RlcUser):
         "folder": build_folder(context, folder, has_access),
         "children": build_children(context, folder, user),
         "content": folder.items if has_access else [],
-        "access": build_access(context, folder),
+        "access": build_user_access(context, folder),
         "group_access": build_group_access(context, folder),
     }
 
@@ -258,11 +257,12 @@ def query__available_folders(rlc_user: RlcUser):
 )
 def query__detail_folder(rlc_user: RlcUser, data: schemas.InputFolderDetail):
     r = get_repository()
+    builder = ContextBuilder()
+    builder.build_available_users(rlc_user.org_id).buid_users_dict()
+    builder.build_folders(rlc_user.org_id).build_folder_dicts()
+    builder.build_available_groups(rlc_user.org_id).build_groups_dict()
+    context = builder.build()
     folder = r.retrieve(rlc_user.org_id, data.id)
-    folders_dict = r.get_dict(rlc_user.org_id)
-    users = list(RlcUser.objects.filter(org_id=rlc_user.org_id))
-    users_dict = {u.uuid: u for u in users}
-    access = TreeAccess(folders_dict, folder, users_dict)
 
     for item in folder.items:
         if item.repository == "RECORD":
@@ -287,5 +287,6 @@ def query__detail_folder(rlc_user: RlcUser, data: schemas.InputFolderDetail):
         "folder": folder.as_dict(),
         "content": folder.items,
         "subfolders": subfolders,
-        "access": access.as_dict(),
+        "access": build_user_access(context, folder),
+        "group_access": build_group_access(context, folder),
     }

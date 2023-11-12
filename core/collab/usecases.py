@@ -1,0 +1,1 @@
+USECASES: dict[str, str] = {}

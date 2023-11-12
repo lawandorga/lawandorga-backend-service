@@ -23,7 +23,7 @@ class TextDocumentVersion(EncryptedModelMixin, models.Model):
 
     def __str__(self):
         return "textDocumentVersion: {}; document: {};".format(
-            self.id, self.document.id
+            self.pk, self.document.pk
         )
 
     def encrypt(self, aes_key_rlc=None, request=None):

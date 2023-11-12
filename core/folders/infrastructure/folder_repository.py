@@ -16,7 +16,6 @@ from core.folders.domain.value_objects.folder_key import (
     EncryptedFolderKeyOfUser,
 )
 from core.folders.domain.value_objects.parent_key import ParentKey
-from core.folders.domain.value_objects.tree import FolderTree
 from core.folders.models import FoldersFolder
 from core.seedwork.repository import RepositoryWarehouse
 
@@ -265,8 +264,3 @@ class DjangoFolderRepository(FolderRepository):
                 children.append(folder)
 
         return children
-
-    @classmethod
-    def tree(cls, user: "RlcUser", org_pk: int) -> FolderTree:
-        users = list(RlcUser.objects.filter(org_id=org_pk))
-        return FolderTree(user, cls.get_list(org_pk), users)

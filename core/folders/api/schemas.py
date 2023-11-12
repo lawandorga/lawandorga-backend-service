@@ -11,7 +11,6 @@ class InputFolderDetail(BaseModel):
 class OutputContent(BaseModel):
     uuid: UUID
     name: Optional[str]
-    # actions: dict[str, str]
     repository: str
 
     model_config = ConfigDict(from_attributes=True)
@@ -32,14 +31,7 @@ class OutputAccess(BaseModel):
     name: str
     uuid: Optional[UUID]
     source: str
-    actions: dict[str, dict] = {}
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class OutputPerson(BaseModel):
-    name: str
-    uuid: Optional[UUID]
+    actions: list[str]
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -59,11 +51,6 @@ class OutputFolderTreeNode(BaseModel):
     access: list[OutputAccess]
 
 
-class OutputFolderPage(BaseModel):
-    tree: list[OutputFolderTreeNode]
-    available_persons: list[OutputPerson]
-
-
 class OutputSubfolder(BaseModel):
     name: str
     uuid: UUID
@@ -74,5 +61,6 @@ class OutputSubfolder(BaseModel):
 class OutputFolderDetail(BaseModel):
     folder: OutputFolder
     access: list[OutputAccess]
+    group_access: list[OutputAccess]
     content: list[OutputContent]
     subfolders: list[OutputSubfolder]
