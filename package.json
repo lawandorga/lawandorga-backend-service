@@ -4,7 +4,7 @@
         "css:watch": "tailwindcss -i ./static/src/tailwind.css -o ./static/dist/tailwind.css --watch"
     },
     "dependencies": {
-        "@tailwindcss/forms": "^0.5.6",
+        "@tailwindcss/forms": "^0.5.7",
         "@tailwindcss/typography": "^0.5.9",
         "tailwindcss": "^3.3.5"
     }
