@@ -22,7 +22,7 @@ def org(db):
 
 @pytest.fixture
 def user(db, org):
-    user_1 = data.create_rlc_user(rlc=org)
+    user_1 = data.create_org_user(rlc=org)
     org.generate_keys()
     yield user_1
 
@@ -87,7 +87,6 @@ def test_publish_questionnaire(user, db, template, folder):
         ),
         content_type="application/json",
     )
-    print(response.json())
     assert response.status_code == 200
 
 

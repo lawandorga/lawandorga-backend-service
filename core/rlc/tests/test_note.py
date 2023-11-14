@@ -11,7 +11,7 @@ from core.seedwork import test_helpers
 @pytest.fixture
 def user(db):
     rlc = Org.objects.create(name="Test RLC")
-    user = test_helpers.create_rlc_user(rlc=rlc)
+    user = test_helpers.create_org_user(rlc=rlc)
     user["rlc_user"].grant(PERMISSION_DASHBOARD_MANAGE_NOTES)
     yield user
 

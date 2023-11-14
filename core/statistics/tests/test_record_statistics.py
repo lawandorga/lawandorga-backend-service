@@ -16,7 +16,7 @@ from core.seedwork import test_helpers as data
 @pytest.fixture
 def user(db):
     rlc = Org.objects.create(name="Test RLC")
-    user_1 = data.create_rlc_user(rlc=rlc)
+    user_1 = data.create_org_user(rlc=rlc)
     statistics_user = data.create_statistics_user(
         email="statistics@law-orga.de", name="Mr. Statistics"
     )

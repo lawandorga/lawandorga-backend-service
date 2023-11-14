@@ -15,10 +15,10 @@ from core.seedwork.encryption import AESEncryption
 
 
 def test_folder_migrate(db):
-    full_user = test_helpers.create_rlc_user()
+    full_user = test_helpers.create_org_user()
     user: RlcUser = full_user["rlc_user"]  # type: ignore
     org: Org = full_user["org"]  # type: ignore
-    another_full_user = test_helpers.create_rlc_user(
+    another_full_user = test_helpers.create_org_user(
         email="tester@law-orga.de", name="Mr. Tester", rlc=org
     )
     another_user = another_full_user["rlc_user"]

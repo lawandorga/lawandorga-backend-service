@@ -8,7 +8,7 @@ from core.seedwork.repository import RepositoryWarehouse
 
 
 def test_folder_can_be_retrieved(db):
-    user = test_helpers.create_rlc_user()
+    user = test_helpers.create_org_user()
     rlc_uesr = user["rlc_user"]
     RepositoryWarehouse.add_repository(DjangoFolderRepository)
     repository = RepositoryWarehouse.get(FolderRepository)

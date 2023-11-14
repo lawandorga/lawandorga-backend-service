@@ -24,14 +24,14 @@ def org(db):
 
 @pytest.fixture
 def rlc_user_2(db, org):
-    user_2 = data.create_rlc_user(email="dummy2@law-orga.de", rlc=org)
+    user_2 = data.create_org_user(email="dummy2@law-orga.de", rlc=org)
     yield user_2
 
 
 @pytest.fixture
 def user(db, rlc_user_2, org):
-    user_1 = data.create_rlc_user(rlc=org)
-    data.create_rlc_user(email="dummy3@law-orga.de", rlc=org)
+    user_1 = data.create_org_user(rlc=org)
+    data.create_org_user(email="dummy3@law-orga.de", rlc=org)
     org.generate_keys()
     template = DataSheetTemplate.objects.create(rlc=org, name="Record Template")
     data.create_data_sheet(

@@ -6,7 +6,7 @@ from core.timeline.models.follow_up import TimelineFollowUp
 
 
 def test_follow_up_creation_on_api(db):
-    user = test_helpers.create_rlc_user()
+    user = test_helpers.create_org_user()
     rlc_user = user["rlc_user"]
     folder = test_helpers.create_folder(user=rlc_user)["folder"]
     client = Client()
@@ -22,6 +22,5 @@ def test_follow_up_creation_on_api(db):
         },
         content_type="application/json",
     )
-    print(response.json())
-    assert response.status_code == 200
+    assert response.status_code == 200, response.json()
     assert TimelineFollowUp.objects.count() == 1

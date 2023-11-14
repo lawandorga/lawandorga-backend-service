@@ -571,10 +571,10 @@ def users_entry(users_field, record):
 
 def test_users_entry_create(db, record, users_field, auth_client):
     user = RlcUser.objects.get()
-    user1 = test_helpers.create_rlc_user(
+    user1 = test_helpers.create_org_user(
         rlc=user.org, email="dummy2@law-orga.de", save=True
     )["rlc_user"]
-    user2 = test_helpers.create_rlc_user(
+    user2 = test_helpers.create_org_user(
         rlc=user.org, email="dummy3@law-orga.de", save=True
     )["rlc_user"]
     data = {
@@ -594,7 +594,7 @@ def test_users_entry_create(db, record, users_field, auth_client):
 
 def test_users_entry_udpate(db, record, users_field, auth_client, users_entry):
     user = RlcUser.objects.get()
-    user2 = test_helpers.create_rlc_user(
+    user2 = test_helpers.create_org_user(
         rlc=user.org, email="dummy3@law-orga.de", save=True
     )["rlc_user"]
     data = {
@@ -629,10 +629,10 @@ def test_entry_delete(db, record, users_field, auth_client, users_entry):
 def test_entry_keys_sharing_true(db, record, users_field, auth_client):
     assert users_field.share_keys is True
     user = RlcUser.objects.get()
-    user1 = test_helpers.create_rlc_user(
+    user1 = test_helpers.create_org_user(
         rlc=user.org, email="dummy2@law-orga.de", save=True
     )["rlc_user"]
-    user2 = test_helpers.create_rlc_user(
+    user2 = test_helpers.create_org_user(
         rlc=user.org, email="dummy3@law-orga.de", save=True
     )["rlc_user"]
     r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
@@ -672,10 +672,10 @@ def test_entry_keys_sharing_false(db, record, users_field, auth_client):
     users_field.save()
     assert users_field.share_keys is False
     user = RlcUser.objects.get()
-    user1 = test_helpers.create_rlc_user(
+    user1 = test_helpers.create_org_user(
         rlc=user.org, email="dummy2@law-orga.de", save=True
     )["rlc_user"]
-    user2 = test_helpers.create_rlc_user(
+    user2 = test_helpers.create_org_user(
         rlc=user.org, email="dummy3@law-orga.de", save=True
     )["rlc_user"]
     r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))

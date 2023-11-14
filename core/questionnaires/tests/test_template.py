@@ -9,7 +9,7 @@ from core.seedwork import test_helpers as helpers
 
 
 def test_create_template(db):
-    user = helpers.create_rlc_user()["rlc_user"]
+    user = helpers.create_org_user()["rlc_user"]
     user.grant(PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES)
     create_questionnaire_template(
         user, "Test Template", "A template for testing purposes."
@@ -18,7 +18,7 @@ def test_create_template(db):
 
 
 def test_update_template(db):
-    user = helpers.create_rlc_user()["rlc_user"]
+    user = helpers.create_org_user()["rlc_user"]
     user.grant(PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES)
     template = helpers.create_questionnaire_template(user.org, save=True)
     update_questionnaire_template(user, template.id, "New Name", "New Notes")
@@ -26,7 +26,7 @@ def test_update_template(db):
 
 
 def test_delete_template(db):
-    user = helpers.create_rlc_user()["rlc_user"]
+    user = helpers.create_org_user()["rlc_user"]
     user.grant(PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES)
     template = helpers.create_questionnaire_template(user.org, save=True)
     delete_questionnaire_template(user, template.id)

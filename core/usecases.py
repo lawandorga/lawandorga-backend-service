@@ -1,3 +1,4 @@
+from core.collab.usecases import USECASES as COLLAB_USECASES
 from core.data_sheets.commands import COMMANDS as DATA_SHEET_COMMANDS
 from core.folders.commands import COMMANDS as FOLDER_COMMANDS
 from core.questionnaires.commands import COMMANDS as QUESTIONNAIRE_COMMANDS
@@ -10,3 +11,4 @@ USECASES.update(QUESTIONNAIRE_COMMANDS)
 USECASES.update(DATA_SHEET_COMMANDS)
 USECASES.update(ORG_COMMANDS)
 USECASES.update(FOLDER_COMMANDS)
+USECASES.update(COLLAB_USECASES)

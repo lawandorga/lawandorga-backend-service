@@ -53,7 +53,7 @@ def test_add_member_is_saved(db, group, user):
 
 
 def test_group_create_creates_keys(db):
-    user = test_helpers.create_rlc_user()["rlc_user"]
+    user = test_helpers.create_org_user()["rlc_user"]
     user.grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     group = create_group(user, "Test Group", None)
     assert len(group.keys) == 1, group.keys
@@ -61,10 +61,10 @@ def test_group_create_creates_keys(db):
 
 
 def test_group_add_member_gets_key(db):
-    user = test_helpers.create_rlc_user()["rlc_user"]
+    user = test_helpers.create_org_user()["rlc_user"]
     user.grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     group = create_group(user, "Test Group", None)
-    user2 = test_helpers.create_rlc_user(email="dummy2@law-orga.de", rlc=user.org)[
+    user2 = test_helpers.create_org_user(email="dummy2@law-orga.de", rlc=user.org)[
         "rlc_user"
     ]
     group.add_member(user2, user)
@@ -73,10 +73,10 @@ def test_group_add_member_gets_key(db):
 
 
 def test_group_remove_member_removes_key(db):
-    user = test_helpers.create_rlc_user()["rlc_user"]
+    user = test_helpers.create_org_user()["rlc_user"]
     user.grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     group = create_group(user, "Test Group", None)
-    user2 = test_helpers.create_rlc_user(email="dummy2@law-orga.de", rlc=user.org)[
+    user2 = test_helpers.create_org_user(email="dummy2@law-orga.de", rlc=user.org)[
         "rlc_user"
     ]
     group.add_member(user2, user)

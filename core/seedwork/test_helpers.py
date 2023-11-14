@@ -136,7 +136,7 @@ class CreateRlcUserData(TypedDict):
     public_key: bytes
 
 
-def create_rlc_user(
+def create_org_user(
     email="dummy@law-orga.de",
     name="Dummy 1",
     rlc=None,
@@ -218,7 +218,7 @@ def create_data_sheet(template=None, users: Optional[List[UserProfile]] = None):
 
 def create_record(token="AZ-TEST", user: Optional[RlcUser] = None):
     if user is None:
-        full_user = create_rlc_user()
+        full_user = create_org_user()
         user = full_user["rlc_user"]
     user.grant(PERMISSION_RECORDS_ADD_RECORD)
     folder_uuid = uc_create_record(user, token)

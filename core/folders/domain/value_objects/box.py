@@ -113,7 +113,7 @@ class OpenBox(Box):
         return self.__data.decode(*args, **kwargs)
 
     @property
-    def value(self) -> bytes:
+    def value(self) -> bytes:  # TODO: refactor to value_as_bytes
         return self.__data
 
     @property

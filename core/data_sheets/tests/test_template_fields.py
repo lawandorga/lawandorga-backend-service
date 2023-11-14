@@ -9,7 +9,7 @@ from core.seedwork import test_helpers
 
 
 def test_create_field(db):
-    user = test_helpers.create_rlc_user()
+    user = test_helpers.create_org_user()
     rlc_user = user["rlc_user"]
     rlc_user.grant(PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES)
     template = DataSheetTemplate.objects.create(
@@ -20,7 +20,7 @@ def test_create_field(db):
 
 
 def test_update_field(db):
-    user = test_helpers.create_rlc_user()
+    user = test_helpers.create_org_user()
     rlc_user = user["rlc_user"]
     rlc_user.grant(PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES)
     template = DataSheetTemplate.objects.create(
@@ -34,7 +34,7 @@ def test_update_field(db):
 
 
 def test_delete_field(db):
-    user = test_helpers.create_rlc_user()
+    user = test_helpers.create_org_user()
     rlc_user = user["rlc_user"]
     rlc_user.grant(PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES)
     template = DataSheetTemplate.objects.create(

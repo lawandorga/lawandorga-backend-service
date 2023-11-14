@@ -5,10 +5,10 @@ from core.auth.models import RlcUser
 from core.auth.use_cases.finders import org_user_from_uuid
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
+from core.folders.domain.value_objects.folder_item import FolderItem
 from core.folders.use_cases.finders import (
     folder_from_uuid,
     group_from_uuid,
-    item_from_repository_and_uuid,
     rlc_user_from_uuid,
 )
 from core.permissions.static import PERMISSION_FOLDERS_TOGGLE_INHERITANCE
@@ -164,12 +164,13 @@ def toggle_inheritance(__actor: RlcUser, folder_uuid: UUID):
 def rename_item_in_folder(
     __actor: MessageBusActor,
     repository_name: str,
+    item_name: str,
     item_uuid: UUID,
     folder_uuid: UUID,
 ):
-    item = item_from_repository_and_uuid(__actor.org_pk, repository_name, item_uuid)
     folder = folder_from_uuid(__actor, folder_uuid)
     r = get_repository()
+    item = FolderItem(name=item_name, uuid=item_uuid, repository=repository_name)
     folder.update_item(item)
     r.save(folder)
 
@@ -186,12 +187,13 @@ def delete_item_from_folder(__actor: MessageBusActor, uuid: UUID, folder_uuid: U
 def add_item_to_folder(
     __actor: MessageBusActor,
     repository_name: str,
+    item_name: str,
     item_uuid: UUID,
     folder_uuid: UUID,
 ):
-    item = item_from_repository_and_uuid(__actor.org_pk, repository_name, item_uuid)
     folder = folder_from_uuid(__actor, folder_uuid)
     r = get_repository()
+    item = FolderItem(name=item_name, uuid=item_uuid, repository=repository_name)
     folder.add_item(item)
     r.save(folder)
 

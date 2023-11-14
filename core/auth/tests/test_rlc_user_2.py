@@ -7,7 +7,7 @@ from core.seedwork import test_helpers as data
 class TestRlcUser(TestCase):
     def setUp(self):
         self.rlc = Org.objects.create(name="Test RLC")
-        self.user_1 = data.create_rlc_user(rlc=self.rlc)
+        self.user_1 = data.create_org_user(rlc=self.rlc)
         self.rlc.generate_keys()
         self.record_1 = data.create_data_sheet(users=[self.user_1["user"]])
         self.client = Client()

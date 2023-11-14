@@ -1,5 +1,6 @@
 from .auth.models import *
 from .collab.models import *
+from .collab.models.collab import Collab
 from .data_sheets.models import *
 from .events.models import *
 from .files.models import *

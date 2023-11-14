@@ -16,6 +16,7 @@ def handler__item_renamed(event: FolderItem.ItemRenamed):
     rename_item_in_folder(
         MessageBusActor(event.org_pk),
         event.repository,
+        event.name,
         event.uuid,
         event.folder_uuid,
     )
@@ -35,6 +36,7 @@ def handler__item_added_to_folder(event: FolderItem.ItemAddedToFolder):
     add_item_to_folder(
         MessageBusActor(event.org_pk),
         event.repository,
+        event.name,
         event.uuid,
         event.folder_uuid,
     )

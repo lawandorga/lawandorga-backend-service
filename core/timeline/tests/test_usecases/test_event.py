@@ -7,7 +7,7 @@ from core.timeline.usecases.event import create_event, delete_event, update_even
 
 
 def test_event_creation(db):
-    user = test_helpers.create_rlc_user()["rlc_user"]
+    user = test_helpers.create_org_user()["rlc_user"]
     folder = test_helpers.create_folder(user=user)["folder"]
     event = create_event(
         user,
@@ -21,7 +21,7 @@ def test_event_creation(db):
 
 
 def test_update_event(db):
-    user = test_helpers.create_rlc_user(save=True)["rlc_user"]
+    user = test_helpers.create_org_user(save=True)["rlc_user"]
     event = helpers.create_event(user=user)
     event = update_event(
         __actor=user,
@@ -34,7 +34,7 @@ def test_update_event(db):
 
 
 def test_delete_event(db):
-    user = test_helpers.create_rlc_user(save=True)["rlc_user"]
+    user = test_helpers.create_org_user(save=True)["rlc_user"]
     event = helpers.create_event(user=user)
     delete_event(
         __actor=user,

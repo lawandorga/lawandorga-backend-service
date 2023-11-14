@@ -12,7 +12,7 @@ from core.seedwork import test_helpers
 
 @pytest.fixture
 def rlc_user(db):
-    user = test_helpers.create_rlc_user()
+    user = test_helpers.create_org_user()
     yield user
 
 
@@ -47,7 +47,7 @@ def test_user_can_not_delete_someone_else(db, rlc_user):
     client = Client()
     client.login(**rlc_user)
     user = rlc_user["rlc_user"]
-    another_user = test_helpers.create_rlc_user(
+    another_user = test_helpers.create_org_user(
         email="test122@law-orga.de", rlc=user.org
     )["rlc_user"]
     response = client.delete("/api/rlc_users/{}/".format(another_user.pk))
@@ -58,7 +58,7 @@ def test_unlock_works(db, rlc_user):
     client = Client()
     client.login(**rlc_user)
     user = rlc_user["rlc_user"]
-    another_user = test_helpers.create_rlc_user(
+    another_user = test_helpers.create_org_user(
         email="test5692@law-orga.de", rlc=user.org
     )["rlc_user"]
     another_user.locked = True
@@ -93,7 +93,7 @@ def test_delete_works(db, rlc_user):
     client.login(**rlc_user)
     user = rlc_user["rlc_user"]
     user.grant(PERMISSION_ADMIN_MANAGE_USERS)
-    another_user = test_helpers.create_rlc_user(
+    another_user = test_helpers.create_org_user(
         email="test2@law-orga.de", rlc=user.org
     )["rlc_user"]
     rlc_users = RlcUser.objects.count()

@@ -12,7 +12,7 @@ from core.timeline.usecases.follow_up import (
 
 
 def test_follow_up_creation(db):
-    user = test_helpers.create_rlc_user()["rlc_user"]
+    user = test_helpers.create_org_user()["rlc_user"]
     folder = test_helpers.create_folder(user=user)["folder"]
     follow_up = create_follow_up(
         user,
@@ -26,7 +26,7 @@ def test_follow_up_creation(db):
 
 
 def test_update_follow_up(db):
-    user = test_helpers.create_rlc_user(save=True)["rlc_user"]
+    user = test_helpers.create_org_user(save=True)["rlc_user"]
     follow_up = helpers.create_follow_up(user=user)
     follow_up = update_follow_up(
         __actor=user,
@@ -40,7 +40,7 @@ def test_update_follow_up(db):
 
 
 def test_delete_follow_up(db):
-    user = test_helpers.create_rlc_user(save=True)["rlc_user"]
+    user = test_helpers.create_org_user(save=True)["rlc_user"]
     follow_up = helpers.create_follow_up(user=user)
     delete_follow_up(
         __actor=user,
@@ -50,7 +50,7 @@ def test_delete_follow_up(db):
 
 
 def test_follow_up_done(db):
-    user = test_helpers.create_rlc_user(save=True)["rlc_user"]
+    user = test_helpers.create_org_user(save=True)["rlc_user"]
     follow_up = helpers.create_follow_up(user=user)
     set_follow_up_as_done(
         __actor=user,

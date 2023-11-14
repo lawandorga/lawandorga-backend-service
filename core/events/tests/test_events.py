@@ -13,8 +13,8 @@ class TestEvents(TestCase):
         self.rlc = Org.objects.create(name="Test RLC", meta=self.meta_org1)
         self.rlc2 = Org.objects.create(name="Second RLC", meta=self.meta_org1)
         self.other_org = Org.objects.create(name="Other Org", meta=self.meta_org2)
-        self.user_1 = data.create_rlc_user(rlc=self.rlc)
-        self.user_2 = data.create_rlc_user(email="dummy2@law-orga.de", rlc=self.rlc)
+        self.user_1 = data.create_org_user(rlc=self.rlc)
+        self.user_2 = data.create_org_user(email="dummy2@law-orga.de", rlc=self.rlc)
 
         self.event_1 = EventsEvent.objects.create(
             org=self.rlc,

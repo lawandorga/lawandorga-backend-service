@@ -53,7 +53,7 @@ def test_deletion_raises(record, another_user, user):
 
 
 def test_deletion_works(db):
-    full_user = test_helpers.create_rlc_user()
+    full_user = test_helpers.create_org_user()
     user = full_user["rlc_user"]
     record = test_helpers.create_record(user=user)["record"]
     deletion = RecordsDeletion.create(record, user)

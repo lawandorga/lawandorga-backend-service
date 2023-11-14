@@ -1,3 +1,4 @@
+from core.collab.repositories.collab import CollabRepository
 from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.timeline.repositories.event import EventRepository
@@ -7,4 +8,5 @@ INJECTIONS = {
     FolderRepository: DjangoFolderRepository(),
     FollowUpRepository: FollowUpRepository(),
     EventRepository: EventRepository(),
+    CollabRepository: CollabRepository(),
 }

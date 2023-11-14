@@ -65,7 +65,7 @@ def test_access_works(db):
     record = full_record["record"]
     user = full_record["user"]
 
-    full_other_user = test_helpers.create_rlc_user(
+    full_other_user = test_helpers.create_org_user(
         email="tester@law-orga.de", rlc=user.org
     )
     other_user = full_other_user["rlc_user"]

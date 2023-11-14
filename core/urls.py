@@ -33,6 +33,7 @@ urlpatterns = [
     path("api/", include(org_urlpatterns)),
     path("api/internal/", include(internal_urlpatterns)),
     path("api/collab/", include(collab_router.urls)),
+    path("api/collab/", include("core.collab.urls")),
     path("api/files/", include(files_router.urls)),
     path("api/files/v2/", include(files_new_urlpatterns)),
     path("api/data_sheets/", include(data_sheets_urlpatterns)),

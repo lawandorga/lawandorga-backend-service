@@ -17,7 +17,7 @@ def org(db):
 
 @pytest.fixture
 def user(db, org):
-    user = data.create_rlc_user(rlc=org)
+    user = data.create_org_user(rlc=org)
     org.generate_keys()
     ExternalLink.objects.create(
         org=org, name="Test Link", link="https://www.amazon.de", order=1
@@ -57,7 +57,7 @@ def test_member_accept(user, db):
     c = Client()
     c.login(**user)
     user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_USERS)
-    another_user = data.create_rlc_user(
+    another_user = data.create_org_user(
         rlc=user["rlc_user"].org, email="another@law-orga.de"
     )
     response = c.post(
