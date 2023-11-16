@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from django.db import models
+from django.utils import timezone
 
 from core.auth.models.org_user import RlcUser
 from core.collab.value_objects.document import Document, EncryptedDocument
@@ -67,6 +68,13 @@ class Collab(Aggregate, models.Model):
     @property
     def text(self) -> str:
         return self.history[-1].text
+
+    @property
+    def password(self) -> str:
+        today_date = timezone.now().strftime("%Y-%m-%d")
+        uuid = self.uuid
+        text = f"{today_date}{uuid}"
+        return str(hash(text))
 
     def sync(self, text: str, user: RlcUser) -> None:
         doc = Document.create(user=self.create_doc_user(user), text=text)
