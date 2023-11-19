@@ -62,7 +62,7 @@ def test_collab_sync(db):
     cr = CollabRepository()
     fr = DjangoFolderRepository()
     cr.save_document(collab, user, folder)
-    sync_collab(user, collab.uuid, "my-awesome-text", cr)
+    sync_collab(user, collab.uuid, "my-awesome-text")
     loaded = cr.get_document(collab.uuid, user, fr)
     assert loaded.text == "my-awesome-text"
 
@@ -79,5 +79,5 @@ def test_collab_delete(db):
     )
     cr = CollabRepository()
     cr.save_document(collab, user, folder)
-    delete_collab(user, collab.uuid, cr)
+    delete_collab(user, collab.uuid)
     assert Collab.objects.count() == 0

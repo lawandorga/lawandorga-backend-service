@@ -15,12 +15,21 @@ class InputUuid(BaseModel):
     uuid: UUID
 
 
+class OutputDocument(BaseModel):
+    user: str
+    text: str
+    time: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class OutputCollab(BaseModel):
     uuid: UUID
     name: str
     text: str
     password: str
     created_at: datetime
+    history: list[OutputDocument]
 
     model_config = ConfigDict(from_attributes=True)
 
