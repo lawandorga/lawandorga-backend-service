@@ -104,9 +104,11 @@ def optimize(__actor: RlcUser, fr: FolderRepository, cr: CollabRepository):
         PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS
     ) and not __actor.has_permission(PERMISSION_COLLAB_READ_ALL_DOCUMENTS):
         return
-    
+
     groups = set()
-    for p in PermissionForCollabDocument.objects.filter(document__rlc_id=__actor.org_id).select_related("group_has_permission"):
+    for p in PermissionForCollabDocument.objects.filter(
+        document__rlc_id=__actor.org_id
+    ).select_related("group_has_permission"):
         groups.add(p.group_has_permission)
 
     for group in groups:
