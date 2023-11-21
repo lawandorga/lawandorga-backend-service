@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
 
 from core.permissions.static import (
@@ -7,6 +9,12 @@ from core.permissions.static import (
 )
 from core.rlc.models import Org
 
+if TYPE_CHECKING:
+    from core.collab.models import TextDocumentVersion
+    from core.collab.models.permission_for_collab_document import (
+        PermissionForCollabDocument,
+    )
+
 
 class CollabDocument(models.Model):
     rlc = models.ForeignKey(
@@ -15,6 +23,10 @@ class CollabDocument(models.Model):
     path = models.CharField(max_length=4096, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+
+    if TYPE_CHECKING:
+        versions: models.QuerySet["TextDocumentVersion"]
+        collab_permissions: models.QuerySet["PermissionForCollabDocument"]
 
     class Meta:
         verbose_name = "CollabDocument"

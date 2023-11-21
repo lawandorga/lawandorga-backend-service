@@ -51,6 +51,8 @@ class Org(EncryptedModelMixin, models.Model):
         choices=FEDERAL_STATE_CHOICES, max_length=100, blank=True, null=True
     )
     use_record_pool = models.BooleanField(default=False)
+    collab_migrated = models.BooleanField(default=False)
+
     # keys
     public_key = models.BinaryField(null=True)
     private_key = models.BinaryField(null=True)

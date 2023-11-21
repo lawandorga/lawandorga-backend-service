@@ -60,7 +60,7 @@ class EncryptedDocument:
     @classmethod
     def create_from_dict(cls, d: JsonDict) -> "EncryptedDocument":
         if "time" not in d:
-            d["time"] = timezone.now().isoformat()
+            d["time"] = datetime(1970, 1, 1).isoformat()
         assert (
             "user" in d
             and "text" in d
