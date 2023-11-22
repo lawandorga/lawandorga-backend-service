@@ -48,6 +48,7 @@ def create_folder(
     fr: FolderRepository,
     org_pk: int,
     permissions: list[PermissionForCollabDocument],
+    users_with_permission: list[RlcUser],
 ) -> TreeFolder:
     folder = Folder.create(name=name, org_pk=org_pk)
     folder.grant_access(user)
@@ -56,6 +57,9 @@ def create_folder(
         folder.stop_inheritance()
     for p in permissions:
         folder.grant_access_to_group(group=p.group_has_permission, by=user)
+    for u in users_with_permission:
+        if not folder.has_access(u):
+            folder.grant_access(u, user)
     fr.save(folder)
     return TreeFolder(folder=folder, children={})
 
@@ -66,16 +70,27 @@ def get_folder_from_path(
     tree: TreeFolder,
     fr: FolderRepository,
     permissions: list[PermissionForCollabDocument],
+    users_with_permission: list[RlcUser],
 ) -> Folder:
     if len(path) == 0:
         return tree.folder
     if path[0] not in tree.children:
         assert isinstance(tree.folder.org_pk, int)
         folder = create_folder(
-            user, path[0], tree.folder, fr, tree.folder.org_pk, permissions
+            user,
+            path[0],
+            tree.folder,
+            fr,
+            tree.folder.org_pk,
+            permissions,
+            users_with_permission,
         )
-        return get_folder_from_path(user, path[1:], folder, fr, permissions)
-    return get_folder_from_path(user, path[1:], tree.children[path[0]], fr, permissions)
+        return get_folder_from_path(
+            user, path[1:], folder, fr, permissions, users_with_permission
+        )
+    return get_folder_from_path(
+        user, path[1:], tree.children[path[0]], fr, permissions, users_with_permission
+    )
 
 
 def put_collab_doc_in_folder(
@@ -130,12 +145,24 @@ def optimize(__actor: RlcUser, fr: FolderRepository, cr: CollabRepository):
         user=__actor.user, private_key_user=__actor.get_private_key()
     )
 
+    users_with_permission = []
+    for user in list(Org.objects.get(pk=__actor.org_id).users.all()):
+        has_p_1 = user.has_permission_as_user(PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS)
+        has_p_2 = user.has_permission_as_user(PERMISSION_COLLAB_READ_ALL_DOCUMENTS)
+        if has_p_1 or has_p_2:
+            users_with_permission.append(user)
+
     for doc in list(CollabDocument.objects.filter(rlc_id=__actor.org_id)):
         tree = TreeFolder.create(__actor.org_id, fr)
         path = doc.path.split("/")
         tree_folder = tree["Collab"]
         folder = get_folder_from_path(
-            __actor, path, tree_folder, fr, list(doc.collab_permissions.all())
+            __actor,
+            path,
+            tree_folder,
+            fr,
+            list(doc.collab_permissions.all()),
+            users_with_permission,
         )
         put_collab_doc_in_folder(__actor, doc, folder, aes_key_org, cr)
 

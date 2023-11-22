@@ -683,6 +683,17 @@ class RlcUser(Aggregate, models.Model):
             group_has_permission__pk__in=groups, permission=permission
         ).exists()
 
+    def has_permission_as_user(self, permission: Union[str, "Permission"]) -> bool:
+        if isinstance(permission, str):
+            try:
+                from core.models import Permission
+
+                permission = Permission.objects.get(name=permission)
+            except ObjectDoesNotExist:
+                return False
+
+        return self.__has_as_user_permission(permission)
+
     def has_permission(self, permission: Union[str, "Permission"]) -> bool:
         if isinstance(permission, str):
             try:

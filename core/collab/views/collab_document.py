@@ -50,6 +50,8 @@ class CollabDocumentViewSet(
         return super().create(*args, **kwargs)
 
     def get_queryset(self):
+        if self.request.user.rlc_user.org.collab_migrated:
+            return CollabDocument.objects.none()
         queryset = CollabDocument.objects.filter(rlc=self.request.user.rlc)
         if (
             self.request.user.has_permission(PERMISSION_COLLAB_READ_ALL_DOCUMENTS)

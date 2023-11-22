@@ -67,6 +67,10 @@ def test_optimize_works(db):
     u3 = test_helpers.create_org_user(email="tester@law-orga.de", rlc=user.org)
     group_user = u3["rlc_user"]
 
+    u4 = test_helpers.create_org_user(email="dummy3@law-orga.de", rlc=user.org)
+    has_p_user = u4["rlc_user"]
+    has_p_user.grant(PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS)
+
     # test normal collab document
     create_collab_document(org=user.org, user=user)
 
@@ -102,6 +106,7 @@ def test_optimize_works(db):
     folder1 = find_folder("Document", folders)
     assert not folder1.has_access(no_access_user)
     assert not folder1.has_access(group_user)
+    assert folder1.has_access(has_p_user)
 
     # assertions for collab document with group access
     assert FoldersFolder.objects.filter(org_id=user.org_id, name="Group").count() == 1
@@ -109,6 +114,7 @@ def test_optimize_works(db):
     assert folder2.has_access_group(group)
     assert not folder2.has_access(no_access_user)
     assert folder2.has_access(group_user)
+    assert folder2.has_access(has_p_user)
 
     # assertions for nested collab doc
     assert (
@@ -120,6 +126,7 @@ def test_optimize_works(db):
     assert not folder3.has_access(group_user)
     assert folder3.parent == folder1
     assert folder3.has_access(user)
+    assert folder3.has_access(has_p_user)
 
     # assertions for nested collab doc with group access
     assert (
@@ -130,3 +137,4 @@ def test_optimize_works(db):
     assert folder4.has_access_group(group)
     assert not folder4.has_access(no_access_user)
     assert folder4.has_access(group_user)
+    assert folder4.has_access(has_p_user)
