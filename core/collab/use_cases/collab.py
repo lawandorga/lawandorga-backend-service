@@ -118,7 +118,10 @@ def optimize(__actor: RlcUser, fr: FolderRepository, cr: CollabRepository):
     if not __actor.has_permission(
         PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS
     ) and not __actor.has_permission(PERMISSION_COLLAB_READ_ALL_DOCUMENTS):
-        return
+        raise UseCaseError(
+            "You need to have the permission to read or write "
+            "all collab documents to migrate collab."
+        )
 
     groups = set()
     for p in PermissionForCollabDocument.objects.filter(
