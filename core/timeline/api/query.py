@@ -9,8 +9,6 @@ from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.seedwork.api_layer import Router
 from core.timeline.repositories.event import EventRepository
 from core.timeline.repositories.follow_up import FollowUpRepository
-from core.timeline.repository import TimelineEventRepository
-from messagebus.domain.store import EventStore
 
 router = Router()
 
@@ -35,12 +33,10 @@ class InputTimelineList(BaseModel):
     output_schema=list[OutputTimelineEvent],
 )
 def query_timeline(rlc_user: RlcUser, data: InputTimelineList):
-    tr = TimelineEventRepository(EventStore())
     fr = DjangoFolderRepository()
     fur = FollowUpRepository()
     er = EventRepository()
     folder = fr.retrieve(rlc_user.org_id, data.folder_uuid)
-    old_events = tr.list(folder=folder, by=rlc_user)
     events = er.list_events(folder_uuid=folder.uuid, user=rlc_user, fr=fr)
     follow_ups = fur.list_follow_ups(folder_uuid=folder.uuid, user=rlc_user, fr=fr)
 
@@ -50,7 +46,7 @@ def query_timeline(rlc_user: RlcUser, data: InputTimelineList):
         return time.isoformat()
 
     items = sorted(
-        [*old_events, *follow_ups, *events],
+        [*follow_ups, *events],
         key=get_time,
         reverse=True,
     )
