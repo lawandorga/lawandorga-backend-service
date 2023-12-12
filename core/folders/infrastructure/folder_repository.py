@@ -6,7 +6,7 @@ from uuid import UUID
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.domain.repositories.item import ItemRepository
@@ -63,7 +63,7 @@ class DjangoFolderRepository(FolderRepository):
         cls,
         db_folder: FoldersFolder,
         folders: dict[UUID, FoldersFolder],
-        users: dict[UUID, RlcUser],
+        users: dict[UUID, OrgUser],
     ) -> Folder:
         # find the parent
         parent: Optional[Folder] = None
@@ -167,14 +167,14 @@ class DjangoFolderRepository(FolderRepository):
         return folders
 
     @classmethod
-    def __users(cls, org_pk: int) -> dict[UUID, RlcUser]:
+    def __users(cls, org_pk: int) -> dict[UUID, OrgUser]:
         users = {}
-        for u in list(RlcUser.objects.filter(org_id=org_pk)):
+        for u in list(OrgUser.objects.filter(org_id=org_pk)):
             users[u.uuid] = u
         return users
 
     @classmethod
-    def get_or_create_records_folder(cls, org_pk: int, user: "RlcUser") -> Folder:
+    def get_or_create_records_folder(cls, org_pk: int, user: "OrgUser") -> Folder:
         name = "Records"
         if FoldersFolder.objects.filter(
             org_id=org_pk, name=name, _parent=None, deleted=False
@@ -190,7 +190,7 @@ class DjangoFolderRepository(FolderRepository):
             return cls.get_dict(org_pk)[f1.uuid]
         folder = Folder.create(name=name, org_pk=org_pk)
         folder.grant_access(user)
-        for u in RlcUser.objects.filter(org_id=org_pk).exclude(uuid=user.uuid):
+        for u in OrgUser.objects.filter(org_id=org_pk).exclude(uuid=user.uuid):
             folder.grant_access(u, user)
         cls.save(folder)
         return cls.get_dict(org_pk)[folder.uuid]

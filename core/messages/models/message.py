@@ -3,7 +3,7 @@ from uuid import UUID
 
 from django.db import models
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.data_sheets.models.data_sheet import DataSheet
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
@@ -20,7 +20,7 @@ from core.seedwork.repository import RepositoryWarehouse
 class EncryptedRecordMessage(models.Model):
     @classmethod
     def create(
-        cls, sender: RlcUser, folder_uuid: UUID, message: str
+        cls, sender: OrgUser, folder_uuid: UUID, message: str
     ) -> "EncryptedRecordMessage":
         m = EncryptedRecordMessage(
             sender=sender, org_id=sender.org_id, folder_uuid=folder_uuid
@@ -29,7 +29,7 @@ class EncryptedRecordMessage(models.Model):
         return m
 
     sender = models.ForeignKey(
-        RlcUser,
+        OrgUser,
         related_name="messages",
         on_delete=models.SET_NULL,
         null=True,
@@ -80,7 +80,7 @@ class EncryptedRecordMessage(models.Model):
         self.message = b""
         super().save(*args, **kwargs)
 
-    def encrypt(self, user: RlcUser):
+    def encrypt(self, user: OrgUser):
         assert self.folder_uuid is not None
 
         self.__generate_key(user)
@@ -89,7 +89,7 @@ class EncryptedRecordMessage(models.Model):
         locked_box = key.lock(open_box)
         self.enc_message = locked_box.as_dict()
 
-    def decrypt(self, user: RlcUser) -> "EncryptedRecordMessage":
+    def decrypt(self, user: OrgUser) -> "EncryptedRecordMessage":
         assert self.folder_uuid is not None
 
         key = self.get_key(user)
@@ -98,11 +98,11 @@ class EncryptedRecordMessage(models.Model):
         self.message = open_box.decode("utf-8")
         return self
 
-    def __decrypt_old(self, user: RlcUser):
+    def __decrypt_old(self, user: OrgUser):
         key = self.record.get_aes_key(user)
         return self.encryption_class.decrypt(self.message, key)  # type: ignore
 
-    def __generate_key(self, user: RlcUser):
+    def __generate_key(self, user: OrgUser):
         assert self.folder is not None
 
         key = SymmetricKey.generate()
@@ -110,7 +110,7 @@ class EncryptedRecordMessage(models.Model):
         enc_key = EncryptedSymmetricKey.create(key, lock_key)
         self.key = enc_key.as_dict()
 
-    def get_key(self, user: RlcUser) -> SymmetricKey:
+    def get_key(self, user: OrgUser) -> SymmetricKey:
         assert self.folder is not None
 
         enc_key = EncryptedSymmetricKey.create_from_dict(self.key)
@@ -118,7 +118,7 @@ class EncryptedRecordMessage(models.Model):
         key = enc_key.decrypt(unlock_key)
         return key
 
-    def put_in_folder(self, user: RlcUser):
+    def put_in_folder(self, user: OrgUser):
         if not self.record.folder_uuid or not self.record.folder.has_access(user):
             return
 

@@ -2,7 +2,7 @@ from django.contrib.sessions.models import Session
 from django.core.management.base import BaseCommand
 
 from core.auth.domain.user_key import UserKey
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.folders.domain.value_objects.box import LockedBox
 from core.folders.domain.value_objects.keys import EncryptedAsymmetricKey
 
@@ -10,7 +10,7 @@ from core.folders.domain.value_objects.keys import EncryptedAsymmetricKey
 class Command(BaseCommand):
     def handle(self, *args, **options):
         Session.objects.all().delete()
-        users = list(RlcUser.objects.all())
+        users = list(OrgUser.objects.all())
         for u in users:
             if u.public_key and u.private_key:
                 if u.is_private_key_encrypted:
@@ -38,4 +38,4 @@ class Command(BaseCommand):
                         "origin": origin,
                         "type": "USER",
                     }
-        RlcUser.objects.bulk_update(users, fields=["key"])
+        OrgUser.objects.bulk_update(users, fields=["key"])

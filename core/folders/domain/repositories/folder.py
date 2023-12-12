@@ -6,7 +6,7 @@ from core.folders.domain.aggregates.folder import Folder
 from core.seedwork.repository import Repository
 
 if TYPE_CHECKING:
-    from core.auth.models.org_user import RlcUser
+    from core.auth.models.org_user import OrgUser
 
 
 class FolderRepository(Repository, abc.ABC):
@@ -17,7 +17,7 @@ class FolderRepository(Repository, abc.ABC):
         raise NotImplementedError()
 
     @classmethod
-    def get_or_create_records_folder(cls, org_pk: int, user: "RlcUser") -> Folder:
+    def get_or_create_records_folder(cls, org_pk: int, user: "OrgUser") -> Folder:
         raise NotImplementedError()
 
     @classmethod

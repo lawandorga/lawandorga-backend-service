@@ -8,7 +8,7 @@ from core.seedwork.events_addon import EventsAddon
 from core.seedwork.repository import RepositoryWarehouse
 
 if TYPE_CHECKING:
-    from core.auth.models.org_user import RlcUser
+    from core.auth.models.org_user import OrgUser
 
 
 class Object(Item, Protocol):
@@ -29,13 +29,13 @@ class FolderAddon(Addon):
         assert self._folder is not None
         return self._folder
 
-    def get_decryption_key(self, requestor: "RlcUser"):
+    def get_decryption_key(self, requestor: "OrgUser"):
         return self.folder.get_decryption_key(requestor=requestor)
 
-    def get_encryption_key(self, requestor: "RlcUser"):
+    def get_encryption_key(self, requestor: "OrgUser"):
         return self.folder.get_encryption_key(requestor=requestor)
 
-    def has_access(self, user: "RlcUser"):
+    def has_access(self, user: "OrgUser"):
         return self.folder.has_access(user)
 
     def put_obj_in_folder(self, folder: Folder):

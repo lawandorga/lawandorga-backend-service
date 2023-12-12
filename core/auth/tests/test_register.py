@@ -1,7 +1,7 @@
 import pytest
 from django.test.client import Client
 
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.legal.models import LegalRequirement
 
 
@@ -21,7 +21,7 @@ def test_register_works(org, data):
     c = Client()
     response = c.post("/auth/user/register/", data=data)
     assert response.status_code == 302
-    assert RlcUser.objects.filter(user__email=data["email"]).exists()
+    assert OrgUser.objects.filter(user__email=data["email"]).exists()
 
 
 def test_create_returns_error_message_on_different_passwords(org):
@@ -36,7 +36,7 @@ def test_create_returns_error_message_on_different_passwords(org):
     }
     response = c.post("/auth/user/register/", data=data)
     assert "password fields didn" in response.content.decode()
-    assert not RlcUser.objects.filter(user__email=data["email"]).exists()
+    assert not OrgUser.objects.filter(user__email=data["email"]).exists()
 
 
 def test_everybody_can_get_to_user_create(db):
@@ -53,7 +53,7 @@ def test_with_legal_requirement_blocks(db, data):
     client = Client()
     response = client.post("/auth/user/register/", data=data)
     assert response.status_code == 200
-    assert not RlcUser.objects.filter(user__email=data["email"]).exists()
+    assert not OrgUser.objects.filter(user__email=data["email"]).exists()
 
 
 def test_with_legal_requirement_works(db, data):
@@ -69,4 +69,4 @@ def test_with_legal_requirement_works(db, data):
         "/auth/user/register/", data={**data, "lrs": [lr_required.pk]}
     )
     assert response.status_code == 302
-    assert RlcUser.objects.filter(user__email=data["email"]).exists()
+    assert OrgUser.objects.filter(user__email=data["email"]).exists()

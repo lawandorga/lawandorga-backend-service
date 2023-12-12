@@ -6,7 +6,7 @@ from django.core.files.base import File as DjangoFile
 from django.db import models
 from django.utils.timezone import localtime
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.data_sheets.models.encrypted_client import EncryptedClient  # type: ignore
 from core.data_sheets.models.template import (
     DataSheetEncryptedFileField,
@@ -51,11 +51,11 @@ class DataSheet(Aggregate, models.Model):
     @classmethod
     def create(
         cls,
-        user: RlcUser,
+        user: OrgUser,
         folder: Folder,
         template: DataSheetTemplate,
         name: str,
-        users: list[RlcUser] | None = None,
+        users: list[OrgUser] | None = None,
         pk=0,
     ) -> "DataSheet":
         if users is None:
@@ -206,7 +206,7 @@ class DataSheet(Aggregate, models.Model):
         self.name = name
         self.folder.obj_renamed()
 
-    def has_access(self, user: RlcUser) -> bool:
+    def has_access(self, user: OrgUser) -> bool:
         if self.folder_uuid is None:
             for enc in getattr(self, "encryptions").all():
                 if enc.user_id == user.id:
@@ -215,7 +215,7 @@ class DataSheet(Aggregate, models.Model):
             return self.folder.has_access(user)
         return False
 
-    def generate_key(self, user: RlcUser):
+    def generate_key(self, user: OrgUser):
         assert self.folder is not None
 
         if self.key is not None:
@@ -229,14 +229,14 @@ class DataSheet(Aggregate, models.Model):
     def set_folder(self, folder: "Folder"):
         self.folder.put_obj_in_folder(folder)
 
-    def get_aes_key(self, user: RlcUser, *args, **kwargs):
+    def get_aes_key(self, user: OrgUser, *args, **kwargs):
         assert self.folder is not None and self.key is not None
         decryption_key = self.folder.get_decryption_key(requestor=user)
         enc_key = EncryptedSymmetricKey.create_from_dict(self.key)
         key = enc_key.decrypt(decryption_key)
         return key.get_key()
 
-    def get_entries(self, user: RlcUser):
+    def get_entries(self, user: OrgUser):
         entries = {}
         aes_key_record = self.get_aes_key(user)
         for entry_type in self.ALL_ENTRY_TYPES:
@@ -252,7 +252,7 @@ class DataSheet(Aggregate, models.Model):
                 }
         return entries
 
-    def get_entries_new(self, user: RlcUser):
+    def get_entries_new(self, user: OrgUser):
         entries = {}
         aes_key_record = self.get_aes_key(user)
         for entry_type in self.ALL_ENTRY_TYPES:
@@ -289,7 +289,7 @@ class DataSheetEntryEncryptedModelMixin(EncryptedModelMixin):
     encrypted_entry = True
 
     def encrypt(
-        self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None
+        self, user: Optional[OrgUser] = None, private_key_user=None, aes_key_record=None
     ):
         data_sheet: DataSheet = self.record  # type: ignore
         if user and not private_key_user:
@@ -305,7 +305,7 @@ class DataSheetEntryEncryptedModelMixin(EncryptedModelMixin):
         super().encrypt(key)
 
     def decrypt(
-        self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None
+        self, user: Optional[OrgUser] = None, private_key_user=None, aes_key_record=None
     ):
         record: DataSheet = self.record  # type: ignore
         if user and private_key_user:
@@ -349,7 +349,7 @@ class DataSheetUsersEntry(DataSheetEntry):
     field = models.ForeignKey(
         DataSheetUsersField, related_name="entries", on_delete=models.PROTECT
     )
-    value = models.ManyToManyField(RlcUser, blank=True)
+    value = models.ManyToManyField(OrgUser, blank=True)
     view_name = "recordusersentry-detail"
 
     class Meta:
@@ -483,7 +483,7 @@ class DataSheetEncryptedFileEntry(DataSheetEntry):
     def encrypt_file(
         file,
         record: DataSheet,
-        user: RlcUser | None = None,
+        user: OrgUser | None = None,
         private_key_user=None,
         aes_key_record=None,
     ):
@@ -503,7 +503,7 @@ class DataSheetEncryptedFileEntry(DataSheetEntry):
         return file
 
     def decrypt_file(
-        self, user: Optional[RlcUser] = None, private_key_user=None, aes_key_record=None
+        self, user: Optional[OrgUser] = None, private_key_user=None, aes_key_record=None
     ):
         if user and not private_key_user:
             private_key_user = user.get_private_key()
@@ -603,7 +603,7 @@ class DataSheetStatisticEntry(DataSheetEntry):
 ###
 class DataSheetEncryptionNew(EncryptedModelMixin, models.Model):
     user = models.ForeignKey(
-        RlcUser, related_name="recordencryptions", on_delete=models.CASCADE
+        OrgUser, related_name="recordencryptions", on_delete=models.CASCADE
     )
     record = models.ForeignKey(
         DataSheet, related_name="encryptions", on_delete=models.CASCADE

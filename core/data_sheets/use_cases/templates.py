@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models import ProtectedError
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheetTemplate
 from core.data_sheets.models.template import (
     DataSheetEncryptedFileField,
@@ -23,20 +23,20 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES])
-def create_template(__actor: RlcUser, name: str):
+def create_template(__actor: OrgUser, name: str):
     template = DataSheetTemplate.create(name=name, org=__actor.org)
     template.save()
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES])
-def update_template(__actor: RlcUser, template_id: int, template_name: str):
+def update_template(__actor: OrgUser, template_id: int, template_name: str):
     template = template_from_id(__actor, template_id)
     template.update_name(template_name)
     template.save()
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES])
-def delete_template(__actor: RlcUser, template_id: int):
+def delete_template(__actor: OrgUser, template_id: int):
     template = template_from_id(__actor, template_id)
     if template.records.exists():
         raise UseCaseError(
@@ -70,7 +70,7 @@ FIELD_TYPES = Literal[
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES])
 def create_field(
-    __actor: RlcUser, template_id: int, kind: FIELD_TYPES, name: str, order: int
+    __actor: OrgUser, template_id: int, kind: FIELD_TYPES, name: str, order: int
 ):
     template = template_from_id(__actor, template_id)
     field_model = FIELDS[kind]
@@ -80,7 +80,7 @@ def create_field(
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES])
 def update_field(
-    __actor: RlcUser,
+    __actor: OrgUser,
     field_uuid: UUID,
     name: str,
     order: int,
@@ -105,7 +105,7 @@ def update_field(
 
 
 @use_case
-def delete_field(__actor: RlcUser, field_uuid: UUID, force_delete: bool):
+def delete_field(__actor: OrgUser, field_uuid: UUID, force_delete: bool):
     field = find_field_from_uuid(__actor, field_uuid)
 
     if force_delete:

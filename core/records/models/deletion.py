@@ -3,7 +3,7 @@ import uuid
 from django.db import models
 from django.utils import timezone
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.seedwork.domain_layer import DomainError
 
 from .record import RecordsRecord
@@ -11,7 +11,7 @@ from .record import RecordsRecord
 
 class RecordsDeletion(models.Model):
     @classmethod
-    def create(cls, record: RecordsRecord, user: RlcUser, explanation=""):
+    def create(cls, record: RecordsRecord, user: OrgUser, explanation=""):
         deletion = RecordsDeletion(
             requestor=user, record=record, explanation=explanation
         )
@@ -23,12 +23,12 @@ class RecordsDeletion(models.Model):
     uuid = models.UUIDField(unique=True, db_index=True, default=uuid.uuid4)
     explanation = models.TextField(blank=True)
     requestor = models.ForeignKey(
-        RlcUser,
+        OrgUser,
         related_name="records_requested_deletions",
         on_delete=models.CASCADE,
     )
     processor = models.ForeignKey(
-        RlcUser,
+        OrgUser,
         related_name="records_processed_deletions",
         on_delete=models.SET_NULL,
         null=True,
@@ -70,7 +70,7 @@ class RecordsDeletion(models.Model):
             return self.requestor.name
         return ""
 
-    def accept(self, by: RlcUser):
+    def accept(self, by: OrgUser):
         if self.state != "re":
             raise DomainError(
                 "This deletion request can not be accepted, because it is not in a requested state."
@@ -79,7 +79,7 @@ class RecordsDeletion(models.Model):
         self.processed = timezone.now()
         self.state = "gr"
 
-    def decline(self, by: RlcUser):
+    def decline(self, by: OrgUser):
         if self.state != "re":
             raise DomainError(
                 "This deletion request can not be declined, because it is not in a requested state."

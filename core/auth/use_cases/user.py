@@ -4,7 +4,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 
 from core.auth.domain.user_key import UserKey
-from core.auth.models import RlcUser, UserProfile
+from core.auth.models import OrgUser, UserProfile
 from core.seedwork.use_case_layer import UseCaseError, use_case
 
 from seedwork.types import JsonDict
@@ -13,7 +13,7 @@ from seedwork.types import JsonDict
 @use_case
 def set_password_of_myself(__actor: UserProfile, password: str) -> UserProfile:
     __actor.set_password(password)
-    org_user: Optional[RlcUser] = None
+    org_user: Optional[OrgUser] = None
 
     if hasattr(__actor, "rlc_user"):
         org_user = __actor.rlc_user
@@ -36,7 +36,7 @@ def set_password_of_myself(__actor: UserProfile, password: str) -> UserProfile:
 @use_case
 def run_user_login_checks(__actor: UserProfile, password: str):
     if hasattr(__actor, "rlc_user"):
-        rlc_user: RlcUser = __actor.rlc_user
+        rlc_user: OrgUser = __actor.rlc_user
 
         # generate key if not existent
         if rlc_user.key is None:

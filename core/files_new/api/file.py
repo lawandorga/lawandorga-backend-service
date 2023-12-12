@@ -1,6 +1,6 @@
 from django.core.files.uploadedfile import UploadedFile
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.files_new.use_cases.file import (
     delete_a_file,
     put_files_inside_of_folders,
@@ -15,7 +15,7 @@ router = Router()
 
 @router.post(url="multiple/")
 def command__upload_multiple_file(
-    rlc_user: RlcUser, data: schemas.InputUploadMultipleFiles
+    rlc_user: OrgUser, data: schemas.InputUploadMultipleFiles
 ):
     if data.files is None:
         raise ApiError({"files": ["No file was submitted."]})
@@ -31,7 +31,7 @@ def command__upload_multiple_file(
 
 
 @router.post()
-def command__upload_file(rlc_user: RlcUser, data: schemas.InputUploadFile):
+def command__upload_file(rlc_user: OrgUser, data: schemas.InputUploadFile):
     if not isinstance(data.file, UploadedFile):
         raise ApiError({"file": ["You need to submit a file"]})
 
@@ -39,10 +39,10 @@ def command__upload_file(rlc_user: RlcUser, data: schemas.InputUploadFile):
 
 
 @router.delete(url="<uuid:uuid>/")
-def command__delete_file(rlc_user: RlcUser, data: schemas.InputDeleteFile):
+def command__delete_file(rlc_user: OrgUser, data: schemas.InputDeleteFile):
     delete_a_file(rlc_user, data.uuid)
 
 
 @router.post(url="optimize/")
-def command__optimize(rlc_user: RlcUser):
+def command__optimize(rlc_user: OrgUser):
     put_files_inside_of_folders(rlc_user)

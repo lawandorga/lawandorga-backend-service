@@ -13,7 +13,7 @@ from .meta import Meta
 if TYPE_CHECKING:
     from django.db.models.manager import RelatedManager
 
-    from core.auth.models import RlcUser, UserProfile
+    from core.auth.models import OrgUser, UserProfile
     from core.events.models import EventsEvent
     from core.rlc.models.group import Group
 
@@ -60,14 +60,14 @@ class Org(EncryptedModelMixin, models.Model):
     encryption_class = AESEncryption
 
     if TYPE_CHECKING:
-        users: RelatedManager[RlcUser]
+        users: RelatedManager[OrgUser]
         group_from_rlc: RelatedManager[Group]
         events: RelatedManager[EventsEvent]
 
     class Meta:
         ordering = ["name"]
-        verbose_name = "Rlc"
-        verbose_name_plural = "Rlcs"
+        verbose_name = "Org"
+        verbose_name_plural = "Orgs"
 
     @property
     def do_keys_exist(self):
@@ -178,7 +178,7 @@ class Org(EncryptedModelMixin, models.Model):
             user_rlc_keys.encrypt(public_key_user)
             user_rlc_keys.save()
 
-    def accept_member(self, admin: "RlcUser", member: "RlcUser"):
+    def accept_member(self, admin: "OrgUser", member: "OrgUser"):
         from core.models import OrgEncryption
 
         # create the rlc encryption keys for new member

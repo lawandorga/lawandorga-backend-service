@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from django.db import models
 
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.rlc.models.org import Org
 from core.timeline.models.utils import EncryptDecryptMethods
@@ -13,7 +13,7 @@ from core.timeline.models.utils import EncryptDecryptMethods
 class TimelineFollowUp(EncryptDecryptMethods, models.Model):
     @classmethod
     def create(
-        cls, folder: Folder, user: RlcUser, title: str, text: str, time: datetime
+        cls, folder: Folder, user: OrgUser, title: str, text: str, time: datetime
     ) -> "TimelineFollowUp":
         follow_up = TimelineFollowUp(
             org=user.org,

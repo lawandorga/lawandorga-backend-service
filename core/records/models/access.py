@@ -3,7 +3,7 @@ import uuid
 from django.db import models
 from django.utils import timezone
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.records.models.record import RecordsRecord
 from core.seedwork.domain_layer import DomainError
 
@@ -11,7 +11,7 @@ from core.seedwork.domain_layer import DomainError
 class RecordsAccessRequest(models.Model):
     @classmethod
     def create(
-        cls, record: RecordsRecord, requestor: RlcUser, explanation=""
+        cls, record: RecordsRecord, requestor: OrgUser, explanation=""
     ) -> "RecordsAccessRequest":
         access = RecordsAccessRequest(
             record=record, requestor=requestor, explanation=explanation
@@ -20,12 +20,12 @@ class RecordsAccessRequest(models.Model):
 
     uuid = models.UUIDField(unique=True, db_index=True, default=uuid.uuid4)
     requestor = models.ForeignKey(
-        RlcUser,
+        OrgUser,
         related_name="records_requested_access_requests",
         on_delete=models.CASCADE,
     )
     processor = models.ForeignKey(
-        RlcUser,
+        OrgUser,
         related_name="records_processed_access_requests",
         on_delete=models.SET_NULL,
         null=True,
@@ -71,7 +71,7 @@ class RecordsAccessRequest(models.Model):
             return self.requestor.name
         return ""
 
-    def grant(self, by: RlcUser):
+    def grant(self, by: OrgUser):
         if self.state != "re":
             raise DomainError(
                 "This access request can not be granted, because "
@@ -88,7 +88,7 @@ class RecordsAccessRequest(models.Model):
         self.processed_on = timezone.now()
         self.processor = by
 
-    def decline(self, by: RlcUser):
+    def decline(self, by: OrgUser):
         if self.state != "re":
             raise DomainError(
                 "This access request can not be declined, because it "

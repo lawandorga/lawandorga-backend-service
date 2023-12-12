@@ -5,7 +5,7 @@ from uuid import uuid4
 import pyotp
 from django.db import models
 
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.folders.domain.value_objects.asymmetric_key import AsymmetricKey
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.symmetric_key import (
@@ -17,7 +17,7 @@ from core.folders.domain.value_objects.symmetric_key import (
 class MultiFactorAuthenticationSecret(models.Model):
     @staticmethod
     def create(
-        user: RlcUser, generator=pyotp.random_base32
+        user: OrgUser, generator=pyotp.random_base32
     ) -> "MultiFactorAuthenticationSecret":
         mfa = MultiFactorAuthenticationSecret(user=user)
         mfa.generate_secret(generator)
@@ -25,7 +25,7 @@ class MultiFactorAuthenticationSecret(models.Model):
 
     uuid = models.UUIDField(default=uuid4, unique=True, db_index=True)
     user = models.OneToOneField(
-        RlcUser, related_name="mfa_secret", on_delete=models.CASCADE
+        OrgUser, related_name="mfa_secret", on_delete=models.CASCADE
     )
     enabled = models.BooleanField(default=False)
     secret = models.JSONField()

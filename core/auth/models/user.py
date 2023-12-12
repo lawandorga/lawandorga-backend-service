@@ -11,7 +11,7 @@ from django.db import models
 from core.seedwork.domain_layer import DomainError
 
 if TYPE_CHECKING:
-    from core.models import MailUser, MatrixUser, Permission, RlcUser, StatisticUser
+    from core.models import MailUser, MatrixUser, OrgUser, Permission, StatisticUser
     from core.rlc.models.org_encryption import OrgEncryption
 
 
@@ -39,7 +39,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     if TYPE_CHECKING:
         users_rlc_keys: models.QuerySet["OrgEncryption"]
-        rlc_user: "RlcUser"
+        rlc_user: "OrgUser"
         statistic_user: "StatisticUser"
         matrix_user: "MatrixUser"
         mail_user: "MailUser"

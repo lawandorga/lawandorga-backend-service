@@ -1,7 +1,7 @@
 from typing import cast
 from uuid import UUID
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet, DataSheetTemplate
 from core.data_sheets.use_cases.finders import (
     record_from_id,
@@ -26,7 +26,7 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case
-def change_record_name(__actor: RlcUser, name: str, record_id: int):
+def change_record_name(__actor: OrgUser, name: str, record_id: int):
     record = record_from_id(__actor, record_id)
     record.set_name(name)
     record.save()
@@ -34,7 +34,7 @@ def change_record_name(__actor: RlcUser, name: str, record_id: int):
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
 def create_a_record_and_a_folder(
-    __actor: RlcUser,
+    __actor: OrgUser,
     name: str,
     template_id: int,
 ) -> UUID:
@@ -62,7 +62,7 @@ def create_a_record_and_a_folder(
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
 def create_a_data_sheet_within_a_folder(
-    __actor: RlcUser,
+    __actor: OrgUser,
     name: str,
     folder_uuid: UUID,
     template_id: int,
@@ -79,7 +79,7 @@ def create_a_data_sheet_within_a_folder(
 
 
 def __create(
-    __actor: RlcUser, name: str, folder: Folder, template: DataSheetTemplate
+    __actor: OrgUser, name: str, folder: Folder, template: DataSheetTemplate
 ) -> UUID:
     access_granted = False
     for user in list(__actor.org.users.all()):
@@ -104,7 +104,7 @@ def __create(
 
 
 @use_case
-def migrate_record_into_folder(__actor: RlcUser, record: DataSheet):
+def migrate_record_into_folder(__actor: OrgUser, record: DataSheet):
     user = __actor
 
     if not record.has_access(user):
@@ -148,6 +148,6 @@ def migrate_record_into_folder(__actor: RlcUser, record: DataSheet):
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ACCESS_ALL_RECORDS])
-def delete_data_sheet(__actor: RlcUser, sheet_uuid: UUID):
+def delete_data_sheet(__actor: OrgUser, sheet_uuid: UUID):
     record = record_from_uuid(__actor, sheet_uuid)
     record.delete()

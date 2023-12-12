@@ -4,7 +4,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.seedwork.api_layer import Router
 
 from ..models import UploadLink
@@ -17,7 +17,7 @@ router = Router()
     url="<uuid:uuid>/",
     output_schema=schemas.OutputQueryLink,
 )
-def query__link(rlc_user: RlcUser, data: schemas.InputQueryLink):
+def query__link(rlc_user: OrgUser, data: schemas.InputQueryLink):
     link = get_object_or_404(UploadLink, org_id=rlc_user.org_id, uuid=data.uuid)
     return {
         "uuid": link.uuid,
@@ -42,7 +42,7 @@ def query__link_public(anonymous_user: AnonymousUser, data: schemas.InputQueryLi
     url="<uuid:link>/<uuid:file>/",
     output_schema=FileResponse,
 )
-def query__download_file(rlc_user: RlcUser, data: schemas.InputDownloadFile):
+def query__download_file(rlc_user: OrgUser, data: schemas.InputDownloadFile):
     link = get_object_or_404(UploadLink, org_id=rlc_user.org_id, uuid=data.link)
 
     filename, file = link.download(data.file, rlc_user)

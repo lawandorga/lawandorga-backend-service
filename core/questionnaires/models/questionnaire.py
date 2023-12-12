@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 from django.db import models
 from django.utils import timezone
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.item import ItemRepository
@@ -36,7 +36,7 @@ class Questionnaire(Aggregate, models.Model):
 
     @classmethod
     def create(
-        cls, template: QuestionnaireTemplate, folder: Folder, user: RlcUser
+        cls, template: QuestionnaireTemplate, folder: Folder, user: OrgUser
     ) -> "Questionnaire":
         name = f"{template.name}: {timezone.now().strftime('%d.%m.%Y')}"
         questionnaire = Questionnaire(template=template, name=name)
@@ -93,14 +93,14 @@ class Questionnaire(Aggregate, models.Model):
         assert self.key is None
         return self.template.rlc.get_public_key()
 
-    def get_private_key(self, private_key_user=None, user: RlcUser | None = None):
+    def get_private_key(self, private_key_user=None, user: OrgUser | None = None):
         assert self.key is None
         assert user is not None
         return self.template.rlc.get_private_key(
             user=user.user, private_key_user=private_key_user
         )
 
-    def generate_key(self, user: RlcUser):
+    def generate_key(self, user: OrgUser):
         assert self.folder is not None
 
         key = AsymmetricKey.generate()
@@ -109,7 +109,7 @@ class Questionnaire(Aggregate, models.Model):
         self.key = enc_key.as_dict()
 
     def get_key(
-        self, user: Optional[RlcUser] = None
+        self, user: Optional[OrgUser] = None
     ) -> AsymmetricKey | EncryptedAsymmetricKey:
         assert self.folder is not None
         assert self.key is not None
@@ -122,7 +122,7 @@ class Questionnaire(Aggregate, models.Model):
         key = enc_key.decrypt(unlock_key)
         return key
 
-    def put_in_folder(self, user: RlcUser):
+    def put_in_folder(self, user: OrgUser):
         assert self.folder_uuid is None
         if self.record and self.record.folder and self.record.folder.has_access(user):
             # set folder

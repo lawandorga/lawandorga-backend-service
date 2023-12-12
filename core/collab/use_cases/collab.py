@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.collab.models.collab import Collab
 from core.collab.models.collab_document import CollabDocument
 from core.collab.models.permission_for_collab_document import (
@@ -42,13 +42,13 @@ class TreeFolder:
 
 
 def create_folder(
-    user: RlcUser,
+    user: OrgUser,
     name: str,
     parent: Folder,
     fr: FolderRepository,
     org_pk: int,
     permissions: list[PermissionForCollabDocument],
-    users_with_permission: list[RlcUser],
+    users_with_permission: list[OrgUser],
 ) -> TreeFolder:
     folder = Folder.create(name=name, org_pk=org_pk)
     folder.grant_access(user)
@@ -65,12 +65,12 @@ def create_folder(
 
 
 def get_folder_from_path(
-    user: RlcUser,
+    user: OrgUser,
     path: list[str],
     tree: TreeFolder,
     fr: FolderRepository,
     permissions: list[PermissionForCollabDocument],
-    users_with_permission: list[RlcUser],
+    users_with_permission: list[OrgUser],
 ) -> Folder:
     if len(path) == 0:
         return tree.folder
@@ -94,7 +94,7 @@ def get_folder_from_path(
 
 
 def put_collab_doc_in_folder(
-    user: RlcUser,
+    user: OrgUser,
     collab_doc: CollabDocument,
     folder: Folder,
     aes_key_org: str,
@@ -110,7 +110,7 @@ def put_collab_doc_in_folder(
 
 
 @use_case
-def optimize(__actor: RlcUser, fr: FolderRepository, cr: CollabRepository):
+def optimize(__actor: OrgUser, fr: FolderRepository, cr: CollabRepository):
     org = __actor.org
     if org.collab_migrated:
         return
@@ -175,7 +175,7 @@ def optimize(__actor: RlcUser, fr: FolderRepository, cr: CollabRepository):
 
 @use_case
 def create_collab(
-    __actor: RlcUser,
+    __actor: OrgUser,
     title: str,
     folder_uuid: UUID,
     cr: CollabRepository,
@@ -193,7 +193,7 @@ def create_collab(
 
 @use_case
 def update_collab(
-    __actor: RlcUser,
+    __actor: OrgUser,
     collab_uuid: UUID,
     title: str,
     cr: CollabRepository,
@@ -212,7 +212,7 @@ def update_collab(
 
 @use_case
 def sync_collab(
-    __actor: RlcUser,
+    __actor: OrgUser,
     collab_uuid: UUID,
     text: str,
     cr: CollabRepository,
@@ -230,5 +230,5 @@ def sync_collab(
 
 
 @use_case
-def delete_collab(__actor: RlcUser, collab_uuid: UUID, cr: CollabRepository):
+def delete_collab(__actor: OrgUser, collab_uuid: UUID, cr: CollabRepository):
     cr.delete_document(collab_uuid, __actor)

@@ -11,7 +11,7 @@ from core.rlc.models.org import Org
 from core.seedwork.domain_layer import DomainError
 
 if TYPE_CHECKING:
-    from core.auth.models.org_user import RlcUser
+    from core.auth.models.org_user import OrgUser
     from core.permissions.models import HasPermission
 
 
@@ -26,7 +26,7 @@ class GroupKey:
     def get_key(self) -> SymmetricKey:
         return self.__key
 
-    def encrypt(self, owner: "RlcUser") -> "EncryptedGroupKey":
+    def encrypt(self, owner: "OrgUser") -> "EncryptedGroupKey":
         lock_key = owner.get_encryption_key()
         enc_key = self.__key.encrypt_self(lock_key)
         return EncryptedGroupKey.create(enc_key=enc_key, owner=owner)
@@ -35,7 +35,7 @@ class GroupKey:
 class EncryptedGroupKey:
     @classmethod
     def create(
-        cls, enc_key: EncryptedSymmetricKey, owner: "RlcUser"
+        cls, enc_key: EncryptedSymmetricKey, owner: "OrgUser"
     ) -> "EncryptedGroupKey":
         return cls(enc_key=enc_key, owner_uuid=owner.uuid)
 
@@ -52,7 +52,7 @@ class EncryptedGroupKey:
         self.__enc_key = enc_key
         self.__owner_uuid = owner_uuid
 
-    def decrypt(self, owner: "RlcUser") -> GroupKey:
+    def decrypt(self, owner: "OrgUser") -> GroupKey:
         if owner.uuid != self.__owner_uuid:
             raise DomainError("The owner does not match the key.")
         key = self.__enc_key.decrypt(owner.get_decryption_key())
@@ -80,7 +80,7 @@ class Group(models.Model):
     )
     name = models.CharField(max_length=200, null=False)
     visible = models.BooleanField(null=False, default=True)
-    members = models.ManyToManyField("RlcUser", related_name="groups", blank=True)
+    members = models.ManyToManyField("OrgUser", related_name="groups", blank=True)
     description = models.TextField(blank=True, null=True)
     keys = models.JSONField(default=list)
 
@@ -115,7 +115,7 @@ class Group(models.Model):
             self.keys.append(enc_key.as_dict())
         assert len(self.keys) == self.members.count()
 
-    def __get_enc_group_key_of_user(self, user: "RlcUser") -> EncryptedGroupKey | None:
+    def __get_enc_group_key_of_user(self, user: "OrgUser") -> EncryptedGroupKey | None:
         assert len(self.keys), "keys have not been generated for this group"
         assert isinstance(self.keys, list), "keys is not a list"
 
@@ -125,7 +125,7 @@ class Group(models.Model):
 
         return None
 
-    def __get_group_key(self, user: "RlcUser") -> GroupKey:
+    def __get_group_key(self, user: "OrgUser") -> GroupKey:
         enc_key = self.__get_enc_group_key_of_user(user)
         if enc_key is None:
             raise DomainError(
@@ -134,11 +134,11 @@ class Group(models.Model):
         key = enc_key.decrypt(user)
         return key
 
-    def get_encryption_key(self, user: "RlcUser") -> SymmetricKey:
+    def get_encryption_key(self, user: "OrgUser") -> SymmetricKey:
         key = self.__get_group_key(user)
         return key.get_key()
 
-    def get_decryption_key(self, user: "RlcUser") -> SymmetricKey:
+    def get_decryption_key(self, user: "OrgUser") -> SymmetricKey:
         return self.get_encryption_key(user)
 
     def update_information(
@@ -149,14 +149,14 @@ class Group(models.Model):
         if description is not None:
             self.description = description
 
-    def has_member(self, user: "RlcUser") -> bool:
+    def has_member(self, user: "OrgUser") -> bool:
         return user.id in self.member_ids
 
-    def has_keys(self, user: "RlcUser") -> bool:
+    def has_keys(self, user: "OrgUser") -> bool:
         key = self.__get_enc_group_key_of_user(user)
         return key is not None
 
-    def add_member(self, new_member: "RlcUser", by: Union["RlcUser", None] = None):
+    def add_member(self, new_member: "OrgUser", by: Union["OrgUser", None] = None):
         if new_member.org_id != self.from_rlc.pk:
             raise DomainError("The user is not in the same org.")
 
@@ -173,7 +173,7 @@ class Group(models.Model):
             self.save()
             self.members.add(new_member)
 
-    def remove_member(self, member: "RlcUser"):
+    def remove_member(self, member: "OrgUser"):
         if not self.has_member(member):
             raise DomainError("The user is not a member of this group.")
 

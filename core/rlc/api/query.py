@@ -1,4 +1,4 @@
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.rlc.models import Group, Note
 from core.seedwork.api_layer import Router
 
@@ -11,7 +11,7 @@ router = Router()
     url="group/<int:id>/",
     output_schema=schemas.OutputSingleGroup,
 )
-def query__get_group(rlc_user: RlcUser, data: schemas.InputQueryGroup):
+def query__get_group(rlc_user: OrgUser, data: schemas.InputQueryGroup):
     group = Group.objects.get(from_rlc__id=rlc_user.org_id, id=data.id)
     return {
         "id": group.pk,
@@ -23,12 +23,12 @@ def query__get_group(rlc_user: RlcUser, data: schemas.InputQueryGroup):
 
 
 @router.get(url="groups/", output_schema=list[schemas.OutputGroup])
-def query__list_groups(rlc_user: RlcUser):
+def query__list_groups(rlc_user: OrgUser):
     groups = Group.objects.filter(from_rlc__id=rlc_user.org_id)
     return list(groups)
 
 
 @router.get(url="notes/", output_schema=list[schemas.OutputNote])
-def query__list_notes(rlc_user: RlcUser):
+def query__list_notes(rlc_user: OrgUser):
     notes = Note.objects.filter(rlc__id=rlc_user.org_id)
     return list(notes)

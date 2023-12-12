@@ -3,7 +3,7 @@ from uuid import uuid4
 from django.db import models
 from django.utils import timezone
 
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.collab.value_objects.document import Document, EncryptedDocument
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_addon import FolderAddon
@@ -16,7 +16,7 @@ class Collab(Aggregate, models.Model):
     REPOSITORY = "COLLAB"
 
     @classmethod
-    def create(cls, user: RlcUser, title: str, folder: Folder) -> "Collab":
+    def create(cls, user: OrgUser, title: str, folder: Folder) -> "Collab":
         collab = Collab(
             org=user.org,
             uuid=uuid4(),
@@ -28,7 +28,7 @@ class Collab(Aggregate, models.Model):
         return collab
 
     @classmethod
-    def create_doc_user(cls, user: RlcUser) -> str:
+    def create_doc_user(cls, user: OrgUser) -> str:
         return f"{user.name} ({user.email})"
 
     org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name="collabs")
@@ -76,7 +76,7 @@ class Collab(Aggregate, models.Model):
         text = f"{today_date}{uuid}"
         return str(hash(text))
 
-    def sync(self, text: str, user: RlcUser) -> None:
+    def sync(self, text: str, user: OrgUser) -> None:
         doc = Document.create(user=self.create_doc_user(user), text=text)
         self.history.append(doc)
 
@@ -84,7 +84,7 @@ class Collab(Aggregate, models.Model):
         self.title = title
         self.folder.obj_renamed()
 
-    def _encrypt(self, folder: Folder, user: RlcUser) -> None:
+    def _encrypt(self, folder: Folder, user: OrgUser) -> None:
         enc_history_uuids = [d["uuid"] for d in self.history_enc]
         key = folder.get_encryption_key(requestor=user)
         for d in self.history:
@@ -92,7 +92,7 @@ class Collab(Aggregate, models.Model):
                 enc_doc = EncryptedDocument.create_from_document(d, key)
                 self.history_enc.append(enc_doc.as_dict())
 
-    def _decrypt(self, folder: Folder, user: RlcUser) -> None:
+    def _decrypt(self, folder: Folder, user: OrgUser) -> None:
         self.history = []
         for d in self.history_enc:
             enc_doc = EncryptedDocument.create_from_dict(d)

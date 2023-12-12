@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from django.db import models
 from tinymce import models as tinymce_models
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 
 if TYPE_CHECKING:
     from django.db.models.manager import RelatedManager
@@ -32,7 +32,7 @@ class LegalRequirement(models.Model):
         verbose_name_plural = "LegalRequirements"
 
     @classmethod
-    def is_locked(cls, user: RlcUser) -> bool:
+    def is_locked(cls, user: OrgUser) -> bool:
         lrs = LegalRequirement.objects.filter(accept_required=True)
         lrs_list = list(lrs)
         for lr in lrs_list:
@@ -40,13 +40,13 @@ class LegalRequirement(models.Model):
                 return True
         return False
 
-    def is_accepted(self, user: RlcUser) -> bool:
+    def is_accepted(self, user: OrgUser) -> bool:
         event = self.events.filter(user=user).order_by("-created").last()
         if event:
             return event.accepted
         return False
 
-    def _set_accepted_of_user(self, user: RlcUser):
+    def _set_accepted_of_user(self, user: OrgUser):
         if (
             hasattr(self, "events_of_user")
             and len(self.events_of_user)
@@ -56,7 +56,7 @@ class LegalRequirement(models.Model):
         else:
             self.accepted_of_user = False
 
-    def _set_events_of_user(self, user: RlcUser):
+    def _set_events_of_user(self, user: OrgUser):
         self.events_of_user = list(self.events.filter(user=user).order_by("-created"))
 
 
@@ -67,7 +67,7 @@ class LegalRequirementEvent(models.Model):
         related_name="events",
     )
     user = models.ForeignKey(
-        RlcUser,
+        OrgUser,
         on_delete=models.CASCADE,
         related_name="legal_requirement_events",
     )

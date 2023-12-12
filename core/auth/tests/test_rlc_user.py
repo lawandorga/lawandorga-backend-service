@@ -5,7 +5,7 @@ from django.conf import settings
 from django.test import Client
 
 from core.folders.domain.value_objects.asymmetric_key import EncryptedAsymmetricKey
-from core.models import RlcUser, UserProfile
+from core.models import OrgUser, UserProfile
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS
 from core.seedwork import test_helpers
 
@@ -83,7 +83,7 @@ def test_change_password_works(db, rlc_user):
         content_type="application/json",
     )
     assert response.status_code == 200
-    rlc_user = RlcUser.objects.get(pk=user.pk)
+    rlc_user = OrgUser.objects.get(pk=user.pk)
     user_key = rlc_user.get_decrypted_key_from_password("pass1234!")
     assert private_key == user_key.key.get_private_key().decode("utf-8")
 
@@ -96,11 +96,11 @@ def test_delete_works(db, rlc_user):
     another_user = test_helpers.create_org_user(
         email="test2@law-orga.de", rlc=user.org
     )["rlc_user"]
-    rlc_users = RlcUser.objects.count()
+    rlc_users = OrgUser.objects.count()
     user_profiles = UserProfile.objects.count()
     response = client.delete("/api/rlc_users/{}/".format(another_user.pk))
     assert response.status_code == 200
-    assert RlcUser.objects.count() == rlc_users - 1
+    assert OrgUser.objects.count() == rlc_users - 1
     assert UserProfile.objects.count() == user_profiles - 1
 
 
@@ -108,5 +108,5 @@ def test_keys_are_generated(rlc_user):
     user = rlc_user["rlc_user"]
     user.generate_keys(settings.DUMMY_USER_PASSWORD)
     user.save()
-    user = RlcUser.objects.get(pk=user.pk)
+    user = OrgUser.objects.get(pk=user.pk)
     assert isinstance(user.get_encryption_key(), EncryptedAsymmetricKey)

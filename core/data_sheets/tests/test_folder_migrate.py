@@ -1,4 +1,4 @@
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.data_sheets.models.data_sheet import (
     DataSheet,
     DataSheetEncryptedStandardEntry,
@@ -16,7 +16,7 @@ from core.seedwork.encryption import AESEncryption
 
 def test_folder_migrate(db):
     full_user = test_helpers.create_org_user()
-    user: RlcUser = full_user["rlc_user"]  # type: ignore
+    user: OrgUser = full_user["rlc_user"]  # type: ignore
     org: Org = full_user["org"]  # type: ignore
     another_full_user = test_helpers.create_org_user(
         email="tester@law-orga.de", name="Mr. Tester", rlc=org
@@ -46,6 +46,6 @@ def test_folder_migrate(db):
     same_entry = DataSheetEncryptedStandardEntry.objects.get(pk=entry.pk)
     same_entry.decrypt(
         another_user,
-        RlcUser.get_dummy_user_private_key(another_user, "tester@law-orga.de"),
+        OrgUser.get_dummy_user_private_key(another_user, "tester@law-orga.de"),
     )
     assert same_entry.value == SECRET

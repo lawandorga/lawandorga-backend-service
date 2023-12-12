@@ -4,14 +4,14 @@ from uuid import uuid4
 from django.db import models
 from django.db.models import Q
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.rlc.models.org import Org
 
 
 class RecordsView(models.Model):
     @classmethod
     def create(
-        cls, name: str, user: RlcUser, columns=list[str], shared=False, pk=0
+        cls, name: str, user: OrgUser, columns=list[str], shared=False, pk=0
     ) -> "RecordsView":
         view = RecordsView(name=name, columns=columns)
         if shared is True:
@@ -31,7 +31,7 @@ class RecordsView(models.Model):
         blank=True,
     )
     user = models.ForeignKey(
-        RlcUser,
+        OrgUser,
         related_name="records_views",
         on_delete=models.CASCADE,
         null=True,

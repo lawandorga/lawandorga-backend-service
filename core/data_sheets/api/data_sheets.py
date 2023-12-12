@@ -1,4 +1,4 @@
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.data_sheets.api import schemas
 from core.data_sheets.models import DataSheet
 from core.data_sheets.use_cases.access_delivery import (
@@ -15,7 +15,7 @@ router = Router()
     output_schema=schemas.OutputRecordCreate,
 )
 def command__create_record_within_folder(
-    rlc_user: RlcUser, data: schemas.InputRecordCreateWithinFolder
+    rlc_user: OrgUser, data: schemas.InputRecordCreateWithinFolder
 ):
     record_uuid = create_a_data_sheet_within_a_folder(
         rlc_user, data.name, folder_uuid=data.folder, template_id=data.template
@@ -25,5 +25,5 @@ def command__create_record_within_folder(
 
 
 @router.post(url="optimize/")
-def command__records_optimize(rlc_user: RlcUser):
+def command__records_optimize(rlc_user: OrgUser):
     deliver_access_to_users_who_should_have_access(rlc_user)

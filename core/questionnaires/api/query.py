@@ -5,7 +5,7 @@ from uuid import UUID
 from django.http import FileResponse
 from pydantic import BaseModel, ConfigDict
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.questionnaires.models import Questionnaire
 from core.questionnaires.models.questionnaire import QuestionnaireAnswer
 from core.questionnaires.models.template import (
@@ -62,7 +62,7 @@ class InputQuestionnaire(BaseModel):
     url="<uuid:uuid>/",
     output_schema=OutputQuestionnaire,
 )
-def query__retrieve_questionnaire(rlc_user: RlcUser, data: InputQuestionnaire):
+def query__retrieve_questionnaire(rlc_user: OrgUser, data: InputQuestionnaire):
     questionnaire = (
         Questionnaire.objects.select_related("template")
         .prefetch_related("answers")
@@ -91,7 +91,7 @@ class OutputTemplateList(BaseModel):
 
 
 @router.get("templates/", output_schema=list[OutputTemplateList])
-def query__list_templates(rlc_user: RlcUser):
+def query__list_templates(rlc_user: OrgUser):
     return QuestionnaireTemplate.objects.filter(rlc=rlc_user.org)
 
 
@@ -127,7 +127,7 @@ class InputRetrieveTemplate(BaseModel):
 
 
 @router.get("template/<int:id>/", output_schema=OutputTemplateDetail)
-def query__retrieve_template(rlc_user: RlcUser, data: InputRetrieveTemplate):
+def query__retrieve_template(rlc_user: OrgUser, data: InputRetrieveTemplate):
     template = QuestionnaireTemplate.objects.filter(rlc=rlc_user.org).get(id=data.id)
     return {
         "id": template.pk,
@@ -157,7 +157,7 @@ class InputDownloadAnswerFile(BaseModel):
 
 
 @router.get("download_answer_file/<int:id>/", output_schema=FileResponse)
-def query__retrieve_answer_file(rlc_user: RlcUser, data: InputDownloadAnswerFile):
+def query__retrieve_answer_file(rlc_user: OrgUser, data: InputDownloadAnswerFile):
     answer = QuestionnaireAnswer.objects.get(
         id=data.id, questionnaire__template__rlc__id=rlc_user.org_id
     )

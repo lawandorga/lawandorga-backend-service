@@ -2,7 +2,7 @@ from smtplib import SMTPRecipientsRefused
 
 from django.db import transaction
 
-from core.auth.models import RlcUser, UserProfile
+from core.auth.models import OrgUser, UserProfile
 from core.auth.token_generator import EmailConfirmationTokenGenerator
 from core.auth.use_cases.finders import (
     org_from_id_dangerous,
@@ -32,7 +32,7 @@ def register_rlc_user(
     # user stuff
     user = UserProfile(email=email, name=name)
     user.set_password(password)
-    rlc_user = RlcUser(user=user, email_confirmed=False, org=org)
+    rlc_user = OrgUser(user=user, email_confirmed=False, org=org)
     rlc_user.generate_keys(password)
 
     # legal stuff
@@ -71,7 +71,7 @@ def register_rlc_user(
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_USERS])
-def delete_user(__actor: RlcUser, other_user_id: int):
+def delete_user(__actor: OrgUser, other_user_id: int):
     other_user = rlc_user_from_id(__actor, other_user_id)
     if not other_user.check_delete_is_safe():
         raise UseCaseError(
@@ -91,7 +91,7 @@ def confirm_email(__actor: None, rlc_user_id: int, token: str):
 
 
 @use_case
-def unlock_user(__actor: RlcUser, another_rlc_user_id: int):
+def unlock_user(__actor: OrgUser, another_rlc_user_id: int):
     another_rlc_user = rlc_user_from_id(__actor, another_rlc_user_id)
     another_rlc_user.unlock(__actor)
     another_rlc_user.save()

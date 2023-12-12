@@ -6,7 +6,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db import models, transaction
 from django.utils import timezone
 
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.folders.domain.repositories.folder import FolderRepository
 from core.models import Group, Org
 from core.seedwork.domain_layer import DomainError
@@ -194,10 +194,10 @@ class RecordField(models.Model):
         model = apps.get_model("core", name)
         return model
 
-    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def create_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         raise NotImplementedError()
 
-    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def update_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         raise NotImplementedError()
 
     def delete_entry(self, record_id: int):
@@ -238,7 +238,7 @@ class DataSheetStateField(RecordField):
                 "The value is not in the options: {}.".format(self.options)
             )
 
-    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def create_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         from .data_sheet import DataSheetStateEntry
 
         assert isinstance(value, str)
@@ -248,7 +248,7 @@ class DataSheetStateField(RecordField):
             entry.closed_at = timezone.now()
         entry.save()
 
-    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def update_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         assert isinstance(value, str)
         self.validate_value(value)
         entry = self.entries.get(record_id=record_id)
@@ -301,7 +301,7 @@ class DataSheetUsersField(RecordField):
 
         return [{"name": i.name, "id": i.pk} for i in users]
 
-    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def create_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         from .data_sheet import DataSheetUsersEntry
 
         assert isinstance(value, list)
@@ -311,7 +311,7 @@ class DataSheetUsersField(RecordField):
             entry.value.set(value)  # type: ignore
         self.do_share_keys(user, entry)
 
-    def do_share_keys(self, user: RlcUser, entry: "DataSheetUsersEntry"):
+    def do_share_keys(self, user: OrgUser, entry: "DataSheetUsersEntry"):
         if self.share_keys:
             record = entry.record
             assert record.folder_uuid is not None
@@ -322,7 +322,7 @@ class DataSheetUsersField(RecordField):
                     folder.grant_access(u, user)
             r.save(folder)
 
-    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def update_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         entry = self.entries.get(record_id=record_id)
         entry.value.set(value)  # type: ignore
         self.do_share_keys(user, entry)
@@ -366,7 +366,7 @@ class DataSheetSelectField(RecordField):
                 "The value is not in the options: {}.".format(self.options)
             )
 
-    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def create_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         from .data_sheet import DataSheetSelectEntry
 
         self.validate_value(value)
@@ -374,7 +374,7 @@ class DataSheetSelectField(RecordField):
         entry = DataSheetSelectEntry(field_id=self.pk, record_id=record_id, value=value)
         entry.save()
 
-    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def update_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         self.validate_value(value)
         entry = self.entries.get(record_id=record_id)
         assert isinstance(value, str)
@@ -420,7 +420,7 @@ class DataSheetMultipleField(RecordField):
                 "The value is not in the options: {}.".format(self.options)
             )
 
-    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def create_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         from .data_sheet import DataSheetMultipleEntry
 
         self.validate_value(value)
@@ -429,7 +429,7 @@ class DataSheetMultipleField(RecordField):
         )
         entry.save()
 
-    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def update_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         self.validate_value(value)
         entry = self.entries.get(record_id=record_id)
         entry.value = value
@@ -476,7 +476,7 @@ class DataSheetEncryptedSelectField(RecordField):
                 "The value is not in the options: {}.".format(self.options)
             )
 
-    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def create_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         from .data_sheet import DataSheetEncryptedSelectEntry
 
         self.validate_value(value)
@@ -486,7 +486,7 @@ class DataSheetEncryptedSelectField(RecordField):
         entry.encrypt(user=user)
         entry.save()
 
-    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def update_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         self.validate_value(value)
         entry = self.entries.get(record_id=record_id)
         entry.value = value  # type: ignore
@@ -528,10 +528,10 @@ class DataSheetEncryptedFileField(RecordField):
     def __str__(self):
         return "recordEncryptedFileField: {}; name: {};".format(self.pk, self.name)
 
-    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def create_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         raise Exception("this is not supported")
 
-    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def update_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         raise Exception("this is not supported")
 
     def delete_old_entries(self, record_id: int):
@@ -540,7 +540,7 @@ class DataSheetEncryptedFileField(RecordField):
             entry.file.delete()
         entries.delete()
 
-    def upload_file(self, user: RlcUser, record_id: int, file: UploadedFile) -> None:
+    def upload_file(self, user: OrgUser, record_id: int, file: UploadedFile) -> None:
         from .data_sheet import DataSheetEncryptedFileEntry
 
         if file.size and file.size > 10000000:
@@ -606,7 +606,7 @@ class DataSheetStandardField(RecordField):
     def validate_value(self, value: str | list[str]):
         assert isinstance(value, str)
 
-    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def create_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         from .data_sheet import DataSheetStandardEntry
 
         self.validate_value(value)
@@ -616,7 +616,7 @@ class DataSheetStandardField(RecordField):
         )
         entry.save()
 
-    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def update_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         self.validate_value(value)
         entry = self.entries.get(record_id=record_id)
         assert isinstance(value, str)
@@ -661,7 +661,7 @@ class DataSheetEncryptedStandardField(RecordField):
     def validate_value(self, value: str | list[str]):
         assert isinstance(value, str)
 
-    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def create_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         from .data_sheet import DataSheetEncryptedStandardEntry
 
         self.validate_value(value)
@@ -671,7 +671,7 @@ class DataSheetEncryptedStandardField(RecordField):
         entry.encrypt(user=user)
         entry.save()
 
-    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def update_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         self.validate_value(value)
         entry = self.entries.get(record_id=record_id)
         entry.value = value  # type: ignore
@@ -714,7 +714,7 @@ class DataSheetStatisticField(RecordField):
     def validate_value(self, value: str | list[str]):
         assert isinstance(value, str)
 
-    def create_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def create_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         from .data_sheet import DataSheetStatisticEntry
 
         self.validate_value(value)
@@ -724,7 +724,7 @@ class DataSheetStatisticField(RecordField):
         )
         entry.save()
 
-    def update_entry(self, user: RlcUser, record_id: int, value: str | list[str]):
+    def update_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         self.validate_value(value)
         entry = self.entries.get(record_id=record_id)
         assert isinstance(value, str)

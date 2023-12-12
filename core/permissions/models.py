@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Union
 from django.db import models
 
 if TYPE_CHECKING:
-    from core.auth.models.org_user import RlcUser
+    from core.auth.models.org_user import OrgUser
     from core.rlc.models.group import Group
 
 
@@ -26,7 +26,7 @@ class HasPermission(models.Model):
     def create(
         cls,
         permission: Permission,
-        user: Union["RlcUser", None] = None,
+        user: Union["OrgUser", None] = None,
         group: Union["Group", None] = None,
     ):
         assert user or group
@@ -40,7 +40,7 @@ class HasPermission(models.Model):
         Permission, related_name="in_has_permission", on_delete=models.CASCADE
     )
     user = models.ForeignKey(
-        "RlcUser",
+        "OrgUser",
         related_name="permissions",
         blank=True,
         on_delete=models.CASCADE,

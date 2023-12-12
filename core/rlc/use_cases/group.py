@@ -1,4 +1,4 @@
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.auth.use_cases.finders import rlc_user_from_id
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_GROUPS
 from core.rlc.models import Group
@@ -7,7 +7,7 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
-def create_group(__actor: RlcUser, name: str, description: str | None) -> Group:
+def create_group(__actor: OrgUser, name: str, description: str | None) -> Group:
     group = Group.create(org=__actor.org, name=name, description=description)
     group.save()
     group.add_member(__actor)
@@ -17,20 +17,20 @@ def create_group(__actor: RlcUser, name: str, description: str | None) -> Group:
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
-def update_group(__actor: RlcUser, group_id: int, name: str, description: str | None):
+def update_group(__actor: OrgUser, group_id: int, name: str, description: str | None):
     group = group_from_id(__actor, group_id)
     group.update_information(name=name, description=description)
     group.save()
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
-def delete_group(__actor: RlcUser, group_id: int):
+def delete_group(__actor: OrgUser, group_id: int):
     group = group_from_id(__actor, group_id)
     group.delete()
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
-def add_member_to_group(__actor: RlcUser, group_id: int, new_member_id: int):
+def add_member_to_group(__actor: OrgUser, group_id: int, new_member_id: int):
     group = group_from_id(__actor, group_id)
     if not group.has_keys(__actor):
         raise UseCaseError(
@@ -47,7 +47,7 @@ def add_member_to_group(__actor: RlcUser, group_id: int, new_member_id: int):
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
-def remove_member_from_group(__actor: RlcUser, group_id: int, member_id: int):
+def remove_member_from_group(__actor: OrgUser, group_id: int, member_id: int):
     group = group_from_id(__actor, group_id)
 
     if group.members.count() <= 2:

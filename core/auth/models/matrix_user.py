@@ -4,7 +4,7 @@ from secrets import token_bytes
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
-from .org_user import RlcUser
+from .org_user import OrgUser
 from .user import UserProfile
 
 
@@ -50,7 +50,7 @@ class MatrixUser(models.Model):
         if self._group:
             return self._group
         try:
-            rlc_user = RlcUser.objects.get(user=self.user)
+            rlc_user = OrgUser.objects.get(user=self.user)
             return rlc_user.org.name
         except ObjectDoesNotExist:
             return ""

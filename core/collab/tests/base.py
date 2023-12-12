@@ -5,8 +5,8 @@ from core.models import (
     CollabDocument,
     HasPermission,
     Org,
+    OrgUser,
     Permission,
-    RlcUser,
     TextDocumentVersion,
     UserProfile,
 )
@@ -22,7 +22,7 @@ class BaseCollab:
         )
         self.user.set_password(settings.DUMMY_USER_PASSWORD)
         self.user.save()
-        self.rlc_user = RlcUser(
+        self.rlc_user = OrgUser(
             user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
         self.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)

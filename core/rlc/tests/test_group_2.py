@@ -1,6 +1,6 @@
 import pytest
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_GROUPS
 from core.rlc.models import Group
 from core.rlc.use_cases.group import create_group
@@ -42,7 +42,7 @@ def test_add_member_is_saved(db, group, user):
     user.org.save()
     user.user.save()
     user.save()
-    user = RlcUser.objects.get(pk=user.pk)
+    user = OrgUser.objects.get(pk=user.pk)
     group.add_member(user)
     group.save()
     group = Group.objects.get(pk=group.pk)

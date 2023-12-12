@@ -7,7 +7,7 @@ from core.auth.models import StatisticUser
 from core.data_sheets.models import DataSheet, DataSheetTemplate
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
-from core.models import RlcUser, UserProfile
+from core.models import OrgUser, UserProfile
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models.template import QuestionnaireTemplate
 from core.records.models.record import RecordsRecord
@@ -53,7 +53,7 @@ def create_raw_org_user(
 ):
     if org is None:
         org = create_raw_org(save=save)
-    user = RlcUser.create(
+    user = OrgUser.create(
         org=org,
         email=email,
         name=name,
@@ -79,7 +79,7 @@ def create_raw_group(
 
 
 def create_raw_folder(
-    user: Optional[RlcUser] = None, name="Dummy's Folder", stop_inherit=False
+    user: Optional[OrgUser] = None, name="Dummy's Folder", stop_inherit=False
 ):
     assert user is not None
     folder = Folder.create(name, user.org_id, stop_inherit=stop_inherit)
@@ -87,7 +87,7 @@ def create_raw_folder(
     return folder
 
 
-def create_folder(name="Test Folder", user: RlcUser | None = None):
+def create_folder(name="Test Folder", user: OrgUser | None = None):
     assert user is not None
 
     folder = Folder.create(name=name, org_pk=user.org_id)
@@ -131,7 +131,7 @@ class CreateRlcUserData(TypedDict):
     username: str
     email: str
     password: str
-    rlc_user: RlcUser
+    rlc_user: OrgUser
     private_key: str
     public_key: bytes
 
@@ -150,7 +150,7 @@ def create_org_user(
     user.set_password(password)
     if save:
         user.save()
-    rlc_user = RlcUser(user=user, email_confirmed=True, accepted=accepted, org=rlc)
+    rlc_user = OrgUser(user=user, email_confirmed=True, accepted=accepted, org=rlc)
     rlc_user.generate_keys(password)
     if save:
         rlc_user.save()
@@ -177,7 +177,7 @@ class CreateGroupData(TypedDict):
 
 
 def create_group(
-    user: RlcUser, name="Test Group", description="Just for testing."
+    user: OrgUser, name="Test Group", description="Just for testing."
 ) -> CreateGroupData:
     group = Group.create(org=user.org, name=name, description=description)
     group.save()
@@ -216,7 +216,7 @@ def create_data_sheet(template=None, users: Optional[List[UserProfile]] = None):
     return {"record": record}
 
 
-def create_record(token="AZ-TEST", user: Optional[RlcUser] = None):
+def create_record(token="AZ-TEST", user: Optional[OrgUser] = None):
     if user is None:
         full_user = create_org_user()
         user = full_user["rlc_user"]

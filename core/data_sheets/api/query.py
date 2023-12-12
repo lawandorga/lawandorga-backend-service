@@ -5,7 +5,7 @@ from uuid import UUID
 from django.http import FileResponse
 from pydantic import BaseModel
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.data_sheets.api import schemas
 from core.data_sheets.models import DataSheet, DataSheetTemplate
 from core.data_sheets.models.data_sheet import DataSheetEncryptedFileEntry
@@ -19,7 +19,7 @@ router = Router()
 @dataclass
 class SheetMigrate:
     sheet: DataSheet
-    current_user: RlcUser
+    current_user: OrgUser
     SHOW: bool
 
     @property
@@ -53,7 +53,7 @@ class SheetMigrate:
 
 
 @router.get(url="non_migrated/", output_schema=list[schemas.OutputNonMigratedDataSheet])
-def query__non_migrated(rlc_user: RlcUser):
+def query__non_migrated(rlc_user: OrgUser):
     sheets_1 = list(
         DataSheet.objects.filter(template__rlc_id=rlc_user.org_id)
         .filter(folder_uuid=None)
@@ -71,7 +71,7 @@ def query__non_migrated(rlc_user: RlcUser):
 
 
 @router.get(url="templates/", output_schema=list[schemas.OutputTemplate])
-def query__templates(rlc_user: RlcUser):
+def query__templates(rlc_user: OrgUser):
     templates = DataSheetTemplate.objects.filter(rlc_id=rlc_user.org_id)
     return list(templates)
 
@@ -80,7 +80,7 @@ def query__templates(rlc_user: RlcUser):
     url="templates/<int:id>/",
     output_schema=schemas.OutputTemplateDetail,
 )
-def query__template(rlc_user: RlcUser, data: schemas.InputTemplateDetail):
+def query__template(rlc_user: OrgUser, data: schemas.InputTemplateDetail):
     return DataSheetTemplate.objects.get(rlc_id=rlc_user.org_id, id=data.id)
 
 
@@ -88,7 +88,7 @@ def query__template(rlc_user: RlcUser, data: schemas.InputTemplateDetail):
     url="<uuid:uuid>/",
     output_schema=schemas.OutputDataSheetDetail,
 )
-def query__data_sheet(rlc_user: RlcUser, data: schemas.InputQueryRecord):
+def query__data_sheet(rlc_user: OrgUser, data: schemas.InputQueryRecord):
     record = (
         DataSheet.objects.prefetch_related(*DataSheet.ALL_PREFETCH_RELATED)
         .select_related("old_client", "template")
@@ -134,7 +134,7 @@ class InputFileEntryDownload(BaseModel):
 @router.get(
     "file_entry_download/<int:record_id>/<uuid:uuid>/", output_schema=FileResponse
 )
-def query__download_file_entry(rlc_user: RlcUser, data: InputFileEntryDownload):
+def query__download_file_entry(rlc_user: OrgUser, data: InputFileEntryDownload):
     entry = DataSheetEncryptedFileEntry.objects.get(
         record_id=data.record_id,
         field__uuid=data.uuid,

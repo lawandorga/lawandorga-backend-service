@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from core.data_sheets.fixtures import create_default_record_template
-from core.models import RlcUser, UserProfile
+from core.models import OrgUser, UserProfile
 from core.permissions.static import get_all_permission_strings
 
 
@@ -36,7 +36,7 @@ class OrgAdminForm(forms.ModelForm):
             user.set_password(self.cleaned_data["user_password"])
             user.save()
             # and rlc user
-            rlc_user = RlcUser(accepted=True, email_confirmed=True, user=user, org=rlc)
+            rlc_user = OrgUser(accepted=True, email_confirmed=True, user=user, org=rlc)
             rlc_user.generate_keys(self.cleaned_data["user_password"])
             rlc_user.save()
             # grant permissions

@@ -3,7 +3,7 @@ from uuid import UUID
 
 from django.db import transaction
 
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.permissions.static import (
@@ -17,7 +17,7 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
-def create_record(__actor: RlcUser, token: str):
+def create_record(__actor: OrgUser, token: str):
     r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository.IDENTIFIER))
 
     parent_folder = r.get_or_create_records_folder(__actor.org_id, __actor)
@@ -49,7 +49,7 @@ def create_record(__actor: RlcUser, token: str):
 
 
 @use_case
-def change_record_token(__actor: RlcUser, uuid: UUID, token: str):
+def change_record_token(__actor: OrgUser, uuid: UUID, token: str):
     r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
 
     record = find_record_by_uuid(__actor, uuid)

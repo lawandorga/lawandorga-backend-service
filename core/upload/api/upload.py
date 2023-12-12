@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import UploadedFile
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.seedwork.api_layer import ApiError, Router
 from core.upload.use_cases.upload import (
     create_upload_link,
@@ -16,12 +16,12 @@ router = Router()
 
 
 @router.post(url="")
-def command__create_link(rlc_user: RlcUser, data: schemas.InputCreateLink):
+def command__create_link(rlc_user: OrgUser, data: schemas.InputCreateLink):
     create_upload_link(rlc_user, data.name, data.folder)
 
 
 @router.post(url="<uuid:link>/disable/")
-def command__disable_link(rlc_user: RlcUser, data: schemas.InputDisableLink):
+def command__disable_link(rlc_user: OrgUser, data: schemas.InputDisableLink):
     disable_upload_link(rlc_user, data.link)
 
 
@@ -34,5 +34,5 @@ def command__upload_file(anonymous_user: AnonymousUser, data: schemas.InputUploa
 
 
 @router.delete(url="<uuid:link>/")
-def command__delete_link(rlc_user: RlcUser, data: schemas.InputDeleteLink):
+def command__delete_link(rlc_user: OrgUser, data: schemas.InputDeleteLink):
     delete_upload_link(rlc_user, data.link)

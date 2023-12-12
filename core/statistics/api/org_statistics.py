@@ -2,7 +2,7 @@ from typing import List
 
 from django.db import connection
 
-from core.auth.models import RlcUser, StatisticUser
+from core.auth.models import OrgUser, StatisticUser
 from core.seedwork.api_layer import Router
 from core.seedwork.statistics import execute_statement
 
@@ -144,7 +144,7 @@ def query__org_usage(statistics_user: StatisticUser):
     url="records_created_and_closed/",
     output_schema=List[schemas.OutputRecordsCreatedClosed],
 )
-def get_records_created_and_closed(rlc_user: RlcUser):
+def get_records_created_and_closed(rlc_user: OrgUser):
     if connection.vendor == "sqlite":
         statement = """
         select t1.month as month, t2.month as month, created, closed

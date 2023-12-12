@@ -1,6 +1,6 @@
 from typing import List
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.rlc.api import schemas
 from core.rlc.models import ExternalLink
 from core.rlc.use_cases.org import accept_member_to_org
@@ -11,7 +11,7 @@ router = Router()
 
 # list links
 @router.get(url="links/", output_schema=List[schemas.OutputExternalLink])
-def _list(rlc_user: RlcUser):
+def _list(rlc_user: OrgUser):
     links = ExternalLink.objects.filter(org=rlc_user.org)
     links_list = list(links)
     return links_list
@@ -22,7 +22,7 @@ def _list(rlc_user: RlcUser):
     url="links/",
     output_schema=schemas.OutputExternalLink,
 )
-def _create(data: schemas.InputExternalLinkCreate, rlc_user: RlcUser):
+def _create(data: schemas.InputExternalLinkCreate, rlc_user: OrgUser):
     link = ExternalLink.objects.create(org=rlc_user.org, **data.model_dump())
     return {
         "id": link.id,
@@ -34,7 +34,7 @@ def _create(data: schemas.InputExternalLinkCreate, rlc_user: RlcUser):
 
 # delete link
 @router.delete(url="links/<uuid:id>/")
-def _delete(data: schemas.InputExternalLinkDelete, rlc_user: RlcUser):
+def _delete(data: schemas.InputExternalLinkDelete, rlc_user: OrgUser):
     link = ExternalLink.objects.filter(org=rlc_user.org, id=data.id).first()
     if link is None:
         raise ApiError(
@@ -47,5 +47,5 @@ def _delete(data: schemas.InputExternalLinkDelete, rlc_user: RlcUser):
 @router.post(
     url="accept_member/",
 )
-def command__accept_member(data: schemas.InputAcceptMember, rlc_user: RlcUser):
+def command__accept_member(data: schemas.InputAcceptMember, rlc_user: OrgUser):
     accept_member_to_org(rlc_user, data.user)

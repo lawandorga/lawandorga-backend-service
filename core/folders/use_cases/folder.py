@@ -1,7 +1,7 @@
 from typing import Optional, cast
 from uuid import UUID
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.auth.use_cases.finders import org_user_from_uuid
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
@@ -24,7 +24,7 @@ def get_repository() -> FolderRepository:
 
 
 @use_case()
-def create_folder(__actor: RlcUser, name: str, parent: Optional[UUID]):
+def create_folder(__actor: OrgUser, name: str, parent: Optional[UUID]):
     r = get_repository()
     folder = Folder.create(name=name, org_pk=__actor.org_id)
     folder.grant_access(to=__actor)
@@ -35,7 +35,7 @@ def create_folder(__actor: RlcUser, name: str, parent: Optional[UUID]):
 
 
 @use_case
-def rename_folder(__actor: RlcUser, name: str, folder_uuid: UUID):
+def rename_folder(__actor: OrgUser, name: str, folder_uuid: UUID):
     folder = folder_from_uuid(__actor, folder_uuid)
     r = get_repository()
     folder.update_information(name=name)
@@ -43,7 +43,7 @@ def rename_folder(__actor: RlcUser, name: str, folder_uuid: UUID):
 
 
 @use_case()
-def delete_folder(__actor: RlcUser, folder_uuid: UUID):
+def delete_folder(__actor: OrgUser, folder_uuid: UUID):
     r = get_repository()
     folder = r.retrieve(org_pk=__actor.org_id, uuid=folder_uuid)
 
@@ -67,7 +67,7 @@ def delete_folder(__actor: RlcUser, folder_uuid: UUID):
 
 
 @use_case
-def grant_access(__actor: RlcUser, to_uuid: UUID, folder_uuid: UUID):
+def grant_access(__actor: OrgUser, to_uuid: UUID, folder_uuid: UUID):
     to = rlc_user_from_uuid(__actor, to_uuid)
     folder = folder_from_uuid(__actor, folder_uuid)
 
@@ -80,7 +80,7 @@ def grant_access(__actor: RlcUser, to_uuid: UUID, folder_uuid: UUID):
 
 
 @use_case
-def grant_access_to_group(__actor: RlcUser, group_uuid: UUID, folder_uuid: UUID):
+def grant_access_to_group(__actor: OrgUser, group_uuid: UUID, folder_uuid: UUID):
     to = group_from_uuid(__actor, group_uuid)
     folder = folder_from_uuid(__actor, folder_uuid)
 
@@ -93,7 +93,7 @@ def grant_access_to_group(__actor: RlcUser, group_uuid: UUID, folder_uuid: UUID)
 
 
 @use_case
-def revoke_access_from_group(__actor: RlcUser, group_uuid: UUID, folder_uuid: UUID):
+def revoke_access_from_group(__actor: OrgUser, group_uuid: UUID, folder_uuid: UUID):
     group = group_from_uuid(__actor, group_uuid)
     folder = folder_from_uuid(__actor, folder_uuid)
 
@@ -106,7 +106,7 @@ def revoke_access_from_group(__actor: RlcUser, group_uuid: UUID, folder_uuid: UU
 
 
 @use_case
-def revoke_access(__actor: RlcUser, of_uuid: UUID, folder_uuid: UUID):
+def revoke_access(__actor: OrgUser, of_uuid: UUID, folder_uuid: UUID):
     of = rlc_user_from_uuid(__actor, of_uuid)
     folder = folder_from_uuid(__actor, folder_uuid)
 
@@ -119,7 +119,7 @@ def revoke_access(__actor: RlcUser, of_uuid: UUID, folder_uuid: UUID):
 
 
 @use_case
-def correct_folder_keys_of_others(__actor: RlcUser):
+def correct_folder_keys_of_others(__actor: OrgUser):
     r = get_repository()
     folders = r.get_list(__actor.org_id)
     users = list(__actor.org.users.exclude(pk=__actor.pk))
@@ -132,7 +132,7 @@ def correct_folder_keys_of_others(__actor: RlcUser):
 
 
 @use_case
-def move_folder(__actor: RlcUser, folder_uuid: UUID, target_uuid: UUID):
+def move_folder(__actor: OrgUser, folder_uuid: UUID, target_uuid: UUID):
     folder = folder_from_uuid(__actor, folder_uuid)
     target = folder_from_uuid(__actor, target_uuid)
 
@@ -142,7 +142,7 @@ def move_folder(__actor: RlcUser, folder_uuid: UUID, target_uuid: UUID):
 
 
 @use_case
-def toggle_inheritance(__actor: RlcUser, folder_uuid: UUID):
+def toggle_inheritance(__actor: OrgUser, folder_uuid: UUID):
     folder = folder_from_uuid(__actor, folder_uuid)
 
     if not folder.has_access(__actor):

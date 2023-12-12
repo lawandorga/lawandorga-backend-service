@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models import Q
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.rlc.models import Org
 
 
@@ -26,7 +26,7 @@ class EventsEvent(models.Model):
         ordering = ["start_time"]
 
     @staticmethod
-    def get_all_events_for_user(rlc_user: RlcUser):
+    def get_all_events_for_user(rlc_user: OrgUser):
         events = EventsEvent.objects.filter(
             Q(org=rlc_user.org)
             | Q(level="GLOBAL")

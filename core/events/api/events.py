@@ -1,7 +1,7 @@
 import bleach
 from django.core.exceptions import ObjectDoesNotExist
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.events.api.schemas import (
     InputEventCreate,
     InputEventDelete,
@@ -16,12 +16,12 @@ router = Router()
 
 
 @router.api(output_schema=list[OutputEventResponse])
-def get_all_events_for_user(rlc_user: RlcUser):
+def get_all_events_for_user(rlc_user: OrgUser):
     return list(EventsEvent.get_all_events_for_user(rlc_user))
 
 
 @router.post()
-def create_event(data: InputEventCreate, rlc_user: RlcUser):
+def create_event(data: InputEventCreate, rlc_user: OrgUser):
     org = Org.objects.get(id=rlc_user.org.pk)
     clean_description = bleach.clean(
         data.description,
@@ -39,7 +39,7 @@ def create_event(data: InputEventCreate, rlc_user: RlcUser):
 
 
 @router.put(url="<int:id>/")
-def update_event(data: InputEventUpdate, rlc_user: RlcUser):
+def update_event(data: InputEventUpdate, rlc_user: OrgUser):
     try:
         event = EventsEvent.objects.get(id=data.id)
     except ObjectDoesNotExist:
@@ -64,7 +64,7 @@ def update_event(data: InputEventUpdate, rlc_user: RlcUser):
 
 
 @router.delete(url="<int:id>/")
-def delete_event(data: InputEventDelete, rlc_user: RlcUser):
+def delete_event(data: InputEventDelete, rlc_user: OrgUser):
     try:
         event = EventsEvent.objects.get(id=data.id)
     except ObjectDoesNotExist:

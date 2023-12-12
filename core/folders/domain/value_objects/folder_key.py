@@ -14,7 +14,7 @@ from core.folders.domain.value_objects.symmetric_key import (
 from seedwork.types import JsonDict
 
 if TYPE_CHECKING:
-    from core.auth.models.org_user import RlcUser
+    from core.auth.models.org_user import OrgUser
     from core.rlc.models.group import Group
 
 
@@ -146,7 +146,7 @@ class EncryptedFolderKeyOfUser(EncryptedFolderKey):
     def __str__(self):
         return "EncryptedFolderKeyOfUser '{}'".format(self._owner_uuid)
 
-    def decrypt_self(self, user: "RlcUser") -> "FolderKey":
+    def decrypt_self(self, user: "OrgUser") -> "FolderKey":
         if not self._is_valid:
             raise ValueError("This key is not valid.")
 
@@ -186,7 +186,7 @@ class EncryptedFolderKeyOfGroup(EncryptedFolderKey):
     def __str__(self):
         return "EncryptedFolderKeyOfGroup '{}'".format(self._owner_uuid)
 
-    def decrypt_self(self, group: "Group", user: "RlcUser") -> "FolderKey":
+    def decrypt_self(self, group: "Group", user: "OrgUser") -> "FolderKey":
         if not self._is_valid:
             raise ValueError("This key is not valid.")
 

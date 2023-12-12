@@ -11,8 +11,8 @@ from core.models import (
     Folder,
     HasPermission,
     Org,
+    OrgUser,
     Permission,
-    RlcUser,
     UserProfile,
 )
 from core.permissions.static import PERMISSION_FILES_WRITE_ALL_FOLDERS
@@ -30,7 +30,7 @@ class FileTestsBase:
         )
         self.user.set_password(settings.DUMMY_USER_PASSWORD)
         self.user.save()
-        self.rlc_user = RlcUser(
+        self.rlc_user = OrgUser(
             user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
         self.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)

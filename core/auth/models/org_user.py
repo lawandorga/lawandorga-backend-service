@@ -58,7 +58,7 @@ class KeyOfUser(TypedDict):
 
 
 class EmailTokenValidator(Protocol):
-    def check_token(self, rlc_user: "RlcUser", token: str) -> bool:
+    def check_token(self, rlc_user: "OrgUser", token: str) -> bool:
         ...
 
 
@@ -67,7 +67,7 @@ class RlcUserManager(models.Manager):
         return super().get_queryset().select_related("user")
 
 
-class RlcUser(Aggregate, models.Model):
+class OrgUser(Aggregate, models.Model):
     class OrgUserLocked(Event):
         org_user_uuid: UUID
         org_pk: int
@@ -87,12 +87,12 @@ class RlcUser(Aggregate, models.Model):
         accepted=False,
         pk=0,
         user_pk=0,
-    ) -> "RlcUser":
+    ) -> "OrgUser":
         user = UserProfile(email=email, name=name)
         if user_pk:
             user.pk = user_pk
         user.set_password(password)
-        rlc_user = RlcUser(
+        rlc_user = OrgUser(
             user=user, email_confirmed=email_confirmed, accepted=accepted, org=org
         )
         if pk:
@@ -158,12 +158,12 @@ class RlcUser(Aggregate, models.Model):
         org_id: int
 
     class Meta:
-        verbose_name = "RlcUser"
-        verbose_name_plural = "RlcUsers"
+        verbose_name = "OrgUser"
+        verbose_name_plural = "OrgUsers"
         ordering = ["accepted", "locked", "is_active", "user__name"]
 
     def __str__(self):
-        return "rlcUser: {}; email: {};".format(self.pk, self.user.email)
+        return "orgUser: {}; email: {};".format(self.pk, self.user.email)
 
     @property
     def org_key(self) -> KeyOfUser:
@@ -296,7 +296,7 @@ class RlcUser(Aggregate, models.Model):
     def members_information(self):
         if self.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
             members_data = []
-            users = RlcUser.objects.filter(
+            users = OrgUser.objects.filter(
                 org=self.org, created__gt=(timezone.now() - timedelta(days=14))
             )
             for rlc_user in list(users):
@@ -465,7 +465,7 @@ class RlcUser(Aggregate, models.Model):
         return u.key
 
     @staticmethod
-    def get_dummy_user_private_key(dummy: "RlcUser", email="dummy@law-orga.de") -> str:
+    def get_dummy_user_private_key(dummy: "OrgUser", email="dummy@law-orga.de") -> str:
         if settings.TESTING and dummy.email == email:
             u1 = UserKey.create_from_dict(dummy.key)
             u2 = u1.decrypt_self(settings.DUMMY_USER_PASSWORD)
@@ -516,7 +516,7 @@ class RlcUser(Aggregate, models.Model):
             self.email == "dummy@law-orga.de" or self.email == "tester@law-orga.de"
         ):
             public_key = self.key["key"]["public_key"]
-            private_key = RlcUser.get_dummy_user_private_key(self, self.email)
+            private_key = OrgUser.get_dummy_user_private_key(self, self.email)
             origin = self.key["key"]["origin"]
             return AsymmetricKey.create(
                 private_key=private_key, origin=origin, public_key=public_key
@@ -603,7 +603,7 @@ class RlcUser(Aggregate, models.Model):
     def lock(self) -> None:
         self.locked = True
         self.events.add(
-            RlcUser.OrgUserLocked(org_user_uuid=self.uuid, org_pk=self.org_id)
+            OrgUser.OrgUserLocked(org_user_uuid=self.uuid, org_pk=self.org_id)
         )
 
     def change_password_for_keys(self, new_password: str):
@@ -720,9 +720,9 @@ class RlcUser(Aggregate, models.Model):
         from core.records.models.deletion import RecordsDeletion
 
         # profiles
-        profiles = RlcUser.objects.filter(org=self.org, locked=True).count()
+        profiles = OrgUser.objects.filter(org=self.org, locked=True).count()
         if self.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
-            profiles += RlcUser.objects.filter(org=self.org, accepted=False).count()
+            profiles += OrgUser.objects.filter(org=self.org, accepted=False).count()
 
         # deletion requests
         if self.has_permission(PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS):
@@ -789,7 +789,7 @@ class RlcUser(Aggregate, models.Model):
         self.calendar_uuid = uuid4()
         self.save()
 
-    def fix_keys(self, by: "RlcUser"):
+    def fix_keys(self, by: "OrgUser"):
         assert self.org_id == by.org_id
 
         aes_key_rlc = by.org.get_aes_key(
@@ -804,11 +804,11 @@ class RlcUser(Aggregate, models.Model):
         new_keys.encrypt(self.get_public_key())
         new_keys.save()
 
-    def unlock(self, by: "RlcUser"):
+    def unlock(self, by: "OrgUser"):
         self.fix_keys(by)
         self.locked = False
         self.events.add(
-            RlcUser.OrgUserUnlocked(
+            OrgUser.OrgUserUnlocked(
                 org_user_uuid=self.uuid,
                 by_org_user_uuid=by.uuid,
                 org_pk=self.org_id,

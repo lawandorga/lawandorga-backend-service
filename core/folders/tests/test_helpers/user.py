@@ -1,7 +1,7 @@
 from typing import Union
 from uuid import UUID, uuid4
 
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.external import IOwner
 from core.folders.domain.value_objects.asymmetric_key import (
@@ -11,7 +11,7 @@ from core.folders.domain.value_objects.asymmetric_key import (
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 
 
-class UserObject(RlcUser):
+class UserObject(OrgUser):
     class Meta:
         abstract = True
 

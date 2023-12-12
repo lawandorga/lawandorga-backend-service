@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.use_cases.finders import folder_from_uuid
 from core.seedwork.use_case_layer import use_case
@@ -11,7 +11,7 @@ from core.timeline.repositories.event import EventRepository
 
 @use_case
 def create_event(
-    __actor: RlcUser,
+    __actor: OrgUser,
     title: str,
     text: str,
     time: datetime,
@@ -33,7 +33,7 @@ def create_event(
 
 @use_case
 def update_event(
-    __actor: RlcUser,
+    __actor: OrgUser,
     uuid: UUID,
     title: str | None,
     text: str | None,
@@ -48,5 +48,5 @@ def update_event(
 
 
 @use_case
-def delete_event(__actor: RlcUser, uuid: UUID, fur: EventRepository) -> None:
+def delete_event(__actor: OrgUser, uuid: UUID, fur: EventRepository) -> None:
     fur.delete_event(uuid=uuid, user=__actor)

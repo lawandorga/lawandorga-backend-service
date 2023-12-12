@@ -6,14 +6,14 @@ from django.utils.crypto import salted_hmac
 from django.utils.http import base36_to_int, int_to_base36
 
 if TYPE_CHECKING:
-    from core.auth.models import RlcUser
+    from core.auth.models import OrgUser
 
 
 class EmailConfirmationTokenGenerator:
     key_salt = "EmailConfirmationTokenGenerator"
     timeout = 60 * 60 * 24 * 30  # 30 days
 
-    def make_token(self, user: "RlcUser"):
+    def make_token(self, user: "OrgUser"):
         return self._make_token_with_timestamp(
             user,
             self._num_seconds(self._now()),
@@ -47,7 +47,7 @@ class EmailConfirmationTokenGenerator:
 
         return True
 
-    def _make_token_with_timestamp(self, user: "RlcUser", timestamp: int):
+    def _make_token_with_timestamp(self, user: "OrgUser", timestamp: int):
         # timestamp is number of seconds since 2001-1-1. Converted to base 36,
         # this gives us a 6 digit string until about 2069.
         ts_b36 = int_to_base36(timestamp)
@@ -59,7 +59,7 @@ class EmailConfirmationTokenGenerator:
         ).hexdigest()[::2]
         return "%s-%s" % (ts_b36, hash_string)
 
-    def _make_hash_value(self, user: "RlcUser", timestamp: int):
+    def _make_hash_value(self, user: "OrgUser", timestamp: int):
         return f"{user.pk}{user.user.email}{user.email_confirmed}{timestamp}"
 
     def _num_seconds(self, dt):

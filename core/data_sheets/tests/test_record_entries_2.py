@@ -8,7 +8,7 @@ from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.test import Client
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.data_sheets.models import (
     DataSheetEncryptedFileEntry,
     DataSheetEncryptedFileField,
@@ -60,7 +60,7 @@ def setup():
     user = UserProfile.objects.create(email="dummy@law-orga.de", name="Dummy 1")
     user.set_password(settings.DUMMY_USER_PASSWORD)
     user.save()
-    rlc_user = RlcUser(user=user, email_confirmed=True, accepted=True, org=rlc)
+    rlc_user = OrgUser(user=user, email_confirmed=True, accepted=True, org=rlc)
     rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
     rlc_user.save()
     template = DataSheetTemplate.objects.create(rlc=rlc, name="Record Template")
@@ -570,7 +570,7 @@ def users_entry(users_field, record):
 
 
 def test_users_entry_create(db, record, users_field, auth_client):
-    user = RlcUser.objects.get()
+    user = OrgUser.objects.get()
     user1 = test_helpers.create_org_user(
         rlc=user.org, email="dummy2@law-orga.de", save=True
     )["rlc_user"]
@@ -593,7 +593,7 @@ def test_users_entry_create(db, record, users_field, auth_client):
 
 
 def test_users_entry_udpate(db, record, users_field, auth_client, users_entry):
-    user = RlcUser.objects.get()
+    user = OrgUser.objects.get()
     user2 = test_helpers.create_org_user(
         rlc=user.org, email="dummy3@law-orga.de", save=True
     )["rlc_user"]
@@ -628,7 +628,7 @@ def test_entry_delete(db, record, users_field, auth_client, users_entry):
 
 def test_entry_keys_sharing_true(db, record, users_field, auth_client):
     assert users_field.share_keys is True
-    user = RlcUser.objects.get()
+    user = OrgUser.objects.get()
     user1 = test_helpers.create_org_user(
         rlc=user.org, email="dummy2@law-orga.de", save=True
     )["rlc_user"]
@@ -671,7 +671,7 @@ def test_entry_keys_sharing_false(db, record, users_field, auth_client):
     users_field.share_keys = False
     users_field.save()
     assert users_field.share_keys is False
-    user = RlcUser.objects.get()
+    user = OrgUser.objects.get()
     user1 = test_helpers.create_org_user(
         rlc=user.org, email="dummy2@law-orga.de", save=True
     )["rlc_user"]

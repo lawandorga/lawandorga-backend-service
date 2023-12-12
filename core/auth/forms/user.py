@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
 
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.auth.models.user import UserProfile
 from core.auth.use_cases.rlc_user import register_rlc_user
 from core.legal.models.legal_requirement import LegalRequirement
@@ -48,7 +48,7 @@ class CustomUserCreationForm(UserCreationForm):
             self.cleaned_data["lrs"].values_list("pk", flat=True),
             self.cleaned_data["org"].pk,
         )
-        return RlcUser.objects.get(user__email=self.cleaned_data["email"])
+        return OrgUser.objects.get(user__email=self.cleaned_data["email"])
 
     def clean_lrs(self):
         value = self.cleaned_data["lrs"]

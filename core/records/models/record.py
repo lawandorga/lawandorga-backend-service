@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 
 from django.db import models
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.item import ItemRepository
 from core.folders.infrastructure.folder_addon import FolderAddon
@@ -26,7 +26,7 @@ class RecordsRecord(Aggregate, models.Model):
     REPOSITORY = DjangoRecordsRecordRepository.IDENTIFIER
 
     @classmethod
-    def create(cls, token: str, user: RlcUser, folder: Folder, pk=0) -> "RecordsRecord":
+    def create(cls, token: str, user: OrgUser, folder: Folder, pk=0) -> "RecordsRecord":
         record = RecordsRecord(name=token, org=user.org)
         if pk:
             record.pk = pk

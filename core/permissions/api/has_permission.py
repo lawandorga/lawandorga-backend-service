@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.permissions.use_cases.has_permission import (
     create_has_permission,
     delete_has_permission,
@@ -17,7 +17,7 @@ class InputHasPermissionCreate(BaseModel):
 
 
 @router.post()
-def command__create_has_permission(rlc_user: RlcUser, data: InputHasPermissionCreate):
+def command__create_has_permission(rlc_user: OrgUser, data: InputHasPermissionCreate):
     create_has_permission(rlc_user, data.user_id, data.group_id, data.permission_id)
 
 
@@ -26,5 +26,5 @@ class InputHasPermissionDelete(BaseModel):
 
 
 @router.delete("<int:has_permission_id>/")
-def command__delete_has_permission(rlc_user: RlcUser, data: InputHasPermissionDelete):
+def command__delete_has_permission(rlc_user: OrgUser, data: InputHasPermissionDelete):
     delete_has_permission(rlc_user, data.has_permission_id)

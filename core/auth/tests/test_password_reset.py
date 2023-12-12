@@ -2,7 +2,7 @@ from django.core import mail
 from django.test import Client
 from django.urls import reverse
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.seedwork import test_helpers
 
 
@@ -43,6 +43,6 @@ def test_password_reset_works(db):
     assert "Password reset complete" in response_5.content.decode()
 
     # check rlc user is locked but his keys work
-    updated_rlc_user = RlcUser.objects.get(pk=rlc_user["rlc_user"].pk)
+    updated_rlc_user = OrgUser.objects.get(pk=rlc_user["rlc_user"].pk)
     assert updated_rlc_user.locked
     updated_rlc_user.get_encryption_key()

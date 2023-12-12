@@ -4,7 +4,7 @@ from django.conf import settings
 from django.utils.module_loading import import_string
 from pydantic import ValidationError, validate_call
 
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.seedwork.api_layer import ApiError, ApiValidationError, Router
 
 router = Router()
@@ -14,7 +14,7 @@ USECASES = import_string(settings.USECASE_FUNCTIONS)
 
 
 @router.post("")
-def command(rlc_user: RlcUser, data: dict[str, Any]):
+def command(rlc_user: OrgUser, data: dict[str, Any]):
     action = data.pop("action", None)
     if action is None:
         raise ApiError("action is required")

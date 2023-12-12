@@ -1,6 +1,6 @@
 from django.utils import timezone
 
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.seedwork import test_helpers
@@ -14,7 +14,7 @@ def create_follow_up(
     title="Something will happen",
     text="In Hamburg",
     folder: None | Folder = None,
-    user: None | RlcUser = None,
+    user: None | OrgUser = None,
 ) -> TimelineFollowUp:
     if user is None:
         user = test_helpers.create_raw_org_user(save=True)
@@ -36,7 +36,7 @@ def create_event(
     title="Something will happen",
     text="In Hamburg",
     folder: None | Folder = None,
-    user: None | RlcUser = None,
+    user: None | OrgUser = None,
 ) -> TimelineEvent:
     if user is None:
         user = test_helpers.create_raw_org_user(save=True)

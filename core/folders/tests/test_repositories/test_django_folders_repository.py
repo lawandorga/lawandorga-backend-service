@@ -1,7 +1,7 @@
 import pytest
 from django.conf import settings
 
-from core.auth.models import RlcUser, UserProfile
+from core.auth.models import OrgUser, UserProfile
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
@@ -28,11 +28,11 @@ def repository(real_encryption):
 def user(db):
     o = Org.objects.create(name="Test")
     p = UserProfile.objects.create(email="dummy@law-orga.de", name="Mr. Dummy")
-    u = RlcUser(user=p, org=o)
+    u = OrgUser(user=p, org=o)
     u.generate_keys(settings.DUMMY_USER_PASSWORD)
     u.save()
     o.generate_keys()
-    user = RlcUser.objects.get(pk=u.pk)
+    user = OrgUser.objects.get(pk=u.pk)
     yield user
 
 

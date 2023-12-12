@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.seedwork.api_layer import Router
 from core.timeline.repositories.event import EventRepository
@@ -32,7 +32,7 @@ class InputTimelineList(BaseModel):
     "timeline/<uuid:folder_uuid>/",
     output_schema=list[OutputTimelineEvent],
 )
-def query_timeline(rlc_user: RlcUser, data: InputTimelineList):
+def query_timeline(rlc_user: OrgUser, data: InputTimelineList):
     fr = DjangoFolderRepository()
     fur = FollowUpRepository()
     er = EventRepository()

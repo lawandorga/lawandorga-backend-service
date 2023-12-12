@@ -15,7 +15,7 @@ from core.seedwork.domain_layer import DomainError
 from seedwork.types import JsonDict
 
 if TYPE_CHECKING:
-    from core.auth.models.org_user import RlcUser
+    from core.auth.models.org_user import OrgUser
     from core.rlc.models.group import Group
 
 
@@ -131,7 +131,7 @@ class Folder:
 
         return versions[0]
 
-    def invalidate_keys_of(self, owner: "RlcUser"):
+    def invalidate_keys_of(self, owner: "OrgUser"):
         new_keys: list[EncryptedFolderKeyOfUser] = []
         for key in self.__keys:
             new_key = key
@@ -143,7 +143,7 @@ class Folder:
             new_keys.append(new_key)
         self.__keys = new_keys
 
-    def has_invalid_keys(self, owner: "RlcUser") -> bool:
+    def has_invalid_keys(self, owner: "OrgUser") -> bool:
         for key in self.__keys:
             if (
                 isinstance(key, EncryptedFolderKeyOfUser)
@@ -153,7 +153,7 @@ class Folder:
                 return True
         return False
 
-    def fix_keys(self, of: "RlcUser", by: "RlcUser"):
+    def fix_keys(self, of: "OrgUser", by: "OrgUser"):
         new_keys: list[EncryptedFolderKeyOfUser] = []
         fixed = False
 
@@ -176,7 +176,7 @@ class Folder:
 
         self.__keys = new_keys
 
-    def has_access(self, owner: "RlcUser") -> bool:
+    def has_access(self, owner: "OrgUser") -> bool:
         key = self._get_key(owner)
         if key is not None and key.is_valid:
             return True
@@ -189,7 +189,7 @@ class Folder:
         self.__restricted = True
 
     def _get_key(
-        self, owner: "RlcUser"
+        self, owner: "OrgUser"
     ) -> Union[EncryptedFolderKeyOfGroup, EncryptedFolderKeyOfUser, None]:
         for u_key in self.__keys:
             if u_key.owner_uuid == owner.uuid:
@@ -208,7 +208,7 @@ class Folder:
                 return key
         return None
 
-    def _has_keys(self, owner: "RlcUser") -> bool:
+    def _has_keys(self, owner: "OrgUser") -> bool:
         return self._get_key(owner) is not None
 
     def _has_keys_group(self, group: "Group") -> bool:
@@ -255,7 +255,7 @@ class Folder:
             )
         self.__name = name if name is not None else self.__name
 
-    def __find_folder_key(self, user: "RlcUser") -> Optional[EncryptedFolderKeyOfUser]:
+    def __find_folder_key(self, user: "OrgUser") -> Optional[EncryptedFolderKeyOfUser]:
         for key in self.__keys:
             if (
                 isinstance(key, EncryptedFolderKeyOfUser)
@@ -267,7 +267,7 @@ class Folder:
         return None
 
     def __get_encryption_key_from_user_keys(
-        self, requestor: "RlcUser"
+        self, requestor: "OrgUser"
     ) -> Optional["SymmetricKey"]:
         enc_folder_key = self.__find_folder_key(requestor)
         if enc_folder_key:
@@ -278,7 +278,7 @@ class Folder:
         return None
 
     def __get_encryption_key_from_parent(
-        self, requestor: "RlcUser"
+        self, requestor: "OrgUser"
     ) -> Optional["SymmetricKey"]:
         if self.__stop_inherit:
             return None
@@ -294,7 +294,7 @@ class Folder:
         return None
 
     def __get_encryption_key_from_group(
-        self, requestor: "RlcUser"
+        self, requestor: "OrgUser"
     ) -> Optional["SymmetricKey"]:
         groups = list(requestor.groups.all())
         for group in groups:
@@ -310,7 +310,7 @@ class Folder:
                     return symmetric_key
         return None
 
-    def get_encryption_key(self, requestor: "RlcUser") -> "SymmetricKey":
+    def get_encryption_key(self, requestor: "OrgUser") -> "SymmetricKey":
         assert len(self.__keys) or self.enc_parent_key is not None
 
         key = self.__get_encryption_key_from_user_keys(requestor)
@@ -327,11 +327,11 @@ class Folder:
 
         raise DomainError("No key was found for this folder.")
 
-    def get_decryption_key(self, requestor: "RlcUser") -> "SymmetricKey":
+    def get_decryption_key(self, requestor: "OrgUser") -> "SymmetricKey":
         # the key is symmetric therefore the encryption and decryption key is the same
         return self.get_encryption_key(requestor=requestor)
 
-    def __set_parent(self, parent: "Folder", by: "RlcUser"):
+    def __set_parent(self, parent: "Folder", by: "OrgUser"):
         self.__parent = parent
 
         # get the key of self
@@ -353,7 +353,7 @@ class Folder:
         # add the parent key to keys
         self.__enc_parent_key = enc_parent_key
 
-    def set_parent(self, parent: "Folder", by: "RlcUser"):
+    def set_parent(self, parent: "Folder", by: "OrgUser"):
         assert by is not None
 
         if self.__parent is not None:
@@ -373,7 +373,7 @@ class Folder:
     def stop_inheritance(self):
         self.__stop_inherit = True
 
-    def move(self, target: "Folder", by: "RlcUser"):
+    def move(self, target: "Folder", by: "OrgUser"):
         if not self.has_access(by):
             raise DomainError("You have no access to this folder.")
 
@@ -393,7 +393,7 @@ class Folder:
         self.__parent = None
         self.set_parent(target, by)
 
-    def __grant_access(self, by: Optional["RlcUser"] = None) -> SymmetricKey:
+    def __grant_access(self, by: Optional["OrgUser"] = None) -> SymmetricKey:
         if len(self.__keys) == 0 and self.__enc_parent_key is None:
             key = SymmetricKey.generate()
 
@@ -403,7 +403,7 @@ class Folder:
 
         return key
 
-    def grant_access(self, to: "RlcUser", by: Optional["RlcUser"] = None):
+    def grant_access(self, to: "OrgUser", by: Optional["OrgUser"] = None):
         if self.has_access(to):
             raise DomainError("This user already has access to this folder.")
 
@@ -420,7 +420,7 @@ class Folder:
 
         self.__keys.append(enc_key)
 
-    def grant_access_to_group(self, group: "Group", by: "RlcUser"):
+    def grant_access_to_group(self, group: "Group", by: "OrgUser"):
         if self._has_keys_group(group):
             raise DomainError("This group already has keys for this folder.")
 
@@ -437,7 +437,7 @@ class Folder:
 
         self.__group_keys.append(enc_key)
 
-    def revoke_access(self, of: "RlcUser"):
+    def revoke_access(self, of: "OrgUser"):
         prev_length = len(self.__keys)
 
         new_keys: list[EncryptedFolderKeyOfUser] = list(

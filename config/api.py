@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest
 
-from core.auth.models import RlcUser, StatisticUser, UserProfile
+from core.auth.models import OrgUser, StatisticUser, UserProfile
 from core.mail.models import MailUser
 from core.seedwork.api_layer import ApiError
 
@@ -41,7 +41,7 @@ def get_mail_user(request: HttpRequest) -> MailUser:
     return mail_user
 
 
-def get_org_user(request: HttpRequest) -> RlcUser:
+def get_org_user(request: HttpRequest) -> OrgUser:
     if not request.user.is_authenticated:
         raise not_authenticated_error
 

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import pytest
 from django.test import Client
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.auth.token_generator import EmailConfirmationTokenGenerator
 from core.data_sheets.models import DataSheetTemplate
 from core.models import Org
@@ -134,7 +134,7 @@ def test_retrieve_another_rlc_user(user, rlc_user_2, db):
     c = Client()
     c.login(**user)
     ru = rlc_user_2["rlc_user"]
-    ru_update = RlcUser.objects.get(id=ru.id)
+    ru_update = OrgUser.objects.get(id=ru.id)
     ru_update.street = "ABC"
     ru_update.save()
     response = c.get("/api/rlc_users/{}/".format(ru.id))
@@ -147,7 +147,7 @@ def test_retrieve_another_rlc_user_with_permission(user, rlc_user_2, db):
     c.login(**user)
     user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_USERS)
     ru = rlc_user_2["rlc_user"]
-    ru_update = RlcUser.objects.get(id=ru.id)
+    ru_update = OrgUser.objects.get(id=ru.id)
     ru_update.street = "ABC"
     ru_update.save()
     response = c.get("/api/rlc_users/{}/".format(ru.id))
@@ -180,7 +180,7 @@ def test_activate_success(user, rlc_user_2, db):
     response_data = response.json()
     assert (
         response.status_code == 200
-        and RlcUser.objects.get(id=ru.id).is_active is False
+        and OrgUser.objects.get(id=ru.id).is_active is False
         and response_data["email"] == ru.email
         and response_data["is_active"] is not ru.is_active
     )

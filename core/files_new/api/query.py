@@ -6,7 +6,7 @@ from rest_framework.exceptions import ParseError
 
 from core.seedwork.api_layer import ApiError, Router
 
-from ...auth.models import RlcUser
+from ...auth.models import OrgUser
 from ..models import EncryptedRecordDocument
 from . import schemas
 
@@ -17,7 +17,7 @@ router = Router()
     url="<uuid:uuid>/download/",
     output_schema=FileResponse,
 )
-def query__download_file(rlc_user: RlcUser, data: schemas.InputQueryFile):
+def query__download_file(rlc_user: OrgUser, data: schemas.InputQueryFile):
     f = get_object_or_404(
         EncryptedRecordDocument, org_id=rlc_user.org_id, uuid=data.uuid
     )
@@ -40,7 +40,7 @@ def query__download_file(rlc_user: RlcUser, data: schemas.InputQueryFile):
     url="<uuid:uuid>/",
     output_schema=schemas.OutputFile,
 )
-def query__retrieve_file(rlc_user: RlcUser, data: schemas.InputQueryFile):
+def query__retrieve_file(rlc_user: OrgUser, data: schemas.InputQueryFile):
     f = get_object_or_404(
         EncryptedRecordDocument, org_id=rlc_user.org_id, uuid=data.uuid
     )

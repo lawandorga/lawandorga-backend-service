@@ -4,7 +4,7 @@ from django.test import TestCase
 from core.auth.domain.user_key import UserKey
 from core.data_sheets.fixtures import create_default_record_template
 from core.data_sheets.models import DataSheet, DataSheetEncryptionNew, DataSheetTemplate
-from core.models import Org, RlcUser, UserProfile
+from core.models import Org, OrgUser, UserProfile
 from core.seedwork.encryption import AESEncryption
 
 
@@ -43,7 +43,7 @@ class UserUnitUserBase:
         user = UserProfile.objects.create(email=email, name=name)
         user.set_password(password)
         user.save()
-        rlc_user = RlcUser(user=user, email_confirmed=True, accepted=True, org=self.rlc)
+        rlc_user = OrgUser(user=user, email_confirmed=True, accepted=True, org=self.rlc)
         rlc_user.generate_keys(password)
         rlc_user.save()
         return user, rlc_user

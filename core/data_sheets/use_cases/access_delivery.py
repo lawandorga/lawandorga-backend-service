@@ -1,6 +1,6 @@
 from typing import cast
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet
 from core.data_sheets.use_cases.record import migrate_record_into_folder
 from core.folders.domain.repositories.folder import FolderRepository
@@ -11,7 +11,7 @@ from core.seedwork.use_case_layer import use_case
 
 
 @use_case
-def deliver_access_to_users_who_should_have_access(__actor: RlcUser):
+def deliver_access_to_users_who_should_have_access(__actor: OrgUser):
     records_1 = (
         DataSheet.objects.filter(template__rlc_id=__actor.org_id)
         .select_related("template")
@@ -21,7 +21,7 @@ def deliver_access_to_users_who_should_have_access(__actor: RlcUser):
 
     permission = Permission.objects.get(name=PERMISSION_RECORDS_ACCESS_ALL_RECORDS)
 
-    users_1 = RlcUser.objects.filter(org_id=__actor.org_id)
+    users_1 = OrgUser.objects.filter(org_id=__actor.org_id)
     users_2 = list(users_1)
     users_3 = [u for u in users_2 if u.has_permission(permission)]
 

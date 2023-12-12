@@ -1,7 +1,7 @@
 from typing import List
 
 from core.auth.api.schemas import InputKeyDelete, OutputKey
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheetEncryptionNew
 from core.seedwork.api_layer import ApiError, Router
 
@@ -10,13 +10,13 @@ router = Router()
 
 # list keys
 @router.api(output_schema=List[OutputKey])
-def list_keys(rlc_user: RlcUser):
+def list_keys(rlc_user: OrgUser):
     return rlc_user.keys
 
 
 # test keys
 @router.post(url="test/", output_schema=List[OutputKey])
-def command__test_keys(rlc_user: RlcUser):
+def command__test_keys(rlc_user: OrgUser):
     private_key_user = rlc_user.get_private_key()
     rlc_user.user.test_all_keys(private_key_user)
     return rlc_user.keys
@@ -24,7 +24,7 @@ def command__test_keys(rlc_user: RlcUser):
 
 # delete key
 @router.delete(url="<int:id>/")
-def delete_key(data: InputKeyDelete, rlc_user: RlcUser):
+def delete_key(data: InputKeyDelete, rlc_user: OrgUser):
     key = DataSheetEncryptionNew.objects.filter(user=rlc_user, pk=data.id).first()
     if key is None:
         raise ApiError(

@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.item import ItemRepository
 from core.folders.domain.value_objects.asymmetric_key import (
@@ -38,7 +38,7 @@ class UploadLink(Aggregate, models.Model):
     REPOSITORY = DjangoUploadLinkRepository.IDENTIFIER
 
     @staticmethod
-    def create(name: str, folder: Folder, user: RlcUser) -> "UploadLink":
+    def create(name: str, folder: Folder, user: OrgUser) -> "UploadLink":
         link = UploadLink()
         link.org = user.org
         link.name = name
@@ -94,7 +94,7 @@ class UploadLink(Aggregate, models.Model):
         """
         pass
 
-    def generate_key(self, user: RlcUser):
+    def generate_key(self, user: OrgUser):
         key = AsymmetricKey.generate()
         lock_key = self.folder.get_encryption_key(requestor=user)
         enc_key = EncryptedAsymmetricKey.create(key, lock_key)
@@ -116,7 +116,7 @@ class UploadLink(Aggregate, models.Model):
         return file
 
     def download(
-        self, uuid: UUID, user: RlcUser
+        self, uuid: UUID, user: OrgUser
     ) -> tuple[str, IO | _TemporaryFileWrapper]:
         file = self.upload_files[uuid]
         enc_key = EncryptedAsymmetricKey.create_from_dict(self.key)

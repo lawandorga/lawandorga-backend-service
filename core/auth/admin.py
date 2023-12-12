@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from core.auth.models.mfa import MultiFactorAuthenticationSecret
 
-from .models import InternalUser, MatrixUser, RlcUser, StatisticUser, UserProfile
+from .models import InternalUser, MatrixUser, OrgUser, StatisticUser, UserProfile
 
 
 class UserAdmin(DjangoUserAdmin):
@@ -53,7 +53,7 @@ class MatrixUserAdmin(admin.ModelAdmin):
 
 admin.site.register(InternalUser, InternalUserAdmin)
 admin.site.register(UserProfile, UserAdmin)
-admin.site.register(RlcUser, RlcUserAdmin)
+admin.site.register(OrgUser, RlcUserAdmin)
 admin.site.register(StatisticUser, StatisticUserAdmin)
 admin.site.register(MatrixUser, MatrixUserAdmin)
 admin.site.register(MultiFactorAuthenticationSecret)

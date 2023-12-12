@@ -1,4 +1,4 @@
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.seedwork.api_layer import Router
 
 from ..models import EncryptedRecordMessage
@@ -11,7 +11,7 @@ router = Router()
     url="<uuid:folder>/",
     output_schema=list[schemas.OutputMessage],
 )
-def query__get_messages(rlc_user: RlcUser, data: schemas.InputGetMessages):
+def query__get_messages(rlc_user: OrgUser, data: schemas.InputGetMessages):
     messages_1 = EncryptedRecordMessage.objects.filter(
         folder_uuid=data.folder
     ).select_related("sender")

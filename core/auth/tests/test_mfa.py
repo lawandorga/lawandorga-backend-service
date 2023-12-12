@@ -3,7 +3,7 @@ from django.conf import settings
 from django.test.client import Client
 
 from core.auth.models.mfa import MultiFactorAuthenticationSecret
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.auth.use_cases.mfa import create_mfa_secret, enable_mfa_secret
 from core.seedwork import test_helpers
 
@@ -52,7 +52,7 @@ def test_mfa_code(real_mfa):
 
 def test_mfa_login(db):
     full_user = test_helpers.create_org_user()
-    user: RlcUser = full_user["rlc_user"]  # type: ignore
+    user: OrgUser = full_user["rlc_user"]  # type: ignore
     create_mfa_secret(user)
     enable_mfa_secret(user)
     client = Client()

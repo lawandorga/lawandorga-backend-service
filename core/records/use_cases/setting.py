@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
 from core.records.models.setting import RecordsView
 from core.records.use_cases.finders import find_view_by_uuid
@@ -8,7 +8,7 @@ from core.seedwork.use_case_layer import UseCaseError, check_permissions, use_ca
 
 
 @use_case
-def create_view(__actor: RlcUser, name: str, columns: list[str], shared=False):
+def create_view(__actor: OrgUser, name: str, columns: list[str], shared=False):
     if shared:
         check_permissions(
             __actor,
@@ -21,7 +21,7 @@ def create_view(__actor: RlcUser, name: str, columns: list[str], shared=False):
 
 @use_case
 def update_view(
-    __actor: RlcUser, uuid: UUID, name: str, columns: list[str], ordering: int
+    __actor: OrgUser, uuid: UUID, name: str, columns: list[str], ordering: int
 ):
     view = find_view_by_uuid(__actor, uuid)
     if view.org is not None:
@@ -31,7 +31,7 @@ def update_view(
 
 
 @use_case
-def delete_view(__actor: RlcUser, uuid: UUID):
+def delete_view(__actor: OrgUser, uuid: UUID):
     view = find_view_by_uuid(__actor, uuid)
     if view.org is not None:
         raise UseCaseError(

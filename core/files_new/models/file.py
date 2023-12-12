@@ -5,7 +5,7 @@ from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.data_sheets.models.data_sheet import DataSheet
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.item import ItemRepository
@@ -36,7 +36,7 @@ class EncryptedRecordDocument(Aggregate, models.Model):
 
     @classmethod
     def create(
-        cls, file: UploadedFile, folder: Folder, by: RlcUser, upload=False, pk=0
+        cls, file: UploadedFile, folder: Folder, by: OrgUser, upload=False, pk=0
     ) -> "EncryptedRecordDocument":
         name = "Unknown"
         if file.name:
@@ -102,7 +102,7 @@ class EncryptedRecordDocument(Aggregate, models.Model):
         self.name = name
         self.folder.obj_renamed()
 
-    def generate_key(self, user: RlcUser):
+    def generate_key(self, user: OrgUser):
         assert self.folder is not None and self.key is None
         key = SymmetricKey.generate()
         lock_key = self.folder.get_encryption_key(requestor=user)
@@ -116,7 +116,7 @@ class EncryptedRecordDocument(Aggregate, models.Model):
     def __get_file_key(self):
         return "{}.enc".format(self.location)
 
-    def __get_key(self, user: RlcUser):
+    def __get_key(self, user: OrgUser):
         assert self.folder is not None
 
         decryption_key = self.folder.get_decryption_key(requestor=user)
@@ -125,12 +125,12 @@ class EncryptedRecordDocument(Aggregate, models.Model):
 
         return key.get_key()
 
-    def upload(self, file: UploadedFile, by: RlcUser):
+    def upload(self, file: UploadedFile, by: OrgUser):
         key = self.__get_key(by)
         location = self.__get_file_key()
         encrypt_and_upload_file(file, location, key)
 
-    def download(self, by: RlcUser):
+    def download(self, by: OrgUser):
         key = self.__get_key(by)
         location = self.__get_file_key()
         return download_and_decrypt_file(location, key)

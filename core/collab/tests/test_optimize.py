@@ -1,4 +1,4 @@
-from core.auth.models.org_user import RlcUser
+from core.auth.models.org_user import OrgUser
 from core.collab.models.collab import Collab
 from core.collab.models.collab_document import CollabDocument
 from core.collab.models.collab_permission import CollabPermission
@@ -16,7 +16,7 @@ from core.rlc.models.org import Org
 from core.seedwork import test_helpers
 
 
-def create_collab_document(org: Org, user: RlcUser, path="/Document"):
+def create_collab_document(org: Org, user: OrgUser, path="/Document"):
     aes_key_rlc = org.get_aes_key(
         user=user.user, private_key_user=user.get_private_key()
     )
@@ -30,7 +30,7 @@ def create_collab_document(org: Org, user: RlcUser, path="/Document"):
 
 
 def create_collab_document_with_group_access(
-    org: Org, user: RlcUser, group: Group, path="/Group"
+    org: Org, user: OrgUser, group: Group, path="/Group"
 ):
     aes_key_rlc = org.get_aes_key(
         user=user.user, private_key_user=user.get_private_key()

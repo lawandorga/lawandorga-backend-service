@@ -3,7 +3,7 @@ from uuid import UUID
 
 from django.core.files.uploadedfile import UploadedFile
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.folders.use_cases.finders import folder_from_uuid
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models import Questionnaire
@@ -17,7 +17,7 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
 def publish_a_questionnaire(
-    __actor: RlcUser,
+    __actor: OrgUser,
     folder_uuid: UUID,
     template_id: int,
 ):
@@ -30,14 +30,14 @@ def publish_a_questionnaire(
 
 
 @use_case
-def delete_a_questionnaire(__actor: RlcUser, questionnaire_id: int):
+def delete_a_questionnaire(__actor: OrgUser, questionnaire_id: int):
     questionnaire = questionnaire_from_id(__actor, questionnaire_id)
     questionnaire.delete()
 
 
 @use_case
 def submit_answers(
-    __actor: RlcUser, questionnaire_id: int, **data: Union[UploadedFile, str]
+    __actor: OrgUser, questionnaire_id: int, **data: Union[UploadedFile, str]
 ):
     questionnaire = questionnaire_from_id(__actor, questionnaire_id)
     for field in list(questionnaire.template.fields.all()):
@@ -61,7 +61,7 @@ def submit_answers(
 
 
 @use_case
-def optimize_questionnaires(__actor: RlcUser):
+def optimize_questionnaires(__actor: OrgUser):
     qs_1 = Questionnaire.objects.filter(template__rlc_id=__actor.org_id)
     qs_2: list[Questionnaire] = list(qs_1)
     for q in qs_2:

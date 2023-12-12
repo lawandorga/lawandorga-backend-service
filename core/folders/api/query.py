@@ -4,7 +4,7 @@ from uuid import UUID
 from django.db import transaction
 from pydantic import BaseModel, ConfigDict
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.item import ItemRepository
@@ -70,12 +70,12 @@ class OutputFolderPage(BaseModel):
 
 
 class Context(TypedDict):
-    available_users: list[RlcUser]
+    available_users: list[OrgUser]
     available_groups: list[Group]
     folders: list[Folder]
     folders_dict: dict[UUID, Folder]
     parent_dict: dict[Optional[UUID], list[Folder]]
-    users_dict: dict[UUID, RlcUser]
+    users_dict: dict[UUID, OrgUser]
     groups_dict: dict[UUID, Group]
 
 
@@ -92,7 +92,7 @@ class ContextBuilder:
         }
 
     def build_available_users(self, org_id: int):
-        x = list(RlcUser.objects.filter(org_id=org_id))
+        x = list(OrgUser.objects.filter(org_id=org_id))
         self.context["available_users"] = x
         return self
 
@@ -149,7 +149,7 @@ def build_folder(context: Context, folder: Folder, has_access: bool):
     }
 
 
-def build_children(context: Context, folder: Folder, user: RlcUser):
+def build_children(context: Context, folder: Folder, user: OrgUser):
     if folder.uuid not in context["parent_dict"]:
         return []
 
@@ -205,7 +205,7 @@ def build_group_access(context: Context, folder: Folder, source="direct"):
     return access
 
 
-def build_node(context: Context, folder: Folder, user: RlcUser):
+def build_node(context: Context, folder: Folder, user: OrgUser):
     has_access = folder.has_access(user)
     return {
         "folder": build_folder(context, folder, has_access),
@@ -216,7 +216,7 @@ def build_node(context: Context, folder: Folder, user: RlcUser):
     }
 
 
-def build_tree(context: Context, user: RlcUser):
+def build_tree(context: Context, user: OrgUser):
     nodes = []
     for folder in context["parent_dict"].get(None, []):
         node = build_node(context, folder, user)
@@ -224,7 +224,7 @@ def build_tree(context: Context, user: RlcUser):
     return nodes
 
 
-def get_page(context: Context, user: RlcUser):
+def get_page(context: Context, user: OrgUser):
     return {
         "tree": build_tree(context, user),
         "available_persons": context["available_users"],
@@ -233,7 +233,7 @@ def get_page(context: Context, user: RlcUser):
 
 
 @router.get(output_schema=OutputFolderPage)
-def query__list_folders(rlc_user: RlcUser):
+def query__list_folders(rlc_user: OrgUser):
     builder = ContextBuilder()
     builder.build_available_users(rlc_user.org_id).buid_users_dict()
     builder.build_available_groups(rlc_user.org_id).build_groups_dict()
@@ -248,7 +248,7 @@ class OutputAvailableFolder(BaseModel):
 
 
 @router.get(url="available_folders/", output_schema=list[OutputAvailableFolder])
-def query__available_folders(rlc_user: RlcUser):
+def query__available_folders(rlc_user: OrgUser):
     r = get_repository()
     folders_1 = r.get_list(rlc_user.org_id)
     folders_2 = list(map(lambda f: {"id": f.uuid, "name": f.name}, folders_1))
@@ -316,7 +316,7 @@ class OutputDetailFolderDetail(BaseModel):
     url="<uuid:id>/",
     output_schema=OutputDetailFolderDetail,
 )
-def query__detail_folder(rlc_user: RlcUser, data: InputFolderDetail):
+def query__detail_folder(rlc_user: OrgUser, data: InputFolderDetail):
     r = get_repository()
     builder = ContextBuilder()
     builder.build_available_users(rlc_user.org_id).buid_users_dict()

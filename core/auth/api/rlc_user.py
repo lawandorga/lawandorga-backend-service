@@ -3,7 +3,7 @@ from typing import Any, List, Optional
 from django.db.models import Q
 from pydantic import BaseModel, ConfigDict
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.auth.use_cases.rlc_user import confirm_email, delete_user, unlock_user
 from core.permissions.models import HasPermission, Permission
 from core.permissions.static import (
@@ -18,7 +18,7 @@ router = Router()
 
 
 @router.delete(url="<int:id>/")
-def command__delete_user(rlc_user: RlcUser, data: schemas.InputRlcUserDelete):
+def command__delete_user(rlc_user: OrgUser, data: schemas.InputRlcUserDelete):
     delete_user(rlc_user, data.id)
 
 
@@ -29,8 +29,8 @@ def command__confirm_email(data: schemas.InputConfirmEmail):
 
 # list
 @router.get(output_schema=List[schemas.OutputRlcUserSmall])
-def list_rlc_users(rlc_user: RlcUser):
-    rlc_users = RlcUser.objects.filter(org=rlc_user.org)
+def list_rlc_users(rlc_user: OrgUser):
+    rlc_users = OrgUser.objects.filter(org=rlc_user.org)
     rlc_users_list = list(rlc_users)
     return rlc_users_list
 
@@ -56,8 +56,8 @@ class OutputUser(BaseModel):
     url="<int:id>/",
     output_schema=OutputUser,
 )
-def retrieve(data: schemas.InputRlcUserGet, rlc_user: RlcUser):
-    found_rlc_user = RlcUser.objects.filter(id=data.id).first()
+def retrieve(data: schemas.InputRlcUserGet, rlc_user: OrgUser):
+    found_rlc_user = OrgUser.objects.filter(id=data.id).first()
     if found_rlc_user is None:
         raise ApiError("The user could not be found.")
 
@@ -91,7 +91,7 @@ def retrieve(data: schemas.InputRlcUserGet, rlc_user: RlcUser):
 
 # unlock user
 @router.api(method="POST", url="unlock_self/", output_schema=schemas.OutputRlcUser)
-def command__unlock_myself(rlc_user: RlcUser):
+def command__unlock_myself(rlc_user: OrgUser):
     rlc_user.user.test_all_keys(rlc_user.get_private_key())
     if not rlc_user.all_keys_correct:
         raise ApiError(
@@ -107,8 +107,8 @@ def command__unlock_myself(rlc_user: RlcUser):
     url="<int:id>/activate/",
     output_schema=schemas.OutputRlcUserSmall,
 )
-def activate_rlc_user(data: schemas.InputRlcUserActivate, rlc_user: RlcUser):
-    rlc_user_to_update = RlcUser.objects.filter(id=data.id).first()
+def activate_rlc_user(data: schemas.InputRlcUserActivate, rlc_user: OrgUser):
+    rlc_user_to_update = OrgUser.objects.filter(id=data.id).first()
     if rlc_user_to_update is None:
         raise ApiError(
             "The user to be activated could not be found.",
@@ -134,13 +134,13 @@ def activate_rlc_user(data: schemas.InputRlcUserActivate, rlc_user: RlcUser):
 
 # update settings
 @router.put(url="settings_self/")
-def update_settings(data: dict[str, Any], rlc_user: RlcUser):
+def update_settings(data: dict[str, Any], rlc_user: OrgUser):
     rlc_user.set_frontend_settings(data)
 
 
 # get data
 @router.get(url="data_self/", output_schema=schemas.OutputRlcUserData)
-def query__data(rlc_user: RlcUser):
+def query__data(rlc_user: OrgUser):
     data = {
         "user": rlc_user,
         "rlc": rlc_user.org,
@@ -156,7 +156,7 @@ def query__data(rlc_user: RlcUser):
     url="<int:id>/update_information/",
     output_schema=schemas.OutputRlcUser,
 )
-def update_user(data: schemas.InputRlcUserUpdate, rlc_user: RlcUser):
+def update_user(data: schemas.InputRlcUserUpdate, rlc_user: OrgUser):
     if rlc_user.pk != data.id and not rlc_user.has_permission(
         PERMISSION_ADMIN_MANAGE_USERS
     ):
@@ -165,7 +165,7 @@ def update_user(data: schemas.InputRlcUserUpdate, rlc_user: RlcUser):
         )
         raise ApiError(error)
 
-    rlc_user_to_update = RlcUser.objects.filter(id=data.id).first()
+    rlc_user_to_update = OrgUser.objects.filter(id=data.id).first()
     if rlc_user_to_update is None:
         raise ApiError(
             "The user to be updated could not be found.",
@@ -190,8 +190,8 @@ def update_user(data: schemas.InputRlcUserUpdate, rlc_user: RlcUser):
 
 # grant permission
 @router.post(url="<int:id>/grant_permission/")
-def grant_permission(data: schemas.InputRlcUserGrantPermission, rlc_user: RlcUser):
-    rlc_user_to_grant: Optional[RlcUser] = RlcUser.objects.filter(
+def grant_permission(data: schemas.InputRlcUserGrantPermission, rlc_user: OrgUser):
+    rlc_user_to_grant: Optional[OrgUser] = OrgUser.objects.filter(
         id=data.id, org=rlc_user.org
     ).first()
 
@@ -221,5 +221,5 @@ def grant_permission(data: schemas.InputRlcUserGrantPermission, rlc_user: RlcUse
 
 # unlock user
 @router.post(url="<int:id>/unlock_user/")
-def command__unlock_user(rlc_user: RlcUser, data: schemas.InputUnlockOrgUser):
+def command__unlock_user(rlc_user: OrgUser, data: schemas.InputUnlockOrgUser):
     unlock_user(rlc_user, data.id)

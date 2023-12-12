@@ -4,7 +4,7 @@ from uuid import UUID
 
 from django.db.models import Q
 
-from core.auth.models import RlcUser
+from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
@@ -44,7 +44,7 @@ class RecordDataPoint:
         attrs["Updated"] = self.record.updated.strftime("%d.%m.%Y %H:%M:%S")
         return attrs
 
-    def has_access(self, user: RlcUser) -> bool:
+    def has_access(self, user: OrgUser) -> bool:
         return self.folder.has_access(user)
 
     @property
@@ -61,7 +61,7 @@ class RecordDataPoint:
 
 
 @router.get(url="dashboard/", output_schema=schemas.OutputRecordsPage)
-def query__records_page(rlc_user: RlcUser):
+def query__records_page(rlc_user: OrgUser):
     records_1 = list(RecordsRecord.objects.filter(org_id=rlc_user.org_id))
     data_sheets_1 = list(
         DataSheet.objects.filter(template__rlc_id=rlc_user.org_id)
