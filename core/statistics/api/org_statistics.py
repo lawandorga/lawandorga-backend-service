@@ -104,10 +104,10 @@ def query__org_members(statistics_user: StatisticUser):
     statement = """
             select
                 core_org.name as rlc_name,
-                count(distinct core_rlcuser.id) as member_amount
-            from core_rlcuser
-            inner join core_org on core_org.id = core_rlcuser.org_id
-            group by core_rlcuser.org_id, core_org.name;
+                count(distinct core_orguser.id) as member_amount
+            from core_orguser
+            inner join core_org on core_org.id = core_orguser.org_id
+            group by core_orguser.org_id, core_org.name;
             """
     data = execute_statement(statement)
     data = list(map(lambda x: {"name": x[0], "amount": x[1]}, data))

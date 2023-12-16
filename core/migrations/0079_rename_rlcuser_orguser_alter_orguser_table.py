@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterModelTable(
             name="orguser",
-            table="core_rlcuser",
+            table="core_orguser",
         ),
     ]

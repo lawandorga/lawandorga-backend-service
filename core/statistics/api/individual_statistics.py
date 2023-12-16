@@ -17,7 +17,7 @@ def query__user_actions_month(rlc_user: OrgUser):
         statement = """
             select u.email as email, count(*) as actions
             from core_userprofile as u
-            left join core_rlcuser ru on ru.user_id = u.id
+            left join core_orguser ru on ru.user_id = u.id
             left join core_loggedpath path on u.id = path.user_id
             where path.user_id is not null
             and path.time > date('now', '-1 month')
@@ -31,7 +31,7 @@ def query__user_actions_month(rlc_user: OrgUser):
         statement = """
             select u.email as email, count(*) as actions
             from core_userprofile as u
-            left join core_rlcuser ru on ru.user_id = u.id
+            left join core_orguser ru on ru.user_id = u.id
             left join core_loggedpath path on u.id = path.user_id
             where path.user_id is not null
             and path.time > date_trunc('day', NOW() - interval '1 month')
