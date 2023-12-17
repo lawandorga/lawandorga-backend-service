@@ -39,7 +39,9 @@ class FollowUpRepository:
         folders = fr.get_dict(org_pk=user.org_id)
         relevant_follow_ups = []
         for follow_up in follow_ups:
-            folder = folders[follow_up.folder_uuid]
+            folder = folders.get(follow_up.folder_uuid)
+            if folder is None:
+                continue
             if folder.has_access(owner=user):
                 entry = DataSheetUsersEntry.objects.filter(
                     record__folder_uuid=follow_up.folder_uuid
