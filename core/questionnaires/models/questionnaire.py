@@ -126,27 +126,6 @@ class Questionnaire(Aggregate, models.Model):
         key = enc_key.decrypt(unlock_key)
         return key
 
-    def put_in_folder(self, user: OrgUser):
-        assert self.folder_uuid is None
-        if self.record and self.record.folder and self.record.folder.has_access(user):
-            # set folder
-            folder = self.record.folder.folder
-            self.folder.put_obj_in_folder(folder)
-
-            # copy key
-            public_key = self.get_public_key().decode("utf-8")
-            private_key = self.get_private_key(user.get_private_key(), user)
-            origin = "A1"
-            key = AsymmetricKey.create(
-                public_key=public_key, private_key=private_key, origin=origin
-            )
-            lock_key = folder.get_encryption_key(requestor=user)
-            enc_key = EncryptedAsymmetricKey.create(key, lock_key)
-            self.key = enc_key.as_dict()
-
-            # save
-            self.save()
-
     def add_answer(
         self, question: QuestionnaireQuestion, answer: str
     ) -> "QuestionnaireAnswer":

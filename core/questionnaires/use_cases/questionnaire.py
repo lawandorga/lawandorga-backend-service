@@ -62,8 +62,4 @@ def submit_answers(
 
 @use_case
 def optimize_questionnaires(__actor: OrgUser):
-    qs_1 = Questionnaire.objects.filter(template__rlc_id=__actor.org_id)
-    qs_2: list[Questionnaire] = list(qs_1)
-    for q in qs_2:
-        if q.folder_uuid is None:
-            q.put_in_folder(__actor)
+    pass
