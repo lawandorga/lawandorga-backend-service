@@ -1,10 +1,9 @@
 import uuid
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, Optional
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
 
-from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 from .meta import Meta
@@ -182,6 +181,7 @@ class Org(EncryptedModelMixin, models.Model):
             user_rlc_keys.save()
 
     def accept_member(self, admin: "OrgUser", member: "OrgUser"):
+        from core.folders.infrastructure.folder_repository import DjangoFolderRepository
         from core.models import OrgEncryption
 
         # create the rlc encryption keys for new member
