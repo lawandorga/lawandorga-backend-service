@@ -22,8 +22,8 @@ class OrgEncryption(EncryptedModelMixin, models.Model):
     encrypted_fields = ["encrypted_key"]
 
     class Meta:
-        verbose_name = "UserRlcKeys"
-        verbose_name_plural = "UsersRlcKeys"
+        verbose_name = "ORG_UserRlcKeys"
+        verbose_name_plural = "ORG_UsersRlcKeys"
         unique_together = ("user", "rlc")
 
     def __str__(self):

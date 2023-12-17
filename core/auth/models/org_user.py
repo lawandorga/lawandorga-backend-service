@@ -158,8 +158,8 @@ class OrgUser(Aggregate, models.Model):
         org_id: int
 
     class Meta:
-        verbose_name = "OrgUser"
-        verbose_name_plural = "OrgUsers"
+        verbose_name = "AUT_OrgUser"
+        verbose_name_plural = "AUT_OrgUsers"
         ordering = ["accepted", "locked", "is_active", "user__name"]
 
     def __str__(self):

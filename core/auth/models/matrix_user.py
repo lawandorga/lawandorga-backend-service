@@ -26,8 +26,8 @@ class MatrixUser(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "MatrixUser"
-        verbose_name_plural = "MatrixUsers"
+        verbose_name = "AUT_MatrixUser"
+        verbose_name_plural = "AUT_MatrixUsers"
         ordering = ["user__name"]
 
     def __str__(self):

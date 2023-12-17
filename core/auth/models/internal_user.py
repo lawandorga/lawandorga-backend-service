@@ -9,8 +9,8 @@ class InternalUser(models.Model):
     )
 
     class Meta:
-        verbose_name = "InternalUser"
-        verbose_name_plural = "InternalUsers"
+        verbose_name = "AUT_InternalUser"
+        verbose_name_plural = "AUT_InternalUsers"
 
     def __str__(self):
         return "internalUser: {};".format(self.user.email)

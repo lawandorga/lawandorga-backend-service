@@ -20,8 +20,8 @@ class Note(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Note"
-        verbose_name_plural = "Notes"
+        verbose_name = "ORG_Note"
+        verbose_name_plural = "ORG_Notes"
         ordering = ["-created"]
 
     def __str__(self):

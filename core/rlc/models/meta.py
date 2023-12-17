@@ -8,8 +8,8 @@ class Meta(models.Model):
     name = models.CharField(max_length=1000)
 
     class Meta:
-        verbose_name = "Meta"
-        verbose_name_plural = "Metas"
+        verbose_name = "ORG_Meta"
+        verbose_name_plural = "ORG_Metas"
 
     def __str__(self):
-        return "meta: {}; name: {};".format(self.id, self.name)
+        return "meta: {}; name: {};".format(self.pk, self.name)

@@ -89,8 +89,8 @@ class Group(models.Model):
         from_rlc_id: int
 
     class Meta:
-        verbose_name = "Group"
-        verbose_name_plural = "Groups"
+        verbose_name = "ORG_Group"
+        verbose_name_plural = "ORG_Groups"
 
     def __str__(self):
         return "group: {}; name: {}; rlc: {};".format(

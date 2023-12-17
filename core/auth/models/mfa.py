@@ -32,8 +32,8 @@ class MultiFactorAuthenticationSecret(models.Model):
     key = models.JSONField()
 
     class Meta:
-        verbose_name = "MultiFactorAuthenticationSecret"
-        verbose_name_plural = "MultiFactorAuthenticationSecrets"
+        verbose_name = "AUT_MultiFactorAuthenticationSecret"
+        verbose_name_plural = "AUT_MultiFactorAuthenticationSecrets"
 
     def __str__(self):
         return "multiFactorAuthenticationSecret: {}; user: {};".format(

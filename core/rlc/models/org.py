@@ -70,8 +70,8 @@ class Org(EncryptedModelMixin, models.Model):
 
     class Meta:
         ordering = ["name"]
-        verbose_name = "Org"
-        verbose_name_plural = "Orgs"
+        verbose_name = "ORG_Org"
+        verbose_name_plural = "ORG_Orgs"
 
     @property
     def do_keys_exist(self):
@@ -197,14 +197,14 @@ class Org(EncryptedModelMixin, models.Model):
         org_enc.encrypt(public_key)
 
         # grant access to the records folder
-        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-        folder = r.get_or_create_records_folder(admin.org_id, admin)
-        if not folder.has_access(member):
-            folder.grant_access(member, admin)
+        # r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+        # folder = r.get_or_create_records_folder(admin.org_id, admin)
+        # if not folder.has_access(member):
+        #     folder.grant_access(member, admin)
 
         with transaction.atomic():
             # save the folder
-            r.save(folder)
+            # r.save(folder)
 
             # delete the old keys
             OrgEncryption.objects.filter(user=member.user).delete()

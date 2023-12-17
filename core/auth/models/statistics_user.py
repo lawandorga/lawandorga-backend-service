@@ -19,8 +19,8 @@ class StatisticUser(models.Model):
     objects = StatisticsUserManager()
 
     class Meta:
-        verbose_name = "StatisticUser"
-        verbose_name_plural = "StatisticUsers"
+        verbose_name = "AUT_StatisticUser"
+        verbose_name_plural = "AUT_StatisticUsers"
         ordering = ["user__name"]
 
     def __str__(self):
