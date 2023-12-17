@@ -45,8 +45,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         mail_user: "MailUser"
 
     class Meta:
-        verbose_name = "UserProfile"
-        verbose_name_plural = "UserProfiles"
+        verbose_name = "User"
+        verbose_name_plural = "Users"
         ordering = ["name"]
 
     def __str__(self):

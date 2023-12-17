@@ -26,7 +26,7 @@ from core.data_sheets.models import (
     DataSheetUsersEntry,
     DataSheetUsersField,
 )
-from core.data_sheets.use_cases.record import create_a_record_and_a_folder
+from core.data_sheets.use_cases.record import create_data_sheet_and_folder
 from core.files.models import FolderPermission
 from core.files_new.use_cases.file import upload_a_file
 from core.fixtures import (
@@ -481,7 +481,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
 
     # create the informative record
     template = DataSheetTemplate.objects.filter(rlc=rlc).first()
-    uuid = create_a_record_and_a_folder(
+    uuid = create_data_sheet_and_folder(
         main_user.rlc_user, "Informative Record", template.pk
     )
     record = DataSheet.objects.get(uuid=uuid)

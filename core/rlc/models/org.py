@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from django.db.models.manager import RelatedManager
 
     from core.auth.models import OrgUser, UserProfile
+    from core.data_sheets.models.template import DataSheetTemplate
     from core.events.models import EventsEvent
     from core.rlc.models.group import Group
 
@@ -52,6 +53,7 @@ class Org(EncryptedModelMixin, models.Model):
     )
     use_record_pool = models.BooleanField(default=False)
     collab_migrated = models.BooleanField(default=False)
+    new_records_have_inheritance_stop = models.BooleanField(default=True)
 
     # keys
     public_key = models.BinaryField(null=True)
@@ -63,6 +65,8 @@ class Org(EncryptedModelMixin, models.Model):
         users: RelatedManager[OrgUser]
         group_from_rlc: RelatedManager[Group]
         events: RelatedManager[EventsEvent]
+        external_links: RelatedManager["ExternalLink"]
+        recordtemplates: RelatedManager["DataSheetTemplate"]
 
     class Meta:
         ordering = ["name"]
@@ -217,7 +221,7 @@ class Org(EncryptedModelMixin, models.Model):
 
     def get_meta_information(self):
         return {
-            "id": self.id,
+            "id": self.pk,
             "name": self.name,
             "records": sum(
                 [template.records.count() for template in self.recordtemplates.all()]

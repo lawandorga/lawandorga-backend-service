@@ -26,8 +26,8 @@ class QuestionnaireTemplate(models.Model):
         rlc_id: int
 
     class Meta:
-        verbose_name = "Questionnaire"
-        verbose_name_plural = "Questionnaire"
+        verbose_name = "QUE_Template"
+        verbose_name_plural = "QUE_Templates"
 
     def __str__(self):
         return "questionnaire: {}; rlc: {};".format(self.name, self.rlc.name)
@@ -81,8 +81,8 @@ class QuestionnaireTemplateFile(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "QuestionnaireFile"
-        verbose_name_plural = "QuestionnaireFiles"
+        verbose_name = "QUE_TemplateFile"
+        verbose_name_plural = "QUE_TemplateFiles"
 
     def __str__(self):
         return "questionnaireFile: {}; questionnaire: {};".format(
@@ -106,8 +106,8 @@ class QuestionnaireQuestion(models.Model):
 
     class Meta:
         ordering = ["order"]
-        verbose_name = "QuestionnaireField"
-        verbose_name_plural = "QuestionnaireFields"
+        verbose_name = "QUE_TemplateField"
+        verbose_name_plural = "QUE_TemplateFields"
 
     def __str__(self):
         return "questionnaireField: {};".format(self.pk)

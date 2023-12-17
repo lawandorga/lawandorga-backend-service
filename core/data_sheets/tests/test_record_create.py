@@ -3,7 +3,7 @@ import pytest
 from core.data_sheets.models import DataSheet
 from core.data_sheets.use_cases.record import (
     create_a_data_sheet_within_a_folder,
-    create_a_record_and_a_folder,
+    create_data_sheet_and_folder,
 )
 from core.permissions.static import (
     PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
@@ -24,7 +24,7 @@ def test_create_within_folder(user, record_template, folder):
 
 def test_create_record_and_folder(user, record_template, folder):
     user["rlc_user"].grant(PERMISSION_RECORDS_ADD_RECORD)
-    create_a_record_and_a_folder(
+    create_data_sheet_and_folder(
         user["rlc_user"],
         name="My folder that contains a record",
         template_id=record_template["template"].pk,
@@ -104,7 +104,7 @@ def test_grant_to_users_with_general_permission_two(
         another_user["rlc_user"]
     )
 
-    record_id = create_a_record_and_a_folder(
+    record_id = create_data_sheet_and_folder(
         user["rlc_user"],
         "record123",
         template_id=record_template["template"].pk,

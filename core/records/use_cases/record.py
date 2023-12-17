@@ -28,7 +28,11 @@ def create_record(__actor: OrgUser, token: str):
             "because you have no access to this folder."
         )
 
-    folder = Folder.create(name=token, org_pk=__actor.org_id, stop_inherit=True)
+    inheritance_stop = __actor.org.new_records_have_inheritance_stop
+
+    folder = Folder.create(
+        name=token, org_pk=__actor.org_id, stop_inherit=inheritance_stop
+    )
     folder.grant_access(__actor)
 
     for user in list(__actor.org.users.all()):

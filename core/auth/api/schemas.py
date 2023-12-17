@@ -141,7 +141,6 @@ class Link(BaseModel):
 class Rlc(BaseModel):
     id: int
     name: str
-    use_record_pool: bool
     links: List[Link]
 
     model_config = ConfigDict(from_attributes=True)

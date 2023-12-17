@@ -33,7 +33,7 @@ def change_record_name(__actor: OrgUser, name: str, record_id: int):
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
-def create_a_record_and_a_folder(
+def create_data_sheet_and_folder(
     __actor: OrgUser,
     name: str,
     template_id: int,
@@ -52,7 +52,11 @@ def create_a_record_and_a_folder(
             "You can not create a record in this folder, because you have no access to this folder."
         )
 
-    folder = Folder.create(name=name, org_pk=__actor.org_id, stop_inherit=True)
+    inheritance_stop = __actor.org.new_records_have_inheritance_stop
+
+    folder = Folder.create(
+        name=name, org_pk=__actor.org_id, stop_inherit=inheritance_stop
+    )
     folder.grant_access(__actor)
     folder.set_parent(parent_folder, __actor)
     folder_repository.save(folder)

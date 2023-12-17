@@ -71,8 +71,8 @@ class Questionnaire(Aggregate, models.Model):
         answers: models.QuerySet["QuestionnaireAnswer"]
 
     class Meta:
-        verbose_name = "RecordQuestionnaire"
-        verbose_name_plural = "RecordQuestionnaires"
+        verbose_name = "QUE_Questionnaire"
+        verbose_name_plural = "QUE_Questionnaires"
 
     def __str__(self):
         return "recordQuestionnaire: {};".format(self.pk)
@@ -84,6 +84,10 @@ class Questionnaire(Aggregate, models.Model):
     @property
     def answered(self):
         return self.answers.all().count() - self.template.fields.all().count() == 0
+
+    @property
+    def org_name(self):
+        return self.template.rlc.name
 
     def generate_code(self):
         assert self.code is None or self.code == ""
@@ -170,8 +174,8 @@ class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
     # enc_data = models.JSONField()
 
     class Meta:
-        verbose_name = "QuestionnaireAnswer"
-        verbose_name_plural = "QuestionnaireAnswers"
+        verbose_name = "QUE_QuestionnaireAnswer"
+        verbose_name_plural = "QUE_QuestionnaireAnswers"
 
     def __str__(self):
         return "questionnaireAnswer: {};".format(self.pk)

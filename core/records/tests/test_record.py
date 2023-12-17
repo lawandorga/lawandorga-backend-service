@@ -5,6 +5,7 @@ from django.test import Client
 
 from core.data_sheets.models.data_sheet import DataSheet
 from core.folders.domain.repositories.folder import FolderRepository
+from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
     PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
@@ -32,6 +33,18 @@ def test_record_creation(db):
     assert response.status_code == 200
 
 
+def test_creation_with_inheritance_stop_disabled(db):
+    full_user = test_helpers.create_org_user()
+    user = full_user["rlc_user"]
+    user.org.new_records_have_inheritance_stop = False
+    user.org.save()
+    user.grant(PERMISSION_RECORDS_ADD_RECORD)
+    folder_uuid = create_record(user, "AZ-001")
+    r = DjangoFolderRepository()
+    folder = r.retrieve(user.org_id, folder_uuid)
+    assert not folder.stop_inherit
+
+
 def test_grant_to_users_with_general_permission(db):
     full_user = test_helpers.create_org_user()
     user = full_user["rlc_user"]
@@ -49,6 +62,7 @@ def test_grant_to_users_with_general_permission(db):
     folder = r.retrieve(user.org_id, folder_uuid)
 
     assert folder.has_access(another_user)
+    assert folder.stop_inherit
 
 
 def test_delete_deletes_data_sheet_as_well(db):
