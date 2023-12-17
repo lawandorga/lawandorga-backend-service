@@ -17,6 +17,7 @@ from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
+from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.folders.infrastructure.folder_addon import FolderAddon
 from core.rlc.models import Org
 from core.seedwork.aggregate import Aggregate
@@ -101,7 +102,7 @@ class UploadLink(Aggregate, models.Model):
         pass
 
     def generate_key(self, user: OrgUser):
-        key = AsymmetricKey.generate()
+        key = AsymmetricKey.generate(AsymmetricEncryptionV1)
         lock_key = self.folder.get_encryption_key(requestor=user)
         enc_key = EncryptedAsymmetricKey.create(key, lock_key)
         self.key = enc_key.as_dict()

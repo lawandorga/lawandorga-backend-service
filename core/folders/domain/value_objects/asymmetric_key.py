@@ -1,27 +1,25 @@
 from typing import Optional, Union
 
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
-from core.folders.domain.value_objects.encryption import (
-    AsymmetricEncryption,
-    EncryptionWarehouse,
-)
+from core.folders.domain.value_objects.encryption import AsymmetricEncryption
 from core.folders.domain.value_objects.key import Key
 from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
+from core.folders.encryptions import ENCRYPTIONS
 
 from seedwork.types import JsonDict
 
 
 class AsymmetricKey(Key):
     @staticmethod
-    def generate() -> "AsymmetricKey":
+    def generate(enc: type[AsymmetricEncryption]) -> "AsymmetricKey":
         (
             private_key,
             public_key,
             version,
-        ) = EncryptionWarehouse.get_highest_asymmetric_encryption().generate_keys()
+        ) = enc.generate_keys()
         return AsymmetricKey.create(
             private_key=private_key, public_key=public_key, origin=version
         )
@@ -59,7 +57,7 @@ class AsymmetricKey(Key):
         )
 
     def get_encryption(self) -> AsymmetricEncryption:
-        encryption_class = EncryptionWarehouse.get_encryption_class(self.origin)
+        encryption_class = ENCRYPTIONS[self.origin]
         assert issubclass(encryption_class, AsymmetricEncryption)
         return encryption_class(
             public_key=self.__public_key, private_key=self.__private_key.decode("utf-8")
@@ -169,7 +167,7 @@ class EncryptedAsymmetricKey(Key):
         )
 
     def get_encryption(self) -> AsymmetricEncryption:
-        encryption_class = EncryptionWarehouse.get_encryption_class(self.origin)
+        encryption_class = ENCRYPTIONS[self.origin]
         assert issubclass(encryption_class, AsymmetricEncryption)
         return encryption_class(public_key=self.__public_key)
 

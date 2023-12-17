@@ -28,6 +28,7 @@ from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
 )
+from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.permissions.models import HasPermission, Permission
 from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
@@ -591,7 +592,7 @@ class OrgUser(Aggregate, models.Model):
         self.save(update_fields=["frontend_settings"])
 
     def generate_keys(self, password: str):
-        key = AsymmetricKey.generate()
+        key = AsymmetricKey.generate(AsymmetricEncryptionV1)
         u1 = UserKey(key=key)
         u2 = u1.encrypt_self(password)
         self.is_private_key_encrypted = True

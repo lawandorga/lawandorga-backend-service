@@ -1,4 +1,3 @@
-# type: ignore
 from typing import Generator
 
 import pytest
@@ -11,8 +10,8 @@ from core.folders.tests.test_helpers.user import UserObject
 def user_user_folders(
     single_encryption,
 ) -> Generator[tuple[UserObject, UserObject, list[Folder]], None, None]:
-    user_1 = UserObject()
-    user_2 = UserObject()
+    user_1 = UserObject()  # type: ignore
+    user_2 = UserObject()  # type: ignore
 
     folder_1 = Folder.create("New Folder")
     folder_1.grant_access(to=user_1)

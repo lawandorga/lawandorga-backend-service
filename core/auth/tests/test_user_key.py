@@ -7,6 +7,7 @@ from core.folders.domain.value_objects.asymmetric_key import (
 )
 from core.folders.domain.value_objects.box import OpenBox
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
+from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 
 
 def assert_key_works(key):
@@ -17,7 +18,7 @@ def assert_key_works(key):
 
 
 def test_user_key_create_from_unecrypted_works():
-    key = AsymmetricKey.generate()
+    key = AsymmetricKey.generate(enc=AsymmetricEncryptionV1)
     u = UserKey.create_from_dict(
         {
             "private_key": key.get_private_key().decode("utf-8"),
@@ -30,7 +31,7 @@ def test_user_key_create_from_unecrypted_works():
 
 
 def test_user_key_create_from_encrypted_works():
-    key = AsymmetricKey.generate()
+    key = AsymmetricKey.generate(enc=AsymmetricEncryptionV1)
     password = "abc123"
     s = SymmetricKey(key=OpenBox(data=password.encode("utf-8")), origin="S1")
     enc_private_key = s.lock(key.get_private_key())
@@ -46,7 +47,7 @@ def test_user_key_create_from_encrypted_works():
 
 def test_user_key_to_dict_and_from_dict_works():
     password = "pw12"
-    key = AsymmetricKey.generate()
+    key = AsymmetricKey.generate(enc=AsymmetricEncryptionV1)
     u1 = UserKey(key=key)
     o1 = OpenBox(data=b"Secret")
     l1 = u1.key.lock(o1)
@@ -59,13 +60,13 @@ def test_user_key_to_dict_and_from_dict_works():
 
 
 def test_user_key_can_encrypt_and_decrypt():
-    key = AsymmetricKey.generate()
+    key = AsymmetricKey.generate(enc=AsymmetricEncryptionV1)
     u1 = UserKey(key=key)
     assert_key_works(u1.key)
 
 
 def test_key_is_pickleable():
-    key = AsymmetricKey.generate()
+    key = AsymmetricKey.generate(enc=AsymmetricEncryptionV1)
     u1 = UserKey(key=key)
     u2 = pickle.dumps(u1)
     u3 = pickle.loads(u2)
@@ -73,7 +74,7 @@ def test_key_is_pickleable():
 
 
 def test_key_unsafe_works():
-    key = AsymmetricKey.generate()
+    key = AsymmetricKey.generate(enc=AsymmetricEncryptionV1)
     u1 = UserKey(key=key)
     key_dict = u1.as_unsafe_dict()
     u2 = UserKey.create_from_unsafe_dict(key_dict)
@@ -81,7 +82,7 @@ def test_key_unsafe_works():
 
 
 def test_key_unsafe_works_with_encryption():
-    key = AsymmetricKey.generate()
+    key = AsymmetricKey.generate(enc=AsymmetricEncryptionV1)
     u1 = UserKey(key=key)
 
     o1 = OpenBox(data=b"CIA Secret")

@@ -9,6 +9,7 @@ from core.folders.domain.value_objects.asymmetric_key import (
     EncryptedAsymmetricKey,
 )
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
+from core.folders.tests.test_helpers.encryptions import AsymmetricEncryptionTest1
 
 
 class UserObject(OrgUser):
@@ -17,7 +18,7 @@ class UserObject(OrgUser):
 
     def __init__(self):
         self.uuid = uuid4()
-        self.key = AsymmetricKey.generate()
+        self.key = AsymmetricKey.generate(enc=AsymmetricEncryptionTest1)
 
     @property
     def groups(self):
@@ -51,7 +52,7 @@ class UserObject(OrgUser):
 class ForeignUserObject(IOwner):
     def __init__(self):
         self.uuid = uuid4()
-        self.key = AsymmetricKey.generate()
+        self.key = AsymmetricKey.generate(enc=AsymmetricEncryptionTest1)
 
     def get_decryption_key(
         self, *args, **kwargs

@@ -12,6 +12,7 @@ from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
 )
+from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.folders.infrastructure.folder_addon import FolderAddon
 from core.questionnaires.models.template import (
     QuestionnaireQuestion,
@@ -107,7 +108,7 @@ class Questionnaire(Aggregate, models.Model):
     def generate_key(self, user: OrgUser):
         assert self.folder is not None
 
-        key = AsymmetricKey.generate()
+        key = AsymmetricKey.generate(AsymmetricEncryptionV1)
         lock_key = self.folder.get_encryption_key(requestor=user)
         enc_key = EncryptedAsymmetricKey.create(key, lock_key)
         self.key = enc_key.as_dict()

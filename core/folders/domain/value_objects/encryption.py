@@ -1,21 +1,19 @@
 import abc
-from typing import Literal, Type, Union
+from typing import Literal, Type
 
 
-class Encryption(abc.ABC):
-    ENCRYPTION_TYPE: Literal["ASYMMETRIC", "SYMMETRIC", None] = None
-    VERSION: Union[str, None] = None
+class Encryption:
+    ENCRYPTION_TYPE: Literal["ASYMMETRIC", "SYMMETRIC"]
+    VERSION: str
 
     def __init__(self, *args, **kwargs):
         assert self.VERSION is not None
 
-    @abc.abstractmethod
     def encrypt(self, data: bytes) -> bytes:
-        pass
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def decrypt(self, enc_data: bytes) -> bytes:
-        pass
+        raise NotImplementedError()
 
 
 class AsymmetricEncryption(Encryption):

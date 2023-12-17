@@ -7,6 +7,7 @@ from core.folders.domain.value_objects.encryption import (
     SymmetricEncryption,
 )
 from core.folders.domain.value_objects.key import Key
+from core.folders.encryptions import ENCRYPTIONS
 
 from seedwork.types import JsonDict
 
@@ -48,7 +49,7 @@ class SymmetricKey(Key):
         return self.__key
 
     def get_encryption(self) -> SymmetricEncryption:
-        encryption_class = EncryptionWarehouse.get_encryption_class(self.origin)
+        encryption_class = ENCRYPTIONS[self.origin]
         assert issubclass(encryption_class, SymmetricEncryption)
         return encryption_class(key=self.get_key().decode("utf-8"))
 

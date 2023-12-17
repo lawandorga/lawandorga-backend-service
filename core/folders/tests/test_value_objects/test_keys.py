@@ -35,7 +35,7 @@ def s_key(encryption):
 
 @pytest.fixture
 def a_key(encryption):
-    yield AsymmetricKey.generate()
+    yield AsymmetricKey.generate(enc=AsymmetricEncryptionTest1)
 
 
 @pytest.fixture
@@ -54,7 +54,7 @@ def test_symmetric_dict(s_key):
 
 
 def test_asymmetric_dict(s_key):
-    key_1 = AsymmetricKey.generate()
+    key_1 = AsymmetricKey.generate(enc=AsymmetricEncryptionTest1)
     enc_key_1 = EncryptedAsymmetricKey.create(key_1, s_key)
     dict_enc_key_1 = enc_key_1.as_dict()
     enc_key_2 = EncryptedAsymmetricKey.create_from_dict(dict_enc_key_1)
@@ -64,7 +64,7 @@ def test_asymmetric_dict(s_key):
 
 
 def test_unlock_error(s_key, a_key):
-    key_1 = AsymmetricKey.generate()
+    key_1 = AsymmetricKey.generate(enc=AsymmetricEncryptionTest1)
     enc_key_1 = EncryptedAsymmetricKey.create(key_1, s_key)
     with pytest.raises(ValueError):
         enc_key_1.decrypt(a_key)
@@ -84,7 +84,7 @@ def test_encrypted_symmetric_keys_errors(s_key):
 
 
 def test_asymmetric_key_errors(a_key, box):
-    key = AsymmetricKey.generate()
+    key = AsymmetricKey.generate(enc=AsymmetricEncryptionTest1)
     locked_box = key.lock(box)
     enc_key = EncryptedAsymmetricKey.create(key, a_key)
     with pytest.raises(ValueError):
@@ -98,7 +98,7 @@ def test_asymmetric_key_errors(a_key, box):
 
 
 def test_encrypted_asymmetric_key_can_encrypt(a_key, box):
-    key = AsymmetricKey.generate()
+    key = AsymmetricKey.generate(enc=AsymmetricEncryptionTest1)
     enc_key = EncryptedAsymmetricKey.create(key, a_key)
     locked_box = enc_key.lock(box)
     key = enc_key.decrypt(a_key)

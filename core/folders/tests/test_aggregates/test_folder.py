@@ -5,7 +5,6 @@ import pytest
 
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.aggregates.item import Item
-from core.folders.domain.value_objects.asymmetric_key import AsymmetricKey
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.folder_key import (
     EncryptedFolderKeyOfUser,
@@ -93,7 +92,7 @@ def test_folder_key_decryption_error(single_encryption):
 
 def test_folder_key_str_method(single_encryption):
     user1 = UserObject()
-    key = FolderKey(owner_uuid=user1.uuid, key=AsymmetricKey.generate())
+    key = FolderKey(owner_uuid=user1.uuid, key=SymmetricKey.generate())
     assert str(key) == "FolderKey of '{}'".format(user1.uuid)
 
 

@@ -16,7 +16,7 @@ def test_asymmetric_encryption():
 
     s_key = SymmetricKey.generate()
 
-    a_key = AsymmetricKey.generate()
+    a_key = AsymmetricKey.generate(AsymmetricEncryptionV1)
     folder_key = FolderKey(key=a_key, owner_uuid=uuid4())
 
     enc_content_key = EncryptedSymmetricKey.create(s_key, folder_key.key)
@@ -66,14 +66,9 @@ def test_asymmetric_encryption_encrypt_symmetric_key():
 
 
 def test_asymmetric_encryption_decode():
-    EncryptionWarehouse.reset_encryption_hierarchies()
-    EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionV1)
-
-    key = AsymmetricKey.generate()
+    key = AsymmetricKey.generate(AsymmetricEncryptionV1)
     data = OpenBox(data=b"Secret")
     locked = key.lock(data)
 
     assert locked.decode("ISO-8859-1").encode("ISO-8859-1") == locked.value
     locked.as_dict()
-    EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionV1)
-    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
