@@ -1,5 +1,5 @@
 from tempfile import _TemporaryFileWrapper
-from typing import IO, Optional
+from typing import IO, TYPE_CHECKING, Optional
 from uuid import UUID, uuid4
 
 from django.conf import settings
@@ -24,8 +24,11 @@ from core.seedwork.domain_layer import DomainError
 from core.seedwork.encryption import AESEncryption
 from core.seedwork.events_addon import EventsAddon
 
+if TYPE_CHECKING:
+    from django.db.models.manager import RelatedManager
 
-class DjangoUploadLinkRepository(ItemRepository):
+
+class UploadLinkRepository(ItemRepository):
     IDENTIFIER = "UPLOAD"
 
     @classmethod
@@ -35,7 +38,7 @@ class DjangoUploadLinkRepository(ItemRepository):
 
 
 class UploadLink(Aggregate, models.Model):
-    REPOSITORY = DjangoUploadLinkRepository.IDENTIFIER
+    REPOSITORY = UploadLinkRepository.IDENTIFIER
 
     @staticmethod
     def create(name: str, folder: Folder, user: OrgUser) -> "UploadLink":
@@ -60,13 +63,16 @@ class UploadLink(Aggregate, models.Model):
     events: EventsAddon
     folder: FolderAddon
 
+    if TYPE_CHECKING:
+        files: RelatedManager["UploadFile"]
+
     class Meta:
         verbose_name = "UploadLink"
         verbose_name_plural = "UploadLinks"
 
     @property
     def org_pk(self) -> int:
-        return self.org.id
+        return self.org.pk
 
     @property
     def enc_key(self) -> EncryptedAsymmetricKey:

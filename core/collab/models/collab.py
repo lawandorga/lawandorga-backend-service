@@ -13,7 +13,7 @@ from core.seedwork.events_addon import EventsAddon
 
 
 class Collab(Aggregate, models.Model):
-    REPOSITORY = "COLLAB"
+    REPOSITORY: str = "COLLAB"
 
     @classmethod
     def create(cls, user: OrgUser, title: str, folder: Folder) -> "Collab":

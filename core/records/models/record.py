@@ -12,7 +12,7 @@ from core.seedwork.aggregate import Aggregate
 from core.seedwork.events_addon import EventsAddon
 
 
-class DjangoRecordsRecordRepository(ItemRepository):
+class RecordRepository(ItemRepository):
     IDENTIFIER = "RECORDS_RECORD"
 
     @classmethod
@@ -23,7 +23,7 @@ class DjangoRecordsRecordRepository(ItemRepository):
 
 
 class RecordsRecord(Aggregate, models.Model):
-    REPOSITORY = DjangoRecordsRecordRepository.IDENTIFIER
+    REPOSITORY = RecordRepository.IDENTIFIER
 
     @classmethod
     def create(cls, token: str, user: OrgUser, folder: Folder, pk=0) -> "RecordsRecord":

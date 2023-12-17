@@ -5,6 +5,7 @@ from core.auth.models import OrgUser
 from core.auth.use_cases.finders import org_user_from_uuid
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
+from core.folders.domain.repositories.item import ItemRepository
 from core.folders.domain.value_objects.folder_item import FolderItem
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.folders.use_cases.finders import (
@@ -16,6 +17,8 @@ from core.permissions.static import PERMISSION_FOLDERS_TOGGLE_INHERITANCE
 from core.seedwork.api_layer import ApiError
 from core.seedwork.message_layer import MessageBusActor
 from core.seedwork.use_case_layer import UseCaseError, check_permissions, use_case
+
+from seedwork.injector import InjectionContext
 
 
 def get_repository() -> FolderRepository:
@@ -42,7 +45,7 @@ def rename_folder(__actor: OrgUser, name: str, folder_uuid: UUID):
 
 
 @use_case()
-def delete_folder(__actor: OrgUser, folder_uuid: UUID):
+def delete_folder(__actor: OrgUser, folder_uuid: UUID, context: InjectionContext):
     r = get_repository()
     folder = r.retrieve(org_pk=__actor.org_id, uuid=folder_uuid)
 
@@ -57,8 +60,13 @@ def delete_folder(__actor: OrgUser, folder_uuid: UUID):
             "You can not delete this folder because it contains a record. Delete the record first."
         )
 
+    repositories: dict[str, ItemRepository] = {}
+    for repo in context.injections.values():
+        if isinstance(repo, ItemRepository):
+            repositories[repo.IDENTIFIER] = repo
+
     if folder.has_access(__actor):
-        r.delete(folder)
+        r.delete(folder, repositories)
     else:
         raise UseCaseError(
             "You can not delete this folder because you have no access to this folder."

@@ -3,13 +3,13 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from core.folders.domain.aggregates.folder import Folder
-from core.seedwork.repository import Repository
+from core.folders.domain.repositories.item import ItemRepository
 
 if TYPE_CHECKING:
     from core.auth.models.org_user import OrgUser
 
 
-class FolderRepository(Repository, abc.ABC):
+class FolderRepository(abc.ABC):
     IDENTIFIER = "FOLDER"
 
     @classmethod
@@ -33,7 +33,7 @@ class FolderRepository(Repository, abc.ABC):
         raise NotImplementedError()
 
     @classmethod
-    def delete(cls, folder: Folder):
+    def delete(cls, folder: Folder, repositories: dict[str, ItemRepository]):
         raise NotImplementedError()
 
     @classmethod

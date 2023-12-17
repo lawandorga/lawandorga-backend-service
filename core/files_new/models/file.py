@@ -20,7 +20,7 @@ from core.seedwork.events_addon import EventsAddon
 from core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_file
 
 
-class DjangoFileRepository(ItemRepository):
+class FileRepository(ItemRepository):
     IDENTIFIER = "FILE"
 
     @classmethod

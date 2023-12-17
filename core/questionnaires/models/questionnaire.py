@@ -23,7 +23,7 @@ from core.seedwork.events_addon import EventsAddon
 from core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_file
 
 
-class DjangoQuestionnaireRepository(ItemRepository):
+class QuestionnaireRepository(ItemRepository):
     IDENTIFIER = "QUESTIONNAIRE"
 
     @classmethod
@@ -32,7 +32,7 @@ class DjangoQuestionnaireRepository(ItemRepository):
 
 
 class Questionnaire(Aggregate, models.Model):
-    REPOSITORY = DjangoQuestionnaireRepository.IDENTIFIER
+    REPOSITORY = QuestionnaireRepository.IDENTIFIER
 
     @classmethod
     def create(

@@ -1,6 +1,6 @@
 import os.path
 from datetime import timedelta
-from typing import Any, Optional, Union, cast
+from typing import Any, Optional, Union
 from uuid import UUID
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -17,7 +17,6 @@ from core.folders.domain.value_objects.folder_key import (
 )
 from core.folders.domain.value_objects.parent_key import ParentKey
 from core.folders.models import FoldersFolder
-from core.seedwork.repository import RepositoryWarehouse
 
 PATH = os.path.abspath(__file__)
 
@@ -240,10 +239,10 @@ class DjangoFolderRepository(FolderRepository):
         delete_cache_of_object(cls, folder.org_pk)
 
     @classmethod
-    def delete(cls, folder: Folder):
+    def delete(cls, folder: Folder, repositories: dict[str, ItemRepository]):
         f = cls.__db_folder_from_domain(folder)
         for raw_item in folder.items:
-            r = cast(ItemRepository, RepositoryWarehouse.get(raw_item.repository))
+            r = repositories[raw_item.repository]
             item = r.retrieve(raw_item.uuid, folder.org_pk)
             item.delete()
         f.deleted = True

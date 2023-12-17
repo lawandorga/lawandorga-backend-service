@@ -36,7 +36,7 @@ from core.seedwork.events_addon import EventsAddon
 ###
 # Record
 ###
-class DjangoRecordRepository(ItemRepository):
+class DataSheetRepository(ItemRepository):
     IDENTIFIER = "RECORD"
 
     @classmethod
@@ -46,7 +46,7 @@ class DjangoRecordRepository(ItemRepository):
 
 
 class DataSheet(Aggregate, models.Model):
-    REPOSITORY = DjangoRecordRepository.IDENTIFIER
+    REPOSITORY = DataSheetRepository.IDENTIFIER
 
     @classmethod
     def create(

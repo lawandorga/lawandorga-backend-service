@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet
-from core.data_sheets.models.data_sheet import DjangoRecordRepository
+from core.data_sheets.models.data_sheet import DataSheetRepository
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.use_cases.folder import get_repository
 from core.rlc.models.group import Group
@@ -326,7 +326,7 @@ def query__detail_folder(rlc_user: OrgUser, data: InputFolderDetail):
 
     for item in folder.items:
         if item.repository == "RECORD":
-            item_repository = DjangoRecordRepository()
+            item_repository = DataSheetRepository()
             record = cast(DataSheet, item_repository.retrieve(item.uuid, folder.org_pk))
             with transaction.atomic():
                 for file in list(record.documents.all()):

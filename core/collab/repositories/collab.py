@@ -4,13 +4,13 @@ from core.auth.models.org_user import OrgUser
 from core.collab.models.collab import Collab
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
-from core.seedwork.repository import Repository
+from core.folders.domain.repositories.item import ItemRepository
 
 
-class CollabRepository(Repository):
+class CollabRepository(ItemRepository):
     IDENTIFIER = Collab.REPOSITORY
 
-    def retrieve(self, uuid: UUID, org_pk: int) -> Collab:
+    def retrieve(self, uuid: UUID, org_pk: int) -> Collab:  # type: ignore
         return Collab.objects.filter(org_id=org_pk).get(uuid=uuid)
 
     def get_document(self, uuid: UUID, user: OrgUser, fr: FolderRepository) -> Collab:
