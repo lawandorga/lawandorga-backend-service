@@ -15,8 +15,14 @@ class QuestionnaireAdmin(admin.ModelAdmin):
     list_filter = ("name", "folder_uuid", "created", "updated")
 
 
+class QuestionnaireAnswerAdmin(admin.ModelAdmin):
+    model = QuestionnaireAnswer
+    list_display = ("__str__", "questionnaire", "field", "created", "updated")
+    search_fields = ("questionnaire__pk", "field__pk")
+
+
 admin.site.register(QuestionnaireTemplate)
 admin.site.register(Questionnaire, QuestionnaireAdmin)
 admin.site.register(QuestionnaireQuestion)
-admin.site.register(QuestionnaireAnswer)
+admin.site.register(QuestionnaireAnswer, QuestionnaireAnswerAdmin)
 admin.site.register(QuestionnaireTemplateFile)
