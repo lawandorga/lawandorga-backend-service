@@ -1,10 +1,7 @@
-from typing import cast
-
 from core.files_new.models import EncryptedRecordDocument
 from core.files_new.use_cases.file import delete_a_file
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositories.folder import FolderRepository
-from core.seedwork.repository import RepositoryWarehouse
+from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 
 
 def test_delete_removes_it_from_folder(db, user, file):
@@ -13,7 +10,7 @@ def test_delete_removes_it_from_folder(db, user, file):
     user.save()
     folder = Folder.create(name="Test Folder", org_pk=user.org.pk)
     folder.grant_access(user)
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    r = DjangoFolderRepository()
     r.save(folder)
     file = EncryptedRecordDocument.create(file=file, folder=folder, by=user)
     file.save()

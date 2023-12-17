@@ -1,4 +1,4 @@
-from typing import Optional, cast
+from typing import Optional
 from uuid import UUID
 
 from core.auth.models import OrgUser
@@ -6,6 +6,7 @@ from core.auth.use_cases.finders import org_user_from_uuid
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.domain.value_objects.folder_item import FolderItem
+from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.folders.use_cases.finders import (
     folder_from_uuid,
     group_from_uuid,
@@ -14,13 +15,11 @@ from core.folders.use_cases.finders import (
 from core.permissions.static import PERMISSION_FOLDERS_TOGGLE_INHERITANCE
 from core.seedwork.api_layer import ApiError
 from core.seedwork.message_layer import MessageBusActor
-from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.use_case_layer import UseCaseError, check_permissions, use_case
 
 
 def get_repository() -> FolderRepository:
-    repository = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-    return repository
+    return DjangoFolderRepository()
 
 
 @use_case()

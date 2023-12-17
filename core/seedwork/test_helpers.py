@@ -1,4 +1,4 @@
-from typing import List, Optional, TypedDict, cast
+from typing import List, Optional, TypedDict
 
 from django.conf import settings
 
@@ -6,14 +6,13 @@ from core.auth.domain.user_key import UserKey
 from core.auth.models import StatisticUser
 from core.data_sheets.models import DataSheet, DataSheetTemplate
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositories.folder import FolderRepository
+from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.models import OrgUser, UserProfile
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models.template import QuestionnaireTemplate
 from core.records.models.record import RecordsRecord
 from core.records.use_cases.record import create_record as uc_create_record
 from core.rlc.models import Group, Org
-from core.seedwork.repository import RepositoryWarehouse
 
 
 def create_questionnaire_template(
@@ -92,7 +91,7 @@ def create_folder(name="Test Folder", user: OrgUser | None = None):
 
     folder = Folder.create(name=name, org_pk=user.org_id)
     folder.grant_access(to=user)
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    r = DjangoFolderRepository()
     r.save(folder)
     return {"folder": folder}
 
@@ -210,7 +209,7 @@ def create_data_sheet(template=None, users: Optional[List[UserProfile]] = None):
 
     for u in users[1:]:
         folder.grant_access(u.rlc_user, user)
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    r = DjangoFolderRepository()
     r.save(folder)
 
     return {"record": record}

@@ -84,16 +84,6 @@ class EncryptedRecordDocument(Aggregate, models.Model):
         assert self.org_id is not None
         return self.org_id
 
-    # @property
-    # def folder(self) -> Optional[Folder]:
-    #     assert self.org_id is not None
-    #     if self.folder_uuid is None:
-    #         return None
-    #     if not hasattr(self, "_folder"):
-    #         r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-    #         self._folder = r.retrieve(self.org_id, self.folder_uuid)
-    #     return self._folder
-
     @property
     def actions(self):
         return {}

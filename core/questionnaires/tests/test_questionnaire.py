@@ -1,17 +1,15 @@
 import json
-from typing import cast
 
 import pytest
 from django.test import Client
 
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositories.folder import FolderRepository
+from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.models import Org
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models import Questionnaire, QuestionnaireTemplate
 from core.seedwork import test_helpers
 from core.seedwork import test_helpers as data
-from core.seedwork.repository import RepositoryWarehouse
 
 
 @pytest.fixture
@@ -37,7 +35,7 @@ def template(db, org):
 def folder(db, org, user):
     folder = Folder.create(name="New Folder", org_pk=org.pk)
     folder.grant_access(to=user["rlc_user"])
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    r = DjangoFolderRepository()
     r.save(folder)
     yield r.retrieve(org.pk, folder.uuid)
 

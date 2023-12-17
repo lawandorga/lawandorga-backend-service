@@ -1,4 +1,3 @@
-from typing import cast
 from uuid import UUID
 
 from core.auth.models import OrgUser
@@ -21,7 +20,6 @@ from core.permissions.static import (
     PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
     PERMISSION_RECORDS_ADD_RECORD,
 )
-from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
@@ -37,12 +35,10 @@ def create_data_sheet_and_folder(
     __actor: OrgUser,
     name: str,
     template_id: int,
+    folder_repository: FolderRepository,
 ) -> UUID:
     template = template_from_id(__actor, template_id)
 
-    folder_repository = cast(
-        FolderRepository, RepositoryWarehouse.get(FolderRepository)
-    )
     parent_folder = folder_repository.get_or_create_records_folder(
         __actor.org_id, __actor
     )
@@ -61,7 +57,7 @@ def create_data_sheet_and_folder(
     folder.set_parent(parent_folder, __actor)
     folder_repository.save(folder)
 
-    return __create(__actor, name, folder, template)
+    return __create(__actor, name, folder, template, folder_repository)
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
@@ -70,6 +66,7 @@ def create_a_data_sheet_within_a_folder(
     name: str,
     folder_uuid: UUID,
     template_id: int,
+    r: FolderRepository,
 ) -> UUID:
     folder = folder_from_uuid(__actor, folder_uuid)
     template = template_from_id(__actor, template_id)
@@ -79,11 +76,15 @@ def create_a_data_sheet_within_a_folder(
             "You can not create a record in this folder, because you have no access to this folder."
         )
 
-    return __create(__actor, name, folder, template)
+    return __create(__actor, name, folder, template, r)
 
 
 def __create(
-    __actor: OrgUser, name: str, folder: Folder, template: DataSheetTemplate
+    __actor: OrgUser,
+    name: str,
+    folder: Folder,
+    template: DataSheetTemplate,
+    folder_repository: FolderRepository,
 ) -> UUID:
     access_granted = False
     for user in list(__actor.org.users.all()):
@@ -94,9 +95,6 @@ def __create(
             access_granted = True
 
     if access_granted:
-        folder_repository = cast(
-            FolderRepository, RepositoryWarehouse.get(FolderRepository)
-        )
         folder_repository.save(folder)
 
     record = DataSheet(template=template, name=name)
@@ -108,7 +106,9 @@ def __create(
 
 
 @use_case
-def migrate_record_into_folder(__actor: OrgUser, record: DataSheet):
+def migrate_record_into_folder(
+    __actor: OrgUser, record: DataSheet, r: FolderRepository
+):
     user = __actor
 
     if not record.has_access(user):
@@ -118,8 +118,6 @@ def migrate_record_into_folder(__actor: OrgUser, record: DataSheet):
         raise ValueError("This record is already inside a folder.")
 
     # put the record inside a folder
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-
     records_folder = r.get_or_create_records_folder(
         org_pk=record.template.rlc_id, user=user
     )

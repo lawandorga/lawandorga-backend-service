@@ -1,11 +1,10 @@
-from typing import TYPE_CHECKING, Optional, Protocol, cast
+from typing import TYPE_CHECKING, Optional, Protocol
 
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.aggregates.item import FolderItem, Item
-from core.folders.domain.repositories.folder import FolderRepository
+from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.seedwork.aggregate import Addon
 from core.seedwork.events_addon import EventsAddon
-from core.seedwork.repository import RepositoryWarehouse
 
 if TYPE_CHECKING:
     from core.auth.models.org_user import OrgUser
@@ -24,7 +23,7 @@ class FolderAddon(Addon):
     def folder(self) -> Folder:
         assert self._obj.folder_uuid is not None
         if not hasattr(self, "_folder") or getattr(self, "_folder", None) is None:
-            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+            r = DjangoFolderRepository()
             self._folder = r.retrieve(self._obj.org_pk, self._obj.folder_uuid)
         assert self._folder is not None
         return self._folder

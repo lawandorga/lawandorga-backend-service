@@ -1,20 +1,15 @@
-from typing import cast
-
 import pytest
 
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.models import Org
 from core.seedwork import test_helpers as data
-from core.seedwork.repository import RepositoryWarehouse
 
 EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
 EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionV1)
-RepositoryWarehouse.add_repository(DjangoFolderRepository)
 
 
 @pytest.fixture
@@ -63,4 +58,4 @@ def folder(db, org, user):
 
 @pytest.fixture
 def folder_repo():
-    yield cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    yield DjangoFolderRepository()

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
 from django.db import models
@@ -6,15 +6,14 @@ from django.db import models
 from core.auth.models import OrgUser
 from core.data_sheets.models.data_sheet import DataSheet
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
+from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.rlc.models import Org
 from core.seedwork.encryption import AESEncryption
-from core.seedwork.repository import RepositoryWarehouse
 
 
 class EncryptedRecordMessage(models.Model):
@@ -53,6 +52,7 @@ class EncryptedRecordMessage(models.Model):
 
     if TYPE_CHECKING:
         objects: models.Manager["EncryptedRecordMessage"]
+        org_id: int
 
     class Meta:
         ordering = ["created"]
@@ -66,8 +66,8 @@ class EncryptedRecordMessage(models.Model):
     def folder(self) -> Optional[Folder]:
         assert self.folder_uuid is not None
         if not hasattr(self, "_folder"):
-            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-            self._folder = r.retrieve(self.org_id, self.folder_uuid)  # type: ignore
+            r = DjangoFolderRepository()
+            self._folder = r.retrieve(self.org_id, self.folder_uuid)
         return self._folder
 
     @property
