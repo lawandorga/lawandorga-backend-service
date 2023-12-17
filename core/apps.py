@@ -5,6 +5,7 @@ class CoreConfig(AppConfig):
     name = "core"
 
     def ready(self) -> None:
+        from core.collab.repositories.collab import CollabRepository
         from core.data_sheets.models.data_sheet import DjangoRecordRepository
         from core.files_new.models.file import DjangoFileRepository
         from core.folders.domain.value_objects.encryption import EncryptionWarehouse
@@ -30,6 +31,7 @@ class CoreConfig(AppConfig):
         RepositoryWarehouse.add_repository(DjangoQuestionnaireRepository)
         RepositoryWarehouse.add_repository(DjangoUploadLinkRepository)
         RepositoryWarehouse.add_repository(DjangoRecordsRecordRepository)
+        RepositoryWarehouse.add_repository(CollabRepository())  # type: ignore
 
         # call the sub ready methods
         from core.folders.ready import ready
