@@ -197,10 +197,10 @@ class Org(EncryptedModelMixin, models.Model):
         org_enc.encrypt(public_key)
 
         # grant access to the records folder
-        # r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-        # folder = r.get_or_create_records_folder(admin.org_id, admin)
-        # if not folder.has_access(member):
-        #     folder.grant_access(member, admin)
+        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+        folder = r.get_or_create_records_folder(admin.org_id, admin)
+        if not folder.has_access(member):
+            folder.grant_access(member, admin)
 
         with transaction.atomic():
             # save the folder
