@@ -1,13 +1,10 @@
-from typing import cast
-
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositories.folder import FolderRepository
+from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.folders.use_cases.folder import (
     grant_access_to_group,
     revoke_access_from_group,
 )
 from core.seedwork import test_helpers
-from core.seedwork.repository import RepositoryWarehouse
 
 
 def test_grant_access_to_group(db):
@@ -18,7 +15,7 @@ def test_grant_access_to_group(db):
     folder = Folder.create(name="Test Folder", org_pk=u.org_id)
     folder.grant_access(u)
 
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    r = DjangoFolderRepository()
     r.save(folder)
 
     group = test_helpers.create_group(u)["group"]
@@ -48,7 +45,7 @@ def test_grant_access_to_group_with_usecase(db):
     folder = Folder.create(name="Test Folder", org_pk=u.org_id)
     folder.grant_access(u)
 
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    r = DjangoFolderRepository()
     r.save(folder)
 
     group = test_helpers.create_group(u)["group"]
@@ -69,7 +66,7 @@ def test_revoke_access_from_group(db):
     folder = Folder.create(name="Test Folder", org_pk=u.org_id)
     folder.grant_access(u)
 
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    r = DjangoFolderRepository()
     r.save(folder)
 
     group = test_helpers.create_group(u)["group"]

@@ -1,4 +1,3 @@
-from typing import cast
 from uuid import UUID
 
 from core.auth.models import OrgUser
@@ -6,7 +5,6 @@ from core.folders.domain.repositories.folder import FolderRepository
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS
 from core.records.models.deletion import RecordsDeletion
 from core.records.use_cases.finders import find_deletion_by_uuid, find_record_by_uuid
-from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.use_case_layer import use_case
 
 
@@ -21,12 +19,11 @@ def create_deletion_request(__actor: OrgUser, explanation: str, record_uuid: UUI
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS])
-def accept_deletion_request(__actor: OrgUser, delete_uuid: UUID):
+def accept_deletion_request(__actor: OrgUser, delete_uuid: UUID, r: FolderRepository):
     deletion = find_deletion_by_uuid(__actor, delete_uuid)
 
     if deletion.record:
         record = deletion.record
-        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
         folder = r.retrieve(__actor.org_id, record.folder_uuid)
         record.delete()
         r.delete(folder)

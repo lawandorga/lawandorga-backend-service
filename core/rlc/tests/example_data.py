@@ -1,7 +1,7 @@
 import io
 import sys
 from random import choice, randint
-from typing import List, cast
+from typing import List
 
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -34,7 +34,7 @@ from core.fixtures import (
     create_folder_permissions,
     create_permissions,
 )
-from core.folders.domain.repositories.folder import FolderRepository
+from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.messages.models import EncryptedRecordMessage
 from core.models import (
     CollabDocument,
@@ -50,9 +50,6 @@ from core.permissions import static
 from core.questionnaires.models import QuestionnaireQuestion, QuestionnaireTemplate
 from core.rlc.models import Org
 from core.seedwork.encryption import AESEncryption
-
-# helpers
-from core.seedwork.repository import RepositoryWarehouse
 
 
 def add_permissions_to_group(group: Group, permission_name):
@@ -489,7 +486,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     record_users = [choice(users), main_user]
     aes_key = AESEncryption.generate_secure_key()
 
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    r = DjangoFolderRepository()
     folder = r.retrieve(main_user.rlc_user.org_id, record.folder_uuid)
     for user in record_users:
         if not folder.has_access(user.rlc_user):

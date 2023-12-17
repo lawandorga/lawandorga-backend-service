@@ -1,4 +1,3 @@
-from typing import cast
 from uuid import UUID
 
 from django.db import transaction
@@ -12,14 +11,11 @@ from core.permissions.static import (
 )
 from core.records.models.record import RecordsRecord
 from core.records.use_cases.finders import find_record_by_uuid
-from core.seedwork.repository import RepositoryWarehouse
 from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
-def create_record(__actor: OrgUser, token: str):
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository.IDENTIFIER))
-
+def create_record(__actor: OrgUser, token: str, r: FolderRepository):
     parent_folder = r.get_or_create_records_folder(__actor.org_id, __actor)
 
     if not parent_folder.has_access(__actor):
@@ -53,9 +49,7 @@ def create_record(__actor: OrgUser, token: str):
 
 
 @use_case
-def change_record_token(__actor: OrgUser, uuid: UUID, token: str):
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
-
+def change_record_token(__actor: OrgUser, uuid: UUID, token: str, r: FolderRepository):
     record = find_record_by_uuid(__actor, uuid)
     record.change_token(token)
 

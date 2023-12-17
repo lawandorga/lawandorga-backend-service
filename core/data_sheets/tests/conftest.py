@@ -14,7 +14,6 @@ from core.seedwork.repository import RepositoryWarehouse
 
 EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
 EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionV1)
-RepositoryWarehouse.add_repository(DjangoFolderRepository)
 
 
 @pytest.fixture
@@ -56,7 +55,7 @@ def record(db, org, user, record_template):
 def folder(db, org, user):
     folder = Folder.create(name="New Folder", org_pk=org.pk)
     folder.grant_access(to=user["rlc_user"])
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    r = DjangoFolderRepository()
     r.save(folder)
     yield r.retrieve(org.pk, folder.uuid)
 

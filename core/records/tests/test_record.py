@@ -1,10 +1,8 @@
 import json
-from typing import cast
 
 from django.test import Client
 
 from core.data_sheets.models.data_sheet import DataSheet
-from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
@@ -16,7 +14,6 @@ from core.records.models.record import RecordsRecord
 from core.records.use_cases.deletion import accept_deletion_request
 from core.records.use_cases.record import create_record
 from core.seedwork import test_helpers
-from core.seedwork.repository import RepositoryWarehouse
 
 
 def test_record_creation(db):
@@ -58,7 +55,7 @@ def test_grant_to_users_with_general_permission(db):
 
     folder_uuid = create_record(user, "AZ-TEST")
 
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository.IDENTIFIER))
+    r = DjangoFolderRepository()
     folder = r.retrieve(user.org_id, folder_uuid)
 
     assert folder.has_access(another_user)

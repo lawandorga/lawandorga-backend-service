@@ -13,7 +13,6 @@ from core.rlc.models.org import Org
 class Command(BaseCommand):
     def handle(self, *args, **options):
         t1 = time.time()
-        # folder_repository = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
 
         sheets = list(
             DataSheet.objects.exclude(folder_uuid=None)

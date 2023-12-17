@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, cast
+from typing import Optional
 from uuid import UUID
 
 from django.db.models import Q
@@ -7,14 +7,13 @@ from django.db.models import Q
 from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositories.folder import FolderRepository
+from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.records.helpers import merge_attrs
 from core.records.models.access import RecordsAccessRequest
 from core.records.models.deletion import RecordsDeletion
 from core.records.models.record import RecordsRecord
 from core.records.models.setting import RecordsView
 from core.seedwork.api_layer import Router
-from core.seedwork.repository import RepositoryWarehouse
 
 from . import schemas
 
@@ -68,7 +67,7 @@ def query__records_page(rlc_user: OrgUser):
         .prefetch_related(*DataSheet.UNENCRYPTED_PREFETCH_RELATED)
         .select_related("template")
     )
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    r = DjangoFolderRepository()
     folders = r.get_dict(rlc_user.org_id)
 
     points_1 = [
