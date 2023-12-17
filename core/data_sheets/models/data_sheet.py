@@ -197,6 +197,7 @@ class DataSheet(Aggregate, models.Model):
             "multiple_entries",
             "select_entries",
             "users_entries",
+            "statistic_entries",
         ]:
             for entry in getattr(self, entry_type).all():
                 entries[entry.field.name] = entry.get_value()

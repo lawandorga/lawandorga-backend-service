@@ -76,12 +76,12 @@ def query__record_states(rlc_user: OrgUser):
 def query__record_client_age(rlc_user: OrgUser):
     statement = """
                 select
-                case when entry.value is null then 'Unknown' else entry.value end as value,
+                case when entry.value is null then 'Not-Set' else entry.value end as value,
                 count(*) as count
                 from core_datasheet record
                 left join core_datasheetstatisticentry entry on record.id = entry.record_id
                 left join core_datasheetstatisticfield field on entry.field_id = field.id
-                left join core_datasheettemplate as template on template.id = field.template_id
+                left join core_datasheettemplate as template on template.id = record.template_id
                 where (field.name='Age in years of the client' or field.name is null) and template.rlc_id = {}
                 group by value
                 """.format(
@@ -99,12 +99,12 @@ def query__record_client_age(rlc_user: OrgUser):
 def query__record_client_nationality(rlc_user: OrgUser):
     statement = """
            select
-           case when entry.value is null then 'Unknown' else entry.value end as value,
+           case when entry.value is null then 'Not-Set' else entry.value end as value,
            count(*) as count
            from core_datasheet record
            left join core_datasheetstatisticentry entry on record.id = entry.record_id
            left join core_datasheetstatisticfield field on entry.field_id = field.id
-           left join core_datasheettemplate as template on template.id = field.template_id
+           left join core_datasheettemplate as template on template.id = record.template_id
            where (field.name='Nationality of the client' or field.name is null) and template.rlc_id = {}
            group by value
            """.format(
@@ -119,12 +119,12 @@ def query__record_client_nationality(rlc_user: OrgUser):
 def query__record_client_state(rlc_user: OrgUser):
     statement = """
                 select
-                case when entry.value is null then 'Unknown' else entry.value end as value,
+                case when entry.value is null then 'Not-Set' else entry.value end as value,
                 count(*) as count
                 from core_datasheet record
                 left join core_datasheetstatisticentry entry on record.id = entry.record_id
                 left join core_datasheetstatisticfield field on entry.field_id = field.id
-                left join core_datasheettemplate as template on template.id = field.template_id
+                left join core_datasheettemplate as template on template.id = record.template_id
                 where (field.name='Current status of the client' or field.name is null) and template.rlc_id = {}
                 group by value
                 """.format(
@@ -139,12 +139,12 @@ def query__record_client_state(rlc_user: OrgUser):
 def query__record_client_sex(rlc_user: OrgUser):
     statement = """
                select
-               case when entry.value is null then 'Unknown' else entry.value end as value,
+               case when entry.value is null then 'Not-Set' else entry.value end as value,
                count(*) as count
                from core_datasheet record
                left join core_datasheetstatisticentry entry on record.id = entry.record_id
                left join core_datasheetstatisticfield field on entry.field_id = field.id
-               left join core_datasheettemplate as template on template.id = field.template_id
+               left join core_datasheettemplate as template on template.id = record.template_id
                where (field.name='Sex of the client' or field.name is null) and template.rlc_id = {}
                group by value
                """.format(
