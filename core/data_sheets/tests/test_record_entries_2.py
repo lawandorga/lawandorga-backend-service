@@ -1,7 +1,6 @@
 import io
 import json
 import sys
-from typing import cast
 
 import pytest
 from django.conf import settings
@@ -34,7 +33,7 @@ from core.data_sheets.models.template import (
     DataSheetStatisticField,
     DataSheetUsersField,
 )
-from core.folders.domain.repositories.folder import FolderRepository
+from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.models import UserProfile
 from core.permissions.models import HasPermission, Permission
 from core.permissions.static import (
@@ -43,7 +42,6 @@ from core.permissions.static import (
 )
 from core.rlc.models.org import Org
 from core.seedwork import test_helpers
-from core.seedwork.repository import RepositoryWarehouse
 
 
 def get_file(text: str = "test-file-text"):
@@ -635,7 +633,7 @@ def test_entry_keys_sharing_true(db, record, users_field, auth_client):
     user2 = test_helpers.create_org_user(
         rlc=user.org, email="dummy3@law-orga.de", save=True
     )["rlc_user"]
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    r = DjangoFolderRepository()
     folder1 = r.retrieve(user.org_id, record.folder_uuid)
     assert folder1.has_access(user2) is False
     data = {
@@ -678,7 +676,7 @@ def test_entry_keys_sharing_false(db, record, users_field, auth_client):
     user2 = test_helpers.create_org_user(
         rlc=user.org, email="dummy3@law-orga.de", save=True
     )["rlc_user"]
-    r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+    r = DjangoFolderRepository()
     folder1 = r.retrieve(user.org_id, record.folder_uuid)
     assert folder1.has_access(user2) is False
     data = {

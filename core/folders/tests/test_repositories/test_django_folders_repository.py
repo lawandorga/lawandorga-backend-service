@@ -3,13 +3,11 @@ from django.conf import settings
 
 from core.auth.models import OrgUser, UserProfile
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.rlc.models import Org
-from core.seedwork.repository import RepositoryWarehouse
 
 
 @pytest.fixture
@@ -20,8 +18,7 @@ def real_encryption(encryption_reset):
 
 @pytest.fixture
 def repository(real_encryption):
-    RepositoryWarehouse.add_repository(DjangoFolderRepository)
-    yield RepositoryWarehouse.get(FolderRepository)
+    yield DjangoFolderRepository()
 
 
 @pytest.fixture

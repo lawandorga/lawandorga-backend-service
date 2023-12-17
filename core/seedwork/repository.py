@@ -32,7 +32,3 @@ class RepositoryWarehouse:
                 "This or another repository with the same identifier is already in this warehouse."
             )
         cls.repositories[repository.IDENTIFIER] = repository
-
-    @classmethod
-    def reset(cls):
-        cls.repositories = {}

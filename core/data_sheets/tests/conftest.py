@@ -14,6 +14,7 @@ from core.seedwork.repository import RepositoryWarehouse
 
 EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
 EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionV1)
+RepositoryWarehouse.add_repository(DjangoFolderRepository)
 
 
 @pytest.fixture

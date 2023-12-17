@@ -9,7 +9,6 @@ from typing import (
     Type,
     TypedDict,
     Union,
-    cast,
 )
 from uuid import UUID, uuid4
 
@@ -41,8 +40,6 @@ from core.seedwork.domain_layer import DomainError
 from core.seedwork.events_addon import EventsAddon
 from messagebus import Event
 
-from ...folders.domain.repositories.folder import FolderRepository
-from ...seedwork.repository import RepositoryWarehouse
 from .user import UserProfile
 
 if TYPE_CHECKING:
@@ -209,9 +206,9 @@ class OrgUser(Aggregate, models.Model):
 
     @property
     def folder_keys(self) -> list[KeyOfUser]:
-        from core.folders.infrastructure.folder_repository import FolderRepository
+        from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 
-        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+        r = DjangoFolderRepository()
         folders = r.get_list(self.org_id)
 
         folder_keys = []
@@ -619,7 +616,9 @@ class OrgUser(Aggregate, models.Model):
         user.delete()
 
     def check_delete_is_safe(self):
-        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+        from core.folders.infrastructure.folder_repository import DjangoFolderRepository
+
+        r = DjangoFolderRepository()
         folders = r.get_list(self.org_id)
 
         for folder in folders:

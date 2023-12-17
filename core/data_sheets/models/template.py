@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from django.apps import apps
@@ -7,10 +7,9 @@ from django.db import models, transaction
 from django.utils import timezone
 
 from core.auth.models.org_user import OrgUser
-from core.folders.domain.repositories.folder import FolderRepository
+from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.models import Group, Org
 from core.seedwork.domain_layer import DomainError
-from core.seedwork.repository import RepositoryWarehouse
 
 if TYPE_CHECKING:
     from .data_sheet import (
@@ -315,7 +314,7 @@ class DataSheetUsersField(RecordField):
         if self.share_keys:
             record = entry.record
             assert record.folder_uuid is not None
-            r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+            r = DjangoFolderRepository()
             folder = r.retrieve(user.org_id, record.folder_uuid)
             for u in list(entry.value.all()):
                 if not folder.has_access(u):
