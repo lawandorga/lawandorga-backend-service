@@ -4,9 +4,8 @@ from typing import TYPE_CHECKING, Optional, cast
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
 
-from core.folders.domain.repositories.folder import FolderRepository
+from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
-from core.seedwork.repository import RepositoryWarehouse
 
 from .meta import Meta
 
@@ -197,14 +196,14 @@ class Org(EncryptedModelMixin, models.Model):
         org_enc.encrypt(public_key)
 
         # grant access to the records folder
-        r = cast(FolderRepository, RepositoryWarehouse.get(FolderRepository))
+        r = DjangoFolderRepository()
         folder = r.get_or_create_records_folder(admin.org_id, admin)
         if not folder.has_access(member):
             folder.grant_access(member, admin)
 
         with transaction.atomic():
             # save the folder
-            # r.save(folder)
+            r.save(folder)
 
             # delete the old keys
             OrgEncryption.objects.filter(user=member.user).delete()
