@@ -91,7 +91,7 @@ def query__template(rlc_user: OrgUser, data: schemas.InputTemplateDetail):
 def query__data_sheet(rlc_user: OrgUser, data: schemas.InputQueryRecord):
     record = (
         DataSheet.objects.prefetch_related(*DataSheet.ALL_PREFETCH_RELATED)
-        .select_related("old_client", "template")
+        .select_related("template")
         .filter(template__rlc_id=rlc_user.org_id)
         .get(uuid=data.uuid)
     )
