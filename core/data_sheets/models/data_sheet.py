@@ -7,7 +7,6 @@ from django.db import models
 from django.utils.timezone import localtime
 
 from core.auth.models import OrgUser
-from core.data_sheets.models.encrypted_client import EncryptedClient  # type: ignore
 from core.data_sheets.models.template import (
     DataSheetEncryptedFileField,
     DataSheetEncryptedSelectField,
@@ -82,13 +81,6 @@ class DataSheet(Aggregate, models.Model):
     )
     folder_uuid = models.UUIDField(db_index=True, null=True)
     uuid = models.UUIDField(default=uuid4, unique=True, db_index=True)
-    old_client = models.ForeignKey(
-        EncryptedClient,
-        related_name="records",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
     name = models.CharField(max_length=300, default="-")
     key = models.JSONField(null=True)
     created = models.DateTimeField(auto_now_add=True)

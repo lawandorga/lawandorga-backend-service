@@ -20,10 +20,7 @@ from core.data_sheets.models import (
     DataSheetTemplate,
     DataSheetUsersEntry,
     DataSheetUsersField,
-    EncryptedClient,
 )
-
-admin.site.register(EncryptedClient)
 
 admin.site.register(DataSheetTemplate)
 admin.site.register(DataSheet)

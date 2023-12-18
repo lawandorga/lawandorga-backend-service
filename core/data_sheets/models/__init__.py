@@ -11,5 +11,4 @@ from .data_sheet import (
     DataSheetStatisticEntry,
     DataSheetUsersEntry,
 )
-from .encrypted_client import *
 from .template import *

@@ -102,16 +102,6 @@ def query__data_sheet(rlc_user: OrgUser, data: schemas.InputQueryRecord):
     if not record.folder_uuid:
         migrate_record_into_folder(rlc_user, record)
 
-    client = None
-    if record.old_client:
-        client = record.old_client
-        private_key_user = rlc_user.get_private_key()
-        client.decrypt(
-            private_key_rlc=rlc_user.org.get_private_key(
-                user=rlc_user.user, private_key_user=private_key_user
-            )
-        )
-
     return {
         "id": record.pk,
         "name": record.name,
@@ -119,7 +109,6 @@ def query__data_sheet(rlc_user: OrgUser, data: schemas.InputQueryRecord):
         "folder_uuid": record.folder_uuid,
         "created": record.created,
         "updated": record.updated,
-        "client": client,
         "fields": record.template.get_fields_new(),
         "entries": record.get_entries_new(rlc_user),
         "template_name": record.template.name,
