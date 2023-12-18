@@ -19,7 +19,7 @@ def subfolder():
     yield folder2
 
 
-def test_hierarchy(single_encryption):
+def test_hierarchy():
     user = UserObject()
 
     folder1 = Folder.create("Parent")
@@ -31,7 +31,7 @@ def test_hierarchy(single_encryption):
     assert folder2.has_access(user)
 
 
-def test_deep_hierarchy(single_encryption):
+def test_deep_hierarchy():
     user = UserObject()
 
     folders = []
@@ -47,7 +47,7 @@ def test_deep_hierarchy(single_encryption):
     assert folders[-1].has_access(user)
 
 
-def test_no_keys_error(single_encryption):
+def test_no_keys_error():
     folder1 = Folder.create("My Folder")
     with pytest.raises(TypeError):
         folder1.get_encryption_key()
@@ -55,13 +55,13 @@ def test_no_keys_error(single_encryption):
         folder1.get_decryption_key()
 
 
-def test_hierarchy_no_access(single_encryption, subfolder):
+def test_hierarchy_no_access(subfolder):
     user = UserObject()
     with pytest.raises(DomainError):
         subfolder.get_decryption_key(requestor=user)
 
 
-def test_parent_set(single_encryption, folder_user):
+def test_parent_set(folder_user):
     folder1, user1 = folder_user
     user2 = UserObject()
     folder1.grant_access(user2, user1)
@@ -74,7 +74,7 @@ def test_parent_set(single_encryption, folder_user):
     assert folder2.has_access(user1)
 
 
-def test_inheritance_stop(single_encryption, folder_user):
+def test_inheritance_stop(folder_user):
     folder1, user1 = folder_user
     user2 = UserObject()
     folder2 = Folder.create("Test", folder1.org_pk, stop_inherit=True)

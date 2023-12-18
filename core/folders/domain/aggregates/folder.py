@@ -10,6 +10,7 @@ from core.folders.domain.value_objects.folder_key import (
 )
 from core.folders.domain.value_objects.parent_key import ParentKey
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
+from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.seedwork.domain_layer import DomainError
 
 from seedwork.types import JsonDict
@@ -336,7 +337,7 @@ class Folder:
 
         # get the key of self
         if len(self.__keys) == 0 and self.__enc_parent_key is None:
-            key = SymmetricKey.generate()
+            key = SymmetricKey.generate(SymmetricEncryptionV1)
 
         else:
             key = self.get_decryption_key(requestor=by)
@@ -395,7 +396,7 @@ class Folder:
 
     def __grant_access(self, by: Optional["OrgUser"] = None) -> SymmetricKey:
         if len(self.__keys) == 0 and self.__enc_parent_key is None:
-            key = SymmetricKey.generate()
+            key = SymmetricKey.generate(SymmetricEncryptionV1)
 
         else:
             assert by is not None

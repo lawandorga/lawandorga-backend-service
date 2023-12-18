@@ -27,6 +27,7 @@ from core.folders.domain.value_objects.symmetric_key import (
     SymmetricKey,
 )
 from core.folders.infrastructure.folder_addon import FolderAddon
+from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.permissions.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
@@ -222,7 +223,7 @@ class DataSheet(Aggregate, models.Model):
         if self.key is not None:
             raise ValueError("This record already has a key.")
 
-        key = SymmetricKey.generate()
+        key = SymmetricKey.generate(SymmetricEncryptionV1)
         lock_key = self.folder.get_encryption_key(requestor=user)
         enc_key = EncryptedSymmetricKey.create(key, lock_key)
         self.key = enc_key.as_dict()

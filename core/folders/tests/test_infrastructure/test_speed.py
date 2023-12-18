@@ -5,19 +5,13 @@ import time
 import pytest
 
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
-from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 
 
-@pytest.fixture
-def real_encryption(encryption_reset):
-    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
-
-
 def generate_keys(L: int):
     keys = []
-    key = SymmetricKey.generate()
+    key = SymmetricKey.generate(SymmetricEncryptionV1)
     for i in range(0, L):
         keys.append(key)
     assert len(keys) == L
@@ -36,7 +30,7 @@ def generate_data(L: int):
 
 
 @pytest.fixture
-def keys(real_encryption):
+def keys():
     yield generate_keys(5000)
 
 

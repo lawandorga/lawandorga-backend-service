@@ -12,6 +12,7 @@ from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
+from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 
 
 class MultiFactorAuthenticationSecret(models.Model):
@@ -69,7 +70,7 @@ class MultiFactorAuthenticationSecret(models.Model):
         return key
 
     def __generate_key(self):
-        key = SymmetricKey.generate()
+        key = SymmetricKey.generate(SymmetricEncryptionV1)
         lock_key = self.user.get_encryption_key()
         enc_key = EncryptedSymmetricKey.create(key, lock_key)
         self.key = enc_key.as_dict()

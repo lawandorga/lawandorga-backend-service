@@ -5,13 +5,10 @@ from core.folders.domain.value_objects.asymmetric_key import (
     EncryptedAsymmetricKey,
 )
 from core.folders.domain.value_objects.box import OpenBox
-from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
-from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
-from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.folders.tests.test_helpers.encryptions import (
     AsymmetricEncryptionTest1,
     SymmetricEncryptionTest1,
@@ -19,22 +16,12 @@ from core.folders.tests.test_helpers.encryptions import (
 
 
 @pytest.fixture
-def encryption():
-    EncryptionWarehouse.reset_encryption_hierarchies()
-    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest1)
-    EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionTest1)
-    yield
-    EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionV1)
-    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
+def s_key():
+    yield SymmetricKey.generate(SymmetricEncryptionTest1)
 
 
 @pytest.fixture
-def s_key(encryption):
-    yield SymmetricKey.generate()
-
-
-@pytest.fixture
-def a_key(encryption):
+def a_key():
     yield AsymmetricKey.generate(enc=AsymmetricEncryptionTest1)
 
 
@@ -44,7 +31,7 @@ def box():
 
 
 def test_symmetric_dict(s_key):
-    key_1 = SymmetricKey.generate()
+    key_1 = SymmetricKey.generate(SymmetricEncryptionTest1)
     enc_key_1 = EncryptedSymmetricKey.create(key_1, s_key)
     dict_enc_key_1 = enc_key_1.as_dict()
     enc_key_2 = EncryptedSymmetricKey.create_from_dict(dict_enc_key_1)
@@ -72,7 +59,7 @@ def test_unlock_error(s_key, a_key):
 
 def test_encrypted_symmetric_keys_errors(s_key):
     box = OpenBox(data=b"Test")
-    key = SymmetricKey.generate()
+    key = SymmetricKey.generate(SymmetricEncryptionTest1)
     locked_box = key.lock(box)
     enc_key = EncryptedSymmetricKey.create(key, s_key)
     with pytest.raises(ValueError):

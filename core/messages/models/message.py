@@ -12,6 +12,7 @@ from core.folders.domain.value_objects.symmetric_key import (
     SymmetricKey,
 )
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
+from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.rlc.models import Org
 from core.seedwork.encryption import AESEncryption
 
@@ -105,7 +106,7 @@ class EncryptedRecordMessage(models.Model):
     def __generate_key(self, user: OrgUser):
         assert self.folder is not None
 
-        key = SymmetricKey.generate()
+        key = SymmetricKey.generate(SymmetricEncryptionV1)
         lock_key = self.folder.get_encryption_key(requestor=user)
         enc_key = EncryptedSymmetricKey.create(key, lock_key)
         self.key = enc_key.as_dict()

@@ -7,6 +7,7 @@ from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
+from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.rlc.models.org import Org
 from core.seedwork.domain_layer import DomainError
 
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
 class GroupKey:
     @classmethod
     def generate(cls) -> "GroupKey":
-        return cls(SymmetricKey.generate())
+        return cls(SymmetricKey.generate(SymmetricEncryptionV1))
 
     def __init__(self, key: SymmetricKey):
         self.__key = key

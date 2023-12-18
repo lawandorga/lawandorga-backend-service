@@ -1,15 +1,9 @@
 import pytest
 
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.value_objects.encryption import EncryptionWarehouse
-from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.models import Org
 from core.seedwork import test_helpers as data
-
-EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
-EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionV1)
 
 
 @pytest.fixture

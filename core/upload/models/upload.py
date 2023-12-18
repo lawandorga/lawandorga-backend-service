@@ -19,6 +19,7 @@ from core.folders.domain.value_objects.symmetric_key import (
 )
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.folders.infrastructure.folder_addon import FolderAddon
+from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.rlc.models import Org
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.domain_layer import DomainError
@@ -160,7 +161,7 @@ class UploadFile(models.Model):
         verbose_name_plural = "UploadFiles"
 
     def generate_key(self):
-        key = SymmetricKey.generate()
+        key = SymmetricKey.generate(SymmetricEncryptionV1)
         lock_key = self.link.enc_key
         enc_key = EncryptedSymmetricKey.create(key, lock_key)
         self.key = enc_key.as_dict()

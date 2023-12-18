@@ -14,6 +14,7 @@ from core.folders.domain.value_objects.symmetric_key import (
     SymmetricKey,
 )
 from core.folders.infrastructure.folder_addon import FolderAddon
+from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.rlc.models import Org
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.events_addon import EventsAddon
@@ -94,7 +95,7 @@ class EncryptedRecordDocument(Aggregate, models.Model):
 
     def generate_key(self, user: OrgUser):
         assert self.folder is not None and self.key is None
-        key = SymmetricKey.generate()
+        key = SymmetricKey.generate(SymmetricEncryptionV1)
         lock_key = self.folder.get_encryption_key(requestor=user)
         enc_key = EncryptedSymmetricKey.create(key, lock_key)
         self.key = enc_key.as_dict()

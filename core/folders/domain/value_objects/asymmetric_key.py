@@ -8,6 +8,7 @@ from core.folders.domain.value_objects.symmetric_key import (
     SymmetricKey,
 )
 from core.folders.encryptions import ENCRYPTIONS
+from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 
 from seedwork.types import JsonDict
 
@@ -88,7 +89,7 @@ class EncryptedAsymmetricKey(Key):
             )
         )
 
-        s_key = SymmetricKey.generate()
+        s_key = SymmetricKey.generate(enc=SymmetricEncryptionV1)
         enc_private_key = s_key.lock(original.get_private_key())
         enc_s_key = EncryptedSymmetricKey.create(s_key, key)
 

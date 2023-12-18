@@ -5,18 +5,20 @@ import pytest
 
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.aggregates.item import Item
-from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.folder_key import (
     EncryptedFolderKeyOfUser,
     FolderKey,
 )
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
-from core.folders.tests.test_helpers.encryptions import SymmetricEncryptionTest2
+from core.folders.tests.test_helpers.encryptions import (
+    SymmetricEncryptionTest1,
+    SymmetricEncryptionTest2,
+)
 from core.folders.tests.test_helpers.user import ForeignUserObject, UserObject
 from core.seedwork.domain_layer import DomainError
 
 
-def test_grant_access(single_encryption):
+def test_grant_access():
     user = UserObject()
 
     folder = Folder.create("New Folder")
@@ -25,7 +27,7 @@ def test_grant_access(single_encryption):
     assert folder.has_access(user)
 
 
-def test_grant_access_to_another_user(single_encryption):
+def test_grant_access_to_another_user():
     user1 = UserObject()
     user2 = UserObject()
 
@@ -36,20 +38,19 @@ def test_grant_access_to_another_user(single_encryption):
     assert folder.has_access(user2)
 
 
-def test_encryption_version(single_encryption):
+def test_encryption_version():
     folder = Folder.create("Test")
     assert folder.encryption_version is None
     user = UserObject()
     folder.grant_access(to=user)
-    assert folder.encryption_version == "AT1" or folder.encryption_version == "ST1"
+    assert folder.encryption_version == "A1" or folder.encryption_version == "S1"
 
-    s_key = SymmetricKey.generate()
+    s_key = SymmetricKey.generate(SymmetricEncryptionTest1)
     folder_key_1 = FolderKey(
         owner_uuid=user.uuid,
         key=s_key,
     )
-    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest2)
-    s_key = SymmetricKey.generate()
+    s_key = SymmetricKey.generate(SymmetricEncryptionTest2)
     folder_key_2 = FolderKey(
         owner_uuid=user.uuid,
         key=s_key,
@@ -70,7 +71,7 @@ def test_encryption_version(single_encryption):
         assert folder.encryption_version
 
 
-def test_update_information(single_encryption, folder_user):
+def test_update_information(folder_user):
     folder, user = folder_user
     folder.update_information(name="New Name")
     assert folder.name == "New Name"
@@ -81,26 +82,30 @@ def test_str_method():
     assert str(folder) == "Folder Test"
 
 
-def test_folder_key_decryption_error(single_encryption):
+def test_folder_key_decryption_error():
     user1 = ForeignUserObject()
-    key = FolderKey(key=SymmetricKey.generate(), owner_uuid=user1.uuid)
+    key = FolderKey(
+        key=SymmetricKey.generate(SymmetricEncryptionTest1), owner_uuid=user1.uuid
+    )
     enc_key = EncryptedFolderKeyOfUser.create_from_key(key, user1.get_encryption_key())
     user2 = UserObject()
     with pytest.raises(KeyError):
         enc_key.decrypt_self(user2)
 
 
-def test_folder_key_str_method(single_encryption):
+def test_folder_key_str_method():
     user1 = UserObject()
-    key = FolderKey(owner_uuid=user1.uuid, key=SymmetricKey.generate())
+    key = FolderKey(
+        owner_uuid=user1.uuid, key=SymmetricKey.generate(SymmetricEncryptionTest1)
+    )
     assert str(key) == "FolderKey of '{}'".format(user1.uuid)
 
 
-def test_folder_access(single_encryption):
+def test_folder_access():
     user_1 = UserObject()
     user_2 = UserObject()
 
-    s_key = SymmetricKey.generate()
+    s_key = SymmetricKey.generate(SymmetricEncryptionTest1)
     folder_key_1 = FolderKey(
         owner_uuid=user_1.uuid,
         key=s_key,
@@ -126,7 +131,7 @@ def test_folder_access(single_encryption):
     assert folder.has_access(user_1) and folder.has_access(user_2)
 
 
-def test_has_no_access(single_encryption):
+def test_has_no_access():
     user1 = UserObject()
     user2 = UserObject()
     folder = Folder.create("Test")

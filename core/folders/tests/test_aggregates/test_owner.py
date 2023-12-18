@@ -7,9 +7,9 @@ from core.folders.tests.test_helpers.user import UserObject
 
 
 @pytest.fixture
-def user_user_folders(
-    single_encryption,
-) -> Generator[tuple[UserObject, UserObject, list[Folder]], None, None]:
+def user_user_folders() -> (
+    Generator[tuple[UserObject, UserObject, list[Folder]], None, None]
+):
     user_1 = UserObject()  # type: ignore
     user_2 = UserObject()  # type: ignore
 

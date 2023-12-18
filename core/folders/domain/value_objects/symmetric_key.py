@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, Optional, Union
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import (
     AsymmetricEncryption,
-    EncryptionWarehouse,
     SymmetricEncryption,
 )
 from core.folders.domain.value_objects.key import Key
@@ -20,11 +19,11 @@ if TYPE_CHECKING:
 
 class SymmetricKey(Key):
     @staticmethod
-    def generate() -> "SymmetricKey":
+    def generate(enc: type[SymmetricEncryption]) -> "SymmetricKey":
         (
             key,
             version,
-        ) = EncryptionWarehouse.get_highest_symmetric_encryption().generate_key()
+        ) = enc.generate_key()
         return SymmetricKey.create(key, version)
 
     @staticmethod

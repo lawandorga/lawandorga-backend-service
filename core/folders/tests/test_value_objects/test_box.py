@@ -3,21 +3,14 @@ import pickle
 import pytest
 
 from core.folders.domain.value_objects.box import Box, LockedBox, OpenBox
-from core.folders.domain.value_objects.encryption import EncryptionWarehouse
 from core.folders.domain.value_objects.symmetric_key import SymmetricKey
-from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
-from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.folders.tests.test_helpers.encryptions import SymmetricEncryptionTest1
 
 
 @pytest.fixture
 def key():
-    EncryptionWarehouse.reset_encryption_hierarchies()
-    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionTest1)
     key, version = SymmetricEncryptionTest1.generate_key()
     yield SymmetricKey.create(key=key, origin=version)
-    EncryptionWarehouse.add_symmetric_encryption(SymmetricEncryptionV1)
-    EncryptionWarehouse.add_asymmetric_encryption(AsymmetricEncryptionV1)
 
 
 def test_box_can_be_pickled():
