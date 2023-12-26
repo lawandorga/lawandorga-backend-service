@@ -315,7 +315,7 @@ class OrgUser(Aggregate, models.Model):
 
         questionnaires = Questionnaire.objects.filter(
             template__rlc_id=self.org_id
-        ).select_related("template", "record")
+        ).select_related("template")
 
         questionnaire_data = []
 
