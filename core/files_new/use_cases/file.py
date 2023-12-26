@@ -28,23 +28,3 @@ def delete_a_file(__actor: OrgUser, file_uuid: UUID):
     file = file_from_uuid(__actor, file_uuid)
     file.delete_on_cloud()
     file.delete()
-
-
-@use_case
-def put_files_inside_of_folders(__actor: OrgUser):
-    files1 = (
-        EncryptedRecordDocument.objects.filter(folder_uuid=None)
-        .filter(org=__actor.org)
-        .exclude(record=None)
-        .select_related("record")
-    )
-    files2: list[EncryptedRecordDocument] = list(files1)
-    for file in files2:
-        if file.record:
-            record = file.record
-            if record.folder_uuid:
-                folder = record.folder.folder
-
-                file.key = file.record.key
-                file.folder.put_obj_in_folder(folder)
-                file.save()

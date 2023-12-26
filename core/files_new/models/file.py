@@ -54,12 +54,9 @@ class EncryptedRecordDocument(Aggregate, models.Model):
         return f
 
     name = models.CharField(max_length=200)
-    record: Optional[DataSheet] = models.ForeignKey(  # type: ignore
-        DataSheet, related_name="documents", on_delete=models.CASCADE, null=True
-    )
     org = models.ForeignKey(Org, related_name="files", on_delete=models.CASCADE)
     uuid = models.UUIDField(db_index=True, unique=True, default=uuid4)
-    folder_uuid = models.UUIDField(db_index=True, null=True)
+    folder_uuid = models.UUIDField(db_index=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     file_size = models.BigIntegerField(null=True)
@@ -77,7 +74,7 @@ class EncryptedRecordDocument(Aggregate, models.Model):
 
     def __str__(self):
         return "recordDocument: {}; name: {}; record: {};".format(
-            self.pk, self.name, self.record.id
+            self.pk, self.name, self.record.pk
         )
 
     @property
