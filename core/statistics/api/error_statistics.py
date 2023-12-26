@@ -109,9 +109,6 @@ def query__migration_statistic(statistics_user: StatisticUser):
     from core_datasheet
     union all
     select avg(case when folder_uuid is not null then 1 else 0 end), sum(case when folder_uuid is null then 1 else 0 end) as togo
-    from core_questionnaire
-    union all
-    select avg(case when folder_uuid is not null then 1 else 0 end), sum(case when folder_uuid is null then 1 else 0 end) as togo
     from core_encryptedrecorddocument
     ) tmp
     """
@@ -119,8 +116,6 @@ def query__migration_statistic(statistics_user: StatisticUser):
     ret = {
         "records": data[0][0],
         "records_togo": data[0][1],
-        "questionnaires": data[1][0],
-        "questionnaires_togo": data[1][1],
         "documents": data[2][0],
         "documents_togo": data[2][1],
     }

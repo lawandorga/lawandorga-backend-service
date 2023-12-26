@@ -5,7 +5,6 @@ from django.db import models
 from django.utils import timezone
 
 from core.auth.models import OrgUser
-from core.data_sheets.models import DataSheet
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.item import ItemRepository
 from core.folders.domain.value_objects.asymmetric_key import (
@@ -46,13 +45,6 @@ class Questionnaire(Aggregate, models.Model):
         questionnaire.generate_code()
         return questionnaire
 
-    record = models.ForeignKey(
-        DataSheet,
-        on_delete=models.CASCADE,
-        related_name="questionnaires",
-        null=True,
-        blank=True,
-    )
     template = models.ForeignKey(
         QuestionnaireTemplate, on_delete=models.PROTECT, related_name="questionnaires"
     )
@@ -61,7 +53,7 @@ class Questionnaire(Aggregate, models.Model):
     updated = models.DateTimeField(auto_now=True)
     name = models.CharField(max_length=200, default="-")
     uuid = models.UUIDField(default=uuid4, unique=True)
-    folder_uuid = models.UUIDField(null=True)
+    folder_uuid = models.UUIDField()
     key = models.JSONField(null=True)
 
     addons = dict(events=EventsAddon, folder=FolderAddon)

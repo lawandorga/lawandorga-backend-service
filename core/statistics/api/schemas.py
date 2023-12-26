@@ -112,8 +112,6 @@ class OutputOrgMembers(BaseModel):
 class OutputMigrationStatistic(BaseModel):
     records: float
     records_togo: int
-    questionnaires: float
-    questionnaires_togo: int
     documents: float
     documents_togo: int
 
