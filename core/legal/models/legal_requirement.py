@@ -24,12 +24,12 @@ class LegalRequirement(models.Model):
         events: RelatedManager["LegalRequirementEvent"]
 
     def __str__(self):
-        return "legalRequirement: {}; title: {};".format(self.id, self.title)
+        return "legalRequirement: {}; title: {};".format(self.pk, self.title)
 
     class Meta:
         ordering = ["order"]
-        verbose_name = "LegalRequirement"
-        verbose_name_plural = "LegalRequirements"
+        verbose_name = "LEG_LegalRequirement"
+        verbose_name_plural = "LEG_LegalRequirements"
 
     @classmethod
     def is_locked(cls, user: OrgUser) -> bool:
@@ -79,9 +79,9 @@ class LegalRequirementEvent(models.Model):
 
     def __str__(self):
         return "event: {}; legalRequirement: {};".format(
-            self.id, self.legal_requirement.title
+            self.pk, self.legal_requirement.title
         )
 
     class Meta:
-        verbose_name = "LegalRequirementEvent"
-        verbose_name_plural = "LegalRequirementEvents"
+        verbose_name = "LEG_LegalRequirementEvent"
+        verbose_name_plural = "LEG_LegalRequirementEvents"
