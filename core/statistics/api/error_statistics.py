@@ -116,7 +116,7 @@ def query__migration_statistic(statistics_user: StatisticUser):
     ret = {
         "records": data[0][0],
         "records_togo": data[0][1],
-        "documents": data[2][0],
-        "documents_togo": data[2][1],
+        "documents": data[1][0],
+        "documents_togo": data[1][1],
     }
     return ret
