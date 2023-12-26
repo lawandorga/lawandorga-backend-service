@@ -1,12 +1,9 @@
-from typing import Optional, TypedDict, cast
+from typing import Optional, TypedDict
 from uuid import UUID
 
-from django.db import transaction
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
-from core.data_sheets.models import DataSheet
-from core.data_sheets.models.data_sheet import DataSheetRepository
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.use_cases.folder import get_repository
 from core.rlc.models.group import Group
@@ -323,22 +320,6 @@ def query__detail_folder(rlc_user: OrgUser, data: InputFolderDetail):
     builder.build_available_groups(rlc_user.org_id).build_groups_dict()
     context = builder.build()
     folder = r.retrieve(rlc_user.org_id, data.id)
-
-    for item in folder.items:
-        if item.repository == "RECORD":
-            item_repository = DataSheetRepository()
-            record = cast(DataSheet, item_repository.retrieve(item.uuid, folder.org_pk))
-            with transaction.atomic():
-                for file in list(record.documents.all()):
-                    if file.key is None and file.record:
-                        file.key = file.record.key
-                        file.save()
-                    if file.folder_uuid is None:
-                        file.folder_uuid = folder.uuid
-                        folder.add_item(file)
-                        file.save()
-                r.save(folder)
-
     subfolders = r.get_children(rlc_user.org_id, folder.uuid)
 
     return {

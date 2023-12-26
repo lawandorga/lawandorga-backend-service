@@ -1,10 +1,7 @@
 from django.core.files.uploadedfile import UploadedFile
 
 from core.auth.models import OrgUser
-from core.files_new.use_cases.file import (
-    delete_a_file,
-    upload_a_file,
-)
+from core.files_new.use_cases.file import delete_a_file, upload_a_file
 from core.seedwork.api_layer import ApiError, Router
 
 from . import schemas
