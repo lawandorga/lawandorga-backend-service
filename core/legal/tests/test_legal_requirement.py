@@ -2,6 +2,7 @@ import pytest
 from django.test import Client
 
 from core.legal.models.legal_requirement import LegalRequirementEvent
+from core.legal.use_cases.legal_requirement import accept_legal_requirement
 from core.models import Org
 from core.seedwork import test_helpers
 
@@ -36,17 +37,7 @@ def test_get_data_works(user, db, legal_requirement):
 
 
 def test_accept_legal_requirement(user, db, legal_requirement):
-    c = Client()
-    c.login(**user)
-
-    response = c.post(
-        "/api/legal/legal_requirements/{}/accept/".format(legal_requirement.id),
-        content_type="application/json",
-    )
-
-    assert (
-        response.status_code == 200
-        and LegalRequirementEvent.objects.filter(
-            user=user["rlc_user"], legal_requirement=legal_requirement
-        ).exists()
-    )
+    accept_legal_requirement(user["rlc_user"], legal_requirement.pk)
+    assert LegalRequirementEvent.objects.filter(
+        user=user["rlc_user"], legal_requirement=legal_requirement
+    ).exists()
