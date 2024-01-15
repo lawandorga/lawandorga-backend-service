@@ -95,3 +95,14 @@ def unlock_user(__actor: OrgUser, another_rlc_user_id: int):
     another_rlc_user = rlc_user_from_id(__actor, another_rlc_user_id)
     another_rlc_user.unlock(__actor)
     another_rlc_user.save()
+
+
+@use_case
+def unlock_myself(__actor: OrgUser):
+    __actor.user.test_all_keys(__actor.get_private_key())
+    if not __actor.all_keys_correct:
+        raise UseCaseError(
+            "You can only unlock yourself when all your keys are correct.",
+        )
+    __actor.locked = False
+    __actor.save()
