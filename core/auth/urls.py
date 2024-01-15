@@ -7,7 +7,6 @@ from . import api, views
 urlpatterns: list[Union[URLPattern, URLResolver]] = [
     path("api/rlc_users/", include(api.rlc_user_router.urls)),
     path("api/statistics_users/", include(api.statistics_user_router.urls)),
-    path("api/matrix_users/", include(api.matrix_user_router.urls)),
     path("api/keys/", include(api.keys_router.urls)),
     path("api/auth/query/", include(api.query_router.urls)),
     path("auth/user/register/", views.CustomRegisterView.as_view(), name="register"),
