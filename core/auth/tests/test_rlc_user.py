@@ -2,7 +2,7 @@ import pytest
 from django.conf import settings
 from django.test import Client
 
-from core.auth.use_cases.rlc_user import delete_user
+from core.auth.use_cases.rlc_user import delete_user, unlock_user
 from core.auth.use_cases.user import change_password_of_user
 from core.folders.domain.value_objects.asymmetric_key import EncryptedAsymmetricKey
 from core.models import OrgUser, UserProfile
@@ -32,12 +32,6 @@ def test_everybody_can_hit_email_confirm(db):
     assert response.status_code != 403 and response.status_code != 401
 
 
-def test_not_everybody_can_hit_unlock(db):
-    client = Client()
-    response = client.post("/api/rlc_users/1/unlock_user/")
-    assert 401 == response.status_code
-
-
 def test_user_can_not_delete_someone_else(db, rlc_user):
     client = Client()
     client.login(**rlc_user)
@@ -58,8 +52,9 @@ def test_unlock_works(db, rlc_user):
     )["rlc_user"]
     another_user.locked = True
     another_user.save()
-    response = client.post("/api/rlc_users/{}/unlock_user/".format(another_user.pk))
-    assert response.status_code == 200
+    unlock_user(user, another_user.pk)
+    another_user.refresh_from_db()
+    assert not another_user.locked
 
 
 def test_change_password_works(db, rlc_user):

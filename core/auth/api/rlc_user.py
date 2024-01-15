@@ -4,7 +4,7 @@ from django.db.models import Q
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
-from core.auth.use_cases.rlc_user import confirm_email, unlock_user
+from core.auth.use_cases.rlc_user import confirm_email
 from core.permissions.models import HasPermission, Permission
 from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_PERMISSIONS,
@@ -212,9 +212,3 @@ def grant_permission(data: schemas.InputRlcUserGrantPermission, rlc_user: OrgUse
         raise ApiError("The user already has this permission.")
 
     rlc_user_to_grant.grant(permission=permission)
-
-
-# unlock user
-@router.post(url="<int:id>/unlock_user/")
-def command__unlock_user(rlc_user: OrgUser, data: schemas.InputUnlockOrgUser):
-    unlock_user(rlc_user, data.id)
