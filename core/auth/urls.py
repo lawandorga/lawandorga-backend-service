@@ -5,9 +5,7 @@ from django.urls import URLPattern, URLResolver, include, path
 from . import api, views
 
 urlpatterns: list[Union[URLPattern, URLResolver]] = [
-    path("api/logout/", api.command__logout),
     path("api/rlc_users/", include(api.rlc_user_router.urls)),
-    path("api/users/", include(api.users_router.urls)),
     path("api/statistics_users/", include(api.statistics_user_router.urls)),
     path("api/matrix_users/", include(api.matrix_user_router.urls)),
     path("api/keys/", include(api.keys_router.urls)),

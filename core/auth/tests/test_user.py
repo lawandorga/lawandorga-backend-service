@@ -70,10 +70,10 @@ def test_everybody_can_hit_login(client):
 
 
 def test_logout_with_not_logged_in(client):
-    response = client.post("/api/logout/")
-    assert response.status_code == 200
+    response = client.post("/auth/user/logout/")
+    assert response.status_code == 302
 
 
 def test_logout(auth_client):
-    response = auth_client.post("/api/logout/")
-    assert response.status_code == 200
+    response = auth_client.post("/auth/user/logout/")
+    assert response.status_code == 302

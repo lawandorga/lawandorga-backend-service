@@ -19,7 +19,7 @@ class EmailConfirmationTokenGenerator:
             self._num_seconds(self._now()),
         )
 
-    def check_token(self, user, token):
+    def check_token(self, user: "OrgUser", token: str):
         """
         Check that a password reset token is correct for a given user.
         """

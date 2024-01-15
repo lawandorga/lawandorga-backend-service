@@ -1,13 +1,14 @@
-import json
-
 import pytest
 from django.conf import settings
 from django.test import Client
 
+from core.auth.use_cases.rlc_user import delete_user
+from core.auth.use_cases.user import change_password_of_user
 from core.folders.domain.value_objects.asymmetric_key import EncryptedAsymmetricKey
 from core.models import OrgUser, UserProfile
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS
 from core.seedwork import test_helpers
+from core.seedwork.use_case_layer import UseCaseError
 
 
 @pytest.fixture
@@ -23,12 +24,6 @@ def test_email_confirmation_token_works(db, rlc_user):
     url = "/api/rlc_users/{}/confirm_email/{}/".format(rlc_user["rlc_user"].id, token)
     response = c.post(url)
     assert 200 == response.status_code
-
-
-def test_not_everybody_can_hit_destroy(db):
-    client = Client()
-    response = client.delete("/api/rlc_users/1/")
-    assert 401 == response.status_code
 
 
 def test_everybody_can_hit_email_confirm(db):
@@ -50,8 +45,8 @@ def test_user_can_not_delete_someone_else(db, rlc_user):
     another_user = test_helpers.create_org_user(
         email="test122@law-orga.de", rlc=user.org
     )["rlc_user"]
-    response = client.delete("/api/rlc_users/{}/".format(another_user.pk))
-    assert response.status_code == 400
+    with pytest.raises(UseCaseError):
+        delete_user(user, another_user.pk)
 
 
 def test_unlock_works(db, rlc_user):
@@ -77,12 +72,7 @@ def test_change_password_works(db, rlc_user):
         "new_password": "pass1234!",
         "new_password_confirm": "pass1234!",
     }
-    response = client.post(
-        "/api/users/change_password/",
-        data=json.dumps(data),
-        content_type="application/json",
-    )
-    assert response.status_code == 200
+    change_password_of_user(user.user, **data)
     rlc_user = OrgUser.objects.get(pk=user.pk)
     user_key = rlc_user.get_decrypted_key_from_password("pass1234!")
     assert private_key == user_key.key.get_private_key().decode("utf-8")
@@ -98,8 +88,7 @@ def test_delete_works(db, rlc_user):
     )["rlc_user"]
     rlc_users = OrgUser.objects.count()
     user_profiles = UserProfile.objects.count()
-    response = client.delete("/api/rlc_users/{}/".format(another_user.pk))
-    assert response.status_code == 200
+    delete_user(user, another_user.pk)
     assert OrgUser.objects.count() == rlc_users - 1
     assert UserProfile.objects.count() == user_profiles - 1
 

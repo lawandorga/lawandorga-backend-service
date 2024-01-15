@@ -56,7 +56,7 @@ class KeyOfUser(TypedDict):
 
 
 class EmailTokenValidator(Protocol):
-    def check_token(self, rlc_user: "OrgUser", token: str) -> bool:
+    def check_token(self, user: "OrgUser", token: str) -> bool:
         ...
 
 

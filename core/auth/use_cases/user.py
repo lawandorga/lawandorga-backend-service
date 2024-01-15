@@ -1,6 +1,7 @@
 from typing import Optional
 
 from django.contrib.auth.password_validation import validate_password
+from django.core import exceptions
 from django.db import transaction
 
 from core.auth.domain.user_key import UserKey
@@ -54,9 +55,18 @@ def run_user_login_checks(__actor: UserProfile, password: str):
 
 @use_case
 def change_password_of_user(
-    __actor: UserProfile, current_password: str, new_password: str
+    __actor: UserProfile,
+    current_password: str,
+    new_password: str,
+    new_password_confirm: str,
 ):
-    validate_password(new_password)
+    if not new_password == new_password_confirm:
+        raise UseCaseError("The new passwords do not match.")
+
+    try:
+        validate_password(new_password)
+    except exceptions.ValidationError as e:
+        raise UseCaseError(e.messages[0])
 
     if not __actor.check_password(current_password):
         raise UseCaseError("Your current password is not correct.")

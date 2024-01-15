@@ -1,3 +1,4 @@
+from core.auth.usecases import USECASES as AUTH_USECASES
 from core.collab.usecases import USECASES as COLLAB_USECASES
 from core.data_sheets.commands import COMMANDS as DATA_SHEET_COMMANDS
 from core.folders.commands import COMMANDS as FOLDER_COMMANDS
@@ -14,3 +15,4 @@ USECASES.update(ORG_COMMANDS)
 USECASES.update(FOLDER_COMMANDS)
 USECASES.update(COLLAB_USECASES)
 USECASES.update(LEGAL_USECASES)
+USECASES.update(AUTH_USECASES)

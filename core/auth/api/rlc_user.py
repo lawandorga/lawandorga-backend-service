@@ -4,7 +4,7 @@ from django.db.models import Q
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
-from core.auth.use_cases.rlc_user import confirm_email, delete_user, unlock_user
+from core.auth.use_cases.rlc_user import confirm_email, unlock_user
 from core.permissions.models import HasPermission, Permission
 from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_PERMISSIONS,
@@ -15,11 +15,6 @@ from core.seedwork.api_layer import ApiError, Router
 from . import schemas
 
 router = Router()
-
-
-@router.delete(url="<int:id>/")
-def command__delete_user(rlc_user: OrgUser, data: schemas.InputRlcUserDelete):
-    delete_user(rlc_user, data.id)
 
 
 @router.post(url="<int:id>/confirm_email/<str:token>/")

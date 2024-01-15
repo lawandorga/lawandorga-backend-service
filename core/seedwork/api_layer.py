@@ -107,8 +107,8 @@ class ApiError(Exception):
         self.detail: None | str = detail if detail else None
 
 
-def _validate(request: HttpRequest, schema: Type[BaseModel]) -> BaseModel:
-    data: Dict[str, Any] = {}
+def get_data_from_request(request: HttpRequest) -> dict[str, Any]:
+    data: dict[str, Any] = {}
     # query params
     get_dict = request.GET.dict()
     data.update(get_dict)
@@ -129,11 +129,16 @@ def _validate(request: HttpRequest, schema: Type[BaseModel]) -> BaseModel:
         data.update(body_dict)
     except (JSONDecodeError, RawPostDataException):
         data.update(request.POST.dict())
-    # validate
+    # return
+    return data
+
+
+def _validate(request: HttpRequest, schema: Type[BaseModel]) -> BaseModel:
+    data = get_data_from_request(request)
     return schema(root=data)
 
 
-def _catch_error(func: Callable[..., JsonResponse | FileResponse]):
+def catch_error(func: Callable[..., JsonResponse | FileResponse]):
     def catch(*args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -179,6 +184,17 @@ def _catch_error(func: Callable[..., JsonResponse | FileResponse]):
     return catch
 
 
+def get_return_type_of_function(func: Callable[..., Any]) -> Any:
+    s = inspect.signature(func)
+    if s.return_annotation == inspect.Parameter.empty:
+        raise TypeError(
+            "The function '{}' is missing a return type annotation.".format(
+                func.__code__.co_name
+            )
+        )
+    return s.return_annotation
+
+
 InjectT = TypeVar("InjectT", bound=Any)
 InjectorF = Callable[[HttpRequest], InjectT]
 
@@ -199,18 +215,11 @@ class Router:
             )
 
     @classmethod
-    def __get_injectors_by_return_type(cls) -> dict[InjectT, InjectorF]:
-        ret: dict[InjectT, InjectorF] = {}
+    def __get_injectors_by_return_type(cls):
+        ret = {}
         for injector in cls._injectors:
-            s = inspect.signature(injector)
-            if s.return_annotation == inspect.Parameter.empty:
-                injector_name = injector.__code__.co_name
-                api_logger.error(
-                    "Api injector '{}' is missing a return type annotation.".format(
-                        injector_name
-                    )
-                )
-            ret[s.return_annotation] = injector
+            return_annotation = get_return_type_of_function(injector)
+            ret[return_annotation] = injector
         return ret
 
     @staticmethod
@@ -319,7 +328,7 @@ class Router:
             # default
             return JsonResponse({})
 
-        return _catch_error(wrapper)
+        return catch_error(wrapper)
 
     def get(
         self,
