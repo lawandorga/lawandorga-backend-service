@@ -14,7 +14,6 @@ from core.folders.use_cases.finders import (
     rlc_user_from_uuid,
 )
 from core.permissions.static import PERMISSION_FOLDERS_TOGGLE_INHERITANCE
-from core.seedwork.api_layer import ApiError
 from core.seedwork.message_layer import MessageBusActor
 from core.seedwork.use_case_layer import UseCaseError, check_permissions, use_case
 
@@ -79,7 +78,7 @@ def grant_access(__actor: OrgUser, to_uuid: UUID, folder_uuid: UUID):
     folder = folder_from_uuid(__actor, folder_uuid)
 
     if not folder.has_access(__actor):
-        raise ApiError("You need access to this folder in order to do that.")
+        raise UseCaseError("You need access to this folder in order to do that.")
 
     r = get_repository()
     folder.grant_access(to=to, by=__actor)
@@ -92,7 +91,7 @@ def grant_access_to_group(__actor: OrgUser, group_uuid: UUID, folder_uuid: UUID)
     folder = folder_from_uuid(__actor, folder_uuid)
 
     if not folder.has_access(__actor):
-        raise ApiError("You need access to this folder in order to do that.")
+        raise UseCaseError("You need access to this folder in order to do that.")
 
     r = get_repository()
     folder.grant_access_to_group(group=to, by=__actor)
@@ -105,7 +104,7 @@ def revoke_access_from_group(__actor: OrgUser, group_uuid: UUID, folder_uuid: UU
     folder = folder_from_uuid(__actor, folder_uuid)
 
     if not folder.has_access(__actor):
-        raise ApiError("You need access to this folder in order to do that.")
+        raise UseCaseError("You need access to this folder in order to do that.")
 
     r = get_repository()
     folder.revoke_access_from_group(of=group)
@@ -118,7 +117,7 @@ def revoke_access(__actor: OrgUser, of_uuid: UUID, folder_uuid: UUID):
     folder = folder_from_uuid(__actor, folder_uuid)
 
     if not folder.has_access(__actor):
-        raise ApiError("You need access to this folder in order to do that.")
+        raise UseCaseError("You need access to this folder in order to do that.")
 
     r = get_repository()
     folder.revoke_access(of=of)
