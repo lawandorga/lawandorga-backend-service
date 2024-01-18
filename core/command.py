@@ -71,7 +71,16 @@ def django_command(request: HttpRequest) -> HttpResponse:
     a = p.annotation
     if a not in INJECTORS_BY_RETURN_TYPE:
         raise ValueError(f"__actor type {a} is not supported for {fn}")
-    actor = INJECTORS_BY_RETURN_TYPE[a](request)
+    try:
+        actor = INJECTORS_BY_RETURN_TYPE[a](request)
+    except ApiError as e:
+        return ErrorResponse(
+            param_errors=e.param_errors,
+            title=e.title,
+            detail=e.message,
+            status=e.status,
+            err_type="ApiError",
+        )
 
     try:
         validate_call(config={"arbitrary_types_allowed": True})(fn)(actor, **data)
