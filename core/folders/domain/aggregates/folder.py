@@ -285,14 +285,17 @@ class Folder:
             return None
 
         enc_parent_key = self.__enc_parent_key
-        if self.__parent is not None and enc_parent_key:
-            unlock_key = self.__parent.get_encryption_key(requestor=requestor)
-            parent_key = enc_parent_key.decrypt_self(unlock_key)
-            key = parent_key.key
-            assert isinstance(key, SymmetricKey)
-            return key
+        if self.__parent is None or not enc_parent_key:
+            return None
 
-        return None
+        unlock_key = self.__parent._get_encryption_key(requestor=requestor)
+        if unlock_key is None:
+            return None
+
+        parent_key = enc_parent_key.decrypt_self(unlock_key)
+        key = parent_key.key
+        assert isinstance(key, SymmetricKey)
+        return key
 
     def __get_encryption_key_from_group(
         self, requestor: "OrgUser"
@@ -311,9 +314,7 @@ class Folder:
                     return symmetric_key
         return None
 
-    def get_encryption_key(self, requestor: "OrgUser") -> "SymmetricKey":
-        assert len(self.__keys) or self.enc_parent_key is not None
-
+    def _get_encryption_key(self, requestor: "OrgUser") -> Optional["SymmetricKey"]:
         key = self.__get_encryption_key_from_user_keys(requestor)
         if key:
             return key
@@ -323,6 +324,15 @@ class Folder:
             return key
 
         key = self.__get_encryption_key_from_group(requestor)
+        if key:
+            return key
+
+        return None
+
+    def get_encryption_key(self, requestor: "OrgUser") -> "SymmetricKey":
+        assert len(self.__keys) or self.enc_parent_key is not None
+
+        key = self._get_encryption_key(requestor)
         if key:
             return key
 
