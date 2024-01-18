@@ -76,6 +76,9 @@ def django_command(request: HttpRequest) -> HttpResponse:
     try:
         validate_call(config={"arbitrary_types_allowed": True})(fn)(actor, **data)
 
+    except ValidationError as e:
+        return ApiValidationError(e).to_error_response()
+
     except UseCaseInputError as e:
         return ErrorResponse(
             title=e.message,
