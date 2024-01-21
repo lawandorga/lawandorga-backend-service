@@ -22,6 +22,6 @@ def delete_key(__actor: OrgUser, key_id: int):
 
 
 @use_case
-def test_keys(__actor: OrgUser):
+def check_keys(__actor: OrgUser):
     private_key_user = __actor.get_private_key()
     __actor.user.test_all_keys(private_key_user)

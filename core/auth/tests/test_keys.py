@@ -1,5 +1,5 @@
 from django.test import Client, TestCase
-from core.auth.use_cases.keys import test_keys
+from core.auth.use_cases.keys import check_keys
 
 from core.data_sheets.models import DataSheetTemplate
 from core.models import Org, OrgEncryption
@@ -60,4 +60,4 @@ class TestUserKeys(TestCase):
         c.get("/api/keys/")
 
     def test_keys_test(self):
-        test_keys(self.user_1["rlc_user"])
+        check_keys(self.user_1["rlc_user"])
