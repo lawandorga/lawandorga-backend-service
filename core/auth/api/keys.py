@@ -1,41 +1,22 @@
-from typing import List
+from typing import Literal
 
-from core.auth.api.schemas import InputKeyDelete, OutputKey
+from pydantic import BaseModel, ConfigDict
+
 from core.auth.models import OrgUser
-from core.data_sheets.models import DataSheetEncryptionNew
-from core.seedwork.api_layer import ApiError, Router
+from core.seedwork.api_layer import Router
 
 router = Router()
 
 
-# list keys
-@router.api(output_schema=List[OutputKey])
+class OutputKey(BaseModel):
+    id: int
+    correct: bool
+    source: Literal["RECORD", "ORG", "FOLDER", "USER"]
+    information: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+@router.get(output_schema=list[OutputKey])
 def list_keys(rlc_user: OrgUser):
     return rlc_user.keys
-
-
-# test keys
-@router.post(url="test/", output_schema=List[OutputKey])
-def command__test_keys(rlc_user: OrgUser):
-    private_key_user = rlc_user.get_private_key()
-    rlc_user.user.test_all_keys(private_key_user)
-    return rlc_user.keys
-
-
-# delete key
-@router.delete(url="<int:id>/")
-def delete_key(data: InputKeyDelete, rlc_user: OrgUser):
-    key = DataSheetEncryptionNew.objects.filter(user=rlc_user, pk=data.id).first()
-    if key is None:
-        raise ApiError(
-            "The key you want to delete does not exist.",
-        )
-    if key.record.encryptions.filter(correct=True).count() <= 1:
-        raise ApiError(
-            "Not enough people have access to this record. "
-            "There needs to be at least one person who must "
-            "have access. You can not delete this key.",
-        )
-    if key.correct:
-        raise ApiError("You can not delete a key that works.")
-    key.delete()

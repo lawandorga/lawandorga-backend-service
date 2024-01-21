@@ -1,10 +1,8 @@
 from datetime import datetime
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError
-from pydantic import BaseModel, ConfigDict, FieldValidationInfo, field_validator
+from pydantic import BaseModel, ConfigDict
 
 
 class OutputOrg(BaseModel):
@@ -85,48 +83,6 @@ class OutputRegisterPage(BaseModel):
 class InputConfirmEmail(BaseModel):
     id: int
     token: str
-
-
-class InputRlcUserDelete(BaseModel):
-    id: int
-
-
-class InputPasswordChange(BaseModel):
-    current_password: str
-    new_password: str
-    new_password_confirm: str
-
-    @field_validator("new_password")
-    def field_validate_password(cls, v):
-        try:
-            validate_password(v)
-        except ValidationError as e:
-            error = " ".join([str(e) for e in e])
-            raise ValueError(error)
-        return v
-
-    @field_validator("new_password_confirm")
-    def field_validate_passwords(cls, v, info: FieldValidationInfo):
-        if "new_password" in info.data and v != info.data["new_password"]:
-            raise ValueError("The two passwords do not match.")
-        return v
-
-
-class OutputKey(BaseModel):
-    id: int
-    correct: bool
-    source: Literal["RECORD", "ORG", "FOLDER", "USER"]
-    information: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class InputKeyDelete(BaseModel):
-    id: int
-
-
-class InputUnlockOrgUser(BaseModel):
-    id: int
 
 
 class Link(BaseModel):
