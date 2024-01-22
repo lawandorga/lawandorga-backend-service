@@ -1,4 +1,5 @@
 from smtplib import SMTPRecipientsRefused
+from typing import Any
 
 from django.db import transaction
 
@@ -106,3 +107,65 @@ def unlock_myself(__actor: OrgUser):
         )
     __actor.locked = False
     __actor.save()
+
+
+@use_case
+def update_user_data(__actor: OrgUser, other_user_id: int, data: dict[str, Any]):
+    if __actor.pk != other_user_id and not __actor.has_permission(
+        PERMISSION_ADMIN_MANAGE_USERS
+    ):
+        error = "You need the permission {} to do this.".format(
+            PERMISSION_ADMIN_MANAGE_USERS
+        )
+        raise UseCaseError(error)
+
+    rlc_user_to_update = OrgUser.objects.filter(id=other_user_id).first()
+    if rlc_user_to_update is None:
+        raise UseCaseError(
+            "The user to be updated could not be found.",
+        )
+
+    if rlc_user_to_update.org != __actor.org:
+        raise UseCaseError(
+            "The user to be updated could not be found.",
+        )
+
+    name = data.pop("name")
+    rlc_user_to_update.update_information(**data)
+    rlc_user_to_update.save()
+    if name:
+        rlc_user_to_update.user.name = name
+        rlc_user_to_update.user.save()
+
+    return rlc_user_to_update
+
+
+@use_case
+def update_frontend_settings(__actor: OrgUser, data: dict[str, Any]):
+    __actor.set_frontend_settings(data)
+
+
+@use_case
+def activate_rlc_user(__actor: OrgUser, other_user_id: int):
+    rlc_user_to_update = OrgUser.objects.filter(id=other_user_id).first()
+    if rlc_user_to_update is None:
+        raise UseCaseError(
+            "The user to be activated could not be found.",
+        )
+
+    if not __actor.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
+        raise UseCaseError(
+            "You need the permission '{}' to do this.".format(
+                PERMISSION_ADMIN_MANAGE_USERS
+            ),
+        )
+
+    if __actor.id == rlc_user_to_update.id:
+        raise UseCaseError(
+            "You can not activate or deactivate yourself.",
+        )
+
+    rlc_user_to_update.activate_or_deactivate()
+    rlc_user_to_update.save()
+
+    return rlc_user_to_update

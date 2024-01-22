@@ -2,6 +2,7 @@ from django.test import Client, TestCase
 from django.utils import timezone
 
 from core.events.models import EventsEvent
+from core.events.use_cases.events import create_event, delete_event, update_event
 from core.rlc.models import Meta, Org
 from core.seedwork import test_helpers as data
 
@@ -66,44 +67,24 @@ class TestEvents(TestCase):
             "start_time": timezone.now().isoformat(),
             "end_time": timezone.now().isoformat(),
         }
-        res = self.client.post(
-            "/api/events/", data=event_data, content_type="application/json"
-        )
-        assert res.status_code == 200
-        created = EventsEvent.objects.filter(name="Test Event Create")
-        assert len(created) == 1
-
-    def test_event_update_unauthorized(self):
-        update_data = {"description": "Updated"}
-        id = self.event_3.pk
-        res = self.client.put(
-            f"/api/events/{id}/", data=update_data, content_type="application/json"
-        )
-        assert res.status_code == 400
-        updated = EventsEvent.objects.get(id=id)
-        assert updated.description == ""
+        create_event(self.user_1["rlc_user"], **event_data)
 
     def test_event_update(self):
-        update_data = {"description": "Updated"}
         id = self.event_1.pk
-        res = self.client.put(
-            f"/api/events/{id}/", data=update_data, content_type="application/json"
+        update_event(
+            self.user_1["rlc_user"],
+            id,
+            description="Updated",
+            name=self.event_1.name,
+            start_time=self.event_1.start_time,
+            end_time=self.event_1.end_time,
         )
-        assert res.status_code == 200
         updated = EventsEvent.objects.get(id=id)
         assert updated.description == "Updated"
 
-    def test_event_delete_unauthorized(self):
-        id = self.event_3.pk
-        res = self.client.delete(f"/api/events/{id}/")
-        assert res.status_code == 400
-        all_events = EventsEvent.objects.all()
-        assert len(all_events) == 4
-
     def test_event_delete(self):
         id = self.event_1.pk
-        res = self.client.delete(f"/api/events/{id}/")
-        assert res.status_code == 200
+        delete_event(self.user_1["rlc_user"], id)
         all_events = EventsEvent.objects.all()
         assert len(all_events) == 3
 

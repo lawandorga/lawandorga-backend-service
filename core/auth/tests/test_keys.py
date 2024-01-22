@@ -1,6 +1,6 @@
 from django.test import Client, TestCase
-from core.auth.use_cases.keys import check_keys
 
+from core.auth.use_cases.keys import check_keys
 from core.data_sheets.models import DataSheetTemplate
 from core.models import Org, OrgEncryption
 from core.seedwork import test_helpers as data

@@ -1,29 +1,48 @@
+from datetime import datetime
 from typing import Any, List, Optional
+from uuid import UUID
 
 from django.db.models import Q
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
 from core.auth.use_cases.rlc_user import confirm_email
-from core.permissions.models import HasPermission, Permission
+from core.permissions.models import HasPermission
 from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_PERMISSIONS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
 from core.seedwork.api_layer import ApiError, Router
 
-from . import schemas
-
 router = Router()
 
 
+class InputConfirmEmail(BaseModel):
+    id: int
+    token: str
+
+
 @router.post(url="<int:id>/confirm_email/<str:token>/")
-def command__confirm_email(data: schemas.InputConfirmEmail):
+def command__confirm_email(data: InputConfirmEmail):
     confirm_email(None, data.id, data.token)
 
 
-# list
-@router.get(output_schema=List[schemas.OutputRlcUserSmall])
+class OutputRlcUserSmall(BaseModel):
+    id: int
+    user_id: int
+    phone_number: Optional[str]
+    name: str
+    email: str
+    accepted: bool
+    email_confirmed: bool
+    locked: bool
+    is_active: bool
+    last_login_month: Optional[str]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+@router.get(output_schema=list[OutputRlcUserSmall])
 def list_rlc_users(rlc_user: OrgUser):
     rlc_users = OrgUser.objects.filter(org=rlc_user.org)
     rlc_users_list = list(rlc_users)
@@ -42,16 +61,44 @@ class OutputPermission(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class OutputRlcUserOptional(BaseModel):
+    id: int
+    user_id: int
+    birthday: Optional[Any] = None
+    phone_number: Optional[str] = None
+    street: Optional[str] = None
+    city: Optional[str] = None
+    postal_code: Optional[str] = None
+    locked: Optional[bool] = None
+    locked_legal: Optional[bool] = None
+    email_confirmed: Optional[bool] = None
+    is_active: Optional[bool] = None
+    accepted: Optional[bool] = None
+    updated: Optional[datetime] = None
+    note: Optional[str] = None
+    name: Optional[str] = None
+    email: Optional[str] = None
+    created: Optional[datetime] = None
+    speciality_of_study: Optional[str] = None
+    speciality_of_study_display: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class OutputUser(BaseModel):
-    user: schemas.OutputRlcUserOptional
+    user: OutputRlcUserOptional
     permissions: Optional[list[OutputPermission]]
+
+
+class InputRlcUserGet(BaseModel):
+    id: int
 
 
 @router.get(
     url="<int:id>/",
     output_schema=OutputUser,
 )
-def retrieve(data: schemas.InputRlcUserGet, rlc_user: OrgUser):
+def retrieve(data: InputRlcUserGet, rlc_user: OrgUser):
     found_rlc_user = OrgUser.objects.filter(id=data.id).first()
     if found_rlc_user is None:
         raise ApiError("The user could not be found.")
@@ -62,7 +109,7 @@ def retrieve(data: schemas.InputRlcUserGet, rlc_user: OrgUser):
     if found_rlc_user.id != rlc_user.id and not rlc_user.has_permission(
         PERMISSION_ADMIN_MANAGE_USERS
     ):
-        found_rlc_user_ret: Any = schemas.OutputRlcUserSmall.model_validate(
+        found_rlc_user_ret: Any = OutputRlcUserSmall.model_validate(
             found_rlc_user
         ).model_dump()
     else:
@@ -84,44 +131,64 @@ def retrieve(data: schemas.InputRlcUserGet, rlc_user: OrgUser):
     return {"user": found_rlc_user_ret, "permissions": permissions}
 
 
-# activate user
-@router.put(
-    url="<int:id>/activate/",
-    output_schema=schemas.OutputRlcUserSmall,
-)
-def activate_rlc_user(data: schemas.InputRlcUserActivate, rlc_user: OrgUser):
-    rlc_user_to_update = OrgUser.objects.filter(id=data.id).first()
-    if rlc_user_to_update is None:
-        raise ApiError(
-            "The user to be activated could not be found.",
-        )
+class OutputRlcUser(BaseModel):
+    id: int
+    user_id: int
+    birthday: Optional[Any]
+    phone_number: Optional[str]
+    street: Optional[str]
+    city: Optional[str]
+    postal_code: Optional[str]
+    locked: bool
+    locked_legal: bool
+    email_confirmed: bool
+    is_active: bool
+    accepted: bool
+    updated: datetime
+    note: Optional[str]
+    name: str
+    email: str
+    created: datetime
+    speciality_of_study: Optional[str]
+    speciality_of_study_display: Optional[str]
 
-    if not rlc_user.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
-        raise ApiError(
-            "You need the permission '{}' to do this.".format(
-                PERMISSION_ADMIN_MANAGE_USERS
-            ),
-        )
-
-    if rlc_user.id == rlc_user_to_update.id:
-        raise ApiError(
-            "You can not activate or deactivate yourself.",
-        )
-
-    rlc_user_to_update.activate_or_deactivate()
-    rlc_user_to_update.save()
-
-    return rlc_user_to_update
+    model_config = ConfigDict(from_attributes=True)
 
 
-# update settings
-@router.put(url="settings_self/")
-def update_settings(data: dict[str, Any], rlc_user: OrgUser):
-    rlc_user.set_frontend_settings(data)
+class Link(BaseModel):
+    id: UUID
+    name: str
+    link: str
+    order: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
-# get data
-@router.get(url="data_self/", output_schema=schemas.OutputRlcUserData)
+class Rlc(BaseModel):
+    id: int
+    name: str
+    links: list[Link]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class Badges(BaseModel):
+    profiles: int
+    record_deletion_requests: int
+    record_permit_requests: int
+    legal: int
+    record: int
+
+
+class OutputRlcUserData(BaseModel):
+    user: OutputRlcUser
+    rlc: Rlc
+    badges: Badges
+    permissions: List[str]
+    settings: Optional[dict[str, Any]]
+
+
+@router.get(url="data_self/", output_schema=OutputRlcUserData)
 def query__data(rlc_user: OrgUser):
     data = {
         "user": rlc_user,
@@ -131,71 +198,3 @@ def query__data(rlc_user: OrgUser):
         "settings": rlc_user.frontend_settings,
     }
     return data
-
-
-# update user
-@router.put(
-    url="<int:id>/update_information/",
-    output_schema=schemas.OutputRlcUser,
-)
-def update_user(data: schemas.InputRlcUserUpdate, rlc_user: OrgUser):
-    if rlc_user.pk != data.id and not rlc_user.has_permission(
-        PERMISSION_ADMIN_MANAGE_USERS
-    ):
-        error = "You need the permission {} to do this.".format(
-            PERMISSION_ADMIN_MANAGE_USERS
-        )
-        raise ApiError(error)
-
-    rlc_user_to_update = OrgUser.objects.filter(id=data.id).first()
-    if rlc_user_to_update is None:
-        raise ApiError(
-            "The user to be updated could not be found.",
-        )
-
-    if rlc_user_to_update.org != rlc_user.org:
-        raise ApiError(
-            "The user to be updated could not be found.",
-        )
-
-    update_data = data.model_dump()
-    update_data.pop("id")
-    update_data.pop("name")
-    rlc_user_to_update.update_information(**update_data)
-    rlc_user_to_update.save()
-    if data.name:
-        rlc_user_to_update.user.name = data.name
-        rlc_user_to_update.user.save()
-
-    return rlc_user_to_update
-
-
-# grant permission
-@router.post(url="<int:id>/grant_permission/")
-def grant_permission(data: schemas.InputRlcUserGrantPermission, rlc_user: OrgUser):
-    rlc_user_to_grant: Optional[OrgUser] = OrgUser.objects.filter(
-        id=data.id, org=rlc_user.org
-    ).first()
-
-    if rlc_user_to_grant is None:
-        raise ApiError(
-            "The user you tried to update could not be found.",
-        )
-
-    if not rlc_user.has_permission(PERMISSION_ADMIN_MANAGE_PERMISSIONS):
-        raise ApiError(
-            "You need the permission '{}' to do this.".format(
-                PERMISSION_ADMIN_MANAGE_PERMISSIONS
-            ),
-        )
-
-    permission = Permission.objects.filter(id=data.permission).first()
-    if permission is None:
-        raise ApiError(
-            "The permission you tried to grant could not be found.",
-        )
-
-    if rlc_user_to_grant.has_permission(permission):
-        raise ApiError("The user already has this permission.")
-
-    rlc_user_to_grant.grant(permission=permission)

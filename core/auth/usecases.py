@@ -1,6 +1,13 @@
-from core.auth.use_cases.keys import delete_key, check_keys
+from core.auth.use_cases.keys import check_keys, delete_key
 from core.auth.use_cases.matrix_user import create_matrix_user
-from core.auth.use_cases.rlc_user import delete_user, unlock_myself, unlock_user
+from core.auth.use_cases.rlc_user import (
+    activate_rlc_user,
+    delete_user,
+    unlock_myself,
+    unlock_user,
+    update_frontend_settings,
+    update_user_data,
+)
 from core.auth.use_cases.user import change_password_of_user
 
 USECASES = {
@@ -15,4 +22,7 @@ USECASES = {
     "auth/unlock_myself": unlock_myself,
     "auth/delete_key": delete_key,
     "auth/test_keys": check_keys,
+    "auth/update_frontend_settings": update_frontend_settings,
+    "auth/activate_user": activate_rlc_user,
+    "auth/update_user_data": update_user_data,
 }

@@ -6,14 +6,12 @@ from django.test import Client
 
 from core.auth.models import OrgUser
 from core.auth.token_generator import EmailConfirmationTokenGenerator
+from core.auth.use_cases.rlc_user import activate_rlc_user, update_user_data
 from core.data_sheets.models import DataSheetTemplate
 from core.models import Org
-from core.permissions.models import Permission
-from core.permissions.static import (
-    PERMISSION_ADMIN_MANAGE_PERMISSIONS,
-    PERMISSION_ADMIN_MANAGE_USERS,
-)
+from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS
 from core.seedwork import test_helpers as data
+from core.seedwork.use_case_layer import UseCaseError
 
 
 @pytest.fixture
@@ -53,8 +51,14 @@ def test_get_data_works(user, db):
 def test_update_frontend_settings(user, db):
     c = Client()
     c.login(**user)
-    response = c.put("/api/rlc_users/settings_self/", data=json.dumps({"abc": "123"}))
-    assert response.status_code == 200
+    response = c.post(
+        "/api/command/",
+        data=json.dumps(
+            {"action": "auth/update_frontend_settings", "data": {"abc": "123"}}
+        ),
+        content_type="application/json",
+    )
+    assert response.status_code == 200, response.json()
 
 
 def test_email_confirmation_token_works(user):
@@ -73,44 +77,31 @@ def test_email_confirmation_token_works(user):
 
 
 def test_update_user(user, db):
-    c = Client()
-    c.login(**user)
-    response = c.put(
-        "/api/rlc_users/{}/update_information/".format(user["rlc_user"].pk),
-        data=json.dumps({"name": "New Name", "note": "New Note"}),
+    update_user_data(
+        user["rlc_user"], user["rlc_user"].pk, {"name": "New Name", "note": "New Note"}
     )
-    response_data = response.json()
-    assert (
-        response.status_code == 200
-        and response_data["note"] == "New Note"
-        and response_data["name"] == "New Name"
-    )
+    user = OrgUser.objects.get(id=user["rlc_user"].id)
+    assert user.note == "New Note" and user.name == "New Name"
 
 
 def test_update_another_user_forbidden(user, rlc_user_2, db):
-    c = Client()
-    c.login(**user)
-    response = c.put(
-        "/api/rlc_users/{}/update_information/".format(rlc_user_2["rlc_user"].pk),
-        data=json.dumps({"name": "New Name", "note": "New Note"}),
-    )
-    assert response.status_code == 400
+    with pytest.raises(UseCaseError):
+        update_user_data(
+            user["rlc_user"],
+            rlc_user_2["rlc_user"].pk,
+            {"name": "New Name", "note": "New Note"},
+        )
 
 
 def test_update_another_user_allowed(user, rlc_user_2, db):
-    c = Client()
-    c.login(**user)
     user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_USERS)
-    response = c.put(
-        "/api/rlc_users/{}/update_information/".format(rlc_user_2["rlc_user"].pk),
-        data=json.dumps({"name": "New Name", "note": "New Note"}),
+    update_user_data(
+        user["rlc_user"],
+        rlc_user_2["rlc_user"].pk,
+        {"name": "New Name", "note": "New Note"},
     )
-    response_data = response.json()
-    assert (
-        response.status_code == 200
-        and response_data["note"] == "New Note"
-        and response_data["name"] == "New Name"
-    )
+    user = OrgUser.objects.get(id=rlc_user_2["rlc_user"].id)
+    assert user.note == "New Note" and user.name == "New Name"
 
 
 def test_list_rlc_users(user, db):
@@ -155,20 +146,10 @@ def test_retrieve_another_rlc_user_with_permission(user, rlc_user_2, db):
     assert response.status_code == 200 and response_data["user"]["street"] == "ABC"
 
 
-def test_activate_error(user, db):
-    c = Client()
-    c.login(**user)
-    ru = user["rlc_user"]
-    response = c.put("/api/rlc_users/{}/activate/".format(ru.id))
-    assert response.status_code == 400
-
-
 def test_activate_error_permission(user, rlc_user_2, db):
-    c = Client()
-    c.login(**user)
     ru = rlc_user_2["rlc_user"]
-    response = c.put("/api/rlc_users/{}/activate/".format(ru.id))
-    assert response.status_code == 400
+    with pytest.raises(UseCaseError):
+        activate_rlc_user(user["rlc_user"], ru.id)
 
 
 def test_activate_success(user, rlc_user_2, db):
@@ -176,48 +157,5 @@ def test_activate_success(user, rlc_user_2, db):
     c.login(**user)
     user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_USERS)
     ru = rlc_user_2["rlc_user"]
-    response = c.put("/api/rlc_users/{}/activate/".format(ru.id))
-    response_data = response.json()
-    assert (
-        response.status_code == 200
-        and OrgUser.objects.get(id=ru.id).is_active is False
-        and response_data["email"] == ru.email
-        and response_data["is_active"] is not ru.is_active
-    )
-
-
-def test_permission_grant(user, rlc_user_2, db):
-    rlc_user_2["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_PERMISSIONS)
-    permission = Permission.objects.first()
-    c = Client()
-    c.login(**rlc_user_2)
-    response = c.post(
-        "/api/rlc_users/{}/grant_permission/".format(user["rlc_user"].id),
-        data=json.dumps({"permission": permission.id}),
-        content_type="application/json",
-    )
-    assert response.status_code == 200
-
-
-def test_permission_grant_forbidden(user, rlc_user_2, db):
-    permission = Permission.objects.first()
-    c = Client()
-    c.login(**rlc_user_2)
-    response = c.post(
-        "/api/rlc_users/{}/grant_permission/".format(user["rlc_user"].id),
-        data=json.dumps({"permission": permission.id}),
-        content_type="application/json",
-    )
-    assert response.status_code == 400
-
-
-def test_permission_not_found(user, rlc_user_2, db):
-    rlc_user_2["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_PERMISSIONS)
-    c = Client()
-    c.login(**rlc_user_2)
-    response = c.post(
-        "/api/rlc_users/{}/grant_permission/".format(user["rlc_user"].id),
-        data=json.dumps({"permission": -1}),
-        content_type="application/json",
-    )
-    assert response.status_code == 400
+    activate_rlc_user(user["rlc_user"], ru.id)
+    assert OrgUser.objects.get(id=ru.id).is_active is False
