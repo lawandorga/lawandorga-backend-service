@@ -18,8 +18,8 @@ This project uses Django, which is based on python.
 
 ### Local Setup
 
-1. `git clone https://github.com/lawandorga/law-orga-apps.git`
-2. `cd law-orga-backend/`
+1. `git clone https://github.com/lawandorga/lawandorga-backend-service.git`
+2. `cd lawandorga-backend-service`
 3. `pipenv install`
 4. Create `tmp/media/`, `tmp/static/`, `tmp/logs`
 5. Run `pipenv shell`
