@@ -587,7 +587,7 @@ class OrgUser(Aggregate, models.Model):
             self.__get_as_user_permissions() + self.__get_as_group_member_permissions()
         )
 
-    def set_frontend_settings(self, data: Dict[str, Any]):
+    def set_frontend_settings(self, data: dict[str, Any]):
         self.frontend_settings = data
         self.save(update_fields=["frontend_settings"])
 
