@@ -2,6 +2,7 @@ from core.auth.usecases import USECASES as AUTH_USECASES
 from core.collab.usecases import USECASES as COLLAB_USECASES
 from core.data_sheets.commands import COMMANDS as DATA_SHEET_COMMANDS
 from core.events.usecases import USECASES as EVENTS_USECASES
+from core.files_new.usecases import USECASES as FILES_NEW_USECASES
 from core.folders.commands import COMMANDS as FOLDER_COMMANDS
 from core.legal.usecases import USECASES as LEGAL_USECASES
 from core.questionnaires.commands import COMMANDS as QUESTIONNAIRE_COMMANDS
@@ -18,3 +19,4 @@ USECASES.update(COLLAB_USECASES)
 USECASES.update(LEGAL_USECASES)
 USECASES.update(AUTH_USECASES)
 USECASES.update(EVENTS_USECASES)
+USECASES.update(FILES_NEW_USECASES)

@@ -24,7 +24,24 @@ def upload_a_file(__actor: OrgUser, file: UploadedFile, folder_uuid: UUID):
 
 
 @use_case
-def delete_a_file(__actor: OrgUser, file_uuid: UUID):
+def upload_multiple_files(
+    __actor: OrgUser, files: list[UploadedFile], folder_uuid: UUID
+):
+    folder = folder_from_uuid(__actor, folder_uuid)
+
+    if not folder.has_access(__actor):
+        raise UseCaseError(
+            "You can not upload a file into this folder, because you have no access to this folder."
+        )
+
+    for file in files:
+        f = EncryptedRecordDocument.create(file, folder, __actor)
+        f.upload(file, __actor)
+        f.save()
+
+
+@use_case
+def delete_file(__actor: OrgUser, file_uuid: UUID):
     file = file_from_uuid(__actor, file_uuid)
     file.delete_on_cloud()
     file.delete()

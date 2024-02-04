@@ -1,14 +1,29 @@
 import mimetypes
+from datetime import datetime
+from uuid import UUID
 
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
+from pydantic import BaseModel, ConfigDict
 from rest_framework.exceptions import ParseError
 
+from core.auth.models import OrgUser
+from core.files_new.models import EncryptedRecordDocument
 from core.seedwork.api_layer import ApiError, Router
 
-from ...auth.models import OrgUser
-from ..models import EncryptedRecordDocument
-from . import schemas
+
+class InputQueryFile(BaseModel):
+    uuid: UUID
+
+
+class OutputFile(BaseModel):
+    uuid: UUID
+    name: str
+    created: datetime
+    updated: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
 
 router = Router()
 
@@ -17,7 +32,7 @@ router = Router()
     url="<uuid:uuid>/download/",
     output_schema=FileResponse,
 )
-def query__download_file(rlc_user: OrgUser, data: schemas.InputQueryFile):
+def query__download_file(rlc_user: OrgUser, data: InputQueryFile):
     f = get_object_or_404(
         EncryptedRecordDocument, org_id=rlc_user.org_id, uuid=data.uuid
     )
@@ -38,9 +53,9 @@ def query__download_file(rlc_user: OrgUser, data: schemas.InputQueryFile):
 
 @router.get(
     url="<uuid:uuid>/",
-    output_schema=schemas.OutputFile,
+    output_schema=OutputFile,
 )
-def query__retrieve_file(rlc_user: OrgUser, data: schemas.InputQueryFile):
+def query__retrieve_file(rlc_user: OrgUser, data: InputQueryFile):
     f = get_object_or_404(
         EncryptedRecordDocument, org_id=rlc_user.org_id, uuid=data.uuid
     )
