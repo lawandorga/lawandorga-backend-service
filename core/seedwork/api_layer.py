@@ -115,6 +115,9 @@ def get_data_from_request(request: HttpRequest) -> dict[str, Any]:
     # files
     for key in request.FILES.dict():
         values = request.FILES.getlist(key)
+        for v in values:
+            if v.size and v.size > 100000000:
+                raise ApiError("File size is too big. Max file size is 100MB.")
         if len(values) == 1:
             data[key] = values[0]
         else:
