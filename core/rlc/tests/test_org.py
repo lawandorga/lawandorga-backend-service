@@ -6,6 +6,7 @@ from django.test import Client
 from core.models import Org
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS
 from core.rlc.models import ExternalLink
+from core.rlc.use_cases.link import create_link, delete_link
 from core.seedwork import test_helpers as data
 
 
@@ -28,29 +29,24 @@ def user(db, org):
 def test_list_links_works(user, db):
     c = Client()
     c.login(**user)
-    response = c.get("/api/org/links/")
+    response = c.get("/api/query/links/")
     response_data = response.json()
     assert response.status_code == 200 and len(response_data) == 1
 
 
 def test_create_link_works(user, db):
-    c = Client()
-    c.login(**user)
-    response = c.post(
-        "/api/org/links/",
-        data=json.dumps({"name": "New Link", "link": "https://ebay.de", "order": 2}),
-        content_type="application/json",
-    )
-    response_data = response.json()
-    assert response.status_code == 200 and response_data["name"] == "New Link"
+    create_link(user["rlc_user"], "New Link", "https://law-orga.de", 2)
+    assert ExternalLink.objects.filter(
+        org=user["rlc_user"].org, name="New Link"
+    ).exists()
 
 
 def test_delete_link_works(user, db):
-    c = Client()
-    c.login(**user)
     link = user["rlc_user"].org.external_links.first()
-    response = c.delete("/api/org/links/{}/".format(link.id))
-    assert response.status_code == 200
+    delete_link(user["rlc_user"], link.id)
+    assert not ExternalLink.objects.filter(
+        org=user["rlc_user"].org, id=link.id
+    ).exists()
 
 
 def test_member_accept(user, db):

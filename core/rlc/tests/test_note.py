@@ -1,10 +1,9 @@
-import json
-
 import pytest
 from django.test import Client
 
 from core.models import Note, Org
 from core.permissions.static import PERMISSION_DASHBOARD_MANAGE_NOTES
+from core.rlc.use_cases.note import create_note, delete_note, update_note
 from core.seedwork import test_helpers
 
 
@@ -24,32 +23,18 @@ def note(db, user):
 
 
 def test_note_create(db, user):
-    c = Client()
-    c.login(**user)
-    response = c.post(
-        "/api/notes/",
-        data=json.dumps({"title": "Test", "note": "Content"}),
-        content_type="application/json",
-    )
-    assert response.status_code == 200
+    create_note(user["rlc_user"], "Test", "Content")
+    assert Note.objects.filter(title="Test").count() == 1
 
 
 def test_note_update(db, user, note):
-    c = Client()
-    c.login(**user)
-    response = c.put(
-        "/api/notes/{}/".format(note.id),
-        data=json.dumps({"title": "New", "note": "New"}),
-        content_type="application/json",
-    )
-    assert response.status_code == 200 and Note.objects.get(pk=note.pk).title == "New"
+    update_note(user["rlc_user"], note.id, "New", "New")
+    assert Note.objects.get(pk=note.pk).title == "New"
 
 
 def test_note_delete(db, user, note):
-    c = Client()
-    c.login(**user)
-    response = c.delete("/api/notes/{}/".format(note.id))
-    assert response.status_code == 200 and Note.objects.filter(pk=note.pk).count() == 0
+    delete_note(user["rlc_user"], note.id)
+    assert Note.objects.filter(pk=note.pk).count() == 0
 
 
 def test_list_works(db, user, note):

@@ -5,6 +5,9 @@ from core.rlc.use_cases.group import (
     remove_member_from_group,
     update_group,
 )
+from core.rlc.use_cases.link import create_link, delete_link
+from core.rlc.use_cases.note import create_note, delete_note, update_note
+from core.rlc.use_cases.org import accept_member_to_org
 
 COMMANDS = {
     "org/create_group": create_group,
@@ -12,4 +15,10 @@ COMMANDS = {
     "org/delete_group": delete_group,
     "org/add_member_to_group": add_member_to_group,
     "org/remove_member_from_group": remove_member_from_group,
+    "org/create_note": create_note,
+    "org/update_note": update_note,
+    "org/delete_note": delete_note,
+    "org/accept_member_to_org": accept_member_to_org,
+    "org/create_link": create_link,
+    "org/delete_link": delete_link,
 }
