@@ -161,6 +161,15 @@ class EncryptedFolderKeyOfUser(EncryptedFolderKey):
             key=key,
         )
 
+    def test(self, user: "OrgUser") -> bool:
+        assert user.uuid == self._owner_uuid, "the owner does not match the key"
+        assert user.get_decryption_key(), "owner decryption key can not be fetched"
+        try:
+            self.decrypt_self(user)
+        except Exception:
+            return False
+        return True
+
     def invalidate_self(self) -> "EncryptedFolderKeyOfUser":
         return EncryptedFolderKeyOfUser(
             owner_uuid=self._owner_uuid, key=self._key, is_valid=False

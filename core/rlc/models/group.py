@@ -38,7 +38,7 @@ class EncryptedGroupKey:
     def create(
         cls, enc_key: EncryptedSymmetricKey, owner: "OrgUser"
     ) -> "EncryptedGroupKey":
-        return cls(enc_key=enc_key, owner_uuid=owner.uuid)
+        return cls(enc_key=enc_key, owner_uuid=owner.uuid, is_valid=True)
 
     @classmethod
     def create_from_dict(cls, data: dict) -> "EncryptedGroupKey":
@@ -46,12 +46,24 @@ class EncryptedGroupKey:
 
         enc_key = EncryptedSymmetricKey.create_from_dict(data["enc_key"])
         owner_uuid = UUID(data["owner_uuid"])
+        is_valid = data.get("is_valid", True)
 
-        return cls(enc_key=enc_key, owner_uuid=owner_uuid)
+        return cls(enc_key=enc_key, owner_uuid=owner_uuid, is_valid=is_valid)
 
-    def __init__(self, enc_key: EncryptedSymmetricKey, owner_uuid: UUID):
+    def __init__(
+        self, enc_key: EncryptedSymmetricKey, owner_uuid: UUID, is_valid: bool
+    ):
         self.__enc_key = enc_key
         self.__owner_uuid = owner_uuid
+        self.__is_valid = is_valid
+
+    @property
+    def is_valid(self):
+        return self.__is_valid
+
+    @property
+    def owner_uuid(self):
+        return self.__owner_uuid
 
     def decrypt(self, owner: "OrgUser") -> GroupKey:
         if owner.uuid != self.__owner_uuid:
@@ -63,7 +75,22 @@ class EncryptedGroupKey:
         return {
             "enc_key": self.__enc_key.as_dict(),
             "owner_uuid": str(self.__owner_uuid),
+            "is_valid": self.__is_valid,
         }
+
+    def test(self, owner: "OrgUser") -> bool:
+        assert owner.uuid == self.__owner_uuid, "the owner does not match the key"
+        assert owner.get_decryption_key(), "owner decryption key can not be fetched"
+        try:
+            self.decrypt(owner)
+        except Exception:
+            return False
+        return True
+
+    def invalidate_self(self) -> "EncryptedGroupKey":
+        return EncryptedGroupKey(
+            enc_key=self.__enc_key, owner_uuid=self.__owner_uuid, is_valid=False
+        )
 
 
 class Group(models.Model):
@@ -106,6 +133,10 @@ class Group(models.Model):
     def member_ids(self) -> list[int]:
         return list(self.members.values_list("id", flat=True))
 
+    @property
+    def keys_as_model(self) -> list[EncryptedGroupKey]:
+        return [EncryptedGroupKey.create_from_dict(key) for key in self.keys]
+
     def generate_keys(self):
         assert len(self.keys) == 0, "keys already exist for this group"
 
@@ -116,7 +147,7 @@ class Group(models.Model):
             self.keys.append(enc_key.as_dict())
         assert len(self.keys) == self.members.count()
 
-    def __get_enc_group_key_of_user(self, user: "OrgUser") -> EncryptedGroupKey | None:
+    def get_enc_group_key_of_user(self, user: "OrgUser") -> EncryptedGroupKey | None:
         assert len(self.keys), "keys have not been generated for this group"
         assert isinstance(self.keys, list), "keys is not a list"
 
@@ -127,13 +158,23 @@ class Group(models.Model):
         return None
 
     def __get_group_key(self, user: "OrgUser") -> GroupKey:
-        enc_key = self.__get_enc_group_key_of_user(user)
+        enc_key = self.get_enc_group_key_of_user(user)
         if enc_key is None:
             raise DomainError(
                 "You have no keys for this group, because you are not a member of this group."
             )
         key = enc_key.decrypt(user)
         return key
+
+    def invalidate_keys_of(self, user: "OrgUser"):
+        assert len(self.keys), "keys have not been generated for this group"
+        new_keys = []
+        for key in self.keys_as_model:
+            if key.owner_uuid == user.uuid:
+                new_keys.append(key.invalidate_self().as_dict())
+            else:
+                new_keys.append(key.as_dict())
+        self.keys = new_keys
 
     def get_encryption_key(self, user: "OrgUser") -> SymmetricKey:
         key = self.__get_group_key(user)
@@ -154,7 +195,7 @@ class Group(models.Model):
         return user.id in self.member_ids
 
     def has_keys(self, user: "OrgUser") -> bool:
-        key = self.__get_enc_group_key_of_user(user)
+        key = self.get_enc_group_key_of_user(user)
         return key is not None
 
     def add_member(self, new_member: "OrgUser", by: Union["OrgUser", None] = None):

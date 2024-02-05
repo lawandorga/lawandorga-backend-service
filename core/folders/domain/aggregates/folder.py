@@ -58,7 +58,7 @@ class Folder:
         self.__restricted = restricted
 
     def __str__(self):
-        return "Folder {}".format(self.name)
+        return "folder: {}; name: {};".format(self.uuid, self.name)
 
     def as_dict(self) -> JsonDict:
         return {

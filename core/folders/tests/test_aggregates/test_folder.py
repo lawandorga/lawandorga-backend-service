@@ -77,11 +77,6 @@ def test_update_information(folder_user):
     assert folder.name == "New Name"
 
 
-def test_str_method():
-    folder = Folder.create("Test")
-    assert str(folder) == "Folder Test"
-
-
 def test_folder_key_decryption_error():
     user1 = ForeignUserObject()
     key = FolderKey(

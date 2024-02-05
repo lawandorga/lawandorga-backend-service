@@ -11,7 +11,7 @@ router = Router()
 class OutputKey(BaseModel):
     id: int
     correct: bool
-    source: Literal["RECORD", "ORG", "FOLDER", "USER"]
+    source: Literal["RECORD", "ORG", "FOLDER", "USER", "GROUP"]
     information: str
 
     model_config = ConfigDict(from_attributes=True)

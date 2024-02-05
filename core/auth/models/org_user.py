@@ -42,9 +42,11 @@ from core.seedwork.events_addon import EventsAddon
 from messagebus import Event
 
 from .user import UserProfile
+from seedwork.functional import list_filter, list_map
 
 if TYPE_CHECKING:
     from core.auth.models.mfa import MultiFactorAuthenticationSecret
+    from core.folders.domain.value_objects.folder_key import EncryptedFolderKeyOfUser
     from core.rlc.models.group import Group
 
 
@@ -186,24 +188,36 @@ class OrgUser(Aggregate, models.Model):
         return {"id": 0, "information": self.name, "source": "USER", "correct": True}
 
     @property
-    def record_keys(self) -> list[KeyOfUser]:
-        from core.data_sheets.models import DataSheetEncryptionNew
-
-        _keys1 = DataSheetEncryptionNew.objects.filter(user_id=self.id).select_related(
-            "record"
-        )
-        _keys2 = list(_keys1)
+    def group_keys(self) -> list[KeyOfUser]:
+        groups = self.get_groups()
+        _keys0 = list_map(groups, lambda x: (x, x.get_enc_group_key_of_user(self)))
+        _keys2 = list_filter(_keys0, lambda k: k[1] is not None)
         _keys3: list[KeyOfUser] = []
         for key in _keys2:
             _keys3.append(
                 {
-                    "id": key.id,
-                    "correct": key.correct,
-                    "source": "RECORD",
-                    "information": "{}".format(key.record.identifier),
+                    "id": 0,
+                    "correct": getattr(key[1], "is_valid"),
+                    "source": "GROUP",
+                    "information": key[0].name,
                 }
             )
         return _keys3
+
+    @property
+    def raw_folder_keys(self) -> list["EncryptedFolderKeyOfUser"]:
+        from core.folders.infrastructure.folder_repository import DjangoFolderRepository
+
+        r = DjangoFolderRepository()
+        folders = r.get_list(self.org_id)
+
+        folder_keys: list["EncryptedFolderKeyOfUser"] = []
+        for folder in folders:
+            for key in folder.keys:
+                if key.TYPE == "FOLDER" and key.owner_uuid == self.uuid:
+                    folder_keys.append(key)
+
+        return folder_keys
 
     @property
     def folder_keys(self) -> list[KeyOfUser]:
@@ -236,7 +250,7 @@ class OrgUser(Aggregate, models.Model):
 
     @property
     def keys(self) -> list[KeyOfUser]:
-        return [self.org_key, self.user_key] + self.record_keys + self.folder_keys
+        return [self.org_key, self.user_key] + self.folder_keys + self.group_keys
 
     @property
     def name(self):
@@ -530,8 +544,8 @@ class OrgUser(Aggregate, models.Model):
         decoded = session.get_decoded()
         key = UserKey.create_from_unsafe_dict(decoded["user_key"])
 
-        ret: AsymmetricKey = key.key  # type: ignore
-        return ret
+        assert isinstance(key.key, AsymmetricKey), f"key is no of type: {type(key.key)}"
+        return key.key
 
     def activate_or_deactivate(self):
         self.is_active = not self.is_active
