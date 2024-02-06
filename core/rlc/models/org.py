@@ -12,8 +12,13 @@ if TYPE_CHECKING:
     from django.db.models.manager import RelatedManager
 
     from core.auth.models import OrgUser, UserProfile
+    from core.collab.models import CollabDocument
+    from core.collab.models.collab import Collab
     from core.data_sheets.models.template import DataSheetTemplate
     from core.events.models import EventsEvent
+    from core.files.models.folder import Folder
+    from core.folders.models import FoldersFolder
+    from core.records.models.record import RecordsRecord
     from core.rlc.models.group import Group
 
 
@@ -60,11 +65,16 @@ class Org(EncryptedModelMixin, models.Model):
     encryption_class = AESEncryption
 
     if TYPE_CHECKING:
+        collab_documents: RelatedManager["CollabDocument"]
+        collabs: RelatedManager["Collab"]
+        folders_folders: RelatedManager["FoldersFolder"]
         users: RelatedManager[OrgUser]
         group_from_rlc: RelatedManager[Group]
         events: RelatedManager[EventsEvent]
         external_links: RelatedManager["ExternalLink"]
         recordtemplates: RelatedManager["DataSheetTemplate"]
+        folders: RelatedManager["Folder"]
+        records_records: RelatedManager["RecordsRecord"]
 
     class Meta:
         ordering = ["name"]
@@ -154,6 +164,11 @@ class Org(EncryptedModelMixin, models.Model):
         else:
             raise ValueError("You need to pass (user and private_key_user).")
 
+    def reset_keys(self):
+        self.private_key = None
+        self.public_key = None
+        self.generate_keys()
+
     def generate_keys(self) -> None:
         from .org_encryption import OrgEncryption
 
@@ -231,20 +246,33 @@ class Org(EncryptedModelMixin, models.Model):
             "collab": self.collab_documents.count(),
         }
 
-    def force_delete(self):
-        from core.auth.models import UserProfile
+    def force_empty(self):
         from core.data_sheets.models import DataSheet
         from core.files.models import File
 
-        # delete records
         for r in DataSheet.objects.filter(template__in=self.recordtemplates.all()):
             r.delete()
-        # delete files
         for f in File.objects.filter(folder__in=self.folders.all()):
             f.delete()
-        # delete collab
+        for fo in self.folders.all():
+            fo.delete()
         for c in self.collab_documents.all():
             c.delete()
+        for cnew in self.collabs.all():
+            cnew.delete()
+        for folder in self.folders_folders.all():
+            folder.delete()
+        for group in self.group_from_rlc.all():
+            group.delete()
+        for record in self.records_records.all():
+            record.delete()
+        self.reset_keys()
+        self.save()
+
+    def force_delete(self):
+        from core.auth.models import UserProfile
+
+        self.force_empty()
         # delete users
         user_ids = []
         for u in self.users.all():

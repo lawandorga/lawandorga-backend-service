@@ -15,7 +15,12 @@ from core.folders.use_cases.finders import (
 )
 from core.permissions.static import PERMISSION_FOLDERS_TOGGLE_INHERITANCE
 from core.seedwork.message_layer import MessageBusActor
-from core.seedwork.use_case_layer import UseCaseError, check_permissions, use_case
+from core.seedwork.use_case_layer import (
+    UseCaseError,
+    UseCaseInputError,
+    check_permissions,
+    use_case,
+)
 
 from seedwork.injector import InjectionContext
 
@@ -183,7 +188,10 @@ def rename_item_in_folder(
 
 @use_case
 def delete_item_from_folder(__actor: MessageBusActor, uuid: UUID, folder_uuid: UUID):
-    folder = folder_from_uuid(__actor, folder_uuid)
+    try:
+        folder = folder_from_uuid(__actor, folder_uuid)
+    except UseCaseInputError:
+        return
     r = get_repository()
     folder.remove_item(uuid)
     r.save(folder)

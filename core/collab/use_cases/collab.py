@@ -100,10 +100,10 @@ def put_collab_doc_in_folder(
     aes_key_org: str,
     cr: CollabRepository,
 ):
-    collab = Collab.create(user=user, title=collab_doc.name, folder=folder)
     if collab_doc.versions.count() == 0:
-        collab_doc.objects.delete()
+        collab_doc.delete()
         return
+    collab = Collab.create(user=user, title=collab_doc.name, folder=folder)
     text = collab_doc.versions.latest("created")
     text.decrypt(aes_key_rlc=aes_key_org)
     content = text.content
