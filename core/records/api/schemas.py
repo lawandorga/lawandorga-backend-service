@@ -14,15 +14,6 @@ class InputCreateAccess(BaseModel):
     explanation: str = ""
 
 
-class InputDeletion(BaseModel):
-    uuid: UUID
-
-
-class InputCreateDeletion(BaseModel):
-    record_uuid: UUID
-    explanation: str = ""
-
-
 class InputCreateView(BaseModel):
     name: str
     columns: list[str]

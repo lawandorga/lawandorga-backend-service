@@ -6,6 +6,5 @@ urlpatterns = [
     path("records/", include(api.records_router.urls)),
     path("query/", include(api.query_router.urls)),
     path("settings/", include(api.settings_router.urls)),
-    path("deletions/", include(api.deletion_router.urls)),
     path("access_requests/", include(api.access_requests_router.urls)),
 ]
