@@ -47,7 +47,11 @@ def create_address(
     user = mail_user_from_uuid(__actor, user_uuid)
     domain = mail_domain_from_uuid(__actor, domain_uuid)
 
-    MailAddress.check_localpart(localpart)
+    try:
+        MailAddress.check_localpart(localpart)
+    except ValueError as e:
+        raise UseCaseError(str(e))
+
     if __actor.id != user.id:
         check_permissions(__actor, [PERMISSION_MAIL_MANAGE_ACCOUNTS])
 

@@ -5,11 +5,11 @@ from core.events.usecases import USECASES as EVENTS_USECASES
 from core.files_new.usecases import USECASES as FILES_NEW_USECASES
 from core.folders.commands import COMMANDS as FOLDER_COMMANDS
 from core.legal.usecases import USECASES as LEGAL_USECASES
+from core.mail.usecases import USECASES as MAIL_USECASES
 from core.questionnaires.commands import COMMANDS as QUESTIONNAIRE_COMMANDS
 from core.rlc.commands import COMMANDS as ORG_COMMANDS
 from core.timeline.commands import COMMANDS as TIMELINE_USECASES
 from core.upload.usecases import USECASES as UPLOAD_USECASES
-from core.mail.usecases import USECASES as MAIL_USECASES
 
 USECASES = {}
 USECASES.update(TIMELINE_USECASES)

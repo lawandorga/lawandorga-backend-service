@@ -1,12 +1,9 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, field_validator
-
-from core.mail.models import MailAddress, MailDomain
+from pydantic import BaseModel, ConfigDict
 
 
-# page
 class InputPageGroup(BaseModel):
     group: UUID
 
@@ -15,94 +12,8 @@ class InputPageUser(BaseModel):
     user: UUID
 
 
-# group
-class InputCreateGroupMail(BaseModel):
-    localpart: str
-    domain: UUID
-
-    @field_validator("localpart")
-    def localpart_validation(cls, v):
-        MailAddress.check_localpart(v)
-        return v
-
-
-class InputDeleteGroupMail(BaseModel):
-    group: UUID
-
-
-class InputAddMemberToGroupMail(BaseModel):
-    group: UUID
-    member: UUID
-
-
-class InputRemoveMemberFromGroupMail(BaseModel):
-    group: UUID
-    member: UUID
-
-
-class InputAddAddressToGroup(BaseModel):
-    localpart: str
-    group: UUID
-    domain: UUID
-
-    @field_validator("localpart")
-    def localpart_validation(cls, v):
-        MailAddress.check_localpart(v)
-        return v
-
-
-class InputSetDefaultGroupAddress(BaseModel):
-    group: UUID
-    address: UUID
-
-
-class InputDeleteGroupAddress(BaseModel):
-    group: UUID
-    address: UUID
-
-
-# domain
-class InputAddDomain(BaseModel):
-    name: str
-
-    @field_validator("name")
-    def domain_validation(cls, v):
-        MailDomain.check_domain(v)
-        return v
-
-
-class InputChangeDomain(BaseModel):
-    uuid: UUID
-    name: str
-
-    @field_validator("name")
-    def domain_validation(cls, v):
-        MailDomain.check_domain(v)
-        return v
-
-
 class InputCheckDomain(BaseModel):
     domain: UUID
-
-
-# mail user
-class InputCreateAddress(BaseModel):
-    localpart: str
-    domain: UUID
-    user: UUID
-
-    @field_validator("localpart")
-    def localpart_validation(cls, v):
-        MailAddress.check_localpart(v)
-        return v
-
-
-class InputDeleteAddress(BaseModel):
-    address: UUID
-
-
-class InputSetDefaultAddress(BaseModel):
-    address: UUID
 
 
 # query

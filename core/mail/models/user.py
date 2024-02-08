@@ -22,6 +22,7 @@ class MailUser(models.Model):
     org = models.ForeignKey(MailOrg, related_name="members", on_delete=models.CASCADE)
 
     if TYPE_CHECKING:
+        id: int
         account: "MailAccount"
         groups: models.QuerySet["MailGroup"]
 
