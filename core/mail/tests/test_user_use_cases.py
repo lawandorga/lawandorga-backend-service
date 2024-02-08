@@ -86,7 +86,7 @@ def test_set_alias_default(db, mail_user, domain, alias):
 
 
 def test_create_alias_invalid_schema(db, mail_user, domain):
-    with pytest.raises(ValueError):
+    with pytest.raises(UseCaseError):
         create_address(
             mail_user,
             localpart="invalid#localpart",
