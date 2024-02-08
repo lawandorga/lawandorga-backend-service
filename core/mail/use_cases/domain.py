@@ -31,7 +31,7 @@ def change_domain(__actor: MailUser, name: str, domain_uuid: UUID):
 @use_case
 def check_domain_settings(
     __actor: MailUser, dns_results: DnsResults, domain_uuid: UUID
-):
+) -> str | None:
     domain = mail_domain_from_uuid(__actor, domain_uuid)
     _, wrong_setting = domain.check_settings(dns_results)
     domain.save()

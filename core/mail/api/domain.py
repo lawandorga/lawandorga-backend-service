@@ -5,21 +5,11 @@ import dns.resolver
 from core.mail.api import schemas
 from core.mail.models import MailUser
 from core.mail.models.domain import DnsResults, DnsSetting
-from core.mail.use_cases.domain import add_domain, change_domain, check_domain_settings
+from core.mail.use_cases.domain import check_domain_settings
 from core.mail.use_cases.finders import mail_domain_from_uuid
 from core.seedwork.api_layer import Router
 
 router = Router()
-
-
-@router.post()
-def command__add_domain(mail_user: MailUser, data: schemas.InputAddDomain):
-    add_domain(mail_user, data.name)
-
-
-@router.post(url="<uuid:domain>/")
-def command__change_domain(mail_user: MailUser, data: schemas.InputChangeDomain):
-    change_domain(mail_user, data.name, data.uuid)
 
 
 @router.post(
@@ -53,8 +43,8 @@ def command__check_domain_settings(mail_user: MailUser, data: schemas.InputCheck
 
     domain = mail_domain_from_uuid(mail_user, data.domain)
 
-    ret_data: dict[str, Union[list[str], bool]] = {
-        "wrong_setting": wrong_setting,
+    ret_data: dict[str, Union[str, bool]] = {
+        "wrong_setting": str(wrong_setting),
         "valid": domain.is_active,
     }
 
