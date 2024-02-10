@@ -22,7 +22,7 @@ def query__article_page(data: schemas.InputArticleDetail):
 
 @router.get("help/", output_schema=schemas.OutputHelpPage)
 def query__help_page():
-    page = HelpPage.objects.get()
+    page = HelpPage.get_solo()
     return page
 
 
@@ -40,9 +40,9 @@ def query__index_page():
 
 @router.get("imprint/", output_schema=schemas.OutputImprintPage)
 def query__imprint_page():
-    return ImprintPage.objects.get()
+    return ImprintPage.get_solo()
 
 
 @router.get("toms/", output_schema=schemas.OutputTomsPage)
 def query__toms_page():
-    return TomsPage.objects.get()
+    return TomsPage.get_solo()

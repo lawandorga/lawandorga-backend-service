@@ -7,5 +7,5 @@ from core.messages.use_cases.message import (
 USECASES = {
     "messages/create_message": create_a_message,
     "messages/delete_message": delete_message,
-    "messages/optimize_messages": optimize_messages,
+    "messages/optimize": optimize_messages,
 }
