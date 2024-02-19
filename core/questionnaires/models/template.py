@@ -4,6 +4,9 @@ from django.db import models
 
 from core.models import Org
 
+if TYPE_CHECKING:
+    from core.questionnaires.models.questionnaire import Questionnaire
+
 
 class QuestionnaireTemplate(models.Model):
     @classmethod
@@ -13,13 +16,14 @@ class QuestionnaireTemplate(models.Model):
 
     name = models.CharField(max_length=100)
     rlc = models.ForeignKey(
-        Org, related_name="questionnaires", on_delete=models.CASCADE, blank=True
+        Org, related_name="questionnaire_templates", on_delete=models.CASCADE, blank=True
     )
     notes = models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     if TYPE_CHECKING:
+        questionnaires: models.QuerySet["Questionnaire"]
         fields: models.QuerySet["QuestionnaireQuestion"]
         files: models.QuerySet["QuestionnaireTemplateFile"]
         rlc_id: int

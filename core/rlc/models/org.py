@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from core.folders.models import FoldersFolder
     from core.records.models.record import RecordsRecord
     from core.rlc.models.group import Group
+    from core.questionnaires.models.template import QuestionnaireTemplate
 
 
 class Org(EncryptedModelMixin, models.Model):
@@ -75,6 +76,7 @@ class Org(EncryptedModelMixin, models.Model):
         recordtemplates: RelatedManager["DataSheetTemplate"]
         folders: RelatedManager["Folder"]
         records_records: RelatedManager["RecordsRecord"]
+        questionnaire_templates: RelatedManager["QuestionnaireTemplate"]
 
     class Meta:
         ordering = ["name"]
@@ -266,6 +268,9 @@ class Org(EncryptedModelMixin, models.Model):
             group.delete()
         for record in self.records_records.all():
             record.delete()
+        for template in self.questionnaire_templates.all():
+            template.questionnaires.all().delete()
+            template.delete()
         self.reset_keys()
         self.save()
 
