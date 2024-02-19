@@ -13,6 +13,7 @@ class OutputKey(BaseModel):
     correct: bool
     source: Literal["RECORD", "ORG", "FOLDER", "USER", "GROUP"]
     information: str
+    group_id: int | None
 
     model_config = ConfigDict(from_attributes=True)
 

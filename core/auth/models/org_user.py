@@ -55,6 +55,7 @@ class KeyOfUser(TypedDict):
     correct: bool
     source: str
     information: str
+    group_id: int | None
 
 
 class EmailTokenValidator(Protocol):
@@ -172,10 +173,11 @@ class OrgUser(Aggregate, models.Model):
         assert len(_keys2) == 1
         key = _keys2[0]
         return {
-            "id": key.id,
+            "id": key.pk,
             "information": self.org.name,
             "source": "ORG",
             "correct": key.correct,
+            "group_id": None,
         }
 
     @property
@@ -185,7 +187,13 @@ class OrgUser(Aggregate, models.Model):
     @property
     def user_key(self) -> KeyOfUser:
         self.get_private_key()
-        return {"id": 0, "information": self.name, "source": "USER", "correct": True}
+        return {
+            "id": 0,
+            "information": self.name,
+            "source": "USER",
+            "correct": True,
+            "group_id": None,
+        }
 
     @property
     def group_keys(self) -> list[KeyOfUser]:
@@ -200,6 +208,7 @@ class OrgUser(Aggregate, models.Model):
                     "correct": getattr(key[1], "is_valid"),
                     "source": "GROUP",
                     "information": key[0].name,
+                    "group_id": key[0].pk,
                 }
             )
         return _keys3
@@ -226,17 +235,19 @@ class OrgUser(Aggregate, models.Model):
         r = DjangoFolderRepository()
         folders = r.get_list(self.org_id)
 
-        folder_keys = []
+        folder_keys: list[KeyOfUser] = []
         for folder in folders:
             for key in folder.keys:
                 if key.TYPE == "FOLDER" and key.owner_uuid == self.uuid:
-                    key = {
-                        "id": 0,
-                        "correct": key.is_valid,
-                        "source": "FOLDER",
-                        "information": folder.name,
-                    }
-                    folder_keys.append(key)
+                    folder_keys.append(
+                        {
+                            "id": 0,
+                            "correct": key.is_valid,
+                            "source": "FOLDER",
+                            "information": folder.name,
+                            "group_id": None,
+                        }
+                    )
 
         return folder_keys
 
