@@ -4,7 +4,10 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
-from core.folders.domain.value_objects.encryption import AsymmetricEncryption
+from core.folders.domain.value_objects.encryption import (
+    AsymmetricEncryption,
+    EncryptionDecryptionError,
+)
 
 
 class AsymmetricEncryptionV1(AsymmetricEncryption):
@@ -66,13 +69,16 @@ class AsymmetricEncryptionV1(AsymmetricEncryption):
             bytes_private_key, None, backend=default_backend()
         )
 
-        data = object_private_key.decrypt(
-            enc_data,
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=None,
-            ),
-        )
+        try:
+            data = object_private_key.decrypt(
+                enc_data,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                    algorithm=hashes.SHA256(),
+                    label=None,
+                ),
+            )
+        except Exception as e:
+            raise EncryptionDecryptionError(e)
 
         return data

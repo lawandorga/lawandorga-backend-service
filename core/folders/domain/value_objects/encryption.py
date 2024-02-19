@@ -2,6 +2,15 @@ import abc
 from typing import Literal
 
 
+class EncryptionDecryptionError(Exception):
+    def __init__(self, exc: Exception) -> None:
+        super().__init__()
+        self.exc = exc
+
+    def __str__(self) -> str:
+        return f"Encryption/Decryption error: {self.exc}"
+
+
 class Encryption:
     ENCRYPTION_TYPE: Literal["ASYMMETRIC", "SYMMETRIC"]
     VERSION: str

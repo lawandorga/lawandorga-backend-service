@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 
 from django.db import models, transaction
 
+from core.folders.domain.value_objects.encryption import EncryptionDecryptionError
 from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
@@ -163,7 +164,14 @@ class Group(models.Model):
             raise DomainError(
                 "You have no keys for this group, because you are not a member of this group."
             )
-        key = enc_key.decrypt(user)
+        try:
+            key = enc_key.decrypt(user)
+        except EncryptionDecryptionError as e:
+            from core.auth.use_cases.keys import check_keys
+
+            check_keys(user)
+            raise e
+
         return key
 
     def invalidate_keys_of(self, user: "OrgUser"):
