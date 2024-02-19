@@ -17,10 +17,10 @@ router = Router()
 def command__create_record_within_folder(
     rlc_user: OrgUser, data: schemas.InputRecordCreateWithinFolder
 ):
-    record_uuid = create_a_data_sheet_within_a_folder(
+    record = create_a_data_sheet_within_a_folder(
         rlc_user, data.name, folder_uuid=data.folder, template_id=data.template
     )
-    record = DataSheet.objects.get(uuid=record_uuid)
+    record = DataSheet.objects.get(uuid=record.uuid)
     return {"id": record.pk, "uuid": record.uuid, "folder_uuid": record.folder_uuid}
 
 

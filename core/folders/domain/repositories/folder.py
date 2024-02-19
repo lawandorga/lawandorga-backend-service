@@ -33,7 +33,7 @@ class FolderRepository(abc.ABC):
         raise NotImplementedError()
 
     @classmethod
-    def delete(cls, folder: Folder, repositories: dict[str, ItemRepository]):
+    def delete(cls, folder: Folder, repositories: list[ItemRepository]):
         raise NotImplementedError()
 
     @classmethod

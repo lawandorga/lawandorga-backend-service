@@ -27,3 +27,7 @@ class CollabRepository(ItemRepository):
     def delete_document(self, uuid: UUID, user: OrgUser) -> None:
         collab = Collab.objects.filter(org_id=user.org_id).get(uuid=uuid)
         collab.delete()
+
+    def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int | None) -> None:
+        _org_id = org_pk if org_pk else 0
+        Collab.objects.filter(folder_uuid=folder_uuid, org_id=_org_id).delete()

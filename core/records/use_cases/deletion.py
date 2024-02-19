@@ -27,10 +27,10 @@ def accept_deletion_request(
 ):
     deletion = find_deletion_by_uuid(__actor, delete_uuid)
 
-    repositories: dict[str, ItemRepository] = {}
+    repositories: list[ItemRepository] = []
     for repo in context.injections.values():
         if isinstance(repo, ItemRepository):
-            repositories[repo.IDENTIFIER] = repo
+            repositories.append(repo)
 
     if deletion.record:
         record = deletion.record

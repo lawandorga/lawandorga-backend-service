@@ -43,10 +43,19 @@ class TimelineFollowUp(EncryptDecryptMethods, models.Model):
         title: str
         text: str
         is_encrypted: bool
+        org_id: int
 
     @property
     def type(self) -> str:
         return "follow_up"
+
+    @property
+    def org_pk(self) -> int:
+        return self.org_id
+
+    @property
+    def name(self) -> str:
+        return self.title
 
     def save(self, *args, **kwargs):
         if not self.is_encrypted:

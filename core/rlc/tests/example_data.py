@@ -478,10 +478,9 @@ def create_informative_record(main_user, main_user_password, users, rlc):
 
     # create the informative record
     template = DataSheetTemplate.objects.filter(rlc=rlc).first()
-    uuid = create_data_sheet_and_folder(
+    record = create_data_sheet_and_folder(
         main_user.rlc_user, "Informative Record", template.pk
     )
-    record = DataSheet.objects.get(uuid=uuid)
 
     record_users = [choice(users), main_user]
     aes_key = AESEncryption.generate_secure_key()

@@ -81,15 +81,14 @@ def test_grant_to_users_with_general_permission(
         another_user["rlc_user"]
     )
 
-    record_id = create_a_data_sheet_within_a_folder(
+    record = create_a_data_sheet_within_a_folder(
         user["rlc_user"],
         "record123",
         folder_uuid=folder.uuid,
         template_id=record_template["template"].pk,
     )
-    folder_uuid = DataSheet.objects.get(uuid=record_id).folder_uuid
 
-    assert folder_repo.retrieve(folder.org_pk, folder_uuid).has_access(
+    assert folder_repo.retrieve(folder.org_pk, record.folder_uuid).has_access(
         another_user["rlc_user"]
     )
 
@@ -104,12 +103,12 @@ def test_grant_to_users_with_general_permission_two(
         another_user["rlc_user"]
     )
 
-    record_id = create_data_sheet_and_folder(
+    record = create_data_sheet_and_folder(
         user["rlc_user"],
         "record123",
         template_id=record_template["template"].pk,
     )
-    folder_uuid = DataSheet.objects.get(uuid=record_id).folder_uuid
+    folder_uuid = DataSheet.objects.get(uuid=record.uuid).folder_uuid
 
     assert folder_repo.retrieve(folder.org_pk, folder_uuid).has_access(
         another_user["rlc_user"]

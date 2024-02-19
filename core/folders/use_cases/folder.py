@@ -64,10 +64,9 @@ def delete_folder(__actor: OrgUser, folder_uuid: UUID, context: InjectionContext
             "You can not delete this folder because it contains a record. Delete the record first."
         )
 
-    repositories: dict[str, ItemRepository] = {}
+    repositories: list[ItemRepository] = []
     for repo in context.injections.values():
-        if isinstance(repo, ItemRepository):
-            repositories[repo.IDENTIFIER] = repo
+        repositories.append(repo)
 
     if folder.has_access(__actor):
         r.delete(folder, repositories)

@@ -33,10 +33,13 @@ if TYPE_CHECKING:
 class UploadLinkRepository(ItemRepository):
     IDENTIFIER = "UPLOAD"
 
-    @classmethod
-    def retrieve(cls, uuid: UUID, org_pk: Optional[int] = None) -> "UploadLink":
+    def retrieve(self, uuid: UUID, org_pk: Optional[int] = None) -> "UploadLink":
         assert org_pk is not None
         return UploadLink.objects.get(uuid=uuid, org_id=org_pk)
+
+    def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int | None) -> None:
+        _org_id = org_pk if org_pk else 0
+        UploadLink.objects.filter(folder_uuid=folder_uuid, org_id=_org_id).delete()
 
 
 class UploadLink(Aggregate, models.Model):

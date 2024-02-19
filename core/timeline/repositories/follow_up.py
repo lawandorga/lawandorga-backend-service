@@ -4,10 +4,17 @@ from django.utils import timezone
 
 from core.auth.models.org_user import OrgUser
 from core.folders.domain.repositories.folder import FolderRepository
+from core.folders.domain.repositories.item import ItemRepository
 from core.timeline.models.follow_up import TimelineFollowUp
 
 
-class FollowUpRepository:
+class FollowUpRepository(ItemRepository):
+    def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int | None) -> None:
+        _org_id = org_pk if org_pk else 0
+        TimelineFollowUp.objects.filter(
+            folder_uuid=folder_uuid, org_id=_org_id
+        ).delete()
+
     def save_follow_up(
         self, follow_up: TimelineFollowUp, user: OrgUser, fr: FolderRepository
     ) -> None:

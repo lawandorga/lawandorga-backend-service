@@ -11,10 +11,11 @@ from core.upload.use_cases.finder import link_from_uuid, link_from_uuid_dangerou
 
 
 @use_case
-def create_upload_link(__actor: OrgUser, name: str, folder_uuid: UUID):
+def create_upload_link(__actor: OrgUser, name: str, folder_uuid: UUID) -> UploadLink:
     folder = folder_from_uuid(__actor, folder_uuid)
     link = UploadLink.create(name, folder, __actor)
     link.save()
+    return link
 
 
 @use_case

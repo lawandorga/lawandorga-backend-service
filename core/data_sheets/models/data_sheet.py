@@ -39,10 +39,14 @@ from core.seedwork.events_addon import EventsAddon
 class DataSheetRepository(ItemRepository):
     IDENTIFIER = "RECORD"
 
-    @classmethod
-    def retrieve(cls, uuid: UUID, org_pk: Optional[int] = None) -> "DataSheet":
+    def retrieve(self, uuid: UUID, org_pk: Optional[int] = None) -> "DataSheet":
         assert isinstance(uuid, UUID)
         return DataSheet.objects.get(uuid=uuid)
+
+    def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int | None) -> None:
+        DataSheet.objects.filter(
+            folder_uuid=folder_uuid, template__rlc_id=org_pk
+        ).delete()
 
 
 class DataSheet(Aggregate, models.Model):

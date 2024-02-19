@@ -23,12 +23,21 @@ from core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_
 class FileRepository(ItemRepository):
     IDENTIFIER = "FILE"
 
-    @classmethod
     def retrieve(
-        cls, uuid: UUID, org_pk: Optional[int] = None
+        self, uuid: UUID, org_pk: Optional[int] = None
     ) -> "EncryptedRecordDocument":
         assert isinstance(uuid, UUID)
         return EncryptedRecordDocument.objects.get(uuid=uuid)
+
+    def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int | None) -> None:
+        _org_id = org_pk if org_pk else 0
+
+        files = EncryptedRecordDocument.objects.filter(
+            folder_uuid=folder_uuid, org_id=_org_id
+        )
+        for file in files:
+            file.delete_on_cloud()
+        files.delete()
 
 
 class EncryptedRecordDocument(Aggregate, models.Model):

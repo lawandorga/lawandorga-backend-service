@@ -10,7 +10,9 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case
-def upload_a_file(__actor: OrgUser, file: UploadedFile, folder_uuid: UUID):
+def upload_a_file(
+    __actor: OrgUser, file: UploadedFile, folder_uuid: UUID
+) -> EncryptedRecordDocument:
     folder = folder_from_uuid(__actor, folder_uuid)
 
     if not folder.has_access(__actor):
@@ -21,6 +23,7 @@ def upload_a_file(__actor: OrgUser, file: UploadedFile, folder_uuid: UUID):
     f = EncryptedRecordDocument.create(file, folder, __actor)
     f.upload(file, __actor)
     f.save()
+    return f
 
 
 @use_case

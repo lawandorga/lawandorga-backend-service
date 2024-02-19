@@ -1,4 +1,3 @@
-import abc
 from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
@@ -6,10 +5,11 @@ if TYPE_CHECKING:
     from core.folders.domain.aggregates.folder import Item
 
 
-class ItemRepository(abc.ABC):
+class ItemRepository:
     IDENTIFIER: str
 
-    @classmethod
-    @abc.abstractmethod
-    def retrieve(cls, uuid: UUID, org_pk: Optional[int] = None) -> "Item":
-        pass
+    def retrieve(self, uuid: UUID, org_pk: Optional[int] = None) -> "Item":
+        raise NotImplementedError()
+
+    def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int | None) -> None:
+        raise NotImplementedError()

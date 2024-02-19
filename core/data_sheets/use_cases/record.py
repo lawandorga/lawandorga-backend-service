@@ -36,7 +36,7 @@ def create_data_sheet_and_folder(
     name: str,
     template_id: int,
     folder_repository: FolderRepository,
-) -> UUID:
+) -> DataSheet:
     template = template_from_id(__actor, template_id)
 
     parent_folder = folder_repository.get_or_create_records_folder(
@@ -67,7 +67,7 @@ def create_a_data_sheet_within_a_folder(
     folder_uuid: UUID,
     template_id: int,
     r: FolderRepository,
-) -> UUID:
+) -> DataSheet:
     folder = folder_from_uuid(__actor, folder_uuid)
     template = template_from_id(__actor, template_id)
 
@@ -85,7 +85,7 @@ def __create(
     folder: Folder,
     template: DataSheetTemplate,
     folder_repository: FolderRepository,
-) -> UUID:
+) -> DataSheet:
     access_granted = False
     for user in list(__actor.org.users.all()):
         should_access = user.has_permission(PERMISSION_RECORDS_ACCESS_ALL_RECORDS)
@@ -97,12 +97,12 @@ def __create(
     if access_granted:
         folder_repository.save(folder)
 
-    record = DataSheet(template=template, name=name)
-    record.set_folder(folder)
-    record.generate_key(__actor)
-    record.save()
+    sheet = DataSheet(template=template, name=name)
+    sheet.set_folder(folder)
+    sheet.generate_key(__actor)
+    sheet.save()
 
-    return record.uuid
+    return sheet
 
 
 @use_case

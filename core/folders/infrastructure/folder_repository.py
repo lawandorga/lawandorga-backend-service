@@ -239,12 +239,10 @@ class DjangoFolderRepository(FolderRepository):
         delete_cache_of_object(cls, folder.org_pk)
 
     @classmethod
-    def delete(cls, folder: Folder, repositories: dict[str, ItemRepository]):
+    def delete(cls, folder: Folder, repositories: list[ItemRepository]):
         f = cls.__db_folder_from_domain(folder)
-        for raw_item in folder.items:
-            r = repositories[raw_item.repository]
-            item = r.retrieve(raw_item.uuid, folder.org_pk)
-            item.delete()
+        for repo in repositories:
+            repo.delete_items_of_folder(folder.uuid, folder.org_pk)
         f.deleted = True
         f.deleted_at = timezone.now()
         f.save()

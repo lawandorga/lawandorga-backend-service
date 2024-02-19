@@ -26,9 +26,13 @@ from core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_
 class QuestionnaireRepository(ItemRepository):
     IDENTIFIER = "QUESTIONNAIRE"
 
-    @classmethod
-    def retrieve(cls, uuid: UUID, org_pk: Optional[int] = None) -> "Questionnaire":
+    def retrieve(self, uuid: UUID, org_pk: Optional[int] = None) -> "Questionnaire":
         return Questionnaire.objects.get(uuid=uuid, template__rlc_id=org_pk)
+
+    def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int | None) -> None:
+        Questionnaire.objects.filter(
+            folder_uuid=folder_uuid, template__rlc_id=org_pk
+        ).delete()
 
 
 class Questionnaire(Aggregate, models.Model):
