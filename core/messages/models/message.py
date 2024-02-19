@@ -4,7 +4,6 @@ from uuid import UUID
 from django.db import models
 
 from core.auth.models import OrgUser
-from core.data_sheets.models.data_sheet import DataSheet
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.symmetric_key import (
@@ -35,18 +34,13 @@ class EncryptedRecordMessage(models.Model):
         null=True,
         blank=True,
     )
-    record = models.ForeignKey(
-        DataSheet, related_name="messages", on_delete=models.CASCADE, null=True
-    )
     org = models.ForeignKey(Org, related_name="messages", on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    folder_uuid = models.UUIDField(null=True)
+    folder_uuid = models.UUIDField()
 
-    key = models.JSONField(null=True)
-    # encrypted
-    message: str = models.BinaryField(null=False)  # type: ignore
-    enc_message = models.JSONField(null=True)
+    key = models.JSONField()
+    enc_message = models.JSONField()
 
     encryption_class = AESEncryption
     encrypted_fields = ["message"]
@@ -61,7 +55,7 @@ class EncryptedRecordMessage(models.Model):
         verbose_name_plural = "RecordMessages"
 
     def __str__(self):
-        return "recordMessage: {}; record: {};".format(self.pk, self.record.pk)
+        return "recordMessage: {}; folder: {};".format(self.pk, self.folder_uuid)
 
     @property
     def folder(self) -> Optional[Folder]:
@@ -76,10 +70,6 @@ class EncryptedRecordMessage(models.Model):
         if self.sender:
             return self.sender.name
         return "Deleted"
-
-    def save(self, *args, **kwargs):
-        self.message = b""
-        super().save(*args, **kwargs)
 
     def encrypt(self, user: OrgUser):
         assert self.folder_uuid is not None
@@ -99,10 +89,6 @@ class EncryptedRecordMessage(models.Model):
         self.message = open_box.decode("utf-8")
         return self
 
-    def __decrypt_old(self, user: OrgUser):
-        key = self.record.get_aes_key(user)
-        return self.encryption_class.decrypt(self.message, key)  # type: ignore
-
     def __generate_key(self, user: OrgUser):
         assert self.folder is not None
 
@@ -118,15 +104,3 @@ class EncryptedRecordMessage(models.Model):
         unlock_key = self.folder.get_decryption_key(requestor=user)
         key = enc_key.decrypt(unlock_key)
         return key
-
-    def put_in_folder(self, user: OrgUser):
-        if not self.record.folder_uuid or not self.record.folder.has_access(user):
-            return
-
-        message = self.__decrypt_old(user)
-        box = OpenBox(data=message.encode("utf-8"))
-        self.folder_uuid = self.record.folder_uuid
-        self.__generate_key(user)
-        key = self.get_key(user)
-        locked_box = key.lock(box)
-        self.enc_message = locked_box.as_dict()

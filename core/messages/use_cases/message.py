@@ -26,12 +26,4 @@ def delete_message(__actor: OrgUser, message_id: int):
 
 @use_case
 def optimize_messages(__actor: OrgUser):
-    messages_1 = EncryptedRecordMessage.objects.filter(
-        folder_uuid=None, record__template__rlc_id=__actor.org_id
-    )
-    messages_2 = list(messages_1)
-    for message in messages_2:
-        message.put_in_folder(__actor)
-    EncryptedRecordMessage.objects.bulk_update(
-        messages_2, ["key", "enc_message", "folder_uuid"]
-    )
+    pass
