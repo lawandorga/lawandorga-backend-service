@@ -158,10 +158,10 @@ def catch_error(func: Callable[..., JsonResponse | FileResponse]):
                 err_type="ApiError",
             )
 
-        except ObjectDoesNotExist as e:
-            return ErrorResponse(
-                title="404", status=404, err_type="NotFoundError", internal=str(e)
-            )
+        # except ObjectDoesNotExist as e:
+        #     return ErrorResponse(
+        #         title="404", status=404, err_type="NotFoundError", internal=str(e)
+        #     )
 
         except UseCaseInputError as e:
             return ErrorResponse(
