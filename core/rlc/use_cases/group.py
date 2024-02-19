@@ -7,7 +7,7 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
-def create_group(__actor: OrgUser, name: str, description: str | None) -> Group:
+def create_group(__actor: OrgUser, name: str, description: str = "") -> Group:
     group = Group.create(org=__actor.org, name=name, description=description)
     group.save()
     group.add_member(__actor)
