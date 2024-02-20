@@ -9,6 +9,7 @@ from .folders.models import *
 from .internal.models import *
 from .legal.models import *
 from .mail.models import *
+from .mail_imports.models import *
 from .other.models import *
 from .permissions.models import *
 from .playground.models import *

@@ -6,6 +6,7 @@ from core.files_new.usecases import USECASES as FILES_NEW_USECASES
 from core.folders.commands import COMMANDS as FOLDER_COMMANDS
 from core.legal.usecases import USECASES as LEGAL_USECASES
 from core.mail.usecases import USECASES as MAIL_USECASES
+from core.mail_imports.usecases import USECASES as MAIL_IMPORTS_USECASES
 from core.messages.usecases import USECASES as MESSAGES_USECASES
 from core.permissions.usecases import USECASES as PERMISSIONS_USECASES
 from core.questionnaires.commands import COMMANDS as QUESTIONNAIRE_COMMANDS
@@ -30,3 +31,4 @@ USECASES.update(MAIL_USECASES)
 USECASES.update(PERMISSIONS_USECASES)
 USECASES.update(RECORDS_USECASES)
 USECASES.update(MESSAGES_USECASES)
+USECASES.update(MAIL_IMPORTS_USECASES)

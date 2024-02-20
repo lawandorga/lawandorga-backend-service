@@ -43,4 +43,5 @@ urlpatterns = [
     path("api/uploads/", include(upload_urlpatterns)),
     path("api/timeline/", include("core.timeline.urls")),
     path("api/permissions/", include("core.permissions.urls")),
+    path("api/mail_imports/", include("core.mail_imports.urls")),
 ]
