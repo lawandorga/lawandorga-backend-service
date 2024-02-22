@@ -189,6 +189,14 @@ class Folder:
     def restrict(self) -> None:
         self.__restricted = True
 
+    def _get_type_of_access(self, owner: "OrgUser") -> Optional[str]:
+        key = self._get_key(owner)
+        if key is None:
+            return "NONE"
+        if isinstance(key, EncryptedFolderKeyOfUser):
+            return "USER"
+        return "GROUP"
+
     def _get_key(
         self, owner: "OrgUser"
     ) -> Union[EncryptedFolderKeyOfGroup, EncryptedFolderKeyOfUser, None]:

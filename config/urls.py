@@ -4,6 +4,7 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView, View
+import time
 
 from core import urls as api_urls
 from core.auth.views.user import CustomLoginView, CustomRedirectView
@@ -21,6 +22,12 @@ class EmailView(View):
         return JsonResponse({"status": "email sent"})
 
 
+class TimeoutView(View):
+    def get(self, request, *args, **kwargs):
+        time.sleep(230)
+        return JsonResponse({"status": "OK"})
+
+
 handler400 = "config.handlers.handler400"
 handler403 = "config.handlers.handler403"
 handler404 = "config.handlers.handler404"
@@ -30,6 +37,7 @@ handler500 = "config.handlers.handler500"
 urlpatterns = [
     path("error/", TemplateView.as_view(template_name="")),
     path("email/", EmailView.as_view()),
+    path("timeout/", TimeoutView.as_view()),
     path("", include(api_urls)),
     path("admin/login/", RedirectView.as_view(pattern_name="login", query_string=True)),
     path("logout/", RedirectView.as_view(pattern_name="logout", query_string=True)),

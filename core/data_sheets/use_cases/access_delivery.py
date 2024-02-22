@@ -1,3 +1,4 @@
+import time
 from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet
 
@@ -6,7 +7,9 @@ from core.folders.domain.repositories.folder import FolderRepository
 from core.permissions.models import Permission
 from core.permissions.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from core.seedwork.use_case_layer import use_case
+import logging
 
+logger = logging.getLogger("django")
 
 @use_case
 def deliver_access_to_users_who_should_have_access(
@@ -25,6 +28,8 @@ def deliver_access_to_users_who_should_have_access(
     users_2 = list(users_1)
     users_3 = [u for u in users_2 if u.has_permission(permission)]
 
+    t1 = time.time()
+
     for record in records_2:
         if record.has_access(__actor):
             # do this in order to put the record inside a folder
@@ -37,3 +42,7 @@ def deliver_access_to_users_who_should_have_access(
                     folder = r.retrieve(__actor.org_id, record.folder_uuid)
                     folder.grant_access(user, __actor)
                     r.save(folder)
+                    logger.info("User {user.uuid} was given access to {record.uuid}")
+                    if time.time() - t1 > 200:
+                        logger.info("Ran out of time")
+                        return
