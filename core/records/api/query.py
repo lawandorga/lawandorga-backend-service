@@ -95,13 +95,13 @@ def query__records_page(rlc_user: OrgUser):
         Q(requestor__org_id=rlc_user.org_id)
         | Q(processor__org_id=rlc_user.org_id)
         | Q(record__org_id=rlc_user.org_id)
-    )
+    ).select_related("requestor__user", "processor__user", "record")
 
     access_requests = RecordsAccessRequest.objects.filter(
         Q(requestor__org_id=rlc_user.org_id)
         | Q(processor__org_id=rlc_user.org_id)
         | Q(record__org_id=rlc_user.org_id)
-    )
+    ).select_related("requestor__user", "processor__user", "record")
 
     badges = {
         "deletion_requests": deletions.filter(state="re").count(),

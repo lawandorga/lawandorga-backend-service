@@ -25,7 +25,7 @@ class EmailView(View):
 
 class TimeoutView(View):
     def get(self, request, *args, **kwargs):
-        time.sleep(230)
+        time.sleep(200)
         return JsonResponse({"status": "OK"})
 
 

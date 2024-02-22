@@ -122,6 +122,7 @@ class DataSheet(Aggregate, models.Model):
         "multiple_entries",
         "multiple_entries__field",
         "encryptions",
+        "statistic_entries",
     ]
 
     ALL_PREFETCH_RELATED = [
