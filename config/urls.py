@@ -1,10 +1,11 @@
+import time
+
 from django.conf import settings
 from django.contrib import admin
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView, View
-import time
 
 from core import urls as api_urls
 from core.auth.views.user import CustomLoginView, CustomRedirectView
