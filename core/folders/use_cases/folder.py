@@ -66,7 +66,8 @@ def delete_folder(__actor: OrgUser, folder_uuid: UUID, context: InjectionContext
 
     repositories: list[ItemRepository] = []
     for repo in context.injections.values():
-        repositories.append(repo)
+        if isinstance(repo, ItemRepository):
+            repositories.append(repo)
 
     if folder.has_access(__actor):
         r.delete(folder, repositories)
