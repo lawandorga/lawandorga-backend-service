@@ -1,6 +1,7 @@
 from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet
-from core.data_sheets.use_cases.record import migrate_record_into_folder
+
+# from core.data_sheets.use_cases.record import migrate_record_into_folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.permissions.models import Permission
 from core.permissions.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
@@ -27,8 +28,8 @@ def deliver_access_to_users_who_should_have_access(
     for record in records_2:
         if record.has_access(__actor):
             # do this in order to put the record inside a folder
-            if not record.folder_uuid:
-                migrate_record_into_folder(__actor, record)
+            # if not record.folder_uuid:
+            #     migrate_record_into_folder(__actor, record)
 
             for user in users_3:
                 if not record.has_access(user):
