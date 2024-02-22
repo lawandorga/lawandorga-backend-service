@@ -54,7 +54,16 @@ def django_command(request: HttpRequest) -> HttpResponse:
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
-    data = get_data_from_request(request)
+    try:
+        data = get_data_from_request(request)
+    except ApiError as e:
+        return ErrorResponse(
+            param_errors=e.param_errors,
+            title=e.title,
+            detail=e.message,
+            status=e.status,
+            err_type="ApiError",
+        )
 
     action = data.pop("action", None)
     if action is None:
