@@ -60,12 +60,8 @@ class Folder:
     def __str__(self):
         return "folder: {}; name: {};".format(self.uuid, self.name)
 
-    def as_dict(self) -> JsonDict:
-        return {
-            "name": self.__name,
-            "uuid": str(self.__uuid),
-            "stop_inherit": self.stop_inherit,
-        }
+    def __hash__(self):
+        return hash(self.uuid)
 
     def __eq__(self, other):
         if not isinstance(other, Folder):
@@ -131,6 +127,13 @@ class Folder:
             raise Exception("Not all folder keys have the same encryption version.")
 
         return versions[0]
+
+    def as_dict(self) -> JsonDict:
+        return {
+            "name": self.__name,
+            "uuid": str(self.__uuid),
+            "stop_inherit": self.stop_inherit,
+        }
 
     def invalidate_keys_of(self, owner: "OrgUser"):
         new_keys: list[EncryptedFolderKeyOfUser] = []
