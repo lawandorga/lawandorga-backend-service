@@ -16,4 +16,4 @@ class MailAdmin(models.Model):
         verbose_name_plural = "MailAdmins"
 
     def __str__(self):
-        return "mailAdmin: {};".format(self.id)
+        return "mailAdmin: {};".format(self.pk)
