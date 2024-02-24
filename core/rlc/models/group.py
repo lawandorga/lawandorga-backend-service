@@ -109,7 +109,7 @@ class Group(models.Model):
     )
     name = models.CharField(max_length=200, null=False)
     visible = models.BooleanField(null=False, default=True)
-    members = models.ManyToManyField("OrgUser", related_name="groups", blank=True)
+    members: "models.ManyToManyField[OrgUser, OrgUser]" = models.ManyToManyField("OrgUser", related_name="groups", blank=True)
     description = models.TextField(blank=True, null=True)
     keys = models.JSONField(default=list)
 

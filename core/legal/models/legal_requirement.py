@@ -5,9 +5,6 @@ from tinymce import models as tinymce_models
 
 from core.auth.models import OrgUser
 
-if TYPE_CHECKING:
-    from django.db.models.manager import RelatedManager
-
 
 class LegalRequirement(models.Model):
     title = models.CharField(max_length=1000)
@@ -21,7 +18,7 @@ class LegalRequirement(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     if TYPE_CHECKING:
-        events: RelatedManager["LegalRequirementEvent"]
+        events: models.QuerySet["LegalRequirementEvent"]
 
     def __str__(self):
         return "legalRequirement: {}; title: {};".format(self.pk, self.title)

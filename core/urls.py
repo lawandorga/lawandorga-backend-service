@@ -20,6 +20,7 @@ from core.upload.urls import urlpatterns as upload_urlpatterns
 
 from .command import django_command
 
+
 urlpatterns = [
     path("api/command/", django_command),
     # path("api/command/", include(router.urls)),

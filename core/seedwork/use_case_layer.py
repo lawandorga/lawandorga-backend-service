@@ -99,8 +99,7 @@ def use_case(
     func: Callable[..., RetType],
     *,
     permissions: None = ...,
-) -> Callable[..., RetType]:
-    ...
+) -> Callable[..., RetType]: ...
 
 
 @overload
@@ -108,8 +107,7 @@ def use_case(
     func: None = ...,
     *,
     permissions: list[str] | None = ...,
-) -> Callable[[Callable[..., RetType]], Callable[..., RetType]]:
-    ...
+) -> Callable[[Callable[..., RetType]], Callable[..., RetType]]: ...
 
 
 def use_case(

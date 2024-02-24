@@ -26,9 +26,6 @@ from core.seedwork.domain_layer import DomainError
 from core.seedwork.encryption import AESEncryption
 from core.seedwork.events_addon import EventsAddon
 
-if TYPE_CHECKING:
-    from django.db.models.manager import RelatedManager
-
 
 class UploadLinkRepository(ItemRepository):
     IDENTIFIER = "UPLOAD"
@@ -69,7 +66,7 @@ class UploadLink(Aggregate, models.Model):
     folder: FolderAddon
 
     if TYPE_CHECKING:
-        files: RelatedManager["UploadFile"]
+        files: models.QuerySet["UploadFile"]
 
     class Meta:
         verbose_name = "UploadLink"

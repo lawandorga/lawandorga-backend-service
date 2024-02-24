@@ -9,8 +9,6 @@ from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncr
 from .meta import Meta
 
 if TYPE_CHECKING:
-    from django.db.models.manager import RelatedManager
-
     from core.auth.models import OrgUser, UserProfile
     from core.collab.models import CollabDocument
     from core.collab.models.collab import Collab
@@ -66,17 +64,17 @@ class Org(EncryptedModelMixin, models.Model):
     encryption_class = AESEncryption
 
     if TYPE_CHECKING:
-        collab_documents: RelatedManager["CollabDocument"]
-        collabs: RelatedManager["Collab"]
-        folders_folders: RelatedManager["FoldersFolder"]
-        users: RelatedManager[OrgUser]
-        group_from_rlc: RelatedManager[Group]
-        events: RelatedManager[EventsEvent]
-        external_links: RelatedManager["ExternalLink"]
-        recordtemplates: RelatedManager["DataSheetTemplate"]
-        folders: RelatedManager["Folder"]
-        records_records: RelatedManager["RecordsRecord"]
-        questionnaire_templates: RelatedManager["QuestionnaireTemplate"]
+        collab_documents: models.QuerySet["CollabDocument"]
+        collabs: models.QuerySet["Collab"]
+        folders_folders: models.QuerySet["FoldersFolder"]
+        users: models.QuerySet[OrgUser]
+        group_from_rlc: models.QuerySet[Group]
+        events: models.QuerySet[EventsEvent]
+        external_links: models.QuerySet["ExternalLink"]
+        recordtemplates: models.QuerySet["DataSheetTemplate"]
+        folders: models.QuerySet["Folder"]
+        records_records: models.QuerySet["RecordsRecord"]
+        questionnaire_templates: models.QuerySet["QuestionnaireTemplate"]
 
     class Meta:
         ordering = ["name"]
