@@ -140,6 +140,10 @@ def get_data_from_request(request: HttpRequest) -> dict[str, Any]:
                 v1 = val.replace("||ARRAY||", "")
                 v2 = v1.split("||ARRAYSEPERATOR||")
                 val = v2
+            elif "||JSON||" in val and isinstance(val, str):
+                v1 = val.replace("||JSON||", "")
+                v2 = json.loads(v1)
+                val = v2
             data[key] = val
     # return
     return data
