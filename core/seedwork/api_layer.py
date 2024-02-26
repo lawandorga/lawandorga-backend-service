@@ -132,7 +132,15 @@ def get_data_from_request(request: HttpRequest) -> dict[str, Any]:
         body_dict = json.loads(body_str)
         data.update(body_dict)
     except (JSONDecodeError, RawPostDataException):
-        data.update(request.POST.dict())
+        for key, value in request.POST.dict().items():
+            val: Any = value
+            if "||EMPTYARRAY||" in val:
+                val = []
+            elif "||ARRAY||" in val and isinstance(val, str):
+                v1 = val.replace("||ARRAY||", "")
+                v2 = v1.split("||ARRAYSEPERATOR||")
+                val = v2
+            data[key] = val
     # return
     return data
 

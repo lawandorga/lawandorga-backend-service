@@ -12,6 +12,8 @@ from core.models import Group, Org
 from core.seedwork.domain_layer import DomainError
 
 if TYPE_CHECKING:
+    from django_stubs_ext import QuerySetAny
+
     from .data_sheet import (
         DataSheet,
         DataSheetEncryptedFileEntry,
@@ -174,6 +176,9 @@ class RecordField(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+    if TYPE_CHECKING:
+        entries: QuerySetAny
+
     class Meta:
         abstract = True
 
@@ -198,6 +203,14 @@ class RecordField(models.Model):
 
     def update_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         raise NotImplementedError()
+
+    def create_or_update_entry(
+        self, user: OrgUser, record_id: int, value: str | list[str]
+    ):
+        if self.entries.filter(record_id=record_id).exists():
+            self.update_entry(user, record_id, value)
+        else:
+            self.create_entry(user, record_id, value)
 
     def delete_entry(self, record_id: int):
         raise NotImplementedError()
@@ -303,7 +316,7 @@ class DataSheetUsersField(RecordField):
     def create_entry(self, user: OrgUser, record_id: int, value: str | list[str]):
         from .data_sheet import DataSheetUsersEntry
 
-        assert isinstance(value, list)
+        assert isinstance(value, list), value
         entry = DataSheetUsersEntry(field_id=self.pk, record_id=record_id)
         with transaction.atomic():
             entry.save()

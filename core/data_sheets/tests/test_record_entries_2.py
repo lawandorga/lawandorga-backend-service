@@ -190,7 +190,7 @@ def test_standard_entry_create(db, standard_field, record, auth_client):
         "record_id": record.pk,
         "field_id": standard_field.uuid,
         "value": "Hallo",
-        "action": "data_sheets/create_entry",
+        "action": "data_sheets/create_or_update_entry",
     }
     response = auth_client.post("/api/command/", data)
     assert response.status_code == 200
@@ -201,7 +201,7 @@ def test_standard_entry_create(db, standard_field, record, auth_client):
 def test_standard_entry_update(db, standard_entry, post):
     data = {
         "value": "Hallo 2",
-        "action": "data_sheets/update_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": standard_entry.record.pk,
         "field_id": standard_entry.field.uuid,
     }
@@ -241,7 +241,7 @@ def select_entry(db, select_field, record):
 
 def test_select_entry_create(db, record, select_field, post):
     data = {
-        "action": "data_sheets/create_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": select_field.uuid,
         "value": "Option 1",
@@ -255,7 +255,7 @@ def test_select_entry_create(db, record, select_field, post):
 
 def test_select_entry_update(db, record, select_field, post, select_entry):
     data = {
-        "action": "data_sheets/update_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": select_field.uuid,
         "value": "Option 2",
@@ -281,7 +281,7 @@ def test_select_entry_delete(db, record, select_field, post, select_entry):
 
 def test_select_entry_create_value_in_options(db, record, select_field, post):
     data = {
-        "action": "data_sheets/create_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": select_field.uuid,
         "value": "Option 3",
@@ -295,7 +295,7 @@ def test_select_entry_update_value_in_options(
     db, record, select_field, post, select_entry
 ):
     data = {
-        "action": "data_sheets/update_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": select_field.uuid,
         "value": "Option 3",
@@ -325,7 +325,7 @@ def state_entry(state_field, record):
 
 def test_state_entry_create(db, record, state_field, post):
     data = {
-        "action": "data_sheets/create_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": state_field.uuid,
         "value": "Option 2",
@@ -339,7 +339,7 @@ def test_state_entry_create(db, record, state_field, post):
 
 def test_state_entry_update(db, record, state_field, post, state_entry):
     data = {
-        "action": "data_sheets/update_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": state_field.uuid,
         "value": "Option 2",
@@ -365,7 +365,7 @@ def test_state_entry_delete(db, record, state_field, post, state_entry):
 
 def test_state_entry_create_value_in_options(db, record, state_field, post):
     data = {
-        "action": "data_sheets/create_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": state_field.uuid,
         "value": "Option 3",
@@ -377,7 +377,7 @@ def test_state_entry_create_value_in_options(db, record, state_field, post):
 
 def test_state_entry_create_value_empty(db, record, state_field, post):
     data = {
-        "action": "data_sheets/create_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": state_field.uuid,
         "value": "",
@@ -391,7 +391,7 @@ def test_state_entry_update_value_in_options(
     db, record, state_field, post, state_entry
 ):
     data = {
-        "action": "data_sheets/update_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": state_field.uuid,
         "value": "Option 3",
@@ -421,7 +421,7 @@ def multiple_entry(multiple_field, record):
 
 def test_multiple_entry_create(db, record, multiple_field, auth_client):
     data = {
-        "action": "data_sheets/create_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": str(multiple_field.uuid),
         "value": ["Option 1"],
@@ -437,7 +437,7 @@ def test_multiple_entry_create(db, record, multiple_field, auth_client):
 
 def test_multiple_entry_update(db, record, multiple_field, auth_client, multiple_entry):
     data = {
-        "action": "data_sheets/update_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": str(multiple_field.uuid),
         "value": ["Option 2"],
@@ -469,7 +469,7 @@ def test_multiple_entry_create_values_must_be_in_options(
     db, record, multiple_field, auth_client
 ):
     data = {
-        "action": "data_sheets/create_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": str(multiple_field.uuid),
         "value": ["Option 2", "Option 3"],
@@ -485,7 +485,7 @@ def test_multiple_entry_update_values_must_be_in_options(
     db, record, multiple_field, auth_client, multiple_entry
 ):
     data = {
-        "action": "data_sheets/update_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": str(multiple_field.uuid),
         "value": ["Option 2", "Option 3"],
@@ -517,7 +517,7 @@ def statistic_entry(statistic_field, record):
 
 def test_statistic_entry_create(db, record, statistic_field, post):
     data = {
-        "action": "data_sheets/create_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": statistic_field.uuid,
         "value": "Option 1",
@@ -531,7 +531,7 @@ def test_statistic_entry_create(db, record, statistic_field, post):
 
 def test_statistic_entry_update(db, record, statistic_field, post, statistic_entry):
     data = {
-        "action": "data_sheets/update_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": statistic_field.uuid,
         "value": "Option 2",
@@ -576,7 +576,7 @@ def test_users_entry_create(db, record, users_field, auth_client):
         rlc=user.org, email="dummy3@law-orga.de", save=True
     )["rlc_user"]
     data = {
-        "action": "data_sheets/create_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": str(users_field.uuid),
         "value": [str(user1.pk), str(user2.pk)],
@@ -596,7 +596,7 @@ def test_users_entry_udpate(db, record, users_field, auth_client, users_entry):
         rlc=user.org, email="dummy3@law-orga.de", save=True
     )["rlc_user"]
     data = {
-        "action": "data_sheets/update_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": str(users_field.uuid),
         "value": [str(user2.pk)],
@@ -637,7 +637,7 @@ def test_entry_keys_sharing_true(db, record, users_field, auth_client):
     folder1 = r.retrieve(user.org_id, record.folder_uuid)
     assert folder1.has_access(user2) is False
     data = {
-        "action": "data_sheets/create_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": str(users_field.uuid),
         "value": [str(user2.pk)],
@@ -652,7 +652,7 @@ def test_entry_keys_sharing_true(db, record, users_field, auth_client):
     # update
     assert folder2.has_access(user1) is False
     data = {
-        "action": "data_sheets/update_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": str(users_field.uuid),
         "value": [str(user1.pk)],
@@ -680,7 +680,7 @@ def test_entry_keys_sharing_false(db, record, users_field, auth_client):
     folder1 = r.retrieve(user.org_id, record.folder_uuid)
     assert folder1.has_access(user2) is False
     data = {
-        "action": "data_sheets/create_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": str(users_field.uuid),
         "value": [str(user2.pk)],
@@ -695,7 +695,7 @@ def test_entry_keys_sharing_false(db, record, users_field, auth_client):
     # update
     assert folder2.has_access(user1) is False
     data = {
-        "action": "data_sheets/update_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": str(users_field.uuid),
         "value": [str(user1.pk)],
@@ -726,7 +726,7 @@ def test_enc_standard_entry_create(
     db, record, enc_standard_field, post, aes_key_record
 ):
     data = {
-        "action": "data_sheets/create_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": enc_standard_field.uuid,
         "value": "Hallo",
@@ -744,7 +744,7 @@ def test_enc_standard_entry_update(
     db, record, enc_standard_field, post, enc_standard_entry, aes_key_record
 ):
     data = {
-        "action": "data_sheets/update_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": enc_standard_field.uuid,
         "value": "Hallo 2",
@@ -792,7 +792,7 @@ def enc_select_entry(enc_select_field, record, aes_key_record):
 
 def test_enc_select_entry_create(db, record, enc_select_field, post, aes_key_record):
     data = {
-        "action": "data_sheets/create_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": enc_select_field.uuid,
         "value": "Option 1",
@@ -810,7 +810,7 @@ def test_enc_select_entry_update(
     db, record, enc_select_field, post, enc_select_entry, aes_key_record
 ):
     data = {
-        "action": "data_sheets/update_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": enc_select_field.uuid,
         "value": "Option 2",
@@ -840,7 +840,7 @@ def test_enc_select_entry_create_value_in_options(
     db, record, enc_select_field, post, aes_key_record
 ):
     data = {
-        "action": "data_sheets/create_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": enc_select_field.uuid,
         "value": "Option 3",
@@ -854,7 +854,7 @@ def test_enc_select_entry_update_value_in_options(
     db, record, enc_select_field, post, enc_select_entry, aes_key_record
 ):
     data = {
-        "action": "data_sheets/update_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": enc_select_field.uuid,
         "value": "Option 3",
@@ -880,7 +880,7 @@ def test_file_entry_download(db, auth_client, file_entry):
 def test_record_updated_is_updated_on_create(db, post, standard_field, record):
     updated = record.updated
     data = {
-        "action": "data_sheets/create_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": str(standard_field.uuid),
         "value": "Hallo",
@@ -894,7 +894,7 @@ def test_record_updated_is_updated_on_create(db, post, standard_field, record):
 def test_record_updated_on_update(db, post, standard_field, standard_entry, record):
     updated = record.updated
     data = {
-        "action": "data_sheets/update_entry",
+        "action": "data_sheets/create_or_update_entry",
         "record_id": record.pk,
         "field_id": str(standard_field.uuid),
         "value": "Hallo",

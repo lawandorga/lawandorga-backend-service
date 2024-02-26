@@ -4,6 +4,7 @@ from core.data_sheets.use_cases.access_delivery import (
 from core.data_sheets.use_cases.entry import (
     create_entry,
     create_file_entry,
+    create_or_update_entry,
     delete_entry,
     update_entry,
 )
@@ -24,6 +25,7 @@ COMMANDS = {
     "data_sheets/create_field": create_field,
     "data_sheets/update_field": update_field,
     "data_sheets/delete_field": delete_field,
+    "data_sheets/create_or_update_entry": create_or_update_entry,
     "data_sheets/create_entry": create_entry,
     "data_sheets/update_entry": update_entry,
     "data_sheets/create_file_entry": create_file_entry,

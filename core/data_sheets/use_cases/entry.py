@@ -16,15 +16,6 @@ def update_record_updated_time(record_id: int):
 
 
 @use_case
-def create_entry(
-    __actor: OrgUser, field_id: UUID, record_id: int, value: str | list[str]
-):
-    field = find_field_from_uuid(__actor, field_id)
-    field.create_entry(__actor, record_id, value)
-    update_record_updated_time(record_id)
-
-
-@use_case
 def create_file_entry(
     __actor: OrgUser, field_id: UUID, record_id: int, file: UploadedFile
 ):
@@ -35,11 +26,29 @@ def create_file_entry(
 
 
 @use_case
+def create_entry(
+    __actor: OrgUser, field_id: UUID, record_id: int, value: str | list[str]
+):
+    field = find_field_from_uuid(__actor, field_id)
+    field.create_entry(__actor, record_id, value)
+    update_record_updated_time(record_id)
+
+
+@use_case
 def update_entry(
     __actor: OrgUser, field_id: UUID, record_id: int, value: str | list[str]
 ):
     field = find_field_from_uuid(__actor, field_id)
     field.update_entry(__actor, record_id, value)
+    update_record_updated_time(record_id)
+
+
+@use_case
+def create_or_update_entry(
+    __actor: OrgUser, field_id: UUID, record_id: int, value: str | list[str]
+):
+    field = find_field_from_uuid(__actor, field_id)
+    field.create_or_update_entry(__actor, record_id, value)
     update_record_updated_time(record_id)
 
 
