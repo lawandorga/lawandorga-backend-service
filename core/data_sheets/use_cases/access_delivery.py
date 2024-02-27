@@ -34,18 +34,24 @@ def deliver_access_to_users_who_should_have_access(
     folders: dict[UUID, Folder] = r.get_dict(__actor.org_id)
     changed_folders: set[Folder] = set()
     for record in records_2:
-        if record.has_access(__actor):
-            # do this in order to put the record inside a folder
-            # if not record.folder_uuid:
-            #     migrate_record_into_folder(__actor, record)
+        if not record.has_access(__actor):
+            continue
 
-            for user in users_3:
-                if not record.has_access(user):
-                    assert record.folder_uuid is not None
-                    folder = folders[record.folder_uuid]
-                    folder.grant_access(user, __actor)
-                    changed_folders.add(folder)
-                    logger.info(f"User {user.uuid} was given access to {record.uuid}")
+        # do this in order to put the record inside a folder
+        # if not record.folder_uuid:
+        #     migrate_record_into_folder(__actor, record)
+
+        for user in users_3:
+            if record.has_access(user):
+                continue
+
+            assert record.folder_uuid is not None
+            folder = folders[record.folder_uuid]
+            if folder.has_access(user):
+                continue
+            folder.grant_access(user, __actor)
+            changed_folders.add(folder)
+            logger.info(f"User {user.uuid} was given access to {record.uuid}")
 
     for folder in changed_folders:
         r.save(folder)
