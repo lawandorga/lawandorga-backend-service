@@ -15,6 +15,13 @@ class InputQueryFolderMails(BaseModel):
 
 class OutputMail(BaseModel):
     uuid: UUID
+    sender: str
+    bcc: str
+    subject: str
+    content: str
+    sending_datetime: datetime.datetime
+    is_read: bool
+    is_pinned: bool
 
 
 @router.get(url="folder_mails/<uuid:group>/", output_schema=list[OutputMail])
