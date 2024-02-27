@@ -9,7 +9,7 @@ router = Router()
 
 
 class InputQueryFolderMails(BaseModel):
-    uuid: UUID
+    group: UUID
 
 
 class OutputMail(BaseModel):
