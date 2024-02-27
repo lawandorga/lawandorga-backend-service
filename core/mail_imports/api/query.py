@@ -23,7 +23,7 @@ def query__folder_mails(user: OrgUser, data: InputQueryFolderMails):
     # optional return the cc-email of the folder as well
     return [
         {
-            "uuid": "123",
+            "uuid": "12341234123412341234123412341234",
             "sender": "hello@gmail.com",
             "bcc": "",
             "subject": "First email",
@@ -33,7 +33,7 @@ def query__folder_mails(user: OrgUser, data: InputQueryFolderMails):
             "is_pinned": False,
         },
         {
-            "uuid": "234",
+            "uuid": "23452345234523452345234523452345",
             "sender": "hello@gmail.com",
             "bcc": "",
             "subject": "Second email",
@@ -43,7 +43,7 @@ def query__folder_mails(user: OrgUser, data: InputQueryFolderMails):
             "is_pinned": True,
         },
         {
-            "uuid": "345",
+            "uuid": "34563456345634563456345634563456",
             "sender": "hello@gmail.com",
             "bcc": "",
             "subject": "Third email",
