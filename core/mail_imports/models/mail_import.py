@@ -22,6 +22,7 @@ class MailImport(models.Model):
     content = models.TextField(max_length=255, blank=True)
     sending_datetime = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
+    is_pinned = models.BooleanField(default=False)
 
 
 def get_emails_from_server():
