@@ -1,10 +1,16 @@
 import os
 from datetime import datetime, timedelta
 
+import environs
 import pytz
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Environment
+# https://github.com/sloria/environs/blob/master/examples/django_example.py
+env = environs.Env()
+env.read_env()
 
 # Application definition
 # https://docs.djangoproject.com/en/dev/ref/applications/
@@ -255,3 +261,10 @@ MESSAGEBUS_EVENT_STORE = "messagebus.impl.store.DjangoEventStore"
 # use case settings
 USECASE_INJECTIONS = "core.injections.INJECTIONS"
 USECASE_FUNCTIONS = "core.usecases.USECASES"
+
+# Mail-Import
+# used in our mail-import application
+MI_EMAIL_HOST = env.str("MI_EMAIL_HOST", "not-set")
+MI_EMAIL_PORT = env.int("MI_EMAIL_PORT", -1)
+MI_EMAIL_USER = env.str("MI_EMAIL_USER", "not-set")
+MI_EMAIL_PASSWORD = env.str("MI_EMAIL_PASSWORD", "not-set")

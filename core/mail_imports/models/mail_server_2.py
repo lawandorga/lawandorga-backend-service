@@ -15,3 +15,8 @@ class MI_MailAddress(models.Model):
 
     def __str__(self):
         return "address: {}; folder: {};".format(self.localpart, self.folder_uuid)
+
+
+# mail server
+# abc@mail-import.law-orga.de
+# externer mail server nach abrufen mails löschen

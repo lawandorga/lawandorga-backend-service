@@ -1,13 +1,4 @@
-# type: ignore
-
-import environs
-
 from .local import *
-
-# Environment
-# https://github.com/sloria/environs/blob/master/examples/django_example.py
-env = environs.Env()
-env.read_env()
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
@@ -19,7 +10,7 @@ DATABASES = {
         "PASSWORD": "pass1234",
         "HOST": "localhost",
         "PORT": "5432",
-        "TEST": {"NAME": "test_{}".format(RUNTIME)},
+        "TEST": {"NAME": "test_{}".format(RUNTIME)},  # type: ignore
     }
 }
 

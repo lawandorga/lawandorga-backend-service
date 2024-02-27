@@ -36,3 +36,8 @@ class MI_MailAddress(models.Model):
         return "address: {}; email: {}@{};".format(
             self.pk, self.localpart, self.domain.name
         )
+
+
+# mail server
+# abc@*.mail-import.law-orga.de
+# externer mail server (?) oder eigener mail server

@@ -1,11 +1,4 @@
-import environs
-
 from .base import *
-
-# Environment
-# https://github.com/sloria/environs/blob/master/examples/django_example.py
-env = environs.Env()
-env.read_env()
 
 # This is used for links in activation emails and so on
 MAIN_FRONTEND_URL = "https://www.law-orga.de"
