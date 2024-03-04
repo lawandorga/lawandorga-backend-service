@@ -40,6 +40,8 @@ def deliver_access_to_users_who_should_have_access(
         # do this in order to put the record inside a folder
         # if not record.folder_uuid:
         #     migrate_record_into_folder(__actor, record)
+        if record.folder_uuid is None:
+            continue
 
         for user in users_3:
             if record.has_access(user):
