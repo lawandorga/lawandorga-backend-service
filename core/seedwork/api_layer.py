@@ -144,6 +144,8 @@ def get_data_from_request(request: HttpRequest) -> dict[str, Any]:
                 v1 = val.replace("||JSON||", "")
                 v2 = json.loads(v1)
                 val = v2
+            elif "||NULL||" == val:
+                val = None
             data[key] = val
     # return
     return data
