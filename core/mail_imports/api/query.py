@@ -24,6 +24,11 @@ class OutputMail(BaseModel):
     is_pinned: bool
 
 
+@router.get(url="folder_mails/get_cc_address", output_schema=str)
+def query__get_cc_address(user: OrgUser):
+    return "toBeDone@web.de"
+
+
 @router.get(url="folder_mails/<uuid:group>/", output_schema=list[OutputMail])
 def query__folder_mails(user: OrgUser, data: InputQueryFolderMails):
     # query the mail import model from models.py
