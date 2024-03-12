@@ -8,6 +8,8 @@ from uuid import uuid4
 from django.conf import settings
 from django.db import models
 from pydantic import BaseModel
+import re 
+
 
 logger = logging.getLogger("django")
 
@@ -76,6 +78,7 @@ class MailInbox:
 
     def delete_emails(self, emails: Sequence[ValidatedEmail | ErrorEmail | RawEmail]):
         for email in emails:
+            self.mailbox.copy(email.num, "Trash")
             self.mailbox.store(email.num, "+FLAGS", "\\Deleted")
 
     def mark_emails_as_error(self, emails: list[ErrorEmail]):
