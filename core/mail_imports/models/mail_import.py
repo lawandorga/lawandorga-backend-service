@@ -8,8 +8,6 @@ from uuid import uuid4
 from django.conf import settings
 from django.db import models
 from pydantic import BaseModel
-import re 
-
 
 logger = logging.getLogger("django")
 
