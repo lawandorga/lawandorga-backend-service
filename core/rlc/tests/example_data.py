@@ -33,6 +33,7 @@ from core.fixtures import (
     create_folder_permissions,
     create_permissions,
 )
+from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.messages.models import EncryptedRecordMessage
 from core.models import (
@@ -297,12 +298,17 @@ def create_admin_group(rlc: Org, main_user: UserProfile):
     return admin_group
 
 
-def create_records(users, rlc):
-    tags = (
-        DataSheetMultipleField.objects.filter(template__rlc=rlc, name="Tags")
-        .first()
-        .options
-    )
+def create_records(main_user: OrgUser, users: list[UserProfile], rlc: Org):
+    fr = DjangoFolderRepository()
+    folder = Folder.create(name="Test Folder", org_pk=rlc.pk)
+    folder.grant_access(main_user)
+    fr.save(folder)
+
+    multiple_field = DataSheetMultipleField.objects.filter(
+        template__rlc=rlc, name="Tags"
+    ).first()
+    assert multiple_field is not None
+    tags = multiple_field.options
     records = [
         (
             "2018-7-12",
@@ -416,52 +422,56 @@ def create_records(users, rlc):
     # 6 tags
 
     template = DataSheetTemplate.objects.first()
+    assert template is not None
     created_records = []
     for record in records:
         # create
-        created_record = DataSheet.objects.create(template=template, name=record[2])
+        rfolder = Folder.create(name=record[2], org_pk=rlc.pk)
+        rfolder.grant_access(main_user)
+        fr.save(rfolder)
+        created_record = DataSheet.create(
+            template=template, name=record[2], user=main_user, folder=rfolder
+        )
+        created_record.save()
         # first contact date
-        field = DataSheetStandardField.objects.get(
+        field1 = DataSheetStandardField.objects.get(
             template=template, name="First contact date"
         )
         DataSheetStandardEntry.objects.create(
-            record=created_record, field=field, value=record[0]
+            record=created_record, field=field1, value=record[0]
         )
         # last contact date
-        field = DataSheetStandardField.objects.get(
+        field2 = DataSheetStandardField.objects.get(
             template=template, name="Last contact date"
         )
         DataSheetStandardEntry.objects.create(
-            record=created_record, field=field, value=record[1]
+            record=created_record, field=field2, value=record[1]
         )
         # official note
-        field = DataSheetStandardField.objects.get(
+        field3 = DataSheetStandardField.objects.get(
             template=template, name="Official Note"
         )
         DataSheetStandardEntry.objects.create(
-            record=created_record, field=field, value=record[3]
+            record=created_record, field=field3, value=record[3]
         )
         # state
-        field = DataSheetStateField.objects.get(template=template, name="State")
+        field4 = DataSheetStateField.objects.get(template=template, name="State")
         DataSheetStateEntry.objects.create(
-            record=created_record, field=field, value=record[4]
+            record=created_record, field=field4, value=record[4]
         )
         # consultants
-        field = DataSheetUsersField.objects.get(template=template, name="Consultants")
-        entry = DataSheetUsersEntry.objects.create(record=created_record, field=field)
+        field5 = DataSheetUsersField.objects.get(template=template, name="Consultants")
+        entry = DataSheetUsersEntry.objects.create(record=created_record, field=field5)
         entry.value.set([u.rlc_user for u in record[5]])
         # tags
-        field = DataSheetMultipleField.objects.get(template=template, name="Tags")
+        field6 = DataSheetMultipleField.objects.get(template=template, name="Tags")
         DataSheetMultipleEntry.objects.create(
-            record=created_record, field=field, value=record[6]
+            record=created_record, field=field6, value=record[6]
         )
 
         # secure the record
-        user0 = users[0]
-        folder = created_record.folder.folder
-        folder.grant_access(user0.rlc_user)
         for user in set(record[5]):
-            folder.grant_access(user.rlc_user, by=user0.rlc_user)
+            rfolder.grant_access(user.rlc_user, by=main_user)
         r = DjangoFolderRepository()
         r.save(folder)
 
@@ -791,7 +801,7 @@ def create() -> None:
     create_groups(rlc1, users)
     create_admin_group(rlc1, dummy)
     # records
-    create_records(list(users) + [dummy], rlc1)
+    create_records(dummy.rlc_user, list(users), rlc1)
     create_informative_record(dummy, dummy_password, users, rlc1)
     # questionnaire templates
     create_questionnaire_templates(rlc1)

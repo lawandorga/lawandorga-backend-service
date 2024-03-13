@@ -18,10 +18,9 @@ logger = logging.getLogger("django")
 def deliver_access_to_users_who_should_have_access(
     __actor: OrgUser, r: FolderRepository
 ):
-    records_1 = (
-        DataSheet.objects.filter(template__rlc_id=__actor.org_id)
-        .select_related("template")
-    )
+    records_1 = DataSheet.objects.filter(
+        template__rlc_id=__actor.org_id
+    ).select_related("template")
     records_2 = list(records_1)
 
     permission = Permission.objects.get(name=PERMISSION_RECORDS_ACCESS_ALL_RECORDS)
@@ -34,12 +33,6 @@ def deliver_access_to_users_who_should_have_access(
     changed_folders: set[Folder] = set()
     for record in records_2:
         if not record.has_access(__actor):
-            continue
-
-        # do this in order to put the record inside a folder
-        # if not record.folder_uuid:
-        #     migrate_record_into_folder(__actor, record)
-        if record.folder_uuid is None:
             continue
 
         for user in users_3:

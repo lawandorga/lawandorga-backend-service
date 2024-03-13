@@ -71,14 +71,14 @@ class DataSheet(Aggregate, models.Model):
             ) and not folder.has_access(user):
                 folder.grant_access(u, user)
 
-        record = DataSheet(template=template, name=name)
-        record.set_folder(folder)
-        record.generate_key(user)
+        sheet = DataSheet(template=template, name=name)
+        sheet.set_folder(folder)
+        sheet.generate_key(user)
 
         if pk:
-            record.pk = pk
+            sheet.pk = pk
 
-        return record
+        return sheet
 
     template = models.ForeignKey(
         DataSheetTemplate, related_name="records", on_delete=models.PROTECT
