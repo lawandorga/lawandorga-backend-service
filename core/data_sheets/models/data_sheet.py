@@ -83,7 +83,7 @@ class DataSheet(Aggregate, models.Model):
     template = models.ForeignKey(
         DataSheetTemplate, related_name="records", on_delete=models.PROTECT
     )
-    folder_uuid = models.UUIDField(db_index=True, null=True)
+    folder_uuid = models.UUIDField(db_index=True)
     uuid = models.UUIDField(default=uuid4, unique=True, db_index=True)
     name = models.CharField(max_length=300, default="-")
     key = models.JSONField(null=True)
@@ -206,13 +206,7 @@ class DataSheet(Aggregate, models.Model):
         self.folder.obj_renamed()
 
     def has_access(self, user: OrgUser) -> bool:
-        if self.folder_uuid is None:
-            for enc in getattr(self, "encryptions").all():
-                if enc.user_id == user.id:
-                    return True
-        else:
-            return self.folder.has_access(user)
-        return False
+        return self.folder.has_access(user)
 
     def generate_key(self, user: OrgUser):
         assert self.folder is not None
