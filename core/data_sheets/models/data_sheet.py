@@ -29,7 +29,7 @@ from core.folders.infrastructure.folder_addon import FolderAddon
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.permissions.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from core.seedwork.aggregate import Aggregate
-from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
+from core.seedwork.encryption import AESEncryption, EncryptedModelMixin
 from core.seedwork.events_addon import EventsAddon
 
 
@@ -121,7 +121,6 @@ class DataSheet(Aggregate, models.Model):
         "users_entries__field",
         "multiple_entries",
         "multiple_entries__field",
-        "encryptions",
         "statistic_entries",
     ]
 
@@ -149,7 +148,6 @@ class DataSheet(Aggregate, models.Model):
 
     if TYPE_CHECKING:
         standard_entries: models.QuerySet["DataSheetStandardEntry"]
-        encryptions: models.QuerySet["DataSheetEncryptionNew"]
 
     class Meta:
         ordering = ["-created"]
@@ -589,64 +587,3 @@ class DataSheetStatisticEntry(DataSheetEntry):
 
     def get_value(self, *args, **kwargs):
         return self.value
-
-
-###
-# RecordEncryption
-###
-class DataSheetEncryptionNew(EncryptedModelMixin, models.Model):
-    user = models.ForeignKey(
-        OrgUser, related_name="recordencryptions", on_delete=models.CASCADE
-    )
-    record = models.ForeignKey(
-        DataSheet, related_name="encryptions", on_delete=models.CASCADE
-    )
-    key = models.BinaryField()
-    correct = models.BooleanField(default=True)
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
-    encryption_class = RSAEncryption
-    encrypted_fields = ["key"]
-
-    class Meta:
-        unique_together = ["user", "record"]
-        verbose_name = "RecordEncryption"
-        verbose_name_plural = "RecordEncryptions"
-
-    def __str__(self):
-        return "recordEncryption: {}; user: {}; record: {};".format(
-            self.pk, self.user.email, self.record.pk
-        )
-
-    def set_correct(self, value):
-        key = DataSheetEncryptionNew.objects.get(pk=self.pk)
-        key.correct = value
-        key.save()
-        self.correct = value
-
-    def test(self, private_key_user):
-        try:
-            super().decrypt(private_key_user)
-            self.set_correct(True)
-        except ValueError:
-            self.set_correct(False)
-            self.user.locked = True
-            self.user.save()
-
-    def decrypt(self, private_key_user=None):
-        if private_key_user:
-            key = private_key_user
-        else:
-            raise ValueError("You need to pass (private_key_user).")
-        try:
-            super().decrypt(key)
-        except Exception as e:
-            self.test(private_key_user)
-            raise e
-
-    def encrypt(self, public_key_user=None):
-        if public_key_user:
-            key = public_key_user
-        else:
-            raise ValueError("You need to pass (public_key_user).")
-        super().encrypt(key)

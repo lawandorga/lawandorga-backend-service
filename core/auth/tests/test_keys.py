@@ -30,10 +30,6 @@ class TestUserKeys(TestCase):
         keys = OrgEncryption.objects.get(pk=user_obj["user"].users_rlc_keys.first().pk)
         return keys
 
-    def get_user_record_key(self, record_obj, user_obj):
-        key = record_obj["record"].encryptions.get(user=user_obj["rlc_user"])
-        return key
-
     def test_rlc_key_check(self):
         objs = self.user_1["rlc_user"].test_keys()
         [obj.save() for obj in objs]

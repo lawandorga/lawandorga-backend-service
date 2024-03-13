@@ -8,7 +8,6 @@ from core.data_sheets.models import (
     DataSheetEncryptedSelectField,
     DataSheetEncryptedStandardEntry,
     DataSheetEncryptedStandardField,
-    DataSheetEncryptionNew,
     DataSheetMultipleEntry,
     DataSheetMultipleField,
     DataSheetSelectEntry,
@@ -24,7 +23,6 @@ from core.data_sheets.models import (
 
 admin.site.register(DataSheetTemplate)
 admin.site.register(DataSheet)
-admin.site.register(DataSheetEncryptionNew)
 
 admin.site.register(DataSheetStandardField)
 admin.site.register(DataSheetSelectField)

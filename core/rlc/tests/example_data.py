@@ -13,7 +13,6 @@ from core.data_sheets.models import (
     DataSheet,
     DataSheetEncryptedStandardEntry,
     DataSheetEncryptedStandardField,
-    DataSheetEncryptionNew,
     DataSheetMultipleEntry,
     DataSheetMultipleField,
     DataSheetSelectEntry,
@@ -458,13 +457,13 @@ def create_records(users, rlc):
         )
 
         # secure the record
-        aes_key = AESEncryption.generate_secure_key()
+        user0 = users[0]
+        folder = created_record.folder.folder
+        folder.grant_access(user0.rlc_user)
         for user in set(record[5]):
-            record_encryption = DataSheetEncryptionNew(
-                user=user.rlc_user, record=created_record, key=aes_key
-            )
-            record_encryption.encrypt(user.get_public_key())
-            record_encryption.save()
+            folder.grant_access(user.rlc_user, by=user0.rlc_user)
+        r = DjangoFolderRepository()
+        r.save(folder)
 
         # append to return
         created_records.append(created_record)

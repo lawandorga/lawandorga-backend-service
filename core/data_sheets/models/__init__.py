@@ -3,7 +3,6 @@ from .data_sheet import (
     DataSheetEncryptedFileEntry,
     DataSheetEncryptedSelectEntry,
     DataSheetEncryptedStandardEntry,
-    DataSheetEncryptionNew,
     DataSheetMultipleEntry,
     DataSheetSelectEntry,
     DataSheetStandardEntry,

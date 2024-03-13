@@ -21,7 +21,6 @@ def deliver_access_to_users_who_should_have_access(
     records_1 = (
         DataSheet.objects.filter(template__rlc_id=__actor.org_id)
         .select_related("template")
-        .prefetch_related("encryptions")
     )
     records_2 = list(records_1)
 
