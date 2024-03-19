@@ -4,14 +4,18 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from core.auth.models.org_user import OrgUser
+<<<<<<< HEAD
 from core.mail_imports.models import MailImport
+=======
+from core.mail_imports.models.mail_import import MailImport
+>>>>>>> 1b75d6306047666fbcf1f4dedcd499d6b9c022a0
 from core.seedwork.api_layer import Router
 
 router = Router()
 
 
 class InputQueryFolderMails(BaseModel):
-    group: UUID
+    folder_uuid: UUID
 
 
 class OutputMail(BaseModel):
