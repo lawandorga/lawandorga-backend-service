@@ -4,11 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from core.auth.models.org_user import OrgUser
-<<<<<<< HEAD
-from core.mail_imports.models import MailImport
-=======
 from core.mail_imports.models.mail_import import MailImport
->>>>>>> 1b75d6306047666fbcf1f4dedcd499d6b9c022a0
 from core.seedwork.api_layer import Router
 
 router = Router()
@@ -34,9 +30,9 @@ def query__get_cc_address(user: OrgUser):
     return user.email
 
 
-@router.get(url="folder_mails/<uuid:group>/", output_schema=list[OutputMail])
+@router.get(url="folder_mails/<uuid:folder_uuid>/", output_schema=list[OutputMail])
 def query__folder_mails(data: InputQueryFolderMails):
-    imported_mails = MailImport.objects.filter(folder_uuid=data.group)
+    imported_mails = MailImport.objects.filter(folder_uuid=data.folder_uuid)
     mails = []
     for imported_mail in imported_mails:
         mail = OutputMail(
