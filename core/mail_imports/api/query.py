@@ -4,13 +4,14 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from core.auth.models.org_user import OrgUser
+from core.mail_imports.models.mail_import import MailImport
 from core.seedwork.api_layer import Router
 
 router = Router()
 
 
 class InputQueryFolderMails(BaseModel):
-    group: UUID
+    folder_uuid: UUID
 
 
 class OutputMail(BaseModel):
@@ -29,10 +30,12 @@ def query__get_cc_address(user: OrgUser):
     return "toBeDone@web.de"
 
 
-@router.get(url="folder_mails/<uuid:group>/", output_schema=list[OutputMail])
+@router.get(url="folder_mails/<uuid:folder_uuid>/", output_schema=list[OutputMail])
 def query__folder_mails(user: OrgUser, data: InputQueryFolderMails):
     # query the mail import model from models.py
     # optional return the cc-email of the folder as well
+    mails = MailImport.objects.filter(folder_uuid=data.folder_uuid)
+    print(mails)
     return [
         {
             "uuid": "12341234123412341234123412341234",
