@@ -4,6 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from core.auth.models.org_user import OrgUser
+from core.mail_imports.models import MailImport
 from core.seedwork.api_layer import Router
 
 router = Router()
@@ -26,42 +27,23 @@ class OutputMail(BaseModel):
 
 @router.get(url="folder_mails/get_cc_address", output_schema=str)
 def query__get_cc_address(user: OrgUser):
-    return "toBeDone@web.de"
+    return user.email
 
 
 @router.get(url="folder_mails/<uuid:group>/", output_schema=list[OutputMail])
-def query__folder_mails(user: OrgUser, data: InputQueryFolderMails):
-    # query the mail import model from models.py
-    # optional return the cc-email of the folder as well
-    return [
-        {
-            "uuid": "12341234123412341234123412341234",
-            "sender": "hello@gmail.com",
-            "bcc": "other.address@gmail.com",
-            "subject": "First email with a very very long, super long, extra extra long subject. Someone wrote a whole email in the subject!",
-            "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-            "sending_datetime": datetime.datetime.now() - datetime.timedelta(days=1),
-            "is_read": True,
-            "is_pinned": False,
-        },
-        {
-            "uuid": "23452345234523452345234523452345",
-            "sender": "hello@gmail.com",
-            "bcc": "other.address@gmail.com",
-            "subject": "Second email",
-            "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-            "sending_datetime": datetime.datetime.now() - datetime.timedelta(days=4),
-            "is_read": True,
-            "is_pinned": True,
-        },
-        {
-            "uuid": "34563456345634563456345634563456",
-            "sender": "hello@gmail.com",
-            "bcc": "other.address@gmail.com",
-            "subject": "Third email",
-            "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-            "sending_datetime": datetime.datetime.now(),
-            "is_read": False,
-            "is_pinned": False,
-        },
-    ]
+def query__folder_mails(data: InputQueryFolderMails):
+    imported_mails = MailImport.objects.filter(folder_uuid=data.group)
+    mails = []
+    for imported_mail in imported_mails:
+        mail = OutputMail(
+            uuid=imported_mail.uuid,
+            sender=imported_mail.sender,
+            bcc=imported_mail.bcc,
+            subject=imported_mail.subject,
+            content=imported_mail.content,
+            sending_datetime=imported_mail.sending_datetime,
+            is_read=imported_mail.is_read,
+            is_pinned=imported_mail.is_pinned,
+        )
+        mails.append(mail)
+    return mails

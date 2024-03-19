@@ -103,8 +103,10 @@ class MailInbox:
             logger.warning(f"Error in email {email.num}: {email.error}")
             self.mailbox.copy(email.num, "Errors")
             self.mailbox.store(email.num, "+FLAGS", "\\Deleted")
-    
-    def mark_emails_as_not_assignable(self, emails: Sequence[ValidatedEmail | ErrorEmail | RawEmail]):
+
+    def mark_emails_as_not_assignable(
+        self, emails: Sequence[ValidatedEmail | ErrorEmail | RawEmail]
+    ):
         for email in emails:
             self.mailbox.copy(email.num, "Unassigned")
             self.mailbox.store(email.num, "+FLAGS", "\\Deleted")
@@ -130,13 +132,17 @@ def assign_emails(emails: list[ValidatedEmail]) -> list[AssignedEmail]:
             left = address.split("@")[0]
             try:
                 folder_uuid = UUID(left)
-                assigned_emails.append(AssignedEmail(folder_uuid=folder_uuid, **email.model_dump()))
+                assigned_emails.append(
+                    AssignedEmail(folder_uuid=folder_uuid, **email.model_dump())
+                )
             except Exception:
                 continue
     return assigned_emails
 
 
-def get_unassigned_emails(validated: list[ValidatedEmail], assigned: list[AssignedEmail]) -> list[ValidatedEmail]:
+def get_unassigned_emails(
+    validated: list[ValidatedEmail], assigned: list[AssignedEmail]
+) -> list[ValidatedEmail]:
     assigned_nums = [email.num for email in assigned]
     return [email for email in validated if email.num not in assigned_nums]
 
