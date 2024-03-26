@@ -15,6 +15,6 @@ def mark_mails_as_read(__actor: OrgUser, mail_uuids: list[UUID]):
 
 
 @use_case
-def mark_mail_as_pinned(__actor: OrgUser, mail_uuid: UUID):
+def toggle_mail_pinned(__actor: OrgUser, mail_uuid: UUID):
     print("toggling mail", mail_uuid, "as pinned")
     pass
