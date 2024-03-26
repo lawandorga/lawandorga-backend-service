@@ -7,16 +7,23 @@ from uuid import UUID, uuid4
 
 from django.conf import settings
 from django.db import models
+from django.utils.timezone import localtime
 from pydantic import BaseModel
 
 logger = logging.getLogger("django")
 
 
 class MailImport(models.Model):
-    """
-    This is the db model for mail import.
-    """
+    @classmethod
+    def create(cls, sender: str, subject: str, content: str, folder_uuid: UUID):
+        return cls(
+            sender=sender,
+            subject=subject,
+            content=content,
+            folder_uuid=folder_uuid,
+        )
 
+    # org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name="mail_imports")
     uuid = models.UUIDField(db_index=True, default=uuid4, unique=True, editable=False)
     sender = models.CharField(max_length=255, blank=False)
     cc = models.CharField(max_length=255, blank=True)
@@ -33,7 +40,11 @@ class MailImport(models.Model):
         verbose_name_plural = "MI_MailImports"
 
     def __str__(self) -> str:
-        return f"mailImport: {self.folder_uuid};"
+        time = localtime(self.sending_datetime).strftime("%Y-%m-%d %H:%M:%S")
+        return f"mailImport: {self.folder_uuid}; time: {time};"
+
+    def mark_as_read(self):
+        self.is_read = True
 
 
 class RawEmail(BaseModel):
