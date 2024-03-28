@@ -2,13 +2,15 @@ import logging
 from email import message_from_bytes
 from email.message import Message
 from imaplib import IMAP4_SSL
-from typing import Any, Sequence
+from typing import Any, Protocol, Sequence, TypeVar
 from uuid import UUID, uuid4
 
 from django.conf import settings
 from django.db import models
 from django.utils.timezone import localtime
 from pydantic import BaseModel
+
+from core.rlc.models.org import Org
 
 logger = logging.getLogger("django")
 
@@ -23,7 +25,7 @@ class MailImport(models.Model):
             folder_uuid=folder_uuid,
         )
 
-    # org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name="mail_imports")
+    org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name="mail_imports")
     uuid = models.UUIDField(db_index=True, default=uuid4, unique=True, editable=False)
     sender = models.CharField(max_length=255, blank=False)
     cc = models.CharField(max_length=255, blank=True)
@@ -45,6 +47,10 @@ class MailImport(models.Model):
 
     def mark_as_read(self):
         self.is_read = True
+
+
+class NumEmail(Protocol):
+    num: str
 
 
 class RawEmail(BaseModel):
@@ -74,6 +80,10 @@ class ValidatedEmail(BaseModel):
 
 class AssignedEmail(ValidatedEmail):
     folder_uuid: UUID
+
+
+class FolderEmail(AssignedEmail):
+    org_pk: int
 
 
 class ErrorEmail(BaseModel):
@@ -151,11 +161,24 @@ def assign_emails(emails: list[ValidatedEmail]) -> list[AssignedEmail]:
     return assigned_emails
 
 
-def get_unassigned_emails(
-    validated: list[ValidatedEmail], assigned: list[AssignedEmail]
-) -> list[ValidatedEmail]:
-    assigned_nums = [email.num for email in assigned]
-    return [email for email in validated if email.num not in assigned_nums]
+def put_emails_in_folders(
+    emails: list[AssignedEmail], folders: dict[UUID, int]
+) -> list[FolderEmail]:
+    folder_emails: list[FolderEmail] = []
+    for email in emails:
+        org_pk = folders.get(email.folder_uuid)
+        if org_pk:
+            folder_emails.append(FolderEmail(org_pk=org_pk, **email.model_dump()))
+    return folder_emails
+
+
+E1 = TypeVar("E1", bound=NumEmail)
+E2 = TypeVar("E2", bound=NumEmail)
+
+
+def get_subset_of_emails(all_emails: list[E1], to_exclude: list[E2]) -> list[E1]:
+    assigned_nums = [email.num for email in to_exclude]
+    return [email for email in all_emails if email.num not in assigned_nums]
 
 
 def get_email_info(message: Message):
@@ -178,7 +201,7 @@ def get_content_from_email(message: Message):
     return content
 
 
-def save_emails(emails: list[AssignedEmail]):
+def save_emails(emails: list[FolderEmail]):
     for email in emails:
         obj = MailImport(
             sender=email.sender,
@@ -187,5 +210,6 @@ def save_emails(emails: list[AssignedEmail]):
             content=email.content,
             sending_datetime=email.date,
             folder_uuid=email.folder_uuid,
+            org_id=email.org_pk,
         )
         obj.save()
