@@ -161,13 +161,15 @@ def assign_emails_to_folder_uuid(
 
 
 def assign_email_to_folder(
-    email: AssignedEmail, folders: dict[UUID, Folder]
+    email: AssignedEmail, folders: dict[UUID, Folder], user: OrgUser
 ) -> FolderEmail | AssignedEmail:
     for folder_uuid in email.folder_uuids:
         if folder_uuid not in folders:
             continue
         folder = folders[folder_uuid]
         assert folder.org_pk is not None
+        if not folder.has_access(user):
+            continue
         return FolderEmail(
             org_pk=folder.org_pk, **email.model_dump(), folder_uuid=folder_uuid
         )
@@ -177,23 +179,25 @@ def assign_email_to_folder(
 def assign_emails_to_folder(
     emails: Sequence[ValidatedEmail | ErrorEmail | AssignedEmail],
     folders: dict[UUID, Folder],
+    user: OrgUser,
 ) -> list[ValidatedEmail | ErrorEmail | AssignedEmail | FolderEmail]:
     assigned: list[ValidatedEmail | ErrorEmail | AssignedEmail | FolderEmail] = []
     for email in emails:
         if not isinstance(email, AssignedEmail):
             assigned.append(email)
             continue
-        assigned.append(assign_email_to_folder(email, folders))
+        assigned.append(assign_email_to_folder(email, folders, user))
     return assigned
 
 
 def save_emails(
     emails: Sequence[ValidatedEmail | ErrorEmail | AssignedEmail | FolderEmail],
+    user: OrgUser,
 ) -> None:
     infolder = list_filter(emails, lambda e: isinstance(e, FolderEmail))
     for email in infolder:
         assert isinstance(email, FolderEmail)
-        obj = MailImport(
+        obj = MailImport.create(
             sender=email.sender,
             bcc=email.bcc or "",
             subject=email.subject,
@@ -202,6 +206,7 @@ def save_emails(
             folder_uuid=email.folder_uuid,
             org_id=email.org_pk,
         )
+        obj.encrypt(user)
         obj.save()
 
 
@@ -236,7 +241,7 @@ def import_mails(__actor: OrgUser, r: FolderRepository):
         raw_emails = mail_box.get_raw_emails()
         validated = validate_emails(raw_emails)
         assigned = assign_emails_to_folder_uuid(validated)
-        infolder = assign_emails_to_folder(assigned, folders)
-        save_emails(infolder)
+        infolder = assign_emails_to_folder(assigned, folders, __actor)
+        save_emails(infolder, __actor)
         move_emails(mail_box, infolder)
         log_emails(infolder)

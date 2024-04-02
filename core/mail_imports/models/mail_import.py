@@ -7,6 +7,7 @@ from django.utils.timezone import localtime
 
 from core.auth.models.org_user import OrgUser
 from core.folders.domain.aggregates.folder import Folder
+from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
@@ -20,28 +21,47 @@ logger = logging.getLogger("django")
 
 class MailImport(models.Model):
     @classmethod
-    def create(cls, sender: str, subject: str, content: str, folder_uuid: UUID):
-        return cls(
+    def create(
+        cls,
+        sender: str,
+        subject: str,
+        content: str,
+        folder_uuid: UUID,
+        org_id: int,
+        bcc: str = "",
+        sending_datetime: str | None = None,
+    ):
+        mi = cls(
             sender=sender,
-            subject=subject,
-            content=content,
             folder_uuid=folder_uuid,
+            org_id=org_id,
+            bcc=bcc,
         )
+        if sending_datetime:
+            mi.sending_datetime = sending_datetime
+        mi.subject = subject
+        mi.content = content
+        return mi
 
     org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name="mail_imports")
     uuid = models.UUIDField(db_index=True, default=uuid4, unique=True, editable=False)
     sender = models.CharField(max_length=255, blank=False)
     cc = models.CharField(max_length=255, blank=True)
     bcc = models.CharField(max_length=255, blank=True)
-    subject = models.CharField(max_length=255, blank=True)
-    content = models.TextField(max_length=255, blank=True)
     sending_datetime = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
     is_pinned = models.BooleanField(default=False)
     folder_uuid = models.UUIDField(db_index=True)
+    # encrypted content
+    ENC_FIELDS = ["subject", "content"]
+    enc_subject = models.JSONField()
+    enc_content = models.JSONField()
+    enc_key = models.JSONField()
 
     if TYPE_CHECKING:
         org_id: int
+        subject: str
+        content: str
 
     class Meta:
         verbose_name = "MI_MailImport"
@@ -49,7 +69,6 @@ class MailImport(models.Model):
 
     @property
     def folder(self) -> Folder:
-        assert self.folder_uuid is not None
         if not hasattr(self, "_folder"):
             r = DjangoFolderRepository()
             self._folder = r.retrieve(self.org_id, self.folder_uuid)
@@ -69,30 +88,29 @@ class MailImport(models.Model):
         self.is_pinned = not self.is_pinned
 
     def encrypt(self, user: OrgUser):
-        raise NotImplementedError("where to get the asymmetric key?")
-        # assert self.folder_uuid is not None
+        self.__generate_key(user)
+        key = self.get_key(user)
+        for field in self.ENC_FIELDS:
+            value = getattr(self, field, "")
+            open_box = OpenBox(data=value.encode("utf-8"))
+            locked_box = key.lock(open_box)
+            setattr(self, f"enc_{field}", locked_box.as_dict())
 
-        # self.__generate_key(user)
-        # key = self.get_key(user)
-        # open_box = OpenBox(data=self.content.encode("utf-8"))
-        # locked_box = key.lock(open_box)
-        # self.enc_content = locked_box.as_dict()
-
-    def decrypt(self):
-        raise NotImplementedError()
+    def decrypt(self, user: OrgUser):
+        key = self.get_key(user)
+        for field in self.ENC_FIELDS:
+            locked_box = LockedBox.create_from_dict(getattr(self, f"enc_{field}"))
+            open_box = key.unlock(locked_box)
+            setattr(self, field, open_box.value_as_str)
 
     def __generate_key(self, user: OrgUser):
-        assert self.folder is not None
-
         key = SymmetricKey.generate(SymmetricEncryptionV1)
         lock_key = self.folder.get_encryption_key(requestor=user)
         enc_key = EncryptedSymmetricKey.create(key, lock_key)
-        self.key = enc_key.as_dict()
+        self.enc_key = enc_key.as_dict()
 
     def get_key(self, user: OrgUser) -> SymmetricKey:
-        assert self.folder is not None
-
-        enc_key = EncryptedSymmetricKey.create_from_dict(self.key)
+        enc_key = EncryptedSymmetricKey.create_from_dict(self.enc_key)
         unlock_key = self.folder.get_decryption_key(requestor=user)
         key = enc_key.decrypt(unlock_key)
         return key
