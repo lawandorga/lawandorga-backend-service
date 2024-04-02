@@ -35,6 +35,14 @@ on:
         required: true
       SCW_SECRET_KEY: 
         required: true
+      MI_EMAIL_HOST: 
+        required: true
+      MI_EMAIL_PORT:
+        required: true
+      MI_EMAIL_USER:
+        required: true
+      MI_EMAIL_PASSWORD:
+        required: true
 
 jobs:
   run_migrations:
@@ -100,5 +108,9 @@ jobs:
         "DB_PORT": "${{ secrets.DB_PORT }}",
         "DB_HOST": "${{ secrets.DB_HOST }}",
         "PIPELINE_IMAGE": "${{ github.event.repository.name }}:${{ github.sha }}",
-        "PIPELINE_SERVICE": "${{ github.event.repository.name }}"
+        "PIPELINE_SERVICE": "${{ github.event.repository.name }}",
+        "MI_EMAIL_HOST": "${{ secrets.MI_EMAIL_HOST }}",
+        "MI_EMAIL_PORT": "${{ secrets.MI_EMAIL_PORT }}",
+        "MI_EMAIL_USER": "${{ secrets.MI_EMAIL_USER }}",
+        "MI_EMAIL_PASSWORD": "${{ secrets.MI_EMAIL_PASSWORD }}"
         }'

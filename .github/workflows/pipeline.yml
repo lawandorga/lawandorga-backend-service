@@ -42,3 +42,7 @@ jobs:
       SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
       SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
       SCW_PROJECT_ID: ${{ secrets.SCW_PROJECT_ID }}
+      MI_EMAIL_HOST: ${{ secrets.MI_EMAIL_HOST }}
+      MI_EMAIL_PORT: ${{ secrets.MI_EMAIL_PORT }}
+      MI_EMAIL_USER: ${{ secrets.MI_EMAIL_ADDRESS }}
+      MI_EMAIL_PASSWORD: ${{ secrets.MI_EMAIL_PASSWORD }}
