@@ -8,3 +8,10 @@
 8. verschlüsseln der emails mit dem folder key (Daniel, depends on 5)
 9. use cases verknüpfen mit frontend DONE
 10. cron job fuer das abholen der mails (Daniel)
+
+
+todos
+- sortieren mit den neuesten mails oben
+- gesendet aus der email ziehen
+- mail als ungelesen markieren
+- header oben der mails fetter machen oder hervorheben
