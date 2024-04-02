@@ -30,11 +30,18 @@ def mark_mails_as_read(__actor: OrgUser, mail_uuids: list[UUID]):
 
 
 @use_case
+def mark_mails_as_unread(__actor: OrgUser, mail_uuids: list[UUID]):
+    mails = mails_from_uuids(__actor, mail_uuids)
+    for mail in mails:
+        mail.mark_as_unread()
+    MailImport.objects.bulk_update(mails, ["is_read"])
+
+
+@use_case
 def toggle_mail_pinned(__actor: OrgUser, mail_uuid: UUID):
     mail = mail_from_uuid(__actor, mail_uuid)
     mail.toggle_pinned()
     mail.save()
-    # MailImport.objects.update()
 
 
 class NumEmail(Protocol):

@@ -62,6 +62,9 @@ class MailImport(models.Model):
     def mark_as_read(self):
         self.is_read = True
 
+    def mark_as_unread(self):
+        self.is_read = False
+
     def toggle_pinned(self):
         self.is_pinned = not self.is_pinned
 
