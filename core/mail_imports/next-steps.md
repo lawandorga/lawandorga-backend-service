@@ -5,9 +5,11 @@
 5. api endpoint für mails DONE
 6. frontend auf api anpassen DONE
 7. usecases fertigstellen (Joey)
-8. verschlüsseln der emails mit dem folder key (Daniel, depends on 5)
+8. verschlüsseln der emails mit dem folder key DONE
 9. use cases verknüpfen mit frontend DONE
-10. cron job fuer das abholen der mails (Daniel)
+10. frontend todos (Leandra)
+11. use case tests (Joey)
+12. mail import test (Daniel)
 
 
 todos
