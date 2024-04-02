@@ -69,6 +69,9 @@ class MailImport(models.Model):
     def mark_as_read(self):
         self.is_read = True
 
+    def mark_as_pinned(self):
+        self.is_pinned = True
+
     def encrypt(self, user: OrgUser):
         raise NotImplementedError("where to get the asymmetric key?")
         # assert self.folder_uuid is not None
