@@ -77,7 +77,9 @@ def get_content_from_email(message: Message):
     content = ""
     for part in message.walk():
         if part.get_content_type() == "text/plain":
-            content += str(part)
+            payload = part.get_payload(decode=True)
+            if payload is not None and isinstance(payload, bytes):
+                content = payload.decode()
     return content
 
 
