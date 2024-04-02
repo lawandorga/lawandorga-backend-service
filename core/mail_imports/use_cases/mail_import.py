@@ -1,3 +1,5 @@
+from email.header import decode_header
+from email.utils import parseaddr
 import logging
 from email import message_from_bytes
 from email.message import Message
@@ -83,9 +85,23 @@ def get_content_from_email(message: Message):
     return content
 
 
+def get_sender_info(message: Message) -> str:
+    sender = message.get("From")
+    if sender is None:
+        return "unknown"
+    
+    name, email = parseaddr(sender)
+
+    decoded_name = decode_header(name)[0][0]
+    if isinstance(decoded_name, bytes):
+        name = decoded_name.decode()
+
+    return f"{name} <{email}>"
+
+
 def get_email_info(message: Message):
     return {
-        "sender": message.get("From"),
+        "sender": get_sender_info(message),
         "to": message.get("To"),
         "bcc": message.get("BCC", ""),
         "cc": message.get("CC", ""),
