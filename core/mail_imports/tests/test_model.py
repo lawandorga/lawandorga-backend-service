@@ -25,3 +25,5 @@ def test_mark_as_pinned_works():
     )
     mail.toggle_pinned()
     assert mail.is_pinned
+    mail.toggle_pinned()
+    assert mail.is_pinned
