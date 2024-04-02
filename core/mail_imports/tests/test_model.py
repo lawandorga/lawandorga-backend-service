@@ -14,7 +14,6 @@ def test_mark_as_read_works():
     mail.mark_as_read()
     assert mail.is_read
 
-
 def test_mark_as_pinned_works():
     folder_uuid = uuid4()
     mail = MailImport.create(
@@ -26,4 +25,4 @@ def test_mark_as_pinned_works():
     mail.toggle_pinned()
     assert mail.is_pinned
     mail.toggle_pinned()
-    assert mail.is_pinned
+    assert not mail.is_pinned
