@@ -44,5 +44,5 @@ jobs:
       SCW_PROJECT_ID: ${{ secrets.SCW_PROJECT_ID }}
       MI_EMAIL_HOST: ${{ secrets.MI_EMAIL_HOST }}
       MI_EMAIL_PORT: ${{ secrets.MI_EMAIL_PORT }}
-      MI_EMAIL_USER: ${{ secrets.MI_EMAIL_ADDRESS }}
+      MI_EMAIL_USER: ${{ secrets.MI_EMAIL_USER }}
       MI_EMAIL_PASSWORD: ${{ secrets.MI_EMAIL_PASSWORD }}
