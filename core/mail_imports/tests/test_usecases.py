@@ -10,6 +10,7 @@ def test_mails_can_be_marked_as_read(db):
     folder_uuid = folder["folder"].uuid
     mail = MailImport.create(
         sender="test@law-orga.de",
+        to="recieve@law-orag.de",
         content="Test Mail",
         folder_uuid=folder_uuid,
         subject="Test Mail",

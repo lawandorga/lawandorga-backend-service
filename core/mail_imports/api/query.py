@@ -7,8 +7,6 @@ from core.auth.models.org_user import OrgUser
 from core.mail_imports.models.mail_import import MailImport
 from core.seedwork.api_layer import Router
 
-from seedwork.functional import list_map
-
 router = Router()
 
 
@@ -19,6 +17,7 @@ class InputQueryFolderMails(BaseModel):
 class OutputMail(BaseModel):
     uuid: UUID
     sender: str
+    to: str
     bcc: str
     subject: str
     content: str

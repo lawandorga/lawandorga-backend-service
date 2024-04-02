@@ -24,6 +24,7 @@ class MailImport(models.Model):
     def create(
         cls,
         sender: str,
+        to: str,
         subject: str,
         content: str,
         folder_uuid: UUID,
@@ -33,6 +34,7 @@ class MailImport(models.Model):
     ):
         mi = cls(
             sender=sender,
+            to=to,
             folder_uuid=folder_uuid,
             org_id=org_id,
             bcc=bcc,
@@ -46,6 +48,7 @@ class MailImport(models.Model):
     org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name="mail_imports")
     uuid = models.UUIDField(db_index=True, default=uuid4, unique=True, editable=False)
     sender = models.CharField(max_length=255, blank=False)
+    to = models.CharField(max_length=255, blank=False)
     cc = models.CharField(max_length=255, blank=True)
     bcc = models.CharField(max_length=255, blank=True)
     sending_datetime = models.DateTimeField(auto_now_add=True)

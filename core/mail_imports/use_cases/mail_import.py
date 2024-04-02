@@ -2,7 +2,7 @@ import logging
 from email import message_from_bytes
 from email.header import decode_header
 from email.message import Message
-from email.utils import parseaddr
+from email.utils import getaddresses, parseaddr
 from typing import Protocol, Sequence
 from uuid import UUID
 
@@ -106,10 +106,26 @@ def get_sender_info(message: Message) -> str:
     return f"{name} <{email}>"
 
 
+def get_to_info(message: Message) -> str:
+    raw_to = message.get("To", "")
+    if raw_to is None:
+        return ""
+
+    addresses = getaddresses([raw_to])
+    formatted_addresses = []
+    for name, email in addresses:
+        decoded_name = decode_header(name)[0][0]
+        if isinstance(decoded_name, bytes):
+            name = decoded_name.decode()
+        formatted_addresses.append(f"{name} <{email}>")
+
+    return ", ".join(formatted_addresses)
+
+
 def get_email_info(message: Message):
     return {
         "sender": get_sender_info(message),
-        "to": message.get("To"),
+        "to": get_to_info(message),
         "bcc": message.get("BCC", ""),
         "cc": message.get("CC", ""),
         "date": message.get("Date"),
@@ -200,6 +216,7 @@ def save_emails(
         obj = MailImport.create(
             sender=email.sender,
             bcc=email.bcc or "",
+            to=email.to,
             subject=email.subject,
             content=email.content,
             sending_datetime=email.date,
