@@ -37,5 +37,6 @@ def query__get_cc_address(user: OrgUser):
 @router.get(url="folder_mails/<uuid:folder_uuid>/", output_schema=list[OutputMail])
 def query__folder_mails(user: OrgUser, data: InputQueryFolderMails):
     mails = list(MailImport.objects.filter(folder_uuid=data.folder_uuid))
-    mails = list_map(mails, lambda m: m.decrypt(user))
+    for m in mails:
+        m.decrypt(user)
     return mails
