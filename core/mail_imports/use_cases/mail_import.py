@@ -57,15 +57,7 @@ class ValidatedEmail(BaseModel):
     date: str
     subject: str
     content: str
-
-    @property
-    def email_addresses(self) -> list[str]:
-        e1 = self.to.split(",")
-        e2 = self.bcc.split(",")
-        e3 = self.cc.split(",")
-        e4 = e1 + e2 + e3
-        e5 = [e.strip() for e in e4]
-        return e5
+    addresses: list[str]
 
 
 class AssignedEmail(ValidatedEmail):
@@ -122,6 +114,20 @@ def get_to_info(message: Message) -> str:
     return ", ".join(formatted_addresses)
 
 
+def get_addresses_from_message(message: Message) -> list[str]:
+    addresses_and_name = []
+    for header in ["To", "CC", "BCC"]:
+        raw_header = message.get(header, "")
+        if raw_header is None:
+            continue
+
+        addresses_and_name.extend(getaddresses([raw_header]))
+
+    addresses = [email for _, email in addresses_and_name]
+
+    return addresses
+
+
 def get_email_info(message: Message):
     return {
         "sender": get_sender_info(message),
@@ -131,6 +137,7 @@ def get_email_info(message: Message):
         "date": message.get("Date"),
         "subject": message.get("Subject"),
         "content": get_content_from_email(message),
+        "addresses": get_addresses_from_message(message),
     }
 
 
@@ -151,7 +158,7 @@ def assign_email_to_folder_uuid(
     email: ValidatedEmail,
 ) -> AssignedEmail | ValidatedEmail:
     folder_uuids = []
-    for address in email.email_addresses:
+    for address in email.addresses:
         left = address.split("@")[0]
         try:
             folder_uuid = UUID(left)

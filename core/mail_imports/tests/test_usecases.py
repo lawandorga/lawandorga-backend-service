@@ -1,5 +1,14 @@
+from email.message import Message
+from uuid import uuid4
+
 from core.mail_imports.models.mail_import import MailImport
-from core.mail_imports.use_cases.mail_import import mark_mails_as_read
+from core.mail_imports.use_cases.mail_import import (
+    AssignedEmail,
+    ValidatedEmail,
+    assign_email_to_folder_uuid,
+    get_addresses_from_message,
+    mark_mails_as_read,
+)
 from core.seedwork import test_helpers
 
 
@@ -21,3 +30,54 @@ def test_mails_can_be_marked_as_read(db):
     mark_mails_as_read(user, [mail.uuid])
     mail.refresh_from_db()
     assert mail.is_read
+
+
+def test_assigned_email_not_created_without_folder_uuid():
+    email = ValidatedEmail(
+        num="1",
+        sender="Sender",
+        to="To",
+        cc="",
+        bcc="",
+        date="",
+        subject="Test",
+        content="Test",
+        addresses=[],
+    )
+    res = assign_email_to_folder_uuid(email)
+    assert res == email
+
+
+def test_assigned_email_is_created_with_folder_uuid():
+    uuid2 = uuid4()
+    email = ValidatedEmail(
+        num="1",
+        sender="Sender",
+        to="To",
+        cc="",
+        bcc="",
+        date="",
+        subject="Test",
+        content="Test",
+        addresses=[f"{uuid2}@law-orga.de"],
+    )
+    res = assign_email_to_folder_uuid(email)
+    new = AssignedEmail(folder_uuids=[uuid2], **email.model_dump())
+    assert res != email
+    assert res == new
+
+
+def test_get_addresses_from_message():
+    msg = Message()
+    msg["Subject"] = "Test Subject"
+    msg["From"] = "from@law-orga.de"
+    msg["To"] = "recipient1@law-orga.de"
+    msg["Cc"] = "recipient2@law-orga.de"
+    msg["Bcc"] = "recipient3@law-orga.de"
+    msg.set_payload("This is the body of the email.")
+    addresses = get_addresses_from_message(msg)
+    assert addresses == [
+        "recipient1@law-orga.de",
+        "recipient2@law-orga.de",
+        "recipient3@law-orga.de",
+    ]
