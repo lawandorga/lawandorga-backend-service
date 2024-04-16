@@ -8,12 +8,29 @@ from core.mail_imports.use_cases.mail_import import (
     assign_email_to_folder_uuid,
     get_addresses_from_message,
     mark_mails_as_read,
+    toggle_mail_pinned,
 )
 from core.seedwork import test_helpers
 
 
 def test_mail_can_be_pinned(db):
-    pass
+    u = test_helpers.create_org_user()
+    user = u["rlc_user"]
+    folder = test_helpers.create_folder(user=user)
+    folder_uuid = folder["folder"].uuid
+    mail = MailImport.create(
+        sender="test@law-orga.de",
+        to="recieve@law-orga.de",
+        content="Test Mail",
+        folder_uuid=folder_uuid,
+        subject="Test Mail",
+        org_id=user.org_id,
+    )
+    mail.encrypt(user)
+    mail.save()
+    toggle_mail_pinned(user, mail.uuid)
+    mail.refresh_from_db()
+    assert mail.is_pinned
 
 
 def test_mails_can_be_marked_as_read(db):
