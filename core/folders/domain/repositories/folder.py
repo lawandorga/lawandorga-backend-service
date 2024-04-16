@@ -1,4 +1,3 @@
-import abc
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -9,33 +8,26 @@ if TYPE_CHECKING:
     from core.auth.models.org_user import OrgUser
 
 
-class FolderRepository(abc.ABC):
+class FolderRepository:
     IDENTIFIER = "FOLDER"
 
-    @classmethod
-    def retrieve(cls, org_pk: int, uuid: UUID) -> Folder:
+    def retrieve(self, org_pk: int, uuid: UUID) -> Folder:
         raise NotImplementedError()
 
-    @classmethod
-    def get_or_create_records_folder(cls, org_pk: int, user: "OrgUser") -> Folder:
+    def get_or_create_records_folder(self, org_pk: int, user: "OrgUser") -> Folder:
         raise NotImplementedError()
 
-    @classmethod
-    def get_dict(cls, org_pk: int) -> dict[UUID, Folder]:
+    def get_dict(self, org_pk: int) -> dict[UUID, Folder]:
         raise NotImplementedError()
 
-    @classmethod
-    def get_list(cls, org_pk: int) -> list[Folder]:
+    def get_list(self, org_pk: int) -> list[Folder]:
         raise NotImplementedError()
 
-    @classmethod
-    def save(cls, folder: Folder):
+    def save(self, folder: Folder):
         raise NotImplementedError()
 
-    @classmethod
-    def delete(cls, folder: Folder, repositories: list[ItemRepository]):
+    def delete(self, folder: Folder, repositories: list[ItemRepository]):
         raise NotImplementedError()
 
-    @classmethod
-    def get_children(cls, org_pk: int, uuid: UUID) -> list[Folder]:
+    def get_children(self, org_pk: int, uuid: UUID) -> list[Folder]:
         raise NotImplementedError()
