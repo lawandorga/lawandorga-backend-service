@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 from django.core.files.base import File as DjangoFile
 from django.db import models
 from django.utils.timezone import localtime
+from pydantic import BaseModel
 
 from core.auth.models import OrgUser
 from core.data_sheets.models.template import (
@@ -33,9 +34,23 @@ from core.seedwork.encryption import AESEncryption, EncryptedModelMixin
 from core.seedwork.events_addon import EventsAddon
 
 
-###
-# Record
-###
+class Pagination(BaseModel):
+    page: int
+    page_size: int
+
+    @property
+    def start(self):
+        return self.page * self.page_size
+
+    @property
+    def end(self):
+        return self.start + self.page_size
+
+
+class Search(BaseModel):
+    token: str | None = None
+
+
 class DataSheetRepository(ItemRepository):
     IDENTIFIER = "RECORD"
 
@@ -47,6 +62,21 @@ class DataSheetRepository(ItemRepository):
         DataSheet.objects.filter(
             folder_uuid=folder_uuid, template__rlc_id=org_pk
         ).delete()
+
+    def list(
+        self, org_pk: int, search: Search, pagination: Pagination
+    ) -> tuple[list["DataSheet"], int]:
+        all_sheets = (
+            DataSheet.objects.filter(template__rlc_id=org_pk)
+            .prefetch_related(*DataSheet.UNENCRYPTED_PREFETCH_RELATED)
+            .select_related("template")
+        )
+        sheets = all_sheets
+        if search.token:
+            sheets = sheets.filter(name__icontains=search.token)
+        if pagination:
+            sheets = sheets[pagination.start : pagination.end]
+        return list(sheets), all_sheets.count()
 
 
 class DataSheet(Aggregate, models.Model):

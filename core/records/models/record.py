@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Optional
 from uuid import UUID, uuid4
 
 from django.db import models
+from pydantic import BaseModel
 
 from core.auth.models import OrgUser
 from core.folders.domain.aggregates.folder import Folder
@@ -10,6 +11,23 @@ from core.folders.infrastructure.folder_addon import FolderAddon
 from core.rlc.models import Org
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.events_addon import EventsAddon
+
+
+class Pagination(BaseModel):
+    limit: int = 10
+    offset: int = 0
+
+    @property
+    def start(self):
+        return self.offset
+
+    @property
+    def end(self):
+        return self.limit
+
+
+class Search(BaseModel):
+    token: str | None = None
 
 
 class RecordRepository(ItemRepository):
@@ -23,6 +41,17 @@ class RecordRepository(ItemRepository):
     def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int | None) -> None:
         _org_id = org_pk if org_pk else 0
         RecordsRecord.objects.filter(folder_uuid=folder_uuid, org_id=_org_id).delete()
+
+    def list(
+        self, org_pk: int, search: Search, pagination: Pagination
+    ) -> tuple[list["RecordsRecord"], int]:
+        all_records = RecordsRecord.objects.filter(org_id=org_pk)
+        records = all_records
+        if search.token:
+            records = records.filter(name__icontains=search.token)
+        if pagination:
+            records = records[pagination.start : pagination.end]
+        return list(records), all_records.count()
 
 
 class RecordsRecord(Aggregate, models.Model):

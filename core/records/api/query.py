@@ -13,7 +13,12 @@ from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.records.helpers import merge_attrs
 from core.records.models.access import RecordsAccessRequest
 from core.records.models.deletion import RecordsDeletion
-from core.records.models.record import RecordsRecord
+from core.records.models.record import (
+    Pagination,
+    RecordRepository,
+    RecordsRecord,
+    Search,
+)
 from core.records.models.setting import RecordsView
 from core.seedwork.api_layer import Router
 
@@ -79,11 +84,26 @@ class OutputView(BaseModel):
 class OutputRecordsPage(BaseModel):
     records: list[OutputRecord]
     views: list[OutputView]
+    total: int
+
+
+class QueryInput(BaseModel):
+    limit: int
+    offset: int
+    token: str | None = None
 
 
 @router.get(url="dashboard/", output_schema=OutputRecordsPage)
-def query__records_page(rlc_user: OrgUser):
-    records_1 = list(RecordsRecord.objects.filter(org_id=rlc_user.org_id))
+def query__records_page(rlc_user: OrgUser, data: QueryInput):
+    # dsr = DataSheetRepository()
+
+    rr = RecordRepository()
+    records, total = rr.list(
+        rlc_user.org_id,
+        Search(token=data.token),
+        Pagination(limit=data.limit, offset=data.offset),
+    )
+
     data_sheets_1 = list(
         DataSheet.objects.filter(template__rlc_id=rlc_user.org_id)
         .prefetch_related(*DataSheet.UNENCRYPTED_PREFETCH_RELATED)
@@ -93,7 +113,7 @@ def query__records_page(rlc_user: OrgUser):
     folders = r.get_dict(rlc_user.org_id)
 
     points_1 = [
-        RecordDataPoint(r, folders[r.folder_uuid], data_sheets_1) for r in records_1
+        RecordDataPoint(r, folders[r.folder_uuid], data_sheets_1) for r in records
     ]
 
     records_2 = [
@@ -115,6 +135,7 @@ def query__records_page(rlc_user: OrgUser):
     return {
         "records": records_2,
         "views": views,
+        "total": total,
     }
 
 
