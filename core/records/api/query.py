@@ -1,8 +1,10 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
 from django.db.models import Q
+from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet
@@ -14,8 +16,6 @@ from core.records.models.deletion import RecordsDeletion
 from core.records.models.record import RecordsRecord
 from core.records.models.setting import RecordsView
 from core.seedwork.api_layer import Router
-
-from . import schemas
 
 router = Router()
 
@@ -47,10 +47,6 @@ class RecordDataPoint:
         return self.folder.has_access(user)
 
     @property
-    def delete_requested(self) -> bool:
-        return False
-
-    @property
     def token(self) -> str:
         return self.record.token
 
@@ -59,7 +55,33 @@ class RecordDataPoint:
         return self.data_sheets[0].uuid if self.data_sheets else None
 
 
-@router.get(url="dashboard/", output_schema=schemas.OutputRecordsPage)
+class OutputRecord(BaseModel):
+    uuid: UUID
+    token: str
+    attributes: dict[str, str | list[str]]
+    has_access: bool
+    folder_uuid: UUID
+    data_sheet_uuid: Optional[UUID]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OutputView(BaseModel):
+    name: str
+    columns: list[str]
+    uuid: UUID
+    shared: bool
+    ordering: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OutputRecordsPage(BaseModel):
+    records: list[OutputRecord]
+    views: list[OutputView]
+
+
+@router.get(url="dashboard/", output_schema=OutputRecordsPage)
 def query__records_page(rlc_user: OrgUser):
     records_1 = list(RecordsRecord.objects.filter(org_id=rlc_user.org_id))
     data_sheets_1 = list(
@@ -80,7 +102,6 @@ def query__records_page(rlc_user: OrgUser):
             "token": p.token,
             "folder_uuid": p.folder_uuid,
             "attributes": p.attributes,
-            "delete_requested": p.delete_requested,
             "has_access": p.has_access(rlc_user),
             "data_sheet_uuid": p.data_sheet_uuid,
         }
@@ -91,16 +112,61 @@ def query__records_page(rlc_user: OrgUser):
         RecordsView.objects.filter(Q(org_id=rlc_user.org_id) | Q(user=rlc_user))
     )
 
+    return {
+        "records": records_2,
+        "views": views,
+    }
+
+
+class OutputDeletion(BaseModel):
+    created: datetime
+    explanation: str
+    uuid: UUID
+    processed_by_detail: str
+    record_detail: str
+    requested_by_detail: str
+    state: str
+    processed: Optional[datetime]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OutputAccessRequest(BaseModel):
+    created: datetime
+    uuid: UUID
+    processed_by_detail: str
+    requested_by_detail: str
+    record_detail: str
+    state: str
+    processed_on: Optional[datetime]
+    explanation: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OutputBadges(BaseModel):
+    deletion_requests: int
+    access_requests: int
+
+
+class OutputInfos(BaseModel):
+    deletions: list[OutputDeletion]
+    access_requests: list[OutputAccessRequest]
+    badges: OutputBadges
+
+
+@router.get(url="infos/", output_schema=OutputInfos)
+def query_infos(user: OrgUser):
     deletions = RecordsDeletion.objects.filter(
-        Q(requestor__org_id=rlc_user.org_id)
-        | Q(processor__org_id=rlc_user.org_id)
-        | Q(record__org_id=rlc_user.org_id)
+        Q(requestor__org_id=user.org_id)
+        | Q(processor__org_id=user.org_id)
+        | Q(record__org_id=user.org_id)
     ).select_related("requestor__user", "processor__user", "record")
 
     access_requests = RecordsAccessRequest.objects.filter(
-        Q(requestor__org_id=rlc_user.org_id)
-        | Q(processor__org_id=rlc_user.org_id)
-        | Q(record__org_id=rlc_user.org_id)
+        Q(requestor__org_id=user.org_id)
+        | Q(processor__org_id=user.org_id)
+        | Q(record__org_id=user.org_id)
     ).select_related("requestor__user", "processor__user", "record")
 
     badges = {
@@ -109,8 +175,6 @@ def query__records_page(rlc_user: OrgUser):
     }
 
     return {
-        "records": records_2,
-        "views": views,
         "deletions": list(deletions),
         "access_requests": list(access_requests),
         "badges": badges,
