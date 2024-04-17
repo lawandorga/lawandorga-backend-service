@@ -4,23 +4,23 @@ from typing import Optional
 from uuid import UUID
 
 from django.db.models import Q
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, validator
 
 from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet
+from core.data_sheets.models.data_sheet import DataSheetRepository
+from core.data_sheets.models.data_sheet import Search as DsrSearch
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.records.helpers import merge_attrs
 from core.records.models.access import RecordsAccessRequest
 from core.records.models.deletion import RecordsDeletion
-from core.records.models.record import (
-    Pagination,
-    RecordRepository,
-    RecordsRecord,
-    Search,
-)
+from core.records.models.record import Pagination, RecordRepository, RecordsRecord
+from core.records.models.record import Search as RrSearch
 from core.records.models.setting import RecordsView
 from core.seedwork.api_layer import Router
+
+from seedwork.functional import list_map
 
 router = Router()
 
@@ -91,30 +91,34 @@ class QueryInput(BaseModel):
     limit: int
     offset: int
     token: str | None = None
+    year: int | None = None
+
+    @validator("year", pre=True)
+    def year_to_none(cls, v):
+        try:
+            return int(v)
+        except ValueError:
+            return None
 
 
 @router.get(url="dashboard/", output_schema=OutputRecordsPage)
 def query__records_page(rlc_user: OrgUser, data: QueryInput):
-    # dsr = DataSheetRepository()
-
     rr = RecordRepository()
+    dsr = DataSheetRepository()
+    fr = DjangoFolderRepository()
+
     records, total = rr.list(
         rlc_user.org_id,
-        Search(token=data.token),
+        RrSearch(token=data.token, year=data.year),
         Pagination(limit=data.limit, offset=data.offset),
     )
 
-    data_sheets_1 = list(
-        DataSheet.objects.filter(template__rlc_id=rlc_user.org_id)
-        .prefetch_related(*DataSheet.UNENCRYPTED_PREFETCH_RELATED)
-        .select_related("template")
-    )
-    r = DjangoFolderRepository()
-    folders = r.get_dict(rlc_user.org_id)
+    folder_uuids = list_map(records, lambda r: r.folder_uuid)
+    data_sheets = dsr.list(rlc_user.org_id, DsrSearch(folder_uuids=folder_uuids))
 
-    points_1 = [
-        RecordDataPoint(r, folders[r.folder_uuid], data_sheets_1) for r in records
-    ]
+    folders = fr.get_dict(rlc_user.org_id)
+
+    points = [RecordDataPoint(r, folders[r.folder_uuid], data_sheets) for r in records]
 
     records_2 = [
         {
@@ -125,7 +129,7 @@ def query__records_page(rlc_user: OrgUser, data: QueryInput):
             "has_access": p.has_access(rlc_user),
             "data_sheet_uuid": p.data_sheet_uuid,
         }
-        for p in points_1
+        for p in points
     ]
 
     views = list(

@@ -34,21 +34,9 @@ from core.seedwork.encryption import AESEncryption, EncryptedModelMixin
 from core.seedwork.events_addon import EventsAddon
 
 
-class Pagination(BaseModel):
-    page: int
-    page_size: int
-
-    @property
-    def start(self):
-        return self.page * self.page_size
-
-    @property
-    def end(self):
-        return self.start + self.page_size
-
-
 class Search(BaseModel):
     token: str | None = None
+    folder_uuids: list[UUID] | None = None
 
 
 class DataSheetRepository(ItemRepository):
@@ -63,9 +51,7 @@ class DataSheetRepository(ItemRepository):
             folder_uuid=folder_uuid, template__rlc_id=org_pk
         ).delete()
 
-    def list(
-        self, org_pk: int, search: Search, pagination: Pagination
-    ) -> tuple[list["DataSheet"], int]:
+    def list(self, org_pk: int, search: Search) -> list["DataSheet"]:
         all_sheets = (
             DataSheet.objects.filter(template__rlc_id=org_pk)
             .prefetch_related(*DataSheet.UNENCRYPTED_PREFETCH_RELATED)
@@ -74,9 +60,9 @@ class DataSheetRepository(ItemRepository):
         sheets = all_sheets
         if search.token:
             sheets = sheets.filter(name__icontains=search.token)
-        if pagination:
-            sheets = sheets[pagination.start : pagination.end]
-        return list(sheets), all_sheets.count()
+        if search.folder_uuids:
+            sheets = sheets.filter(folder_uuid__in=search.folder_uuids)
+        return list(sheets)
 
 
 class DataSheet(Aggregate, models.Model):

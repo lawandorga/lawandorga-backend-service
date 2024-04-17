@@ -28,6 +28,7 @@ class Pagination(BaseModel):
 
 class Search(BaseModel):
     token: str | None = None
+    year: int | None = None
 
 
 class RecordRepository(ItemRepository):
@@ -45,13 +46,15 @@ class RecordRepository(ItemRepository):
     def list(
         self, org_pk: int, search: Search, pagination: Pagination
     ) -> tuple[list["RecordsRecord"], int]:
-        all_records = RecordsRecord.objects.filter(org_id=org_pk)
-        records = all_records
+        records = RecordsRecord.objects.filter(org_id=org_pk)
         if search.token:
             records = records.filter(name__icontains=search.token)
+        if search.year:
+            records = records.filter(created__year=search.year)
+        filtered_count = records.count()
         if pagination:
             records = records[pagination.start : pagination.end]
-        return list(records), all_records.count()
+        return list(records), filtered_count
 
 
 class RecordsRecord(Aggregate, models.Model):
