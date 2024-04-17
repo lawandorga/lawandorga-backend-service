@@ -71,19 +71,8 @@ class OutputRecord(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class OutputView(BaseModel):
-    name: str
-    columns: list[str]
-    uuid: UUID
-    shared: bool
-    ordering: int
-
-    model_config = ConfigDict(from_attributes=True)
-
-
 class OutputRecordsPage(BaseModel):
     records: list[OutputRecord]
-    views: list[OutputView]
     total: int
 
 
@@ -132,15 +121,20 @@ def query__records_page(rlc_user: OrgUser, data: QueryInput):
         for p in points
     ]
 
-    views = list(
-        RecordsView.objects.filter(Q(org_id=rlc_user.org_id) | Q(user=rlc_user))
-    )
-
     return {
         "records": records_2,
-        "views": views,
         "total": total,
     }
+
+
+class OutputView(BaseModel):
+    name: str
+    columns: list[str]
+    uuid: UUID
+    shared: bool
+    ordering: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OutputDeletion(BaseModel):
@@ -178,6 +172,7 @@ class OutputInfos(BaseModel):
     deletions: list[OutputDeletion]
     access_requests: list[OutputAccessRequest]
     badges: OutputBadges
+    views: list[OutputView]
 
 
 @router.get(url="infos/", output_schema=OutputInfos)
@@ -199,8 +194,11 @@ def query_infos(user: OrgUser):
         "access_requests": access_requests.filter(state="re").count(),
     }
 
+    views = list(RecordsView.objects.filter(Q(org_id=user.org_id) | Q(user=user)))
+
     return {
         "deletions": list(deletions),
         "access_requests": list(access_requests),
         "badges": badges,
+        "views": views,
     }
