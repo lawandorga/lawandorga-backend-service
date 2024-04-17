@@ -4,7 +4,7 @@ from typing import Optional
 from uuid import UUID
 
 from django.db.models import Q
-from pydantic import BaseModel, ConfigDict, validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet
@@ -93,7 +93,7 @@ class QueryInput(BaseModel):
     token: str | None = None
     year: int | None = None
 
-    @validator("year", pre=True)
+    @field_validator("year", mode="before")
     def year_to_none(cls, v):
         try:
             return int(v)
