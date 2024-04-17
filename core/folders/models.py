@@ -1,5 +1,5 @@
-from typing import TYPE_CHECKING, Optional
-from uuid import UUID, uuid4
+from typing import TYPE_CHECKING
+from uuid import uuid4
 
 from django.db import models
 from django.db.models import QuerySet
@@ -36,12 +36,6 @@ class FoldersFolder(models.Model):
 
     def __str__(self):
         return "foldersFolder: {};".format(self.pk)
-
-    @property
-    def parent(self) -> Optional[UUID]:
-        if self._parent_id is None:
-            return None
-        return self._parent_id
 
     @staticmethod
     def query() -> QuerySet:
