@@ -21,14 +21,14 @@ class DjangoFolderRepository(FolderRepository):
     def __db_folder_to_domain(
         self,
         db_folder: FoldersFolder,
-        folders: dict[UUID, FoldersFolder],
+        folders: dict[int, FoldersFolder],
         users: dict[UUID, OrgUser],
     ) -> Folder:
         # find the parent
         parent: Optional[Folder] = None
-        if db_folder.parent is not None:
+        if db_folder._parent_id is not None:
             parent = self.__db_folder_to_domain(
-                folders[db_folder.parent], folders, users
+                folders[db_folder._parent_id], folders, users
             )
 
         # revive keys
@@ -117,9 +117,18 @@ class DjangoFolderRepository(FolderRepository):
 
         return f
 
+    def __as_id_dict(self, org_pk: int) -> dict[int, FoldersFolder]:
+        folders = {}
+        for f in list(FoldersFolder.objects.filter(org_id=org_pk, deleted=False)):
+            folders[f.pk] = f
+        return folders
+
     def __as_dict(self, org_pk: int) -> dict[UUID, FoldersFolder]:
         folders = {}
-        for f in list(FoldersFolder.query().filter(org_id=org_pk, deleted=False)):
+        query = FoldersFolder.objects.select_related("_parent").filter(
+            org_id=org_pk, deleted=False
+        )
+        for f in list(query):
             folders[f.uuid] = f
         return folders
 
@@ -159,17 +168,17 @@ class DjangoFolderRepository(FolderRepository):
         raise ObjectDoesNotExist()
 
     def get_dict(self, org_pk: int) -> dict[UUID, Folder]:
-        folders = self.__as_dict(org_pk)
+        folders = self.__as_id_dict(org_pk)
         users = self.__users(org_pk)
 
         domain_folders = {}
-        for i, f in folders.items():
-            domain_folders[i] = self.__db_folder_to_domain(f, folders, users)
+        for f in folders.values():
+            domain_folders[f.uuid] = self.__db_folder_to_domain(f, folders, users)
 
         return domain_folders
 
     def get_list(self, org_pk: int) -> list[Folder]:
-        folders = self.__as_dict(org_pk)
+        folders = self.__as_id_dict(org_pk)
         users = self.__users(org_pk)
 
         folders_list = []

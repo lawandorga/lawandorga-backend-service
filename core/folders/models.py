@@ -39,9 +39,9 @@ class FoldersFolder(models.Model):
 
     @property
     def parent(self) -> Optional[UUID]:
-        if self._parent is None:
+        if self._parent_id is None:
             return None
-        return self._parent.uuid
+        return self._parent_id
 
     @staticmethod
     def query() -> QuerySet:

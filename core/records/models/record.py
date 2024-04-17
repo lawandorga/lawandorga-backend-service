@@ -83,6 +83,7 @@ class RecordsRecord(Aggregate, models.Model):
     if TYPE_CHECKING:
         events: EventsAddon
         folder: FolderAddon
+        org_id: int
 
     class Meta:
         verbose_name = "Records-Record"
@@ -95,7 +96,7 @@ class RecordsRecord(Aggregate, models.Model):
 
     @property
     def org_pk(self) -> int:
-        return self.org.pk
+        return self.org_id
 
     @property
     def token(self) -> str:
