@@ -85,9 +85,12 @@ class QueryInput(BaseModel):
     @field_validator("year", mode="before")
     def year_to_none(cls, v):
         try:
-            return int(v)
+            val = int(v)
         except ValueError:
             return None
+        if val < 0:
+            return 0
+        return val
 
 
 @router.get(url="dashboard/", output_schema=OutputRecordsPage)
