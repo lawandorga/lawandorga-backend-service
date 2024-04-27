@@ -1,7 +1,7 @@
 import pytest
 
 from core.data_sheets.models import DataSheet
-from core.data_sheets.use_cases.record import (
+from core.data_sheets.use_cases.sheet import (
     create_a_data_sheet_within_a_folder,
     create_data_sheet_and_folder,
 )

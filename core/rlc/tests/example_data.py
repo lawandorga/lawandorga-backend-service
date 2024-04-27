@@ -25,7 +25,7 @@ from core.data_sheets.models import (
     DataSheetUsersEntry,
     DataSheetUsersField,
 )
-from core.data_sheets.use_cases.record import create_data_sheet_and_folder
+from core.data_sheets.use_cases.sheet import create_data_sheet_and_folder
 from core.files.models import FolderPermission
 from core.files_new.use_cases.file import upload_a_file
 from core.fixtures import (

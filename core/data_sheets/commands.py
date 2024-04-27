@@ -8,7 +8,7 @@ from core.data_sheets.use_cases.entry import (
     delete_entry,
     update_entry,
 )
-from core.data_sheets.use_cases.record import change_record_name, delete_data_sheet
+from core.data_sheets.use_cases.sheet import change_sheet_name, delete_data_sheet
 from core.data_sheets.use_cases.templates import (
     create_field,
     create_template,
@@ -31,6 +31,6 @@ COMMANDS = {
     "data_sheets/create_file_entry": create_file_entry,
     "data_sheets/delete_entry": delete_entry,
     "data_sheets/delete_data_sheet": delete_data_sheet,
-    "data_sheets/change_data_sheet_name": change_record_name,
+    "data_sheets/change_data_sheet_name": change_sheet_name,
     "data_sheets/optimize": deliver_access_to_users_who_should_have_access,
 }

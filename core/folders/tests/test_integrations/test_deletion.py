@@ -12,7 +12,7 @@ from core.collab.repositories.collab import CollabRepository
 from core.collab.use_cases.collab import create_collab
 from core.data_sheets.models.data_sheet import DataSheet, DataSheetRepository
 from core.data_sheets.models.template import DataSheetTemplate
-from core.data_sheets.use_cases.record import create_a_data_sheet_within_a_folder
+from core.data_sheets.use_cases.sheet import create_a_data_sheet_within_a_folder
 from core.files_new.models.file import EncryptedRecordDocument, FileRepository
 from core.files_new.use_cases.file import upload_a_file
 from core.folders.domain.aggregates.folder import Folder

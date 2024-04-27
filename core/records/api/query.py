@@ -81,6 +81,7 @@ class QueryInput(BaseModel):
     offset: int
     token: str | None = None
     year: int | None = None
+    general: str | None = None
 
     @field_validator("year", mode="before")
     def year_to_none(cls, v):
@@ -101,7 +102,7 @@ def query__records_page(rlc_user: OrgUser, data: QueryInput):
 
     records, total = rr.list(
         rlc_user.org_id,
-        RrSearch(token=data.token, year=data.year),
+        RrSearch(token=data.token, year=data.year, general=data.general),
         Pagination(limit=data.limit, offset=data.offset),
     )
 

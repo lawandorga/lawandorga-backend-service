@@ -3,8 +3,8 @@ from uuid import UUID
 from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet, DataSheetTemplate
 from core.data_sheets.use_cases.finders import (
-    record_from_id,
-    record_from_uuid,
+    sheet_from_id,
+    sheet_from_uuid,
     template_from_id,
 )
 from core.folders.domain.aggregates.folder import Folder
@@ -18,10 +18,10 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case
-def change_record_name(__actor: OrgUser, name: str, record_id: int):
-    record = record_from_id(__actor, record_id)
-    record.set_name(name)
-    record.save()
+def change_sheet_name(__actor: OrgUser, name: str, record_id: int):
+    sheet = sheet_from_id(__actor, record_id)
+    sheet.set_name(name)
+    sheet.save()
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
@@ -101,5 +101,5 @@ def __create(
 
 @use_case(permissions=[PERMISSION_RECORDS_ACCESS_ALL_RECORDS])
 def delete_data_sheet(__actor: OrgUser, sheet_uuid: UUID):
-    record = record_from_uuid(__actor, sheet_uuid)
+    record = sheet_from_uuid(__actor, sheet_uuid)
     record.delete()

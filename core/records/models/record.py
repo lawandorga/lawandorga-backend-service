@@ -1,3 +1,4 @@
+import json
 from typing import TYPE_CHECKING, Optional
 from uuid import UUID, uuid4
 
@@ -8,9 +9,13 @@ from core.auth.models import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.item import ItemRepository
 from core.folders.infrastructure.folder_addon import FolderAddon
+from core.records.helpers import merge_attrs
 from core.rlc.models import Org
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.events_addon import EventsAddon
+
+if TYPE_CHECKING:
+    from core.data_sheets.models import DataSheet
 
 
 class Pagination(BaseModel):
@@ -29,6 +34,7 @@ class Pagination(BaseModel):
 class Search(BaseModel):
     token: str | None = None
     year: int | None = None
+    general: str | None = None
 
 
 class RecordRepository(ItemRepository):
@@ -51,6 +57,9 @@ class RecordRepository(ItemRepository):
             records = records.filter(name__icontains=search.token)
         if search.year:
             records = records.filter(created__year=search.year)
+        if search.general:
+            records = records.filter(attributes__icontains=search.general)
+
         filtered_count = records.count()
         if pagination:
             records = records[pagination.start : pagination.end]
@@ -77,6 +86,7 @@ class RecordsRecord(Aggregate, models.Model):
     is_archived = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    attributes = models.TextField(default="{}")
 
     addons = dict(events=EventsAddon, folder=FolderAddon)
 
@@ -105,3 +115,12 @@ class RecordsRecord(Aggregate, models.Model):
     def change_token(self, token: str):
         self.name = token
         self.folder.obj_renamed()
+
+    def set_attributes(self, data_sheets: list["DataSheet"]) -> None:
+        attrs: dict = {}
+        for ds in data_sheets:
+            assert ds.folder_uuid == self.folder_uuid
+            attrs = merge_attrs(attrs, ds.attributes)
+        attrs["Created"] = self.created.strftime("%d.%m.%Y %H:%M:%S")
+        attrs["Updated"] = self.updated.strftime("%d.%m.%Y %H:%M:%S")
+        self.attributes = json.dumps(attrs)

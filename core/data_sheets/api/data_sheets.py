@@ -4,7 +4,7 @@ from core.data_sheets.models import DataSheet
 from core.data_sheets.use_cases.access_delivery import (
     deliver_access_to_users_who_should_have_access,
 )
-from core.data_sheets.use_cases.record import create_a_data_sheet_within_a_folder
+from core.data_sheets.use_cases.sheet import create_a_data_sheet_within_a_folder
 from core.seedwork.api_layer import Router
 
 router = Router()
