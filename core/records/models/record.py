@@ -61,6 +61,7 @@ class RecordRepository(ItemRepository):
             records = records.filter(attributes__icontains=search.general)
 
         filtered_count = records.count()
+        records = records.order_by("-created")
         if pagination:
             records = records[pagination.start : pagination.end]
         return list(records), filtered_count
