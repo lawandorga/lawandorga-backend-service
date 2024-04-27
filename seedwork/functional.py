@@ -113,3 +113,12 @@ def list_reduce(
     for item in items:
         ret = fn(ret, item)
     return ret
+
+
+create_chunks_I = TypeVar("create_chunks_I")
+
+
+def create_chunks(items: list[create_chunks_I], n) -> Iterable[list[create_chunks_I]]:
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(items), n):
+        yield items[i : i + n]

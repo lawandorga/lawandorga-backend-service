@@ -27,4 +27,4 @@ class Command(BaseCommand):
 
         for k in g.keys:
             if k["owner_uuid"] == str(u.uuid):
-                print(k)
+                out(k)

@@ -118,6 +118,7 @@ class RecordsRecord(Aggregate, models.Model):
 
     def set_attributes(self, data_sheets: list["DataSheet"]) -> None:
         attrs: dict = {}
+        attrs["sheet_uuids"] = [str(ds.uuid) for ds in data_sheets]
         for ds in data_sheets:
             assert ds.folder_uuid == self.folder_uuid
             attrs = merge_attrs(attrs, ds.attributes)

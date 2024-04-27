@@ -1,3 +1,4 @@
+import json
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
@@ -7,20 +8,14 @@ from django.db.models import Q
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from core.auth.models import OrgUser
-from core.data_sheets.models import DataSheet
-from core.data_sheets.models.data_sheet import DataSheetRepository
-from core.data_sheets.models.data_sheet import Search as DsrSearch
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-from core.records.helpers import merge_attrs
 from core.records.models.access import RecordsAccessRequest
 from core.records.models.deletion import RecordsDeletion
 from core.records.models.record import Pagination, RecordRepository, RecordsRecord
 from core.records.models.record import Search as RrSearch
 from core.records.models.setting import RecordsView
 from core.seedwork.api_layer import Router
-
-from seedwork.functional import list_map
 
 router = Router()
 
@@ -29,11 +24,6 @@ router = Router()
 class RecordDataPoint:
     record: RecordsRecord
     folder: Folder
-    ALL_DATA_SHEETS: list[DataSheet]
-
-    @property
-    def data_sheets(self) -> list[DataSheet]:
-        return [ds for ds in self.ALL_DATA_SHEETS if ds.folder_uuid == self.folder.uuid]
 
     @property
     def folder_uuid(self) -> UUID:
@@ -41,12 +31,7 @@ class RecordDataPoint:
 
     @property
     def attributes(self) -> dict:
-        attrs: dict = {}
-        for ds in self.data_sheets:
-            attrs = merge_attrs(attrs, ds.attributes)
-        attrs["Created"] = self.record.created.strftime("%d.%m.%Y %H:%M:%S")
-        attrs["Updated"] = self.record.updated.strftime("%d.%m.%Y %H:%M:%S")
-        return attrs
+        return json.loads(self.record.attributes)
 
     def has_access(self, user: OrgUser) -> bool:
         return self.folder.has_access(user)
@@ -57,7 +42,10 @@ class RecordDataPoint:
 
     @property
     def data_sheet_uuid(self) -> Optional[UUID]:
-        return self.data_sheets[0].uuid if self.data_sheets else None
+        uuids = self.attributes.get("sheet_uuids", [None])
+        if len(uuids) == 0:
+            return None
+        return UUID(uuids[0])
 
 
 class OutputRecord(BaseModel):
@@ -97,7 +85,6 @@ class QueryInput(BaseModel):
 @router.get(url="dashboard/", output_schema=OutputRecordsPage)
 def query__records_page(rlc_user: OrgUser, data: QueryInput):
     rr = RecordRepository()
-    dsr = DataSheetRepository()
     fr = DjangoFolderRepository()
 
     records, total = rr.list(
@@ -106,12 +93,9 @@ def query__records_page(rlc_user: OrgUser, data: QueryInput):
         Pagination(limit=data.limit, offset=data.offset),
     )
 
-    folder_uuids = list_map(records, lambda r: r.folder_uuid)
-    data_sheets = dsr.list(rlc_user.org_id, DsrSearch(folder_uuids=folder_uuids))
-
     folders = fr.get_dict(rlc_user.org_id)
 
-    points = [RecordDataPoint(r, folders[r.folder_uuid], data_sheets) for r in records]
+    points = [RecordDataPoint(r, folders[r.folder_uuid]) for r in records]
 
     records_2 = [
         {
