@@ -1,7 +1,6 @@
 from django.urls import include, path
 
 from core.auth.urls import urlpatterns as auth_urlpatterns
-from core.collab.urls import router as collab_router
 from core.cronjobs import router as cronjobs_router
 from core.data_sheets.urls import urlpatterns as data_sheets_urlpatterns
 from core.events.urls import urlpatterns as events_urlpatterns
@@ -33,7 +32,6 @@ urlpatterns = [
     path("api/cronjobs/", include(cronjobs_router.urls)),
     path("api/", include(org_urlpatterns)),
     path("api/internal/", include(internal_urlpatterns)),
-    path("api/collab/", include(collab_router.urls)),
     path("api/collab/", include("core.collab.urls")),
     path("api/files/", include(files_router.urls)),
     path("api/files/v2/", include(files_new_urlpatterns)),
