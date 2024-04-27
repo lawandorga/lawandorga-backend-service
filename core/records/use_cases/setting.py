@@ -23,6 +23,9 @@ def create_view(__actor: OrgUser, name: str, columns: list[str], shared=False):
 def update_view(
     __actor: OrgUser, uuid: UUID, name: str, columns: list[str], ordering: int
 ):
+    for c in columns:
+        if c == "":
+            raise UseCaseError("Columns can not contain an empty column.")
     view = find_view_by_uuid(__actor, uuid)
     if view.org is not None:
         check_permissions(__actor, [PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES])

@@ -11,7 +11,7 @@ from core.rlc.models.org import Org
 class RecordsView(models.Model):
     @classmethod
     def create(
-        cls, name: str, user: OrgUser, columns=list[str], shared=False, pk=0
+        cls, name: str, user: OrgUser, columns: list[str], shared=False, pk=0
     ) -> "RecordsView":
         view = RecordsView(name=name, columns=columns)
         if shared is True:
@@ -57,7 +57,8 @@ class RecordsView(models.Model):
 
     def __str__(self):
         return "recordsView: {}; of: {};".format(
-            self.uuid, self.user.email if self.user else self.org.name
+            self.uuid,
+            self.user.email if self.user else self.org.name if self.org else "None",
         )
 
     @property
