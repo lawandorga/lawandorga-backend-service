@@ -2,6 +2,7 @@ from typing import Any, Optional
 from uuid import UUID
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 from django.utils import timezone
 
 from core.auth.models import OrgUser
@@ -14,7 +15,9 @@ from core.folders.domain.value_objects.folder_key import (
     EncryptedFolderKeyOfUser,
 )
 from core.folders.domain.value_objects.parent_key import ParentKey
-from core.folders.models import FOL_Folder
+from core.folders.models import FOL_ClosureTable, FOL_Folder
+
+from seedwork.functional import list_map
 
 
 class DjangoFolderRepository(FolderRepository):
@@ -22,14 +25,11 @@ class DjangoFolderRepository(FolderRepository):
         self,
         db_folder: FOL_Folder,
         folders: dict[int, FOL_Folder],
-        users: dict[UUID, OrgUser],
     ) -> Folder:
         # find the parent
         parent: Optional[Folder] = None
         if db_folder._parent_id is not None:
-            parent = self.__db_folder_to_domain(
-                folders[db_folder._parent_id], folders, users
-            )
+            parent = self.__db_folder_to_domain(folders[db_folder._parent_id], folders)
 
         # revive keys
         enc_parent_key: Optional[ParentKey] = None
@@ -123,21 +123,6 @@ class DjangoFolderRepository(FolderRepository):
             folders[f.pk] = f
         return folders
 
-    def __as_dict(self, org_pk: int) -> dict[UUID, FOL_Folder]:
-        folders = {}
-        query = FOL_Folder.objects.select_related("_parent").filter(
-            org_id=org_pk, deleted=False
-        )
-        for f in list(query):
-            folders[f.uuid] = f
-        return folders
-
-    def __users(self, org_pk: int) -> dict[UUID, OrgUser]:
-        users = {}
-        for u in list(OrgUser.objects.filter(org_id=org_pk)):
-            users[u.uuid] = u
-        return users
-
     def get_or_create_records_folder(self, org_pk: int, user: "OrgUser") -> Folder:
         name = "Records"
         if FOL_Folder.objects.filter(
@@ -167,30 +152,76 @@ class DjangoFolderRepository(FolderRepository):
             return folders[uuid]
         raise ObjectDoesNotExist()
 
+    def retrieve_new(self, org_pk: int, uuid: UUID) -> Folder:
+        assert isinstance(uuid, UUID)
+
+        db_folder = FOL_Folder.objects.filter(uuid=uuid, org_id=org_pk).get()
+        closures = FOL_ClosureTable.objects.filter(
+            child_id=db_folder.pk
+        ).select_related("parent")
+        db_parents = list_map(closures, lambda c: c.parent)
+        db_parents_dict = {f.pk: f for f in db_parents}
+
+        folder = self.__db_folder_to_domain(
+            db_folder,
+            db_parents_dict,
+        )
+
+        return folder
+
+    def list_by_uuids(self, org_pk: int, uuids: list[UUID]) -> list[Folder]:
+        db_folders = list(FOL_Folder.objects.filter(uuid__in=uuids, org_id=org_pk))
+        pks = list_map(db_folders, lambda f: f.pk)
+        closures = FOL_ClosureTable.objects.filter(child_id__in=pks).select_related(
+            "parent"
+        )
+        db_parents = list_map(closures, lambda c: c.parent)
+        db_parents_dict = {f.pk: f for f in db_parents}
+
+        folders = list_map(
+            db_folders, lambda f: self.__db_folder_to_domain(f, db_parents_dict)
+        )
+        return folders
+
     def get_dict(self, org_pk: int) -> dict[UUID, Folder]:
         folders = self.__as_id_dict(org_pk)
-        users = self.__users(org_pk)
 
         domain_folders = {}
         for f in folders.values():
-            domain_folders[f.uuid] = self.__db_folder_to_domain(f, folders, users)
+            domain_folders[f.uuid] = self.__db_folder_to_domain(f, folders)
 
         return domain_folders
 
     def get_list(self, org_pk: int) -> list[Folder]:
         folders = self.__as_id_dict(org_pk)
-        users = self.__users(org_pk)
 
         folders_list = []
         for folder in folders.values():
-            folders_list.append(self.__db_folder_to_domain(folder, folders, users))
+            folders_list.append(self.__db_folder_to_domain(folder, folders))
 
         return folders_list
+
+    def __get_closures_from_folder(
+        self, folder: Folder, folder_pk: int
+    ) -> list[FOL_ClosureTable]:
+        parent_uuids = folder.parent_uuids
+        ids = FOL_Folder.objects.filter(uuid__in=parent_uuids).values_list(
+            "pk", flat=True
+        )
+        closures = list_map(
+            ids, lambda id: FOL_ClosureTable(parent_id=id, child_id=folder_pk)
+        )
+        return closures
 
     def save(self, folder: Folder):
         assert folder.org_pk is not None
         db_folder = self.__db_folder_from_domain(folder)
-        db_folder.save()
+        with transaction.atomic():
+            db_folder.save()
+            assert db_folder.pk is not None
+            FOL_ClosureTable.objects.filter(child_id=db_folder.pk).delete()
+            closures = self.__get_closures_from_folder(folder, db_folder.pk)
+            FOL_ClosureTable.objects.bulk_create(closures)
 
     def delete(self, folder: Folder, repositories: list[ItemRepository]):
         assert folder.org_pk is not None

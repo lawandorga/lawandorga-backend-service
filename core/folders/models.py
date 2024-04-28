@@ -40,3 +40,27 @@ class FOL_Folder(models.Model):
     @staticmethod
     def query() -> QuerySet:
         return FOL_Folder.objects.select_related("_parent")
+
+
+class FOL_ClosureTable(models.Model):
+    parent = models.ForeignKey(
+        FOL_Folder,
+        related_name="children_connections",
+        on_delete=models.CASCADE,
+        db_index=True,
+    )
+    child = models.ForeignKey(
+        FOL_Folder,
+        related_name="parent_connections",
+        on_delete=models.CASCADE,
+        db_index=True,
+    )
+
+    class Meta:
+        verbose_name = "FOL_ClosureTable"
+        verbose_name_plural = "FOL_ClosureTable"
+        unique_together = ("parent", "child")
+        ordering = ["parent", "child"]
+
+    def __str__(self):
+        return "parent: {}; child: {};".format(self.parent, self.child)

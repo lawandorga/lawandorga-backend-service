@@ -4,6 +4,7 @@ from django.conf import settings
 from core.auth.models import OrgUser, UserProfile
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
+from core.folders.models import FOL_ClosureTable, FOL_Folder
 from core.rlc.models import Org
 
 
@@ -64,3 +65,26 @@ def test_name_change_disable_saved(db, user, repository):
     repository.save(folder1)
     folder2 = repository.retrieve(user.org_id, folder1.uuid)
     assert folder2.restricted
+
+
+def disabled_test_closures_saved_and_deleted(db, user, repository):
+    folder1 = Folder.create(name="New Folder", org_pk=user.org_id)
+    folder1.grant_access(to=user)
+    folder2 = Folder.create(name="New Folder", org_pk=user.org_id)
+    folder2.grant_access(to=user)
+    folder2.set_parent(folder1, user)
+
+    repository.save(folder1)
+    repository.save(folder2)
+
+    f1 = FOL_Folder.objects.get(uuid=folder1.uuid)
+    f2 = FOL_Folder.objects.get(uuid=folder2.uuid)
+    assert FOL_ClosureTable.objects.filter(parent_id=f1.pk, child_id=f2.pk).exists()
+
+    folder3 = Folder.create(name="New Folder", org_pk=user.org_id)
+    folder3.grant_access(to=user)
+    folder2.move(folder3, user)
+    repository.save(folder3)
+    repository.save(folder2)
+
+    assert not FOL_ClosureTable.objects.filter(parent_id=f1.pk, child_id=f2.pk).exists()
