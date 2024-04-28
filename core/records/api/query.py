@@ -17,6 +17,8 @@ from core.records.models.record import Search as RrSearch
 from core.records.models.setting import RecordsView
 from core.seedwork.api_layer import Router
 
+from seedwork.functional import list_map
+
 router = Router()
 
 
@@ -92,8 +94,10 @@ def query__records_page(rlc_user: OrgUser, data: QueryInput):
         RrSearch(token=data.token, year=data.year, general=data.general),
         Pagination(limit=data.limit, offset=data.offset),
     )
+    folder_uuids = list_map(records, lambda r: r.folder_uuid)
 
-    folders = fr.get_dict(rlc_user.org_id)
+    foldersl = fr.list_by_uuids(rlc_user.org_id, folder_uuids)
+    folders = {f.uuid: f for f in foldersl}
 
     points = [RecordDataPoint(r, folders[r.folder_uuid]) for r in records]
 
