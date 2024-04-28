@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from core.data_sheets.models.template import DataSheetTemplate
     from core.events.models import EventsEvent
     from core.files.models.folder import Folder
-    from core.folders.models import FoldersFolder
+    from core.folders.models import FOL_Folder
     from core.questionnaires.models.template import QuestionnaireTemplate
     from core.records.models.record import RecordsRecord
     from core.rlc.models.group import Group
@@ -66,7 +66,7 @@ class Org(EncryptedModelMixin, models.Model):
     if TYPE_CHECKING:
         collab_documents: models.QuerySet["CollabDocument"]
         collabs: models.QuerySet["Collab"]
-        folders_folders: models.QuerySet["FoldersFolder"]
+        folders_folders: models.QuerySet["FOL_Folder"]
         users: models.QuerySet[OrgUser]
         group_from_rlc: models.QuerySet[Group]
         events: models.QuerySet[EventsEvent]

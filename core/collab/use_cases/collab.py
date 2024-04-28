@@ -9,7 +9,7 @@ from core.collab.models.permission_for_collab_document import (
 from core.collab.repositories.collab import CollabRepository
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
-from core.folders.models import FoldersFolder
+from core.folders.models import FOL_Folder
 from core.permissions.static import (
     PERMISSION_COLLAB_READ_ALL_DOCUMENTS,
     PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS,
@@ -138,7 +138,7 @@ def optimize(__actor: OrgUser, fr: FolderRepository, cr: CollabRepository):
                 f"You need to be a member of group '{group.name}' to migrate collab."
             )
 
-    if not FoldersFolder.objects.filter(
+    if not FOL_Folder.objects.filter(
         org_id=__actor.org_id, name="Collab", _parent=None
     ).exists():
         folder = Folder.create(name="Collab", org_pk=__actor.org_id)

@@ -2,14 +2,14 @@ import time
 
 from django.core.management.base import BaseCommand
 
-from core.folders.models import FoldersFolder
+from core.folders.models import FOL_Folder
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
         t1 = time.time()
 
-        folders = list(FoldersFolder.objects.filter())
+        folders = list(FOL_Folder.objects.filter())
 
         for folder in folders:
             contains_files = False

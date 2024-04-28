@@ -5,7 +5,7 @@ from django.db import transaction
 
 from core.data_sheets.models.data_sheet import DataSheet
 from core.folders.domain.value_objects.folder_item import FolderItem
-from core.folders.models import FoldersFolder
+from core.folders.models import FOL_Folder
 from core.records.models.record import RecordsRecord
 from core.rlc.models.org import Org
 
@@ -21,7 +21,7 @@ class Command(BaseCommand):
             .order_by("id")
         )
 
-        folders = list(FoldersFolder.objects.all())
+        folders = list(FOL_Folder.objects.all())
         folders = {folder.uuid: folder for folder in folders}
 
         created_records_inside_folders_uuids = list(

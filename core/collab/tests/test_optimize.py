@@ -9,7 +9,7 @@ from core.collab.models.text_document_version import TextDocumentVersion
 from core.collab.use_cases.collab import optimize
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-from core.folders.models import FoldersFolder
+from core.folders.models import FOL_Folder
 from core.permissions.static import PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS
 from core.rlc.models.group import Group
 from core.rlc.models.org import Org
@@ -93,23 +93,21 @@ def test_optimize_works(db):
 
     # general assertions
     assert Collab.objects.count() == 4
-    assert FoldersFolder.objects.filter(org_id=user.org_id, name="Collab").count() == 1
+    assert FOL_Folder.objects.filter(org_id=user.org_id, name="Collab").count() == 1
     assert Org.objects.get(pk=user.org_id).collab_migrated
 
     fr = DjangoFolderRepository()
     folders = fr.get_list(user.org_id)
 
     # assertions for normal collab document
-    assert (
-        FoldersFolder.objects.filter(org_id=user.org_id, name="Document").count() == 1
-    )
+    assert FOL_Folder.objects.filter(org_id=user.org_id, name="Document").count() == 1
     folder1 = find_folder("Document", folders)
     assert not folder1.has_access(no_access_user)
     assert not folder1.has_access(group_user)
     assert folder1.has_access(has_p_user)
 
     # assertions for collab document with group access
-    assert FoldersFolder.objects.filter(org_id=user.org_id, name="Group").count() == 1
+    assert FOL_Folder.objects.filter(org_id=user.org_id, name="Group").count() == 1
     folder2 = find_folder("Group", folders)
     assert folder2.has_access_group(group)
     assert not folder2.has_access(no_access_user)
@@ -118,8 +116,7 @@ def test_optimize_works(db):
 
     # assertions for nested collab doc
     assert (
-        FoldersFolder.objects.filter(org_id=user.org_id, name="SubDocument").count()
-        == 1
+        FOL_Folder.objects.filter(org_id=user.org_id, name="SubDocument").count() == 1
     )
     folder3 = find_folder("SubDocument", folders)
     assert not folder3.has_access(no_access_user)
@@ -130,8 +127,7 @@ def test_optimize_works(db):
 
     # assertions for nested collab doc with group access
     assert (
-        FoldersFolder.objects.filter(org_id=user.org_id, name="GroupBottom").count()
-        == 1
+        FOL_Folder.objects.filter(org_id=user.org_id, name="GroupBottom").count() == 1
     )
     folder4 = find_folder("GroupBottom", folders)
     assert folder4.has_access_group(group)

@@ -7,9 +7,9 @@ from django.db.models import QuerySet
 from core.rlc.models import Org
 
 
-class FoldersFolder(models.Model):
+class FOL_Folder(models.Model):
     _parent = models.ForeignKey(
-        "FoldersFolder", on_delete=models.CASCADE, null=True, blank=True
+        "FOL_Folder", on_delete=models.CASCADE, null=True, blank=True
     )
     uuid = models.UUIDField(default=uuid4, unique=True, db_index=True)
     name = models.CharField(max_length=1000)
@@ -30,13 +30,13 @@ class FoldersFolder(models.Model):
         _parent_id: int | None
 
     class Meta:
-        verbose_name = "FoldersFolder"
-        verbose_name_plural = "FoldersFolders"
+        verbose_name = "FOL_Folder"
+        verbose_name_plural = "FOL_Folders"
         ordering = ["name"]
 
     def __str__(self):
-        return "foldersFolder: {};".format(self.pk)
+        return "folder: {};".format(self.pk)
 
     @staticmethod
     def query() -> QuerySet:
-        return FoldersFolder.objects.select_related("_parent")
+        return FOL_Folder.objects.select_related("_parent")

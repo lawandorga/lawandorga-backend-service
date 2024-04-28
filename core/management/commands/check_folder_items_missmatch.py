@@ -4,14 +4,14 @@ from uuid import UUID
 from django.core.management.base import BaseCommand
 
 from core.data_sheets.models.data_sheet import DataSheet
-from core.folders.models import FoldersFolder
+from core.folders.models import FOL_Folder
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
         t1 = time.time()
 
-        folders = list(FoldersFolder.objects.all())
+        folders = list(FOL_Folder.objects.all())
         records = list(
             DataSheet.objects.exclude(folder_uuid=None)
             .all()

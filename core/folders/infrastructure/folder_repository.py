@@ -14,14 +14,14 @@ from core.folders.domain.value_objects.folder_key import (
     EncryptedFolderKeyOfUser,
 )
 from core.folders.domain.value_objects.parent_key import ParentKey
-from core.folders.models import FoldersFolder
+from core.folders.models import FOL_Folder
 
 
 class DjangoFolderRepository(FolderRepository):
     def __db_folder_to_domain(
         self,
-        db_folder: FoldersFolder,
-        folders: dict[int, FoldersFolder],
+        db_folder: FOL_Folder,
+        folders: dict[int, FOL_Folder],
         users: dict[UUID, OrgUser],
     ) -> Folder:
         # find the parent
@@ -75,7 +75,7 @@ class DjangoFolderRepository(FolderRepository):
         # return
         return folder
 
-    def __db_folder_from_domain(self, folder: Folder) -> FoldersFolder:
+    def __db_folder_from_domain(self, folder: Folder) -> FOL_Folder:
         keys = [k.as_dict() for k in folder.keys]
         items = [i.as_dict() for i in folder.items]
         group_keys = [k.as_dict() for k in folder.group_keys]
@@ -88,8 +88,8 @@ class DjangoFolderRepository(FolderRepository):
         if folder.enc_parent_key is not None:
             enc_parent_key = folder.enc_parent_key.as_dict()
 
-        if FoldersFolder.objects.filter(uuid=folder.uuid).exists():
-            f = FoldersFolder.objects.get(uuid=folder.uuid)
+        if FOL_Folder.objects.filter(uuid=folder.uuid).exists():
+            f = FOL_Folder.objects.get(uuid=folder.uuid)
             f._parent_id = parent_id
             f.name = folder.name
             assert folder.org_pk is not None
@@ -102,7 +102,7 @@ class DjangoFolderRepository(FolderRepository):
             f.enc_parent_key = enc_parent_key  # type: ignore
 
         else:
-            f = FoldersFolder(
+            f = FOL_Folder(
                 _parent_id=parent_id,
                 uuid=folder.uuid,
                 name=folder.name,
@@ -117,15 +117,15 @@ class DjangoFolderRepository(FolderRepository):
 
         return f
 
-    def __as_id_dict(self, org_pk: int) -> dict[int, FoldersFolder]:
+    def __as_id_dict(self, org_pk: int) -> dict[int, FOL_Folder]:
         folders = {}
-        for f in list(FoldersFolder.objects.filter(org_id=org_pk, deleted=False)):
+        for f in list(FOL_Folder.objects.filter(org_id=org_pk, deleted=False)):
             folders[f.pk] = f
         return folders
 
-    def __as_dict(self, org_pk: int) -> dict[UUID, FoldersFolder]:
+    def __as_dict(self, org_pk: int) -> dict[UUID, FOL_Folder]:
         folders = {}
-        query = FoldersFolder.objects.select_related("_parent").filter(
+        query = FOL_Folder.objects.select_related("_parent").filter(
             org_id=org_pk, deleted=False
         )
         for f in list(query):
@@ -140,10 +140,10 @@ class DjangoFolderRepository(FolderRepository):
 
     def get_or_create_records_folder(self, org_pk: int, user: "OrgUser") -> Folder:
         name = "Records"
-        if FoldersFolder.objects.filter(
+        if FOL_Folder.objects.filter(
             org_id=org_pk, name=name, _parent=None, deleted=False
         ).exists():
-            fs = FoldersFolder.objects.filter(
+            fs = FOL_Folder.objects.filter(
                 org_id=org_pk, name=name, _parent=None, deleted=False
             )
             f1 = fs[0]
