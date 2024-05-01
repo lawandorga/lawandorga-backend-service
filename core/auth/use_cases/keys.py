@@ -1,14 +1,23 @@
 from core.auth.models.org_user import OrgUser
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-from core.seedwork.use_case_layer import use_case
+from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case
 def check_keys(__actor: OrgUser):
     private_key_user = __actor.get_private_key()
-    __actor.user.test_all_keys(private_key_user)
-    __test_folder_keys(__actor)
-    __test_group_keys(__actor)
+    try:
+        __actor.user.test_all_keys(private_key_user)
+    except Exception:
+        raise UseCaseError("The user key is not correct.")
+    try:
+        __test_folder_keys(__actor)
+    except Exception:
+        raise UseCaseError("The folder keys are not correct.")
+    try:
+        __test_group_keys(__actor)
+    except Exception:
+        raise UseCaseError("The group keys are not correct.")
 
 
 def __test_folder_keys(u: OrgUser):
