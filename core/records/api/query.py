@@ -44,7 +44,7 @@ class RecordDataPoint:
 
     @property
     def data_sheet_uuid(self) -> Optional[UUID]:
-        uuids = self.attributes.get("sheet_uuids", [None])
+        uuids = self.attributes.get("sheet_uuids", [])
         if len(uuids) == 0:
             return None
         return UUID(uuids[0])
