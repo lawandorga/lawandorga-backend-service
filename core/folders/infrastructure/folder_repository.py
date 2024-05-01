@@ -147,14 +147,6 @@ class DjangoFolderRepository(FolderRepository):
     def retrieve(self, org_pk: int, uuid: UUID) -> Folder:
         assert isinstance(uuid, UUID)
 
-        folders = self.get_dict(org_pk)
-        if uuid in folders:
-            return folders[uuid]
-        raise ObjectDoesNotExist()
-
-    def retrieve_new(self, org_pk: int, uuid: UUID) -> Folder:
-        assert isinstance(uuid, UUID)
-
         db_folder = FOL_Folder.objects.filter(uuid=uuid, org_id=org_pk).get()
         closures = FOL_ClosureTable.objects.filter(
             child_id=db_folder.pk
