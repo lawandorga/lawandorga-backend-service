@@ -56,7 +56,8 @@ def create_folder(
     if parent.parent_uuid is None:
         folder.stop_inheritance()
     for p in permissions:
-        folder.grant_access_to_group(group=p.group_has_permission, by=user)
+        if not folder.has_access_group(p.group_has_permission):
+            folder.grant_access_to_group(group=p.group_has_permission, by=user)
     for u in users_with_permission:
         if not folder.has_access(u):
             folder.grant_access(u, user)
