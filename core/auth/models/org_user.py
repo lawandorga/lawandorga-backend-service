@@ -153,7 +153,6 @@ class OrgUser(Aggregate, models.Model):
 
     if TYPE_CHECKING:
         mfa_secret: "MultiFactorAuthenticationSecret"
-        id: int
         groups: models.QuerySet[Group]
         org_id: int
 
@@ -288,29 +287,36 @@ class OrgUser(Aggregate, models.Model):
     def records_information(self):
         from core.data_sheets.models import DataSheet
 
-        records = DataSheet.objects.filter(template__rlc=self.org).prefetch_related(
+        recordsqs = DataSheet.objects.filter(template__rlc=self.org).prefetch_related(
             "state_entries", "users_entries", "users_entries__value"
         )
+        records = list(recordsqs)
         records_data = []
-        for record in list(records):
-            state_entries = list(record.state_entries.all())
+        for record in records:
             users_entries = list(record.users_entries.all())
+            if len(users_entries) <= 0:
+                continue
 
-            if len(users_entries) <= 0 or len(state_entries) <= 0:
+            user_entry = users_entries[0]
+            user_ids = list_map(list(user_entry.value.all()), lambda x: x.pk)
+            if self.pk not in user_ids:
                 continue
-            users = list(users_entries[0].value.all())
-            if self.id not in map(lambda x: x.id, users):
+
+            state_entries = list(record.state_entries.all())
+            if len(state_entries) <= 0:
                 continue
-            state = state_entries[0].value
-            if state == "Open":
-                records_data.append(
-                    {
-                        "id": record.id,
-                        "uuid": record.uuid,
-                        "identifier": record.identifier,
-                        "state": state,
-                    }
-                )
+            state_entry = state_entries[0]
+            if state_entry.value != "Open":
+                continue
+
+            records_data.append(
+                {
+                    "uuid": record.uuid,
+                    "folder_uuid": record.folder_uuid,
+                    "identifier": record.identifier,
+                    "state": "Open",
+                }
+            )
 
         return records_data
 
@@ -326,8 +332,8 @@ class OrgUser(Aggregate, models.Model):
                     members_data.append(
                         {
                             "name": rlc_user.user.name,
-                            "id": rlc_user.user.id,
-                            "rlcuserid": rlc_user.id,
+                            "id": rlc_user.user.pk,
+                            "rlcuserid": rlc_user.pk,
                         }
                     )
             return members_data
@@ -371,25 +377,40 @@ class OrgUser(Aggregate, models.Model):
             if len(users_entries) <= 0:
                 continue
             users = list(users_entries[0].value.all())
-            if self.id in map(lambda x: x.id, users):
-                record_pks.append(record.id)
+            if self.pk in map(lambda x: x.id, users):
+                record_pks.append(record.pk)
 
         return DataSheet.objects.filter(pk__in=record_pks)
 
     @property
     def changed_records_information(self):
-        records = self.own_records
-        records = records.filter(updated__gt=timezone.now() - timedelta(days=10))
+        from core.folders.infrastructure.folder_repository import DjangoFolderRepository
+        from core.records.models import RecordsRecord
+
+        recordsqs = RecordsRecord.objects.filter(
+            org_id=self.org_id, updated__gt=timezone.now() - timedelta(days=10)
+        )
+        records = list(recordsqs)
+        folder_uuids = list_map(records, lambda x: x.folder_uuid)
+        r = DjangoFolderRepository()
+        foldersl = r.list_by_uuids(org_pk=self.org_id, uuids=folder_uuids)
+        folders = {folder.uuid: folder for folder in foldersl}
+
         changed_records_data = []
-        for record in list(records):
+        for record in records:
+            folder = folders[record.folder_uuid]
+            if not folder.has_access(self):
+                continue
+
             changed_records_data.append(
                 {
-                    "id": record.id,
                     "uuid": record.uuid,
-                    "identifier": record.identifier,
+                    "folder_uuid": folder.uuid,
+                    "identifier": record.name,
                     "updated": record.updated,
                 }
             )
+
         return changed_records_data
 
     @property
@@ -659,7 +680,7 @@ class OrgUser(Aggregate, models.Model):
     def get_email_confirmation_link(self):
         token = self.get_email_confirmation_token()
         link = "{}/user/email-confirm/{}/{}/".format(
-            settings.MAIN_FRONTEND_URL, self.id, token
+            settings.MAIN_FRONTEND_URL, self.pk, token
         )
         return link
 

@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from core.auth.models.org_user import OrgUser
+from core.auth.use_cases.keys import check_keys
 from core.collab.models.collab import Collab
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.rlc.models.group import Group
@@ -13,6 +14,13 @@ USER_EMAIL = ""
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        self.handle_access_bugtest()
+
+    def handle_access_bugtest(self):
+        u = OrgUser.objects.get(user__email=USER_EMAIL)
+        check_keys(u)
+
+    def handle_collab_bugtest(self):
         def out(x):
             self.stdout.write(x)
 

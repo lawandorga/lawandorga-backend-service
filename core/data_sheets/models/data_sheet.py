@@ -165,6 +165,14 @@ class DataSheet(Aggregate, models.Model):
 
     if TYPE_CHECKING:
         standard_entries: models.QuerySet["DataSheetStandardEntry"]
+        state_entries: models.QuerySet["DataSheetStateEntry"]
+        multiple_entries: models.QuerySet["DataSheetMultipleEntry"]
+        select_entries: models.QuerySet["DataSheetSelectEntry"]
+        users_entries: models.QuerySet["DataSheetUsersEntry"]
+        statistic_entries: models.QuerySet["DataSheetStatisticEntry"]
+        encrypted_select_entries: models.QuerySet["DataSheetEncryptedSelectEntry"]
+        encrypted_file_entries: models.QuerySet["DataSheetEncryptedFileEntry"]
+        encrypted_standard_entries: models.QuerySet["DataSheetEncryptedStandardEntry"]
 
     class Meta:
         ordering = ["-created"]
@@ -184,18 +192,7 @@ class DataSheet(Aggregate, models.Model):
 
     @property
     def identifier(self) -> str:
-        entries = list(self.standard_entries.all())
-        lowest_entry = None
-        for entry in entries:
-            if lowest_entry is None:
-                lowest_entry = entry
-            if entry.field.order < lowest_entry.field.order:
-                lowest_entry = entry
-
-        if lowest_entry:
-            return lowest_entry.value
-
-        return "NOT-SET"
+        return self.name
 
     @property
     def attributes(self) -> dict[str, Union[list[str], str]]:

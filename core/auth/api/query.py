@@ -67,7 +67,7 @@ def query__register_page():
 
 
 class OutputDashboardRecord(BaseModel):
-    id: int
+    folder_uuid: UUID
     uuid: UUID
     identifier: str
     state: str
@@ -85,7 +85,7 @@ class OutputDashboardQuestionnaire(BaseModel):
 
 
 class OutputDashboardChangedRecord(BaseModel):
-    id: int
+    folder_uuid: UUID
     uuid: UUID
     identifier: str
     updated: datetime
