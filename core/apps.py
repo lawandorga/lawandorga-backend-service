@@ -5,6 +5,5 @@ class CoreConfig(AppConfig):
     name = "core"
 
     def ready(self) -> None:
-        from core.folders.ready import ready
-
-        ready()
+        import core.folders.handlers  # noqa: F401
+        import core.rlc.handlers  # noqa: F401

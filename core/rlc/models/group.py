@@ -166,6 +166,8 @@ class Group(models.Model):
             raise DomainError(
                 "You have no keys for this group, because you are not a member of this group."
             )
+        if not enc_key.is_valid:
+            raise DomainError("Your keys for this group are invalid.")
         try:
             key = enc_key.decrypt(user)
         except EncryptionDecryptionError as e:
@@ -202,11 +204,19 @@ class Group(models.Model):
             self.description = description
 
     def has_member(self, user: "OrgUser") -> bool:
-        return user.id in self.member_ids
+        return user.pk in self.member_ids
 
     def has_keys(self, user: "OrgUser") -> bool:
         key = self.get_enc_group_key_of_user(user)
         return key is not None
+
+    def has_valid_keys(self, user: "OrgUser") -> bool:
+        key = self.get_enc_group_key_of_user(user)
+        if key is None:
+            return False
+        if not key.is_valid:
+            return False
+        return True
 
     def add_member(self, new_member: "OrgUser", by: Union["OrgUser", None] = None):
         if new_member.org_id != self.from_rlc.pk:

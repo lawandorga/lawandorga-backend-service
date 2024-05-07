@@ -1,8 +1,11 @@
+from uuid import UUID
+
 from core.auth.models import OrgUser
 from core.auth.use_cases.finders import rlc_user_from_id
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_GROUPS
 from core.rlc.models import Group
 from core.rlc.use_cases.finders import group_from_id
+from core.seedwork.message_layer import MessageBusActor
 from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
@@ -62,3 +65,14 @@ def remove_member_from_group(__actor: OrgUser, group_id: int, member_id: int):
         raise UseCaseError("You can not edit a member from another org.")
 
     group.remove_member(member)
+
+
+@use_case
+def invalidate_keys_of(__actor: MessageBusActor, org_user_uuid: UUID):
+    org_user = OrgUser.objects.get(uuid=org_user_uuid)
+    groups = list(org_user.groups.all())
+    for group in groups:
+        if group.has_member(org_user):
+            group.invalidate_keys_of(org_user)
+            group.save()
+    return org_user

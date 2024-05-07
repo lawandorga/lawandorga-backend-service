@@ -83,3 +83,11 @@ def test_group_remove_member_removes_key(db):
     group.remove_member(user)
     assert len(group.keys) == 1, group.keys
     assert not group.has_keys(user)
+
+
+def test_invalidate_keys(db):
+    user = test_helpers.create_org_user()["rlc_user"]
+    user.grant(PERMISSION_ADMIN_MANAGE_GROUPS)
+    group = create_group(user, "Test Group", None)
+    group.invalidate_keys_of(user)
+    assert not group.has_valid_keys(user)
