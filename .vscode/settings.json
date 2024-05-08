@@ -1,22 +1,20 @@
 {
-  "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
-},
-  "tailwindCSS.emmetCompletions": true,
-  "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true,
-  "python.formatting.provider": "black",
-  "[terraform]": {
-      "editor.defaultFormatter": "hashicorp.terraform"
-  },
-  "[html]": {
-      "editor.defaultFormatter": "vscode.html-language-features"
-  },
-  "[json]": {
-      "editor.defaultFormatter": "vscode.json-language-features"
-  },
-  "files.exclude": {
-      "**/.git": false
-  },
-  "python.analysis.typeCheckingMode": "basic"
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit"
+    },
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "[terraform]": {
+        "editor.defaultFormatter": "hashicorp.terraform"
+    },
+    "[html]": {
+        "editor.defaultFormatter": "vscode.html-language-features"
+    },
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "files.exclude": {
+        "**/.git": false
+    },
+    "python.analysis.typeCheckingMode": "basic"
 }
