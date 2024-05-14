@@ -1,11 +1,11 @@
 from core.auth.models.org_user import OrgUser
 from core.collab.models.collab import Collab
-from core.collab.models.collab_document import CollabDocument
-from core.collab.models.collab_permission import CollabPermission
-from core.collab.models.permission_for_collab_document import (
+from core.collab.models.deprecated_collab_document import CollabDocument
+from core.collab.models.deprecated_collab_permission import CollabPermission
+from core.collab.models.deprecated_permission_for_collab_document import (
     PermissionForCollabDocument,
 )
-from core.collab.models.text_document_version import TextDocumentVersion
+from core.collab.models.deprecated_text_document_version import TextDocumentVersion
 from core.collab.use_cases.collab import optimize
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository

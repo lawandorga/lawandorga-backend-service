@@ -2,8 +2,8 @@ from django.db import models
 
 from core.rlc.models import Group
 
-from .collab_document import CollabDocument
-from .collab_permission import CollabPermission
+from .deprecated_collab_document import CollabDocument
+from .deprecated_collab_permission import CollabPermission
 
 
 class PermissionForCollabDocument(models.Model):

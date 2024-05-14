@@ -2,7 +2,7 @@ from django.db import models
 
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin
 
-from .collab_document import CollabDocument
+from .deprecated_collab_document import CollabDocument
 
 
 class TextDocumentVersion(EncryptedModelMixin, models.Model):

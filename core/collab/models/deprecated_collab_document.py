@@ -11,7 +11,7 @@ from core.rlc.models import Org
 
 if TYPE_CHECKING:
     from core.collab.models import TextDocumentVersion
-    from core.collab.models.permission_for_collab_document import (
+    from core.collab.models.deprecated_permission_for_collab_document import (
         PermissionForCollabDocument,
     )
 
