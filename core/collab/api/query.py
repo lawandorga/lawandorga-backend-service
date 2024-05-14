@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -43,3 +44,40 @@ def query__data_sheet(rlc_user: OrgUser, data: InputUuid):
     fr = DjangoFolderRepository()
     collab = cr.get_document(data.uuid, rlc_user, fr)
     return collab
+
+
+class OutputTemplate(BaseModel):
+    name: str
+    type: Literal["footer", "letterhead"]
+
+
+@router.get(
+    url="templates/",
+    output_schema=list[OutputTemplate],
+)
+def query__templates(rlc_user: OrgUser):
+    return []
+
+
+class OutputLetterhead(BaseModel):
+    pass
+
+
+@router.get(
+    url="letterhead/<uuid:uuid>/",
+    output_schema=OutputLetterhead,
+)
+def query__letterhead(rlc_user: OrgUser, data: InputUuid):
+    return {}
+
+
+class OutputFooter(BaseModel):
+    pass
+
+
+@router.get(
+    url="footer/<uuid:uuid>/",
+    output_schema=OutputFooter,
+)
+def query__footer(rlc_user: OrgUser, data: InputUuid):
+    return {}
