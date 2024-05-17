@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from core.auth.models import OrgUser, UserProfile
     from core.collab.models import CollabDocument
     from core.collab.models.collab import Collab
+    from core.collab.models.letterhead import Letterhead
     from core.data_sheets.models.template import DataSheetTemplate
     from core.events.models import EventsEvent
     from core.files.models.folder import Folder
@@ -75,6 +76,7 @@ class Org(EncryptedModelMixin, models.Model):
         folders: models.QuerySet["Folder"]
         records_records: models.QuerySet["RecordsRecord"]
         questionnaire_templates: models.QuerySet["QuestionnaireTemplate"]
+        letterheads: models.QuerySet["Letterhead"]
 
     class Meta:
         ordering = ["name"]

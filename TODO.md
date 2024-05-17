@@ -1,11 +1,11 @@
 COLLAB
 
-- Backend Model Letterhead (Daniel)
+- Backend Model Letterhead (Daniel) - CHECK
 - Backend Model Footer (Joey)
-- Backend UseCases Letterhead (Daniel)
+- Backend UseCases Letterhead (Daniel) - CHECK
 - Backend UseCases Footer (Joey)
-- Backend Query Templates (Daniel)
-- Backend Query Letterhead (Daniel)
+- Backend Query Templates (Daniel) -
+- Backend Query Letterhead (Daniel) - CHECK
 - Backend Query Footer (Joey)
 - Frontend Templates View (Leandra)
 - Frontend Create Letterhead (Leandra)

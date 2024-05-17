@@ -5,6 +5,11 @@ from core.collab.use_cases.collab import (
     sync_collab,
     update_collab,
 )
+from core.collab.use_cases.letterhead import (
+    create_letterhead,
+    delete_letterhead,
+    update_letterhead,
+)
 from core.seedwork.use_case_layer import use_case
 
 
@@ -19,9 +24,9 @@ USECASES = {
     "collab/sync_collab": sync_collab,
     "collab/delete_collab": delete_collab,
     "collab/optimize": optimize,
-    "collab/create_letterhead": placeholder,
-    "collab/update_letterhead": placeholder,
-    "collab/delete_letterhead": placeholder,
+    "collab/create_letterhead": create_letterhead,
+    "collab/update_letterhead": update_letterhead,
+    "collab/delete_letterhead": delete_letterhead,
     "collab/create_footer": placeholder,
     "collab/update_footer": placeholder,
     "collab/delete_footer": placeholder,
