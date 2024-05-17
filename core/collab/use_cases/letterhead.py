@@ -15,12 +15,12 @@ def create_letterhead(
     __actor: OrgUser,
     name: str,
     description: str,
-    address_line_1: str,
-    address_line_2: str,
-    address_line_3: str,
-    address_line_4: str,
-    address_line_5: str,
-    text_right: str,
+    address_line_1: str = "",
+    address_line_2: str = "",
+    address_line_3: str = "",
+    address_line_4: str = "",
+    address_line_5: str = "",
+    text_right: str = "",
 ):
     lh = Letterhead.create(
         __actor,
