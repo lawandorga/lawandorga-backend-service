@@ -30,12 +30,10 @@ class Footer(models.Model):
 
     uuid = models.UUIDField(unique=True, default=uuid4)
     org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name="footers")
-    column_1 = models.TextField(max_length=256, blank=True)
-    column_2 = models.TextField(max_length=256, blank=True)
-    column_3 = models.TextField(max_length=256, blank=True)
-    column_4 = models.TextField(max_length=256, blank=True)
-
-    objects = models.Manager()
+    column_1 = models.TextField(blank=True)
+    column_2 = models.TextField(blank=True)
+    column_3 = models.TextField(blank=True)
+    column_4 = models.TextField(blank=True)
 
     class Meta:
         verbose_name = "Footer"
