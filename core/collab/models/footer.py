@@ -35,6 +35,8 @@ class Footer(models.Model):
     column_3 = models.TextField(max_length=256, blank=True)
     column_4 = models.TextField(max_length=256, blank=True)
 
+    objects = models.Manager()
+
     class Meta:
         verbose_name = "Footer"
         verbose_name_plural = "Footers"
