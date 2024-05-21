@@ -1,7 +1,7 @@
 COLLAB
 
 - Backend Model Letterhead (Daniel) - CHECK
-- Backend Model Footer (Joey)
+- Backend Model Footer (Joey) - CHECK
 - Backend UseCases Letterhead (Daniel) - CHECK
 - Backend UseCases Footer (Joey)
 - Backend Query Templates (Daniel) -
