@@ -7,10 +7,10 @@ COLLAB
 - Backend Query Templates (Daniel) - footer fehlt noch
 - Backend Query Letterhead (Daniel) - CHECK
 - Backend Query Footer (Joey) - noch offen collab/api/query.py
-- Frontend Templates View (Leandra)
-- Frontend Create Letterhead (Leandra)
+- Frontend Templates View (Leandra) - CHECK table generator
+- Frontend Create Letterhead (Leandra) - CHECK
 - Frontend Create Footer (Leandra)
-- Frontend Footer View (?)
+- Frontend Footer View (Joey)
 - Frontend Letterhead View (Daniel)
 - Frontend Letterhead Delete (Leandra)
 - Frontend Footer Delete (Leandra)
