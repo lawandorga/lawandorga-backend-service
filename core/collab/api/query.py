@@ -62,7 +62,7 @@ class OutputTemplate(BaseModel):
 def query__templates(rlc_user: OrgUser):
     lhs = Letterhead.objects.filter(org=rlc_user.org)
     # TODO: add the footers as well
-    return lhs
+    return [*lhs]
 
 
 class OutputLetterhead(BaseModel):
