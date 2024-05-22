@@ -5,6 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models.org_user import OrgUser
+from core.collab.models.footer import Footer
 from core.collab.models.letterhead import Letterhead
 from core.collab.repositories.collab import CollabRepository
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
@@ -61,8 +62,8 @@ class OutputTemplate(BaseModel):
 )
 def query__templates(rlc_user: OrgUser):
     lhs = Letterhead.objects.filter(org=rlc_user.org)
-    # TODO: add the footers as well
-    return [*lhs]
+    footer = Footer.objects.filter(org=rlc_user.org)
+    return [*lhs, footer]
 
 
 class OutputLetterhead(BaseModel):
@@ -88,7 +89,10 @@ def query__letterhead(rlc_user: OrgUser, data: InputUuid):
 
 
 class OutputFooter(BaseModel):
-    pass
+    column_1: str
+    column_2: str
+    column_3: str
+    column_4: str
 
 
 @router.get(
@@ -96,4 +100,5 @@ class OutputFooter(BaseModel):
     output_schema=OutputFooter,
 )
 def query__footer(rlc_user: OrgUser, data: InputUuid):
-    return {}
+    footer = Footer.objects.get(uuid=data.uuid, org=rlc_user.org)
+    return footer
