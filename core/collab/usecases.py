@@ -5,6 +5,7 @@ from core.collab.use_cases.collab import (
     sync_collab,
     update_collab,
 )
+from core.collab.use_cases.footer import create_footer, delete_footer, update_footer
 from core.collab.use_cases.letterhead import (
     create_letterhead,
     delete_letterhead,
@@ -27,7 +28,7 @@ USECASES = {
     "collab/create_letterhead": create_letterhead,
     "collab/update_letterhead": update_letterhead,
     "collab/delete_letterhead": delete_letterhead,
-    "collab/create_footer": placeholder,
-    "collab/update_footer": placeholder,
-    "collab/delete_footer": placeholder,
+    "collab/create_footer": create_footer,
+    "collab/update_footer": update_footer,
+    "collab/delete_footer": delete_footer,
 }

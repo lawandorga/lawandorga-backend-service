@@ -3,7 +3,7 @@ COLLAB
 - Backend Model Letterhead (Daniel) - CHECK
 - Backend Model Footer (Joey) - CHECK
 - Backend UseCases Letterhead (Daniel) - CHECK
-- Backend UseCases Footer (Joey) - noch in usecases rein collab/usecases.py
+- Backend UseCases Footer (Joey) - noch in usecases rein collab/usecases.py - CHECK
 - Backend Query Templates (Daniel) - footer fehlt noch
 - Backend Query Letterhead (Daniel) - CHECK
 - Backend Query Footer (Joey) - noch offen collab/api/query.py
