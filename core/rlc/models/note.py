@@ -1,3 +1,5 @@
+import re
+
 from django.db import models
 
 from .org import Org
@@ -23,6 +25,16 @@ class Note(models.Model):
         verbose_name = "ORG_Note"
         verbose_name_plural = "ORG_Notes"
         ordering = ["-created"]
+
+    @property
+    def note_with_links(self):
+        note = self.note
+        note = re.sub(
+            r"(http[s]?://\S+)",
+            r'<a target="_blank" rel="nofollow" href="\1">\1</a>',
+            note,
+        )
+        return note
 
     def __str__(self):
         return "rlc: {}; note: {};".format(self.rlc.name, self.title)

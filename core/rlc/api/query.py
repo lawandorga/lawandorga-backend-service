@@ -11,6 +11,7 @@ class OutputNote(BaseModel):
     id: int
     title: str
     note: str
+    note_with_links: str
 
     model_config = ConfigDict(from_attributes=True)
 
