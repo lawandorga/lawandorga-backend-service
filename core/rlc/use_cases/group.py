@@ -32,6 +32,17 @@ def delete_group(__actor: OrgUser, group_id: int):
     group.delete()
 
 
+@use_case()
+def correct_group_keys_of_others(__actor: OrgUser):
+    changed_groups: set[Group] = set()
+    for group in list(__actor.groups.all()):
+        for user in list(group.members.all()):
+            if group.has_keys(user) and not group.has_valid_keys(user):
+                group.fix_keys(user, __actor)
+                changed_groups.add(group)
+    Group.objects.bulk_update(changed_groups, ["keys"])
+
+
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
 def add_member_to_group(__actor: OrgUser, group_id: int, new_member_id: int):
     group = group_from_id(__actor, group_id)

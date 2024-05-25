@@ -218,6 +218,15 @@ class Group(models.Model):
             return False
         return True
 
+    def fix_keys(self, of: "OrgUser", by: "OrgUser") -> None:
+        self.__remove_key_of_user(of)
+        self.__add_key_for_user(of, by)
+
+    def __add_key_for_user(self, new_member: "OrgUser", by: "OrgUser") -> None:
+        key = self.__get_group_key(by)
+        enc_key = key.encrypt(new_member)
+        self.keys.append(enc_key.as_dict())
+
     def add_member(self, new_member: "OrgUser", by: Union["OrgUser", None] = None):
         if new_member.org_id != self.from_rlc.pk:
             raise DomainError("The user is not in the same org.")
@@ -227,25 +236,26 @@ class Group(models.Model):
 
         if len(self.keys):
             assert by is not None, "by must be set if keys exist"
-            key = self.__get_group_key(by)
-            enc_key = key.encrypt(new_member)
-            self.keys.append(enc_key.as_dict())
+            self.__add_key_for_user(new_member, by)
 
         with transaction.atomic():
             self.save()
             self.members.add(new_member)
 
+    def __remove_key_of_user(self, user: "OrgUser"):
+        assert len(self.keys), "keys have not been generated for this group"
+        old_length = len(self.keys)
+        for key in self.keys:
+            if key["owner_uuid"] == str(user.uuid):
+                self.keys.remove(key)
+                break
+        assert len(self.keys) == old_length - 1
+
     def remove_member(self, member: "OrgUser"):
         if not self.has_member(member):
             raise DomainError("The user is not a member of this group.")
 
-        assert len(self.keys), "keys have not been generated for this group"
-        old_length = len(self.keys)
-        for key in self.keys:
-            if key["owner_uuid"] == str(member.uuid):
-                self.keys.remove(key)
-                break
-        assert len(self.keys) == old_length - 1
+        self.__remove_key_of_user(member)
 
         with transaction.atomic():
             self.save()

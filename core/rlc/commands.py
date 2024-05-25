@@ -1,5 +1,6 @@
 from core.rlc.use_cases.group import (
     add_member_to_group,
+    correct_group_keys_of_others,
     create_group,
     delete_group,
     remove_member_from_group,
@@ -13,6 +14,7 @@ COMMANDS = {
     "org/create_group": create_group,
     "org/update_group": update_group,
     "org/delete_group": delete_group,
+    "org/optimize_groups": correct_group_keys_of_others,
     "org/add_member_to_group": add_member_to_group,
     "org/remove_member_from_group": remove_member_from_group,
     "org/create_note": create_note,

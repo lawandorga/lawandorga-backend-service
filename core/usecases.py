@@ -3,7 +3,7 @@ from core.collab.usecases import USECASES as COLLAB_USECASES
 from core.data_sheets.commands import COMMANDS as DATA_SHEET_COMMANDS
 from core.events.usecases import USECASES as EVENTS_USECASES
 from core.files_new.usecases import USECASES as FILES_NEW_USECASES
-from core.folders.commands import COMMANDS as FOLDER_COMMANDS
+from core.folders.usecases import USECASES as FOLDER_COMMANDS
 from core.legal.usecases import USECASES as LEGAL_USECASES
 from core.mail.usecases import USECASES as MAIL_USECASES
 from core.mail_imports.usecases import USECASES as MAIL_IMPORTS_USECASES

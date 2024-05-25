@@ -11,7 +11,7 @@ from core.folders.use_cases.folder import (
     toggle_inheritance,
 )
 
-COMMANDS = {
+USECASES = {
     "folders/create_folder": create_folder,
     "folders/rename_folder": rename_folder,
     "folders/delete_folder": delete_folder,

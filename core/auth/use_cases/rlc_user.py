@@ -160,7 +160,7 @@ def activate_rlc_user(__actor: OrgUser, other_user_id: int):
             ),
         )
 
-    if __actor.id == rlc_user_to_update.id:
+    if __actor.pk == rlc_user_to_update.pk:
         raise UseCaseError(
             "You can not activate or deactivate yourself.",
         )
