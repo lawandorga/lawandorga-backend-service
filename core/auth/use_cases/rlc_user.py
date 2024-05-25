@@ -74,12 +74,14 @@ def register_rlc_user(
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_USERS])
 def delete_user(__actor: OrgUser, other_user_id: int):
     other_user = rlc_user_from_id(__actor, other_user_id)
-    if not other_user.check_delete_is_safe():
+    delete_safe, folders = other_user.check_delete_is_safe()
+    if not delete_safe:
         raise UseCaseError(
             "You can not delete this user right now, because "
-            "you could loose access to one or "
-            "more folders. This user is one of the only two "
-            "persons with access to those folders."
+            f"you could loose access to the following folders: '{folders}'. "
+            "\nThis user is one of the only two "
+            "persons with access to this folders. \n"
+            "In order to delete this user, you need to add another user to these folders."
         )
     other_user.user.delete()
 

@@ -661,17 +661,24 @@ class OrgUser(Aggregate, models.Model):
         super().delete(*args, **kwargs)
         user.delete()
 
-    def check_delete_is_safe(self):
+    def check_delete_is_safe(self) -> tuple[bool, str]:
         from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 
         r = DjangoFolderRepository()
         folders = r.get_list(self.org_id)
 
-        for folder in folders:
-            if folder.has_access(self) and len(folder.keys) <= 3:
-                return False
+        dangerous_folders: list[str] = []
+        safe = True
 
-        return True
+        for folder in folders:
+            total_keys = (
+                len(folder.keys) + len(folder.group_keys) + 1 if folder.parent else 0
+            )
+            if folder.has_access(self) and total_keys <= 3:
+                dangerous_folders.append(folder.name)
+                safe = False
+
+        return safe, ", ".join(dangerous_folders)
 
     def get_email_confirmation_token(self):
         token = EmailConfirmationTokenGenerator().make_token(self)
