@@ -215,11 +215,18 @@ def create_data_sheet(template=None, users: Optional[List[UserProfile]] = None):
     return {"record": record}
 
 
-def create_record(token="AZ-TEST", user: Optional[OrgUser] = None):
+class RecordDict(TypedDict):
+    record: RecordsRecord
+    user: OrgUser
+    folder: Folder
+
+
+def create_record(token="AZ-TEST", user: Optional[OrgUser] = None) -> RecordDict:
     if user is None:
         full_user = create_org_user()
         user = full_user["rlc_user"]
     user.grant(PERMISSION_RECORDS_ADD_RECORD)
     folder_uuid = uc_create_record(user, token)
     record = RecordsRecord.objects.get(folder_uuid=folder_uuid)
-    return {"record": record, "user": user}
+    folder = DjangoFolderRepository().retrieve(user.org_id, folder_uuid)
+    return {"record": record, "user": user, "folder": folder}

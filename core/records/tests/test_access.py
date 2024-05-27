@@ -78,3 +78,22 @@ def test_access_works(db):
     assert not RecordsRecord.objects.get(pk=record.pk).folder.has_access(other_user)
     grant_access_request(user, access.uuid)
     assert RecordsRecord.objects.get(pk=record.pk).folder.has_access(other_user)
+
+
+def test_access_grant_works_if_access_already_exists(db):
+    full_record = test_helpers.create_record()
+    record = full_record["record"]
+    user = full_record["user"]
+    folder = full_record["folder"]
+
+    full_other_user = test_helpers.create_org_user(
+        email="tester@law-orga.de", rlc=user.org
+    )
+    other_user = full_other_user["rlc_user"]
+
+    folder.grant_access(other_user, user)
+    access = RecordsAccessRequest.create(record, user, "needs to go")
+    access.save()
+    user.grant(PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS)
+
+    grant_access_request(user, access.uuid)
