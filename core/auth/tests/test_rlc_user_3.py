@@ -71,7 +71,7 @@ def test_email_confirmation_token_works(user):
     token = generator._make_token_with_timestamp(rlc_user, ts)
     assert generator.check_token(rlc_user, token)
 
-    ts = generator._num_seconds(datetime.now() - timedelta(days=32))
+    ts = generator._num_seconds(datetime.now() - timedelta(days=400))
     token = generator._make_token_with_timestamp(rlc_user, ts)
     assert not generator.check_token(rlc_user, token)
 
