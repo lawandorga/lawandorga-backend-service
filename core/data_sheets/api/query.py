@@ -32,26 +32,30 @@ def query__template(rlc_user: OrgUser, data: schemas.InputTemplateDetail):
     output_schema=schemas.OutputDataSheetDetail,
 )
 def query__data_sheet(rlc_user: OrgUser, data: schemas.InputQueryRecord):
-    record = (
+    sheet = (
         DataSheet.objects.prefetch_related(*DataSheet.ALL_PREFETCH_RELATED)
         .select_related("template")
         .filter(template__rlc_id=rlc_user.org_id)
-        .get(uuid=data.uuid)
+        .filter(uuid=data.uuid)
+        .first()
     )
 
-    if not record.has_access(rlc_user):
+    if not sheet:
+        raise ApiError("Data Sheet not found.", status=404)
+
+    if not sheet.has_access(rlc_user):
         raise ApiError("You have no access to this folder.")
 
     return {
-        "id": record.pk,
-        "name": record.name,
-        "uuid": record.uuid,
-        "folder_uuid": record.folder_uuid,
-        "created": record.created,
-        "updated": record.updated,
-        "fields": record.template.get_fields_new(),
-        "entries": record.get_entries_new(rlc_user),
-        "template_name": record.template.name,
+        "id": sheet.pk,
+        "name": sheet.name,
+        "uuid": sheet.uuid,
+        "folder_uuid": sheet.folder_uuid,
+        "created": sheet.created,
+        "updated": sheet.updated,
+        "fields": sheet.template.get_fields_new(),
+        "entries": sheet.get_entries_new(rlc_user),
+        "template_name": sheet.template.name,
     }
 
 
