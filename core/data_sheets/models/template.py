@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from django.apps import apps
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import UploadedFile
 from django.db import models, transaction
 from django.utils import timezone
@@ -691,7 +692,11 @@ class DataSheetEncryptedStandardField(RecordField):
         entry.save()
 
     def delete_entry(self, record_id: int):
-        self.entries.get(record_id=record_id).delete()
+        try:
+            self.entries.get(record_id=record_id).delete()
+        except ObjectDoesNotExist:
+            # just assume it was already deleted
+            pass
 
 
 class DataSheetStatisticField(RecordField):
