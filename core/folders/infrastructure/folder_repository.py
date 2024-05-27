@@ -1,7 +1,6 @@
 from typing import Any, Optional
 from uuid import UUID
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils import timezone
 
@@ -225,13 +224,9 @@ class DjangoFolderRepository(FolderRepository):
         f.save()
 
     def get_children(self, org_pk: int, uuid: UUID) -> list[Folder]:
-        folders = self.get_dict(org_pk)
-        if uuid not in folders:
-            raise ObjectDoesNotExist()
-
-        children = []
-        for folder in folders.values():
-            if folder.parent is not None and folder.parent.uuid == uuid:
-                children.append(folder)
-
-        return children
+        db_folder = FOL_Folder.objects.filter(uuid=uuid, org_id=org_pk).get()
+        closures = FOL_ClosureTable.objects.filter(
+            child_id=db_folder.pk
+        ).select_related("child")
+        uuids = list_map(closures, lambda c: c.child.uuid)
+        return self.list_by_uuids(org_pk, uuids)
