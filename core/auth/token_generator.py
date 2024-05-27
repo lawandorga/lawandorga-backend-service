@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 class EmailConfirmationTokenGenerator:
     key_salt = "EmailConfirmationTokenGenerator"
-    timeout = 60 * 60 * 24 * 30  # 30 days
+    timeout = 60 * 60 * 24 * 30 * 12  # 12 months
 
     def make_token(self, user: "OrgUser"):
         return self._make_token_with_timestamp(

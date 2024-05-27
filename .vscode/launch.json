@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Runserver",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",
             "args": [
@@ -16,12 +16,12 @@
         },
         {
             "name": "Production: Check E-Mail Token",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/production_manage.py",
             "args": [
-                "testemailkey",
-                "bjmskb-c531c6d206159095f8442c1771ae94fb"
+                "testmailkey",
+                "no-token"
             ],
             "django": true
         }

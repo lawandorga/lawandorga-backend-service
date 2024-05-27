@@ -10,5 +10,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         token = options["token"][0]
-        rlc_user = OrgUser.objects.get(id=2574)
-        EmailConfirmationTokenGenerator().check_token(rlc_user, token)
+        rlc_user = OrgUser.objects.get(id=2757)
+        correct = EmailConfirmationTokenGenerator().check_token(rlc_user, token)
+        self.stdout.write(f"Token is {'correct' if correct else 'incorrect'}")
