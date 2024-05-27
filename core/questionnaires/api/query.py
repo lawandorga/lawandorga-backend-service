@@ -207,11 +207,18 @@ class OutputFillOutQuestionnaire(BaseModel):
     fields: list[OutputFillOutTemplateDetailField]
 
 
+class OutputFillOutQuestionnaireError(BaseModel):
+    error: str
+
+
 @router.get(
-    "fill_out_questionnaire/<str:code>/", output_schema=OutputFillOutQuestionnaire
+    "fill_out_questionnaire/<str:code>/",
+    output_schema=OutputFillOutQuestionnaire | OutputFillOutQuestionnaireError,
 )
 def query__fill_out_questionnaire(data: InputFillOutQuestionnaire):
-    questionnaire = Questionnaire.objects.get(code=data.code)
+    questionnaire = Questionnaire.objects.filter(code=data.code).first()
+    if questionnaire is None:
+        return {"error": "Questionnaire not found."}
     fields = list(questionnaire.template.fields.all())
     answers = list(questionnaire.answers.values_list("field", flat=True))
     fields = list(filter(lambda field: field.pk not in answers, fields))

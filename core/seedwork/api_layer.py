@@ -351,7 +351,7 @@ class Router:
     def get(
         self,
         url: str = "",
-        output_schema: Optional[Type] = None,
+        output_schema: Any = None,
     ):
         return self.api(url, "GET", output_schema)
 
