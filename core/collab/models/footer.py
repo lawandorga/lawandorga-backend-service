@@ -15,6 +15,8 @@ class Footer(models.Model):
     def create(
         cls,
         user: OrgUser,
+        name: str,
+        description: str,
         column_1: str,
         column_2: str,
         column_3: str,
@@ -22,6 +24,8 @@ class Footer(models.Model):
     ):
         return cls(
             org_id=user.org_id,
+            name=name,
+            description=description,
             column_1=column_1,
             column_2=column_2,
             column_3=column_3,
@@ -30,6 +34,8 @@ class Footer(models.Model):
 
     uuid = models.UUIDField(unique=True, default=uuid4)
     org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name="footers")
+    name = models.CharField(max_length=256, blank=True)
+    description = models.TextField(blank=True)
     column_1 = models.TextField(blank=True)
     column_2 = models.TextField(blank=True)
     column_3 = models.TextField(blank=True)
@@ -41,7 +47,11 @@ class Footer(models.Model):
 
     @property
     def template_type(self):
-        return "Footer"
+        return "footer"
+
+    def update_meta(self, name: str, description: str):
+        self.name = name
+        self.description = description
 
     def update_text(self, column_1: str, column_2: str, column_3: str, column_4: str):
         self.column_1 = column_1

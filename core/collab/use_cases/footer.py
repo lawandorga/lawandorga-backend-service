@@ -13,13 +13,17 @@ def get_footer(a: OrgUser, v: UUID) -> Footer:
 @use_case
 def create_footer(
     __actor: OrgUser,
-    column_1: str,
-    column_2: str,
-    column_3: str,
-    column_4: str,
+    name: str,
+    description: str,
+    column_1: str = "",
+    column_2: str = "",
+    column_3: str = "",
+    column_4: str = "",
 ):
     footer = Footer.create(
         __actor,
+        name,
+        description,
         column_1,
         column_2,
         column_3,
@@ -32,12 +36,15 @@ def create_footer(
 def update_footer(
     __actor: OrgUser,
     footer_uuid: UUID,
+    name: str,
+    description: str,
     column_1: str,
     column_2: str,
     column_3: str,
     column_4: str,
 ):
     footer = get_footer(__actor, footer_uuid)
+    footer.update_meta(name, description)
     footer.update_text(
         column_1,
         column_2,
