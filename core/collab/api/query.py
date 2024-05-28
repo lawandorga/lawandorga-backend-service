@@ -53,6 +53,7 @@ class OutputTemplate(BaseModel):
     name: str
     description: str
     template_type: Literal["footer", "letterhead"]
+    uuid: UUID
 
     model_config = ConfigDict(from_attributes=True)
 
