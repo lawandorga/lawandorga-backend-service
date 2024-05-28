@@ -49,6 +49,7 @@ def query__data_sheet(rlc_user: OrgUser, data: InputUuid):
 
 
 class OutputTemplate(BaseModel):
+    uuid: UUID
     name: str
     description: str
     template_type: Literal["footer", "letterhead"]
