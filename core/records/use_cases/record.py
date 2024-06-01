@@ -15,7 +15,7 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
-def create_record(__actor: OrgUser, token: str, r: FolderRepository):
+def create_record_and_folder(__actor: OrgUser, token: str, r: FolderRepository):
     parent_folder = r.get_or_create_records_folder(__actor.org_id, __actor)
 
     if not parent_folder.has_access(__actor):

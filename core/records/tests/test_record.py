@@ -12,7 +12,7 @@ from core.permissions.static import (
 from core.records.models.deletion import RecordsDeletion
 from core.records.models.record import RecordsRecord
 from core.records.use_cases.deletion import accept_deletion_request
-from core.records.use_cases.record import create_record
+from core.records.use_cases.record import create_record_and_folder
 from core.seedwork import test_helpers
 
 
@@ -36,7 +36,7 @@ def test_creation_with_inheritance_stop_disabled(db):
     user.org.new_records_have_inheritance_stop = False
     user.org.save()
     user.grant(PERMISSION_RECORDS_ADD_RECORD)
-    folder_uuid = create_record(user, "AZ-001")
+    folder_uuid = create_record_and_folder(user, "AZ-001")
     r = DjangoFolderRepository()
     folder = r.retrieve(user.org_id, folder_uuid)
     assert not folder.stop_inherit
@@ -53,7 +53,7 @@ def test_grant_to_users_with_general_permission(db):
     user.grant(PERMISSION_RECORDS_ADD_RECORD)
     another_user.grant(PERMISSION_RECORDS_ACCESS_ALL_RECORDS)
 
-    folder_uuid = create_record(user, "AZ-TEST")
+    folder_uuid = create_record_and_folder(user, "AZ-TEST")
 
     r = DjangoFolderRepository()
     folder = r.retrieve(user.org_id, folder_uuid)
