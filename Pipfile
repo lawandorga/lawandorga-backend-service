@@ -29,7 +29,7 @@ uvicorn = "==0.27.*"
 pytest-env = "==1.1.*"
 ics = "==0.7.*"
 django = {extras = ["argon2"], version = "==5.0.*"}
-pydantic = {extras = ["email"], version = "==2.3.*"}
+pydantic = {extras = ["email"], version = "==2.7.*"}
 dnspython = "==2.4.*"
 bleach = "==6.1.*"
 types-bleach = "==6.1.*"
