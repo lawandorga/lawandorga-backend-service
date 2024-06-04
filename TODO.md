@@ -9,9 +9,16 @@ COLLAB
 - Backend Query Footer (Joey) - CHECK
 - Frontend Templates View (Leandra) - CHECK table generator
 - Frontend Create Letterhead (Leandra) - CHECK
-- Frontend Create Footer (Leandra)
+- Frontend Create Footer (Leandra) - CHECK
 - Frontend Footer View (Joey)
-- Frontend Letterhead View (Daniel)
-- Frontend Letterhead Delete (Leandra)
-- Frontend Footer Delete (Leandra)
-- Frontend LorgaUI Config (Daniel)
+- Frontend Letterhead View ()
+- Frontend Edit Footer in der View
+- Frontend Edit Letterhead in der View
+- Frontend Letterhead Delete (Leandra) - CHECK
+- Frontend Footer Delete (Leandra) - CHECK
+- Frontend LorgaUI Config (Daniel) - CHECK
+
+- Print Collab Button -> PDF Ansicht im Browser (query übers backend)
+- Add Template Button -> Letterhead & Footer 2 Select Inputs -> speichern in Collab Model
+  - Query Endpoint für Letterhead & Footer
+  - Set Template for collab usecase
