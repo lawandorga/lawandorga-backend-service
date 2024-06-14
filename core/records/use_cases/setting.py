@@ -15,6 +15,11 @@ def create_view(__actor: OrgUser, name: str, columns: list[str], shared=False):
             [PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES],
             message_addition="You can only create views that are not shared.",
         )
+    if len(columns) == 0:
+        raise UseCaseError("Columns can not be empty.")
+    for c in columns:
+        if c == "":
+            raise UseCaseError("Columns can not contain an empty column.")
     view = RecordsView.create(name=name, user=__actor, columns=columns, shared=shared)
     view.save()
 
@@ -23,6 +28,8 @@ def create_view(__actor: OrgUser, name: str, columns: list[str], shared=False):
 def update_view(
     __actor: OrgUser, uuid: UUID, name: str, columns: list[str], ordering: int
 ):
+    if len(columns) == 0:
+        raise UseCaseError("Columns can not be empty.")
     for c in columns:
         if c == "":
             raise UseCaseError("Columns can not contain an empty column.")
