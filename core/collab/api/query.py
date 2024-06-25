@@ -90,6 +90,8 @@ def query__letterhead(rlc_user: OrgUser, data: InputUuid):
 
 
 class OutputFooter(BaseModel):
+    name: str
+    description: str
     column_1: str
     column_2: str
     column_3: str
