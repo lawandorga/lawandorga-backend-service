@@ -97,6 +97,8 @@ class OutputFooter(BaseModel):
     column_3: str
     column_4: str
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 @router.get(
     url="footer/<uuid:uuid>/",
