@@ -1,7 +1,3 @@
-# 4 einfache textfelder - CHECK
-# spalte 1, spalte 2, spalte 3, spalte 4 - CHECK
-# verbunden mit org - CHECK
-# uuid field - CHECK
 from uuid import uuid4
 
 from django.db import models

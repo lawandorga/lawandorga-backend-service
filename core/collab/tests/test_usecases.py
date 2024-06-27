@@ -4,7 +4,7 @@ from core.collab.use_cases.collab import (
     create_collab,
     delete_collab,
     sync_collab,
-    update_collab,
+    update_collab_title,
 )
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.seedwork import test_helpers
@@ -39,7 +39,7 @@ def test_collab_update(db):
     )
     cr = CollabRepository()
     cr.save_document(collab, user, folder)
-    collab = update_collab(
+    collab = update_collab_title(
         __actor=user,
         collab_uuid=collab.uuid,
         title="Updated Collab",

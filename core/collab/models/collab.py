@@ -1,4 +1,4 @@
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from django.db import models
 from django.utils import timezone
@@ -43,6 +43,8 @@ class Collab(Aggregate, models.Model):
     events: EventsAddon
     folder: FolderAddon
     addons = {"events": EventsAddon, "folder": FolderAddon}
+    letterhead_uuid: UUID
+    footer_uuid: UUID
 
     class Meta:
         verbose_name = "Collab"
@@ -80,9 +82,13 @@ class Collab(Aggregate, models.Model):
         doc = Document.create(user=self.create_doc_user(user), text=text)
         self.history.append(doc)
 
-    def update(self, title: str) -> None:
+    def update_title(self, title: str) -> None:
         self.title = title
         self.folder.obj_renamed()
+
+    def update_template(self, letterhead_uuid: UUID, footer_uuid: UUID) -> None:
+        self.letterhead_uuid = letterhead_uuid
+        self.footer_uuid = footer_uuid
 
     def _encrypt(self, folder: Folder, user: OrgUser) -> None:
         enc_history_uuids = [d["uuid"] for d in self.history_enc]

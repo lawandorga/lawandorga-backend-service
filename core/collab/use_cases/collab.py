@@ -196,7 +196,7 @@ def create_collab(
 
 
 @use_case
-def update_collab(
+def update_collab_title(
     __actor: OrgUser,
     collab_uuid: UUID,
     title: str,
@@ -209,7 +209,27 @@ def update_collab(
         raise UseCaseError(
             "You do not have access to this folder. Therefore you can not update this collab."
         )
-    collab.update(title=title)
+    collab.update_title(title=title)
+    cr.save_document(collab, __actor, folder)
+    return collab
+
+
+@use_case
+def update_collab_template(
+    __actor: OrgUser,
+    collab_uuid: UUID,
+    letterhead_uuid: UUID,
+    footer_uuid: UUID,
+    cr: CollabRepository,
+    fr: FolderRepository,
+) -> Collab:
+    collab = cr.get_document(collab_uuid, __actor, fr)
+    folder = fr.retrieve(org_pk=__actor.org_id, uuid=collab.folder_uuid)
+    if not folder.has_access(__actor):
+        raise UseCaseError(
+            "You do not have access to this folder. Therefore you can not update this collab."
+        )
+    collab.update_template(letterhead_uuid=letterhead_uuid, footer_uuid=footer_uuid)
     cr.save_document(collab, __actor, folder)
     return collab
 
