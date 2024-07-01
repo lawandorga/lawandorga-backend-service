@@ -128,7 +128,7 @@ def query__collab_pdf(rlc_user: OrgUser, data: InputUuid):
     buffer.seek(0)
     response = FileResponse(
         buffer,
-        as_attachment=True,
+        as_attachment=False,
         content_type="application/pdf",
         filename=f"{collab.name}.pdf",
     )
