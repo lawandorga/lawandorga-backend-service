@@ -250,11 +250,11 @@ def build_response(
 ) -> HttpResponse | FileResponse:
     if (
         output_schema
-        and isinstance(result, output_schema)
         and (
             HttpResponse in get_args(output_schema)
             or FileResponse in get_args(output_schema)
         )
+        and isinstance(result, output_schema)
     ):
         return result
 
