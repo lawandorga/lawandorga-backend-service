@@ -14,12 +14,20 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    get_args,
 )
 
 from django.conf import settings
 
 # from django.core.exceptions import ObjectDoesNotExist
-from django.http import FileResponse, HttpRequest, JsonResponse, RawPostDataException
+from django.http import (
+    FileResponse,
+    HttpRequest,
+    HttpResponse,
+    JsonResponse,
+    RawPostDataException,
+)
+from django.http.response import HttpResponseBase
 from django.urls import path
 from django.utils.module_loading import import_string
 from pydantic import BaseModel, ValidationError, create_model
@@ -156,7 +164,7 @@ def _validate(request: HttpRequest, schema: Type[BaseModel]) -> BaseModel:
     return schema(root=data)
 
 
-def catch_error(func: Callable[..., JsonResponse | FileResponse]):
+def catch_error(func: Callable[..., HttpResponse | FileResponse]):
     def catch(*args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -211,6 +219,57 @@ def get_return_type_of_function(func: Callable[..., Any]) -> Any:
             )
         )
     return s.return_annotation
+
+
+def build_kwargs_for_api_function_from_request(
+    s: inspect.Signature, request: HttpRequest, injectors_by_return_type: dict
+):
+    func_kwargs: dict[str, Any] = {}
+
+    for parameter in s.parameters.values():
+        annotation = parameter.annotation
+        if annotation in injectors_by_return_type:
+            inject_function = injectors_by_return_type[annotation]
+            func_kwargs[parameter.name] = inject_function(request)
+
+    if "data" in s.parameters:
+        data_parameter = s.parameters["data"]
+        try:
+            model = create_model(
+                "Input",
+                root=(data_parameter.annotation, ...),
+            )
+            data = _validate(request, model)
+        except ValidationError as e:
+            raise ApiValidationError(e)
+
+        func_kwargs["data"] = data.root  # type: ignore
+
+    return func_kwargs
+
+
+def build_response(
+    result: Any, output_schema: Optional[Type]
+) -> HttpResponse | FileResponse:
+    if (
+        output_schema
+        and isinstance(result, output_schema)
+        and (
+            HttpResponse in get_args(output_schema)
+            or FileResponse in get_args(output_schema)
+        )
+    ):
+        return result
+
+    if output_schema:
+        model = create_model(
+            "Output",
+            root=(output_schema, ...),
+        )
+        output_data = model(root=result)
+        return JsonResponse(output_data.model_dump()["root"], safe=False)
+
+    return JsonResponse({})
 
 
 InjectT = TypeVar("InjectT", bound=Any)
@@ -300,51 +359,13 @@ class Router:
 
         def wrapper(
             request: HttpRequest, *args, **kwargs
-        ) -> JsonResponse | FileResponse:
-            # set up input
-            func_kwargs: Dict[str, Any] = {}
-
-            # handle injections
-            for parameter in s.parameters.values():
-                annotation = parameter.annotation
-                if annotation in cls._injectors_by_return_type:
-                    inject_function = cls._injectors_by_return_type[annotation]
-                    func_kwargs[parameter.name] = inject_function(request)
-
-            # add data input
-            if "data" in s.parameters:
-                data_parameter = s.parameters["data"]
-                try:
-                    model = create_model(
-                        "Input",
-                        root=(data_parameter.annotation, ...),
-                    )
-                    data = _validate(request, model)
-                except ValidationError as e:
-                    raise ApiValidationError(e)
-
-                func_kwargs["data"] = data.root  # type: ignore
-
-            # different layer errors
+        ) -> HttpResponse | FileResponse:
+            func_kwargs = build_kwargs_for_api_function_from_request(
+                s, request, cls._injectors_by_return_type
+            )
             result = func(**func_kwargs)
-
-            # validate the output
-            if (
-                inspect.isclass(output_schema)
-                and issubclass(output_schema, FileResponse)
-                and isinstance(result, FileResponse)
-            ):
-                return result
-            if output_schema:
-                model = create_model(
-                    "Output",
-                    root=(output_schema, ...),
-                )
-                output_data = model(root=result)
-                return JsonResponse(output_data.model_dump()["root"], safe=False)
-
-            # default
-            return JsonResponse({})
+            response = build_response(result, output_schema)
+            return response
 
         return catch_error(wrapper)
 
