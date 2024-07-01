@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from django.template import loader
 from pydantic import BaseModel, ConfigDict
 from weasyprint import HTML
@@ -113,15 +113,26 @@ def query__footer(rlc_user: OrgUser, data: InputUuid):
     return footer
 
 
+class InputPdf(BaseModel):
+    uuid: UUID
+    debug: bool = False
+
+
 @router.get(
     url="<uuid:uuid>/pdf/",
-    output_schema=FileResponse,
+    output_schema=HttpResponse | FileResponse,
 )
-def query__collab_pdf(rlc_user: OrgUser, data: InputUuid):
+def query__collab_pdf(rlc_user: OrgUser, data: InputPdf):
     cr = CollabRepository()
     fr = DjangoFolderRepository()
     collab = cr.get_document(data.uuid, rlc_user, fr)
-    html = loader.render_to_string("collab/templates/pdf.html", {"collab": collab})
+    html = loader.render_to_string(
+        "collab/templates/pdf.html", context={"collab": collab}
+    )
+
+    if data.debug:
+        return HttpResponse(html, content_type="text/html")
+
     htmldoc = HTML(string=html)
     buffer = io.BytesIO()
     htmldoc.write_pdf(buffer)
