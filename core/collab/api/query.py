@@ -1,8 +1,12 @@
+import io
 from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
+from django.http import FileResponse
+from django.template import loader
 from pydantic import BaseModel, ConfigDict
+from weasyprint import HTML
 
 from core.auth.models.org_user import OrgUser
 from core.collab.models.footer import Footer
@@ -107,3 +111,25 @@ class OutputFooter(BaseModel):
 def query__footer(rlc_user: OrgUser, data: InputUuid):
     footer = Footer.objects.get(uuid=data.uuid, org=rlc_user.org)
     return footer
+
+
+@router.get(
+    url="<uuid:uuid>/pdf/",
+    output_schema=FileResponse,
+)
+def query__collab_pdf(rlc_user: OrgUser, data: InputUuid):
+    cr = CollabRepository()
+    fr = DjangoFolderRepository()
+    collab = cr.get_document(data.uuid, rlc_user, fr)
+    html = loader.render_to_string("collab/templates/pdf.html", {"collab": collab})
+    htmldoc = HTML(string=html)
+    buffer = io.BytesIO()
+    htmldoc.write_pdf(buffer)
+    buffer.seek(0)
+    response = FileResponse(
+        buffer,
+        as_attachment=True,
+        content_type="application/pdf",
+        filename=f"{collab.name}.pdf",
+    )
+    return response
