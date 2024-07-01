@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
+from django.conf import settings
 from django.http import FileResponse, HttpResponse
 from django.template import loader
 from pydantic import BaseModel, ConfigDict
@@ -133,7 +134,7 @@ def query__collab_pdf(rlc_user: OrgUser, data: InputPdf):
     if data.debug:
         return HttpResponse(html, content_type="text/html")
 
-    htmldoc = HTML(string=html)
+    htmldoc = HTML(string=html, base_url=settings.MAIN_BACKEND_URL)
     buffer = io.BytesIO()
     htmldoc.write_pdf(buffer)
     buffer.seek(0)

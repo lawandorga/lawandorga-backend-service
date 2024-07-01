@@ -73,10 +73,10 @@ INTERNAL_IPS = ["127.0.0.1"]
 
 # Logging
 # https://docs.djangoproject.com/en/dev/topics/logging/
-LOGGING_DIR = os.path.join(BASE_DIR, "tmp/logs")
+LOGGING_DIR = os.path.join(BASE_DIR, "tmp")
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": True,
+    "disable_existing_loggers": False,
     "formatters": {
         "console": {
             "format": "{levelname:8s} | {name:14s} | {message}",
@@ -89,8 +89,19 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "console",
         },
+        "weasyprint": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "formatter": "console",
+            "filename": os.path.join(LOGGING_DIR, "weasyprint.log"),
+        },
     },
     "loggers": {
+        "weasyprint": {
+            "handlers": ["weasyprint"],
+            "propagate": False,
+            "level": "DEBUG",
+        },
         "": {"handlers": ["console"], "level": "DEBUG"},
         # log database queries
         # "django.db.backends": {

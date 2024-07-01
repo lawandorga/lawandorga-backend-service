@@ -1,4 +1,15 @@
-<div>
-    <h1>{{ collab.name }}</h1>
-    {{ collab.text|safe }}
-</div>
+{% load static %}
+<html>
+    <head>
+        <title>{{ collab.name }}</title>
+        <link rel="stylesheet" href="{% static 'collab_print.css' %}">
+    </head>
+    <body>
+        <header>header</header>
+        <main>
+            <h1>{{ collab.name }}</h1>
+            {{ collab.text|safe }}
+        </main>
+        <footer>footer</footer>
+    </body>
+</html>

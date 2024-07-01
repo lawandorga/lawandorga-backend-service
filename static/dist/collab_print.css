@@ -1,0 +1,24 @@
+body {
+    font-family: Arial, sans-serif;
+}
+@page {
+    margin: 10px;
+    margin-bottom: 10px;
+    margin-top: 10px
+}
+main {
+    padding: 200px 20px;
+}
+header, footer {
+    background-color: #f0f0f0;
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 200px;
+}
+header {
+    top: 0;
+}
+footer {
+    bottom: 0;
+}
