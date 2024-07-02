@@ -73,6 +73,7 @@ def query__templates(rlc_user: OrgUser):
 
 
 class OutputLetterhead(BaseModel):
+    uuid: UUID
     name: str
     description: str
     address_line_1: str
@@ -95,6 +96,7 @@ def query__letterhead(rlc_user: OrgUser, data: InputUuid):
 
 
 class OutputFooter(BaseModel):
+    uuid: UUID
     name: str
     description: str
     column_1: str

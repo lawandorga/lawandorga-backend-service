@@ -46,8 +46,8 @@ def update_letterhead(
     address_line_2: str,
     address_line_3: str,
     address_line_4: str,
-    address_line_5: str,
-    text_right: str,
+    address_line_5: str = "",
+    text_right: str = "",
 ):
     lh = get_letterhead(__actor, letterhead_uuid)
     lh.update_meta(name, description)
