@@ -46,6 +46,8 @@ class Collab(Aggregate, models.Model):
     letterhead_uuid: UUID
     footer_uuid: UUID
 
+    # footer = models.ForeignKey(Footer, on_delete=models.SET_NULL, null=True)
+
     class Meta:
         verbose_name = "Collab"
         verbose_name_plural = "Collabs"

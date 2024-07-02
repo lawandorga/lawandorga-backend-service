@@ -33,4 +33,5 @@ USECASES = {
     "collab/create_footer": create_footer,
     "collab/update_footer": update_footer,
     "collab/delete_footer": delete_footer,
+    "collab/assign_template_to_collab": placeholder,
 }
