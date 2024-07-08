@@ -1,6 +1,6 @@
 import io
 from datetime import datetime
-from typing import Literal
+from typing import Literal, Optional
 from uuid import UUID
 
 from django.conf import settings
@@ -134,8 +134,8 @@ class OutputCollab(BaseModel):
     password: str
     created_at: datetime
     history: list[OutputDocument]
-    letterhead: OutputLetterhead
-    footer: OutputFooter
+    letterhead: Optional[OutputLetterhead]
+    footer: Optional[OutputFooter]
 
     model_config = ConfigDict(from_attributes=True)
 
