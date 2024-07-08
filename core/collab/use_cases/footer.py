@@ -38,10 +38,10 @@ def update_footer(
     footer_uuid: UUID,
     name: str,
     description: str,
-    column_1: str,
-    column_2: str,
-    column_3: str,
-    column_4: str,
+    column_1: str = "",
+    column_2: str = "",
+    column_3: str = "",
+    column_4: str = "",
 ):
     footer = get_footer(__actor, footer_uuid)
     footer.update_meta(name, description)
