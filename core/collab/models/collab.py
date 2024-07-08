@@ -89,10 +89,10 @@ class Collab(Aggregate, models.Model):
         self.title = title
         self.folder.obj_renamed()
 
-    def update_letterhead(self, letterhead: Letterhead) -> None:
+    def update_letterhead(self, letterhead: Letterhead | None) -> None:
         self.letterhead = letterhead
 
-    def update_footer(self, footer: Footer) -> None:
+    def update_footer(self, footer: Footer | None) -> None:
         self.footer = footer
 
     def _encrypt(self, folder: Folder, user: OrgUser) -> None:

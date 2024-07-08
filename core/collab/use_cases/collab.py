@@ -235,9 +235,15 @@ def assign_template_to_collab(
     if letterhead_uuid:
         letterhead = get_letterhead(__actor, letterhead_uuid)
         collab.update_letterhead(letterhead)
+    else:
+        collab.update_letterhead(None)
+
     if footer_uuid:
         footer = get_footer(__actor, footer_uuid)
         collab.update_footer(footer)
+    else:
+        collab.update_footer(None)
+
     cr.save_document(collab, __actor, folder)
     return collab
 
