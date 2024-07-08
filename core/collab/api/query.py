@@ -31,28 +31,6 @@ class OutputDocument(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class OutputCollab(BaseModel):
-    uuid: UUID
-    name: str
-    text: str
-    password: str
-    created_at: datetime
-    history: list[OutputDocument]
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-@router.get(
-    url="<uuid:uuid>/",
-    output_schema=OutputCollab,
-)
-def query__data_sheet(rlc_user: OrgUser, data: InputUuid):
-    cr = CollabRepository()
-    fr = DjangoFolderRepository()
-    collab = cr.get_document(data.uuid, rlc_user, fr)
-    return collab
-
-
 class OutputTemplate(BaseModel):
     uuid: UUID
     name: str
@@ -147,3 +125,27 @@ def query__collab_pdf(rlc_user: OrgUser, data: InputPdf):
         filename=f"{collab.name}.pdf",
     )
     return response
+
+
+class OutputCollab(BaseModel):
+    uuid: UUID
+    name: str
+    text: str
+    password: str
+    created_at: datetime
+    history: list[OutputDocument]
+    letterhead: OutputLetterhead
+    footer: OutputFooter
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+@router.get(
+    url="<uuid:uuid>/",
+    output_schema=OutputCollab,
+)
+def query__data_sheet(rlc_user: OrgUser, data: InputUuid):
+    cr = CollabRepository()
+    fr = DjangoFolderRepository()
+    collab = cr.get_document(data.uuid, rlc_user, fr)
+    return collab
