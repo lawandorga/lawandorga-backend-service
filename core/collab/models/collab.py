@@ -1,4 +1,4 @@
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from django.db import models
 from django.utils import timezone
