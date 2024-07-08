@@ -248,11 +248,14 @@ def build_kwargs_for_api_function_from_request(
 def build_response(
     result: Any, output_schema: Optional[Type]
 ) -> HttpResponse | FileResponse:
+    print(output_schema, result, type(result), get_args(output_schema))
     if (
         output_schema
         and (
             HttpResponse in get_args(output_schema)
             or FileResponse in get_args(output_schema)
+            or output_schema == FileResponse
+            or output_schema == HttpResponse
         )
         and isinstance(result, output_schema)
     ):

@@ -5,11 +5,57 @@
         <link rel="stylesheet" href="{% static 'collab_print.css' %}">
     </head>
     <body>
-        <header>header</header>
+        {% if header %}
+        <header>
+            <div>
+                <p>
+                    {{ header.address_line_1 }} <br>
+                    {{ header.address_line_2 }} <br>
+                    {{ header.address_line_3 }} <br>
+                    {{ header.address_line_4 }} <br>
+                    {{ header.address_line_5 }}
+                </p>
+            </div>
+            <span></span>
+            <div>
+                <p class="right">
+                    {{ header.text_right }}
+                </p>
+            </div>
+        </header>
+        <div style="height: 200px"></div>
+        {% endif %}
         <main>
             <h1>{{ collab.name }}</h1>
             {{ collab.text|safe }}
         </main>
-        <footer>footer</footer>
+        {% if footer %}
+        <div style="height: 200px"></div>
+        <footer>
+            <div>
+                <p>
+                    {{ footer.column_1 }}
+                </p>
+            </div>
+            <span></span>
+            <div>
+                <p>
+                    {{ footer.column_2 }}
+                </p>
+            </div>
+            <span></span>
+            <div>
+                <p>
+                    {{ footer.column_3 }}
+                </p>
+            </div>
+            <span></span>
+            <div>
+                <p>
+                    {{ footer.column_4 }}
+                </p>
+            </div>
+        </footer>
+        {% endif %}
     </body>
 </html>

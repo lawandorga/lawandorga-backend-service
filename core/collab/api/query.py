@@ -107,8 +107,11 @@ def query__collab_pdf(rlc_user: OrgUser, data: InputPdf):
     cr = CollabRepository()
     fr = DjangoFolderRepository()
     collab = cr.get_document(data.uuid, rlc_user, fr)
+    header = collab.letterhead
+    footer = collab.footer
     html = loader.render_to_string(
-        "collab/templates/pdf.html", context={"collab": collab}
+        "collab/templates/pdf.html",
+        context={"collab": collab, "header": header, "footer": footer},
     )
 
     if data.debug:

@@ -1,24 +1,61 @@
 body {
     font-family: Arial, sans-serif;
 }
+
 @page {
     margin: 10px;
     margin-bottom: 10px;
     margin-top: 10px
 }
+
 main {
-    padding: 200px 20px;
+    padding: 0px 20px;
 }
-header, footer {
+
+header,
+footer {
     background-color: #f0f0f0;
     position: absolute;
     left: 0;
     right: 0;
-    height: 200px;
+    height: auto;
 }
+
 header {
     top: 0;
+    display: flex;
+    padding: 10px 10px;
 }
+
 footer {
     bottom: 0;
+    display: flex;
+    padding: 0 10px;
+}
+
+header p,
+footer p {
+    margin: 0;
+}
+
+footer>div {
+    width: 25%;
+    padding: 0 0px;
+    /* border: 1px solid black; */
+}
+
+footer>span,
+header>span {
+    display: block;
+    width: 5px;
+}
+
+header>div {
+    width: 50%;
+    padding: 0 0px;
+    /* border: 1px solid black; */
+}
+
+header>div>p.right {
+    text-align: right;
 }
