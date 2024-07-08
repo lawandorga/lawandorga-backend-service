@@ -22,7 +22,7 @@ COLLAB
 
 - Collab PDF View (Daniel)
 
-- Frontend Edit Footer in der View (Joey & Leandra)
+- Frontend Edit Footer in der View (Joey & Leandra) - CHECK
 - Frontend Edit Letterhead in der View (Joey & Leandra) - CHECK
 - Collab Letterhead PDF View einbinden (Daniel)
 - Collab Footer in PDF View einbinden (Daniel)
