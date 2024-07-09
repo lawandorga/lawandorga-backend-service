@@ -1,5 +1,7 @@
 from uuid import UUID
 
+from django.core.files.uploadedfile import UploadedFile
+
 from core.auth.models.org_user import OrgUser
 from core.collab.models.letterhead import Letterhead
 from core.seedwork.use_case_layer import finder_function, use_case
@@ -48,6 +50,7 @@ def update_letterhead(
     address_line_4: str = "",
     address_line_5: str = "",
     text_right: str = "",
+    logo: UploadedFile | None = None,
 ):
     lh = get_letterhead(__actor, letterhead_uuid)
     lh.update_meta(name, description)
@@ -59,6 +62,8 @@ def update_letterhead(
         address_line_5,
         text_right,
     )
+    if logo:
+        lh.update_logo(logo)
     lh.save()
 
 

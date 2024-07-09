@@ -7,7 +7,7 @@ COLLAB
 -   Backend Query Templates (Daniel) - CHECK
 -   Backend Query Letterhead (Daniel) - CHECK
 -   Backend Query Footer (Joey) - CHECK
--   Frontend Templates View (Leandra) - CHECK table generator
+-   Frontend Templates View (Leandra) - CHECK
 -   Frontend Create Letterhead (Leandra) - CHECK
 -   Frontend Create Footer (Leandra) - CHECK
 -   Frontend Footer View (Joey) - CHECK
@@ -17,13 +17,12 @@ COLLAB
 -   Frontend LorgaUI Config (Daniel) - CHECK
 -   Print Collab Button -> PDF Ansicht im Browser - CHECK
 -   In den Dokumentent Print Button mit Auswahl von Footer - CHECK
--   Add Template Button -> Letterhead & Footer 2 Select Inputs - (CHECK)
--   Query Endpoint für Letterhead & Footer (CHECK)
-
--   Collab PDF View (Daniel)
-
+-   Add Template Button -> Letterhead & Footer 2 Select Inputs - CHECK
+-   Query Endpoint für Letterhead & Footer - CHECK
 -   Frontend Edit Footer in der View (Joey & Leandra) - CHECK
 -   Frontend Edit Letterhead in der View (Joey & Leandra) - CHECK
--   Collab Letterhead PDF View einbinden (Daniel)
--   Collab Footer in PDF View einbinden (Daniel)
+-   Collab Letterhead PDF View einbinden (Daniel) - CHECK
+-   Collab Footer in PDF View einbinden (Daniel) - CHECK
 -   Use Case Footer und Letterhead im Collab Model speichern (Leandra & Joey) - CHECK
+
+-   Collab PDF View logo hinzufügen (Daniel)

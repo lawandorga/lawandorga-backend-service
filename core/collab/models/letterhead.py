@@ -1,5 +1,7 @@
+import base64
 from uuid import uuid4
 
+from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 
 from core.auth.models.org_user import OrgUser
@@ -53,6 +55,18 @@ class Letterhead(models.Model):
     def template_type(self):
         return "letterhead"
 
+    @property
+    def logo_url(self):
+        return self.logo.url if self.logo else ""
+
+    @property
+    def logo_base64(self):
+        if not self.logo:
+            return ""
+        with open(self.logo.path, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
+        return f"data:image/jpeg;base64,{encoded_string}"
+
     def update_meta(self, name: str, description: str):
         self.name = name
         self.description = description
@@ -72,3 +86,6 @@ class Letterhead(models.Model):
         self.address_line_4 = address_line_4
         self.address_line_5 = address_line_5
         self.text_right = text_right
+
+    def update_logo(self, logo: UploadedFile):
+        self.logo: models.ImageField = logo  # type: ignore

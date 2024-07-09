@@ -60,6 +60,7 @@ class OutputLetterhead(BaseModel):
     address_line_4: str
     address_line_5: str
     text_right: str
+    logo_base64: str
 
     model_config = ConfigDict(from_attributes=True)
 
