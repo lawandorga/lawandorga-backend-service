@@ -7,7 +7,7 @@ from core.auth.models import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.use_cases.folder import get_repository
 from core.rlc.models.group import Group
-from core.seedwork.api_layer import Router
+from core.seedwork.api_layer import ApiError, Router
 
 router = Router()
 
@@ -173,9 +173,10 @@ def build_user_access(context: Context, folder: Folder, source="direct"):
             }
         )
     if not folder.stop_inherit and folder.parent_uuid is not None:
-        access += build_user_access(
-            context, context["folders_dict"][folder.parent_uuid], "parent"
-        )
+        parent = context["folders_dict"].get(folder.parent_uuid, None)
+        if parent is None:
+            raise ApiError("Parent folder not found. This folder might be deleted.")
+        access += build_user_access(context, parent, "parent")
     return access
 
 
