@@ -1,6 +1,8 @@
 from uuid import UUID
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import UploadedFile
+from django.db import IntegrityError
 
 from core.auth.models.org_user import OrgUser
 from core.data_sheets.models.data_sheet import DataSheet
@@ -11,7 +13,7 @@ from core.data_sheets.use_cases.finders import (
     find_sheets_from_folder_uuid,
     sheet_from_id,
 )
-from core.seedwork.use_case_layer import use_case
+from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 def update_record_in_folder(__actor: OrgUser, folder_uuid: UUID):
@@ -65,7 +67,12 @@ def create_or_update_entry(
     __actor: OrgUser, field_id: UUID, record_id: int, value: str | list[str]
 ):
     field = find_field_from_uuid(__actor, field_id)
-    field.create_or_update_entry(__actor, record_id, value)
+    try:
+        field.create_or_update_entry(__actor, record_id, value)
+    except (IntegrityError, ObjectDoesNotExist):
+        raise UseCaseError(
+            "Error: Data Sheet might be deleted. Please reload the page."
+        )
     sheet = sheet_from_id(__actor, record_id)
     set_sheet_updated_time(sheet)
     update_record_in_folder(__actor, sheet.folder_uuid)
