@@ -1,6 +1,7 @@
 from typing import Optional, TypedDict
 from uuid import UUID
 
+from django.core.exceptions import ObjectDoesNotExist
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
@@ -320,7 +321,10 @@ def query__detail_folder(rlc_user: OrgUser, data: InputFolderDetail):
     builder.build_folders(rlc_user.org_id).build_folder_dicts()
     builder.build_available_groups(rlc_user.org_id).build_groups_dict()
     context = builder.build()
-    folder = r.retrieve(rlc_user.org_id, data.id)
+    try:
+        folder = r.retrieve(rlc_user.org_id, data.id)
+    except ObjectDoesNotExist:
+        raise ApiError("Folder not found.")
     subfolders = r.get_children(rlc_user.org_id, folder.uuid)
 
     return {
