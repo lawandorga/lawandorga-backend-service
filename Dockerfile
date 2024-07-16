@@ -35,6 +35,9 @@ COPY manage.py /django/manage.py
 # install library for psycopg2
 RUN apt-get update && apt-get install libpq5 -y
 
+# install library for weasyprint
+RUN apt-get install -y --no-install-recommends build-essential libcairo2 libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 libffi-dev shared-mime-info
+
 # change to nonroot user
 USER 999
 
