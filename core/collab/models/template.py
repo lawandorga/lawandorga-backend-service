@@ -43,6 +43,9 @@ class Template(models.Model):
         verbose_name = "Template"
         verbose_name_plural = "Templates"
 
+    def __str__(self) -> str:
+        return self.name
+
     def add_letterhead(self):
         lh = Letterhead.create(self.org_id, "", "", "", "", "", "", "", "")
         self.letterhead = lh
