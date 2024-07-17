@@ -28,7 +28,11 @@ class DjangoFolderRepository(FolderRepository):
         # find the parent
         parent: Optional[Folder] = None
         if db_folder._parent_id is not None:
-            parent = self.__db_folder_to_domain(folders[db_folder._parent_id], folders)
+            try:
+                parent_db = folders[db_folder._parent_id]
+            except KeyError:
+                raise Exception("parent folder not found")
+            parent = self.__db_folder_to_domain(parent_db, folders)
 
         # revive keys
         enc_parent_key: Optional[ParentKey] = None
