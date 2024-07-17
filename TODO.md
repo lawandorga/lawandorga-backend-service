@@ -1,5 +1,8 @@
 COLLAB
 
+<details>
+    <summary>Done</summary>
+
 -   Backend Model Letterhead (Daniel) - CHECK
 -   Backend Model Footer (Joey) - CHECK
 -   Backend UseCases Letterhead (Daniel) - CHECK
@@ -24,12 +27,13 @@ COLLAB
 -   Collab Letterhead PDF View einbinden (Daniel) - CHECK
 -   Collab Footer in PDF View einbinden (Daniel) - CHECK
 -   Use Case Footer und Letterhead im Collab Model speichern (Leandra & Joey) - CHECK
-
--   Collab PDF View logo hinzufügen (Daniel)
-
 -   Create Template Button über die Tabelle (Style anpassen) (Leandra & Johannes) - CHECK
 -   Outline Create Footer: Bug? Outline beim Öffnen der Seite (Leandra & Johannes) - CHECK
 -   Erwartung: Name sollte zur Detailansicht, nicht zum Edit, ODER Name ist nicht klickbar (Leandra & Johannes) - CHECK
+</details>
+
+-   Collab PDF View logo hinzufügen (Daniel)
+
 -   Aufteilung der Inhalte zum Editieren von Footer und Letterhead: Name und Beschreibung, und separat: Inhalte (Leandra & Johannes)
 -   Statt Create Collab lieber Create Collab Document im CTA (oder vielleicht ein Info-Icon mit Tooltip, das eine Erklärung liefert, was ein Collab ist) (Leandra & Johannes)
 -   Add-Template-Button springt mehr ins Auge als die Buttons oben rechts in der Tabelle: (Leandra & Johannes)
