@@ -42,13 +42,6 @@ class Template(models.Model):
     class Meta:
         verbose_name = "Template"
         verbose_name_plural = "Templates"
-        constraints = [
-            models.CheckConstraint(
-                check=models.Q(letterhead__isnull=False)
-                | models.Q(footer__isnull=False),
-                name="either_letterhead_or_footer",
-            )
-        ]
 
     def add_letterhead(self):
         lh = Letterhead.create(self.org_id, "", "", "", "", "", "", "", "")
