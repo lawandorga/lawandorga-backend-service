@@ -44,7 +44,7 @@ class Collab(Aggregate, models.Model):
     events: EventsAddon
     folder: FolderAddon
     addons = {"events": EventsAddon, "folder": FolderAddon}
-    template = models.ForeignKey(Template, on_delete=models.CASCADE, null=True)
+    template = models.ForeignKey(Template, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         verbose_name = "Collab"
