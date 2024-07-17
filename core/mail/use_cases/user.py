@@ -20,6 +20,9 @@ def create_mail_user(__actor: UserProfile):
             "At the moment mail users can only be created for users with an org user role."
         )
 
+    if hasattr(__actor, "mail_user"):
+        raise UseCaseError("A mail user already exists for this user.")
+
     org = __actor.rlc_user.org
     users = [u.user for u in list(org.users.select_related("user").all())]
 
