@@ -7,30 +7,25 @@
     <body>
         {% if header %}
         <header>
-            <div>
+            <address>
+                {{ header.address_line_1 }} <br>
+                {{ header.address_line_2 }} <br>
+                {{ header.address_line_3 }} <br>
+                {{ header.address_line_4 }} <br>
+                {{ header.address_line_5 }}
+            </address>
+            <div  class="right">
                 <p>
-                    {{ header.address_line_1 }} <br>
-                    {{ header.address_line_2 }} <br>
-                    {{ header.address_line_3 }} <br>
-                    {{ header.address_line_4 }} <br>
-                    {{ header.address_line_5 }}
-                </p>
-            </div>
-            <span></span>
-            <div>
-                <p class="right">
                     {{ header.text_right }}
                 </p>
             </div>
         </header>
-        <div style="height: 200px"></div>
         {% endif %}
         <main>
             <h1>{{ collab.name }}</h1>
             {{ collab.text|safe }}
         </main>
         {% if footer %}
-        <div style="height: 200px"></div>
         <footer>
             <div>
                 <p>
