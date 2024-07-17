@@ -6,8 +6,8 @@ from core.seedwork.use_case_layer import finder_function, use_case
 
 
 @finder_function
-def get_footer(a: OrgUser, v: UUID) -> Footer:
-    return Footer.objects.get(uuid=v, org_id=a.org_id)
+def get_footer(user: OrgUser, id: UUID) -> Footer:
+    return Footer.objects.get(uuid=id, org_id=user.org_id)
 
 
 @use_case

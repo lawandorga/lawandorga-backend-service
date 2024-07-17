@@ -8,8 +8,7 @@ from core.collab.models.deprecated_permission_for_collab_document import (
     PermissionForCollabDocument,
 )
 from core.collab.repositories.collab import CollabRepository
-from core.collab.use_cases.footer import get_footer
-from core.collab.use_cases.letterhead import get_letterhead
+from core.collab.use_cases.template import get_template
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.models import FOL_Folder
@@ -221,8 +220,7 @@ def update_collab_title(
 def assign_template_to_collab(
     __actor: OrgUser,
     collab_uuid: UUID,
-    letterhead_uuid: Optional[UUID],
-    footer_uuid: Optional[UUID],
+    template_uuid: Optional[UUID],
     cr: CollabRepository,
     fr: FolderRepository,
 ) -> Collab:
@@ -232,17 +230,11 @@ def assign_template_to_collab(
         raise UseCaseError(
             "You do not have access to this folder. Therefore you can not update this collab."
         )
-    if letterhead_uuid:
-        letterhead = get_letterhead(__actor, letterhead_uuid)
-        collab.update_letterhead(letterhead)
+    if template_uuid:
+        template = get_template(__actor, template_uuid)
+        collab.update_template(template)
     else:
-        collab.update_letterhead(None)
-
-    if footer_uuid:
-        footer = get_footer(__actor, footer_uuid)
-        collab.update_footer(footer)
-    else:
-        collab.update_footer(None)
+        collab.update_template(None)
 
     cr.save_document(collab, __actor, folder)
     return collab

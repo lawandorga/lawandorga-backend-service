@@ -41,6 +41,7 @@ class Footer(models.Model):
         verbose_name = "Footer"
         verbose_name_plural = "Footers"
 
+    # TODO: can it be removed?
     @property
     def template_type(self):
         return "footer"

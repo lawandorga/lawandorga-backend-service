@@ -51,6 +51,7 @@ class Letterhead(models.Model):
         verbose_name = "Letterhead"
         verbose_name_plural = "Letterheads"
 
+    # TODO: can be removed?
     @property
     def template_type(self):
         return "letterhead"

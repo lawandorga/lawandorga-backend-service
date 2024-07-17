@@ -8,8 +8,8 @@ from core.seedwork.use_case_layer import finder_function, use_case
 
 
 @finder_function
-def get_letterhead(a: OrgUser, v: UUID) -> Letterhead:
-    return Letterhead.objects.get(uuid=v, org_id=a.org_id)
+def get_letterhead(user: OrgUser, id: UUID) -> Letterhead:
+    return Letterhead.objects.get(uuid=id, org_id=user.org_id)
 
 
 @use_case

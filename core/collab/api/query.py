@@ -1,6 +1,6 @@
 import io
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Optional
 from uuid import UUID
 
 from django.conf import settings
@@ -35,9 +35,10 @@ class OutputTemplate(BaseModel):
     uuid: UUID
     name: str
     description: str
-    template_type: Literal["footer", "letterhead"]
+    letterhead: Optional[Letterhead]
+    footer: Optional[Footer]
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
 
 
 @router.get(
@@ -108,8 +109,8 @@ def query__collab_pdf(rlc_user: OrgUser, data: InputPdf):
     cr = CollabRepository()
     fr = DjangoFolderRepository()
     collab = cr.get_document(data.uuid, rlc_user, fr)
-    header = collab.letterhead
-    footer = collab.footer
+    header = collab.template.letterhead if collab.template else None
+    footer = collab.template.footer if collab.template else None
     html = loader.render_to_string(
         "collab/templates/pdf.html",
         context={"collab": collab, "header": header, "footer": footer},
@@ -138,8 +139,7 @@ class OutputCollab(BaseModel):
     password: str
     created_at: datetime
     history: list[OutputDocument]
-    letterhead: Optional[OutputLetterhead]
-    footer: Optional[OutputFooter]
+    template: Optional[OutputTemplate]
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -4,8 +4,7 @@ from django.db import models
 from django.utils import timezone
 
 from core.auth.models.org_user import OrgUser
-from core.collab.models.footer import Footer
-from core.collab.models.letterhead import Letterhead
+from core.collab.models.template import Template
 from core.collab.value_objects.document import Document, EncryptedDocument
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_addon import FolderAddon
@@ -45,9 +44,7 @@ class Collab(Aggregate, models.Model):
     events: EventsAddon
     folder: FolderAddon
     addons = {"events": EventsAddon, "folder": FolderAddon}
-
-    footer = models.ForeignKey(Footer, on_delete=models.SET_NULL, null=True)
-    letterhead = models.ForeignKey(Letterhead, on_delete=models.SET_NULL, null=True)
+    template = models.ForeignKey(Template, on_delete=models.CASCADE, null=True)
 
     class Meta:
         verbose_name = "Collab"
@@ -89,11 +86,8 @@ class Collab(Aggregate, models.Model):
         self.title = title
         self.folder.obj_renamed()
 
-    def update_letterhead(self, letterhead: Letterhead | None) -> None:
-        self.letterhead = letterhead
-
-    def update_footer(self, footer: Footer | None) -> None:
-        self.footer = footer
+    def update_template(self, template: Template | None) -> None:
+        self.template = template
 
     def _encrypt(self, folder: Folder, user: OrgUser) -> None:
         enc_history_uuids = [d["uuid"] for d in self.history_enc]
