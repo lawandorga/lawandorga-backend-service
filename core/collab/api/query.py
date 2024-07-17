@@ -12,6 +12,7 @@ from weasyprint import HTML
 from core.auth.models.org_user import OrgUser
 from core.collab.models.footer import Footer
 from core.collab.models.letterhead import Letterhead
+from core.collab.models.template import Template
 from core.collab.repositories.collab import CollabRepository
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.seedwork.api_layer import Router
@@ -46,9 +47,7 @@ class OutputTemplate(BaseModel):
     output_schema=list[OutputTemplate],
 )
 def query__templates(rlc_user: OrgUser):
-    lhs = Letterhead.objects.filter(org=rlc_user.org)
-    footer = Footer.objects.filter(org=rlc_user.org)
-    return [*lhs, *footer]
+    return Template.objects.filter(org=rlc_user.org)
 
 
 class OutputLetterhead(BaseModel):
