@@ -2,7 +2,6 @@ from uuid import uuid4
 
 from django.db import models
 
-from core.auth.models.org_user import OrgUser
 from core.rlc.models.org import Org
 
 
@@ -10,7 +9,7 @@ class Footer(models.Model):
     @classmethod
     def create(
         cls,
-        user: OrgUser,
+        org_id: int,
         name: str,
         description: str,
         column_1: str,
@@ -19,7 +18,7 @@ class Footer(models.Model):
         column_4: str,
     ):
         return cls(
-            org_id=user.org_id,
+            org_id=org_id,
             name=name,
             description=description,
             column_1=column_1,

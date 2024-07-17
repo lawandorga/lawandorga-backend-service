@@ -36,8 +36,9 @@ class OutputTemplate(BaseModel):
     uuid: UUID
     name: str
     description: str
-    letterhead: Optional[Letterhead]
-    footer: Optional[Footer]
+    # letterhead: Optional[Letterhead]
+    # footer: Optional[Footer]
+    template_type: str = "deprecated"
 
     model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
 

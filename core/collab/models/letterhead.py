@@ -4,7 +4,6 @@ from uuid import uuid4
 from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 
-from core.auth.models.org_user import OrgUser
 from core.rlc.models.org import Org
 
 
@@ -12,7 +11,7 @@ class Letterhead(models.Model):
     @classmethod
     def create(
         cls,
-        user: OrgUser,
+        org_id: int,
         name: str,
         description: str,
         address_line_1: str,
@@ -23,7 +22,7 @@ class Letterhead(models.Model):
         text_right: str,
     ):
         return cls(
-            org_id=user.org_id,
+            org_id=org_id,
             name=name,
             description=description,
             address_line_1=address_line_1,

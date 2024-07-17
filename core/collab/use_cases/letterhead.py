@@ -25,7 +25,7 @@ def create_letterhead(
     text_right: str = "",
 ):
     lh = Letterhead.create(
-        __actor,
+        __actor.org_id,
         name,
         description,
         address_line_1,

@@ -1,4 +1,7 @@
+from typing import Literal
 from uuid import UUID
+
+from django.db import transaction
 
 from core.auth.models.org_user import OrgUser
 from core.collab.models.template import Template
@@ -12,41 +15,30 @@ def get_template(user: OrgUser, id: UUID) -> Template:
 
 @use_case
 def create_template(
-    __actor: OrgUser,
-    name: str,
-    description: str,
+    __actor: OrgUser, name: str, description: str, type: Literal["letterhead", "footer"]
 ):
-    template = Template.create(
+    template, content = Template.create(
         __actor,
         name,
         description,
+        type,
     )
-    template.save()
+    with transaction.atomic():
+        template.save()
+        content.save()
 
 
 @use_case
 def update_template(
     __actor: OrgUser,
     template_uuid: UUID,
-    name: str,
+    name: str | None = None,
+    description: str | None = None,
 ):
     template = get_template(__actor, template_uuid)
     template.update_name(name)
-    template.save()
-
-
-@use_case
-def update_description(
-    __actor: OrgUser,
-    template_uuid: UUID,
-    description: str,
-):
-    template = get_template(__actor, template_uuid)
     template.update_description(description)
     template.save()
-
-    # TODO: update letterhead?
-    # TODO: update footer?
 
 
 @use_case

@@ -21,7 +21,7 @@ def create_footer(
     column_4: str = "",
 ):
     footer = Footer.create(
-        __actor,
+        __actor.org_id,
         name,
         description,
         column_1,
