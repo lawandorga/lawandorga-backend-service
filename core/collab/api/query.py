@@ -48,7 +48,7 @@ class OutputTemplate(BaseModel):
     output_schema=list[OutputTemplate],
 )
 def query__templates(rlc_user: OrgUser):
-    return Template.objects.filter(org=rlc_user.org)
+    return list(Template.objects.filter(org=rlc_user.org))
 
 
 class OutputLetterhead(BaseModel):
