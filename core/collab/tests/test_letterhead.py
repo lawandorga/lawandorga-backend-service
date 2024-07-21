@@ -26,7 +26,7 @@ def test_create(db):
 def test_update(db):
     user = test_helpers.create_org_user()["rlc_user"]
     lh = Letterhead.create(
-        user,
+        user.org_id,
         "name",
         "description",
         "address_line_1",
@@ -56,7 +56,7 @@ def test_update(db):
 def test_delete(db):
     user = test_helpers.create_org_user()["rlc_user"]
     lh = Letterhead.create(
-        user,
+        user.org_id,
         "name",
         "description",
         "address_line_1",
