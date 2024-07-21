@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from django.db import models
@@ -16,18 +16,13 @@ class Template(models.Model):
         user: OrgUser,
         name: str,
         description: str,
-        type: Literal["letterhead", "footer"],
-    ) -> tuple["Template", Footer | Letterhead]:
+    ) -> "Template":
         template = cls(
             org_id=user.org_id,
             name=name,
             description=description,
         )
-        if type == "letterhead":
-            content = template.add_letterhead()
-        else:
-            content = template.add_footer()
-        return template, content
+        return template
 
     org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name="templates")
     name = models.CharField(max_length=256, blank=True)
@@ -56,13 +51,11 @@ class Template(models.Model):
         self.footer = footer
         return footer
 
-    def update_name(self, name: str | None):
-        if name:
-            self.name = name
+    def update_name(self, name: str):
+        self.name = name
 
-    def update_description(self, description: str | None):
-        if description:
-            self.description = description
+    def update_description(self, description: str):
+        self.description = description
 
     def update_letterhead(self, letterhead: Letterhead):
         self.letterhead = letterhead

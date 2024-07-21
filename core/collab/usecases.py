@@ -15,7 +15,8 @@ from core.collab.use_cases.letterhead import (
 from core.collab.use_cases.template import (
     create_template,
     delete_template,
-    update_template,
+    update_template_description,
+    update_template_name,
 )
 from core.seedwork.use_case_layer import use_case
 
@@ -39,6 +40,7 @@ USECASES = {
     "collab/delete_footer": delete_footer,
     "collab/assign_template_to_collab": assign_template_to_collab,
     "collab/create_template": create_template,
-    "collab/update_template": update_template,
+    "collab/update_template_name": update_template_name,
+    "collab/update_template_description": update_template_description,
     "collab/delete_template": delete_template,
 }

@@ -1,4 +1,3 @@
-from typing import Literal
 from uuid import UUID
 
 from django.db import transaction
@@ -14,29 +13,34 @@ def get_template(user: OrgUser, id: UUID) -> Template:
 
 
 @use_case
-def create_template(
-    __actor: OrgUser, name: str, description: str, type: Literal["letterhead", "footer"]
-):
-    template, content = Template.create(
+def create_template(__actor: OrgUser, name: str, description: str):
+    template = Template.create(
         __actor,
         name,
         description,
-        type,
     )
     with transaction.atomic():
         template.save()
-        content.save()
 
 
 @use_case
-def update_template(
+def update_template_name(
     __actor: OrgUser,
     template_uuid: UUID,
-    name: str | None = None,
-    description: str | None = None,
+    name: str,
 ):
     template = get_template(__actor, template_uuid)
     template.update_name(name)
+    template.save()
+
+
+@use_case
+def update_template_description(
+    __actor: OrgUser,
+    template_uuid: UUID,
+    description: str = "",
+):
+    template = get_template(__actor, template_uuid)
     template.update_description(description)
     template.save()
 

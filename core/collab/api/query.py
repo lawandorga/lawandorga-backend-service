@@ -36,8 +36,8 @@ class OutputTemplate(BaseModel):
     uuid: UUID
     name: str
     description: str
-    # letterhead: Optional[Letterhead]
-    # footer: Optional[Footer]
+    letterhead: Optional[Letterhead]
+    footer: Optional[Footer]
     template_type: str = "deprecated"
 
     model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
@@ -94,6 +94,15 @@ class OutputFooter(BaseModel):
 def query__footer(rlc_user: OrgUser, data: InputUuid):
     footer = Footer.objects.get(uuid=data.uuid, org=rlc_user.org)
     return footer
+
+
+@router.get(
+    url="template/<uuid:uuid>/",
+    output_schema=OutputTemplate,
+)
+def query__template(rlc_user: OrgUser, data: InputUuid):
+    template = Template.objects.get(uuid=data.uuid, org=rlc_user.org)
+    return template
 
 
 class InputPdf(BaseModel):
