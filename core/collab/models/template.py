@@ -41,16 +41,6 @@ class Template(models.Model):
     def __str__(self) -> str:
         return self.name
 
-    def add_letterhead(self):
-        lh = Letterhead.create(self.org_id, "", "", "", "", "", "", "", "")
-        self.letterhead = lh
-        return lh
-
-    def add_footer(self):
-        footer = Footer.create(self.org_id, "", "", "", "", "", "")
-        self.footer = footer
-        return footer
-
     def update_name(self, name: str):
         self.name = name
 
@@ -59,6 +49,8 @@ class Template(models.Model):
 
     def update_letterhead(self, letterhead: Letterhead):
         self.letterhead = letterhead
+        self.save()
 
     def update_footer(self, footer: Footer):
         self.footer = footer
+        self.save()

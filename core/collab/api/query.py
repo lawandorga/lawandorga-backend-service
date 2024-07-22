@@ -32,29 +32,8 @@ class OutputDocument(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class OutputTemplate(BaseModel):
-    uuid: UUID
-    name: str
-    description: str
-    letterhead: Optional[Letterhead]
-    footer: Optional[Footer]
-    template_type: str = "deprecated"
-
-    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
-
-
-@router.get(
-    url="templates/",
-    output_schema=list[OutputTemplate],
-)
-def query__templates(rlc_user: OrgUser):
-    return list(Template.objects.filter(org=rlc_user.org))
-
-
 class OutputLetterhead(BaseModel):
     uuid: UUID
-    name: str
-    description: str
     address_line_1: str
     address_line_2: str
     address_line_3: str
@@ -71,14 +50,12 @@ class OutputLetterhead(BaseModel):
     output_schema=OutputLetterhead,
 )
 def query__letterhead(rlc_user: OrgUser, data: InputUuid):
-    lh = Letterhead.objects.get(uuid=data.uuid, org=rlc_user.org)
-    return lh
+    letterhead = Letterhead.objects.get(uuid=data.uuid, org=rlc_user.org)
+    return letterhead
 
 
 class OutputFooter(BaseModel):
     uuid: UUID
-    name: str
-    description: str
     column_1: str
     column_2: str
     column_3: str
@@ -94,6 +71,25 @@ class OutputFooter(BaseModel):
 def query__footer(rlc_user: OrgUser, data: InputUuid):
     footer = Footer.objects.get(uuid=data.uuid, org=rlc_user.org)
     return footer
+
+
+class OutputTemplate(BaseModel):
+    uuid: UUID
+    name: str
+    description: str
+    letterhead: OutputLetterhead | None
+    footer: OutputFooter | None
+    template_type: str = "deprecated"
+
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
+
+
+@router.get(
+    url="templates/",
+    output_schema=list[OutputTemplate],
+)
+def query__templates(rlc_user: OrgUser):
+    return list(Template.objects.filter(org=rlc_user.org))
 
 
 @router.get(
