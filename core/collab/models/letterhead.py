@@ -29,8 +29,7 @@ class Letterhead(models.Model):
             text_right=text_right,
         )
 
-    org = models.ForeignKey(Org, on_delete=models.CASCADE,
-                            related_name="letterheads")
+    org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name="letterheads")
     uuid = models.UUIDField(unique=True, default=uuid4)
     address_line_1 = models.CharField(max_length=256)
     address_line_2 = models.CharField(max_length=256, blank=True)
@@ -54,8 +53,7 @@ class Letterhead(models.Model):
         if not self.logo:
             return ""
         with open(self.logo.path, "rb") as image_file:
-            encoded_string = base64.b64encode(
-                image_file.read()).decode("utf-8")
+            encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
         return f"data:image/jpeg;base64,{encoded_string}"
 
     def update_letterhead(

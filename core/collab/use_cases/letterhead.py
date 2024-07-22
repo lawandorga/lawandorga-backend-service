@@ -22,7 +22,7 @@ def create_letterhead(
     address_line_5: str = "",
     text_right: str = "",
 ):
-    lh = Letterhead.create(
+    letterhead = Letterhead.create(
         __actor.org_id,
         address_line_1,
         address_line_2,
@@ -31,7 +31,7 @@ def create_letterhead(
         address_line_5,
         text_right,
     )
-    lh.save()
+    letterhead.save()
 
 
 @use_case
@@ -46,8 +46,8 @@ def update_letterhead(
     text_right: str = "",
     logo: UploadedFile | None = None,
 ):
-    lh = get_letterhead(__actor, letterhead_uuid)
-    lh.update_letterhead(
+    letterhead = get_letterhead(__actor, letterhead_uuid)
+    letterhead.update_letterhead(
         address_line_1,
         address_line_2,
         address_line_3,
@@ -56,11 +56,11 @@ def update_letterhead(
         text_right,
     )
     if logo:
-        lh.update_logo(logo)
-    lh.save()
+        letterhead.update_logo(logo)
+    letterhead.save()
 
 
 @use_case
 def delete_letterhead(__actor: OrgUser, letterhead_uuid: UUID):
-    lh = get_letterhead(__actor, letterhead_uuid)
-    lh.delete()
+    letterhead = get_letterhead(__actor, letterhead_uuid)
+    letterhead.delete()

@@ -24,13 +24,11 @@ class Template(models.Model):
         )
         return template
 
-    org = models.ForeignKey(
-        Org, on_delete=models.CASCADE, related_name="templates")
+    org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name="templates")
     name = models.CharField(max_length=256, blank=True)
     description = models.TextField(blank=True)
     uuid = models.UUIDField(unique=True, default=uuid4)
-    letterhead = models.OneToOneField(
-        Letterhead, on_delete=models.SET_NULL, null=True)
+    letterhead = models.OneToOneField(Letterhead, on_delete=models.SET_NULL, null=True)
     footer = models.OneToOneField(Footer, on_delete=models.SET_NULL, null=True)
 
     if TYPE_CHECKING:
