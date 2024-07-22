@@ -40,7 +40,8 @@ class OutputTemplate(BaseModel):
     footer: Optional[Footer]
     template_type: str = "deprecated"
 
-    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
+    model_config = ConfigDict(from_attributes=True,
+                              arbitrary_types_allowed=True)
 
 
 @router.get(
@@ -53,8 +54,6 @@ def query__templates(rlc_user: OrgUser):
 
 class OutputLetterhead(BaseModel):
     uuid: UUID
-    name: str
-    description: str
     address_line_1: str
     address_line_2: str
     address_line_3: str

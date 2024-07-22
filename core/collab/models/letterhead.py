@@ -12,8 +12,6 @@ class Letterhead(models.Model):
     def create(
         cls,
         org_id: int,
-        name: str,
-        description: str,
         address_line_1: str,
         address_line_2: str,
         address_line_3: str,
@@ -23,8 +21,6 @@ class Letterhead(models.Model):
     ):
         return cls(
             org_id=org_id,
-            name=name,
-            description=description,
             address_line_1=address_line_1,
             address_line_2=address_line_2,
             address_line_3=address_line_3,
@@ -33,9 +29,8 @@ class Letterhead(models.Model):
             text_right=text_right,
         )
 
-    org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name="letterheads")
-    name = models.CharField(max_length=256, blank=True)
-    description = models.TextField(blank=True)
+    org = models.ForeignKey(Org, on_delete=models.CASCADE,
+                            related_name="letterheads")
     uuid = models.UUIDField(unique=True, default=uuid4)
     address_line_1 = models.CharField(max_length=256)
     address_line_2 = models.CharField(max_length=256, blank=True)
@@ -50,11 +45,6 @@ class Letterhead(models.Model):
         verbose_name = "Letterhead"
         verbose_name_plural = "Letterheads"
 
-    # TODO: can be removed?
-    @property
-    def template_type(self):
-        return "letterhead"
-
     @property
     def logo_url(self):
         return self.logo.url if self.logo else ""
@@ -64,14 +54,11 @@ class Letterhead(models.Model):
         if not self.logo:
             return ""
         with open(self.logo.path, "rb") as image_file:
-            encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
+            encoded_string = base64.b64encode(
+                image_file.read()).decode("utf-8")
         return f"data:image/jpeg;base64,{encoded_string}"
 
-    def update_meta(self, name: str, description: str):
-        self.name = name
-        self.description = description
-
-    def update_text(
+    def update_letterhead(
         self,
         address_line_1: str,
         address_line_2: str,

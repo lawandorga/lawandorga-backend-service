@@ -24,11 +24,13 @@ class Template(models.Model):
         )
         return template
 
-    org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name="templates")
+    org = models.ForeignKey(
+        Org, on_delete=models.CASCADE, related_name="templates")
     name = models.CharField(max_length=256, blank=True)
     description = models.TextField(blank=True)
     uuid = models.UUIDField(unique=True, default=uuid4)
-    letterhead = models.OneToOneField(Letterhead, on_delete=models.SET_NULL, null=True)
+    letterhead = models.OneToOneField(
+        Letterhead, on_delete=models.SET_NULL, null=True)
     footer = models.OneToOneField(Footer, on_delete=models.SET_NULL, null=True)
 
     if TYPE_CHECKING:
@@ -41,16 +43,6 @@ class Template(models.Model):
     def __str__(self) -> str:
         return self.name
 
-    def add_letterhead(self):
-        lh = Letterhead.create(self.org_id, "", "", "", "", "", "", "", "")
-        self.letterhead = lh
-        return lh
-
-    def add_footer(self):
-        footer = Footer.create(self.org_id, "", "", "", "", "", "")
-        self.footer = footer
-        return footer
-
     def update_name(self, name: str):
         self.name = name
 
@@ -59,6 +51,8 @@ class Template(models.Model):
 
     def update_letterhead(self, letterhead: Letterhead):
         self.letterhead = letterhead
+        self.save()
 
     def update_footer(self, footer: Footer):
         self.footer = footer
+        self.save()

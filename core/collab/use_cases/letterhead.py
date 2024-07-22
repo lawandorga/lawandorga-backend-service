@@ -15,8 +15,6 @@ def get_letterhead(user: OrgUser, id: UUID) -> Letterhead:
 @use_case
 def create_letterhead(
     __actor: OrgUser,
-    name: str,
-    description: str,
     address_line_1: str = "",
     address_line_2: str = "",
     address_line_3: str = "",
@@ -26,8 +24,6 @@ def create_letterhead(
 ):
     lh = Letterhead.create(
         __actor.org_id,
-        name,
-        description,
         address_line_1,
         address_line_2,
         address_line_3,
@@ -42,8 +38,6 @@ def create_letterhead(
 def update_letterhead(
     __actor: OrgUser,
     letterhead_uuid: UUID,
-    name: str,
-    description: str,
     address_line_1: str = "",
     address_line_2: str = "",
     address_line_3: str = "",
@@ -53,8 +47,7 @@ def update_letterhead(
     logo: UploadedFile | None = None,
 ):
     lh = get_letterhead(__actor, letterhead_uuid)
-    lh.update_meta(name, description)
-    lh.update_text(
+    lh.update_letterhead(
         address_line_1,
         address_line_2,
         address_line_3,
