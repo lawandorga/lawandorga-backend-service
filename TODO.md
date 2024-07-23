@@ -38,16 +38,17 @@ COLLAB
 -   Add-Template-Button springt mehr ins Auge als die Buttons oben rechts in der Tabelle: (Leandra & Johannes)
     -   Add-Template-Button anders als die Buttons oben, aber sollte weniger ins Auge springen
     -   Vielleicht secondary etwas dezenter stylen (Daniel)
+    -   Neuer Button-Style: outline?
 -   Add Template Button: Verlangt von den Nutzer\*innen extrem gute Kenntnis der Inhalte, besser mit Preview-Button (Alle)
 -   Edit-Button im Collab Dokument weg (Leandra & Johannes) - CHECK
 -   Separater Delete Button für Templates (Leandra & Johannes) - CHECK
 -   Bug: Styling in Tonis Chrome im PDF wird nicht angezeigt (Daniel)
 -   Styling: PDF nach Briefkopf, einschl. grauer Hintergrund weg (Daniel)
--   Backend so ändern, dass Nutzer\*innen zuerst ein Template erstellen, und dann Footer und Letterhead (Leandra & Johannes)
+-   Backend so ändern, dass Nutzer\*innen zuerst ein Template erstellen, und dann Footer und Letterhead (Leandra & Johannes) - CHECK
 
     -   Remove description and title from footer and letterhead - CHECK
-    -   Template view accessed from Create Template button
-    -   Create Template button only opens with title and description overlay, button from overlay leads to template view
+    -   Template view accessed from Create Template button - CHECK
+    -   Create Template button only opens with title and description overlay, button from overlay leads to template view - CHECK
 
 -   Datum automatisch für heute ausfüllen, aber händisch editierbar
 -   Wenn Footer und Letterhead getrennt bleiben, sollten wir einen Filter in der Übersicht dafür anlegen
