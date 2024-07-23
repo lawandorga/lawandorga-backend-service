@@ -1,8 +1,5 @@
 COLLAB
 
-<details>
-    <summary>Done</summary>
-
 -   Backend Model Letterhead (Daniel) - CHECK
 -   Backend Model Footer (Joey) - CHECK
 -   Backend UseCases Letterhead (Daniel) - CHECK
@@ -26,31 +23,36 @@ COLLAB
 -   Frontend Edit Letterhead in der View (Joey & Leandra) - CHECK
 -   Collab Letterhead PDF View einbinden (Daniel) - CHECK
 -   Collab Footer in PDF View einbinden (Daniel) - CHECK
-</details>
-
 -   Use Case Footer und Letterhead im Collab Model speichern (Leandra & Joey) - CHECK
 -   Create Template Button über die Tabelle (Style anpassen) (Leandra & Johannes) - CHECK
 -   Outline Create Footer: Bug? Outline beim Öffnen der Seite (Leandra & Johannes) - CHECK
 -   Erwartung: Name sollte zur Detailansicht, nicht zum Edit, ODER Name ist nicht klickbar (Leandra & Johannes) - CHECK
--   Collab PDF View logo hinzufügen (Daniel)
 -   Aufteilung der Inhalte zum Editieren von Footer und Letterhead: Name und Beschreibung, und separat: Inhalte (Leandra & Johannes) - CHECK
 -   Statt Create Collab lieber Create Collab Document im CTA (oder vielleicht ein Info-Icon mit Tooltip, das eine Erklärung liefert, was ein Collab ist) (Leandra & Johannes) - CHECK
--   Add-Template-Button springt mehr ins Auge als die Buttons oben rechts in der Tabelle: (Leandra & Johannes)
-    -   Add-Template-Button anders als die Buttons oben, aber sollte weniger ins Auge springen
-    -   Vielleicht secondary etwas dezenter stylen (Daniel)
-    -   Neuer Button-Style: outline?
--   Add Template Button: Verlangt von den Nutzer\*innen extrem gute Kenntnis der Inhalte, besser mit Preview-Button (Alle)
+-   Add-Template-Button springt mehr ins Auge als die Buttons oben rechts in der Tabelle: (Leandra & Johannes) - CHECK
+-   Add-Template-Button anders als die Buttons oben, aber sollte weniger ins Auge springen - CHECK
+-   Add Template Button: Verlangt von den Nutzer\*innen extrem gute Kenntnis der Inhalte, besser mit Preview-Button - CHECK
 -   Edit-Button im Collab Dokument weg (Leandra & Johannes) - CHECK
 -   Separater Delete Button für Templates (Leandra & Johannes) - CHECK
--   Bug: Styling in Tonis Chrome im PDF wird nicht angezeigt (Daniel)
--   Styling: PDF nach Briefkopf, einschl. grauer Hintergrund weg (Daniel)
+-   Styling: PDF nach Briefkopf, einschl. grauer Hintergrund weg - CHECK
 -   Backend so ändern, dass Nutzer\*innen zuerst ein Template erstellen, und dann Footer und Letterhead (Leandra & Johannes) - CHECK
+-   Remove description and title from footer and letterhead - CHECK
+-   Create Template button only opens with title and description overlay, button from overlay leads to template view - CHECK
+-   Logo-Upload reparieren - CHECK
 
-    -   Remove description and title from footer and letterhead - CHECK
-    -   Template view accessed from Create Template button - CHECK
-    -   Create Template button only opens with title and description overlay, button from overlay leads to template view - CHECK
+- Tests für Footer Model und Template Model (Johannes)
+- Template view accessed from Create Template button (uuid im frontend erstellen und nach success im frontend auf uuid umleiten) - (Leandra)
+- Bug: Styling in Tonis Chrome im PDF wird nicht angezeigt (Daniel)
+- Preview PDF von Template (Daniel)
+- Bug @change lorga-ui data does not change but it shows the default after close and open again (Daniel)
+- Collab PDF View logo hinzufügen (Daniel) 
 
--   Datum automatisch für heute ausfüllen, aber händisch editierbar
--   Wenn Footer und Letterhead getrennt bleiben, sollten wir einen Filter in der Übersicht dafür anlegen
--   Logo-Upload reparieren
--   Tests für Footer Model und Template Model (Johannes)
+- Neuer Button-Style: outline? (Leandra)
+- Vielleicht secondary etwas dezenter stylen (Daniel)
+
+- Text Right größer vllt schwierig 
+
+
+
+
+- Datum automatisch für heute ausfüllen, aber händisch editierbar
