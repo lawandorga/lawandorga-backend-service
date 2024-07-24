@@ -39,13 +39,13 @@ COLLAB
 -   Remove description and title from footer and letterhead - CHECK
 -   Create Template button only opens with title and description overlay, button from overlay leads to template view - CHECK
 -   Logo-Upload reparieren - CHECK
+-   Preview PDF von Template (Daniel) - CHECK
+-   Collab PDF View logo hinzufügen (Daniel) - CHECK
 
 - Tests für Footer Model und Template Model (Johannes)
 - Template view accessed from Create Template button (uuid im frontend erstellen und nach success im frontend auf uuid umleiten) - (Leandra)
 - Bug: Styling in Tonis Chrome im PDF wird nicht angezeigt (Daniel)
-- Preview PDF von Template (Daniel)
 - Bug @change lorga-ui data does not change but it shows the default after close and open again (Daniel)
-- Collab PDF View logo hinzufügen (Daniel) 
 
 - Neuer Button-Style: outline? (Leandra)
 - Vielleicht secondary etwas dezenter stylen (Daniel)
