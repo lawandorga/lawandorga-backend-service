@@ -1,56 +1,8 @@
-{% load static %}
-<html>
-    <head>
-        <title>{{ collab.name }}</title>
-        <link rel="stylesheet" href="{% static 'collab_print.css' %}">
-    </head>
-    <body>
-        {% if header %}
-        <header>
-            <address>
-                {{ header.address_line_1 }} <br>
-                {{ header.address_line_2 }} <br>
-                {{ header.address_line_3 }} <br>
-                {{ header.address_line_4 }} <br>
-                {{ header.address_line_5 }}
-            </address>
-            <div  class="right">
-                <p>
-                    {{ header.text_right }}
-                </p>
-            </div>
-        </header>
-        {% endif %}
-        <main>
-            <h1>{{ collab.name }}</h1>
-            {{ collab.text|safe }}
-        </main>
-        {% if footer %}
-        <footer>
-            <div>
-                <p>
-                    {{ footer.column_1 }}
-                </p>
-            </div>
-            <span></span>
-            <div>
-                <p>
-                    {{ footer.column_2 }}
-                </p>
-            </div>
-            <span></span>
-            <div>
-                <p>
-                    {{ footer.column_3 }}
-                </p>
-            </div>
-            <span></span>
-            <div>
-                <p>
-                    {{ footer.column_4 }}
-                </p>
-            </div>
-        </footer>
-        {% endif %}
-    </body>
-</html>
+{% extends 'collab/templates/base.html' %}
+
+{% block body %}
+<main>
+    <h1>{{ collab.name }}</h1>
+    {{ collab.text|safe }}
+</main>
+{% endblock body %}

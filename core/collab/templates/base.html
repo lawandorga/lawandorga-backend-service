@@ -1,0 +1,13 @@
+{% load static %}
+<html>
+    <head>
+        <title>{{ collab.name }}</title>
+        <link rel="stylesheet" href="{% static 'collab_print.css' %}">
+    </head>
+    <body>
+        {% include 'collab/templates/symbols/letterhead.html' %}
+        {% block body %}
+        {% endblock body %}
+        {% include 'collab/templates/symbols/footer.html' %}
+    </body>
+</html>

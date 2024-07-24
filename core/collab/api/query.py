@@ -137,6 +137,39 @@ def query__collab_pdf(rlc_user: OrgUser, data: InputPdf):
     return response
 
 
+@router.get(
+    url="template/<uuid:uuid>/pdf/",
+    output_schema=HttpResponse | FileResponse,
+)
+def query__collab_template_pdf(rlc_user: OrgUser, data: InputPdf):
+    template = Template.objects.select_related("letterhead", "footer").get(
+        uuid=data.uuid, org=rlc_user.org
+    )
+    html = loader.render_to_string(
+        "collab/templates/template.html",
+        context={
+            "template": template,
+            "header": template.letterhead,
+            "footer": template.footer,
+        },
+    )
+
+    if data.debug:
+        return HttpResponse(html, content_type="text/html")
+
+    htmldoc = HTML(string=html, base_url=settings.MAIN_BACKEND_URL)
+    buffer = io.BytesIO()
+    htmldoc.write_pdf(buffer)
+    buffer.seek(0)
+    response = FileResponse(
+        buffer,
+        as_attachment=False,
+        content_type="application/pdf",
+        filename=f"{template.name}.pdf",
+    )
+    return response
+
+
 class OutputCollab(BaseModel):
     uuid: UUID
     name: str
