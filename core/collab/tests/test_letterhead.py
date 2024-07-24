@@ -1,4 +1,5 @@
 from core.collab.models.letterhead import Letterhead
+from core.collab.models.template import Template
 from core.collab.use_cases.letterhead import (
     create_letterhead,
     delete_letterhead,
@@ -9,8 +10,11 @@ from core.seedwork import test_helpers
 
 def test_create(db):
     user = test_helpers.create_org_user()["rlc_user"]
+    template = Template.create(user, "name", "description")
+    template.save()
     create_letterhead(
         user,
+        template.uuid,
         "address_line_1",
         "address_line_2",
         "address_line_3",
