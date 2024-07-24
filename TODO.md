@@ -43,10 +43,10 @@ COLLAB
 -   Collab PDF View logo hinzufügen (Daniel) - CHECK
 -   Bug @change lorga-ui data does not change but it shows the default after close and open again (Daniel) - CHECK
 -   Neuer Button-Style: outline? (Daniel) - CHECK
+-   Bug: Styling in Tonis Chrome im PDF wird nicht angezeigt (Daniel) - CHECK
 
 - Tests für Footer Model und Template Model (Johannes)
 - Template view accessed from Create Template button (uuid im frontend erstellen und nach success im frontend auf uuid umleiten) - (Leandra)
-- Bug: Styling in Tonis Chrome im PDF wird nicht angezeigt (Daniel)
 
 - Vielleicht secondary etwas dezenter stylen (Leandra)
 
