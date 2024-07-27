@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-from uuid import uuid4
+from uuid import UUID
 
 from django.db import models
 
@@ -14,10 +14,12 @@ class Template(models.Model):
     def create(
         cls,
         user: OrgUser,
+        uuid: UUID,
         name: str,
         description: str,
     ) -> "Template":
         template = cls(
+            uuid=uuid,
             org_id=user.org_id,
             name=name,
             description=description,
@@ -27,7 +29,7 @@ class Template(models.Model):
     org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name="templates")
     name = models.CharField(max_length=256, blank=True)
     description = models.TextField(blank=True)
-    uuid = models.UUIDField(unique=True, default=uuid4)
+    uuid = models.UUIDField(unique=True)
     letterhead = models.OneToOneField(Letterhead, on_delete=models.SET_NULL, null=True)
     footer = models.OneToOneField(Footer, on_delete=models.SET_NULL, null=True)
 

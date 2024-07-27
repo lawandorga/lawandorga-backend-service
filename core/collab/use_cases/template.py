@@ -13,9 +13,10 @@ def get_template(user: OrgUser, id: UUID) -> Template:
 
 
 @use_case
-def create_template(__actor: OrgUser, name: str, description: str = ""):
+def create_template(__actor: OrgUser, uuid: UUID, name: str, description: str = ""):
     template = Template.create(
         __actor,
+        uuid,
         name,
         description,
     )
