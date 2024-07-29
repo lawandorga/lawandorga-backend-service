@@ -1,4 +1,5 @@
 from uuid import uuid4
+
 from core.collab.models.letterhead import Letterhead
 from core.collab.models.template import Template
 from core.collab.use_cases.letterhead import (

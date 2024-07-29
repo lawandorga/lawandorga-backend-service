@@ -52,7 +52,7 @@ class Letterhead(models.Model):
     def logo_base64(self):
         if not self.logo:
             return ""
-        with open(self.logo.path, "rb") as image_file:
+        with self.logo.open("rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
         return f"data:image/jpeg;base64,{encoded_string}"
 
