@@ -74,7 +74,7 @@ class Letterhead(models.Model):
         self.text_right = text_right
 
     def update_logo(self, logo: UploadedFile):
-        if logo.size > 1024 * 1024:
+        if not logo.size or logo.size > 1024 * 1024:
             raise DomainError("Logo size should be less than 1MB.")
         if logo.content_type not in ["image/jpeg", "image/png", "image/jpg"]:
             raise DomainError("Logo should be in .jpg, .jpeg or .png format.")

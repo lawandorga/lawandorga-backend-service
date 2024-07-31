@@ -47,10 +47,10 @@ COLLAB
 -   Template view accessed from Create Template button (uuid im frontend erstellen und nach success im frontend auf uuid umleiten) (Leandra) - CHECK
 -   Logo anzeigen in der Template Admin View (Daniel) - CHECK
 -   logo limit size anlegen frontend und backend (Daniel) - CHECK
+-   logo weiter oben rechts anzeigen in der pdf view (Daniel) - CHECK
 
 - Tests für Footer Model und Template Model (Johannes)
 - Vielleicht secondary etwas dezenter stylen (Leandra)
-- logo weiter oben rechts anzeigen in der pdf view (Daniel)
 - bottom alignment von reset search in records (Daniel)
 
 - Text Right größer vllt schwierig
