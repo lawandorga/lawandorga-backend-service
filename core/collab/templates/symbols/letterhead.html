@@ -1,4 +1,7 @@
 {% if header %}
+{% if header.logo %}
+    <img src="{{ header.logo_base64 }}" alt="Logo">
+{% endif %}
 <header>
     <address>
         {{ header.address_line_1 }} <br>
@@ -8,9 +11,7 @@
         {{ header.address_line_5 }}
     </address>
     <div class="right">
-        {% if header.logo %}
-            <img src="{{ header.logo_base64 }}" style="max-height: 80px; margin-bottom: 10px;" alt="Logo">
-        {% endif %}
+        
         <p>
             {{ header.text_right|linebreaksbr }}
         </p>

@@ -22,6 +22,14 @@ header {
     display: flex;
 }
 
+img {
+    height: 20mm;
+    display: block;
+    position: fixed;
+    top: -22mm;
+    right: 10mm;
+}
+
 header address {
     /* border: 1px solid black; */
     font-size: 1.2rem;
