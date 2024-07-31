@@ -48,10 +48,10 @@ COLLAB
 -   Logo anzeigen in der Template Admin View (Daniel) - CHECK
 -   logo limit size anlegen frontend und backend (Daniel) - CHECK
 -   logo weiter oben rechts anzeigen in der pdf view (Daniel) - CHECK
+-   bottom alignment von reset search in records (Daniel) - CHECK
 
 - Tests für Footer Model und Template Model (Johannes)
 - Vielleicht secondary etwas dezenter stylen (Leandra)
-- bottom alignment von reset search in records (Daniel)
 
 - Text Right größer vllt schwierig
 - Datum automatisch für heute ausfüllen, aber händisch editierbar
