@@ -26,7 +26,6 @@ def placeholder(__actor: None):
     pass
 
 
-# TODO: check which ones of these are still in use in the FE, also delete components there
 USECASES = {
     "collab/create_collab": create_collab,
     "collab/update_collab_title": update_collab_title,
