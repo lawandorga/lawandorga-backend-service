@@ -53,7 +53,8 @@ COLLAB
 -   Tests für Footer Model und Template Model (Johannes)
 -   Vielleicht secondary etwas dezenter stylen (Leandra)
 -   Feature veröffentlichen und Artikel schreiben (Daniel)
--   Neueste Artikel auf dem Dashboard darstellen (?)
+-   Neueste Artikel auf dem Dashboard darstellen (Leandra & Johannes)
+-   Files Feature disablen für Orgs ohne Files (Daniel)
 
 - Text Right größer vllt schwierig
 - Datum automatisch für heute ausfüllen, aber händisch editierbar
