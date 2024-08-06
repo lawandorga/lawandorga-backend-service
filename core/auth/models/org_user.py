@@ -155,6 +155,7 @@ class OrgUser(Aggregate, models.Model):
         mfa_secret: "MultiFactorAuthenticationSecret"
         groups: models.QuerySet[Group]
         org_id: int
+        user_id: int
 
     class Meta:
         verbose_name = "AUT_OrgUser"

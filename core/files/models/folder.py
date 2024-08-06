@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from django.db import models
 
 from core.models import UserProfile
@@ -12,6 +13,9 @@ from core.rlc.models import Org
 from core.seedwork.storage_folders import get_storage_base_files_folder
 
 from .folder_permission import FolderPermission
+
+if TYPE_CHECKING:
+    from .file import File
 
 
 class Folder(models.Model):
@@ -29,6 +33,10 @@ class Folder(models.Model):
         Org, related_name="folders", on_delete=models.CASCADE, null=False, blank=True
     )
 
+    if TYPE_CHECKING:
+        files_in_folder: models.QuerySet["File"]
+        child_folders: models.QuerySet["Folder"]
+
     class Meta:
         verbose_name = "Folder"
         verbose_name_plural = "Folders"
@@ -40,7 +48,7 @@ class Folder(models.Model):
         if self.parent:
             key = self.parent.get_file_key()
         else:
-            key = get_storage_base_files_folder(self.rlc.id)
+            key = get_storage_base_files_folder(self.rlc.pk)
         return key + self.name + "/"
 
     def get_all_parents(self):
