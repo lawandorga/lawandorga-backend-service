@@ -12,6 +12,8 @@ if TYPE_CHECKING:
     from core.auth.models import OrgUser, UserProfile
     from core.collab.models import CollabDocument
     from core.collab.models.collab import Collab
+    from core.collab.models.footer import Footer
+    from core.collab.models.template import Template
     from core.collab.models.letterhead import Letterhead
     from core.data_sheets.models.template import DataSheetTemplate
     from core.events.models import EventsEvent
@@ -77,6 +79,8 @@ class Org(EncryptedModelMixin, models.Model):
         records_records: models.QuerySet["RecordsRecord"]
         questionnaire_templates: models.QuerySet["QuestionnaireTemplate"]
         letterheads: models.QuerySet["Letterhead"]
+        footers: models.QuerySet["Footer"]
+        templates: models.QuerySet["Template"]
 
     class Meta:
         ordering = ["name"]
