@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from core.internal.models import (
     Article,
@@ -10,6 +13,7 @@ from core.internal.models import (
 )
 from core.seedwork.api_layer import Router
 
+from ...auth.api.query import OutputDashboardArticle
 from . import schemas
 
 router = Router()
@@ -34,6 +38,15 @@ def query__index_page():
     return {
         "content": page.content,
         "roadmap_items": roadmap_items,
+        "articles": articles,
+    }
+
+
+@router.get("dashboard/", output_schema=OutputDashboardArticle)
+def query__dashboard_page():
+    cutoff_date = timezone.now() - timedelta(days=60)
+    articles = list(Article.objects.filter(date__gte=cutoff_date))
+    return {
         "articles": articles,
     }
 

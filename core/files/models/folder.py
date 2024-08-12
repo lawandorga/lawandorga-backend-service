@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+
 from django.db import models
 
 from core.models import UserProfile

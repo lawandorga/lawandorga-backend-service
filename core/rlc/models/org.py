@@ -13,8 +13,8 @@ if TYPE_CHECKING:
     from core.collab.models import CollabDocument
     from core.collab.models.collab import Collab
     from core.collab.models.footer import Footer
-    from core.collab.models.template import Template
     from core.collab.models.letterhead import Letterhead
+    from core.collab.models.template import Template
     from core.data_sheets.models.template import DataSheetTemplate
     from core.events.models import EventsEvent
     from core.files.models.folder import Folder

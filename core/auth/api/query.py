@@ -9,6 +9,8 @@ from core.legal.models import LegalRequirement
 from core.rlc.models import Org
 from core.seedwork.api_layer import Router
 
+from ...internal.api.schemas import OutputArticleList
+
 router = Router()
 
 
@@ -97,12 +99,19 @@ class OutputFollowUp(BaseModel):
     folder_uuid: UUID
 
 
+class OutputDashboardArticle(BaseModel):
+    articles: list[OutputArticleList]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class OutputDashboardPage(BaseModel):
     records: None | list[OutputDashboardRecord] = None
     members: None | list[OutputDashboardMember] = None
     questionnaires: None | list[OutputDashboardQuestionnaire] = None
     changed_records: None | list[OutputDashboardChangedRecord] = None
     follow_ups: None | list[OutputFollowUp] = None
+    articles: None | list[OutputDashboardArticle] = None
 
     model_config = ConfigDict(from_attributes=True)
 
