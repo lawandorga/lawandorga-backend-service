@@ -30,7 +30,7 @@ pytest-env = "==1.1.*"
 ics = "==0.7.*"
 django = {extras = ["argon2"], version = "==5.0.*"}
 pydantic = {extras = ["email"], version = "==2.3.*"}
-dnspython = "==2.4.*"
+dnspython = "==2.6.*"
 bleach = "==6.1.*"
 types-bleach = "==6.1.*"
 pytest-xdist = "==3.3.*"
