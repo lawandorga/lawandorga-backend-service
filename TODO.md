@@ -50,11 +50,9 @@ COLLAB
 -   logo weiter oben rechts anzeigen in der pdf view (Daniel) - CHECK
 -   bottom alignment von reset search in records (Daniel) - CHECK
 -   Tests für Footer Model und Template Model (Johannes) - CHECK
+-   Feature veröffentlichen und Artikel schreiben (Daniel) - CHECK
+-   Neueste Artikel auf dem Dashboard darstellen (Leandra & Johannes) - CHECK
 
+-   Dashboard api aufraeumen
 -   Vielleicht secondary etwas dezenter stylen (Leandra)
--   Feature veröffentlichen und Artikel schreiben (Daniel)
--   Neueste Artikel auf dem Dashboard darstellen (Leandra & Johannes)
 -   Files Feature disablen für Orgs ohne Files (Leandra)
-
-- Text Right größer vllt schwierig
-- Datum automatisch für heute ausfüllen, aber händisch editierbar

@@ -1,9 +1,11 @@
 exclude = []
+source_roots = [
+    ".",
+]
 
 [[modules]]
 path = "core.auth.api"
 depends_on = [
-    { path = "<root>" },
     { path = "core.auth.models" },
     { path = "core.auth.use_cases" },
     { path = "core.internal.api" },
@@ -12,14 +14,11 @@ depends_on = [
 
 [[modules]]
 path = "core.auth.domain"
-depends_on = [
-    { path = "<root>" },
-]
+depends_on = []
 
 [[modules]]
 path = "core.auth.forms"
 depends_on = [
-    { path = "<root>" },
     { path = "core.auth.domain" },
     { path = "core.auth.models" },
     { path = "core.auth.use_cases" },
@@ -28,7 +27,6 @@ depends_on = [
 [[modules]]
 path = "core.auth.models"
 depends_on = [
-    { path = "<root>" },
     { path = "core.auth.domain" },
     { path = "core.auth.token_generator" },
     { path = "core.seedwork.aggregate" },
@@ -47,7 +45,6 @@ depends_on = []
 [[modules]]
 path = "core.auth.use_cases"
 depends_on = [
-    { path = "<root>" },
     { path = "core.auth.domain" },
     { path = "core.auth.models" },
     { path = "core.auth.token_generator" },
@@ -72,7 +69,6 @@ depends_on = [
 [[modules]]
 path = "core.collab.api"
 depends_on = [
-    { path = "<root>" },
     { path = "core.auth.models" },
     { path = "core.collab.models" },
     { path = "core.collab.repositories" },
@@ -82,7 +78,6 @@ depends_on = [
 [[modules]]
 path = "core.collab.models"
 depends_on = [
-    { path = "<root>" },
     { path = "core.auth.models" },
     { path = "core.collab.value_objects" },
     { path = "core.seedwork.aggregate" },
@@ -94,7 +89,6 @@ depends_on = [
 [[modules]]
 path = "core.collab.repositories"
 depends_on = [
-    { path = "<root>" },
     { path = "core.auth.models" },
     { path = "core.collab.models" },
 ]
@@ -102,7 +96,6 @@ depends_on = [
 [[modules]]
 path = "core.collab.use_cases"
 depends_on = [
-    { path = "<root>" },
     { path = "core.auth.models" },
     { path = "core.collab.models" },
     { path = "core.collab.repositories" },
@@ -118,9 +111,7 @@ depends_on = [
 
 [[modules]]
 path = "core.collab.value_objects"
-depends_on = [
-    { path = "<root>" },
-]
+depends_on = []
 
 [[modules]]
 path = "core.internal.api"
@@ -132,9 +123,7 @@ depends_on = [
 
 [[modules]]
 path = "core.internal.models"
-depends_on = [
-    { path = "<root>" },
-]
+depends_on = []
 
 [[modules]]
 path = "core.seedwork.aggregate"
@@ -164,7 +153,6 @@ depends_on = []
 [[modules]]
 path = "core.seedwork.events_addon"
 depends_on = [
-    { path = "<root>" },
     { path = "core.seedwork.aggregate" },
 ]
 
@@ -193,37 +181,5 @@ depends_on = []
 [[modules]]
 path = "core.seedwork.use_case_layer"
 depends_on = [
-    { path = "<root>" },
     { path = "core.seedwork.domain_layer" },
-]
-
-[[modules]]
-path = "<root>"
-depends_on = [
-    { path = "core.auth.domain" },
-    { path = "core.auth.models" },
-    { path = "core.auth.oidc_provider_settings" },
-    { path = "core.auth.token_generator" },
-    { path = "core.auth.use_cases" },
-    { path = "core.auth.usecases" },
-    { path = "core.auth.views" },
-    { path = "core.collab.api" },
-    { path = "core.collab.models" },
-    { path = "core.collab.repositories" },
-    { path = "core.collab.use_cases" },
-    { path = "core.collab.usecases" },
-    { path = "core.collab.value_objects" },
-    { path = "core.internal.models" },
-    { path = "core.seedwork.aggregate" },
-    { path = "core.seedwork.api_layer" },
-    { path = "core.seedwork.cronjobs" },
-    { path = "core.seedwork.domain_layer" },
-    { path = "core.seedwork.encryption" },
-    { path = "core.seedwork.events_addon" },
-    { path = "core.seedwork.message_layer" },
-    { path = "core.seedwork.permission" },
-    { path = "core.seedwork.statistics" },
-    { path = "core.seedwork.storage" },
-    { path = "core.seedwork.storage_folders" },
-    { path = "core.seedwork.use_case_layer" },
 ]
