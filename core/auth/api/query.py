@@ -9,7 +9,7 @@ from core.legal.models import LegalRequirement
 from core.rlc.models import Org
 from core.seedwork.api_layer import Router
 
-from ...internal.api.schemas import OutputArticleList
+from core.internal.api.schemas import OutputArticleList
 
 router = Router()
 

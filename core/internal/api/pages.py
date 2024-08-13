@@ -13,7 +13,7 @@ from core.internal.models import (
 )
 from core.seedwork.api_layer import Router
 
-from ...auth.api.query import OutputDashboardArticle
+from core.auth.api.query import OutputDashboardArticle
 from . import schemas
 
 router = Router()
