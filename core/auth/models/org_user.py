@@ -415,25 +415,6 @@ class OrgUser(Aggregate, models.Model):
         return changed_records_data
 
     @property
-    def follow_ups_information(self):
-        from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-        from core.timeline.repositories.follow_up import FollowUpRepository
-
-        follow_ups = FollowUpRepository().list_follow_ups_of_user(
-            user=self, fr=DjangoFolderRepository()
-        )
-        follow_ups_data = []
-        for follow_up in list(follow_ups):
-            follow_ups_data.append(
-                {
-                    "title": follow_up.title,
-                    "folder_uuid": follow_up.folder_uuid,
-                    "time": follow_up.time,
-                }
-            )
-        return follow_ups_data
-
-    @property
     def information(self) -> Dict[str, Any]:
         return_dict = {}
         # records
@@ -452,10 +433,6 @@ class OrgUser(Aggregate, models.Model):
         changed_records_data = self.changed_records_information
         if changed_records_data:
             return_dict["changed_records"] = changed_records_data
-        # follow ups
-        follow_ups_data = self.follow_ups_information
-        if follow_ups_data:
-            return_dict["follow_ups"] = follow_ups_data
         return return_dict
 
     def get_group_uuids(self) -> list[UUID]:

@@ -110,7 +110,6 @@ class OutputDashboardPage(BaseModel):
     members: None | list[OutputDashboardMember] = None
     questionnaires: None | list[OutputDashboardQuestionnaire] = None
     changed_records: None | list[OutputDashboardChangedRecord] = None
-    follow_ups: None | list[OutputFollowUp] = None
     articles: None | list[OutputDashboardArticle] = None
 
     model_config = ConfigDict(from_attributes=True)

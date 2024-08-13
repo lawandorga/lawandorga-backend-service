@@ -52,3 +52,26 @@ def query_timeline(rlc_user: OrgUser, data: InputTimelineList):
     )
 
     return items
+
+
+class OutputFollowUp(BaseModel):
+    time: datetime
+    title: str
+    folder_uuid: UUID
+
+
+@router.get("dashboard/", output_schema=list[OutputFollowUp])
+def query__dashboard_page(rlc_user: OrgUser):
+    follow_ups = FollowUpRepository().list_follow_ups_of_user(
+        user=rlc_user, fr=DjangoFolderRepository()
+    )
+    follow_ups_data = []
+    for follow_up in list(follow_ups):
+        follow_ups_data.append(
+            {
+                "title": follow_up.title,
+                "folder_uuid": follow_up.folder_uuid,
+                "time": follow_up.time,
+            }
+        )
+    return follow_ups_data
