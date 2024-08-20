@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
 from core.auth.use_cases.rlc_user import confirm_email
+from core.files.query import has_org_files
 from core.permissions.models import HasPermission
 from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_PERMISSIONS,
@@ -106,7 +107,7 @@ def retrieve(data: InputRlcUserGet, rlc_user: OrgUser):
     if found_rlc_user.org != rlc_user.org:
         raise ApiError("The user could not be found.")
 
-    if found_rlc_user.id != rlc_user.id and not rlc_user.has_permission(
+    if found_rlc_user.pk != rlc_user.pk and not rlc_user.has_permission(
         PERMISSION_ADMIN_MANAGE_USERS
     ):
         found_rlc_user_ret: Any = OutputRlcUserSmall.model_validate(
@@ -164,10 +165,11 @@ class Link(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class Rlc(BaseModel):
+class Org(BaseModel):
     id: int
     name: str
     links: list[Link]
+    disable_files: bool = False
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -182,7 +184,7 @@ class Badges(BaseModel):
 
 class OutputRlcUserData(BaseModel):
     user: OutputRlcUser
-    rlc: Rlc
+    rlc: Org
     badges: Badges
     permissions: List[str]
     settings: Optional[dict[str, Any]]
@@ -192,7 +194,12 @@ class OutputRlcUserData(BaseModel):
 def query__data(rlc_user: OrgUser):
     data = {
         "user": rlc_user,
-        "rlc": rlc_user.org,
+        "rlc": {
+            "id": rlc_user.org.pk,
+            "name": rlc_user.org.name,
+            "links": rlc_user.org.links,
+            "disable_files": not has_org_files(rlc_user.org),
+        },
         "badges": rlc_user.badges,
         "permissions": rlc_user.get_permissions(),
         "settings": rlc_user.frontend_settings,
