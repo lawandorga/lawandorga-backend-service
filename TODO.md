@@ -52,7 +52,7 @@ COLLAB
 -   Tests für Footer Model und Template Model (Johannes) - CHECK
 -   Feature veröffentlichen und Artikel schreiben (Daniel) - CHECK
 -   Neueste Artikel auf dem Dashboard darstellen (Leandra & Johannes) - CHECK
--   Files Feature disablen für Orgs ohne Files (Leandra) - CHECK
+-   Files Feature disablen für Orgs ohne Files (Johannes) - CHECK
 
--   Dashboard api aufraeumen (Johannes)
+-   Dashboard api aufraeumen (Leandra)
 -   Vielleicht secondary etwas dezenter stylen (Leandra)

@@ -10,6 +10,8 @@ from core.data_sheets.models import DataSheet, DataSheetTemplate
 from core.data_sheets.models.data_sheet import DataSheetEncryptedFileEntry
 from core.seedwork.api_layer import ApiError, Router
 
+from seedwork.functional import list_map
+
 router = Router()
 
 
@@ -79,3 +81,46 @@ def query__download_file_entry(rlc_user: OrgUser, data: InputFileEntryDownload):
         entry.file.name
     )
     return response
+
+
+class OutputDashboardRecord(BaseModel):
+    folder_uuid: UUID
+    uuid: UUID
+    identifier: str
+    state: str
+
+
+@router.get("dashboard/", output_schema=list[OutputDashboardRecord])
+def query__dashboard_page(rlc_user: OrgUser):
+    recordsqs = DataSheet.objects.filter(template__rlc=rlc_user.org).prefetch_related(
+        "state_entries", "users_entries", "users_entries__value"
+    )
+    records = list(recordsqs)
+    records_data = []
+    for record in records:
+        users_entries = list(record.users_entries.all())
+        if len(users_entries) <= 0:
+            continue
+
+        user_entry = users_entries[0]
+        user_ids = list_map(list(user_entry.value.all()), lambda x: x.pk)
+        if rlc_user.pk not in user_ids:
+            continue
+
+        state_entries = list(record.state_entries.all())
+        if len(state_entries) <= 0:
+            continue
+        state_entry = state_entries[0]
+        if state_entry.value != "Open":
+            continue
+
+        records_data.append(
+            {
+                "uuid": record.uuid,
+                "folder_uuid": record.folder_uuid,
+                "identifier": record.identifier,
+                "state": "Open",
+            }
+        )
+
+    return records_data

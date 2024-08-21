@@ -67,13 +67,6 @@ def query__register_page():
     return data
 
 
-class OutputDashboardRecord(BaseModel):
-    folder_uuid: UUID
-    uuid: UUID
-    identifier: str
-    state: str
-
-
 class OutputDashboardMember(BaseModel):
     name: str
     id: int
@@ -92,14 +85,7 @@ class OutputDashboardChangedRecord(BaseModel):
     updated: datetime
 
 
-class OutputFollowUp(BaseModel):
-    time: datetime
-    title: str
-    folder_uuid: UUID
-
-
 class OutputDashboardPage(BaseModel):
-    records: None | list[OutputDashboardRecord] = None
     members: None | list[OutputDashboardMember] = None
     questionnaires: None | list[OutputDashboardQuestionnaire] = None
     changed_records: None | list[OutputDashboardChangedRecord] = None

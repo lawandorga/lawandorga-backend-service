@@ -285,43 +285,6 @@ class OrgUser(Aggregate, models.Model):
         return LegalRequirement.is_locked(self)
 
     @property
-    def records_information(self):
-        from core.data_sheets.models import DataSheet
-
-        recordsqs = DataSheet.objects.filter(template__rlc=self.org).prefetch_related(
-            "state_entries", "users_entries", "users_entries__value"
-        )
-        records = list(recordsqs)
-        records_data = []
-        for record in records:
-            users_entries = list(record.users_entries.all())
-            if len(users_entries) <= 0:
-                continue
-
-            user_entry = users_entries[0]
-            user_ids = list_map(list(user_entry.value.all()), lambda x: x.pk)
-            if self.pk not in user_ids:
-                continue
-
-            state_entries = list(record.state_entries.all())
-            if len(state_entries) <= 0:
-                continue
-            state_entry = state_entries[0]
-            if state_entry.value != "Open":
-                continue
-
-            records_data.append(
-                {
-                    "uuid": record.uuid,
-                    "folder_uuid": record.folder_uuid,
-                    "identifier": record.identifier,
-                    "state": "Open",
-                }
-            )
-
-        return records_data
-
-    @property
     def members_information(self):
         if self.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
             members_data = []
@@ -425,10 +388,6 @@ class OrgUser(Aggregate, models.Model):
     @property
     def information(self) -> Dict[str, Any]:
         return_dict = {}
-        # records
-        records_data = self.records_information
-        if records_data:
-            return_dict["records"] = records_data
         # members
         members_data = self.members_information
         if members_data:
