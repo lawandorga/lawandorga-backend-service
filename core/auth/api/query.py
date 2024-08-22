@@ -63,14 +63,7 @@ def query__register_page():
     return data
 
 
-class OutputDashboardMember(BaseModel):
-    name: str
-    id: int
-    rlcuserid: int
-
-
 class OutputDashboardPage(BaseModel):
-    members: None | list[OutputDashboardMember] = None
 
     model_config = ConfigDict(from_attributes=True)
 

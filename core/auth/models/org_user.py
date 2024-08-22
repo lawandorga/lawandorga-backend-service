@@ -285,49 +285,8 @@ class OrgUser(Aggregate, models.Model):
         return LegalRequirement.is_locked(self)
 
     @property
-    def members_information(self):
-        if self.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
-            members_data = []
-            users = OrgUser.objects.filter(
-                org=self.org, created__gt=(timezone.now() - timedelta(days=14))
-            )
-            for rlc_user in list(users):
-                if rlc_user.groups.all().count() == 0:
-                    members_data.append(
-                        {
-                            "name": rlc_user.user.name,
-                            "id": rlc_user.user.pk,
-                            "rlcuserid": rlc_user.pk,
-                        }
-                    )
-            return members_data
-        return None
-
-    @property
-    def own_records(self):
-        from core.data_sheets.models import DataSheet
-
-        records = DataSheet.objects.filter(template__rlc=self.org).prefetch_related(
-            "users_entries", "users_entries__value"
-        )
-        record_pks = []
-        for record in list(records):
-            users_entries = list(record.users_entries.all())
-            if len(users_entries) <= 0:
-                continue
-            users = list(users_entries[0].value.all())
-            if self.pk in map(lambda x: x.id, users):
-                record_pks.append(record.pk)
-
-        return DataSheet.objects.filter(pk__in=record_pks)
-
-    @property
     def information(self) -> Dict[str, Any]:
         return_dict = {}
-        # members
-        members_data = self.members_information
-        if members_data:
-            return_dict["members"] = members_data
         return return_dict
 
     def get_group_uuids(self) -> list[UUID]:

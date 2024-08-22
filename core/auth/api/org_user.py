@@ -1,8 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, List, Optional
 from uuid import UUID
 
 from django.db.models import Q
+from django.utils import timezone
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
@@ -205,3 +206,29 @@ def query__data(rlc_user: OrgUser):
         "settings": rlc_user.frontend_settings,
     }
     return data
+
+
+class OutputDashboardMember(BaseModel):
+    name: str
+    id: int
+    rlcuserid: int
+
+
+@router.get("dashboard/", output_schema=None | list[OutputDashboardMember])
+def members_information(rlc_user: OrgUser):
+    if rlc_user.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
+        members_data = []
+        users = OrgUser.objects.filter(
+            org=rlc_user.org, created__gt=(timezone.now() - timedelta(days=14))
+        )
+        for rlc_user in list(users):
+            if rlc_user.groups.all().count() == 0:
+                members_data.append(
+                    {
+                        "name": rlc_user.user.name,
+                        "id": rlc_user.user.pk,
+                        "rlcuserid": rlc_user.pk,
+                    }
+                )
+        return members_data
+    return None
