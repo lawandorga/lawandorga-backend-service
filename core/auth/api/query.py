@@ -2,7 +2,6 @@ from django.db.models import Q
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser, UserProfile
-from core.internal.api.schemas import OutputArticleList
 from core.legal.models import LegalRequirement
 from core.rlc.models import Org
 from core.seedwork.api_layer import Router
@@ -72,7 +71,6 @@ class OutputDashboardMember(BaseModel):
 
 class OutputDashboardPage(BaseModel):
     members: None | list[OutputDashboardMember] = None
-    articles: None | list[OutputArticleList] = None
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -322,24 +322,12 @@ class OrgUser(Aggregate, models.Model):
         return DataSheet.objects.filter(pk__in=record_pks)
 
     @property
-    def latest_articles(self):
-        from core.internal.models.articles import Article
-
-        cutoff_date = timezone.now() - timedelta(days=60)
-        articles = list(Article.objects.filter(date__gte=cutoff_date))
-        return articles
-
-    @property
     def information(self) -> Dict[str, Any]:
         return_dict = {}
         # members
         members_data = self.members_information
         if members_data:
             return_dict["members"] = members_data
-        # articles
-        articles_data = self.latest_articles
-        if articles_data:
-            return_dict["articles"] = articles_data
         return return_dict
 
     def get_group_uuids(self) -> list[UUID]:
