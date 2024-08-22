@@ -1,7 +1,7 @@
 from django.db.models import Q
 from pydantic import BaseModel, ConfigDict
 
-from core.auth.models import OrgUser, UserProfile
+from core.auth.models import UserProfile
 from core.legal.models import LegalRequirement
 from core.rlc.models import Org
 from core.seedwork.api_layer import Router
@@ -61,13 +61,3 @@ def query__register_page():
         ),
     }
     return data
-
-
-class OutputDashboardPage(BaseModel):
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-@router.get(url="page/dashboard/", output_schema=OutputDashboardPage)
-def query__dashboard_page(rlc_user: OrgUser):
-    return rlc_user.information

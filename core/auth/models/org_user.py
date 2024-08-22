@@ -1,15 +1,5 @@
 from datetime import timedelta
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    List,
-    Optional,
-    Protocol,
-    Type,
-    TypedDict,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, List, Optional, Protocol, Type, TypedDict, Union
 from uuid import UUID, uuid4
 
 import ics
@@ -283,11 +273,6 @@ class OrgUser(Aggregate, models.Model):
         from core.legal.models import LegalRequirement
 
         return LegalRequirement.is_locked(self)
-
-    @property
-    def information(self) -> Dict[str, Any]:
-        return_dict = {}
-        return return_dict
 
     def get_group_uuids(self) -> list[UUID]:
         if not hasattr(self, "_group_uuids"):
