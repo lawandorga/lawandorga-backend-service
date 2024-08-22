@@ -204,7 +204,7 @@ class OutputDashboardChangedRecord(BaseModel):
     updated: datetime
 
 
-@router.get("dashboard/changed", output_schema=list[OutputDashboardChangedRecord])
+@router.get("dashboard/changed/", output_schema=list[OutputDashboardChangedRecord])
 def changed_records_information(rlc_user: OrgUser):
     recordsqs = RecordsRecord.objects.filter(
         org_id=rlc_user.org_id, updated__gt=timezone.now() - timedelta(days=10)
