@@ -73,11 +73,6 @@ class OutputDashboardMember(BaseModel):
     rlcuserid: int
 
 
-class OutputDashboardQuestionnaire(BaseModel):
-    name: str
-    folder_uuid: UUID
-
-
 class OutputDashboardChangedRecord(BaseModel):
     folder_uuid: UUID
     uuid: UUID
@@ -87,7 +82,6 @@ class OutputDashboardChangedRecord(BaseModel):
 
 class OutputDashboardPage(BaseModel):
     members: None | list[OutputDashboardMember] = None
-    questionnaires: None | list[OutputDashboardQuestionnaire] = None
     changed_records: None | list[OutputDashboardChangedRecord] = None
     articles: None | list[OutputArticleList] = None
 

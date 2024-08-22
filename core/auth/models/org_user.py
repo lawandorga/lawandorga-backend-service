@@ -304,31 +304,6 @@ class OrgUser(Aggregate, models.Model):
         return None
 
     @property
-    def questionnaire_information(self):
-        from core.questionnaires.models.questionnaire import Questionnaire
-
-        questionnaires = Questionnaire.objects.filter(
-            template__rlc_id=self.org_id
-        ).select_related("template")
-
-        questionnaire_data = []
-
-        for questionnaire in list(questionnaires):
-            if (
-                not questionnaire.answered
-                and questionnaire.folder_uuid
-                and questionnaire.folder.has_access(self)
-            ):
-                questionnaire_data.append(
-                    {
-                        "name": questionnaire.name,
-                        "folder_uuid": questionnaire.folder_uuid,
-                    }
-                )
-
-        return questionnaire_data
-
-    @property
     def own_records(self):
         from core.data_sheets.models import DataSheet
 
@@ -392,10 +367,6 @@ class OrgUser(Aggregate, models.Model):
         members_data = self.members_information
         if members_data:
             return_dict["members"] = members_data
-        # questionnaires
-        questionnaire_data = self.questionnaire_information
-        if questionnaire_data:
-            return_dict["questionnaires"] = questionnaire_data
         # changed records
         changed_records_data = self.changed_records_information
         if changed_records_data:

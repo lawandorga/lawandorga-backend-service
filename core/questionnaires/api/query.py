@@ -232,3 +232,32 @@ def query__fill_out_questionnaire(data: InputFillOutQuestionnaire):
         },
         "fields": fields,
     }
+
+
+class OutputDashboardQuestionnaire(BaseModel):
+    name: str
+    folder_uuid: UUID
+
+
+@router.get("dashboard/", output_schema=list[OutputDashboardQuestionnaire])
+def questionnaire_information(rlc_user: OrgUser):
+    questionnaires = Questionnaire.objects.filter(
+        template__rlc_id=rlc_user.org_id
+    ).select_related("template")
+
+    questionnaire_data = []
+
+    for questionnaire in list(questionnaires):
+        if (
+            not questionnaire.answered
+            and questionnaire.folder_uuid
+            and questionnaire.folder.has_access(rlc_user)
+        ):
+            questionnaire_data.append(
+                {
+                    "name": questionnaire.name,
+                    "folder_uuid": questionnaire.folder_uuid,
+                }
+            )
+
+    return questionnaire_data
