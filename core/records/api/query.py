@@ -1,10 +1,11 @@
 import json
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 from uuid import UUID
 
 from django.db.models import Q
+from django.utils import timezone
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from core.auth.models import OrgUser
@@ -194,3 +195,39 @@ def query_infos(user: OrgUser):
         "badges": badges,
         "views": views,
     }
+
+
+class OutputDashboardChangedRecord(BaseModel):
+    folder_uuid: UUID
+    uuid: UUID
+    identifier: str
+    updated: datetime
+
+
+@router.get("dashboard/changed", output_schema=list[OutputDashboardChangedRecord])
+def changed_records_information(rlc_user: OrgUser):
+    recordsqs = RecordsRecord.objects.filter(
+        org_id=rlc_user.org_id, updated__gt=timezone.now() - timedelta(days=10)
+    )
+    records = list(recordsqs)
+    folder_uuids = list_map(records, lambda x: x.folder_uuid)
+    r = DjangoFolderRepository()
+    foldersl = r.list_by_uuids(org_pk=rlc_user.org_id, uuids=folder_uuids)
+    folders = {folder.uuid: folder for folder in foldersl}
+
+    changed_records_data = []
+    for record in records:
+        folder = folders[record.folder_uuid]
+        if not folder.has_access(rlc_user):
+            continue
+
+        changed_records_data.append(
+            {
+                "uuid": record.uuid,
+                "folder_uuid": folder.uuid,
+                "identifier": record.name,
+                "updated": record.updated,
+            }
+        )
+
+    return changed_records_data

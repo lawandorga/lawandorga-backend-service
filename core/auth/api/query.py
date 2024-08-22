@@ -1,6 +1,3 @@
-from datetime import datetime
-from uuid import UUID
-
 from django.db.models import Q
 from pydantic import BaseModel, ConfigDict
 
@@ -73,16 +70,8 @@ class OutputDashboardMember(BaseModel):
     rlcuserid: int
 
 
-class OutputDashboardChangedRecord(BaseModel):
-    folder_uuid: UUID
-    uuid: UUID
-    identifier: str
-    updated: datetime
-
-
 class OutputDashboardPage(BaseModel):
     members: None | list[OutputDashboardMember] = None
-    changed_records: None | list[OutputDashboardChangedRecord] = None
     articles: None | list[OutputArticleList] = None
 
     model_config = ConfigDict(from_attributes=True)

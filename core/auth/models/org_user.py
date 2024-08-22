@@ -322,37 +322,6 @@ class OrgUser(Aggregate, models.Model):
         return DataSheet.objects.filter(pk__in=record_pks)
 
     @property
-    def changed_records_information(self):
-        from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-        from core.records.models import RecordsRecord
-
-        recordsqs = RecordsRecord.objects.filter(
-            org_id=self.org_id, updated__gt=timezone.now() - timedelta(days=10)
-        )
-        records = list(recordsqs)
-        folder_uuids = list_map(records, lambda x: x.folder_uuid)
-        r = DjangoFolderRepository()
-        foldersl = r.list_by_uuids(org_pk=self.org_id, uuids=folder_uuids)
-        folders = {folder.uuid: folder for folder in foldersl}
-
-        changed_records_data = []
-        for record in records:
-            folder = folders[record.folder_uuid]
-            if not folder.has_access(self):
-                continue
-
-            changed_records_data.append(
-                {
-                    "uuid": record.uuid,
-                    "folder_uuid": folder.uuid,
-                    "identifier": record.name,
-                    "updated": record.updated,
-                }
-            )
-
-        return changed_records_data
-
-    @property
     def latest_articles(self):
         from core.internal.models.articles import Article
 
@@ -367,10 +336,6 @@ class OrgUser(Aggregate, models.Model):
         members_data = self.members_information
         if members_data:
             return_dict["members"] = members_data
-        # changed records
-        changed_records_data = self.changed_records_information
-        if changed_records_data:
-            return_dict["changed_records"] = changed_records_data
         # articles
         articles_data = self.latest_articles
         if articles_data:
