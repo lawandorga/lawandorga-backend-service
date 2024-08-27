@@ -117,3 +117,16 @@ class MailImport(models.Model):
         unlock_key = self.folder.get_decryption_key(requestor=user)
         key = enc_key.decrypt(unlock_key)
         return key
+
+
+# TODO: Create files model
+# class MailAttachement(models.Model):
+#     uuid = models.UUIDField(db_index=True, default=uuid4, unique=True, editable=False)
+#     mail_import = models.ForeignKey(
+#         MailImport, on_delete=models.CASCADE, related_name="attachements"
+#     )
+#     file_name = models.CharField(max_length=255)
+#     file_location = models.SlugField(allow_unicode=True, max_length=1000, unique=True)
+
+#     created = models.DateTimeField(auto_now_add=True)
+#     updated = models.DateTimeField(auto_now=True)

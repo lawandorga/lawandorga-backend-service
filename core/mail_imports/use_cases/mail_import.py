@@ -266,6 +266,7 @@ def import_mails(__actor: OrgUser, r: FolderRepository):
         validated = validate_emails(raw_emails)
         assigned = assign_emails_to_folder_uuid(validated)
         infolder = assign_emails_to_folder(assigned, folders, __actor)
+        # TODO: get attachements
         save_emails(infolder, __actor)
         move_emails(mail_box, infolder)
         log_emails(infolder)

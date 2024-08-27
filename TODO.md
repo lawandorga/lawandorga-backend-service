@@ -53,6 +53,13 @@ COLLAB
 -   Feature veröffentlichen und Artikel schreiben (Daniel) - CHECK
 -   Neueste Artikel auf dem Dashboard darstellen (Leandra & Johannes) - CHECK
 -   Files Feature disablen für Orgs ohne Files (Johannes) - CHECK
+-   Dashboard api aufraeumen (Leandra) - CHECK
+-   Vielleicht secondary etwas dezenter stylen (Leandra) - CHECK
 
--   Dashboard api aufraeumen (Leandra)
--   Vielleicht secondary etwas dezenter stylen (Leandra)
+MAIL
+
+- Mail-Import Attachement Model erstellen (Joey)
+- Mail-Import Attachement Model Encryption (Daniel)
+- Import Use-Case anpassen (Joey)
+- API anpassen und attachement filenames hinzufügen (Joey)
+- Frontend Attachements anzeigen einfach unter der mail (Leandra)
