@@ -28,7 +28,7 @@ pytz = "==2024.*"
 uvicorn = "==0.27.*"
 pytest-env = "==1.1.*"
 ics = "==0.7.*"
-django = {extras = ["argon2"], version = "==5.0.*"}
+django = {extras = ["argon2"], version = "==5.1"}
 pydantic = {extras = ["email"], version = "==2.8.*"}
 dnspython = "==2.6.*"
 bleach = "==6.1.*"
