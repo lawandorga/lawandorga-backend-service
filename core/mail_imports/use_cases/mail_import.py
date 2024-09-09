@@ -12,7 +12,7 @@ from core.auth.models.org_user import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.mail_imports.mail_inbox import MailInbox, RawEmail
-from core.mail_imports.models.mail_import import MailImport
+from core.mail_imports.models.mail_import import MailAttachement, MailImport
 from core.mail_imports.use_cases.finder import mail_from_uuid, mails_from_uuids
 from core.seedwork.use_case_layer import use_case
 
@@ -82,6 +82,10 @@ def get_content_from_email(message: Message):
             if payload is not None and isinstance(payload, bytes):
                 content = payload.decode()
     return content
+
+
+def get_attachements_from_email(mail: MailImport) -> MailAttachement:
+    return MailAttachement.objects.get(mail_import=mail)
 
 
 def get_sender_info(message: Message) -> str:

@@ -120,6 +120,28 @@ class MailImport(models.Model):
 
 
 class MailAttachement(models.Model):
+    @classmethod
+    def create(
+        cls,
+        attachment_uuid: UUID,
+        mail_import: MailImport,
+        file_name: str,
+        file_location: str,
+        created: str | None = None,
+        updated: str | None = None,
+    ):
+        attachment = cls(
+            uuid=attachment_uuid,
+            mail_import=mail_import,
+            file_name=file_name,
+            file_location=file_location,
+        )
+        if updated:
+            attachment.updated = updated
+        if created:
+            attachment.created = created
+        return attachment
+
     uuid = models.UUIDField(db_index=True, default=uuid4, unique=True, editable=False)
     mail_import = models.ForeignKey(
         MailImport, on_delete=models.CASCADE, related_name="attachements"
@@ -128,3 +150,11 @@ class MailAttachement(models.Model):
     file_location = models.SlugField(allow_unicode=True, max_length=1000, unique=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "MI_MailAttachment"
+        verbose_name_plural = "MI_MailAttachments"
+
+    def __str__(self) -> str:
+        mail_import_uuid = self.mail_import.folder_uuid
+        return f"mailAttachment: {self.uuid}; mailImportUUid: {mail_import_uuid}"
