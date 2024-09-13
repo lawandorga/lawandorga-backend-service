@@ -1,8 +1,35 @@
-# type: ignore
+from .production import *
 
-import environs
+# This is used for links in activation emails and so on
+#
+MAIN_FRONTEND_URL = "http://localhost:4204"
+STATISTICS_FRONTEND_URL = "http://localhost:4300"
 
-from .local import *
+# This is used internally to access media or similar stuff
+#
+MAIN_BACKEND_URL = "http://localhost:4205"
+
+# This is used for ics calendar integration links
+#
+CALENDAR_URL = "http://localhost:4205"
+
+# Debug
+# https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEBUG
+DEBUG = True
+
+# Allowed Hosts
+# https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
+ALLOWED_HOSTS = ["*"]
+
+# session cookie domain
+# https://docs.djangoproject.com/en/4.1/ref/settings/#session-cookie-domain
+SESSION_COOKIE_DOMAIN = None
+CSRF_COOKIE_DOMAIN = None
+
+# secure attribute
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies?retiredLocale=de#restrict_access_to_cookies
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
@@ -33,3 +60,7 @@ AWS_STORAGE_BUCKET_NAME = env.str("S3_BUCKET_NAME")
 AWS_S3_REGION_NAME = "fr-par"
 AWS_S3_ENDPOINT_URL = "https://s3.fr-par.scw.cloud"
 AWS_S3_FILE_OVERWRITE = False
+
+# E-Mail
+# https://docs.djangoproject.com/en/dev/topics/email/#smtp-backend
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

@@ -7,6 +7,7 @@ from core.auth.token_generator import EmailConfirmationTokenGenerator
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
+        parser.add_argument("user", nargs="+", type=str, help="User to check")
         parser.add_argument("token", nargs="+", type=str, help="Token to check")
 
     def handle(self, *args, **options):
@@ -21,6 +22,8 @@ class Command(BaseCommand):
 
     def test_password_token(self, *args, **options):
         token = options["token"][0]
-        rlc_user = OrgUser.objects.get(id=0)
+        user = options["user"][0]
+        rlc_user = OrgUser.objects.get(user__email=user)
+        self.stdout.write(f"User: {rlc_user}")
         correct = PasswordResetTokenGenerator().check_token(rlc_user.user, token)
         self.stdout.write(f"Token is {'correct' if correct else 'incorrect'}")

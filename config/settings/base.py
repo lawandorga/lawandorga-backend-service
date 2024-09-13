@@ -146,8 +146,8 @@ CORS_ALLOW_CREDENTIALS = True
 
 # same site attribute
 # https://docs.djangoproject.com/en/4.1/ref/settings/#session-cookie-samesite
-SESSION_COOKIE_SAMESITE = "Strict"
-CSRF_COOKIE_SAMESITE = "Strict"
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
 
 # logout after browser close
 # https://docs.djangoproject.com/en/4.1/ref/settings/#session-expire-at-browser-close
