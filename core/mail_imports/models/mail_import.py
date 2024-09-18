@@ -123,24 +123,20 @@ class MailAttachement(models.Model):
     @classmethod
     def create(
         cls,
-        attachment_uuid: UUID,
         mail_import: MailImport,
-        file_name: str,
-        file_location: str,
-        created: str | None = None,
-        updated: str | None = None,
+        files: list[str],
     ):
+        attachments = []
+        attachment_uuid = 123
+        file_location = "45"
         attachment = cls(
             uuid=attachment_uuid,
             mail_import=mail_import,
-            file_name=file_name,
+            files=files,
             file_location=file_location,
         )
-        if updated:
-            attachment.updated = updated
-        if created:
-            attachment.created = created
-        return attachment
+        attachments.append(attachment)
+        return attachments
 
     uuid = models.UUIDField(db_index=True, default=uuid4, unique=True, editable=False)
     mail_import = models.ForeignKey(

@@ -1,12 +1,14 @@
+import email
 import logging
 from email import message_from_bytes
 from email.header import decode_header
-from email.message import Message
+from email.message import Message, EmailMessage
 from email.utils import getaddresses, parseaddr
 from typing import Protocol, Sequence
 from uuid import UUID
 
 from pydantic import BaseModel
+from django.db import transaction
 
 from core.auth.models.org_user import OrgUser
 from core.folders.domain.aggregates.folder import Folder
@@ -58,6 +60,7 @@ class ValidatedEmail(BaseModel):
     subject: str
     content: str
     addresses: list[str]
+    attachments: list[bytes]
 
 
 class AssignedEmail(ValidatedEmail):
@@ -84,8 +87,8 @@ def get_content_from_email(message: Message):
     return content
 
 
-def get_attachements_from_email(mail: MailImport) -> MailAttachement:
-    return MailAttachement.objects.get(mail_import=mail)
+def get_attachements_from_email(message: Message) -> bytes:
+    raise NotImplementedError()
 
 
 def get_sender_info(message: Message) -> str:
@@ -142,6 +145,7 @@ def get_email_info(message: Message):
         "subject": message.get("Subject"),
         "content": get_content_from_email(message),
         "addresses": get_addresses_from_message(message),
+        "attachements": get_attachements_from_email(message),
     }
 
 
@@ -235,7 +239,14 @@ def save_emails(
             org_id=email.org_pk,
         )
         obj.encrypt(user)
-        obj.save()
+        attachments = MailAttachement.create(
+            mail_import=obj,
+            files=[],
+        )
+        with transaction.atomic():
+            for a in attachments:
+                a.save()
+            obj.save()
 
 
 def move_emails(
@@ -270,7 +281,6 @@ def import_mails(__actor: OrgUser, r: FolderRepository):
         validated = validate_emails(raw_emails)
         assigned = assign_emails_to_folder_uuid(validated)
         infolder = assign_emails_to_folder(assigned, folders, __actor)
-        # TODO: get attachements
         save_emails(infolder, __actor)
         move_emails(mail_box, infolder)
         log_emails(infolder)
