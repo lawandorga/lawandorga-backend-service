@@ -124,19 +124,13 @@ class MailAttachement(models.Model):
     def create(
         cls,
         mail_import: MailImport,
-        files: list[str],
     ):
-        attachments = []
-        attachment_uuid = 123
-        file_location = "45"
         attachment = cls(
-            uuid=attachment_uuid,
             mail_import=mail_import,
-            files=files,
-            file_location=file_location,
+            file_name="",
+            file_location="",
         )
-        attachments.append(attachment)
-        return attachments
+        return attachment
 
     uuid = models.UUIDField(db_index=True, default=uuid4, unique=True, editable=False)
     mail_import = models.ForeignKey(
@@ -154,3 +148,6 @@ class MailAttachement(models.Model):
     def __str__(self) -> str:
         mail_import_uuid = self.mail_import.folder_uuid
         return f"mailAttachment: {self.uuid}; mailImportUUid: {mail_import_uuid}"
+
+    def upload_file(self, file):
+        raise NotImplementedError()

@@ -51,6 +51,11 @@ class NumEmail(Protocol):
     num: str
 
 
+class EmailMessageAttachement(BaseModel):
+    filename: str
+    content: bytes
+
+
 class ValidatedEmail(BaseModel):
     num: str
     sender: str
@@ -61,7 +66,7 @@ class ValidatedEmail(BaseModel):
     subject: str
     content: str
     addresses: list[str]
-    # attachments: list[bytes]
+    # attachments: list[EmailMessageAttachement]  # TODO: this needs to get implemented
 
 
 class AssignedEmail(ValidatedEmail):
@@ -88,10 +93,10 @@ def get_content_from_email(message: EmailMessage):
     return content
 
 
-def get_attachements_from_email(message: EmailMessage) -> list[MailAttachement]:
-    attachments: list[MailAttachement] = []
+def get_attachements_from_email(message: EmailMessage) -> list[EmailMessageAttachement]:
+    attachments: list[EmailMessageAttachement] = []
     for part in message.iter_attachments():
-        attachments.append(part)
+        raise NotImplementedError("Here the EmailMessageAttachement should be created")
     return attachments
 
 
@@ -159,8 +164,10 @@ def validate_emails(raw_emails: list[RawEmail]) -> list[ErrorEmail | ValidatedEm
         try:
             data = email.data
             message = message_from_bytes(data[0][1], policy=default)
-            email_ = get_email_info(message)
-            validated_emails.append(ValidatedEmail(num=email.num, **email_))
+            email_info = get_email_info(
+                message
+            )  # TODO: here the type does not match message_from_bytes returns a different type maybe use sth else instead of message_from_bytes?
+            validated_emails.append(ValidatedEmail(num=email.num, **email_info))
         except Exception as e:
             validated_emails.append(ErrorEmail(num=email.num, error=str(e)))
     return validated_emails
@@ -242,15 +249,19 @@ def save_emails(
             folder_uuid=email.folder_uuid,
             org_id=email.org_pk,
         )
+        attachements: list[MailAttachement] = []
+        for attachement in email.attachements:
+            attachement = MailAttachement.create(
+                mail_import=obj,
+            )
+            attachement.upload_file(attachement.content)  # oder so
+            attachements.append(attachement)
+            # TODO: here the attachements need to be created from the validated_email.attachements that is not implemented yet
         obj.encrypt(user)
-        # attachments = MailAttachement.create(
-        #     mail_import=obj,
-        #     files=[],
-        # )
-        # with transaction.atomic():
-        #     for a in attachments:
-        #         a.save()
-        obj.save()
+        with transaction.atomic():
+            obj.save()
+            for attachement in attachements:
+                attachement.save()
 
 
 def move_emails(
