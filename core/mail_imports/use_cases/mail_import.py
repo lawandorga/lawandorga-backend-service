@@ -2,13 +2,13 @@ import email
 import logging
 from email import message_from_bytes
 from email.header import decode_header
-from email.message import Message, EmailMessage
+from email.message import EmailMessage
 from email.utils import getaddresses, parseaddr
 from typing import Protocol, Sequence
 from uuid import UUID
 
-from pydantic import BaseModel
 from django.db import transaction
+from pydantic import BaseModel
 
 from core.auth.models.org_user import OrgUser
 from core.folders.domain.aggregates.folder import Folder
@@ -60,7 +60,7 @@ class ValidatedEmail(BaseModel):
     subject: str
     content: str
     addresses: list[str]
-    attachments: list[bytes]
+    # attachments: list[bytes]
 
 
 class AssignedEmail(ValidatedEmail):
@@ -77,7 +77,7 @@ class ErrorEmail(BaseModel):
     error: str
 
 
-def get_content_from_email(message: Message):
+def get_content_from_email(message: EmailMessage):
     content = ""
     for part in message.walk():
         if part.get_content_type() == "text/plain":
@@ -87,11 +87,11 @@ def get_content_from_email(message: Message):
     return content
 
 
-def get_attachements_from_email(message: Message) -> bytes:
+def get_attachements_from_email(message: EmailMessage) -> bytes:
     raise NotImplementedError()
 
 
-def get_sender_info(message: Message) -> str:
+def get_sender_info(message: EmailMessage) -> str:
     sender = message.get("From")
     if sender is None:
         return "unknown"
@@ -105,7 +105,7 @@ def get_sender_info(message: Message) -> str:
     return f"{name} <{email}>"
 
 
-def get_to_info(message: Message) -> str:
+def get_to_info(message: EmailMessage) -> str:
     raw_to = message.get("To", "")
     if raw_to is None:
         return ""
@@ -121,7 +121,7 @@ def get_to_info(message: Message) -> str:
     return ", ".join(formatted_addresses)
 
 
-def get_addresses_from_message(message: Message) -> list[str]:
+def get_addresses_from_message(message: EmailMessage) -> list[str]:
     addresses_and_name = []
     for header in ["To", "CC", "BCC"]:
         raw_header = message.get(header, "")
@@ -135,7 +135,7 @@ def get_addresses_from_message(message: Message) -> list[str]:
     return addresses
 
 
-def get_email_info(message: Message):
+def get_email_info(message: EmailMessage):
     return {
         "sender": get_sender_info(message),
         "to": get_to_info(message),
@@ -145,7 +145,7 @@ def get_email_info(message: Message):
         "subject": message.get("Subject"),
         "content": get_content_from_email(message),
         "addresses": get_addresses_from_message(message),
-        "attachements": get_attachements_from_email(message),
+        # "attachements": get_attachements_from_email(message),
     }
 
 
@@ -239,14 +239,14 @@ def save_emails(
             org_id=email.org_pk,
         )
         obj.encrypt(user)
-        attachments = MailAttachement.create(
-            mail_import=obj,
-            files=[],
-        )
-        with transaction.atomic():
-            for a in attachments:
-                a.save()
-            obj.save()
+        # attachments = MailAttachement.create(
+        #     mail_import=obj,
+        #     files=[],
+        # )
+        # with transaction.atomic():
+        #     for a in attachments:
+        #         a.save()
+        obj.save()
 
 
 def move_emails(
