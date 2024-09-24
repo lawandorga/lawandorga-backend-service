@@ -265,12 +265,16 @@ def log_emails(
 @use_case
 def import_mails(__actor: OrgUser, r: FolderRepository):
     folders = r.get_dict(__actor.org_id)
-    with MailInbox() as mail_box:
-        raw_emails = mail_box.get_raw_emails()
-        validated = validate_emails(raw_emails)
-        assigned = assign_emails_to_folder_uuid(validated)
-        infolder = assign_emails_to_folder(assigned, folders, __actor)
-        # TODO: get attachements
-        save_emails(infolder, __actor)
-        move_emails(mail_box, infolder)
-        log_emails(infolder)
+    try:
+        with MailInbox() as mail_box:
+            raw_emails = mail_box.get_raw_emails()
+            validated = validate_emails(raw_emails)
+            assigned = assign_emails_to_folder_uuid(validated)
+            infolder = assign_emails_to_folder(assigned, folders, __actor)
+            save_emails(infolder, __actor)
+            move_emails(mail_box, infolder)
+            log_emails(infolder)
+    except OSError as e:
+        if not "Network is unreachable" in str(e):
+            raise e
+        logger.error(f"Error while importing mails: {e}")
