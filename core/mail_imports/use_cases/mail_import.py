@@ -1,4 +1,4 @@
-import email
+# import email
 import logging
 from email import message_from_bytes
 from email.header import decode_header
@@ -8,7 +8,7 @@ from email.utils import getaddresses, parseaddr
 from typing import Protocol, Sequence
 from uuid import UUID
 
-from django.db import transaction
+# from django.db import transaction
 from pydantic import BaseModel
 
 from core.auth.models.org_user import OrgUser

@@ -4,7 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models.org_user import OrgUser
-from core.mail_imports.models.mail_import import MailAttachement, MailImport
+from core.mail_imports.models.mail_import import MailImport  # , MailAttachement
 from core.seedwork.api_layer import Router
 
 router = Router()
