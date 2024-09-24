@@ -3,6 +3,7 @@ import logging
 from email import message_from_bytes
 from email.header import decode_header
 from email.message import EmailMessage
+from email.policy import default
 from email.utils import getaddresses, parseaddr
 from typing import Protocol, Sequence
 from uuid import UUID
@@ -87,8 +88,11 @@ def get_content_from_email(message: EmailMessage):
     return content
 
 
-def get_attachements_from_email(message: EmailMessage) -> bytes:
-    raise NotImplementedError()
+def get_attachements_from_email(message: EmailMessage) -> list[MailAttachement]:
+    attachments: list[MailAttachement] = []
+    for part in message.iter_attachments():
+        attachments.append(part)
+    return attachments
 
 
 def get_sender_info(message: EmailMessage) -> str:
@@ -145,7 +149,7 @@ def get_email_info(message: EmailMessage):
         "subject": message.get("Subject"),
         "content": get_content_from_email(message),
         "addresses": get_addresses_from_message(message),
-        # "attachements": get_attachements_from_email(message),
+        "attachements": get_attachements_from_email(message),
     }
 
 
@@ -154,7 +158,7 @@ def validate_emails(raw_emails: list[RawEmail]) -> list[ErrorEmail | ValidatedEm
     for email in raw_emails:
         try:
             data = email.data
-            message = message_from_bytes(data[0][1])
+            message = message_from_bytes(data[0][1], policy=default)
             email_ = get_email_info(message)
             validated_emails.append(ValidatedEmail(num=email.num, **email_))
         except Exception as e:
