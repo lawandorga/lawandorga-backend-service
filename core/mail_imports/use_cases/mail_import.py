@@ -8,7 +8,7 @@ from email.utils import getaddresses, parseaddr
 from typing import Protocol, Sequence
 from uuid import UUID
 
-# from django.db import transaction
+from django.db import transaction
 from pydantic import BaseModel
 
 from core.auth.models.org_user import OrgUser
@@ -163,10 +163,10 @@ def validate_emails(raw_emails: list[RawEmail]) -> list[ErrorEmail | ValidatedEm
     for email in raw_emails:
         try:
             data = email.data
-            message = message_from_bytes(data[0][1], policy=default)
-            email_info = get_email_info(
-                message
-            )  # TODO: here the type does not match message_from_bytes returns a different type maybe use sth else instead of message_from_bytes?
+            message: EmailMessage = message_from_bytes(
+                data[0][1], policy=default
+            )  # type: ignore
+            email_info = get_email_info(message)
             validated_emails.append(ValidatedEmail(num=email.num, **email_info))
         except Exception as e:
             validated_emails.append(ErrorEmail(num=email.num, error=str(e)))
