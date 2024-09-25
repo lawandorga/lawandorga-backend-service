@@ -66,7 +66,7 @@ class ValidatedEmail(BaseModel):
     subject: str
     content: str
     addresses: list[str]
-    # attachments: list[EmailMessageAttachement]  # TODO: this needs to get implemented
+    attachments: list[EmailMessageAttachement] = []
 
 
 class AssignedEmail(ValidatedEmail):
@@ -96,7 +96,10 @@ def get_content_from_email(message: EmailMessage):
 def get_attachements_from_email(message: EmailMessage) -> list[EmailMessageAttachement]:
     attachments: list[EmailMessageAttachement] = []
     for part in message.iter_attachments():
-        raise NotImplementedError("Here the EmailMessageAttachement should be created")
+        attachment = EmailMessageAttachement(
+            filename=part.get_filename(), content=part.as_bytes()
+        )
+        attachments.append(attachment)
     return attachments
 
 
@@ -249,19 +252,19 @@ def save_emails(
             folder_uuid=email.folder_uuid,
             org_id=email.org_pk,
         )
-        attachements: list[MailAttachement] = []
-        for attachement in email.attachements:
-            attachement = MailAttachement.create(
-                mail_import=obj,
-            )
-            attachement.upload_file(attachement.content)  # oder so
-            attachements.append(attachement)
-            # TODO: here the attachements need to be created from the validated_email.attachements that is not implemented yet
+        # attachements: list[MailAttachement] = []
+        # for attachement in email.attachements:
+        #     attachement = MailAttachement.create(
+        #         mail_import=obj,
+        #     )
+        #     attachement.upload_file(attachement.content)  # oder so
+        #     attachements.append(attachement)
+        # TODO: here the attachements need to be created from the validated_email.attachements that is not implemented yet
         obj.encrypt(user)
         with transaction.atomic():
             obj.save()
-            for attachement in attachements:
-                attachement.save()
+            # for attachement in attachements:
+            #     attachement.save()
 
 
 def move_emails(
