@@ -1,4 +1,3 @@
-# import email
 import logging
 from email import message_from_bytes
 from email.header import decode_header
@@ -15,7 +14,7 @@ from core.auth.models.org_user import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.mail_imports.mail_inbox import MailInbox, RawEmail
-from core.mail_imports.models.mail_import import MailAttachement, MailImport
+from core.mail_imports.models.mail_import import MailAttachment, MailImport
 from core.mail_imports.use_cases.finder import mail_from_uuid, mails_from_uuids
 from core.seedwork.use_case_layer import use_case
 
@@ -51,7 +50,7 @@ class NumEmail(Protocol):
     num: str
 
 
-class EmailMessageAttachement(BaseModel):
+class EmailMessageAttachment(BaseModel):
     filename: str
     content: bytes
 
@@ -66,7 +65,7 @@ class ValidatedEmail(BaseModel):
     subject: str
     content: str
     addresses: list[str]
-    attachments: list[EmailMessageAttachement] = []
+    attachments: list[EmailMessageAttachment] = []
 
 
 class AssignedEmail(ValidatedEmail):
@@ -93,11 +92,11 @@ def get_content_from_email(message: EmailMessage):
     return content
 
 
-def get_attachements_from_email(message: EmailMessage) -> list[EmailMessageAttachement]:
-    attachments: list[EmailMessageAttachement] = []
+def get_attachments_from_email(message: EmailMessage) -> list[EmailMessageAttachment]:
+    attachments: list[EmailMessageAttachment] = []
     for part in message.iter_attachments():
-        attachment = EmailMessageAttachement(
-            filename=part.get_filename(), content=part.as_bytes()
+        attachment = EmailMessageAttachment(
+            filename=part.get_filename() or "Unknown", content=part.as_bytes()
         )
         attachments.append(attachment)
     return attachments
@@ -157,7 +156,7 @@ def get_email_info(message: EmailMessage):
         "subject": message.get("Subject"),
         "content": get_content_from_email(message),
         "addresses": get_addresses_from_message(message),
-        "attachements": get_attachements_from_email(message),
+        "attachments": get_attachments_from_email(message),
     }
 
 
@@ -252,19 +251,20 @@ def save_emails(
             folder_uuid=email.folder_uuid,
             org_id=email.org_pk,
         )
-        # attachements: list[MailAttachement] = []
-        # for attachement in email.attachements:
-        #     attachement = MailAttachement.create(
-        #         mail_import=obj,
-        #     )
-        #     attachement.upload_file(attachement.content)  # oder so
-        #     attachements.append(attachement)
-        # TODO: here the attachements need to be created from the validated_email.attachements that is not implemented yet
+        attachments: list[MailAttachment] = []
+        for attachment in email.attachments:
+            attachment = MailAttachment.create(
+                mail_import=obj,
+                filename=attachment.filename,
+                content=attachment.content,
+            )
+            attachment.upload_file(attachment.content)
+            attachments.append(attachment)
         obj.encrypt(user)
         with transaction.atomic():
             obj.save()
-            # for attachement in attachements:
-            #     attachement.save()
+            for attachment in attachments:
+                attachment.save()
 
 
 def move_emails(

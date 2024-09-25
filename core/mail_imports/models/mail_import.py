@@ -119,25 +119,28 @@ class MailImport(models.Model):
         return key
 
 
-class MailAttachement(models.Model):
+class MailAttachment(models.Model):
     @classmethod
     def create(
         cls,
         mail_import: MailImport,
+        filename: str,
+        content: bytes,
     ):
         attachment = cls(
             mail_import=mail_import,
-            file_name="",
-            file_location="",
+            filename=filename,
+            content=content,
         )
         return attachment
 
     uuid = models.UUIDField(db_index=True, default=uuid4, unique=True, editable=False)
     mail_import = models.ForeignKey(
-        MailImport, on_delete=models.CASCADE, related_name="attachements"
+        MailImport, on_delete=models.CASCADE, related_name="attachments"
     )
-    file_name = models.CharField(max_length=255)
+    filename = models.CharField(max_length=255)
     file_location = models.SlugField(allow_unicode=True, max_length=1000, unique=True)
+    content = models.FileField(upload_to="attachments", null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
