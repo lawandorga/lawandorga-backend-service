@@ -6,6 +6,9 @@ from django.core.files.base import ContentFile
 from django.db import models
 from django.utils.timezone import localtime
 
+if TYPE_CHECKING:
+    from django.db.models.manager import Manager
+
 from core.auth.models.org_user import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
@@ -66,6 +69,7 @@ class MailImport(models.Model):
         org_id: int
         subject: str
         content: str
+        attachments: Manager["MailAttachment"]
 
     class Meta:
         verbose_name = "MI_MailImport"
@@ -151,3 +155,6 @@ class MailAttachment(models.Model):
     def __str__(self) -> str:
         mail_import_uuid = self.mail_import.folder_uuid
         return f"mailAttachment: {self.uuid}; mailImportUUid: {mail_import_uuid}"
+
+    def location(self) -> str:
+        return self.content.path
