@@ -7,6 +7,7 @@ from email.utils import getaddresses, parseaddr
 from typing import Protocol, Sequence
 from uuid import UUID
 
+from django.core.files.base import ContentFile
 from django.db import transaction
 from pydantic import BaseModel
 
@@ -251,18 +252,18 @@ def save_emails(
             folder_uuid=email.folder_uuid,
             org_id=email.org_pk,
         )
+        obj.encrypt(user)
+        obj.save()
         attachments: list[MailAttachment] = []
         for a in email.attachments:
+            content_file = ContentFile(content=a.content, name=a.filename)
             attachment = MailAttachment.create(
                 mail_import=obj,
                 filename=a.filename,
-                content=a.content,
+                content=content_file,
             )
-            attachment.upload_file(attachment.content)
             attachments.append(attachment)
-        obj.encrypt(user)
         with transaction.atomic():
-            obj.save()
             for attachment in attachments:
                 attachment.save()
 

@@ -2,6 +2,7 @@ import logging
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
+from django.core.files.base import ContentFile
 from django.db import models
 from django.utils.timezone import localtime
 
@@ -125,7 +126,7 @@ class MailAttachment(models.Model):
         cls,
         mail_import: MailImport,
         filename: str,
-        content: bytes,
+        content: ContentFile,
     ):
         attachment = cls(
             mail_import=mail_import,
@@ -139,7 +140,6 @@ class MailAttachment(models.Model):
         MailImport, on_delete=models.CASCADE, related_name="attachments"
     )
     filename = models.CharField(max_length=255)
-    file_location = models.SlugField(allow_unicode=True, max_length=1000, unique=True)
     content = models.FileField(upload_to="attachments", null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -151,6 +151,3 @@ class MailAttachment(models.Model):
     def __str__(self) -> str:
         mail_import_uuid = self.mail_import.folder_uuid
         return f"mailAttachment: {self.uuid}; mailImportUUid: {mail_import_uuid}"
-
-    def upload_file(self, file):
-        raise NotImplementedError()
