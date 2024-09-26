@@ -4,7 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models.org_user import OrgUser
-from core.mail_imports.models.mail_import import MailImport
+from core.mail_imports.models.mail_import import MailImport  # , MailAttachment
 from core.seedwork.api_layer import Router
 
 router = Router()
@@ -24,6 +24,7 @@ class OutputMail(BaseModel):
     sending_datetime: datetime.datetime
     is_read: bool
     is_pinned: bool
+    # attachments: MailAttachment
 
     model_config = ConfigDict(from_attributes=True)
 

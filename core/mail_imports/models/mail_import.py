@@ -2,6 +2,7 @@ import logging
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
+from django.core.files.base import ContentFile
 from django.db import models
 from django.utils.timezone import localtime
 
@@ -119,35 +120,27 @@ class MailImport(models.Model):
         return key
 
 
-class MailAttachement(models.Model):
+class MailAttachment(models.Model):
     @classmethod
     def create(
         cls,
-        attachment_uuid: UUID,
         mail_import: MailImport,
-        file_name: str,
-        file_location: str,
-        created: str | None = None,
-        updated: str | None = None,
+        filename: str,
+        content: ContentFile,
     ):
         attachment = cls(
-            uuid=attachment_uuid,
             mail_import=mail_import,
-            file_name=file_name,
-            file_location=file_location,
+            filename=filename,
+            content=content,
         )
-        if updated:
-            attachment.updated = updated
-        if created:
-            attachment.created = created
         return attachment
 
     uuid = models.UUIDField(db_index=True, default=uuid4, unique=True, editable=False)
     mail_import = models.ForeignKey(
-        MailImport, on_delete=models.CASCADE, related_name="attachements"
+        MailImport, on_delete=models.CASCADE, related_name="attachments"
     )
-    file_name = models.CharField(max_length=255)
-    file_location = models.SlugField(allow_unicode=True, max_length=1000, unique=True)
+    filename = models.CharField(max_length=255)
+    content = models.FileField(upload_to="attachments", null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 

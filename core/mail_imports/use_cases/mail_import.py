@@ -1,18 +1,21 @@
 import logging
 from email import message_from_bytes
 from email.header import decode_header
-from email.message import Message
+from email.message import EmailMessage
+from email.policy import default
 from email.utils import getaddresses, parseaddr
 from typing import Protocol, Sequence
 from uuid import UUID
 
+from django.core.files.base import ContentFile
+from django.db import transaction
 from pydantic import BaseModel
 
 from core.auth.models.org_user import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.mail_imports.mail_inbox import MailInbox, RawEmail
-from core.mail_imports.models.mail_import import MailAttachement, MailImport
+from core.mail_imports.models.mail_import import MailAttachment, MailImport
 from core.mail_imports.use_cases.finder import mail_from_uuid, mails_from_uuids
 from core.seedwork.use_case_layer import use_case
 
@@ -48,6 +51,11 @@ class NumEmail(Protocol):
     num: str
 
 
+class EmailMessageAttachment(BaseModel):
+    filename: str
+    content: bytes
+
+
 class ValidatedEmail(BaseModel):
     num: str
     sender: str
@@ -58,6 +66,7 @@ class ValidatedEmail(BaseModel):
     subject: str
     content: str
     addresses: list[str]
+    attachments: list[EmailMessageAttachment] = []
 
 
 class AssignedEmail(ValidatedEmail):
@@ -74,7 +83,7 @@ class ErrorEmail(BaseModel):
     error: str
 
 
-def get_content_from_email(message: Message):
+def get_content_from_email(message: EmailMessage):
     content = ""
     for part in message.walk():
         if part.get_content_type() == "text/plain":
@@ -84,11 +93,17 @@ def get_content_from_email(message: Message):
     return content
 
 
-def get_attachements_from_email(mail: MailImport) -> MailAttachement:
-    return MailAttachement.objects.get(mail_import=mail)
+def get_attachments_from_email(message: EmailMessage) -> list[EmailMessageAttachment]:
+    attachments: list[EmailMessageAttachment] = []
+    for part in message.iter_attachments():
+        attachment = EmailMessageAttachment(
+            filename=part.get_filename() or "Unknown", content=part.as_bytes()
+        )
+        attachments.append(attachment)
+    return attachments
 
 
-def get_sender_info(message: Message) -> str:
+def get_sender_info(message: EmailMessage) -> str:
     sender = message.get("From")
     if sender is None:
         return "unknown"
@@ -102,7 +117,7 @@ def get_sender_info(message: Message) -> str:
     return f"{name} <{email}>"
 
 
-def get_to_info(message: Message) -> str:
+def get_to_info(message: EmailMessage) -> str:
     raw_to = message.get("To", "")
     if raw_to is None:
         return ""
@@ -118,7 +133,7 @@ def get_to_info(message: Message) -> str:
     return ", ".join(formatted_addresses)
 
 
-def get_addresses_from_message(message: Message) -> list[str]:
+def get_addresses_from_message(message: EmailMessage) -> list[str]:
     addresses_and_name = []
     for header in ["To", "CC", "BCC"]:
         raw_header = message.get(header, "")
@@ -132,7 +147,7 @@ def get_addresses_from_message(message: Message) -> list[str]:
     return addresses
 
 
-def get_email_info(message: Message):
+def get_email_info(message: EmailMessage):
     return {
         "sender": get_sender_info(message),
         "to": get_to_info(message),
@@ -142,6 +157,7 @@ def get_email_info(message: Message):
         "subject": message.get("Subject"),
         "content": get_content_from_email(message),
         "addresses": get_addresses_from_message(message),
+        "attachments": get_attachments_from_email(message),
     }
 
 
@@ -150,9 +166,11 @@ def validate_emails(raw_emails: list[RawEmail]) -> list[ErrorEmail | ValidatedEm
     for email in raw_emails:
         try:
             data = email.data
-            message = message_from_bytes(data[0][1])
-            email_ = get_email_info(message)
-            validated_emails.append(ValidatedEmail(num=email.num, **email_))
+            message: EmailMessage = message_from_bytes(
+                data[0][1], policy=default
+            )  # type: ignore
+            email_info = get_email_info(message)
+            validated_emails.append(ValidatedEmail(num=email.num, **email_info))
         except Exception as e:
             validated_emails.append(ErrorEmail(num=email.num, error=str(e)))
     return validated_emails
@@ -236,6 +254,18 @@ def save_emails(
         )
         obj.encrypt(user)
         obj.save()
+        attachments: list[MailAttachment] = []
+        for a in email.attachments:
+            content_file = ContentFile(content=a.content, name=a.filename)
+            attachment = MailAttachment.create(
+                mail_import=obj,
+                filename=a.filename,
+                content=content_file,
+            )
+            attachments.append(attachment)
+        with transaction.atomic():
+            for attachment in attachments:
+                attachment.save()
 
 
 def move_emails(
