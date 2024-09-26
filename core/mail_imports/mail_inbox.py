@@ -55,5 +55,5 @@ class MailInbox:
             self.mailbox.copy(email.num, "Unassigned")
             self.mailbox.store(email.num, "+FLAGS", "\\Deleted")
 
-    def get_mail_attachements(self, email: NumEmail) -> list[bytes]:
+    def get_mail_attachments(self, email: NumEmail) -> list[bytes]:
         raise NotImplementedError()

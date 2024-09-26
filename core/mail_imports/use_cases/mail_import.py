@@ -252,11 +252,11 @@ def save_emails(
             org_id=email.org_pk,
         )
         attachments: list[MailAttachment] = []
-        for attachment in email.attachments:
+        for a in email.attachments:
             attachment = MailAttachment.create(
                 mail_import=obj,
-                filename=attachment.filename,
-                content=attachment.content,
+                filename=a.filename,
+                content=a.content,
             )
             attachment.upload_file(attachment.content)
             attachments.append(attachment)
