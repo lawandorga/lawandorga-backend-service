@@ -96,10 +96,11 @@ def get_content_from_email(message: EmailMessage):
 def get_attachments_from_email(message: EmailMessage) -> list[EmailMessageAttachment]:
     attachments: list[EmailMessageAttachment] = []
     for part in message.iter_attachments():
-        attachment = EmailMessageAttachment(
-            filename=part.get_filename() or "Unknown", content=part.as_bytes()
-        )
-        attachments.append(attachment)
+        if part.is_attachment():
+            attachment = EmailMessageAttachment(
+                filename=part.get_filename() or "Unknown", content=part.as_bytes()
+            )
+            attachments.append(attachment)
     return attachments
 
 
