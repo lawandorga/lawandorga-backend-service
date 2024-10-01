@@ -96,11 +96,10 @@ def get_content_from_email(message: EmailMessage):
 def get_attachments_from_email(message: EmailMessage) -> list[EmailMessageAttachment]:
     attachments: list[EmailMessageAttachment] = []
     for part in message.iter_attachments():
-        if part.is_attachment():
-            attachment = EmailMessageAttachment(
-                filename=part.get_filename() or "Unknown", content=part.as_bytes()
-            )
-            attachments.append(attachment)
+        attachment = EmailMessageAttachment(
+            filename=part.get_filename() or "Unknown", content=part.as_bytes()
+        )
+        attachments.append(attachment)
     return attachments
 
 
@@ -171,7 +170,8 @@ def validate_emails(raw_emails: list[RawEmail]) -> list[ErrorEmail | ValidatedEm
                 data[0][1], policy=default
             )  # type: ignore
             email_info = get_email_info(message)
-            validated_emails.append(ValidatedEmail(num=email.num, **email_info))
+            validated_emails.append(
+                ValidatedEmail(num=email.num, **email_info))
         except Exception as e:
             validated_emails.append(ErrorEmail(num=email.num, error=str(e)))
     return validated_emails
@@ -227,7 +227,8 @@ def assign_emails_to_folder(
     folders: dict[UUID, Folder],
     user: OrgUser,
 ) -> list[ValidatedEmail | ErrorEmail | AssignedEmail | FolderEmail]:
-    assigned: list[ValidatedEmail | ErrorEmail | AssignedEmail | FolderEmail] = []
+    assigned: list[ValidatedEmail | ErrorEmail |
+                   AssignedEmail | FolderEmail] = []
     for email in emails:
         if not isinstance(email, AssignedEmail):
             assigned.append(email)
