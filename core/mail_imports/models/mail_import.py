@@ -157,4 +157,4 @@ class MailAttachment(models.Model):
         return f"mailAttachment: {self.uuid}; mailImportUUid: {mail_import_uuid}"
 
     def location(self) -> str:
-        return self.content.path
+        return self.content.url
