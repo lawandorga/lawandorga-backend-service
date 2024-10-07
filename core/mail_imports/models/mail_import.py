@@ -1,10 +1,12 @@
 import logging
-from typing import TYPE_CHECKING
+from typing import IO, TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from django.core.files.base import ContentFile
 from django.db import models
 from django.utils.timezone import localtime
+
+from core.seedwork.encryption import AESEncryption
 
 if TYPE_CHECKING:
     from django.db.models.manager import Manager
@@ -131,11 +133,16 @@ class MailAttachment(models.Model):
         mail_import: MailImport,
         filename: str,
         content: ContentFile,
+        user: OrgUser,
     ):
+        key = mail_import.get_key(user)
+        enc_content = AESEncryption.encrypt_in_memory_file(
+            content, key.get_key().value_as_str
+        )
         attachment = cls(
             mail_import=mail_import,
             filename=filename,
-            content=content,
+            content=ContentFile(enc_content.read(), name=filename),
         )
         return attachment
 
@@ -158,3 +165,11 @@ class MailAttachment(models.Model):
 
     def location(self) -> str:
         return self.content.url
+
+    def get_decrypted_file(self, user: OrgUser) -> IO[bytes]:
+        key = self.mail_import.get_key(user)
+        file = AESEncryption.decrypt_bytes_file(
+            self.content, key.get_key().value_as_str
+        )
+        file.seek(0)
+        return file

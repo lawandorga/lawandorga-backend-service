@@ -1,10 +1,11 @@
 import datetime
 from uuid import UUID
 
+from django.http import FileResponse
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models.org_user import OrgUser
-from core.mail_imports.models.mail_import import MailImport
+from core.mail_imports.models.mail_import import MailAttachment, MailImport
 from core.seedwork.api_layer import Router
 
 router = Router()
@@ -16,7 +17,7 @@ class InputQueryFolderMails(BaseModel):
 
 class OutputMailAttachment(BaseModel):
     name: str
-    location: str
+    uuid: UUID
 
 
 class OutputMail(BaseModel):
@@ -61,11 +62,22 @@ def query__folder_mails(user: OrgUser, data: InputQueryFolderMails):
                 sender=mail.sender,
                 sending_datetime=mail.sending_datetime,
                 mail_attachments=[
-                    OutputMailAttachment(
-                        name=attachment.filename, location=attachment.location()
-                    )
+                    OutputMailAttachment(name=attachment.filename, uuid=attachment.uuid)
                     for attachment in list(mail.attachments.all())
                 ],
             )
         )
     return output_mails
+
+
+class InputAttachementId(BaseModel):
+    uuid: UUID
+
+
+@router.get("mail_attachements/<uuid:uuid>/", output_schema=FileResponse)
+def query__mail_attachement(user: OrgUser, data: InputAttachementId):
+    attachement = MailAttachment.objects.filter(mail_import__org_id=user.org_id).get(
+        uuid=data.uuid
+    )
+    file = attachement.get_decrypted_file(user)
+    return FileResponse(file, filename=attachement.filename, as_attachment=True)

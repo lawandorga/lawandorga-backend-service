@@ -4,7 +4,7 @@ from email.header import decode_header
 from email.message import EmailMessage
 from email.policy import default
 from email.utils import getaddresses, parseaddr
-from typing import Protocol, Sequence
+from typing import Any, Protocol, Sequence
 from uuid import UUID
 
 from django.core.files.base import ContentFile
@@ -53,7 +53,7 @@ class NumEmail(Protocol):
 
 class EmailMessageAttachment(BaseModel):
     filename: str
-    content: bytes
+    content: Any
 
 
 class ValidatedEmail(BaseModel):
@@ -97,7 +97,8 @@ def get_attachments_from_email(message: EmailMessage) -> list[EmailMessageAttach
     attachments: list[EmailMessageAttachment] = []
     for part in message.iter_attachments():
         attachment = EmailMessageAttachment(
-            filename=part.get_filename() or "Unknown", content=part.as_bytes()
+            filename=part.get_filename() or "Unknown",
+            content=part.get_payload(decode=True),
         )
         attachments.append(attachment)
     return attachments
@@ -253,7 +254,6 @@ def save_emails(
             org_id=email.org_pk,
         )
         obj.encrypt(user)
-        obj.save()
         attachments: list[MailAttachment] = []
         for a in email.attachments:
             content_file = ContentFile(content=a.content, name=a.filename)
@@ -261,9 +261,12 @@ def save_emails(
                 mail_import=obj,
                 filename=a.filename,
                 content=content_file,
+                user=user,
             )
+            # attachment.encrypt(user)
             attachments.append(attachment)
         with transaction.atomic():
+            obj.save()
             for attachment in attachments:
                 attachment.save()
 

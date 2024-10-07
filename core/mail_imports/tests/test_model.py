@@ -1,6 +1,8 @@
 from uuid import uuid4
 
-from core.mail_imports.models.mail_import import MailImport
+from django.core.files.base import ContentFile
+
+from core.mail_imports.models.mail_import import MailAttachment, MailImport
 from core.seedwork import test_helpers
 
 
@@ -82,3 +84,27 @@ def test_encryption(db):
     mail.decrypt(user)
     assert mail.content == "Test Mail"
     assert mail.subject == "Test Mail"
+
+
+def test_attachement_encrypts(db):
+    u = test_helpers.create_org_user()
+    user = u["rlc_user"]
+    folder = test_helpers.create_folder(user=user)
+    folder_uuid = folder["folder"].uuid
+    mail = MailImport.create(
+        sender="test@law-orga.de",
+        to="recieve@law-orag.de",
+        content="Test Mail",
+        folder_uuid=folder_uuid,
+        subject="Test Mail",
+        org_id=user.org_id,
+    )
+    mail.encrypt(user)
+    mail.save()
+    file = ContentFile(b"this is a custom test", "test.txt")
+    attachement = MailAttachment.create(
+        mail_import=mail, filename="test.txt", content=file, user=user
+    )
+    attachement.save()
+    assert attachement.content != "this is a custom test"
+    assert attachement.get_decrypted_file(user).read() == b"this is a custom test"

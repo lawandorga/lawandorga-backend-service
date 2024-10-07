@@ -4,7 +4,7 @@ import string
 import struct
 import tempfile
 from hashlib import sha3_256
-from typing import List, Optional, Tuple, Type, Union
+from typing import IO, List, Optional, Tuple, Type, Union
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
@@ -12,7 +12,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padding
 from cryptography.hazmat.primitives.asymmetric import rsa
-from django.core.files.base import File
+from django.core.files.base import ContentFile, File
 from django.core.files.uploadedfile import UploadedFile
 
 
@@ -91,7 +91,9 @@ class AESEncryption:
         return plain
 
     @staticmethod
-    def encrypt_in_memory_file(file: UploadedFile, aes_key: str):
+    def encrypt_in_memory_file(
+        file: UploadedFile | ContentFile, aes_key: str
+    ) -> IO[bytes]:
         # fix the aes key
         bytes_aes_key = to_bytes(aes_key)
         # stuff needed
@@ -116,7 +118,7 @@ class AESEncryption:
         return encrypted_file
 
     @staticmethod
-    def decrypt_bytes_file(file: File, aes_key: str):
+    def decrypt_bytes_file(file: File, aes_key: str) -> IO[bytes]:
         # fix the aes key
         bytes_aes_key = to_bytes(aes_key)
         # stuff needed
