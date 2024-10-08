@@ -67,13 +67,13 @@ GENERAL
 
 TODO
 
-- Model erstellen
-- Use Cases erstellen (anlegen, abhaken, löschen)
-- Frontend Button erstellen (hidden nur für dummy)
-- Frontent Modal erstellen mit fake request const request = () => Promise.resolve();
-- Dashboard api erstellen 2 listen: mir assigned und von mir erstellt
+- Model erstellen (Joey)
+- Use Cases erstellen (anlegen, abhaken, löschen) (Joey)
+- Frontend Button erstellen (hidden nur für dummy) (Leandra)
+- Frontent Modal erstellen mit fake request const request = () => Promise.resolve(); (Leandra / Daniel)
+- Dashboard api erstellen 2 listen: mir assigned und von mir erstellt (Daniel)
 
-- Todos auf dem Dashboard anzeigen wenn vorhanden (braucht api)
+- Todos auf dem Dashboard anzeigen wenn vorhanden (braucht api) (Joey)
 - Todo Modal im frontend
 
 - todo bearbeiten
