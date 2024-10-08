@@ -55,11 +55,25 @@ COLLAB
 -   Files Feature disablen für Orgs ohne Files (Johannes) - CHECK
 -   Dashboard api aufraeumen (Leandra) - CHECK
 -   Vielleicht secondary etwas dezenter stylen (Leandra) - CHECK
+-   Mail-Import Attachement Model erstellen (Joey) - CHECK
+-   Mail-Import Attachement Model Encryption (Daniel) - CHECK
+-   Import Use-Case anpassen (Joey) - CHECK
+-   API anpassen und attachement filenames hinzufügen (Joey) - CHECK
+-   Frontend Attachements anzeigen einfach unter der mail (Leandra) - CHECK
 
-MAIL
+GENERAL
 
-- Mail-Import Attachement Model erstellen (Joey)
-- Mail-Import Attachement Model Encryption (Daniel)
-- Import Use-Case anpassen (Joey)
-- API anpassen und attachement filenames hinzufügen (Joey)
-- Frontend Attachements anzeigen einfach unter der mail (Leandra)
+- test mail attachement kein zugriff folder dann 404 oder so
+
+TODO
+
+- Model erstellen
+- Use Cases erstellen (anlegen, abhaken, löschen)
+- Frontend Button erstellen (hidden nur für dummy)
+- Frontent Modal erstellen mit fake request const request = () => Promise.resolve();
+- Dashboard api erstellen 2 listen: mir assigned und von mir erstellt
+
+- Todos auf dem Dashboard anzeigen wenn vorhanden (braucht api)
+- Todo Modal im frontend
+
+- todo bearbeiten
