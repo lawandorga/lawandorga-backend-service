@@ -5,7 +5,7 @@ resource "kubernetes_ingress_v1" "ingress" {
       "nginx.ingress.kubernetes.io/enable-cors"        = "true"
       "nginx.ingress.kubernetes.io/cors-allow-headers" = "accept, accept-encoding, authorization, content-type, dnt, origin, user-agent, x-csrftoken, x-requested-with"
       "nginx.ingress.kubernetes.io/cors-allow-origin"  = "https://www.law-orga.de, https://law-orga.de"
-      "nginx.ingress.kubernetes.io/proxy-body-size"    = "500m"
+      "nginx.ingress.kubernetes.io/proxy-body-size"    = "2g"
       "nginx.org/proxy-read-timeout"                   = "240"
       "nginx.org/proxy-send-timeout"                   = "240"
       "nginx.org/proxy-connect-timeout"                = "240"
