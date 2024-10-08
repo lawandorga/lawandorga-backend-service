@@ -203,10 +203,6 @@ TINYMCE_DEFAULT_CONFIG = {
     "advlist_number_styles": "default",
 }
 
-# increase to avoid weird error and let kubernetes define the maximum
-# https://docs.djangoproject.com/en/5.1/ref/settings/#data-upload-max-memory-size
-DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 1024 * 10  # 10 GB
-
 # custom test runner
 # https://pytest-django.readthedocs.io/en/latest/faq.html#how-can-i-use-manage-py-test-with-pytest-django
 TEST_RUNNER = "config.test.PytestTestRunner"
