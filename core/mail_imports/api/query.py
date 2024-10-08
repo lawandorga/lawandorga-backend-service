@@ -74,7 +74,7 @@ class InputAttachementId(BaseModel):
     uuid: UUID
 
 
-@router.get("mail_attachements/<uuid:uuid>/", output_schema=FileResponse)
+@router.get("mail_attachments/<uuid:uuid>/", output_schema=FileResponse)
 def query__mail_attachement(user: OrgUser, data: InputAttachementId):
     attachement = MailAttachment.objects.filter(mail_import__org_id=user.org_id).get(
         uuid=data.uuid
