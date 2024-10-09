@@ -12,12 +12,17 @@ data "terraform_remote_state" "cluster" {
     bucket = "lawandorga-main-infrastructure"
     key    = "cluster.tfstate"
     region = "fr-par"
+
     endpoints = {
       s3 = "https://s3.fr-par.scw.cloud"
     }
+
     skip_region_validation      = true
     skip_credentials_validation = true
     skip_requesting_account_id  = true
+
+    access_key = var.scw_access_key
+    secret_key = var.scw_secret_key
   }
 }
 
@@ -27,12 +32,17 @@ data "terraform_remote_state" "cert_manager" {
     bucket = "lawandorga-main-infrastructure"
     key    = "cert-manager.tfstate"
     region = "fr-par"
+
     endpoints = {
       s3 = "https://s3.fr-par.scw.cloud"
     }
+
     skip_region_validation      = true
     skip_credentials_validation = true
     skip_requesting_account_id  = true
+
+    access_key = var.scw_access_key
+    secret_key = var.scw_secret_key
   }
 }
 
