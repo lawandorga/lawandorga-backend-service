@@ -5,7 +5,7 @@ from django.db import models
 from ...auth.models import UserProfile
 
 
-class MailImport(models.Model):
+class Todo(models.Model):
     uuid = models.UUIDField(db_index=True, default=uuid4, unique=True, editable=False)
     creator = models.ForeignKey(
         UserProfile, on_delete=models.CASCADE, related_name="creator"
