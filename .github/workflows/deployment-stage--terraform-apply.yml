@@ -31,6 +31,7 @@ jobs:
       TF_VAR_scw_project_id: ${{ secrets.scw_project_id }}
       AWS_ACCESS_KEY_ID: ${{ secrets.scw_access_key }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.scw_secret_key }}
+      AWS_PROFILE: lawandorga
       TF_VAR_image_version: ${{ inputs.image_version }}
 
     steps:
