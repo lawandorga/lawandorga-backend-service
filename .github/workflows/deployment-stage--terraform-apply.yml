@@ -29,15 +29,17 @@ jobs:
       TF_VAR_scw_access_key: ${{ secrets.scw_access_key }}
       TF_VAR_scw_secret_key: ${{ secrets.scw_secret_key }}
       TF_VAR_scw_project_id: ${{ secrets.scw_project_id }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.scw_access_key }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.scw_secret_key }}
-      AWS_PROFILE: lawandorga
       TF_VAR_image_version: ${{ inputs.image_version }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup AWS Credentials
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.scw_access_key }} --profile lawandorga
+          aws configure set aws_secret_access_key ${{ secrets.scw_secret_key }} --profile lawandorga
+      
       - name: Set Up Terraform
         uses: hashicorp/setup-terraform@v3
         with: 

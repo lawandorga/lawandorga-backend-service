@@ -14,9 +14,10 @@ terraform {
     }
   }
   backend "s3" {
-    bucket                      = "lawandorga-main-infrastructure"
-    key                         = "lawandorga-backend-service.tfstate"
-    region                      = "fr-par"
+    bucket = "lawandorga-main-infrastructure"
+    key    = "lawandorga-backend-service.tfstate"
+    region = "fr-par"
+
     skip_region_validation      = true
     skip_credentials_validation = true
     skip_requesting_account_id  = true
