@@ -22,7 +22,7 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   deployment:
-    # needs: [acceptance]
+    needs: [acceptance]
     name: Deployment Stage
     uses: ./.github/workflows/deployment-stage.yml
     secrets:
