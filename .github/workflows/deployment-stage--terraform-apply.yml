@@ -40,7 +40,7 @@ jobs:
       - name: Set Up Terraform
         uses: hashicorp/setup-terraform@v3
         with: 
-          terraform_version: 1.5.7
+          terraform_version: 1.9.7
 
       - name: Terraform Apply
         run: |
