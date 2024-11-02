@@ -67,8 +67,8 @@ GENERAL
 
 TODO
 
-- Model erstellen (Joey) uuid, 2 user, title, description, is_done, page_location, created_at, updated_at
-- Use Cases erstellen (anlegen, abhaken, löschen) (Joey)
+- Model erstellen (Joey) uuid, 2 user, title, description, is_done, page_location, created_at, updated_at - CHECK
+- Use Cases erstellen (anlegen, abhaken, löschen) (Joey) - CHECK
 - Frontend Button erstellen (hidden nur für dummy) (Leandra)
 - Frontent Modal erstellen mit fake request const request = () => Promise.resolve(); (Leandra / Daniel)
 - Dashboard api erstellen 2 listen: mir assigned und von mir erstellt (Daniel)
