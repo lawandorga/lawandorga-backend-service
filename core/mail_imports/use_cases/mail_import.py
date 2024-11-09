@@ -200,8 +200,7 @@ def assign_emails_to_folder_uuid(
     for email in emails:
         if isinstance(email, ErrorEmail):
             assigned.append(email)
-
-        assert isinstance(email, ValidatedEmail), type(email)
+            continue
         assigned.append(assign_email_to_folder_uuid(email))
     return assigned
 
