@@ -492,7 +492,7 @@ class OrgUser(Aggregate, models.Model):
                 len(folder.keys) + len(folder.group_keys) + 1 if folder.parent else 0
             )
             if folder.has_access(self) and total_keys <= 3:
-                dangerous_folders.append(folder.name)
+                dangerous_folders.append(folder.parent_str)
                 safe = False
 
         return safe, ", ".join(dangerous_folders)

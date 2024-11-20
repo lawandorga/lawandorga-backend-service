@@ -69,6 +69,12 @@ class Folder:
         return self.uuid == other.uuid
 
     @property
+    def parent_str(self):
+        if self.parent is None:
+            return self.name
+        return self.parent.parent_str + "/" + self.name
+
+    @property
     def restricted(self):
         return self.__restricted
 
