@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand
 
 from core.auth.models.org_user import OrgUser
-from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.rlc.models.org import Org
 
