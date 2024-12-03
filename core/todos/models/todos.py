@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import uuid4
 
 from django.db import models
@@ -15,6 +16,7 @@ class Todo(models.Model):
         description: str,
         page_url: str,
         updated_at: str,
+        deadline: datetime,
     ):
         todo = cls(
             creator=creator,
@@ -22,6 +24,7 @@ class Todo(models.Model):
             title=title,
             description=description,
             page_url=page_url,
+            deadline=deadline,
         )
 
         if updated_at:
@@ -38,6 +41,7 @@ class Todo(models.Model):
     description = models.CharField(max_length=255, blank=True)
     page_url = models.CharField(max_length=255, blank=True)
     is_done = models.BooleanField(default=False)
+    deadline = models.DateTimeField(default=datetime.now, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
