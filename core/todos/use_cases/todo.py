@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -26,8 +27,9 @@ def create_todo(
     description: str,
     page_url: str,
     updated_at: str,
+    deadline: datetime,
 ):
-    Todo.create(creator, assignee, title, description, page_url, updated_at)
+    Todo.create(creator, assignee, title, description, page_url, updated_at, deadline)
 
 
 @use_case
