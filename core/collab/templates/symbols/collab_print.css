@@ -3,6 +3,17 @@ body {
     margin: 0;
 }
 
+table {
+    width: 100%;
+    table-layout: fixed; /* Ensures that the table respects the width of the cells */
+}
+
+td {
+    word-wrap: break-word; /* For older browsers */
+    overflow-wrap: break-word; /* For modern browsers */
+    hyphens: auto; /* Optional: adds hyphenation for better readability */
+}
+
 @page {
     size: A4 portrait;
     margin: 0;

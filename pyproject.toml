@@ -67,6 +67,6 @@ env = [ "TESTING = true" ]
 name = "lawandorga-backend-service"
 version = "0.0.0"
 description = "Law&Orga Backend Service"
-requires-python = ">=3.11"
+requires-python = "==3.12.*"
 readme = "README.md"
 license = { text = "GNU Affero General Public License v3.0" }

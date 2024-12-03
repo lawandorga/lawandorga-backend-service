@@ -42,6 +42,8 @@ def create_folder(__actor: OrgUser, name: str, parent: Optional[UUID]):
 
 @use_case
 def rename_folder(__actor: OrgUser, name: str, folder_uuid: UUID):
+    if name == "":
+        raise UseCaseInputError("Please specify a name")
     folder = folder_from_uuid(__actor, folder_uuid)
     r = get_repository()
     folder.update_information(name=name)
