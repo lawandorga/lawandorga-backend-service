@@ -3,25 +3,21 @@
 from datetime import datetime
 from uuid import UUID
 
-from django.core.exceptions import ObjectDoesNotExist
 from pydantic import BaseModel, ConfigDict
 
-from core.auth.models.user import UserProfile
+from core.auth.models import OrgUser
 from core.seedwork.api_layer import Router
 from core.todos.models.todos import Todo
 
 
 class InputTasks(BaseModel):
-    uuid: UUID
-
-    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
-
+    id: int
 
 # do we want to split into two models, one with creator, one with assignee?
 class OutputTask(BaseModel):
     uuid: UUID
-    creator: UserProfile
-    assignee: UserProfile
+    creator_id: int
+    assignee_id: int
     title: str
     description: str
     page_url: str
@@ -37,20 +33,52 @@ router = Router()
 
 
 @router.get(
-    url="<uuid:user>/own/",
+    url="<int:id>/own/",
     output_schema=list[OutputTask],
 )
-def query__own_tasks(user: UserProfile, data: InputTasks):
-    try:
-        tasks = Todo.objects.filter(assignee=user).get(uuid=data.uuid)
-    except ObjectDoesNotExist:
-        tasks = []
-    return "data.uuid"
+def query__own_tasks(data: InputTasks):
+    org_user = OrgUser.objects.get(id=data.id)
+    tasks = Todo.objects.filter(assignee=org_user)
+
+    serialized_tasks = [
+        OutputTask(
+            uuid=task.uuid,
+            creator_id=task.creator.pk,
+            assignee_id=task.assignee.pk,
+            title=task.title,
+            description=task.description,
+            page_url=task.page_url,
+            is_done=task.is_done,
+            deadline=task.deadline,
+            created_at=task.created_at,
+            updated_at=task.updated_at,
+        )
+        for task in tasks
+    ]
+    return serialized_tasks
 
 
 @router.get(
-    url="<uuid:user>/created/",
+    url="<int:id>/created/",
     output_schema=list[OutputTask],
 )
-def query__created_tasks():
-    pass
+def query__created_tasks(data: InputTasks):
+    org_user = OrgUser.objects.get(id=data.id)
+    tasks = Todo.objects.filter(creator=org_user)
+
+    serialized_tasks = [
+        OutputTask(
+            uuid=task.uuid,
+            creator_id=task.creator.pk,
+            assignee_id=task.assignee.pk,
+            title=task.title,
+            description=task.description,
+            page_url=task.page_url,
+            is_done=task.is_done,
+            deadline=task.deadline,
+            created_at=task.created_at,
+            updated_at=task.updated_at,
+        )
+        for task in tasks
+    ]
+    return serialized_tasks

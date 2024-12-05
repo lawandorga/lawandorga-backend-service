@@ -3,15 +3,15 @@ from uuid import uuid4
 
 from django.db import models
 
-from ...auth.models import UserProfile
+from ...auth.models import OrgUser
 
 
 class Todo(models.Model):
     @classmethod
     def create(
         cls,
-        creator: UserProfile,
-        assignee: UserProfile,
+        creator: OrgUser,
+        assignee: OrgUser,
         title: str,
         description: str,
         page_url: str,
@@ -32,10 +32,10 @@ class Todo(models.Model):
 
     uuid = models.UUIDField(db_index=True, default=uuid4, unique=True, editable=False)
     creator = models.ForeignKey(
-        UserProfile, on_delete=models.CASCADE, related_name="creator"
+        OrgUser, on_delete=models.CASCADE, related_name="creator"
     )
     assignee = models.ForeignKey(
-        UserProfile, on_delete=models.CASCADE, related_name="assignee"
+        OrgUser, on_delete=models.CASCADE, related_name="assignee"
     )
     title = models.CharField(max_length=255, blank=True)
     description = models.CharField(max_length=255, blank=True)

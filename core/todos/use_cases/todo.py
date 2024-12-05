@@ -1,14 +1,10 @@
 from datetime import datetime
-from typing import TYPE_CHECKING
 from uuid import UUID
 
 from core.auth.models.org_user import OrgUser
 from core.seedwork.use_case_layer import use_case
 from core.todos.models.todos import Todo
 from core.todos.use_cases.finder import todo_from_uuid, todos_from_uuids
-
-if TYPE_CHECKING:
-    from ...auth.models import UserProfile
 
 
 @use_case
@@ -21,8 +17,8 @@ def mark_todos_as_done(__actor: OrgUser, todos_uuids: list[UUID]):
 
 @use_case
 def create_todo(
-    creator: UserProfile,
-    assignee: UserProfile,
+    creator: OrgUser,
+    assignee: OrgUser,
     title: str,
     description: str,
     page_url: str,
