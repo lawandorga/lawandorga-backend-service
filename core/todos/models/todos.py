@@ -47,3 +47,6 @@ class Todo(models.Model):
 
     def mark_as_done(self):
         self.is_done = True
+
+    def __str__(self) -> str:
+        return self.title
