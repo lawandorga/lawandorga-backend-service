@@ -71,9 +71,10 @@ TODO
 - Use Cases erstellen (anlegen, abhaken, löschen) (Joey) - CHECK
 - Frontend Button erstellen (hidden nur für dummy) (Leandra) - CHECK
 - Dashboard api erstellen 2 listen: mir assigned und von mir erstellt (zusammen) - CHECK
+- Deadline in Model aufnehmen (Leandra) - CHECK
 
-- Deadline in Model aufnehmen (Leandra)
 - Todos auf dem Dashboard anzeigen wenn vorhanden (braucht api) (zusammen) - Fast CHECK 
 - Todo Modal im frontend
 - Frontend Modal erstellen mit fake request const request = () => Promise.resolve();
+
 - todo bearbeiten

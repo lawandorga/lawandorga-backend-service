@@ -13,6 +13,7 @@ from core.todos.models.todos import Todo
 class InputTasks(BaseModel):
     id: int
 
+
 # do we want to split into two models, one with creator, one with assignee?
 class OutputTask(BaseModel):
     uuid: UUID
