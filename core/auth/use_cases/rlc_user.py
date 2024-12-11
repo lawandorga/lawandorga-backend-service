@@ -115,13 +115,13 @@ def unlock_myself(__actor: OrgUser):
 def update_user_data(
     __actor: OrgUser,
     other_user_id: int,
-    name: str | None,
-    phone_number: str | None,
-    street: str | None,
-    city: str | None,
-    postal_code: str | None,
-    speciality_of_study: str | None,
-    note: str | None,
+    name: str | None = None,
+    phone_number: str | None = None,
+    street: str | None = None,
+    city: str | None = None,
+    postal_code: str | None = None,
+    speciality_of_study: str | None = None,
+    note: str | None = None,
 ):
     if __actor.pk != other_user_id and not __actor.has_permission(
         PERMISSION_ADMIN_MANAGE_USERS
