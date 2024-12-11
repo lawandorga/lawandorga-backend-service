@@ -112,7 +112,17 @@ def unlock_myself(__actor: OrgUser):
 
 
 @use_case
-def update_user_data(__actor: OrgUser, other_user_id: int, data: dict[str, Any]):
+def update_user_data(
+    __actor: OrgUser,
+    other_user_id: int,
+    name: str | None,
+    phone_number: str | None,
+    street: str | None,
+    city: str | None,
+    postal_code: str | None,
+    speciality_of_study: str | None,
+    note: str | None,
+):
     if __actor.pk != other_user_id and not __actor.has_permission(
         PERMISSION_ADMIN_MANAGE_USERS
     ):
@@ -132,8 +142,14 @@ def update_user_data(__actor: OrgUser, other_user_id: int, data: dict[str, Any])
             "The user to be updated could not be found.",
         )
 
-    name = data.pop("name")
-    rlc_user_to_update.update_information(**data)
+    rlc_user_to_update.update_information(
+        street=street,
+        speciality_of_study=speciality_of_study,
+        postal_code=postal_code,
+        city=city,
+        phone_number=phone_number,
+        note=note,
+    )
     rlc_user_to_update.save()
     if name:
         rlc_user_to_update.user.name = name
