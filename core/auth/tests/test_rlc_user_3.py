@@ -78,7 +78,9 @@ def test_email_confirmation_token_works(user):
 
 def test_update_user(user, db):
     update_user_data(
-        user["rlc_user"], user["rlc_user"].pk, **{"name": "New Name", "note": "New Note"}
+        user["rlc_user"],
+        user["rlc_user"].pk,
+        **{"name": "New Name", "note": "New Note"},
     )
     user = OrgUser.objects.get(id=user["rlc_user"].id)
     assert user.note == "New Note" and user.name == "New Name"
