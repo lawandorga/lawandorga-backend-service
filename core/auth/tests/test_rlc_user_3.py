@@ -78,7 +78,7 @@ def test_email_confirmation_token_works(user):
 
 def test_update_user(user, db):
     update_user_data(
-        user["rlc_user"], user["rlc_user"].pk, {"name": "New Name", "note": "New Note"}
+        user["rlc_user"], user["rlc_user"].pk, **{"name": "New Name", "note": "New Note"}
     )
     user = OrgUser.objects.get(id=user["rlc_user"].id)
     assert user.note == "New Note" and user.name == "New Name"
@@ -89,7 +89,7 @@ def test_update_another_user_forbidden(user, rlc_user_2, db):
         update_user_data(
             user["rlc_user"],
             rlc_user_2["rlc_user"].pk,
-            {"name": "New Name", "note": "New Note"},
+            **{"name": "New Name", "note": "New Note"},
         )
 
 
@@ -98,7 +98,7 @@ def test_update_another_user_allowed(user, rlc_user_2, db):
     update_user_data(
         user["rlc_user"],
         rlc_user_2["rlc_user"].pk,
-        {"name": "New Name", "note": "New Note"},
+        **{"name": "New Name", "note": "New Note"},
     )
     user = OrgUser.objects.get(id=rlc_user_2["rlc_user"].id)
     assert user.note == "New Note" and user.name == "New Name"
