@@ -50,8 +50,14 @@ class RecordRepository(ItemRepository):
         RecordsRecord.objects.filter(folder_uuid=folder_uuid, org_id=_org_id).delete()
 
     def list(
-        self, org_pk: int, search: Search, pagination: Pagination
+        self,
+        org_pk: int,
+        search: Search,
+        pagination: Pagination,
+        order_by: str | None = "-created",
     ) -> tuple[list["RecordsRecord"], int]:
+        if order_by is None:
+            order_by = "-created"
         records = RecordsRecord.objects.filter(org_id=org_pk)
         if search.token:
             records = records.filter(name__icontains=search.token)
@@ -61,7 +67,7 @@ class RecordRepository(ItemRepository):
             records = records.filter(attributes__icontains=search.general)
 
         filtered_count = records.count()
-        records = records.order_by("-created")
+        records = records.order_by(order_by)
         if pagination:
             records = records[pagination.start : pagination.end]
         return list(records), filtered_count
