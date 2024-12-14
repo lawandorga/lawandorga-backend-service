@@ -1,6 +1,7 @@
 import mimetypes
 from uuid import UUID
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import FileResponse
 from pydantic import BaseModel
 
@@ -70,11 +71,14 @@ class InputFileEntryDownload(BaseModel):
     "file_entry_download/<int:record_id>/<uuid:uuid>/", output_schema=FileResponse
 )
 def query__download_file_entry(rlc_user: OrgUser, data: InputFileEntryDownload):
-    entry = DataSheetEncryptedFileEntry.objects.get(
-        record_id=data.record_id,
-        field__uuid=data.uuid,
-        field__template__rlc_id=rlc_user.org_id,
-    )
+    try:
+        entry = DataSheetEncryptedFileEntry.objects.get(
+            record_id=data.record_id,
+            field__uuid=data.uuid,
+            field__template__rlc_id=rlc_user.org_id,
+        )
+    except ObjectDoesNotExist:
+        raise ApiError(message="The file was not found.", status=404)
     file = entry.decrypt_file(user=rlc_user)
     response = FileResponse(file, content_type=mimetypes.guess_type(entry.file.name)[0])
     response["Content-Disposition"] = 'attachment; filename="{}"'.format(
