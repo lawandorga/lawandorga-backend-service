@@ -168,8 +168,8 @@ def validate_emails(raw_emails: list[RawEmail]) -> list[ErrorEmail | ValidatedEm
         try:
             data = email.data
             message: EmailMessage = message_from_bytes(
-                data[0][1], policy=default
-            )  # type: ignore
+                data[0][1], policy=default  # type: ignore
+            )
             email_info = get_email_info(message)
             validated_emails.append(ValidatedEmail(num=email.num, **email_info))
         except Exception as e:
