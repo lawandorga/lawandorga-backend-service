@@ -66,8 +66,9 @@ def django_command(request: HttpRequest) -> HttpResponse:
             err_type="ApiError",
         )
 
-    data.pop("action", None)
-    action = request.GET.get("action", None)
+    actionPost = data.pop("action", None)
+    actionGet = request.GET.get("action", None)
+    action = actionPost or actionGet
     if action is None:
         return HttpResponseBadRequest("action is required")
 
