@@ -50,3 +50,11 @@ class Todo(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+    @property
+    def creator_id(self):
+        return self.creator.pk
+    
+    @property
+    def assignee_id(self):
+        return self.assignee.pk
