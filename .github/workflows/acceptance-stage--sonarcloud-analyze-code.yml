@@ -29,7 +29,7 @@ jobs:
           key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
 
       - name: Download Test Results
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: commit-stage.yml
           name: coverage
