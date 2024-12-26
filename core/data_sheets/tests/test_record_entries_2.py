@@ -141,9 +141,8 @@ def test_file_entry_create(db, setup, file_field):
         "record_id": record.pk,
         "field_id": field.uuid,
         "file": get_file("test-string"),
-        "action": "data_sheets/create_file_entry",
     }
-    response = client.post("/api/command/", data)
+    response = client.post("/api/command/?action=data_sheets/create_file_entry", data)
     assert response.status_code == 200
     assert DataSheetEncryptedFileEntry.objects.count() == 1
     entry = DataSheetEncryptedFileEntry.objects.get()
