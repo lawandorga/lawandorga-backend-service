@@ -54,7 +54,7 @@ class Todo(models.Model):
     @property
     def creator_id(self):
         return self.creator.pk
-    
+
     @property
     def assignee_id(self):
         return self.assignee.pk
