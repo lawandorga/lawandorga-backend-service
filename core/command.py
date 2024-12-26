@@ -51,6 +51,7 @@ INJECTORS_BY_RETURN_TYPE = {get_return_type_of_function(f): f for f in INJECTORS
 
 
 def django_command(request: HttpRequest) -> HttpResponse:
+    print(2)
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
@@ -65,7 +66,8 @@ def django_command(request: HttpRequest) -> HttpResponse:
             err_type="ApiError",
         )
 
-    action = data.pop("action", None)
+    data.pop("action", None)
+    action = request.GET.get("action", None)
     if action is None:
         return HttpResponseBadRequest("action is required")
 
