@@ -139,10 +139,11 @@ class MailAttachment(models.Model):
         enc_content = AESEncryption.encrypt_in_memory_file(
             content, key.get_key().value_as_str
         )
+        storage_filename = str(uuid4()) + ".enc"
         attachment = cls(
             mail_import=mail_import,
             filename=filename,
-            content=ContentFile(enc_content.read(), name=filename),
+            content=ContentFile(enc_content.read(), name=storage_filename),
         )
         return attachment
 
