@@ -6,7 +6,7 @@ from django.db import models
 from ...auth.models import OrgUser
 
 
-class Todo(models.Model):
+class Task(models.Model):
     @classmethod
     def create(
         cls,
@@ -18,7 +18,7 @@ class Todo(models.Model):
         updated_at: str,
         deadline: datetime,
     ):
-        todo = cls(
+        task = cls(
             creator=creator,
             assignee=assignee,
             title=title,
@@ -28,7 +28,7 @@ class Todo(models.Model):
         )
 
         if updated_at:
-            todo.updated_at = updated_at
+            task.updated_at = updated_at
 
     uuid = models.UUIDField(db_index=True, default=uuid4, unique=True, editable=False)
     creator = models.ForeignKey(

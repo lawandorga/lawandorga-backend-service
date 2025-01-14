@@ -1,5 +1,3 @@
-# TODO: rename todos in tasks
-
 from datetime import datetime
 from uuid import UUID
 
@@ -7,7 +5,7 @@ from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
 from core.seedwork.api_layer import Router
-from core.todos.models.todos import Todo
+from core.tasks.models.task import Task
 
 
 class InputTasks(BaseModel):
@@ -38,7 +36,7 @@ router = Router()
     output_schema=list[OutputTask],
 )
 def query__own_tasks(rlc_user: OrgUser):
-    tasks = Todo.objects.filter(assignee=rlc_user)
+    tasks = Task.objects.filter(assignee=rlc_user)
     return tasks
 
 
@@ -47,5 +45,5 @@ def query__own_tasks(rlc_user: OrgUser):
     output_schema=list[OutputTask],
 )
 def query__created_tasks(rlc_user: OrgUser):
-    tasks = Todo.objects.filter(creator=rlc_user)
+    tasks = Task.objects.filter(creator=rlc_user)
     return tasks

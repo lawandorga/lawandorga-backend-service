@@ -15,5 +15,5 @@ from .questionnaires.admin import *
 from .records.admin import *
 from .rlc.admin import *
 from .statistics.admin import *
-from .todos.admin import *
+from .tasks.admin import *
 from .upload.admin import *
