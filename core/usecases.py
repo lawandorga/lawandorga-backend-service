@@ -12,6 +12,7 @@ from core.permissions.usecases import USECASES as PERMISSIONS_USECASES
 from core.questionnaires.commands import COMMANDS as QUESTIONNAIRE_COMMANDS
 from core.records.usecases import USECASES as RECORDS_USECASES
 from core.rlc.commands import COMMANDS as ORG_COMMANDS
+from core.tasks.usecases import USECASES as TASKS_USECASES
 from core.timeline.commands import COMMANDS as TIMELINE_USECASES
 from core.upload.usecases import USECASES as UPLOAD_USECASES
 
@@ -32,3 +33,4 @@ USECASES.update(PERMISSIONS_USECASES)
 USECASES.update(RECORDS_USECASES)
 USECASES.update(MESSAGES_USECASES)
 USECASES.update(MAIL_IMPORTS_USECASES)
+USECASES.update(TASKS_USECASES)
