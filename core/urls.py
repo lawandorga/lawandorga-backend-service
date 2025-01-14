@@ -42,5 +42,5 @@ urlpatterns = [
     path("api/timeline/", include("core.timeline.urls")),
     path("api/permissions/", include("core.permissions.urls")),
     path("api/mail_imports/", include("core.mail_imports.urls")),
-    path("api/tasks/", include("core.todos.urls")),
+    path("api/tasks/", include("core.tasks.urls")),
 ]
