@@ -34,29 +34,12 @@ router = Router()
 
 
 @router.get(
-    url="<int:id>/own/",
+    url="own/",
     output_schema=list[OutputTask],
 )
-def query__own_tasks(data: InputTasks):
-    org_user = OrgUser.objects.get(id=data.id)
-    tasks = Todo.objects.filter(assignee=org_user)
-
-    serialized_tasks = [
-        OutputTask(
-            uuid=task.uuid,
-            creator_id=task.creator.pk,
-            assignee_id=task.assignee.pk,
-            title=task.title,
-            description=task.description,
-            page_url=task.page_url,
-            is_done=task.is_done,
-            deadline=task.deadline,
-            created_at=task.created_at,
-            updated_at=task.updated_at,
-        )
-        for task in tasks
-    ]
-    return serialized_tasks
+def query__own_tasks(rlc_user: OrgUser):
+    tasks = Todo.objects.filter(assignee=rlc_user)
+    return tasks
 
 
 @router.get(
