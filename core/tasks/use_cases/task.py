@@ -1,6 +1,6 @@
 from datetime import datetime
-from uuid import UUID
 from typing import Optional
+from uuid import UUID
 
 from core.auth.models.org_user import OrgUser
 from core.seedwork.use_case_layer import use_case
@@ -27,6 +27,7 @@ def create_task(
     deadline: datetime,
 ):
     Task.create(creator, assignee, title, description, page_url, updated_at, deadline)
+
 
 @use_case
 def update_task(
@@ -58,6 +59,7 @@ def update_task(
         task.deadline = deadline
 
     task.save()
+
 
 @use_case
 def delete_task(__actor: OrgUser, task_uuid):

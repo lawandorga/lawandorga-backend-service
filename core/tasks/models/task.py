@@ -38,7 +38,7 @@ class Task(models.Model):
         OrgUser, on_delete=models.CASCADE, related_name="assignee"
     )
     title = models.CharField(max_length=255, blank=True)
-    description = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True)
     page_url = models.CharField(max_length=255, blank=True)
     is_done = models.BooleanField(default=False)
     deadline = models.DateTimeField(default=datetime.now, blank=True)
