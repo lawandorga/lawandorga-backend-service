@@ -18,15 +18,14 @@ def mark_tasks_as_done(__actor: OrgUser, task_uuids: list[UUID]):
 
 @use_case
 def create_task(
-    creator: OrgUser,
+    __actor: OrgUser,
     assignee: OrgUser,
     title: str,
     description: str,
     page_url: str,
-    updated_at: str,
     deadline: datetime,
 ):
-    Task.create(creator, assignee, title, description, page_url, updated_at, deadline)
+    Task.create(__actor, assignee, title, description, page_url, deadline)
 
 
 @use_case
@@ -57,6 +56,7 @@ def update_task(
         task.is_done = is_done
     if deadline is not None:
         task.deadline = deadline
+    # TODO: check if we need to manually update the updated_at field
 
     task.save()
 

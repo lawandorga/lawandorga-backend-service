@@ -10,25 +10,21 @@ class Task(models.Model):
     @classmethod
     def create(
         cls,
-        creator: OrgUser,
+        __actor: OrgUser,
         assignee: OrgUser,
         title: str,
         description: str,
         page_url: str,
-        updated_at: str,
         deadline: datetime,
     ):
-        task = cls(
-            creator=creator,
+        cls(
+            creator=__actor,
             assignee=assignee,
             title=title,
             description=description,
             page_url=page_url,
             deadline=deadline,
         )
-
-        if updated_at:
-            task.updated_at = updated_at
 
     uuid = models.UUIDField(db_index=True, default=uuid4, unique=True, editable=False)
     creator = models.ForeignKey(
