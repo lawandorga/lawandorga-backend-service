@@ -11,20 +11,21 @@ class Task(models.Model):
     def create(
         cls,
         __actor: OrgUser,
-        assignee: OrgUser,
+        assignee_id: int,
         title: str,
         description: str,
         page_url: str,
         deadline: datetime,
     ):
-        cls(
+        task = cls(
             creator=__actor,
-            assignee=assignee,
             title=title,
             description=description,
             page_url=page_url,
             deadline=deadline,
         )
+
+        task.assignee = OrgUser.objects.get(id=assignee_id)
 
     uuid = models.UUIDField(db_index=True, default=uuid4, unique=True, editable=False)
     creator = models.ForeignKey(

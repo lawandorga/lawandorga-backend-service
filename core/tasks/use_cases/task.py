@@ -19,13 +19,13 @@ def mark_tasks_as_done(__actor: OrgUser, task_uuids: list[UUID]):
 @use_case
 def create_task(
     __actor: OrgUser,
-    assignee: OrgUser,
+    assignee_id: int,
     title: str,
     description: str,
     page_url: str,
     deadline: datetime,
 ):
-    Task.create(__actor, assignee, title, description, page_url, deadline)
+    Task.create(__actor, assignee_id, title, description, page_url, deadline)
 
 
 @use_case
