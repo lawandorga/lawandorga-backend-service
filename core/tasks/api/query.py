@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -21,7 +22,7 @@ class OutputTask(BaseModel):
     description: str
     page_url: str
     is_done: bool
-    deadline: datetime
+    deadline: Optional[datetime]
     created_at: datetime
     updated_at: datetime
 
