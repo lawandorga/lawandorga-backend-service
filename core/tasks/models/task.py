@@ -26,6 +26,7 @@ class Task(models.Model):
         )
 
         task.assignee = OrgUser.objects.get(id=assignee_id)
+        return task
 
     uuid = models.UUIDField(db_index=True, default=uuid4, unique=True, editable=False)
     creator = models.ForeignKey(
@@ -35,10 +36,10 @@ class Task(models.Model):
         OrgUser, on_delete=models.CASCADE, related_name="assignee"
     )
     title = models.CharField(max_length=255, blank=True)
-    description = models.TextField(blank=True)
+    description = models.TextField(default="", null=True, blank=True)
     page_url = models.CharField(max_length=255, blank=True)
     is_done = models.BooleanField(default=False)
-    deadline = models.DateTimeField(default=datetime.now, blank=True)
+    deadline = models.DateTimeField(default=datetime.now, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

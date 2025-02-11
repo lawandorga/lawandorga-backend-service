@@ -25,7 +25,8 @@ def create_task(
     page_url: str,
     deadline: datetime,
 ):
-    Task.create(__actor, assignee_id, title, description, page_url, deadline)
+    task = Task.create(__actor, assignee_id, title, description, page_url, deadline)
+    task.save()
 
 
 @use_case
