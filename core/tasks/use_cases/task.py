@@ -21,9 +21,9 @@ def create_task(
     __actor: OrgUser,
     assignee_id: int,
     title: str,
-    description: str,
-    page_url: str,
-    deadline: datetime,
+    description: str = "",
+    page_url: str = "",
+    deadline: Optional[datetime] = None,
 ):
     task = Task.create(__actor, assignee_id, title, description, page_url, deadline)
     task.save()
