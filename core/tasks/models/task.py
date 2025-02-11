@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from uuid import uuid4
 
 from django.db import models
@@ -15,7 +16,7 @@ class Task(models.Model):
         title: str,
         description: str,
         page_url: str,
-        deadline: datetime,
+        deadline: Optional[datetime] = None,
     ):
         task = cls(
             creator=__actor,
@@ -38,7 +39,7 @@ class Task(models.Model):
     description = models.TextField(blank=True)
     page_url = models.CharField(max_length=255, blank=True)
     is_done = models.BooleanField(default=False)
-    deadline = models.DateTimeField(default=datetime.now, blank=True)
+    deadline = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
