@@ -52,6 +52,11 @@ class CustomLoginView(LoginView):
             uk = user.rlc_user.get_decrypted_key_from_password(form.data["password"])
             self.request.session["user_key"] = uk.as_unsafe_dict()
             user.rlc_user.set_frontend_settings({})
+            try:
+                user.rlc_user.check_login_allowed()
+            except Exception as e:
+                form.add_error(None, str(e))
+                return self.form_invalid(form)
 
         if (
             hasattr(user, "rlc_user")
