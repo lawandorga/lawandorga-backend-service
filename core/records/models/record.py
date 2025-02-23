@@ -12,6 +12,7 @@ from core.folders.infrastructure.folder_addon import FolderAddon
 from core.records.helpers import merge_attrs
 from core.rlc.models import Org
 from core.seedwork.aggregate import Aggregate
+from core.seedwork.domain_layer import DomainError
 from core.seedwork.events_addon import EventsAddon
 
 if TYPE_CHECKING:
@@ -62,6 +63,8 @@ class RecordRepository(ItemRepository):
         if search.token:
             records = records.filter(name__icontains=search.token)
         if search.year:
+            if search.year < 1900 or search.year > 2100:
+                raise DomainError("Year must be between 1900 and 2100")
             records = records.filter(created__year=search.year)
         if search.general:
             records = records.filter(attributes__icontains=search.general)
