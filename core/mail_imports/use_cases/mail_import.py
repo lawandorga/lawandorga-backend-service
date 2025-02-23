@@ -255,6 +255,8 @@ def save_emails(
         obj.encrypt(user)
         attachments: list[MailAttachment] = []
         for a in email.attachments:
+            if len(a.content) == 0:
+                continue
             content_file = ContentFile(content=a.content, name=a.filename)
             attachment = MailAttachment.create(
                 mail_import=obj,
