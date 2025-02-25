@@ -3,6 +3,7 @@ from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.translation import gettext_lazy as _
 
 from core.auth.models.mfa import MultiFactorAuthenticationSecret
+from core.auth.models.session import CustomSession
 
 from .models import InternalUser, MatrixUser, OrgUser, StatisticUser, UserProfile
 
@@ -51,9 +52,16 @@ class MatrixUserAdmin(admin.ModelAdmin):
     autocomplete_fields = ["user"]
 
 
+class CustomSessionAdmin(admin.ModelAdmin):
+    list_display = ("session_key", "user_id", "expire_date")
+    search_fields = ("session_key", "user_id")
+    list_filter = ("expire_date",)
+
+
 admin.site.register(InternalUser, InternalUserAdmin)
 admin.site.register(UserProfile, UserAdmin)
 admin.site.register(OrgUser, RlcUserAdmin)
 admin.site.register(StatisticUser, StatisticUserAdmin)
 admin.site.register(MatrixUser, MatrixUserAdmin)
 admin.site.register(MultiFactorAuthenticationSecret)
+admin.site.register(CustomSession, CustomSessionAdmin)

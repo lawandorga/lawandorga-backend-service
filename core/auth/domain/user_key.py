@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Any, Union
 
 from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
@@ -32,7 +32,8 @@ class UserKey:
         return UserKey(key)
 
     @staticmethod
-    def create_from_dict(d: JsonDict) -> "UserKey":
+    def create_from_dict(d: Any) -> "UserKey":
+        assert isinstance(d, dict)
         assert "type" in d and d["type"] == "USER"
         assert ("key" in d and isinstance(d["key"], dict)) or (
             "private_key" in d

@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Optional, Protocol
 
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.aggregates.item import FolderItem, Item
+from core.folders.domain.value_objects.encryption import EncryptionDecryptionError
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.seedwork.aggregate import Addon
 from core.seedwork.events_addon import EventsAddon
@@ -29,7 +30,15 @@ class FolderAddon(Addon):
         return self._folder
 
     def get_decryption_key(self, requestor: "OrgUser"):
-        return self.folder.get_decryption_key(requestor=requestor)
+        try:
+            return self.folder.get_decryption_key(requestor=requestor)
+        except EncryptionDecryptionError as e:
+            folder = self.folder.get_folder_of_access(requestor)
+            if folder is not None:
+                folder.invalidate_keys_of(requestor)
+                r = DjangoFolderRepository()
+                r.save(folder)
+            raise e
 
     def get_encryption_key(self, requestor: "OrgUser"):
         return self.folder.get_encryption_key(requestor=requestor)

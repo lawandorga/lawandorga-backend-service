@@ -40,7 +40,7 @@ def run_user_login_checks(__actor: UserProfile, password: str):
         rlc_user: OrgUser = __actor.rlc_user
 
         # generate key if not existent
-        if rlc_user.key is None:
+        if rlc_user.key is None or rlc_user.key == {}:
             rlc_user.generate_keys(password)
             rlc_user.save()
 

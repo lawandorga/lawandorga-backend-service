@@ -19,6 +19,7 @@ from django.views.generic import CreateView, RedirectView, TemplateView
 
 from core.auth.forms.user import CustomUserCreationForm
 from core.auth.models import UserProfile
+from core.auth.models.session import CustomSession
 from core.auth.use_cases.user import run_user_login_checks, set_password_of_myself
 
 
@@ -74,7 +75,9 @@ class CustomLoginView(LoginView):
 
 
 class CustomLogoutView(LogoutView):
-    pass
+    def post(self, *args, **kwargs):
+        CustomSession.objects.filter(user_id=self.request.user.pk).delete()
+        return super().post(*args, **kwargs)
 
 
 class CustomPasswordResetForm(PasswordResetForm):

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from core.folders.domain.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.value_objects.encryption import (
@@ -73,7 +73,8 @@ class EncryptedSymmetricKey(Key):
         return EncryptedSymmetricKey(enc_key=enc_key, origin=original.origin)
 
     @staticmethod
-    def create_from_dict(d: JsonDict):
+    def create_from_dict(d: Any):
+        assert isinstance(d, dict)
         assert (
             "enc_key" in d
             and "origin" in d

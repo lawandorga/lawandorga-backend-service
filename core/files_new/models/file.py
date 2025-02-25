@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID, uuid4
 
 from django.core.files.storage import default_storage
@@ -76,13 +76,16 @@ class EncryptedRecordDocument(Aggregate, models.Model):
     events: EventsAddon
     folder: FolderAddon
 
+    if TYPE_CHECKING:
+        org_id: int
+
     class Meta:
         verbose_name = "RecordDocument"
         verbose_name_plural = "RecordDocuments"
 
     def __str__(self):
-        return "recordDocument: {}; name: {}; record: {};".format(
-            self.pk, self.name, self.record.pk
+        return "recordDocument: {}; name: {}; folderUuid: {};".format(
+            self.pk, self.name, self.folder_uuid
         )
 
     @property

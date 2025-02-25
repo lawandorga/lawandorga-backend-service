@@ -216,6 +216,10 @@ CACHES = {
     }
 }
 
+# session overwrite
+# https://docs.djangoproject.com/en/5.1/topics/http/sessions/#example
+SESSION_ENGINE = "config.session"
+
 # this setting is used by the api layer to automatically inject the object of the return type of the function
 API_INJECTORS = [
     "config.api.get_user",

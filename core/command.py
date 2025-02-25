@@ -51,10 +51,12 @@ INJECTORS_BY_RETURN_TYPE = {get_return_type_of_function(f): f for f in INJECTORS
 
 
 T = TypeVar("T")
+
+
 def handle_error(fn: Callable[[], T]) -> HttpResponse | T:
     try:
         return fn()
-    
+
     except ApiError as e:
         return ErrorResponse(
             param_errors=e.param_errors,
@@ -88,6 +90,7 @@ def handle_error(fn: Callable[[], T]) -> HttpResponse | T:
             err_type="DomainError",
         )
 
+
 def django_command(request: HttpRequest) -> HttpResponse:
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -120,13 +123,19 @@ def django_command(request: HttpRequest) -> HttpResponse:
     a = p.annotation
     if a not in INJECTORS_BY_RETURN_TYPE:
         raise ValueError(f"__actor type {a} is not supported for {fn}")
-    
-    get_actor_fn = lambda: INJECTORS_BY_RETURN_TYPE[a](request)
+
+    def get_actor_fn():
+        return INJECTORS_BY_RETURN_TYPE[a](request)
+
     get_actor_result = handle_error(get_actor_fn)
     if isinstance(get_actor_result, HttpResponse):
         return get_actor_result
 
-    command_fn = lambda: validate_call(config={"arbitrary_types_allowed": True})(fn)(get_actor_result, **data)
+    def command_fn():
+        return validate_call(config={"arbitrary_types_allowed": True})(fn)(
+            get_actor_result, **data
+        )
+
     command_result = handle_error(command_fn)
     if isinstance(command_result, HttpResponse):
         return command_result

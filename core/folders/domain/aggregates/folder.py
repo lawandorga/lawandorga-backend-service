@@ -198,6 +198,12 @@ class Folder:
             return True
         return False
 
+    def _has_direct_access(self, owner: "OrgUser") -> bool:
+        for u_key in self.__keys:
+            if u_key.owner_uuid == owner.uuid:
+                return u_key.is_valid
+        return False
+
     def has_access_group(self, owner: "Group") -> bool:
         return self._has_keys_group(owner)
 
@@ -211,6 +217,13 @@ class Folder:
         if isinstance(key, EncryptedFolderKeyOfUser):
             return "USER"
         return "GROUP"
+
+    def get_folder_of_access(self, owner: "OrgUser") -> Optional["Folder"]:
+        if self._has_direct_access(owner):
+            return self
+        if self.__parent is None:
+            return None
+        return self.__parent.get_folder_of_access(owner)
 
     def _get_key(
         self, owner: "OrgUser"

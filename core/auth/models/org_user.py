@@ -4,7 +4,6 @@ from uuid import UUID, uuid4
 
 import ics
 from django.conf import settings
-from django.contrib.sessions.models import Session
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import models
@@ -13,6 +12,7 @@ from django.template import loader
 from django.utils import timezone
 
 from core.auth.domain.user_key import UserKey
+from core.auth.models.session import CustomSession
 from core.auth.token_generator import EmailConfirmationTokenGenerator
 from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
@@ -335,7 +335,7 @@ class OrgUser(Aggregate, models.Model):
 
         raise ValueError("This method is only available for dummy and in test mode.")
 
-    def __get_session(self) -> Optional[Session]:
+    def __get_session(self) -> Optional[CustomSession]:
         memory_cache_session_key = "session-of-org-user-{}".format(self.pk)
         memory_cache_time_key = "time-of-org-user-{}".format(self.pk)
 
@@ -348,14 +348,11 @@ class OrgUser(Aggregate, models.Model):
                 delattr(self.__class__, memory_cache_time_key)
                 delattr(self.__class__, memory_cache_session_key)
 
-        session = None
-        for s in list(Session.objects.all()):
-            decoded: dict[str, str] = s.get_decoded()
-            if "_auth_user_id" in decoded and decoded["_auth_user_id"] == str(
-                self.user_id
-            ):
-                session = s
-                break
+        session = (
+            CustomSession.objects.filter(user_id=self.user_id)
+            .order_by("-expire_date")
+            .first()
+        )
 
         if session is None:
             return None
