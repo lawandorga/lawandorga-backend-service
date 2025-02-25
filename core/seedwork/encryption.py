@@ -211,7 +211,7 @@ class EncryptedModelMixin:
     encryption_status = None
 
     def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
+        self, *args, **kwargs
     ) -> None:
         fields = (
             self.encrypted_fields
@@ -227,7 +227,7 @@ class EncryptedModelMixin:
                     "Do not save unencrypted data. "
                     "Value of the field: {}.".format(field, self, data_in_field)
                 )
-        super().save(force_insert, force_update, using, update_fields)  # type: ignore
+        super().save(*args, **kwargs)  # type: ignore
 
     def decrypt(self, key) -> None:
         if getattr(self, "encryption_status", "") != "DECRYPTED":

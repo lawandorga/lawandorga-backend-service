@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="template",
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     ("letterhead__isnull", False),
                     ("footer__isnull", False),
                     _connector="OR",

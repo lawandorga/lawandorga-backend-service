@@ -44,5 +44,6 @@ django-stubs = "==5.1.*"
 pillow = "*"
 weasyprint = "*"
 tach = "*"
+types-pytz = "*"
 
 [dev-packages]

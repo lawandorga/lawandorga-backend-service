@@ -29,7 +29,7 @@ class MailAccount(models.Model):
         verbose_name_plural = "MailAccounts"
         constraints = [
             models.CheckConstraint(
-                check=(Q(group__isnull=True) & Q(user__isnull=False))
+                condition=(Q(group__isnull=True) & Q(user__isnull=False))
                 | (Q(group__isnull=False) & Q(user__isnull=True)),
                 name="one_of_both_is_set",
             )

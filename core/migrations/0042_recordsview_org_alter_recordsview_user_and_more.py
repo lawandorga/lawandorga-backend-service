@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="recordsview",
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     models.Q(("org__isnull", True), ("user__isnull", False)),
                     models.Q(("org__isnull", False), ("user__isnull", True)),
                     _connector="OR",

@@ -49,7 +49,7 @@ class RecordsView(models.Model):
         ordering = ["-org", "ordering"]
         constraints = [
             models.CheckConstraint(
-                check=(Q(org__isnull=True) & Q(user__isnull=False))
+                condition=(Q(org__isnull=True) & Q(user__isnull=False))
                 | (Q(org__isnull=False) & Q(user__isnull=True)),
                 name="records_view_one_of_both_is_set",
             )
