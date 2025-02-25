@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="todo",
             name="deadline",
-            field=models.DateTimeField(blank=True, default=datetime.datetime.now),
+            field=models.DateTimeField(blank=True, null=True, default=None),
         ),
     ]
