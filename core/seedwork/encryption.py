@@ -210,9 +210,7 @@ class EncryptedModelMixin:
     encryption_class: Union[Type[RSAEncryption], Type[AESEncryption]] = RSAEncryption
     encryption_status = None
 
-    def save(
-        self, *args, **kwargs
-    ) -> None:
+    def save(self, *args, **kwargs) -> None:
         fields = (
             self.encrypted_fields
         )  # if update_fields is None else list(set(self.encrypted_fields).intersection(set(update_fields)))
