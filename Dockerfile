@@ -1,5 +1,5 @@
 # inspired by: https://snyk.io/blog/best-practices-containerizing-python-docker/
-FROM python:3.12 as base
+FROM python:3.13 as base
 
 # workdir related stuff stuff
 WORKDIR /django
@@ -14,7 +14,7 @@ RUN pipenv requirements > /django/requirements.txt
 RUN pip install -r /django/requirements.txt
 
 # build image
-FROM python:3.12-slim as build
+FROM python:3.13-slim as build
 
 # least privilege user
 RUN groupadd -g 999 python && useradd -r -u 999 -g python python
