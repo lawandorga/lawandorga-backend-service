@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import bleach
-from django.core.exceptions import ObjectDoesNotExist
 
 from core.auth.models.org_user import OrgUser
 from core.events.models.event import EventsEvent
@@ -19,18 +18,15 @@ def create_event(
     end_time: datetime,
 ):
     org = Org.objects.get(id=__actor.org.pk)
-    clean_description = bleach.clean(
-        description,
-        tags=["a", "p", "strong", "em", "ul", "ol", "li", "s"],
-        attributes={"a": ["href"]},
-    )
-    event = org.events.create(
-        level=level,
+    event = EventsEvent.create(
+        org=org,
         name=name,
-        description=clean_description,
+        description=description,
+        level=level,
         start_time=start_time,
         end_time=end_time,
     )
+    event.save()
     return event
 
 
@@ -43,10 +39,7 @@ def update_event(
     start_time: datetime,
     end_time: datetime,
 ):
-    try:
-        event = EventsEvent.objects.get(id=event_id)
-    except ObjectDoesNotExist:
-        raise UseCaseError("The event you want to edit does not exist.")
+    event = EventsEvent.objects.get(id=event_id)
 
     if __actor.org.pk != event.org.pk:
         raise UseCaseError(
@@ -59,6 +52,7 @@ def update_event(
             tags=["a", "p", "strong", "em", "ul", "ol", "li", "s"],
             attributes={"a": ["href"]},
         )
+
     event.update_information(
         description=description,
         name=name,
@@ -66,15 +60,15 @@ def update_event(
         end_time=end_time,
     )
 
+    event.save()
+
     return event
 
 
 @use_case
 def delete_event(__actor: OrgUser, event_id: int):
-    try:
-        event = EventsEvent.objects.get(id=event_id)
-    except ObjectDoesNotExist:
-        raise UseCaseError("The event you want to delete does not exist.")
+    event = EventsEvent.objects.get(id=event_id)
+
     if __actor.org.pk != event.org.pk:
         raise UseCaseError(
             "You do not have the permission to delete this event.",
