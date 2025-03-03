@@ -33,7 +33,7 @@ django = {extras = ["argon2"], version = "==5.1.*"}
 pydantic = {extras = ["email"], version = "==2.10.*"}
 dnspython = "==2.7.*"
 bleach = "==6.2.*"
-types-bleach = "==6.1.*"
+types-bleach = "==6.2.*"
 pytest-xdist = "==3.6.*"
 django-oidc-provider = {git = "https://github.com/lawandorga/django-oidc-provider"}
 pyotp = "==2.9.*"
