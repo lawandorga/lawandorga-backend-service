@@ -1,10 +1,10 @@
 name: Acceptance Stage - Analyze Code With Sonarcloud
 
 on:
-  workflow_call:
-    secrets:
-      SONAR_TOKEN:
-        required: true
+  workflow_run:
+    workflows: [".github/workflows/commit-stage--run-tests.yml"]
+    types:
+      - completed
 
 jobs:
   scan:
