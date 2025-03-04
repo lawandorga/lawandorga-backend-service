@@ -21,7 +21,7 @@ def test_email_confirmation_token_works(db, org_user):
     token = org_user["org_user"].get_email_confirmation_token()
     c = Client()
     c.login(**org_user)
-    url = "/api/rlc_users/{}/confirm_email/{}/".format(org_user["org_user"].id, token)
+    url = "/api/org_users/{}/confirm_email/{}/".format(org_user["org_user"].id, token)
     response = c.post(url)
     assert 200 == response.status_code
 

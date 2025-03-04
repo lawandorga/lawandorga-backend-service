@@ -44,7 +44,7 @@ def user(db, org_user_2, org):
 def test_get_data_works(user, db):
     c = Client()
     c.login(**user)
-    response = c.get("/api/rlc_users/data_self/")
+    response = c.get("/api/org_users/data_self/")
     assert response.status_code == 200
 
 
@@ -109,7 +109,7 @@ def test_update_another_user_allowed(user, org_user_2, db):
 def test_list_org_users(user, db):
     c = Client()
     c.login(**user)
-    response = c.get("/api/rlc_users/")
+    response = c.get("/api/org_users/")
     response_data = response.json()
     assert response.status_code == 200 and "street" not in response_data[0]
 
@@ -118,7 +118,7 @@ def test_retrieve_org_user(user, db):
     c = Client()
     c.login(**user)
     ru = user["org_user"]
-    response = c.get("/api/rlc_users/{}/".format(ru.id))
+    response = c.get("/api/org_users/{}/".format(ru.id))
     response_data = response.json()
     assert response.status_code == 200 and response_data["user"]["street"] is None
 
@@ -130,7 +130,7 @@ def test_retrieve_another_org_user(user, org_user_2, db):
     ru_update = OrgUser.objects.get(id=ru.id)
     ru_update.street = "ABC"
     ru_update.save()
-    response = c.get("/api/rlc_users/{}/".format(ru.id))
+    response = c.get("/api/org_users/{}/".format(ru.id))
     response_data = response.json()
     assert response.status_code == 200 and response_data["user"]["street"] is None
 
@@ -143,7 +143,7 @@ def test_retrieve_another_org_user_with_permission(user, org_user_2, db):
     ru_update = OrgUser.objects.get(id=ru.id)
     ru_update.street = "ABC"
     ru_update.save()
-    response = c.get("/api/rlc_users/{}/".format(ru.id))
+    response = c.get("/api/org_users/{}/".format(ru.id))
     response_data = response.json()
     assert response.status_code == 200 and response_data["user"]["street"] == "ABC"
 
