@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
+from core.files.serializers.group import GroupNameSerializer
 from core.models import PermissionForFolder
-from core.rlc.serializers.group import GroupNameSerializer
 
 from .folder import FolderSimpleSerializer
 from .folder_permission import FolderPermissionSerializer
