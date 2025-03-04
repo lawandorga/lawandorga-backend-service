@@ -5,7 +5,6 @@ from uuid import UUID
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from pydantic import BaseModel, ConfigDict
-from rest_framework.exceptions import ParseError
 
 from core.auth.models import OrgUser
 from core.files_new.models import EncryptedRecordDocument
@@ -39,7 +38,7 @@ def query__download_file(rlc_user: OrgUser, data: InputQueryFile):
 
     try:
         file = f.download(rlc_user)
-    except ParseError:
+    except FileNotFoundError:
         raise ApiError(
             "The file could not be found on the server. "
             "Please delete it or contact it@law-orga.de "
