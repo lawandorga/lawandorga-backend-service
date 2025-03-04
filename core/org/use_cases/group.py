@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from core.auth.models import OrgUser
-from core.auth.use_cases.finders import rlc_user_from_id
+from core.auth.use_cases.finders import org_user_from_id
 from core.org.models import Group
 from core.org.use_cases.finders import group_from_id
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_GROUPS
@@ -52,7 +52,7 @@ def add_member_to_group(__actor: OrgUser, group_id: int, new_member_id: int):
             "You need to be part of this group in order to add members."
         )
 
-    new_member = rlc_user_from_id(__actor, new_member_id)
+    new_member = org_user_from_id(__actor, new_member_id)
 
     if group.from_rlc_id != new_member.org_id:
         raise UseCaseError("You can not edit a member from another org.")
@@ -70,7 +70,7 @@ def remove_member_from_group(__actor: OrgUser, group_id: int, member_id: int):
             "But you can always delete the group."
         )
 
-    member = rlc_user_from_id(__actor, member_id)
+    member = org_user_from_id(__actor, member_id)
 
     if group.from_rlc_id != member.org_id:
         raise UseCaseError("You can not edit a member from another org.")

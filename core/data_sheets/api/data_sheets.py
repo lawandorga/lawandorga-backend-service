@@ -15,15 +15,15 @@ router = Router()
     output_schema=schemas.OutputRecordCreate,
 )
 def command__create_record_within_folder(
-    rlc_user: OrgUser, data: schemas.InputRecordCreateWithinFolder
+    org_user: OrgUser, data: schemas.InputRecordCreateWithinFolder
 ):
     record = create_a_data_sheet_within_a_folder(
-        rlc_user, data.name, folder_uuid=data.folder, template_id=data.template
+        org_user, data.name, folder_uuid=data.folder, template_id=data.template
     )
     record = DataSheet.objects.get(uuid=record.uuid)
     return {"id": record.pk, "uuid": record.uuid, "folder_uuid": record.folder_uuid}
 
 
 @router.post(url="optimize/")
-def command__records_optimize(rlc_user: OrgUser):
-    deliver_access_to_users_who_should_have_access(rlc_user)
+def command__records_optimize(org_user: OrgUser):
+    deliver_access_to_users_who_should_have_access(org_user)

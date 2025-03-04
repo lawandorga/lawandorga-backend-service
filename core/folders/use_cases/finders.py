@@ -17,7 +17,7 @@ def folder_from_uuid(actor: OrgUser | MessageBusActor, v: UUID) -> Folder:
 
 
 @finder_function
-def rlc_user_from_uuid(actor: OrgUser, v: UUID) -> OrgUser:
+def org_user_from_uuid(actor: OrgUser, v: UUID) -> OrgUser:
     return OrgUser.objects.get(org__id=actor.org_id, uuid=v)
 
 

@@ -37,20 +37,20 @@ def set_password_of_myself(__actor: UserProfile, password: str) -> UserProfile:
 @use_case
 def run_user_login_checks(__actor: UserProfile, password: str):
     if hasattr(__actor, "org_user"):
-        rlc_user: OrgUser = __actor.org_user
+        org_user: OrgUser = __actor.org_user
 
         # generate key if not existent
-        if rlc_user.key is None or rlc_user.key == {}:
-            rlc_user.generate_keys(password)
-            rlc_user.save()
+        if org_user.key is None or org_user.key == {}:
+            org_user.generate_keys(password)
+            org_user.save()
 
         # check if key is encrypted
-        key: JsonDict = rlc_user.key  # type: ignore
+        key: JsonDict = org_user.key  # type: ignore
         u1 = UserKey.create_from_dict(key)
         if not u1.is_encrypted:
             u2 = u1.encrypt_self(password)
-            rlc_user.key = u2.as_dict()
-            rlc_user.save()
+            org_user.key = u2.as_dict()
+            org_user.save()
 
 
 @use_case

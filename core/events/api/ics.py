@@ -24,9 +24,9 @@ class CalendarUuidUser(BaseModel):
 
 
 @router.get(output_schema=CalendarUuidUser)
-def get_calender_uuid(rlc_user: OrgUser):
+def get_calender_uuid(org_user: OrgUser):
     return {
-        "id": rlc_user.id,
-        "calendar_uuid": rlc_user.calendar_uuid,
-        "calendar_url": f"{settings.CALENDAR_URL}{rlc_user.calendar_uuid}.ics",
+        "id": org_user.pk,
+        "calendar_uuid": org_user.calendar_uuid,
+        "calendar_url": f"{settings.CALENDAR_URL}{org_user.calendar_uuid}.ics",
     }

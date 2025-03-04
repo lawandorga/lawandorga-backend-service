@@ -7,9 +7,9 @@ router = Router()
 
 
 @router.get(output_schema=list[schemas.OutputLegalRequirement])
-def api_list_legal_requirements(rlc_user: OrgUser):
+def api_list_legal_requirements(org_user: OrgUser):
     lrs = list(LegalRequirement.objects.all())
     for lr in lrs:
-        lr._set_events_of_user(rlc_user)
-        lr._set_accepted_of_user(rlc_user)
+        lr._set_events_of_user(org_user)
+        lr._set_accepted_of_user(org_user)
     return lrs

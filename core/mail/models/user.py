@@ -55,7 +55,7 @@ class MailUser(models.Model):
 
     def has_permission(self, permission: str):
         user = self.user
-        if hasattr(user, "rlc_user"):
+        if hasattr(user, "org_user"):
             return user.org_user.has_permission(permission)
 
         return True

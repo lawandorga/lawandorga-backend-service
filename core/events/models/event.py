@@ -56,11 +56,11 @@ class EventsEvent(models.Model):
         ordering = ["start_time"]
 
     @staticmethod
-    def get_all_events_for_user(rlc_user: OrgUser):
+    def get_all_events_for_user(org_user: OrgUser):
         events = EventsEvent.objects.filter(
-            Q(org=rlc_user.org)
+            Q(org=org_user.org)
             | Q(level="GLOBAL")
-            | Q(level="META", org__meta=rlc_user.org.meta)
+            | Q(level="META", org__meta=org_user.org.meta)
         )
         return events
 

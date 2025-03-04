@@ -50,7 +50,7 @@ class MatrixUser(models.Model):
         if self._group:
             return self._group
         try:
-            rlc_user = OrgUser.objects.get(user=self.user)
-            return rlc_user.org.name
+            org_user = OrgUser.objects.get(user=self.user)
+            return org_user.org.name
         except ObjectDoesNotExist:
             return ""

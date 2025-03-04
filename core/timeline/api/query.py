@@ -32,13 +32,13 @@ class InputTimelineList(BaseModel):
     "timeline/<uuid:folder_uuid>/",
     output_schema=list[OutputTimelineEvent],
 )
-def query_timeline(rlc_user: OrgUser, data: InputTimelineList):
+def query_timeline(org_user: OrgUser, data: InputTimelineList):
     fr = DjangoFolderRepository()
     fur = FollowUpRepository()
     er = EventRepository()
-    folder = fr.retrieve(rlc_user.org_id, data.folder_uuid)
-    events = er.list_events(folder_uuid=folder.uuid, user=rlc_user, fr=fr)
-    follow_ups = fur.list_follow_ups(folder_uuid=folder.uuid, user=rlc_user, fr=fr)
+    folder = fr.retrieve(org_user.org_id, data.folder_uuid)
+    events = er.list_events(folder_uuid=folder.uuid, user=org_user, fr=fr)
+    follow_ups = fur.list_follow_ups(folder_uuid=folder.uuid, user=org_user, fr=fr)
 
     def get_time(item: Any):
         time = getattr(item, "time", None)
@@ -61,9 +61,9 @@ class OutputFollowUp(BaseModel):
 
 
 @router.get("dashboard/", output_schema=list[OutputFollowUp])
-def query__dashboard_page(rlc_user: OrgUser):
+def query__dashboard_page(org_user: OrgUser):
     follow_ups = FollowUpRepository().list_follow_ups_of_user(
-        user=rlc_user, fr=DjangoFolderRepository()
+        user=org_user, fr=DjangoFolderRepository()
     )
     follow_ups_data = []
     for follow_up in list(follow_ups):

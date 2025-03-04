@@ -1,5 +1,5 @@
 from core.auth.models.org_user import OrgUser
-from core.auth.use_cases.finders import rlc_user_from_id
+from core.auth.use_cases.finders import org_user_from_id
 from core.org.use_cases.finders import group_from_id
 from core.permissions.models import HasPermission
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_PERMISSIONS
@@ -23,7 +23,7 @@ def create_has_permission(
     permission = permission_from_id(__actor, permission_id)
 
     if user_id is not None:
-        user = rlc_user_from_id(__actor, user_id)
+        user = org_user_from_id(__actor, user_id)
         has_permission = HasPermission.create(user=user, permission=permission)
         has_permission.save()
 

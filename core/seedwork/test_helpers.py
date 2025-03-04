@@ -149,12 +149,12 @@ def create_org_user(
     user.set_password(password)
     if save:
         user.save()
-    rlc_user = OrgUser(user=user, email_confirmed=True, accepted=accepted, org=rlc)
-    rlc_user.generate_keys(password)
+    org_user = OrgUser(user=user, email_confirmed=True, accepted=accepted, org=rlc)
+    org_user.generate_keys(password)
     if save:
-        rlc_user.save()
+        org_user.save()
     private_key = (
-        UserKey.create_from_dict(rlc_user.key)
+        UserKey.create_from_dict(org_user.key)
         .decrypt_self(password)
         .key.get_private_key()
         .decode("utf-8")
@@ -165,7 +165,7 @@ def create_org_user(
         "username": user.email,
         "email": user.email,
         "password": settings.DUMMY_USER_PASSWORD,
-        "org_user": rlc_user,
+        "org_user": org_user,
         "private_key": private_key,
         "public_key": user.get_public_key(),
     }

@@ -28,10 +28,10 @@ router = Router()
     url="<uuid:folder>/",
     output_schema=list[OutputMessage],
 )
-def query__get_messages(rlc_user: OrgUser, data: InputGetMessages):
+def query__get_messages(org_user: OrgUser, data: InputGetMessages):
     messages_1 = EncryptedRecordMessage.objects.filter(
         folder_uuid=data.folder
     ).select_related("sender")
     messages_2 = list(messages_1)
-    messages_3 = [message.decrypt(rlc_user) for message in messages_2]
+    messages_3 = [message.decrypt(org_user) for message in messages_2]
     return messages_3

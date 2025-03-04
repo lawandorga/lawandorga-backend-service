@@ -9,11 +9,11 @@ router = Router()
 
 
 @router.post(output_schema=schemas.OutputCreateRecord)
-def command__create_record(rlc_user: OrgUser, data: schemas.InputCreateRecord):
-    folder_uuid = create_record_and_folder(rlc_user, data.token)
+def command__create_record(org_user: OrgUser, data: schemas.InputCreateRecord):
+    folder_uuid = create_record_and_folder(org_user, data.token)
     if data.template is not None:
         sheet = create_a_data_sheet_within_a_folder(
-            rlc_user, data.token, folder_uuid, data.template
+            org_user, data.token, folder_uuid, data.template
         )
         return {"folder_uuid": folder_uuid, "record_uuid": sheet.uuid}
     return {"folder_uuid": folder_uuid}

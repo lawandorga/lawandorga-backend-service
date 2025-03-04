@@ -144,7 +144,7 @@ def query__org_usage(statistics_user: StatisticUser):
     url="records_created_and_closed/",
     output_schema=List[schemas.OutputRecordsCreatedClosed],
 )
-def get_records_created_and_closed(rlc_user: OrgUser):
+def get_records_created_and_closed(org_user: OrgUser):
     if connection.vendor == "sqlite":
         statement = """
         select t1.month as month, t2.month as month, created, closed
@@ -166,7 +166,7 @@ def get_records_created_and_closed(rlc_user: OrgUser):
         ) t2 on t1.month = t2.month
         order by t1.month
         """.format(
-            rlc_user.org.id, rlc_user.org.id
+            org_user.org.id, org_user.org.id
         )
     else:
         statement = """
@@ -189,7 +189,7 @@ def get_records_created_and_closed(rlc_user: OrgUser):
         ) t2 on t1.month = t2.month
         order by t1.month
         """.format(
-            rlc_user.org.id, rlc_user.org.id
+            org_user.org.id, org_user.org.id
         )
     data = execute_statement(statement)
     data = list(

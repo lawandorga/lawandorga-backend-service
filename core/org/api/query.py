@@ -69,8 +69,8 @@ router = Router()
 
 
 @router.get(url="links/", output_schema=list[OutputExternalLink])
-def get_links(rlc_user: OrgUser):
-    links = ExternalLink.objects.filter(org=rlc_user.org)
+def get_links(org_user: OrgUser):
+    links = ExternalLink.objects.filter(org=org_user.org)
     links_list = list(links)
     return links_list
 
@@ -79,8 +79,8 @@ def get_links(rlc_user: OrgUser):
     url="group/<int:id>/",
     output_schema=OutputSingleGroup,
 )
-def query__get_group(rlc_user: OrgUser, data: InputQueryGroup):
-    group = Group.objects.get(from_rlc__id=rlc_user.org_id, id=data.id)
+def query__get_group(org_user: OrgUser, data: InputQueryGroup):
+    group = Group.objects.get(from_rlc__id=org_user.org_id, id=data.id)
     return {
         "id": group.pk,
         "name": group.name,
@@ -91,12 +91,12 @@ def query__get_group(rlc_user: OrgUser, data: InputQueryGroup):
 
 
 @router.get(url="groups/", output_schema=list[OutputGroup])
-def query__list_groups(rlc_user: OrgUser):
-    groups = Group.objects.filter(from_rlc__id=rlc_user.org_id)
+def query__list_groups(org_user: OrgUser):
+    groups = Group.objects.filter(from_rlc__id=org_user.org_id)
     return list(groups)
 
 
 @router.get(url="notes/", output_schema=list[OutputNote])
-def query__list_notes(rlc_user: OrgUser):
-    notes = Note.objects.filter(rlc__id=rlc_user.org_id)
+def query__list_notes(org_user: OrgUser):
+    notes = Note.objects.filter(rlc__id=org_user.org_id)
     return list(notes)

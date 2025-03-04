@@ -31,7 +31,7 @@ class MfaStatusView(LoginRequiredMixin, GetUserMixin, generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.get_user()
-        if not hasattr(user, "rlc_user"):
+        if not hasattr(user, "org_user"):
             context["mfa_impossible"] = True
             return context
         context["mfa_setup"] = hasattr(user.org_user, "mfa_secret")
@@ -52,7 +52,7 @@ class MfaSetupView(LoginRequiredMixin, GetUserMixin, generic.FormView):
         return SetupMfaForm(self.get_user(), **self.get_form_kwargs())
 
     def form_valid(self, form):
-        create_mfa_secret(self.get_user().rlc_user)
+        create_mfa_secret(self.get_user().org_user)
         url = reverse_lazy("mfa_enable")
         return HttpResponseRedirect(url)
 
@@ -62,19 +62,19 @@ class MfaEnableView(LoginRequiredMixin, GetUserMixin, generic.FormView):
     success_url = reverse_lazy("mfa_status")
 
     def get_context_data(self, **kwargs):
-        if not hasattr(self.request.user, "rlc_user") or not hasattr(
-            self.get_user().rlc_user, "mfa_secret"
+        if not hasattr(self.request.user, "org_user") or not hasattr(
+            self.get_user().org_user, "mfa_secret"
         ):
             raise Http404()
         context = super().get_context_data(**kwargs)
-        context["object"] = self.get_user().rlc_user.mfa_secret
+        context["object"] = self.get_user().org_user.mfa_secret
         return context
 
     def get_form(self, form_class=None):
         return CheckMfaForm(self.get_user(), **self.get_form_kwargs())
 
     def form_valid(self, form):
-        enable_mfa_secret(self.get_user().rlc_user)
+        enable_mfa_secret(self.get_user().org_user)
         return HttpResponseRedirect(self.get_success_url())
 
 
@@ -83,7 +83,7 @@ class MfaDisableView(LoginRequiredMixin, GetUserMixin, generic.FormView):
     success_url = reverse_lazy("mfa_status")
 
     def get_context_data(self, **kwargs):
-        if not hasattr(self.request.user, "rlc_user"):
+        if not hasattr(self.request.user, "org_user"):
             raise Http404()
         return super().get_context_data(**kwargs)
 
@@ -91,7 +91,7 @@ class MfaDisableView(LoginRequiredMixin, GetUserMixin, generic.FormView):
         return CheckMfaForm(self.get_user(), **self.get_form_kwargs())
 
     def form_valid(self, form):
-        delete_mfa_secret(self.get_user().rlc_user)
+        delete_mfa_secret(self.get_user().org_user)
         return HttpResponseRedirect(self.get_success_url())
 
 

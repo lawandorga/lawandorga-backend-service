@@ -231,13 +231,13 @@ def get_page(context: Context, user: OrgUser):
 
 
 @router.get(output_schema=OutputFolderPage)
-def query__list_folders(rlc_user: OrgUser):
+def query__list_folders(org_user: OrgUser):
     builder = ContextBuilder()
-    builder.build_available_users(rlc_user.org_id).buid_users_dict()
-    builder.build_available_groups(rlc_user.org_id).build_groups_dict()
-    builder.build_folders(rlc_user.org_id).build_folder_dicts()
+    builder.build_available_users(org_user.org_id).buid_users_dict()
+    builder.build_available_groups(org_user.org_id).build_groups_dict()
+    builder.build_folders(org_user.org_id).build_folder_dicts()
     context = builder.build()
-    return get_page(context, rlc_user)
+    return get_page(context, org_user)
 
 
 class OutputAvailableFolder(BaseModel):
@@ -246,9 +246,9 @@ class OutputAvailableFolder(BaseModel):
 
 
 @router.get(url="available_folders/", output_schema=list[OutputAvailableFolder])
-def query__available_folders(rlc_user: OrgUser):
+def query__available_folders(org_user: OrgUser):
     r = get_repository()
-    folders_1 = r.get_list(rlc_user.org_id)
+    folders_1 = r.get_list(org_user.org_id)
     folders_2 = list(map(lambda f: {"id": f.uuid, "name": f.name}, folders_1))
     return folders_2
 
@@ -314,18 +314,18 @@ class OutputDetailFolderDetail(BaseModel):
     url="<uuid:id>/",
     output_schema=OutputDetailFolderDetail,
 )
-def query__detail_folder(rlc_user: OrgUser, data: InputFolderDetail):
+def query__detail_folder(org_user: OrgUser, data: InputFolderDetail):
     r = get_repository()
     builder = ContextBuilder()
-    builder.build_available_users(rlc_user.org_id).buid_users_dict()
-    builder.build_folders(rlc_user.org_id).build_folder_dicts()
-    builder.build_available_groups(rlc_user.org_id).build_groups_dict()
+    builder.build_available_users(org_user.org_id).buid_users_dict()
+    builder.build_folders(org_user.org_id).build_folder_dicts()
+    builder.build_available_groups(org_user.org_id).build_groups_dict()
     context = builder.build()
     try:
-        folder = r.retrieve(rlc_user.org_id, data.id)
+        folder = r.retrieve(org_user.org_id, data.id)
     except ObjectDoesNotExist:
         raise ApiError("Folder not found.")
-    subfolders = r.get_children(rlc_user.org_id, folder.uuid)
+    subfolders = r.get_children(org_user.org_id, folder.uuid)
 
     return {
         "folder": folder.as_dict(),

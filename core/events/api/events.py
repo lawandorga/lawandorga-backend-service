@@ -38,5 +38,5 @@ class OutputEventResponse(BaseModel):
 
 
 @router.api(output_schema=list[OutputEventResponse])
-def get_all_events_for_user(rlc_user: OrgUser):
-    return list(EventsEvent.get_all_events_for_user(rlc_user))
+def get_all_events_for_user(org_user: OrgUser):
+    return list(EventsEvent.get_all_events_for_user(org_user))

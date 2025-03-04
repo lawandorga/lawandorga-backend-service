@@ -4,7 +4,7 @@ from django.db.models import Q
 
 from core.auth.models.org_user import OrgUser
 from core.auth.models.user import UserProfile
-from core.auth.use_cases.org_user import register_rlc_user
+from core.auth.use_cases.org_user import register_org_user
 from core.legal.models.legal_requirement import LegalRequirement
 from core.org.models.org import Org
 
@@ -38,9 +38,9 @@ class CustomUserCreationForm(UserCreationForm):
     def save(self, commit=True):
         if not commit:
             raise NotImplementedError(
-                "can't create rlc_user and user without commit equal to true"
+                "can't create org_user and user without commit equal to true"
             )
-        register_rlc_user(
+        register_org_user(
             None,
             self.cleaned_data["email"],
             self.cleaned_data["password1"],

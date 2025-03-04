@@ -31,13 +31,13 @@ router = Router()
     url="<uuid:uuid>/download/",
     output_schema=FileResponse,
 )
-def query__download_file(rlc_user: OrgUser, data: InputQueryFile):
+def query__download_file(org_user: OrgUser, data: InputQueryFile):
     f = get_object_or_404(
-        EncryptedRecordDocument, org_id=rlc_user.org_id, uuid=data.uuid
+        EncryptedRecordDocument, org_id=org_user.org_id, uuid=data.uuid
     )
 
     try:
-        file = f.download(rlc_user)
+        file = f.download(org_user)
     except FileNotFoundError:
         raise ApiError(
             "The file could not be found on the server. "
@@ -54,8 +54,8 @@ def query__download_file(rlc_user: OrgUser, data: InputQueryFile):
     url="<uuid:uuid>/",
     output_schema=OutputFile,
 )
-def query__retrieve_file(rlc_user: OrgUser, data: InputQueryFile):
+def query__retrieve_file(org_user: OrgUser, data: InputQueryFile):
     f = get_object_or_404(
-        EncryptedRecordDocument, org_id=rlc_user.org_id, uuid=data.uuid
+        EncryptedRecordDocument, org_id=org_user.org_id, uuid=data.uuid
     )
     return f

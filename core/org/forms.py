@@ -36,12 +36,12 @@ class OrgAdminForm(forms.ModelForm):
             user.set_password(self.cleaned_data["user_password"])
             user.save()
             # and rlc user
-            rlc_user = OrgUser(accepted=True, email_confirmed=True, user=user, org=rlc)
-            rlc_user.generate_keys(self.cleaned_data["user_password"])
-            rlc_user.save()
+            org_user = OrgUser(accepted=True, email_confirmed=True, user=user, org=rlc)
+            org_user.generate_keys(self.cleaned_data["user_password"])
+            org_user.save()
             # grant permissions
             for permission in get_all_permission_strings():
-                rlc_user.grant(permission)
+                org_user.grant(permission)
         # return
         return rlc
 

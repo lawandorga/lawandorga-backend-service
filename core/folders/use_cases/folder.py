@@ -11,7 +11,7 @@ from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.folders.use_cases.finders import (
     folder_from_uuid,
     group_from_uuid,
-    rlc_user_from_uuid,
+    org_user_from_uuid,
 )
 from core.permissions.static import PERMISSION_FOLDERS_TOGGLE_INHERITANCE
 from core.seedwork.message_layer import MessageBusActor
@@ -81,7 +81,7 @@ def delete_folder(__actor: OrgUser, folder_uuid: UUID, context: InjectionContext
 
 @use_case
 def grant_access(__actor: OrgUser, to_uuid: UUID, folder_uuid: UUID):
-    to = rlc_user_from_uuid(__actor, to_uuid)
+    to = org_user_from_uuid(__actor, to_uuid)
     folder = folder_from_uuid(__actor, folder_uuid)
 
     if not folder.has_access(__actor):
@@ -120,7 +120,7 @@ def revoke_access_from_group(__actor: OrgUser, group_uuid: UUID, folder_uuid: UU
 
 @use_case
 def revoke_access(__actor: OrgUser, of_uuid: UUID, folder_uuid: UUID):
-    of = rlc_user_from_uuid(__actor, of_uuid)
+    of = org_user_from_uuid(__actor, of_uuid)
     folder = folder_from_uuid(__actor, folder_uuid)
 
     if not folder.has_access(__actor):

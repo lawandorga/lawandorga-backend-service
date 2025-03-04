@@ -82,13 +82,13 @@ class OrgUser(Aggregate, models.Model):
         if user_pk:
             user.pk = user_pk
         user.set_password(password)
-        rlc_user = OrgUser(
+        org_user = OrgUser(
             user=user, email_confirmed=email_confirmed, accepted=accepted, org=org
         )
         if pk:
-            rlc_user.pk = pk
-        rlc_user.generate_keys(password)
-        return rlc_user
+            org_user.pk = pk
+        org_user.generate_keys(password)
+        return org_user
 
     STUDY_CHOICES = (
         ("LAW", "Law Sciences"),

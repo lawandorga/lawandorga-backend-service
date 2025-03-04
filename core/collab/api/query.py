@@ -49,8 +49,8 @@ class OutputLetterhead(BaseModel):
     url="letterhead/<uuid:uuid>/",
     output_schema=OutputLetterhead,
 )
-def query__letterhead(rlc_user: OrgUser, data: InputUuid):
-    letterhead = Letterhead.objects.get(uuid=data.uuid, org=rlc_user.org)
+def query__letterhead(org_user: OrgUser, data: InputUuid):
+    letterhead = Letterhead.objects.get(uuid=data.uuid, org=org_user.org)
     return letterhead
 
 
@@ -68,8 +68,8 @@ class OutputFooter(BaseModel):
     url="footer/<uuid:uuid>/",
     output_schema=OutputFooter,
 )
-def query__footer(rlc_user: OrgUser, data: InputUuid):
-    footer = Footer.objects.get(uuid=data.uuid, org=rlc_user.org)
+def query__footer(org_user: OrgUser, data: InputUuid):
+    footer = Footer.objects.get(uuid=data.uuid, org=org_user.org)
     return footer
 
 
@@ -88,16 +88,16 @@ class OutputTemplate(BaseModel):
     url="templates/",
     output_schema=list[OutputTemplate],
 )
-def query__templates(rlc_user: OrgUser):
-    return list(Template.objects.filter(org=rlc_user.org))
+def query__templates(org_user: OrgUser):
+    return list(Template.objects.filter(org=org_user.org))
 
 
 @router.get(
     url="template/<uuid:uuid>/",
     output_schema=OutputTemplate,
 )
-def query__template(rlc_user: OrgUser, data: InputUuid):
-    template = Template.objects.get(uuid=data.uuid, org=rlc_user.org)
+def query__template(org_user: OrgUser, data: InputUuid):
+    template = Template.objects.get(uuid=data.uuid, org=org_user.org)
     return template
 
 
@@ -110,10 +110,10 @@ class InputPdf(BaseModel):
     url="<uuid:uuid>/pdf/",
     output_schema=HttpResponse | FileResponse,
 )
-def query__collab_pdf(rlc_user: OrgUser, data: InputPdf):
+def query__collab_pdf(org_user: OrgUser, data: InputPdf):
     cr = CollabRepository()
     fr = DjangoFolderRepository()
-    collab = cr.get_document(data.uuid, rlc_user, fr)
+    collab = cr.get_document(data.uuid, org_user, fr)
     header = collab.template.letterhead if collab.template else None
     footer = collab.template.footer if collab.template else None
     html = loader.render_to_string(
@@ -141,9 +141,9 @@ def query__collab_pdf(rlc_user: OrgUser, data: InputPdf):
     url="template/<uuid:uuid>/pdf/",
     output_schema=HttpResponse | FileResponse,
 )
-def query__collab_template_pdf(rlc_user: OrgUser, data: InputPdf):
+def query__collab_template_pdf(org_user: OrgUser, data: InputPdf):
     template = Template.objects.select_related("letterhead", "footer").get(
-        uuid=data.uuid, org=rlc_user.org
+        uuid=data.uuid, org=org_user.org
     )
     html = loader.render_to_string(
         "collab/templates/template.html",
@@ -186,8 +186,8 @@ class OutputCollab(BaseModel):
     url="<uuid:uuid>/",
     output_schema=OutputCollab,
 )
-def query__data_sheet(rlc_user: OrgUser, data: InputUuid):
+def query__data_sheet(org_user: OrgUser, data: InputUuid):
     cr = CollabRepository()
     fr = DjangoFolderRepository()
-    collab = cr.get_document(data.uuid, rlc_user, fr)
+    collab = cr.get_document(data.uuid, org_user, fr)
     return collab

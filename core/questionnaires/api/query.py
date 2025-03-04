@@ -62,14 +62,14 @@ class InputQuestionnaire(BaseModel):
     url="<uuid:uuid>/",
     output_schema=OutputQuestionnaire,
 )
-def query__retrieve_questionnaire(rlc_user: OrgUser, data: InputQuestionnaire):
+def query__retrieve_questionnaire(org_user: OrgUser, data: InputQuestionnaire):
     questionnaire = (
         Questionnaire.objects.select_related("template")
         .prefetch_related("answers")
-        .get(template__rlc_id=rlc_user.org_id, uuid=data.uuid)
+        .get(template__rlc_id=org_user.org_id, uuid=data.uuid)
     )
     answers = [
-        answer.decrypt(user=rlc_user) for answer in list(questionnaire.answers.all())
+        answer.decrypt(user=org_user) for answer in list(questionnaire.answers.all())
     ]
     return {
         "id": questionnaire.pk,
@@ -91,8 +91,8 @@ class OutputTemplateList(BaseModel):
 
 
 @router.get("templates/", output_schema=list[OutputTemplateList])
-def query__list_templates(rlc_user: OrgUser):
-    return QuestionnaireTemplate.objects.filter(rlc=rlc_user.org)
+def query__list_templates(org_user: OrgUser):
+    return QuestionnaireTemplate.objects.filter(rlc=org_user.org)
 
 
 class OutputTemplateDetailField(BaseModel):
@@ -127,8 +127,8 @@ class InputRetrieveTemplate(BaseModel):
 
 
 @router.get("template/<int:id>/", output_schema=OutputTemplateDetail)
-def query__retrieve_template(rlc_user: OrgUser, data: InputRetrieveTemplate):
-    template = QuestionnaireTemplate.objects.filter(rlc=rlc_user.org).get(id=data.id)
+def query__retrieve_template(org_user: OrgUser, data: InputRetrieveTemplate):
+    template = QuestionnaireTemplate.objects.filter(rlc=org_user.org).get(id=data.id)
     return {
         "id": template.pk,
         "name": template.name,
@@ -157,11 +157,11 @@ class InputDownloadAnswerFile(BaseModel):
 
 
 @router.get("download_answer_file/<int:id>/", output_schema=FileResponse)
-def query__retrieve_answer_file(rlc_user: OrgUser, data: InputDownloadAnswerFile):
+def query__retrieve_answer_file(org_user: OrgUser, data: InputDownloadAnswerFile):
     answer = QuestionnaireAnswer.objects.get(
-        id=data.id, questionnaire__template__rlc__id=rlc_user.org_id
+        id=data.id, questionnaire__template__rlc__id=org_user.org_id
     )
-    answer.decrypt(user=rlc_user)
+    answer.decrypt(user=org_user)
     if answer.data is None:
         raise ApiError("This file does not exist.")
     file = answer.download_file(answer.aes_key)
@@ -240,9 +240,9 @@ class OutputDashboardQuestionnaire(BaseModel):
 
 
 @router.get("dashboard/", output_schema=list[OutputDashboardQuestionnaire])
-def questionnaire_information(rlc_user: OrgUser):
+def questionnaire_information(org_user: OrgUser):
     questionnaires = Questionnaire.objects.filter(
-        template__rlc_id=rlc_user.org_id
+        template__rlc_id=org_user.org_id
     ).select_related("template")
 
     questionnaire_data = []
@@ -251,7 +251,7 @@ def questionnaire_information(rlc_user: OrgUser):
         if (
             not questionnaire.answered
             and questionnaire.folder_uuid
-            and questionnaire.folder.has_access(rlc_user)
+            and questionnaire.folder.has_access(org_user)
         ):
             questionnaire_data.append(
                 {

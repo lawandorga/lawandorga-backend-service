@@ -36,8 +36,8 @@ router = Router()
     url="own/",
     output_schema=list[OutputTask],
 )
-def query__own_tasks(rlc_user: OrgUser):
-    tasks = Task.objects.filter(assignee=rlc_user)
+def query__own_tasks(org_user: OrgUser):
+    tasks = Task.objects.filter(assignee=org_user)
     return tasks
 
 
@@ -45,6 +45,6 @@ def query__own_tasks(rlc_user: OrgUser):
     url="created/",
     output_schema=list[OutputTask],
 )
-def query__created_tasks(rlc_user: OrgUser):
-    tasks = Task.objects.filter(creator=rlc_user)
+def query__created_tasks(org_user: OrgUser):
+    tasks = Task.objects.filter(creator=org_user)
     return tasks

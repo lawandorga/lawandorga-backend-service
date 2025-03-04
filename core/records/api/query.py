@@ -87,19 +87,19 @@ class QueryInput(BaseModel):
 
 
 @router.get(url="dashboard/", output_schema=OutputRecordsPage)
-def query__records_page(rlc_user: OrgUser, data: QueryInput):
+def query__records_page(org_user: OrgUser, data: QueryInput):
     rr = RecordRepository()
     fr = DjangoFolderRepository()
 
     records, total = rr.list(
-        rlc_user.org_id,
+        org_user.org_id,
         RrSearch(token=data.token, year=data.year, general=data.general),
         Pagination(limit=data.limit, offset=data.offset),
         data.order_by,
     )
     folder_uuids = list_map(records, lambda r: r.folder_uuid)
 
-    foldersl = fr.list_by_uuids(rlc_user.org_id, folder_uuids)
+    foldersl = fr.list_by_uuids(org_user.org_id, folder_uuids)
     folders = {f.uuid: f for f in foldersl}
 
     points = [RecordDataPoint(r, folders[r.folder_uuid]) for r in records]
@@ -110,7 +110,7 @@ def query__records_page(rlc_user: OrgUser, data: QueryInput):
             "token": p.token,
             "folder_uuid": p.folder_uuid,
             "attributes": p.attributes,
-            "has_access": p.has_access(rlc_user),
+            "has_access": p.has_access(org_user),
             "data_sheet_uuid": p.data_sheet_uuid,
         }
         for p in points
@@ -207,20 +207,20 @@ class OutputDashboardChangedRecord(BaseModel):
 
 
 @router.get("dashboard/changed/", output_schema=list[OutputDashboardChangedRecord])
-def changed_records_information(rlc_user: OrgUser):
+def changed_records_information(org_user: OrgUser):
     recordsqs = RecordsRecord.objects.filter(
-        org_id=rlc_user.org_id, updated__gt=timezone.now() - timedelta(days=10)
+        org_id=org_user.org_id, updated__gt=timezone.now() - timedelta(days=10)
     )
     records = list(recordsqs)
     folder_uuids = list_map(records, lambda x: x.folder_uuid)
     r = DjangoFolderRepository()
-    foldersl = r.list_by_uuids(org_pk=rlc_user.org_id, uuids=folder_uuids)
+    foldersl = r.list_by_uuids(org_pk=org_user.org_id, uuids=folder_uuids)
     folders = {folder.uuid: folder for folder in foldersl}
 
     changed_records_data = []
     for record in records:
         folder = folders[record.folder_uuid]
-        if not folder.has_access(rlc_user):
+        if not folder.has_access(org_user):
             continue
 
         changed_records_data.append(

@@ -45,7 +45,7 @@ class OutputOrgUserSmall(BaseModel):
 
 
 @router.get(output_schema=list[OutputOrgUserSmall])
-def list_rlc_users(org_user: OrgUser):
+def list_org_users(org_user: OrgUser):
     org_users = OrgUser.objects.filter(org=org_user.org)
     return list(org_users)
 
@@ -98,37 +98,37 @@ class InputOrgUserGet(BaseModel):
     url="<int:id>/",
     output_schema=OutputUser,
 )
-def retrieve(data: InputOrgUserGet, rlc_user: OrgUser):
-    found_rlc_user = OrgUser.objects.filter(id=data.id).first()
-    if found_rlc_user is None:
+def retrieve(data: InputOrgUserGet, org_user: OrgUser):
+    found_org_user = OrgUser.objects.filter(id=data.id).first()
+    if found_org_user is None:
         raise ApiError("The user could not be found.")
 
-    if found_rlc_user.org != rlc_user.org:
+    if found_org_user.org != org_user.org:
         raise ApiError("The user could not be found.")
 
-    if found_rlc_user.pk != rlc_user.pk and not rlc_user.has_permission(
+    if found_org_user.pk != org_user.pk and not org_user.has_permission(
         PERMISSION_ADMIN_MANAGE_USERS
     ):
-        found_rlc_user_ret: Any = OutputOrgUserSmall.model_validate(
-            found_rlc_user
+        found_org_user_ret: Any = OutputOrgUserSmall.model_validate(
+            found_org_user
         ).model_dump()
     else:
-        found_rlc_user_ret = found_rlc_user
+        found_org_user_ret = found_org_user
 
     permissions: Optional[list[HasPermission]] = None
-    if rlc_user.has_permission(PERMISSION_ADMIN_MANAGE_PERMISSIONS):
+    if org_user.has_permission(PERMISSION_ADMIN_MANAGE_PERMISSIONS):
         queryset = HasPermission.objects.filter(
-            Q(user__org=found_rlc_user.org)
-            | Q(group_has_permission__from_rlc=found_rlc_user.org)
+            Q(user__org=found_org_user.org)
+            | Q(group_has_permission__from_rlc=found_org_user.org)
         )
         queryset = queryset.select_related("permission", "group_has_permission", "user")
-        groups = found_rlc_user.groups.all()
+        groups = found_org_user.groups.all()
         queryset = queryset.filter(
-            Q(user=found_rlc_user) | Q(group_has_permission__in=groups)
+            Q(user=found_org_user) | Q(group_has_permission__in=groups)
         )
         permissions = list(queryset)
 
-    return {"user": found_rlc_user_ret, "permissions": permissions}
+    return {"user": found_org_user_ret, "permissions": permissions}
 
 
 class OutputOrgUser(BaseModel):
@@ -190,18 +190,18 @@ class OutputOrgUserData(BaseModel):
 
 
 @router.get(url="data_self/", output_schema=OutputOrgUserData)
-def query__data(rlc_user: OrgUser):
+def query__data(org_user: OrgUser):
     data = {
-        "user": rlc_user,
+        "user": org_user,
         "rlc": {
-            "id": rlc_user.org.pk,
-            "name": rlc_user.org.name,
-            "links": rlc_user.org.links,
-            "disable_files": not has_org_files(rlc_user.org),
+            "id": org_user.org.pk,
+            "name": org_user.org.name,
+            "links": org_user.org.links,
+            "disable_files": not has_org_files(org_user.org),
         },
-        "badges": rlc_user.badges,
-        "permissions": rlc_user.get_permissions(),
-        "settings": rlc_user.frontend_settings,
+        "badges": org_user.badges,
+        "permissions": org_user.get_permissions(),
+        "settings": org_user.frontend_settings,
     }
     return data
 
@@ -213,19 +213,19 @@ class OutputDashboardMember(BaseModel):
 
 
 @router.get("dashboard/", output_schema=None | list[OutputDashboardMember])
-def members_information(rlc_user: OrgUser):
-    if rlc_user.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
+def members_information(org_user: OrgUser):
+    if org_user.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
         members_data = []
         users = OrgUser.objects.filter(
-            org=rlc_user.org, created__gt=(timezone.now() - timedelta(days=14))
+            org=org_user.org, created__gt=(timezone.now() - timedelta(days=14))
         )
-        for rlc_user in list(users):
-            if rlc_user.groups.all().count() == 0:
+        for org_user in list(users):
+            if org_user.groups.all().count() == 0:
                 members_data.append(
                     {
-                        "name": rlc_user.user.name,
-                        "id": rlc_user.user.pk,
-                        "rlcuserid": rlc_user.pk,
+                        "name": org_user.user.name,
+                        "id": org_user.user.pk,
+                        "rlcuserid": org_user.pk,
                     }
                 )
         return members_data

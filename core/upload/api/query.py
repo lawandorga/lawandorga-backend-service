@@ -57,8 +57,8 @@ router = Router()
     url="<uuid:uuid>/",
     output_schema=OutputQueryLink,
 )
-def query__link(rlc_user: OrgUser, data: InputQueryLink):
-    link = get_object_or_404(UploadLink, org_id=rlc_user.org_id, uuid=data.uuid)
+def query__link(org_user: OrgUser, data: InputQueryLink):
+    link = get_object_or_404(UploadLink, org_id=org_user.org_id, uuid=data.uuid)
     return {
         "uuid": link.uuid,
         "name": link.name,
@@ -82,10 +82,10 @@ def query__link_public(anonymous_user: AnonymousUser, data: InputQueryLink):
     url="<uuid:link>/<uuid:file>/",
     output_schema=FileResponse,
 )
-def query__download_file(rlc_user: OrgUser, data: InputDownloadFile):
-    link = get_object_or_404(UploadLink, org_id=rlc_user.org_id, uuid=data.link)
+def query__download_file(org_user: OrgUser, data: InputDownloadFile):
+    link = get_object_or_404(UploadLink, org_id=org_user.org_id, uuid=data.link)
 
-    filename, file = link.download(data.file, rlc_user)
+    filename, file = link.download(data.file, org_user)
 
     response = FileResponse(
         file, filename=filename, content_type=mimetypes.guess_type(filename)[0]

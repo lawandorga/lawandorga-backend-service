@@ -8,7 +8,7 @@ from core.auth.token_generator import EmailConfirmationTokenGenerator
 from core.auth.use_cases.finders import (
     org_from_id_dangerous,
     org_user_from_id_dangerous,
-    rlc_user_from_id,
+    org_user_from_id,
 )
 from core.legal.models import LegalRequirement, LegalRequirementEvent
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS
@@ -16,7 +16,7 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case
-def register_rlc_user(
+def register_org_user(
     __actor: None,
     email: str,
     password: str,
@@ -33,8 +33,8 @@ def register_rlc_user(
     # user stuff
     user = UserProfile(email=email, name=name)
     user.set_password(password)
-    rlc_user = OrgUser(user=user, email_confirmed=False, org=org)
-    rlc_user.generate_keys(password)
+    org_user = OrgUser(user=user, email_confirmed=False, org=org)
+    org_user.generate_keys(password)
 
     # legal stuff
     lr_events = []
@@ -45,7 +45,7 @@ def register_rlc_user(
             )
         event = LegalRequirementEvent(
             legal_requirement=lr,
-            user=rlc_user,
+            user=org_user,
             actor=email,
             accepted=True,
             text="Accepted on registration.",
@@ -55,14 +55,14 @@ def register_rlc_user(
     # save
     with transaction.atomic():
         user.save()
-        rlc_user.save()
+        org_user.save()
         for lre in lr_events:
             lre.save()
-        assert rlc_user.key is not None
+        assert org_user.key is not None
 
     # send confirmation mail
     try:
-        rlc_user.send_email_confirmation_email()
+        org_user.send_email_confirmation_email()
     except SMTPRecipientsRefused:
         user.delete()
         raise UseCaseError(
@@ -73,7 +73,7 @@ def register_rlc_user(
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_USERS])
 def delete_user(__actor: OrgUser, other_user_id: int):
-    other_user = rlc_user_from_id(__actor, other_user_id)
+    other_user = org_user_from_id(__actor, other_user_id)
     delete_safe, folders = other_user.check_delete_is_safe()
     if not delete_safe:
         raise UseCaseError(
@@ -87,17 +87,17 @@ def delete_user(__actor: OrgUser, other_user_id: int):
 
 
 @use_case
-def confirm_email(__actor: None, rlc_user_id: int, token: str):
-    rlc_user = org_user_from_id_dangerous(__actor, rlc_user_id)
-    rlc_user.confirm_email(EmailConfirmationTokenGenerator, token)
-    rlc_user.save()
+def confirm_email(__actor: None, org_user_id: int, token: str):
+    org_user = org_user_from_id_dangerous(__actor, org_user_id)
+    org_user.confirm_email(EmailConfirmationTokenGenerator, token)
+    org_user.save()
 
 
 @use_case
-def unlock_user(__actor: OrgUser, another_rlc_user_id: int):
-    another_rlc_user = rlc_user_from_id(__actor, another_rlc_user_id)
-    another_rlc_user.unlock(__actor)
-    another_rlc_user.save()
+def unlock_user(__actor: OrgUser, another_org_user_id: int):
+    another_org_user = org_user_from_id(__actor, another_org_user_id)
+    another_org_user.unlock(__actor)
+    another_org_user.save()
 
 
 @use_case
@@ -131,18 +131,18 @@ def update_user_data(
         )
         raise UseCaseError(error)
 
-    rlc_user_to_update = OrgUser.objects.filter(id=other_user_id).first()
-    if rlc_user_to_update is None:
+    org_user_to_update = OrgUser.objects.filter(id=other_user_id).first()
+    if org_user_to_update is None:
         raise UseCaseError(
             "The user to be updated could not be found.",
         )
 
-    if rlc_user_to_update.org != __actor.org:
+    if org_user_to_update.org != __actor.org:
         raise UseCaseError(
             "The user to be updated could not be found.",
         )
 
-    rlc_user_to_update.update_information(
+    org_user_to_update.update_information(
         street=street,
         speciality_of_study=speciality_of_study,
         postal_code=postal_code,
@@ -150,12 +150,12 @@ def update_user_data(
         phone_number=phone_number,
         note=note,
     )
-    rlc_user_to_update.save()
+    org_user_to_update.save()
     if name:
-        rlc_user_to_update.user.name = name
-        rlc_user_to_update.user.save()
+        org_user_to_update.user.name = name
+        org_user_to_update.user.save()
 
-    return rlc_user_to_update
+    return org_user_to_update
 
 
 @use_case
@@ -165,8 +165,8 @@ def update_frontend_settings(__actor: OrgUser, data: dict[str, Any]):
 
 @use_case
 def activate_org_user(__actor: OrgUser, other_user_id: int):
-    rlc_user_to_update = OrgUser.objects.filter(id=other_user_id).first()
-    if rlc_user_to_update is None:
+    org_user_to_update = OrgUser.objects.filter(id=other_user_id).first()
+    if org_user_to_update is None:
         raise UseCaseError(
             "The user to be activated could not be found.",
         )
@@ -178,12 +178,12 @@ def activate_org_user(__actor: OrgUser, other_user_id: int):
             ),
         )
 
-    if __actor.pk == rlc_user_to_update.pk:
+    if __actor.pk == org_user_to_update.pk:
         raise UseCaseError(
             "You can not activate or deactivate yourself.",
         )
 
-    rlc_user_to_update.activate_or_deactivate()
-    rlc_user_to_update.save()
+    org_user_to_update.activate_or_deactivate()
+    org_user_to_update.save()
 
-    return rlc_user_to_update
+    return org_user_to_update

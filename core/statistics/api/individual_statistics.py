@@ -12,7 +12,7 @@ router = Router()
 @router.get(
     "user_actions_month/", output_schema=list[schemas.OutputIndividualUserActionsMonth]
 )
-def query__user_actions_month(rlc_user: OrgUser):
+def query__user_actions_month(org_user: OrgUser):
     if connection.vendor == "sqlite":
         statement = """
             select u.email as email, count(*) as actions
@@ -25,7 +25,7 @@ def query__user_actions_month(rlc_user: OrgUser):
             group by u.email
             order by count(*) desc;
             """.format(
-            rlc_user.org_id
+            org_user.org_id
         )
     else:
         statement = """
@@ -39,7 +39,7 @@ def query__user_actions_month(rlc_user: OrgUser):
             group by u.email
             order by count(*) desc;
             """.format(
-            rlc_user.org_id
+            org_user.org_id
         )
     data = execute_statement(statement)
     data = map(lambda x: {"email": x[0], "actions": x[1]}, data)
@@ -47,7 +47,7 @@ def query__user_actions_month(rlc_user: OrgUser):
 
 
 @router.get("record_states/", output_schema=list[schemas.OutputRecordStates])
-def query__record_states(rlc_user: OrgUser):
+def query__record_states(org_user: OrgUser):
     statement = """
              select state, count(amount) as amount
              from (
@@ -65,7 +65,7 @@ def query__record_states(rlc_user: OrgUser):
              ) as tmp
              group by state
              """.format(
-        rlc_user.org_id
+        org_user.org_id
     )
     data = execute_statement(statement)
     data = map(lambda x: {"state": x[0], "amount": x[1]}, data)
@@ -73,7 +73,7 @@ def query__record_states(rlc_user: OrgUser):
 
 
 @router.get("record_client_age/", output_schema=list[schemas.OutputRecordClientAge])
-def query__record_client_age(rlc_user: OrgUser):
+def query__record_client_age(org_user: OrgUser):
     statement = """
                 select
                 case when entry.value is null then 'Not-Set' else entry.value end as value,
@@ -85,7 +85,7 @@ def query__record_client_age(rlc_user: OrgUser):
                 where (field.name='Age in years of the client' or field.name is null) and template.rlc_id = {}
                 group by value
                 """.format(
-        rlc_user.org_id
+        org_user.org_id
     )
     data = execute_statement(statement)
     data = map(lambda x: {"value": x[0], "count": x[1]}, data)
@@ -96,7 +96,7 @@ def query__record_client_age(rlc_user: OrgUser):
     "record_client_nationality/",
     output_schema=list[schemas.OutputRecordClientNationality],
 )
-def query__record_client_nationality(rlc_user: OrgUser):
+def query__record_client_nationality(org_user: OrgUser):
     statement = """
            select
            case when entry.value is null then 'Not-Set' else entry.value end as value,
@@ -108,7 +108,7 @@ def query__record_client_nationality(rlc_user: OrgUser):
            where (field.name='Nationality of the client' or field.name is null) and template.rlc_id = {}
            group by value
            """.format(
-        rlc_user.org_id
+        org_user.org_id
     )
     data = execute_statement(statement)
     data = map(lambda x: {"value": x[0], "count": x[1]}, data)
@@ -116,7 +116,7 @@ def query__record_client_nationality(rlc_user: OrgUser):
 
 
 @router.get("record_client_state/", output_schema=list[schemas.OutputRecordClientState])
-def query__record_client_state(rlc_user: OrgUser):
+def query__record_client_state(org_user: OrgUser):
     statement = """
                 select
                 case when entry.value is null then 'Not-Set' else entry.value end as value,
@@ -128,7 +128,7 @@ def query__record_client_state(rlc_user: OrgUser):
                 where (field.name='Current status of the client' or field.name is null) and template.rlc_id = {}
                 group by value
                 """.format(
-        rlc_user.org_id
+        org_user.org_id
     )
     data = execute_statement(statement)
     data = map(lambda x: {"value": x[0], "count": x[1]}, data)
@@ -136,7 +136,7 @@ def query__record_client_state(rlc_user: OrgUser):
 
 
 @router.get("record_client_sex/", output_schema=list[schemas.OutputRecordClientSex])
-def query__record_client_sex(rlc_user: OrgUser):
+def query__record_client_sex(org_user: OrgUser):
     statement = """
                select
                case when entry.value is null then 'Not-Set' else entry.value end as value,
@@ -148,7 +148,7 @@ def query__record_client_sex(rlc_user: OrgUser):
                where (field.name='Sex of the client' or field.name is null) and template.rlc_id = {}
                group by value
                """.format(
-        rlc_user.org_id
+        org_user.org_id
     )
     data = execute_statement(statement)
     data = map(lambda x: {"value": x[0], "count": x[1]}, data)
@@ -156,7 +156,7 @@ def query__record_client_sex(rlc_user: OrgUser):
 
 
 @router.get("tag_stats/", output_schema=schemas.OutputRecordTagStats)
-def query__tag_stats(rlc_user: OrgUser):
+def query__tag_stats(org_user: OrgUser):
     if connection.vendor == "sqlite":
         example_data = {
             "tags": [
@@ -181,7 +181,7 @@ def query__tag_stats(rlc_user: OrgUser):
         group by tag
         order by count(*) desc
         """.format(
-        rlc_user.org_id
+        org_user.org_id
     )
     ret = {}
     data = execute_statement(statement)
@@ -214,7 +214,7 @@ def query__tag_stats(rlc_user: OrgUser):
         ) tmp3
         group by name
         """.format(
-        rlc_user.org_id
+        org_user.org_id
     )
     data = execute_statement(statement)
     data = list(map(lambda x: {"state": x[0], "count": x[1]}, data))

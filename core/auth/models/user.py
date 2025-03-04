@@ -71,9 +71,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             raise DomainError("The password is not correct.")
         self.set_password(new_password)
         if hasattr(self, "org_user"):
-            rlc_user = self.org_user
-            rlc_user.change_password_for_keys(new_password)
-            return [self, rlc_user]
+            org_user = self.org_user
+            org_user.change_password_for_keys(new_password)
+            return [self, org_user]
         return [self]
 
     def has_permission(self, permission: Union[str, "Permission"]) -> bool:
