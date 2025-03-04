@@ -7,8 +7,8 @@ from core.auth.models import OrgUser, UserProfile
 from core.auth.token_generator import EmailConfirmationTokenGenerator
 from core.auth.use_cases.finders import (
     org_from_id_dangerous,
-    org_user_from_id_dangerous,
     org_user_from_id,
+    org_user_from_id_dangerous,
 )
 from core.legal.models import LegalRequirement, LegalRequirementEvent
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS

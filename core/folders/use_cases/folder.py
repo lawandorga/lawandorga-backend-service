@@ -2,7 +2,6 @@ from typing import Optional
 from uuid import UUID
 
 from core.auth.models import OrgUser
-from core.auth.use_cases.finders import org_user_from_uuid
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.domain.repositories.item import ItemRepository
