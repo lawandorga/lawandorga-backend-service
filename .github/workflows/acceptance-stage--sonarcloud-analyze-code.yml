@@ -33,6 +33,7 @@ jobs:
         with:
           workflow: pipeline.yml
           name: coverage
+          commit: ${{ github.event.workflow_run.head_commit.id }}
 
       - name: Scan
         uses: SonarSource/sonarqube-scan-action@master
