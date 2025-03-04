@@ -1,10 +1,10 @@
 name: Acceptance Stage - Analyze Code With Sonarcloud
 
 on:
-  workflow_run:
-    workflows: [".github/workflows/commit-stage--run-tests.yml"]
-    types:
-      - completed
+  workflow_call:
+    secrets:
+      SONAR_TOKEN:
+        required: true
 
 jobs:
   scan:
@@ -31,7 +31,7 @@ jobs:
       - name: Download Test Results
         uses: dawidd6/action-download-artifact@v9
         with:
-          workflow: commit-stage--run-tests.yml
+          workflow: pipeline.yml
           name: coverage
 
       - name: Scan

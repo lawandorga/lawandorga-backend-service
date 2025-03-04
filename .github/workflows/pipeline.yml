@@ -11,7 +11,6 @@ jobs:
     secrets:
       SCW_DOCKER_REGISTRY: ${{ secrets.SCW_DOCKER_REGISTRY }}
       SCW_TOKEN: ${{ secrets.SCW_TOKEN }}
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   acceptance:
     needs: [commit]
