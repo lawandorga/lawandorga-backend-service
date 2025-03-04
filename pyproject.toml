@@ -18,24 +18,6 @@ ignore_missing_settings = true
 known_local_folder = ["dms", "seedwork"]
 profile = "black"
 
-[tool.flake8]
-
-max-line-length = 500
-extend-ignore = ["E203"]
-exclude = [
-    "__init__.py",
-    "config/settings/local.py",
-    "config/settings/local_postgres.py",
-    "config/settings/local_production.py",
-    "config/settings/production.py",
-    "config/settings/testing.py",
-    "core/forms.py",
-    "core/views.py",
-    "core/models.py",
-    "core/tests.py",
-    "core/admin.py"
-]
-
 [tool.ruff]
 
 line-length = 500

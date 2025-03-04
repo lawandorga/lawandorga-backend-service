@@ -39,9 +39,6 @@ jobs:
 
       - name: Run Isort
         run: isort .
-      
-      - name: Run Flake
-        run: flake8 .
 
       - name: Run MyPy
         run: mypy .

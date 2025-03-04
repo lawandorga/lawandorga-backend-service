@@ -21,7 +21,3 @@ repos:
             -   id: mypy
                 language: system
                 exclude: migrations
-    -   repo: https://github.com/pycqa/flake8
-        rev: '6.0.0'
-        hooks:
-            -   id: flake8
