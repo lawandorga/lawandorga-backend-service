@@ -18,14 +18,14 @@ class Migration(migrations.Migration):
             model_name="collabdocument",
             name="rlc",
         ),
-        migrations.RemoveField(
-            model_name="permissionforcollabdocument",
-            name="document",
-        ),
-        migrations.RemoveField(
-            model_name="permissionforcollabdocument",
-            name="permission",
-        ),
+        # migrations.RemoveField(
+        #     model_name="permissionforcollabdocument",
+        #     name="document",
+        # ),
+        # migrations.RemoveField(
+        #     model_name="permissionforcollabdocument",
+        #     name="permission",
+        # ),
         migrations.AlterUniqueTogether(
             name="permissionforcollabdocument",
             unique_together=None,
