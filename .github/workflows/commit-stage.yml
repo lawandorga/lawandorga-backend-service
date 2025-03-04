@@ -9,6 +9,12 @@ on:
         required: true
 
 jobs:
+  analyze:
+    name: Analyze
+    uses: ./.github/workflows/acceptance-stage--sonarcloud-analyze-code.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      
   build:
     name: Build Image
     uses: ./.github/workflows/commit-stage--build-image.yml

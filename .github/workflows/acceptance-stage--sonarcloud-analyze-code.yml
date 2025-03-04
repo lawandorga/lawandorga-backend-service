@@ -28,11 +28,11 @@ jobs:
           path: ${{ env.pythonLocation }}
           key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
 
-      - name: Download Test Results
-        uses: dawidd6/action-download-artifact@v9
-        with:
-          workflow: commit-stage.yml
-          name: coverage
+      # - name: Download Test Results
+      #   uses: dawidd6/action-download-artifact@v9
+      #   with:
+      #     workflow: commit-stage.yml
+      #     name: coverage
 
       - name: Scan
         uses: SonarSource/sonarqube-scan-action@master
