@@ -3,7 +3,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
-from core.rlc.models import ExternalLink, Group, Note
+from core.org.models import ExternalLink, Group, Note
 from core.seedwork.api_layer import Router
 
 

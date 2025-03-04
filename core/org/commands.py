@@ -1,4 +1,4 @@
-from core.rlc.use_cases.group import (
+from core.org.use_cases.group import (
     add_member_to_group,
     correct_group_keys_of_others,
     create_group,
@@ -6,9 +6,9 @@ from core.rlc.use_cases.group import (
     remove_member_from_group,
     update_group,
 )
-from core.rlc.use_cases.link import create_link, delete_link
-from core.rlc.use_cases.note import create_note, delete_note, update_note
-from core.rlc.use_cases.org import accept_member_to_org
+from core.org.use_cases.link import create_link, delete_link
+from core.org.use_cases.note import create_note, delete_note, update_note
+from core.org.use_cases.org import accept_member_to_org
 
 COMMANDS = {
     "org/create_group": create_group,

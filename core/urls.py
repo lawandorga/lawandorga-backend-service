@@ -11,9 +11,9 @@ from core.internal.urls import urlpatterns as internal_urlpatterns
 from core.legal.urls import urlpatterns as legal_urlpatterns
 from core.mail.urls import urlpatterns as mail_urlpatterns
 from core.messages.urls import urlpatterns as messages_urlpatterns
+from core.org.urls import urlpatterns as org_urlpatterns
 from core.questionnaires.urls import urlpatterns as questionnaires_urlpatterns
 from core.records.urls import urlpatterns as records_urlpatterns
-from core.rlc.urls import urlpatterns as org_urlpatterns
 from core.statistics.urls import urlpatterns as statistics_urlpatterns
 from core.upload.urls import urlpatterns as upload_urlpatterns
 

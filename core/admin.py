@@ -9,11 +9,11 @@ from .internal.admin import *
 from .legal.admin import *
 from .mail.admin import *
 from .mail_imports.admin import *
+from .org.admin import *
 from .other.admin import *
 from .permissions.admin import *
 from .questionnaires.admin import *
 from .records.admin import *
-from .rlc.admin import *
 from .statistics.admin import *
 from .tasks.admin import *
 from .upload.admin import *

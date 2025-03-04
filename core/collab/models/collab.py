@@ -8,7 +8,7 @@ from core.collab.models.template import Template
 from core.collab.value_objects.document import Document, EncryptedDocument
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_addon import FolderAddon
-from core.rlc.models.org import Org
+from core.org.models.org import Org
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.events_addon import EventsAddon
 

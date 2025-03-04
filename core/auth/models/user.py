@@ -11,7 +11,7 @@ from core.seedwork.domain_layer import DomainError
 
 if TYPE_CHECKING:
     from core.models import MailUser, MatrixUser, OrgUser, Permission, StatisticUser
-    from core.rlc.models.org_encryption import OrgEncryption
+    from core.org.models.org_encryption import OrgEncryption
 
 
 class UserProfileManager(BaseUserManager):

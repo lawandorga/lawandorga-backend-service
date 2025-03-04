@@ -4,8 +4,8 @@ import pytest
 from django.test import Client
 
 from core.models import Org
+from core.org.models import Group
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_GROUPS
-from core.rlc.models import Group
 from core.seedwork import test_helpers as data
 
 

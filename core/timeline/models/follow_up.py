@@ -6,7 +6,7 @@ from django.db import models
 
 from core.auth.models.org_user import OrgUser
 from core.folders.domain.aggregates.folder import Folder
-from core.rlc.models.org import Org
+from core.org.models.org import Org
 from core.timeline.models.utils import EncryptDecryptMethods
 
 

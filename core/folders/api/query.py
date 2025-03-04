@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict
 from core.auth.models import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.use_cases.folder import get_repository
-from core.rlc.models.group import Group
+from core.org.models.group import Group
 from core.seedwork.api_layer import ApiError, Router
 
 router = Router()

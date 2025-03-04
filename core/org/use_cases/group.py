@@ -2,9 +2,9 @@ from uuid import UUID
 
 from core.auth.models import OrgUser
 from core.auth.use_cases.finders import rlc_user_from_id
+from core.org.models import Group
+from core.org.use_cases.finders import group_from_id
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_GROUPS
-from core.rlc.models import Group
-from core.rlc.use_cases.finders import group_from_id
 from core.seedwork.message_layer import MessageBusActor
 from core.seedwork.use_case_layer import UseCaseError, use_case
 

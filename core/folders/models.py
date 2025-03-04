@@ -4,7 +4,7 @@ from uuid import uuid4
 from django.db import models
 from django.db.models import QuerySet
 
-from core.rlc.models import Org
+from core.org.models import Org
 
 
 class FOL_Folder(models.Model):

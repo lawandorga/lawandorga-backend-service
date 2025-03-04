@@ -8,11 +8,11 @@ from core.data_sheets.models import DataSheet, DataSheetTemplate
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.models import OrgUser, UserProfile
+from core.org.models import Group, Org
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models.template import QuestionnaireTemplate
 from core.records.models.record import RecordsRecord
 from core.records.use_cases.record import create_record_and_folder as uc_create_record
-from core.rlc.models import Group, Org
 
 
 def create_questionnaire_template(

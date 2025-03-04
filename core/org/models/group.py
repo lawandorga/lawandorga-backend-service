@@ -9,7 +9,7 @@ from core.folders.domain.value_objects.symmetric_key import (
     SymmetricKey,
 )
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
-from core.rlc.models.org import Org
+from core.org.models.org import Org
 from core.seedwork.domain_layer import DomainError
 
 if TYPE_CHECKING:

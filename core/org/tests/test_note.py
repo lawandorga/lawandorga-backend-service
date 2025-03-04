@@ -2,8 +2,8 @@ import pytest
 from django.test import Client
 
 from core.models import Note, Org
+from core.org.use_cases.note import create_note, delete_note, update_note
 from core.permissions.static import PERMISSION_DASHBOARD_MANAGE_NOTES
-from core.rlc.use_cases.note import create_note, delete_note, update_note
 from core.seedwork import test_helpers
 
 

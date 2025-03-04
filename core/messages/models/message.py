@@ -12,7 +12,7 @@ from core.folders.domain.value_objects.symmetric_key import (
 )
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
-from core.rlc.models import Org
+from core.org.models import Org
 from core.seedwork.encryption import AESEncryption
 
 

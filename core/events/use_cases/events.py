@@ -4,7 +4,7 @@ import bleach
 
 from core.auth.models.org_user import OrgUser
 from core.events.models.event import EventsEvent
-from core.rlc.models.org import Org
+from core.org.models.org import Org
 from core.seedwork.use_case_layer import UseCaseError, use_case
 
 

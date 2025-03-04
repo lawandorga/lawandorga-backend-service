@@ -9,8 +9,8 @@ from core.auth.models import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.item import ItemRepository
 from core.folders.infrastructure.folder_addon import FolderAddon
+from core.org.models import Org
 from core.records.helpers import merge_attrs
-from core.rlc.models import Org
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.events_addon import EventsAddon

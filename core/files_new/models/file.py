@@ -14,7 +14,7 @@ from core.folders.domain.value_objects.symmetric_key import (
 )
 from core.folders.infrastructure.folder_addon import FolderAddon
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
-from core.rlc.models import Org
+from core.org.models import Org
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.events_addon import EventsAddon
 from core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_file

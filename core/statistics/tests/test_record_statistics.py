@@ -9,7 +9,7 @@ from core.data_sheets.models import (
     DataSheetStateField,
     DataSheetTemplate,
 )
-from core.rlc.models import Org
+from core.org.models import Org
 from core.seedwork import test_helpers as data
 
 

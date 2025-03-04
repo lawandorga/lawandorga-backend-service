@@ -1,7 +1,7 @@
 from django.db import models, transaction
 
 from core.auth.models.user import UserProfile
-from core.rlc.models import Org
+from core.org.models import Org
 from core.seedwork.encryption import EncryptedModelMixin, RSAEncryption
 
 

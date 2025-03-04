@@ -6,4 +6,4 @@ class CoreConfig(AppConfig):
 
     def ready(self) -> None:
         import core.folders.handlers  # noqa: F401
-        import core.rlc.handlers  # noqa: F401
+        import core.org.handlers  # noqa: F401

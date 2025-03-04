@@ -3,7 +3,7 @@ from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import UserProfile
 from core.legal.models import LegalRequirement
-from core.rlc.models import Org
+from core.org.models import Org
 from core.seedwork.api_layer import Router
 
 router = Router()

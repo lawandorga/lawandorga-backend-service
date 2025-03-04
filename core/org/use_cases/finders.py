@@ -1,5 +1,5 @@
 from core.auth.models import OrgUser
-from core.rlc.models import Group, Note
+from core.org.models import Group, Note
 from core.seedwork.use_case_layer import finder_function
 
 

@@ -5,7 +5,7 @@ from core.auth.models import OrgUser, UserProfile
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.folders.models import FOL_ClosureTable, FOL_Folder
-from core.rlc.models import Org
+from core.org.models import Org
 
 
 @pytest.fixture

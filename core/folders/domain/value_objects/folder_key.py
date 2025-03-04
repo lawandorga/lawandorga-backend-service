@@ -15,7 +15,7 @@ from seedwork.types import JsonDict
 
 if TYPE_CHECKING:
     from core.auth.models.org_user import OrgUser
-    from core.rlc.models.group import Group
+    from core.org.models.group import Group
 
 
 class FolderKey(abc.ABC):

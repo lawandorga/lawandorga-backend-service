@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from core.events.models import EventsEvent
 from core.events.use_cases.events import create_event, delete_event, update_event
-from core.rlc.models import Meta, Org
+from core.org.models import Meta, Org
 from core.seedwork import test_helpers as data
 
 

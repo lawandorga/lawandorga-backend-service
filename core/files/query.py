@@ -1,5 +1,5 @@
 from core.files.models.file import File
-from core.rlc.models.org import Org
+from core.org.models.org import Org
 
 
 def has_org_files(org: Org) -> bool:

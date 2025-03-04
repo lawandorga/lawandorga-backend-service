@@ -4,8 +4,8 @@ from core.auth.models.org_user import OrgUser
 from core.auth.use_cases.keys import check_keys
 from core.collab.models.collab import Collab
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-from core.rlc.models.group import Group
-from core.rlc.models.org import Org
+from core.org.models.group import Group
+from core.org.models.org import Org
 
 COLLAB_UUID = ""
 GROUP_PK = 0

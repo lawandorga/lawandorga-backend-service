@@ -4,7 +4,7 @@ from uuid import uuid4
 from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 
-from core.rlc.models.org import Org
+from core.org.models.org import Org
 from core.seedwork.domain_layer import DomainError
 
 

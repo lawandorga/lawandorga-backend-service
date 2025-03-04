@@ -6,7 +6,7 @@ from django.db import models
 from core.auth.models.org_user import OrgUser
 from core.collab.models.footer import Footer
 from core.collab.models.letterhead import Letterhead
-from core.rlc.models.org import Org
+from core.org.models.org import Org
 
 
 class Template(models.Model):

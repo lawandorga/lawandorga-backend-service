@@ -4,7 +4,7 @@ from django.db import models
 
 if TYPE_CHECKING:
     from core.auth.models.org_user import OrgUser
-    from core.rlc.models.group import Group
+    from core.org.models.group import Group
 
 
 class Permission(models.Model):

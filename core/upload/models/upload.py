@@ -20,7 +20,7 @@ from core.folders.domain.value_objects.symmetric_key import (
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.folders.infrastructure.folder_addon import FolderAddon
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
-from core.rlc.models import Org
+from core.org.models import Org
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.encryption import AESEncryption

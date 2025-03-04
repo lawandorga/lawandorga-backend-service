@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from core.rlc.tests import example_data as ed
+from core.org.tests import example_data as ed
 
 
 class ExampleDataTestCase(TestCase):

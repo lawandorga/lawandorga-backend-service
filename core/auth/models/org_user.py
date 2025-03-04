@@ -19,13 +19,13 @@ from core.folders.domain.value_objects.asymmetric_key import (
     EncryptedAsymmetricKey,
 )
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
+from core.org.models import Org, OrgEncryption
 from core.permissions.models import HasPermission, Permission
 from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
-from core.rlc.models import Org, OrgEncryption
 from core.seedwork.aggregate import Aggregate
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.events_addon import EventsAddon
@@ -37,7 +37,7 @@ from seedwork.functional import list_filter, list_map
 if TYPE_CHECKING:
     from core.auth.models.mfa import MultiFactorAuthenticationSecret
     from core.folders.domain.value_objects.folder_key import EncryptedFolderKeyOfUser
-    from core.rlc.models.group import Group
+    from core.org.models.group import Group
 
 
 class KeyOfUser(TypedDict):

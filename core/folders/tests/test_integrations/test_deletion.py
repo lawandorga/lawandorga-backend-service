@@ -17,6 +17,7 @@ from core.files_new.models.file import EncryptedRecordDocument, FileRepository
 from core.files_new.use_cases.file import upload_a_file
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
+from core.org.models import Org
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models.questionnaire import (
     Questionnaire,
@@ -24,7 +25,6 @@ from core.questionnaires.models.questionnaire import (
 )
 from core.questionnaires.models.template import QuestionnaireTemplate
 from core.questionnaires.use_cases.questionnaire import publish_a_questionnaire
-from core.rlc.models import Org
 from core.timeline.models.event import TimelineEvent
 from core.timeline.models.follow_up import TimelineFollowUp
 from core.timeline.repositories.event import EventRepository

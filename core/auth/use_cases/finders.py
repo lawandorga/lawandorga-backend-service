@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from core.auth.models import OrgUser
-from core.rlc.models import Org
+from core.org.models import Org
 from core.seedwork.message_layer import MessageBusActor
 from core.seedwork.use_case_layer import finder_function
 

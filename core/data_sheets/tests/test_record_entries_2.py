@@ -35,12 +35,12 @@ from core.data_sheets.models.template import (
 )
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.models import UserProfile
+from core.org.models.org import Org
 from core.permissions.models import HasPermission, Permission
 from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
     PERMISSION_RECORDS_ADD_RECORD,
 )
-from core.rlc.models.org import Org
 from core.seedwork import test_helpers
 
 

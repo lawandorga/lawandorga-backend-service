@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from django.db import models
 
-from core.rlc.models.org import Org
+from core.org.models.org import Org
 
 
 class Footer(models.Model):

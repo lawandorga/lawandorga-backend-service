@@ -41,9 +41,9 @@ from core.models import (
     Permission,
     UserProfile,
 )
+from core.org.models import Org
 from core.permissions import static
 from core.questionnaires.models import QuestionnaireQuestion, QuestionnaireTemplate
-from core.rlc.models import Org
 from core.seedwork.encryption import AESEncryption
 
 

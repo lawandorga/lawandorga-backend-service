@@ -1,6 +1,6 @@
 import pytest
 
-from core.rlc.models import Org
+from core.org.models import Org
 
 
 @pytest.fixture

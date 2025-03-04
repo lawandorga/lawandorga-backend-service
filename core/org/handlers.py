@@ -1,5 +1,5 @@
 from core.auth.models.org_user import OrgUser
-from core.rlc.use_cases.group import invalidate_keys_of
+from core.org.use_cases.group import invalidate_keys_of
 from core.seedwork.message_layer import MessageBusActor
 from messagebus.domain.bus import MessageBus
 

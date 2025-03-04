@@ -9,11 +9,11 @@ from .internal.models import *
 from .legal.models import *
 from .mail.models import *
 from .mail_imports.models import *
+from .org.models import *
 from .other.models import *
 from .permissions.models import *
 from .playground.models import *
 from .records.models import *
-from .rlc.models import *
 from .tasks.models import Task
 from .timeline.models.event import TimelineEvent
 from .timeline.models.follow_up import TimelineFollowUp

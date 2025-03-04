@@ -1,9 +1,9 @@
 import pytest
 
 from core.auth.models import OrgUser
+from core.org.models import Group
+from core.org.use_cases.group import create_group
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_GROUPS
-from core.rlc.models import Group
-from core.rlc.use_cases.group import create_group
 from core.seedwork import test_helpers
 
 

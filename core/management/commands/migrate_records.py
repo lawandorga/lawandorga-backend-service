@@ -6,8 +6,8 @@ from django.db import transaction
 from core.data_sheets.models.data_sheet import DataSheet
 from core.folders.domain.value_objects.folder_item import FolderItem
 from core.folders.models import FOL_Folder
+from core.org.models.org import Org
 from core.records.models.record import RecordsRecord
-from core.rlc.models.org import Org
 
 
 class Command(BaseCommand):

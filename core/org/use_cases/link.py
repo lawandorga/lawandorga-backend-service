@@ -3,7 +3,7 @@ from uuid import UUID
 from pydantic import AnyUrl
 
 from core.auth.models.org_user import OrgUser
-from core.rlc.models.org import ExternalLink
+from core.org.models.org import ExternalLink
 from core.seedwork.use_case_layer import use_case
 
 

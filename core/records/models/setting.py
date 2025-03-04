@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models import Q
 
 from core.auth.models import OrgUser
-from core.rlc.models.org import Org
+from core.org.models.org import Org
 
 
 class RecordsView(models.Model):

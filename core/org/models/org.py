@@ -18,9 +18,9 @@ if TYPE_CHECKING:
     from core.events.models import EventsEvent
     from core.files.models.folder import Folder
     from core.folders.models import FOL_Folder
+    from core.org.models.group import Group
     from core.questionnaires.models.template import QuestionnaireTemplate
     from core.records.models.record import RecordsRecord
-    from core.rlc.models.group import Group
 
 
 class Org(EncryptedModelMixin, models.Model):

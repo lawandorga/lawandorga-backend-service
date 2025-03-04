@@ -8,10 +8,10 @@ from core.legal.usecases import USECASES as LEGAL_USECASES
 from core.mail.usecases import USECASES as MAIL_USECASES
 from core.mail_imports.usecases import USECASES as MAIL_IMPORTS_USECASES
 from core.messages.usecases import USECASES as MESSAGES_USECASES
+from core.org.commands import COMMANDS as ORG_COMMANDS
 from core.permissions.usecases import USECASES as PERMISSIONS_USECASES
 from core.questionnaires.commands import COMMANDS as QUESTIONNAIRE_COMMANDS
 from core.records.usecases import USECASES as RECORDS_USECASES
-from core.rlc.commands import COMMANDS as ORG_COMMANDS
 from core.tasks.usecases import USECASES as TASKS_USECASES
 from core.timeline.commands import COMMANDS as TIMELINE_USECASES
 from core.upload.usecases import USECASES as UPLOAD_USECASES

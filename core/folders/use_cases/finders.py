@@ -3,7 +3,7 @@ from uuid import UUID
 from core.auth.models import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-from core.rlc.models.group import Group
+from core.org.models.group import Group
 from core.seedwork.message_layer import MessageBusActor
 from core.seedwork.use_case_layer import finder_function
 

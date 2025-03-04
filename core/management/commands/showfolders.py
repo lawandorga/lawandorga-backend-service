@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 
 from core.auth.models.org_user import OrgUser
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-from core.rlc.models.org import Org
+from core.org.models.org import Org
 
 EMAIL = ""
 PK = 0

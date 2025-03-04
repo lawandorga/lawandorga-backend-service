@@ -1,6 +1,6 @@
 from core.auth.use_cases.user import set_password_of_myself
-from core.rlc.models.group import Group
-from core.rlc.use_cases.group import correct_group_keys_of_others
+from core.org.models.group import Group
+from core.org.use_cases.group import correct_group_keys_of_others
 from core.seedwork import test_helpers
 
 
