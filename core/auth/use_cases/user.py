@@ -16,8 +16,8 @@ def set_password_of_myself(__actor: UserProfile, password: str) -> UserProfile:
     __actor.set_password(password)
     org_user: Optional[OrgUser] = None
 
-    if hasattr(__actor, "rlc_user"):
-        org_user = __actor.rlc_user
+    if hasattr(__actor, "org_user"):
+        org_user = __actor.org_user
 
     if org_user:
         org_user.generate_keys(password)
@@ -36,8 +36,8 @@ def set_password_of_myself(__actor: UserProfile, password: str) -> UserProfile:
 
 @use_case
 def run_user_login_checks(__actor: UserProfile, password: str):
-    if hasattr(__actor, "rlc_user"):
-        rlc_user: OrgUser = __actor.rlc_user
+    if hasattr(__actor, "org_user"):
+        rlc_user: OrgUser = __actor.org_user
 
         # generate key if not existent
         if rlc_user.key is None or rlc_user.key == {}:

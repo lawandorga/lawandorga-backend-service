@@ -2,7 +2,7 @@ import pytest
 from django.conf import settings
 from django.test import Client
 
-from core.auth.use_cases.rlc_user import delete_user, unlock_user
+from core.auth.use_cases.org_user import delete_user, unlock_user
 from core.auth.use_cases.user import change_password_of_user
 from core.folders.domain.value_objects.asymmetric_key import EncryptedAsymmetricKey
 from core.models import OrgUser, UserProfile

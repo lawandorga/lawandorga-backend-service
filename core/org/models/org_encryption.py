@@ -50,7 +50,7 @@ class OrgEncryption(EncryptedModelMixin, models.Model):
         try:
             super().decrypt(private_key_user)
         except Exception as e:
-            objs = self.user.rlc_user.test_keys()
+            objs = self.user.org_user.test_keys()
             with transaction.atomic():
                 for obj in objs:
                     obj.save()

@@ -103,7 +103,7 @@ class OrgUser(Aggregate, models.Model):
         ("NONE", "None"),
     )
     user = models.OneToOneField(
-        UserProfile, on_delete=models.CASCADE, related_name="rlc_user"
+        UserProfile, on_delete=models.CASCADE, related_name="org_user"
     )
     org = models.ForeignKey(Org, related_name="users", on_delete=models.PROTECT)
     uuid = models.UUIDField(default=uuid4, unique=True, db_index=True)

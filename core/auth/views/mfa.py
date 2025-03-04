@@ -34,13 +34,13 @@ class MfaStatusView(LoginRequiredMixin, GetUserMixin, generic.TemplateView):
         if not hasattr(user, "rlc_user"):
             context["mfa_impossible"] = True
             return context
-        context["mfa_setup"] = hasattr(user.rlc_user, "mfa_secret")
+        context["mfa_setup"] = hasattr(user.org_user, "mfa_secret")
         context["mfa_enabled"] = (
-            context["mfa_setup"] and user.rlc_user.mfa_secret.enabled
+            context["mfa_setup"] and user.org_user.mfa_secret.enabled
         )
         context["frontend_url"] = settings.MAIN_FRONTEND_URL
-        if hasattr(user.rlc_user, "mfa_secret"):
-            context["mfa_secret"] = user.rlc_user.mfa_secret
+        if hasattr(user.org_user, "mfa_secret"):
+            context["mfa_secret"] = user.org_user.mfa_secret
         return context
 
 

@@ -15,7 +15,7 @@ from core.seedwork.use_case_layer import UseCaseError, check_permissions, use_ca
 
 @use_case
 def create_mail_user(__actor: UserProfile):
-    if not hasattr(__actor, "rlc_user"):
+    if not hasattr(__actor, "org_user"):
         raise UseCaseError(
             "At the moment mail users can only be created for users with an org user role."
         )
@@ -23,7 +23,7 @@ def create_mail_user(__actor: UserProfile):
     if hasattr(__actor, "mail_user"):
         raise UseCaseError("A mail user already exists for this user.")
 
-    org = __actor.rlc_user.org
+    org = __actor.org_user.org
     users = [u.user for u in list(org.users.select_related("user").all())]
 
     mail_org = None

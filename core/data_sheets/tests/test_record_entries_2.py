@@ -63,12 +63,12 @@ def setup():
     rlc_user.save()
     template = DataSheetTemplate.objects.create(rlc=rlc, name="Record Template")
     permission = Permission.objects.get(name=PERMISSION_RECORDS_ADD_RECORD)
-    HasPermission.objects.create(user=user.rlc_user, permission=permission)
+    HasPermission.objects.create(user=user.org_user, permission=permission)
     permission = Permission.objects.get(name=PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES)
     HasPermission.objects.create(user=rlc_user, permission=permission)
     template = DataSheetTemplate.objects.create(rlc=rlc, name="Record Template")
     record = test_helpers.create_data_sheet(template, [user])["record"]
-    aes_key_record = record.get_aes_key(user.rlc_user)
+    aes_key_record = record.get_aes_key(user.org_user)
     yield {
         "login": {"email": user.email, "password": settings.DUMMY_USER_PASSWORD},
         "record": record,

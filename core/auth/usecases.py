@@ -1,6 +1,6 @@
 from core.auth.use_cases.keys import check_keys
 from core.auth.use_cases.matrix_user import create_matrix_user
-from core.auth.use_cases.rlc_user import (
+from core.auth.use_cases.org_user import (
     activate_rlc_user,
     delete_user,
     unlock_myself,

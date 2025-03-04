@@ -19,7 +19,7 @@ class UserProfileManager(BaseUserManager):
         return (
             super()
             .get_queryset()
-            .select_related("rlc_user", "statistic_user", "internal_user", "mail_user")
+            .select_related("org_user", "statistic_user", "internal_user", "mail_user")
         )
 
 
@@ -38,7 +38,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     if TYPE_CHECKING:
         users_rlc_keys: models.QuerySet["OrgEncryption"]
-        rlc_user: "OrgUser"
+        org_user: "OrgUser"
         statistic_user: "StatisticUser"
         matrix_user: "MatrixUser"
         mail_user: "MailUser"
@@ -64,34 +64,26 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     @property
     def rlc(self):
-        return self.rlc_user.org
+        return self.org_user.org
 
     def change_password(self, old_password, new_password):
         if not self.check_password(old_password):
             raise DomainError("The password is not correct.")
         self.set_password(new_password)
-        if hasattr(self, "rlc_user"):
-            rlc_user = self.rlc_user
+        if hasattr(self, "org_user"):
+            rlc_user = self.org_user
             rlc_user.change_password_for_keys(new_password)
             return [self, rlc_user]
         return [self]
 
     def has_permission(self, permission: Union[str, "Permission"]) -> bool:
-        return self.rlc_user.has_permission(permission)
-
-    def get_collab_permissions(self):
-        from core.models import PermissionForCollabDocument
-
-        groups = self.rlc_user.groups.all()
-        return PermissionForCollabDocument.objects.filter(
-            group_has_permission__in=groups
-        ).select_related("document")
+        return self.org_user.has_permission(permission)
 
     def get_public_key(self) -> bytes:
-        return self.rlc_user.get_public_key()
+        return self.org_user.get_public_key()
 
     def get_private_key(self, *args, **kwargs) -> str:
-        return self.rlc_user.get_private_key()
+        return self.org_user.get_private_key()
 
     def get_private_key_rlc(self, private_key_user=None, request=None):
         if private_key_user:

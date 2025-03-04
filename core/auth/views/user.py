@@ -48,21 +48,21 @@ class CustomLoginView(LoginView):
     def form_valid(self, form):
         user: UserProfile = form.get_user()  # type: ignore
 
-        if hasattr(user, "rlc_user"):
+        if hasattr(user, "org_user"):
             run_user_login_checks(user, form.data["password"])
-            uk = user.rlc_user.get_decrypted_key_from_password(form.data["password"])
+            uk = user.org_user.get_decrypted_key_from_password(form.data["password"])
             self.request.session["user_key"] = uk.as_unsafe_dict()
-            user.rlc_user.set_frontend_settings({})
+            user.org_user.set_frontend_settings({})
             try:
-                user.rlc_user.check_login_allowed()
+                user.org_user.check_login_allowed()
             except Exception as e:
                 form.add_error(None, str(e))
                 return self.form_invalid(form)
 
         if (
-            hasattr(user, "rlc_user")
-            and hasattr(user.rlc_user, "mfa_secret")
-            and user.rlc_user.mfa_secret.enabled
+            hasattr(user, "org_user")
+            and hasattr(user.org_user, "mfa_secret")
+            and user.org_user.mfa_secret.enabled
         ):
             self.request.session["user_pk"] = user.pk
             url = f"{reverse_lazy('mfa_login')}"

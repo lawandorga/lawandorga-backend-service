@@ -41,7 +41,7 @@ class StatisticUser(models.Model):
     def change_password(self, old_password, new_password):
         if not self.user.check_password(old_password):
             raise ValueError("The password is not correct.")
-        if hasattr(self.user, "rlc_user"):
+        if hasattr(self.user, "org_user"):
             raise ValueError(
                 "You also have an lc role, please change your password within Law&Orga."
             )

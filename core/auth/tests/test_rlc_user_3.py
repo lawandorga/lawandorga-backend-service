@@ -6,7 +6,7 @@ from django.test import Client
 
 from core.auth.models import OrgUser
 from core.auth.token_generator import EmailConfirmationTokenGenerator
-from core.auth.use_cases.rlc_user import activate_rlc_user, update_user_data
+from core.auth.use_cases.org_user import activate_rlc_user, update_user_data
 from core.data_sheets.models import DataSheetTemplate
 from core.models import Org
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS

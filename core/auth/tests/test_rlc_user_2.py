@@ -1,6 +1,6 @@
 import pytest
 
-from core.auth.use_cases.rlc_user import unlock_myself
+from core.auth.use_cases.org_user import unlock_myself
 from core.models import Org, OrgEncryption
 from core.seedwork import test_helpers as data
 from core.seedwork.use_case_layer import UseCaseError

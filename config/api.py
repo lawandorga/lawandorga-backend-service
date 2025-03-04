@@ -46,14 +46,14 @@ def get_org_user(request: HttpRequest) -> OrgUser:
         raise not_authenticated_error
 
     user: UserProfile = request.user  # type: ignore
-    if not hasattr(user, "rlc_user"):
+    if not hasattr(user, "org_user"):
         raise ApiError(
             message="Org User Required",
-            detail="You need to have the rlc user role.",
+            detail="You need to have the org user role.",
             status=403,
         )
 
-    org_user = user.rlc_user
+    org_user = user.org_user
     org_user.check_login_allowed()
     return org_user
 

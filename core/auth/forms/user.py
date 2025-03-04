@@ -4,7 +4,7 @@ from django.db.models import Q
 
 from core.auth.models.org_user import OrgUser
 from core.auth.models.user import UserProfile
-from core.auth.use_cases.rlc_user import register_rlc_user
+from core.auth.use_cases.org_user import register_rlc_user
 from core.legal.models.legal_requirement import LegalRequirement
 from core.org.models.org import Org
 

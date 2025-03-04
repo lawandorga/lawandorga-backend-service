@@ -255,7 +255,7 @@ def create_groups(rlc: Org, users: List[UserProfile]):
     )
 
     for i in range(0, randint(0, len(users))):
-        users_group.members.add(users[i].rlc_user)
+        users_group.members.add(users[i].org_user)
 
     # create ag group
     ag_group = Group.objects.create(
@@ -266,7 +266,7 @@ def create_groups(rlc: Org, users: List[UserProfile]):
     )
 
     for i in range(0, randint(0, int(len(users) / 2))):
-        ag_group.members.add(users[i].rlc_user)
+        ag_group.members.add(users[i].org_user)
 
     # return
     return [users_group, ag_group]
@@ -280,7 +280,7 @@ def create_admin_group(rlc: Org, main_user: UserProfile):
         visible=False,
         description="haben alle Berechtigungen",
     )
-    admin_group.members.add(main_user.rlc_user)
+    admin_group.members.add(main_user.org_user)
 
     add_permissions_to_group(admin_group, static.PERMISSION_ADMIN_MANAGE_PERMISSIONS)
     add_permissions_to_group(admin_group, static.PERMISSION_ADMIN_MANAGE_GROUPS)
@@ -457,7 +457,7 @@ def create_records(main_user: OrgUser, users: list[UserProfile], rlc: Org):
         # consultants
         field5 = DataSheetUsersField.objects.get(template=template, name="Consultants")
         entry = DataSheetUsersEntry.objects.create(record=created_record, field=field5)
-        entry.value.set([u.rlc_user for u in record[5]])
+        entry.value.set([u.org_user for u in record[5]])
         # tags
         field6 = DataSheetMultipleField.objects.get(template=template, name="Tags")
         DataSheetMultipleEntry.objects.create(
@@ -466,7 +466,7 @@ def create_records(main_user: OrgUser, users: list[UserProfile], rlc: Org):
 
         # secure the record
         for user in set(record[5]):
-            rfolder.grant_access(user.rlc_user, by=main_user)
+            rfolder.grant_access(user.org_user, by=main_user)
         r = DjangoFolderRepository()
         r.save(folder)
 
@@ -484,17 +484,17 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     template = DataSheetTemplate.objects.filter(rlc=rlc).first()
     assert template is not None
     record = create_data_sheet_and_folder(
-        main_user.rlc_user, "Informative Record", template.pk
+        main_user.org_user, "Informative Record", template.pk
     )
 
     record_users = [choice(users), main_user]
     aes_key = AESEncryption.generate_secure_key()
 
     r = DjangoFolderRepository()
-    folder = r.retrieve(main_user.rlc_user.org_id, record.folder_uuid)
+    folder = r.retrieve(main_user.org_user.org_id, record.folder_uuid)
     for user in record_users:
-        if not folder.has_access(user.rlc_user):
-            folder.grant_access(user.rlc_user, main_user.rlc_user)
+        if not folder.has_access(user.org_user):
+            folder.grant_access(user.org_user, main_user.org_user)
     r.save(folder)
 
     # first contact date
@@ -683,7 +683,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     # consultants
     field = DataSheetUsersField.objects.get(template=template, name="Consultants")
     entry = DataSheetUsersEntry.objects.create(record=record, field=field)
-    entry.value.set([u.rlc_user for u in record_users])
+    entry.value.set([u.org_user for u in record_users])
 
     # add some documents
     file_content = io.BytesIO(bytes("What an awesome file :)", "utf-8"))
@@ -695,39 +695,39 @@ def create_informative_record(main_user, main_user_password, users, rlc):
         size=sys.getsizeof(file_content),
         charset="utf-8",
     )
-    upload_a_file(main_user.rlc_user, file, record.folder_uuid)
-    upload_a_file(main_user.rlc_user, file, record.folder_uuid)
-    upload_a_file(main_user.rlc_user, file, record.folder_uuid)
-    upload_a_file(main_user.rlc_user, file, record.folder_uuid)
+    upload_a_file(main_user.org_user, file, record.folder_uuid)
+    upload_a_file(main_user.org_user, file, record.folder_uuid)
+    upload_a_file(main_user.org_user, file, record.folder_uuid)
+    upload_a_file(main_user.org_user, file, record.folder_uuid)
 
     # add some messages
     message1 = EncryptedRecordMessage.create(
-        sender=main_user.rlc_user,
+        sender=main_user.org_user,
         folder_uuid=record.folder_uuid,
         message="Bitte dringend die Kontaktdaten des Mandanten eintragen.",
     )
-    message1.encrypt(main_user.rlc_user)
+    message1.encrypt(main_user.org_user)
     message1.save()
     message2 = EncryptedRecordMessage.create(
-        sender=main_user.rlc_user,
+        sender=main_user.org_user,
         folder_uuid=record.folder_uuid,
         message="Ist erledigt! Koennen wir uns morgen treffen um das zu besprechen?",
     )
-    message2.encrypt(main_user.rlc_user)
+    message2.encrypt(main_user.org_user)
     message2.save()
     message3 = EncryptedRecordMessage.create(
-        sender=main_user.rlc_user,
+        sender=main_user.org_user,
         folder_uuid=record.folder_uuid,
         message="Klar, einfach direkt in der Mittagspause in der Mensa.",
     )
-    message3.encrypt(main_user.rlc_user)
+    message3.encrypt(main_user.org_user)
     message3.save()
     message4 = EncryptedRecordMessage.create(
-        sender=main_user.rlc_user,
+        sender=main_user.org_user,
         folder_uuid=record.folder_uuid,
         message="Gut, jetzt faellt mir aber auch nichts mehr ein.",
     )
-    message4.encrypt(main_user.rlc_user)
+    message4.encrypt(main_user.org_user)
     message4.save()
 
     # return
@@ -770,7 +770,7 @@ def create() -> None:
     create_groups(rlc1, users)
     create_admin_group(rlc1, dummy)
     # records
-    create_records(dummy.rlc_user, list(users), rlc1)
+    create_records(dummy.org_user, list(users), rlc1)
     create_informative_record(dummy, dummy_password, users, rlc1)
     # questionnaire templates
     create_questionnaire_templates(rlc1)

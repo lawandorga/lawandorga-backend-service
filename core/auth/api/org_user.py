@@ -7,7 +7,7 @@ from django.utils import timezone
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
-from core.auth.use_cases.rlc_user import confirm_email
+from core.auth.use_cases.org_user import confirm_email
 from core.files.query import has_org_files
 from core.permissions.models import HasPermission
 from core.permissions.static import (

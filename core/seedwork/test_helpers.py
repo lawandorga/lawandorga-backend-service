@@ -199,7 +199,7 @@ def create_data_sheet(template=None, users: Optional[List[UserProfile]] = None):
         template = DataSheetTemplate.objects.create(
             rlc=users[0].rlc, name="Record Template"
         )
-    user = users[0].rlc_user
+    user = users[0].org_user
     folder = create_folder(user=user)["folder"]
 
     record = DataSheet(template=template)
@@ -208,7 +208,7 @@ def create_data_sheet(template=None, users: Optional[List[UserProfile]] = None):
     record.save()
 
     for u in users[1:]:
-        folder.grant_access(u.rlc_user, user)
+        folder.grant_access(u.org_user, user)
     r = DjangoFolderRepository()
     r.save(folder)
 

@@ -17,12 +17,12 @@ class IsAuthenticatedAndEverything(permissions.IsAuthenticated):  # type: ignore
         user = request.user
 
         # rlc user
-        if hasattr(user, "rlc_user"):
-            rlc_user = user.rlc_user
+        if hasattr(user, "org_user"):
+            org_user = user.org_user
             if (
-                not rlc_user.is_active
-                or not rlc_user.email_confirmed
-                or not user.rlc_user.accepted
+                not org_user.is_active
+                or not org_user.email_confirmed
+                or not user.org_user.accepted
             ):
                 return False
 

@@ -118,7 +118,7 @@ AUTH_USER_MODEL = "core.UserProfile"
 
 # Login
 # https://docs.djangoproject.com/en/4.1/ref/settings/#login-url
-LOGIN_URL = "/login/"
+LOGIN_URL = "/auth/user/login/"
 LOGOUT_REDIRECT_URL = "/login/"
 
 # Static Files Storage
