@@ -31,6 +31,7 @@ jobs:
       - name: Download Test Results
         uses: dawidd6/action-download-artifact@v9
         with:
+          workflow: pipeline.yml
           name: coverage
 
       - name: Scan
