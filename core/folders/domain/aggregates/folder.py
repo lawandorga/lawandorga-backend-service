@@ -421,11 +421,6 @@ class Folder:
         self.__stop_inherit = True
 
     def move(self, target: "Folder", by: "OrgUser"):
-        if 1 == 1:
-            raise DomainError(
-                "Moving folders is disabled as speed improvements are happening."
-            )
-
         if not self.has_access(by):
             raise DomainError("You have no access to this folder.")
 

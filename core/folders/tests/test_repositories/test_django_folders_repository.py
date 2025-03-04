@@ -67,7 +67,7 @@ def test_name_change_disable_saved(db, user, repository):
     assert folder2.restricted
 
 
-def disabled_test_closures_saved_and_deleted(db, user, repository):
+def test_closures_saved_and_deleted(db, user, repository):
     folder1 = Folder.create(name="New Folder", org_pk=user.org_id)
     folder1.grant_access(to=user)
     folder2 = Folder.create(name="New Folder", org_pk=user.org_id)

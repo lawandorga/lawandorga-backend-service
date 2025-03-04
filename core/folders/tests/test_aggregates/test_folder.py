@@ -226,7 +226,7 @@ def test_get_encryption_key(folder_user):
     another_folder.get_encryption_key(requestor=another_user)
 
 
-def disabled_test_folder_move(folder_user):
+def test_folder_move(folder_user):
     folder_1, user = folder_user
     folder_2 = Folder.create("Child")
     folder_2.grant_access(user)
