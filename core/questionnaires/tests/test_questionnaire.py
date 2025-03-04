@@ -34,7 +34,7 @@ def template(db, org):
 @pytest.fixture
 def folder(db, org, user):
     folder = Folder.create(name="New Folder", org_pk=org.pk)
-    folder.grant_access(to=user["rlc_user"])
+    folder.grant_access(to=user["org_user"])
     r = DjangoFolderRepository()
     r.save(folder)
     yield r.retrieve(org.pk, folder.uuid)
@@ -71,7 +71,7 @@ def raw_question(raw_template):
 
 
 def test_publish_questionnaire(user, db, template, folder):
-    user["rlc_user"].grant(PERMISSION_RECORDS_ADD_RECORD)
+    user["org_user"].grant(PERMISSION_RECORDS_ADD_RECORD)
     c = Client()
     c.login(**user)
     response = c.post(

@@ -23,8 +23,8 @@ def user(db, org):
 def another_user(db, user, org):
     user_2 = data.create_org_user(rlc=org, email="test@law-orga.de")
     org.accept_member(
-        user["rlc_user"],
-        user_2["rlc_user"],
+        user["org_user"],
+        user_2["org_user"],
     )
     yield user_2
 
@@ -44,7 +44,7 @@ def record(db, org, user, record_template):
 @pytest.fixture
 def folder(db, org, user):
     folder = Folder.create(name="New Folder", org_pk=org.pk)
-    folder.grant_access(to=user["rlc_user"])
+    folder.grant_access(to=user["org_user"])
     r = DjangoFolderRepository()
     r.save(folder)
     yield r.retrieve(org.pk, folder.uuid)

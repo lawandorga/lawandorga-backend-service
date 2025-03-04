@@ -164,7 +164,7 @@ def update_frontend_settings(__actor: OrgUser, data: dict[str, Any]):
 
 
 @use_case
-def activate_rlc_user(__actor: OrgUser, other_user_id: int):
+def activate_org_user(__actor: OrgUser, other_user_id: int):
     rlc_user_to_update = OrgUser.objects.filter(id=other_user_id).first()
     if rlc_user_to_update is None:
         raise UseCaseError(

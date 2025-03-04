@@ -45,13 +45,11 @@ class OutputOrgUserSmall(BaseModel):
 
 
 @router.get(output_schema=list[OutputOrgUserSmall])
-def list_rlc_users(rlc_user: OrgUser):
-    rlc_users = OrgUser.objects.filter(org=rlc_user.org)
-    rlc_users_list = list(rlc_users)
-    return rlc_users_list
+def list_rlc_users(org_user: OrgUser):
+    org_users = OrgUser.objects.filter(org=org_user.org)
+    return list(org_users)
 
 
-# retrieve
 class OutputPermission(BaseModel):
     id: int
     permission_name: str

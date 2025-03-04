@@ -8,23 +8,23 @@ from core.seedwork import test_helpers
 
 @pytest.fixture
 def user(db):
-    rlc_user = test_helpers.create_org_user()
-    yield rlc_user["user"]
+    org_user = test_helpers.create_org_user()
+    yield org_user["user"]
 
 
 @pytest.fixture
 def two_users_same_org(db):
-    rlc_user_1 = test_helpers.create_org_user()
-    org = rlc_user_1["rlc_user"].org
-    rlc_user_2 = test_helpers.create_org_user(email="dummy2@law-orga.de", rlc=org)
-    yield {1: rlc_user_1["user"], 2: rlc_user_2["user"]}
+    org_user_1 = test_helpers.create_org_user()
+    org = org_user_1["org_user"].org
+    org_user_2 = test_helpers.create_org_user(email="dummy2@law-orga.de", rlc=org)
+    yield {1: org_user_1["user"], 2: org_user_2["user"]}
 
 
 @pytest.fixture
 def two_users_different_org(db):
-    rlc_user_1 = test_helpers.create_org_user()
-    rlc_user_2 = test_helpers.create_org_user(email="dummy2@law-orga.de")
-    yield {1: rlc_user_1["user"], 2: rlc_user_2["user"]}
+    org_user_1 = test_helpers.create_org_user()
+    org_user_2 = test_helpers.create_org_user(email="dummy2@law-orga.de")
+    yield {1: org_user_1["user"], 2: org_user_2["user"]}
 
 
 @pytest.fixture

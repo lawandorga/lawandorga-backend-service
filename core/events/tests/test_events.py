@@ -67,12 +67,12 @@ class TestEvents(TestCase):
             "start_time": timezone.now().isoformat(),
             "end_time": timezone.now().isoformat(),
         }
-        create_event(self.user_1["rlc_user"], **event_data)
+        create_event(self.user_1["org_user"], **event_data)
 
     def test_event_update(self):
         id = self.event_1.pk
         update_event(
-            self.user_1["rlc_user"],
+            self.user_1["org_user"],
             id,
             description="Updated",
             name=self.event_1.name,
@@ -84,10 +84,10 @@ class TestEvents(TestCase):
 
     def test_event_delete(self):
         id = self.event_1.pk
-        delete_event(self.user_1["rlc_user"], id)
+        delete_event(self.user_1["org_user"], id)
         all_events = EventsEvent.objects.all()
         assert len(all_events) == 3
 
     def test_ics_calendar(self):
-        ics_cal = self.user_1["rlc_user"].get_ics_calendar()
+        ics_cal = self.user_1["org_user"].get_ics_calendar()
         assert ics_cal.count("BEGIN:VEVENT") == 2

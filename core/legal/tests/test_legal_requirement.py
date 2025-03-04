@@ -37,7 +37,7 @@ def test_get_data_works(user, db, legal_requirement):
 
 
 def test_accept_legal_requirement(user, db, legal_requirement):
-    accept_legal_requirement(user["rlc_user"], legal_requirement.pk)
+    accept_legal_requirement(user["org_user"], legal_requirement.pk)
     assert LegalRequirementEvent.objects.filter(
-        user=user["rlc_user"], legal_requirement=legal_requirement
+        user=user["org_user"], legal_requirement=legal_requirement
     ).exists()

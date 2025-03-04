@@ -18,7 +18,7 @@ from core.seedwork import test_helpers
 
 def test_record_creation(db):
     full_user = test_helpers.create_org_user()
-    user = full_user["rlc_user"]
+    user = full_user["org_user"]
     user.grant(PERMISSION_RECORDS_ADD_RECORD)
     client = Client()
     client.login(**full_user)
@@ -32,7 +32,7 @@ def test_record_creation(db):
 
 def test_creation_with_inheritance_stop_disabled(db):
     full_user = test_helpers.create_org_user()
-    user = full_user["rlc_user"]
+    user = full_user["org_user"]
     user.org.new_records_have_inheritance_stop = False
     user.org.save()
     user.grant(PERMISSION_RECORDS_ADD_RECORD)
@@ -44,11 +44,11 @@ def test_creation_with_inheritance_stop_disabled(db):
 
 def test_grant_to_users_with_general_permission(db):
     full_user = test_helpers.create_org_user()
-    user = full_user["rlc_user"]
+    user = full_user["org_user"]
     full_another_user = test_helpers.create_org_user(
         email="tester@law-orga.de", rlc=user.org
     )
-    another_user = full_another_user["rlc_user"]
+    another_user = full_another_user["org_user"]
 
     user.grant(PERMISSION_RECORDS_ADD_RECORD)
     another_user.grant(PERMISSION_RECORDS_ACCESS_ALL_RECORDS)
@@ -64,7 +64,7 @@ def test_grant_to_users_with_general_permission(db):
 
 def test_delete_deletes_data_sheet_as_well(db):
     full_user = test_helpers.create_org_user()
-    user = full_user["rlc_user"]
+    user = full_user["org_user"]
     template = test_helpers.create_record_template(user.org)["template"]
     user.grant(PERMISSION_RECORDS_ADD_RECORD)
     user.grant(PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS)

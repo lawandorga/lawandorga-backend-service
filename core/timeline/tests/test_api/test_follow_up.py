@@ -7,8 +7,8 @@ from core.timeline.models.follow_up import TimelineFollowUp
 
 def test_follow_up_creation_on_api(db):
     user = test_helpers.create_org_user()
-    rlc_user = user["rlc_user"]
-    folder = test_helpers.create_folder(user=rlc_user)["folder"]
+    org_user = user["org_user"]
+    folder = test_helpers.create_folder(user=org_user)["folder"]
     client = Client()
     client.login(**user)
     response = client.post(

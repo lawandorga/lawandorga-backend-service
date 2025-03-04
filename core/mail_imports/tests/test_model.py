@@ -67,7 +67,7 @@ def test_mark_as_unpinned_works():
 
 def test_encryption(db):
     u = test_helpers.create_org_user()
-    user = u["rlc_user"]
+    user = u["org_user"]
     folder = test_helpers.create_folder(user=user)
     folder_uuid = folder["folder"].uuid
     mail = MailImport.create(
@@ -88,7 +88,7 @@ def test_encryption(db):
 
 def test_attachement_encrypts(db):
     u = test_helpers.create_org_user()
-    user = u["rlc_user"]
+    user = u["org_user"]
     folder = test_helpers.create_folder(user=user)
     folder_uuid = folder["folder"].uuid
     mail = MailImport.create(

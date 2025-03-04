@@ -130,7 +130,7 @@ class CreateOrgUserData(TypedDict):
     username: str
     email: str
     password: str
-    rlc_user: OrgUser
+    org_user: OrgUser
     private_key: str
     public_key: bytes
 
@@ -165,7 +165,7 @@ def create_org_user(
         "username": user.email,
         "email": user.email,
         "password": settings.DUMMY_USER_PASSWORD,
-        "rlc_user": rlc_user,
+        "org_user": rlc_user,
         "private_key": private_key,
         "public_key": user.get_public_key(),
     }
@@ -224,7 +224,7 @@ class RecordDict(TypedDict):
 def create_record(token="AZ-TEST", user: Optional[OrgUser] = None) -> RecordDict:
     if user is None:
         full_user = create_org_user()
-        user = full_user["rlc_user"]
+        user = full_user["org_user"]
     user.grant(PERMISSION_RECORDS_ADD_RECORD)
     folder_uuid = uc_create_record(user, token)
     record = RecordsRecord.objects.get(folder_uuid=folder_uuid)

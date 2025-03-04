@@ -31,7 +31,7 @@ class TestUserKeys(TestCase):
         return keys
 
     def test_rlc_key_check(self):
-        objs = self.user_1["rlc_user"].test_keys()
+        objs = self.user_1["org_user"].test_keys()
         [obj.save() for obj in objs]
         assert self.get_user_rlc_keys(self.user_1).correct
         keys = self.get_user_rlc_keys(self.user_1)
@@ -39,14 +39,14 @@ class TestUserKeys(TestCase):
         private, public = RSAEncryption.generate_keys()
         keys.encrypt(public)
         keys.save()
-        objs = self.user_1["rlc_user"].test_keys()
+        objs = self.user_1["org_user"].test_keys()
         [obj.save() for obj in objs]
         assert not self.get_user_rlc_keys(self.user_1).correct
         keys = self.get_user_rlc_keys(self.user_1)
         keys.encrypted_key = b"1234"
         keys.encrypt(self.user_1["public_key"])
         keys.save()
-        objs = self.user_1["rlc_user"].test_keys()
+        objs = self.user_1["org_user"].test_keys()
         [obj.save() for obj in objs]
         assert self.get_user_rlc_keys(self.user_1).correct
 
@@ -56,4 +56,4 @@ class TestUserKeys(TestCase):
         c.get("/api/keys/")
 
     def test_keys_test(self):
-        check_keys(self.user_1["rlc_user"])
+        check_keys(self.user_1["org_user"])

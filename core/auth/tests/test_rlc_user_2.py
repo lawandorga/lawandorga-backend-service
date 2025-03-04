@@ -16,7 +16,7 @@ def test_unlock_fails(db):
     key.encrypted_key = b""
     key.save()
     with pytest.raises(UseCaseError):
-        unlock_myself(user_1["rlc_user"])
+        unlock_myself(user_1["org_user"])
 
 
 def test_unlock_works(db):
@@ -24,9 +24,9 @@ def test_unlock_works(db):
     user_1 = data.create_org_user(rlc=rlc)
     rlc.generate_keys()
     data.create_data_sheet(users=[user_1["user"]])
-    rlc_user = user_1["rlc_user"]
-    rlc_user.locked = True
-    rlc_user.save()
-    unlock_myself(rlc_user)
-    rlc_user.refresh_from_db()
-    assert rlc_user.locked is False
+    org_user = user_1["org_user"]
+    org_user.locked = True
+    org_user.save()
+    unlock_myself(org_user)
+    org_user.refresh_from_db()
+    assert org_user.locked is False

@@ -34,27 +34,27 @@ def test_list_links_works(user, db):
 
 
 def test_create_link_works(user, db):
-    create_link(user["rlc_user"], "New Link", "https://law-orga.de", 2)
+    create_link(user["org_user"], "New Link", "https://law-orga.de", 2)
     assert ExternalLink.objects.filter(
-        org=user["rlc_user"].org, name="New Link"
+        org=user["org_user"].org, name="New Link"
     ).exists()
 
 
 def test_delete_link_works(user, db):
-    link = user["rlc_user"].org.external_links.first()
-    delete_link(user["rlc_user"], link.id)
+    link = user["org_user"].org.external_links.first()
+    delete_link(user["org_user"], link.id)
     assert not ExternalLink.objects.filter(
-        org=user["rlc_user"].org, id=link.id
+        org=user["org_user"].org, id=link.id
     ).exists()
 
 
 def test_member_accept(user, db):
     c = Client()
     c.login(**user)
-    user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_USERS)
+    user["org_user"].grant(PERMISSION_ADMIN_MANAGE_USERS)
     another_user = data.create_org_user(
-        rlc=user["rlc_user"].org, email="another@law-orga.de"
+        rlc=user["org_user"].org, email="another@law-orga.de"
     )
-    accept_member_to_org(user["rlc_user"], another_user["rlc_user"].id)
-    another_user["rlc_user"].refresh_from_db()
-    assert another_user["rlc_user"].accepted
+    accept_member_to_org(user["org_user"], another_user["org_user"].id)
+    another_user["org_user"].refresh_from_db()
+    assert another_user["org_user"].accepted

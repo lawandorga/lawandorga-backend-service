@@ -68,7 +68,7 @@ def test_access_works(db):
     full_other_user = test_helpers.create_org_user(
         email="tester@law-orga.de", rlc=user.org
     )
-    other_user = full_other_user["rlc_user"]
+    other_user = full_other_user["org_user"]
 
     create_access_request(other_user, "testing", record.uuid)
 
@@ -89,7 +89,7 @@ def test_access_grant_works_if_access_already_exists(db):
     full_other_user = test_helpers.create_org_user(
         email="tester@law-orga.de", rlc=user.org
     )
-    other_user = full_other_user["rlc_user"]
+    other_user = full_other_user["org_user"]
 
     folder.grant_access(other_user, user)
     access = RecordsAccessRequest.create(record, user, "needs to go")

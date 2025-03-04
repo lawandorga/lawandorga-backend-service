@@ -19,5 +19,5 @@ class OutputKey(BaseModel):
 
 
 @router.get(output_schema=list[OutputKey])
-def list_keys(rlc_user: OrgUser):
-    return rlc_user.keys
+def list_keys(org_user: OrgUser):
+    return org_user.keys

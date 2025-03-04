@@ -38,7 +38,7 @@ def user_3(db, org):
 def user(db, group, user_2, org):
     user_1 = data.create_org_user(rlc=org)
     org.generate_keys()
-    group.members.add(user_1["rlc_user"])
+    group.members.add(user_1["org_user"])
     group.generate_keys()
     group.save()
     yield user_1
@@ -54,12 +54,12 @@ def test_list_users(user, group, db):
 def test_add_member(user, group, db, user_2):
     c = Client()
     c.login(**user)
-    user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
+    user["org_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     response = c.post(
         "/api/command/",
         data=json.dumps(
             {
-                "new_member_id": user_2["rlc_user"].id,
+                "new_member_id": user_2["org_user"].id,
                 "group_id": group.id,
                 "action": "org/add_member_to_group",
             }
@@ -76,7 +76,7 @@ def test_add_member_permission_error(user, group, db, user_2):
         "/api/command/",
         data=json.dumps(
             {
-                "new_member_id": user_2["rlc_user"].id,
+                "new_member_id": user_2["org_user"].id,
                 "group_id": group.id,
                 "action": "org/add_member_to_group",
             }
@@ -89,15 +89,15 @@ def test_add_member_permission_error(user, group, db, user_2):
 def test_remove_member(user, group, db, user_2, user_3):
     c = Client()
     c.login(**user)
-    user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
-    group.add_member(user_2["rlc_user"], by=user["rlc_user"])
-    group.add_member(user_3["rlc_user"], by=user["rlc_user"])
+    user["org_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
+    group.add_member(user_2["org_user"], by=user["org_user"])
+    group.add_member(user_3["org_user"], by=user["org_user"])
     group.save()
     response = c.post(
         "/api/command/",
         data=json.dumps(
             {
-                "member_id": user_2["rlc_user"].id,
+                "member_id": user_2["org_user"].id,
                 "group_id": group.id,
                 "action": "org/remove_member_from_group",
             }
@@ -110,7 +110,7 @@ def test_remove_member(user, group, db, user_2, user_3):
 def test_add_member_fails_different_org(user, group, db):
     c = Client()
     c.login(**user)
-    user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
+    user["org_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     org2 = Org.objects.create(name="Another")
     another_user = data.create_org_user(
         email="another@law-orga.de", name="Another", rlc=org2
@@ -119,7 +119,7 @@ def test_add_member_fails_different_org(user, group, db):
         "/api/command/",
         data=json.dumps(
             {
-                "new_member_id": another_user["rlc_user"].id,
+                "new_member_id": another_user["org_user"].id,
                 "group_id": group.id,
                 "action": "org/add_member_to_group",
             }
@@ -132,14 +132,14 @@ def test_add_member_fails_different_org(user, group, db):
 def test_add_member_already_member(user, group, db, user_2):
     c = Client()
     c.login(**user)
-    user["rlc_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
-    group.add_member(user_2["rlc_user"], by=user["rlc_user"])
+    user["org_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
+    group.add_member(user_2["org_user"], by=user["org_user"])
     group.save()
     response = c.post(
         "/api/command/",
         data=json.dumps(
             {
-                "new_member_id": user_2["rlc_user"].id,
+                "new_member_id": user_2["org_user"].id,
                 "group_id": group.id,
                 "action": "org/add_member_to_group",
             }

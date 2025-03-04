@@ -11,7 +11,7 @@ from core.seedwork import test_helpers
 
 
 def test_create(db):
-    user = test_helpers.create_org_user()["rlc_user"]
+    user = test_helpers.create_org_user()["org_user"]
     uuid = uuid4()
     template = Template.create(user, uuid, "name", "description")
     template.save()
@@ -29,7 +29,7 @@ def test_create(db):
 
 
 def test_update(db):
-    user = test_helpers.create_org_user()["rlc_user"]
+    user = test_helpers.create_org_user()["org_user"]
     lh = Letterhead.create(
         user.org_id,
         "address_line_1",
@@ -55,7 +55,7 @@ def test_update(db):
 
 
 def test_delete(db):
-    user = test_helpers.create_org_user()["rlc_user"]
+    user = test_helpers.create_org_user()["org_user"]
     lh = Letterhead.create(
         user.org_id,
         "address_line_1",

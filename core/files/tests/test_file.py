@@ -30,11 +30,11 @@ class FileTestsBase:
         )
         self.user.set_password(settings.DUMMY_USER_PASSWORD)
         self.user.save()
-        self.rlc_user = OrgUser(
+        self.org_user = OrgUser(
             user=self.user, email_confirmed=True, accepted=True, org=self.rlc
         )
-        self.rlc_user.generate_keys(settings.DUMMY_USER_PASSWORD)
-        self.rlc_user.save()
+        self.org_user.generate_keys(settings.DUMMY_USER_PASSWORD)
+        self.org_user.save()
         self.folder = Folder.objects.get(parent=None, rlc=self.rlc)
         self.private_key_user = self.user.get_private_key(
             password_user=settings.DUMMY_USER_PASSWORD
@@ -43,7 +43,7 @@ class FileTestsBase:
             user=self.user, private_key_user=self.private_key_user
         )
         HasPermission.objects.create(
-            user=self.rlc_user,
+            user=self.org_user,
             permission=Permission.objects.get(name=PERMISSION_FILES_WRITE_ALL_FOLDERS),
         )
 

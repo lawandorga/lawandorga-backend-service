@@ -12,7 +12,7 @@ from core.seedwork import test_helpers
 
 def test_collab_creation(db):
     ou = test_helpers.create_org_user()
-    user = ou["rlc_user"]
+    user = ou["org_user"]
     f = test_helpers.create_folder(user=user)
     folder = f["folder"]
     collab = create_collab(
@@ -29,7 +29,7 @@ def test_collab_creation(db):
 
 def test_collab_update(db):
     ou = test_helpers.create_org_user()
-    user = ou["rlc_user"]
+    user = ou["org_user"]
     f = test_helpers.create_folder(user=user)
     folder = f["folder"]
     collab = Collab.create(
@@ -51,7 +51,7 @@ def test_collab_update(db):
 
 def test_collab_sync(db):
     ou = test_helpers.create_org_user()
-    user = ou["rlc_user"]
+    user = ou["org_user"]
     f = test_helpers.create_folder(user=user)
     folder = f["folder"]
     collab = Collab.create(
@@ -69,7 +69,7 @@ def test_collab_sync(db):
 
 def test_collab_delete(db):
     ou = test_helpers.create_org_user()
-    user = ou["rlc_user"]
+    user = ou["org_user"]
     f = test_helpers.create_folder(user=user)
     folder = f["folder"]
     collab = Collab.create(
