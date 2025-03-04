@@ -5,16 +5,12 @@ from django.db import migrations
 
 def create_fixtures(apps, schema_editor):
     from core.fixtures import (
-        create_collab_permissions,
         create_folder_permissions,
         create_permissions,
     )
 
     Permission = apps.get_model("core", "Permission")
     create_permissions(Permission)
-
-    CollabPermission = apps.get_model("core", "CollabPermission")
-    create_collab_permissions(CollabPermission)
 
     FolderPermission = apps.get_model("core", "FolderPermission")
     create_folder_permissions(FolderPermission)

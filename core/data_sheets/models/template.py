@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from core.auth.models.org_user import OrgUser
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-from core.models import Group, Org
+from core.rlc.models import Group, Org
 from core.seedwork.domain_layer import DomainError
 
 if TYPE_CHECKING:

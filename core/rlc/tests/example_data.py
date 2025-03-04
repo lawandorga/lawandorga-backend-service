@@ -6,8 +6,6 @@ from typing import List
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
-from core.auth.domain.user_key import UserKey
-from core.collab.models import CollabPermission
 from core.data_sheets.fixtures import create_default_record_template
 from core.data_sheets.models import (
     DataSheet,
@@ -29,7 +27,6 @@ from core.data_sheets.use_cases.sheet import create_data_sheet_and_folder
 from core.files.models import FolderPermission
 from core.files_new.use_cases.file import upload_a_file
 from core.fixtures import (
-    create_collab_permissions,
     create_folder_permissions,
     create_permissions,
 )
@@ -37,13 +34,11 @@ from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.messages.models import EncryptedRecordMessage
 from core.models import (
-    CollabDocument,
     Group,
     HasPermission,
     InternalUser,
     OrgUser,
     Permission,
-    TextDocumentVersion,
     UserProfile,
 )
 from core.permissions import static
@@ -487,6 +482,7 @@ def create_informative_record(main_user, main_user_password, users, rlc):
 
     # create the informative record
     template = DataSheetTemplate.objects.filter(rlc=rlc).first()
+    assert template is not None
     record = create_data_sheet_and_folder(
         main_user.rlc_user, "Informative Record", template.pk
     )
@@ -753,36 +749,9 @@ def create_questionnaire_templates(rlc):
     )
 
 
-def create_collab_document(
-    user, rlc, path="/Document", content="<h1>Collab Document</h1>"
-):
-    cd = CollabDocument.objects.create(
-        path=path,
-        rlc=rlc,
-    )
-    tv = TextDocumentVersion(document=cd, content=content, quill=False)
-    private_key_user = (
-        UserKey.create_from_dict(user.rlc_user.key)
-        .decrypt_self(settings.DUMMY_USER_PASSWORD)
-        .key.get_private_key()
-        .decode("utf-8")
-    )
-    aes_key_rlc = rlc.get_aes_key(user=user, private_key_user=private_key_user)
-    tv.encrypt(aes_key_rlc=aes_key_rlc)
-    tv.save()
-
-
-def create_collab_documents(user, rlc):
-    create_collab_document(user, rlc, path="Document 1")
-    create_collab_document(user, rlc, path="Document 1/Document 1.1")
-    create_collab_document(user, rlc, path="Document 1/Document 1.2")
-    create_collab_document(user, rlc, path="Document 2")
-
-
 def create() -> None:
     # fixtures
     create_permissions(Permission)
-    create_collab_permissions(CollabPermission)
     create_folder_permissions(FolderPermission)
     # password
     dummy_password = settings.DUMMY_USER_PASSWORD
@@ -805,5 +774,3 @@ def create() -> None:
     create_informative_record(dummy, dummy_password, users, rlc1)
     # questionnaire templates
     create_questionnaire_templates(rlc1)
-    # collab
-    create_collab_documents(dummy, rlc1)

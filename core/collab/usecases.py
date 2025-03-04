@@ -2,7 +2,6 @@ from core.collab.use_cases.collab import (
     assign_template_to_collab,
     create_collab,
     delete_collab,
-    optimize,
     sync_collab,
     update_collab_title,
 )
@@ -31,7 +30,6 @@ USECASES = {
     "collab/update_collab_title": update_collab_title,
     "collab/sync_collab": sync_collab,
     "collab/delete_collab": delete_collab,
-    "collab/optimize": optimize,
     "collab/create_letterhead": create_letterhead,
     "collab/update_letterhead": update_letterhead,
     "collab/delete_letterhead": delete_letterhead,

@@ -10,7 +10,6 @@ from .meta import Meta
 
 if TYPE_CHECKING:
     from core.auth.models import OrgUser, UserProfile
-    from core.collab.models import CollabDocument
     from core.collab.models.collab import Collab
     from core.collab.models.footer import Footer
     from core.collab.models.letterhead import Letterhead
@@ -67,7 +66,6 @@ class Org(EncryptedModelMixin, models.Model):
     encryption_class = AESEncryption
 
     if TYPE_CHECKING:
-        collab_documents: models.QuerySet["CollabDocument"]
         collabs: models.QuerySet["Collab"]
         folders_folders: models.QuerySet["FOL_Folder"]
         users: models.QuerySet[OrgUser]
@@ -249,7 +247,7 @@ class Org(EncryptedModelMixin, models.Model):
             "files": sum(
                 [folder.files_in_folder.count() for folder in self.folders.all()]
             ),
-            "collab": self.collab_documents.count(),
+            "collab": 0,
         }
 
     def force_empty(self):
@@ -262,8 +260,6 @@ class Org(EncryptedModelMixin, models.Model):
             f.delete()
         for fo in self.folders.all():
             fo.delete()
-        for c in self.collab_documents.all():
-            c.delete()
         for cnew in self.collabs.all():
             cnew.delete()
         for folder in self.folders_folders.all():
