@@ -29,7 +29,7 @@ def command__confirm_email(data: InputConfirmEmail):
     confirm_email(None, data.id, data.token)
 
 
-class OutputRlcUserSmall(BaseModel):
+class OutputOrgUserSmall(BaseModel):
     id: int
     user_id: int
     phone_number: Optional[str]
@@ -44,7 +44,7 @@ class OutputRlcUserSmall(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-@router.get(output_schema=list[OutputRlcUserSmall])
+@router.get(output_schema=list[OutputOrgUserSmall])
 def list_rlc_users(rlc_user: OrgUser):
     rlc_users = OrgUser.objects.filter(org=rlc_user.org)
     rlc_users_list = list(rlc_users)
@@ -63,7 +63,7 @@ class OutputPermission(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class OutputRlcUserOptional(BaseModel):
+class OutputOrgUserOptional(BaseModel):
     id: int
     user_id: int
     birthday: Optional[Any] = None
@@ -88,11 +88,11 @@ class OutputRlcUserOptional(BaseModel):
 
 
 class OutputUser(BaseModel):
-    user: OutputRlcUserOptional
+    user: OutputOrgUserOptional
     permissions: Optional[list[OutputPermission]]
 
 
-class InputRlcUserGet(BaseModel):
+class InputOrgUserGet(BaseModel):
     id: int
 
 
@@ -100,7 +100,7 @@ class InputRlcUserGet(BaseModel):
     url="<int:id>/",
     output_schema=OutputUser,
 )
-def retrieve(data: InputRlcUserGet, rlc_user: OrgUser):
+def retrieve(data: InputOrgUserGet, rlc_user: OrgUser):
     found_rlc_user = OrgUser.objects.filter(id=data.id).first()
     if found_rlc_user is None:
         raise ApiError("The user could not be found.")
@@ -111,7 +111,7 @@ def retrieve(data: InputRlcUserGet, rlc_user: OrgUser):
     if found_rlc_user.pk != rlc_user.pk and not rlc_user.has_permission(
         PERMISSION_ADMIN_MANAGE_USERS
     ):
-        found_rlc_user_ret: Any = OutputRlcUserSmall.model_validate(
+        found_rlc_user_ret: Any = OutputOrgUserSmall.model_validate(
             found_rlc_user
         ).model_dump()
     else:
@@ -133,7 +133,7 @@ def retrieve(data: InputRlcUserGet, rlc_user: OrgUser):
     return {"user": found_rlc_user_ret, "permissions": permissions}
 
 
-class OutputRlcUser(BaseModel):
+class OutputOrgUser(BaseModel):
     id: int
     user_id: int
     birthday: Optional[Any]
@@ -183,15 +183,15 @@ class Badges(BaseModel):
     record: int
 
 
-class OutputRlcUserData(BaseModel):
-    user: OutputRlcUser
+class OutputOrgUserData(BaseModel):
+    user: OutputOrgUser
     rlc: Org
     badges: Badges
     permissions: List[str]
     settings: Optional[dict[str, Any]]
 
 
-@router.get(url="data_self/", output_schema=OutputRlcUserData)
+@router.get(url="data_self/", output_schema=OutputOrgUserData)
 def query__data(rlc_user: OrgUser):
     data = {
         "user": rlc_user,

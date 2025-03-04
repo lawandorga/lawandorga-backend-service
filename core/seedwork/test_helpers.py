@@ -124,7 +124,7 @@ def create_user(email="dummy@law-orga.de", name="Mr. Dummy"):
     return user
 
 
-class CreateRlcUserData(TypedDict):
+class CreateOrgUserData(TypedDict):
     org: Org
     user: UserProfile
     username: str
@@ -142,7 +142,7 @@ def create_org_user(
     accepted=True,
     password=settings.DUMMY_USER_PASSWORD,
     save=True,
-) -> CreateRlcUserData:
+) -> CreateOrgUserData:
     if rlc is None:
         rlc = create_org("Dummy's Org", save=save)["org"]
     user = UserProfile.objects.create(email=email, name=name)

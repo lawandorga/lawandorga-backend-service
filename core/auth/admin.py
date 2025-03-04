@@ -36,7 +36,7 @@ class UserAdmin(DjangoUserAdmin):
     list_filter = ()
 
 
-class RlcUserAdmin(admin.ModelAdmin):
+class OrgUserAdmin(admin.ModelAdmin):
     search_fields = ("user__email", "user__name")
 
 
@@ -60,7 +60,7 @@ class CustomSessionAdmin(admin.ModelAdmin):
 
 admin.site.register(InternalUser, InternalUserAdmin)
 admin.site.register(UserProfile, UserAdmin)
-admin.site.register(OrgUser, RlcUserAdmin)
+admin.site.register(OrgUser, OrgUserAdmin)
 admin.site.register(StatisticUser, StatisticUserAdmin)
 admin.site.register(MatrixUser, MatrixUserAdmin)
 admin.site.register(MultiFactorAuthenticationSecret)

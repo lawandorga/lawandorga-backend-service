@@ -52,7 +52,7 @@ class EmailTokenValidator(Protocol):
     def check_token(self, user: "OrgUser", token: str) -> bool: ...
 
 
-class RlcUserManager(models.Manager):
+class OrgUserManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().select_related("user")
 
@@ -136,7 +136,7 @@ class OrgUser(Aggregate, models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     # custom manager
-    objects = RlcUserManager()
+    objects = OrgUserManager()
     # addons
     addons = {"events": EventsAddon}
     events: EventsAddon
