@@ -140,6 +140,12 @@ class Folder:
 
         return versions[0]
 
+    def get_total_keys(self) -> int:
+        parent_keys = 0
+        if self.parent:
+            parent_keys = self.parent.get_total_keys()
+        return parent_keys + len(self.__keys) + len(self.__group_keys)
+
     def as_dict(self) -> JsonDict:
         return {
             "name": self.__name,

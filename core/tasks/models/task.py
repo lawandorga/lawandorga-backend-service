@@ -58,6 +58,6 @@ class Task(models.Model):
 
     def __str__(self) -> str:
         return self.title
-    
+
     def mark_as_done(self):
         self.is_done = True
