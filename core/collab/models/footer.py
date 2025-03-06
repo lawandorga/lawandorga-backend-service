@@ -31,8 +31,8 @@ class Footer(models.Model):
     column_4 = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = "Footer"
-        verbose_name_plural = "Footers"
+        verbose_name = "COL_Footer"
+        verbose_name_plural = "COL_Footers"
 
     def update_text(self, column_1: str, column_2: str, column_3: str, column_4: str):
         self.column_1 = column_1

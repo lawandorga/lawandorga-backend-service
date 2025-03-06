@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from django.db import models
 
-from ...auth.models import OrgUser
+from core.auth.models import OrgUser
 
 
 class Task(models.Model):
@@ -44,11 +44,9 @@ class Task(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def mark_as_done(self):
-        self.is_done = True
-
-    def __str__(self) -> str:
-        return self.title
+    class Meta:
+        verbose_name = "TAS_Task"
+        verbose_name_plural = "TAS_Tasks"
 
     @property
     def creator_id(self):
@@ -57,3 +55,9 @@ class Task(models.Model):
     @property
     def assignee_id(self):
         return self.assignee.pk
+
+    def __str__(self) -> str:
+        return self.title
+    
+    def mark_as_done(self):
+        self.is_done = True

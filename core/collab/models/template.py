@@ -37,8 +37,8 @@ class Template(models.Model):
         org_id: int
 
     class Meta:
-        verbose_name = "Template"
-        verbose_name_plural = "Templates"
+        verbose_name = "COL_Template"
+        verbose_name_plural = "COL_Templates"
 
     def __str__(self) -> str:
         return self.name

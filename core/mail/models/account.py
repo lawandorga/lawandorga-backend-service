@@ -25,8 +25,8 @@ class MailAccount(models.Model):
         addresses: models.QuerySet["MailAddress"]
 
     class Meta:
-        verbose_name = "MailAccount"
-        verbose_name_plural = "MailAccounts"
+        verbose_name = "MAIL_MailAccount"
+        verbose_name_plural = "MAIL_MailAccounts"
         constraints = [
             models.CheckConstraint(
                 condition=(Q(group__isnull=True) & Q(user__isnull=False))

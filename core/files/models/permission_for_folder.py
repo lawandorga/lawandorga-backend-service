@@ -28,8 +28,8 @@ class PermissionForFolder(models.Model):
     )
 
     class Meta:
-        verbose_name = "PermissionForFolder"
-        verbose_name_plural = "PermissionsForFolders"
+        verbose_name = "FIL_PermissionForFolder"
+        verbose_name_plural = "FIL_PermissionsForFolders"
 
     def __str__(self):
         return "permissionForFolder: {}; folder: {}; permission: {};".format(

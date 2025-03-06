@@ -48,8 +48,8 @@ class RecordsDeletion(models.Model):
         return "recordsDeletion: {}; state: {};".format(self.pk, self.state)
 
     class Meta:
-        verbose_name = "Records-Deletion"
-        verbose_name_plural = "Records-Deletions"
+        verbose_name = "REC_RecordDeletion"
+        verbose_name_plural = "REC_RecordDeletions"
         ordering = ["-created"]
 
     @property

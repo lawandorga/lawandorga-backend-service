@@ -44,8 +44,8 @@ class RecordsView(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Records-View"
-        verbose_name_plural = "Records-Views"
+        verbose_name = "REC_RecordsView"
+        verbose_name_plural = "REC_RecordsViews"
         ordering = ["-org", "ordering"]
         constraints = [
             models.CheckConstraint(

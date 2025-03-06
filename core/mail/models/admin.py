@@ -12,8 +12,8 @@ class MailAdmin(models.Model):
     )
 
     class Meta:
-        verbose_name = "MailAdmin"
-        verbose_name_plural = "MailAdmins"
+        verbose_name = "MAIL_MailAdmin"
+        verbose_name_plural = "MAIL_MailAdmins"
 
     def __str__(self):
         return "mailAdmin: {};".format(self.pk)

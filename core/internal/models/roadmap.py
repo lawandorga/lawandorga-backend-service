@@ -9,8 +9,8 @@ class RoadmapItem(models.Model):
     date = models.DateField()
 
     class Meta:
-        verbose_name = "RoadmapItem"
-        verbose_name_plural = "RoadmapItems"
+        verbose_name = "INT_RoadmapItem"
+        verbose_name_plural = "INT_RoadmapItems"
         ordering = ["date"]
 
     def __str__(self):

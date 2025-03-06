@@ -51,8 +51,8 @@ class EncryptedRecordMessage(models.Model):
 
     class Meta:
         ordering = ["created"]
-        verbose_name = "RecordMessage"
-        verbose_name_plural = "RecordMessages"
+        verbose_name = "MES_RecordMessage"
+        verbose_name_plural = "MES_RecordMessages"
 
     def __str__(self):
         return "recordMessage: {}; folder: {};".format(self.pk, self.folder_uuid)

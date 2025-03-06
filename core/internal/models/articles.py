@@ -18,8 +18,8 @@ class Article(models.Model):
     )
 
     class Meta:
-        verbose_name = "Article"
-        verbose_name_plural = "Articles"
+        verbose_name = "INT_Article"
+        verbose_name_plural = "INT_Articles"
         ordering = ["-date"]
 
     def __str__(self):

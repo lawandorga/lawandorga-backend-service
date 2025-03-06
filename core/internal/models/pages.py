@@ -9,8 +9,8 @@ class IndexPage(SingletonModel):
     content = HTMLField()
 
     class Meta:
-        verbose_name = "IndexPage"
-        verbose_name_plural = "IndexPage"
+        verbose_name = "INT_IndexPage"
+        verbose_name_plural = "INT_IndexPage"
 
     def __str__(self):
         return "IndexPage"
@@ -20,8 +20,8 @@ class ImprintPage(SingletonModel):
     content = HTMLField()
 
     class Meta:
-        verbose_name = "ImprintPage"
-        verbose_name_plural = "ImprintPage"
+        verbose_name = "INT_ImprintPage"
+        verbose_name_plural = "INT_ImprintPage"
 
     def __str__(self):
         return "ImprintPage"
@@ -31,8 +31,8 @@ class TomsPage(SingletonModel):
     content = HTMLField()
 
     class Meta:
-        verbose_name = "TomsPage"
-        verbose_name_plural = "TomsPage"
+        verbose_name = "INT_TomsPage"
+        verbose_name_plural = "INT_TomsPage"
 
     def __str__(self):
         return "TomsPage"
@@ -42,8 +42,8 @@ class HelpPage(SingletonModel):
     manual = models.FileField("Manual", upload_to="internal/helppage/manual/")
 
     class Meta:
-        verbose_name = "HelpPage"
-        verbose_name_plural = "HelpPage"
+        verbose_name = "INT_HelpPage"
+        verbose_name_plural = "INT_HelpPage"
 
     def __str__(self):
         return "HelpPage"

@@ -106,8 +106,8 @@ class RecordsRecord(Aggregate, models.Model):
         org_id: int
 
     class Meta:
-        verbose_name = "Records-Record"
-        verbose_name_plural = "Records-Records"
+        verbose_name = "REC_RecordsRecord"
+        verbose_name_plural = "REC_RecordsRecords"
 
     def __str__(self):
         return "recordsRecord: {}; token: {}; org: {};".format(

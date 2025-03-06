@@ -69,8 +69,8 @@ class UploadLink(Aggregate, models.Model):
         files: models.QuerySet["UploadFile"]
 
     class Meta:
-        verbose_name = "UploadLink"
-        verbose_name_plural = "UploadLinks"
+        verbose_name = "UPL_UploadLink"
+        verbose_name_plural = "UPL_UploadLinks"
 
     @property
     def org_pk(self) -> int:
@@ -157,8 +157,8 @@ class UploadFile(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "UploadFile"
-        verbose_name_plural = "UploadFiles"
+        verbose_name = "UPL_UploadFile"
+        verbose_name_plural = "UPL_UploadFiles"
 
     def generate_key(self):
         key = SymmetricKey.generate(SymmetricEncryptionV1)

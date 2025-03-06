@@ -176,8 +176,8 @@ class DataSheet(Aggregate, models.Model):
 
     class Meta:
         ordering = ["-created"]
-        verbose_name = "Record"
-        verbose_name_plural = "Records"
+        verbose_name = "DAT_DataSheet"
+        verbose_name_plural = "DAT_DataSheets"
 
     def __str__(self):
         return "record: {}; rlc: {};".format(self.pk, self.template.rlc.name)
@@ -337,8 +337,8 @@ class DataSheetStateEntry(DataSheetEntry):
 
     class Meta:
         unique_together = ["record", "field"]
-        verbose_name = "RecordStateEntry"
-        verbose_name_plural = "RecordStateEntries"
+        verbose_name = "DAT_DataSheetStateEntry"
+        verbose_name_plural = "DAT_DataSheetStateEntries"
 
     def __str__(self):
         return "recordStateEntry: {};".format(self.pk)
@@ -359,8 +359,8 @@ class DataSheetUsersEntry(DataSheetEntry):
 
     class Meta:
         unique_together = ["record", "field"]
-        verbose_name = "RecordUsersEntry"
-        verbose_name_plural = "RecordUsersEntries"
+        verbose_name = "DAT_DataSheetUsersEntry"
+        verbose_name_plural = "DAT_DataSheetUsersEntries"
 
     def __str__(self):
         return "recordUsersEntry: {};".format(self.pk)
@@ -392,8 +392,8 @@ class DataSheetSelectEntry(DataSheetEntry):
 
     class Meta:
         unique_together = ["record", "field"]
-        verbose_name = "RecordSelectEntry"
-        verbose_name_plural = "RecordSelectEntries"
+        verbose_name = "DAT_DataSheetSelectEntry"
+        verbose_name_plural = "DAT_DataSheetSelectEntries"
 
     def __str__(self):
         return "recordSelectEntry: {};".format(self.pk)
@@ -414,8 +414,8 @@ class DataSheetMultipleEntry(DataSheetEntry):
 
     class Meta:
         unique_together = ["record", "field"]
-        verbose_name = "RecordMultipleEntry"
-        verbose_name_plural = "RecordMultipleEntries"
+        verbose_name = "DAT_DataSheetMultipleEntry"
+        verbose_name_plural = "DAT_DataSheetMultipleEntries"
 
     def __str__(self):
         return "recordMultipleEntry: {}".format(self.pk)
@@ -439,8 +439,8 @@ class DataSheetEncryptedSelectEntry(DataSheetEntryEncryptedModelMixin, DataSheet
 
     class Meta:
         unique_together = ["record", "field"]
-        verbose_name = "RecordEncryptedSelectEntry"
-        verbose_name_plural = "RecordEncryptedSelectEntries"
+        verbose_name = "DAT_DataSheetEncryptedSelectEntry"
+        verbose_name_plural = "DAT_DataSheetEncryptedSelectEntries"
 
     def __str__(self):
         return "recordEncryptedSelectEntry: {};".format(self.pk)
@@ -471,8 +471,8 @@ class DataSheetEncryptedFileEntry(DataSheetEntry):
 
     class Meta:
         unique_together = ["record", "field"]
-        verbose_name = "RecordEncryptedFileEntry"
-        verbose_name_plural = "RecordEncryptedFileEntries"
+        verbose_name = "DAT_DataSheetEncryptedFileEntry"
+        verbose_name_plural = "DAT_DataSheetEncryptedFileEntries"
 
     def __str__(self):
         return "recordEncryptedFileEntry: {};".format(self.pk)
@@ -539,8 +539,8 @@ class DataSheetStandardEntry(DataSheetEntry):
 
     class Meta:
         unique_together = ["record", "field"]
-        verbose_name = "RecordStandardEntry"
-        verbose_name_plural = "RecordStandardEntries"
+        verbose_name = "DAT_DataSheetStandardEntry"
+        verbose_name_plural = "DAT_DataSheetStandardEntries"
 
     def __str__(self):
         return "recordStandardEntry: {};".format(self.pk)
@@ -569,8 +569,8 @@ class DataSheetEncryptedStandardEntry(
 
     class Meta:
         unique_together = ["record", "field"]
-        verbose_name = "RecordStandardEntry"
-        verbose_name_plural = "RecordStandardEntries"
+        verbose_name = "DAT_DataSheetEncryptedStandardEntry"
+        verbose_name_plural = "DAT_DataSheetEncryptedStandardEntries"
 
     def __str__(self):
         return "recordEncryptedStandardEntry: {};".format(self.pk)
@@ -593,8 +593,8 @@ class DataSheetStatisticEntry(DataSheetEntry):
 
     class Meta:
         unique_together = ["record", "field"]
-        verbose_name = "RecordStatisticEntry"
-        verbose_name_plural = "RecordStatisticEntries"
+        verbose_name = "DAT_DataSheetStatisticEntry"
+        verbose_name_plural = "DAT_DataSheetStatisticEntries"
 
     def __str__(self):
         return "recordStatisticEntry: {};".format(self.pk)

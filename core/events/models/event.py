@@ -53,6 +53,8 @@ class EventsEvent(models.Model):
     end_time = models.DateTimeField()
 
     class Meta:
+        verbose_name = "EVT_EventsEvent"
+        verbose_name = "EVT_EventsEvents"
         ordering = ["start_time"]
 
     @staticmethod

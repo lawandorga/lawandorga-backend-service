@@ -13,8 +13,8 @@ class Permission(models.Model):
     recommended_for = models.CharField(max_length=200)
 
     class Meta:
-        verbose_name = "Permission"
-        verbose_name_plural = "Permissions"
+        verbose_name = "PER_Permission"
+        verbose_name_plural = "PER_Permissions"
         ordering = ["name"]
 
     def __str__(self):
@@ -54,9 +54,12 @@ class HasPermission(models.Model):
         null=True,
     )
 
+    if TYPE_CHECKING:
+        group_has_permission_id: int
+
     class Meta:
-        verbose_name = "HasPermission"
-        verbose_name_plural = "HasPermissions"
+        verbose_name = "PER_HasPermission"
+        verbose_name_plural = "PER_HasPermissions"
         unique_together = ("permission", "user", "group_has_permission")
 
     def __str__(self):

@@ -25,8 +25,8 @@ class File(models.Model):
     exists = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = "File"
-        verbose_name_plural = "Files"
+        verbose_name = "FIL_File"
+        verbose_name_plural = "FIL_Files"
         ordering = ["exists", "-created"]
 
     def __str__(self):

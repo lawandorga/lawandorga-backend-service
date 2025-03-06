@@ -19,8 +19,8 @@ class MailAddress(models.Model):
     )
 
     class Meta:
-        verbose_name = "MailAddress"
-        verbose_name_plural = "MailAddress"
+        verbose_name = "MAIL_MailAddress"
+        verbose_name_plural = "MAIL_MailAddress"
         ordering = ["localpart"]
 
     def __str__(self):

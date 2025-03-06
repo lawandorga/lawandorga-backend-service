@@ -42,8 +42,8 @@ class Letterhead(models.Model):
     text_right = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = "Letterhead"
-        verbose_name_plural = "Letterheads"
+        verbose_name = "COL_Letterhead"
+        verbose_name_plural = "COL_Letterheads"
 
     @property
     def logo_url(self):

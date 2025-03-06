@@ -39,8 +39,8 @@ class Folder(models.Model):
         child_folders: models.QuerySet["Folder"]
 
     class Meta:
-        verbose_name = "Folder"
-        verbose_name_plural = "Folders"
+        verbose_name = "FIL_Folder"
+        verbose_name_plural = "FIL_Folders"
 
     def __str__(self) -> str:
         return "folder: {}; name: {};".format(self.pk, self.name)

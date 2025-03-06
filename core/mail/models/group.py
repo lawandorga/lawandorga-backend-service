@@ -19,8 +19,8 @@ class MailGroup(models.Model):
         account: "MailAccount"
 
     class Meta:
-        verbose_name = "MailGroup"
-        verbose_name_plural = "MailGroups"
+        verbose_name = "MAIL_MailGroup"
+        verbose_name_plural = "MAIL_MailGroups"
 
     def __str__(self):
         return "mailGroup: {};".format(self.pk)

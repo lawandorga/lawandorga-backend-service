@@ -38,8 +38,8 @@ class MailDomain(models.Model):
     is_active = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = "MailDomain"
-        verbose_name_plural = "MailDomains"
+        verbose_name = "MAIL_MailDomain"
+        verbose_name_plural = "MAIL_MailDomains"
 
     def __str__(self):
         return "mailDomain: {};".format(self.pk)

@@ -80,8 +80,8 @@ class EncryptedRecordDocument(Aggregate, models.Model):
         org_id: int
 
     class Meta:
-        verbose_name = "RecordDocument"
-        verbose_name_plural = "RecordDocuments"
+        verbose_name = "FIN_EncryptedRecordDocument"
+        verbose_name_plural = "FIN_EncryptedRecordDocuments"
 
     def __str__(self):
         return "recordDocument: {}; name: {}; folderUuid: {};".format(

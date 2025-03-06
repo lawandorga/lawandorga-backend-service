@@ -27,8 +27,8 @@ class MailUser(models.Model):
         groups: models.QuerySet["MailGroup"]
 
     class Meta:
-        verbose_name = "MailUser"
-        verbose_name_plural = "MailUsers"
+        verbose_name = "MAIL_MailUser"
+        verbose_name_plural = "MAIL_MailUsers"
 
     def __str__(self):
         return "mailUser: {}; user: {};".format(self.pk, self.user)

@@ -19,8 +19,8 @@ class LoggedPath(models.Model):
 
     class Meta:
         ordering = ["-time"]
-        verbose_name = "LoggedPath"
-        verbose_name_plural = "LoggedPaths"
+        verbose_name = "OTH_LoggedPath"
+        verbose_name_plural = "OTH_LoggedPaths"
 
     def __str__(self):
         return "loggedPath: {}; path: {} '{}' {}; user: {};".format(

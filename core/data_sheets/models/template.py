@@ -57,8 +57,8 @@ class DataSheetTemplate(models.Model):
         users_fields: models.QuerySet["DataSheetUsersField"]
 
     class Meta:
-        verbose_name = "RecordTemplate"
-        verbose_name_plural = "RecordTemplates"
+        verbose_name = "DAT_RecordTemplate"
+        verbose_name_plural = "DAT_RecordTemplates"
 
     def __str__(self):
         return "recordTemplate: {}; rlc: {};".format(self.pk, self.rlc)
@@ -227,8 +227,8 @@ class DataSheetStateField(RecordField):
         entries: models.QuerySet["DataSheetStateEntry"]
 
     class Meta:
-        verbose_name = "RecordStateField"
-        verbose_name_plural = "RecordStateFields"
+        verbose_name = "DAT_RecordStateField"
+        verbose_name_plural = "DAT_RecordStateFields"
 
     @property
     def field_type(self):
@@ -287,8 +287,8 @@ class DataSheetUsersField(RecordField):
         entries: models.QuerySet["DataSheetUsersEntry"]
 
     class Meta:
-        verbose_name = "RecordUsersField"
-        verbose_name_plural = "RecordUsersFields"
+        verbose_name = "DAT_RecordUsersField"
+        verbose_name_plural = "DAT_RecordUsersFields"
 
     @property
     def kind(self):
@@ -354,8 +354,8 @@ class DataSheetSelectField(RecordField):
         entries: models.QuerySet["DataSheetSelectEntry"]
 
     class Meta:
-        verbose_name = "RecordSelectField"
-        verbose_name_plural = "RecordSelectFields"
+        verbose_name = "DAT_RecordSelectField"
+        verbose_name_plural = "DAT_RecordSelectFields"
 
     @property
     def field_type(self):
@@ -408,8 +408,8 @@ class DataSheetMultipleField(RecordField):
         entries: models.QuerySet["DataSheetMultipleEntry"]
 
     class Meta:
-        verbose_name = "RecordMultipleField"
-        verbose_name_plural = "RecordMultipleFields"
+        verbose_name = "DAT_RecordMultipleField"
+        verbose_name_plural = "DAT_RecordMultipleFields"
 
     @property
     def field_type(self):
@@ -464,8 +464,8 @@ class DataSheetEncryptedSelectField(RecordField):
         entries: models.QuerySet["DataSheetEncryptedSelectEntry"]
 
     class Meta:
-        verbose_name = "RecordEncryptedSelectField"
-        verbose_name_plural = "RecordEncryptedSelectFields"
+        verbose_name = "DAT_DataSheetEncryptedSelectField"
+        verbose_name_plural = "DAT_DataSheetEncryptedSelectFields"
 
     @property
     def field_type(self):
@@ -523,8 +523,8 @@ class DataSheetEncryptedFileField(RecordField):
         entries: models.QuerySet["DataSheetEncryptedFileEntry"]
 
     class Meta:
-        verbose_name = "RecordEncryptedFileField"
-        verbose_name_plural = "RecordEncryptedFileFields"
+        verbose_name = "DAT_DataSheetEncryptedFileField"
+        verbose_name_plural = "DAT_DataSheetEncryptedFileField"
 
     @property
     def field_type(self):
@@ -588,8 +588,8 @@ class DataSheetStandardField(RecordField):
         entries: models.QuerySet["DataSheetStandardEntry"]
 
     class Meta:
-        verbose_name = "RecordStandardField"
-        verbose_name_plural = "RecordStandardFields"
+        verbose_name = "DAT_DataSheetStandardField"
+        verbose_name_plural = "DAT_DataSheetStandardField"
 
     @property
     def type(self):
@@ -657,8 +657,8 @@ class DataSheetEncryptedStandardField(RecordField):
         entries: models.QuerySet["DataSheetEncryptedStandardEntry"]
 
     class Meta:
-        verbose_name = "RecordEncryptedStandardField"
-        verbose_name_plural = "RecordEncryptedStandardFields"
+        verbose_name = "DAT_DataSheetEncryptedStandardField"
+        verbose_name_plural = "DAT_DataSheetEncryptedStandardField"
 
     @property
     def type(self):
@@ -710,8 +710,8 @@ class DataSheetStatisticField(RecordField):
         entries: models.QuerySet["DataSheetStatisticEntry"]
 
     class Meta:
-        verbose_name = "RecordStatisticField"
-        verbose_name_plural = "RecordStatisticFields"
+        verbose_name = "DAT_DataSheetStatisticField"
+        verbose_name_plural = "DAT_DataSheetStatisticField"
 
     @property
     def field_type(self):

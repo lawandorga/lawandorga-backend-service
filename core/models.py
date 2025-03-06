@@ -12,7 +12,6 @@ from .mail_imports.models import *
 from .org.models import *
 from .other.models import *
 from .permissions.models import *
-from .playground.models import *
 from .records.models import *
 from .tasks.models import Task
 from .timeline.models.event import TimelineEvent
