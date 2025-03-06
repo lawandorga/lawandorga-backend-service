@@ -31,8 +31,8 @@ def create_task(
 
 @use_case
 def update_task(
+    __actor: OrgUser,
     task_id: UUID,
-    updater: OrgUser,
     title: Optional[str] = None,
     description: Optional[str] = None,
     page_url: Optional[str] = None,
@@ -42,7 +42,7 @@ def update_task(
 ):
     task = Task.objects.get(uuid=task_id)
 
-    if task.creator != updater and task.assignee != updater:
+    if task.creator != __actor and task.assignee != __actor:
         raise PermissionError("You are not allowed to update this task.")
 
     if title is not None:
