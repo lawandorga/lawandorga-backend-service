@@ -1,5 +1,15 @@
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, List, Optional, Protocol, Type, TypedDict, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    List,
+    Optional,
+    Protocol,
+    Type,
+    TypedDict,
+    Union,
+)
 from uuid import UUID, uuid4
 
 import ics
@@ -146,6 +156,7 @@ class OrgUser(Aggregate, models.Model):
         groups: models.QuerySet[Group]
         org_id: int
         user_id: int
+        get_speciality_of_study_display: Callable[[], str]
 
     class Meta:
         verbose_name = "AUT_OrgUser"
