@@ -24,8 +24,8 @@ def query__raw_numbers(statistics_user: StatisticUser):
                 "records": x[0],
                 "files": x[1],
                 "collabs": x[2],
-                "users": x[2],
-                "lcs": x[3],
+                "users": x[3],
+                "lcs": x[4],
             },
             data,
         )
