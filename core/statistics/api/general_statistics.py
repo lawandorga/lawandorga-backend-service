@@ -13,7 +13,7 @@ def query__raw_numbers(statistics_user: StatisticUser):
            select
            (select count(*) as records from core_datasheet) as records,
            (select count(*) as files from core_file) as files,
-           (select count(*) as collab from core_collabdocument as collab),
+           (select count(*) as collab from core_collab as collab),
            (select count(*) as users from core_orguser as users),
            (select count(*) as lcs from core_org as lcs)
            """
@@ -24,8 +24,8 @@ def query__raw_numbers(statistics_user: StatisticUser):
                 "records": x[0],
                 "files": x[1],
                 "collabs": x[2],
-                "users": x[3],
-                "lcs": x[4],
+                "users": x[2],
+                "lcs": x[3],
             },
             data,
         )

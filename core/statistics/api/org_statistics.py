@@ -121,13 +121,13 @@ def query__org_usage(statistics_user: StatisticUser):
         rlc.name as name,
         count(distinct record.id) as records,
         count(distinct file.id) as files,
-        count(distinct document.id) as documents
+        count(distinct collab.id) as collabs
     from core_org as rlc
     left join core_datasheettemplate template on rlc.id = template.rlc_id
     left join core_datasheet record on record.template_id = template.id
     left join core_folder folder on rlc.id = folder.rlc_id
     left join core_file file on file.folder_id = folder.id
-    left join core_collabdocument document on rlc.id = document.rlc_id
+    left join core_collab collab on rlc.id = collab.org_id
     group by rlc.id, rlc.name;
     """
     data = execute_statement(statement)
