@@ -11,7 +11,7 @@ from core.permissions.static import (
 )
 from core.records.models.record import RecordsRecord
 from core.records.use_cases.finders import find_record_by_uuid
-from core.seedwork.use_case_layer import UseCaseError, use_case
+from core.seedwork.use_case_layer import UseCaseError, UseCaseInputError, use_case
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
@@ -50,6 +50,8 @@ def create_record_and_folder(__actor: OrgUser, token: str, r: FolderRepository):
 
 @use_case
 def change_record_token(__actor: OrgUser, uuid: UUID, token: str, r: FolderRepository):
+    if token == "":
+        raise UseCaseInputError({"token": ["The Token can not be empty."]})
     record = find_record_by_uuid(__actor, uuid)
     record.change_token(token)
 

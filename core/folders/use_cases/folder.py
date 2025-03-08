@@ -42,7 +42,7 @@ def create_folder(__actor: OrgUser, name: str, parent: Optional[UUID]):
 @use_case
 def rename_folder(__actor: OrgUser, name: str, folder_uuid: UUID):
     if name == "":
-        raise UseCaseInputError("Please specify a name")
+        raise UseCaseInputError({"name": ["Please specify a name"]})
     folder = folder_from_uuid(__actor, folder_uuid)
     r = get_repository()
     folder.update_information(name=name)
@@ -189,10 +189,7 @@ def rename_item_in_folder(
 
 @use_case
 def delete_item_from_folder(__actor: MessageBusActor, uuid: UUID, folder_uuid: UUID):
-    try:
-        folder = folder_from_uuid(__actor, folder_uuid)
-    except UseCaseInputError:
-        return
+    folder = folder_from_uuid(__actor, folder_uuid)
     r = get_repository()
     folder.remove_item(uuid)
     r.save(folder)

@@ -25,8 +25,9 @@ class UseCaseError(Exception):
 
 
 class UseCaseInputError(Exception):
-    def __init__(self, message):
-        self.message = message
+    def __init__(self, param_errors: dict[str, list[str]] | None = None):
+        self.message = "Input Error"
+        self.param_errors = param_errors
 
 
 P1 = ParamSpec("P1")
@@ -39,7 +40,7 @@ def finder_function(function: Callable[P1, T1]) -> Callable[P1, T1]:
             return function(*args, **kwargs)
         except ObjectDoesNotExist:
             message = "The object could not be found."
-            raise UseCaseInputError(message)
+            raise UseCaseError(message)
 
     return decorator
 

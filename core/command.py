@@ -71,7 +71,8 @@ def handle_error(fn: Callable[[], T]) -> HttpResponse | T:
 
     except UseCaseInputError as e:
         return ErrorResponse(
-            title=e.message,
+            title=e.message or "Input Error",
+            param_errors=e.param_errors,
             status=400,
             err_type="UseCaseInputError",
         )

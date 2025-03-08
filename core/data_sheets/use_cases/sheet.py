@@ -14,11 +14,13 @@ from core.permissions.static import (
     PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
     PERMISSION_RECORDS_ADD_RECORD,
 )
-from core.seedwork.use_case_layer import UseCaseError, use_case
+from core.seedwork.use_case_layer import UseCaseError, UseCaseInputError, use_case
 
 
 @use_case
 def change_sheet_name(__actor: OrgUser, name: str, record_id: int):
+    if name == "":
+        raise UseCaseInputError({"name": ["The name can not be empty."]})
     sheet = sheet_from_id(__actor, record_id)
     sheet.set_name(name)
     sheet.save()

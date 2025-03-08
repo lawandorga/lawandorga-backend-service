@@ -43,7 +43,7 @@ class RFC7807(BaseModel):
     instance: Optional[str] = None
     internal: Optional[Any] = None
     general_errors: Optional[list[str]] = None
-    param_errors: Optional[Dict[str, List[str]]] = None
+    param_errors: Optional[dict[str, list[str]]] = None
 
 
 class ErrorResponse(JsonResponse):
@@ -56,7 +56,7 @@ class ErrorResponse(JsonResponse):
         general_errors: Optional[list[str]] = None,
         instance: Optional[str] = None,
         internal: Optional[Any] = None,
-        param_errors: Optional[Dict[str, List[str]]] = None,
+        param_errors: Optional[dict[str, list[str]]] = None,
     ):
         error = RFC7807(
             err_type=err_type,
@@ -185,7 +185,8 @@ def catch_error(func: Callable[..., HttpResponse | FileResponse]):
 
         except UseCaseInputError as e:
             return ErrorResponse(
-                title=e.message,
+                title=e.message or "Input Error",
+                param_errors=e.param_errors,
                 status=400,
                 err_type="UseCaseInputError",
             )
