@@ -346,7 +346,7 @@ class OrgUser(Aggregate, models.Model):
 
         raise ValueError("This method is only available for dummy and in test mode.")
 
-    def __get_session(self) -> Optional[CustomSession]:
+    def __get_session(self) -> CustomSession:
         memory_cache_session_key = "session-of-org-user-{}".format(self.pk)
         memory_cache_time_key = "time-of-org-user-{}".format(self.pk)
 
@@ -366,7 +366,9 @@ class OrgUser(Aggregate, models.Model):
         )
 
         if session is None:
-            return None
+            raise Exception(
+                f"No session found for user '{self.user_id}' with last login '{self.user.last_login}'"
+            )
 
         setattr(
             self.__class__,
@@ -391,12 +393,6 @@ class OrgUser(Aggregate, models.Model):
             )
 
         session = self.__get_session()
-
-        if session is None:
-            raise ValueError(
-                "No private key could be found for user '{}'.".format(self.pk)
-            )
-
         decoded = session.get_decoded()
         key = UserKey.create_from_unsafe_dict(decoded["user_key"])
 
