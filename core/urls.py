@@ -1,6 +1,7 @@
 from django.urls import include, path
 
 from core.auth.urls import urlpatterns as auth_urlpatterns
+from core.command import django_command
 from core.cronjobs import router as cronjobs_router
 from core.data_sheets.urls import urlpatterns as data_sheets_urlpatterns
 from core.events.urls import urlpatterns as events_urlpatterns
@@ -17,11 +18,8 @@ from core.records.urls import urlpatterns as records_urlpatterns
 from core.statistics.urls import urlpatterns as statistics_urlpatterns
 from core.upload.urls import urlpatterns as upload_urlpatterns
 
-from .command import django_command
-
 urlpatterns = [
     path("api/command/", django_command),
-    # path("api/command/", include(router.urls)),
     path("api/mail/", include(mail_urlpatterns)),
     path("api/", include(statistics_urlpatterns)),  # TODO: namespace
     path("api/messages/", include(messages_urlpatterns)),
