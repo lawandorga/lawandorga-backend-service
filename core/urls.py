@@ -1,7 +1,7 @@
 from django.urls import include, path
 
 from core.auth.urls import api_urlpatterns as auth_api_urlpatterns
-from core.auth.urls import urlpatterns as auth_urlpatterns
+from core.auth.urls import view_urlpatterns as auth_view_urlpatterns
 from core.command import django_command
 from core.cronjobs import router as cronjobs_router
 from core.data_sheets.urls import urlpatterns as data_sheets_urlpatterns
@@ -20,11 +20,11 @@ from core.statistics.urls import urlpatterns as statistics_urlpatterns
 from core.upload.urls import urlpatterns as upload_urlpatterns
 
 urlpatterns = [
+    path("auth/", include(auth_view_urlpatterns)),
     path("api/command/", django_command),
     path("api/mail/", include(mail_urlpatterns)),
     path("api/statistics/", include(statistics_urlpatterns)),
     path("api/messages/", include(messages_urlpatterns)),
-    path("auth/", include(auth_urlpatterns)),
     path("api/", include(auth_api_urlpatterns)),  # TODO: rename add namespace
     path("api/folders/", include(folders_urlpatterns)),
     path("api/events/", include(events_urlpatterns)),

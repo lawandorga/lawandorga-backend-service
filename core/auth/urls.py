@@ -11,7 +11,7 @@ api_urlpatterns: list[Union[URLPattern, URLResolver]] = [
     path("auth/query/", include(api.query_router.urls)),
 ]
 
-urlpatterns: list[Union[URLPattern, URLResolver]] = [
+view_urlpatterns: list[Union[URLPattern, URLResolver]] = [
     path("user/register/", views.CustomRegisterView.as_view(), name="register"),
     path(
         "user/register/successful/",
