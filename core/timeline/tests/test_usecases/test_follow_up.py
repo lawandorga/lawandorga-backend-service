@@ -3,7 +3,7 @@ from django.utils import timezone
 from core.seedwork import test_helpers
 from core.timeline.models.follow_up import TimelineFollowUp
 from core.timeline.tests import helpers
-from core.timeline.usecases.follow_up import (
+from core.timeline.use_cases.follow_up import (
     create_follow_up,
     delete_follow_up,
     set_follow_up_as_done,
