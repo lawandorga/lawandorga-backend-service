@@ -33,7 +33,7 @@ def org_user(user):
 def test_list_links_works(user, db):
     c = Client()
     c.login(**user)
-    response = c.get("/api/query/links/")
+    response = c.get("/api/org/query/links/")
     response_data = response.json()
     assert response.status_code == 200 and len(response_data) == 1
 

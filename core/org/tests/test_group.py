@@ -47,7 +47,7 @@ def user(db, group, user_2, org):
 def test_list_users(user, group, db):
     c = Client()
     c.login(**user)
-    response = c.get("/api/query/group/{}/".format(group.id))
+    response = c.get("/api/org/query/group/{}/".format(group.id))
     assert response.status_code == 200 and "members" in response.json()
 
 
