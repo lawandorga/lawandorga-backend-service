@@ -1,5 +1,6 @@
 from django.urls import include, path
 
+from core.auth.urls import api_urlpatterns as auth_api_urlpatterns
 from core.auth.urls import urlpatterns as auth_urlpatterns
 from core.command import django_command
 from core.cronjobs import router as cronjobs_router
@@ -23,7 +24,8 @@ urlpatterns = [
     path("api/mail/", include(mail_urlpatterns)),
     path("api/statistics/", include(statistics_urlpatterns)),
     path("api/messages/", include(messages_urlpatterns)),
-    path("", include(auth_urlpatterns)),
+    path("auth/", include(auth_urlpatterns)),
+    path("api/", include(auth_api_urlpatterns)),  # TODO: rename add namespace
     path("api/folders/", include(folders_urlpatterns)),
     path("api/events/", include(events_urlpatterns)),
     path("api/legal/", include(legal_urlpatterns)),
