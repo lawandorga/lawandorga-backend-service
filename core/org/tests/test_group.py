@@ -119,7 +119,7 @@ def test_add_member_fails_different_org(user, group, db):
         "/api/command/",
         data=json.dumps(
             {
-                "new_member_id": another_user["org_user"].id,
+                "new_member_id": another_user["org_user"].pk,
                 "group_id": group.id,
                 "action": "org/add_member_to_group",
             }

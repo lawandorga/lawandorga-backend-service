@@ -31,7 +31,6 @@ urlpatterns = [
     path("api/legal/", include(legal_urlpatterns)),
     path("api/cronjobs/", include(cronjobs_router.urls)),
     path("api/org/", include(org_urlpatterns)),
-    path("api/", include(org_urlpatterns)),  # TODO: remove
     path("api/internal/", include(internal_urlpatterns)),
     path("api/collab/", include("core.collab.urls")),
     path("api/files/", include(files_router.urls)),
