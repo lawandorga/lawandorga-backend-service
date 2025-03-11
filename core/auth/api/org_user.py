@@ -119,7 +119,7 @@ def retrieve(data: InputOrgUserGet, org_user: OrgUser):
     if org_user.has_permission(PERMISSION_ADMIN_MANAGE_PERMISSIONS):
         queryset = HasPermission.objects.filter(
             Q(user__org=found_org_user.org)
-            | Q(group_has_permission__from_rlc=found_org_user.org)
+            | Q(group_has_permission__org=found_org_user.org)
         )
         queryset = queryset.select_related("permission", "group_has_permission", "user")
         groups = found_org_user.groups.all()

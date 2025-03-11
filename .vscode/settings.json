@@ -16,8 +16,5 @@
     "files.exclude": {
         "**/.git": false
     },
-    "emmet.includeLanguages": {
-        "django-html": "html"
-    },
     "python.analysis.typeCheckingMode": "basic"
 }

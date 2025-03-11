@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Optional
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
 
+from core.seedwork.domain_layer import DomainError
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
 
 from .meta import Meta
@@ -58,6 +59,13 @@ class Org(EncryptedModelMixin, models.Model):
     use_record_pool = models.BooleanField(default=False)
     collab_migrated = models.BooleanField(default=False)
     new_records_have_inheritance_stop = models.BooleanField(default=True)
+    default_group_for_new_users = models.ForeignKey(
+        "Group",
+        on_delete=models.SET_NULL,
+        related_name="default_group_for_new_users",
+        null=True,
+        blank=True,
+    )
 
     # keys
     public_key = models.BinaryField(null=True)
@@ -69,7 +77,7 @@ class Org(EncryptedModelMixin, models.Model):
         collabs: models.QuerySet["Collab"]
         folders_folders: models.QuerySet["FOL_Folder"]
         users: models.QuerySet[OrgUser]
-        group_from_rlc: models.QuerySet[Group]
+        groups: models.QuerySet[Group]
         events: models.QuerySet[EventsEvent]
         external_links: models.QuerySet["ExternalLink"]
         recordtemplates: models.QuerySet["DataSheetTemplate"]
@@ -139,6 +147,15 @@ class Org(EncryptedModelMixin, models.Model):
 
         else:
             raise ValueError("You need to pass (user and private_key_user).")
+
+    def update(self, name: str, default_group_for_new_users: Optional["Group"] = None):
+        self.name = name
+        if (
+            default_group_for_new_users
+            and default_group_for_new_users.org_id != self.pk
+        ):
+            raise DomainError("The group does not belong to this org.")
+        self.default_group_for_new_users = default_group_for_new_users
 
     def get_private_key(
         self,
@@ -264,7 +281,7 @@ class Org(EncryptedModelMixin, models.Model):
             cnew.delete()
         for folder in self.folders_folders.all():
             folder.delete()
-        for group in self.group_from_rlc.all():
+        for group in self.groups.all():
             group.delete()
         for record in self.records_records.all():
             record.delete()

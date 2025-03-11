@@ -23,4 +23,4 @@ def org_user_from_uuid(actor: OrgUser | MessageBusActor, v: UUID) -> OrgUser:
 
 @finder_function
 def group_from_uuid(actor: OrgUser, v: UUID) -> Group:
-    return Group.objects.get(from_rlc__id=actor.org_id, uuid=v)
+    return Group.objects.get(org__id=actor.org_id, uuid=v)

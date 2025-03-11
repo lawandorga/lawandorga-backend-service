@@ -248,7 +248,7 @@ def create_inactive_user(rlc):
 def create_groups(rlc: Org, users: List[UserProfile]):
     # create users group
     users_group = Group.objects.create(
-        from_rlc=rlc,
+        org=rlc,
         name="Berater",
         visible=False,
         description="all users",
@@ -259,7 +259,7 @@ def create_groups(rlc: Org, users: List[UserProfile]):
 
     # create ag group
     ag_group = Group.objects.create(
-        from_rlc=rlc,
+        org=rlc,
         name="AG Datenschutz",
         visible=True,
         description="DSGVO",
@@ -275,7 +275,7 @@ def create_groups(rlc: Org, users: List[UserProfile]):
 def create_admin_group(rlc: Org, main_user: UserProfile):
     # create admin group
     admin_group = Group.objects.create(
-        from_rlc=rlc,
+        org=rlc,
         name="Administratoren",
         visible=False,
         description="haben alle Berechtigungen",

@@ -80,7 +80,7 @@ def get_links(org_user: OrgUser):
     output_schema=OutputSingleGroup,
 )
 def query__get_group(org_user: OrgUser, data: InputQueryGroup):
-    group = Group.objects.get(from_rlc__id=org_user.org_id, id=data.id)
+    group = Group.objects.get(org__id=org_user.org_id, id=data.id)
     return {
         "id": group.pk,
         "name": group.name,
@@ -92,7 +92,7 @@ def query__get_group(org_user: OrgUser, data: InputQueryGroup):
 
 @router.get(url="groups/", output_schema=list[OutputGroup])
 def query__list_groups(org_user: OrgUser):
-    groups = Group.objects.filter(from_rlc__id=org_user.org_id)
+    groups = Group.objects.filter(org__id=org_user.org_id)
     return list(groups)
 
 
@@ -100,3 +100,23 @@ def query__list_groups(org_user: OrgUser):
 def query__list_notes(org_user: OrgUser):
     notes = Note.objects.filter(rlc__id=org_user.org_id)
     return list(notes)
+
+
+class OutputDefaultGroup(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OutputOrg(BaseModel):
+    id: int
+    name: str
+    default_group_for_new_users: OutputDefaultGroup | None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+@router.get(url="org/", output_schema=OutputOrg)
+def query__org(org_user: OrgUser):
+    return org_user.org

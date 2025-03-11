@@ -97,7 +97,7 @@ class FolderViewSet(viewsets.ModelViewSet):
     def permissions(self, request, *args, **kwargs):
         folder = self.get_object()
 
-        groups = Group.objects.filter(from_rlc=request.user.rlc)
+        groups = Group.objects.filter(org=request.user.rlc)
 
         parents = folder.get_all_parents()
         children = folder.get_all_children()

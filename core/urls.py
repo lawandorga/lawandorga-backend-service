@@ -23,14 +23,15 @@ urlpatterns = [
     path("api/command/", django_command),
     # path("api/command/", include(router.urls)),
     path("api/mail/", include(mail_urlpatterns)),
-    path("api/", include(statistics_urlpatterns)),
+    path("api/", include(statistics_urlpatterns)),  # TODO: namespace
     path("api/messages/", include(messages_urlpatterns)),
     path("", include(auth_urlpatterns)),
     path("api/folders/", include(folders_urlpatterns)),
     path("api/events/", include(events_urlpatterns)),
     path("api/legal/", include(legal_urlpatterns)),
     path("api/cronjobs/", include(cronjobs_router.urls)),
-    path("api/", include(org_urlpatterns)),
+    path("api/org/", include(org_urlpatterns)),
+    path("api/", include(org_urlpatterns)),  # TODO: remove
     path("api/internal/", include(internal_urlpatterns)),
     path("api/collab/", include("core.collab.urls")),
     path("api/files/", include(files_router.urls)),

@@ -54,7 +54,7 @@ def add_member_to_group(__actor: OrgUser, group_id: int, new_member_id: int):
 
     new_member = org_user_from_id(__actor, new_member_id)
 
-    if group.from_rlc_id != new_member.org_id:
+    if group.org_id != new_member.org_id:
         raise UseCaseError("You can not edit a member from another org.")
 
     group.add_member(new_member, by=__actor)
@@ -72,7 +72,7 @@ def remove_member_from_group(__actor: OrgUser, group_id: int, member_id: int):
 
     member = org_user_from_id(__actor, member_id)
 
-    if group.from_rlc_id != member.org_id:
+    if group.org_id != member.org_id:
         raise UseCaseError("You can not edit a member from another org.")
 
     group.remove_member(member)

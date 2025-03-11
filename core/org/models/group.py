@@ -97,15 +97,15 @@ class EncryptedGroupKey:
 class Group(models.Model):
     @classmethod
     def create(cls, org: Org, name: str, description: str | None, pk=0):
-        group = Group(from_rlc=org, name=name)
+        group = Group(org=org, name=name)
         group.description = description if description is not None else ""
         if pk:
             group.pk = pk
         return group
 
     uuid = models.UUIDField(default=uuid4, unique=True, editable=False)
-    from_rlc = models.ForeignKey(
-        Org, related_name="group_from_rlc", on_delete=models.CASCADE, blank=True
+    org = models.ForeignKey(
+        Org, related_name="groups", on_delete=models.CASCADE, blank=True
     )
     name = models.CharField(max_length=200, null=False)
     visible = models.BooleanField(null=False, default=True)
@@ -117,16 +117,14 @@ class Group(models.Model):
 
     if TYPE_CHECKING:
         group_has_permission: models.QuerySet["HasPermission"]
-        from_rlc_id: int
+        org_id: int
 
     class Meta:
         verbose_name = "ORG_Group"
         verbose_name_plural = "ORG_Groups"
 
     def __str__(self):
-        return "group: {}; name: {}; rlc: {};".format(
-            self.pk, self.name, self.from_rlc.name
-        )
+        return "group: {}; name: {}; rlc: {};".format(self.pk, self.name, self.org.name)
 
     @property
     def permissions(self):
@@ -228,7 +226,7 @@ class Group(models.Model):
         self.keys.append(enc_key.as_dict())
 
     def add_member(self, new_member: "OrgUser", by: Union["OrgUser", None] = None):
-        if new_member.org_id != self.from_rlc.pk:
+        if new_member.org_id != self.org.pk:
             raise DomainError("The user is not in the same org.")
 
         if self.has_member(new_member):

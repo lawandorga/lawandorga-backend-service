@@ -46,7 +46,7 @@ def get_has_permissions_of(
         )
         .filter(
             Q(user__in=org_user.org.users.all())
-            | Q(group_has_permission__in=org_user.org.group_from_rlc.all())
+            | Q(group_has_permission__in=org_user.org.groups.all())
         )
         .select_related("user", "group_has_permission", "permission")
     )

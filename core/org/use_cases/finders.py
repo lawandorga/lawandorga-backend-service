@@ -5,7 +5,7 @@ from core.seedwork.use_case_layer import finder_function
 
 @finder_function
 def group_from_id(actor: OrgUser, v: int) -> Group:
-    return Group.objects.get(id=v, from_rlc__id=actor.org_id)
+    return Group.objects.get(id=v, org__id=actor.org_id)
 
 
 @finder_function

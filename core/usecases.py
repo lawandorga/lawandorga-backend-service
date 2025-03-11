@@ -8,7 +8,7 @@ from core.legal.usecases import USECASES as LEGAL_USECASES
 from core.mail.usecases import USECASES as MAIL_USECASES
 from core.mail_imports.usecases import USECASES as MAIL_IMPORTS_USECASES
 from core.messages.usecases import USECASES as MESSAGES_USECASES
-from core.org.commands import COMMANDS as ORG_COMMANDS
+from core.org.usecases import USECASES as ORG_USECASES
 from core.permissions.usecases import USECASES as PERMISSIONS_USECASES
 from core.questionnaires.commands import COMMANDS as QUESTIONNAIRE_COMMANDS
 from core.records.usecases import USECASES as RECORDS_USECASES
@@ -20,7 +20,7 @@ USECASES = {}
 USECASES.update(TIMELINE_USECASES)
 USECASES.update(QUESTIONNAIRE_COMMANDS)
 USECASES.update(DATA_SHEET_COMMANDS)
-USECASES.update(ORG_COMMANDS)
+USECASES.update(ORG_USECASES)
 USECASES.update(FOLDER_COMMANDS)
 USECASES.update(COLLAB_USECASES)
 USECASES.update(LEGAL_USECASES)

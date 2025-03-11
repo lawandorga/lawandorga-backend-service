@@ -94,7 +94,7 @@ class ContextBuilder:
         return self
 
     def build_available_groups(self, org_id: int):
-        x = list(Group.objects.filter(from_rlc_id=org_id))
+        x = list(Group.objects.filter(org_id=org_id))
         self.context["available_groups"] = x
         return self
 

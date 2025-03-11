@@ -8,9 +8,9 @@ from core.org.use_cases.group import (
 )
 from core.org.use_cases.link import create_link, delete_link
 from core.org.use_cases.note import create_note, delete_note, update_note
-from core.org.use_cases.org import accept_member_to_org
+from core.org.use_cases.org import accept_member_to_org, update_org
 
-COMMANDS = {
+USECASES = {
     "org/create_group": create_group,
     "org/update_group": update_group,
     "org/delete_group": delete_group,
@@ -23,4 +23,5 @@ COMMANDS = {
     "org/accept_member_to_org": accept_member_to_org,
     "org/create_link": create_link,
     "org/delete_link": delete_link,
+    "org/update_org": update_org,
 }

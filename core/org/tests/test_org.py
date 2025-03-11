@@ -25,6 +25,11 @@ def user(db, org):
     yield user
 
 
+@pytest.fixture
+def org_user(user):
+    yield user["org_user"]
+
+
 def test_list_links_works(user, db):
     c = Client()
     c.login(**user)
@@ -55,6 +60,21 @@ def test_member_accept(user, db):
     another_user = data.create_org_user(
         rlc=user["org_user"].org, email="another@law-orga.de"
     )
-    accept_member_to_org(user["org_user"], another_user["org_user"].id)
+    accept_member_to_org(user["org_user"], another_user["org_user"].pk)
     another_user["org_user"].refresh_from_db()
     assert another_user["org_user"].accepted
+
+
+def test_accepted_member_assigned_to_default_group(user, org_user, db):
+    c = Client()
+    c.login(**user)
+    org_user.grant(PERMISSION_ADMIN_MANAGE_USERS)
+    another_user = data.create_org_user(rlc=org_user.org, email="another@law-orga.de")
+    org = org_user.org
+    group = org.groups.create(name="Test Group")
+    org.default_group_for_new_users = group
+    org.save()
+    org_user.refresh_from_db()
+    accept_member_to_org(org_user, another_user["org_user"].pk)
+    group.refresh_from_db()
+    assert group.has_member(another_user["org_user"])

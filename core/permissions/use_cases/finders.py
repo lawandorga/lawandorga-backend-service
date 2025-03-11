@@ -13,6 +13,5 @@ def permission_from_id(_, v: int) -> Permission:
 @finder_function
 def has_permission_from_id(__actor: OrgUser, v: int) -> HasPermission:
     return HasPermission.objects.get(
-        Q(id=v)
-        & (Q(user__org=__actor.org) | Q(group_has_permission__from_rlc=__actor.org))
+        Q(id=v) & (Q(user__org=__actor.org) | Q(group_has_permission__org=__actor.org))
     )
