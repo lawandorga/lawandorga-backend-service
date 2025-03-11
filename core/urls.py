@@ -21,7 +21,7 @@ from core.upload.urls import urlpatterns as upload_urlpatterns
 urlpatterns = [
     path("api/command/", django_command),
     path("api/mail/", include(mail_urlpatterns)),
-    path("api/", include(statistics_urlpatterns)),  # TODO: namespace
+    path("api/statistics/", include(statistics_urlpatterns)),
     path("api/messages/", include(messages_urlpatterns)),
     path("", include(auth_urlpatterns)),
     path("api/folders/", include(folders_urlpatterns)),
