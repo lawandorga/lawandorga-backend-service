@@ -29,8 +29,8 @@ from core.timeline.models.event import TimelineEvent
 from core.timeline.models.follow_up import TimelineFollowUp
 from core.timeline.repositories.event import EventRepository
 from core.timeline.repositories.follow_up import FollowUpRepository
-from core.timeline.usecases.event import create_event
-from core.timeline.usecases.follow_up import create_follow_up
+from core.timeline.use_cases.event import create_event
+from core.timeline.use_cases.follow_up import create_follow_up
 from core.upload.models.upload import UploadLink, UploadLinkRepository
 from core.upload.use_cases.upload import create_upload_link
 
