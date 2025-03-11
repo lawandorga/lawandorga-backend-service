@@ -18,7 +18,7 @@ from core.data_sheets.use_cases.templates import (
     update_template,
 )
 
-COMMANDS = {
+USECASES = {
     "data_sheets/create_template": create_template,
     "data_sheets/update_template": update_template,
     "data_sheets/delete_template": delete_template,

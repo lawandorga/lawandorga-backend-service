@@ -15,7 +15,7 @@ from core.questionnaires.use_cases.template import (
     update_questionnaire_template,
 )
 
-COMMANDS = {
+USECASES = {
     "questionnaires/publish_questionnaire": publish_a_questionnaire,
     "questionnaires/create_question": create_question,
     "questionnaires/update_question": update_question,
