@@ -264,7 +264,6 @@ def save_emails(
                 content=content_file,
                 user=user,
             )
-            # attachment.encrypt(user)
             attachments.append(attachment)
         with transaction.atomic():
             obj.save()
