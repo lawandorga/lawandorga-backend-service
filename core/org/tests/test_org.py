@@ -3,6 +3,7 @@ from django.test import Client
 
 from core.models import Org
 from core.org.models import ExternalLink
+from core.org.models.group import Group
 from core.org.use_cases.link import create_link, delete_link
 from core.org.use_cases.org import accept_member_to_org
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS
@@ -28,6 +29,14 @@ def user(db, org):
 @pytest.fixture
 def org_user(user):
     yield user["org_user"]
+
+
+def test_update():
+    org = Org(name="Test Org")
+    group = Group(name="Test Group", org=org)
+    org.update(name="New Name", default_group_for_new_users=group)
+    assert org.name == "New Name"
+    assert org.default_group_for_new_users == group
 
 
 def test_list_links_works(user, db):
