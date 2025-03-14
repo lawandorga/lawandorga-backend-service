@@ -53,7 +53,7 @@ class TestUserKeys(TestCase):
     def test_list_keys(self):
         c = Client()
         c.login(**self.user_1)
-        c.get("/api/keys/")
+        c.get("/api/auth/keys/")
 
     def test_keys_test(self):
         check_keys(self.user_1["org_user"])

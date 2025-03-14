@@ -8,7 +8,7 @@ api_urlpatterns: list[Union[URLPattern, URLResolver]] = [
     path("org_users/", include(api.org_user_router.urls)),
     path("statistics_users/", include(api.statistics_user_router.urls)),
     path("keys/", include(api.keys_router.urls)),
-    path("auth/query/", include(api.query_router.urls)),
+    path("query/", include(api.query_router.urls)),
 ]
 
 view_urlpatterns: list[Union[URLPattern, URLResolver]] = [

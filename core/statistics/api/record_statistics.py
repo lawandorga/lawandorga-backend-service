@@ -1,14 +1,36 @@
 from typing import List
 
 from django.db import connection
+from django.db.models import Count
+from django.db.models.functions import ExtractYear
+from pydantic import BaseModel
 
 from core.auth.models import StatisticUser
+from core.auth.models.org_user import OrgUser
+from core.records.models.record import RecordsRecord
 from core.seedwork.api_layer import Router
 from core.seedwork.statistics import execute_statement
 from core.statistics.api import schemas
 from core.statistics.use_cases.records import create_statistic
 
 router = Router()
+
+
+class OutputCreatedRecords(BaseModel):
+    year: int
+    created: int
+
+
+@router.get(url="created_records/", output_schema=list[OutputCreatedRecords])
+def query__created_records(org_user: OrgUser):
+    qs = (
+        RecordsRecord.objects.filter(org=org_user.org)
+        .annotate(year=ExtractYear("created"))
+        .values("year")
+        .annotate(created=Count("id"))
+        .order_by("year")
+    )
+    return list(qs)
 
 
 @router.get(

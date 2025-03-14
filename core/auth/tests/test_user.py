@@ -42,7 +42,7 @@ def test_inactive_user_can_not_hit_the_api(user, client, login_data):
     user["org_user"].is_active = False
     user["org_user"].save(update_fields=["is_active"])
     client.login(**user)
-    response = client.get("/api/org_users/data_self/")
+    response = client.get("/api/auth/org_users/data_self/")
     assert response.status_code == 400 and "deactivated" in response.json()["title"]
 
 

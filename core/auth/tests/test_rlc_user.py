@@ -21,14 +21,16 @@ def test_email_confirmation_token_works(db, org_user):
     token = org_user["org_user"].get_email_confirmation_token()
     c = Client()
     c.login(**org_user)
-    url = "/api/org_users/{}/confirm_email/{}/".format(org_user["org_user"].id, token)
+    url = "/api/auth/org_users/{}/confirm_email/{}/".format(
+        org_user["org_user"].id, token
+    )
     response = c.post(url)
     assert 200 == response.status_code
 
 
 def test_everybody_can_hit_email_confirm(db):
     client = Client()
-    response = client.post("/api/org_users/1/confirm_email/token-123/")
+    response = client.post("/api/auth/org_users/1/confirm_email/token-123/")
     assert response.status_code != 403 and response.status_code != 401
 
 

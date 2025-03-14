@@ -25,6 +25,7 @@ urlpatterns = [
     path("api/mail/", include(mail_urlpatterns)),
     path("api/statistics/", include(statistics_urlpatterns)),
     path("api/messages/", include(messages_urlpatterns)),
+    path("api/auth/", include(auth_api_urlpatterns)),
     path("api/", include(auth_api_urlpatterns)),  # TODO: rename add namespace
     path("api/folders/", include(folders_urlpatterns)),
     path("api/events/", include(events_urlpatterns)),
