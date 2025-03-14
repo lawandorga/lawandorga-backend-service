@@ -89,7 +89,8 @@ def get_content_from_email(message: EmailMessage):
         if part.get_content_type() == "text/plain":
             payload = part.get_payload(decode=True)
             if payload is not None and isinstance(payload, bytes):
-                content = payload.decode()
+                charset = part.get_content_charset() or "utf-8"
+                content = payload.decode(charset, errors="replace")
     return content
 
 
@@ -173,6 +174,7 @@ def validate_emails(raw_emails: list[RawEmail]) -> list[ErrorEmail | ValidatedEm
             email_info = get_email_info(message)
             validated_emails.append(ValidatedEmail(num=email.num, **email_info))
         except Exception as e:
+            logger.error(f"error while importing mails: {e}")
             validated_emails.append(ErrorEmail(num=email.num, error=str(e)))
     return validated_emails
 

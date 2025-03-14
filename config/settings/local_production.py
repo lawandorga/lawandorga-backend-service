@@ -51,6 +51,14 @@ DATABASES = {
     }
 }
 
+# Installed app django-cors-headers
+# https://pypi.org/project/django-cors-headers/
+CORS_ALLOWED_ORIGINS = [MAIN_FRONTEND_URL, STATISTICS_FRONTEND_URL]
+
+# Add the frontend to trusted origins
+# https://docs.djangoproject.com/en/4.1/ref/settings/#csrf-trusted-origins
+CSRF_TRUSTED_ORIGINS = [MAIN_FRONTEND_URL, STATISTICS_FRONTEND_URL]
+
 # Storage
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
 STORAGES["default"]["BACKEND"] = "config.storage.CustomS3Boto3Storage"
