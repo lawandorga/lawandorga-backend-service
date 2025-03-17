@@ -55,8 +55,7 @@ def update_task(
         task.assignee = assignee
     if is_done is not None:
         task.is_done = is_done
-    if deadline is not None:
-        task.deadline = deadline
+    task.deadline = deadline
     # TODO: check if we need to manually update the updated_at field
 
     task.save()
