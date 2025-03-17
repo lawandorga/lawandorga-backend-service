@@ -17,6 +17,7 @@ class InputTasks(BaseModel):
 class OutputTask(BaseModel):
     uuid: UUID
     creator_id: int
+    creator_name: str
     assignee_id: int
     title: str
     description: str

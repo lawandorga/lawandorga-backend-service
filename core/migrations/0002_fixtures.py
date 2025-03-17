@@ -4,10 +4,7 @@ from django.db import migrations
 
 
 def create_fixtures(apps, schema_editor):
-    from core.fixtures import (
-        create_folder_permissions,
-        create_permissions,
-    )
+    from core.fixtures import create_folder_permissions, create_permissions
 
     Permission = apps.get_model("core", "Permission")
     create_permissions(Permission)
