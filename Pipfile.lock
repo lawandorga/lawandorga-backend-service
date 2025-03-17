@@ -1500,21 +1500,21 @@
         },
         "tach": {
             "hashes": [
-                "sha256:0ad176584512bf32001d77b1779ac2fc5eedd2b211cef270b872250bcc47e14a",
-                "sha256:2280ad748484576cbe33ea62f4661305f530627bcbc4dc0ecc4b1d422fc2f273",
-                "sha256:387dff1c28ea47a5160658fafc84288070be7f4e95ac4b9c16c390790fabfab3",
-                "sha256:7a830654e81f96b8561288c765800d3a7c5f525e771ba9d3180f8d4191440dab",
-                "sha256:a6da15167f5929cf855a38960c1b733fdc7053b00cd93f9c6a68ef82ad04c37a",
-                "sha256:a73e83413cf6c79344952624a7e542c5c507204135d8b874de6f6d0ba27107a3",
-                "sha256:bc513d5a00f9e26a10dabd8c3bb5088484d091154c46bc29b7c8af2fb52e35f4",
-                "sha256:ee355523d6ec83a47cdd95b5f845513807b0d311dd64d5c5adedef216bc29a70",
-                "sha256:f2e29830ea9a9ab8816068b774201a67823501808af0d6899984cfe4d2942394",
-                "sha256:fc6a6f418377d6b21c37bf884f0ab862cffbda46616faab24a94ec0134d9eda5",
-                "sha256:fff214b25bb1c80e2d9f09d4eabb30b4c638eabeaa91fb557017926b903f29cd"
+                "sha256:01a9e39b4f2398a5b6d34af90cf655ad194525d7dc704e315556bdf00e4b3079",
+                "sha256:0bcec313dc57ae6f1863bad0c68ef4174cb4dbfb1317974af83020ccb76dfcfd",
+                "sha256:0c6a366e73a8335b3eb81d5f7a379548f1fa17e5dded328e7bb2a0f79b502d6d",
+                "sha256:3365fa144a0f342353b7fed1b1ca7e160cd3c9e659469328d29b5f9cfe7f1261",
+                "sha256:3f4c126a744f0dc8c4c7dbe168ad45e69a2f01e84b94ae9f3ab04ba9616643bb",
+                "sha256:4e71da0d8324362eb39bc3a8464b1f44af6a82759a0477196760181ded64e957",
+                "sha256:a5a892ddfc304169c2f125ac7719a15f5a912b73b4c5ce258814053a5c5e9f11",
+                "sha256:c03bf287e22672eba61329d9cdc586e4cfa97f6ce7d774f33ff20af9caed531f",
+                "sha256:cb2029e2dda62147c67208ac9c8c849aa66ef6e57fda6096a6cf351285064e8c",
+                "sha256:f0587bbe91fe32c210be6be0b23e4c115f3c9523daeeded6f6665d17b68e7fc8",
+                "sha256:fbff6fa4fd5f2789a8aa68a8d684aa0525a00f586d26e9fb917b13d4ae2d6cf0"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.7'",
-            "version": "==0.27.2"
+            "version": "==0.28.1"
         },
         "tatsu": {
             "hashes": [
