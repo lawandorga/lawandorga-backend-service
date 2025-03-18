@@ -28,6 +28,9 @@ def update_org(
     org_id: int,
     org_name: str,
     default_group_for_new_users_id: int | None,
+    is_mail_enabled: bool,
+    is_events_enabled: bool,
+    is_chat_enabled: bool,
 ):
     org = org_from_id(__actor, org_id)
     group = (
@@ -35,5 +38,11 @@ def update_org(
         if default_group_for_new_users_id
         else None
     )
-    org.update(name=org_name, default_group_for_new_users=group)
+    org.update(
+        name=org_name,
+        default_group_for_new_users=group,
+        is_mail_enabled=is_mail_enabled,
+        is_events_enabled=is_events_enabled,
+        is_chat_enabled=is_chat_enabled,
+    )
     org.save()

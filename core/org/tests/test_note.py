@@ -17,13 +17,13 @@ def user(db):
 
 @pytest.fixture
 def note(db, user):
-    note = Note.create(org=user["org_user"].org, title="Test", note="Content")
+    note = Note.create(org=user["org_user"].org, title="Test", note="Content", order=1)
     note.save()
     yield note
 
 
 def test_note_create(db, user):
-    create_note(user["org_user"], "Test", "Content")
+    create_note(user["org_user"], "Test", "Content", 1)
     assert Note.objects.filter(title="Test").count() == 1
 
 

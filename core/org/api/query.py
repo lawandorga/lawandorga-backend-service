@@ -12,6 +12,8 @@ class OutputNote(BaseModel):
     title: str
     note: str
     note_with_links: str
+    is_wide: bool
+    order: int
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -65,9 +67,6 @@ class OutputExternalLink(BaseModel):
 router = Router()
 
 
-router = Router()
-
-
 @router.get(url="links/", output_schema=list[OutputExternalLink])
 def get_links(org_user: OrgUser):
     links = ExternalLink.objects.filter(org=org_user.org)
@@ -113,6 +112,9 @@ class OutputOrg(BaseModel):
     id: int
     name: str
     default_group_for_new_users: OutputDefaultGroup | None
+    is_mail_enabled: bool
+    is_events_enabled: bool
+    is_chat_enabled: bool
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -157,6 +157,7 @@ class OrgUser(Aggregate, models.Model):
         org_id: int
         user_id: int
         get_speciality_of_study_display: Callable[[], str]
+        org: models.ForeignKey[Org]  # type: ignore
 
     class Meta:
         verbose_name = "AUT_OrgUser"

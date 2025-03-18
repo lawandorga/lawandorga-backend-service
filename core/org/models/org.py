@@ -66,6 +66,9 @@ class Org(EncryptedModelMixin, models.Model):
         null=True,
         blank=True,
     )
+    is_mail_enabled = models.BooleanField(default=True)
+    is_chat_enabled = models.BooleanField(default=True)
+    is_events_enabled = models.BooleanField(default=True)
 
     # keys
     public_key = models.BinaryField(null=True)
@@ -148,7 +151,14 @@ class Org(EncryptedModelMixin, models.Model):
         else:
             raise ValueError("You need to pass (user and private_key_user).")
 
-    def update(self, name: str, default_group_for_new_users: Optional["Group"] = None):
+    def update(
+        self,
+        name: str,
+        default_group_for_new_users: Optional["Group"] = None,
+        is_mail_enabled: bool = True,
+        is_chat_enabled: bool = True,
+        is_events_enabled: bool = True,
+    ):
         self.name = name
         if (
             default_group_for_new_users
@@ -156,6 +166,9 @@ class Org(EncryptedModelMixin, models.Model):
         ):
             raise DomainError("The group does not belong to this org.")
         self.default_group_for_new_users = default_group_for_new_users
+        self.is_mail_enabled = is_mail_enabled
+        self.is_chat_enabled = is_chat_enabled
+        self.is_events_enabled = is_events_enabled
 
     def get_private_key(
         self,
