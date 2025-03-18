@@ -9,7 +9,7 @@ class UsersRlcKeysAdmin(admin.ModelAdmin):
 
 
 class OrgAdmin(admin.ModelAdmin):
-    list_display = ("name", "collab_migrated")
+    list_display = ("name", "meta__name", "collab_migrated")
 
     def get_fieldsets(self, request, obj=None):
         if obj is None:
