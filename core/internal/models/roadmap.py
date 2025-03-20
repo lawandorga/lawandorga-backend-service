@@ -11,7 +11,7 @@ class RoadmapItem(models.Model):
     class Meta:
         verbose_name = "INT_RoadmapItem"
         verbose_name_plural = "INT_RoadmapItems"
-        ordering = ["date"]
+        ordering = ["-date"]
 
     def __str__(self):
         return "roadmapItem: {};".format(self.title)

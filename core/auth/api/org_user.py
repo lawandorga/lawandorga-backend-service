@@ -186,7 +186,6 @@ class Badges(BaseModel):
 
 class OutputOrgUserData(BaseModel):
     user: OutputOrgUser
-    rlc: Org
     org: Org
     badges: Badges
     permissions: List[str]
@@ -197,15 +196,6 @@ class OutputOrgUserData(BaseModel):
 def query__data(org_user: OrgUser):
     data = {
         "user": org_user,
-        "rlc": {
-            "id": org_user.org.pk,
-            "name": org_user.org.name,
-            "links": org_user.org.links,
-            "disable_files": not has_org_files(org_user.org),
-            "is_mail_enabled": org_user.org.is_mail_enabled,
-            "is_events_enabled": org_user.org.is_events_enabled,
-            "is_chat_enabled": org_user.org.is_chat_enabled,
-        },
         "org": {
             "id": org_user.org.pk,
             "name": org_user.org.name,

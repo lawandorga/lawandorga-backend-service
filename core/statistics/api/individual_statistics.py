@@ -1,10 +1,14 @@
 from django.db import connection
+from pydantic import BaseModel
 
 from core.auth.models import OrgUser
+from core.data_sheets.models.data_sheet import DataSheet
 from core.seedwork.api_layer import Router
 from core.seedwork.statistics import execute_statement
+from core.statistics.api.utils import get_available_datasheet_years
 
 from . import schemas
+from seedwork.functional import list_filter
 
 router = Router()
 
@@ -155,68 +159,55 @@ def query__record_client_sex(org_user: OrgUser):
     return list(data)
 
 
-@router.get("tag_stats/", output_schema=schemas.OutputRecordTagStats)
-def query__tag_stats(org_user: OrgUser):
-    if connection.vendor == "sqlite":
-        example_data = {
-            "tags": [
-                {"tag": "Duldung", "count": 10},
-                {"tag": "Abschiebung", "count": 5},
-            ],
-            "state": [
-                {"state": "Set", "count": 10},
-                {"state": "Not-Existing", "count": 5},
-            ],
-        }
-        return example_data
-    statement = """
-        select tag, count(*) as count from (
-        select json_array_elements(value::json)::varchar as tag
-        from core_datasheetmultipleentry entry
-        left join core_datasheetmultiplefield field on entry.field_id = field.id
-        left join core_datasheettemplate as template on template.id = field.template_id
-        where field.name='Tags'
-        and template.rlc_id = {}
-        ) tmp
-        group by tag
-        order by count(*) desc
-        """.format(
-        org_user.org_id
+class TagStatsInput(BaseModel):
+    year: str | None = None
+
+
+class OutputTagStats(BaseModel):
+    stats: dict[str, int]
+    years: list[int]
+
+
+@router.get("tag_stats/", output_schema=OutputTagStats)
+def query__tag_stats(org_user: OrgUser, data: TagStatsInput):
+    stats: dict[str, int] = {"Not Set": 0}
+
+    qs = DataSheet.objects.filter(template__rlc_id=org_user.org_id).prefetch_related(
+        "template",
+        "multiple_entries",
+        "multiple_entries__field",
+        "template__multiple_fields",
+        "template__multiple_fields__entries",
     )
-    ret = {}
-    data = execute_statement(statement)
-    data = list(
-        map(
-            lambda x: {
-                "tag": x[0].replace(' "', "").replace('"', ""),
-                "count": x[1],
-            },
-            data,
-        )
-    )
-    ret["tags"] = data
-    statement = """
-        select name, count(*) as existing
-        from (
-        select case when name like '%Tags%' then 'Tags' else 'Unknown' end as name
-        from (
-        select string_agg(name, ' ') as name
-        from (
-        select record.id,
-        case when field.name = 'Tags' then 'Tags' else 'Unknown' end as name
-        from core_datasheet record
-        left join core_datasheettemplate template on record.template_id = template.id
-        left join core_datasheetmultiplefield field on template.id = field.template_id
-        where template.rlc_id = {}
-        ) tmp1
-        group by id
-        ) tmp2
-        ) tmp3
-        group by name
-        """.format(
-        org_user.org_id
-    )
-    data = execute_statement(statement)
-    data = list(map(lambda x: {"state": x[0], "count": x[1]}, data))
-    ret["state"] = data
+
+    if data.year:
+        qs = qs.filter(created__year=data.year)
+
+    sheets = list(qs)
+    for sheet in sheets:
+        fields = list(sheet.template.multiple_fields.all())
+        entries = list(sheet.multiple_entries.all())
+
+        tag_fields = list_filter(fields, lambda f: "tags" in f.name.lower())
+        for entry in entries:
+            if entry.field not in tag_fields:
+                continue
+            for v in entry.value:
+                stats[v] = stats.get(v, 0) + 1
+
+        for field in tag_fields:
+            entries = list(field.entries.all())
+            sheet_entries = list_filter(entries, lambda e: e.record_id == sheet.pk)
+            if not sheet_entries:
+                stats["Not Set"] += 1
+            elif sum([len(e.value) for e in sheet_entries]) == 0:
+                stats["Not Set"] += 1
+
+    years = get_available_datasheet_years(org_user.org_id)
+
+    ret = {
+        "stats": stats,
+        "years": years,
+    }
+
     return ret

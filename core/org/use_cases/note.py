@@ -18,9 +18,12 @@ def update_note(
     title: str | None = None,
     note: str | None = None,
     order: int | None = None,
+    is_wide: bool | None = None,
 ):
     note_obj = note_from_id(__actor, note_id)
-    note_obj.update_information(new_title=title, new_note=note, new_order=order)
+    note_obj.update_information(
+        new_title=title, new_note=note, new_order=order, is_wide=is_wide
+    )
     note_obj.save()
 
 

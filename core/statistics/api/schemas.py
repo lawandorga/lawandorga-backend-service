@@ -55,6 +55,7 @@ class OutputState(BaseModel):
 class OutputRecordTagStats(BaseModel):
     tags: list[OutputTag]
     state: list[OutputState]
+    years: list[int]
 
 
 class OutputUsersWithMissingAccess(BaseModel):
@@ -142,9 +143,3 @@ class OutputRecordClosedStatistic(BaseModel):
 class OutputRecordFieldAmount(BaseModel):
     field: str
     amount: int
-
-
-class OutputRecordsCreatedClosed(BaseModel):
-    month: Optional[str]
-    created: int
-    closed: int

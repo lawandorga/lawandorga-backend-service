@@ -27,6 +27,7 @@ class Note(models.Model):
     order = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    is_wide = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "ORG_Note"
@@ -43,15 +44,6 @@ class Note(models.Model):
         )
         return note
 
-    @property
-    def avg_line_length(self):
-        lines = self.note.split("\n")
-        return sum([len(line) for line in lines]) / len(lines)
-
-    @property
-    def is_wide(self):
-        return self.avg_line_length > 200
-
     def __str__(self):
         return "rlc: {}; note: {};".format(self.rlc.name, self.title)
 
@@ -60,6 +52,7 @@ class Note(models.Model):
         new_note: str | None = None,
         new_title: str | None = None,
         new_order: int | None = None,
+        is_wide: bool | None = None,
     ):
         if new_note is not None:
             clean_note = bleach.clean(
@@ -72,3 +65,5 @@ class Note(models.Model):
             self.title = new_title
         if new_order is not None:
             self.order = new_order
+        if is_wide is not None:
+            self.is_wide = is_wide

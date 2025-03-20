@@ -1,12 +1,13 @@
-from typing import List
-
 from django.db import connection
+from pydantic import BaseModel
 
 from core.auth.models import OrgUser, StatisticUser
 from core.seedwork.api_layer import Router
 from core.seedwork.statistics import execute_statement
+from core.statistics.api.utils import get_available_datasheet_years
 
 from . import schemas
+from seedwork.functional import list_filter, list_map
 
 router = Router()
 
@@ -140,11 +141,26 @@ def query__org_usage(statistics_user: StatisticUser):
     return data
 
 
+class OutputCreatedClosedStats(BaseModel):
+    month: str
+    created: int
+    closed: int
+
+
+class OutputRecordsCreatedClosed(BaseModel):
+    years: list[int]
+    data: list[OutputCreatedClosedStats]
+
+
+class InputCreatedAndClosed(BaseModel):
+    year: str | None = None
+
+
 @router.api(
     url="records_created_and_closed/",
-    output_schema=List[schemas.OutputRecordsCreatedClosed],
+    output_schema=OutputRecordsCreatedClosed,
 )
-def get_records_created_and_closed(org_user: OrgUser):
+def get_records_created_and_closed(org_user: OrgUser, data: InputCreatedAndClosed):
     if connection.vendor == "sqlite":
         statement = """
         select t1.month as month, t2.month as month, created, closed
@@ -166,7 +182,7 @@ def get_records_created_and_closed(org_user: OrgUser):
         ) t2 on t1.month = t2.month
         order by t1.month
         """.format(
-            org_user.org.id, org_user.org.id
+            org_user.org.pk, org_user.org.pk
         )
     else:
         statement = """
@@ -189,17 +205,52 @@ def get_records_created_and_closed(org_user: OrgUser):
         ) t2 on t1.month = t2.month
         order by t1.month
         """.format(
-            org_user.org.id, org_user.org.id
+            org_user.org.pk, org_user.org.pk
         )
-    data = execute_statement(statement)
-    data = list(
-        map(
-            lambda x: {
-                "month": x[0] or x[1],
-                "created": x[2] or 0,
-                "closed": x[3] or 0,
-            },
-            data,
-        )
+    result = execute_statement(statement)
+    created_and_closed = list_map(
+        result,
+        lambda x: {
+            "month": str(x[0] or x[1]),
+            "created": x[2] or 0,
+            "closed": x[3] or 0,
+        },
     )
-    return data
+    if data.year:
+        created_and_closed = list_filter(
+            created_and_closed, lambda x: str(x["month"]).startswith(str(data.year))
+        )
+    years = get_available_datasheet_years(org_user.org.pk)
+    first_year_str, first_month_str = str(
+        min(created_and_closed, key=lambda x: x["month"])["month"]
+    ).split("/")
+    last_year_str, last_month_str = str(
+        max(created_and_closed, key=lambda x: x["month"])["month"]
+    ).split("/")
+
+    first_year, first_month = int(first_year_str), int(first_month_str)
+    last_year, last_month = int(last_year_str), int(last_month_str)
+    existing_map = {item["month"]: item for item in created_and_closed}
+    current_year, current_month = int(first_year), int(first_month)
+    created_and_closed_continuous = []
+
+    while (current_year < last_year) or (
+        current_year == last_year and current_month <= last_month
+    ):
+        month_str = f"{current_year:04d}/{current_month:02d}"
+        if month_str in existing_map:
+            created_and_closed_continuous.append(existing_map[month_str])
+        else:
+            created_and_closed_continuous.append(
+                {
+                    "month": month_str,
+                    "created": 0,
+                    "closed": 0,
+                }
+            )
+        current_month += 1
+        if current_month > 12:
+            current_month = 1
+            current_year += 1
+
+    return {"years": list(years), "data": created_and_closed_continuous}
