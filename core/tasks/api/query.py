@@ -13,12 +13,12 @@ class InputTasks(BaseModel):
     id: int
 
 
-# do we want to split into two models, one with creator, one with assignee?
 class OutputTask(BaseModel):
     uuid: UUID
     creator_id: int
     creator_name: str
     assignee_id: int
+    assignee_name: str
     title: str
     description: str
     page_url: str

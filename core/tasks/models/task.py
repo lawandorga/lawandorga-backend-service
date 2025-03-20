@@ -55,10 +55,14 @@ class Task(models.Model):
     @property
     def creator_name(self):
         return self.creator.name
-
+    
     @property
     def assignee_id(self):
         return self.assignee.pk
+
+    @property
+    def assignee_name(self):
+        return self.assignee.name
 
     def __str__(self) -> str:
         return self.title
