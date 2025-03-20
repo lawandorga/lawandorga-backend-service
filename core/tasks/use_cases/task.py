@@ -36,7 +36,7 @@ def update_task(
     title: Optional[str] = None,
     description: Optional[str] = None,
     page_url: Optional[str] = None,
-    assignee: Optional[OrgUser] = None,
+    assignee_id: Optional[int] = None,
     is_done: Optional[bool] = None,
     deadline: Optional[datetime] = None,
 ):
@@ -51,8 +51,8 @@ def update_task(
         task.description = description
     if page_url is not None:
         task.page_url = page_url
-    if assignee is not None:
-        task.assignee = assignee
+    if assignee_id is not None:
+        task.assignee = OrgUser.objects.get(id=assignee_id)
     if is_done is not None:
         task.is_done = is_done
     task.deadline = deadline
