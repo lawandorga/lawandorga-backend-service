@@ -6,14 +6,24 @@ from django.db import models
 from .org import Org
 
 
+def set_target_blank(attrs, new=False):
+    attrs[(None, "target")] = "_blank"
+    return attrs
+
+
+def clean_note_html(note: str) -> str:
+    cleaned = bleach.clean(
+        note,
+        tags=["a", "p", "strong", "em", "ul", "ol", "li", "s"],
+        attributes={"a": ["href"]},
+    )
+    return bleach.linkify(cleaned, callbacks=[set_target_blank])
+
+
 class Note(models.Model):
     @staticmethod
     def create(org: Org, title: str, note: str, order: int, pk=0) -> "Note":
-        clean_note = bleach.clean(
-            note,
-            tags=["a", "p", "strong", "em", "ul", "ol", "li", "s"],
-            attributes={"a": ["href"]},
-        )
+        clean_note = clean_note_html(note)
         note_obj = Note(rlc=org, title=title, note=clean_note, order=order)
         if pk:
             note_obj.pk = pk
@@ -55,11 +65,7 @@ class Note(models.Model):
         is_wide: bool | None = None,
     ):
         if new_note is not None:
-            clean_note = bleach.clean(
-                new_note,
-                tags=["a", "p", "strong", "em", "ul", "ol", "li", "s"],
-                attributes={"a": ["href"]},
-            )
+            clean_note = clean_note_html(new_note)
             self.note = clean_note
         if new_title is not None:
             self.title = new_title

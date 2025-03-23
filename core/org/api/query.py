@@ -11,7 +11,6 @@ class OutputNote(BaseModel):
     id: int
     title: str
     note: str
-    note_with_links: str
     is_wide: bool
     order: int
 
