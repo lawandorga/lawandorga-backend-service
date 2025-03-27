@@ -5,7 +5,6 @@ from core.auth.models.org_user import OrgUser
 from core.permissions.models import HasPermission, Permission
 from core.permissions.static import (
     get_all_admin_permissions,
-    get_all_collab_permissions,
     get_all_files_permissions,
     get_all_records_permissions,
 )
@@ -50,12 +49,6 @@ def get_has_permissions_of(
         )
         .select_related("user", "group_has_permission", "permission")
     )
-
-
-@router.get("has_permissions/collab/", output_schema=list[OutputHasPermission])
-def query__collab_has_permissions(org_user: OrgUser):
-    permissions = get_has_permissions_of(org_user, get_all_collab_permissions())
-    return permissions
 
 
 @router.get("has_permissions/record/", output_schema=list[OutputHasPermission])

@@ -7,10 +7,6 @@ PERMISSION_RECORDS_ACCESS_ALL_RECORDS = "records__access_all_records"
 PERMISSION_FILES_READ_ALL_FOLDERS = "files__read_all_folders"
 PERMISSION_FILES_WRITE_ALL_FOLDERS = "files__write_all_folders"
 PERMISSION_FILES_MANAGE_PERMISSIONS = "files__manage_permissions"
-# collab
-PERMISSION_COLLAB_READ_ALL_DOCUMENTS = "collab__read_all_documents"
-PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS = "collab__write_all_documents"
-PERMISSION_COLLAB_MANAGE_PERMISSIONS = "collab__manage_permissions"
 # admin
 PERMISSION_ADMIN_MANAGE_GROUPS = "admin__manage_groups"
 PERMISSION_ADMIN_MANAGE_USERS = "admin__manage_users"
@@ -38,10 +34,6 @@ def get_all_permission_strings():
         PERMISSION_FILES_READ_ALL_FOLDERS,
         PERMISSION_FILES_WRITE_ALL_FOLDERS,
         PERMISSION_FILES_MANAGE_PERMISSIONS,
-        # collab
-        PERMISSION_COLLAB_MANAGE_PERMISSIONS,
-        PERMISSION_COLLAB_READ_ALL_DOCUMENTS,
-        PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS,
         # mail
         PERMISSION_MAIL_MANAGE_ACCOUNTS,
         # admin
@@ -54,14 +46,6 @@ def get_all_permission_strings():
         PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS,
         # dashboard
         PERMISSION_DASHBOARD_MANAGE_NOTES,
-    ]
-
-
-def get_all_collab_permissions():
-    return [
-        PERMISSION_COLLAB_MANAGE_PERMISSIONS,
-        PERMISSION_COLLAB_WRITE_ALL_DOCUMENTS,
-        PERMISSION_COLLAB_READ_ALL_DOCUMENTS,
     ]
 
 
