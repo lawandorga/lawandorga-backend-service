@@ -5,7 +5,7 @@ from core.seedwork import test_helpers
 
 def test_key_invalidation_on_user_lock(db):
     org = test_helpers.create_org("Test Org")["org"]
-    org_user = test_helpers.create_org_user(rlc=org)
+    org_user = test_helpers.create_org_user(org=org)
     u = org_user["org_user"]
 
     folder = Folder.create(name="Test Folder", org_pk=u.org_id)

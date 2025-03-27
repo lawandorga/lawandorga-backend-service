@@ -14,14 +14,14 @@ def org(db):
 
 @pytest.fixture
 def user(db, org):
-    user_1 = data.create_org_user(rlc=org)
+    user_1 = data.create_org_user(org=org)
     org.generate_keys()
     yield user_1
 
 
 @pytest.fixture
 def another_user(db, user, org):
-    user_2 = data.create_org_user(rlc=org, email="test@law-orga.de")
+    user_2 = data.create_org_user(org=org, email="test@law-orga.de")
     org.accept_member(
         user["org_user"],
         user_2["org_user"],

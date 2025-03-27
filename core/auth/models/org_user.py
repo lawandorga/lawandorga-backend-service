@@ -646,14 +646,14 @@ class OrgUser(Aggregate, models.Model):
         )
 
         c = ics.Calendar()
-        for rlc_event in events:
-            e = ics.Event()
-            e.name = rlc_event.name
-            e.begin = rlc_event.start_time
-            e.end = rlc_event.end_time
-            e.description = rlc_event.description
-            e.organizer = rlc_event.org.name
-            c.events.add(e)
+        for event in events:
+            ics_event = ics.Event()
+            ics_event.name = event.name
+            ics_event.begin = event.start_time
+            ics_event.end = event.end_time
+            ics_event.description = event.description
+            ics_event.organizer = event.org.name
+            c.events.add(ics_event)
         return c.serialize()
 
     def regenerate_calendar_uuid(self):

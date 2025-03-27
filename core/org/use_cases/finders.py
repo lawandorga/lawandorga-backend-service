@@ -10,4 +10,4 @@ def group_from_id(actor: OrgUser, v: int) -> Group:
 
 @finder_function
 def note_from_id(actor: OrgUser, v: int) -> Note:
-    return Note.objects.get(id=v, rlc_id=actor.org_id)
+    return Note.objects.get(id=v, org_id=actor.org_id)

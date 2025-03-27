@@ -57,7 +57,7 @@ def test_all_items_inside_folder_are_deleted_when_folder_is_deleted(db, user):
     collab = create_collab(user, "TestCollab", f.uuid)
     assert Collab.objects.filter(pk=collab.pk).exists()
 
-    template = DataSheetTemplate.objects.create(name="TestTemplate", rlc_id=user.org_id)
+    template = DataSheetTemplate.objects.create(name="TestTemplate", org_id=user.org_id)
     sheet = create_a_data_sheet_within_a_folder(user, "TestRecord", f.uuid, template.pk)
     assert DataSheet.objects.filter(pk=sheet.pk).exists()
 

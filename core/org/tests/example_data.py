@@ -52,19 +52,19 @@ def add_permissions_to_group(group: Group, permission_name):
 
 
 # create
-def create_rlcs():
-    rlc1 = Org.objects.create(
+def create_orgs() -> tuple[Org, Org]:
+    org1 = Org.objects.create(
         name="Dummy RLC",
         id=3033,
     )
-    rlc2 = Org.objects.create(
+    org2 = Org.objects.create(
         name="Neighbourhood RLC",
         id=1,
     )
-    return [rlc1, rlc2]
+    return org1, org2
 
 
-def create_users(rlc1, rlc2):
+def create_users(org1, org2):
     users = [
         (
             "ludwig.maximilian@outlook.de",
@@ -175,7 +175,7 @@ def create_users(rlc1, rlc2):
         )
         r = OrgUser(
             user=user,
-            org=choice([rlc1, rlc2]),
+            org=choice([org1, org2]),
             phone_number=user_data[3],
             street=user_data[4],
             city=user_data[5],
@@ -184,12 +184,12 @@ def create_users(rlc1, rlc2):
         )
         r.generate_keys(settings.DUMMY_USER_PASSWORD)
         r.save()
-        if r.org == rlc1:
+        if r.org == org1:
             created_users.append(user)
     return created_users
 
 
-def create_dummy_users(rlc: Org, dummy_password: str = "qwe123") -> List[UserProfile]:
+def create_dummy_users(org: Org, dummy_password: str = "qwe123") -> List[UserProfile]:
     users = []
 
     # main user
@@ -198,7 +198,7 @@ def create_dummy_users(rlc: Org, dummy_password: str = "qwe123") -> List[UserPro
     )
     user.set_password(dummy_password)
     user.save()
-    r = OrgUser(user=user, accepted=True, pk=999, email_confirmed=True, org=rlc)
+    r = OrgUser(user=user, accepted=True, pk=999, email_confirmed=True, org=org)
     r.generate_keys(dummy_password)
     r.save()
     for permission in Permission.objects.all():
@@ -213,7 +213,7 @@ def create_dummy_users(rlc: Org, dummy_password: str = "qwe123") -> List[UserPro
     )
     user.set_password(settings.DUMMY_USER_PASSWORD)
     user.save()
-    r = OrgUser(user=user, accepted=True, pk=1000, org=rlc)
+    r = OrgUser(user=user, accepted=True, pk=1000, org=org)
     r.generate_keys(dummy_password)
     r.save()
     users.append(user)
@@ -221,7 +221,7 @@ def create_dummy_users(rlc: Org, dummy_password: str = "qwe123") -> List[UserPro
     user = UserProfile.objects.create(name="Tester 2", email="tester2@law-orga.de")
     user.set_password(settings.DUMMY_USER_PASSWORD)
     user.save()
-    r = OrgUser(user=user, pk=1001, accepted=True, org=rlc)
+    r = OrgUser(user=user, pk=1001, accepted=True, org=org)
     r.generate_keys(dummy_password)
     r.save()
     users.append(user)
@@ -230,22 +230,22 @@ def create_dummy_users(rlc: Org, dummy_password: str = "qwe123") -> List[UserPro
     return users
 
 
-def create_inactive_user(rlc):
+def create_inactive_user(org: Org):
     user = UserProfile(
         name="Mr. Inactive",
         email="inactive@law-orga.de",
     )
     user.set_password("qwe123")
     user.save()
-    r = OrgUser(user=user, org=rlc)
+    r = OrgUser(user=user, org=org)
     r.generate_keys(settings.DUMMY_USER_PASSWORD)
     r.save()
 
 
-def create_groups(rlc: Org, users: List[UserProfile]):
+def create_groups(org: Org, users: List[UserProfile]):
     # create users group
     users_group = Group.objects.create(
-        org=rlc,
+        org=org,
         name="Berater",
         visible=False,
         description="all users",
@@ -256,7 +256,7 @@ def create_groups(rlc: Org, users: List[UserProfile]):
 
     # create ag group
     ag_group = Group.objects.create(
-        org=rlc,
+        org=org,
         name="AG Datenschutz",
         visible=True,
         description="DSGVO",
@@ -269,10 +269,10 @@ def create_groups(rlc: Org, users: List[UserProfile]):
     return [users_group, ag_group]
 
 
-def create_admin_group(rlc: Org, main_user: UserProfile):
+def create_admin_group(org: Org, main_user: UserProfile):
     # create admin group
     admin_group = Group.objects.create(
-        org=rlc,
+        org=org,
         name="Administratoren",
         visible=False,
         description="haben alle Berechtigungen",
@@ -290,14 +290,14 @@ def create_admin_group(rlc: Org, main_user: UserProfile):
     return admin_group
 
 
-def create_records(main_user: OrgUser, users: list[UserProfile], rlc: Org):
+def create_records(main_user: OrgUser, users: list[UserProfile], org: Org):
     fr = DjangoFolderRepository()
-    folder = Folder.create(name="Test Folder", org_pk=rlc.pk)
+    folder = Folder.create(name="Test Folder", org_pk=org.pk)
     folder.grant_access(main_user)
     fr.save(folder)
 
     multiple_field = DataSheetMultipleField.objects.filter(
-        template__rlc=rlc, name="Tags"
+        template__org=org, name="Tags"
     ).first()
     assert multiple_field is not None
     tags = multiple_field.options
@@ -418,7 +418,7 @@ def create_records(main_user: OrgUser, users: list[UserProfile], rlc: Org):
     created_records = []
     for record in records:
         # create
-        rfolder = Folder.create(name=record[2], org_pk=rlc.pk)
+        rfolder = Folder.create(name=record[2], org_pk=org.pk)
         rfolder.grant_access(main_user)
         fr.save(rfolder)
         created_record = DataSheet.create(
@@ -474,11 +474,11 @@ def create_records(main_user: OrgUser, users: list[UserProfile], rlc: Org):
     return created_records
 
 
-def create_informative_record(main_user, main_user_password, users, rlc):
+def create_informative_record(main_user, main_user_password, users, org):
     users = [main_user] + users
 
     # create the informative record
-    template = DataSheetTemplate.objects.filter(rlc=rlc).first()
+    template = DataSheetTemplate.objects.filter(org=org).first()
     assert template is not None
     record = create_data_sheet_and_folder(
         main_user.org_user, "Informative Record", template.pk
@@ -731,9 +731,9 @@ def create_informative_record(main_user, main_user_password, users, rlc):
     return record
 
 
-def create_questionnaire_templates(rlc):
+def create_questionnaire_templates(org: Org):
     template = QuestionnaireTemplate.objects.create(
-        name="Standard Questionnaire", rlc=rlc, notes="Just the usual."
+        name="Standard Questionnaire", rlc=org, notes="Just the usual."
     )
     QuestionnaireQuestion.objects.create(
         questionnaire=template, question="How old are you?", type="TEXTAREA"
@@ -752,22 +752,22 @@ def create() -> None:
     create_folder_permissions(FolderPermission)
     # password
     dummy_password = settings.DUMMY_USER_PASSWORD
-    # rlcs and fixtures
-    rlc1, rlc2 = create_rlcs()
-    create_default_record_template(rlc1)
-    create_default_record_template(rlc2)
+    # orgs and fixtures
+    org1, org2 = create_orgs()
+    create_default_record_template(org1)
+    create_default_record_template(org2)
     # users
-    dummy, *other_dummies = create_dummy_users(rlc1)
-    users = create_users(rlc1, rlc2)
-    create_inactive_user(rlc1)
-    # rlc keys
-    rlc1.generate_keys()
-    rlc2.generate_keys()
+    dummy, *other_dummies = create_dummy_users(org1)
+    users = create_users(org1, org2)
+    create_inactive_user(org1)
+    # org keys
+    org1.generate_keys()
+    org2.generate_keys()
     # groups
-    create_groups(rlc1, users)
-    create_admin_group(rlc1, dummy)
+    create_groups(org1, users)
+    create_admin_group(org1, dummy)
     # records
-    create_records(dummy.org_user, list(users), rlc1)
-    create_informative_record(dummy, dummy_password, users, rlc1)
+    create_records(dummy.org_user, list(users), org1)
+    create_informative_record(dummy, dummy_password, users, org1)
     # questionnaire templates
-    create_questionnaire_templates(rlc1)
+    create_questionnaire_templates(org1)

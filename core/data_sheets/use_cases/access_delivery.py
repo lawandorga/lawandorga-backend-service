@@ -19,7 +19,7 @@ def deliver_access_to_users_who_should_have_access(
     __actor: OrgUser, r: FolderRepository
 ):
     records_1 = DataSheet.objects.filter(
-        template__rlc_id=__actor.org_id
+        template__org_id=__actor.org_id
     ).select_related("template")
     records_2 = list(records_1)
 

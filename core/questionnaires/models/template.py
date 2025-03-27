@@ -36,7 +36,7 @@ class QuestionnaireTemplate(models.Model):
         verbose_name_plural = "QUE_Templates"
 
     def __str__(self):
-        return "questionnaire: {}; rlc: {};".format(self.name, self.rlc.name)
+        return "questionnaire: {}; org: {};".format(self.name, self.rlc.name)
 
     def add_question(
         self, question_type: Literal["FILE", "TEXTAREA"], question: str, order=1

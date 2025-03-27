@@ -64,7 +64,7 @@ def test_group_add_member_gets_key(db):
     user = test_helpers.create_org_user()["org_user"]
     user.grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     group = create_group(user, "Test Group", None)
-    user2 = test_helpers.create_org_user(email="dummy2@law-orga.de", rlc=user.org)[
+    user2 = test_helpers.create_org_user(email="dummy2@law-orga.de", org=user.org)[
         "org_user"
     ]
     group.add_member(user2, user)
@@ -76,7 +76,7 @@ def test_group_remove_member_removes_key(db):
     user = test_helpers.create_org_user()["org_user"]
     user.grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     group = create_group(user, "Test Group", None)
-    user2 = test_helpers.create_org_user(email="dummy2@law-orga.de", rlc=user.org)[
+    user2 = test_helpers.create_org_user(email="dummy2@law-orga.de", org=user.org)[
         "org_user"
     ]
     group.add_member(user2, user)

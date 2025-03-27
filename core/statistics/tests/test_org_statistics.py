@@ -8,12 +8,12 @@ from core.seedwork import test_helpers as data
 
 @pytest.fixture
 def user(db):
-    rlc = Org.objects.create(name="Test RLC")
-    user_1 = data.create_org_user(rlc=rlc)
-    user_2 = data.create_org_user(email="dummy2@law-orga.de", rlc=rlc)
-    data.create_org_user(email="dummy3@law-orga.de", rlc=rlc)
-    rlc.generate_keys()
-    template = DataSheetTemplate.objects.create(rlc=rlc, name="Record Template")
+    org = Org.objects.create(name="Test RLC")
+    user_1 = data.create_org_user(org=org)
+    user_2 = data.create_org_user(email="dummy2@law-orga.de", org=org)
+    data.create_org_user(email="dummy3@law-orga.de", org=org)
+    org.generate_keys()
+    template = DataSheetTemplate.objects.create(org=org, name="Record Template")
     data.create_data_sheet(template=template, users=[user_1["user"], user_2["user"]])
     data.create_data_sheet(template=template, users=[user_1["user"], user_2["user"]])
     yield user_1

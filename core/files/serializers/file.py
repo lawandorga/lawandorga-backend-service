@@ -66,7 +66,7 @@ class FileCreateSerializer(AddUserMixin, FileSerializer):
         # encrypt file
         user = self.context["request"].user
         private_key_user = user.get_private_key(request=self.context["request"])
-        aes_key_rlc = user.rlc.get_aes_key(user=user, private_key_user=private_key_user)
+        aes_key_rlc = user.org.get_aes_key(user=user, private_key_user=private_key_user)
         file = File.encrypt_file(file, aes_key_rlc=aes_key_rlc)
         # return
         return file
@@ -83,10 +83,10 @@ class FileCreateSerializer(AddUserMixin, FileSerializer):
         # set folder
         if folder is None:
             folder = Folder.objects.get(
-                parent=None, rlc=self.context["request"].user.rlc
+                parent=None, rlc=self.context["request"].user.org
             )
         # whatever
-        if folder.rlc != self.context["request"].user.rlc:
+        if folder.rlc != self.context["request"].user.org:
             raise ValidationError("The folder needs to be in your RLC.")
         # check permissions
         if not folder.user_has_permission_write(self.context["request"].user):

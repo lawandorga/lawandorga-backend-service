@@ -9,12 +9,13 @@ from core.data_sheets.models import (
     DataSheetTemplate,
     DataSheetUsersField,
 )
+from core.org.models import Org
 
 
-def create_default_record_template(rlc):
+def create_default_record_template(org: Org):
     with transaction.atomic():
         template = DataSheetTemplate.objects.create(
-            name="Default Record Template", rlc=rlc
+            name="Default Record Template", org=org
         )
         DataSheetStandardField.objects.create(
             template=template, order=20, name="First contact date", field_type="DATE"

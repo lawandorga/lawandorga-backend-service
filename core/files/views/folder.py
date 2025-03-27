@@ -20,7 +20,7 @@ class FolderViewSet(viewsets.ModelViewSet):
     serializer_class = FolderSerializer
 
     def get_queryset(self):
-        return Folder.objects.filter(rlc=self.request.user.rlc)
+        return Folder.objects.filter(rlc=self.request.user.org)
 
     def list(self, request, *args, **kwargs):
         folders = []

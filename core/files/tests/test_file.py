@@ -39,7 +39,7 @@ class FileTestsBase:
         self.private_key_user = self.user.get_private_key(
             password_user=settings.DUMMY_USER_PASSWORD
         )
-        self.aes_key_rlc = self.user.rlc.get_aes_key(
+        self.aes_key_rlc = self.user.org.get_aes_key(
             user=self.user, private_key_user=self.private_key_user
         )
         HasPermission.objects.create(

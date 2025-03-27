@@ -96,7 +96,7 @@ def query__list_groups(org_user: OrgUser):
 
 @router.get(url="notes/", output_schema=list[OutputNote])
 def query__list_notes(org_user: OrgUser):
-    notes = Note.objects.filter(rlc__id=org_user.org_id)
+    notes = Note.objects.filter(org__id=org_user.org_id)
     return list(notes)
 
 

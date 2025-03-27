@@ -22,16 +22,16 @@ def org(db):
 
 @pytest.fixture
 def org_user_2(db, org):
-    user_2 = data.create_org_user(email="dummy2@law-orga.de", rlc=org)
+    user_2 = data.create_org_user(email="dummy2@law-orga.de", org=org)
     yield user_2
 
 
 @pytest.fixture
 def user(db, org_user_2, org):
-    user_1 = data.create_org_user(rlc=org)
-    data.create_org_user(email="dummy3@law-orga.de", rlc=org)
+    user_1 = data.create_org_user(org=org)
+    data.create_org_user(email="dummy3@law-orga.de", org=org)
     org.generate_keys()
-    template = DataSheetTemplate.objects.create(rlc=org, name="Record Template")
+    template = DataSheetTemplate.objects.create(org=org, name="Record Template")
     data.create_data_sheet(
         template=template, users=[user_1["user"], org_user_2["user"]]
     )

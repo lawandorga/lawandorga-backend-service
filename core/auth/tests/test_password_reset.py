@@ -9,7 +9,7 @@ from core.seedwork import test_helpers
 def test_password_reset_works(db):
     # setup
     org = test_helpers.create_org()["org"]
-    org_user = test_helpers.create_org_user(rlc=org)
+    org_user = test_helpers.create_org_user(org=org)
     org.generate_keys()
     c = Client()
 
@@ -42,7 +42,7 @@ def test_password_reset_works(db):
     # step4: check that the complete page renders
     assert "Password reset complete" in response_5.content.decode()
 
-    # check rlc user is locked but his keys work
+    # check org user is locked but his keys work
     updated_org_user = OrgUser.objects.get(pk=org_user["org_user"].pk)
     assert updated_org_user.locked
     updated_org_user.get_encryption_key()

@@ -11,8 +11,8 @@ from ..models import LegalRequirement
 
 @pytest.fixture
 def user(db):
-    rlc = Org.objects.create(name="Test RLC")
-    user = test_helpers.create_org_user(rlc=rlc)
+    org = Org.objects.create(name="Test RLC")
+    user = test_helpers.create_org_user(org=org)
     yield user
 
 

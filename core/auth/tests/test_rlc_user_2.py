@@ -7,9 +7,9 @@ from core.seedwork.use_case_layer import UseCaseError
 
 
 def test_unlock_fails(db):
-    rlc = Org.objects.create(name="Test RLC")
-    user_1 = data.create_org_user(rlc=rlc)
-    rlc.generate_keys()
+    org = Org.objects.create(name="Test RLC")
+    user_1 = data.create_org_user(org=org)
+    org.generate_keys()
     data.create_data_sheet(users=[user_1["user"]])
     key = OrgEncryption.objects.get(user=user_1["user"])
     key.correct = False
@@ -20,9 +20,9 @@ def test_unlock_fails(db):
 
 
 def test_unlock_works(db):
-    rlc = Org.objects.create(name="Test RLC")
-    user_1 = data.create_org_user(rlc=rlc)
-    rlc.generate_keys()
+    org = Org.objects.create(name="Test RLC")
+    user_1 = data.create_org_user(org=org)
+    org.generate_keys()
     data.create_data_sheet(users=[user_1["user"]])
     org_user = user_1["org_user"]
     org_user.locked = True

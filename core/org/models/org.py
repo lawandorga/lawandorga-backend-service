@@ -105,7 +105,7 @@ class Org(EncryptedModelMixin, models.Model):
         return list(self.external_links.all())
 
     def __str__(self):
-        return "rlc: {}; name: {};".format(self.pk, self.name)
+        return "org: {}; name: {};".format(self.pk, self.name)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -210,14 +210,14 @@ class Org(EncryptedModelMixin, models.Model):
         if self.do_keys_exist:
             return
 
-        # generate some keys for rlc
+        # generate some keys for org
         aes_key = AESEncryption.generate_secure_key()
         private_key, public_key = RSAEncryption.generate_keys()
         self.private_key = private_key
         self.public_key = public_key
         self.encrypt(aes_key)
         self.save()
-        # create encryption keys for users to be able to decrypt rlc private key with users private key
+        # create encryption keys for users to be able to decrypt org private key with users private key
         # the aes key is encrypted with the users public key, but only the user's private key can decrypt
         # the encrypted aes key
         for org_user in self.users.all():

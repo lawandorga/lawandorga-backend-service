@@ -6,7 +6,7 @@ from core.seedwork import test_helpers
 
 def test_group_keys_invalidated(db):
     user1 = test_helpers.create_org_user()["org_user"]
-    user2 = test_helpers.create_org_user(email="tester@law-orga.de", rlc=user1.org)[
+    user2 = test_helpers.create_org_user(email="tester@law-orga.de", org=user1.org)[
         "org_user"
     ]
 
@@ -30,7 +30,7 @@ def test_group_keys_invalidated(db):
 
 def test_group_keys_fixed_with_unlock(db):
     user1 = test_helpers.create_org_user()["org_user"]
-    user2 = test_helpers.create_org_user(email="tester@law-orga.de", rlc=user1.org)[
+    user2 = test_helpers.create_org_user(email="tester@law-orga.de", org=user1.org)[
         "org_user"
     ]
 

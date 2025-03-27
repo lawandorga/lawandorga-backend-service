@@ -9,7 +9,7 @@ from core.seedwork import test_helpers
 @pytest.fixture
 def user1(db):
     org = Org.objects.create(name="Test RLC")
-    org_user = test_helpers.create_org_user(rlc=org)
+    org_user = test_helpers.create_org_user(org=org)
     user = org_user["user"]
     m_user = MatrixUser.objects.create(user=user)
     yield m_user
@@ -18,7 +18,7 @@ def user1(db):
 @pytest.fixture
 def user2(db):
     org = Org.objects.create(name="Test RLC")
-    org_user = test_helpers.create_org_user(rlc=org, email="tester1@law-orga.de")
+    org_user = test_helpers.create_org_user(org=org, email="tester1@law-orga.de")
     user = org_user["user"]
     m_user = MatrixUser.objects.create(user=user, _group="Different Group")
     yield m_user

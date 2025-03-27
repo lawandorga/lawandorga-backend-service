@@ -18,7 +18,7 @@ router = Router()
 
 @router.get(url="templates/", output_schema=list[schemas.OutputTemplate])
 def query__templates(org_user: OrgUser):
-    templates = DataSheetTemplate.objects.filter(rlc_id=org_user.org_id)
+    templates = DataSheetTemplate.objects.filter(org_id=org_user.org_id)
     return list(templates)
 
 
@@ -27,7 +27,7 @@ def query__templates(org_user: OrgUser):
     output_schema=schemas.OutputTemplateDetail,
 )
 def query__template(org_user: OrgUser, data: schemas.InputTemplateDetail):
-    return DataSheetTemplate.objects.get(rlc_id=org_user.org_id, id=data.id)
+    return DataSheetTemplate.objects.get(org_id=org_user.org_id, id=data.id)
 
 
 @router.get(
@@ -38,7 +38,7 @@ def query__data_sheet(org_user: OrgUser, data: schemas.InputQueryRecord):
     sheet = (
         DataSheet.objects.prefetch_related(*DataSheet.ALL_PREFETCH_RELATED)
         .select_related("template")
-        .filter(template__rlc_id=org_user.org_id)
+        .filter(template__org_id=org_user.org_id)
         .filter(uuid=data.uuid)
         .first()
     )
@@ -75,7 +75,7 @@ def query__download_file_entry(org_user: OrgUser, data: InputFileEntryDownload):
         entry = DataSheetEncryptedFileEntry.objects.get(
             record_id=data.record_id,
             field__uuid=data.uuid,
-            field__template__rlc_id=org_user.org_id,
+            field__template__org_id=org_user.org_id,
         )
     except ObjectDoesNotExist:
         raise ApiError(message="The file was not found.", status=404)

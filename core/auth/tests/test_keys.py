@@ -10,12 +10,12 @@ from core.seedwork.encryption import RSAEncryption
 class TestUserKeys(TestCase):
     def setUp(self):
         self.rlc = Org.objects.create(name="Test RLC")
-        self.user_1 = data.create_org_user(rlc=self.rlc)
-        self.user_2 = data.create_org_user(email="dummy2@law-orga.de", rlc=self.rlc)
-        self.user_3 = data.create_org_user(email="dummy3@law-orga.de", rlc=self.rlc)
+        self.user_1 = data.create_org_user(org=self.rlc)
+        self.user_2 = data.create_org_user(email="dummy2@law-orga.de", org=self.rlc)
+        self.user_3 = data.create_org_user(email="dummy3@law-orga.de", org=self.rlc)
         self.rlc.generate_keys()
         self.template = DataSheetTemplate.objects.create(
-            rlc=self.rlc, name="Record Template"
+            org=self.rlc, name="Record Template"
         )
         self.record_1 = data.create_data_sheet(
             template=self.template, users=[self.user_1["user"], self.user_2["user"]]

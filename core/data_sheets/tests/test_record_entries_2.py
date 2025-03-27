@@ -54,19 +54,19 @@ def get_file(text: str = "test-file-text"):
 
 @pytest.fixture
 def setup():
-    rlc = Org.objects.create(name="Test RLC")
+    org = Org.objects.create(name="Test RLC")
     user = UserProfile.objects.create(email="dummy@law-orga.de", name="Dummy 1")
     user.set_password(settings.DUMMY_USER_PASSWORD)
     user.save()
-    org_user = OrgUser(user=user, email_confirmed=True, accepted=True, org=rlc)
+    org_user = OrgUser(user=user, email_confirmed=True, accepted=True, org=org)
     org_user.generate_keys(settings.DUMMY_USER_PASSWORD)
     org_user.save()
-    template = DataSheetTemplate.objects.create(rlc=rlc, name="Record Template")
+    template = DataSheetTemplate.objects.create(org=org, name="Record Template")
     permission = Permission.objects.get(name=PERMISSION_RECORDS_ADD_RECORD)
     HasPermission.objects.create(user=user.org_user, permission=permission)
     permission = Permission.objects.get(name=PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES)
     HasPermission.objects.create(user=org_user, permission=permission)
-    template = DataSheetTemplate.objects.create(rlc=rlc, name="Record Template")
+    template = DataSheetTemplate.objects.create(org=org, name="Record Template")
     record = test_helpers.create_data_sheet(template, [user])["record"]
     aes_key_record = record.get_aes_key(user.org_user)
     yield {
@@ -569,10 +569,10 @@ def users_entry(users_field, record):
 def test_users_entry_create(db, record, users_field, auth_client):
     user = OrgUser.objects.get()
     user1 = test_helpers.create_org_user(
-        rlc=user.org, email="dummy2@law-orga.de", save=True
+        org=user.org, email="dummy2@law-orga.de", save=True
     )["org_user"]
     user2 = test_helpers.create_org_user(
-        rlc=user.org, email="dummy3@law-orga.de", save=True
+        org=user.org, email="dummy3@law-orga.de", save=True
     )["org_user"]
     data = {
         "action": "data_sheets/create_or_update_entry",
@@ -592,7 +592,7 @@ def test_users_entry_create(db, record, users_field, auth_client):
 def test_users_entry_udpate(db, record, users_field, auth_client, users_entry):
     user = OrgUser.objects.get()
     user2 = test_helpers.create_org_user(
-        rlc=user.org, email="dummy3@law-orga.de", save=True
+        org=user.org, email="dummy3@law-orga.de", save=True
     )["org_user"]
     data = {
         "action": "data_sheets/create_or_update_entry",
@@ -627,10 +627,10 @@ def test_entry_keys_sharing_true(db, record, users_field, auth_client):
     assert users_field.share_keys is True
     user = OrgUser.objects.get()
     user1 = test_helpers.create_org_user(
-        rlc=user.org, email="dummy2@law-orga.de", save=True
+        org=user.org, email="dummy2@law-orga.de", save=True
     )["org_user"]
     user2 = test_helpers.create_org_user(
-        rlc=user.org, email="dummy3@law-orga.de", save=True
+        org=user.org, email="dummy3@law-orga.de", save=True
     )["org_user"]
     r = DjangoFolderRepository()
     folder1 = r.retrieve(user.org_id, record.folder_uuid)
@@ -670,10 +670,10 @@ def test_entry_keys_sharing_false(db, record, users_field, auth_client):
     assert users_field.share_keys is False
     user = OrgUser.objects.get()
     user1 = test_helpers.create_org_user(
-        rlc=user.org, email="dummy2@law-orga.de", save=True
+        org=user.org, email="dummy2@law-orga.de", save=True
     )["org_user"]
     user2 = test_helpers.create_org_user(
-        rlc=user.org, email="dummy3@law-orga.de", save=True
+        org=user.org, email="dummy3@law-orga.de", save=True
     )["org_user"]
     r = DjangoFolderRepository()
     folder1 = r.retrieve(user.org_id, record.folder_uuid)

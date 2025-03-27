@@ -24,12 +24,12 @@ class Note(models.Model):
     @staticmethod
     def create(org: Org, title: str, note: str, order: int, pk=0) -> "Note":
         clean_note = clean_note_html(note)
-        note_obj = Note(rlc=org, title=title, note=clean_note, order=order)
+        note_obj = Note(org=org, title=title, note=clean_note, order=order)
         if pk:
             note_obj.pk = pk
         return note_obj
 
-    rlc = models.ForeignKey(
+    org = models.ForeignKey(
         Org, on_delete=models.CASCADE, related_name="notes", blank=True
     )
     title = models.CharField(max_length=200)
@@ -55,7 +55,7 @@ class Note(models.Model):
         return note
 
     def __str__(self):
-        return "rlc: {}; note: {};".format(self.rlc.name, self.title)
+        return "org: {}; note: {};".format(self.org.name, self.title)
 
     def update_information(
         self,

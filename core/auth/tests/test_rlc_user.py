@@ -39,7 +39,7 @@ def test_user_can_not_delete_someone_else(db, org_user):
     client.login(**org_user)
     user = org_user["org_user"]
     another_user = test_helpers.create_org_user(
-        email="test122@law-orga.de", rlc=user.org
+        email="test122@law-orga.de", org=user.org
     )["org_user"]
     with pytest.raises(UseCaseError):
         delete_user(user, another_user.pk)
@@ -50,7 +50,7 @@ def test_unlock_works(db, org_user):
     client.login(**org_user)
     user = org_user["org_user"]
     another_user = test_helpers.create_org_user(
-        email="test5692@law-orga.de", rlc=user.org
+        email="test5692@law-orga.de", org=user.org
     )["org_user"]
     another_user.locked = True
     another_user.save()
@@ -81,7 +81,7 @@ def test_delete_works(db, org_user):
     user = org_user["org_user"]
     user.grant(PERMISSION_ADMIN_MANAGE_USERS)
     another_user = test_helpers.create_org_user(
-        email="test2@law-orga.de", rlc=user.org
+        email="test2@law-orga.de", org=user.org
     )["org_user"]
     org_users = OrgUser.objects.count()
     user_profiles = UserProfile.objects.count()

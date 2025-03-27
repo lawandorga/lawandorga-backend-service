@@ -7,10 +7,10 @@ from core.seedwork import test_helpers
 
 def test_folder_can_be_retrieved(db):
     user = test_helpers.create_org_user()
-    rlc_uesr = user["org_user"]
+    org_user = user["org_user"]
     repository = DjangoFolderRepository()
-    folder1 = Folder.create(name="New Folder", org_pk=rlc_uesr.org_id)
-    folder1.grant_access(to=rlc_uesr)
+    folder1 = Folder.create(name="New Folder", org_pk=org_user.org_id)
+    folder1.grant_access(to=org_user)
     repository.save(folder1)
     client = Client()
     client.login(**user)

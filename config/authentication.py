@@ -16,7 +16,7 @@ class IsAuthenticatedAndEverything(permissions.IsAuthenticated):  # type: ignore
         # get the user
         user = request.user
 
-        # rlc user
+        # org user
         if hasattr(user, "org_user"):
             org_user = user.org_user
             if (

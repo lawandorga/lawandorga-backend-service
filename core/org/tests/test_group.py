@@ -24,19 +24,19 @@ def group(db, org):
 
 @pytest.fixture
 def user_2(db, org):
-    user_2 = data.create_org_user(email="dummy2@law-orga.de", name="Dummy 2", rlc=org)
+    user_2 = data.create_org_user(email="dummy2@law-orga.de", name="Dummy 2", org=org)
     yield user_2
 
 
 @pytest.fixture
 def user_3(db, org):
-    user_3 = data.create_org_user(email="dummy3@law-orga.de", name="Dummy 3", rlc=org)
+    user_3 = data.create_org_user(email="dummy3@law-orga.de", name="Dummy 3", org=org)
     yield user_3
 
 
 @pytest.fixture
 def user(db, group, user_2, org):
-    user_1 = data.create_org_user(rlc=org)
+    user_1 = data.create_org_user(org=org)
     org.generate_keys()
     group.members.add(user_1["org_user"])
     group.generate_keys()
@@ -113,7 +113,7 @@ def test_add_member_fails_different_org(user, group, db):
     user["org_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     org2 = Org.objects.create(name="Another")
     another_user = data.create_org_user(
-        email="another@law-orga.de", name="Another", rlc=org2
+        email="another@law-orga.de", name="Another", org=org2
     )
     response = c.post(
         "/api/command/",

@@ -63,7 +63,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return self.last_login.strftime("%b %Y")
 
     @property
-    def rlc(self):
+    def org(self):
         return self.org_user.org
 
     def change_password(self, old_password, new_password):
@@ -85,19 +85,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def get_private_key(self, *args, **kwargs) -> str:
         return self.org_user.get_private_key()
 
-    def get_private_key_rlc(self, private_key_user=None, request=None):
+    def get_org_aes_key(self, private_key_user=None):
         if private_key_user:
-            pass
-        elif request:
-            private_key_user = self.get_private_key(request=request)
-        else:
-            raise ValueError("You need to pass (private_key_user) or (request).")
-
-        return self.rlc.get_private_key(user=self, private_key_user=private_key_user)
-
-    def get_rlc_aes_key(self, private_key_user=None):
-        if private_key_user:
-            return self.rlc.get_aes_key(user=self, private_key_user=private_key_user)
+            return self.org.get_aes_key(user=self, private_key_user=private_key_user)
         else:
             raise ValueError("You need to set (private_key_user).")
 

@@ -7,7 +7,7 @@ from core.seedwork import test_helpers
 
 @pytest.fixture
 def user(db, org):
-    user = test_helpers.create_org_user(rlc=org)
+    user = test_helpers.create_org_user(org=org)
     org.generate_keys()
     yield user
 

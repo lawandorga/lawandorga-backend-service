@@ -26,8 +26,8 @@ class OrgAdminForm(forms.ModelForm):
     def save(self, commit=True):
         with transaction.atomic():
             # save
-            rlc = super().save()
-            create_default_record_template(rlc)
+            org = super().save()
+            create_default_record_template(org)
             # create user
             user = UserProfile.objects.create(
                 email=self.cleaned_data["user_email"],
@@ -36,14 +36,14 @@ class OrgAdminForm(forms.ModelForm):
             user.set_password(self.cleaned_data["user_password"])
             user.save()
             # and rlc user
-            org_user = OrgUser(accepted=True, email_confirmed=True, user=user, org=rlc)
+            org_user = OrgUser(accepted=True, email_confirmed=True, user=user, org=org)
             org_user.generate_keys(self.cleaned_data["user_password"])
             org_user.save()
             # grant permissions
             for permission in get_all_permission_strings():
                 org_user.grant(permission)
         # return
-        return rlc
+        return org
 
     def save_m2m(self):
         pass

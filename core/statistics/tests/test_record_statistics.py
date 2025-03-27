@@ -15,13 +15,13 @@ from core.seedwork import test_helpers as data
 
 @pytest.fixture
 def user(db):
-    rlc = Org.objects.create(name="Test RLC")
-    user_1 = data.create_org_user(rlc=rlc)
+    org = Org.objects.create(name="Test RLC")
+    user_1 = data.create_org_user(org=org)
     statistics_user = data.create_statistics_user(
         email="statistics@law-orga.de", name="Mr. Statistics"
     )
-    rlc.generate_keys()
-    template = DataSheetTemplate.objects.create(rlc=rlc, name="Record Template")
+    org.generate_keys()
+    template = DataSheetTemplate.objects.create(org=org, name="Record Template")
     field = DataSheetStateField.objects.create(
         template=template, options=["Open", "Closed"]
     )

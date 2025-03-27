@@ -17,10 +17,10 @@ class FolderSerializer(serializers.ModelSerializer):
 class FolderCreateSerializer(FolderSerializer):
     def validate(self, attrs):
         attrs = super().validate(attrs)
-        attrs["rlc"] = self.context["request"].user.rlc
+        attrs["rlc"] = self.context["request"].user.org
         if attrs.get("parent", None) is None:
             attrs["parent"] = Folder.objects.get(
-                parent=None, rlc=self.context["request"].user.rlc
+                parent=None, rlc=self.context["request"].user.org
             )
         return attrs
 

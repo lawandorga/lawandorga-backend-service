@@ -124,7 +124,7 @@ class Group(models.Model):
         verbose_name_plural = "ORG_Groups"
 
     def __str__(self):
-        return "group: {}; name: {}; rlc: {};".format(self.pk, self.name, self.org.name)
+        return "group: {}; name: {}; org: {};".format(self.pk, self.name, self.org.name)
 
     @property
     def permissions(self):

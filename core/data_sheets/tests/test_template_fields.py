@@ -13,7 +13,7 @@ def test_create_field(db):
     org_user = user["org_user"]
     org_user.grant(PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES)
     template = DataSheetTemplate.objects.create(
-        rlc=org_user.org, name="Record Template"
+        org=org_user.org, name="Record Template"
     )
     create_field(org_user, template.pk, "standard", "Standard Field", 1)
     assert len(template.fields) == 5
@@ -24,7 +24,7 @@ def test_update_field(db):
     org_user = user["org_user"]
     org_user.grant(PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES)
     template = DataSheetTemplate.objects.create(
-        rlc=org_user.org, name="Record Template"
+        org=org_user.org, name="Record Template"
     )
     create_field(org_user, template.pk, "standard", "Standard Field", 1)
     field = template.fields[0]
@@ -38,7 +38,7 @@ def test_delete_field(db):
     org_user = user["org_user"]
     org_user.grant(PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES)
     template = DataSheetTemplate.objects.create(
-        rlc=org_user.org, name="Record Template"
+        org=org_user.org, name="Record Template"
     )
     create_field(org_user, template.pk, "standard", "Standard Field", 1)
     field = template.fields[0]

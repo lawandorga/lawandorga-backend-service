@@ -20,7 +20,7 @@ def org(db):
 
 @pytest.fixture
 def user(db, org):
-    user_1 = data.create_org_user(rlc=org)
+    user_1 = data.create_org_user(org=org)
     org.generate_keys()
     yield user_1
 

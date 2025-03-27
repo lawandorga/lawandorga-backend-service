@@ -6,20 +6,20 @@ from core.models import Org
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        rlc_id = input("Enter the id of the LC you want to delete: ")
+        org_id = input("Enter the id of the org you want to delete: ")
         try:
-            rlc = Org.objects.get(pk=rlc_id)
+            org = Org.objects.get(pk=org_id)
         except (ObjectDoesNotExist, ValueError):
-            raise CommandError("No LC was found with this id.")
+            raise CommandError("No org was found with this id.")
         delete = input(
-            "Do you want to delete LC '{name}' with {records} records, "
+            "Do you want to delete org '{name}' with {records} records, "
             "{files} files and {collab} collab documents? [y/n]: ".format(
-                **rlc.get_meta_information()
+                **org.get_meta_information()
             )
         )
         delete = True if delete == "y" else False
         if delete:
-            rlc.force_delete()
-            self.stdout.write("The LC '{}' was deleted.".format(rlc.name))
+            org.force_delete()
+            self.stdout.write("The org '{}' was deleted.".format(org.name))
         else:
-            self.stdout.write("No LC was deleted.")
+            self.stdout.write("No org was deleted.")

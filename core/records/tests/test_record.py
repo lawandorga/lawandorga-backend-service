@@ -46,7 +46,7 @@ def test_grant_to_users_with_general_permission(db):
     full_user = test_helpers.create_org_user()
     user = full_user["org_user"]
     full_another_user = test_helpers.create_org_user(
-        email="tester@law-orga.de", rlc=user.org
+        email="tester@law-orga.de", org=user.org
     )
     another_user = full_another_user["org_user"]
 

@@ -138,18 +138,18 @@ class CreateOrgUserData(TypedDict):
 def create_org_user(
     email="dummy@law-orga.de",
     name="Dummy 1",
-    rlc=None,
-    accepted=True,
-    password=settings.DUMMY_USER_PASSWORD,
-    save=True,
+    org: Org | None = None,
+    accepted: bool = True,
+    password: str = settings.DUMMY_USER_PASSWORD,
+    save: bool = True,
 ) -> CreateOrgUserData:
-    if rlc is None:
-        rlc = create_org("Dummy's Org", save=save)["org"]
+    if org is None:
+        org = create_org("Dummy's Org", save=save)["org"]
     user = UserProfile.objects.create(email=email, name=name)
     user.set_password(password)
     if save:
         user.save()
-    org_user = OrgUser(user=user, email_confirmed=True, accepted=accepted, org=rlc)
+    org_user = OrgUser(user=user, email_confirmed=True, accepted=accepted, org=org)
     org_user.generate_keys(password)
     if save:
         org_user.save()
@@ -160,7 +160,7 @@ def create_org_user(
         .decode("utf-8")
     )
     return {
-        "org": rlc,
+        "org": org,
         "user": user,
         "username": user.email,
         "email": user.email,
@@ -189,7 +189,7 @@ def create_group(
 def create_record_template(org=None):
     if org is None:
         org = create_org()["org"]
-    template = DataSheetTemplate.objects.create(rlc=org, name="Record Template")
+    template = DataSheetTemplate.objects.create(org=org, name="Record Template")
     return {"template": template, "org": org}
 
 
@@ -197,7 +197,7 @@ def create_data_sheet(template=None, users: Optional[List[UserProfile]] = None):
     assert users and len(users) > 0
     if template is None:
         template = DataSheetTemplate.objects.create(
-            rlc=users[0].rlc, name="Record Template"
+            org=users[0].org, name="Record Template"
         )
     user = users[0].org_user
     folder = create_folder(user=user)["folder"]

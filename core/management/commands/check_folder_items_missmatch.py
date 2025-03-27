@@ -17,7 +17,7 @@ class Command(BaseCommand):
             .all()
             .prefetch_related("standard_entries", "standard_entries__field")
             .select_related("template", "template__rlc")
-            .order_by("template__rlc_id")
+            .order_by("template__org_id")
         )
 
         self.stdout.write("Querying done. Checking...")

@@ -72,7 +72,7 @@ class Folder(models.Model):
     def user_has_permission_read(self, user: UserProfile) -> bool:
         from .permission_for_folder import PermissionForFolder
 
-        if user.rlc != self.rlc:
+        if user.org != self.rlc:
             return False
 
         if (
@@ -97,7 +97,7 @@ class Folder(models.Model):
     def user_has_permission_write(self, user: UserProfile) -> bool:
         from .permission_for_folder import PermissionForFolder
 
-        if user.rlc != self.rlc:
+        if user.org != self.rlc:
             return False
 
         if user.has_permission(

@@ -46,14 +46,14 @@ class DataSheetRepository(ItemRepository):
         assert isinstance(uuid, UUID)
         return DataSheet.objects.get(uuid=uuid)
 
-    def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int | None) -> None:
+    def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int) -> None:
         DataSheet.objects.filter(
-            folder_uuid=folder_uuid, template__rlc_id=org_pk
+            folder_uuid=folder_uuid, template__org_id=org_pk
         ).delete()
 
     def list(self, org_pk: int, search: Search) -> list["DataSheet"]:
         all_sheets = (
-            DataSheet.objects.filter(template__rlc_id=org_pk)
+            DataSheet.objects.filter(template__org_id=org_pk)
             .prefetch_related(*DataSheet.UNENCRYPTED_PREFETCH_RELATED)
             .select_related("template")
         )
@@ -151,7 +151,7 @@ class DataSheet(Aggregate, models.Model):
         "statistic_entries",
         "statistic_entries__field",
         "template",
-        "template__rlc__users",
+        "template__org__users",
         "template__standard_fields",
         "template__select_fields",
         "template__users_fields",
@@ -184,7 +184,7 @@ class DataSheet(Aggregate, models.Model):
 
     @property
     def org_pk(self) -> int:
-        return self.template.rlc_id
+        return self.template.org_id
 
     @property
     def actions(self):

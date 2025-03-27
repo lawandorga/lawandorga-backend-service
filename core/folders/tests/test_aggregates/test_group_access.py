@@ -8,7 +8,7 @@ def test_has_access_can_get_the_key(db):
     an DomainError. This test ensures that this bug is fixed.
     """
     org = test_helpers.create_org("Test Org")["org"]
-    org_user = test_helpers.create_org_user(rlc=org)
+    org_user = test_helpers.create_org_user(org=org)
     u = org_user["org_user"]
 
     parentfolder = Folder.create(name="Parent Folder", org_pk=u.org_id)
@@ -25,7 +25,7 @@ def test_has_access_can_get_the_key(db):
     group = test_helpers.create_group(u)["group"]
     folder.grant_access_to_group(group, u)
 
-    gu = test_helpers.create_org_user(rlc=org, email="tester@law-orga.de")["org_user"]
+    gu = test_helpers.create_org_user(org=org, email="tester@law-orga.de")["org_user"]
     group.add_member(gu, u)
 
     assert subfolder.has_access(gu) and subfolder.get_encryption_key(gu)

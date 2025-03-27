@@ -35,14 +35,14 @@ if TYPE_CHECKING:
 class DataSheetTemplate(models.Model):
     @classmethod
     def create(cls, name: str, org: Org, pk=0) -> "DataSheetTemplate":
-        template = DataSheetTemplate(name=name, rlc=org)
+        template = DataSheetTemplate(name=name, org=org)
         if pk:
             template.pk = pk
         return template
 
     name = models.CharField(max_length=200)
-    rlc = models.ForeignKey(
-        Org, related_name="recordtemplates", on_delete=models.CASCADE, blank=True
+    org = models.ForeignKey(
+        Org, related_name="recordtemplates", on_delete=models.CASCADE
     )
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -61,7 +61,7 @@ class DataSheetTemplate(models.Model):
         verbose_name_plural = "DAT_RecordTemplates"
 
     def __str__(self):
-        return "recordTemplate: {}; rlc: {};".format(self.pk, self.rlc)
+        return "recordTemplate: {}; rlc: {};".format(self.pk, self.org)
 
     @property
     def fields(self):

@@ -11,5 +11,5 @@ class ItemRepository:
     def retrieve(self, uuid: UUID, org_pk: Optional[int] = None) -> "Item":
         raise NotImplementedError()
 
-    def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int | None) -> None:
+    def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int) -> None:
         raise NotImplementedError()

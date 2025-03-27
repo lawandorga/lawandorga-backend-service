@@ -100,11 +100,11 @@ def query__user_logins(statistics_user: StatisticUser):
     return list(data)
 
 
-@router.get(url="rlc_members/", output_schema=list[schemas.OutputOrgMembers])
+@router.get(url="org_members/", output_schema=list[schemas.OutputOrgMembers])
 def query__org_members(statistics_user: StatisticUser):
     statement = """
             select
-                core_org.name as rlc_name,
+                core_org.name as org_name,
                 count(distinct core_orguser.id) as member_amount
             from core_orguser
             inner join core_org on core_org.id = core_orguser.org_id
@@ -119,17 +119,17 @@ def query__org_members(statistics_user: StatisticUser):
 def query__org_usage(statistics_user: StatisticUser):
     statement = """
     select
-        rlc.name as name,
+        org.name as name,
         count(distinct record.id) as records,
         count(distinct file.id) as files,
         count(distinct collab.id) as collabs
-    from core_org as rlc
-    left join core_datasheettemplate template on rlc.id = template.rlc_id
+    from core_org as org
+    left join core_datasheettemplate template on org.id = template.org_id
     left join core_datasheet record on record.template_id = template.id
-    left join core_folder folder on rlc.id = folder.rlc_id
+    left join core_folder folder on org.id = folder.org_id
     left join core_file file on file.folder_id = folder.id
-    left join core_collab collab on rlc.id = collab.org_id
-    group by rlc.id, rlc.name;
+    left join core_collab collab on org.id = collab.org_id
+    group by org.id, org.name;
     """
     data = execute_statement(statement)
     data = list(
@@ -168,8 +168,8 @@ def get_records_created_and_closed(org_user: OrgUser, data: InputCreatedAndClose
         select strftime('%Y/%m', r.created) as month, count(*) as created
         from core_datasheet r
         left join core_datasheettemplate t on t.id = r.template_id
-        where t.rlc_id = {}
-        group by strftime('%Y/%m', r.created), t.rlc_id
+        where t.org_id = {}
+        group by strftime('%Y/%m', r.created), t.org_id
         ) t1
         left outer join (
         select strftime('%Y/%m', se.closed_at) as month, count(*) as closed
@@ -177,8 +177,8 @@ def get_records_created_and_closed(org_user: OrgUser, data: InputCreatedAndClose
         left join core_datasheet r on se.record_id = r.id
         left join core_datasheettemplate t on t.id = r.template_id
         where se.value = 'Closed'
-        and t.rlc_id = {}
-        group by strftime('%Y/%m', se.closed_at), t.rlc_id
+        and t.org_id = {}
+        group by strftime('%Y/%m', se.closed_at), t.org_id
         ) t2 on t1.month = t2.month
         order by t1.month
         """.format(
@@ -192,7 +192,7 @@ def get_records_created_and_closed(org_user: OrgUser, data: InputCreatedAndClose
         from core_datasheet r
         left join core_datasheettemplate t on t.id = r.template_id
         where t.rlc_id = {}
-        group by to_char(r.created, 'YYYY/MM'), t.rlc_id
+        group by to_char(r.created, 'YYYY/MM'), t.org_id
         ) t1
         full outer join (
         select to_char(se.closed_at, 'YYYY/MM') as month, count(*) as closed
@@ -201,7 +201,7 @@ def get_records_created_and_closed(org_user: OrgUser, data: InputCreatedAndClose
         left join core_datasheettemplate t on t.id = r.template_id
         where se.value = 'Closed'
         and t.rlc_id = {}
-        group by to_char(se.closed_at, 'YYYY/MM'), t.rlc_id
+        group by to_char(se.closed_at, 'YYYY/MM'), t.org_id
         ) t2 on t1.month = t2.month
         order by t1.month
         """.format(

@@ -9,7 +9,7 @@ from core.seedwork import test_helpers
 
 def test_grant_access_to_group(db):
     org = test_helpers.create_org("Test Org")["org"]
-    org_user = test_helpers.create_org_user(rlc=org)
+    org_user = test_helpers.create_org_user(org=org)
     u = org_user["org_user"]
 
     folder = Folder.create(name="Test Folder", org_pk=u.org_id)
@@ -39,7 +39,7 @@ def test_grant_access_to_group(db):
 
 def test_grant_access_to_group_with_usecase(db):
     org = test_helpers.create_org("Test Org")["org"]
-    org_user = test_helpers.create_org_user(rlc=org)
+    org_user = test_helpers.create_org_user(org=org)
     u = org_user["org_user"]
 
     folder = Folder.create(name="Test Folder", org_pk=u.org_id)
@@ -60,7 +60,7 @@ def test_grant_access_to_group_with_usecase(db):
 
 def test_revoke_access_from_group(db):
     org = test_helpers.create_org("Test Org")["org"]
-    org_user = test_helpers.create_org_user(rlc=org)
+    org_user = test_helpers.create_org_user(org=org)
     u = org_user["org_user"]
 
     folder = Folder.create(name="Test Folder", org_pk=u.org_id)
@@ -83,9 +83,9 @@ def test_revoke_access_from_group(db):
 
 def test_get_keys_with_group(db):
     org = test_helpers.create_org("Test Org")["org"]
-    org_user_1 = test_helpers.create_org_user(rlc=org)
+    org_user_1 = test_helpers.create_org_user(org=org)
     u1 = org_user_1["org_user"]
-    org_user_2 = test_helpers.create_org_user(email="tester@law-orga.de", rlc=org)
+    org_user_2 = test_helpers.create_org_user(email="tester@law-orga.de", org=org)
     u2 = org_user_2["org_user"]
     group = test_helpers.create_group(u1)["group"]
     group.add_member(u2, u1)

@@ -16,7 +16,7 @@ def user(db):
 def two_users_same_org(db):
     org_user_1 = test_helpers.create_org_user()
     org = org_user_1["org_user"].org
-    org_user_2 = test_helpers.create_org_user(email="dummy2@law-orga.de", rlc=org)
+    org_user_2 = test_helpers.create_org_user(email="dummy2@law-orga.de", org=org)
     yield {1: org_user_1["user"], 2: org_user_2["user"]}
 
 
