@@ -96,7 +96,7 @@ class OutputDashboardRecord(BaseModel):
 
 @router.get("dashboard/", output_schema=list[OutputDashboardRecord])
 def query__dashboard_page(org_user: OrgUser):
-    recordsqs = DataSheet.objects.filter(template__rlc=org_user.org).prefetch_related(
+    recordsqs = DataSheet.objects.filter(template__org=org_user.org).prefetch_related(
         "state_entries", "users_entries", "users_entries__value"
     )
     records = list(recordsqs)

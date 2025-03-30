@@ -64,7 +64,7 @@ def query__record_states(org_user: OrgUser):
                  from core_datasheet as record
                  left join core_datasheetstateentry as state on state.record_id = record.id
                  left join core_datasheettemplate as template on template.id = record.template_id
-                 where template.rlc_id = {}
+                 where template.org_id = {}
                  group by record.id, state.record_id, state.value
              ) as tmp
              group by state
@@ -86,7 +86,7 @@ def query__record_client_age(org_user: OrgUser):
                 left join core_datasheetstatisticentry entry on record.id = entry.record_id
                 left join core_datasheetstatisticfield field on entry.field_id = field.id
                 left join core_datasheettemplate as template on template.id = record.template_id
-                where (field.name='Age in years of the client' or field.name is null) and template.rlc_id = {}
+                where (field.name='Age in years of the client' or field.name is null) and template.org_id = {}
                 group by value
                 """.format(
         org_user.org_id
@@ -109,7 +109,7 @@ def query__record_client_nationality(org_user: OrgUser):
            left join core_datasheetstatisticentry entry on record.id = entry.record_id
            left join core_datasheetstatisticfield field on entry.field_id = field.id
            left join core_datasheettemplate as template on template.id = record.template_id
-           where (field.name='Nationality of the client' or field.name is null) and template.rlc_id = {}
+           where (field.name='Nationality of the client' or field.name is null) and template.org_id = {}
            group by value
            """.format(
         org_user.org_id
@@ -129,7 +129,7 @@ def query__record_client_state(org_user: OrgUser):
                 left join core_datasheetstatisticentry entry on record.id = entry.record_id
                 left join core_datasheetstatisticfield field on entry.field_id = field.id
                 left join core_datasheettemplate as template on template.id = record.template_id
-                where (field.name='Current status of the client' or field.name is null) and template.rlc_id = {}
+                where (field.name='Current status of the client' or field.name is null) and template.org_id = {}
                 group by value
                 """.format(
         org_user.org_id
@@ -149,7 +149,7 @@ def query__record_client_sex(org_user: OrgUser):
                left join core_datasheetstatisticentry entry on record.id = entry.record_id
                left join core_datasheetstatisticfield field on entry.field_id = field.id
                left join core_datasheettemplate as template on template.id = record.template_id
-               where (field.name='Sex of the client' or field.name is null) and template.rlc_id = {}
+               where (field.name='Sex of the client' or field.name is null) and template.org_id = {}
                group by value
                """.format(
         org_user.org_id
@@ -172,7 +172,7 @@ class OutputTagStats(BaseModel):
 def query__tag_stats(org_user: OrgUser, data: TagStatsInput):
     stats: dict[str, int] = {"Not Set": 0}
 
-    qs = DataSheet.objects.filter(template__rlc_id=org_user.org_id).prefetch_related(
+    qs = DataSheet.objects.filter(template__org_id=org_user.org_id).prefetch_related(
         "template",
         "multiple_entries",
         "multiple_entries__field",
