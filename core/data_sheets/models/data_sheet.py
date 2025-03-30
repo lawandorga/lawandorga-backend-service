@@ -98,7 +98,7 @@ class DataSheet(Aggregate, models.Model):
 
     template = models.ForeignKey(
         DataSheetTemplate, related_name="records", on_delete=models.PROTECT
-    )
+    )  # type: ignore
     folder_uuid = models.UUIDField(db_index=True)
     uuid = models.UUIDField(default=uuid4, unique=True, db_index=True)
     name = models.CharField(max_length=300, default="-")
@@ -173,6 +173,7 @@ class DataSheet(Aggregate, models.Model):
         encrypted_select_entries: models.QuerySet["DataSheetEncryptedSelectEntry"]
         encrypted_file_entries: models.QuerySet["DataSheetEncryptedFileEntry"]
         encrypted_standard_entries: models.QuerySet["DataSheetEncryptedStandardEntry"]
+        template: DataSheetTemplate  # type: ignore
 
     class Meta:
         ordering = ["-created"]
@@ -180,7 +181,7 @@ class DataSheet(Aggregate, models.Model):
         verbose_name_plural = "DAT_DataSheets"
 
     def __str__(self):
-        return "record: {}; rlc: {};".format(self.pk, self.template.rlc.name)
+        return "record: {}; org: {};".format(self.pk, self.template.org.name)
 
     @property
     def org_pk(self) -> int:

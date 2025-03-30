@@ -43,7 +43,7 @@ class DataSheetTemplate(models.Model):
     name = models.CharField(max_length=200)
     org = models.ForeignKey(
         Org, related_name="recordtemplates", on_delete=models.CASCADE
-    )
+    )  # type: ignore
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -59,6 +59,10 @@ class DataSheetTemplate(models.Model):
     class Meta:
         verbose_name = "DAT_RecordTemplate"
         verbose_name_plural = "DAT_RecordTemplates"
+
+    if TYPE_CHECKING:
+        org_id: int
+        org: Org  # type: ignore
 
     def __str__(self):
         return "recordTemplate: {}; rlc: {};".format(self.pk, self.org)
@@ -277,14 +281,16 @@ class DataSheetStateField(RecordField):
 class DataSheetUsersField(RecordField):
     template = models.ForeignKey(
         DataSheetTemplate, on_delete=models.CASCADE, related_name="users_fields"
-    )
+    )  # type: ignore
     share_keys = models.BooleanField(default=True)
     group = models.ForeignKey(
         Group, blank=True, null=True, default=None, on_delete=models.SET_NULL
-    )
+    )  # type: ignore
 
     if TYPE_CHECKING:
         entries: models.QuerySet["DataSheetUsersEntry"]
+        template: DataSheetTemplate  # type: ignore
+        group: Group  # type: ignore
 
     class Meta:
         verbose_name = "DAT_RecordUsersField"
@@ -310,7 +316,7 @@ class DataSheetUsersField(RecordField):
         if self.group:
             users = list(self.group.members.all())
         else:
-            users = list(self.template.rlc.users.all())
+            users = list(self.template.org.users.all())
 
         return [{"name": i.name, "id": i.pk} for i in users]
 
