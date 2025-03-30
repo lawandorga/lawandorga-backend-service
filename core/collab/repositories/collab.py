@@ -10,7 +10,7 @@ from core.folders.domain.repositories.item import ItemRepository
 class CollabRepository(ItemRepository):
     IDENTIFIER = Collab.REPOSITORY
 
-    def retrieve(self, uuid: UUID, org_pk: int) -> Collab:  # type: ignore
+    def retrieve(self, uuid: UUID, org_pk: int) -> Collab:
         return Collab.objects.filter(org_id=org_pk).get(uuid=uuid)
 
     def get_document(self, uuid: UUID, user: OrgUser, fr: FolderRepository) -> Collab:

@@ -10,21 +10,21 @@ from core.seedwork.use_case_layer import finder_function
 
 @finder_function
 def template_from_id(actor: OrgUser, v: int) -> QuestionnaireTemplate:
-    return QuestionnaireTemplate.objects.get(id=v, rlc__id=actor.org_id)
+    return QuestionnaireTemplate.objects.get(id=v, org__id=actor.org_id)
 
 
 @finder_function
 def template_question_from_id(actor: OrgUser, v: int) -> QuestionnaireQuestion:
-    return QuestionnaireQuestion.objects.get(id=v, questionnaire__rlc__id=actor.org_id)
+    return QuestionnaireQuestion.objects.get(id=v, questionnaire__org__id=actor.org_id)
 
 
 @finder_function
 def template_file_from_id(actor: OrgUser, v: int) -> QuestionnaireTemplateFile:
     return QuestionnaireTemplateFile.objects.get(
-        id=v, questionnaire__rlc__id=actor.org_id
+        id=v, questionnaire__org__id=actor.org_id
     )
 
 
 @finder_function
 def questionnaire_from_id(actor: OrgUser, v: int) -> Questionnaire:
-    return Questionnaire.objects.get(id=v, template__rlc__id=actor.org_id)
+    return Questionnaire.objects.get(id=v, template__org__id=actor.org_id)

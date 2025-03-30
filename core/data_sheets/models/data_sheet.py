@@ -42,10 +42,6 @@ class Search(BaseModel):
 class DataSheetRepository(ItemRepository):
     IDENTIFIER = "RECORD"
 
-    def retrieve(self, uuid: UUID, org_pk: Optional[int] = None) -> "DataSheet":
-        assert isinstance(uuid, UUID)
-        return DataSheet.objects.get(uuid=uuid)
-
     def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int) -> None:
         DataSheet.objects.filter(
             folder_uuid=folder_uuid, template__org_id=org_pk

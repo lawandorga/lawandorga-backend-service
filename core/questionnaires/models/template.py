@@ -11,11 +11,11 @@ if TYPE_CHECKING:
 class QuestionnaireTemplate(models.Model):
     @classmethod
     def create(cls, name: str, org: Org, notes="") -> "QuestionnaireTemplate":
-        template = QuestionnaireTemplate(name=name, rlc=org, notes=notes)
+        template = QuestionnaireTemplate(name=name, org=org, notes=notes)
         return template
 
     name = models.CharField(max_length=100)
-    rlc = models.ForeignKey(
+    org = models.ForeignKey(
         Org,
         related_name="questionnaire_templates",
         on_delete=models.CASCADE,
@@ -29,14 +29,15 @@ class QuestionnaireTemplate(models.Model):
         questionnaires: models.QuerySet["Questionnaire"]
         fields: models.QuerySet["QuestionnaireQuestion"]
         files: models.QuerySet["QuestionnaireTemplateFile"]
-        rlc_id: int
+        org_id: int
+        org: models.ForeignKey[Org]  # type: ignore[no-redef]
 
     class Meta:
         verbose_name = "QUE_Template"
         verbose_name_plural = "QUE_Templates"
 
     def __str__(self):
-        return "questionnaire: {}; org: {};".format(self.name, self.rlc.name)
+        return "questionnaire: {}; org: {};".format(self.name, self.org.name)
 
     def add_question(
         self, question_type: Literal["FILE", "TEXTAREA"], question: str, order=1
@@ -89,6 +90,9 @@ class QuestionnaireTemplateFile(models.Model):
     class Meta:
         verbose_name = "QUE_TemplateFile"
         verbose_name_plural = "QUE_TemplateFiles"
+
+    if TYPE_CHECKING:
+        questionnaire: models.ForeignKey[QuestionnaireTemplate]  # type: ignore[no-redef]
 
     def __str__(self):
         return "questionnaireFile: {}; questionnaire: {};".format(

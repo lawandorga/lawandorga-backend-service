@@ -64,7 +64,7 @@ class FolderViewSet(viewsets.ModelViewSet):
     @action(detail=False)
     def first(self, request, *args, **kwargs):
         instance, created = Folder.objects.get_or_create(
-            parent=None, rlc=request.user.rlc
+            parent=None, rlc=request.user.org
         )
         if created:
             instance.name = "files"
@@ -97,7 +97,7 @@ class FolderViewSet(viewsets.ModelViewSet):
     def permissions(self, request, *args, **kwargs):
         folder = self.get_object()
 
-        groups = Group.objects.filter(org=request.user.rlc)
+        groups = Group.objects.filter(org=request.user.org)
 
         parents = folder.get_all_parents()
         children = folder.get_all_children()

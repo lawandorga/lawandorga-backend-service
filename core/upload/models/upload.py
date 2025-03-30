@@ -1,5 +1,5 @@
 from tempfile import _TemporaryFileWrapper
-from typing import IO, TYPE_CHECKING, Optional
+from typing import IO, TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from django.conf import settings
@@ -29,10 +29,6 @@ from core.seedwork.events_addon import EventsAddon
 
 class UploadLinkRepository(ItemRepository):
     IDENTIFIER = "UPLOAD"
-
-    def retrieve(self, uuid: UUID, org_pk: Optional[int] = None) -> "UploadLink":
-        assert org_pk is not None
-        return UploadLink.objects.get(uuid=uuid, org_id=org_pk)
 
     def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int | None) -> None:
         _org_id = org_pk if org_pk else 0

@@ -733,7 +733,7 @@ def create_informative_record(main_user, main_user_password, users, org):
 
 def create_questionnaire_templates(org: Org):
     template = QuestionnaireTemplate.objects.create(
-        name="Standard Questionnaire", rlc=org, notes="Just the usual."
+        name="Standard Questionnaire", org=org, notes="Just the usual."
     )
     QuestionnaireQuestion.objects.create(
         questionnaire=template, question="How old are you?", type="TEXTAREA"

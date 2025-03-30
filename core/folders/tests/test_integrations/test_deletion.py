@@ -62,7 +62,7 @@ def test_all_items_inside_folder_are_deleted_when_folder_is_deleted(db, user):
     assert DataSheet.objects.filter(pk=sheet.pk).exists()
 
     qtemplate = QuestionnaireTemplate.objects.create(
-        name="TestTemplate", rlc_id=user.org_id
+        name="TestTemplate", org_id=user.org_id
     )
     questionnaire = publish_a_questionnaire(user, f.uuid, qtemplate.pk)
     assert Questionnaire.objects.filter(pk=questionnaire.pk).exists()

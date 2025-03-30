@@ -66,7 +66,7 @@ def query__retrieve_questionnaire(org_user: OrgUser, data: InputQuestionnaire):
     questionnaire = (
         Questionnaire.objects.select_related("template")
         .prefetch_related("answers")
-        .get(template__rlc_id=org_user.org_id, uuid=data.uuid)
+        .get(template__org_id=org_user.org_id, uuid=data.uuid)
     )
     answers = [
         answer.decrypt(user=org_user) for answer in list(questionnaire.answers.all())
@@ -92,7 +92,7 @@ class OutputTemplateList(BaseModel):
 
 @router.get("templates/", output_schema=list[OutputTemplateList])
 def query__list_templates(org_user: OrgUser):
-    return QuestionnaireTemplate.objects.filter(rlc=org_user.org)
+    return QuestionnaireTemplate.objects.filter(org=org_user.org)
 
 
 class OutputTemplateDetailField(BaseModel):
@@ -128,7 +128,7 @@ class InputRetrieveTemplate(BaseModel):
 
 @router.get("template/<int:id>/", output_schema=OutputTemplateDetail)
 def query__retrieve_template(org_user: OrgUser, data: InputRetrieveTemplate):
-    template = QuestionnaireTemplate.objects.filter(rlc=org_user.org).get(id=data.id)
+    template = QuestionnaireTemplate.objects.filter(org=org_user.org).get(id=data.id)
     return {
         "id": template.pk,
         "name": template.name,
@@ -242,7 +242,7 @@ class OutputDashboardQuestionnaire(BaseModel):
 @router.get("dashboard/", output_schema=list[OutputDashboardQuestionnaire])
 def questionnaire_information(org_user: OrgUser):
     questionnaires = Questionnaire.objects.filter(
-        template__rlc_id=org_user.org_id
+        template__org_id=org_user.org_id
     ).select_related("template")
 
     questionnaire_data = []

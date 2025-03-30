@@ -191,7 +191,7 @@ def get_records_created_and_closed(org_user: OrgUser, data: InputCreatedAndClose
         select to_char(r.created, 'YYYY/MM') as month, count(*) as created
         from core_datasheet r
         left join core_datasheettemplate t on t.id = r.template_id
-        where t.rlc_id = {}
+        where t.org_id = {}
         group by to_char(r.created, 'YYYY/MM'), t.org_id
         ) t1
         full outer join (
@@ -200,7 +200,7 @@ def get_records_created_and_closed(org_user: OrgUser, data: InputCreatedAndClose
         left join core_datasheet r on se.record_id = r.id
         left join core_datasheettemplate t on t.id = r.template_id
         where se.value = 'Closed'
-        and t.rlc_id = {}
+        and t.org_id = {}
         group by to_char(se.closed_at, 'YYYY/MM'), t.org_id
         ) t2 on t1.month = t2.month
         order by t1.month

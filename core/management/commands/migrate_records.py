@@ -31,24 +31,24 @@ class Command(BaseCommand):
         name_difference = []
 
         for org in list(Org.objects.all().order_by("id")):
-            self.stdout.write(f"Working on org: {org.id}")
+            self.stdout.write(f"Working on org: {org.pk}")
             # folders = folder_repository.get_dict(org.pk)
 
             for sheet in sheets:
-                if sheet.template.rlc_id != org.id:
+                if sheet.template.org_id != org.pk:
                     continue
 
                 # if sheet.id > 500:
                 #     break
 
-                self.stdout.write(f"Working on sheet: {sheet.id}")
+                self.stdout.write(f"Working on sheet: {sheet.pk}")
 
                 folder = folders[sheet.folder_uuid]
 
                 if folder.uuid not in created_records_inside_folders_uuids:
                     record = RecordsRecord(
                         name=folder.name,
-                        org=sheet.template.rlc,
+                        org=sheet.template.org,
                         folder_uuid=folder.uuid,
                         created=sheet.created,
                         updated=sheet.updated,

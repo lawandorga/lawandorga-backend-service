@@ -47,7 +47,7 @@ def handler_csrf_error(request, reason=""):
         ),
         status=400,
         detail=(
-            "Please make sure your browser does not block " "any cookies from Law&Orga."
+            "Please make sure your browser does not block any cookies from Law&Orga."
         ),
         internal=reason,
     )

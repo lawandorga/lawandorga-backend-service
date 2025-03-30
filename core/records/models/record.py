@@ -1,5 +1,5 @@
 import json
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from django.db import models
@@ -40,11 +40,6 @@ class Search(BaseModel):
 
 class RecordRepository(ItemRepository):
     IDENTIFIER = "RECORDS_RECORD"
-
-    def retrieve(self, uuid: UUID, org_pk: Optional[int] = None) -> "RecordsRecord":
-        assert isinstance(uuid, UUID), f"uuid must be a UUID but is {type(uuid)}"
-        assert isinstance(org_pk, int), f"org_pk must be an int but is {type(org_pk)}"
-        return RecordsRecord.objects.filter(uuid=uuid, org_id=org_pk).get()
 
     def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int | None) -> None:
         _org_id = org_pk if org_pk else 0

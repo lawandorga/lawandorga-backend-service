@@ -26,12 +26,10 @@ from core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_
 class QuestionnaireRepository(ItemRepository):
     IDENTIFIER = "QUESTIONNAIRE"
 
-    def retrieve(self, uuid: UUID, org_pk: Optional[int] = None) -> "Questionnaire":
-        return Questionnaire.objects.get(uuid=uuid, template__rlc_id=org_pk)
-
-    def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int | None) -> None:
+    def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int) -> None:
         Questionnaire.objects.filter(
-            folder_uuid=folder_uuid, template__rlc_id=org_pk
+            folder_uuid=folder_uuid,
+            template__org_id=org_pk,
         ).delete()
 
 
@@ -66,6 +64,7 @@ class Questionnaire(Aggregate, models.Model):
 
     if TYPE_CHECKING:
         answers: models.QuerySet["QuestionnaireAnswer"]
+        template: models.ForeignKey[QuestionnaireTemplate]  # type: ignore[no-redef]
 
     class Meta:
         verbose_name = "QUE_Questionnaire"
@@ -76,7 +75,7 @@ class Questionnaire(Aggregate, models.Model):
 
     @property
     def org_pk(self) -> int:
-        return self.template.rlc_id
+        return self.template.org_id
 
     @property
     def answered(self):
@@ -84,7 +83,7 @@ class Questionnaire(Aggregate, models.Model):
 
     @property
     def org_name(self):
-        return self.template.rlc.name
+        return self.template.org.name
 
     def generate_code(self):
         assert self.code is None or self.code == ""
@@ -92,12 +91,12 @@ class Questionnaire(Aggregate, models.Model):
 
     def get_public_key(self):
         assert self.key is None
-        return self.template.rlc.get_public_key()
+        return self.template.org.get_public_key()
 
     def get_private_key(self, private_key_user=None, user: OrgUser | None = None):
         assert self.key is None
         assert user is not None
-        return self.template.rlc.get_private_key(
+        return self.template.org.get_private_key(
             user=user.user, private_key_user=private_key_user
         )
 

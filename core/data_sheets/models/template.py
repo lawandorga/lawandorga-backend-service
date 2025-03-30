@@ -43,12 +43,13 @@ class DataSheetTemplate(models.Model):
     name = models.CharField(max_length=200)
     org = models.ForeignKey(
         Org, related_name="recordtemplates", on_delete=models.CASCADE
-    )  # type: ignore
+    )
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     if TYPE_CHECKING:
-        rlc_id: int
+        org_id: int
+        org: models.ForeignKey[Org]  # type: ignore[no-redef]
         records: models.QuerySet[DataSheet]
         state_fields: models.QuerySet["DataSheetStateField"]
         standard_fields: models.QuerySet["DataSheetStandardField"]
@@ -59,10 +60,6 @@ class DataSheetTemplate(models.Model):
     class Meta:
         verbose_name = "DAT_RecordTemplate"
         verbose_name_plural = "DAT_RecordTemplates"
-
-    if TYPE_CHECKING:
-        org_id: int
-        org: Org  # type: ignore
 
     def __str__(self):
         return "recordTemplate: {}; rlc: {};".format(self.pk, self.org)

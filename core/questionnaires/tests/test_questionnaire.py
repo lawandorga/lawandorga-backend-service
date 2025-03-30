@@ -27,7 +27,7 @@ def user(db, org):
 
 @pytest.fixture
 def template(db, org):
-    template = QuestionnaireTemplate.objects.create(rlc=org, name="Test Template")
+    template = QuestionnaireTemplate.objects.create(org=org, name="Test Template")
     yield template
 
 
