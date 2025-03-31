@@ -31,6 +31,7 @@ def update_org(
     is_mail_enabled: bool,
     is_events_enabled: bool,
     is_chat_enabled: bool,
+    user_qualifications: list[str],
 ):
     org = org_from_id(__actor, org_id)
     group = (
@@ -44,5 +45,6 @@ def update_org(
         is_mail_enabled=is_mail_enabled,
         is_events_enabled=is_events_enabled,
         is_chat_enabled=is_chat_enabled,
+        user_qualifications=user_qualifications,
     )
     org.save()

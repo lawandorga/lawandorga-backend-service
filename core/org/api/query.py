@@ -114,6 +114,7 @@ class OutputOrg(BaseModel):
     is_mail_enabled: bool
     is_events_enabled: bool
     is_chat_enabled: bool
+    user_qualifications: list[str]
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -69,6 +69,7 @@ class Org(EncryptedModelMixin, models.Model):
     is_mail_enabled = models.BooleanField(default=True)
     is_chat_enabled = models.BooleanField(default=True)
     is_events_enabled = models.BooleanField(default=True)
+    user_qualifications = models.JSONField(default=list, blank=True)
 
     # keys
     public_key = models.BinaryField(null=True)
@@ -158,6 +159,7 @@ class Org(EncryptedModelMixin, models.Model):
         is_mail_enabled: bool = True,
         is_chat_enabled: bool = True,
         is_events_enabled: bool = True,
+        user_qualifications: Optional[list[str]] = None,
     ):
         self.name = name
         if (
@@ -169,6 +171,8 @@ class Org(EncryptedModelMixin, models.Model):
         self.is_mail_enabled = is_mail_enabled
         self.is_chat_enabled = is_chat_enabled
         self.is_events_enabled = is_events_enabled
+        if user_qualifications is not None:
+            self.user_qualifications = user_qualifications
 
     def get_private_key(
         self,
