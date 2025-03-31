@@ -40,6 +40,7 @@ class OutputOrgUserSmall(BaseModel):
     locked: bool
     is_active: bool
     last_login_month: Optional[str]
+    qualifications: list[str]
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -81,6 +82,7 @@ class OutputOrgUserOptional(BaseModel):
     created: Optional[datetime] = None
     speciality_of_study: Optional[str] = None
     speciality_of_study_display: Optional[str] = None
+    qualifications: list[str]
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -236,3 +238,8 @@ def members_information(org_user: OrgUser):
                 )
         return members_data
     return None
+
+
+@router.get("qualifications/", output_schema=list[str])
+def qualifications(org_user: OrgUser):
+    return org_user.org.user_qualifications

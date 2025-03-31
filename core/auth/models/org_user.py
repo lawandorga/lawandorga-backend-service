@@ -135,6 +135,8 @@ class OrgUser(Aggregate, models.Model):
     calendar_uuid = models.UUIDField(
         primary_key=False, default=uuid4, editable=True, unique=True
     )
+    qualifications = models.JSONField(default=list, blank=True)
+    additional_information = models.TextField(blank=True)
     # settings
     frontend_settings = models.JSONField(null=True, blank=True)
     # encryption
@@ -158,6 +160,7 @@ class OrgUser(Aggregate, models.Model):
         user_id: int
         get_speciality_of_study_display: Callable[[], str]
         org: models.ForeignKey[Org]  # type: ignore
+        user: models.OneToOneField[UserProfile]  # type: ignore
 
     class Meta:
         verbose_name = "AUT_OrgUser"
@@ -412,6 +415,7 @@ class OrgUser(Aggregate, models.Model):
         city=None,
         postal_code=None,
         speciality_of_study=None,
+        qualifications=None,
     ):
         if note is not None:
             self.note = note
@@ -427,6 +431,8 @@ class OrgUser(Aggregate, models.Model):
             self.postal_code = postal_code
         if speciality_of_study is not None:
             self.speciality_of_study = speciality_of_study
+        if qualifications is not None:
+            self.qualifications = qualifications
 
     def delete_keys(self):
         self.private_key = None

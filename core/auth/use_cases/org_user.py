@@ -122,6 +122,7 @@ def update_user_data(
     postal_code: str | None = None,
     speciality_of_study: str | None = None,
     note: str | None = None,
+    qualifications: list[str] | None = None,
 ):
     if __actor.pk != other_user_id and not __actor.has_permission(
         PERMISSION_ADMIN_MANAGE_USERS
@@ -131,7 +132,7 @@ def update_user_data(
         )
         raise UseCaseError(error)
 
-    org_user_to_update = OrgUser.objects.filter(id=other_user_id).first()
+    org_user_to_update = OrgUser.objects.get(org_id=__actor.org_id, id=other_user_id)
     if org_user_to_update is None:
         raise UseCaseError(
             "The user to be updated could not be found.",
@@ -149,6 +150,7 @@ def update_user_data(
         city=city,
         phone_number=phone_number,
         note=note,
+        qualifications=qualifications,
     )
     org_user_to_update.save()
     if name:
