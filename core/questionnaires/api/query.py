@@ -159,7 +159,7 @@ class InputDownloadAnswerFile(BaseModel):
 @router.get("download_answer_file/<int:id>/", output_schema=FileResponse)
 def query__retrieve_answer_file(org_user: OrgUser, data: InputDownloadAnswerFile):
     answer = QuestionnaireAnswer.objects.get(
-        id=data.id, questionnaire__template__rlc__id=org_user.org_id
+        id=data.id, questionnaire__template__org__id=org_user.org_id
     )
     answer.decrypt(user=org_user)
     if answer.data is None:
