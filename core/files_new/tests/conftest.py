@@ -6,6 +6,7 @@ from django.core.files.uploadedfile import UploadedFile
 
 from core.files_new.models import EncryptedRecordDocument
 from core.seedwork import test_helpers
+from messagebus.domain.collector import EventCollector
 
 
 @pytest.fixture
@@ -33,5 +34,7 @@ def file(user, folder):
     f = UploadedFile(
         bytes_io, "secret.txt", "text/plain", sys.getsizeof(bytes_io), None
     )
-    file = EncryptedRecordDocument.create(f, folder, user, upload=True, pk=1)
+    file = EncryptedRecordDocument.create(
+        f, folder, user, upload=True, pk=1, collector=EventCollector()
+    )
     yield file

@@ -1,4 +1,15 @@
-from core.folders.use_cases.folder import (
+from typing import Callable
+
+from core.auth.models.org_user import OrgUser
+from core.folders.domain.aggregates.item import FolderItem
+from core.folders.handlers.folder import (
+    handler__item_added_to_folder,
+    handler__item_deleted,
+    handler__item_renamed,
+    handler__org_user_locked,
+    handler__org_user_unlocked,
+)
+from core.folders.usecases.folder import (
     correct_folder_keys_of_others,
     create_folder,
     delete_folder,
@@ -10,6 +21,7 @@ from core.folders.use_cases.folder import (
     revoke_access_from_group,
     toggle_inheritance,
 )
+from messagebus.domain.event import Event
 
 USECASES = {
     "folders/create_folder": create_folder,
@@ -22,4 +34,12 @@ USECASES = {
     "folders/grant_access_to_group": grant_access_to_group,
     "folders/revoke_access_from_group": revoke_access_from_group,
     "folders/optimize": correct_folder_keys_of_others,
+}
+
+HANDLERS: dict[type[Event], list[Callable]] = {
+    FolderItem.ItemRenamed: [handler__item_renamed],
+    FolderItem.ItemDeleted: [handler__item_deleted],
+    FolderItem.ItemAddedToFolder: [handler__item_added_to_folder],
+    OrgUser.OrgUserLocked: [handler__org_user_locked],
+    OrgUser.OrgUserUnlocked: [handler__org_user_unlocked],
 }

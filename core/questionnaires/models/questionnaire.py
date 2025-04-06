@@ -12,15 +12,14 @@ from core.folders.domain.value_objects.asymmetric_key import (
     EncryptedAsymmetricKey,
 )
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
-from core.folders.infrastructure.folder_addon import FolderAddon
+from core.folders.infrastructure.item_mixins import FolderItemMixin
 from core.questionnaires.models.template import (
     QuestionnaireQuestion,
     QuestionnaireTemplate,
 )
-from core.seedwork.aggregate import Aggregate
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
-from core.seedwork.events_addon import EventsAddon
 from core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_file
+from messagebus.domain.collector import EventCollector
 
 
 class QuestionnaireRepository(ItemRepository):
@@ -33,16 +32,20 @@ class QuestionnaireRepository(ItemRepository):
         ).delete()
 
 
-class Questionnaire(Aggregate, models.Model):
+class Questionnaire(FolderItemMixin, models.Model):
     REPOSITORY = QuestionnaireRepository.IDENTIFIER
 
     @classmethod
     def create(
-        cls, template: QuestionnaireTemplate, folder: Folder, user: OrgUser
+        cls,
+        template: QuestionnaireTemplate,
+        folder: Folder,
+        user: OrgUser,
+        collector: EventCollector,
     ) -> "Questionnaire":
         name = f"{template.name}: {timezone.now().strftime('%d.%m.%Y')}"
         questionnaire = Questionnaire(template=template, name=name)
-        questionnaire.folder.put_obj_in_folder(folder)
+        questionnaire.put_into_folder(folder, collector)
         questionnaire.generate_key(user)
         questionnaire.generate_code()
         return questionnaire
@@ -58,10 +61,6 @@ class Questionnaire(Aggregate, models.Model):
     folder_uuid = models.UUIDField()
     key = models.JSONField(null=True)
 
-    addons = dict(events=EventsAddon, folder=FolderAddon)
-    events: EventsAddon
-    folder: FolderAddon
-
     if TYPE_CHECKING:
         answers: models.QuerySet["QuestionnaireAnswer"]
         template: models.ForeignKey[QuestionnaireTemplate]  # type: ignore[no-redef]
@@ -76,6 +75,10 @@ class Questionnaire(Aggregate, models.Model):
     @property
     def org_pk(self) -> int:
         return self.template.org_id
+
+    @property
+    def org_id(self) -> int:  # type: ignore[override]
+        return self.org_pk
 
     @property
     def answered(self):

@@ -7,6 +7,7 @@ from django.core.files.uploadedfile import UploadedFile
 from core.seedwork import test_helpers
 from core.seedwork.domain_layer import DomainError
 from core.upload.models.upload import UploadLink
+from messagebus.domain.collector import EventCollector
 
 
 @pytest.fixture
@@ -22,7 +23,9 @@ def user(org):
 @pytest.fixture
 def link(org, user):
     folder = test_helpers.create_raw_folder(user=user)
-    link = UploadLink.create(user=user, folder=folder, name="Big Files")
+    link = UploadLink.create(
+        user=user, folder=folder, name="Big Files", collector=EventCollector()
+    )
     yield link
 
 
@@ -61,7 +64,9 @@ def test_upload_link_can_be_created():
     org = test_helpers.create_raw_org()
     user = test_helpers.create_raw_org_user(org=org)
     folder = test_helpers.create_raw_folder(user=user)
-    UploadLink.create(user=user, folder=folder, name="Big Files")
+    UploadLink.create(
+        user=user, folder=folder, name="Big Files", collector=EventCollector()
+    )
 
 
 def test_data_can_be_uploaded(link, file, user):

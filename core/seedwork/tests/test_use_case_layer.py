@@ -1,4 +1,5 @@
 import pytest
+from pydantic import ValidationError
 
 from core.seedwork.use_case_layer import use_case
 
@@ -57,7 +58,7 @@ def test_actor_errors():
     def f8(__actor: Actor, _):
         pass
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ValidationError):
         f8(0, __actor=Actor())
 
 
@@ -95,8 +96,8 @@ def test_findable_errors():
     def f1(__actor: Actor, x: str):
         assert x == "test"
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ValidationError):
         f1(Actor())
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ValidationError):
         f1(__actor=Actor())

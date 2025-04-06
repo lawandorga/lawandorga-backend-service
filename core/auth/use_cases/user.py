@@ -7,12 +7,15 @@ from django.db import transaction
 from core.auth.domain.user_key import UserKey
 from core.auth.models import OrgUser, UserProfile
 from core.seedwork.use_case_layer import UseCaseError, use_case
+from messagebus.domain.collector import EventCollector
 
 from seedwork.types import JsonDict
 
 
 @use_case
-def set_password_of_myself(__actor: UserProfile, password: str) -> UserProfile:
+def set_password_of_myself(
+    __actor: UserProfile, password: str, collector: EventCollector
+) -> UserProfile:
     __actor.set_password(password)
     org_user: Optional[OrgUser] = None
 
@@ -28,7 +31,7 @@ def set_password_of_myself(__actor: UserProfile, password: str) -> UserProfile:
             org_user.save()
 
     if org_user:
-        org_user.lock()
+        org_user.lock(collector)
         org_user.save()
 
     return __actor

@@ -6,6 +6,7 @@ from core.records.models.record import RecordsRecord
 from core.records.use_cases.deletion import accept_deletion_request
 from core.seedwork import test_helpers
 from core.seedwork.domain_layer import DomainError
+from messagebus.domain.collector import EventCollector
 
 
 @pytest.fixture
@@ -21,7 +22,9 @@ def user(org):
 @pytest.fixture
 def record(user):
     folder = test_helpers.create_raw_folder(user)
-    yield RecordsRecord.create("Dummy's Record", user, folder, pk=1)
+    yield RecordsRecord.create(
+        "Dummy's Record", user, folder, pk=1, collector=EventCollector()
+    )
 
 
 @pytest.fixture

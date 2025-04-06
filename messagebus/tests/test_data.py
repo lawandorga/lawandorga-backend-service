@@ -26,7 +26,7 @@ class Car:
 
 
 def test_model_to_json_and_back():
-    car_1 = Car.WhatIsThis(wheels=4, driver={"uuid": uuid4()})
+    car_1 = Car.WhatIsThis(wheels=4, uuid=uuid4(), driver={"uuid": uuid4()})
     data = car_1.data
     car_2 = Car.WhatIsThis(**data)
     assert car_1 == car_2

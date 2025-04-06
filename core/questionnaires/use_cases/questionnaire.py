@@ -4,7 +4,7 @@ from uuid import UUID
 from django.core.files.uploadedfile import UploadedFile
 
 from core.auth.models import OrgUser
-from core.folders.use_cases.finders import folder_from_uuid
+from core.folders.usecases.finders import folder_from_uuid
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models import Questionnaire
 from core.questionnaires.models.questionnaire import QuestionnaireAnswer
@@ -13,6 +13,7 @@ from core.questionnaires.use_cases.finders import (
     template_from_id,
 )
 from core.seedwork.use_case_layer import UseCaseError, use_case
+from messagebus.domain.collector import EventCollector
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
@@ -20,19 +21,22 @@ def publish_a_questionnaire(
     __actor: OrgUser,
     folder_uuid: UUID,
     template_id: int,
+    collector: EventCollector,
 ):
     folder = folder_from_uuid(__actor, folder_uuid)
     template = template_from_id(__actor, template_id)
-    questionnaire = Questionnaire.create(template, folder, __actor)
+    questionnaire = Questionnaire.create(template, folder, __actor, collector)
     questionnaire.save()
 
     return questionnaire
 
 
 @use_case
-def delete_a_questionnaire(__actor: OrgUser, questionnaire_id: int):
+def delete_a_questionnaire(
+    __actor: OrgUser, questionnaire_id: int, collector: EventCollector
+):
     questionnaire = questionnaire_from_id(__actor, questionnaire_id)
-    questionnaire.delete()
+    questionnaire.delete(collector)
 
 
 @use_case

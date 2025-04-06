@@ -8,12 +8,11 @@ from pydantic import BaseModel
 from core.auth.models import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.item import ItemRepository
-from core.folders.infrastructure.folder_addon import FolderAddon
+from core.folders.infrastructure.item_mixins import FolderItemMixin
 from core.org.models import Org
 from core.records.helpers import merge_attrs
-from core.seedwork.aggregate import Aggregate
 from core.seedwork.domain_layer import DomainError
-from core.seedwork.events_addon import EventsAddon
+from messagebus.domain.collector import EventCollector
 
 if TYPE_CHECKING:
     from core.data_sheets.models import DataSheet
@@ -71,15 +70,17 @@ class RecordRepository(ItemRepository):
         return list(records), filtered_count
 
 
-class RecordsRecord(Aggregate, models.Model):
+class RecordsRecord(FolderItemMixin, models.Model):
     REPOSITORY = RecordRepository.IDENTIFIER
 
     @classmethod
-    def create(cls, token: str, user: OrgUser, folder: Folder, pk=0) -> "RecordsRecord":
+    def create(
+        cls, token: str, user: OrgUser, folder: Folder, collector: EventCollector, pk=0
+    ) -> "RecordsRecord":
         record = RecordsRecord(name=token, org=user.org)
         if pk:
             record.pk = pk
-        record.folder.put_obj_in_folder(folder)
+        record.put_into_folder(folder, collector)
         return record
 
     name = models.CharField(max_length=200)
@@ -93,11 +94,7 @@ class RecordsRecord(Aggregate, models.Model):
     updated = models.DateTimeField(auto_now=True)
     attributes = models.TextField(default="{}")
 
-    addons = dict(events=EventsAddon, folder=FolderAddon)
-
     if TYPE_CHECKING:
-        events: EventsAddon
-        folder: FolderAddon
         org_id: int
 
     class Meta:
@@ -117,9 +114,9 @@ class RecordsRecord(Aggregate, models.Model):
     def token(self) -> str:
         return self.name
 
-    def change_token(self, token: str):
+    def change_token(self, token: str, collector: EventCollector) -> None:
         self.name = token
-        self.folder.obj_renamed()
+        self.renamed(collector)
 
     def set_attributes(self, data_sheets: list["DataSheet"]) -> None:
         attrs: dict = {}

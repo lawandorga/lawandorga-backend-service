@@ -13,6 +13,7 @@ from core.auth.use_cases.finders import (
 from core.legal.models import LegalRequirement, LegalRequirementEvent
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS
 from core.seedwork.use_case_layer import UseCaseError, use_case
+from messagebus.domain.collector import EventCollector
 
 
 @use_case
@@ -94,9 +95,9 @@ def confirm_email(__actor: None, org_user_id: int, token: str):
 
 
 @use_case
-def unlock_user(__actor: OrgUser, another_org_user_id: int):
+def unlock_user(__actor: OrgUser, another_org_user_id: int, collector: EventCollector):
     another_org_user = org_user_from_id(__actor, another_org_user_id)
-    another_org_user.unlock(__actor)
+    another_org_user.unlock(__actor, collector)
     another_org_user.save()
 
 

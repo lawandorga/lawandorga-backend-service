@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from core.auth.models import OrgUser
-from core.folders.use_cases.finders import folder_from_uuid
+from core.folders.usecases.finders import folder_from_uuid
 from core.messages.models import EncryptedRecordMessage
 from core.messages.use_cases.finders import get_message_by_uuid
 from core.seedwork.use_case_layer import use_case

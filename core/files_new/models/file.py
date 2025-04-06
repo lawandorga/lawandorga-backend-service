@@ -12,12 +12,11 @@ from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
-from core.folders.infrastructure.folder_addon import FolderAddon
+from core.folders.infrastructure.item_mixins import FolderItemMixin
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.org.models import Org
-from core.seedwork.aggregate import Aggregate
-from core.seedwork.events_addon import EventsAddon
 from core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_file
+from messagebus.domain.collector import EventCollector
 
 
 class FileRepository(ItemRepository):
@@ -34,12 +33,18 @@ class FileRepository(ItemRepository):
         files.delete()
 
 
-class EncryptedRecordDocument(Aggregate, models.Model):
+class EncryptedRecordDocument(FolderItemMixin, models.Model):
     REPOSITORY = "FILE"
 
     @classmethod
     def create(
-        cls, file: UploadedFile, folder: Folder, by: OrgUser, upload=False, pk=0
+        cls,
+        file: UploadedFile,
+        folder: Folder,
+        by: OrgUser,
+        collector: EventCollector,
+        upload=False,
+        pk=0,
     ) -> "EncryptedRecordDocument":
         name = "Unknown"
         if file.name:
@@ -47,8 +52,8 @@ class EncryptedRecordDocument(Aggregate, models.Model):
         f = EncryptedRecordDocument(org_id=folder.org_pk)
         if pk:
             f.pk = pk
-        f.folder.put_obj_in_folder(folder)
-        f.set_name(name)
+        f.put_into_folder(folder, collector)
+        f.set_name(name, collector)
         f.set_location()
         f.generate_key(by)
         if upload:
@@ -65,10 +70,6 @@ class EncryptedRecordDocument(Aggregate, models.Model):
     location = models.SlugField(allow_unicode=True, max_length=1000, unique=True)
     exists = models.BooleanField(default=True)
     key = models.JSONField(null=True)
-
-    addons = dict(events=EventsAddon, folder=FolderAddon)
-    events: EventsAddon
-    folder: FolderAddon
 
     if TYPE_CHECKING:
         org_id: int
@@ -91,9 +92,9 @@ class EncryptedRecordDocument(Aggregate, models.Model):
     def actions(self):
         return {}
 
-    def set_name(self, name: str):
+    def set_name(self, name: str, collector: EventCollector):
         self.name = name
-        self.folder.obj_renamed()
+        self.renamed(collector)
 
     def generate_key(self, user: OrgUser):
         assert self.folder is not None and self.key is None

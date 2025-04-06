@@ -9,20 +9,23 @@ from core.data_sheets.use_cases.finders import (
 )
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
-from core.folders.use_cases.finders import folder_from_uuid
+from core.folders.usecases.finders import folder_from_uuid
 from core.permissions.static import (
     PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
     PERMISSION_RECORDS_ADD_RECORD,
 )
 from core.seedwork.use_case_layer import UseCaseError, UseCaseInputError, use_case
+from messagebus.domain.collector import EventCollector
 
 
 @use_case
-def change_sheet_name(__actor: OrgUser, name: str, record_id: int):
+def change_sheet_name(
+    __actor: OrgUser, name: str, record_id: int, collector: EventCollector
+):
     if name == "":
         raise UseCaseInputError({"name": ["The name can not be empty."]})
     sheet = sheet_from_id(__actor, record_id)
-    sheet.set_name(name)
+    sheet.set_name(name, collector)
     sheet.save()
 
 
@@ -32,6 +35,7 @@ def create_data_sheet_and_folder(
     name: str,
     template_id: int,
     folder_repository: FolderRepository,
+    collector: EventCollector,
 ) -> DataSheet:
     template = template_from_id(__actor, template_id)
 
@@ -53,7 +57,7 @@ def create_data_sheet_and_folder(
     folder.set_parent(parent_folder, __actor)
     folder_repository.save(folder)
 
-    return __create(__actor, name, folder, template, folder_repository)
+    return __create(__actor, name, folder, template, folder_repository, collector)
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
@@ -63,6 +67,7 @@ def create_a_data_sheet_within_a_folder(
     folder_uuid: UUID,
     template_id: int,
     r: FolderRepository,
+    collector: EventCollector,
 ) -> DataSheet:
     folder = folder_from_uuid(__actor, folder_uuid)
     template = template_from_id(__actor, template_id)
@@ -72,7 +77,7 @@ def create_a_data_sheet_within_a_folder(
             "You can not create a record in this folder, because you have no access to this folder."
         )
 
-    return __create(__actor, name, folder, template, r)
+    return __create(__actor, name, folder, template, r, collector)
 
 
 def __create(
@@ -81,6 +86,7 @@ def __create(
     folder: Folder,
     template: DataSheetTemplate,
     folder_repository: FolderRepository,
+    collector: EventCollector,
 ) -> DataSheet:
     access_granted = False
     for user in list(__actor.org.users.all()):
@@ -94,7 +100,7 @@ def __create(
         folder_repository.save(folder)
 
     sheet = DataSheet(template=template, name=name)
-    sheet.set_folder(folder)
+    sheet.set_folder(folder, collector)
     sheet.generate_key(__actor)
     sheet.save()
 
@@ -102,6 +108,6 @@ def __create(
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ACCESS_ALL_RECORDS])
-def delete_data_sheet(__actor: OrgUser, sheet_uuid: UUID):
+def delete_data_sheet(__actor: OrgUser, sheet_uuid: UUID, collector: EventCollector):
     record = sheet_from_uuid(__actor, sheet_uuid)
-    record.delete()
+    record.delete(collector)

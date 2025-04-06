@@ -10,19 +10,15 @@ class Message(Protocol):
     # stream names: http://docs.eventide-project.org/user-guide/stream-names/#parts
 
     @property
-    def action(self) -> str:
-        pass
+    def action(self) -> str: ...
 
     @property
-    def data(self) -> JsonDict:
-        pass
+    def data(self) -> JsonDict: ...
 
     @property
-    def metadata(self) -> JsonDict:
-        pass
+    def metadata(self) -> JsonDict: ...
 
-    def add_to_metadata(self, key: str, value: Any) -> None:
-        pass
+    def add_to_metadata(self, key: str, value: Any) -> None: ...
 
 
 class DomainMessage(BaseModel):

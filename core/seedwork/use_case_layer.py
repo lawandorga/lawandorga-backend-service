@@ -5,10 +5,16 @@ from typing import Callable, ParamSpec, TypeVar, get_type_hints, overload
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.module_loading import import_string
+from pydantic import validate_call
 
 from core.seedwork.domain_layer import DomainError
 
-from seedwork.injector import InjectionContext, inject_function
+from seedwork.injector import (
+    CallableInjectionContext,
+    InjectionContext,
+    inject_function,
+    inject_kwargs,
+)
 
 logger = getLogger("usecase")
 
@@ -17,6 +23,7 @@ T = TypeVar("T")
 
 injections = import_string(settings.USECASE_INJECTIONS)
 inj_context = InjectionContext(injections)
+callbacks = import_string(settings.USECASE_CALLBACKS)
 
 
 class UseCaseError(Exception):
@@ -128,6 +135,9 @@ def use_case(
 
         @wraps(injected_usecase_func)
         def wrapper(*args, **kwargs) -> RetType:
+            callable_inj_context = CallableInjectionContext(injections)
+            kwargs = inject_kwargs(injected_usecase_func, kwargs, callable_inj_context)
+
             func_code = usecase_func.__code__
             func_name = func_code.co_name
 
@@ -136,7 +146,12 @@ def use_case(
             check_permissions(actor, permissions)
 
             try:
-                ret = injected_usecase_func(*args, **kwargs)
+                ret = validate_call(config={"arbitrary_types_allowed": True})(
+                    injected_usecase_func
+                )(*args, **kwargs)
+                for callback in callbacks:
+                    inj_callback = inject_function(callback, inj_context)
+                    inj_callback(**inject_kwargs(callback, {}, callable_inj_context))
                 msg = "SUCCESS: '{}' called '{}'.".format(str(actor), func_name)
                 logger.log(INFO, msg)
                 return ret

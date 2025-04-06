@@ -18,13 +18,12 @@ from core.folders.domain.value_objects.symmetric_key import (
     SymmetricKey,
 )
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
-from core.folders.infrastructure.folder_addon import FolderAddon
+from core.folders.infrastructure.item_mixins import FolderItemMixin
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.org.models import Org
-from core.seedwork.aggregate import Aggregate
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.encryption import AESEncryption
-from core.seedwork.events_addon import EventsAddon
+from messagebus.domain.collector import EventCollector
 
 
 class UploadLinkRepository(ItemRepository):
@@ -35,15 +34,17 @@ class UploadLinkRepository(ItemRepository):
         UploadLink.objects.filter(folder_uuid=folder_uuid, org_id=_org_id).delete()
 
 
-class UploadLink(Aggregate, models.Model):
+class UploadLink(FolderItemMixin, models.Model):
     REPOSITORY = UploadLinkRepository.IDENTIFIER
 
     @staticmethod
-    def create(name: str, folder: Folder, user: OrgUser) -> "UploadLink":
+    def create(
+        name: str, folder: Folder, user: OrgUser, collector: EventCollector
+    ) -> "UploadLink":
         link = UploadLink()
         link.org = user.org
         link.name = name
-        link.folder.put_obj_in_folder(folder)
+        link.put_into_folder(folder, collector)
         link.generate_key(user)
         return link
 
@@ -55,11 +56,6 @@ class UploadLink(Aggregate, models.Model):
     disabled = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-
-    addons = {"events": EventsAddon, "folder": FolderAddon}
-
-    events: EventsAddon
-    folder: FolderAddon
 
     if TYPE_CHECKING:
         files: models.QuerySet["UploadFile"]

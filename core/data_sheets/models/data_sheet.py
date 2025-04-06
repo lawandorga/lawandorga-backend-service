@@ -26,12 +26,11 @@ from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
-from core.folders.infrastructure.folder_addon import FolderAddon
+from core.folders.infrastructure.item_mixins import FolderItemMixin
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.permissions.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
-from core.seedwork.aggregate import Aggregate
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin
-from core.seedwork.events_addon import EventsAddon
+from messagebus.domain.collector import EventCollector
 
 
 class Search(BaseModel):
@@ -61,7 +60,7 @@ class DataSheetRepository(ItemRepository):
         return list(sheets)
 
 
-class DataSheet(Aggregate, models.Model):
+class DataSheet(FolderItemMixin, models.Model):
     REPOSITORY = DataSheetRepository.IDENTIFIER
 
     @classmethod
@@ -71,6 +70,7 @@ class DataSheet(Aggregate, models.Model):
         folder: Folder,
         template: DataSheetTemplate,
         name: str,
+        collector: EventCollector,
         users: list[OrgUser] | None = None,
         pk=0,
     ) -> "DataSheet":
@@ -84,7 +84,7 @@ class DataSheet(Aggregate, models.Model):
                 folder.grant_access(u, user)
 
         sheet = DataSheet(template=template, name=name)
-        sheet.set_folder(folder)
+        sheet.set_folder(folder, collector)
         sheet.generate_key(user)
 
         if pk:
@@ -101,10 +101,6 @@ class DataSheet(Aggregate, models.Model):
     key = models.JSONField(null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-
-    addons = {"events": EventsAddon, "folder": FolderAddon}
-    events: EventsAddon
-    folder: FolderAddon
 
     UNENCRYPTED_ENTRY_TYPES = [
         "state_entries",
@@ -184,6 +180,10 @@ class DataSheet(Aggregate, models.Model):
         return self.template.org_id
 
     @property
+    def org_id(self) -> int:  # type: ignore[override]
+        return self.org_pk
+
+    @property
     def actions(self):
         return {"OPEN": "/records/{}/".format(self.pk)}
 
@@ -210,9 +210,9 @@ class DataSheet(Aggregate, models.Model):
                 entries[entry.field.name] = entry.get_value()
         return entries
 
-    def set_name(self, name: str):
+    def set_name(self, name: str, collector: EventCollector):
         self.name = name
-        self.folder.obj_renamed()
+        self.renamed(collector)
 
     def has_access(self, user: OrgUser) -> bool:
         return self.folder.has_access(user)
@@ -228,8 +228,8 @@ class DataSheet(Aggregate, models.Model):
         enc_key = EncryptedSymmetricKey.create(key, lock_key)
         self.key = enc_key.as_dict()
 
-    def set_folder(self, folder: "Folder"):
-        self.folder.put_obj_in_folder(folder)
+    def set_folder(self, folder: "Folder", collector: EventCollector):
+        self.put_into_folder(folder, collector)
 
     def get_aes_key(self, user: OrgUser, *args, **kwargs):
         assert self.folder is not None and self.key is not None

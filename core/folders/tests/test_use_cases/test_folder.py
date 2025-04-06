@@ -1,6 +1,6 @@
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.folders.models import FOL_Folder
-from core.folders.use_cases.folder import create_folder, delete_folder, rename_folder
+from core.folders.usecases.folder import create_folder, delete_folder, rename_folder
 from core.seedwork import test_helpers
 
 

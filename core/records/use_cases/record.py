@@ -12,10 +12,13 @@ from core.permissions.static import (
 from core.records.models.record import RecordsRecord
 from core.records.use_cases.finders import find_record_by_uuid
 from core.seedwork.use_case_layer import UseCaseError, UseCaseInputError, use_case
+from messagebus.domain.collector import EventCollector
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
-def create_record_and_folder(__actor: OrgUser, token: str, r: FolderRepository):
+def create_record_and_folder(
+    __actor: OrgUser, token: str, r: FolderRepository, collector: EventCollector
+):
     parent_folder = r.get_or_create_records_folder(__actor.org_id, __actor)
 
     if not parent_folder.has_access(__actor):
@@ -42,18 +45,24 @@ def create_record_and_folder(__actor: OrgUser, token: str, r: FolderRepository):
     folder.restrict()
     r.save(folder)
 
-    record = RecordsRecord.create(token, __actor, folder)
+    record = RecordsRecord.create(token, __actor, folder, collector)
     record.save()
 
     return folder.uuid
 
 
 @use_case
-def change_record_token(__actor: OrgUser, uuid: UUID, token: str, r: FolderRepository):
+def change_record_token(
+    __actor: OrgUser,
+    uuid: UUID,
+    token: str,
+    r: FolderRepository,
+    collector: EventCollector,
+):
     if token == "":
         raise UseCaseInputError({"token": ["The Token can not be empty."]})
     record = find_record_by_uuid(__actor, uuid)
-    record.change_token(token)
+    record.change_token(token, collector)
 
     folder = r.retrieve(__actor.org_id, record.folder_uuid)
     folder.update_information(name=token, force=True)

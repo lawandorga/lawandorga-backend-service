@@ -10,7 +10,7 @@ from django.http import (
     HttpResponseNotFound,
 )
 from django.utils.module_loading import import_string
-from pydantic import ValidationError, validate_call
+from pydantic import ValidationError
 
 from core.seedwork.api_layer import (
     ApiError,
@@ -110,9 +110,7 @@ def django_command(request: HttpRequest) -> HttpResponse:
         return get_actor_result
 
     def command_fn():
-        return validate_call(config={"arbitrary_types_allowed": True})(fn)(
-            get_actor_result, **data
-        )
+        return fn(get_actor_result, **data)
 
     command_result = handle_error(command_fn)
     if isinstance(command_result, HttpResponse):

@@ -42,6 +42,7 @@ from core.org.models import Org
 from core.permissions import static
 from core.questionnaires.models import QuestionnaireQuestion, QuestionnaireTemplate
 from core.seedwork.encryption import AESEncryption
+from messagebus.domain.collector import EventCollector
 
 
 def add_permissions_to_group(group: Group, permission_name):
@@ -422,7 +423,11 @@ def create_records(main_user: OrgUser, users: list[UserProfile], org: Org):
         rfolder.grant_access(main_user)
         fr.save(rfolder)
         created_record = DataSheet.create(
-            template=template, name=record[2], user=main_user, folder=rfolder
+            template=template,
+            name=record[2],
+            user=main_user,
+            folder=rfolder,
+            collector=EventCollector(),
         )
         created_record.save()
         # first contact date

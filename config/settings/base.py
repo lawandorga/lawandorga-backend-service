@@ -268,6 +268,7 @@ MESSAGEBUS_EVENT_STORE = "messagebus.impl.store.DjangoEventStore"
 # use case settings
 USECASE_INJECTIONS = "core.injections.INJECTIONS"
 USECASE_FUNCTIONS = "core.usecases.USECASES"
+USECASE_CALLBACKS = "core.injections.CALLBACKS"
 
 # Mail-Import
 # used in our mail-import application

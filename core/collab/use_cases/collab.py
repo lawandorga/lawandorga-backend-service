@@ -8,6 +8,7 @@ from core.collab.use_cases.template import get_template
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.seedwork.use_case_layer import UseCaseError, use_case
+from messagebus.domain.collector import EventCollector
 
 
 class TreeFolder:
@@ -40,13 +41,16 @@ def create_collab(
     folder_uuid: UUID,
     cr: CollabRepository,
     fr: FolderRepository,
+    collector: EventCollector,
 ) -> Collab:
     folder = fr.retrieve(org_pk=__actor.org_id, uuid=folder_uuid)
     if not folder.has_access(__actor):
         raise UseCaseError(
             "You do not have access to this folder. Therefore you can not create a collab inside of it."
         )
-    collab = Collab.create(user=__actor, title=title, folder=folder)
+    collab = Collab.create(
+        user=__actor, title=title, folder=folder, collector=collector
+    )
     cr.save_document(collab, __actor, folder)
     return collab
 
@@ -58,6 +62,7 @@ def update_collab_title(
     title: str,
     cr: CollabRepository,
     fr: FolderRepository,
+    collector: EventCollector,
 ) -> Collab:
     collab = cr.get_document(collab_uuid, __actor, fr)
     folder = fr.retrieve(org_pk=__actor.org_id, uuid=collab.folder_uuid)
@@ -65,7 +70,7 @@ def update_collab_title(
         raise UseCaseError(
             "You do not have access to this folder. Therefore you can not update this collab."
         )
-    collab.update_title(title=title)
+    collab.update_title(title=title, collector=collector)
     cr.save_document(collab, __actor, folder)
     return collab
 
@@ -114,5 +119,7 @@ def sync_collab(
 
 
 @use_case
-def delete_collab(__actor: OrgUser, collab_uuid: UUID, cr: CollabRepository):
-    cr.delete_document(collab_uuid, __actor)
+def delete_collab(
+    __actor: OrgUser, collab_uuid: UUID, cr: CollabRepository, collector: EventCollector
+):
+    cr.delete_document(collab_uuid, __actor, collector)

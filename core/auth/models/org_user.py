@@ -36,10 +36,9 @@ from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS,
     PERMISSION_ADMIN_MANAGE_USERS,
 )
-from core.seedwork.aggregate import Aggregate
 from core.seedwork.domain_layer import DomainError
-from core.seedwork.events_addon import EventsAddon
 from messagebus import Event
+from messagebus.domain.collector import EventCollector
 
 from .user import UserProfile
 from seedwork.functional import list_filter, list_map
@@ -67,13 +66,13 @@ class OrgUserManager(models.Manager):
         return super().get_queryset().select_related("user")
 
 
-class OrgUser(Aggregate, models.Model):
+class OrgUser(models.Model):
     class OrgUserLocked(Event):
-        org_user_uuid: UUID
+        uuid: UUID
         org_pk: int
 
     class OrgUserUnlocked(Event):
-        org_user_uuid: UUID
+        uuid: UUID
         by_org_user_uuid: UUID
         org_pk: int
 
@@ -149,9 +148,6 @@ class OrgUser(Aggregate, models.Model):
     updated = models.DateTimeField(auto_now=True)
     # custom manager
     objects = OrgUserManager()
-    # addons
-    addons = {"events": EventsAddon}
-    events: EventsAddon
 
     if TYPE_CHECKING:
         mfa_secret: "MultiFactorAuthenticationSecret"
@@ -471,11 +467,9 @@ class OrgUser(Aggregate, models.Model):
         self.is_private_key_encrypted = True
         self.key = u2.as_dict()
 
-    def lock(self) -> None:
+    def lock(self, collector: EventCollector) -> None:
         self.locked = True
-        self.events.add(
-            OrgUser.OrgUserLocked(org_user_uuid=self.uuid, org_pk=self.org_id)
-        )
+        collector.collect(OrgUser.OrgUserLocked(uuid=self.uuid, org_pk=self.org_id))
 
     def change_password_for_keys(self, new_password: str):
         key = self.get_decryption_key()
@@ -681,12 +675,12 @@ class OrgUser(Aggregate, models.Model):
         new_keys.encrypt(self.get_public_key())
         new_keys.save()
 
-    def unlock(self, by: "OrgUser"):
+    def unlock(self, by: "OrgUser", collector: EventCollector):
         self.fix_keys(by)
         self.locked = False
-        self.events.add(
+        collector.collect(
             OrgUser.OrgUserUnlocked(
-                org_user_uuid=self.uuid,
+                uuid=self.uuid,
                 by_org_user_uuid=by.uuid,
                 org_pk=self.org_id,
             )

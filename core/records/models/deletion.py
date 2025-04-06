@@ -1,4 +1,5 @@
 import uuid
+from typing import TYPE_CHECKING
 
 from django.db import models
 from django.utils import timezone
@@ -44,13 +45,16 @@ class RecordsDeletion(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return "recordsDeletion: {}; state: {};".format(self.pk, self.state)
-
     class Meta:
         verbose_name = "REC_RecordDeletion"
         verbose_name_plural = "REC_RecordDeletions"
         ordering = ["-created"]
+
+    if TYPE_CHECKING:
+        record: models.ForeignKey[RecordsRecord | None]  # type: ignore[no-redef]
+
+    def __str__(self):
+        return "recordsDeletion: {}; state: {};".format(self.pk, self.state)
 
     @property
     def record_detail(self):

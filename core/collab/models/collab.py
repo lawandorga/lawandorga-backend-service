@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from django.db import models
@@ -7,24 +8,25 @@ from core.auth.models.org_user import OrgUser
 from core.collab.models.template import Template
 from core.collab.value_objects.document import Document, EncryptedDocument
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.infrastructure.folder_addon import FolderAddon
+from core.folders.infrastructure.item_mixins import FolderItemMixin
 from core.org.models.org import Org
-from core.seedwork.aggregate import Aggregate
-from core.seedwork.events_addon import EventsAddon
+from messagebus.domain.collector import EventCollector
 
 
-class Collab(Aggregate, models.Model):
+class Collab(FolderItemMixin, models.Model):
     REPOSITORY: str = "COLLAB"
 
     @classmethod
-    def create(cls, user: OrgUser, title: str, folder: Folder) -> "Collab":
+    def create(
+        cls, user: OrgUser, title: str, folder: Folder, collector: EventCollector
+    ) -> "Collab":
         collab = Collab(
             org=user.org,
             uuid=uuid4(),
             title=title,
         )
         doc = Document.create(user=cls.create_doc_user(user), text="")
-        collab.folder.put_obj_in_folder(folder)
+        collab.put_into_folder(folder, collector)
         collab.history = [doc]
         return collab
 
@@ -41,10 +43,10 @@ class Collab(Aggregate, models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     history: list[Document]
     objects = models.Manager()
-    events: EventsAddon
-    folder: FolderAddon
-    addons = {"events": EventsAddon, "folder": FolderAddon}
     template = models.ForeignKey(Template, on_delete=models.SET_NULL, null=True)
+
+    if TYPE_CHECKING:
+        org_id: int
 
     class Meta:
         verbose_name = "COL_Collab"
@@ -61,10 +63,10 @@ class Collab(Aggregate, models.Model):
 
     @property
     def org_pk(self) -> int:
-        return self.org.pk
+        return self.org_id
 
     @property
-    def name(self) -> str:
+    def name(self) -> str:  # type: ignore
         return self.title
 
     @property
@@ -82,9 +84,9 @@ class Collab(Aggregate, models.Model):
         doc = Document.create(user=self.create_doc_user(user), text=text)
         self.history.append(doc)
 
-    def update_title(self, title: str) -> None:
+    def update_title(self, title: str, collector: EventCollector) -> None:
         self.title = title
-        self.folder.obj_renamed()
+        self.renamed(collector)
 
     def update_template(self, template: Template | None) -> None:
         self.template = template

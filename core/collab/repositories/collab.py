@@ -5,6 +5,7 @@ from core.collab.models.collab import Collab
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.domain.repositories.item import ItemRepository
+from messagebus.domain.collector import EventCollector
 
 
 class CollabRepository(ItemRepository):
@@ -24,9 +25,11 @@ class CollabRepository(ItemRepository):
         collab._encrypt(folder=folder, user=user)
         collab.save(__allow=True)
 
-    def delete_document(self, uuid: UUID, user: OrgUser) -> None:
+    def delete_document(
+        self, uuid: UUID, user: OrgUser, collector: EventCollector
+    ) -> None:
         collab = Collab.objects.filter(org_id=user.org_id).get(uuid=uuid)
-        collab.delete()
+        collab.delete(collector=collector)
 
     def delete_items_of_folder(self, folder_uuid: UUID, org_pk: int | None) -> None:
         _org_id = org_pk if org_pk else 0

@@ -27,6 +27,8 @@ class DjangoEventStore(EventStore):
                 messages_max["max_position"] + 1 if messages_max["max_position"] else 1
             )
 
+        assert position is not None
+
         for message in messages:
             message_to_save = DjangoMessage(
                 stream_name=stream_name,

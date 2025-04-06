@@ -1,6 +1,6 @@
 from core.auth.models import OrgUser
 from core.folders.domain.aggregates.item import FolderItem
-from core.folders.use_cases.folder import (
+from core.folders.usecases.folder import (
     add_item_to_folder,
     correct_keys_of_user_by_user,
     delete_item_from_folder,
@@ -8,10 +8,8 @@ from core.folders.use_cases.folder import (
     rename_item_in_folder,
 )
 from core.seedwork.message_layer import MessageBusActor
-from messagebus import MessageBus
 
 
-@MessageBus.handler(on=FolderItem.ItemRenamed)
 def handler__item_renamed(event: FolderItem.ItemRenamed):
     rename_item_in_folder(
         MessageBusActor(event.org_pk),
@@ -22,7 +20,6 @@ def handler__item_renamed(event: FolderItem.ItemRenamed):
     )
 
 
-@MessageBus.handler(on=FolderItem.ItemDeleted)
 def handler__item_deleted(event: FolderItem.ItemDeleted):
     delete_item_from_folder(
         MessageBusActor(event.org_pk),
@@ -31,7 +28,6 @@ def handler__item_deleted(event: FolderItem.ItemDeleted):
     )
 
 
-@MessageBus.handler(on=FolderItem.ItemAddedToFolder)
 def handler__item_added_to_folder(event: FolderItem.ItemAddedToFolder):
     add_item_to_folder(
         MessageBusActor(event.org_pk),
@@ -42,13 +38,11 @@ def handler__item_added_to_folder(event: FolderItem.ItemAddedToFolder):
     )
 
 
-@MessageBus.handler(on=OrgUser.OrgUserLocked)
 def handler__org_user_locked(event: OrgUser.OrgUserLocked):
-    invalidate_keys_of_user(MessageBusActor(event.org_pk), event.org_user_uuid)
+    invalidate_keys_of_user(MessageBusActor(event.org_pk), event.uuid)
 
 
-@MessageBus.handler(on=OrgUser.OrgUserUnlocked)
 def handler__org_user_unlocked(event: OrgUser.OrgUserUnlocked):
-    of_uuid = event.org_user_uuid
+    of_uuid = event.uuid
     by_uuid = event.by_org_user_uuid
     correct_keys_of_user_by_user(MessageBusActor(event.org_pk), of_uuid, by_uuid)

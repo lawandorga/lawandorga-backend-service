@@ -1,6 +1,7 @@
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.seedwork import test_helpers
+from messagebus.domain.collector import EventCollector
 
 
 def test_key_invalidation_on_user_lock(db):
@@ -14,8 +15,10 @@ def test_key_invalidation_on_user_lock(db):
     r = DjangoFolderRepository()
     r.save(folder)
 
-    u.lock()
+    collector = EventCollector()
+    u.lock(collector)
     u.save()
+    test_helpers.run_collector(collector)
 
     new_folder = r.retrieve(u.org_id, folder.uuid)
 

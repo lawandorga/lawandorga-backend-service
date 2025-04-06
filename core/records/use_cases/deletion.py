@@ -7,6 +7,7 @@ from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQU
 from core.records.models.deletion import RecordsDeletion
 from core.records.use_cases.finders import find_deletion_by_uuid, find_record_by_uuid
 from core.seedwork.use_case_layer import use_case
+from messagebus.domain.collector import EventCollector
 
 from seedwork.injector import InjectionContext
 
@@ -23,7 +24,11 @@ def create_deletion_request(__actor: OrgUser, explanation: str, record_uuid: UUI
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQUESTS])
 def accept_deletion_request(
-    __actor: OrgUser, delete_uuid: UUID, r: FolderRepository, context: InjectionContext
+    __actor: OrgUser,
+    delete_uuid: UUID,
+    r: FolderRepository,
+    context: InjectionContext,
+    collector: EventCollector,
 ):
     deletion = find_deletion_by_uuid(__actor, delete_uuid)
 
@@ -35,7 +40,7 @@ def accept_deletion_request(
     if deletion.record:
         record = deletion.record
         folder = r.retrieve(__actor.org_id, record.folder_uuid)
-        record.delete()
+        record.delete(collector)
         r.delete(folder, repositories)
         deletion.record = None
 

@@ -8,6 +8,7 @@ from core.collab.use_cases.collab import (
 )
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.seedwork import test_helpers
+from messagebus.domain.collector import EventCollector
 
 
 def test_collab_creation(db):
@@ -32,19 +33,15 @@ def test_collab_update(db):
     user = ou["org_user"]
     f = test_helpers.create_folder(user=user)
     folder = f["folder"]
-    collab = Collab.create(
-        user=user,
+    collab = create_collab(
+        __actor=user,
         title="Test Collab",
-        folder=folder,
+        folder_uuid=folder.uuid,
     )
-    cr = CollabRepository()
-    cr.save_document(collab, user, folder)
     collab = update_collab_title(
         __actor=user,
         collab_uuid=collab.uuid,
         title="Updated Collab",
-        cr=cr,
-        fr=DjangoFolderRepository(),
     )
     assert Collab.objects.get(uuid=collab.uuid).title == "Updated Collab"
 
@@ -58,6 +55,7 @@ def test_collab_sync(db):
         user=user,
         title="Test Collab",
         folder=folder,
+        collector=EventCollector(),
     )
     cr = CollabRepository()
     fr = DjangoFolderRepository()
@@ -76,6 +74,7 @@ def test_collab_delete(db):
         user=user,
         title="Test Collab",
         folder=folder,
+        collector=EventCollector(),
     )
     cr = CollabRepository()
     cr.save_document(collab, user, folder)

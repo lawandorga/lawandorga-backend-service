@@ -10,6 +10,7 @@ from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models import Questionnaire, QuestionnaireTemplate
 from core.seedwork import test_helpers
 from core.seedwork import test_helpers as data
+from messagebus.domain.collector import EventCollector
 
 
 @pytest.fixture
@@ -62,7 +63,9 @@ def raw_folder(raw_user):
 
 @pytest.fixture
 def raw_questionnaire(raw_template, raw_user, raw_folder):
-    yield Questionnaire.create(raw_template, raw_folder, raw_user)
+    yield Questionnaire.create(
+        raw_template, raw_folder, raw_user, collector=EventCollector()
+    )
 
 
 @pytest.fixture

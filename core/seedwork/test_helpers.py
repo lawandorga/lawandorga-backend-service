@@ -7,12 +7,14 @@ from core.auth.models import StatisticUser
 from core.data_sheets.models import DataSheet, DataSheetTemplate
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
+from core.injections import BUS
 from core.models import OrgUser, UserProfile
 from core.org.models import Group, Org
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models.template import QuestionnaireTemplate
 from core.records.models.record import RecordsRecord
 from core.records.use_cases.record import create_record_and_folder as uc_create_record
+from messagebus.domain.collector import EventCollector
 
 
 def create_questionnaire_template(
@@ -203,7 +205,7 @@ def create_data_sheet(template=None, users: Optional[List[UserProfile]] = None):
     folder = create_folder(user=user)["folder"]
 
     record = DataSheet(template=template)
-    record.set_folder(folder)
+    record.set_folder(folder, EventCollector())
     record.generate_key(user)
     record.save()
 
@@ -230,3 +232,8 @@ def create_record(token="AZ-TEST", user: Optional[OrgUser] = None) -> RecordDict
     record = RecordsRecord.objects.get(folder_uuid=folder_uuid)
     folder = DjangoFolderRepository().retrieve(user.org_id, folder_uuid)
     return {"record": record, "user": user, "folder": folder}
+
+
+def run_collector(collector: EventCollector):
+    while event := collector.pop():
+        BUS.handle(event)

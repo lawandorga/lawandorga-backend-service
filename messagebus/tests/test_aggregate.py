@@ -4,6 +4,8 @@ from messagebus import Event, MessageBus
 from messagebus.domain.store import EventStore
 from messagebus.impl.message import Message
 
+bus = MessageBus()
+
 
 class StubModel:
     uuid: UUID
@@ -24,7 +26,7 @@ class StubModel:
 
         # let the messagebus handle the events
         for event in events:
-            MessageBus.handle(event)
+            bus.handle(event)
 
     def add_event(self, event: Event, metadata: dict):
         self.events.append(event)
@@ -39,7 +41,7 @@ class Car(StubModel):
         self.uuid = uuid4()
 
     def drive_to_location(self):
-        self.add_event(Car.DrivenToLocation(miles=500), metadata={})
+        self.add_event(Car.DrivenToLocation(miles=500, uuid=uuid4()), metadata={})
 
 
 def test_django_aggregate_event_handling(db):
@@ -48,7 +50,7 @@ def test_django_aggregate_event_handling(db):
     def change_state(event: Car.DrivenToLocation):
         metadata["total_miles"] += event.miles
 
-    MessageBus.register_handler(Car.DrivenToLocation, change_state)
+    bus.register_handler(Car.DrivenToLocation, change_state)
 
     car = Car()
     car.drive_to_location()

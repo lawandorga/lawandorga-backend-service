@@ -46,16 +46,16 @@ def test_add_member_is_saved(db, group, user):
     group.add_member(user)
     group.save()
     group = Group.objects.get(pk=group.pk)
-    assert user.id in group.member_ids
+    assert user.pk in group.member_ids
     group.save()
     group = Group.objects.get(pk=group.pk)
-    assert user.id in group.member_ids
+    assert user.pk in group.member_ids
 
 
 def test_group_create_creates_keys(db):
     user = test_helpers.create_org_user()["org_user"]
     user.grant(PERMISSION_ADMIN_MANAGE_GROUPS)
-    group = create_group(user, "Test Group", None)
+    group = create_group(user, "Test Group", "")
     assert len(group.keys) == 1, group.keys
     assert group.has_keys(user)
 
@@ -63,7 +63,7 @@ def test_group_create_creates_keys(db):
 def test_group_add_member_gets_key(db):
     user = test_helpers.create_org_user()["org_user"]
     user.grant(PERMISSION_ADMIN_MANAGE_GROUPS)
-    group = create_group(user, "Test Group", None)
+    group = create_group(user, "Test Group", "")
     user2 = test_helpers.create_org_user(email="dummy2@law-orga.de", org=user.org)[
         "org_user"
     ]
@@ -75,7 +75,7 @@ def test_group_add_member_gets_key(db):
 def test_group_remove_member_removes_key(db):
     user = test_helpers.create_org_user()["org_user"]
     user.grant(PERMISSION_ADMIN_MANAGE_GROUPS)
-    group = create_group(user, "Test Group", None)
+    group = create_group(user, "Test Group", "")
     user2 = test_helpers.create_org_user(email="dummy2@law-orga.de", org=user.org)[
         "org_user"
     ]
@@ -88,6 +88,6 @@ def test_group_remove_member_removes_key(db):
 def test_invalidate_keys(db):
     user = test_helpers.create_org_user()["org_user"]
     user.grant(PERMISSION_ADMIN_MANAGE_GROUPS)
-    group = create_group(user, "Test Group", None)
+    group = create_group(user, "Test Group", "")
     group.invalidate_keys_of(user)
     assert not group.has_valid_keys(user)

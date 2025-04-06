@@ -5,6 +5,7 @@ from core.records.models import RecordsAccessRequest, RecordsRecord
 from core.records.use_cases.access import create_access_request, grant_access_request
 from core.seedwork import test_helpers
 from core.seedwork.domain_layer import DomainError
+from messagebus.domain.collector import EventCollector
 
 
 @pytest.fixture
@@ -20,7 +21,9 @@ def user(org):
 @pytest.fixture
 def view(org, user):
     folder = test_helpers.create_raw_folder(user)
-    yield RecordsRecord.create("Dummy's Record", user, folder, pk=1)
+    yield RecordsRecord.create(
+        "Dummy's Record", user, folder, pk=1, collector=EventCollector()
+    )
 
 
 @pytest.fixture
@@ -33,7 +36,9 @@ def another_user(org):
 @pytest.fixture
 def record(org, user):
     folder = test_helpers.create_raw_folder(user)
-    record = RecordsRecord.create(token="AZ-TEST", user=user, folder=folder, pk=1)
+    record = RecordsRecord.create(
+        token="AZ-TEST", user=user, folder=folder, pk=1, collector=EventCollector()
+    )
     yield record
 
 

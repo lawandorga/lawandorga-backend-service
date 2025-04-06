@@ -2,16 +2,14 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from seedwork.types import JsonDict
 
 
 class Event(BaseModel):
-    metadata: dict = {}
-
-    def __str__(self):
-        return self.action
+    metadata: dict = Field(default_factory=dict)
+    uuid: UUID  # the uuid of the object in which the event happened
 
     @property
     def _name(self) -> str:
@@ -36,13 +34,17 @@ class Event(BaseModel):
         return self._qualname_splits[0]
 
     @property
+    def stream_name(self) -> str:
+        return f"{self.aggregate_name}-{self.uuid}"
+
+    @property
     def data(self) -> JsonDict:
         return self._clean_data(self.model_dump())
 
     @classmethod
     def _get_name(cls) -> str:
         parts = cls.__qualname__.split(".")
-        if len(parts) < 2:
+        if len(parts) != 2:
             raise ValueError(f"The Event '{cls}' is not nested correctly.")
         return f"{parts[-2]}.{parts[-1]}"
 

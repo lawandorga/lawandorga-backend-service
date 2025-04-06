@@ -7,7 +7,7 @@ from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.domain.repositories.item import ItemRepository
 from core.folders.domain.value_objects.folder_item import FolderItem
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-from core.folders.use_cases.finders import (
+from core.folders.usecases.finders import (
     folder_from_uuid,
     group_from_uuid,
     org_user_from_uuid,
@@ -172,7 +172,7 @@ def toggle_inheritance(__actor: OrgUser, folder_uuid: UUID):
     r.save(folder)
 
 
-@use_case()
+@use_case
 def rename_item_in_folder(
     __actor: MessageBusActor,
     repository_name: str,

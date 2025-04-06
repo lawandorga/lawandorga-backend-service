@@ -16,7 +16,6 @@ def accept_member_to_org(__actor: OrgUser, user_id: int):
     org.accept_member(__actor, user)
     group = org.default_group_for_new_users
     if group:
-        print("HERE")
         group.add_member(new_member=user, by=__actor)
         group.refresh_from_db()
         assert group.has_member(user)

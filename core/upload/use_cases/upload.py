@@ -4,16 +4,19 @@ from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import UploadedFile
 
 from core.auth.models import OrgUser
-from core.folders.use_cases.finders import folder_from_uuid
+from core.folders.usecases.finders import folder_from_uuid
 from core.seedwork.use_case_layer import UseCaseError, use_case
 from core.upload.models import UploadLink
 from core.upload.use_cases.finder import link_from_uuid, link_from_uuid_dangerous
+from messagebus.domain.collector import EventCollector
 
 
 @use_case
-def create_upload_link(__actor: OrgUser, name: str, folder_uuid: UUID) -> UploadLink:
+def create_upload_link(
+    __actor: OrgUser, name: str, folder_uuid: UUID, collector: EventCollector
+) -> UploadLink:
     folder = folder_from_uuid(__actor, folder_uuid)
-    link = UploadLink.create(name, folder, __actor)
+    link = UploadLink.create(name, folder, __actor, collector)
     link.save()
     return link
 
@@ -26,12 +29,12 @@ def disable_upload_link(__actor: OrgUser, link_uuid: UUID):
 
 
 @use_case
-def delete_upload_link(__actor: OrgUser, link_uuid: UUID):
+def delete_upload_link(__actor: OrgUser, link_uuid: UUID, collector: EventCollector):
     link = link_from_uuid(__actor, link_uuid)
     if link.files.count() > 0:
         raise UseCaseError("This link can not be deleted as files have been uploaded.")
 
-    link.delete()
+    link.delete(collector)
 
 
 @use_case
