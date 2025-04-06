@@ -56,7 +56,9 @@ DATABASES = {
         "TEST": {"NAME": "test_{}".format(RUNTIME)},
         "OPTIONS": {
             "sslmode": "verify-full",
-            "sslrootcert": "system",
+            "sslrootcert": os.path.join(
+                BASE_DIR, "static/dist/lawandorga-backend-service.cer"
+            ),
         },
     }
 }
