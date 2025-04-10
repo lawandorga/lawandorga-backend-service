@@ -5,6 +5,7 @@ from django.db import models
 
 from core.mail.models import MailAccount
 from core.mail.models.domain import MailDomain
+from core.seedwork.domain_layer import DomainError
 
 
 class MailAddress(models.Model):
@@ -40,25 +41,25 @@ class MailAddress(models.Model):
             )
 
         if len(localpart) > 64:
-            raise ValueError("The localpart is too long.")
+            raise DomainError("The localpart is too long.")
 
         if len(localpart) == 0:
-            raise ValueError("The localpart is too short.")
+            raise DomainError("The localpart is too short.")
 
         if localpart == "postmaster":
-            raise ValueError("You are not allowed to use postmaster@.")
+            raise DomainError("You are not allowed to use postmaster@.")
 
         if ".." in localpart:
-            raise ValueError("You are not allowed to use '.' two times in a row.")
+            raise DomainError("You are not allowed to use '.' two times in a row.")
 
         regex = r"^[a-z0-9._-]+$"
         pattern = re.compile(regex)
         if not pattern.match(localpart):
-            raise ValueError(
+            raise DomainError(
                 "You are only allowed to use the following characters 'a-z', '0-9', '.', '-' or '_'."
             )
 
         if "." == localpart[0] or "." == localpart[-1]:
-            raise ValueError(
+            raise DomainError(
                 "The localpart needs to start and end with 'a-z', '0-9', '-' or '_'."
             )
