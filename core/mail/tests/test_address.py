@@ -1,6 +1,7 @@
 import pytest
 
 from core.mail.models import MailAddress
+from core.seedwork.domain_layer import DomainError
 
 
 def test_localpart_wrong_type():
@@ -10,19 +11,19 @@ def test_localpart_wrong_type():
 
 def test_localpart_too_long():
     localpart = "".join(["a" for _ in range(0, 66)])
-    with pytest.raises(ValueError):
+    with pytest.raises(DomainError):
         MailAddress.check_localpart(localpart)
 
 
 def test_localpart_illegal_character():
     localpart = "dollarboy$$"
-    with pytest.raises(ValueError):
+    with pytest.raises(DomainError):
         MailAddress.check_localpart(localpart)
 
 
 def test_localpart_too_many_dots():
     localpart = "lenoardo.....von.gogh"
-    with pytest.raises(ValueError):
+    with pytest.raises(DomainError):
         MailAddress.check_localpart(localpart)
 
 

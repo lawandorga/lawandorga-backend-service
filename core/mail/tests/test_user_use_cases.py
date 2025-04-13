@@ -9,6 +9,7 @@ from core.mail.use_cases.user import (
     delete_address,
     set_address_as_default,
 )
+from core.seedwork.domain_layer import DomainError
 from core.seedwork.use_case_layer import UseCaseError
 
 
@@ -86,7 +87,7 @@ def test_set_alias_default(db, mail_user, domain, alias):
 
 
 def test_create_alias_invalid_schema(db, mail_user, domain):
-    with pytest.raises(UseCaseError):
+    with pytest.raises(DomainError):
         create_address(
             mail_user,
             localpart="invalid#localpart",

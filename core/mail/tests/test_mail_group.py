@@ -11,6 +11,7 @@ from core.mail.use_cases.group import (
     remove_member_from_group,
     set_group_address_as_default,
 )
+from core.seedwork.domain_layer import DomainError
 
 
 def test_create_group(db, mail_user, domain):
@@ -57,12 +58,12 @@ def test_delete_group_address(db, mail_user, mail_group, domain):
 
 
 def test_add_address_block_with_invalid_format(db, mail_user, mail_group, domain):
-    with pytest.raises(ValueError):
+    with pytest.raises(DomainError):
         add_address_to_group(
             mail_user, "invalid%localpart", mail_group.uuid, domain.uuid
         )
 
 
 def test_create_group_with_invalid_localpart(db, mail_user, domain):
-    with pytest.raises(ValueError):
+    with pytest.raises(DomainError):
         create_group_mail(mail_user, localpart="AFLJKFD", domain_uuid=domain.uuid)
