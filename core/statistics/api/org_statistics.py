@@ -220,6 +220,9 @@ def get_records_created_and_closed(org_user: OrgUser, data: InputCreatedAndClose
         created_and_closed = list_filter(
             created_and_closed, lambda x: str(x["month"]).startswith(str(data.year))
         )
+    if not created_and_closed:
+        return {"years": [], "data": []}
+
     years = get_available_datasheet_years(org_user.org.pk)
     first_year_str, first_month_str = str(
         min(created_and_closed, key=lambda x: x["month"])["month"]
