@@ -10,6 +10,7 @@ Injections = dict[type[R], R | Callable[[], R]]
 class InjectionContext:
     def __init__(self, injections: Injections) -> None:
         self.injections = {k: v for k, v in injections.items() if not callable(v)}
+        self.injections[InjectionContext] = self
 
     def has(self, injection) -> bool:
         return injection in self.injections
@@ -30,12 +31,8 @@ def inject_function(
     hints.pop("return", None)
 
     for name, hint in hints.items():
-        if name == "context":
-            func = partial(func, context=context)
-        elif context.has(hint):
+        if context.has(hint):
             func = partial(func, **{name: context.get(hint)})
-        else:
-            continue
 
     return func
 

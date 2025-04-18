@@ -1,10 +1,13 @@
+from core.auth.models.user import UserProfile
 from core.collab.repositories.collab import CollabRepository
 from core.data_sheets.models.data_sheet import DataSheetRepository
 from core.files_new.models.file import FileRepository
 from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
+from core.other.models.logged_path import LoggedPath
 from core.questionnaires.models.questionnaire import QuestionnaireRepository
 from core.records.models.record import RecordRepository
+from core.seedwork.use_case_layer.callbacks import CallbackContext
 from core.timeline.repositories.event import EventRepository
 from core.timeline.repositories.follow_up import FollowUpRepository
 from core.upload.models.upload import UploadLinkRepository
@@ -32,10 +35,22 @@ def save_event(event: Event):
     store.append(event.stream_name, [event])
 
 
-def handle_events(collector: EventCollector):
+def handle_events(context: CallbackContext, collector: EventCollector):
+    if not context.success:
+        return
     while event := collector.pop():
         save_event(event)
         BUS.handle(event)
+
+
+def log_usecase(context: CallbackContext):
+    if hasattr(context.actor, "user") and isinstance(context.actor.user, UserProfile):
+        LoggedPath.objects.create(
+            user=context.actor.user,
+            path=context.fn_name,
+            status=200 if context.success else 400,
+            method="USECASE",
+        )
 
 
 INJECTIONS = {

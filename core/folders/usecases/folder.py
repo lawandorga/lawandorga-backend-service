@@ -20,8 +20,7 @@ from core.seedwork.use_case_layer import (
     check_permissions,
     use_case,
 )
-
-from seedwork.injector import InjectionContext
+from core.seedwork.use_case_layer.injector import InjectionContext
 
 
 def get_repository() -> FolderRepository:

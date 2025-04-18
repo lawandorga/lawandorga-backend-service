@@ -7,9 +7,8 @@ from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQU
 from core.records.models.deletion import RecordsDeletion
 from core.records.use_cases.finders import find_deletion_by_uuid, find_record_by_uuid
 from core.seedwork.use_case_layer import use_case
+from core.seedwork.use_case_layer.injector import InjectionContext
 from messagebus.domain.collector import EventCollector
-
-from seedwork.injector import InjectionContext
 
 
 @use_case
