@@ -313,9 +313,9 @@ def import_mails(__actor: OrgUser, r: FolderRepository):
         logger.error(f"Error while importing mails: {e}")
         if "Network is unreachable" in str(e):
             return
-        raise
+        raise e
     except Exception as e:
         logger.error(f"Error while importing mails: {e}")
         if "Account is temporarily unavailable" in str(e):
             return
-        raise
+        raise e
