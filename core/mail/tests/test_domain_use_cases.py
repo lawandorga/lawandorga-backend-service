@@ -1,6 +1,7 @@
 import pytest
 
 from core.mail.use_cases.domain import add_domain, change_domain, check_domain_settings
+from core.seedwork.domain_layer import DomainError
 from core.seedwork.use_case_layer import UseCaseError
 
 
@@ -18,12 +19,12 @@ def test_add_domain_exists_error(db, domain, mail_user):
 
 
 def test_add_domain_invalid_domain(db, mail_user):
-    with pytest.raises(ValueError):
+    with pytest.raises(DomainError):
         add_domain(mail_user, "domain.asdf$")
 
 
 def test_change_domain_invalid_domain(db, domain, mail_user):
-    with pytest.raises(ValueError):
+    with pytest.raises(DomainError):
         change_domain(mail_user, "domain.asdf$", domain.uuid)
 
 

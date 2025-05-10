@@ -7,6 +7,7 @@ from django.db import models
 from typing_extensions import TypedDict
 
 from core.mail.models.org import MailOrg
+from core.seedwork.domain_layer import DomainError
 
 
 class DnsSetting(TypedDict):
@@ -47,7 +48,7 @@ class MailDomain(models.Model):
     @staticmethod
     def check_domain(domain: str):
         if domain == settings.MAIL_MX_RECORD:
-            raise ValueError(
+            raise DomainError(
                 "You are not allowed to use '{}' as your domain.".format(
                     settings.MAIL_MX_RECORD
                 )
@@ -59,15 +60,15 @@ class MailDomain(models.Model):
             )
 
         if len(domain) < 1:
-            raise ValueError("The domain is too short.")
+            raise DomainError("The domain is too short.")
 
         if len(domain) > 64:
-            raise ValueError("The domain is too long.")
+            raise DomainError("The domain is too long.")
 
         regex = "^((?!-)[a-z0-9-]+(?<!-)\\.)+(?!-)[a-z-]{2,20}(?<!-)$"
         pattern = re.compile(regex)
         if not pattern.match(domain):
-            raise ValueError(
+            raise DomainError(
                 "The domain contains illegal characters or does not conform to the correct structure."
             )
 

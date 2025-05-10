@@ -2,6 +2,7 @@ import pytest
 from django.conf import settings
 
 from core.mail.models import MailDomain
+from core.seedwork.domain_layer import DomainError
 
 
 def test_check_domain_wrong_type():
@@ -10,27 +11,27 @@ def test_check_domain_wrong_type():
 
 
 def test_check_domain_illegal_start():
-    with pytest.raises(ValueError):
+    with pytest.raises(DomainError):
         MailDomain.check_domain(".abc.de")
-    with pytest.raises(ValueError):
+    with pytest.raises(DomainError):
         MailDomain.check_domain("-abc.de")
-    with pytest.raises(ValueError):
+    with pytest.raises(DomainError):
         MailDomain.check_domain("+abc.de")
 
 
 def test_check_domain_illegal_end():
-    with pytest.raises(ValueError):
+    with pytest.raises(DomainError):
         MailDomain.check_domain("abc.de-")
-    # with pytest.raises(ValueError):
+    # with pytest.raises(DomainError):
     #     MailDomain.check_domain("abc.sdfadsfdasfdasf")
-    with pytest.raises(ValueError):
+    with pytest.raises(DomainError):
         MailDomain.check_domain("abc.de.")
 
 
 def test_check_domain_illegal_format():
-    with pytest.raises(ValueError):
+    with pytest.raises(DomainError):
         MailDomain.check_domain("abc-.de")
-    with pytest.raises(ValueError):
+    with pytest.raises(DomainError):
         MailDomain.check_domain("abc.$sdfadsfdasfdasf.com")
 
 
