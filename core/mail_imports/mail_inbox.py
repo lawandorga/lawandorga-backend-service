@@ -24,13 +24,21 @@ class MailInbox:
         )
 
     def __enter__(self):
-        self.mailbox.login(settings.MI_EMAIL_USER, settings.MI_EMAIL_PASSWORD)
-        self.mailbox.select("INBOX")
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.mailbox.close()
-        self.mailbox.logout()
+        try:
+            self.mailbox.close()
+            self.mailbox.logout()
+        except Exception:
+            pass
+        if "[UNAVAILABLE]" in str(exc_val):
+            logger.error("mailbox unavailable but ignoring the error")
+            return True
+
+    def login(self):
+        self.mailbox.login(settings.MI_EMAIL_USER, settings.MI_EMAIL_PASSWORD)
+        self.mailbox.select("INBOX")
 
     def get_raw_emails(self) -> list[RawEmail]:
         _, [nums] = self.mailbox.search(None, "ALL")

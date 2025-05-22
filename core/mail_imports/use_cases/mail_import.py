@@ -301,6 +301,7 @@ def log_emails(
 def import_mails(__actor: OrgUser, r: FolderRepository):
     folders = r.get_dict(__actor.org_id)
     with MailInbox() as mail_box:
+        mail_box.login()
         raw_emails = mail_box.get_raw_emails()
         validated = validate_emails(raw_emails)
         assigned = assign_emails_to_folder_uuid(validated)
