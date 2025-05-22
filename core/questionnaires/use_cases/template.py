@@ -1,6 +1,7 @@
 from typing import Literal
 
 from django.core.files.uploadedfile import UploadedFile
+from django.db.models import ProtectedError
 
 from core.auth.models.org_user import OrgUser
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES
@@ -11,6 +12,7 @@ from core.questionnaires.use_cases.finders import (
     template_question_from_id,
 )
 from core.seedwork.use_case_layer import use_case
+from core.seedwork.use_case_layer.error import UseCaseError
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES])
@@ -31,7 +33,12 @@ def update_questionnaire_template(
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES])
 def delete_questionnaire_template(__actor: OrgUser, template_id: int):
     template = template_from_id(__actor, template_id)
-    template.delete()
+    try:
+        template.delete()
+    except ProtectedError:
+        raise UseCaseError(
+            "This questionnaire template cannot be deleted because it is used by questionnaires."
+        )
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES])
