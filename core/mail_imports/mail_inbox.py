@@ -33,7 +33,7 @@ class MailInbox:
         except Exception:
             pass
         if "[UNAVAILABLE]" in str(exc_val):
-            logger.error("mailbox unavailable but ignoring the error")
+            logger.warning("mailbox unavailable but ignoring the error")
             return True
 
     def login(self):
