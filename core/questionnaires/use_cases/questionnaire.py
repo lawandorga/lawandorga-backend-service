@@ -1,6 +1,7 @@
 from typing import Union
 from uuid import UUID
 
+from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import UploadedFile
 
 from core.auth.models import OrgUser
@@ -15,7 +16,6 @@ from core.questionnaires.use_cases.finders import (
 )
 from core.seedwork.use_case_layer import UseCaseError, use_case
 from messagebus.domain.collector import EventCollector
-from django.contrib.auth.models import AnonymousUser
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])

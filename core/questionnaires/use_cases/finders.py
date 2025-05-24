@@ -1,3 +1,5 @@
+from django.contrib.auth.models import AnonymousUser
+
 from core.auth.models.org_user import OrgUser
 from core.questionnaires.models import QuestionnaireTemplate
 from core.questionnaires.models.questionnaire import Questionnaire
@@ -6,7 +8,7 @@ from core.questionnaires.models.template import (
     QuestionnaireTemplateFile,
 )
 from core.seedwork.use_case_layer import finder_function
-from django.contrib.auth.models import AnonymousUser
+
 
 @finder_function
 def template_from_id(actor: OrgUser, v: int) -> QuestionnaireTemplate:
