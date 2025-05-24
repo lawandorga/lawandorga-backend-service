@@ -14,6 +14,7 @@ from .user import (
     CustomPasswordResetView,
     CustomRegisterDoneView,
     CustomRegisterView,
+    LegalRequirementView,
 )
 
 __all__ = [
@@ -25,6 +26,7 @@ __all__ = [
     "CustomPasswordResetView",
     "CustomRegisterDoneView",
     "CustomRegisterView",
+    "LegalRequirementView",
     "MfaDisableView",
     "MfaEnableView",
     "MfaLoginView",

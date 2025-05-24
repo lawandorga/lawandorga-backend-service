@@ -15,12 +15,13 @@ from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.views.generic import CreateView, RedirectView, TemplateView
+from django.views.generic import CreateView, RedirectView, TemplateView, DetailView
 
 from core.auth.forms.user import CustomUserCreationForm
 from core.auth.models import UserProfile
 from core.auth.models.session import CustomSession
 from core.auth.use_cases.user import run_user_login_checks, set_password_of_myself
+from core.legal.models.legal_requirement import LegalRequirement
 
 
 def strip_scheme(url: str):
@@ -31,6 +32,12 @@ class CustomRegisterView(CreateView):
     form_class = CustomUserCreationForm
     success_url = reverse_lazy("register_done")
     template_name = "registration/register.html"
+
+
+class LegalRequirementView(DetailView):
+    model = LegalRequirement
+    template_name = "registration/legal_requirement.html"
+    context_object_name = "lr"
 
 
 class CustomRegisterDoneView(TemplateView):

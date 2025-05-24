@@ -1,8 +1,8 @@
-/* https://tailwindcss.com/blog/standalone-cli */
+@import 'tailwindcss';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* https://tailwindcss.com/docs/installation/tailwind-cli */
+
+@config "../../tailwind.config.js";
 
 /* form */
 .tailwind-form {
@@ -20,7 +20,7 @@
     @apply block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm appearance-none focus:outline-none focus:ring-1 focus-within:ring-1 focus-within:ring-lorgablue focus-within:border-lorgablue focus:ring-lorgablue focus:border-lorgablue sm:text-sm;
 }
 .tailwind-form input[type=submit], .tailwind-form button[type=submit] {
-    @apply flex items-center w-auto px-4 py-2 ml-auto text-sm font-medium text-white bg-opacity-100 border border-transparent shadow-sm cursor-pointer focus:outline-none bg-lorgablue hover:bg-opacity-90 focus:ring-2 focus:ring-offset-2 focus:ring-lorgablue rounded-xl;
+    @apply flex items-center w-auto px-4 py-2 ml-auto text-sm font-medium text-white border border-transparent shadow-sm cursor-pointer focus:outline-none bg-lorgablue hover:bg-lorgablue/90 focus:ring-2 focus:ring-offset-2 focus:ring-lorgablue rounded-xl;
 }
 
 /* select */
@@ -36,7 +36,7 @@
 /* checkbox */
 .tailwind-form input[type="checkbox"] {
     /* @apply inline-block w-auto mr-1 border-gray-300 rounded text-lorgablue focus:ring-lorgablue; */
-    @apply mr-1 border-gray-300 rounded shadow-sm text-lorgablue focus:border-lorgablue focus:ring focus:ring-offset-0 focus:ring-lorgablue focus:ring-opacity-50;
+    @apply mr-1 border-gray-300 rounded shadow-sm text-lorgablue focus:border-lorgablue focus:ring focus:ring-offset-0 focus:ring-lorgablue/50;
     @apply flex-shrink-0 inline-block w-4 h-4 p-0 align-middle border appearance-none cursor-pointer;
 }
 .tailwind-form input[type='checkbox']:checked, input[type='radio']:checked {
@@ -55,10 +55,10 @@
 
 /* error */
 .tailwind-form .errorlist {
-    @apply !mt-1;
+    @apply mt-1!;
 }
 .tailwind-form .errorlist.nonfield {
-    @apply !mt-0;
+    @apply mt-0!;
 }
 .tailwind-form .errorlist > li {
     @apply text-sm text-red-700;

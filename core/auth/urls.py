@@ -13,6 +13,7 @@ api_urlpatterns: list[Union[URLPattern, URLResolver]] = [
 
 view_urlpatterns: list[Union[URLPattern, URLResolver]] = [
     path("user/register/", views.CustomRegisterView.as_view(), name="register"),
+    path("user/register/legal-requirement/<int:pk>/", views.LegalRequirementView.as_view(), name="legal_requirement"),
     path(
         "user/register/successful/",
         views.CustomRegisterDoneView.as_view(),

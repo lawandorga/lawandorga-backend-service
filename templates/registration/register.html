@@ -18,6 +18,11 @@
                 {% else %}
                     {% include 'symbols/form.html' with submit="Register" form=form %}
                 {% endif %}
+                <p>
+                    {% for lr in form.get_legal_requirements %}
+                        <a class="font-medium underline" target="_blank" href="{% url 'legal_requirement' lr.id %}">Read the legal requirement: {{ lr.title }}</a>
+                    {% endfor %}
+                </p>
             </div>
         </div>
     </div>
