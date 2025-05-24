@@ -6,7 +6,7 @@ from core.questionnaires.models.template import (
     QuestionnaireTemplateFile,
 )
 from core.seedwork.use_case_layer import finder_function
-
+from django.contrib.auth.models import AnonymousUser
 
 @finder_function
 def template_from_id(actor: OrgUser, v: int) -> QuestionnaireTemplate:
@@ -28,3 +28,8 @@ def template_file_from_id(actor: OrgUser, v: int) -> QuestionnaireTemplateFile:
 @finder_function
 def questionnaire_from_id(actor: OrgUser, v: int) -> Questionnaire:
     return Questionnaire.objects.get(id=v, template__org__id=actor.org_id)
+
+
+@finder_function
+def questionnaire_from_id_dangerous(_: AnonymousUser, v: int) -> Questionnaire:
+    return Questionnaire.objects.get(id=v)

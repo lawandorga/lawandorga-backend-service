@@ -10,10 +10,12 @@ from core.questionnaires.models import Questionnaire
 from core.questionnaires.models.questionnaire import QuestionnaireAnswer
 from core.questionnaires.use_cases.finders import (
     questionnaire_from_id,
+    questionnaire_from_id_dangerous,
     template_from_id,
 )
 from core.seedwork.use_case_layer import UseCaseError, use_case
 from messagebus.domain.collector import EventCollector
+from django.contrib.auth.models import AnonymousUser
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
@@ -41,9 +43,9 @@ def delete_a_questionnaire(
 
 @use_case
 def submit_answers(
-    __actor: OrgUser, questionnaire_id: int, **data: Union[UploadedFile, str]
+    __actor: AnonymousUser, questionnaire_id: int, **data: Union[UploadedFile, str]
 ):
-    questionnaire = questionnaire_from_id(__actor, questionnaire_id)
+    questionnaire = questionnaire_from_id_dangerous(__actor, questionnaire_id)
     for field in list(questionnaire.template.fields.all()):
         if field.name in data:
             answer = QuestionnaireAnswer(questionnaire=questionnaire, field=field)
