@@ -9,7 +9,6 @@ from core.legal.models.legal_requirement import LegalRequirement
 from core.org.models.org import Org
 
 
-
 class OrgModelChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj: Org):  # type: ignore
         return obj.name

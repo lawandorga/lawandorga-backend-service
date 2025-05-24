@@ -43,6 +43,8 @@ def rename_folder(__actor: OrgUser, name: str, folder_uuid: UUID):
     if name == "":
         raise UseCaseInputError({"name": ["Please specify a name"]})
     folder = folder_from_uuid(__actor, folder_uuid)
+    if not folder.has_access(__actor):
+        raise UseCaseError("You need access to this folder in order to do that.")
     r = get_repository()
     folder.update_information(name=name)
     r.save(folder)

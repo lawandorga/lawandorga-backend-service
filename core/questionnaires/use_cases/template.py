@@ -16,7 +16,7 @@ from core.seedwork.use_case_layer.error import UseCaseError
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_QUESTIONNAIRES])
-def create_questionnaire_template(__actor: OrgUser, name: str, notes: str):
+def create_questionnaire_template(__actor: OrgUser, name: str, notes: str = ""):
     template = QuestionnaireTemplate.create(name=name, org=__actor.org, notes=notes)
     template.save()
 
