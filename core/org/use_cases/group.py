@@ -66,7 +66,7 @@ def remove_member_from_group(__actor: OrgUser, group_id: int, member_id: int):
 
     if group.members.count() <= 2:
         raise UseCaseError(
-            "You can not remove the last members of a group. "
+            "You can not remove the last two members of a group. "
             "But you can always delete the group."
         )
 
