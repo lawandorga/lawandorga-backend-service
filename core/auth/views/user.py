@@ -15,7 +15,7 @@ from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.views.generic import CreateView, RedirectView, TemplateView, DetailView
+from django.views.generic import CreateView, DetailView, RedirectView, TemplateView
 
 from core.auth.forms.user import CustomUserCreationForm
 from core.auth.models import UserProfile

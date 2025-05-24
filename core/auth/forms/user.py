@@ -7,7 +7,7 @@ from core.auth.models.user import UserProfile
 from core.auth.use_cases.org_user import register_org_user
 from core.legal.models.legal_requirement import LegalRequirement
 from core.org.models.org import Org
-from seedwork.functional import list_map
+
 
 
 class OrgModelChoiceField(forms.ModelChoiceField):
@@ -61,7 +61,7 @@ class CustomUserCreationForm(UserCreationForm):
                     f"You have to accept the legal requirement '{lr.title}'"
                 )
         return value
-    
+
     def get_legal_requirements(self):
         required_lrs = LegalRequirement.objects.filter(accept_required=True)
         return required_lrs
