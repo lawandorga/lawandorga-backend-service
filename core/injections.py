@@ -68,4 +68,5 @@ INJECTIONS = {
 
 CALLBACKS = [
     handle_events,
+    log_usecase,
 ]

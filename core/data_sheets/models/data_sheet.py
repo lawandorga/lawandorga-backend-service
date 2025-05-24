@@ -409,6 +409,9 @@ class DataSheetMultipleEntry(DataSheetEntry):
     value = models.JSONField()
     view_name = "recordmultipleentry-detail"
 
+    if TYPE_CHECKING:
+        record_id: int
+
     class Meta:
         unique_together = ["record", "field"]
         verbose_name = "DAT_DataSheetMultipleEntry"
