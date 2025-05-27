@@ -1,8 +1,7 @@
 {% extends 'collab/templates/base.html' %}
 
 {% block body %}
-<main>
-    <h1>{{ collab.name }}</h1>
+<div id="main">
     {{ collab.text|safe }}
-</main>
+</div>
 {% endblock body %}
