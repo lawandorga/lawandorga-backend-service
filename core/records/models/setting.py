@@ -1,25 +1,31 @@
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from uuid import uuid4
 
 from django.db import models
-from django.db.models import Q
 
 from core.auth.models import OrgUser
 from core.org.models.org import Org
+from core.seedwork.domain_layer import DomainError
 
 
 class RecordsView(models.Model):
     @classmethod
     def create(
-        cls, name: str, user: OrgUser, columns: list[str], shared=False, pk=0
+        cls,
+        name: str,
+        user: OrgUser,
+        columns: list[str],
+        shared=False,
+        pk=0,
+        ordering=0,
     ) -> "RecordsView":
         view = RecordsView(name=name, columns=columns)
         if shared is True:
             view.org = user.org
-        else:
-            view.user = user
+        view.user = user
         if pk:
             view.pk = pk
+        view.ordering = ordering
         return view
 
     name = models.CharField(max_length=200)
@@ -43,17 +49,13 @@ class RecordsView(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+    if TYPE_CHECKING:
+        user: models.ForeignKey[OrgUser] | None  # type: ignore[no-redef]
+
     class Meta:
         verbose_name = "REC_RecordsView"
         verbose_name_plural = "REC_RecordsViews"
-        ordering = ["-org", "ordering"]
-        constraints = [
-            models.CheckConstraint(
-                condition=(Q(org__isnull=True) & Q(user__isnull=False))
-                | (Q(org__isnull=False) & Q(user__isnull=True)),
-                name="records_view_one_of_both_is_set",
-            )
-        ]
+        ordering = ["ordering"]
 
     def __str__(self):
         return "recordsView: {}; of: {};".format(
@@ -74,3 +76,18 @@ class RecordsView(models.Model):
             self.columns = columns
         if ordering is not None:
             self.ordering = ordering
+
+    def make_shared(self, user: OrgUser):
+        if self.shared:
+            raise DomainError("This view is already shared.")
+        self.org = user.org
+
+    def make_private(self, actor: OrgUser):
+        if not self.shared:
+            raise DomainError("This view is already private.")
+        if self.user and self.user != actor:
+            raise DomainError(
+                "You can not make this view private, because you are not the creator of it."
+            )
+        self.org = None
+        self.user = actor
