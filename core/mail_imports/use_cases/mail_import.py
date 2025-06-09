@@ -47,8 +47,8 @@ def toggle_mail_pinned(__actor: OrgUser, mail_uuid: UUID):
     mail.save()
 
 
-class NumEmail(Protocol):
-    num: str
+class UidEmail(Protocol):
+    uid: str
 
 
 class EmailMessageAttachment(BaseModel):
@@ -57,7 +57,7 @@ class EmailMessageAttachment(BaseModel):
 
 
 class ValidatedEmail(BaseModel):
-    num: str
+    uid: str
     sender: str
     to: str
     cc: str
@@ -79,7 +79,7 @@ class FolderEmail(ValidatedEmail):
 
 
 class ErrorEmail(BaseModel):
-    num: str
+    uid: str
     error: str
 
 
@@ -172,10 +172,10 @@ def validate_emails(raw_emails: list[RawEmail]) -> list[ErrorEmail | ValidatedEm
                 data[0][1], policy=default  # type: ignore
             )
             email_info = get_email_info(message)
-            validated_emails.append(ValidatedEmail(num=email.num, **email_info))
+            validated_emails.append(ValidatedEmail(uid=email.uid, **email_info))
         except Exception as e:
             logger.error(f"error while importing mails: {e}")
-            validated_emails.append(ErrorEmail(num=email.num, error=str(e)))
+            validated_emails.append(ErrorEmail(uid=email.uid, error=str(e)))
     return validated_emails
 
 

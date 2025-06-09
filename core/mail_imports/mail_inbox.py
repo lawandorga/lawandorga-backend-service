@@ -8,12 +8,12 @@ from pydantic import BaseModel
 logger = logging.getLogger("django")
 
 
-class NumEmail(Protocol):
-    num: str
+class UidEmail(Protocol):
+    uid: str
 
 
 class RawEmail(BaseModel):
-    num: str
+    uid: str
     data: Any
 
 
@@ -41,27 +41,27 @@ class MailInbox:
         self.mailbox.select("INBOX")
 
     def get_raw_emails(self) -> list[RawEmail]:
-        _, [nums] = self.mailbox.search(None, "ALL")
+        _, [uids] = self.mailbox.uid("SEARCH", "", "ALL")
         emails = []
-        for num in nums.split():
-            _, data = self.mailbox.fetch(num, "(RFC822)")
-            emails.append(RawEmail(num=num, data=data))
+        for uid in uids.split():
+            _, data = self.mailbox.uid("FETCH", uid, "(RFC822)")
+            emails.append(RawEmail(uid=uid, data=data))
         return emails
 
-    def delete_emails(self, emails: Sequence[NumEmail]):
+    def delete_emails(self, emails: Sequence[UidEmail]):
         for email in emails:
-            self.mailbox.copy(email.num, "Trash")
-            self.mailbox.store(email.num, "+FLAGS", "\\Deleted")
+            self.mailbox.copy(email.uid, "Trash")
+            self.mailbox.store(email.uid, "+FLAGS", "\\Deleted")
 
-    def mark_emails_as_error(self, emails: Sequence[NumEmail]):
+    def mark_emails_as_error(self, emails: Sequence[UidEmail]):
         for email in emails:
-            self.mailbox.copy(email.num, "Errors")
-            self.mailbox.store(email.num, "+FLAGS", "\\Deleted")
+            self.mailbox.copy(email.uid, "Errors")
+            self.mailbox.store(email.uid, "+FLAGS", "\\Deleted")
 
-    def mark_emails_as_not_assignable(self, emails: Sequence[NumEmail]):
+    def mark_emails_as_not_assignable(self, emails: Sequence[UidEmail]):
         for email in emails:
-            self.mailbox.copy(email.num, "Unassigned")
-            self.mailbox.store(email.num, "+FLAGS", "\\Deleted")
+            self.mailbox.copy(email.uid, "Unassigned")
+            self.mailbox.store(email.uid, "+FLAGS", "\\Deleted")
 
-    def get_mail_attachments(self, email: NumEmail) -> list[bytes]:
+    def get_mail_attachments(self, email: UidEmail) -> list[bytes]:
         raise NotImplementedError()
