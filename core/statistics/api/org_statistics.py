@@ -222,8 +222,7 @@ def get_records_created_and_closed(org_user: OrgUser, data: InputCreatedAndClose
         )
     if not created_and_closed:
         return {"years": [], "data": []}
-
-    years = get_available_datasheet_years(org_user.org.pk)
+    
     first_year_str, first_month_str = str(
         min(created_and_closed, key=lambda x: x["month"])["month"]
     ).split("/")
@@ -256,4 +255,5 @@ def get_records_created_and_closed(org_user: OrgUser, data: InputCreatedAndClose
             current_month = 1
             current_year += 1
 
+    years = get_available_datasheet_years(org_user.org.pk)
     return {"years": list(years), "data": created_and_closed_continuous}
