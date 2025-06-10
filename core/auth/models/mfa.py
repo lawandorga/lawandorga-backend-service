@@ -53,7 +53,7 @@ class MultiFactorAuthenticationSecret(models.Model):
         )
         img = qrcode.make(uri)
         buffer = BytesIO()
-        img.save(buffer, format="PNG")
+        img.save(buffer)
         base64_string = base64.b64encode(buffer.getvalue()).decode("utf-8")
         return "data:image/png;base64,{}".format(base64_string)
 
