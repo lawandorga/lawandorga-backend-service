@@ -64,7 +64,8 @@ def update_view(
 def delete_view(__actor: OrgUser, uuid: UUID):
     view = find_view_by_uuid(__actor, uuid)
     if view.org is not None:
-        raise UseCaseError(
-            "You can not delete a view that is shared with your organization."
+        check_permissions(
+            __actor,
+            [PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES],
         )
     view.delete()
