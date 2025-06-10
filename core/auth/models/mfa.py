@@ -1,7 +1,9 @@
+import base64
+from io import BytesIO
 import urllib.parse
 from typing import Callable
 from uuid import uuid4
-
+import qrcode
 import pyotp
 from django.db import models
 
@@ -49,9 +51,11 @@ class MultiFactorAuthenticationSecret(models.Model):
             issuer_name="Law&Orga",
             image="https://backend.law-orga.de/static/logo256blue.png",
         )
-        encoded_uri = urllib.parse.quote(uri)
-        google_uri = "https://chart.apis.google.com/chart?cht=qr&chs=250x250&chl={}"
-        return google_uri.format(encoded_uri)
+        img = qrcode.make(uri)
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        base64_string = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        return "data:image/png;base64,{}".format(base64_string)
 
     def generate_secret(self, generator: Callable[..., str]):
         if self.secret is not None:

@@ -9,7 +9,7 @@
             You can scan this QR Code with your favourite Authenticator app (We recommend Authy).
             And put the generated code into the input field to enable MfA.
         </p>
-        <img alt="MFA Setup QR Code" src="https://chart.apis.google.com/chart?cht=qr&chs=250x250&chl={{ object.url }}">
+        <img alt="MFA Setup QR Code" src="{{ object.url }}" width="200">
         {% include 'symbols/form.html' with submit="Enable MfA" form=form %}
     </div>
 {% endblock %}

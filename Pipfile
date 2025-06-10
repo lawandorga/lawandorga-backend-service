@@ -44,5 +44,6 @@ pillow = "*"
 weasyprint = "*"
 tach = "*"
 types-pytz = "*"
+qrcode = {extras = ["pil"], version = "==8.*"}
 
 [dev-packages]
