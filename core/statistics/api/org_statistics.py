@@ -222,7 +222,7 @@ def get_records_created_and_closed(org_user: OrgUser, data: InputCreatedAndClose
         )
     if not created_and_closed:
         return {"years": [], "data": []}
-    
+
     first_year_str, first_month_str = str(
         min(created_and_closed, key=lambda x: x["month"])["month"]
     ).split("/")

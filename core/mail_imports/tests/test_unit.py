@@ -8,7 +8,7 @@ from core.mail_imports.use_cases.mail_import import (
 def test_assign_emails_to_folder_uuid_works():
     emails = [
         ValidatedEmail(
-            num="test",
+            uid="test",
             sender="test",
             to="test",
             cc="test",
@@ -18,7 +18,7 @@ def test_assign_emails_to_folder_uuid_works():
             content="test",
             addresses=[],
         ),
-        ErrorEmail(num="test", error="test"),
+        ErrorEmail(uid="test", error="test"),
     ]
     assigned = assign_emails_to_folder_uuid(emails)
     assert len(assigned) == 2

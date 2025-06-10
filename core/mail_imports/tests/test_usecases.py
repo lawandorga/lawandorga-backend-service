@@ -55,7 +55,7 @@ def test_mails_can_be_marked_as_read(db):
 
 def test_assigned_email_not_created_without_folder_uuid():
     email = ValidatedEmail(
-        num="1",
+        uid="1",
         sender="Sender",
         to="To",
         cc="",
@@ -72,7 +72,7 @@ def test_assigned_email_not_created_without_folder_uuid():
 def test_assigned_email_is_created_with_folder_uuid():
     uuid2 = uuid4()
     email = ValidatedEmail(
-        num="1",
+        uid="1",
         sender="Sender",
         to="To",
         cc="",
