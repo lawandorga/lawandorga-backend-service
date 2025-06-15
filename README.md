@@ -39,6 +39,7 @@ Before proceeding with the remaining steps, you must ensure that the following P
 
 Make sure to install these packages with compatible versions to avoid dependency issues.
 Example installation command:
+
 `pip install Django pytz oidc-provider djangorestframework pydantic django-storages django-solo django-cors-headers ics cryptography bleach pyotp whitenoise duspython weasyprint argon2-cffi`
 
 ### Local Setup
