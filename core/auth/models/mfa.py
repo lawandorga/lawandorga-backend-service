@@ -1,10 +1,10 @@
 import base64
 from io import BytesIO
-import urllib.parse
 from typing import Callable
 from uuid import uuid4
-import qrcode
+
 import pyotp
+import qrcode
 from django.db import models
 
 from core.auth.models.org_user import OrgUser

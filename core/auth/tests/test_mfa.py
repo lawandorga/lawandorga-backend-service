@@ -35,7 +35,7 @@ def test_mfa_creation():
 
 
 def test_mfa_url(mfa):
-    assert "secret" in mfa.url
+    assert "data:image/png;base64" in mfa.url
 
 
 def test_mfa_enable(mfa):
