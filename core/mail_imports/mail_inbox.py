@@ -50,8 +50,11 @@ class MailInbox:
 
     def delete_emails(self, emails: Sequence[UidEmail]):
         for email in emails:
-            self.mailbox.copy(email.uid, "Trash")
-            self.mailbox.store(email.uid, "+FLAGS", "\\Deleted")
+            try:
+                self.mailbox.copy(email.uid, "Trash")
+                self.mailbox.store(email.uid, "+FLAGS", "\\Deleted")
+            except Exception as e:
+                logger.error(f"Failed to delete email UID {email.uid}: {e}")
 
     def mark_emails_as_error(self, emails: Sequence[UidEmail]):
         for email in emails:
