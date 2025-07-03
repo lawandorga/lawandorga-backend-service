@@ -4,8 +4,6 @@ from uuid import UUID
 from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet
 from core.folders.domain.aggregates.folder import Folder
-
-# from core.data_sheets.use_cases.record import migrate_record_into_folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.permissions.models import Permission
 from core.permissions.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
