@@ -4,6 +4,7 @@ from typing import Optional
 from uuid import UUID
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import FileResponse, HttpResponse
 from django.template import loader
 from pydantic import BaseModel, ConfigDict
@@ -15,7 +16,7 @@ from core.collab.models.letterhead import Letterhead
 from core.collab.models.template import Template
 from core.collab.repositories.collab import CollabRepository
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-from core.seedwork.api_layer import Router
+from core.seedwork.api_layer import ApiError, Router
 
 router = Router()
 
@@ -189,5 +190,8 @@ class OutputCollab(BaseModel):
 def query__data_sheet(org_user: OrgUser, data: InputUuid):
     cr = CollabRepository()
     fr = DjangoFolderRepository()
-    collab = cr.get_document(data.uuid, org_user, fr)
+    try:
+        collab = cr.get_document(data.uuid, org_user, fr)
+    except ObjectDoesNotExist:
+        raise ApiError("Collab document not found.")
     return collab
