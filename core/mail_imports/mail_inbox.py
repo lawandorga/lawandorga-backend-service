@@ -53,7 +53,7 @@ class MailInbox:
             try:
                 self.mailbox.store(email.uid, "+FLAGS", "\\Deleted")
             except IMAP4_SSL.error as e:
-                logger.error(f"error deleting email {email.uid}: {e}")
+                logger.warning(f"error deleting email {email.uid}: {e}")
         self.mailbox.expunge()
 
     def mark_emails_as_error(self, emails: Sequence[UidEmail]):
