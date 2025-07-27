@@ -334,3 +334,20 @@ def query__detail_folder(org_user: OrgUser, data: InputFolderDetail):
         "access": build_user_access(context, folder),
         "group_access": build_group_access(context, folder),
     }
+
+
+class OutputRootFolder(BaseModel):
+    uuid: UUID
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+@router.get(
+    url="root_folders/",
+    output_schema=list[OutputRootFolder],
+)
+def query__root_folders(org_user: OrgUser):
+    r = get_repository()
+    folders = r.get_root_folders(org_user.org_id)
+    return folders

@@ -165,6 +165,16 @@ class DjangoFolderRepository(FolderRepository):
 
         return folder
 
+    def get_root_folders(self, org_pk: int) -> list[Folder]:
+        db_folders = FOL_Folder.objects.filter(
+            org_id=org_pk, _parent=None, deleted=False
+        )
+        folders = list_map(
+            db_folders,
+            lambda f: self.__db_folder_to_domain(f, {}),
+        )
+        return folders
+
     def list_by_uuids(self, org_pk: int, uuids: list[UUID]) -> list[Folder]:
         db_folders = list(FOL_Folder.objects.filter(uuid__in=uuids, org_id=org_pk))
         pks = list_map(db_folders, lambda f: f.pk)

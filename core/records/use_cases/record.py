@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from django.db import transaction
@@ -17,9 +18,16 @@ from messagebus.domain.collector import EventCollector
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
 def create_record_and_folder(
-    __actor: OrgUser, token: str, r: FolderRepository, collector: EventCollector
+    __actor: OrgUser,
+    token: str,
+    parent_folder_uuid: Optional[UUID],
+    r: FolderRepository,
+    collector: EventCollector,
 ):
-    parent_folder = r.get_or_create_records_folder(__actor.org_id, __actor)
+    if parent_folder_uuid:
+        parent_folder = r.retrieve(__actor.org_id, parent_folder_uuid)
+    else:
+        parent_folder = r.get_or_create_records_folder(__actor.org_id, __actor)
 
     if not parent_folder.has_access(__actor):
         raise UseCaseError(

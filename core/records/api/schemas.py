@@ -7,6 +7,7 @@ from pydantic import BaseModel
 class InputCreateRecord(BaseModel):
     token: str
     template: Optional[int] = None
+    folder_uuid: Optional[UUID] = None
 
 
 class OutputCreateRecord(BaseModel):

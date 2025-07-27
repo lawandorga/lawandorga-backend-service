@@ -228,7 +228,7 @@ def create_record(token="AZ-TEST", user: Optional[OrgUser] = None) -> RecordDict
         full_user = create_org_user()
         user = full_user["org_user"]
     user.grant(PERMISSION_RECORDS_ADD_RECORD)
-    folder_uuid = uc_create_record(user, token)
+    folder_uuid = uc_create_record(user, token, None)
     record = RecordsRecord.objects.get(folder_uuid=folder_uuid)
     folder = DjangoFolderRepository().retrieve(user.org_id, folder_uuid)
     return {"record": record, "user": user, "folder": folder}
