@@ -1,12 +1,12 @@
 from core.mail_imports.use_cases.mail_import import (
     ErrorEmail,
     ValidatedEmail,
-    assign_emails_to_folder_uuid,
+    assign_email_to_folder_uuid,
 )
 
 
 def test_assign_emails_to_folder_uuid_works():
-    emails = [
+    assigned1 = assign_email_to_folder_uuid(
         ValidatedEmail(
             uid="test",
             sender="test",
@@ -17,8 +17,8 @@ def test_assign_emails_to_folder_uuid_works():
             subject="test",
             content="test",
             addresses=[],
-        ),
-        ErrorEmail(uid="test", error="test"),
-    ]
-    assigned = assign_emails_to_folder_uuid(emails)
-    assert len(assigned) == 2
+        )
+    )
+    assert isinstance(assigned1, ValidatedEmail)
+    assigned2 = assign_email_to_folder_uuid(ErrorEmail(uid="test", error="test"))
+    assert isinstance(assigned2, ErrorEmail)

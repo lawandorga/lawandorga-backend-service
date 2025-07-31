@@ -163,25 +163,24 @@ def get_email_info(message: EmailMessage):
     }
 
 
-def validate_emails(raw_emails: list[RawEmail]) -> list[ErrorEmail | ValidatedEmail]:
-    validated_emails: list[ErrorEmail | ValidatedEmail] = []
-    for email in raw_emails:
-        try:
-            data = email.data
-            message: EmailMessage = message_from_bytes(
-                data[0][1], policy=default  # type: ignore
-            )
-            email_info = get_email_info(message)
-            validated_emails.append(ValidatedEmail(uid=email.uid, **email_info))
-        except Exception as e:
-            logger.error(f"error while importing mails: {e}")
-            validated_emails.append(ErrorEmail(uid=email.uid, error=str(e)))
-    return validated_emails
+def validate_email(raw_email: RawEmail) -> ErrorEmail | ValidatedEmail:
+    try:
+        data = raw_email.data
+        message: EmailMessage = message_from_bytes(
+            data[0][1], policy=default  # type: ignore
+        )
+        email_info = get_email_info(message)
+        return ValidatedEmail(uid=raw_email.uid, **email_info)
+    except Exception as e:
+        logger.error(f"error while importing mail: {e}")
+        return ErrorEmail(uid=raw_email.uid, error=str(e))
 
 
 def assign_email_to_folder_uuid(
-    email: ValidatedEmail,
-) -> AssignedEmail | ValidatedEmail:
+    email: ValidatedEmail | ErrorEmail,
+) -> AssignedEmail | ValidatedEmail | ErrorEmail:
+    if isinstance(email, ErrorEmail):
+        return email
     folder_uuids = []
     for address in email.addresses:
         left = address.split("@")[0]
@@ -195,21 +194,13 @@ def assign_email_to_folder_uuid(
     return email
 
 
-def assign_emails_to_folder_uuid(
-    emails: list[ValidatedEmail | ErrorEmail],
-) -> list[ValidatedEmail | ErrorEmail | AssignedEmail]:
-    assigned: list[ValidatedEmail | ErrorEmail | AssignedEmail] = []
-    for email in emails:
-        if isinstance(email, ErrorEmail):
-            assigned.append(email)
-            continue
-        assigned.append(assign_email_to_folder_uuid(email))
-    return assigned
-
-
 def assign_email_to_folder(
-    email: AssignedEmail, folders: dict[UUID, Folder], user: OrgUser
-) -> FolderEmail | AssignedEmail:
+    email: AssignedEmail | ValidatedEmail | ErrorEmail,
+    folders: dict[UUID, Folder],
+    user: OrgUser,
+) -> FolderEmail | AssignedEmail | ValidatedEmail | ErrorEmail:
+    if not isinstance(email, AssignedEmail):
+        return email
     for folder_uuid in email.folder_uuids:
         if folder_uuid not in folders:
             continue
@@ -223,64 +214,50 @@ def assign_email_to_folder(
     return email
 
 
-def assign_emails_to_folder(
-    emails: Sequence[ValidatedEmail | ErrorEmail | AssignedEmail],
-    folders: dict[UUID, Folder],
+def save_email(
+    email: ValidatedEmail | ErrorEmail | AssignedEmail | FolderEmail,
     user: OrgUser,
-) -> list[ValidatedEmail | ErrorEmail | AssignedEmail | FolderEmail]:
-    assigned: list[ValidatedEmail | ErrorEmail | AssignedEmail | FolderEmail] = []
-    for email in emails:
-        if not isinstance(email, AssignedEmail):
-            assigned.append(email)
+) -> None:
+    if not isinstance(email, FolderEmail):
+        return
+    assert isinstance(email, FolderEmail)
+    obj = MailImport.create(
+        sender=email.sender,
+        bcc=email.bcc or "",
+        to=email.to,
+        subject=email.subject,
+        content=email.content,
+        sending_datetime=email.date,
+        folder_uuid=email.folder_uuid,
+        org_id=email.org_pk,
+    )
+    obj.encrypt(user)
+    attachments: list[MailAttachment] = []
+    for a in email.attachments:
+        if a.content is None or len(a.content) == 0:
             continue
-        assigned.append(assign_email_to_folder(email, folders, user))
-    return assigned
-
-
-def save_emails(
-    emails: Sequence[ValidatedEmail | ErrorEmail | AssignedEmail | FolderEmail],
-    user: OrgUser,
-) -> None:
-    infolder = list_filter(emails, lambda e: isinstance(e, FolderEmail))
-    for email in infolder:
-        assert isinstance(email, FolderEmail)
-        obj = MailImport.create(
-            sender=email.sender,
-            bcc=email.bcc or "",
-            to=email.to,
-            subject=email.subject,
-            content=email.content,
-            sending_datetime=email.date,
-            folder_uuid=email.folder_uuid,
-            org_id=email.org_pk,
+        content_file = ContentFile(content=a.content, name=a.filename)
+        attachment = MailAttachment.create(
+            mail_import=obj,
+            filename=a.filename,
+            content=content_file,
+            user=user,
         )
-        obj.encrypt(user)
-        attachments: list[MailAttachment] = []
-        for a in email.attachments:
-            if a.content is None or len(a.content) == 0:
-                continue
-            content_file = ContentFile(content=a.content, name=a.filename)
-            attachment = MailAttachment.create(
-                mail_import=obj,
-                filename=a.filename,
-                content=content_file,
-                user=user,
-            )
-            attachments.append(attachment)
-        with transaction.atomic():
-            obj.save()
-            for attachment in attachments:
-                attachment.save()
+        attachments.append(attachment)
+    with transaction.atomic():
+        obj.save()
+        for attachment in attachments:
+            attachment.save()
 
 
-def move_emails(
+def move_email(
     mail_box: MailInbox,
-    emails: Sequence[ValidatedEmail | ErrorEmail | AssignedEmail | FolderEmail],
+    email: ValidatedEmail | ErrorEmail | AssignedEmail | FolderEmail,
 ) -> None:
-    infolder = list_filter(emails, lambda e: isinstance(e, FolderEmail))
-    error = list_filter(emails, lambda e: isinstance(e, ErrorEmail))
-    mail_box.mark_emails_as_error(error)
-    mail_box.delete_emails(infolder)
+    if isinstance(email, FolderEmail):
+        mail_box.delete_emails([email])
+    elif isinstance(email, ErrorEmail):
+        mail_box.mark_emails_as_error([email])
 
 
 def log_emails(
@@ -302,10 +279,12 @@ def import_mails(__actor: OrgUser, r: FolderRepository):
     folders = r.get_dict(__actor.org_id)
     with MailInbox() as mail_box:
         mail_box.login()
-        raw_emails = mail_box.get_raw_emails()
-        validated = validate_emails(raw_emails)
-        assigned = assign_emails_to_folder_uuid(validated)
-        infolder = assign_emails_to_folder(assigned, folders, __actor)
-        save_emails(infolder, __actor)
-        move_emails(mail_box, infolder)
-        log_emails(infolder)
+        all_mails = []
+        while email := mail_box.get_raw_email():
+            validated = validate_email(email)
+            assigned = assign_email_to_folder_uuid(validated)
+            infolder = assign_email_to_folder(assigned, folders, __actor)
+            save_email(infolder, __actor)
+            move_email(mail_box, infolder)
+            all_mails.append(infolder)
+        log_emails(all_mails)

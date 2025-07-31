@@ -48,6 +48,14 @@ class MailInbox:
             emails.append(RawEmail(uid=uid, data=data))
         return emails
 
+    def get_raw_email(self) -> RawEmail | None:
+        _, [uids] = self.mailbox.uid("SEARCH", "", "ALL")
+        if not uids:
+            return None
+        uid = uids.split()[0]
+        _, data = self.mailbox.uid("FETCH", uid, "(RFC822)")
+        return RawEmail(uid=uid, data=data)
+
     def delete_emails(self, emails: Sequence[UidEmail]):
         for email in emails:
             try:
