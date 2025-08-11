@@ -34,3 +34,6 @@ class FolderRepository:
 
     def get_root_folders(self, org_pk: int) -> list[Folder]:
         raise NotImplementedError()
+
+    def get_parent_folders(self, org_pk: int, uuid: UUID) -> list[Folder]:
+        raise NotImplementedError()

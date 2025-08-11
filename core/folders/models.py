@@ -43,18 +43,24 @@ class FOL_Folder(models.Model):
 
 
 class FOL_ClosureTable(models.Model):
-    parent = models.ForeignKey(
+    parent = models.ForeignKey(  # type: ignore
         FOL_Folder,
         related_name="children_connections",
         on_delete=models.CASCADE,
         db_index=True,
     )
-    child = models.ForeignKey(
+    child = models.ForeignKey(  # type: ignore
         FOL_Folder,
         related_name="parent_connections",
         on_delete=models.CASCADE,
         db_index=True,
     )
+
+    if TYPE_CHECKING:
+        parent: models.ForeignKey[FOL_Folder]  # type: ignore
+        child: models.ForeignKey[FOL_Folder]  # type: ignore
+        parent_id: int
+        child_id: int
 
     class Meta:
         verbose_name = "FOL_ClosureTable"
@@ -63,4 +69,4 @@ class FOL_ClosureTable(models.Model):
         ordering = ["parent", "child"]
 
     def __str__(self):
-        return "parent: {}; child: {};".format(self.parent, self.child)
+        return "parent: {}; child: {};".format(self.parent_id, self.child_id)

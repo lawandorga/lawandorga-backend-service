@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
 from core.folders.domain.aggregates.folder import Folder
+from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.usecases.folder import get_repository
 from core.org.models.group import Group
 from core.seedwork.api_layer import ApiError, Router
@@ -77,7 +78,7 @@ class Context(TypedDict):
 
 
 class ContextBuilder:
-    def __init__(self) -> None:
+    def __init__(self, repository: FolderRepository) -> None:
         self.context: Context = {
             "available_users": [],
             "available_groups": [],
@@ -87,6 +88,7 @@ class ContextBuilder:
             "users_dict": {},
             "groups_dict": {},
         }
+        self.r = repository
 
     def build_available_users(self, org_id: int):
         x = list(OrgUser.objects.filter(org_id=org_id))
@@ -99,9 +101,12 @@ class ContextBuilder:
         return self
 
     def build_folders(self, org_id: int):
-        r = get_repository()
-        x = r.get_list(org_id)
+        x = self.r.get_list(org_id)
         self.context["folders"] = x
+        return self
+
+    def build_parent_folders(self, org_id: int, folder_id: UUID):
+        self.context["folders"] = self.r.get_parent_folders(org_id, folder_id)
         return self
 
     def build_folder_dicts(self):
@@ -232,7 +237,8 @@ def get_page(context: Context, user: OrgUser):
 
 @router.get(output_schema=OutputFolderPage)
 def query__list_folders(org_user: OrgUser):
-    builder = ContextBuilder()
+    r = get_repository()
+    builder = ContextBuilder(r)
     builder.build_available_users(org_user.org_id).buid_users_dict()
     builder.build_available_groups(org_user.org_id).build_groups_dict()
     builder.build_folders(org_user.org_id).build_folder_dicts()
@@ -316,9 +322,9 @@ class OutputDetailFolderDetail(BaseModel):
 )
 def query__detail_folder(org_user: OrgUser, data: InputFolderDetail):
     r = get_repository()
-    builder = ContextBuilder()
+    builder = ContextBuilder(r)
     builder.build_available_users(org_user.org_id).buid_users_dict()
-    builder.build_folders(org_user.org_id).build_folder_dicts()
+    builder.build_parent_folders(org_user.org_id, data.id).build_folder_dicts()
     builder.build_available_groups(org_user.org_id).build_groups_dict()
     context = builder.build()
     try:

@@ -175,6 +175,16 @@ class DjangoFolderRepository(FolderRepository):
         )
         return folders
 
+    def get_parent_folders(self, org_pk: int, uuid: UUID) -> list[Folder]:
+        db_folder = FOL_Folder.objects.get(uuid=uuid, org_id=org_pk)
+        closures: list[FOL_ClosureTable] = list(
+            FOL_ClosureTable.objects.filter(child_id=db_folder.pk).select_related(
+                "parent"
+            )
+        )
+        uuids = list_map(closures, lambda c: c.parent.uuid)
+        return self.list_by_uuids(org_pk, uuids)
+
     def list_by_uuids(self, org_pk: int, uuids: list[UUID]) -> list[Folder]:
         db_folders = list(FOL_Folder.objects.filter(uuid__in=uuids, org_id=org_pk))
         pks = list_map(db_folders, lambda f: f.pk)
@@ -239,9 +249,9 @@ class DjangoFolderRepository(FolderRepository):
         f.save()
 
     def get_children(self, org_pk: int, uuid: UUID) -> list[Folder]:
-        db_folder = FOL_Folder.objects.filter(uuid=uuid, org_id=org_pk).get()
+        db_folder = FOL_Folder.objects.get(uuid=uuid, org_id=org_pk)
         closures = FOL_ClosureTable.objects.filter(
-            child_id=db_folder.pk
+            parent_id=db_folder.pk
         ).select_related("child")
         uuids = list_map(closures, lambda c: c.child.uuid)
         return self.list_by_uuids(org_pk, uuids)

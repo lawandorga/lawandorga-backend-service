@@ -17,6 +17,21 @@ CALENDAR_URL = "http://localhost:4205"
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEBUG
 DEBUG = True
 
+# Application definition
+# https://docs.djangoproject.com/en/dev/ref/applications/
+INSTALLED_APPS += ["debug_toolbar"]
+
+# Middleware
+# https://docs.djangoproject.com/en/dev/topics/http/middleware/
+MIDDLEWARE += [
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "config.middleware.custom_debug_toolbar_middleware",
+]
+
+# Django Debug Toolbar
+# https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#configuring-internal-ips
+INTERNAL_IPS = ["127.0.0.1"]
+
 # Allowed Hosts
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["*"]
