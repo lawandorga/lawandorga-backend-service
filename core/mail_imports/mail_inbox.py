@@ -43,7 +43,6 @@ class MailInbox:
 
     def get_raw_emails(self) -> list[RawEmail]:
         _, [uids] = self.mailbox.uid("SEARCH", "", "ALL")
-        print(uids)
         emails = []
         for uid in uids.split():
             _, data = self.mailbox.uid("FETCH", uid, "(RFC822)")
