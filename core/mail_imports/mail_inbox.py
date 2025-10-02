@@ -65,20 +65,20 @@ class MailInbox:
     def delete_emails(self, emails: Sequence[UidEmail]):
         for email in emails:
             try:
-                self.mailbox.store(email.uid, "+FLAGS", "\\Deleted")
+                self.mailbox.uid("STORE", email.uid, "+FLAGS", "\\Deleted")
             except IMAP4_SSL.error as e:
                 logger.warning(f"error deleting email {email.uid}: {e}")
         self.mailbox.expunge()
 
     def mark_emails_as_error(self, emails: Sequence[UidEmail]):
         for email in emails:
-            self.mailbox.copy(email.uid, "Errors")
-            self.mailbox.store(email.uid, "+FLAGS", "\\Deleted")
+            self.mailbox.uid("COPY", email.uid, "Errors")
+            self.mailbox.uid("STORE", email.uid, "+FLAGS", "\\Deleted")
 
     def mark_emails_as_not_assignable(self, emails: Sequence[UidEmail]):
         for email in emails:
-            self.mailbox.copy(email.uid, "Unassigned")
-            self.mailbox.store(email.uid, "+FLAGS", "\\Deleted")
+            self.mailbox.uid("COPY", email.uid, "Unassigned")
+            self.mailbox.uid("STORE", email.uid, "+FLAGS", "\\Deleted")
 
     def get_mail_attachments(self, email: UidEmail) -> list[bytes]:
         raise NotImplementedError()
