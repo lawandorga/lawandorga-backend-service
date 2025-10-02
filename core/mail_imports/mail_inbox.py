@@ -1,3 +1,4 @@
+import email as _email
 import logging
 from imaplib import IMAP4_SSL
 from typing import Any, Protocol, Sequence
@@ -16,12 +17,23 @@ class RawEmail(BaseModel):
     uid: str
     data: Any
 
+    @property
+    def message_id(self) -> str | None:
+        """Extract the Message-ID header from the email data"""
+        if self.data and len(self.data) > 0:
+            raw_email = self.data[0][1]
+            if isinstance(raw_email, bytes):
+                msg = _email.message_from_bytes(raw_email)
+                return msg.get("Message-ID")
+        return None
+
 
 class MailInbox:
     def __init__(self) -> None:
         self.mailbox = IMAP4_SSL(
             host=settings.MI_EMAIL_HOST, port=settings.MI_EMAIL_PORT
         )
+        self.seen: set[Any] = set()
 
     def __enter__(self):
         return self
@@ -52,9 +64,14 @@ class MailInbox:
         _, [uids] = self.mailbox.uid("SEARCH", "", "ALL")
         if not uids:
             return None
-        uid = uids.split()[0]
-        _, data = self.mailbox.uid("FETCH", uid, "(RFC822)")
-        return RawEmail(uid=uid, data=data)
+        for uid in uids.split():
+            _, data = self.mailbox.uid("FETCH", uid, "(RFC822)")
+            email = RawEmail(uid=uid, data=data)
+            if email.message_id in self.seen:
+                continue
+            self.seen.add(email.message_id)
+            return email
+        return None
 
     def delete_emails(self, emails: Sequence[UidEmail]):
         for email in emails:
