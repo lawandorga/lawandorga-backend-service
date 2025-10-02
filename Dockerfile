@@ -23,7 +23,7 @@ RUN groupadd -g 999 python && useradd -r -u 999 -g python python
 RUN apt-get update && apt-get install libpq5 -y
 
 # install library for weasyprint
-RUN apt-get install -y --no-install-recommends build-essential libcairo2 libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 libffi-dev shared-mime-info
+RUN apt-get install -y --no-install-recommends build-essential libcairo2 libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf-xlib-2.0-0 libffi-dev shared-mime-info
 
 # copy files
 RUN mkdir /django && chown python:python /django
