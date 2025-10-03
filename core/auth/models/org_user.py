@@ -181,6 +181,10 @@ class OrgUser(models.Model):
         }
 
     @property
+    def group_names(self) -> list[str]:
+        return [group.name for group in self.groups.all()]
+
+    @property
     def last_login_month(self):
         return self.user.last_login_month
 

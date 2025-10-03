@@ -37,6 +37,7 @@ class OutputOrgUserSmall(BaseModel):
     email: str
     accepted: bool
     email_confirmed: bool
+    group_names: list[str]
     locked: bool
     is_active: bool
     last_login_month: Optional[str]
@@ -47,7 +48,7 @@ class OutputOrgUserSmall(BaseModel):
 
 @router.get(output_schema=list[OutputOrgUserSmall])
 def list_org_users(org_user: OrgUser):
-    org_users = OrgUser.objects.filter(org=org_user.org)
+    org_users = OrgUser.objects.filter(org=org_user.org).prefetch_related("groups")
     return list(org_users)
 
 
