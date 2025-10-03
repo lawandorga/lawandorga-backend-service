@@ -200,3 +200,6 @@ class UploadFile(models.Model):
             self.file.file, key.get_key().decode("utf-8")
         )
         return f
+
+    def delete_file(self):
+        self.file.delete(save=False)

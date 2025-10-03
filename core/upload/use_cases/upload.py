@@ -7,7 +7,11 @@ from core.auth.models import OrgUser
 from core.folders.usecases.finders import folder_from_uuid
 from core.seedwork.use_case_layer import UseCaseError, use_case
 from core.upload.models import UploadLink
-from core.upload.use_cases.finder import link_from_uuid, link_from_uuid_dangerous
+from core.upload.use_cases.finder import (
+    file_from_uuid,
+    link_from_uuid,
+    link_from_uuid_dangerous,
+)
 from messagebus.domain.collector import EventCollector
 
 
@@ -42,3 +46,10 @@ def upload_data(__actor: AnonymousUser, name: str, file: UploadedFile, link_uuid
     link = link_from_uuid_dangerous(link_uuid)
     obj = link.upload(name, file)
     obj.save()
+
+
+@use_case
+def delete_uploaded_file(__actor: OrgUser, file_uuid: UUID):
+    file = file_from_uuid(__actor, file_uuid)
+    file.delete_file()
+    file.delete()

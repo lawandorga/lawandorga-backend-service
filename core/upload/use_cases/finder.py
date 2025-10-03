@@ -13,3 +13,10 @@ def link_from_uuid(actor: OrgUser, uuid: UUID) -> UploadLink:
 @finder_function
 def link_from_uuid_dangerous(uuid: UUID) -> UploadLink:
     return UploadLink.objects.get(uuid=uuid)
+
+
+@finder_function
+def file_from_uuid(actor: OrgUser, uuid: UUID):
+    return UploadLink.objects.get(files__uuid=uuid, org_id=actor.org_id).files.get(
+        uuid=uuid
+    )
