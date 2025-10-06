@@ -1,11 +1,15 @@
 from email.message import Message
 from uuid import uuid4
 
-from core.mail_imports.models.mail_import import MailImport
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+
+from core.mail_imports.models.mail_import import MailAttachment, MailImport
 from core.mail_imports.use_cases.mail_import import (
     AssignedEmail,
     ValidatedEmail,
     assign_email_to_folder_uuid,
+    delete_mail,
     get_addresses_from_message,
     mark_mails_as_read,
     toggle_mail_pinned,
@@ -102,3 +106,34 @@ def test_get_addresses_from_message():
         "recipient2@law-orga.de",
         "recipient3@law-orga.de",
     ]
+
+
+def test_mail_can_be_deleted(db):
+    u = test_helpers.create_org_user()
+    user = u["org_user"]
+    folder = test_helpers.create_folder(user=user)
+    folder_uuid = folder["folder"].uuid
+    mail = MailImport.create(
+        sender="test@law-orga.de",
+        to="recieve@law-orag.de",
+        content="Test Mail",
+        folder_uuid=folder_uuid,
+        subject="Test Mail",
+        org_id=user.org_id,
+    )
+    mail.encrypt(user)
+    content_file = ContentFile(content=b"abc", name="testing-mail-import")
+    attachment = MailAttachment.create(
+        mail_import=mail,
+        filename="testing-mail-import",
+        content=content_file,
+        user=user,
+    )
+    mail.save()
+    attachment.save()
+    filename = attachment.content.name
+    assert default_storage.exists(filename)
+    delete_mail(user, mail.uuid)
+    assert MailImport.objects.filter(uuid=mail.uuid).count() == 0
+    assert MailAttachment.objects.filter(mail_import__uuid=mail.uuid).count() == 0
+    assert not default_storage.exists(filename)

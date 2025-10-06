@@ -288,3 +288,12 @@ def import_mails(__actor: OrgUser, r: FolderRepository):
             move_email(mail_box, infolder)
             all_mails.append(infolder)
         log_emails(all_mails)
+
+
+@use_case
+def delete_mail(__actor: OrgUser, mail_uuid: UUID):
+    mail = mail_from_uuid(__actor, mail_uuid)
+    for a in mail.attachments.all():
+        a.content.delete()
+        a.delete()
+    mail.delete()
