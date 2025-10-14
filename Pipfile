@@ -37,7 +37,7 @@ types-bleach = "==6.2.*"
 pytest-xdist = "==3.6.*"
 django-oidc-provider = {git = "https://github.com/lawandorga/django-oidc-provider"}
 pyotp = "==2.9.*"
-ruff = "==0.11.*"
+ruff = "==0.14.*"
 isort = "==6.*"
 django-stubs = "==5.1.*"
 pillow = "*"
