@@ -5,6 +5,7 @@ from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
+from core.folders.domain.value_objects.asymmetric_key import AsymmetricKey
 from core.permissions.models import Permission
 from core.permissions.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from core.seedwork.use_case_layer import use_case

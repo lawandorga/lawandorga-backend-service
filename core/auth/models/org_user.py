@@ -400,7 +400,9 @@ class OrgUser(models.Model):
         decoded = session.get_decoded()
         key = UserKey.create_from_unsafe_dict(decoded["user_key"])
 
-        assert isinstance(key.key, AsymmetricKey), f"key is no of type: {type(key.key)}"
+        assert isinstance(
+            key.key, AsymmetricKey
+        ), f"key is not an AsymmetricKey it is of type: {type(key.key)}"
         return key.key
 
     def activate_or_deactivate(self):

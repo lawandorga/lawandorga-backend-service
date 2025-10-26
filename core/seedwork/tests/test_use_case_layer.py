@@ -2,6 +2,7 @@ import pytest
 from pydantic import ValidationError
 
 from core.seedwork.use_case_layer import use_case
+from core.seedwork.use_case_layer.injector import InjectionContext
 
 
 class Actor:
@@ -101,3 +102,70 @@ def test_findable_errors():
 
     with pytest.raises(ValidationError):
         f1(__actor=Actor())
+
+
+class Repo:
+    def get_key(self):
+        return Key()
+
+
+class Key:
+    pass
+
+
+def inject_key(r: Repo) -> Key:
+    return r.get_key()
+
+
+def test_injection_context():
+    injections = InjectionContext(
+        {
+            Repo: Repo(),
+            Key: inject_key,
+        }
+    )
+    assert injections.has(Repo)
+    assert injections.has(Key)
+
+
+def test_use_case_with_unused_function_injection():
+    def inject_key_not_called(r: Repo) -> Key:
+        assert False
+
+    injections = InjectionContext(
+        {
+            Repo: Repo(),
+            Key: inject_key_not_called,
+        }
+    )
+
+    @use_case(context=injections, callbacks=[])
+    def t1(__actor: Actor):
+        pass
+
+    t1(__actor=Actor())
+
+
+class Secret:
+    pass
+
+
+def get_secret(key: Key) -> Secret:
+    assert isinstance(key, Key)
+    return Secret()
+
+
+def test_injections_injecting_themselfes():
+    injections = InjectionContext(
+        {
+            Repo: Repo(),
+            Key: inject_key,
+            Secret: get_secret,
+        }
+    )
+
+    @use_case(context=injections, callbacks=[])
+    def t2(__actor: Actor, key: Key):
+        assert isinstance(key, Key)
+
+    t2(__actor=Actor())

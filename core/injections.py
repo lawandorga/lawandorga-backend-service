@@ -1,8 +1,12 @@
+from typing import Any
+
+from core.auth.models.org_user import OrgUser
 from core.auth.models.user import UserProfile
 from core.collab.repositories.collab import CollabRepository
 from core.data_sheets.models.data_sheet import DataSheetRepository
 from core.files_new.models.file import FileRepository
 from core.folders.domain.repositories.folder import FolderRepository
+from core.folders.domain.value_objects.asymmetric_key import AsymmetricKey
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.other.models.logged_path import LoggedPath
 from core.questionnaires.models.questionnaire import QuestionnaireRepository
@@ -53,6 +57,11 @@ def log_usecase(context: CallbackContext):
         )
 
 
+def asymmetric_key_injection(actor: Any) -> AsymmetricKey:
+    assert isinstance(actor, OrgUser)
+    return actor.get_decryption_key()
+
+
 INJECTIONS = {
     FolderRepository: fr,
     FollowUpRepository: fur,
@@ -64,6 +73,7 @@ INJECTIONS = {
     RecordRepository: rr,
     CollabRepository: cr,
     EventCollector: lambda: EventCollector(),
+    # AsymmetricKey: asymmetric_key_injection,
 }
 
 CALLBACKS = [
