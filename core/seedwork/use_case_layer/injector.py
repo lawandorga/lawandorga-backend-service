@@ -1,40 +1,53 @@
-from functools import partial
 from typing import Any, Callable, TypeVar, get_type_hints
 
 RT = TypeVar("RT")
 
 R = TypeVar("R")
-Injections = dict[type[R], R | Callable[[], R]]
+Injections = dict[type[R], R | Callable[..., R]]
+_InjectionsDirect = dict[type[R], R]
+_InjectionsCallable = dict[type[R], Callable[..., R]]
 
 
 class InjectionContext:
     def __init__(self, injections: Injections) -> None:
-        self.injections = {k: v for k, v in injections.items() if not callable(v)}
+        self.injections: _InjectionsDirect = {
+            k: v for k, v in injections.items() if not callable(v)
+        }
+        self.callable_injections: _InjectionsCallable = {
+            k: v for k, v in injections.items() if callable(v)
+        }
         self.injections[InjectionContext] = self
+        self.resolved_callable_injections: _InjectionsDirect = {}
 
     def has(self, injection) -> bool:
-        return injection in self.injections
+        if injection in self.injections:
+            return True
+        if injection in self.callable_injections:
+            return True
+        return False
 
     def get(self, injection: type[R]) -> R:
-        return self.injections[injection]
+        if injection in self.injections:
+            return self.injections[injection]
+        if injection in self.resolved_callable_injections:
+            return self.resolved_callable_injections[injection]
+        if injection in self.callable_injections:
+            func = self.callable_injections[injection]
+            kwargs = inject_kwargs(func, {}, self)
+            resolved: R = func(**kwargs)
+            self.resolved_callable_injections[injection] = resolved
+            return resolved
+        raise ValueError(f"no injection found for type '{injection}'")
 
-
-class CallableInjectionContext(InjectionContext):
-    def __init__(self, injections: Injections) -> None:
-        self.injections = {k: v() for k, v in injections.items() if callable(v)}
-
-
-def inject_function(
-    func: Callable[..., RT], context: InjectionContext
-) -> Callable[..., RT]:
-    hints = get_type_hints(func)
-    hints.pop("return", None)
-
-    for name, hint in hints.items():
-        if context.has(hint):
-            func = partial(func, **{name: context.get(hint)})
-
-    return func
+    def reset(self) -> None:
+        """
+        Resets the resolved callable injections.
+        Call this method before each use case execution to ensure that
+        callable injections are re-evaluated.
+        This means that each callable injection will be request bound.
+        Or more specifically usecase bound.
+        """
+        self.resolved_callable_injections = {}
 
 
 def inject_kwargs(
