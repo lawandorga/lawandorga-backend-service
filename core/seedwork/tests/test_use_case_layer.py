@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import pytest
 from pydantic import ValidationError
 
@@ -169,3 +171,51 @@ def test_injections_injecting_themselfes():
         assert isinstance(key, Key)
 
     t2(__actor=Actor())
+
+
+class UniqueObject:
+    def __init__(self) -> None:
+        self.id = uuid4()
+
+
+def test_callback_injection_is_same_as_usecase_injection():
+    injections = InjectionContext(
+        {
+            UniqueObject: lambda: UniqueObject(),
+        }
+    )
+
+    id = None
+
+    def callback(unique_object: UniqueObject):
+        nonlocal id
+        assert id == unique_object.id
+
+    @use_case(context=injections, callbacks=[callback])
+    def t3(__actor: Actor, unique_object: UniqueObject):
+        nonlocal id
+        id = unique_object.id
+
+    t3(__actor=Actor())
+
+
+def test_callback_injection_different_from_usecase_injection():
+    injections = InjectionContext(
+        {
+            UniqueObject: lambda: UniqueObject(),
+        }
+    )
+
+    ids = set()
+
+    @use_case(context=injections, callbacks=[])
+    def t4(__actor: Actor, unique_object: UniqueObject):
+        ids.add(unique_object.id)
+
+    @use_case(context=injections, callbacks=[])
+    def t5(__actor: Actor, unique_object: UniqueObject):
+        ids.add(unique_object.id)
+
+    t4(__actor=Actor())
+    t5(__actor=Actor())
+    assert len(ids) == 2

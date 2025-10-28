@@ -42,6 +42,8 @@ def test_create_no_permission(user, record_template, folder):
 
 
 def test_records_are_added_to_folder(user, record_template, folder, folder_repo):
+    f = folder_repo.retrieve(folder.org_pk, folder.uuid)
+    assert 0 == len(f.items)
     user["org_user"].grant(PERMISSION_RECORDS_ADD_RECORD)
     create_a_data_sheet_within_a_folder(
         user["org_user"],
@@ -49,6 +51,8 @@ def test_records_are_added_to_folder(user, record_template, folder, folder_repo)
         folder_uuid=folder.uuid,
         template_id=record_template["template"].pk,
     )
+    f = folder_repo.retrieve(folder.org_pk, folder.uuid)
+    assert 1 == len(f.items)
     create_a_data_sheet_within_a_folder(
         user["org_user"],
         "record123",

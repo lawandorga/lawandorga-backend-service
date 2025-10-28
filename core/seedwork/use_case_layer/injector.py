@@ -3,14 +3,21 @@ from typing import Any, Callable, TypeVar, get_type_hints
 RT = TypeVar("RT")
 
 R = TypeVar("R")
-Injections = dict[type[R], R | Callable[[], R]]
+Injections = dict[type[R], R | Callable[..., R]]
+_InjectionsDirect = dict[type[R], R]
+_InjectionsCallable = dict[type[R], Callable[..., R]]
 
 
 class InjectionContext:
     def __init__(self, injections: Injections) -> None:
-        self.injections = {k: v for k, v in injections.items() if not callable(v)}
-        self.callable_injections = {k: v for k, v in injections.items() if callable(v)}
+        self.injections: _InjectionsDirect = {
+            k: v for k, v in injections.items() if not callable(v)
+        }
+        self.callable_injections: _InjectionsCallable = {
+            k: v for k, v in injections.items() if callable(v)
+        }
         self.injections[InjectionContext] = self
+        self.resolved_callable_injections: _InjectionsDirect = {}
 
     def has(self, injection) -> bool:
         if injection in self.injections:
@@ -22,11 +29,25 @@ class InjectionContext:
     def get(self, injection: type[R]) -> R:
         if injection in self.injections:
             return self.injections[injection]
+        if injection in self.resolved_callable_injections:
+            return self.resolved_callable_injections[injection]
         if injection in self.callable_injections:
             func = self.callable_injections[injection]
             kwargs = inject_kwargs(func, {}, self)
-            return func(**kwargs)  # type: ignore
-        assert False
+            resolved: R = func(**kwargs)
+            self.resolved_callable_injections[injection] = resolved
+            return resolved
+        raise ValueError(f"no injection found for type '{injection}'")
+
+    def reset(self) -> None:
+        """
+        Resets the resolved callable injections.
+        Call this method before each use case execution to ensure that
+        callable injections are re-evaluated.
+        This means that each callable injection will be request bound.
+        Or more specifically usecase bound.
+        """
+        self.resolved_callable_injections = {}
 
 
 def inject_kwargs(

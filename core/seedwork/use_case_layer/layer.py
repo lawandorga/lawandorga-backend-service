@@ -61,6 +61,7 @@ def use_case(
 
         @wraps(usecase_func)
         def wrapper(*args, **kwargs) -> RetType:
+            context.reset()
             kwargs = inject_kwargs(usecase_func, kwargs, context)
 
             func_code = usecase_func.__code__
