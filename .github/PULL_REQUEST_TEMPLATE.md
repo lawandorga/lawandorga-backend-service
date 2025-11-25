@@ -25,14 +25,4 @@
 
 Fixes: #
 
----
-
-<!--
-DOR:
-- [Release notes](https://github.com/digitalfabrik/integreat-app/blob/main/docs/contributing.md#release-notes) have been added for user visible changes
-- Linting: `yarn lint`
-- Typescript: `yarn ts:check`
-- Prettier: `yarn prettier`
-- Unit tests: `yarn test`
--->
 
