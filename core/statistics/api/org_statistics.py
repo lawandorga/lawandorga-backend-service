@@ -126,7 +126,7 @@ def query__org_usage(statistics_user: StatisticUser):
     from core_org as org
     left join core_datasheettemplate template on org.id = template.org_id
     left join core_datasheet record on record.template_id = template.id
-    left join core_folder folder on org.id = folder.org_id
+    left join core_folder folder on org.id = folder.rlc_id
     left join core_file file on file.folder_id = folder.id
     left join core_collab collab on org.id = collab.org_id
     group by org.id, org.name;
