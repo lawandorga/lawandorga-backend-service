@@ -10,15 +10,14 @@ resource "kubernetes_ingress_v1" "ingress" {
       "nginx.org/proxy-send-timeout"                   = "240"
       "nginx.org/proxy-connect-timeout"                = "240"
       "nginx.org/proxy-next-upstream-timeout"          = "240"
-      "cert-manager.io/cluster-issuer"                 = "${data.terraform_remote_state.cert_manager.outputs.cluster_issuer_name}"
       # this allows for too big files that the frontend shows the correct error and can read the 413 status code
-      "nginx.ingress.kubernetes.io/server-snippet" = <<-EOF
-        error_page 413 /custom_413.html;
-        location = /custom_413.html {
-          add_header Access-Control-Allow-Origin "https://www.law-orga.de" always;
-          add_header Access-Control-Allow-Credentials "true" always;
-        }
-      EOF
+      # "nginx.ingress.kubernetes.io/server-snippet" = <<-EOF
+      #   error_page 413 /custom_413.html;
+      #   location = /custom_413.html {
+      #     add_header Access-Control-Allow-Origin "https://www.law-orga.de" always;
+      #     add_header Access-Control-Allow-Credentials "true" always;
+      #   }
+      # EOF
     }
   }
 

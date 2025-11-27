@@ -45,6 +45,7 @@ resource "kubernetes_deployment_v1" "deployment" {
 
           readiness_probe {
             http_get {
+              path = "/"
               port = 8080
               http_header {
                 name  = "Host"
