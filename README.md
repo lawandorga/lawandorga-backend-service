@@ -31,7 +31,7 @@ Install the required Python packages:
 5. Run `pipenv shell`
 6. Run `python manage.py migrate`
 7. Run `python manage.py create_dummy_data`
-8. Run `python manage.py runserver`
+8. Run `./run.sh`
 
 The command `create_dummy_data` creates an user with email `dummy@law-orga.de` and password `qwe123`. You can use it to login into the development frontend.
 
