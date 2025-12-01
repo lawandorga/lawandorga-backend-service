@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "53e3cfd4063428f03e9acb178beb5acc231612898a9c4e21886a5975c106a43a"
+            "sha256": "664b063291ff1fc2ae8bdedb9941516f78685669725594889913bc49d6cc99c7"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -640,12 +640,12 @@
         },
         "django-debug-toolbar": {
             "hashes": [
-                "sha256:296f6f18a80710e84fbb8361538ae5ec522a75ebe9ab67db34bcf1026cbeb420",
-                "sha256:7456cc2e951db37dab335686db7803c4a0ecb6736d120705f6668db9548bf49f"
+                "sha256:0cf2cac5c307b77d6e143c914e5c6592df53ffe34642d93929e5ef095ae56841",
+                "sha256:6eb9fa6f4a5884bf04004700ffb5a44043f1fff38784447fc52c1633448c8c14"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==5.0.1"
+            "version": "==6.0.0"
         },
         "django-oidc-provider": {
             "git": "https://github.com/lawandorga/django-oidc-provider",
