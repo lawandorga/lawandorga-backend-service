@@ -1,8 +1,8 @@
 resource "kubernetes_deployment_v1" "deployment" {
   metadata {
-    name = "lawandorga-backend-service"
+    name = var.name
     labels = {
-      app = "lawandorga-backend-service"
+      app = var.name
     }
   }
 
@@ -11,14 +11,14 @@ resource "kubernetes_deployment_v1" "deployment" {
 
     selector {
       match_labels = {
-        app = "lawandorga-backend-service"
+        app = var.name
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "lawandorga-backend-service"
+          app = var.name
         }
       }
 
@@ -28,14 +28,12 @@ resource "kubernetes_deployment_v1" "deployment" {
         }
 
         container {
-          image = "${data.terraform_remote_state.cluster.outputs.registry_endpoint}/lawandorga-backend-service:${var.image_version}"
-          name  = "lawandorga-backend-service-container"
+          image = "${data.terraform_remote_state.cluster.outputs.registry_endpoint}/${var.name}:${var.image_version}"
+          name  = "${var.name}-container"
 
-          dynamic "env" {
-            for_each = nonsensitive(toset(keys(var.env_vars)))
-            content {
-              name  = env.key
-              value = var.env_vars[env.key]
+          env_from {
+            secret_ref {
+              name = kubernetes_manifest.secret.manifest["metadata"]["name"]
             }
           }
 

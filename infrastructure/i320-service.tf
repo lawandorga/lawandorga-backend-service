@@ -1,6 +1,6 @@
 resource "kubernetes_service_v1" "service" {
   metadata {
-    name = "lawandorga-backend-service"
+    name = var.name
   }
   spec {
     selector = {

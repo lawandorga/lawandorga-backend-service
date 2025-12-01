@@ -46,6 +46,26 @@ data "terraform_remote_state" "cert_manager" {
   }
 }
 
+data "terraform_remote_state" "secrets" {
+  backend = "s3"
+  config = {
+    bucket = "lawandorga-main-infrastructure"
+    key    = "secrets.tfstate"
+    region = "fr-par"
+
+    endpoints = {
+      s3 = "https://s3.fr-par.scw.cloud"
+    }
+
+    skip_region_validation      = true
+    skip_credentials_validation = true
+    skip_requesting_account_id  = true
+
+    access_key = var.scw_access_key
+    secret_key = var.scw_secret_key
+  }
+}
+
 data "scaleway_k8s_cluster" "cluster" {
   cluster_id = data.terraform_remote_state.cluster.outputs.cluster_id
 }

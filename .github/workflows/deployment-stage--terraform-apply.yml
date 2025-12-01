@@ -9,8 +9,6 @@ on:
         required: true
       scw_project_id:
         required: true
-      env_vars:
-        required: true
     inputs:
       image_version:
         required: true
@@ -25,7 +23,6 @@ jobs:
     runs-on: ubuntu-22.04
     environment: ${{ inputs.environment }}
     env:
-      TF_VAR_env_vars: ${{ secrets.env_vars }}
       TF_VAR_scw_access_key: ${{ secrets.scw_access_key }}
       TF_VAR_scw_secret_key: ${{ secrets.scw_secret_key }}
       TF_VAR_scw_project_id: ${{ secrets.scw_project_id }}

@@ -1,6 +1,6 @@
 resource "kubernetes_ingress_v1" "ingress" {
   metadata {
-    name = "lawandorga-backend-service"
+    name = var.name
     annotations = {
       "nginx.ingress.kubernetes.io/enable-cors"        = "true"
       "nginx.ingress.kubernetes.io/cors-allow-headers" = "accept, accept-encoding, authorization, content-type, dnt, origin, user-agent, x-csrftoken, x-requested-with"
