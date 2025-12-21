@@ -25,6 +25,7 @@ class Keyring(models.Model):
         OrgUser, on_delete=models.CASCADE, related_name="keyring"
     )
     key = models.JSONField(null=False, blank=True)
+    decryption_key: AsymmetricKey | None = None
 
     if TYPE_CHECKING:
         object_keys: models.QuerySet["ObjectKey"]
@@ -85,19 +86,17 @@ class Keyring(models.Model):
         key = UserKey.create_from_unsafe_dict(decoded["user_key"])
         return key
 
-    def get_public_key(self) -> bytes:
-        return self.__get_encryption_key().get_public_key().encode("utf-8")
-
-    def get_private_key(self, *args, **kwargs) -> str:
-        return self.__get_decryption_key().get_private_key().decode("utf-8")
-
     def __get_decryption_key(self, *args, **kwargs) -> AsymmetricKey:
-        key = self._get_user_key()
+        if self.decryption_key is None:
+            key = self._get_user_key()
 
-        assert isinstance(
-            key.key, AsymmetricKey
-        ), f"key is not an AsymmetricKey it is of type: {type(key.key)}"
-        return key.key
+            assert isinstance(
+                key.key, AsymmetricKey
+            ), f"key is not an AsymmetricKey it is of type: {type(key.key)}"
+            
+            self.decryption_key = key.key
+        
+        return self.decryption_key
 
     def __get_encryption_key(
         self, *args, **kwargs
@@ -105,6 +104,12 @@ class Keyring(models.Model):
         assert self.key is not None
         u = UserKey.create_from_dict(self.key)
         return u.key
+
+    def get_public_key(self) -> bytes:
+        return self.__get_encryption_key().get_public_key().encode("utf-8")
+
+    def get_private_key(self, *args, **kwargs) -> str:
+        return self.__get_decryption_key().get_private_key().decode("utf-8")
 
     def get_object_key(self, object_id: UUID, object_type: str) -> SymmetricKey:
         keys = self.object_keys.all()
