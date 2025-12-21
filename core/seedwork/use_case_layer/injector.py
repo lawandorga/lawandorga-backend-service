@@ -63,3 +63,14 @@ def inject_kwargs(
             continue
 
     return kwargs
+
+
+def convert_args_to_kwargs(
+    func: Callable[..., RT], args: tuple[Any, ...], kwargs: dict[str, Any]
+) -> dict[str, Any]:
+    func_code = func.__code__
+    for index, value in enumerate(args):
+        param_name = func_code.co_varnames[index]
+        if param_name not in kwargs:
+            kwargs[param_name] = value
+    return kwargs

@@ -219,3 +219,26 @@ def test_callback_injection_different_from_usecase_injection():
     t4(__actor=Actor())
     t5(__actor=Actor())
     assert len(ids) == 2
+
+
+class ActorObject:
+    def __init__(self, actor: Actor) -> None:
+        self.id = uuid4()
+        self.actor = actor
+
+
+def test_callback_injection_can_inject_with_user():
+    def get_actor_object(__actor: Actor) -> ActorObject:
+        return ActorObject(actor=__actor)
+
+    injections = InjectionContext(
+        {
+            ActorObject: get_actor_object,
+        }
+    )
+
+    @use_case(context=injections, callbacks=[])
+    def t6(__actor: Actor, actor_object: ActorObject):
+        assert actor_object.actor == __actor
+
+    t6(__actor=Actor())

@@ -12,6 +12,7 @@ from core.seedwork.use_case_layer.checks import __check_actor, check_permissions
 from core.seedwork.use_case_layer.error import UseCaseError
 from core.seedwork.use_case_layer.injector import (
     InjectionContext,
+    convert_args_to_kwargs,
     inject_kwargs,
 )
 
@@ -61,13 +62,15 @@ def use_case(
 
         @wraps(usecase_func)
         def wrapper(*args, **kwargs) -> RetType:
-            context.reset()
-            kwargs = inject_kwargs(usecase_func, kwargs, context)
+            kwargs = convert_args_to_kwargs(usecase_func, args, kwargs)
 
             func_code = usecase_func.__code__
             func_name = func_code.co_name
+            actor = __check_actor(kwargs, func_code, type_hints)
 
-            actor = __check_actor(args, kwargs, func_code, type_hints)
+            context.reset()
+            context.injections[type_hints["__actor"]] = actor
+            kwargs = inject_kwargs(usecase_func, kwargs, context)
 
             check_permissions(actor, permissions)
 
@@ -89,7 +92,7 @@ def use_case(
             try:
                 ret = validate_call(config={"arbitrary_types_allowed": True})(
                     usecase_func
-                )(*args, **kwargs)
+                )(**kwargs)
                 msg = "SUCCESS: '{}' called '{}'.".format(str(actor), func_name)
                 logger.info(msg)
                 run_callbacks()

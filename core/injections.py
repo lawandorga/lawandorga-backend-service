@@ -1,3 +1,5 @@
+from core.auth.domain.user_key import UserKey
+from core.auth.models.org_user import OrgUser
 from core.auth.models.user import UserProfile
 from core.collab.repositories.collab import CollabRepository
 from core.data_sheets.models.data_sheet import DataSheetRepository
@@ -53,6 +55,12 @@ def log_usecase(context: CallbackContext):
         )
 
 
+def get_key(__actor: OrgUser) -> UserKey:
+    # injecting the UserKey only works if the usecase itself
+    # already has OrgUser as an actor
+    return __actor._get_user_key()
+
+
 INJECTIONS = {
     FolderRepository: fr,
     FollowUpRepository: fur,
@@ -64,6 +72,7 @@ INJECTIONS = {
     RecordRepository: rr,
     CollabRepository: cr,
     EventCollector: lambda: EventCollector(),
+    UserKey: get_key,
 }
 
 CALLBACKS = [

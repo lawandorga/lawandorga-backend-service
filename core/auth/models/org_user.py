@@ -383,22 +383,28 @@ class OrgUser(models.Model):
 
         return session
 
-    def get_decryption_key(self, *args, **kwargs) -> AsymmetricKey:
+    def _get_user_key(self) -> UserKey:
         assert self.key is not None
 
         if settings.TESTING and (
             self.email == "dummy@law-orga.de" or self.email == "tester@law-orga.de"
         ):
-            public_key = self.key["key"]["public_key"]
+            public_key: str = self.key["key"]["public_key"]  # type: ignore
             private_key = OrgUser.get_dummy_user_private_key(self, self.email)
-            origin = self.key["key"]["origin"]
-            return AsymmetricKey.create(
-                private_key=private_key, origin=origin, public_key=public_key
+            origin: str = self.key["key"]["origin"]  # type: ignore
+            return UserKey(
+                AsymmetricKey.create(
+                    private_key=private_key, origin=origin, public_key=public_key
+                )
             )
 
         session = self.__get_session()
         decoded = session.get_decoded()
         key = UserKey.create_from_unsafe_dict(decoded["user_key"])
+        return key
+
+    def get_decryption_key(self, *args, **kwargs) -> AsymmetricKey:
+        key = self._get_user_key()
 
         assert isinstance(
             key.key, AsymmetricKey
