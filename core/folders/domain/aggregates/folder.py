@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Optional, Union
 from uuid import UUID, uuid4
 
+from core.encryption.models import Keyring
 from core.folders.domain.aggregates.item import Item
 from core.folders.domain.value_objects.folder_item import FolderItem
 from core.folders.domain.value_objects.folder_key import (
@@ -472,6 +473,18 @@ class Folder:
         enc_key = EncryptedFolderKeyOfUser.create_from_key(folder_key, lock_key)
 
         self.__keys.append(enc_key)
+
+    def grant_access_v2(self, to: "OrgUser", by: "OrgUser") -> Keyring:
+        key = by.keyring.get_object_key(object_id=self.uuid, object_type="FOLDER")
+        to.keyring.add_object_key(
+            object_id=self.uuid, object_type="FOLDER", key=key
+        )
+        return by.keyring
+
+    def get_encryption_key_v2(self, requestor: "OrgUser") -> SymmetricKey:
+        keyring = requestor.keyring
+        key = keyring.get_object_key(object_id=self.uuid, object_type="FOLDER")
+        return key
 
     def grant_access_to_group(self, group: "Group", by: "OrgUser"):
         if self._has_keys_group(group):

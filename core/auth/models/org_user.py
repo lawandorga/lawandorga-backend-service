@@ -47,6 +47,7 @@ if TYPE_CHECKING:
     from core.auth.models.mfa import MultiFactorAuthenticationSecret
     from core.folders.domain.value_objects.folder_key import EncryptedFolderKeyOfUser
     from core.org.models.group import Group
+    from core.encryption.models import Keyring
 
 
 class KeyOfUser(TypedDict):
@@ -157,6 +158,7 @@ class OrgUser(models.Model):
         get_speciality_of_study_display: Callable[[], str]
         org: models.ForeignKey[Org]  # type: ignore
         user: models.OneToOneField[UserProfile]  # type: ignore
+        keyring: models.OneToOneField["Keyring"]
 
     class Meta:
         verbose_name = "AUT_OrgUser"
