@@ -7,15 +7,17 @@ from core.seedwork.api_layer import Router
 from core.seedwork.statistics import execute_statement
 from core.statistics.api.utils import get_available_datasheet_years
 
-from . import schemas
 from seedwork.functional import list_filter
 
 router = Router()
 
 
-@router.get(
-    "user_actions_month/", output_schema=list[schemas.OutputIndividualUserActionsMonth]
-)
+class OutputIndividualUserActionsMonth(BaseModel):
+    email: str
+    actions: int
+
+
+@router.get("user_actions_month/", output_schema=list[OutputIndividualUserActionsMonth])
 def query__user_actions_month(org_user: OrgUser):
     if connection.vendor == "sqlite":
         statement = """
@@ -50,7 +52,12 @@ def query__user_actions_month(org_user: OrgUser):
     return list(data)
 
 
-@router.get("record_states/", output_schema=list[schemas.OutputRecordStates])
+class OutputRecordStates(BaseModel):
+    state: str
+    amount: int
+
+
+@router.get("record_states/", output_schema=list[OutputRecordStates])
 def query__record_states(org_user: OrgUser):
     statement = """
              select state, count(amount) as amount
@@ -73,89 +80,6 @@ def query__record_states(org_user: OrgUser):
     )
     data = execute_statement(statement)
     data = map(lambda x: {"state": x[0], "amount": x[1]}, data)
-    return list(data)
-
-
-@router.get("record_client_age/", output_schema=list[schemas.OutputRecordClientAge])
-def query__record_client_age(org_user: OrgUser):
-    statement = """
-                select
-                case when entry.value is null then 'Not-Set' else entry.value end as value,
-                count(*) as count
-                from core_datasheet record
-                left join core_datasheetstatisticentry entry on record.id = entry.record_id
-                left join core_datasheetstatisticfield field on entry.field_id = field.id
-                left join core_datasheettemplate as template on template.id = record.template_id
-                where (field.name='Age in years of the client' or field.name is null) and template.org_id = {}
-                group by value
-                """.format(
-        org_user.org_id
-    )
-    data = execute_statement(statement)
-    data = map(lambda x: {"value": x[0], "count": x[1]}, data)
-    return list(data)
-
-
-@router.get(
-    "record_client_nationality/",
-    output_schema=list[schemas.OutputRecordClientNationality],
-)
-def query__record_client_nationality(org_user: OrgUser):
-    statement = """
-           select
-           case when entry.value is null then 'Not-Set' else entry.value end as value,
-           count(*) as count
-           from core_datasheet record
-           left join core_datasheetstatisticentry entry on record.id = entry.record_id
-           left join core_datasheetstatisticfield field on entry.field_id = field.id
-           left join core_datasheettemplate as template on template.id = record.template_id
-           where (field.name='Nationality of the client' or field.name is null) and template.org_id = {}
-           group by value
-           """.format(
-        org_user.org_id
-    )
-    data = execute_statement(statement)
-    data = map(lambda x: {"value": x[0], "count": x[1]}, data)
-    return list(data)
-
-
-@router.get("record_client_state/", output_schema=list[schemas.OutputRecordClientState])
-def query__record_client_state(org_user: OrgUser):
-    statement = """
-                select
-                case when entry.value is null then 'Not-Set' else entry.value end as value,
-                count(*) as count
-                from core_datasheet record
-                left join core_datasheetstatisticentry entry on record.id = entry.record_id
-                left join core_datasheetstatisticfield field on entry.field_id = field.id
-                left join core_datasheettemplate as template on template.id = record.template_id
-                where (field.name='Current status of the client' or field.name is null) and template.org_id = {}
-                group by value
-                """.format(
-        org_user.org_id
-    )
-    data = execute_statement(statement)
-    data = map(lambda x: {"value": x[0], "count": x[1]}, data)
-    return list(data)
-
-
-@router.get("record_client_sex/", output_schema=list[schemas.OutputRecordClientSex])
-def query__record_client_sex(org_user: OrgUser):
-    statement = """
-               select
-               case when entry.value is null then 'Not-Set' else entry.value end as value,
-               count(*) as count
-               from core_datasheet record
-               left join core_datasheetstatisticentry entry on record.id = entry.record_id
-               left join core_datasheetstatisticfield field on entry.field_id = field.id
-               left join core_datasheettemplate as template on template.id = record.template_id
-               where (field.name='Sex of the client' or field.name is null) and template.org_id = {}
-               group by value
-               """.format(
-        org_user.org_id
-    )
-    data = execute_statement(statement)
-    data = map(lambda x: {"value": x[0], "count": x[1]}, data)
     return list(data)
 
 

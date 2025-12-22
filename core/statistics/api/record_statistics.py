@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List, Optional
 
 from django.db import connection
 from django.db.models import Count
@@ -10,7 +10,6 @@ from core.auth.models.org_user import OrgUser
 from core.records.models.record import RecordsRecord
 from core.seedwork.api_layer import Router
 from core.seedwork.statistics import execute_statement
-from core.statistics.api import schemas
 from core.statistics.use_cases.records import create_statistic
 
 router = Router()
@@ -33,9 +32,14 @@ def query__created_records(org_user: OrgUser):
     return list(qs)
 
 
+class OutputRecordClientState(BaseModel):
+    value: str
+    count: int
+
+
 @router.get(
     url="record_client_state/",
-    output_schema=list[schemas.OutputRecordClientState],
+    output_schema=list[OutputRecordClientState],
 )
 def query__record_client_state(statistics_user: StatisticUser):
     statement = """
@@ -53,9 +57,14 @@ def query__record_client_state(statistics_user: StatisticUser):
     return list(data)
 
 
+class OutputRecordClientAge(BaseModel):
+    value: str
+    count: int
+
+
 @router.get(
     url="record_client_age/",
-    output_schema=list[schemas.OutputRecordClientAge],
+    output_schema=list[OutputRecordClientAge],
 )
 def query__record_client_age(statistics_user: StatisticUser):
     statement = """
@@ -73,9 +82,14 @@ def query__record_client_age(statistics_user: StatisticUser):
     return list(data)
 
 
+class OutputRecordClientNationality(BaseModel):
+    value: str
+    count: int
+
+
 @router.get(
     url="record_client_nationality/",
-    output_schema=list[schemas.OutputRecordClientNationality],
+    output_schema=list[OutputRecordClientNationality],
 )
 def query__record_client_nationality(statistics_user: StatisticUser):
     statement = """
@@ -93,9 +107,14 @@ def query__record_client_nationality(statistics_user: StatisticUser):
     return list(data)
 
 
+class OutputRecordClientSex(BaseModel):
+    value: str
+    count: int
+
+
 @router.get(
     url="record_client_sex/",
-    output_schema=list[schemas.OutputRecordClientSex],
+    output_schema=list[OutputRecordClientSex],
 )
 def query__record_client_sex(statistics_user: StatisticUser):
     statement = """
@@ -113,9 +132,14 @@ def query__record_client_sex(statistics_user: StatisticUser):
     return list(data)
 
 
+class OutputRecordStates(BaseModel):
+    state: str
+    amount: int
+
+
 @router.get(
     url="record_states/",
-    output_schema=list[schemas.OutputRecordStates],
+    output_schema=list[OutputRecordStates],
 )
 def query__record_states(statistics_user: StatisticUser):
     statement = """
@@ -138,9 +162,25 @@ def query__record_states(statistics_user: StatisticUser):
     return list(data)
 
 
+class OutputState(BaseModel):
+    state: str
+    count: int
+
+
+class OutputTag(BaseModel):
+    tag: str
+    count: int
+
+
+class OutputRecordTagStats(BaseModel):
+    tags: list[OutputTag]
+    state: list[OutputState]
+    years: list[int]
+
+
 @router.get(
     url="tag_stats/",
-    output_schema=schemas.OutputRecordTagStats,
+    output_schema=OutputRecordTagStats,
 )
 def query__tag_stats(statistics_user: StatisticUser):
     if connection.vendor == "sqlite":
@@ -201,9 +241,14 @@ def query__tag_stats(statistics_user: StatisticUser):
     return ret
 
 
+class OutputRecordClosedStatistic(BaseModel):
+    days: Optional[int]
+    count: int
+
+
 @router.api(
     url="records_closed_statistic/",
-    output_schema=List[schemas.OutputRecordClosedStatistic],
+    output_schema=List[OutputRecordClosedStatistic],
 )
 def get_records_closed_statistic(statistics_user: StatisticUser):
     if connection.vendor == "sqlite":
@@ -233,10 +278,14 @@ def get_records_closed_statistic(statistics_user: StatisticUser):
     return data
 
 
-# records field amount statistic
+class OutputRecordFieldAmount(BaseModel):
+    field: str
+    amount: int
+
+
 @router.api(
     url="record_fields_amount/",
-    output_schema=List[schemas.OutputRecordFieldAmount],
+    output_schema=List[OutputRecordFieldAmount],
 )
 def get_record_fields_amount(statistics_user: StatisticUser):
     statement = """
@@ -265,13 +314,22 @@ def get_record_fields_amount(statistics_user: StatisticUser):
     return data
 
 
-# build a dynamic statistic
+class InputRecordStats(BaseModel):
+    field_1: str
+    value_1: str
+    field_2: str
+
+
+class OutputRecordStats(BaseModel):
+    error: bool
+    label: str
+    data: List[tuple[Any, int, int]]
+
+
 @router.post(
     url="dynamic/",
-    output_schema=schemas.OutputRecordStats,
+    output_schema=OutputRecordStats,
 )
-def get_dynamic_record_stats(
-    data: schemas.InputRecordStats, statistics_user: StatisticUser
-):
+def get_dynamic_record_stats(data: InputRecordStats, statistics_user: StatisticUser):
     ret = create_statistic(statistics_user, data.field_1, data.value_1, data.field_2)
     return ret

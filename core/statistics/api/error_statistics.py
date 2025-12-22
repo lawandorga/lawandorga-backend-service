@@ -1,23 +1,34 @@
 from django.db import connection
+from pydantic import BaseModel
 
 from core.auth.models import StatisticUser
 from core.seedwork.api_layer import Router
 from core.seedwork.statistics import execute_statement
 
-from . import schemas
-
 router = Router()
+
+
+class OutputUsersWithMissingAccess(BaseModel):
+    user: int
+    records: int
+    access: int
 
 
 @router.get(
     "users_with_missing_access/",
-    output_schema=list[schemas.OutputUsersWithMissingAccess],
+    output_schema=list[OutputUsersWithMissingAccess],
 )
 def query__users_with_missing_access(statistics_user: StatisticUser):
     return []
 
 
-@router.get("errors_month/", output_schema=list[schemas.OutputErrorsMonth])
+class OutputErrorsMonth(BaseModel):
+    status: int
+    path: str
+    count: int
+
+
+@router.get("errors_month/", output_schema=list[OutputErrorsMonth])
 def query__errors_month(statistics_user: StatisticUser):
     if connection.vendor == "sqlite":
         statement = """
@@ -46,7 +57,15 @@ def query__errors_month(statistics_user: StatisticUser):
     return list(data)
 
 
-@router.get("errors_user/", output_schema=list[schemas.OutputErrorsUser])
+class OutputErrorsUser(BaseModel):
+    email: str | int
+    rlckeys: int
+    userkeys: int
+    accepted: bool
+    locked: bool
+
+
+@router.get("errors_user/", output_schema=list[OutputErrorsUser])
 def query__errors_user(statistics_user: StatisticUser):
     statement = """
             select
@@ -74,7 +93,14 @@ def query__errors_user(statistics_user: StatisticUser):
     return list(data)
 
 
-@router.get("migration/", output_schema=schemas.OutputMigrationStatistic)
+class OutputMigrationStatistic(BaseModel):
+    records: float
+    records_togo: int
+    documents: float
+    documents_togo: int
+
+
+@router.get("migration/", output_schema=OutputMigrationStatistic)
 def query__migration_statistic(statistics_user: StatisticUser):
     statement = """
     select * from (

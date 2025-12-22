@@ -1,13 +1,21 @@
+from pydantic import BaseModel
+
 from core.auth.models import StatisticUser
 from core.seedwork.api_layer import Router
 from core.seedwork.statistics import execute_statement
 
-from . import schemas
-
 router = Router()
 
 
-@router.get("raw_numbers/", output_schema=schemas.OutputRawNumbers)
+class OutputRawNumbers(BaseModel):
+    records: int
+    files: int
+    collabs: int
+    users: int
+    lcs: int
+
+
+@router.get("raw_numbers/", output_schema=OutputRawNumbers)
 def query__raw_numbers(statistics_user: StatisticUser):
     statement = """
            select

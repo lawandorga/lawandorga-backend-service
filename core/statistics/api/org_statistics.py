@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.db import connection
 from pydantic import BaseModel
 
@@ -8,13 +10,17 @@ from core.seedwork.api_layer import Router
 from core.seedwork.statistics import execute_statement
 from core.statistics.api.utils import get_available_datasheet_years
 
-from . import schemas
 from seedwork.functional import list_filter, list_map
 
 router = Router()
 
 
-@router.get(url="user_actions_month/", output_schema=list[schemas.OutputUserActions])
+class OutputUserActions(BaseModel):
+    email: str | int
+    actions: int
+
+
+@router.get(url="user_actions_month/", output_schema=list[OutputUserActions])
 def query__user_actions(statistics_user: StatisticUser):
     if connection.vendor == "sqlite":
         statement = """
@@ -41,7 +47,12 @@ def query__user_actions(statistics_user: StatisticUser):
     return list(data)
 
 
-@router.get(url="unique_users_month/", output_schema=list[schemas.OutputUniqueUsers])
+class OutputUniqueUsers(BaseModel):
+    month: str
+    logins: int
+
+
+@router.get(url="unique_users_month/", output_schema=list[OutputUniqueUsers])
 def query__unique_users(statistics_user: StatisticUser):
     if connection.vendor == "sqlite":
         statement = """
@@ -62,7 +73,12 @@ def query__unique_users(statistics_user: StatisticUser):
     return list(data)
 
 
-@router.get(url="user_logins_month/", output_schema=list[schemas.OutputUserLoginsMonth])
+class OutputUserLoginsMonth(BaseModel):
+    month: str
+    logins: int
+
+
+@router.get(url="user_logins_month/", output_schema=list[OutputUserLoginsMonth])
 def query__user_logins_month(statistics_user: StatisticUser):
     if connection.vendor == "sqlite":
         statement = """
@@ -87,7 +103,12 @@ def query__user_logins_month(statistics_user: StatisticUser):
     return list(data)
 
 
-@router.get(url="user_logins/", output_schema=list[schemas.OutputUserLogins])
+class OutputUserLogins(BaseModel):
+    date: str | date
+    logins: int
+
+
+@router.get(url="user_logins/", output_schema=list[OutputUserLogins])
 def query__user_logins(statistics_user: StatisticUser):
     statement = """
             select date(time) as date, count(*) as logins
@@ -102,7 +123,12 @@ def query__user_logins(statistics_user: StatisticUser):
     return list(data)
 
 
-@router.get(url="org_members/", output_schema=list[schemas.OutputOrgMembers])
+class OutputOrgMembers(BaseModel):
+    name: str
+    amount: int
+
+
+@router.get(url="org_members/", output_schema=list[OutputOrgMembers])
 def query__org_members(statistics_user: StatisticUser):
     statement = """
             select
@@ -117,7 +143,14 @@ def query__org_members(statistics_user: StatisticUser):
     return data
 
 
-@router.get(url="lc_usage/", output_schema=list[schemas.OutputOrgUsage])
+class OutputOrgUsage(BaseModel):
+    lc: str
+    records: int
+    files: int
+    documents: int
+
+
+@router.get(url="lc_usage/", output_schema=list[OutputOrgUsage])
 def query__org_usage(statistics_user: StatisticUser):
     statement = """
     select
