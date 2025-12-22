@@ -219,6 +219,7 @@ class RecordField(models.Model):
 
 
 class DataSheetStateField(RecordField):
+    KIND = "State"
     template = models.ForeignKey(
         DataSheetTemplate, on_delete=models.CASCADE, related_name="state_fields"
     )
@@ -276,6 +277,7 @@ class DataSheetStateField(RecordField):
 
 
 class DataSheetUsersField(RecordField):
+    KIND = "Users"
     template = models.ForeignKey(
         DataSheetTemplate, on_delete=models.CASCADE, related_name="users_fields"
     )  # type: ignore
@@ -348,6 +350,7 @@ class DataSheetUsersField(RecordField):
 
 
 class DataSheetSelectField(RecordField):
+    KIND = "Select"
     template = models.ForeignKey(
         DataSheetTemplate, on_delete=models.CASCADE, related_name="select_fields"
     )
@@ -402,6 +405,7 @@ class DataSheetSelectField(RecordField):
 
 
 class DataSheetMultipleField(RecordField):
+    KIND = "Multiple"
     template = models.ForeignKey(
         DataSheetTemplate, on_delete=models.CASCADE, related_name="multiple_fields"
     )
@@ -456,6 +460,7 @@ class DataSheetMultipleField(RecordField):
 
 
 class DataSheetEncryptedSelectField(RecordField):
+    KIND = "Encrypted Select"
     template = models.ForeignKey(
         DataSheetTemplate,
         on_delete=models.CASCADE,
@@ -514,6 +519,7 @@ class DataSheetEncryptedSelectField(RecordField):
 
 
 class DataSheetEncryptedFileField(RecordField):
+    KIND = "Encrypted File"
     template = models.ForeignKey(
         DataSheetTemplate,
         on_delete=models.CASCADE,
@@ -576,6 +582,7 @@ class DataSheetEncryptedFileField(RecordField):
 
 
 class DataSheetStandardField(RecordField):
+    KIND = "Standard"
     template = models.ForeignKey(
         DataSheetTemplate, on_delete=models.CASCADE, related_name="standard_fields"
     )
@@ -644,6 +651,7 @@ class DataSheetStandardField(RecordField):
 
 
 class DataSheetEncryptedStandardField(RecordField):
+    KIND = "Encrypted Standard"
     template = models.ForeignKey(
         DataSheetTemplate,
         on_delete=models.CASCADE,
@@ -703,6 +711,7 @@ class DataSheetEncryptedStandardField(RecordField):
 
 
 class DataSheetStatisticField(RecordField):
+    KIND = "Statistic"
     template = models.ForeignKey(
         DataSheetTemplate, on_delete=models.CASCADE, related_name="statistic_fields"
     )

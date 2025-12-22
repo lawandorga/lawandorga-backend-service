@@ -15,6 +15,7 @@ from core.data_sheets.models.template import (
     DataSheetSelectField,
     DataSheetStandardField,
     DataSheetStateField,
+    DataSheetStatisticField,
     DataSheetUsersField,
 )
 from core.data_sheets.use_cases.finders import find_field_from_uuid, template_from_id
@@ -46,35 +47,56 @@ def delete_template(__actor: OrgUser, template_id: int):
 
 
 FIELDS: dict[str, type[models.Model]] = {
-    "standard": DataSheetStandardField,
-    "select": DataSheetSelectField,
-    "multiple": DataSheetMultipleField,
-    "state": DataSheetStateField,
-    "users": DataSheetUsersField,
-    "encryptedstandard": DataSheetEncryptedStandardField,
-    "encryptedselect": DataSheetEncryptedSelectField,
-    "encryptedfile": DataSheetEncryptedFileField,
+    DataSheetStandardField.KIND: DataSheetStandardField,
+    DataSheetSelectField.KIND: DataSheetSelectField,
+    DataSheetMultipleField.KIND: DataSheetMultipleField,
+    DataSheetStateField.KIND: DataSheetStateField,
+    DataSheetUsersField.KIND: DataSheetUsersField,
+    DataSheetEncryptedStandardField.KIND: DataSheetEncryptedStandardField,
+    DataSheetEncryptedSelectField.KIND: DataSheetEncryptedSelectField,
+    DataSheetEncryptedFileField.KIND: DataSheetEncryptedFileField,
+    DataSheetStatisticField.KIND: DataSheetStatisticField,
 }
 
 FIELD_TYPES = Literal[
-    "standard",
-    "select",
-    "multiple",
-    "state",
-    "users",
-    "encryptedstandard",
-    "encryptedselect",
-    "encryptedfile",
+    "Standard",
+    "Select",
+    "Multiple",
+    "State",
+    "Users",
+    "Encrypted Standard",
+    "Encrypted Select",
+    "Encrypted File",
+    "Statistic",
 ]
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES])
 def create_field(
-    __actor: OrgUser, template_id: int, kind: FIELD_TYPES, name: str, order: int
+    __actor: OrgUser,
+    template_id: int,
+    kind: FIELD_TYPES,
+    name: str,
+    order: int,
+    options: list[str] | None = None,
+    share_keys: bool | None = None,
+    group_id: int | None = None,
+    field_type: str | None = None,
 ):
     template = template_from_id(__actor, template_id)
     field_model = FIELDS[kind]
     field = field_model(name=name, order=order, template=template)
+    if (
+        kind in ["Multiple", "Select", "Encrypted Select", "Statistic"]
+        and options is not None
+    ):
+        setattr(field, "options", options)
+    if kind in ["Users"] and share_keys is not None:
+        setattr(field, "share_keys", share_keys)
+    if group_id is not None:
+        setattr(field, "group_id", group_id)
+    if kind in ["Encrypted Standard", "Standard"] and field_type is not None:
+        setattr(field, "field_type", field_type)
     field.save()
 
 
@@ -93,7 +115,10 @@ def update_field(
     field.name = name
     field.order = order
     kind = getattr(field, "kind", None)
-    if kind in ["Multiple", "Select", "Encrypted Select"] and options is not None:
+    if (
+        kind in ["Multiple", "Select", "Encrypted Select", "Statistic"]
+        and options is not None
+    ):
         setattr(field, "options", options)
     if kind in ["Users"] and share_keys is not None:
         setattr(field, "share_keys", share_keys)

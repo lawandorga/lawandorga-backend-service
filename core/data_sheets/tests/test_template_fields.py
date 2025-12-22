@@ -15,7 +15,7 @@ def test_create_field(db):
     template = DataSheetTemplate.objects.create(
         org=org_user.org, name="Record Template"
     )
-    create_field(org_user, template.pk, "standard", "Standard Field", 1)
+    create_field(org_user, template.pk, "Standard", "Standard Field", 1)
     assert len(template.fields) == 5
 
 
@@ -26,7 +26,7 @@ def test_update_field(db):
     template = DataSheetTemplate.objects.create(
         org=org_user.org, name="Record Template"
     )
-    create_field(org_user, template.pk, "standard", "Standard Field", 1)
+    create_field(org_user, template.pk, "Standard", "Standard Field", 1)
     field = template.fields[0]
     assert field.name == "Standard Field"
     update_field(org_user, field.uuid, "Standard Field New", 5)
@@ -40,6 +40,6 @@ def test_delete_field(db):
     template = DataSheetTemplate.objects.create(
         org=org_user.org, name="Record Template"
     )
-    create_field(org_user, template.pk, "standard", "Standard Field", 1)
+    create_field(org_user, template.pk, "Standard", "Standard Field", 1)
     field = template.fields[0]
     delete_field(org_user, field.uuid, False)
