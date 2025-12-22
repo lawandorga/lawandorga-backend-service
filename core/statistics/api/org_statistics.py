@@ -2,6 +2,8 @@ from django.db import connection
 from pydantic import BaseModel
 
 from core.auth.models import OrgUser, StatisticUser
+from core.data_sheets.models.data_sheet import DataSheetStatisticEntry
+from core.data_sheets.models.template import DataSheetStatisticField
 from core.seedwork.api_layer import Router
 from core.seedwork.statistics import execute_statement
 from core.statistics.api.utils import get_available_datasheet_years
@@ -257,3 +259,38 @@ def get_records_created_and_closed(org_user: OrgUser, data: InputCreatedAndClose
 
     years = get_available_datasheet_years(org_user.org.pk)
     return {"years": list(years), "data": created_and_closed_continuous}
+
+
+class InputDataSheetStatisticFields(BaseModel):
+    year: str | None = None
+
+
+class OutputDataSheetStatisticFieldStats(BaseModel):
+    stats: dict[str, dict[str, int]]
+    years: list[int]
+
+
+@router.get(
+    url="data_sheet_statistic_fields/", output_schema=OutputDataSheetStatisticFieldStats
+)
+def query__statistic_fields(org_user: OrgUser, data: InputDataSheetStatisticFields):
+    fields = DataSheetStatisticField.objects.filter(template__org=org_user.org)
+    entries = DataSheetStatisticEntry.objects.filter(field__in=fields).select_related(
+        "field"
+    )
+    if data.year:
+        entries = entries.filter(record__created__year=int(data.year))
+    ret: dict[str, dict[str, int]] = {}
+    for field in fields:
+        ret[field.name] = {}
+    for entry in entries:
+        field_name = entry.field.name
+        value = entry.value
+        ret.setdefault(field_name, {})
+        ret[field_name].setdefault(value, 0)
+        ret[field_name][value] += 1
+    years = get_available_datasheet_years(org_user.org.pk)
+    return {
+        "years": list(years),
+        "stats": ret,
+    }
