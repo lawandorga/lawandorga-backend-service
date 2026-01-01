@@ -66,6 +66,9 @@ class EncryptedGroupKey:
     def owner_uuid(self):
         return self.__owner_uuid
 
+    def get_key_for_migration(self) -> EncryptedSymmetricKey:
+        return self.__enc_key
+
     def decrypt(self, owner: "OrgUser") -> GroupKey:
         if owner.uuid != self.__owner_uuid:
             raise DomainError("The owner does not match the key.")
