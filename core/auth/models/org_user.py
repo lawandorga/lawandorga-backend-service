@@ -45,9 +45,9 @@ from seedwork.functional import list_filter, list_map
 
 if TYPE_CHECKING:
     from core.auth.models.mfa import MultiFactorAuthenticationSecret
+    from core.encryption.models import Keyring
     from core.folders.domain.value_objects.folder_key import EncryptedFolderKeyOfUser
     from core.org.models.group import Group
-    from core.encryption.models import Keyring
 
 
 class KeyOfUser(TypedDict):

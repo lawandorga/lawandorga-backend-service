@@ -476,9 +476,7 @@ class Folder:
 
     def grant_access_v2(self, to: "OrgUser", by: "OrgUser") -> Keyring:
         key = by.keyring.get_object_key(object_id=self.uuid, object_type="FOLDER")
-        to.keyring.add_object_key(
-            object_id=self.uuid, object_type="FOLDER", key=key
-        )
+        to.keyring.add_object_key(object_id=self.uuid, object_type="FOLDER", key=key)
         return by.keyring
 
     def get_encryption_key_v2(self, requestor: "OrgUser") -> SymmetricKey:
