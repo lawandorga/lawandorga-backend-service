@@ -2,7 +2,7 @@ from typing import Union
 from uuid import UUID
 
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
 from git import TYPE_CHECKING
 
 from core.auth.domain.user_key import UserKey
@@ -18,6 +18,8 @@ from core.folders.domain.value_objects.symmetric_key import (
     SymmetricKey,
 )
 from core.org.models.group import Group
+
+from seedwork.functional import list_filter
 
 
 class KeyNotFoundError(Exception):
@@ -36,6 +38,7 @@ class KeyringManager(models.Manager["Keyring"]):
             )
             .get()
         )
+        keyring.load()
         return keyring
 
 
@@ -49,6 +52,9 @@ class Keyring(models.Model):
     objects = KeyringManager()
 
     if TYPE_CHECKING:
+        _object_keys: list["ObjectKey"]
+        _group_keys: list["GroupKey"]
+        _group_object_keys: list["ObjectKey"]
         object_keys: models.QuerySet["ObjectKey"]
         group_keys: models.QuerySet["GroupKey"]
 
@@ -57,7 +63,37 @@ class Keyring(models.Model):
         verbose_name_plural = "ENC_Keyrings"
 
     def __str__(self):
+        if not hasattr(self, "user"):
+            return "keyring: None;"
         return f"keyring: {self.user.email};"
+
+    def load(self):
+        self._object_keys = list(self.object_keys.all())
+        self._group_keys = list(self.group_keys.all())
+        for gkey in self._group_keys:
+            gkey.load()
+
+    def save(self, *args, **kwargs):
+        """
+        Disabled to allow:
+        - Easier in-memory testing (no accidental DB writes during tests)
+        - Keyring acts as an aggregate (DDD): only Keyring should be saved, not its children directly
+        - More predictable code: Keyring must be saved after critical actions, ideally atomically
+        Note: GroupKey's ObjectKeys are an edge case and don't fit perfectly into this model.
+        Use store() instead for persistence.
+        """
+        raise Exception("save is disabled use store() instead")
+
+    def store(self):
+        with transaction.atomic():
+            super().save()
+            self.object_keys.all().delete()
+            ObjectKey.objects.bulk_create(self._object_keys)
+            self.group_keys.all().delete()
+            GroupKey.objects.bulk_create(self._group_keys)
+            for key in self._group_keys:
+                key.object_keys.all().delete()
+                ObjectKey.objects.bulk_create(key._object_keys)
 
     def __get_session(self) -> CustomSession:
         session = (
@@ -127,43 +163,45 @@ class Keyring(models.Model):
     def get_private_key(self, *args, **kwargs) -> str:
         return self._get_decryption_key().get_private_key().decode("utf-8")
 
-    def get_group_key(self, group_id: UUID) -> SymmetricKey:
-        for gkey in self.group_keys.all():
+    def _find_group_key(self, group_id: UUID) -> "GroupKey":
+        for gkey in self._group_keys:
             if gkey.group.uuid == group_id:
-                return gkey._get_decryption_key()
+                return gkey
         raise KeyNotFoundError("no group key found for the given group id")
 
-    def add_group_key(self, group: Group, by: "OrgUser") -> "GroupKey":
+    def get_group_key(self, group_id: UUID) -> SymmetricKey:
+        group_key = self._find_group_key(group_id)
+        return group_key._get_decryption_key()
+
+    def add_group_key(self, group: Group, by: "OrgUser"):
         key = by.keyring.get_group_key(group.uuid)
         enc_key = key.encrypt_self(self._get_encryption_key())
         group_key = GroupKey(keyring=self, group=group, key=enc_key.as_dict())
-        group_key.save()
-        return group_key
+        self._group_keys.append(group_key)
 
-    def add_group_key_directly(self, group: Group, key: SymmetricKey) -> "GroupKey":
+    def add_group_key_directly(self, group: Group, key: SymmetricKey):
         enc_key = key.encrypt_self(self._get_encryption_key())
         group_key = GroupKey(keyring=self, group=group, key=enc_key.as_dict())
-        group_key.save()
-        return group_key
+        self._group_keys.append(group_key)
 
     def remove_group_key(self, group: Group) -> None:
-        for gkey in self.group_keys.all():
-            if gkey.group.uuid == group.uuid:
-                gkey.delete()
+        self._group_keys = list_filter(
+            self._group_keys, lambda gkey: gkey.group.uuid != group.uuid
+        )
 
     def get_object_key(self, object_id: UUID, object_type: ObjectTypes) -> SymmetricKey:
-        for key in self.object_keys.all():
+        for key in self._object_keys:
             if key.object_id == object_id and key.object_type == object_type.value:
                 return key._get_decryption_key(self._get_decryption_key())
-        for gkey in self.group_keys.all():
-            for key in gkey.group.object_keys.all():
+        for gkey in self._group_keys:
+            for key in gkey._object_keys:
                 if key.object_id == object_id and key.object_type == object_type.value:
                     return key._get_decryption_key(gkey._get_decryption_key())
         raise KeyNotFoundError("no object key found for the given object id and type")
 
     def add_object_key(
         self, object_id: UUID, object_type: ObjectTypes, key: SymmetricKey
-    ) -> "ObjectKey":
+    ):
         enc_key = key.encrypt_self(self._get_encryption_key())
         obj_key = ObjectKey(
             keyring=self,
@@ -171,12 +209,15 @@ class Keyring(models.Model):
             object_type=object_type.value,
             key=enc_key.as_dict(),
         )
-        obj_key.save()
-        return obj_key
+        self._object_keys.append(obj_key)
 
     def add_object_key_for_group(
         self, group: Group, object_id: UUID, object_type: ObjectTypes
-    ) -> "ObjectKey":
+    ):
+        for gkey in self._group_keys:
+            if gkey.group.uuid == group.uuid:
+                group_key = gkey
+        assert group_key is not None, "group key must be found"
         key = self.get_object_key(object_id=object_id, object_type=object_type)
         enc_key = key.encrypt_self(group.get_encryption_key(self.user))
         obj_key = ObjectKey(
@@ -185,21 +226,26 @@ class Keyring(models.Model):
             object_type=object_type.value,
             key=enc_key.as_dict(),
         )
-        obj_key.save()
-        return obj_key
+        group_key._object_keys.append(obj_key)
 
-    def remove_object_key(self, object_id: UUID, object_type: ObjectTypes) -> None:
-        for key in self.object_keys.all():
-            if key.object_id == object_id and key.object_type == object_type.value:
-                key.delete()
+    def remove_object_key(self, object_id: UUID, object_type: ObjectTypes):
+        self._object_keys = list_filter(
+            self._object_keys,
+            lambda key: not (
+                key.object_id == object_id and key.object_type == object_type.value
+            ),
+        )
 
-    @staticmethod
     def remove_object_key_for_group(
-        group: Group, object_id: UUID, object_type: ObjectTypes
-    ) -> None:
-        for key in group.object_keys.all():
-            if key.object_id == object_id and key.object_type == object_type.value:
-                key.delete()
+        self, group: Group, object_id: UUID, object_type: ObjectTypes
+    ):
+        group_key = self._find_group_key(group.uuid)
+        group_key._object_keys = list_filter(
+            group_key._object_keys,
+            lambda key: not (
+                key.object_id == object_id and key.object_type == object_type.value
+            ),
+        )
 
 
 class GroupKey(models.Model):
@@ -214,6 +260,7 @@ class GroupKey(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     if TYPE_CHECKING:
+        _object_keys: list["ObjectKey"]
         object_keys: models.QuerySet["ObjectKey"]
 
     class Meta:
@@ -223,6 +270,12 @@ class GroupKey(models.Model):
 
     def __str__(self):
         return f"groupKey: {self.keyring.user.email}; group: {self.group.name};"
+
+    def save(self, *args, **kwargs):
+        raise Exception("save is disabled use store() of keyring instead")
+
+    def load(self):
+        self._object_keys = list(self.group.object_keys.all())
 
     def _get_decryption_key(self) -> SymmetricKey:
         unlock_key = self.keyring._get_decryption_key()
@@ -272,6 +325,9 @@ class ObjectKey(models.Model):
             assert self.group is not None
             start = f"objectKey: {self.group.name};"
         return f"{start} object_type: {self.object_type}; object_id: {self.object_id};"
+
+    def save(self, *args, **kwargs):
+        raise Exception("save is disabled use store() of keyring instead")
 
     def _get_decryption_key(
         self, unlock_key: AsymmetricKey | SymmetricKey
