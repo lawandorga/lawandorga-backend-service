@@ -14,6 +14,7 @@ from core.seedwork.domain_layer import DomainError
 
 if TYPE_CHECKING:
     from core.auth.models.org_user import OrgUser
+    from core.encryption.models import ObjectKey
     from core.permissions.models import HasPermission
 
 
@@ -120,6 +121,7 @@ class Group(models.Model):
 
     if TYPE_CHECKING:
         group_has_permission: models.QuerySet["HasPermission"]
+        object_keys: models.QuerySet["ObjectKey"]
         org_id: int
 
     class Meta:
@@ -148,6 +150,7 @@ class Group(models.Model):
         self.keys = []
         for user in list(self.members.all()):
             enc_key = key.encrypt(user)
+            user.keyring.add_group_key_directly(self, key.get_key())
             self.keys.append(enc_key.as_dict())
         assert len(self.keys) == self.members.count()
 
@@ -240,6 +243,10 @@ class Group(models.Model):
             self.__add_key_for_user(new_member, by)
 
         with transaction.atomic():
+            if by is not None:
+                new_member.keyring.add_group_key(self, by=by)
+            else:
+                new_member.keyring.add_group_key(self, by=new_member)
             self.save()
             self.members.add(new_member)
 
@@ -261,3 +268,4 @@ class Group(models.Model):
         with transaction.atomic():
             self.save()
             self.members.remove(member)
+            member.keyring.remove_group_key(self)

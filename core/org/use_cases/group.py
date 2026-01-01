@@ -1,5 +1,7 @@
 from uuid import UUID
 
+from django.db import transaction
+
 from core.auth.models import OrgUser
 from core.auth.use_cases.finders import org_user_from_id
 from core.org.models import Group
@@ -14,8 +16,9 @@ def create_group(__actor: OrgUser, name: str, description: str = "") -> Group:
     group = Group.create(org=__actor.org, name=name, description=description)
     group.save()
     group.add_member(__actor)
-    group.generate_keys()
-    group.save()
+    with transaction.atomic():
+        group.generate_keys()
+        group.save()
     return group
 
 

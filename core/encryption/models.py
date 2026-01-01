@@ -8,6 +8,7 @@ from git import TYPE_CHECKING
 from core.auth.domain.user_key import UserKey
 from core.auth.models import OrgUser
 from core.auth.models.session import CustomSession
+from core.encryption.types import ObjectTypes
 from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
@@ -19,11 +20,20 @@ from core.folders.domain.value_objects.symmetric_key import (
 from core.org.models.group import Group
 
 
+class KeyNotFoundError(Exception):
+    pass
+
+
 class KeyringManager(models.Manager["Keyring"]):
     def load(self, user: OrgUser) -> "Keyring":
         keyring = (
             self.filter(user=user)
-            .prefetch_related("object_keys", "group_keys", "group_keys__object_keys")
+            .prefetch_related(
+                "object_keys",
+                "group_keys",
+                "group_keys__group",
+                "group_keys__group__object_keys",
+            )
             .get()
         )
         return keyring
@@ -41,6 +51,13 @@ class Keyring(models.Model):
     if TYPE_CHECKING:
         object_keys: models.QuerySet["ObjectKey"]
         group_keys: models.QuerySet["GroupKey"]
+
+    class Meta:
+        verbose_name = "ENC_Keyring"
+        verbose_name_plural = "ENC_Keyrings"
+
+    def __str__(self):
+        return f"keyring: {self.user.email};"
 
     def __get_session(self) -> CustomSession:
         session = (
@@ -110,33 +127,86 @@ class Keyring(models.Model):
     def get_private_key(self, *args, **kwargs) -> str:
         return self._get_decryption_key().get_private_key().decode("utf-8")
 
-    def get_object_key(self, object_id: UUID, object_type: str) -> SymmetricKey:
+    def get_group_key(self, group_id: UUID) -> SymmetricKey:
+        for gkey in self.group_keys.all():
+            if gkey.group.uuid == group_id:
+                return gkey._get_decryption_key()
+        raise KeyNotFoundError("no group key found for the given group id")
+
+    def add_group_key(self, group: Group, by: "OrgUser") -> "GroupKey":
+        key = by.keyring.get_group_key(group.uuid)
+        enc_key = key.encrypt_self(self._get_encryption_key())
+        group_key = GroupKey(keyring=self, group=group, key=enc_key.as_dict())
+        group_key.save()
+        return group_key
+
+    def add_group_key_directly(self, group: Group, key: SymmetricKey) -> "GroupKey":
+        enc_key = key.encrypt_self(self._get_encryption_key())
+        group_key = GroupKey(keyring=self, group=group, key=enc_key.as_dict())
+        group_key.save()
+        return group_key
+
+    def remove_group_key(self, group: Group) -> None:
+        for gkey in self.group_keys.all():
+            if gkey.group.uuid == group.uuid:
+                gkey.delete()
+
+    def get_object_key(self, object_id: UUID, object_type: ObjectTypes) -> SymmetricKey:
         for key in self.object_keys.all():
-            if key.object_id == object_id and key.object_type == object_type:
+            if key.object_id == object_id and key.object_type == object_type.value:
                 return key._get_decryption_key(self._get_decryption_key())
         for gkey in self.group_keys.all():
-            for key in gkey.object_keys.all():
-                if key.object_id == object_id and key.object_type == object_type:
+            for key in gkey.group.object_keys.all():
+                if key.object_id == object_id and key.object_type == object_type.value:
                     return key._get_decryption_key(gkey._get_decryption_key())
-        raise ValueError("no object key found for the given object id and type.")
+        raise KeyNotFoundError("no object key found for the given object id and type")
 
     def add_object_key(
-        self, object_id: UUID, object_type: str, key: SymmetricKey
+        self, object_id: UUID, object_type: ObjectTypes, key: SymmetricKey
     ) -> "ObjectKey":
         enc_key = key.encrypt_self(self._get_encryption_key())
-        return ObjectKey(
+        obj_key = ObjectKey(
             keyring=self,
             object_id=object_id,
-            object_type=object_type,
+            object_type=object_type.value,
             key=enc_key.as_dict(),
         )
+        obj_key.save()
+        return obj_key
+
+    def add_object_key_for_group(
+        self, group: Group, object_id: UUID, object_type: ObjectTypes
+    ) -> "ObjectKey":
+        key = self.get_object_key(object_id=object_id, object_type=object_type)
+        enc_key = key.encrypt_self(group.get_encryption_key(self.user))
+        obj_key = ObjectKey(
+            group=group,
+            object_id=object_id,
+            object_type=object_type.value,
+            key=enc_key.as_dict(),
+        )
+        obj_key.save()
+        return obj_key
+
+    def remove_object_key(self, object_id: UUID, object_type: ObjectTypes) -> None:
+        for key in self.object_keys.all():
+            if key.object_id == object_id and key.object_type == object_type.value:
+                key.delete()
+
+    @staticmethod
+    def remove_object_key_for_group(
+        group: Group, object_id: UUID, object_type: ObjectTypes
+    ) -> None:
+        for key in group.object_keys.all():
+            if key.object_id == object_id and key.object_type == object_type.value:
+                key.delete()
 
 
 class GroupKey(models.Model):
     keyring: models.ForeignKey["GroupKey", Keyring] = models.ForeignKey(
         Keyring, on_delete=models.CASCADE, related_name="group_keys"
     )
-    group = models.ForeignKey(
+    group: models.ForeignKey["GroupKey", Group] = models.ForeignKey(
         Group, on_delete=models.CASCADE, related_name="group_keys"
     )
     key = models.JSONField(null=False, blank=True)
@@ -147,7 +217,12 @@ class GroupKey(models.Model):
         object_keys: models.QuerySet["ObjectKey"]
 
     class Meta:
+        verbose_name = "ENC_GroupKey"
+        verbose_name_plural = "ENC_GroupKeys"
         unique_together = ("keyring", "group")
+
+    def __str__(self):
+        return f"groupKey: {self.keyring.user.email}; group: {self.group.name};"
 
     def _get_decryption_key(self) -> SymmetricKey:
         unlock_key = self.keyring._get_decryption_key()
@@ -163,7 +238,7 @@ class ObjectKey(models.Model):
         null=True,
         blank=True,
     )
-    group = models.ForeignKey(
+    group: models.ForeignKey["ObjectKey", Group | None] = models.ForeignKey(
         Group,
         on_delete=models.CASCADE,
         related_name="object_keys",
@@ -177,6 +252,8 @@ class ObjectKey(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
+        verbose_name = "ENC_ObjectKey"
+        verbose_name_plural = "ENC_ObjectKeys"
         unique_together = ("keyring", "object_id", "object_type")
         constraints = [
             models.CheckConstraint(
@@ -187,6 +264,14 @@ class ObjectKey(models.Model):
                 name="one_of_both_is_set_object_key",
             )
         ]
+
+    def __str__(self):
+        if self.keyring is not None:
+            start = f"objectKey: {self.keyring.user.email};"
+        else:
+            assert self.group is not None
+            start = f"objectKey: {self.group.name};"
+        return f"{start} object_type: {self.object_type}; object_id: {self.object_id};"
 
     def _get_decryption_key(
         self, unlock_key: AsymmetricKey | SymmetricKey
