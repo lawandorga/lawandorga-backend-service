@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Optional, Union
 from uuid import UUID, uuid4
 
-from core.encryption.models import KeyNotFoundError, Keyring
+from core.encryption.models import KeyNotFoundError
 from core.encryption.types import ObjectTypes
 from core.folders.domain.aggregates.item import Item
 from core.folders.domain.value_objects.folder_item import FolderItem
@@ -201,10 +201,14 @@ class Folder:
         self.__keys = new_keys
 
     def has_access(self, owner: "OrgUser") -> bool:
-        key = self._get_key(owner)
-        if key is not None and key.is_valid:
-            return True
-        return False
+        try:
+            if owner.keyring.has_object_key(self.uuid, ObjectTypes.FOLDER):
+                return True
+        except KeyNotFoundError:
+            pass
+        if self.parent is None or self.__stop_inherit:
+            return False
+        return self.parent.has_access(owner)
 
     def _has_direct_access(self, owner: "OrgUser") -> bool:
         for u_key in self.__keys:
@@ -441,6 +445,7 @@ class Folder:
         to.keyring.add_object_key(
             object_id=self.uuid, object_type=ObjectTypes.FOLDER, key=key
         )
+        print(id(to.keyring))
 
     def grant_access_to_group(self, group: "Group", by: "OrgUser"):
         if self._has_keys_group(group):
@@ -487,7 +492,7 @@ class Folder:
             object_id=self.uuid, object_type=ObjectTypes.FOLDER
         )
 
-    def revoke_access_from_group(self, of: "Group"):
+    def revoke_access_from_group(self, of: "Group", by: "OrgUser"):
         prev_length = len(self.__keys)
 
         new_keys: list[EncryptedFolderKeyOfGroup] = list(
@@ -502,6 +507,6 @@ class Folder:
 
         self.__group_keys = new_keys
 
-        Keyring.remove_object_key_for_group(
+        by.keyring.remove_object_key_for_group(
             group=of, object_id=self.uuid, object_type=ObjectTypes.FOLDER
         )

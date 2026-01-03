@@ -1,7 +1,5 @@
 from uuid import UUID
 
-from django.db import transaction
-
 from core.auth.models import OrgUser
 from core.auth.use_cases.finders import org_user_from_id
 from core.org.models import Group
@@ -13,12 +11,9 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
 def create_group(__actor: OrgUser, name: str, description: str = "") -> Group:
-    group = Group.create(org=__actor.org, name=name, description=description)
-    group.save()
-    group.add_member(__actor)
-    with transaction.atomic():
-        group.generate_keys()
-        group.save()
+    group = Group.create(
+        org=__actor.org, name=name, description=description, by=__actor
+    )
     return group
 
 

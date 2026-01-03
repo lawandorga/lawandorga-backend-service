@@ -30,7 +30,7 @@ def record(user):
 @pytest.fixture
 def another_user(org):
     yield test_helpers.create_raw_org_user(
-        org=org, email="tester@law-orga.de", name="Mr. Tester", user_pk=2, pk=2
+        org=org, email="tester@law-orga.de", name="Mr. Tester"
     )
 
 

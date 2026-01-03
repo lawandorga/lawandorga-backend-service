@@ -19,7 +19,7 @@ class RecordsAccessRequest(models.Model):
         return access
 
     uuid = models.UUIDField(unique=True, db_index=True, default=uuid.uuid4)
-    requestor = models.ForeignKey(
+    requestor: models.ForeignKey["RecordsAccessRequest", OrgUser] = models.ForeignKey(
         OrgUser,
         related_name="records_requested_access_requests",
         on_delete=models.CASCADE,

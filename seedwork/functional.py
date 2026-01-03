@@ -91,6 +91,18 @@ def list_filter(
     return list(filter(fn, items))
 
 
+list_find_I = TypeVar("list_find_I")
+
+
+def list_find(
+    items: Iterable[list_find_I], fn: Callable[[list_find_I], bool]
+) -> list_find_I | None:
+    for item in items:
+        if fn(item):
+            return item
+    return None
+
+
 take_single_I = TypeVar("take_single_I")
 
 

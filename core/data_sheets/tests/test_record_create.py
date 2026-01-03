@@ -88,6 +88,8 @@ def test_grant_to_users_with_general_permission(
         template_id=record_template["template"].pk,
     )
 
+    another_user["org_user"].keyring.load(force=True)
+
     assert folder_repo.retrieve(folder.org_pk, record.folder_uuid).has_access(
         another_user["org_user"]
     )
