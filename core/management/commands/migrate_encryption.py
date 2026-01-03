@@ -1,0 +1,59 @@
+from django.core.management.base import BaseCommand
+
+from core.auth.models.org_user import OrgUser
+from core.encryption.models import GroupKey, Keyring, ObjectKey
+from core.folders.domain.value_objects.folder_key import EncryptedFolderKeyOfUser
+from core.folders.domain.value_objects.symmetric_key import EncryptedSymmetricKey
+from core.folders.infrastructure.folder_repository import DjangoFolderRepository
+from core.org.models.group import EncryptedGroupKey, Group
+from core.org.models.org import Org
+
+
+class Command(BaseCommand):
+    help = "migrates into the new encryption model"
+
+    def handle(self, *args, **options):
+        Keyring.objects.all().delete()
+
+        r = DjangoFolderRepository()
+        for o in Org.objects.all().order_by("pk"):
+            self.stdout.write("migrating org {}".format(o.pk))
+            folders = r.get_dict(o.pk)
+
+            for u in OrgUser.objects.filter(org=o).order_by("pk"):
+                keyring = Keyring(user=u, key=u.key)
+                keyring.save()
+                self.stdout.write("created keyring for user {}".format(u.pk))
+                for f in folders.values():
+                    if f._has_direct_access(u):
+                        key = f._get_key(u)
+                        assert isinstance(key, EncryptedFolderKeyOfUser)
+                        enc_s_key = key._key
+                        assert isinstance(enc_s_key, EncryptedSymmetricKey)
+                        object_key = ObjectKey(
+                            keyring=keyring,
+                            object_id=f.uuid,
+                            object_type="folder",
+                            key=enc_s_key.as_dict(),
+                        )
+                        object_key.save()
+                        self.stdout.write(
+                            "created object key for folder {}".format(f.uuid)
+                        )
+
+            for g in (
+                Group.objects.filter(org=o).prefetch_related("members").order_by("pk")
+            ):
+                self.stdout.write("migrating group {}".format(g.pk))
+                for u in g.members.all().order_by("pk").select_related("keyring"):
+                    enc_group_key = g.get_enc_group_key_of_user(u)
+                    assert isinstance(enc_group_key, EncryptedGroupKey)
+                    enc_s_key = enc_group_key.get_key_for_migration()
+                    assert isinstance(enc_s_key, EncryptedSymmetricKey)
+                    group_key = GroupKey(
+                        keyring=u.keyring,
+                        group=g,
+                        key=enc_s_key.as_dict(),
+                    )
+                    group_key.save()
+                    self.stdout.write("created group key for user {}".format(u.pk))

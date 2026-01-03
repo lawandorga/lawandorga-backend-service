@@ -14,6 +14,7 @@ from core.seedwork.domain_layer import DomainError
 
 if TYPE_CHECKING:
     from core.auth.models.org_user import OrgUser
+    from core.encryption.models import ObjectKey
     from core.permissions.models import HasPermission
 
 
@@ -66,6 +67,9 @@ class EncryptedGroupKey:
     def owner_uuid(self):
         return self.__owner_uuid
 
+    def get_key_for_migration(self) -> EncryptedSymmetricKey:
+        return self.__enc_key
+
     def decrypt(self, owner: "OrgUser") -> GroupKey:
         if owner.uuid != self.__owner_uuid:
             raise DomainError("The owner does not match the key.")
@@ -96,11 +100,18 @@ class EncryptedGroupKey:
 
 class Group(models.Model):
     @classmethod
-    def create(cls, org: Org, name: str, description: str | None, pk=0):
+    def create_simple(cls, org: Org, name: str, description: str | None):
         group = Group(org=org, name=name)
         group.description = description if description is not None else ""
-        if pk:
-            group.pk = pk
+        return group
+
+    @classmethod
+    def create(cls, org: Org, name: str, description: str | None, by: "OrgUser"):
+        group = Group.create_simple(org=org, name=name, description=description)
+        with transaction.atomic():
+            group.save()
+            group.add_member(by)
+            by.keyring.store()
         return group
 
     uuid = models.UUIDField(default=uuid4, unique=True, editable=False)
@@ -117,6 +128,7 @@ class Group(models.Model):
 
     if TYPE_CHECKING:
         group_has_permission: models.QuerySet["HasPermission"]
+        object_keys: models.QuerySet["ObjectKey"]
         org_id: int
 
     class Meta:
@@ -138,15 +150,14 @@ class Group(models.Model):
     def keys_as_model(self) -> list[EncryptedGroupKey]:
         return [EncryptedGroupKey.create_from_dict(key) for key in self.keys]
 
-    def generate_keys(self):
+    def _generate_keys(self, for_member: "OrgUser"):
         assert len(self.keys) == 0, "keys already exist for this group"
 
         key = GroupKey.generate()
         self.keys = []
-        for user in list(self.members.all()):
-            enc_key = key.encrypt(user)
-            self.keys.append(enc_key.as_dict())
-        assert len(self.keys) == self.members.count()
+        enc_key = key.encrypt(for_member)
+        for_member.keyring.load().add_group_key_directly(self, key.get_key())
+        self.keys.append(enc_key.as_dict())
 
     def get_enc_group_key_of_user(self, user: "OrgUser") -> EncryptedGroupKey | None:
         assert len(self.keys), "keys have not been generated for this group"
@@ -235,10 +246,14 @@ class Group(models.Model):
         if len(self.keys):
             assert by is not None, "by must be set if keys exist"
             self.__add_key_for_user(new_member, by)
+            new_member.keyring.add_group_key(self, by=by)
+        else:
+            self._generate_keys(new_member)
 
         with transaction.atomic():
             self.save()
             self.members.add(new_member)
+            new_member.keyring.store()
 
     def __remove_key_of_user(self, user: "OrgUser"):
         assert len(self.keys), "keys have not been generated for this group"
@@ -254,7 +269,9 @@ class Group(models.Model):
             raise DomainError("The user is not a member of this group.")
 
         self.__remove_key_of_user(member)
+        member.keyring.remove_group_key(self)
 
         with transaction.atomic():
             self.save()
             self.members.remove(member)
+            member.keyring.store()

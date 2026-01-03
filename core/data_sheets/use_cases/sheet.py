@@ -1,5 +1,7 @@
 from uuid import UUID
 
+from django.db import transaction
+
 from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet, DataSheetTemplate
 from core.data_sheets.use_cases.finders import (
@@ -16,6 +18,8 @@ from core.permissions.static import (
 )
 from core.seedwork.use_case_layer import UseCaseError, UseCaseInputError, use_case
 from messagebus.domain.collector import EventCollector
+
+from seedwork.functional import list_filter
 
 
 @use_case
@@ -88,15 +92,18 @@ def __create(
     folder_repository: FolderRepository,
     collector: EventCollector,
 ) -> DataSheet:
-    access_granted = False
-    for user in list(__actor.org.users.all()):
-        should_access = user.has_permission(PERMISSION_RECORDS_ACCESS_ALL_RECORDS)
-        has_access = folder.has_access(user)
-        if should_access and not has_access:
-            folder.grant_access(user, __actor)
-            access_granted = True
+    users_that_should_have_access = list_filter(
+        __actor.org.users.all(),
+        lambda u: u.has_permission(PERMISSION_RECORDS_ACCESS_ALL_RECORDS)
+        and not folder.has_access(u),
+    )
 
-    if access_granted:
+    for user in users_that_should_have_access:
+        folder.grant_access(user, __actor)
+
+    with transaction.atomic():
+        for user in users_that_should_have_access:
+            user.keyring.store()
         folder_repository.save(folder)
 
     sheet = DataSheet(template=template, name=name)

@@ -18,6 +18,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import models
 from django.db.models import Q
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.template import loader
 from django.utils import timezone
 
@@ -45,6 +47,7 @@ from seedwork.functional import list_filter, list_map
 
 if TYPE_CHECKING:
     from core.auth.models.mfa import MultiFactorAuthenticationSecret
+    from core.encryption.models import Keyring
     from core.folders.domain.value_objects.folder_key import EncryptedFolderKeyOfUser
     from core.org.models.group import Group
 
@@ -148,6 +151,8 @@ class OrgUser(models.Model):
     updated = models.DateTimeField(auto_now=True)
     # custom manager
     objects = OrgUserManager()
+    # helper for saving
+    _save_keyring = False
 
     if TYPE_CHECKING:
         mfa_secret: "MultiFactorAuthenticationSecret"
@@ -157,6 +162,7 @@ class OrgUser(models.Model):
         get_speciality_of_study_display: Callable[[], str]
         org: models.ForeignKey[Org]  # type: ignore
         user: models.OneToOneField[UserProfile]  # type: ignore
+        keyring: models.OneToOneField["Keyring"]
 
     class Meta:
         verbose_name = "AUT_OrgUser"
@@ -479,6 +485,14 @@ class OrgUser(models.Model):
         self.is_private_key_encrypted = True
         self.key = u2.as_dict()
 
+        from core.encryption.models import Keyring
+
+        self.keyring = Keyring.create(
+            user=self,
+            key=u2,
+        )
+        self._save_keyring = True
+
     def lock(self, collector: EventCollector) -> None:
         self.locked = True
         collector.collect(OrgUser.OrgUserLocked(uuid=self.uuid, org_pk=self.org_id))
@@ -697,3 +711,10 @@ class OrgUser(models.Model):
                 org_pk=self.org_id,
             )
         )
+
+
+@receiver(post_save, sender=OrgUser)
+def create_keyring_for_orguser(sender, instance: OrgUser, created, **kwargs):
+    if instance._save_keyring:
+        instance.keyring.store()
+        instance._save_keyring = False

@@ -16,9 +16,18 @@ def org(db):
 
 
 @pytest.fixture
-def group(db, org):
-    g = Group.create(name="Test Group", org=org, description="Just testing.")
-    g.save()
+def user(db, org):
+    user_1 = data.create_org_user(org=org)
+    org.generate_keys()
+    user_1["org_user"].keyring.store()
+    yield user_1
+
+
+@pytest.fixture
+def group(db, org, user):
+    g = Group.create(
+        name="Test Group", org=org, description="Just testing.", by=user["org_user"]
+    )
     yield g
 
 
@@ -32,16 +41,6 @@ def user_2(db, org):
 def user_3(db, org):
     user_3 = data.create_org_user(email="dummy3@law-orga.de", name="Dummy 3", org=org)
     yield user_3
-
-
-@pytest.fixture
-def user(db, group, user_2, org):
-    user_1 = data.create_org_user(org=org)
-    org.generate_keys()
-    group.members.add(user_1["org_user"])
-    group.generate_keys()
-    group.save()
-    yield user_1
 
 
 def test_list_users(user, group, db):

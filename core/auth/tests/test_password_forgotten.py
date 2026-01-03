@@ -10,10 +10,7 @@ def test_group_keys_invalidated(db):
         "org_user"
     ]
 
-    group = Group.create(org=user1.org, name="Test Group", description="")
-    group.save()
-    group.add_member(user1)
-    group.generate_keys()
+    group = Group.create(org=user1.org, name="Test Group", description="", by=user1)
     group.add_member(user2, user1)
     assert group.has_keys(user1)
     assert group.has_keys(user2)
@@ -34,10 +31,7 @@ def test_group_keys_fixed_with_unlock(db):
         "org_user"
     ]
 
-    group = Group.create(org=user1.org, name="Test Group", description="")
-    group.save()
-    group.add_member(user1)
-    group.generate_keys()
+    group = Group.create(org=user1.org, name="Test Group", description="", by=user1)
     group.add_member(user2, user1)
     assert group.has_keys(user1)
     assert group.has_keys(user2)

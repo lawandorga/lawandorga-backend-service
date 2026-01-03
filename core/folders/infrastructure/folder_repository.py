@@ -143,9 +143,15 @@ class DjangoFolderRepository(FolderRepository):
             return self.get_dict(org_pk)[f1.uuid]
         folder = Folder.create(name=name, org_pk=org_pk)
         folder.grant_access(user)
-        for u in OrgUser.objects.filter(org_id=org_pk).exclude(uuid=user.uuid):
+        users = OrgUser.objects.filter(org_id=org_pk).exclude(uuid=user.uuid)
+        for u in users:
+            u.keyring.load()
             folder.grant_access(u, user)
-        self.save(folder)
+        with transaction.atomic():
+            self.save(folder)
+            for u in users:
+                u.keyring.store()
+
         return self.get_dict(org_pk)[folder.uuid]
 
     def retrieve(self, org_pk: int, uuid: UUID) -> Folder:

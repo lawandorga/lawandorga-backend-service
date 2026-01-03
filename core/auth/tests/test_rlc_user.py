@@ -90,9 +90,11 @@ def test_delete_works(db, org_user):
     assert UserProfile.objects.count() == user_profiles - 1
 
 
-def test_keys_are_generated(org_user):
-    user = org_user["org_user"]
+def test_keys_are_generated(db):
+    user = test_helpers.create_raw_org_user()
     user.generate_keys(settings.DUMMY_USER_PASSWORD)
+    user.org.save()
+    user.user.save()
     user.save()
     user = OrgUser.objects.get(pk=user.pk)
     assert isinstance(user.get_encryption_key(), EncryptedAsymmetricKey)

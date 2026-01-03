@@ -21,7 +21,9 @@ def grant_access_request(__actor: OrgUser, access_uuid: UUID, r: FolderRepositor
     record = access.record
     folder = r.retrieve(__actor.org_id, record.folder_uuid)
     if not folder.has_access(access.requestor):
-        folder.grant_access(access.requestor, __actor)
+        requestor = access.requestor
+        folder.grant_access(requestor, __actor)
+        requestor.keyring.store()
         r.save(folder)
     access.grant(__actor)
     access.save()

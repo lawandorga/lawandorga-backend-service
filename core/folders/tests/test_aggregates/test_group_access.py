@@ -24,8 +24,12 @@ def test_has_access_can_get_the_key(db):
 
     group = test_helpers.create_group(u)["group"]
     folder.grant_access_to_group(group, u)
+    u.keyring.store()
 
     gu = test_helpers.create_org_user(org=org, email="tester@law-orga.de")["org_user"]
     group.add_member(gu, u)
+    gu.keyring.load(
+        force=True
+    )  # required so that the group keys object keys are loaded
 
     assert subfolder.has_access(gu) and subfolder.get_encryption_key(gu)
