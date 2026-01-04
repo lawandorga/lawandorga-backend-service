@@ -15,8 +15,6 @@ from core.records.use_cases.finders import find_record_by_uuid
 from core.seedwork.use_case_layer import UseCaseError, UseCaseInputError, use_case
 from messagebus.domain.collector import EventCollector
 
-from seedwork.functional import list_filter
-
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])
 def create_record_and_folder(
@@ -26,7 +24,6 @@ def create_record_and_folder(
     r: FolderRepository,
     collector: EventCollector,
 ):
-    __actor.keyring.load()
     if parent_folder_uuid:
         parent_folder = r.retrieve(__actor.org_id, parent_folder_uuid)
     else:
@@ -45,25 +42,19 @@ def create_record_and_folder(
     )
     folder.grant_access(__actor)
 
-    users_that_should_have_access = list_filter(
-        __actor.org.users.all(),
-        lambda u: u.has_permission(PERMISSION_RECORDS_ACCESS_ALL_RECORDS),
-    )
-
-    for user in users_that_should_have_access:
+    for user in list(__actor.org.users.all()):
+        should_access = user.has_permission(PERMISSION_RECORDS_ACCESS_ALL_RECORDS)
         has_access = folder.has_access(user)
-        if not has_access:
+        if should_access and not has_access:
             folder.grant_access(user, __actor)
 
+    # todo: grant access to all users who should have
     folder.set_parent(parent_folder, __actor)
     folder.restrict()
-    record = RecordsRecord.create(token, __actor, folder, collector)
+    r.save(folder)
 
-    with transaction.atomic():
-        r.save(folder)
-        for user in users_that_should_have_access:
-            user.keyring.store()
-        record.save()
+    record = RecordsRecord.create(token, __actor, folder, collector)
+    record.save()
 
     return folder.uuid
 

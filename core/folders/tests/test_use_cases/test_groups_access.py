@@ -8,12 +8,9 @@ from core.seedwork import test_helpers
 
 
 def test_grant_access_to_group(db):
-    org = test_helpers.create_raw_org(name="Test Org", save=True)
-    u = test_helpers.create_raw_org_user(org=org, save=True)
-
-    another_user = test_helpers.create_raw_org_user(
-        org=org, email="tester@law-orga.de", save=True
-    )
+    org = test_helpers.create_org("Test Org")["org"]
+    org_user = test_helpers.create_org_user(org=org)
+    u = org_user["org_user"]
 
     folder = Folder.create(name="Test Folder", org_pk=u.org_id)
     folder.grant_access(u)
@@ -22,28 +19,21 @@ def test_grant_access_to_group(db):
     r.save(folder)
 
     group = test_helpers.create_group(u)["group"]
-    group.add_member(another_user, u)
-
     folder.grant_access_to_group(group, u)
     assert len(folder.group_keys) == 1
-    u.keyring.store()
 
-    another_user.keyring.load(force=True)
-
-    assert folder.has_access(another_user)
+    assert folder.has_access_group(group)
     r.save(folder)
 
     new_folder = r.retrieve(u.org_id, folder.uuid)
-    assert new_folder.has_access(another_user), new_folder.keys
+    assert new_folder.has_access_group(group), new_folder.keys
 
-    new_folder.revoke_access_from_group(group, u)
-    u.keyring.store()
-    another_user.keyring.load(force=True)
-    assert not new_folder.has_access(another_user)
+    new_folder.revoke_access_from_group(group)
+    assert not new_folder.has_access_group(group)
     r.save(new_folder)
 
     new_folder = r.retrieve(u.org_id, folder.uuid)
-    assert not new_folder.has_access(another_user)
+    assert not new_folder.has_access_group(group)
     assert new_folder.has_access(u)
 
 
