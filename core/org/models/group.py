@@ -14,7 +14,6 @@ from core.seedwork.domain_layer import DomainError
 
 if TYPE_CHECKING:
     from core.auth.models.org_user import OrgUser
-    from core.encryption.models import ObjectKey
     from core.permissions.models import HasPermission
 
 
@@ -128,7 +127,7 @@ class Group(models.Model):
 
     if TYPE_CHECKING:
         group_has_permission: models.QuerySet["HasPermission"]
-        object_keys: models.QuerySet["ObjectKey"]
+        # object_keys: models.QuerySet["ObjectKey"]
         org_id: int
 
     class Meta:
@@ -169,24 +168,6 @@ class Group(models.Model):
 
         return None
 
-    def __get_group_key(self, user: "OrgUser") -> GroupKey:
-        enc_key = self.get_enc_group_key_of_user(user)
-        if enc_key is None:
-            raise DomainError(
-                "You have no keys for this group, because you are not a member of this group."
-            )
-        if not enc_key.is_valid:
-            raise DomainError("Your keys for this group are invalid.")
-        try:
-            key = enc_key.decrypt(user)
-        except EncryptionDecryptionError as e:
-            from core.auth.use_cases.keys import check_keys
-
-            check_keys(user)
-            raise e
-
-        return key
-
     def invalidate_keys_of(self, user: "OrgUser"):
         assert len(self.keys), "keys have not been generated for this group"
         new_keys = []
@@ -198,8 +179,7 @@ class Group(models.Model):
         self.keys = new_keys
 
     def get_encryption_key(self, user: "OrgUser") -> SymmetricKey:
-        key = self.__get_group_key(user)
-        return key.get_key()
+        return user.keyring.get_group_key(self.uuid)
 
     def get_decryption_key(self, user: "OrgUser") -> SymmetricKey:
         return self.get_encryption_key(user)
@@ -228,13 +208,10 @@ class Group(models.Model):
         return True
 
     def fix_keys(self, of: "OrgUser", by: "OrgUser") -> None:
-        self.__remove_key_of_user(of)
-        self.__add_key_for_user(of, by)
-
-    def __add_key_for_user(self, new_member: "OrgUser", by: "OrgUser") -> None:
-        key = self.__get_group_key(by)
-        enc_key = key.encrypt(new_member)
-        self.keys.append(enc_key.as_dict())
+        of.keyring.remove_group_key(self)
+        of.keyring.add_group_key(self, by)
+        with transaction.atomic():
+            of.keyring.store()
 
     def add_member(self, new_member: "OrgUser", by: Union["OrgUser", None] = None):
         if new_member.org_id != self.org.pk:
@@ -245,7 +222,6 @@ class Group(models.Model):
 
         if len(self.keys):
             assert by is not None, "by must be set if keys exist"
-            self.__add_key_for_user(new_member, by)
             new_member.keyring.add_group_key(self, by=by)
         else:
             self._generate_keys(new_member)
@@ -255,20 +231,10 @@ class Group(models.Model):
             self.members.add(new_member)
             new_member.keyring.store()
 
-    def __remove_key_of_user(self, user: "OrgUser"):
-        assert len(self.keys), "keys have not been generated for this group"
-        old_length = len(self.keys)
-        for key in self.keys:
-            if key["owner_uuid"] == str(user.uuid):
-                self.keys.remove(key)
-                break
-        assert len(self.keys) == old_length - 1
-
     def remove_member(self, member: "OrgUser"):
         if not self.has_member(member):
             raise DomainError("The user is not a member of this group.")
 
-        self.__remove_key_of_user(member)
         member.keyring.remove_group_key(self)
 
         with transaction.atomic():

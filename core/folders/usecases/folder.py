@@ -114,7 +114,7 @@ def revoke_access_from_group(__actor: OrgUser, group_uuid: UUID, folder_uuid: UU
         raise UseCaseError("You need access to this folder in order to do that.")
 
     r = get_repository()
-    folder.revoke_access_from_group(of=group, by=__actor)
+    folder.revoke_access_from_group(of=group)
     r.save(folder)
 
 

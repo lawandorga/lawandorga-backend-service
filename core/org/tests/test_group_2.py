@@ -68,8 +68,8 @@ def test_group_add_member_gets_key(db):
         "org_user"
     ]
     group.add_member(user2, user)
-    assert len(group.keys) == 2, group.keys
-    assert group.has_keys(user2)
+    user2.keyring.load(force=True)
+    assert user2.keyring._find_group_key(group.uuid) is not None
 
 
 def test_group_remove_member_removes_key(db):
@@ -81,8 +81,8 @@ def test_group_remove_member_removes_key(db):
     ]
     group.add_member(user2, user)
     group.remove_member(user)
-    assert len(group.keys) == 1, group.keys
-    assert not group.has_keys(user)
+    user.keyring.load(force=True)
+    assert user.keyring._find_group_key(group.uuid) is None
 
 
 def test_invalidate_keys(db):

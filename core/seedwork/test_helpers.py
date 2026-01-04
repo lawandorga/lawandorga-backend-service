@@ -41,16 +41,6 @@ def create_raw_template(org: Org | None = None, name="Test Template", pk=1):
     return DataSheetTemplate.create(name=name, org=org, pk=pk)
 
 
-# def create_raw_keyring(user: OrgUser | None, save=False):
-#     keyring = Keyring(
-#         user=user,
-#         key=UserKey.generate(enc=user.org.default_asymmetric_encryption).as_dict(),
-#     )
-#     if save:
-#         keyring.store()
-#     return keyring
-
-
 def create_raw_org_user(
     org=None,
     email="dummy@law-orga.de",

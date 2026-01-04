@@ -14,10 +14,10 @@ def check_keys(__actor: OrgUser):
         __test_folder_keys(__actor)
     except Exception:
         raise UseCaseError("The folder keys are not correct.")
-    try:
-        __test_group_keys(__actor)
-    except Exception:
-        raise UseCaseError("The group keys are not correct.")
+    # try:
+    #     __test_group_keys(__actor)
+    # except Exception:
+    #     raise UseCaseError("The group keys are not correct.")
 
 
 def __test_folder_keys(u: OrgUser):
@@ -27,17 +27,19 @@ def __test_folder_keys(u: OrgUser):
     for folder in folders:
         for key in folder.keys:
             if key.TYPE == "FOLDER" and key.owner_uuid == u.uuid:
-                result = key.test(u)
+                result = key.test(u.keyring)
                 if not result:
                     folder.invalidate_keys_of(u)
                     r.save(folder)
 
 
-def __test_group_keys(u: OrgUser):
-    for g in u.get_groups():
-        key = g.get_enc_group_key_of_user(u)
-        if key is not None:
-            result = key.test(u)
-            if not result:
-                g.invalidate_keys_of(u)
-                g.save()
+# TODO: check if this is needed in the future probably not as a whole keyring should be invalidated instead of just group keys
+# def __test_group_keys(u: OrgUser):
+#     result = u.keyring._test_group_keys()
+#     for g in u.get_groups():
+#         key = g.get_enc_group_key_of_user(u)
+#         if key is not None:
+#             result = key.test(u)
+#             if not result:
+#                 g.invalidate_keys_of(u)
+#                 g.save()

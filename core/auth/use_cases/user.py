@@ -6,6 +6,7 @@ from django.db import transaction
 
 from core.auth.domain.user_key import UserKey
 from core.auth.models import OrgUser, UserProfile
+from core.encryption.models import Keyring
 from core.seedwork.use_case_layer import UseCaseError, use_case
 from messagebus.domain.collector import EventCollector
 
@@ -28,6 +29,7 @@ def set_password_of_myself(
     with transaction.atomic():
         __actor.save()
         if org_user:
+            Keyring.objects.filter(user=org_user).delete()
             org_user.save()
 
     if org_user:
