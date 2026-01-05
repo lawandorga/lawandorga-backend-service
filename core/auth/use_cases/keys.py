@@ -1,5 +1,7 @@
 from core.auth.models.org_user import OrgUser
+from core.encryption.models import KeyNotFoundError
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
+from core.seedwork.domain_layer import DomainError
 from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
@@ -27,17 +29,24 @@ def __test_folder_keys(u: OrgUser):
     for folder in folders:
         for key in folder.keys:
             if key.TYPE == "FOLDER" and key.owner_uuid == u.uuid:
-                result = key.test(u)
+                result = key.test(u.keyring)
                 if not result:
                     folder.invalidate_keys_of(u)
                     r.save(folder)
 
 
 def __test_group_keys(u: OrgUser):
-    for g in u.get_groups():
-        key = g.get_enc_group_key_of_user(u)
-        if key is not None:
-            result = key.test(u)
-            if not result:
-                g.invalidate_keys_of(u)
-                g.save()
+    for g in u.groups.all():
+        try:
+            u.keyring.get_group_key(g.uuid)
+        except DomainError:
+            # key is already invalid
+            pass
+        except KeyNotFoundError as e:
+            # this should never happen
+            raise e
+        except Exception:
+            gkey = u.keyring._find_group_key(g.uuid)
+            assert gkey is not None
+            gkey.is_invalidated = True
+            u.keyring.store()

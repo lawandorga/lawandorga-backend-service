@@ -19,17 +19,9 @@ def user(org):
 
 
 @pytest.fixture
-def view(org, user):
-    folder = test_helpers.create_raw_folder(user)
-    yield RecordsRecord.create(
-        "Dummy's Record", user, folder, pk=1, collector=EventCollector()
-    )
-
-
-@pytest.fixture
 def another_user(org):
     yield test_helpers.create_raw_org_user(
-        org=org, email="tester@law-orga.de", name="Mr. Tester", user_pk=2, pk=2
+        org=org, email="tester@law-orga.de", name="Mr. Tester"
     )
 
 
@@ -82,6 +74,7 @@ def test_access_works(db):
 
     assert not RecordsRecord.objects.get(pk=record.pk).folder.has_access(other_user)
     grant_access_request(user, access.uuid)
+    other_user.keyring.load(force=True)
     assert RecordsRecord.objects.get(pk=record.pk).folder.has_access(other_user)
 
 

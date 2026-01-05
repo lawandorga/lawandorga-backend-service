@@ -41,10 +41,10 @@ from messagebus import Event
 from messagebus.domain.collector import EventCollector
 
 from .user import UserProfile
-from seedwork.functional import list_filter, list_map
 
 if TYPE_CHECKING:
     from core.auth.models.mfa import MultiFactorAuthenticationSecret
+    from core.encryption.models import Keyring
     from core.folders.domain.value_objects.folder_key import EncryptedFolderKeyOfUser
     from core.org.models.group import Group
 
@@ -148,6 +148,8 @@ class OrgUser(models.Model):
     updated = models.DateTimeField(auto_now=True)
     # custom manager
     objects = OrgUserManager()
+    # helper for saving
+    _save_keyring = False
 
     if TYPE_CHECKING:
         mfa_secret: "MultiFactorAuthenticationSecret"
@@ -157,6 +159,7 @@ class OrgUser(models.Model):
         get_speciality_of_study_display: Callable[[], str]
         org: models.ForeignKey[Org]  # type: ignore
         user: models.OneToOneField[UserProfile]  # type: ignore
+        keyring: models.OneToOneField["Keyring"]
 
     class Meta:
         verbose_name = "AUT_OrgUser"
@@ -201,18 +204,16 @@ class OrgUser(models.Model):
 
     @property
     def group_keys(self) -> list[KeyOfUser]:
-        groups = self.get_groups()
-        _keys0 = list_map(groups, lambda x: (x, x.get_enc_group_key_of_user(self)))
-        _keys2 = list_filter(_keys0, lambda k: k[1] is not None)
+        self.keyring.load()
         _keys3: list[KeyOfUser] = []
-        for key in _keys2:
+        for key in self.keyring._group_keys:
             _keys3.append(
                 {
                     "id": 0,
-                    "correct": getattr(key[1], "is_valid"),
+                    "correct": key.is_invalidated is False,
                     "source": "GROUP",
-                    "information": key[0].name,
-                    "group_id": key[0].pk,
+                    "information": key.group.name,
+                    "group_id": key.group.pk,
                 }
             )
         return _keys3
@@ -293,9 +294,6 @@ class OrgUser(models.Model):
         if not hasattr(self, "_group_uuids"):
             self._group_uuids = list(self.groups.values_list("uuid", flat=True))
         return self._group_uuids
-
-    def get_groups(self) -> list["Group"]:
-        return list(self.groups.all())
 
     def test_keys(self) -> list[models.Model]:
         org_key: Optional[OrgEncryption] = self.user.users_rlc_keys.first()
@@ -479,16 +477,23 @@ class OrgUser(models.Model):
         self.is_private_key_encrypted = True
         self.key = u2.as_dict()
 
+        from core.encryption.models import Keyring
+
+        self.keyring = Keyring.create(
+            user=self,
+            key=u2,
+        )
+        self._save_keyring = True
+
+    def regenerate_keys(self, password: str):
+        self.keyring.invalidate(password)
+
     def lock(self, collector: EventCollector) -> None:
         self.locked = True
         collector.collect(OrgUser.OrgUserLocked(uuid=self.uuid, org_pk=self.org_id))
 
-    def change_password_for_keys(self, new_password: str):
-        key = self.get_decryption_key()
-        u1 = UserKey(key=key)
-        u2 = u1.encrypt_self(new_password)
-        self.is_private_key_encrypted = True
-        self.key = u2.as_dict()
+    def change_password_for_keys(self, new_key: UserKey):
+        self.key = new_key.as_dict()
 
     def delete(self, *args, **kwargs):
         user = self.user

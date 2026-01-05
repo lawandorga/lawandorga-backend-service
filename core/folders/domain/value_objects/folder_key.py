@@ -14,8 +14,7 @@ from core.folders.domain.value_objects.symmetric_key import (
 from seedwork.types import JsonDict
 
 if TYPE_CHECKING:
-    from core.auth.models.org_user import OrgUser
-    from core.org.models.group import Group
+    from core.encryption.models import Keyring
 
 
 class FolderKey(abc.ABC):
@@ -146,13 +145,13 @@ class EncryptedFolderKeyOfUser(EncryptedFolderKey):
     def __str__(self):
         return "EncryptedFolderKeyOfUser '{}'".format(self._owner_uuid)
 
-    def decrypt_self(self, user: "OrgUser") -> "FolderKey":
+    def decrypt_self(self, user_keyring: "Keyring") -> "FolderKey":
         if not self._is_valid:
             raise ValueError("This key is not valid.")
 
         assert isinstance(self._key, EncryptedSymmetricKey)
 
-        unlock_key = user.get_decryption_key()
+        unlock_key = user_keyring.get_decryption_key()
 
         key = self._key.decrypt(unlock_key)
 
@@ -161,11 +160,15 @@ class EncryptedFolderKeyOfUser(EncryptedFolderKey):
             key=key,
         )
 
-    def test(self, user: "OrgUser") -> bool:
-        assert user.uuid == self._owner_uuid, "the owner does not match the key"
-        assert user.get_decryption_key(), "owner decryption key can not be fetched"
+    def test(self, user_keyring: "Keyring") -> bool:
+        assert (
+            user_keyring.user.uuid == self._owner_uuid
+        ), "the owner does not match the key"
+        assert (
+            user_keyring.get_decryption_key()
+        ), "owner decryption key can not be fetched"
         try:
-            self.decrypt_self(user)
+            self.decrypt_self(user_keyring)
         except Exception:
             return False
         return True
@@ -195,13 +198,11 @@ class EncryptedFolderKeyOfGroup(EncryptedFolderKey):
     def __str__(self):
         return "EncryptedFolderKeyOfGroup '{}'".format(self._owner_uuid)
 
-    def decrypt_self(self, group: "Group", user: "OrgUser") -> "FolderKey":
+    def decrypt_self(self, unlock_key: SymmetricKey) -> "FolderKey":
         if not self._is_valid:
             raise ValueError("This key is not valid.")
 
         assert isinstance(self._key, EncryptedSymmetricKey)
-
-        unlock_key = group.get_decryption_key(user=user)
 
         key = self._key.decrypt(unlock_key)
 

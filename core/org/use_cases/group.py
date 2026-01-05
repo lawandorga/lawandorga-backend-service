@@ -11,11 +11,9 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
 def create_group(__actor: OrgUser, name: str, description: str = "") -> Group:
-    group = Group.create(org=__actor.org, name=name, description=description)
-    group.save()
-    group.add_member(__actor)
-    group.generate_keys()
-    group.save()
+    group = Group.create(
+        org=__actor.org, name=name, description=description, by=__actor
+    )
     return group
 
 
@@ -35,6 +33,10 @@ def delete_group(__actor: OrgUser, group_id: int):
 @use_case()
 def correct_group_keys_of_others(__actor: OrgUser):
     changed_groups: set[Group] = set()
+    for user in list(__actor.org.users.exclude(pk=__actor.pk)):
+        if user.keyring.has_invalid_keys:
+            user.keyring.fix(__actor.keyring)
+            user.keyring.store()
     for group in list(__actor.groups.all()):
         for user in list(group.members.all()):
             if group.has_keys(user) and not group.has_valid_keys(user):

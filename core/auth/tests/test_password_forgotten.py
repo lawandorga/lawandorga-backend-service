@@ -1,7 +1,10 @@
-from core.auth.use_cases.user import set_password_of_myself
+import pytest
+
+from core.auth.use_cases.user import set_new_password_of_myself
 from core.org.models.group import Group
 from core.org.use_cases.group import correct_group_keys_of_others
 from core.seedwork import test_helpers
+from core.seedwork.domain_layer import DomainError
 
 
 def test_group_keys_invalidated(db):
@@ -10,22 +13,19 @@ def test_group_keys_invalidated(db):
         "org_user"
     ]
 
-    group = Group.create(org=user1.org, name="Test Group", description="")
-    group.save()
-    group.add_member(user1)
-    group.generate_keys()
+    group = Group.create(org=user1.org, name="Test Group", description="", by=user1)
     group.add_member(user2, user1)
-    assert group.has_keys(user1)
-    assert group.has_keys(user2)
+    assert user1.keyring._find_group_key(group.uuid) is not None
+    assert user2.keyring._find_group_key(group.uuid) is not None
 
-    set_password_of_myself(user2.user, "password")
-    group.refresh_from_db()
-    group.get_decryption_key(user1)
-    assert not group.has_valid_keys(user2)
-    try:
+    set_new_password_of_myself(user2.user, "password")
+    user1.refresh_from_db()
+    key1 = user1.keyring._find_group_key(group.uuid)
+    assert key1 and not key1.is_invalidated
+    key2 = user2.keyring._find_group_key(group.uuid)
+    assert key2 and key2.is_invalidated
+    with pytest.raises(DomainError):
         group.get_decryption_key(user2)
-    except Exception as e:
-        assert "Padding" not in str(e)
 
 
 def test_group_keys_fixed_with_unlock(db):
@@ -34,19 +34,18 @@ def test_group_keys_fixed_with_unlock(db):
         "org_user"
     ]
 
-    group = Group.create(org=user1.org, name="Test Group", description="")
-    group.save()
-    group.add_member(user1)
-    group.generate_keys()
+    group = Group.create(org=user1.org, name="Test Group", description="", by=user1)
     group.add_member(user2, user1)
-    assert group.has_keys(user1)
-    assert group.has_keys(user2)
+    assert user1.keyring._find_group_key(group.uuid) is not None
+    assert user2.keyring._find_group_key(group.uuid) is not None
 
-    set_password_of_myself(user2.user, "password")
-    group.refresh_from_db()
-    group.get_decryption_key(user1)
-    assert not group.has_valid_keys(user2)
+    set_new_password_of_myself(user2.user, "password")
+    user1.refresh_from_db()
+    assert user1.keyring._find_group_key(group.uuid) is not None
+    key2 = user2.keyring._find_group_key(group.uuid)
+    assert key2 and key2.is_invalidated
 
     correct_group_keys_of_others(user1)
-    group.refresh_from_db()
-    assert group.has_valid_keys(user2)
+    user2.keyring.load(force=True)
+    new_key2 = user2.keyring._find_group_key(group.uuid)
+    assert new_key2 and not new_key2.is_invalidated

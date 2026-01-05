@@ -72,8 +72,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         self.set_password(new_password)
         if hasattr(self, "org_user"):
             org_user = self.org_user
-            org_user.change_password_for_keys(new_password)
-            return [self, org_user]
+            new_key = org_user.keyring.change_password(new_password)
+            org_user.change_password_for_keys(new_key)
+            return [self, org_user, org_user.keyring]
         return [self]
 
     def has_permission(self, permission: Union[str, "Permission"]) -> bool:

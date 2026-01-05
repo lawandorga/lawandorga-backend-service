@@ -2,6 +2,7 @@ from uuid import UUID
 
 from core.auth.models import OrgUser
 from core.data_sheets.models import DataSheet, DataSheetTemplate
+from core.data_sheets.use_cases.entry import update_record_in_folder
 from core.data_sheets.use_cases.finders import (
     sheet_from_id,
     sheet_from_uuid,
@@ -104,6 +105,8 @@ def __create(
     sheet.generate_key(__actor)
     sheet.save()
 
+    update_record_in_folder(__actor, sheet.folder_uuid)
+
     return sheet
 
 
@@ -111,3 +114,4 @@ def __create(
 def delete_data_sheet(__actor: OrgUser, sheet_uuid: UUID, collector: EventCollector):
     record = sheet_from_uuid(__actor, sheet_uuid)
     record.delete(collector)
+    update_record_in_folder(__actor, record.folder_uuid)

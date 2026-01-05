@@ -6,6 +6,7 @@ from django.db import transaction
 
 from core.auth.domain.user_key import UserKey
 from core.auth.models import OrgUser, UserProfile
+from core.encryption.models import Keyring
 from core.seedwork.use_case_layer import UseCaseError, use_case
 from messagebus.domain.collector import EventCollector
 
@@ -13,7 +14,7 @@ from seedwork.types import JsonDict
 
 
 @use_case
-def set_password_of_myself(
+def set_new_password_of_myself(
     __actor: UserProfile, password: str, collector: EventCollector
 ) -> UserProfile:
     __actor.set_password(password)
@@ -23,11 +24,13 @@ def set_password_of_myself(
         org_user = __actor.org_user
 
     if org_user:
-        org_user.generate_keys(password)
+        org_user.regenerate_keys(password)
+        org_user.keyring.invalidate(password)
 
     with transaction.atomic():
         __actor.save()
         if org_user:
+            org_user.keyring.store()
             org_user.save()
 
     if org_user:
@@ -75,4 +78,9 @@ def change_password_of_user(
         raise UseCaseError("Your current password is not correct.")
 
     objs = __actor.change_password(current_password, new_password)
-    [obj.save() for obj in objs]
+    with transaction.atomic():
+        for obj in objs:
+            if isinstance(obj, Keyring):
+                obj.store()
+                continue
+            obj.save()

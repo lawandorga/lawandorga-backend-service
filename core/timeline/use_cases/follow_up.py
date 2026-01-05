@@ -19,6 +19,7 @@ def create_follow_up(
     fur: FollowUpRepository,
     fr: FolderRepository,
 ):
+    __actor.keyring.load()
     folder = folder_from_uuid(__actor, folder_uuid)
     follow_up = TimelineFollowUp.create(
         title=title,
@@ -42,6 +43,7 @@ def update_follow_up(
     fur: FollowUpRepository,
     fr: FolderRepository,
 ):
+    __actor.keyring.load()
     follow_up = fur.get_follow_up(uuid=uuid, user=__actor, fr=fr)
     follow_up.update(title=title, text=text, time=time, is_done=is_done)
     fur.save_follow_up(follow_up, __actor, fr)

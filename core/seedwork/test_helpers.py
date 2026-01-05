@@ -48,8 +48,6 @@ def create_raw_org_user(
     password=settings.DUMMY_USER_PASSWORD,
     email_confirmed=True,
     accepted=True,
-    user_pk=1,
-    pk=1,
     save=False,
 ):
     if org is None:
@@ -61,21 +59,20 @@ def create_raw_org_user(
         password=password,
         email_confirmed=email_confirmed,
         accepted=accepted,
-        user_pk=user_pk,
-        pk=pk,
     )
     user._group_uuids = []
     if save:
+        user.user.save()
         user.save()
     return user
 
 
 def create_raw_group(
-    org=None, name="Test Group", description="A group for testing purposes.", pk=1
+    org=None, name="Test Group", description="A group for testing purposes."
 ):
     if org is None:
         org = create_raw_org()
-    group = Group.create(org=org, name=name, description=description, pk=pk)
+    group = Group.create_simple(org=org, name=name, description=description)
     return group
 
 
@@ -155,6 +152,7 @@ def create_org_user(
     org_user.generate_keys(password)
     if save:
         org_user.save()
+        org_user.keyring.store()
     private_key = (
         UserKey.create_from_dict(org_user.key)
         .decrypt_self(password)
@@ -180,11 +178,9 @@ class CreateGroupData(TypedDict):
 def create_group(
     user: OrgUser, name="Test Group", description="Just for testing."
 ) -> CreateGroupData:
-    group = Group.create(org=user.org, name=name, description=description)
+    group = Group.create_simple(org=user.org, name=name, description=description)
     group.save()
     group.add_member(user)
-    group.generate_keys()
-    group.save()
     return {"group": group}
 
 

@@ -185,6 +185,7 @@ def create_users(org1, org2):
         )
         r.generate_keys(settings.DUMMY_USER_PASSWORD)
         r.save()
+        r.keyring.store()
         if r.org == org1:
             created_users.append(user)
     return created_users
@@ -202,6 +203,7 @@ def create_dummy_users(org: Org, dummy_password: str = "qwe123") -> List[UserPro
     r = OrgUser(user=user, accepted=True, pk=999, email_confirmed=True, org=org)
     r.generate_keys(dummy_password)
     r.save()
+    r.keyring.store()
     for permission in Permission.objects.all():
         r.grant(permission=permission)
     InternalUser.objects.create(user=user)
@@ -217,6 +219,7 @@ def create_dummy_users(org: Org, dummy_password: str = "qwe123") -> List[UserPro
     r = OrgUser(user=user, accepted=True, pk=1000, org=org)
     r.generate_keys(dummy_password)
     r.save()
+    r.keyring.store()
     users.append(user)
 
     user = UserProfile.objects.create(name="Tester 2", email="tester2@law-orga.de")
@@ -225,6 +228,7 @@ def create_dummy_users(org: Org, dummy_password: str = "qwe123") -> List[UserPro
     r = OrgUser(user=user, pk=1001, accepted=True, org=org)
     r.generate_keys(dummy_password)
     r.save()
+    r.keyring.store()
     users.append(user)
 
     # return
@@ -241,6 +245,7 @@ def create_inactive_user(org: Org):
     r = OrgUser(user=user, org=org)
     r.generate_keys(settings.DUMMY_USER_PASSWORD)
     r.save()
+    r.keyring.store()
 
 
 def create_groups(org: Org, users: List[UserProfile]):
@@ -773,6 +778,8 @@ def create() -> None:
     create_admin_group(org1, dummy)
     # records
     create_records(dummy.org_user, list(users), org1)
+    for u in dummy.org_user.org.users.all():
+        assert u.keyring.load(), str(u)
     create_informative_record(dummy, dummy_password, users, org1)
     # questionnaire templates
     create_questionnaire_templates(org1)
