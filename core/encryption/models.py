@@ -1,9 +1,8 @@
-from typing import Union
+from typing import TYPE_CHECKING, Union
 from uuid import UUID
 
 from django.conf import settings
 from django.db import models, transaction
-from git import TYPE_CHECKING
 
 from core.auth.domain.user_key import UserKey
 from core.auth.models import OrgUser
