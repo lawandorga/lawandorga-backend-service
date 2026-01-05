@@ -44,7 +44,6 @@ class KeyringManager(models.Manager["Keyring"]):
 
 
 class Keyring(models.Model):
-    # TODO: UserKey has to be in a special state here (encrypted or not) please check later
     @classmethod
     def create(cls, user: OrgUser | None, key: UserKey) -> "Keyring":
         keyring = Keyring()
