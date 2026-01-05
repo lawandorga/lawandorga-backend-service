@@ -702,10 +702,3 @@ class OrgUser(models.Model):
                 org_pk=self.org_id,
             )
         )
-
-
-# @receiver(post_save, sender=OrgUser)
-# def create_keyring_for_orguser(sender, instance: OrgUser, created, **kwargs):
-#     if instance._save_keyring:
-#         instance.keyring.store()
-#         instance._save_keyring = False
