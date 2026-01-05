@@ -297,9 +297,6 @@ class OrgUser(models.Model):
             self._group_uuids = list(self.groups.values_list("uuid", flat=True))
         return self._group_uuids
 
-    def get_groups(self) -> list["Group"]:
-        return list(self.groups.all())
-
     def test_keys(self) -> list[models.Model]:
         org_key: Optional[OrgEncryption] = self.user.users_rlc_keys.first()
         assert org_key is not None

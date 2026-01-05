@@ -1,5 +1,7 @@
 from core.auth.models.org_user import OrgUser
+from core.encryption.models import KeyNotFoundError
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
+from core.seedwork.domain_layer import DomainError
 from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
@@ -14,10 +16,10 @@ def check_keys(__actor: OrgUser):
         __test_folder_keys(__actor)
     except Exception:
         raise UseCaseError("The folder keys are not correct.")
-    # try:
-    #     __test_group_keys(__actor)
-    # except Exception:
-    #     raise UseCaseError("The group keys are not correct.")
+    try:
+        __test_group_keys(__actor)
+    except Exception:
+        raise UseCaseError("The group keys are not correct.")
 
 
 def __test_folder_keys(u: OrgUser):
@@ -33,13 +35,18 @@ def __test_folder_keys(u: OrgUser):
                     r.save(folder)
 
 
-# TODO: check if this is needed in the future probably not as a whole keyring should be invalidated instead of just group keys
-# def __test_group_keys(u: OrgUser):
-#     result = u.keyring._test_group_keys()
-#     for g in u.get_groups():
-#         key = g.get_enc_group_key_of_user(u)
-#         if key is not None:
-#             result = key.test(u)
-#             if not result:
-#                 g.invalidate_keys_of(u)
-#                 g.save()
+def __test_group_keys(u: OrgUser):
+    for g in u.groups.all():
+        try:
+            u.keyring.get_group_key(g.uuid)
+        except DomainError:
+            # key is already invalid
+            pass
+        except KeyNotFoundError as e:
+            # this should never happen
+            raise e
+        except Exception:
+            gkey = u.keyring._find_group_key(g.uuid)
+            assert gkey is not None
+            gkey.is_invalidated = True
+            u.keyring.store()
