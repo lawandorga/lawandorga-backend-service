@@ -18,7 +18,9 @@ class Command(BaseCommand):
         for o in Org.objects.all().order_by("pk"):
             self.stdout.write("migrating org {}".format(o.pk))
 
-            for u in OrgUser.objects.filter(org=o).select_related("user").order_by("pk"):
+            for u in (
+                OrgUser.objects.filter(org=o).select_related("user").order_by("pk")
+            ):
                 user_key = UserKey.create_from_dict(u.key)
                 if not isinstance(user_key.key, EncryptedAsymmetricKey):
                     u.locked = True
