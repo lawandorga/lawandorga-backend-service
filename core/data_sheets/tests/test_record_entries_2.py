@@ -61,6 +61,7 @@ def setup():
     org_user = OrgUser(user=user, email_confirmed=True, accepted=True, org=org)
     org_user.generate_keys(settings.DUMMY_USER_PASSWORD)
     org_user.save()
+    org_user.keyring.store()
     template = DataSheetTemplate.objects.create(org=org, name="Record Template")
     permission = Permission.objects.get(name=PERMISSION_RECORDS_ADD_RECORD)
     HasPermission.objects.create(user=user.org_user, permission=permission)

@@ -41,6 +41,7 @@ def test_add_member_is_saved(db, group, user):
     user.org.save()
     user.user.save()
     user.save()
+    user.keyring.store()
     user = OrgUser.objects.get(pk=user.pk)
     group.save()
     group.add_member(user)

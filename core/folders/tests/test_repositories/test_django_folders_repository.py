@@ -20,6 +20,7 @@ def user(db):
     u = OrgUser(user=p, org=o)
     u.generate_keys(settings.DUMMY_USER_PASSWORD)
     u.save()
+    u.keyring.store()
     o.generate_keys()
     user = OrgUser.objects.get(pk=u.pk)
     yield user

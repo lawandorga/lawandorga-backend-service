@@ -18,8 +18,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import models
 from django.db.models import Q
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.template import loader
 from django.utils import timezone
 
@@ -706,8 +704,8 @@ class OrgUser(models.Model):
         )
 
 
-@receiver(post_save, sender=OrgUser)
-def create_keyring_for_orguser(sender, instance: OrgUser, created, **kwargs):
-    if instance._save_keyring:
-        instance.keyring.store()
-        instance._save_keyring = False
+# @receiver(post_save, sender=OrgUser)
+# def create_keyring_for_orguser(sender, instance: OrgUser, created, **kwargs):
+#     if instance._save_keyring:
+#         instance.keyring.store()
+#         instance._save_keyring = False

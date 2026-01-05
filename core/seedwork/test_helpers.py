@@ -152,6 +152,7 @@ def create_org_user(
     org_user.generate_keys(password)
     if save:
         org_user.save()
+        org_user.keyring.store()
     private_key = (
         UserKey.create_from_dict(org_user.key)
         .decrypt_self(password)
