@@ -80,7 +80,7 @@ class UserKey:
         return hash(self.__key)
 
     def as_dict(self) -> JsonDict:
-        assert isinstance(self.__key, EncryptedAsymmetricKey)
+        assert isinstance(self.__key, EncryptedAsymmetricKey), type(self.__key)
 
         return {
             "key": self.__key.as_dict(),
