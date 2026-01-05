@@ -3,7 +3,6 @@ from uuid import UUID, uuid4
 
 from django.db import models, transaction
 
-from core.folders.domain.value_objects.encryption import EncryptionDecryptionError
 from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,

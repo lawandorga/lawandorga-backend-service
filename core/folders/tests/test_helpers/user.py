@@ -50,14 +50,14 @@ class UserObject:
 
     def check_has_invalid_keys(self, folders: list["Folder"]):
         for folder in folders:
-            if folder.has_invalid_keys(self):
+            if folder.has_invalid_keys(self):  # type: ignore
                 return True
         return False
 
     def fix_keys_of(self, someone_else: "UserObject", folders: list["Folder"]):
         for folder in folders:
-            if folder.has_access(self) and folder.has_invalid_keys(someone_else):
-                folder.fix_keys(someone_else, self)
+            if folder.has_access(self) and folder.has_invalid_keys(someone_else):  # type: ignore
+                folder.fix_keys(someone_else, self)  # type: ignore
 
 
 class ForeignUserObject(IOwner):

@@ -19,14 +19,6 @@ def user(org):
 
 
 @pytest.fixture
-def view(org, user):
-    folder = test_helpers.create_raw_folder(user)
-    yield RecordsRecord.create(
-        "Dummy's Record", user, folder, pk=1, collector=EventCollector()
-    )
-
-
-@pytest.fixture
 def another_user(org):
     yield test_helpers.create_raw_org_user(
         org=org, email="tester@law-orga.de", name="Mr. Tester"

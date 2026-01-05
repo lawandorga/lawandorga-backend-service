@@ -33,6 +33,10 @@ def delete_group(__actor: OrgUser, group_id: int):
 @use_case()
 def correct_group_keys_of_others(__actor: OrgUser):
     changed_groups: set[Group] = set()
+    for user in list(__actor.org.users.exclude(pk=__actor.pk)):
+        if user.keyring.has_invalid_keys:
+            user.keyring.fix(__actor.keyring)
+            user.keyring.store()
     for group in list(__actor.groups.all()):
         for user in list(group.members.all()):
             if group.has_keys(user) and not group.has_valid_keys(user):

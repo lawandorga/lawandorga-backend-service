@@ -43,7 +43,6 @@ from messagebus import Event
 from messagebus.domain.collector import EventCollector
 
 from .user import UserProfile
-from seedwork.functional import list_filter, list_map
 
 if TYPE_CHECKING:
     from core.auth.models.mfa import MultiFactorAuthenticationSecret
@@ -207,18 +206,16 @@ class OrgUser(models.Model):
 
     @property
     def group_keys(self) -> list[KeyOfUser]:
-        groups = self.get_groups()
-        _keys0 = list_map(groups, lambda x: (x, x.get_enc_group_key_of_user(self)))
-        _keys2 = list_filter(_keys0, lambda k: k[1] is not None)
+        self.keyring.load()
         _keys3: list[KeyOfUser] = []
-        for key in _keys2:
+        for key in self.keyring._group_keys:
             _keys3.append(
                 {
                     "id": 0,
-                    "correct": getattr(key[1], "is_valid"),
+                    "correct": key.is_invalidated is False,
                     "source": "GROUP",
-                    "information": key[0].name,
-                    "group_id": key[0].pk,
+                    "information": key.group.name,
+                    "group_id": key.group.pk,
                 }
             )
         return _keys3
@@ -493,16 +490,15 @@ class OrgUser(models.Model):
         )
         self._save_keyring = True
 
+    def regenerate_keys(self, password: str):
+        self.keyring.invalidate(password)
+
     def lock(self, collector: EventCollector) -> None:
         self.locked = True
         collector.collect(OrgUser.OrgUserLocked(uuid=self.uuid, org_pk=self.org_id))
 
-    def change_password_for_keys(self, new_password: str):
-        key = self.get_decryption_key()
-        u1 = UserKey(key=key)
-        u2 = u1.encrypt_self(new_password)
-        self.is_private_key_encrypted = True
-        self.key = u2.as_dict()
+    def change_password_for_keys(self, new_key: UserKey):
+        self.key = new_key.as_dict()
 
     def delete(self, *args, **kwargs):
         user = self.user

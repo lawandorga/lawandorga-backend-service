@@ -16,7 +16,9 @@ from core.folders.domain.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
+from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.org.models.group import Group
+from core.seedwork.domain_layer import DomainError
 
 from seedwork.functional import list_filter
 
@@ -59,6 +61,9 @@ class Keyring(models.Model):
     key = models.JSONField(null=False, blank=True)
     decryption_key: AsymmetricKey | None = None
 
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
     objects = KeyringManager()
 
     if TYPE_CHECKING:
@@ -81,6 +86,14 @@ class Keyring(models.Model):
     def __repr__(self):
         return self.__str__()
 
+    @property
+    def has_invalid_keys(self) -> bool:
+        self.load()
+        for gkey in self._group_keys:
+            if gkey.is_invalidated:
+                return True
+        return False
+
     def load(self, force: bool = False) -> "Keyring":
         if self._is_loaded and not force:
             return self
@@ -100,6 +113,7 @@ class Keyring(models.Model):
         raise Exception("save is disabled use store() instead")
 
     def store(self):
+        self.load()
         with transaction.atomic():
             super().save()
             self.group_keys.all().delete()
@@ -148,6 +162,10 @@ class Keyring(models.Model):
 
         return self.__get_user_key_from_session()
 
+    def get_user_key_from_password(self, password: str) -> UserKey:
+        user_key = UserKey.create_from_dict(self.key)
+        return user_key.decrypt_self(password)
+
     def get_decryption_key(self, *args, **kwargs) -> AsymmetricKey:
         if self.decryption_key is None:
             key = self._get_user_key()
@@ -172,6 +190,36 @@ class Keyring(models.Model):
 
     def get_private_key(self, *args, **kwargs) -> str:
         return self.get_decryption_key().get_private_key().decode("utf-8")
+
+    def change_password(self, new_password: str) -> UserKey:
+        self.load()
+        user_key = self._get_user_key()
+        new_user_key = user_key.encrypt_self(new_password)
+        self.key = new_user_key.as_dict()
+        return new_user_key
+
+    def invalidate(self, new_password: str):
+        self.load()
+        key = AsymmetricKey.generate(AsymmetricEncryptionV1)
+        u1 = UserKey(key=key)
+        u2 = u1.encrypt_self(new_password)
+        self.key = u2.as_dict()
+        for gkey in self._group_keys:
+            gkey.is_invalidated = True
+
+    def fix(self, other_keyring: "Keyring"):
+        self.load()
+        other_keyring.load()
+        for gkey in self._group_keys:
+            if gkey.is_invalidated:
+                other_gkey = other_keyring._find_group_key(gkey.group.uuid)
+                if other_gkey is not None and not other_gkey.is_invalidated:
+                    group_symmetric_key = other_gkey._get_decryption_key()
+                    skey_enc = group_symmetric_key.encrypt_self(
+                        self._get_encryption_key()
+                    )
+                    gkey.key = skey_enc.as_dict()
+                    gkey.is_invalidated = False
 
     def _find_group_key(self, group_id: UUID) -> Union["GroupKey", None]:
         self.load()
@@ -222,6 +270,8 @@ class GroupKey(models.Model):
         Group, on_delete=models.CASCADE, related_name="group_keys"
     )
     key = models.JSONField(null=False, blank=True)
+    is_invalidated = models.BooleanField(default=False)
+
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -233,10 +283,15 @@ class GroupKey(models.Model):
     def __str__(self):
         return f"groupKey: {self.keyring.user.email}; group: {self.group.name};"
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, force=False, **kwargs):
+        if force:
+            super().save(*args, **kwargs)
+            return
         raise Exception("save is disabled use store() of keyring instead")
 
     def _get_decryption_key(self) -> SymmetricKey:
+        if self.is_invalidated:
+            raise DomainError("The group key is invalidated.")
         unlock_key = self.keyring.get_decryption_key()
         key = EncryptedSymmetricKey.create_from_dict(self.key)
         return key.decrypt(unlock_key)

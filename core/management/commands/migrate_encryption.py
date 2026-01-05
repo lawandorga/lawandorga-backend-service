@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 
+from core.auth.domain.user_key import UserKey
 from core.auth.models.org_user import OrgUser
 from core.encryption.models import GroupKey, Keyring
 from core.folders.domain.value_objects.symmetric_key import EncryptedSymmetricKey
@@ -17,8 +18,8 @@ class Command(BaseCommand):
             self.stdout.write("migrating org {}".format(o.pk))
 
             for u in OrgUser.objects.filter(org=o).order_by("pk"):
-                keyring = Keyring(user=u, key=u.key)
-                keyring.save()
+                keyring = Keyring.create(user=u, key=UserKey.create_from_dict(u.key))
+                keyring.store()
                 self.stdout.write("created keyring for user {}".format(u.pk))
 
             for g in (
@@ -35,5 +36,5 @@ class Command(BaseCommand):
                         group=g,
                         key=enc_s_key.as_dict(),
                     )
-                    group_key.save()
+                    group_key.save(force=True)
                     self.stdout.write("created group key for user {}".format(u.pk))

@@ -20,7 +20,7 @@ from django.views.generic import CreateView, DetailView, RedirectView, TemplateV
 from core.auth.forms.user import CustomUserCreationForm
 from core.auth.models import UserProfile
 from core.auth.models.session import CustomSession
-from core.auth.use_cases.user import run_user_login_checks, set_password_of_myself
+from core.auth.use_cases.user import run_user_login_checks, set_new_password_of_myself
 from core.legal.models.legal_requirement import LegalRequirement
 
 
@@ -57,7 +57,7 @@ class CustomLoginView(LoginView):
 
         if hasattr(user, "org_user"):
             run_user_login_checks(user, form.data["password"])
-            uk = user.org_user.get_decrypted_key_from_password(form.data["password"])
+            uk = user.org_user.keyring.get_user_key_from_password(form.data["password"])
             self.request.session["user_key"] = uk.as_unsafe_dict()
             user.org_user.set_frontend_settings({})
             try:
@@ -116,7 +116,7 @@ class CustomSetPasswordForm(SetPasswordForm):
     def save(self, commit=True):
         if not commit:
             raise ValueError("Why would this set password form not commit?")
-        user = set_password_of_myself(self.user, self.cleaned_data["new_password1"])
+        user = set_new_password_of_myself(self.user, self.cleaned_data["new_password1"])
         return user
 
 
