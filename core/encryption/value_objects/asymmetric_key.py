@@ -1,5 +1,6 @@
 from typing import Optional, Union
 
+from core.encryption.encryptions import ENCRYPTIONS
 from core.encryption.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.encryption.value_objects.box import LockedBox, OpenBox
 from core.encryption.value_objects.encryption import AsymmetricEncryption
@@ -8,7 +9,6 @@ from core.encryption.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
-from core.folders.encryptions import ENCRYPTIONS
 
 from seedwork.types import JsonDict
 

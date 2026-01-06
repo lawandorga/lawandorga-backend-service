@@ -1,12 +1,12 @@
 from typing import TYPE_CHECKING, Any, Optional, Union
 
+from core.encryption.encryptions import ENCRYPTIONS
 from core.encryption.value_objects.box import LockedBox, OpenBox
 from core.encryption.value_objects.encryption import (
     AsymmetricEncryption,
     SymmetricEncryption,
 )
 from core.encryption.value_objects.key import Key
-from core.folders.encryptions import ENCRYPTIONS
 
 from seedwork.types import JsonDict
 
