@@ -58,6 +58,7 @@ def register_org_user(
     with transaction.atomic():
         user.save()
         org_user.save()
+        org_user.keyring.save()
         for lre in lr_events:
             lre.save()
         assert org_user.key is not None
