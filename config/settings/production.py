@@ -15,6 +15,7 @@ DEBUG = False
 # Login
 # https://docs.djangoproject.com/en/4.1/ref/settings/#login-redirect-url
 LOGIN_REDIRECT_URL = MAIN_FRONTEND_URL
+LOGOUT_REDIRECT_URL = MAIN_FRONTEND_URL
 
 # Allowed Hosts
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
