@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING
 from django.db import models
 from tinymce import models as tinymce_models
 
-from core.auth.models import OrgUser
+if TYPE_CHECKING:
+    from core.auth.models import OrgUser
 
 
 class LegalRequirement(models.Model):
@@ -29,7 +30,7 @@ class LegalRequirement(models.Model):
         verbose_name_plural = "LEG_LegalRequirements"
 
     @classmethod
-    def is_locked(cls, user: OrgUser) -> bool:
+    def is_locked(cls, user: "OrgUser") -> bool:
         lrs = LegalRequirement.objects.filter(accept_required=True)
         lrs_list = list(lrs)
         for lr in lrs_list:
@@ -37,13 +38,13 @@ class LegalRequirement(models.Model):
                 return True
         return False
 
-    def is_accepted(self, user: OrgUser) -> bool:
+    def is_accepted(self, user: "OrgUser") -> bool:
         event = self.events.filter(user=user).order_by("-created").last()
         if event:
             return event.accepted
         return False
 
-    def _set_accepted_of_user(self, user: OrgUser):
+    def _set_accepted_of_user(self, user: "OrgUser"):
         if (
             hasattr(self, "events_of_user")
             and len(self.events_of_user)
@@ -64,7 +65,7 @@ class LegalRequirementEvent(models.Model):
         related_name="events",
     )
     user = models.ForeignKey(
-        OrgUser,
+        "core.OrgUser",
         on_delete=models.CASCADE,
         related_name="legal_requirement_events",
     )
