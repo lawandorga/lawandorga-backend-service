@@ -10,7 +10,7 @@ from core.data_sheets.use_cases.finders import (
 )
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
-from core.folders.usecases.finders import folder_from_uuid
+from core.folders.use_cases.finders import folder_from_uuid
 from core.permissions.static import (
     PERMISSION_RECORDS_ACCESS_ALL_RECORDS,
     PERMISSION_RECORDS_ADD_RECORD,

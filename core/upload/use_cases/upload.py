@@ -4,7 +4,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import UploadedFile
 
 from core.auth.models import OrgUser
-from core.folders.usecases.finders import folder_from_uuid
+from core.folders.use_cases.finders import folder_from_uuid
 from core.seedwork.use_case_layer import UseCaseError, use_case
 from core.upload.models import UploadLink
 from core.upload.use_cases.finder import (

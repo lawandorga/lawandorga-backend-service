@@ -7,7 +7,7 @@ from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.domain.repositories.item import ItemRepository
 from core.folders.domain.value_objects.folder_item import FolderItem
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-from core.folders.usecases.finders import (
+from core.folders.use_cases.finders import (
     folder_from_uuid,
     group_from_uuid,
     org_user_from_uuid,

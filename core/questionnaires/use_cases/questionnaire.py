@@ -5,7 +5,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import UploadedFile
 
 from core.auth.models import OrgUser
-from core.folders.usecases.finders import folder_from_uuid
+from core.folders.use_cases.finders import folder_from_uuid
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models import Questionnaire
 from core.questionnaires.models.questionnaire import QuestionnaireAnswer

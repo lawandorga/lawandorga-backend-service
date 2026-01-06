@@ -1,4 +1,4 @@
-from core.folders.main import HANDLERS as FOLDER_HANDLERS
+from core.folders.handlers import HANDLERS as FOLDER_HANDLERS
 from core.org.handlers import HANDLERS as ORG_HANDLERS
 from messagebus.domain.bus import Handlers
 

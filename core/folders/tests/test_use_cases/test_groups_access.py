@@ -1,6 +1,6 @@
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-from core.folders.usecases.folder import (
+from core.folders.use_cases.folder import (
     grant_access_to_group,
     revoke_access_from_group,
 )

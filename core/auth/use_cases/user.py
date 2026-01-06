@@ -24,7 +24,6 @@ def set_new_password_of_myself(
         org_user = __actor.org_user
 
     if org_user:
-        org_user.regenerate_keys(password)
         org_user.keyring.invalidate(password)
 
     with transaction.atomic():

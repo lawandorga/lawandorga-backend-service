@@ -5,7 +5,7 @@ from django.core.files.uploadedfile import UploadedFile
 from core.auth.models import OrgUser
 from core.files_new.models import EncryptedRecordDocument
 from core.files_new.use_cases.finder import file_from_uuid
-from core.folders.usecases.finders import folder_from_uuid
+from core.folders.use_cases.finders import folder_from_uuid
 from core.seedwork.use_case_layer import UseCaseError, use_case
 from messagebus.domain.collector import EventCollector
 
