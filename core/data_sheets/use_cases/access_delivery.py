@@ -16,6 +16,7 @@ logger = logging.getLogger("django")
 def deliver_access_to_users_who_should_have_access(
     __actor: OrgUser, r: FolderRepository
 ):
+    __actor.keyring.load()  # load the keyring to have it in memory for this long running use case
     records_1 = DataSheet.objects.filter(
         template__org_id=__actor.org_id
     ).select_related("template")
