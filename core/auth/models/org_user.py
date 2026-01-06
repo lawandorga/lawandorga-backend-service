@@ -11,12 +11,10 @@ from typing import (
 )
 from uuid import UUID, uuid4
 
-import ics
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import models
-from django.db.models import Q
 from django.template import loader
 
 from core.auth.domain.user_key import UserKey
@@ -542,26 +540,6 @@ class OrgUser(models.Model):
             "record": record,
         }
         return data
-
-    def get_ics_calendar(self):
-        from ...events.models import EventsEvent
-
-        events = EventsEvent.objects.filter(
-            Q(level="META", org__meta=self.org.meta)
-            | Q(level="GLOBAL")
-            | Q(org=self.org)
-        )
-
-        c = ics.Calendar()
-        for event in events:
-            ics_event = ics.Event()
-            ics_event.name = event.name
-            ics_event.begin = event.start_time
-            ics_event.end = event.end_time
-            ics_event.description = event.description
-            ics_event.organizer = event.org.name
-            c.events.add(ics_event)
-        return c.serialize()
 
     def regenerate_calendar_uuid(self):
         self.calendar_uuid = uuid4()

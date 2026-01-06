@@ -6,14 +6,15 @@ from django.shortcuts import get_object_or_404
 from pydantic import BaseModel
 
 from core.auth.models import OrgUser
+from core.events.models.utils import get_ics_calendar
 from core.seedwork.api_layer import Router
 
 router = Router()
 
 
-def get_ics_calendar(request, calendar_uuid: uuid.UUID):
-    user = get_object_or_404(OrgUser, calendar_uuid=calendar_uuid)
-    calendar = user.get_ics_calendar()
+def api_get_ics_calendar(request, calendar_uuid: uuid.UUID):
+    user: OrgUser = get_object_or_404(OrgUser, calendar_uuid=calendar_uuid)
+    calendar = get_ics_calendar(user)
     return HttpResponse(calendar, content_type="text/calendar")
 
 

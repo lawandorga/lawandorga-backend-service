@@ -2,6 +2,7 @@ from django.test import Client, TestCase
 from django.utils import timezone
 
 from core.events.models import EventsEvent
+from core.events.models.utils import get_ics_calendar
 from core.events.use_cases.events import create_event, delete_event, update_event
 from core.org.models import Meta, Org
 from core.tests import test_helpers as test_helpers
@@ -91,5 +92,5 @@ class TestEvents(TestCase):
         assert len(all_events) == 3
 
     def test_ics_calendar(self):
-        ics_cal = self.user_1["org_user"].get_ics_calendar()
+        ics_cal = get_ics_calendar(self.user_1["org_user"])
         assert ics_cal.count("BEGIN:VEVENT") == 2
