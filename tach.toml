@@ -1,185 +1,107 @@
-exclude = []
+interfaces = []
+exclude = [
+    "**/*__pycache__",
+    "**/*egg-info",
+    "**/docs",
+    "**/tests",
+    "**/venv",
+]
 source_roots = [
     ".",
 ]
 
-[[modules]]
-path = "core.auth.api"
-depends_on = [
-    { path = "core.auth.models" },
-    { path = "core.auth.use_cases" },
-    { path = "core.internal.api" },
-    { path = "core.seedwork.api_layer" },
-]
+[[modules ]]
+path = "core.tasks"
+depends_on = ["core.auth", "core.seedwork"]
 
-[[modules]]
-path = "core.auth.domain"
+[[modules ]]
+path = "core.org"
+depends_on = [ "core.seedwork", "core.auth", "core.encryption", "messagebus", "core.folders", "core.permissions"]
+
+[[modules ]]
+path = "core.legal"
+depends_on = ["core.seedwork", "core.auth"]
+
+[[modules ]]
+path = "core.auth"
+depends_on = ["core.permissions", "core.records", "core.encryption", "core.folders", "core.legal", "core.org", "core.seedwork", "messagebus", "seedwork"]
+
+[[modules ]]
+path = "core.folders"
+depends_on = ["core.auth", "seedwork", "core.permissions", "core.org", "messagebus", "core.seedwork", "core.encryption"]
+
+[[modules ]]
+path = "core.files_new"
+depends_on = ["core.folders", "messagebus", "core.seedwork", "core.auth", "core.org", "core.encryption"]
+
+[[modules ]]
+path = "messagebus"
+depends_on = ["seedwork"]
+
+[[modules ]]
+path = "core.records"
+depends_on = ["core.org", "core.auth", "messagebus", "core.permissions", "core.data_sheets", "seedwork", "core.folders", "core.seedwork"]
+
+[[modules ]]
+path = "core.mail_imports"
+depends_on = ["core.org", "core.seedwork", "core.folders", "core.auth", "seedwork", "core.encryption"]
+
+[[modules ]]
+path = "core.data_sheets"
+depends_on = ["core.org", "core.folders", "core.permissions", "core.auth", "seedwork", "messagebus", "core.seedwork", "core.encryption"]
+
+[[modules ]]
+path = "seedwork"
 depends_on = []
 
-[[modules]]
-path = "core.auth.forms"
-depends_on = [
-    { path = "core.auth.domain" },
-    { path = "core.auth.models" },
-    { path = "core.auth.use_cases" },
-]
+[[modules ]]
+path = "core.questionnaires"
+depends_on = ["messagebus", "core.auth", "core.seedwork", "core.permissions", "core.folders", "core.encryption"]
 
-[[modules]]
-path = "core.auth.models"
-depends_on = [
-    { path = "core.auth.domain" },
-    { path = "core.auth.token_generator" },
-    { path = "core.seedwork.aggregate" },
-    { path = "core.seedwork.domain_layer" },
-    { path = "core.seedwork.events_addon" },
-]
+[[modules ]]
+path = "core.permissions"
+depends_on = [ "core.auth", "core.seedwork"]
 
-[[modules]]
-path = "core.auth.oidc_provider_settings"
+[[modules ]]
+path = "core.collab"
+depends_on = ["core.org", "core.seedwork", "messagebus", "seedwork", "core.auth", "core.folders", "core.encryption"]
+
+[[modules ]]
+path = "core.statistics"
+depends_on = ["core.seedwork", "seedwork", "core.records", "core.auth", "core.data_sheets"]
+
+[[modules ]]
+path = "core.seedwork"
 depends_on = []
 
-[[modules]]
-path = "core.auth.token_generator"
+[[modules ]]
+path = "core.mail"
+depends_on = ["core.permissions", "core.auth", "core.seedwork"]
+
+[[modules ]]
+path = "core.internal"
+depends_on = ["core.seedwork"]
+
+[[modules ]]
+path = "core.timeline"
+depends_on = ["core.org", "core.seedwork", "core.folders", "core.data_sheets", "core.auth", "core.encryption"]
+
+[[modules ]]
+path = "core.encryption"
+depends_on = ["core.auth", "core.seedwork", "messagebus", "core.folders", "core.org", "seedwork"]
+
+[[modules ]]
+path = "core.other"
 depends_on = []
 
-[[modules]]
-path = "core.auth.use_cases"
-depends_on = [
-    { path = "core.auth.domain" },
-    { path = "core.auth.models" },
-    { path = "core.auth.token_generator" },
-    { path = "core.seedwork.message_layer" },
-    { path = "core.seedwork.use_case_layer" },
-]
+[[modules ]]
+path = "core.messages"
+depends_on = ["core.org", "core.seedwork", "core.folders", "core.auth", "core.encryption"]
 
-[[modules]]
-path = "core.auth.usecases"
-depends_on = [
-    { path = "core.auth.use_cases" },
-]
+[[modules ]]
+path = "core.events"
+depends_on = ["core.auth", "core.seedwork", "core.org"]
 
-[[modules]]
-path = "core.auth.views"
-depends_on = [
-    { path = "core.auth.forms" },
-    { path = "core.auth.models" },
-    { path = "core.auth.use_cases" },
-]
-
-[[modules]]
-path = "core.collab.api"
-depends_on = [
-    { path = "core.auth.models" },
-    { path = "core.collab.models" },
-    { path = "core.collab.repositories" },
-    { path = "core.seedwork.api_layer" },
-]
-
-[[modules]]
-path = "core.collab.models"
-depends_on = [
-    { path = "core.auth.models" },
-    { path = "core.collab.value_objects" },
-    { path = "core.seedwork.aggregate" },
-    { path = "core.seedwork.domain_layer" },
-    { path = "core.seedwork.encryption" },
-    { path = "core.seedwork.events_addon" },
-]
-
-[[modules]]
-path = "core.collab.repositories"
-depends_on = [
-    { path = "core.auth.models" },
-    { path = "core.collab.models" },
-]
-
-[[modules]]
-path = "core.collab.use_cases"
-depends_on = [
-    { path = "core.auth.models" },
-    { path = "core.collab.models" },
-    { path = "core.collab.repositories" },
-    { path = "core.seedwork.use_case_layer" },
-]
-
-[[modules]]
-path = "core.collab.usecases"
-depends_on = [
-    { path = "core.collab.use_cases" },
-    { path = "core.seedwork.use_case_layer" },
-]
-
-[[modules]]
-path = "core.collab.value_objects"
-depends_on = []
-
-[[modules]]
-path = "core.internal.api"
-depends_on = [
-    { path = "core.auth.api" },
-    { path = "core.internal.models" },
-    { path = "core.seedwork.api_layer" },
-]
-
-[[modules]]
-path = "core.internal.models"
-depends_on = []
-
-[[modules]]
-path = "core.seedwork.aggregate"
-depends_on = []
-
-[[modules]]
-path = "core.seedwork.api_layer"
-depends_on = [
-    { path = "core.seedwork.domain_layer" },
-    { path = "core.seedwork.use_case_layer" },
-]
-
-[[modules]]
-path = "core.seedwork.cronjobs"
-depends_on = [
-    { path = "core.seedwork.api_layer" },
-]
-
-[[modules]]
-path = "core.seedwork.domain_layer"
-depends_on = []
-
-[[modules]]
-path = "core.seedwork.encryption"
-depends_on = []
-
-[[modules]]
-path = "core.seedwork.events_addon"
-depends_on = [
-    { path = "core.seedwork.aggregate" },
-]
-
-[[modules]]
-path = "core.seedwork.message_layer"
-depends_on = []
-
-[[modules]]
-path = "core.seedwork.permission"
-depends_on = []
-
-[[modules]]
-path = "core.seedwork.statistics"
-depends_on = []
-
-[[modules]]
-path = "core.seedwork.storage"
-depends_on = [
-    { path = "core.seedwork.encryption" },
-]
-
-[[modules]]
-path = "core.seedwork.storage_folders"
-depends_on = []
-
-[[modules]]
-path = "core.seedwork.use_case_layer"
-depends_on = [
-    { path = "core.seedwork.domain_layer" },
-]
+[[modules ]]
+path = "core.upload"
+depends_on = ["core.seedwork", "messagebus", "core.folders", "core.org", "core.auth", "core.encryption"]
