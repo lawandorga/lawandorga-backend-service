@@ -3,16 +3,16 @@ from uuid import uuid4
 
 import pytest
 
+from core.encryption.tests.encryptions import (
+    SymmetricEncryptionTest1,
+    SymmetricEncryptionTest2,
+)
 from core.encryption.value_objects.symmetric_key import SymmetricKey
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.aggregates.item import Item
 from core.folders.domain.value_objects.folder_key import (
     EncryptedFolderKeyOfUser,
     FolderKey,
-)
-from core.folders.tests.test_helpers.encryptions import (
-    SymmetricEncryptionTest1,
-    SymmetricEncryptionTest2,
 )
 from core.folders.tests.test_helpers.user import ForeignUserObject, UserObject
 from core.seedwork.domain_layer import DomainError

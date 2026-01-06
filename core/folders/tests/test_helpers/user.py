@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 
 from core.auth.domain.user_key import UserKey
 from core.encryption.models import Keyring
+from core.encryption.tests.encryptions import AsymmetricEncryptionTest1
 from core.encryption.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
@@ -10,7 +11,6 @@ from core.encryption.value_objects.asymmetric_key import (
 from core.encryption.value_objects.symmetric_key import SymmetricKey
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.external import IOwner
-from core.folders.tests.test_helpers.encryptions import AsymmetricEncryptionTest1
 
 
 class UserObject:

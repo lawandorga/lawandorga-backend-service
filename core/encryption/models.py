@@ -16,10 +16,12 @@ from core.encryption.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
-from core.org.models.group import Group
 from core.seedwork.domain_layer import DomainError
 
 from seedwork.functional import list_filter
+
+if TYPE_CHECKING:
+    from core.org.models.group import Group
 
 
 class KeyNotFoundError(Exception):
@@ -267,20 +269,20 @@ class Keyring(models.Model):
             return None
         return group_key._get_decryption_key()
 
-    def add_group_key(self, group: Group, by: "OrgUser"):
+    def add_group_key(self, group: "Group", by: "OrgUser"):
         self.load()
         key = by.keyring.get_group_key(group.uuid)
         enc_key = key.encrypt_self(self.get_encryption_key())
         group_key = GroupKey(keyring=self, group=group, key=enc_key.as_dict())
         self._group_keys.append(group_key)
 
-    def add_group_key_directly(self, group: Group, key: SymmetricKey):
+    def add_group_key_directly(self, group: "Group", key: SymmetricKey):
         self.load()
         enc_key = key.encrypt_self(self.get_encryption_key())
         group_key = GroupKey(keyring=self, group=group, key=enc_key.as_dict())
         self._group_keys.append(group_key)
 
-    def remove_group_key(self, group: Group) -> None:
+    def remove_group_key(self, group: "Group") -> None:
         self.load()
         self._group_keys = list_filter(
             self._group_keys, lambda gkey: gkey.group.uuid != group.uuid
@@ -291,8 +293,8 @@ class GroupKey(models.Model):
     keyring: models.ForeignKey["GroupKey", Keyring] = models.ForeignKey(
         Keyring, on_delete=models.CASCADE, related_name="group_keys"
     )
-    group: models.ForeignKey["GroupKey", Group] = models.ForeignKey(
-        Group, on_delete=models.CASCADE, related_name="group_keys"
+    group: models.ForeignKey["GroupKey", "Group"] = models.ForeignKey(
+        "core.Group", on_delete=models.CASCADE, related_name="group_keys"
     )
     key = models.JSONField(null=False, blank=True)
     is_invalidated = models.BooleanField(default=False)

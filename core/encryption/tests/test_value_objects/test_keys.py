@@ -1,5 +1,9 @@
 import pytest
 
+from core.encryption.tests.encryptions import (
+    AsymmetricEncryptionTest1,
+    SymmetricEncryptionTest1,
+)
 from core.encryption.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
@@ -8,10 +12,6 @@ from core.encryption.value_objects.box import OpenBox
 from core.encryption.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
-)
-from core.folders.tests.test_helpers.encryptions import (
-    AsymmetricEncryptionTest1,
-    SymmetricEncryptionTest1,
 )
 
 
