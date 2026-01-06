@@ -1,8 +1,6 @@
-from typing import TYPE_CHECKING, Type
+from typing import Type
 
-if TYPE_CHECKING:
-    from core.models import FolderPermission, Permission
-
+from core.models import FolderPermission, Permission
 from core.permissions.static import (
     get_all_files_permission_strings,
     get_all_permission_strings,

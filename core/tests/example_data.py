@@ -6,7 +6,6 @@ from typing import List
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
-from core.data_sheets.fixtures import create_default_record_template
 from core.data_sheets.models import (
     DataSheet,
     DataSheetEncryptedStandardEntry,
@@ -26,7 +25,6 @@ from core.data_sheets.models import (
 from core.data_sheets.use_cases.sheet import create_data_sheet_and_folder
 from core.files.models import FolderPermission
 from core.files_new.use_cases.file import upload_a_file
-from core.fixtures import create_folder_permissions, create_permissions
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.messages.models import EncryptedRecordMessage
@@ -42,6 +40,8 @@ from core.org.models import Org
 from core.permissions import static
 from core.questionnaires.models import QuestionnaireQuestion, QuestionnaireTemplate
 from core.seedwork.encryption import AESEncryption
+from core.tests.data_sheet_fixtures import create_default_record_template
+from core.tests.fixtures import create_folder_permissions, create_permissions
 from messagebus.domain.collector import EventCollector
 
 

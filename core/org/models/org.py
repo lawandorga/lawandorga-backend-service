@@ -284,44 +284,6 @@ class Org(EncryptedModelMixin, models.Model):
             "collab": 0,
         }
 
-    def force_empty(self):
-        from core.data_sheets.models import DataSheet
-        from core.files.models import File
-
-        for r in DataSheet.objects.filter(template__in=self.recordtemplates.all()):
-            r.delete()
-        for f in File.objects.filter(folder__in=self.folders.all()):
-            f.delete()
-        for fo in self.folders.all():
-            fo.delete()
-        for cnew in self.collabs.all():
-            cnew.delete()
-        for folder in self.folders_folders.all():
-            folder.delete()
-        for group in self.groups.all():
-            group.delete()
-        for record in self.records_records.all():
-            record.delete()
-        for template in self.questionnaire_templates.all():
-            template.questionnaires.all().delete()
-            template.delete()
-        self.reset_keys()
-        self.save()
-
-    def force_delete(self):
-        from core.auth.models import UserProfile
-
-        self.force_empty()
-        # delete users
-        user_ids = []
-        for u in self.users.all():
-            user_ids.append(u.user_id)
-            u.delete()
-        for u in list(UserProfile.objects.filter(id__in=user_ids)):
-            u.delete()
-        # delete self
-        self.delete()
-
 
 class ExternalLink(models.Model):
     org = models.ForeignKey(

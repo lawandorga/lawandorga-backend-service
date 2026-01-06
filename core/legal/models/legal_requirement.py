@@ -54,7 +54,7 @@ class LegalRequirement(models.Model):
         else:
             self.accepted_of_user = False
 
-    def _set_events_of_user(self, user: OrgUser):
+    def _set_events_of_user(self, user: "OrgUser"):
         self.events_of_user = list(self.events.filter(user=user).order_by("-created"))
 
 

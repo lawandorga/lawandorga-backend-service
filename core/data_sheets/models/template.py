@@ -109,7 +109,7 @@ class DataSheetTemplate(models.Model):
 
     @classmethod
     def get_statistic_fields_meta(cls):
-        from core.data_sheets.fixtures import get_all_countries
+        from core.tests.data_sheet_fixtures import get_all_countries
 
         return [
             {

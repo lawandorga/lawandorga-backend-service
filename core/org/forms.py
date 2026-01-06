@@ -2,9 +2,9 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
-from core.data_sheets.fixtures import create_default_record_template
 from core.models import OrgUser, UserProfile
 from core.permissions.static import get_all_permission_strings
+from core.tests.data_sheet_fixtures import create_default_record_template
 
 
 class OrgAdminForm(forms.ModelForm):

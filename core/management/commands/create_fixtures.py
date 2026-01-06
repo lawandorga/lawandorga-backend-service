@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from core.fixtures import create
+from core.tests.fixtures import create
 
 
 class Command(BaseCommand):

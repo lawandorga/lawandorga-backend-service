@@ -1,9 +1,9 @@
 from django.conf import settings
 
 from core.auth.domain.user_key import UserKey
-from core.data_sheets.fixtures import create_default_record_template
 from core.data_sheets.models import DataSheetTemplate
 from core.models import Org, OrgUser, UserProfile
+from core.tests.data_sheet_fixtures import create_default_record_template
 
 
 class UserUnitUserBase:
