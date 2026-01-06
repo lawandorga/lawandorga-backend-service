@@ -7,8 +7,8 @@ from core.auth.use_cases.user import change_password_of_user
 from core.encryption.value_objects.asymmetric_key import EncryptedAsymmetricKey
 from core.models import OrgUser, UserProfile
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS
-from core.seedwork import test_helpers
 from core.seedwork.use_case_layer import UseCaseError
+from core.tests import test_helpers
 
 
 @pytest.fixture

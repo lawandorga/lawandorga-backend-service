@@ -14,7 +14,7 @@ from core.mail_imports.use_cases.mail_import import (
     mark_mails_as_read,
     toggle_mail_pinned,
 )
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 def test_mail_can_be_pinned(db):

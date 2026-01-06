@@ -41,7 +41,7 @@ from core.permissions.static import (
     PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES,
     PERMISSION_RECORDS_ADD_RECORD,
 )
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 def get_file(text: str = "test-file-text"):

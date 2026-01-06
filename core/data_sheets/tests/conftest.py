@@ -3,7 +3,7 @@ import pytest
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.models import Org
-from core.seedwork import test_helpers as test_helpers
+from core.tests import test_helpers as test_helpers
 
 
 @pytest.fixture

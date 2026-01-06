@@ -7,7 +7,7 @@ from core.collab.use_cases.letterhead import (
     delete_letterhead,
     update_letterhead,
 )
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 def test_create(db):

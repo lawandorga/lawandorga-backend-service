@@ -3,7 +3,7 @@ from django.utils import timezone
 from core.auth.models.org_user import OrgUser
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 from core.timeline.models.event import TimelineEvent
 from core.timeline.models.follow_up import TimelineFollowUp
 from core.timeline.repositories.event import EventRepository

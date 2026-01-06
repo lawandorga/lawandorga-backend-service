@@ -4,7 +4,7 @@ from django.test import Client
 from core.legal.models.legal_requirement import LegalRequirementEvent
 from core.legal.use_cases.legal_requirement import accept_legal_requirement
 from core.models import Org
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 from ..models import LegalRequirement
 

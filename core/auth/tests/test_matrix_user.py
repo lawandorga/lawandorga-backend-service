@@ -3,7 +3,7 @@ import pytest
 from core.auth.oidc_provider_settings import userinfo
 from core.auth.use_cases.matrix_user import create_matrix_user
 from core.models import MatrixUser, Org, UserProfile
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 @pytest.fixture

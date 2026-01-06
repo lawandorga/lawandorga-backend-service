@@ -3,8 +3,8 @@ import pytest
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUESTS
 from core.records.models import RecordsAccessRequest, RecordsRecord
 from core.records.use_cases.access import create_access_request, grant_access_request
-from core.seedwork import test_helpers
 from core.seedwork.domain_layer import DomainError
+from core.tests import test_helpers
 from messagebus.domain.collector import EventCollector
 
 

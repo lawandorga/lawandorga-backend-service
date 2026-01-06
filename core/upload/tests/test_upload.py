@@ -4,8 +4,8 @@ import sys
 import pytest
 from django.core.files.uploadedfile import UploadedFile
 
-from core.seedwork import test_helpers
 from core.seedwork.domain_layer import DomainError
+from core.tests import test_helpers
 from core.upload.models.upload import UploadLink
 from messagebus.domain.collector import EventCollector
 

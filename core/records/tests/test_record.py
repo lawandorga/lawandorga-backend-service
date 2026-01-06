@@ -13,7 +13,7 @@ from core.records.models.deletion import RecordsDeletion
 from core.records.models.record import RecordsRecord
 from core.records.use_cases.deletion import accept_deletion_request
 from core.records.use_cases.record import create_record_and_folder
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 def test_record_creation(db):

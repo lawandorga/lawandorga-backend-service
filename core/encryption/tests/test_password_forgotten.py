@@ -3,8 +3,8 @@ import pytest
 from core.auth.use_cases.user import set_new_password_of_myself
 from core.encryption.usecases import optimize
 from core.org.models.group import Group
-from core.seedwork import test_helpers
 from core.seedwork.domain_layer import DomainError
+from core.tests import test_helpers
 
 
 def test_group_keys_invalidated(db):

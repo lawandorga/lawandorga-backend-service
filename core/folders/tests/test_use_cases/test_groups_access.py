@@ -4,7 +4,7 @@ from core.folders.use_cases.folder import (
     grant_access_to_group,
     revoke_access_from_group,
 )
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 def test_grant_access_to_group(db):

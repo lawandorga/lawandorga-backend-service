@@ -7,7 +7,7 @@ from core.org.models.group import Group
 from core.org.use_cases.link import create_link, delete_link
 from core.org.use_cases.org import accept_member_to_org
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS
-from core.seedwork import test_helpers as test_helpers
+from core.tests import test_helpers as test_helpers
 
 
 @pytest.fixture

@@ -7,7 +7,7 @@ from core.collab.use_cases.template import (
     update_template_description,
     update_template_name,
 )
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 def test_create(db):

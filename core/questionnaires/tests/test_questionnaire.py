@@ -8,7 +8,7 @@ from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.models import Org
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models import Questionnaire, QuestionnaireTemplate
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 from messagebus.domain.collector import EventCollector
 
 

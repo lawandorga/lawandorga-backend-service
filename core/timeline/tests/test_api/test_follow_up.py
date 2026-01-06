@@ -1,7 +1,7 @@
 from django.test import Client
 from django.utils import timezone
 
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 from core.timeline.models.follow_up import TimelineFollowUp
 
 

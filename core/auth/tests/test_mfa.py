@@ -5,7 +5,7 @@ from django.test.client import Client
 from core.auth.models.mfa import MultiFactorAuthenticationSecret
 from core.auth.models.org_user import OrgUser
 from core.auth.use_cases.mfa import create_mfa_secret, enable_mfa_secret
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 @pytest.fixture

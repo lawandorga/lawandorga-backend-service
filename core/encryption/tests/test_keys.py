@@ -2,7 +2,7 @@ from django.test import Client
 
 from core.data_sheets.models import DataSheetTemplate
 from core.encryption.usecases import check_keys
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 def test_keys_check_fails(db):

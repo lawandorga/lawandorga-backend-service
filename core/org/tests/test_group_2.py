@@ -5,7 +5,7 @@ from core.encryption.models import GroupKey
 from core.org.models import Group
 from core.org.use_cases.group import create_group
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_GROUPS
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 @pytest.fixture

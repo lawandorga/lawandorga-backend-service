@@ -1,6 +1,6 @@
 from django.utils import timezone
 
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 from core.timeline.models.event import TimelineEvent
 from core.timeline.tests import helpers
 from core.timeline.use_cases.event import create_event, delete_event, update_event

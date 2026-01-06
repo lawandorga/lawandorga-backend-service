@@ -3,7 +3,7 @@ from django.db import transaction
 
 from core.mail.models import MailAccount, MailAddress, MailDomain, MailOrg, MailUser
 from core.mail.models.group import MailGroup
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 @pytest.fixture

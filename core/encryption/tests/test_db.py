@@ -1,5 +1,5 @@
 from core.encryption.models import Keyring
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 def test_storing_and_loading(db):

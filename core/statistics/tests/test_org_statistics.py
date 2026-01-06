@@ -3,7 +3,7 @@ from django.test import Client
 
 from core.data_sheets.models import DataSheetTemplate
 from core.org.models import Org
-from core.seedwork import test_helpers as test_helpers
+from core.tests import test_helpers as test_helpers
 
 
 @pytest.fixture

@@ -4,8 +4,8 @@ from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_DELETION_REQU
 from core.records.models import RecordsDeletion
 from core.records.models.record import RecordsRecord
 from core.records.use_cases.deletion import accept_deletion_request
-from core.seedwork import test_helpers
 from core.seedwork.domain_layer import DomainError
+from core.tests import test_helpers
 from messagebus.domain.collector import EventCollector
 
 

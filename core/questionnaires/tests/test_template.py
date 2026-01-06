@@ -5,7 +5,7 @@ from core.questionnaires.use_cases.template import (
     delete_questionnaire_template,
     update_questionnaire_template,
 )
-from core.seedwork import test_helpers as helpers
+from core.tests import test_helpers as helpers
 
 
 def test_create_template(db):

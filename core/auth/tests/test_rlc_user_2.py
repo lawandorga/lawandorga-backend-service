@@ -2,8 +2,8 @@ import pytest
 
 from core.auth.use_cases.org_user import unlock_myself
 from core.models import Org, OrgEncryption
-from core.seedwork import test_helpers as test_helpers
 from core.seedwork.use_case_layer import UseCaseError
+from core.tests import test_helpers as test_helpers
 
 
 def test_unlock_fails(db):

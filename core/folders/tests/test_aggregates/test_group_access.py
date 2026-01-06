@@ -1,5 +1,5 @@
 from core.folders.domain.aggregates.folder import Folder
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 def test_has_access_can_get_the_key(db):

@@ -7,7 +7,7 @@ from core.collab.use_cases.collab import (
     update_collab_title,
 )
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 from messagebus.domain.collector import EventCollector
 
 

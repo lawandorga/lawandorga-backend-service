@@ -3,7 +3,7 @@ from django.test import Client
 from django.urls import reverse
 
 from core.auth.models import OrgUser
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 def test_password_reset_works(db):

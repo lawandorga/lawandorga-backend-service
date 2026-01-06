@@ -10,8 +10,8 @@ from core.auth.use_cases.org_user import activate_org_user, update_user_data
 from core.data_sheets.models import DataSheetTemplate
 from core.models import Org
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS
-from core.seedwork import test_helpers as test_helpers
 from core.seedwork.use_case_layer import UseCaseError
+from core.tests import test_helpers as test_helpers
 
 
 @pytest.fixture

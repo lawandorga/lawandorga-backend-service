@@ -2,7 +2,7 @@ import pytest
 from django.conf import settings
 from django.test import Client
 
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 @pytest.fixture

@@ -3,7 +3,7 @@ from uuid import uuid4
 from core.collab.models.footer import Footer
 from core.collab.models.template import Template
 from core.collab.use_cases.footer import create_footer, delete_footer, update_footer
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 def test_create(db):

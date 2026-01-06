@@ -5,7 +5,7 @@ from core.data_sheets.use_cases.templates import (
     update_field,
 )
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 def test_create_field(db):

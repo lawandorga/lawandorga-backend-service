@@ -5,7 +5,7 @@ import pytest
 from django.core.files.uploadedfile import UploadedFile
 
 from core.files_new.models import EncryptedRecordDocument
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 from messagebus.domain.collector import EventCollector
 
 

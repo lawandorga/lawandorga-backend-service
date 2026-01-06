@@ -3,7 +3,7 @@ from uuid import uuid4
 from django.core.files.base import ContentFile
 
 from core.mail_imports.models.mail_import import MailAttachment, MailImport
-from core.seedwork import test_helpers
+from core.tests import test_helpers
 
 
 def test_mark_as_read_works():
