@@ -10,14 +10,14 @@ from core.data_sheets.models import (
     DataSheetTemplate,
 )
 from core.org.models import Org
-from core.seedwork import test_helpers as data
+from core.seedwork import test_helpers as test_helpers
 
 
 @pytest.fixture
 def user(db):
     org = Org.objects.create(name="Test RLC")
-    user_1 = data.create_org_user(org=org)
-    statistics_user = data.create_statistics_user(
+    user_1 = test_helpers.create_org_user(org=org)
+    statistics_user = test_helpers.create_statistics_user(
         email="statistics@law-orga.de", name="Mr. Statistics"
     )
     org.generate_keys()
@@ -25,11 +25,11 @@ def user(db):
     field = DataSheetStateField.objects.create(
         template=template, options=["Open", "Closed"]
     )
-    record1 = data.create_data_sheet(template=template, users=[user_1["user"]])
+    record1 = test_helpers.create_data_sheet(template=template, users=[user_1["user"]])
     DataSheetStateEntry.objects.create(
         field=field, record=record1["record"], value="Closed", closed_at=timezone.now()
     )
-    record2 = data.create_data_sheet(template=template, users=[user_1["user"]])
+    record2 = test_helpers.create_data_sheet(template=template, users=[user_1["user"]])
     DataSheetStateEntry.objects.create(
         field=field, record=record2["record"], value="Closed"
     )

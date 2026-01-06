@@ -3,7 +3,7 @@ import pytest
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.models import Org
-from core.seedwork import test_helpers as data
+from core.seedwork import test_helpers as test_helpers
 
 
 @pytest.fixture
@@ -14,14 +14,14 @@ def org(db):
 
 @pytest.fixture
 def user(db, org):
-    user_1 = data.create_org_user(org=org)
+    user_1 = test_helpers.create_org_user(org=org)
     org.generate_keys()
     yield user_1
 
 
 @pytest.fixture
 def another_user(db, user, org):
-    user_2 = data.create_org_user(org=org, email="test@law-orga.de")
+    user_2 = test_helpers.create_org_user(org=org, email="test@law-orga.de")
     org.accept_member(
         user["org_user"],
         user_2["org_user"],
@@ -31,13 +31,13 @@ def another_user(db, user, org):
 
 @pytest.fixture
 def record_template(db, org):
-    template = data.create_record_template(org)
+    template = test_helpers.create_record_template(org)
     yield template
 
 
 @pytest.fixture
 def record(db, org, user, record_template):
-    record = data.create_data_sheet(record_template["template"], [user["user"]])
+    record = test_helpers.create_data_sheet(record_template["template"], [user["user"]])
     yield record["record"]
 
 

@@ -3,19 +3,23 @@ from django.test import Client
 
 from core.data_sheets.models import DataSheetTemplate
 from core.org.models import Org
-from core.seedwork import test_helpers as data
+from core.seedwork import test_helpers as test_helpers
 
 
 @pytest.fixture
 def user(db):
     org = Org.objects.create(name="Test RLC")
-    user_1 = data.create_org_user(org=org)
-    user_2 = data.create_org_user(email="dummy2@law-orga.de", org=org)
-    data.create_org_user(email="dummy3@law-orga.de", org=org)
+    user_1 = test_helpers.create_org_user(org=org)
+    user_2 = test_helpers.create_org_user(email="dummy2@law-orga.de", org=org)
+    test_helpers.create_org_user(email="dummy3@law-orga.de", org=org)
     org.generate_keys()
     template = DataSheetTemplate.objects.create(org=org, name="Record Template")
-    data.create_data_sheet(template=template, users=[user_1["user"], user_2["user"]])
-    data.create_data_sheet(template=template, users=[user_1["user"], user_2["user"]])
+    test_helpers.create_data_sheet(
+        template=template, users=[user_1["user"], user_2["user"]]
+    )
+    test_helpers.create_data_sheet(
+        template=template, users=[user_1["user"], user_2["user"]]
+    )
     yield user_1
 
 

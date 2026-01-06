@@ -583,7 +583,6 @@ class OrgUser(models.Model):
         new_keys.save()
 
     def unlock(self, by: "OrgUser", collector: EventCollector):
-        self.fix_keys(by)
         self.locked = False
         collector.collect(
             OrgUser.OrgUserUnlocked(

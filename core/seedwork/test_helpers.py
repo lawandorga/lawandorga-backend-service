@@ -65,6 +65,7 @@ def create_raw_org_user(
         user.user.save()
         user.save()
         user.keyring.store()
+        setattr(user, "login_data", {"username": email, "password": password})
     return user
 
 

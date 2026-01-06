@@ -220,7 +220,19 @@ class Keyring(models.Model):
         for gkey in self._group_keys:
             gkey.is_invalidated = True
 
-    def fix(self, other_keyring: "Keyring"):
+    def test_keys(self):
+        self.load()
+        for gkey in self._group_keys:
+            try:
+                gkey._get_decryption_key()
+            except DomainError:
+                # group key is already invalidated
+                continue
+            except ValueError:
+                gkey.is_invalidated = True
+        return not self.has_invalid_keys
+
+    def fix_self(self, other_keyring: "Keyring"):
         self.load()
         other_keyring.load()
         for gkey in self._group_keys:

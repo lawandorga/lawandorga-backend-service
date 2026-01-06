@@ -10,7 +10,7 @@ from core.auth.use_cases.org_user import activate_org_user, update_user_data
 from core.data_sheets.models import DataSheetTemplate
 from core.models import Org
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS
-from core.seedwork import test_helpers as data
+from core.seedwork import test_helpers as test_helpers
 from core.seedwork.use_case_layer import UseCaseError
 
 
@@ -22,20 +22,20 @@ def org(db):
 
 @pytest.fixture
 def org_user_2(db, org):
-    user_2 = data.create_org_user(email="dummy2@law-orga.de", org=org)
+    user_2 = test_helpers.create_org_user(email="dummy2@law-orga.de", org=org)
     yield user_2
 
 
 @pytest.fixture
 def user(db, org_user_2, org):
-    user_1 = data.create_org_user(org=org)
-    data.create_org_user(email="dummy3@law-orga.de", org=org)
+    user_1 = test_helpers.create_org_user(org=org)
+    test_helpers.create_org_user(email="dummy3@law-orga.de", org=org)
     org.generate_keys()
     template = DataSheetTemplate.objects.create(org=org, name="Record Template")
-    data.create_data_sheet(
+    test_helpers.create_data_sheet(
         template=template, users=[user_1["user"], org_user_2["user"]]
     )
-    data.create_data_sheet(
+    test_helpers.create_data_sheet(
         template=template, users=[user_1["user"], org_user_2["user"]]
     )
     yield user_1

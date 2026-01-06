@@ -1,8 +1,8 @@
 import pytest
 
 from core.auth.use_cases.user import set_new_password_of_myself
+from core.encryption.usecases import optimize
 from core.org.models.group import Group
-from core.org.use_cases.group import correct_group_keys_of_others
 from core.seedwork import test_helpers
 from core.seedwork.domain_layer import DomainError
 
@@ -45,7 +45,7 @@ def test_group_keys_fixed_with_unlock(db):
     key2 = user2.keyring._find_group_key(group.uuid)
     assert key2 and key2.is_invalidated
 
-    correct_group_keys_of_others(user1)
+    optimize(user1)
     user2.keyring.load(force=True)
     new_key2 = user2.keyring._find_group_key(group.uuid)
     assert new_key2 and not new_key2.is_invalidated

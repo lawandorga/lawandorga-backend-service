@@ -6,7 +6,7 @@ from django.test import Client
 from core.models import Org
 from core.org.models import Group
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_GROUPS
-from core.seedwork import test_helpers as data
+from core.seedwork import test_helpers as test_helpers
 
 
 @pytest.fixture
@@ -17,7 +17,7 @@ def org(db):
 
 @pytest.fixture
 def user(db, org):
-    user_1 = data.create_org_user(org=org)
+    user_1 = test_helpers.create_org_user(org=org)
     org.generate_keys()
     user_1["org_user"].keyring.store()
     yield user_1
@@ -33,13 +33,17 @@ def group(db, org, user):
 
 @pytest.fixture
 def user_2(db, org):
-    user_2 = data.create_org_user(email="dummy2@law-orga.de", name="Dummy 2", org=org)
+    user_2 = test_helpers.create_org_user(
+        email="dummy2@law-orga.de", name="Dummy 2", org=org
+    )
     yield user_2
 
 
 @pytest.fixture
 def user_3(db, org):
-    user_3 = data.create_org_user(email="dummy3@law-orga.de", name="Dummy 3", org=org)
+    user_3 = test_helpers.create_org_user(
+        email="dummy3@law-orga.de", name="Dummy 3", org=org
+    )
     yield user_3
 
 
@@ -111,7 +115,7 @@ def test_add_member_fails_different_org(user, group, db):
     c.login(**user)
     user["org_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     org2 = Org.objects.create(name="Another")
-    another_user = data.create_org_user(
+    another_user = test_helpers.create_org_user(
         email="another@law-orga.de", name="Another", org=org2
     )
     response = c.post(

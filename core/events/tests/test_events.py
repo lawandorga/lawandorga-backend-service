@@ -4,7 +4,7 @@ from django.utils import timezone
 from core.events.models import EventsEvent
 from core.events.use_cases.events import create_event, delete_event, update_event
 from core.org.models import Meta, Org
-from core.seedwork import test_helpers as data
+from core.seedwork import test_helpers as test_helpers
 
 
 class TestEvents(TestCase):
@@ -14,8 +14,10 @@ class TestEvents(TestCase):
         self.rlc = Org.objects.create(name="Test RLC", meta=self.meta_org1)
         self.rlc2 = Org.objects.create(name="Second RLC", meta=self.meta_org1)
         self.other_org = Org.objects.create(name="Other Org", meta=self.meta_org2)
-        self.user_1 = data.create_org_user(org=self.rlc)
-        self.user_2 = data.create_org_user(email="dummy2@law-orga.de", org=self.rlc)
+        self.user_1 = test_helpers.create_org_user(org=self.rlc)
+        self.user_2 = test_helpers.create_org_user(
+            email="dummy2@law-orga.de", org=self.rlc
+        )
 
         self.event_1 = EventsEvent.objects.create(
             org=self.rlc,

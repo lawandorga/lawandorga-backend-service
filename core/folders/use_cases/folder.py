@@ -132,19 +132,6 @@ def revoke_access(__actor: OrgUser, of_uuid: UUID, folder_uuid: UUID):
 
 
 @use_case
-def correct_folder_keys_of_others(__actor: OrgUser):
-    r = get_repository()
-    folders = r.get_list(__actor.org_id)
-    users = list(__actor.org.users.exclude(pk=__actor.pk))
-    for f in folders:
-        if f.has_access(__actor):
-            for u in users:
-                if f.has_invalid_keys(u):
-                    f.fix_keys(u, __actor)
-                    r.save(f)
-
-
-@use_case
 def move_folder(__actor: OrgUser, folder_uuid: UUID, target_uuid: UUID):
     folder = folder_from_uuid(__actor, folder_uuid)
     target = folder_from_uuid(__actor, target_uuid)

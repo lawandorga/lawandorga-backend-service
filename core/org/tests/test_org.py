@@ -7,7 +7,7 @@ from core.org.models.group import Group
 from core.org.use_cases.link import create_link, delete_link
 from core.org.use_cases.org import accept_member_to_org
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_USERS
-from core.seedwork import test_helpers as data
+from core.seedwork import test_helpers as test_helpers
 
 
 @pytest.fixture
@@ -18,7 +18,7 @@ def org(db):
 
 @pytest.fixture
 def user(db, org):
-    user = data.create_org_user(org=org)
+    user = test_helpers.create_org_user(org=org)
     org.generate_keys()
     ExternalLink.objects.create(
         org=org, name="Test Link", link="https://www.amazon.de", order=1
@@ -66,7 +66,7 @@ def test_member_accept(user, db):
     c = Client()
     c.login(**user)
     user["org_user"].grant(PERMISSION_ADMIN_MANAGE_USERS)
-    another_user = data.create_org_user(
+    another_user = test_helpers.create_org_user(
         org=user["org_user"].org, email="another@law-orga.de"
     )
     accept_member_to_org(user["org_user"], another_user["org_user"].pk)
@@ -78,7 +78,9 @@ def test_accepted_member_assigned_to_default_group(user, org_user, db):
     c = Client()
     c.login(**user)
     org_user.grant(PERMISSION_ADMIN_MANAGE_USERS)
-    another_user = data.create_org_user(org=org_user.org, email="another@law-orga.de")
+    another_user = test_helpers.create_org_user(
+        org=org_user.org, email="another@law-orga.de"
+    )
     org = org_user.org
     group = org.groups.create(name="Test Group")
     org.default_group_for_new_users = group

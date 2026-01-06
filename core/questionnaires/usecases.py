@@ -1,6 +1,5 @@
 from core.questionnaires.use_cases.questionnaire import (
     delete_a_questionnaire,
-    optimize_questionnaires,
     publish_a_questionnaire,
     submit_answers,
 )
@@ -27,5 +26,4 @@ USECASES = {
     "questionnaires/create_template": create_questionnaire_template,
     "questionnaires/update_template": update_questionnaire_template,
     "questionnaires/delete_template": delete_questionnaire_template,
-    "questionnaires/optimize": optimize_questionnaires,
 }

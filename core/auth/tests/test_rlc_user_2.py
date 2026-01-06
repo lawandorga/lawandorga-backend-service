@@ -2,15 +2,15 @@ import pytest
 
 from core.auth.use_cases.org_user import unlock_myself
 from core.models import Org, OrgEncryption
-from core.seedwork import test_helpers as data
+from core.seedwork import test_helpers as test_helpers
 from core.seedwork.use_case_layer import UseCaseError
 
 
 def test_unlock_fails(db):
     org = Org.objects.create(name="Test RLC")
-    user_1 = data.create_org_user(org=org)
+    user_1 = test_helpers.create_org_user(org=org)
     org.generate_keys()
-    data.create_data_sheet(users=[user_1["user"]])
+    test_helpers.create_data_sheet(users=[user_1["user"]])
     key = OrgEncryption.objects.get(user=user_1["user"])
     key.correct = False
     key.encrypted_key = b""
@@ -21,9 +21,9 @@ def test_unlock_fails(db):
 
 def test_unlock_works(db):
     org = Org.objects.create(name="Test RLC")
-    user_1 = data.create_org_user(org=org)
+    user_1 = test_helpers.create_org_user(org=org)
     org.generate_keys()
-    data.create_data_sheet(users=[user_1["user"]])
+    test_helpers.create_data_sheet(users=[user_1["user"]])
     org_user = user_1["org_user"]
     org_user.locked = True
     org_user.save()

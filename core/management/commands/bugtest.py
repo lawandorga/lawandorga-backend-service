@@ -1,8 +1,8 @@
 from django.core.management.base import BaseCommand
 
 from core.auth.models.org_user import OrgUser
-from core.auth.use_cases.keys import check_keys
 from core.collab.models.collab import Collab
+from core.encryption.usecases import check_keys
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.org.models.group import Group
 from core.org.models.org import Org

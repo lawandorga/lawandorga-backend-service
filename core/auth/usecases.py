@@ -1,4 +1,3 @@
-from core.auth.use_cases.keys import check_keys
 from core.auth.use_cases.matrix_user import create_matrix_user
 from core.auth.use_cases.org_user import (
     activate_org_user,
@@ -9,15 +8,12 @@ from core.auth.use_cases.org_user import (
     update_user_data,
 )
 from core.auth.use_cases.user import change_password_of_user
+from core.encryption.usecases import check_keys
 
 USECASES = {
     "auth/change_password": change_password_of_user,
     "auth/delete_user": delete_user,
-    # "auth/confirm_email": confirm_email,
     "auth/unlock_user": unlock_user,
-    # "auth/create_mfa_secret": create_mfa_secret,
-    # "auth/enable_mfa_secret": enable_mfa_secret,
-    # "auth/delete_mfa_secret": delete_mfa_secret,
     "auth/create_matrix_user": create_matrix_user,
     "auth/unlock_myself": unlock_myself,
     "auth/test_keys": check_keys,

@@ -1,5 +1,4 @@
 from core.folders.use_cases.folder import (
-    correct_folder_keys_of_others,
     create_folder,
     delete_folder,
     grant_access,
@@ -21,5 +20,4 @@ USECASES = {
     "folders/revoke_access_from_user": revoke_access,
     "folders/grant_access_to_group": grant_access_to_group,
     "folders/revoke_access_from_group": revoke_access_from_group,
-    "folders/optimize": correct_folder_keys_of_others,
 }

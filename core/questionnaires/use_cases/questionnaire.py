@@ -64,8 +64,3 @@ def submit_answers(
                 answer.data = data[field.name]  # type: ignore
             answer.encrypt()
             answer.save()
-
-
-@use_case
-def optimize_questionnaires(__actor: OrgUser):
-    pass

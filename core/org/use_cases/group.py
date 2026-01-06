@@ -27,16 +27,6 @@ def delete_group(__actor: OrgUser, group_id: int):
     group.delete()
 
 
-@use_case()
-def correct_group_keys_of_others(__actor: OrgUser):
-    for user in list(__actor.org.users.exclude(pk=__actor.pk)):
-        if not hasattr(user, "keyring"):
-            continue
-        if user.keyring.has_invalid_keys:
-            user.keyring.fix(__actor.keyring)
-            user.keyring.store()
-
-
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])
 def add_member_to_group(__actor: OrgUser, group_id: int, new_member_id: int):
     group = group_from_id(__actor, group_id)

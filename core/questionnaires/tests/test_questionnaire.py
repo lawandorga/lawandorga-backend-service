@@ -9,7 +9,6 @@ from core.models import Org
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
 from core.questionnaires.models import Questionnaire, QuestionnaireTemplate
 from core.seedwork import test_helpers
-from core.seedwork import test_helpers as data
 from messagebus.domain.collector import EventCollector
 
 
@@ -21,7 +20,7 @@ def org(db):
 
 @pytest.fixture
 def user(db, org):
-    user_1 = data.create_org_user(org=org)
+    user_1 = test_helpers.create_org_user(org=org)
     org.generate_keys()
     yield user_1
 

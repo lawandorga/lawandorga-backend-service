@@ -22,8 +22,3 @@ def create_a_message(__actor: OrgUser, message: str, folder_uuid: UUID):
 def delete_message(__actor: OrgUser, message_id: int):
     message = get_message_by_uuid(__actor, message_id)
     message.delete()
-
-
-@use_case
-def optimize_messages(__actor: OrgUser):
-    pass
