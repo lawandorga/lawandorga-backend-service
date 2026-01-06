@@ -229,7 +229,7 @@ class Org(EncryptedModelMixin, models.Model):
             user_rlc_keys = OrgEncryption(
                 user=org_user.user, rlc=self, encrypted_key=aes_key
             )
-            public_key_user = org_user.user.get_public_key()
+            public_key_user = org_user.keyring.get_public_key()
             user_rlc_keys.encrypt(public_key_user)
             user_rlc_keys.save()
 
@@ -238,14 +238,14 @@ class Org(EncryptedModelMixin, models.Model):
         from core.models import OrgEncryption
 
         # create the rlc encryption keys for new member
-        private_key_admin = admin.get_private_key()
+        private_key_admin = admin.keyring.get_private_key()
         aes_key_rlc = self.get_aes_key(
             user=admin.user, private_key_user=private_key_admin
         )
         org_enc = OrgEncryption(
             user=member.user, rlc_id=self.pk, encrypted_key=aes_key_rlc
         )
-        public_key = member.get_public_key()
+        public_key = member.keyring.get_public_key()
         org_enc.encrypt(public_key)
 
         # grant access to the records folder

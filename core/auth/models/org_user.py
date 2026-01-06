@@ -1,4 +1,3 @@
-from datetime import timedelta
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -19,14 +18,11 @@ from django.core.mail import send_mail
 from django.db import models
 from django.db.models import Q
 from django.template import loader
-from django.utils import timezone
 
 from core.auth.domain.user_key import UserKey
-from core.auth.models.session import CustomSession
 from core.auth.token_generator import EmailConfirmationTokenGenerator
 from core.folders.domain.value_objects.asymmetric_key import (
     AsymmetricKey,
-    EncryptedAsymmetricKey,
 )
 from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.org.models import Org, OrgEncryption
@@ -193,7 +189,7 @@ class OrgUser(models.Model):
 
     @property
     def user_key(self) -> KeyOfUser:
-        self.get_private_key()
+        self.keyring.get_private_key()
         return {
             "id": 0,
             "information": self.name,
@@ -258,8 +254,7 @@ class OrgUser(models.Model):
 
     @property
     def all_keys_correct(self):
-        _keys = self.keys
-        for key in _keys:
+        for key in self.keys:
             if not key["correct"]:
                 return False
         return True
@@ -281,33 +276,19 @@ class OrgUser(models.Model):
         return self.user.email
 
     @property
-    def do_keys_exist(self):
-        return self.public_key is not None or self.private_key is not None
-
-    @property
     def locked_legal(self):
         from core.legal.models import LegalRequirement
 
         return LegalRequirement.is_locked(self)
 
-    def get_group_uuids(self) -> list[UUID]:
-        if not hasattr(self, "_group_uuids"):
-            self._group_uuids = list(self.groups.values_list("uuid", flat=True))
-        return self._group_uuids
-
     def test_keys(self) -> list[models.Model]:
         org_key: Optional[OrgEncryption] = self.user.users_rlc_keys.first()
         assert org_key is not None
-        correct = org_key.test(self.get_private_key())
+        correct = org_key.test(self.keyring.get_private_key())
         if not correct:
             self.locked = True
             return [org_key, self]
         return []
-
-    def get_decrypted_key_from_password(self, password: str) -> UserKey:
-        enc_user_key = UserKey.create_from_dict(self.key)
-        user_key = enc_user_key.decrypt_self(password)
-        return user_key
 
     def check_login_allowed(self):
         if not self.email_confirmed:
@@ -323,91 +304,6 @@ class OrgUser(models.Model):
         if not self.accepted:
             message = "You can not login, yet. You need to be accepted as member by one of your admins."
             raise DomainError(message)
-
-    def get_public_key(self) -> bytes:
-        return self.get_encryption_key().get_public_key().encode("utf-8")
-
-    def get_private_key(self, *args, **kwargs) -> str:
-        return self.get_decryption_key().get_private_key().decode("utf-8")
-
-    def get_encryption_key(
-        self, *args, **kwargs
-    ) -> Union[AsymmetricKey, EncryptedAsymmetricKey]:
-        assert self.key is not None
-        u = UserKey.create_from_dict(self.key)
-        return u.key
-
-    @staticmethod
-    def get_dummy_user_private_key(dummy: "OrgUser", email="dummy@law-orga.de") -> str:
-        if settings.TESTING and dummy.email == email:
-            u1 = UserKey.create_from_dict(dummy.key)
-            u2 = u1.decrypt_self(settings.DUMMY_USER_PASSWORD)
-            key = u2.key
-            assert isinstance(key, AsymmetricKey)
-            return key.get_private_key().decode("utf-8")
-
-        raise ValueError("This method is only available for dummy and in test mode.")
-
-    def __get_session(self) -> CustomSession:
-        memory_cache_session_key = "session-of-org-user-{}".format(self.pk)
-        memory_cache_time_key = "time-of-org-user-{}".format(self.pk)
-
-        if hasattr(self.__class__, memory_cache_session_key) and hasattr(
-            self.__class__, memory_cache_time_key
-        ):
-            if timezone.now() < getattr(self.__class__, memory_cache_time_key):
-                return getattr(self.__class__, memory_cache_session_key)
-            else:
-                delattr(self.__class__, memory_cache_time_key)
-                delattr(self.__class__, memory_cache_session_key)
-
-        session = (
-            CustomSession.objects.filter(user_id=self.user_id)
-            .order_by("-expire_date")
-            .first()
-        )
-
-        if session is None:
-            raise Exception(
-                f"No session found for user '{self.user_id}' with last login '{self.user.last_login}'"
-            )
-
-        setattr(
-            self.__class__,
-            memory_cache_time_key,
-            timezone.now() + timedelta(seconds=10),
-        )
-        setattr(self.__class__, memory_cache_session_key, session)
-
-        return session
-
-    def _get_user_key(self) -> UserKey:
-        assert self.key is not None
-
-        if settings.TESTING and (
-            self.email == "dummy@law-orga.de" or self.email == "tester@law-orga.de"
-        ):
-            public_key: str = self.key["key"]["public_key"]  # type: ignore
-            private_key = OrgUser.get_dummy_user_private_key(self, self.email)
-            origin: str = self.key["key"]["origin"]  # type: ignore
-            return UserKey(
-                AsymmetricKey.create(
-                    private_key=private_key, origin=origin, public_key=public_key
-                )
-            )
-
-        session = self.__get_session()
-        decoded = session.get_decoded()
-        key = UserKey.create_from_unsafe_dict(decoded["user_key"])
-        return key
-
-    def get_decryption_key(self, *args, **kwargs) -> AsymmetricKey:
-        key = self._get_user_key()
-
-        assert isinstance(
-            key.key, AsymmetricKey
-        ), f"key is not an AsymmetricKey it is of type: {type(key.key)}"
-        return key.key
 
     def activate_or_deactivate(self):
         self.is_active = not self.is_active
@@ -439,12 +335,6 @@ class OrgUser(models.Model):
             self.speciality_of_study = speciality_of_study
         if qualifications is not None:
             self.qualifications = qualifications
-
-    def delete_keys(self):
-        self.private_key = None
-        self.public_key = None
-        self.key = None
-        self.is_private_key_encrypted = False
 
     def __get_as_user_permissions(self) -> List[str]:
         permissions = list(HasPermission.objects.filter(user__id=self.pk))
@@ -681,7 +571,7 @@ class OrgUser(models.Model):
         assert self.org_id == by.org_id
 
         aes_key_rlc = by.org.get_aes_key(
-            user=by.user, private_key_user=by.get_private_key()
+            user=by.user, private_key_user=by.keyring.get_private_key()
         )
         new_keys = OrgEncryption(
             user=self.user, rlc=self.org, encrypted_key=aes_key_rlc
@@ -689,7 +579,7 @@ class OrgUser(models.Model):
 
         self.user.users_rlc_keys.all().delete()
 
-        new_keys.encrypt(self.get_public_key())
+        new_keys.encrypt(self.keyring.get_public_key())
         new_keys.save()
 
     def unlock(self, by: "OrgUser", collector: EventCollector):

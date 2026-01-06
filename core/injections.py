@@ -58,7 +58,7 @@ def log_usecase(context: CallbackContext):
 def get_key(__actor: OrgUser) -> UserKey:
     # injecting the UserKey only works if the usecase itself
     # already has OrgUser as an actor
-    return __actor._get_user_key()
+    return __actor.keyring._get_user_key()
 
 
 INJECTIONS = {

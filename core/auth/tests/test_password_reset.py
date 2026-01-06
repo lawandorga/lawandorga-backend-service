@@ -45,4 +45,4 @@ def test_password_reset_works(db):
     # check org user is locked but his keys work
     updated_org_user = OrgUser.objects.get(pk=org_user["org_user"].pk)
     assert updated_org_user.locked
-    updated_org_user.get_encryption_key()
+    updated_org_user.keyring.get_encryption_key()

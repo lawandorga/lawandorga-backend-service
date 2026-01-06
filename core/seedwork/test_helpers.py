@@ -60,10 +60,11 @@ def create_raw_org_user(
         email_confirmed=email_confirmed,
         accepted=accepted,
     )
-    user._group_uuids = []
+    user.generate_keys(password)
     if save:
         user.user.save()
         user.save()
+        user.keyring.store()
     return user
 
 
@@ -167,7 +168,7 @@ def create_org_user(
         "password": settings.DUMMY_USER_PASSWORD,
         "org_user": org_user,
         "private_key": private_key,
-        "public_key": user.get_public_key(),
+        "public_key": org_user.keyring.get_public_key(),
     }
 
 

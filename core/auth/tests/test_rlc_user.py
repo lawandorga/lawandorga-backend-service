@@ -61,7 +61,7 @@ def test_unlock_works(db, org_user):
 
 def test_change_password_works(db):
     user = test_helpers.create_raw_org_user(save=True)
-    private_key = user.get_private_key()
+    private_key = user.keyring.get_private_key()
     data = {
         "current_password": settings.DUMMY_USER_PASSWORD,
         "new_password": "pass1234!",
@@ -89,10 +89,6 @@ def test_delete_works(db, org_user):
 
 
 def test_keys_are_generated(db):
-    user = test_helpers.create_raw_org_user()
-    user.generate_keys(settings.DUMMY_USER_PASSWORD)
-    user.org.save()
-    user.user.save()
-    user.save()
+    user = test_helpers.create_raw_org_user(save=True)
     user = OrgUser.objects.get(pk=user.pk)
-    assert isinstance(user.get_encryption_key(), EncryptedAsymmetricKey)
+    assert isinstance(user.keyring.get_encryption_key(), EncryptedAsymmetricKey)

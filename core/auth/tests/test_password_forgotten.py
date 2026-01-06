@@ -25,7 +25,7 @@ def test_group_keys_invalidated(db):
     key2 = user2.keyring._find_group_key(group.uuid)
     assert key2 and key2.is_invalidated
     with pytest.raises(DomainError):
-        group.get_decryption_key(user2)
+        user2.keyring.get_group_key(group.uuid)
 
 
 def test_group_keys_fixed_with_unlock(db):

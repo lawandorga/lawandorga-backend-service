@@ -568,7 +568,7 @@ class DataSheetEncryptedFileField(RecordField):
         if file.size and file.size > 10000000:
             raise DomainError("The size of the file needs to be less than 10 MB.")
 
-        private_key_user = user.get_private_key()
+        private_key_user = user.keyring.get_private_key()
         record = self.template.records.get(id=record_id)
         enc_file = DataSheetEncryptedFileEntry.encrypt_file(
             file, record, user=user, private_key_user=private_key_user

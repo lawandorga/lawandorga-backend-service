@@ -1,6 +1,7 @@
 import pytest
 
 from core.auth.models import OrgUser
+from core.encryption.models import GroupKey
 from core.org.models import Group
 from core.org.use_cases.group import create_group
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_GROUPS
@@ -47,18 +48,18 @@ def test_add_member_is_saved(db, group, user):
     group.add_member(user)
     group.save()
     group = Group.objects.get(pk=group.pk)
-    assert user.pk in group.member_ids
+    assert group.has_member(user)
     group.save()
     group = Group.objects.get(pk=group.pk)
-    assert user.pk in group.member_ids
+    assert group.has_member(user)
 
 
 def test_group_create_creates_keys(db):
     user = test_helpers.create_org_user()["org_user"]
     user.grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     group = create_group(user, "Test Group", "")
-    assert len(group.keys) == 1, group.keys
-    assert group.has_keys(user)
+    assert GroupKey.objects.filter(group=group).count() == 1, group.keys
+    assert user.keyring._find_group_key(group.uuid) is not None
 
 
 def test_group_add_member_gets_key(db):
@@ -90,5 +91,6 @@ def test_invalidate_keys(db):
     user = test_helpers.create_org_user()["org_user"]
     user.grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     group = create_group(user, "Test Group", "")
-    group.invalidate_keys_of(user)
-    assert not group.has_valid_keys(user)
+    user.keyring.invalidate_group_keys()
+    key = user.keyring._find_group_key(group.uuid)
+    assert key and key.is_invalidated

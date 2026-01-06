@@ -295,7 +295,7 @@ class DataSheetEntryEncryptedModelMixin(EncryptedModelMixin):
     ):
         data_sheet: DataSheet = self.record  # type: ignore
         if user and not private_key_user:
-            private_key_user = user.get_private_key()
+            private_key_user = user.keyring.get_private_key()
         if user and private_key_user:
             key = data_sheet.get_aes_key(user=user, private_key_user=private_key_user)
         elif aes_key_record:
@@ -511,7 +511,7 @@ class DataSheetEncryptedFileEntry(DataSheetEntry):
         self, user: Optional[OrgUser] = None, private_key_user=None, aes_key_record=None
     ):
         if user and not private_key_user:
-            private_key_user = user.get_private_key()
+            private_key_user = user.keyring.get_private_key()
         if user and private_key_user:
             key = self.record.get_aes_key(
                 user=user, private_key_user=private_key_user

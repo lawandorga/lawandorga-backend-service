@@ -31,8 +31,12 @@ class FileViewSet(
         if not instance.folder.user_has_permission_read(request.user):
             raise PermissionDenied()
 
-        private_key_user = request.user.get_private_key(request=request)
-        aes_key = request.user.get_org_aes_key(private_key_user)
+        private_key_user = request.user.org_user.keyring.get_private_key(
+            request=request
+        )
+        aes_key = request.user.org_user.org.get_aes_key(
+            user=request.user, private_key_user=private_key_user
+        )
 
         # error handling if the file can not be found
         if not instance.file.name:

@@ -65,7 +65,9 @@ class FileCreateSerializer(AddUserMixin, FileSerializer):
             raise ValidationError("The size of the file needs to be less than 10 MB.")
         # encrypt file
         user = self.context["request"].user
-        private_key_user = user.get_private_key(request=self.context["request"])
+        private_key_user = user.org_user.keyring.get_private_key(
+            request=self.context["request"]
+        )
         aes_key_rlc = user.org.get_aes_key(user=user, private_key_user=private_key_user)
         file = File.encrypt_file(file, aes_key_rlc=aes_key_rlc)
         # return

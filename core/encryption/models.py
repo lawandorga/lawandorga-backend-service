@@ -137,9 +137,20 @@ class Keyring(models.Model):
         key = UserKey.create_from_unsafe_dict(decoded["user_key"])
         return key
 
+    @staticmethod
+    def get_dummy_user_private_key(dummy: "OrgUser", email="dummy@law-orga.de") -> str:
+        if settings.TESTING and dummy.email == email:
+            u1 = UserKey.create_from_dict(dummy.key)
+            u2 = u1.decrypt_self(settings.DUMMY_USER_PASSWORD)
+            key = u2.key
+            assert isinstance(key, AsymmetricKey)
+            return key.get_private_key().decode("utf-8")
+
+        raise ValueError("This method is only available for dummy and in test mode.")
+
     def __get_user_key_for_test(self) -> UserKey:
         public_key: str = self.key["key"]["public_key"]  # type: ignore
-        private_key = OrgUser.get_dummy_user_private_key(
+        private_key = Keyring.get_dummy_user_private_key(
             self.user, self.user.user.email
         )
         origin: str = self.key["key"]["origin"]  # type: ignore
@@ -176,7 +187,7 @@ class Keyring(models.Model):
 
         return self.decryption_key
 
-    def _get_encryption_key(
+    def get_encryption_key(
         self, *args, **kwargs
     ) -> Union[AsymmetricKey, EncryptedAsymmetricKey]:
         assert self.key is not None
@@ -184,7 +195,7 @@ class Keyring(models.Model):
         return u.key
 
     def get_public_key(self) -> bytes:
-        return self._get_encryption_key().get_public_key().encode("utf-8")
+        return self.get_encryption_key().get_public_key().encode("utf-8")
 
     def get_private_key(self, *args, **kwargs) -> str:
         return self.get_decryption_key().get_private_key().decode("utf-8")
@@ -202,6 +213,10 @@ class Keyring(models.Model):
         u1 = UserKey(key=key)
         u2 = u1.encrypt_self(new_password)
         self.key = u2.as_dict()
+        self.invalidate_group_keys()
+
+    def invalidate_group_keys(self):
+        self.load()
         for gkey in self._group_keys:
             gkey.is_invalidated = True
 
@@ -214,7 +229,7 @@ class Keyring(models.Model):
                 if other_gkey is not None and not other_gkey.is_invalidated:
                     group_symmetric_key = other_gkey._get_decryption_key()
                     skey_enc = group_symmetric_key.encrypt_self(
-                        self._get_encryption_key()
+                        self.get_encryption_key()
                     )
                     gkey.key = skey_enc.as_dict()
                     gkey.is_invalidated = False
@@ -243,13 +258,13 @@ class Keyring(models.Model):
     def add_group_key(self, group: Group, by: "OrgUser"):
         self.load()
         key = by.keyring.get_group_key(group.uuid)
-        enc_key = key.encrypt_self(self._get_encryption_key())
+        enc_key = key.encrypt_self(self.get_encryption_key())
         group_key = GroupKey(keyring=self, group=group, key=enc_key.as_dict())
         self._group_keys.append(group_key)
 
     def add_group_key_directly(self, group: Group, key: SymmetricKey):
         self.load()
-        enc_key = key.encrypt_self(self._get_encryption_key())
+        enc_key = key.encrypt_self(self.get_encryption_key())
         group_key = GroupKey(keyring=self, group=group, key=enc_key.as_dict())
         self._group_keys.append(group_key)
 

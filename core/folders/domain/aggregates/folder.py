@@ -13,6 +13,7 @@ from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.seedwork.domain_layer import DomainError
 
+from seedwork.functional import list_find
 from seedwork.types import JsonDict
 
 if TYPE_CHECKING:
@@ -188,7 +189,7 @@ class Folder:
             ):
                 s_key = self.get_decryption_key(requestor=by)
                 new_key = FolderKey(owner_uuid=of.uuid, key=s_key)
-                enc_key = of.get_encryption_key()
+                enc_key = of.keyring.get_encryption_key()
                 enc_new_key = EncryptedFolderKeyOfUser.create_from_key(new_key, enc_key)
                 fixed = True
             new_keys.append(enc_new_key)
@@ -204,25 +205,23 @@ class Folder:
             return True
         return False
 
+    def has_keys(self, owner: Union["OrgUser", "Group"]) -> bool:
+        for u_key in self.__keys:
+            if u_key.owner_uuid == owner.uuid:
+                return True
+        for g_key in self.__group_keys:
+            if g_key.owner_uuid == owner.uuid:
+                return True
+        return False
+
     def _has_direct_access(self, owner: "OrgUser") -> bool:
         for u_key in self.__keys:
             if u_key.owner_uuid == owner.uuid:
                 return u_key.is_valid
         return False
 
-    def has_access_group(self, owner: "Group") -> bool:
-        return self._has_keys_group(owner)
-
     def restrict(self) -> None:
         self.__restricted = True
-
-    def _get_type_of_access(self, owner: "OrgUser") -> Optional[str]:
-        key = self._get_key(owner)
-        if key is None:
-            return "NONE"
-        if isinstance(key, EncryptedFolderKeyOfUser):
-            return "USER"
-        return "GROUP"
 
     def get_folder_of_access(self, owner: "OrgUser") -> Optional["Folder"]:
         if self._has_direct_access(owner):
@@ -237,9 +236,9 @@ class Folder:
         for u_key in self.__keys:
             if u_key.owner_uuid == owner.uuid:
                 return u_key
-        group_uuids = owner.get_group_uuids()
         for g_key in self.__group_keys:
-            if g_key.owner_uuid in group_uuids:
+            key = owner.keyring.find_group_key(g_key.owner_uuid)
+            if key:
                 return g_key
         if self.__parent is None or self.__stop_inherit:
             return None
@@ -250,12 +249,6 @@ class Folder:
             if key.owner_uuid == owner.uuid:
                 return key
         return None
-
-    def _has_keys(self, owner: "OrgUser") -> bool:
-        return self._get_key(owner) is not None
-
-    def _has_keys_group(self, group: "Group") -> bool:
-        return self._get_key_by_group(group) is not None
 
     def __contains(self, item: Union[Item, FolderItem]):
         contains = False
@@ -298,21 +291,12 @@ class Folder:
             )
         self.__name = name if name is not None else self.__name
 
-    def __find_folder_key(self, user: "OrgUser") -> Optional[EncryptedFolderKeyOfUser]:
-        for key in self.__keys:
-            if (
-                isinstance(key, EncryptedFolderKeyOfUser)
-                and key.owner_uuid == user.uuid
-                and key.is_valid
-            ):
-                return key
-
-        return None
-
     def __get_encryption_key_from_user_keys(
         self, requestor: "OrgUser"
-    ) -> Optional["SymmetricKey"]:
-        enc_folder_key = self.__find_folder_key(requestor)
+    ) -> Optional[SymmetricKey]:
+        enc_folder_key = list_find(
+            self.__keys, lambda k: k.owner_uuid == requestor.uuid and k.is_valid
+        )
         if enc_folder_key:
             folder_key = enc_folder_key.decrypt_self(requestor.keyring)
             key = folder_key.key
@@ -322,7 +306,7 @@ class Folder:
 
     def __get_encryption_key_from_parent(
         self, requestor: "OrgUser"
-    ) -> Optional["SymmetricKey"]:
+    ) -> Optional[SymmetricKey]:
         if self.__stop_inherit:
             return None
 
@@ -358,7 +342,21 @@ class Folder:
 
         return None
 
-    def _get_encryption_key(self, requestor: "OrgUser") -> Optional["SymmetricKey"]:
+    def _get_encryption_key(
+        self, requestor: Optional["OrgUser"]
+    ) -> Optional[SymmetricKey]:
+        key: Optional[SymmetricKey] = None
+
+        if (
+            len(self.__keys) == 0
+            and len(self.__group_keys) == 0
+            and self.__enc_parent_key is None
+        ):
+            key = SymmetricKey.generate(SymmetricEncryptionV1)
+            return key
+
+        assert requestor is not None
+
         key = self.__get_encryption_key_from_user_keys(requestor)
         if key:
             return key
@@ -448,38 +446,32 @@ class Folder:
         self.__parent = None
         self.set_parent(target, by)
 
-    def __get_symmetric_key(self, by: Optional["OrgUser"] = None) -> SymmetricKey:
-        if len(self.__keys) == 0 and self.__enc_parent_key is None:
-            key = SymmetricKey.generate(SymmetricEncryptionV1)
-
-        else:
-            assert by is not None
-            key = self.get_decryption_key(requestor=by)
-
-        return key
-
     def grant_access(self, to: "OrgUser", by: Optional["OrgUser"] = None):
         if self.has_access(to):
             raise DomainError("This user already has access to this folder.")
 
-        key = self.__get_symmetric_key(by)
+        key = self._get_encryption_key(by)
+
+        assert key is not None
 
         folder_key = FolderKey(
             owner_uuid=to.uuid,
             key=key,
         )
 
-        lock_key = to.keyring._get_encryption_key()
+        lock_key = to.keyring.get_encryption_key()
 
         enc_key = EncryptedFolderKeyOfUser.create_from_key(folder_key, lock_key)
 
         self.__keys.append(enc_key)
 
     def grant_access_to_group(self, group: "Group", by: "OrgUser"):
-        if self._has_keys_group(group):
+        if self.has_keys(group):
             raise DomainError("This group already has keys for this folder.")
 
-        key = self.__get_symmetric_key(by)
+        key = self._get_encryption_key(by)
+
+        assert key is not None
 
         folder_key = FolderKey(
             owner_uuid=group.uuid,

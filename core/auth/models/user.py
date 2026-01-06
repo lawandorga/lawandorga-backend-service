@@ -79,18 +79,3 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def has_permission(self, permission: Union[str, "Permission"]) -> bool:
         return self.org_user.has_permission(permission)
-
-    def get_public_key(self) -> bytes:
-        return self.org_user.get_public_key()
-
-    def get_private_key(self, *args, **kwargs) -> str:
-        return self.org_user.get_private_key()
-
-    def get_org_aes_key(self, private_key_user=None):
-        if private_key_user:
-            return self.org.get_aes_key(user=self, private_key_user=private_key_user)
-        else:
-            raise ValueError("You need to set (private_key_user).")
-
-    def test_all_keys(self, private_key_user):
-        self.users_rlc_keys.get().test(private_key_user)

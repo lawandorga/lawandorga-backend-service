@@ -8,8 +8,8 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 @use_case
 def check_keys(__actor: OrgUser):
     try:
-        private_key_user = __actor.get_private_key()
-        __actor.user.test_all_keys(private_key_user)
+        private_key_user = __actor.keyring.get_private_key()
+        __actor.user.users_rlc_keys.get().test(private_key_user)
     except Exception:
         raise UseCaseError("The user key is not correct.")
     try:

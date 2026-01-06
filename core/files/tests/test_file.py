@@ -35,8 +35,9 @@ class FileTestsBase:
         )
         self.org_user.generate_keys(settings.DUMMY_USER_PASSWORD)
         self.org_user.save()
+        self.org_user.keyring.store()
         self.folder = Folder.objects.get(parent=None, rlc=self.rlc)
-        self.private_key_user = self.user.get_private_key(
+        self.private_key_user = self.org_user.keyring.get_private_key(
             password_user=settings.DUMMY_USER_PASSWORD
         )
         self.aes_key_rlc = self.user.org.get_aes_key(

@@ -22,18 +22,18 @@ def test_grant_access_to_group(db):
     folder.grant_access_to_group(group, u)
     assert len(folder.group_keys) == 1
 
-    assert folder.has_access_group(group)
+    assert folder.has_keys(group)
     r.save(folder)
 
     new_folder = r.retrieve(u.org_id, folder.uuid)
-    assert new_folder.has_access_group(group), new_folder.keys
+    assert new_folder.has_keys(group), new_folder.keys
 
     new_folder.revoke_access_from_group(group)
-    assert not new_folder.has_access_group(group)
+    assert not new_folder.has_keys(group)
     r.save(new_folder)
 
     new_folder = r.retrieve(u.org_id, folder.uuid)
-    assert not new_folder.has_access_group(group)
+    assert not new_folder.has_keys(group)
     assert new_folder.has_access(u)
 
 
@@ -50,12 +50,12 @@ def test_grant_access_to_group_with_usecase(db):
 
     group = test_helpers.create_group(u)["group"]
 
-    assert not folder.has_access_group(group)
+    assert not folder.has_keys(group)
 
     grant_access_to_group(u, group.uuid, folder.uuid)
 
     new_folder = r.retrieve(u.org_id, folder.uuid)
-    assert new_folder.has_access_group(group)
+    assert new_folder.has_keys(group)
 
 
 def test_revoke_access_from_group(db):
@@ -73,12 +73,12 @@ def test_revoke_access_from_group(db):
     folder.grant_access_to_group(group, u)
     r.save(folder)
 
-    assert folder.has_access_group(group)
+    assert folder.has_keys(group)
 
     revoke_access_from_group(u, group.uuid, folder.uuid)
 
     new_folder = r.retrieve(u.org_id, folder.uuid)
-    assert not new_folder.has_access_group(group)
+    assert not new_folder.has_keys(group)
 
 
 def test_get_keys_with_group(db):

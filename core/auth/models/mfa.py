@@ -27,7 +27,7 @@ class MultiFactorAuthenticationSecret(models.Model):
         return mfa
 
     uuid = models.UUIDField(default=uuid4, unique=True, db_index=True)
-    user = models.OneToOneField(
+    user: models.OneToOneField[OrgUser] = models.OneToOneField(
         OrgUser, related_name="mfa_secret", on_delete=models.CASCADE
     )
     enabled = models.BooleanField(default=False)
@@ -69,13 +69,13 @@ class MultiFactorAuthenticationSecret(models.Model):
 
     def __get_key(self) -> SymmetricKey:
         enc_key = EncryptedSymmetricKey.create_from_dict(self.key)
-        unlock_key = self.user.get_decryption_key()
+        unlock_key = self.user.keyring.get_decryption_key()
         key = enc_key.decrypt(unlock_key)
         return key
 
     def __generate_key(self):
         key = SymmetricKey.generate(SymmetricEncryptionV1)
-        lock_key = self.user.get_encryption_key()
+        lock_key = self.user.keyring.get_encryption_key()
         enc_key = EncryptedSymmetricKey.create(key, lock_key)
         self.key = enc_key.as_dict()
 
@@ -99,7 +99,7 @@ class MultiFactorAuthenticationSecret(models.Model):
         return secret.decode("utf-8")
 
     def __get_secret(self) -> str:
-        unlock_key = self.user.get_decryption_key()
+        unlock_key = self.user.keyring.get_decryption_key()
         return self.__get_secret_with_key(unlock_key)
 
     def enable(self):
