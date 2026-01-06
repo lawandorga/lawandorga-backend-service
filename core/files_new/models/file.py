@@ -6,14 +6,14 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 
 from core.auth.models import OrgUser
-from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositories.item import ItemRepository
-from core.folders.domain.value_objects.symmetric_key import (
+from core.encryption.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
+from core.encryption.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
+from core.folders.domain.aggregates.folder import Folder
+from core.folders.domain.repositories.item import ItemRepository
 from core.folders.infrastructure.item_mixins import FolderItemMixin
-from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.org.models import Org
 from core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_file
 from messagebus.domain.collector import EventCollector

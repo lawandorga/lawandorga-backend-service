@@ -1,10 +1,10 @@
 import pytest
 
+from core.encryption.value_objects.symmetric_key import SymmetricKey
 from core.folders.domain.value_objects.folder_key import (
     EncryptedFolderKeyOfUser,
     FolderKey,
 )
-from core.folders.domain.value_objects.symmetric_key import SymmetricKey
 from core.folders.tests.test_helpers.encryptions import SymmetricEncryptionTest1
 from core.folders.tests.test_helpers.user import UserObject
 

@@ -3,10 +3,10 @@ from uuid import uuid4
 
 from django.db import models, transaction
 
-from core.folders.domain.value_objects.symmetric_key import (
+from core.encryption.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
+from core.encryption.value_objects.symmetric_key import (
     SymmetricKey,
 )
-from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.org.models.org import Org
 from core.seedwork.domain_layer import DomainError
 

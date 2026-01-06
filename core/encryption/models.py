@@ -7,15 +7,15 @@ from django.db import models, transaction
 from core.auth.domain.user_key import UserKey
 from core.auth.models import OrgUser
 from core.auth.models.session import CustomSession
-from core.folders.domain.value_objects.asymmetric_key import (
+from core.encryption.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
+from core.encryption.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
 )
-from core.folders.domain.value_objects.symmetric_key import (
+from core.encryption.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
-from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.org.models.group import Group
 from core.seedwork.domain_layer import DomainError
 

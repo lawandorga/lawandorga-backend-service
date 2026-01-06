@@ -1,8 +1,8 @@
 import abc
 from typing import Optional, Union
 
-from core.folders.domain.value_objects.box import LockedBox, OpenBox
-from core.folders.domain.value_objects.encryption import (
+from core.encryption.value_objects.box import LockedBox, OpenBox
+from core.encryption.value_objects.encryption import (
     AsymmetricEncryption,
     SymmetricEncryption,
 )

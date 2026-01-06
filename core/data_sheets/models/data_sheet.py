@@ -20,14 +20,14 @@ from core.data_sheets.models.template import (
     DataSheetTemplate,
     DataSheetUsersField,
 )
-from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositories.item import ItemRepository
-from core.folders.domain.value_objects.symmetric_key import (
+from core.encryption.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
+from core.encryption.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
+from core.folders.domain.aggregates.folder import Folder
+from core.folders.domain.repositories.item import ItemRepository
 from core.folders.infrastructure.item_mixins import FolderItemMixin
-from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.permissions.static import PERMISSION_RECORDS_ACCESS_ALL_RECORDS
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin
 from messagebus.domain.collector import EventCollector

@@ -7,19 +7,19 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 
 from core.auth.models import OrgUser
-from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositories.item import ItemRepository
-from core.folders.domain.value_objects.asymmetric_key import (
+from core.encryption.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
+from core.encryption.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
+from core.encryption.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
 )
-from core.folders.domain.value_objects.symmetric_key import (
+from core.encryption.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
-from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
+from core.folders.domain.aggregates.folder import Folder
+from core.folders.domain.repositories.item import ItemRepository
 from core.folders.infrastructure.item_mixins import FolderItemMixin
-from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.org.models import Org
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.encryption import AESEncryption

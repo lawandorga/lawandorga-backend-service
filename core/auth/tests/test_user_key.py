@@ -1,13 +1,13 @@
 import pickle
 
 from core.auth.domain.user_key import UserKey
-from core.folders.domain.value_objects.asymmetric_key import (
+from core.encryption.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
+from core.encryption.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
 )
-from core.folders.domain.value_objects.box import OpenBox
-from core.folders.domain.value_objects.symmetric_key import SymmetricKey
-from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
+from core.encryption.value_objects.box import OpenBox
+from core.encryption.value_objects.symmetric_key import SymmetricKey
 
 
 def assert_key_works(key):

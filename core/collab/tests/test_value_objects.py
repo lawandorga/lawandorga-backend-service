@@ -1,6 +1,6 @@
 from core.collab.value_objects.document import Document
-from core.folders.domain.value_objects.symmetric_key import SymmetricKey
-from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
+from core.encryption.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
+from core.encryption.value_objects.symmetric_key import SymmetricKey
 
 
 def test_document_encrypt_and_decrypt():

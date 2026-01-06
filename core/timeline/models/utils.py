@@ -3,8 +3,8 @@ from uuid import UUID
 from django.db import models
 
 from core.auth.models.org_user import OrgUser
+from core.encryption.value_objects.box import LockedBox, OpenBox
 from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.value_objects.box import LockedBox, OpenBox
 
 
 class EncryptDecryptMethods:

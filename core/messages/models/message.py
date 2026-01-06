@@ -4,14 +4,14 @@ from uuid import UUID
 from django.db import models
 
 from core.auth.models import OrgUser
-from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.value_objects.box import LockedBox, OpenBox
-from core.folders.domain.value_objects.symmetric_key import (
+from core.encryption.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
+from core.encryption.value_objects.box import LockedBox, OpenBox
+from core.encryption.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )
+from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.org.models import Org
 from core.seedwork.encryption import AESEncryption
 

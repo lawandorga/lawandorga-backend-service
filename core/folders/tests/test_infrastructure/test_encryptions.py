@@ -1,11 +1,11 @@
 from uuid import uuid4
 
-from core.folders.domain.value_objects.asymmetric_key import AsymmetricKey, SymmetricKey
-from core.folders.domain.value_objects.box import OpenBox
+from core.encryption.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
+from core.encryption.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
+from core.encryption.value_objects.asymmetric_key import AsymmetricKey, SymmetricKey
+from core.encryption.value_objects.box import OpenBox
+from core.encryption.value_objects.symmetric_key import EncryptedSymmetricKey
 from core.folders.domain.value_objects.folder_key import FolderKey
-from core.folders.domain.value_objects.symmetric_key import EncryptedSymmetricKey
-from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
-from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 
 
 def test_asymmetric_encryption():

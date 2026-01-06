@@ -2,7 +2,7 @@ import os
 from typing import Optional, Tuple
 from uuid import uuid4
 
-from core.folders.domain.value_objects.encryption import (
+from core.encryption.value_objects.encryption import (
     AsymmetricEncryption,
     SymmetricEncryption,
 )

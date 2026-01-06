@@ -21,10 +21,10 @@ from django.template import loader
 
 from core.auth.domain.user_key import UserKey
 from core.auth.token_generator import EmailConfirmationTokenGenerator
-from core.folders.domain.value_objects.asymmetric_key import (
+from core.encryption.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
+from core.encryption.value_objects.asymmetric_key import (
     AsymmetricKey,
 )
-from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
 from core.org.models import Org, OrgEncryption
 from core.permissions.models import HasPermission, Permission
 from core.permissions.static import (

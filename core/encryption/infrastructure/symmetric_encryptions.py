@@ -6,7 +6,7 @@ from hashlib import sha3_256
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 
-from core.folders.domain.value_objects.encryption import (
+from core.encryption.value_objects.encryption import (
     EncryptionDecryptionError,
     SymmetricEncryption,
 )

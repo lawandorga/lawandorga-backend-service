@@ -3,9 +3,9 @@ from uuid import UUID
 
 from django.db import models
 
+from core.encryption.value_objects.encryption import EncryptionDecryptionError
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.aggregates.item import FolderItem
-from core.folders.domain.value_objects.encryption import EncryptionDecryptionError
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from messagebus.domain.collector import EventCollector
 

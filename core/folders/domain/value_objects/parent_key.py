@@ -1,7 +1,7 @@
 from typing import Optional, Union
 from uuid import UUID
 
-from core.folders.domain.value_objects.symmetric_key import (
+from core.encryption.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )

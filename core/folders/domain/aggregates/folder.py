@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING, Optional, Union
 from uuid import UUID, uuid4
 
+from core.encryption.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
+from core.encryption.value_objects.symmetric_key import SymmetricKey
 from core.folders.domain.aggregates.item import Item
 from core.folders.domain.value_objects.folder_item import FolderItem
 from core.folders.domain.value_objects.folder_key import (
@@ -9,8 +11,6 @@ from core.folders.domain.value_objects.folder_key import (
     FolderKey,
 )
 from core.folders.domain.value_objects.parent_key import ParentKey
-from core.folders.domain.value_objects.symmetric_key import SymmetricKey
-from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.seedwork.domain_layer import DomainError
 
 from seedwork.functional import list_find

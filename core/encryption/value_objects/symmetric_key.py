@@ -1,17 +1,17 @@
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-from core.folders.domain.value_objects.box import LockedBox, OpenBox
-from core.folders.domain.value_objects.encryption import (
+from core.encryption.value_objects.box import LockedBox, OpenBox
+from core.encryption.value_objects.encryption import (
     AsymmetricEncryption,
     SymmetricEncryption,
 )
-from core.folders.domain.value_objects.key import Key
+from core.encryption.value_objects.key import Key
 from core.folders.encryptions import ENCRYPTIONS
 
 from seedwork.types import JsonDict
 
 if TYPE_CHECKING:
-    from core.folders.domain.value_objects.asymmetric_key import (
+    from core.encryption.value_objects.asymmetric_key import (
         AsymmetricKey,
         EncryptedAsymmetricKey,
     )

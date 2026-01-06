@@ -3,8 +3,8 @@ from uuid import UUID, uuid4
 
 from django.utils import timezone
 
-from core.folders.domain.value_objects.box import LockedBox, OpenBox
-from core.folders.domain.value_objects.symmetric_key import SymmetricKey
+from core.encryption.value_objects.box import LockedBox, OpenBox
+from core.encryption.value_objects.symmetric_key import SymmetricKey
 
 from seedwork.types import JsonDict
 

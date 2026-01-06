@@ -4,9 +4,9 @@ import time
 
 import pytest
 
-from core.folders.domain.value_objects.box import LockedBox, OpenBox
-from core.folders.domain.value_objects.symmetric_key import SymmetricKey
-from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
+from core.encryption.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
+from core.encryption.value_objects.box import LockedBox, OpenBox
+from core.encryption.value_objects.symmetric_key import SymmetricKey
 
 
 def generate_keys(L: int):

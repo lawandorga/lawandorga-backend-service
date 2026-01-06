@@ -1,11 +1,11 @@
 import pytest
 
-from core.folders.domain.value_objects.asymmetric_key import (
+from core.encryption.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
 )
-from core.folders.domain.value_objects.box import OpenBox
-from core.folders.domain.value_objects.symmetric_key import (
+from core.encryption.value_objects.box import OpenBox
+from core.encryption.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
 )

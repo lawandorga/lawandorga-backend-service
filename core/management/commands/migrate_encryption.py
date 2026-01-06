@@ -3,8 +3,8 @@
 # from core.auth.domain.user_key import UserKey
 # from core.auth.models.org_user import OrgUser
 # from core.encryption.models import GroupKey, Keyring
-# from core.folders.domain.value_objects.asymmetric_key import EncryptedAsymmetricKey
-# from core.folders.domain.value_objects.symmetric_key import EncryptedSymmetricKey
+# from core.encryption.value_objects.asymmetric_key import EncryptedAsymmetricKey
+# from core.encryption.value_objects.symmetric_key import EncryptedSymmetricKey
 # from core.org.models.group import EncryptedGroupKey, Group
 # from core.org.models.org import Org
 

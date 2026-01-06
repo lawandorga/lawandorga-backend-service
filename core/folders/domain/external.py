@@ -1,11 +1,11 @@
 from typing import TYPE_CHECKING, Any, Protocol, Union
 
 if TYPE_CHECKING:
-    from core.folders.domain.value_objects.asymmetric_key import (
+    from core.encryption.value_objects.asymmetric_key import (
         AsymmetricKey,
         EncryptedAsymmetricKey,
     )
-    from core.folders.domain.value_objects.symmetric_key import SymmetricKey
+    from core.encryption.value_objects.symmetric_key import SymmetricKey
 
 
 class IOwner(Protocol):

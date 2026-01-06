@@ -3,8 +3,8 @@ from django.core.management.base import BaseCommand
 
 from core.auth.domain.user_key import UserKey
 from core.auth.models import OrgUser
-from core.folders.domain.value_objects.box import LockedBox
-from core.folders.domain.value_objects.keys import EncryptedAsymmetricKey
+from core.encryption.value_objects.box import LockedBox
+from core.encryption.value_objects.keys import EncryptedAsymmetricKey
 
 
 class Command(BaseCommand):

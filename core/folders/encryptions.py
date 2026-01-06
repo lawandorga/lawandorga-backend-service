@@ -1,5 +1,5 @@
-from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
-from core.folders.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
+from core.encryption.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
+from core.encryption.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.folders.tests.test_helpers.encryptions import (
     AsymmetricEncryptionTest1,
     AsymmetricEncryptionTest2,

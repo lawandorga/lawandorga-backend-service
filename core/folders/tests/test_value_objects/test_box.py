@@ -2,8 +2,8 @@ import pickle
 
 import pytest
 
-from core.folders.domain.value_objects.box import Box, LockedBox, OpenBox
-from core.folders.domain.value_objects.symmetric_key import SymmetricKey
+from core.encryption.value_objects.box import Box, LockedBox, OpenBox
+from core.encryption.value_objects.symmetric_key import SymmetricKey
 from core.folders.tests.test_helpers.encryptions import SymmetricEncryptionTest1
 
 

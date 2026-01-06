@@ -5,13 +5,13 @@ from django.db import models
 from django.utils import timezone
 
 from core.auth.models import OrgUser
-from core.folders.domain.aggregates.folder import Folder
-from core.folders.domain.repositories.item import ItemRepository
-from core.folders.domain.value_objects.asymmetric_key import (
+from core.encryption.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
+from core.encryption.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
 )
-from core.folders.infrastructure.asymmetric_encryptions import AsymmetricEncryptionV1
+from core.folders.domain.aggregates.folder import Folder
+from core.folders.domain.repositories.item import ItemRepository
 from core.folders.infrastructure.item_mixins import FolderItemMixin
 from core.questionnaires.models.template import (
     QuestionnaireQuestion,
