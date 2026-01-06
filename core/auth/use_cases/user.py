@@ -44,10 +44,11 @@ def run_user_login_checks(__actor: UserProfile, password: str):
     if hasattr(__actor, "org_user"):
         org_user: OrgUser = __actor.org_user
 
-        # generate key if not existent
-        if org_user.key is None or org_user.key == {}:
+        # generate keyring if not there
+        if not hasattr(org_user, "keyring"):
             org_user.generate_keys(password)
             org_user.save()
+            org_user.keyring.store()
 
         # check if key is encrypted
         key: JsonDict = org_user.key  # type: ignore

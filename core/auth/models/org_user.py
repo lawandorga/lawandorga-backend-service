@@ -141,8 +141,6 @@ class OrgUser(models.Model):
     updated = models.DateTimeField(auto_now=True)
     # custom manager
     objects = OrgUserManager()
-    # helper for saving
-    _save_keyring = False
 
     if TYPE_CHECKING:
         mfa_secret: "MultiFactorAuthenticationSecret"
@@ -355,7 +353,6 @@ class OrgUser(models.Model):
             user=self,
             key=u2,
         )
-        self._save_keyring = True
 
     def regenerate_keys(self, password: str):
         self.keyring.invalidate(password)
