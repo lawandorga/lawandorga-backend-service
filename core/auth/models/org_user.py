@@ -213,21 +213,6 @@ class OrgUser(models.Model):
         return _keys3
 
     @property
-    def raw_folder_keys(self) -> list["EncryptedFolderKeyOfUser"]:
-        from core.folders.infrastructure.folder_repository import DjangoFolderRepository
-
-        r = DjangoFolderRepository()
-        folders = r.get_list(self.org_id)
-
-        folder_keys: list["EncryptedFolderKeyOfUser"] = []
-        for folder in folders:
-            for key in folder.keys:
-                if key.TYPE == "FOLDER" and key.owner_uuid == self.uuid:
-                    folder_keys.append(key)
-
-        return folder_keys
-
-    @property
     def folder_keys(self) -> list[KeyOfUser]:
         from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 
