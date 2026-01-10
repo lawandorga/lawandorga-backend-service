@@ -4,7 +4,6 @@ from django.core.management.base import BaseCommand
 from django.template import loader
 
 
-
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
