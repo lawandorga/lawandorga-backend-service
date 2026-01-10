@@ -101,6 +101,11 @@ class Keyring(models.Model):
         self._is_loaded = True
         return self
 
+    def load_with_decryption_key(self) -> "Keyring":
+        self.load()
+        self.get_decryption_key()
+        return self
+
     def save(self, *args, **kwargs):
         """
         Disabled to allow:
