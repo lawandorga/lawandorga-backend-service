@@ -72,7 +72,6 @@ def check_keys(__actor: OrgUser, collector: EventCollector):
     correct = org_key.test(__actor.keyring.get_private_key())
     correct = __actor.keyring.test_keys() and correct
     if not correct:
-        org_key.encrypt(__actor.keyring.get_public_key())
         with transaction.atomic():
             __actor.lock(collector)
             org_key.save()
