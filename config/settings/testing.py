@@ -9,6 +9,9 @@ STATISTICS_FRONTEND_URL = "http://127.0.0.1:4300"
 #
 CALENDAR_URL = "http://127.0.0.1:8000"
 
+# Login
+# https://docs.djangoproject.com/en/4.1/ref/settings/#login-url
+LOGOUT_REDIRECT_URL = "/login/"
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY
