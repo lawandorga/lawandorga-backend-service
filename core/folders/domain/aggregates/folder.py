@@ -200,10 +200,7 @@ class Folder:
         self.__keys = new_keys
 
     def has_access(self, owner: "OrgUser") -> bool:
-        key = self._get_key(owner)
-        if key is not None and key.is_valid:
-            return True
-        return False
+        return self._has_key(owner)
 
     def has_keys(self, owner: Union["OrgUser", "Group"]) -> bool:
         for u_key in self.__keys:
@@ -243,6 +240,17 @@ class Folder:
         if self.__parent is None or self.__stop_inherit:
             return None
         return self.__parent._get_key(owner)
+
+    def _has_key(self, owner: "OrgUser") -> bool:
+        for u_key in self.__keys:
+            if u_key.owner_uuid == owner.uuid:
+                return True
+        for g_key in self.__group_keys:
+            if owner.keyring.has_group_key(g_key.owner_uuid):
+                return True
+        if self.__parent is None or self.__stop_inherit:
+            return False
+        return self.__parent._has_key(owner)
 
     def _get_key_by_group(self, owner: "Group") -> Optional[EncryptedFolderKeyOfGroup]:
         for key in self.__group_keys:

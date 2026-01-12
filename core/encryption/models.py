@@ -260,6 +260,11 @@ class Keyring(models.Model):
                 return gkey
         return None
 
+    def has_group_key(self, group_id: UUID) -> bool:
+        self.load()
+        group_key = self._find_group_key(group_id)
+        return group_key is not None and not group_key.is_invalidated
+
     def get_group_key(self, group_id: UUID) -> SymmetricKey:
         self.load()
         group_key = self._find_group_key(group_id)
