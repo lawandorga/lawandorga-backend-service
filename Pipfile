@@ -39,7 +39,7 @@ django-oidc-provider = {git = "https://github.com/lawandorga/django-oidc-provide
 pyotp = "==2.9.*"
 ruff = "==0.14.*"
 isort = "==6.*"
-django-stubs = "==5.1.*"
+django-stubs = "==5.2.*"
 pillow = "*"
 weasyprint = "*"
 tach = "*"
