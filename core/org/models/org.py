@@ -1,8 +1,10 @@
 import uuid
+from datetime import timedelta
 from typing import TYPE_CHECKING, Optional
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
+from django.utils import timezone
 
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
@@ -236,6 +238,12 @@ class Org(EncryptedModelMixin, models.Model):
     def accept_member(self, admin: "OrgUser", member: "OrgUser"):
         from core.folders.infrastructure.folder_repository import DjangoFolderRepository
         from core.models import OrgEncryption
+
+        one_year_ago = timezone.now() - timedelta(days=365)
+        if member.user.last_login and member.user.last_login < one_year_ago:
+            raise DomainError(
+                "The user has not logged in for over one year and can therefore not be accepted. Either delete the user or tell the user to login again."
+            )
 
         # create the rlc encryption keys for new member
         private_key_admin = admin.keyring.get_private_key()

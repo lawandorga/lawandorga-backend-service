@@ -1,7 +1,9 @@
+from datetime import timedelta
 from smtplib import SMTPRecipientsRefused
 from typing import Any
 
 from django.db import transaction
+from django.utils import timezone
 
 from core.auth.models import OrgUser, UserProfile
 from core.auth.token_generator import EmailConfirmationTokenGenerator
@@ -99,6 +101,16 @@ def confirm_email(__actor: None, org_user_id: int, token: str):
 @use_case
 def unlock_user(__actor: OrgUser, another_org_user_id: int, collector: EventCollector):
     another_org_user = org_user_from_id(__actor, another_org_user_id)
+
+    one_year_ago = timezone.now() - timedelta(days=365)
+    if (
+        another_org_user.user.last_login
+        and another_org_user.user.last_login < one_year_ago
+    ):
+        raise UseCaseError(
+            "The user has not logged in for over one year and can therefore not be accepted. Either delete the user or tell the user to login again."
+        )
+
     fix_keys(__actor, another_org_user.pk)
     another_org_user.unlock(__actor, collector)
     another_org_user.save()
