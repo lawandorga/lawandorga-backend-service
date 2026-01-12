@@ -243,7 +243,7 @@ class Folder:
 
     def _has_key(self, owner: "OrgUser") -> bool:
         for u_key in self.__keys:
-            if u_key.owner_uuid == owner.uuid:
+            if u_key.owner_uuid == owner.uuid and u_key.is_valid:
                 return True
         for g_key in self.__group_keys:
             if owner.keyring.has_group_key(g_key.owner_uuid):
