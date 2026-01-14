@@ -26,7 +26,7 @@ class Command(BaseCommand):
         user_data = list_map(
             inactive_users,
             lambda u: {
-                "pk": u.pk,
+                "pk": str(u.pk),
                 "name": u.name,
                 "inactive_years": "3",
                 "email": u.email,
