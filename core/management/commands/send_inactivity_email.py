@@ -21,7 +21,7 @@ class Command(BaseCommand):
         three_years_ago = timezone.now() - timedelta(days=365 * inactivity_years)
         inactive_users = UserProfile.objects.filter(
             Q(last_login__lt=three_years_ago)
-            | (Q(last_login__isnull=True) & Q(created__lt=three_years_ago))
+            | ((Q(last_login__isnull=True) & Q(created__lt=three_years_ago)))
         ).order_by("-pk")
         user_data = list_map(
             inactive_users,
