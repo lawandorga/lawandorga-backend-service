@@ -23,12 +23,14 @@ def set_new_password_of_myself(
     if hasattr(__actor, "org_user"):
         org_user = __actor.org_user
 
-    if org_user:
+    if org_user and hasattr(org_user, "keyring"):
         org_user.keyring.invalidate(password)
 
     with transaction.atomic():
         __actor.save()
         if org_user:
+            if not hasattr(org_user, "keyring"):
+                org_user.generate_keys(password)
             org_user.keyring.store()
             org_user.save()
 
