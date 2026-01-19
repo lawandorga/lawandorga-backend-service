@@ -99,6 +99,9 @@ def grant_access_to_group(__actor: OrgUser, group_uuid: UUID, folder_uuid: UUID)
 
     if not folder.has_access(__actor):
         raise UseCaseError("You need access to this folder in order to do that.")
+    
+    if not to.has_member(__actor):
+        raise UseCaseError("You need to be a member of the group to grant it access.")
 
     r = get_repository()
     folder.grant_access_to_group(group=to, by=__actor)
