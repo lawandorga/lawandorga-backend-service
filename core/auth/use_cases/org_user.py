@@ -105,6 +105,11 @@ def confirm_email(__actor: None, org_user_id: int, token: str):
 def unlock_user(__actor: OrgUser, another_org_user_id: int, collector: EventCollector):
     another_org_user = org_user_from_id(__actor, another_org_user_id)
 
+    if not hasattr(another_org_user, "keyring"):
+        raise UseCaseError(
+            "This user does not have any keys and can therefore not be unlocked. Please tell this user to try to login again, which will create new keys. After that the user can be unlocked.",
+        )
+
     one_year_ago = timezone.now() - timedelta(days=365)
     if (
         another_org_user.user.last_login
