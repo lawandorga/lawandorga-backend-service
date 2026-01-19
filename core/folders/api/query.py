@@ -322,16 +322,16 @@ class OutputDetailFolderDetail(BaseModel):
 )
 def query__detail_folder(org_user: OrgUser, data: InputFolderDetail):
     r = get_repository()
-    builder = ContextBuilder(r)
-    builder.build_available_users(org_user.org_id).buid_users_dict()
-    builder.build_parent_folders(org_user.org_id, data.id).build_folder_dicts()
-    builder.build_available_groups(org_user.org_id).build_groups_dict()
-    context = builder.build()
     try:
+        builder = ContextBuilder(r)
+        builder.build_available_users(org_user.org_id).buid_users_dict()
+        builder.build_parent_folders(org_user.org_id, data.id).build_folder_dicts()
+        builder.build_available_groups(org_user.org_id).build_groups_dict()
+        context = builder.build()
         folder = r.retrieve(org_user.org_id, data.id)
+        subfolders = r.get_children(org_user.org_id, folder.uuid)
     except ObjectDoesNotExist:
-        raise ApiError("Folder not found.")
-    subfolders = r.get_children(org_user.org_id, folder.uuid)
+        raise ApiError("Folder or content not found.")
 
     return {
         "folder": folder.as_dict(),
