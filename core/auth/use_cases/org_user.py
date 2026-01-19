@@ -79,6 +79,9 @@ def register_org_user(
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_USERS])
 def delete_user(__actor: OrgUser, other_user_id: int):
     other_user = org_user_from_id(__actor, other_user_id)
+    if not hasattr(other_user, "keyring"):
+        other_user.user.delete()
+        return
     delete_safe, folders = other_user.check_delete_is_safe()
     if not delete_safe:
         raise UseCaseError(
