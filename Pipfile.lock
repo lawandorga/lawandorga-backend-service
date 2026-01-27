@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b227cd5757c69cd1277872f549fbc3d24f3f8c093c10465382d1f33e1d014d71"
+            "sha256": "cb5733724276151ae8cf1a8b769c3e510e8c1cdc042fb3331c8c8c683a5b0192"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -74,11 +74,11 @@
         },
         "asgiref": {
             "hashes": [
-                "sha256:aef8a81283a34d0ab31630c9b7dfe70c812c95eba78171367ca8745e88124734",
-                "sha256:d89f2d8cd8b56dada7d52fa7dc8075baa08fb836560710d38c292a7a3f78c04e"
+                "sha256:13acff32519542a1736223fb79a715acdebe24286d98e8b164a73085f40da2c4",
+                "sha256:1db9021efadb0d9512ce8ffaf72fcef601c7b73a8807a1bb2ef143dc6b14846d"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==3.10.0"
+            "version": "==3.11.0"
         },
         "attrs": {
             "hashes": [
@@ -628,11 +628,11 @@
                 "argon2"
             ],
             "hashes": [
-                "sha256:23254866a5bb9a2cfa6004e8b809ec6246eba4b58a7589bc2772f1bcc8456c7f",
-                "sha256:37e687f7bd73ddf043e2b6b97cfe02fcbb11f2dbb3adccc6a2b18c6daa054d7f"
+                "sha256:74df100784c288c50a2b5cad59631d71214f40f72051d5af3fdf220c20bdbbbe",
+                "sha256:cf85067a64250c95d5f9067b056c5eaa80591929f7e16fbcd997746e40d6c45c"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==5.2.8"
+            "version": "==5.2.10"
         },
         "django-cors-headers": {
             "hashes": [
@@ -676,20 +676,20 @@
         },
         "django-stubs": {
             "hashes": [
-                "sha256:716758ced158b439213062e52de6df3cff7c586f9f9ad7ab59210efbea5dfe78",
-                "sha256:8c230bc5bebee6da282ba8a27ad1503c84a0c4cd2f46e63d149e76d2a63e639a"
+                "sha256:2317a7130afdaa76f6ff7f623650d7f3bf1b6c86a60f95840e14e6ec6de1a7cd",
+                "sha256:c192257120b08785cfe6f2f1c91f1797aceae8e9daa689c336e52c91e8f6a493"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.8'",
-            "version": "==5.1.3"
+            "markers": "python_version >= '3.10'",
+            "version": "==5.2.9"
         },
         "django-stubs-ext": {
             "hashes": [
-                "sha256:3e60f82337f0d40a362f349bf15539144b96e4ceb4dbd0239be1cd71f6a74ad0",
-                "sha256:64561fbc53e963cc1eed2c8eb27e18b8e48dcb90771205180fe29fc8a59e55fd"
+                "sha256:230c51575551b0165be40177f0f6805f1e3ebf799b835c85f5d64c371ca6cf71",
+                "sha256:6db4054d1580657b979b7d391474719f1a978773e66c7070a5e246cd445a25a9"
             ],
-            "markers": "python_version >= '3.8'",
-            "version": "==5.1.3"
+            "markers": "python_version >= '3.10'",
+            "version": "==5.2.9"
         },
         "django-tinymce": {
             "hashes": [
@@ -1610,11 +1610,11 @@
         },
         "sqlparse": {
             "hashes": [
-                "sha256:09f67787f56a0b16ecdbde1bfc7f5d9c3371ca683cfeaa8e6ff60b4807ec9272",
-                "sha256:cf2196ed3418f3ba5de6af7e82c694a9fbdbfecccdfc72e281548517081f16ca"
+                "sha256:12a08b3bf3eec877c519589833aed092e2444e68240a3577e8e26148acc7b1ba",
+                "sha256:e20d4a9b0b8585fdf63b10d30066c7c94c5d7a7ec47c889a2d83a3caa93ff28e"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==0.5.3"
+            "version": "==0.5.5"
         },
         "tach": {
             "hashes": [
@@ -1740,11 +1740,11 @@
         },
         "types-pyyaml": {
             "hashes": [
-                "sha256:7f07622dbd34bb9c8b264fe860a17e0efcad00d50b5f27e93984909d9363498c",
-                "sha256:fa4d32565219b68e6dee5f67534c722e53c00d1cfc09c435ef04d7353e1e96e6"
+                "sha256:0f8b54a528c303f0e6f7165687dd33fafa81c807fcac23f632b63aa624ced1d3",
+                "sha256:e7d4d9e064e89a3b3cae120b4990cd370874d2bf12fa5f46c97018dd5d3c9ab6"
             ],
-            "markers": "python_version >= '3.8'",
-            "version": "==6.0.12.20241230"
+            "markers": "python_version >= '3.9'",
+            "version": "==6.0.12.20250915"
         },
         "types-requests": {
             "hashes": [
