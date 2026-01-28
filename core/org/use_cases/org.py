@@ -15,16 +15,13 @@ def accept_member_to_org(__actor: OrgUser, user_id: int):
     user = org_user_from_id(__actor, user_id)
     org: Org = __actor.org
     group = org.default_group_for_new_users
-    if group:
-        if not group.has_member(__actor):
-            raise UseCaseError(
-                f"You must be member of the default group '{group.name}' to add new users."
-            )
+    if group and not group.has_member(__actor):
+        raise UseCaseError(
+            f"You must be member of the default group '{group.name}' to add new users."
+        )
     org.accept_member(__actor, user)
     if group:
         group.add_member(new_member=user, by=__actor)
-        group.refresh_from_db()
-        assert group.has_member(user)
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_GROUPS])

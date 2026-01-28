@@ -86,6 +86,7 @@ def test_accepted_member_assigned_to_default_group(user, org_user, db):
     org.default_group_for_new_users = group
     org.save()
     org_user.refresh_from_db()
+    group.add_member(org_user)
     accept_member_to_org(org_user, another_user["org_user"].pk)
     group.refresh_from_db()
     assert group.has_member(another_user["org_user"])
