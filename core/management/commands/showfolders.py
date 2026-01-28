@@ -17,4 +17,4 @@ class Command(BaseCommand):
         for f in folders:
             total_keys = len(f.keys) + len(f.group_keys) + 1 if f.parent else 0
             if f.has_access(user) and total_keys <= 3:
-                print(f.parent_str)
+                self.stdout.write(f.parent_str)

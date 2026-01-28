@@ -6,6 +6,7 @@ from core.auth.domain.user_key import UserKey
 from core.auth.models import StatisticUser
 from core.data_sheets.models import DataSheet, DataSheetTemplate
 from core.folders.domain.aggregates.folder import Folder
+from core.folders.domain.repositories.folder import FolderRepository
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.injections import BUS
 from core.models import OrgUser, UserProfile
@@ -79,11 +80,18 @@ def create_raw_group(
 
 
 def create_raw_folder(
-    user: Optional[OrgUser] = None, name="Dummy's Folder", stop_inherit=False
+    user: Optional[OrgUser] = None,
+    name="Dummy's Folder",
+    stop_inherit=False,
+    repo: FolderRepository | None = None,
+    save=False,
 ):
     assert user is not None
     folder = Folder.create(name, user.org_id, stop_inherit=stop_inherit)
     folder.grant_access(user)
+    if save:
+        assert repo is not None
+        repo.save(folder)
     return folder
 
 

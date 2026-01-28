@@ -69,9 +69,9 @@ def test_name_change_disable_saved(db, user, repository):
 
 
 def test_closures_saved_and_deleted(db, user, repository):
-    folder1 = Folder.create(name="New Folder", org_pk=user.org_id)
+    folder1 = Folder.create(name="1", org_pk=user.org_id)
     folder1.grant_access(to=user)
-    folder2 = Folder.create(name="New Folder", org_pk=user.org_id)
+    folder2 = Folder.create(name="2", org_pk=user.org_id)
     folder2.grant_access(to=user)
     folder2.set_parent(folder1, user)
 
@@ -82,7 +82,7 @@ def test_closures_saved_and_deleted(db, user, repository):
     f2 = FOL_Folder.objects.get(uuid=folder2.uuid)
     assert FOL_ClosureTable.objects.filter(parent_id=f1.pk, child_id=f2.pk).exists()
 
-    folder3 = Folder.create(name="New Folder", org_pk=user.org_id)
+    folder3 = Folder.create(name="3", org_pk=user.org_id)
     folder3.grant_access(to=user)
     folder2.move(folder3, user)
     repository.save(folder3)

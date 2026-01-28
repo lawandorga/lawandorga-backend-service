@@ -28,7 +28,8 @@ class DjangoFolderRepository(FolderRepository):
         # find the parent
         parent: Optional[Folder] = None
         if db_folder._parent_id is not None:
-            parent_db = folders[db_folder._parent_id]
+            parent_db = folders.get(db_folder._parent_id)
+            assert parent_db is not None
             parent = self.__db_folder_to_domain(parent_db, folders)
 
         # revive keys
@@ -219,27 +220,47 @@ class DjangoFolderRepository(FolderRepository):
 
         return folders_list
 
-    def __get_closures_from_folder(
-        self, folder: Folder, folder_pk: int
-    ) -> list[FOL_ClosureTable]:
-        parent_uuids = folder.parent_uuids
-        ids = FOL_Folder.objects.filter(uuid__in=parent_uuids).values_list(
-            "pk", flat=True
-        )
-        closures = list_map(
-            ids, lambda id: FOL_ClosureTable(parent_id=id, child_id=folder_pk)
-        )
-        return closures
-
     def save(self, folder: Folder):
         assert folder.org_pk is not None
         db_folder = self.__db_folder_from_domain(folder)
         with transaction.atomic():
             db_folder.save()
             assert db_folder.pk is not None
-            FOL_ClosureTable.objects.filter(child_id=db_folder.pk).delete()
-            closures = self.__get_closures_from_folder(folder, db_folder.pk)
-            FOL_ClosureTable.objects.bulk_create(closures)
+
+            if db_folder._parent_id is not None:
+                # now this is some weird looking stuff but
+                # it basically makes sure that after a folder move
+                # the closure table is updated accordingly
+                ancestor_ids = [db_folder._parent_id]
+                ancestor_ids.extend(
+                    FOL_ClosureTable.objects.filter(
+                        child__pk=db_folder._parent_id
+                    ).values_list("parent_id", flat=True)
+                )
+                descendant_ids = [db_folder.pk]
+                descendant_ids.extend(
+                    FOL_ClosureTable.objects.filter(
+                        parent__pk=db_folder.pk
+                    ).values_list("child_id", flat=True)
+                )
+                new_closures = []
+                for ancestor_id in ancestor_ids:
+                    for descendant_id in descendant_ids:
+                        new_closures.append(
+                            FOL_ClosureTable(
+                                parent_id=ancestor_id, child_id=descendant_id
+                            )
+                        )
+                child_pks = FOL_ClosureTable.objects.filter(
+                    parent__pk=db_folder._parent_id
+                ).values_list("child__pk", flat=True)
+                FOL_ClosureTable.objects.filter(child__pk=db_folder.pk).delete()
+                FOL_ClosureTable.objects.filter(child__pk__in=child_pks).exclude(
+                    parent__pk__in=child_pks
+                ).delete()
+                FOL_ClosureTable.objects.bulk_create(
+                    new_closures, ignore_conflicts=True
+                )
 
     def delete(self, folder: Folder, repositories: list[ItemRepository]):
         assert folder.org_pk is not None

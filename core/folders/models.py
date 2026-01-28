@@ -43,6 +43,8 @@ class FOL_Folder(models.Model):
 
 
 class FOL_ClosureTable(models.Model):
+    # note: this is not a true true closure table since it does not
+    # store depth and also it does not self reference
     parent = models.ForeignKey(  # type: ignore
         FOL_Folder,
         related_name="children_connections",

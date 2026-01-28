@@ -75,4 +75,4 @@ class Command(BaseCommand):
                     html_message=html_message,
                 )
             except Exception as e:
-                print("ERROR:", e)
+                self.stdout.write(f"ERROR: {e}")
