@@ -134,3 +134,12 @@ def create_chunks(items: list[create_chunks_I], n) -> Iterable[list[create_chunk
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(items), n):
         yield items[i : i + n]
+
+
+list_sort_I = TypeVar("list_sort_I")
+
+
+def list_sort(
+    items: list[list_sort_I], key: Callable[[list_sort_I], Any | list[Any]]
+) -> list[list_sort_I]:
+    return sorted(items, key=key)

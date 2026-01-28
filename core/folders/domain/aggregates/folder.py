@@ -13,7 +13,7 @@ from core.folders.domain.value_objects.folder_key import (
 from core.folders.domain.value_objects.parent_key import ParentKey
 from core.seedwork.domain_layer import DomainError
 
-from seedwork.functional import list_find
+from seedwork.functional import list_find, list_sort
 from seedwork.types import JsonDict
 
 if TYPE_CHECKING:
@@ -125,7 +125,7 @@ class Folder:
 
     @property
     def items(self) -> list[FolderItem]:
-        return self.__items
+        return list_sort(self.__items, lambda x: x.name.lower())
 
     @property
     def encryption_version(self) -> Optional[str]:
