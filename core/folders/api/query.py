@@ -126,7 +126,7 @@ class ContextBuilder:
         self.context["groups_dict"] = groups_dict
         return self
 
-    def buid_users_dict(self):
+    def build_users_dict(self):
         users_dict = {u.uuid: u for u in self.context["available_users"]}
         self.context["users_dict"] = users_dict
         return self
@@ -239,7 +239,7 @@ def get_page(context: Context, user: OrgUser):
 def query__list_folders(org_user: OrgUser):
     r = get_repository()
     builder = ContextBuilder(r)
-    builder.build_available_users(org_user.org_id).buid_users_dict()
+    builder.build_available_users(org_user.org_id).build_users_dict()
     builder.build_available_groups(org_user.org_id).build_groups_dict()
     builder.build_folders(org_user.org_id).build_folder_dicts()
     context = builder.build()
@@ -322,16 +322,18 @@ class OutputDetailFolderDetail(BaseModel):
 )
 def query__detail_folder(org_user: OrgUser, data: InputFolderDetail):
     r = get_repository()
+
     try:
-        builder = ContextBuilder(r)
-        builder.build_available_users(org_user.org_id).buid_users_dict()
-        builder.build_parent_folders(org_user.org_id, data.id).build_folder_dicts()
-        builder.build_available_groups(org_user.org_id).build_groups_dict()
-        context = builder.build()
         folder = r.retrieve(org_user.org_id, data.id)
-        subfolders = r.get_children(org_user.org_id, folder.uuid)
     except ObjectDoesNotExist:
-        raise ApiError("Folder or content not found.")
+        raise ApiError("The folder could not be found.", status=404)
+
+    subfolders = r.get_children(org_user.org_id, folder.uuid)
+    builder = ContextBuilder(r)
+    builder.build_available_users(org_user.org_id).build_users_dict()
+    builder.build_available_groups(org_user.org_id).build_groups_dict()
+    builder.build_parent_folders(org_user.org_id, data.id).build_folder_dicts()
+    context = builder.build()
 
     return {
         "folder": folder.as_dict(),

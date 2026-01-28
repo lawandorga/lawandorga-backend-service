@@ -1,7 +1,6 @@
 from typing import Any, Optional
 from uuid import UUID
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils import timezone
 
@@ -29,10 +28,7 @@ class DjangoFolderRepository(FolderRepository):
         # find the parent
         parent: Optional[Folder] = None
         if db_folder._parent_id is not None:
-            try:
-                parent_db = folders[db_folder._parent_id]
-            except KeyError:
-                raise ObjectDoesNotExist("parent folder not found")
+            parent_db = folders[db_folder._parent_id]
             parent = self.__db_folder_to_domain(parent_db, folders)
 
         # revive keys
