@@ -227,37 +227,33 @@ class DjangoFolderRepository(FolderRepository):
             db_folder.save()
             assert db_folder.pk is not None
 
+            descendant_ids = [db_folder.pk]
+            descendant_ids.extend(
+                FOL_ClosureTable.objects.filter(
+                    parent__pk=db_folder.pk
+                ).values_list("child_id", flat=True)
+            )
+            
+            FOL_ClosureTable.objects.filter(
+                child__pk__in=descendant_ids
+            ).exclude(
+                parent__pk__in=descendant_ids
+            ).delete()
+
             if db_folder._parent_id is not None:
-                # now this is some weird looking stuff but
-                # it basically makes sure that after a folder move
-                # the closure table is updated accordingly
                 ancestor_ids = [db_folder._parent_id]
                 ancestor_ids.extend(
                     FOL_ClosureTable.objects.filter(
                         child__pk=db_folder._parent_id
                     ).values_list("parent_id", flat=True)
                 )
-                descendant_ids = [db_folder.pk]
-                descendant_ids.extend(
-                    FOL_ClosureTable.objects.filter(
-                        parent__pk=db_folder.pk
-                    ).values_list("child_id", flat=True)
-                )
-                new_closures = []
-                for ancestor_id in ancestor_ids:
-                    for descendant_id in descendant_ids:
-                        new_closures.append(
-                            FOL_ClosureTable(
-                                parent_id=ancestor_id, child_id=descendant_id
-                            )
-                        )
-                child_pks = FOL_ClosureTable.objects.filter(
-                    parent__pk=db_folder._parent_id
-                ).values_list("child__pk", flat=True)
-                FOL_ClosureTable.objects.filter(child__pk=db_folder.pk).delete()
-                FOL_ClosureTable.objects.filter(child__pk__in=child_pks).exclude(
-                    parent__pk__in=child_pks
-                ).delete()
+                
+                new_closures = [
+                    FOL_ClosureTable(parent_id=ancestor_id, child_id=descendant_id)
+                    for ancestor_id in ancestor_ids
+                    for descendant_id in descendant_ids
+                ]
+                
                 FOL_ClosureTable.objects.bulk_create(
                     new_closures, ignore_conflicts=True
                 )
