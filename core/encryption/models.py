@@ -33,10 +33,8 @@ class KeyringManager(models.Manager["Keyring"]):
         keyring = (
             self.filter(user=user)
             .prefetch_related(
-                "object_keys",
                 "group_keys",
                 "group_keys__group",
-                "group_keys__group__object_keys",
             )
             .get()
         )
