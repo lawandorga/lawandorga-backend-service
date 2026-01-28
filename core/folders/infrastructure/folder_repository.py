@@ -229,14 +229,12 @@ class DjangoFolderRepository(FolderRepository):
 
             descendant_ids = [db_folder.pk]
             descendant_ids.extend(
-                FOL_ClosureTable.objects.filter(
-                    parent__pk=db_folder.pk
-                ).values_list("child_id", flat=True)
+                FOL_ClosureTable.objects.filter(parent__pk=db_folder.pk).values_list(
+                    "child_id", flat=True
+                )
             )
-            
-            FOL_ClosureTable.objects.filter(
-                child__pk__in=descendant_ids
-            ).exclude(
+
+            FOL_ClosureTable.objects.filter(child__pk__in=descendant_ids).exclude(
                 parent__pk__in=descendant_ids
             ).delete()
 
@@ -247,13 +245,13 @@ class DjangoFolderRepository(FolderRepository):
                         child__pk=db_folder._parent_id
                     ).values_list("parent_id", flat=True)
                 )
-                
+
                 new_closures = [
                     FOL_ClosureTable(parent_id=ancestor_id, child_id=descendant_id)
                     for ancestor_id in ancestor_ids
                     for descendant_id in descendant_ids
                 ]
-                
+
                 FOL_ClosureTable.objects.bulk_create(
                     new_closures, ignore_conflicts=True
                 )
