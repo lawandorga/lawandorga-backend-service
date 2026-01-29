@@ -56,7 +56,10 @@ DATABASES = {
         "PORT": env.int("DB_PORT"),
         "TEST": {"NAME": "test_{}".format(RUNTIME)},
         "OPTIONS": {
-            "sslmode": "require",
+            "sslmode": "verify-full",
+            "sslrootcert": os.path.join(
+                BASE_DIR, "static/dist/lawandorga-backend-service.cer"
+            ),
         },
     }
 }
