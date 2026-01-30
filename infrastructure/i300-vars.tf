@@ -5,7 +5,7 @@ variable "name" {
 
 variable "certificate_name" {
   type = string
-  default = "backend-certificate"
+  default = "lawandorga-backend-service-certificate"
 }
 
 variable "image_version" {
