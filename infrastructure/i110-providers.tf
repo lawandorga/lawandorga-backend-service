@@ -77,7 +77,7 @@ provider "kubernetes" {
 }
 
 provider "helm" {
-  kubernetes {
+  kubernetes = {
     host                   = data.scaleway_k8s_cluster.cluster.kubeconfig.0.host
     token                  = data.scaleway_k8s_cluster.cluster.kubeconfig.0.token
     cluster_ca_certificate = base64decode(data.scaleway_k8s_cluster.cluster.kubeconfig.0.cluster_ca_certificate)
