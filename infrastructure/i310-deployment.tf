@@ -36,7 +36,14 @@ resource "kubernetes_deployment_v1" "deployment" {
               name = kubernetes_manifest.secret.manifest["metadata"]["name"]
             }
           }
-
+          env {
+            name  = "PIPELINE_IMAGE"
+            value = var.image_version
+          }
+          env {
+            name  = "PIPELINE_SERVICE"
+            value = var.name
+          }
           port {
             container_port = 8080
           }
