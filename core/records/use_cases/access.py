@@ -6,6 +6,7 @@ from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_ACCESS_REQUES
 from core.records.models import RecordsAccessRequest
 from core.records.use_cases.finders import find_access_by_uuid, find_record_by_uuid
 from core.seedwork.use_case_layer import use_case
+from core.seedwork.use_case_layer.error import UseCaseError
 
 
 @use_case
@@ -20,6 +21,10 @@ def grant_access_request(__actor: OrgUser, access_uuid: UUID, r: FolderRepositor
     access = find_access_by_uuid(__actor, access_uuid)
     record = access.record
     folder = r.retrieve(__actor.org_id, record.folder_uuid)
+    if not folder.has_access(__actor):
+        raise UseCaseError(
+            "You have no access to the record you want to grant access to."
+        )
     if not folder.has_access(access.requestor):
         folder.grant_access(access.requestor, __actor)
         r.save(folder)
