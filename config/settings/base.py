@@ -179,7 +179,7 @@ OIDC_IDTOKEN_INCLUDE_CLAIMS = True
 
 # mail errors to the admins
 # https://docs.djangoproject.com/en/3.2/ref/settings/#admins
-ADMINS = [("Daniel Mössner", "it@law-orga.de")]
+ADMINS = [("Daniel Mössner", "it@law-orga.de"), ("Johannes Stock", "johannes.stock@tuerantuer.org")]
 
 # TinyMCE
 # https://django-tinymce.readthedocs.io/en/latest/installation.html#configuration
