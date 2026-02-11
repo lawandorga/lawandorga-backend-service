@@ -182,6 +182,7 @@ OIDC_IDTOKEN_INCLUDE_CLAIMS = True
 ADMINS = [
     ("Daniel Mössner", "it@law-orga.de"),
     ("Johannes Stock", "johannes.stock@tuerantuer.org"),
+    ("Leandra Hahn", "leandra.hahn@tuerantuer.org"),
 ]
 
 # TinyMCE
