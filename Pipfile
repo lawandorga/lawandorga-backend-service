@@ -34,7 +34,7 @@ pydantic = {extras = ["email"], version = "==2.12.*"}
 dnspython = "==2.7.*"
 bleach = "==6.2.*"
 types-bleach = "==6.2.*"
-pytest-xdist = "==3.6.*"
+pytest-xdist = "==3.8.*"
 django-oidc-provider = {git = "https://github.com/lawandorga/django-oidc-provider"}
 pyotp = "==2.9.*"
 ruff = "==0.14.*"
