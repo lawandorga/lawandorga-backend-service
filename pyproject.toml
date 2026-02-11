@@ -20,7 +20,7 @@ profile = "black"
 
 [tool.ruff]
 
-line-length = 500
+line-length = 320
 exclude = [
     "__init__.py",
     "config/settings/local.py",
