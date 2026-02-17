@@ -181,8 +181,7 @@ OIDC_IDTOKEN_INCLUDE_CLAIMS = True
 # https://docs.djangoproject.com/en/3.2/ref/settings/#admins
 ADMINS = [
     ("Daniel Mössner", "it@law-orga.de"),
-    ("Johannes Stock", "johannes.stock@tuerantuer.org"),
-    ("Leandra Hahn", "leandra.hahn@tuerantuer.org"),
+    ("Team von Tür an Tür - Digitalfabrik", "law-orga@ŧuerantuer.org"),
 ]
 
 # TinyMCE
