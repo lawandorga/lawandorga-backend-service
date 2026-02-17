@@ -216,9 +216,7 @@ def get_records_created_and_closed(org_user: OrgUser, data: InputCreatedAndClose
         group by strftime('%Y/%m', se.closed_at), t.org_id
         ) t2 on t1.month = t2.month
         order by t1.month
-        """.format(
-            org_user.org.pk, org_user.org.pk
-        )
+        """.format(org_user.org.pk, org_user.org.pk)
     else:
         statement = """
         select t1.month as month, t2.month as month, created, closed
@@ -239,9 +237,7 @@ def get_records_created_and_closed(org_user: OrgUser, data: InputCreatedAndClose
         group by to_char(se.closed_at, 'YYYY/MM'), t.org_id
         ) t2 on t1.month = t2.month
         order by t1.month
-        """.format(
-            org_user.org.pk, org_user.org.pk
-        )
+        """.format(org_user.org.pk, org_user.org.pk)
     result = execute_statement(statement)
     created_and_closed = list_map(
         result,

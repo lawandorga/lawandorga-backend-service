@@ -30,9 +30,7 @@ def query__user_actions_month(org_user: OrgUser):
             and ru.org_id = {}
             group by u.email
             order by count(*) desc;
-            """.format(
-            org_user.org_id
-        )
+            """.format(org_user.org_id)
     else:
         statement = """
             select u.email as email, count(*) as actions
@@ -44,9 +42,7 @@ def query__user_actions_month(org_user: OrgUser):
             and ru.org_id = {}
             group by u.email
             order by count(*) desc;
-            """.format(
-            org_user.org_id
-        )
+            """.format(org_user.org_id)
     data = execute_statement(statement)
     data = map(lambda x: {"email": x[0], "actions": x[1]}, data)
     return list(data)
@@ -75,9 +71,7 @@ def query__record_states(org_user: OrgUser):
                  group by record.id, state.record_id, state.value
              ) as tmp
              group by state
-             """.format(
-        org_user.org_id
-    )
+             """.format(org_user.org_id)
     data = execute_statement(statement)
     data = map(lambda x: {"state": x[0], "amount": x[1]}, data)
     return list(data)

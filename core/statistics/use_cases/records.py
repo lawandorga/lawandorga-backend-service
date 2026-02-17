@@ -63,9 +63,7 @@ def create_statistic(__actor: StatisticUser, field_1: str, value_1: str, field_2
         group by t1.id, t2.value
     ) m
     group by value;
-    """.format(
-        cleaned_field_1, cleaned_value_1, cleaned_field_2
-    )
+    """.format(cleaned_field_1, cleaned_value_1, cleaned_field_2)
     data = execute_statement(statement)
     error = bool(sum(map(lambda x: x[2], data)))
     ret = {
