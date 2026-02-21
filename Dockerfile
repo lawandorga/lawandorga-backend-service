@@ -26,13 +26,13 @@ RUN apt-get install -y --no-install-recommends build-essential libcairo2 libpang
 # copy files
 RUN mkdir /django && chown python:python /django
 WORKDIR /django
-COPY --chown=python:python --chmod=755 --from=base /django/.venv /django/.venv
-COPY --chown=python:python config /django/config
-COPY --chown=python:python core /django/core
-COPY --chown=python:python messagebus /django/messagebus
-COPY --chown=python:python seedwork /django/seedwork
-COPY --chown=python:python static /django/static
-COPY --chown=python:python templates /django/templates
+COPY --chown=root:root --chmod=755 --from=base /django/.venv /django/.venv
+COPY --chown=root:root config /django/config
+COPY --chown=root:root core /django/core
+COPY --chown=root:root messagebus /django/messagebus
+COPY --chown=root:root seedwork /django/seedwork
+COPY --chown=root:root static /django/static
+COPY --chown=root:root templates /django/templates
 COPY --chown=python:python tmp /django/tmp
 COPY manage.py /django/manage.py
 
