@@ -36,7 +36,7 @@ class Command(BaseCommand):
         org_id = input("Enter the id of the org you want to empty: ")
         try:
             org = Org.objects.get(pk=org_id)
-        except (ObjectDoesNotExist, ValueError):
+        except ObjectDoesNotExist, ValueError:
             raise CommandError("No org was found with this id.")
         empty = input(
             "Do you want to empty org '{name}' with {records} records, "

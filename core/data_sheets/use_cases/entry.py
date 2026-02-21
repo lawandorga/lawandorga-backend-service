@@ -69,7 +69,7 @@ def create_or_update_entry(
     field = find_field_from_uuid(__actor, field_id)
     try:
         field.create_or_update_entry(__actor, record_id, value)
-    except (IntegrityError, ObjectDoesNotExist):
+    except IntegrityError, ObjectDoesNotExist:
         raise UseCaseError(
             "Error: Data Sheet might be deleted. Please reload the page."
         )

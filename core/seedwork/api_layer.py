@@ -136,7 +136,7 @@ def get_data_from_request(request: HttpRequest) -> dict[str, Any]:
         body_str = request.body.decode("utf-8")
         body_dict = json.loads(body_str)
         data.update(body_dict)
-    except (JSONDecodeError, RawPostDataException):
+    except JSONDecodeError, RawPostDataException:
         for key, value in request.POST.dict().items():
             val: Any = value
             if "||EMPTYARRAY||" in val:

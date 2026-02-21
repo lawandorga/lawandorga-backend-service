@@ -14,7 +14,7 @@ class SessionStore(DBStore):
         obj: CustomSession = super().create_model_instance(data)  # type: ignore
         try:
             user_id = int(data["_auth_user_id"])
-        except (ValueError, TypeError, KeyError):
+        except ValueError, TypeError, KeyError:
             user_id = None
         obj.user_id = user_id
         return obj

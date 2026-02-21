@@ -21,7 +21,7 @@ class Command(BaseCommand):
         org_id = input("Enter the id of the org you want to delete: ")
         try:
             org = Org.objects.get(pk=org_id)
-        except (ObjectDoesNotExist, ValueError):
+        except ObjectDoesNotExist, ValueError:
             raise CommandError("No org was found with this id.")
         delete = input(
             "Do you want to delete org '{name}' with {records} records, "
