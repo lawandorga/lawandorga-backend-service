@@ -3,15 +3,13 @@ FROM python:3.14 AS base
 
 # workdir related stuff stuff
 WORKDIR /django
-RUN python -m venv /django/venv
-ENV PATH="/django/venv/bin:$PATH"
+ENV PATH="/django/.venv/bin:$PATH"
 
 # install requirements
-COPY Pipfile /django/Pipfile
-COPY Pipfile.lock /django/Pipfile.lock
-RUN pip install --upgrade pip pipenv
-RUN pipenv requirements > /django/requirements.txt
-RUN pip install -r /django/requirements.txt
+COPY pyproject.toml /django/pyproject.toml
+COPY uv.lock /django/uv.lock
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+RUN uv sync
 
 # build image
 FROM python:3.14-slim AS build
@@ -28,7 +26,7 @@ RUN apt-get install -y --no-install-recommends build-essential libcairo2 libpang
 # copy files
 RUN mkdir /django && chown python:python /django
 WORKDIR /django
-COPY --chown=python:python --from=base /django/venv /django/venv
+COPY --chown=python:python --from=base /django/.venv /django/.venv
 COPY --chown=python:python config /django/config
 COPY --chown=python:python core /django/core
 COPY --chown=python:python messagebus /django/messagebus
@@ -42,7 +40,7 @@ COPY manage.py /django/manage.py
 USER 999
 
 # make commands available
-ENV PATH="/django/venv/bin:$PATH"
+ENV PATH="/django/.venv/bin:$PATH"
 
 # create static files
 RUN python manage.py collectstatic --noinput

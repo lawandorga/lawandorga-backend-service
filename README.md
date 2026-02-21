@@ -22,23 +22,26 @@ Install the required Python packages:
 
 `pip install Django pytz oidc-provider djangorestframework pydantic django-storages django-solo django-cors-headers ics cryptography bleach pyotp whitenoise weasyprint argon2-cffi`
 
+Make sure you have uv installed:
+
+`https://docs.astral.sh/uv/getting-started/installation/`
+
 ### Local Setup
 
 1. `git clone https://github.com/lawandorga/lawandorga-backend-service.git`
 2. `cd lawandorga-backend-service`
-3. `pipenv install`
+3. `uv sync`
 4. Create `tmp/media/`, `tmp/static/`, `tmp/logs`
-5. Run `pipenv shell`
-6. Run `python manage.py migrate`
-7. Run `python manage.py create_dummy_data`
-8. Run `./run.sh`
+5. Run `uv run python manage.py migrate`
+6. Run `uv run python manage.py create_dummy_data`
+7. Run `./run.sh`
 
 The command `create_dummy_data` creates an user with email `dummy@law-orga.de` and password `qwe123`. You can use it to login into the development frontend.
 
 ### Local Dev
 
 1. `git pull`
-2. `pipenv install`
+2. `uv sync`
 3. `python manage.py migrate`
 4. `python manage.py runserver`
 

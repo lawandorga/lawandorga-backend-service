@@ -1,7 +1,6 @@
 name: Commit Stage - Run Tests
 
-on:
-  workflow_call
+on: workflow_call
 
 jobs:
   test:
@@ -27,9 +26,8 @@ jobs:
       - name: Install Dependencies
         if: steps.cache-packages.outputs.cache-hit != 'true'
         run: |
-          pip install --upgrade pip pipenv
-          pipenv requirements > requirements.txt
-          pip install -r requirements.txt
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv sync
 
       - name: Test
         run: |
