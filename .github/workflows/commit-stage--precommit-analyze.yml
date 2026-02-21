@@ -13,7 +13,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set Up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.14"
 
@@ -30,13 +30,13 @@ jobs:
           uv sync
 
       - name: Run Black
-        run: black . --check
+        run: uv run black . --check
 
       - name: Run Ruff
-        run: ruff check .
+        run: uv run ruff check .
 
       - name: Run Isort
-        run: isort .
+        run: uv run isort .
 
       - name: Run MyPy
-        run: mypy .
+        run: uv run mypy .
