@@ -12,22 +12,30 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
       - name: Set Up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.14"
+          python-version-file: ".python-version"
 
-      - uses: actions/cache@v4
-        id: cache-packages
+      - name: Restore UV Cache
+        uses: actions/cache@v5
         with:
-          path: ${{ env.pythonLocation }}
-          key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
+          path: /tmp/.uv-cache
+          key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
+            uv-${{ runner.os }}
 
       - name: Install Dependencies
-        if: steps.cache-packages.outputs.cache-hit != 'true'
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          uv sync
+        run: uv sync
+
+      - name: Minimize UV Cache
+        run: uv cache prune --ci
 
       - name: Run Black
         run: uv run black . --check
