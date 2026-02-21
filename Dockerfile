@@ -8,8 +8,7 @@ ENV PATH="/django/.venv/bin:$PATH"
 # install requirements
 COPY pyproject.toml /django/pyproject.toml
 COPY uv.lock /django/uv.lock
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-RUN source $HOME/.local/bin/env
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 RUN uv sync
 
 # build image
