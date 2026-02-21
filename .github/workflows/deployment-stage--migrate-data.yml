@@ -1,7 +1,6 @@
 name: Deployment Stage - Migrate Data
 
-on:
-  workflow_dispatch
+on: workflow_dispatch
 
 jobs:
   migrate:
@@ -31,7 +30,7 @@ jobs:
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.14"
 
       - uses: actions/cache@v4
         id: cache-packages
