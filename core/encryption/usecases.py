@@ -64,12 +64,6 @@ def _test_folder_keys(u: OrgUser):
                 if not result:
                     folder.invalidate_keys_of(u)
                     r.save(folder)
-                elif key.is_valid is False:
-                    # super edge case of some db operations have been done
-                    # by hand and login works again and old keys can be set
-                    # to valid again
-                    key._is_valid = True
-                    r.save(folder)
 
 
 @use_case
