@@ -5,7 +5,7 @@ from core.models import UserProfile
 
 
 class LoggedPath(models.Model):
-    path = models.CharField(max_length=200)
+    path = models.CharField(max_length=200, db_index=True)
     user = models.ForeignKey(
         UserProfile,
         null=True,
@@ -13,7 +13,7 @@ class LoggedPath(models.Model):
         on_delete=models.CASCADE,
         related_name="logged_paths",
     )
-    time = models.DateTimeField(auto_now_add=True)
+    time = models.DateTimeField(auto_now_add=True, db_index=True)
     status = models.IntegerField(default=0)
     method = models.CharField(default="UNKNOWN", max_length=20)
 

@@ -46,9 +46,13 @@ def handle_events(context: CallbackContext, collector: EventCollector):
 
 
 def log_usecase(context: CallbackContext):
-    if hasattr(context.actor, "user") and isinstance(context.actor.user, UserProfile):
+    if isinstance(context.actor, OrgUser) or isinstance(context.actor, UserProfile):
         LoggedPath.objects.create(
-            user=context.actor.user,
+            user=(
+                context.actor
+                if isinstance(context.actor, UserProfile)
+                else context.actor.user
+            ),
             path=context.fn_name,
             status=200 if context.success else 400,
             method="USECASE",

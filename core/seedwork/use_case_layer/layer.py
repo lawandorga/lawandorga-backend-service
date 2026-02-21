@@ -16,6 +16,8 @@ from core.seedwork.use_case_layer.injector import (
     inject_kwargs,
 )
 
+from seedwork.functional import list_map
+
 logger = getLogger("usecase")
 
 injections = import_string(settings.USECASE_INJECTIONS)
@@ -80,14 +82,11 @@ def use_case(
             context.injections[CallbackContext] = callback_context
 
             def run_callbacks():
-                for callback in callbacks:
-                    callback(
-                        **inject_kwargs(
-                            callback,
-                            {},
-                            context,
-                        )
-                    )
+                inj_callbacks = list_map(
+                    callbacks, lambda c: (c, inject_kwargs(c, {}, context))
+                )
+                for c, inj_kwargs in inj_callbacks:
+                    c(**inj_kwargs)
 
             try:
                 ret = validate_call(config={"arbitrary_types_allowed": True})(

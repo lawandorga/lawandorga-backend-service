@@ -1,10 +1,14 @@
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from pydantic import ValidationError
 
+from core.injections import BUS
 from core.seedwork.use_case_layer import use_case
+from core.seedwork.use_case_layer.callbacks import CallbackContext
 from core.seedwork.use_case_layer.injector import InjectionContext
+from messagebus.domain.collector import EventCollector
+from messagebus.domain.event import Event
 
 
 class Actor:
@@ -174,7 +178,7 @@ def test_injections_injecting_themselfes():
 
 
 class UniqueObject:
-    def __init__(self) -> None:
+    def __init__(self):
         self.id = uuid4()
 
 
@@ -222,7 +226,7 @@ def test_callback_injection_different_from_usecase_injection():
 
 
 class ActorObject:
-    def __init__(self, actor: Actor) -> None:
+    def __init__(self, actor: Actor):
         self.id = uuid4()
         self.actor = actor
 
@@ -242,3 +246,50 @@ def test_callback_injection_can_inject_with_user():
         assert actor_object.actor == __actor
 
     t6(__actor=Actor())
+
+
+class _TestEvent(Event):
+    uuid: UUID
+
+
+def _test_callbacks_context_is_not_overwritten_handle_events(
+    context: CallbackContext, collector: EventCollector
+):
+    if not context.success:
+        return
+    while event := collector.pop():
+        BUS.handle(event)
+
+
+def test_callbacks_context_is_not_overwritten():
+    CONTEXTS = []
+
+    def store_context(context: CallbackContext):
+        CONTEXTS.append(context)
+
+    callbacks = [
+        _test_callbacks_context_is_not_overwritten_handle_events,
+        store_context,
+    ]
+    injections = InjectionContext(
+        {
+            EventCollector: lambda: EventCollector(),
+        }
+    )
+
+    @use_case(callbacks=callbacks, context=injections)
+    def collect_event(__actor: Actor, collector: EventCollector):
+        collector.collect(_TestEvent(uuid=uuid4()))
+
+    @use_case(callbacks=callbacks, context=injections)
+    def another_one(__actor: Actor):
+        pass
+
+    def handle_test_event(event: _TestEvent):
+        another_one(__actor=Actor())
+
+    BUS.register_handler(_TestEvent, handle_test_event)
+
+    collect_event(__actor=Actor())
+
+    assert len(CONTEXTS) == len(set(CONTEXTS))
