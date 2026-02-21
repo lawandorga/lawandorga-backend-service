@@ -69,4 +69,4 @@ jobs:
         run: uv sync
 
       - name: Run migrations
-        run: python production_manage.py migrate
+        run: uv run python production_manage.py migrate
