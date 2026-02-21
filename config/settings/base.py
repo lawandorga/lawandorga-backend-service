@@ -68,7 +68,6 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    # "config.middleware.logging_middleware",
 ]
 
 # Url conf
