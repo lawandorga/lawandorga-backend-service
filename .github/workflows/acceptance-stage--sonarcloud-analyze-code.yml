@@ -29,9 +29,6 @@ jobs:
       - name: Install Dependencies
         run: uv sync
 
-      - name: Minimize UV Cache
-        run: uv cache prune --ci
-
       - name: Download Test Results
         uses: dawidd6/action-download-artifact@v9
         with:

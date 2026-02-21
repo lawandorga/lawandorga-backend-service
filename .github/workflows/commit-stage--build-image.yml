@@ -48,9 +48,6 @@ jobs:
       - name: Install Dependencies
         run: uv sync
 
-      - name: Minimize UV Cache
-        run: uv cache prune --ci
-
       - name: Build The Docker Container
         run: docker build -t ${{ secrets.SCW_DOCKER_REGISTRY }}/${{ inputs.image }}:${{ inputs.version }} .
 

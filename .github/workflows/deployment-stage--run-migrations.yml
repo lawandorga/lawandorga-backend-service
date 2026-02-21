@@ -68,8 +68,5 @@ jobs:
       - name: Install Dependencies
         run: uv sync
 
-      - name: Minimize UV Cache
-        run: uv cache prune --ci
-
       - name: Run migrations
         run: python production_manage.py migrate

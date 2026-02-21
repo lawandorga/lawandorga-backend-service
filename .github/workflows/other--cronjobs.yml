@@ -71,9 +71,6 @@ jobs:
       - name: Install Dependencies
         run: uv sync
 
-      - name: Minimize UV Cache
-        run: uv cache prune --ci
-
       - name: Run cronjobs
         run: python production_manage.py cronjobs
 
