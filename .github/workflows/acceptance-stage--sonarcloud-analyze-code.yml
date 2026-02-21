@@ -30,7 +30,7 @@ jobs:
         run: uv sync
 
       - name: Download Test Results
-        uses: dawidd6/action-download-artifact@v9
+        uses: dawidd6/action-download-artifact@v14
         with:
           workflow: pipeline.yml
           name: coverage
