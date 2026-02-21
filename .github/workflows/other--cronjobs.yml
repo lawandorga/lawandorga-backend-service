@@ -5,35 +5,8 @@ on:
     - cron: "4 2 * * *"
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set Up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version-file: ".python-version"
-
-      - uses: actions/cache@v4
-        id: cache-packages
-        with:
-          path: ${{ env.pythonLocation }}
-          key: ${{ env.pythonLocation }}-${{ hashFiles('Pipfile') }}
-
-      - name: Install Dependencies
-        if: steps.cache-packages.outputs.cache-hit != 'true'
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          uv sync
-
   cron:
     name: Run Cronjobs
-    needs: [build]
     runs-on: ubuntu-22.04
     environment: PRODUCTION
 
@@ -44,7 +17,7 @@ jobs:
       EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
       EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
       S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
-      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_TOKEN }}
       S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
       DB_NAME: ${{ secrets.DB_NAME }}
       DB_USER: ${{ secrets.DB_USER }}
