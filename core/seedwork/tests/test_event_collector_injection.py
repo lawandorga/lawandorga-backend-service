@@ -33,11 +33,6 @@ def handle_events(collector: EventCollector):
         EVENTS.append(event)
 
 
-CALLBACKS = [
-    handle_events,
-]
-
-
 @use_case
 def example(__actor: AnonymousUser, a: int, collector: EventCollector):
     uuid = uuid4()
