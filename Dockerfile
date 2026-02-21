@@ -9,6 +9,7 @@ ENV PATH="/django/.venv/bin:$PATH"
 COPY pyproject.toml /django/pyproject.toml
 COPY uv.lock /django/uv.lock
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+RUN source $HOME/.local/bin/env
 RUN uv sync
 
 # build image
