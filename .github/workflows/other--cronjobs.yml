@@ -45,7 +45,7 @@ jobs:
         run: uv sync
 
       - name: Run cronjobs
-        run: python production_manage.py cronjobs
+        run: uv run python production_manage.py cronjobs
 
       - name: Clear sessions
-        run: python production_manage.py clearsessions
+        run: uv run python production_manage.py clearsessions
