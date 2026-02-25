@@ -71,7 +71,7 @@ def delete_folder(__actor: OrgUser, folder_uuid: UUID, context: InjectionContext
         if isinstance(repo, ItemRepository):
             repositories.append(repo)
 
-    if folder.has_access(__actor):
+    if folder.has_keys(__actor):
         r.delete(folder, repositories)
     else:
         raise UseCaseError(
