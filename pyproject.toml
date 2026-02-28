@@ -61,7 +61,7 @@ dependencies = [
     "cryptography==46.0.*",
     "django-solo==2.5.*",
     "django-storages==1.14.*",
-    "whitenoise==6.9.*",
+    "whitenoise==6.11.*",
     "django-tinymce==4.1.*",
     "pycryptodome==3.22.*",
     "boto3==1.37.*",
