@@ -1,3 +1,7 @@
+from datetime import timedelta
+
+from django.utils import timezone
+
 from core.auth.models import OrgUser
 from core.auth.use_cases.finders import org_from_id, org_user_from_id
 from core.org.models.org import Org
@@ -13,6 +17,19 @@ from core.seedwork.use_case_layer.error import UseCaseError
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_USERS])
 def accept_member_to_org(__actor: OrgUser, user_id: int):
     user = org_user_from_id(__actor, user_id)
+    if user.org != __actor.org:
+        raise UseCaseError("The user must be a member of the same organization.")
+    one_year_ago = timezone.now() - timedelta(days=365)
+    user_created_more_than_one_year_ago = user.user.created < one_year_ago
+    last_login_more_than_one_year_ago = (
+        user.user.last_login is None or user.user.last_login < one_year_ago
+    )
+    if user_created_more_than_one_year_ago and last_login_more_than_one_year_ago:
+        raise UseCaseError(
+            "The user registered more than one year ago and has not logged in since. "
+            "Please ask the user to log in before accepting them to the organization. "
+            "Or delete the user and ask them to register again."
+        )
     org: Org = __actor.org
     group = org.default_group_for_new_users
     if group and not group.has_member(__actor):
