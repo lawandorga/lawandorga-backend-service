@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Literal
 from django.db import models
 
 from core.models import Org
+from core.seedwork.domain_layer import DomainError
 
 if TYPE_CHECKING:
     from core.questionnaires.models.questionnaire import Questionnaire
@@ -42,6 +43,8 @@ class QuestionnaireTemplate(models.Model):
     def add_question(
         self, question_type: Literal["FILE", "TEXTAREA"], question: str, order=1
     ) -> "QuestionnaireQuestion":
+        if len(question) > 100:
+            raise DomainError("The question cannot be longer than 100 characters.")
         q = QuestionnaireQuestion(
             type=question_type, question=question, order=order, questionnaire=self
         )
@@ -129,6 +132,8 @@ class QuestionnaireQuestion(models.Model):
     def update(
         self, question_type: Literal["FILE", "TEXTAREA"], question: str, order=1
     ):
+        if len(question) > 100:
+            raise DomainError("The question cannot be longer than 100 characters.")
         self.question = question
         self.type = question_type
         self.order = order
