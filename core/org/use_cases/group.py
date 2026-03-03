@@ -2,6 +2,7 @@ from core.auth.models import OrgUser
 from core.auth.use_cases.finders import org_user_from_id
 from core.org.models import Group
 from core.org.use_cases.finders import group_from_id
+from core.org.use_cases.utils import check_user_is_not_an_old_one
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_GROUPS
 from core.seedwork.use_case_layer import UseCaseError, use_case
 
@@ -37,9 +38,10 @@ def add_member_to_group(__actor: OrgUser, group_id: int, new_member_id: int):
         )
 
     new_member = org_user_from_id(__actor, new_member_id)
+    check_user_is_not_an_old_one(new_member)
 
     if group.org_id != new_member.org_id:
-        raise UseCaseError("You can not edit a member from another org.")
+        raise UseCaseError("You can not add a member from another org.")
 
     group.add_member(new_member, by=__actor)
 

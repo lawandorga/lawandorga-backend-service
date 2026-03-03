@@ -71,11 +71,19 @@ def create_raw_org_user(
 
 
 def create_raw_group(
-    org=None, name="Test Group", description="A group for testing purposes."
+    org=None,
+    name="Test Group",
+    description="A group for testing purposes.",
+    members: list[OrgUser] = [],
+    save=False,
 ):
     if org is None:
         org = create_raw_org()
     group = Group.create_simple(org=org, name=name, description=description)
+    if save:
+        group.save()
+    for member in members:
+        group.add_member(member)
     return group
 
 

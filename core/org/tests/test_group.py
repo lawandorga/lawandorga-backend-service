@@ -1,11 +1,15 @@
 import json
+from datetime import timedelta
 
 import pytest
 from django.test import Client
+from django.utils import timezone
 
 from core.models import Org
 from core.org.models import Group
+from core.org.use_cases.group import add_member_to_group
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_GROUPS
+from core.seedwork.use_case_layer.error import UseCaseError
 from core.tests import test_helpers as test_helpers
 
 
@@ -150,3 +154,31 @@ def test_add_member_already_member(user, group, db, user_2):
         content_type="application/json",
     )
     assert response.status_code == 400, response.json()
+
+
+def test_add_member_fails_if_user_never_logged_in_for_over_a_year(db):
+    user = test_helpers.create_raw_org_user(save=True)
+    g = test_helpers.create_raw_group(
+        name="Test Group",
+        org=user.org,
+        description="Just testing.",
+        members=[user],
+        save=True,
+    )
+
+    user.grant(PERMISSION_ADMIN_MANAGE_GROUPS)
+
+    stale_user = test_helpers.create_raw_org_user(
+        email="stale@law-orga.de", name="Stale User", org=user.org, save=True
+    )
+    stale_user_user = stale_user.user
+    stale_user_user.created = timezone.now() - timedelta(days=366)
+    stale_user_user.last_login = None
+    stale_user_user.save(update_fields=["created", "last_login"])
+
+    with pytest.raises(UseCaseError):
+        add_member_to_group(
+            __actor=user,
+            group_id=g.pk,
+            new_member_id=stale_user.user.pk,
+        )
