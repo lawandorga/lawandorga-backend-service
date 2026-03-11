@@ -100,6 +100,7 @@ class DataSheetTemplate(models.Model):
                     "id": field.pk,
                     "uuid": field.uuid,
                     "order": field.order,
+                    "is_required": field.is_required,
                 }
                 if hasattr(field, "options"):
                     data["options"] = field.options
@@ -177,6 +178,7 @@ class RecordField(models.Model):
     order = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    is_required = models.BooleanField(default=False)
 
     if TYPE_CHECKING:
         entries: QuerySetAny

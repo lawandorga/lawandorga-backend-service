@@ -82,10 +82,11 @@ def create_field(
     share_keys: bool | None = None,
     group_id: int | None = None,
     field_type: str | None = None,
+    is_required: bool = False,
 ):
     template = template_from_id(__actor, template_id)
     field_model = FIELDS[kind]
-    field = field_model(name=name, order=order, template=template)
+    field = field_model(name=name, order=order, template=template, is_required=is_required)
     if (
         kind in ["Multiple", "Select", "Encrypted Select", "Statistic"]
         and options is not None
@@ -110,10 +111,13 @@ def update_field(
     share_keys: bool | None = None,
     group_id: int | None = None,
     field_type: str | None = None,
+    is_required: bool | None = None,
 ):
     field = find_field_from_uuid(__actor, field_uuid)
     field.name = name
     field.order = order
+    if is_required is not None:
+        field.is_required = is_required
     kind = getattr(field, "kind", None)
     if (
         kind in ["Multiple", "Select", "Encrypted Select", "Statistic"]
