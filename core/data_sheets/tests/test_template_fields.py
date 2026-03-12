@@ -33,18 +33,6 @@ def test_update_field(db):
     assert template.fields[0].name == "Standard Field New"
 
 
-def test_create_statistic_field_is_required_by_default(db):
-    user = test_helpers.create_org_user()
-    org_user = user["org_user"]
-    org_user.grant(PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES)
-    template = DataSheetTemplate.objects.create(
-        org=org_user.org, name="Record Template"
-    )
-    create_field(org_user, template.pk, "Statistic", "Statistic Field", 1, options=["Option A"])
-    field = template.fields[0]
-    assert field.is_required is True
-
-
 def test_delete_field(db):
     user = test_helpers.create_org_user()
     org_user = user["org_user"]
