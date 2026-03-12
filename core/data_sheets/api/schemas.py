@@ -54,6 +54,7 @@ class OutputTemplateField(BaseModel):
     field_type: str
     order: int
     kind: str
+    is_required: bool
     group_id: int | None = None
     share_keys: bool | None = None
     options: Optional[list[OutputOption | str]] = None
@@ -77,6 +78,7 @@ class OutputField(BaseModel):
     kind: str
     label: str
     name: str
+    is_required: bool
     options: Optional[list[OutputOption | str]] = None
     type: str
 
