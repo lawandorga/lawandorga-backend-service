@@ -86,7 +86,9 @@ def create_field(
 ):
     template = template_from_id(__actor, template_id)
     field_model = FIELDS[kind]
-    field = field_model(name=name, order=order, template=template, is_required=is_required)
+    field = field_model(
+        name=name, order=order, template=template, is_required=is_required
+    )
     if (
         kind in ["Multiple", "Select", "Encrypted Select", "Statistic"]
         and options is not None
