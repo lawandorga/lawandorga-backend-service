@@ -64,7 +64,7 @@ dependencies = [
     "whitenoise==6.9.*",
     "django-tinymce==4.1.*",
     "pycryptodome==3.22.*",
-    "boto3==1.37.*",
+    "boto3==1.42.*",
     "coverage==7.13.*",
     "pytest==8.3.*",
     "pytest-django==4.11.*",
