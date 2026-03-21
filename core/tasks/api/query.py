@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID
 
 from django.db.models import Q
@@ -26,6 +26,7 @@ class OutputTask(BaseModel):
     progress: int
     priority: str
     is_done: bool
+    comments: list[Any]
     deadline: Optional[datetime]
     created_at: datetime
     updated_at: datetime

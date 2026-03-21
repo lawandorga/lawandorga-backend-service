@@ -155,6 +155,31 @@ def test_update_task_priority(db):
     assert task.priority == "urgent"
 
 
+def test_update_task_comments(db):
+    org = create_raw_org(save=True)
+    creator = create_raw_org_user(org=org, save=True)
+    assignee = create_raw_org_user(
+        org=org, email="assignee@test.de", name="Assignee", save=True
+    )
+
+    create_task(creator, assignee_ids=[assignee.pk], title="Comment Task")
+
+    task = Task.objects.get()
+    assert task.comments == []
+
+    update_task(creator, task_id=task.uuid, comment="First comment")
+    task.refresh_from_db()
+    assert len(task.comments) == 1
+    assert task.comments[0]["email"] == creator.email
+    assert task.comments[0]["comment"] == "First comment"
+
+    update_task(assignee, task_id=task.uuid, comment="Second comment")
+    task.refresh_from_db()
+    assert len(task.comments) == 2
+    assert task.comments[1]["email"] == "assignee@test.de"
+    assert task.comments[1]["comment"] == "Second comment"
+
+
 def test_delete_task(db):
     org = create_raw_org(save=True)
     creator = create_raw_org_user(org=org, save=True)

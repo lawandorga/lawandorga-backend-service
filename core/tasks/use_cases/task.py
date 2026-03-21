@@ -33,6 +33,7 @@ def update_task(
     progress: Optional[int] = None,
     priority: Optional[str] = None,
     deadline: Optional[datetime] = None,
+    comment: Optional[str] = None,
 ):
     task = Task.objects.get(uuid=task_id)
 
@@ -49,6 +50,10 @@ def update_task(
         task.progress = progress
     if priority is not None:
         task.priority = priority
+    if comment:
+        task.comments = task.comments + [
+            {"email": __actor.email, "comment": comment}
+        ]
     task.deadline = deadline
 
     task.save()

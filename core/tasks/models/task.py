@@ -61,7 +61,7 @@ class Task(models.Model):
     deadline = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    # comments = models.JSONField(default=list, blank=True)
+    comments = models.JSONField(default=list, blank=True)
 
     class Meta:
         verbose_name = "TAS_Task"
