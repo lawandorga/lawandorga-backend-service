@@ -19,14 +19,15 @@ def mark_tasks_as_done(__actor: OrgUser, task_uuids: list[UUID]):
 @use_case
 def create_task(
     __actor: OrgUser,
-    assignee_id: int,
+    assignee_ids: list[int],
     title: str,
     description: str = "",
     page_url: str = "",
     deadline: Optional[datetime] = None,
 ):
-    task = Task.create(__actor, assignee_id, title, description, page_url, deadline)
-    task.save()
+    Task.create(
+        __actor, assignee_ids, title, description, page_url, deadline, save=True
+    )
 
 
 @use_case
@@ -36,13 +37,13 @@ def update_task(
     title: Optional[str] = None,
     description: Optional[str] = None,
     page_url: Optional[str] = None,
-    assignee_id: Optional[int] = None,
+    assignee_ids: Optional[list[int]] = None,
     is_done: Optional[bool] = None,
     deadline: Optional[datetime] = None,
 ):
     task = Task.objects.get(uuid=task_id)
 
-    if task.creator != __actor and task.assignee != __actor:
+    if task.creator != __actor and not task.assignees.filter(pk=__actor.pk).exists():
         raise PermissionError("You are not allowed to update this task.")
 
     if title is not None:
@@ -51,14 +52,15 @@ def update_task(
         task.description = description
     if page_url is not None:
         task.page_url = page_url
-    if assignee_id is not None:
-        task.assignee = OrgUser.objects.get(id=assignee_id)
     if is_done is not None:
         task.is_done = is_done
     task.deadline = deadline
-    # TODO: check if we need to manually update the updated_at field
 
     task.save()
+
+    if assignee_ids is not None:
+        assignees = OrgUser.objects.filter(id__in=assignee_ids)
+        task.assignees.set(assignees)
 
 
 @use_case

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
+from django.db.models import Q
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
@@ -17,8 +18,8 @@ class OutputTask(BaseModel):
     uuid: UUID
     creator_id: int
     creator_name: str
-    assignee_id: int
-    assignee_name: str
+    assignee_ids: list[int]
+    assignee_names: list[str]
     title: str
     description: str
     page_url: str
@@ -34,18 +35,9 @@ router = Router()
 
 
 @router.get(
-    url="own/",
+    url="",
     output_schema=list[OutputTask],
 )
-def query__own_tasks(org_user: OrgUser):
-    tasks = Task.objects.filter(assignee=org_user)
-    return tasks
-
-
-@router.get(
-    url="created/",
-    output_schema=list[OutputTask],
-)
-def query__created_tasks(org_user: OrgUser):
-    tasks = Task.objects.filter(creator=org_user)
+def query__tasks(org_user: OrgUser):
+    tasks = Task.objects.filter(Q(creator=org_user) | Q(assignees=org_user)).distinct()
     return tasks
