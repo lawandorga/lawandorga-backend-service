@@ -114,6 +114,47 @@ def test_update_task_unauthorized(db):
         update_task(other, task_id=task.uuid, title="Hacked")
 
 
+def test_update_task_progress(db):
+    org = create_raw_org(save=True)
+    creator = create_raw_org_user(org=org, save=True)
+    assignee = create_raw_org_user(
+        org=org, email="assignee@test.de", name="Assignee", save=True
+    )
+
+    create_task(creator, assignee_ids=[assignee.pk], title="Progress Task")
+
+    task = Task.objects.get()
+    assert task.progress == 0
+    assert task.is_done is False
+
+    update_task(creator, task_id=task.uuid, progress=50)
+    task.refresh_from_db()
+    assert task.progress == 50
+    assert task.is_done is False
+
+    update_task(creator, task_id=task.uuid, progress=100)
+    task.refresh_from_db()
+    assert task.progress == 100
+    assert task.is_done is True
+
+
+def test_update_task_priority(db):
+    org = create_raw_org(save=True)
+    creator = create_raw_org_user(org=org, save=True)
+    assignee = create_raw_org_user(
+        org=org, email="assignee@test.de", name="Assignee", save=True
+    )
+
+    create_task(creator, assignee_ids=[assignee.pk], title="Priority Task")
+
+    task = Task.objects.get()
+    assert task.priority == "medium"
+
+    update_task(creator, task_id=task.uuid, priority="urgent")
+    task.refresh_from_db()
+    assert task.priority == "urgent"
+
+
 def test_delete_task(db):
     org = create_raw_org(save=True)
     creator = create_raw_org_user(org=org, save=True)
@@ -162,3 +203,6 @@ def test_query_tasks(db):
     assert data[0]["title"] == "Assigned Task"
     assert isinstance(data[0]["assignee_ids"], list)
     assert isinstance(data[0]["assignee_names"], list)
+    assert "progress" in data[0]
+    assert "priority" in data[0]
+    assert "is_done" in data[0]

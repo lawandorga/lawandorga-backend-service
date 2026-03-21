@@ -23,6 +23,8 @@ class OutputTask(BaseModel):
     title: str
     description: str
     page_url: str
+    progress: int
+    priority: str
     is_done: bool
     deadline: Optional[datetime]
     created_at: datetime

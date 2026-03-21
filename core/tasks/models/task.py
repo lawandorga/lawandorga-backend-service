@@ -58,10 +58,10 @@ class Task(models.Model):
     title = models.CharField(max_length=255, blank=True)
     description = models.TextField(default="", null=True, blank=True)
     page_url = models.CharField(max_length=255, blank=True)
-    is_done = models.BooleanField(default=False)
     deadline = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # comments = models.JSONField(default=list, blank=True)
 
     class Meta:
         verbose_name = "TAS_Task"
@@ -83,8 +83,9 @@ class Task(models.Model):
     def assignee_names(self):
         return list(self.assignees.values_list("user__name", flat=True))
 
+    @property
+    def is_done(self):
+        return self.progress == 100
+
     def __str__(self) -> str:
         return self.title
-
-    def mark_as_done(self):
-        self.is_done = True
