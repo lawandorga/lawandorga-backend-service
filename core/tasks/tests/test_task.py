@@ -1,6 +1,7 @@
 import pytest
 from django.test import Client
 
+from core.seedwork.domain_layer import DomainError
 from core.tasks.models.task import Task
 from core.tasks.use_cases.task import create_task, delete_task, update_task
 from core.tests.test_helpers import create_raw_org, create_raw_org_user
@@ -199,7 +200,7 @@ def test_tags_validation_max_5(db):
     create_task(creator, assignee_ids=[assignee.pk], title="Too Many Tags")
     task = Task.objects.get()
 
-    with pytest.raises(ValueError, match="at most 5 tags"):
+    with pytest.raises(DomainError, match="at most 5 tags"):
         update_task(
             creator,
             task_id=task.uuid,
@@ -217,7 +218,7 @@ def test_tags_validation_special_chars(db):
     create_task(creator, assignee_ids=[assignee.pk], title="Bad Tags")
     task = Task.objects.get()
 
-    with pytest.raises(ValueError, match="only contain letters"):
+    with pytest.raises(DomainError, match="only contain letters"):
         update_task(creator, task_id=task.uuid, tags=["good", "bad|tag"])
 
 
@@ -231,7 +232,7 @@ def test_tags_validation_max_length(db):
     create_task(creator, assignee_ids=[assignee.pk], title="Long Tag")
     task = Task.objects.get()
 
-    with pytest.raises(ValueError, match="at most 100 characters"):
+    with pytest.raises(DomainError, match="at most 100 characters"):
         update_task(creator, task_id=task.uuid, tags=["a" * 101])
 
 
