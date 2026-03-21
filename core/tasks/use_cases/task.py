@@ -17,6 +17,8 @@ def create_task(
     page_url: str = "",
     deadline: Optional[datetime] = None,
     tags: Optional[list[str]] = None,
+    priority: str = "medium",
+    progress: int = 0,
 ):
     Task.create(
         __actor,
@@ -26,6 +28,8 @@ def create_task(
         page_url,
         deadline,
         tags=tags,
+        priority=priority,
+        progress=progress,
         save=True,
     )
 

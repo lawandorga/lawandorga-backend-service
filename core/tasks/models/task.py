@@ -32,6 +32,8 @@ class Task(models.Model):
         page_url: str,
         deadline: Optional[datetime] = None,
         tags: Optional[list[str]] = None,
+        priority: str = "medium",
+        progress: int = 0,
         save: bool = False,
     ):
         task = cls(
@@ -40,6 +42,8 @@ class Task(models.Model):
             description=description,
             page_url=page_url,
             deadline=deadline,
+            priority=priority,
+            progress=progress,
         )
         if tags:
             task.tags = validate_tags(tags)
