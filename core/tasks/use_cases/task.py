@@ -4,7 +4,7 @@ from uuid import UUID
 
 from core.auth.models.org_user import OrgUser
 from core.seedwork.use_case_layer import use_case
-from core.tasks.models.task import Task
+from core.tasks.models.task import Task, validate_tags
 from core.tasks.use_cases.finder import task_from_uuid
 
 
@@ -16,9 +16,10 @@ def create_task(
     description: str = "",
     page_url: str = "",
     deadline: Optional[datetime] = None,
+    tags: Optional[list[str]] = None,
 ):
     Task.create(
-        __actor, assignee_ids, title, description, page_url, deadline, save=True
+        __actor, assignee_ids, title, description, page_url, deadline, tags=tags, save=True
     )
 
 
@@ -34,6 +35,7 @@ def update_task(
     priority: Optional[str] = None,
     deadline: Optional[datetime] = None,
     comment: Optional[str] = None,
+    tags: Optional[list[str]] = None,
 ):
     task = Task.objects.get(uuid=task_id)
 
@@ -54,6 +56,8 @@ def update_task(
         task.comments = task.comments + [
             {"email": __actor.email, "comment": comment}
         ]
+    if tags is not None:
+        task.tags = validate_tags(tags)
     task.deadline = deadline
 
     task.save()

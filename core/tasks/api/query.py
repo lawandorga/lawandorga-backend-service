@@ -27,6 +27,7 @@ class OutputTask(BaseModel):
     priority: str
     is_done: bool
     comments: list[Any]
+    tags_as_list: list[str]
     deadline: Optional[datetime]
     created_at: datetime
     updated_at: datetime

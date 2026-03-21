@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from typing import Optional
 from uuid import uuid4
@@ -6,6 +7,18 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from core.auth.models import OrgUser
+from core.seedwork.domain_layer import DomainError
+
+
+def validate_tags(tags: list[str]) -> str:
+    if len(tags) > 5:
+        raise DomainError("A task can have at most 5 tags.")
+    for tag in tags:
+        if len(tag) > 100:
+            raise DomainError("A tag can have at most 100 characters.")
+        if not re.match(r"^[a-zA-Z0-9 ]*$", tag):
+            raise DomainError("Tags can only contain letters, numbers, and spaces.")
+    return "|".join(tags)
 
 
 class Task(models.Model):
@@ -18,6 +31,7 @@ class Task(models.Model):
         description: str,
         page_url: str,
         deadline: Optional[datetime] = None,
+        tags: Optional[list[str]] = None,
         save: bool = False,
     ):
         task = cls(
@@ -27,6 +41,8 @@ class Task(models.Model):
             page_url=page_url,
             deadline=deadline,
         )
+        if tags:
+            task.tags = validate_tags(tags)
         if save:
             task.save()
             task.assignees.set(OrgUser.objects.filter(id__in=assignee_ids))
@@ -62,6 +78,7 @@ class Task(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     comments = models.JSONField(default=list, blank=True)
+    tags = models.CharField(blank=True, max_length=512)
 
     class Meta:
         verbose_name = "TAS_Task"
@@ -86,6 +103,12 @@ class Task(models.Model):
     @property
     def is_done(self):
         return self.progress == 100
+
+    @property
+    def tags_as_list(self):
+        if not self.tags:
+            return []
+        return self.tags.split("|")
 
     def __str__(self) -> str:
         return self.title

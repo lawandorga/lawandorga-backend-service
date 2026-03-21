@@ -155,6 +155,86 @@ def test_update_task_priority(db):
     assert task.priority == "urgent"
 
 
+def test_create_task_with_tags(db):
+    org = create_raw_org(save=True)
+    creator = create_raw_org_user(org=org, save=True)
+    assignee = create_raw_org_user(
+        org=org, email="assignee@test.de", name="Assignee", save=True
+    )
+
+    create_task(
+        creator, assignee_ids=[assignee.pk], title="Tagged", tags=["bug", "urgent"]
+    )
+
+    task = Task.objects.get()
+    assert task.tags == "bug|urgent"
+    assert task.tags_as_list == ["bug", "urgent"]
+
+
+def test_update_task_tags(db):
+    org = create_raw_org(save=True)
+    creator = create_raw_org_user(org=org, save=True)
+    assignee = create_raw_org_user(
+        org=org, email="assignee@test.de", name="Assignee", save=True
+    )
+
+    create_task(creator, assignee_ids=[assignee.pk], title="Tag Task")
+
+    task = Task.objects.get()
+    assert task.tags_as_list == []
+
+    update_task(creator, task_id=task.uuid, tags=["feature", "frontend"])
+    task.refresh_from_db()
+    assert task.tags == "feature|frontend"
+    assert task.tags_as_list == ["feature", "frontend"]
+
+
+def test_tags_validation_max_5(db):
+    org = create_raw_org(save=True)
+    creator = create_raw_org_user(org=org, save=True)
+    assignee = create_raw_org_user(
+        org=org, email="assignee@test.de", name="Assignee", save=True
+    )
+
+    create_task(creator, assignee_ids=[assignee.pk], title="Too Many Tags")
+    task = Task.objects.get()
+
+    with pytest.raises(ValueError, match="at most 5 tags"):
+        update_task(
+            creator,
+            task_id=task.uuid,
+            tags=["a", "b", "c", "d", "e", "f"],
+        )
+
+
+def test_tags_validation_special_chars(db):
+    org = create_raw_org(save=True)
+    creator = create_raw_org_user(org=org, save=True)
+    assignee = create_raw_org_user(
+        org=org, email="assignee@test.de", name="Assignee", save=True
+    )
+
+    create_task(creator, assignee_ids=[assignee.pk], title="Bad Tags")
+    task = Task.objects.get()
+
+    with pytest.raises(ValueError, match="only contain letters"):
+        update_task(creator, task_id=task.uuid, tags=["good", "bad|tag"])
+
+
+def test_tags_validation_max_length(db):
+    org = create_raw_org(save=True)
+    creator = create_raw_org_user(org=org, save=True)
+    assignee = create_raw_org_user(
+        org=org, email="assignee@test.de", name="Assignee", save=True
+    )
+
+    create_task(creator, assignee_ids=[assignee.pk], title="Long Tag")
+    task = Task.objects.get()
+
+    with pytest.raises(ValueError, match="at most 100 characters"):
+        update_task(creator, task_id=task.uuid, tags=["a" * 101])
+
+
 def test_update_task_comments(db):
     org = create_raw_org(save=True)
     creator = create_raw_org_user(org=org, save=True)
