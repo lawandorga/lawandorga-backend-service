@@ -19,7 +19,14 @@ def create_task(
     tags: Optional[list[str]] = None,
 ):
     Task.create(
-        __actor, assignee_ids, title, description, page_url, deadline, tags=tags, save=True
+        __actor,
+        assignee_ids,
+        title,
+        description,
+        page_url,
+        deadline,
+        tags=tags,
+        save=True,
     )
 
 
@@ -53,9 +60,7 @@ def update_task(
     if priority is not None:
         task.priority = priority
     if comment:
-        task.comments = task.comments + [
-            {"email": __actor.email, "comment": comment}
-        ]
+        task.comments = task.comments + [{"email": __actor.email, "comment": comment}]
     if tags is not None:
         task.tags = validate_tags(tags)
     task.deadline = deadline
