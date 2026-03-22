@@ -3,7 +3,7 @@ from django.test import Client
 
 from core.seedwork.domain_layer import DomainError
 from core.tasks.models.task import Task
-from core.tasks.use_cases.task import create_task, delete_task, update_task
+from core.tasks.use_cases.task import add_comment, create_task, delete_task, update_task
 from core.tests.test_helpers import create_raw_org, create_raw_org_user
 
 
@@ -248,16 +248,22 @@ def test_update_task_comments(db):
     task = Task.objects.get()
     assert task.comments == []
 
-    update_task(creator, task_id=task.uuid, comment="First comment")
+    add_comment(creator, task_id=task.uuid, comment="First comment")
     task.refresh_from_db()
     assert len(task.comments) == 1
     assert task.comments[0]["email"] == creator.email
+    assert task.comments[0]["name"] == creator.name
+    assert isinstance(task.comments[0]["date"], str)
+    assert task.comments[0]["date"]
     assert task.comments[0]["comment"] == "First comment"
 
-    update_task(assignee, task_id=task.uuid, comment="Second comment")
+    add_comment(assignee, task_id=task.uuid, comment="Second comment")
     task.refresh_from_db()
     assert len(task.comments) == 2
     assert task.comments[1]["email"] == "assignee@test.de"
+    assert task.comments[1]["name"] == "Assignee"
+    assert isinstance(task.comments[1]["date"], str)
+    assert task.comments[1]["date"]
     assert task.comments[1]["comment"] == "Second comment"
 
 
