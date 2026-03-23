@@ -75,7 +75,7 @@ dependencies = [
     "pytz==2025.*",
     "pytest-env==1.1.*",
     "ics==0.7.*",
-    "django[argon2]==5.2.*",
+    "django[argon2]==6.0.*",
     "pydantic[email]==2.12.*",
     "dnspython==2.8.*",
     "bleach==6.3.*",
