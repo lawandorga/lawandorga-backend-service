@@ -21,7 +21,6 @@ class OutputEventResponse(BaseModel):
     id: int
     created: datetime
     updated: datetime
-    is_global: bool
     name: str
     description: str
     start_time: datetime
