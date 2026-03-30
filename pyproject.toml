@@ -97,4 +97,9 @@ dependencies = [
 dev = [
     "mypy>=1.10.0",
     "types-requests>=2.28.0",
+    "types-Markdown>=3.5.0",
+    "types-setuptools>=68.0.0",
 ]
+
+[tool.uv]
+dev-dependencies = ["mypy", "types-requests", "types-Markdown", "types-setuptools"]
