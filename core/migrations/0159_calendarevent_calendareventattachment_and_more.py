@@ -109,7 +109,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "rsvp_status",
+                    "attendance_status",
                     models.CharField(
                         choices=[
                             ("PENDING", "Pending"),

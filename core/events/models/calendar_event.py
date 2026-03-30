@@ -7,6 +7,26 @@ from core.auth.models import OrgUser
 from core.seedwork.domain_layer import DomainError
 
 
+class RecurrenceRule(str):
+    def __new__(cls, value: str = ""):
+        if value is None:
+            value = ""
+        if not isinstance(value, str):
+            raise TypeError("RecurrenceRule must be a string.")
+
+        normalized = value.strip()
+        if len(normalized) > 200:
+            raise DomainError("Recurrence rule must be at most 200 characters.")
+
+        return str.__new__(cls, normalized)
+
+    @classmethod
+    def create(cls, value: str | None = None) -> "RecurrenceRule":
+        if value is None:
+            return cls("")
+        return cls(value)
+
+
 class CalendarEvent(models.Model):
     class EventType(models.TextChoices):
         APPOINTMENT = "APPOINTMENT", "Appointment"
@@ -52,7 +72,7 @@ class CalendarEvent(models.Model):
         end_time: datetime | None = None,
         description: str = "",
         location: str = "",
-        recurrence_rule: str = "",
+        recurrence_rule: RecurrenceRule | None = None,
         recurrence_until: date | None = None,
     ) -> "CalendarEvent":
         if end_time is not None and start_time > end_time:
@@ -65,7 +85,7 @@ class CalendarEvent(models.Model):
             end_time=end_time,
             description=description,
             location=location,
-            recurrence_rule=recurrence_rule,
+            recurrence_rule=str(recurrence_rule) if recurrence_rule is not None else "",
             recurrence_until=recurrence_until,
         )
 
@@ -81,7 +101,7 @@ class CalendarEvent(models.Model):
         start_time: datetime | None = None,
         end_time: datetime | None = None,
         location: str | None = None,
-        recurrence_rule: str | None = None,
+        recurrence_rule: RecurrenceRule | None = None,
         recurrence_until: date | None = None,
     ) -> None:
         new_start = start_time if start_time is not None else self.start_time
@@ -108,7 +128,7 @@ class CalendarEvent(models.Model):
 
 
 class CalendarEventGuest(models.Model):
-    class RsvpStatus(models.TextChoices):
+    class AttendanceStatus(models.TextChoices):
         PENDING = "PENDING", "Pending"
         ACCEPTED = "ACCEPTED", "Accepted"
         DECLINED = "DECLINED", "Declined"
@@ -119,8 +139,8 @@ class CalendarEventGuest(models.Model):
     org_user = models.ForeignKey(
         OrgUser, on_delete=models.CASCADE, related_name="guest_events"
     )
-    rsvp_status = models.CharField(
-        max_length=20, choices=RsvpStatus.choices, default=RsvpStatus.PENDING
+    attendance_status = models.CharField(
+        max_length=20, choices=AttendanceStatus.choices, default=AttendanceStatus.PENDING
     )
     created = models.DateTimeField(auto_now_add=True)
 
