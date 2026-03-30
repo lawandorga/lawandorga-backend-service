@@ -35,4 +35,4 @@ jobs:
         run: uv run isort .
 
       - name: Run MyPy
-        run: uv run mypy --install-types .
+        run: uv run mypy .
