@@ -140,7 +140,9 @@ class CalendarEventGuest(models.Model):
         OrgUser, on_delete=models.CASCADE, related_name="guest_events"
     )
     attendance_status = models.CharField(
-        max_length=20, choices=AttendanceStatus.choices, default=AttendanceStatus.PENDING
+        max_length=20,
+        choices=AttendanceStatus.choices,
+        default=AttendanceStatus.PENDING,
     )
     created = models.DateTimeField(auto_now_add=True)
 
