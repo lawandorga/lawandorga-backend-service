@@ -32,7 +32,7 @@ def command__confirm_email(data: InputConfirmEmail):
 class OutputOrgUserSmall(BaseModel):
     id: int
     user_id: int
-    phone_number: str = "hidden"
+    phone_number: Optional[str] = None
     name: str
     email: str
     accepted: bool
@@ -49,7 +49,14 @@ class OutputOrgUserSmall(BaseModel):
 @router.get(output_schema=list[OutputOrgUserSmall])
 def list_org_users(org_user: OrgUser):
     org_users = OrgUser.objects.filter(org=org_user.org).prefetch_related("groups")
-    return list(org_users)
+    if org_user.has_permission(PERMISSION_ADMIN_MANAGE_USERS):
+        return list(org_users)
+    return [
+        OutputOrgUserSmall.model_validate(ou).model_copy(
+            update={"phone_number": "hidden"}
+        )
+        for ou in org_users
+    ]
 
 
 class OutputPermission(BaseModel):
@@ -114,7 +121,7 @@ def retrieve(data: InputOrgUserGet, org_user: OrgUser):
     ):
         found_org_user_ret: Any = OutputOrgUserSmall.model_validate(
             found_org_user
-        ).model_dump()
+        ).model_copy(update={"phone_number": "hidden"})
     else:
         found_org_user_ret = found_org_user
 
