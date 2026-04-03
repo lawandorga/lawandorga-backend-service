@@ -4,7 +4,7 @@ from uuid import UUID
 
 from django.db.models import Q
 from django.utils import timezone
-from pydantic import BaseModel, ConfigDict, 
+from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
 from core.auth.use_cases.org_user import confirm_email
