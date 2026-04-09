@@ -80,6 +80,7 @@ dependencies = [
     "dnspython==2.8.*",
     "bleach==6.3.*",
     "types-bleach==6.2.*",
+    "types-requests",
     "pytest-xdist==3.8.*",
     "django-oidc-provider @ git+https://github.com/lawandorga/django-oidc-provider",
     "pyotp==2.9.*",
