@@ -85,7 +85,7 @@ dependencies = [
     "django-oidc-provider @ git+https://github.com/lawandorga/django-oidc-provider",
     "pyotp==2.9.*",
     "ruff==0.15.*",
-    "isort==6.*",
+    "isort==8.*",
     "django-stubs==5.2.*",
     "pillow",
     "weasyprint",
