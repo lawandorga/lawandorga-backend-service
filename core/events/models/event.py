@@ -45,7 +45,6 @@ class EventsEvent(models.Model):
     org = models.ForeignKey(Org, related_name="events", on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    is_global = models.BooleanField(default=False)  # deprecated: remove after migration
     level = models.CharField(max_length=200, choices=LEVEL_CHOICES, default="ORG")
     name = models.CharField(null=False, max_length=200)
     description = models.TextField(blank=True, default="")
@@ -68,7 +67,6 @@ class EventsEvent(models.Model):
 
     def update_information(
         self,
-        is_global=None,
         name=None,
         description=None,
         start_time=None,
@@ -84,7 +82,6 @@ class EventsEvent(models.Model):
                 tags=["a", "p", "strong", "em", "ul", "ol", "li", "s"],
                 attributes={"a": ["href"]},
             )
-        self.is_global = self.is_global if (is_global is None) else is_global
         self.name = name or self.name
         self.description = clean_description or self.description
         self.start_time = start_time or self.start_time
