@@ -91,7 +91,8 @@ dependencies = [
     "weasyprint",
     "tach",
     "types-pytz",
-    "qrcode[pil]==8.*"
+    "qrcode[pil]==8.*",
+    "tatsu==5.8.*"
 ]
 
 [project.optional-dependencies]

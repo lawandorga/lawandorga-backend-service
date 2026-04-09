@@ -750,6 +750,7 @@ dependencies = [
     { name = "qrcode", extra = ["pil"] },
     { name = "ruff" },
     { name = "tach" },
+    { name = "tatsu" },
     { name = "types-bleach" },
     { name = "types-pytz" },
     { name = "types-requests" },
@@ -810,6 +811,7 @@ requires-dist = [
     { name = "qrcode", extras = ["pil"], specifier = "==8.*" },
     { name = "ruff", specifier = "==0.15.*" },
     { name = "tach" },
+    { name = "tatsu", specifier = "==5.8.*" },
     { name = "types-bleach", specifier = "==6.2.*" },
     { name = "types-markdown", marker = "extra == 'dev'", specifier = ">=3.5.0" },
     { name = "types-pytz" },
@@ -1429,11 +1431,11 @@ wheels = [
 
 [[package]]
 name = "tatsu"
-version = "5.18.0"
+version = "5.8.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/9b/86/03190394e9a2a79133d8d48201b1bf0a2eb4326cf510f53f0cc182370e0f/tatsu-5.18.0.tar.gz", hash = "sha256:b1d2859791649e5acffb4a31ef5e86b87c0ffd217390eebb053fe1a34cd8895b", size = 349286, upload-time = "2026-03-18T21:22:39.544Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/dd/e6/f46e17ed341ff7584b23a63508c781e6e5e984a9e6eb0b66b273991a02eb/TatSu-5.8.3.zip", hash = "sha256:571ecbcdf33b7828c05e5cd95a8e8ad06af111c2c83a6a245be4d8f7c43de7bb", size = 205187, upload-time = "2022-07-29T21:44:19.461Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1d/7c/9dfff64b6fe0042ac343d312ecb8beee34baa6767cec8705419d4a90f8dc/tatsu-5.18.0-py3-none-any.whl", hash = "sha256:011c880d52f60cba1e1cb9ce76a463192646508a3891a82b6c9aaa40239c5c99", size = 167318, upload-time = "2026-03-18T21:22:38.281Z" },
+    { url = "https://files.pythonhosted.org/packages/78/67/413a03b1048f9f237e3f242e6e829688d8c9cf1fbe6bd8bb5f574ae67ac9/TatSu-5.8.3-py2.py3-none-any.whl", hash = "sha256:0a836692e67247cad9f251e083b045b13345cc715e69a7fbc16522beaa0f2163", size = 101486, upload-time = "2022-07-29T21:44:15.033Z" },
 ]
 
 [[package]]
