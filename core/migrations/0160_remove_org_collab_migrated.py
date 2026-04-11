@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0157_task_tags"),
+        ("core", "0159_calendarevent_calendareventattachment_and_more"),
     ]
 
     operations = [
