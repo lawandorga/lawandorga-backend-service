@@ -73,7 +73,7 @@ dependencies = [
     "black==26.*",
     "environs==14.5.*",
     "pytz==2025.*",
-    "pytest-env==1.1.*",
+    "pytest-env>=1.1,<1.7",
     "ics==0.7.*",
     "django[argon2]==5.2.*",
     "pydantic[email]==2.13.*",
