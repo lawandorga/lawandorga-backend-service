@@ -67,3 +67,4 @@ override.tf.json
 terraform.rc
 *kubeconfig*
 tmp.txt
+tmp.py
