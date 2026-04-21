@@ -1,1 +1,1 @@
-from .legal_requirement import *
+from .legal_requirement import LegalRequirement, LegalRequirementEvent

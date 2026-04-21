@@ -1,4 +1,5 @@
 from core.auth.usecases import USECASES as AUTH_USECASES
+from core.calendar.usecases import USECASES as CALENDAR_USECASES
 from core.collab.usecases import USECASES as COLLAB_USECASES
 from core.data_sheets.usecases import USECASES as DATA_SHEET_USECASES
 from core.encryption.usecases import USECASES as ENCRYPTION_USECASES
@@ -36,3 +37,4 @@ USECASES.update(MESSAGES_USECASES)
 USECASES.update(MAIL_IMPORTS_USECASES)
 USECASES.update(TASKS_USECASES)
 USECASES.update(ENCRYPTION_USECASES)
+USECASES.update(CALENDAR_USECASES)

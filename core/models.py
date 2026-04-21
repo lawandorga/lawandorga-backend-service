@@ -1,4 +1,5 @@
 from .auth.models import *
+from .calendar.models import *
 from .collab.models import *
 from .data_sheets.models import *
 from .events.models import *
@@ -13,7 +14,6 @@ from .org.models import *
 from .other.models import *
 from .permissions.models import *
 from .records.models import *
-from .tasks.models import Task
-from .timeline.models.event import TimelineEvent
-from .timeline.models.follow_up import TimelineFollowUp
+from .tasks.models import *
+from .timeline.models import *
 from .upload.models import *

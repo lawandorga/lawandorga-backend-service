@@ -1,4 +1,5 @@
 from .auth.admin import *
+from .calendar.admin import *
 from .collab.admin import *
 from .data_sheets.admin import *
 from .encryption.admin import *
