@@ -2,6 +2,7 @@ from datetime import date, datetime
 from uuid import uuid4
 
 from django.db import models
+from django.db.models import Q
 
 from core.auth.models import OrgUser
 from core.seedwork.domain_layer import DomainError
@@ -90,8 +91,30 @@ class CalendarEvent(models.Model):
         )
 
     @staticmethod
-    def get_all_events_for_user(org_user: OrgUser) -> models.QuerySet["CalendarEvent"]:
-        return CalendarEvent.objects.filter(creator=org_user)
+    def get_accessible_events_for_user(
+        org_user: OrgUser,
+    ) -> models.QuerySet["CalendarEvent"]:
+        return (
+            CalendarEvent.objects.filter(Q(creator=org_user) | Q(guest_users=org_user))
+            .distinct()
+            .order_by("start_time")
+        )
+
+    @property
+    def creator_id(self) -> int:
+        return self.creator.pk
+
+    @property
+    def creator_name(self) -> str:
+        return self.creator.name
+
+    @property
+    def guest_user_ids(self) -> list[int]:
+        return list(self.guest_users.values_list("id", flat=True))
+
+    @property
+    def guest_user_names(self) -> list[str]:
+        return list(self.guest_users.values_list("user__name", flat=True))
 
     def update_information(
         self,

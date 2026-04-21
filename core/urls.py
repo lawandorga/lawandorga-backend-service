@@ -43,4 +43,5 @@ urlpatterns = [
     path("api/permissions/", include("core.permissions.urls")),
     path("api/mail_imports/", include("core.mail_imports.urls")),
     path("api/tasks/", include("core.tasks.urls")),
+    path("api/calendar/", include("core.calendar.urls")),
 ]
