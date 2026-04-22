@@ -103,5 +103,5 @@ dev = [
     "types-setuptools>=68.0.0",
 ]
 
-[tool.uv]
-dev-dependencies = ["mypy", "types-requests", "types-Markdown", "types-setuptools"]
+[dependency-groups]
+dev = ["mypy", "types-requests", "types-Markdown", "types-setuptools"]
