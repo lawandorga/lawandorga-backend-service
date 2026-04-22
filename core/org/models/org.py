@@ -59,7 +59,6 @@ class Org(EncryptedModelMixin, models.Model):
         choices=FEDERAL_STATE_CHOICES, max_length=100, blank=True, null=True
     )
     use_record_pool = models.BooleanField(default=False)
-    collab_migrated = models.BooleanField(default=False)
     new_records_have_inheritance_stop = models.BooleanField(default=True)
     default_group_for_new_users = models.ForeignKey(
         "Group",
