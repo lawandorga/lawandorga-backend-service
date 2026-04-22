@@ -48,7 +48,7 @@ def test_query_calendar_events_returns_accessible_events(db):
     client = Client()
     client.login(**getattr(guest, "login_data"))
 
-    response = client.get("/api/calendar/query/")
+    response = client.get("/api/calendar/query/events/")
     assert response.status_code == 200
     data = response.json()
 
