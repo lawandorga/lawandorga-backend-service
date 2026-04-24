@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0158_remove_eventsevent_is_global"),
+        ("core", "0160_remove_org_collab_migrated"),
     ]
 
     operations = [
