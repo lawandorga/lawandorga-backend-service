@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = "==3.14.*"
 
 [[package]]
@@ -800,12 +800,12 @@ requires-dist = [
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10.0" },
     { name = "pillow" },
     { name = "psycopg2", specifier = "==2.9.*" },
-    { name = "pycryptodome", specifier = "==3.22.*" },
+    { name = "pycryptodome", specifier = ">=3.22,<3.24" },
     { name = "pydantic", extras = ["email"], specifier = "==2.13.*" },
     { name = "pyotp", specifier = "==2.9.*" },
     { name = "pytest", specifier = "==9.0.*" },
     { name = "pytest-django", specifier = "==4.12.*" },
-    { name = "pytest-env", specifier = "==1.1.*" },
+    { name = "pytest-env", specifier = ">=1.1,<1.7" },
     { name = "pytest-xdist", specifier = "==3.8.*" },
     { name = "pytz", specifier = "==2025.*" },
     { name = "qrcode", extras = ["pil"], specifier = "==8.*" },
