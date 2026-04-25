@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 
+from core.internal.api.articles import add_orgs_to_articles
 from core.internal.models import (
     Article,
     HelpPage,
@@ -30,11 +31,11 @@ def query__help_page():
 def query__index_page():
     page = IndexPage.objects.get()
     roadmap_items = list(RoadmapItem.objects.all())
-    articles = list(Article.objects.all())
+    articles = Article.objects.all()
     return {
         "content": page.content,
         "roadmap_items": roadmap_items,
-        "articles": articles,
+        "articles": add_orgs_to_articles(articles),
     }
 
 
