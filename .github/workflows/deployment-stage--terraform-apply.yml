@@ -30,16 +30,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup AWS Credentials
         run: |
           aws configure set aws_access_key_id ${{ secrets.scw_access_key }} --profile lawandorga
           aws configure set aws_secret_access_key ${{ secrets.scw_secret_key }} --profile lawandorga
-      
+
       - name: Set Up Terraform
-        uses: hashicorp/setup-terraform@v3
-        with: 
+        uses: hashicorp/setup-terraform@v4
+        with:
           terraform_version: 1.9.7
 
       - name: Terraform Apply
