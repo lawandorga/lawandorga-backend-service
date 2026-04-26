@@ -38,13 +38,10 @@ def query_articles() -> list[OutputArticleList]:
 @router.get("dashboard/", output_schema=list[OutputArticleList])
 def latest_articles(org_user: OrgUser) -> list[OutputArticleList]:
     cutoff_date = timezone.now() - timedelta(days=60)
-    articles = (
-        Article.objects.filter(
-            Q(date__gte=cutoff_date)
-            & (Q(recipients__isnull=True) | Q(recipients=org_user.org))
-        )
-        .distinct()
-    )
+    articles = Article.objects.filter(
+        Q(date__gte=cutoff_date)
+        & (Q(recipients__isnull=True) | Q(recipients=org_user.org))
+    ).distinct()
 
     if not articles:
         return []
