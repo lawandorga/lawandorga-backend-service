@@ -1,9 +1,7 @@
 from datetime import date
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
-
-from core.auth.api.org_user import OutputOrgUser
+from pydantic import BaseModel, ConfigDict
 
 
 class OutputRoadmapItem(BaseModel):
@@ -33,7 +31,6 @@ class OutputArticleList(BaseModel):
     id: int
     title: str
     preview: str
-    recipients: list[OutputOrgUser] = Field(default_factory=list)
     date: date
 
     model_config = ConfigDict(from_attributes=True)
