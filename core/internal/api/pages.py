@@ -31,11 +31,11 @@ def query__help_page():
 def query__index_page():
     page = IndexPage.objects.get()
     roadmap_items = list(RoadmapItem.objects.all())
-    articles = Article.objects.all()
+    articles = list(Article.objects.all())
     return {
         "content": page.content,
         "roadmap_items": roadmap_items,
-        "articles": add_orgs_to_articles(articles),
+        "articles": articles,
     }
 
 
