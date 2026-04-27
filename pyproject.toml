@@ -92,7 +92,7 @@ dependencies = [
     "tach",
     "types-pytz",
     "qrcode[pil]==8.*",
-    "tatsu==5.8.*"
+    "tatsu>=5.8,<5.19"
 ]
 
 [project.optional-dependencies]
