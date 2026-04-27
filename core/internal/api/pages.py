@@ -1,6 +1,5 @@
 from django.shortcuts import get_object_or_404
 
-from core.internal.api.articles import add_orgs_to_articles
 from core.internal.models import (
     Article,
     HelpPage,
