@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from django.db.models import Q, QuerySet
+from django.db.models import Q
 from django.utils import timezone
 
 from core.auth.models import OrgUser
@@ -13,26 +13,11 @@ from . import schemas
 router = Router()
 
 
-def add_orgs_to_articles(articles: QuerySet[Article]) -> list[OutputArticleList]:
-    return [
-        OutputArticleList(
-            id=article.pk,
-            title=article.title,
-            preview=article.preview,
-            date=article.date,
-        )
-        for article in articles
-    ]
-
-
 @router.get("", output_schema=list[schemas.OutputArticleList])
-def query_articles() -> list[OutputArticleList]:
-    articles = Article.objects.all()
+def query_articles(org_user: OrgUser) -> list[OutputArticleList]:
+    articles = Article.objects.filter(recipients=org_user.org).distinct()
 
-    if not articles:
-        return []
-
-    return add_orgs_to_articles(articles)
+    return [OutputArticleList.model_validate(article) for article in articles]
 
 
 @router.get("dashboard/", output_schema=list[OutputArticleList])
@@ -43,7 +28,4 @@ def latest_articles(org_user: OrgUser) -> list[OutputArticleList]:
         & (Q(recipients__isnull=True) | Q(recipients=org_user.org))
     ).distinct()
 
-    if not articles:
-        return []
-
-    return add_orgs_to_articles(articles)
+    return [OutputArticleList.model_validate(article) for article in articles]
