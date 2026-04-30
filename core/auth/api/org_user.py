@@ -42,6 +42,7 @@ class OutputOrgUserSmall(BaseModel):
     is_active: bool
     last_login_month: Optional[str]
     qualifications: list[str]
+    activity_state: str
 
     model_config = ConfigDict(from_attributes=True)
 
