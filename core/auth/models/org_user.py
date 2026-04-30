@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -16,6 +17,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import models
 from django.template import loader
+from django.utils import timezone
 
 from core.auth.domain.user_key import UserKey
 from core.auth.token_generator import EmailConfirmationTokenGenerator
@@ -136,6 +138,8 @@ class OrgUser(models.Model):
     old_private_key = models.BinaryField(null=True)
     is_private_key_encrypted = models.BooleanField(default=False)
     old_public_key = models.BinaryField(null=True)
+    # activity
+    last_activity = models.DateTimeField(null=True, blank=True)
     # other
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -181,6 +185,18 @@ class OrgUser(models.Model):
     @property
     def last_login_month(self):
         return self.user.last_login_month
+
+    @property
+    def activity_state(self) -> str:
+        now = timezone.now()
+        if self.last_activity:
+            if self.last_activity >= now - timedelta(days=90):
+                return "green"
+            if self.last_activity >= now - timedelta(days=180):
+                return "yellow"
+        if self.user.last_login and self.user.last_login >= now - timedelta(days=365):
+            return "orange"
+        return "red"
 
     @property
     def user_key(self) -> KeyOfUser:
