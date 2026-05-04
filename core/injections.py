@@ -1,3 +1,7 @@
+from datetime import timedelta
+
+from django.utils import timezone
+
 from core.auth.domain.user_key import UserKey
 from core.auth.models.org_user import OrgUser
 from core.auth.models.user import UserProfile
@@ -59,6 +63,20 @@ def log_usecase(context: CallbackContext):
         )
 
 
+def update_last_activity(context: CallbackContext):
+    if not context.success:
+        return
+    if not isinstance(context.actor, OrgUser):
+        return
+    now = timezone.now()
+    one_hour_ago = now - timedelta(hours=1)
+    if (
+        context.actor.last_activity is None
+        or context.actor.last_activity < one_hour_ago
+    ):
+        OrgUser.objects.filter(pk=context.actor.pk).update(last_activity=now)
+
+
 def get_key(__actor: OrgUser) -> UserKey:
     # injecting the UserKey only works if the usecase itself
     # already has OrgUser as an actor
@@ -82,4 +100,5 @@ INJECTIONS = {
 CALLBACKS = [
     handle_events,
     log_usecase,
+    update_last_activity,
 ]
