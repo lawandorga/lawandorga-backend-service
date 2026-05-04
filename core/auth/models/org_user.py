@@ -138,7 +138,6 @@ class OrgUser(models.Model):
     old_private_key = models.BinaryField(null=True)
     is_private_key_encrypted = models.BooleanField(default=False)
     old_public_key = models.BinaryField(null=True)
-    # activity
     last_activity = models.DateTimeField(null=True, blank=True)
     # other
     created = models.DateTimeField(auto_now_add=True)
