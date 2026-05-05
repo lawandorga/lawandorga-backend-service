@@ -86,7 +86,7 @@ dependencies = [
     "pyotp==2.9.*",
     "ruff==0.15.*",
     "isort==8.*",
-    "django-stubs==5.2.*",
+    "django-stubs>=5.2,<6.1",
     "pillow",
     "weasyprint",
     "tach",
