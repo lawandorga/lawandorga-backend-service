@@ -53,33 +53,33 @@ requires-python = "==3.14.*"
 readme = "README.md"
 license = { text = "GNU Affero General Public License v3.0" }
 dependencies = [
-    "gunicorn==25.3.0",
-    "djangorestframework==3.16.*",
+    "gunicorn==26.0.0",
+    "djangorestframework>=3.16,<3.18",
     "psycopg2==2.9.*",
     "django-cors-headers==4.9.*",
     "django-debug-toolbar==6.*",
-    "cryptography==46.0.*",
+    "cryptography>=46.0,<48.1",
     "django-solo==2.5.*",
     "django-storages==1.14.*",
     "whitenoise==6.12.*",
     "django-tinymce==5.0.*",
     "pycryptodome>=3.22,<3.24",
-    "boto3==1.42.*",
+    "boto3>=1.42,<1.44",
     "coverage==7.13.*",
     "pytest==9.0.*",
     "pytest-django==4.12.*",
-    "mypy==1.15.*",
+    "mypy>=1.15,<1.21",
     "djangorestframework-stubs==3.16.*",
     "black==26.*",
     "environs>=14.5,<15.1",
-    "pytz==2025.*",
+    "pytz>=2025,<2027",
     "pytest-env>=1.1,<1.7",
     "ics==0.7.*",
     "django[argon2]>=5.2,<6.1",
     "pydantic[email]==2.13.*",
     "dnspython==2.8.*",
     "bleach==6.3.*",
-    "types-bleach==6.2.*",
+    "types-bleach>=6.2,<6.4",
     "types-requests",
     "pytest-xdist==3.8.*",
     "django-oidc-provider @ git+https://github.com/lawandorga/django-oidc-provider",
@@ -92,7 +92,7 @@ dependencies = [
     "tach",
     "types-pytz",
     "qrcode[pil]==8.*",
-    "tatsu==5.8.*"
+    "tatsu>=5.8,<5.19"
 ]
 
 [project.optional-dependencies]
