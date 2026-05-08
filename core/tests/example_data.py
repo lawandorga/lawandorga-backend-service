@@ -29,6 +29,7 @@ from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.messages.models import EncryptedRecordMessage
 from core.models import (
+    Article,
     Group,
     HasPermission,
     InternalUser,
@@ -756,6 +757,31 @@ def create_questionnaire_templates(org: Org):
     )
 
 
+def create_articles():
+    Article.objects.create(
+        title="Article for everyone",
+        preview="A guide for all organizations.",
+        date="2024-01-01",
+        content="This is a dummy article to show how articles look like. This article is visible for everyone.",
+    )
+
+    a2 = Article.objects.create(
+        title="Article for Dummy RLC",
+        preview="A guide for Dummy RLC.",
+        date="2024-01-02",
+        content="This is a dummy article to show how articles look like. This article is only visible for Dummy RLC.",
+    )
+    a2.recipients.set([Org.objects.get(name="Dummy RLC")])
+
+    a3 = Article.objects.create(
+        title="Article for Neighbourhood RLC",
+        preview="A guide for Neighbourhood RLC.",
+        date="2024-01-03",
+        content="This is a dummy article to show how articles look like. This article is only visible for Neighbourhood RLC.",
+    )
+    a3.recipients.set([Org.objects.get(name="Neighbourhood RLC")])
+
+
 def create() -> None:
     # fixtures
     create_permissions(Permission)
@@ -783,3 +809,4 @@ def create() -> None:
     create_informative_record(dummy, dummy_password, users, org1)
     # questionnaire templates
     create_questionnaire_templates(org1)
+    create_articles()
