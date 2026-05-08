@@ -303,8 +303,8 @@ class ExternalLink(models.Model):
 
     class Meta:
         ordering = ["order"]
-        verbose_name = "ExternalLink"
-        verbose_name_plural = "ExternalLinks"
+        verbose_name = "ORG_ExternalLink"
+        verbose_name_plural = "ORG_ExternalLinks"
 
     def __str__(self):
         return "externalLink: {}; name: {};".format(self.id, self.name)

@@ -1,5 +1,7 @@
 from django.contrib import admin
 
+from core.org.models.org import ExternalLink
+
 from .forms import OrgAdminForm
 from .models import Group, Meta, Note, Org, OrgEncryption
 
@@ -33,5 +35,6 @@ class OrgAdmin(admin.ModelAdmin):
 admin.site.register(Note)
 admin.site.register(Org, OrgAdmin)
 admin.site.register(Group)
+admin.site.register(ExternalLink)
 admin.site.register(OrgEncryption, UsersRlcKeysAdmin)
 admin.site.register(Meta)
