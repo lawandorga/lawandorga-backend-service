@@ -40,6 +40,7 @@ class OutputMember(BaseModel):
     id: int
     name: str
     email: str
+    activity_state: str
 
     model_config = ConfigDict(from_attributes=True)
 
