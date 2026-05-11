@@ -80,7 +80,9 @@ def query__download_file_entry(org_user: OrgUser, data: InputFileEntryDownload):
     except ObjectDoesNotExist:
         raise ApiError(message="The file was not found.", status=404)
     file = entry.decrypt_file(user=org_user)
-    response = FileResponse(file, content_type=mimetypes.guess_type(entry.file.name)[0])
+    response = FileResponse(
+        file, content_type=mimetypes.guess_type(entry.file.name or "")[0]
+    )
     response["Content-Disposition"] = 'attachment; filename="{}"'.format(
         entry.file.name
     )

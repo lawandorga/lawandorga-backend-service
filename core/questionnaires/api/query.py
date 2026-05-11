@@ -146,7 +146,7 @@ class InputDownloadFile(BaseModel):
 def query__retrieve_file(data: InputDownloadFile):
     file = QuestionnaireTemplateFile.objects.get(id=data.id)
     response = FileResponse(
-        file.file, content_type=mimetypes.guess_type(file.file.name)[0]
+        file.file, content_type=mimetypes.guess_type(file.file.name or "")[0]
     )
     response["Content-Disposition"] = 'attachment; filename="{}"'.format(file.name)
     return response

@@ -12,7 +12,7 @@ class SingletonRepository(abc.ABC):
 
     @classmethod
     def get_setting(cls) -> str:
-        return settings.__getattr__(cls.SETTING)
+        return getattr(settings, cls.SETTING)
 
     @classmethod
     def get_module(cls) -> type:

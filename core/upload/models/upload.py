@@ -3,6 +3,7 @@ from typing import IO, TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from django.conf import settings
+from django.core.files.base import File as DjangoFile
 from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 
@@ -192,7 +193,7 @@ class UploadFile(models.Model):
         enc_f = AESEncryption.encrypt_in_memory_file(
             file, key.get_key().decode("utf-8")
         )
-        self.file.save(file_name, enc_f, save=False)
+        self.file.save(file_name, DjangoFile(enc_f), save=False)
 
     def download(self, link_key: AsymmetricKey) -> IO | _TemporaryFileWrapper:
         key = self.get_key(link_key)

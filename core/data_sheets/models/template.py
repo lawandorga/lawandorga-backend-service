@@ -577,7 +577,7 @@ class DataSheetEncryptedFileField(RecordField):
         )
         entry = DataSheetEncryptedFileEntry(record_id=record_id, field_id=self.pk)
         entry.save()
-        entry.file.save(file.name, enc_file)
+        entry.file.save(file.name or "", enc_file)
 
     def delete_entry(self, record_id: int):
         self.entries.get(record_id=record_id).delete()
