@@ -48,6 +48,7 @@ class DataSheetTemplate(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     if TYPE_CHECKING:
+        id: int
         org_id: int
         org: models.ForeignKey[Org]  # type: ignore[no-redef]
         records: models.QuerySet[DataSheet]
