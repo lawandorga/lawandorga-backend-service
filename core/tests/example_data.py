@@ -1,12 +1,13 @@
-from datetime import date, timedelta
 import io
 import sys
+from datetime import date, datetime, timedelta, timezone
 from random import choice, randint
 from typing import List
 
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
+from core.calendar.models.event import CalendarEvent
 from core.data_sheets.models import (
     DataSheet,
     DataSheetEncryptedStandardEntry,
@@ -172,7 +173,7 @@ def create_users(org1, org2):
 
     created_users = []
     for user_data in users:
-        user = UserProfile.objects.create(
+        user = UserProfile.objects.create( 
             email=user_data[0],
             name=user_data[1],
         )
@@ -767,21 +768,57 @@ def create_articles():
         content="This is a dummy article to show how articles look like. This article is visible for everyone.",
     )
 
-    a2 = Article.objects.create(
+    article2 = Article.objects.create(
         title="Article for Dummy RLC",
         preview="A guide for Dummy RLC.",
         date=yesterday,
         content="This is a dummy article to show how articles look like. This article is only visible for Dummy RLC.",
     )
-    a2.recipients.set([Org.objects.get(name="Dummy RLC")])
+    article2.recipients.set([Org.objects.get(name="Dummy RLC")])
 
-    a3 = Article.objects.create(
+    article3 = Article.objects.create(
         title="Article for Neighbourhood RLC",
         preview="A guide for Neighbourhood RLC.",
         date=yesterday,
         content="This is a dummy article to show how articles look like. This article is only visible for Neighbourhood RLC.",
     )
-    a3.recipients.set([Org.objects.get(name="Neighbourhood RLC")])
+    article3.recipients.set([Org.objects.get(name="Neighbourhood RLC")])
+
+
+def create_calendar_events(creator: OrgUser):
+    tomorrow = date.today() + timedelta(days=1)
+    day_after_tomorrow = date.today() + timedelta(days=1)
+
+    event1 = CalendarEvent.create(
+        creator=creator,
+        title="Weekly Team Meeting",
+        event_type=CalendarEvent.EventType.MEETING,
+        start_time=datetime(tomorrow.year, tomorrow.month, tomorrow.day, 9, 0, tzinfo=timezone.utc),
+        end_time=datetime(tomorrow.year, tomorrow.month, tomorrow.day, 10, 30, tzinfo=timezone.utc),
+        description="Weekly meeting of the counseling team to discuss ongoing cases.",
+        location="Room 201",
+    )
+    event1.save()
+
+    event2 = CalendarEvent.create(
+        creator=creator,
+        title="Consultation: Asylum Law",
+        event_type=CalendarEvent.EventType.APPOINTMENT,
+        start_time=datetime(day_after_tomorrow.year, day_after_tomorrow.month, day_after_tomorrow.day, 14, 0, tzinfo=timezone.utc),
+        end_time=datetime(day_after_tomorrow.year, day_after_tomorrow.month, day_after_tomorrow.day, 15, 0, tzinfo=timezone.utc),
+        description="First consultation regarding asylum law.",
+        location="Consultation Center Munich",
+    )
+    event2.save()
+
+    event3 = CalendarEvent.create(
+        creator=creator,
+        title="Deadline: File an appeal",
+        event_type=CalendarEvent.EventType.DEADLINE,
+        start_time=datetime(tomorrow.year, tomorrow.month, tomorrow.day, 23, 59, tzinfo=timezone.utc),
+        description="This is your last chance to file an appeal against the denial notice.",
+    )
+    event3.save()
 
 
 def create() -> None:
@@ -812,3 +849,4 @@ def create() -> None:
     # questionnaire templates
     create_questionnaire_templates(org1)
     create_articles()
+    create_calendar_events(dummy.org_user)
