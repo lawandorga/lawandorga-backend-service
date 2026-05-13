@@ -173,7 +173,7 @@ def create_users(org1, org2):
 
     created_users = []
     for user_data in users:
-        user = UserProfile.objects.create( 
+        user = UserProfile.objects.create(
             email=user_data[0],
             name=user_data[1],
         )
@@ -793,8 +793,12 @@ def create_calendar_events(creator: OrgUser):
         creator=creator,
         title="Weekly Team Meeting",
         event_type=CalendarEvent.EventType.MEETING,
-        start_time=datetime(tomorrow.year, tomorrow.month, tomorrow.day, 9, 0, tzinfo=timezone.utc),
-        end_time=datetime(tomorrow.year, tomorrow.month, tomorrow.day, 10, 30, tzinfo=timezone.utc),
+        start_time=datetime(
+            tomorrow.year, tomorrow.month, tomorrow.day, 9, 0, tzinfo=timezone.utc
+        ),
+        end_time=datetime(
+            tomorrow.year, tomorrow.month, tomorrow.day, 10, 30, tzinfo=timezone.utc
+        ),
         description="Weekly meeting of the counseling team to discuss ongoing cases.",
         location="Room 201",
     )
@@ -804,8 +808,22 @@ def create_calendar_events(creator: OrgUser):
         creator=creator,
         title="Consultation: Asylum Law",
         event_type=CalendarEvent.EventType.APPOINTMENT,
-        start_time=datetime(day_after_tomorrow.year, day_after_tomorrow.month, day_after_tomorrow.day, 14, 0, tzinfo=timezone.utc),
-        end_time=datetime(day_after_tomorrow.year, day_after_tomorrow.month, day_after_tomorrow.day, 15, 0, tzinfo=timezone.utc),
+        start_time=datetime(
+            day_after_tomorrow.year,
+            day_after_tomorrow.month,
+            day_after_tomorrow.day,
+            14,
+            0,
+            tzinfo=timezone.utc,
+        ),
+        end_time=datetime(
+            day_after_tomorrow.year,
+            day_after_tomorrow.month,
+            day_after_tomorrow.day,
+            15,
+            0,
+            tzinfo=timezone.utc,
+        ),
         description="First consultation regarding asylum law.",
         location="Consultation Center Munich",
     )
@@ -815,7 +833,9 @@ def create_calendar_events(creator: OrgUser):
         creator=creator,
         title="Deadline: File an appeal",
         event_type=CalendarEvent.EventType.DEADLINE,
-        start_time=datetime(tomorrow.year, tomorrow.month, tomorrow.day, 23, 59, tzinfo=timezone.utc),
+        start_time=datetime(
+            tomorrow.year, tomorrow.month, tomorrow.day, 23, 59, tzinfo=timezone.utc
+        ),
         description="This is your last chance to file an appeal against the denial notice.",
     )
     event3.save()
