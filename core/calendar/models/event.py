@@ -149,6 +149,9 @@ class CalendarEvent(models.Model):
         if recurrence_until is not None:
             self.recurrence_until = recurrence_until
 
+    def __str__(self):
+        return f"CalendarEvent: {self.pk}, title: {self.title}, creator: {self.creator.name}"
+
 
 class CalendarEventGuest(models.Model):
     class AttendanceStatus(models.TextChoices):
