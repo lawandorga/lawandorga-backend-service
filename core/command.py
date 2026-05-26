@@ -8,6 +8,7 @@ from django.http import (
     HttpResponseBadRequest,
     HttpResponseNotAllowed,
     HttpResponseNotFound,
+    JsonResponse,
 )
 from django.utils.module_loading import import_string
 from pydantic import ValidationError
@@ -115,5 +116,8 @@ def django_command(request: HttpRequest) -> HttpResponse:
     command_result = handle_error(command_fn)
     if isinstance(command_result, HttpResponse):
         return command_result
+
+    if isinstance(command_result, dict):
+        return JsonResponse(command_result)
 
     return HttpResponse()

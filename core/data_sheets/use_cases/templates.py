@@ -24,9 +24,10 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES])
-def create_template(__actor: OrgUser, name: str):
+def create_template(__actor: OrgUser, name: str) -> dict[str, int]:
     template = DataSheetTemplate.create(name=name, org=__actor.org)
     template.save()
+    return {"id": template.id}
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES])
