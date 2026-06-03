@@ -55,7 +55,7 @@ license = { text = "GNU Affero General Public License v3.0" }
 dependencies = [
     "gunicorn==26.0.0",
     "djangorestframework>=3.16,<3.18",
-    "psycopg2==2.9.*",
+    "psycopg2-binary==2.9.*",
     "django-cors-headers==4.9.*",
     "django-debug-toolbar==6.*",
     "cryptography>=46.0,<48.1",

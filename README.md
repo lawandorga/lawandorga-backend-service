@@ -18,10 +18,6 @@ This project uses Django, which is based on python.
 
 ## Pre Setup
 
-Install the required Python packages:
-
-`pip install Django pytz oidc-provider djangorestframework pydantic django-storages django-solo django-cors-headers ics cryptography bleach pyotp whitenoise weasyprint argon2-cffi`
-
 Make sure you have uv installed:
 
 `https://docs.astral.sh/uv/getting-started/installation/`
