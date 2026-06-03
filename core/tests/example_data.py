@@ -39,7 +39,7 @@ from core.models import (
     Permission,
     UserProfile,
 )
-from core.org.models import Org
+from core.org.models import Meta, Org
 from core.permissions import static
 from core.questionnaires.models import QuestionnaireQuestion, QuestionnaireTemplate
 from core.seedwork.encryption import AESEncryption
@@ -57,18 +57,25 @@ def add_permissions_to_group(group: Group, permission_name):
 
 # create
 def create_orgs() -> tuple[Org, Org]:
-    org1 = Org.objects.create(
+    dummy_meta, _ = Meta.objects.get_or_create(name="Dummy Meta")
+    org1, _ = Org.objects.get_or_create(
         name="Dummy RLC",
-        id=3033,
+        defaults={
+            "meta": dummy_meta,
+        },
     )
-    org2 = Org.objects.create(
+
+    org2, _ = Org.objects.get_or_create(
         name="Neighbourhood RLC",
-        id=1,
+        defaults={
+            "meta": dummy_meta,
+        },
     )
+
     return org1, org2
 
 
-def create_users(org1, org2):
+def create_users(org1: Org, org2: Org, *, include_org2: bool = True):
     users = [
         (
             "ludwig.maximilian@outlook.de",

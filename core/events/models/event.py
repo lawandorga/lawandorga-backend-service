@@ -42,7 +42,7 @@ class EventsEvent(models.Model):
         ("GLOBAL", "Global"),
     ]
 
-    org = models.ForeignKey(Org, related_name="events", on_delete=models.PROTECT)
+    org = models.ForeignKey(Org, related_name="events", on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     level = models.CharField(max_length=200, choices=LEVEL_CHOICES, default="ORG")
@@ -53,7 +53,7 @@ class EventsEvent(models.Model):
 
     class Meta:
         verbose_name = "EVT_EventsEvent"
-        verbose_name = "EVT_EventsEvents"
+        verbose_name_plural = "EVT_EventsEvents"
         ordering = ["start_time"]
 
     @staticmethod
