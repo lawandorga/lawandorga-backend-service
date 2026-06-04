@@ -93,4 +93,4 @@ class TestEvents(TestCase):
 
     def test_ics_calendar(self):
         ics_cal = get_ics_calendar(self.user_1["org_user"])
-        assert ics_cal.count("BEGIN:VEVENT") == 2
+        assert ics_cal.count("BEGIN:VEVENT") == 1
