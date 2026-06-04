@@ -6,12 +6,7 @@ from core.events.models import EventsEvent
 
 
 def get_ics_calendar(org_user: OrgUser):
-
-    events = EventsEvent.objects.filter(
-        Q(level="META", org__meta=org_user.org.meta)
-        | Q(level="GLOBAL")
-        | Q(org=org_user.org)
-    )
+    events = EventsEvent.objects.filter(Q(org=org_user.org))
 
     c = ics.Calendar()
     for event in events:
