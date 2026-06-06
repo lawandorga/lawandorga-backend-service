@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Optional
 from uuid import UUID
 
-from django.db.models import Q
+from django.db.models import BooleanField, ExpressionWrapper, Q
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
@@ -26,6 +26,7 @@ class OutputTask(BaseModel):
     progress: int
     priority: str
     is_done: bool
+    is_new: bool
     comments: list[Any]
     tags_as_list: list[str]
     deadline: Optional[datetime]
@@ -43,5 +44,11 @@ router = Router()
     output_schema=list[OutputTask],
 )
 def query__tasks(org_user: OrgUser):
-    tasks = Task.objects.filter(Q(creator=org_user) | Q(assignees=org_user)).distinct()
+    last_login = org_user.user.last_login
+    tasks = Task.objects.filter(Q(creator=org_user) | Q(assignees=org_user)).distinct().annotate(
+        is_new=ExpressionWrapper(
+            Q(created_at__gt=last_login) if last_login else Q(pk__isnull=True),
+            output_field=BooleanField(),
+        )
+    )
     return tasks
