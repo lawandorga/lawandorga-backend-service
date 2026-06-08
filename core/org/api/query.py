@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -40,6 +41,7 @@ class OutputMember(BaseModel):
     id: int
     name: str
     email: str
+    last_login_month: Optional[str]
     activity_state: str
 
     model_config = ConfigDict(from_attributes=True)

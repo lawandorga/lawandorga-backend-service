@@ -58,6 +58,17 @@ def test_list_users(user, group, db):
     assert response.status_code == 200 and "members" in response.json()
 
 
+def test_group_members_include_activity_information(user, group, db):
+    c = Client()
+    c.login(**user)
+    response = c.get("/api/org/query/group/{}/".format(group.id))
+    members = response.json()["members"]
+    assert len(members) > 0
+    for member in members:
+        assert "activity_state" in member
+        assert "last_login_month" in member
+
+
 def test_add_member(user, group, db, user_2):
     c = Client()
     c.login(**user)
