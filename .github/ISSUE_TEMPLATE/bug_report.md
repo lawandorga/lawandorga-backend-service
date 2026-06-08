@@ -1,7 +1,11 @@
 ---
 name: "Bug Report \U0001F41B"
 about: Report a bug to help us to fix and improve the app
+title: ''
+labels: ''
+assignees: ''
 type: Bug
+
 ---
 
 ### Describe the Bug
