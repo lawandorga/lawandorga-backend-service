@@ -814,7 +814,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "black", specifier = "==26.*" },
-    { name = "bleach", specifier = "==6.3.*" },
+    { name = "bleach", specifier = ">=6.3,<6.5" },
     { name = "boto3", specifier = ">=1.42,<1.44" },
     { name = "coverage", specifier = ">=7.13,<7.15" },
     { name = "cryptography", specifier = ">=46.0,<48.1" },
@@ -848,7 +848,7 @@ requires-dist = [
     { name = "qrcode", extras = ["pil"], specifier = "==8.*" },
     { name = "ruff", specifier = "==0.15.*" },
     { name = "tach" },
-    { name = "types-bleach", specifier = ">=6.2,<6.4" },
+    { name = "types-bleach", specifier = ">=6.2,<6.5" },
     { name = "types-markdown", marker = "extra == 'dev'", specifier = ">=3.5.0" },
     { name = "types-pytz" },
     { name = "types-requests" },
