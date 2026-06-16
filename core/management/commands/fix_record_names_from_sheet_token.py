@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from core.data_sheets.models.data_sheet import DataSheetStandardEntry
+from core.folders.models import FOL_Folder
 from core.folders.use_cases.folder import rename_item_in_folder
 from core.org.models.org import Org
 from core.records.models.record import RecordsRecord
@@ -73,9 +74,7 @@ class Command(BaseCommand):
                 hint = f" Similar org names: {', '.join(similar)}"
             raise CommandError(f"Org not found: '{org_name}'.{hint}") from exc
 
-        records_qs = RecordsRecord.objects.filter(
-            org=org, name=only_if_record_name
-        ).order_by("id")
+        records_qs = RecordsRecord.objects.filter(org=org).order_by("id")
         if limit and limit > 0:
             records_qs = records_qs[:limit]
 
@@ -155,9 +154,16 @@ class Command(BaseCommand):
             if dry_run:
                 continue
 
+            folder = FOL_Folder.objects.get(org=org, uuid=record.folder_uuid)
+
+            if len(folder.name) > 4:
+                continue
+
             with transaction.atomic():
                 record.name = new_name
                 record.save(update_fields=["name"])
+                folder.name = new_name
+                folder.save(update_fields=["name"])
                 rename_item_in_folder(
                     actor,
                     record.REPOSITORY,
