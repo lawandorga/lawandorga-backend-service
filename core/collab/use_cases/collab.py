@@ -6,33 +6,17 @@ from core.collab.models.collab import Collab
 from core.collab.repositories.collab import CollabRepository
 from core.collab.use_cases.template import get_template
 from core.data_sheets.use_cases.finders import find_record_from_folder_uuid
-from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.seedwork.use_case_layer import UseCaseError, use_case
 from messagebus.domain.collector import EventCollector
 
 
-class TreeFolder:
-    @classmethod
-    def create(cls, org_pk: int, fr: FolderRepository) -> dict[str, "TreeFolder"]:
-        tree: dict[str, "TreeFolder"] = {}
-        folders = fr.get_list(org_pk)
-        for f in folders:
-            if f.parent_uuid is None:
-                tree[f.name] = TreeFolder.create_single(f, folders)
-        return tree
-
-    @classmethod
-    def create_single(cls, folder: Folder, folders: list[Folder]) -> "TreeFolder":
-        children = {}
-        for child in folders:
-            if child.parent_uuid == folder.uuid:
-                children[child.name] = cls.create_single(child, folders)
-        return cls(folder, children)
-
-    def __init__(self, folder: Folder, children: dict[str, "TreeFolder"]) -> None:
-        self.folder = folder
-        self.children = children
+def update_record_updated_at(__actor: OrgUser, folder_uuid: UUID):
+    record = find_record_from_folder_uuid(__actor, folder_uuid)
+    if not record:
+        return
+    record.update_timestamps()
+    record.save()
 
 
 @use_case
@@ -53,9 +37,7 @@ def create_collab(
         user=__actor, title=title, folder=folder, collector=collector
     )
     cr.save_document(collab, __actor, folder)
-    record = find_record_from_folder_uuid(__actor, collab.folder_uuid)
-    record.update_timestamps()
-    record.save()
+    update_record_updated_at(__actor, folder_uuid)
     return collab
 
 
@@ -76,9 +58,7 @@ def update_collab_title(
         )
     collab.update_title(title=title, collector=collector)
     cr.save_document(collab, __actor, folder)
-    record = find_record_from_folder_uuid(__actor, collab.folder_uuid)
-    record.update_timestamps()
-    record.save()
+    update_record_updated_at(__actor, collab.folder_uuid)
     return collab
 
 
@@ -122,14 +102,18 @@ def sync_collab(
         )
     collab.sync(text=text, user=__actor)
     cr.save_document(collab, __actor, folder)
-    record = find_record_from_folder_uuid(__actor, collab.folder_uuid)
-    record.update_timestamps()
-    record.save()
+    update_record_updated_at(__actor, collab.folder_uuid)
     return collab
 
 
 @use_case
 def delete_collab(
-    __actor: OrgUser, collab_uuid: UUID, cr: CollabRepository, collector: EventCollector
+    __actor: OrgUser,
+    collab_uuid: UUID,
+    cr: CollabRepository,
+    fr: FolderRepository,
+    collector: EventCollector,
 ):
+    collab = cr.get_document(collab_uuid, __actor, fr)
+    update_record_updated_at(__actor, collab.folder_uuid)
     cr.delete_document(collab_uuid, __actor, collector)

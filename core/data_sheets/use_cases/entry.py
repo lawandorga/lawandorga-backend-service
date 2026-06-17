@@ -18,6 +18,8 @@ from core.seedwork.use_case_layer import UseCaseError, use_case
 
 def update_record_in_folder(__actor: OrgUser, folder_uuid: UUID):
     record = find_record_from_folder_uuid(__actor, folder_uuid)
+    if not record:
+        return
     sheets = find_sheets_from_folder_uuid(__actor, folder_uuid)
     record.set_attributes(sheets)
     record.save()
