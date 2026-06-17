@@ -127,3 +127,8 @@ class RecordsRecord(FolderItemMixin, models.Model):
         attrs["Created"] = self.created.strftime("%d.%m.%Y %H:%M:%S")
         attrs["Updated"] = self.updated.strftime("%d.%m.%Y %H:%M:%S")
         self.attributes = json.dumps(attrs)
+
+    def update_timestamps(self):
+        attrs = json.loads(self.attributes)
+        attrs["Updated"] = self.updated.strftime("%d.%m.%Y %H:%M:%S")
+        self.attributes = json.dumps(attrs)

@@ -5,6 +5,7 @@ from core.auth.models.org_user import OrgUser
 from core.collab.models.collab import Collab
 from core.collab.repositories.collab import CollabRepository
 from core.collab.use_cases.template import get_template
+from core.data_sheets.use_cases.finders import find_record_from_folder_uuid
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.seedwork.use_case_layer import UseCaseError, use_case
@@ -52,6 +53,9 @@ def create_collab(
         user=__actor, title=title, folder=folder, collector=collector
     )
     cr.save_document(collab, __actor, folder)
+    record = find_record_from_folder_uuid(__actor, collab.folder_uuid)
+    record.update_timestamps()
+    record.save()
     return collab
 
 
@@ -72,6 +76,9 @@ def update_collab_title(
         )
     collab.update_title(title=title, collector=collector)
     cr.save_document(collab, __actor, folder)
+    record = find_record_from_folder_uuid(__actor, collab.folder_uuid)
+    record.update_timestamps()
+    record.save()
     return collab
 
 
@@ -115,6 +122,9 @@ def sync_collab(
         )
     collab.sync(text=text, user=__actor)
     cr.save_document(collab, __actor, folder)
+    record = find_record_from_folder_uuid(__actor, collab.folder_uuid)
+    record.update_timestamps()
+    record.save()
     return collab
 
 

@@ -50,8 +50,8 @@ def find_field_from_id(actor: OrgUser, id: int) -> RecordField:
 
 
 @finder_function
-def find_record_from_folder_uuid(actor: OrgUser, v: UUID) -> RecordsRecord | None:
-    return RecordsRecord.objects.filter(folder_uuid=v, org_id=actor.org_id).first()
+def find_record_from_folder_uuid(actor: OrgUser, v: UUID) -> RecordsRecord:
+    return RecordsRecord.objects.filter(folder_uuid=v, org_id=actor.org_id).get()
 
 
 @finder_function
