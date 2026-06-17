@@ -32,11 +32,6 @@ class Command(BaseCommand):
             help="DataSheet standard field name to copy from (default: 'token')",
         )
         parser.add_argument(
-            "--only-if-record-name",
-            default="-",
-            help="Only update records whose current name equals this value (default: '-')",
-        )
-        parser.add_argument(
             "--dry-run",
             action="store_true",
             help="Do not write changes, only print what would happen",
@@ -56,7 +51,6 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:  # type: ignore[override]
         org_name: str = options["org_name"]
         field_name: str = options["field_name"]
-        only_if_record_name: str = options["only_if_record_name"]
         dry_run: bool = options["dry_run"]
         limit: int = options["limit"]
         verbose: bool = options["verbose"]
