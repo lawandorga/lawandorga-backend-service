@@ -3,6 +3,7 @@ from datetime import datetime
 from uuid import UUID
 
 from django.http import FileResponse
+from django.shortcuts import get_object_or_404
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
@@ -63,10 +64,10 @@ class InputQuestionnaire(BaseModel):
     output_schema=OutputQuestionnaire,
 )
 def query__retrieve_questionnaire(org_user: OrgUser, data: InputQuestionnaire):
-    questionnaire = (
-        Questionnaire.objects.select_related("template")
-        .prefetch_related("answers")
-        .get(template__org_id=org_user.org_id, uuid=data.uuid)
+    questionnaire = get_object_or_404(
+        Questionnaire.objects.select_related("template").prefetch_related("answers"),
+        template__org_id=org_user.org_id,
+        uuid=data.uuid,
     )
     answers = [
         answer.decrypt(user=org_user) for answer in list(questionnaire.answers.all())
