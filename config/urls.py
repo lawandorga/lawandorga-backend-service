@@ -36,7 +36,7 @@ handler500 = "config.handlers.handler500"
 
 
 urlpatterns = [
-    path("error/", TemplateView.as_view(template_name="")),
+    # path("error/", TemplateView.as_view(template_name="")),
     path("email/", EmailView.as_view()),
     path("timeout/", TimeoutView.as_view()),
     path("", include(api_urls)),
