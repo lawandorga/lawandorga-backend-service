@@ -58,7 +58,7 @@ dependencies = [
     "psycopg2-binary==2.9.*",
     "django-cors-headers==4.9.*",
     "django-debug-toolbar==6.*",
-    "cryptography>=46.0,<48.1",
+    "cryptography>=48.0.1,<48.1",
     "django-solo==2.5.*",
     "django-storages==1.14.*",
     "whitenoise==6.12.*",
