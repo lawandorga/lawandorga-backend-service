@@ -296,6 +296,50 @@ def test_task_assignee_ids_and_names(db):
     assert task.assignee_names == [assignee.name]
 
 
+def test_create_task_sanitizes_description(db):
+    org = create_raw_org(save=True)
+    creator = create_raw_org_user(org=org, save=True)
+    assignee = create_raw_org_user(
+        org=org, email="assignee@test.de", name="Assignee", save=True
+    )
+
+    malicious_description = (
+        "<p>Hello</p><script>alert('xss')</script>" '<img src=x onerror="alert(1)">'
+    )
+    create_task(
+        creator,
+        assignee_ids=[assignee.pk],
+        title="XSS Task",
+        description=malicious_description,
+    )
+
+    task = Task.objects.get()
+    assert "<script>" not in task.description
+    assert "<img" not in task.description
+    assert "<p>Hello</p>" in task.description
+
+
+def test_update_task_sanitizes_description(db):
+    org = create_raw_org(save=True)
+    creator = create_raw_org_user(org=org, save=True)
+    assignee = create_raw_org_user(
+        org=org, email="assignee@test.de", name="Assignee", save=True
+    )
+
+    create_task(creator, assignee_ids=[assignee.pk], title="Task")
+    task = Task.objects.get()
+
+    update_task(
+        creator,
+        task_id=task.uuid,
+        description="<p>Safe</p><script>alert('xss')</script>",
+    )
+
+    task.refresh_from_db()
+    assert "<script>" not in task.description
+    assert "<p>Safe</p>" in task.description
+
+
 def test_query_tasks(db):
     org = create_raw_org(save=True)
     creator = create_raw_org_user(org=org, save=True)

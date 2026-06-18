@@ -2,12 +2,21 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
+import bleach
 from django.utils import timezone
 
 from core.auth.models.org_user import OrgUser
 from core.seedwork.use_case_layer import use_case
 from core.tasks.models.task import Task, validate_tags
 from core.tasks.use_cases.finder import task_from_uuid
+
+
+def clean_description_html(description: str) -> str:
+    return bleach.clean(
+        description,
+        tags=["a", "p", "strong", "em", "ul", "ol", "li", "s"],
+        attributes={"a": ["href"]},
+    )
 
 
 @use_case
@@ -22,11 +31,12 @@ def create_task(
     priority: str = "medium",
     progress: int = 0,
 ):
+    clean_description = clean_description_html(description)
     Task.create(
         __actor,
         assignee_ids,
         title,
-        description,
+        clean_description,
         page_url,
         deadline,
         tags=tags,
@@ -57,7 +67,7 @@ def update_task(
     if title is not None:
         task.title = title
     if description is not None:
-        task.description = description
+        task.description = clean_description_html(description)
     if page_url is not None:
         task.page_url = page_url
     if progress is not None:
