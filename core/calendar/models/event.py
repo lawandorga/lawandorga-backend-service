@@ -45,6 +45,7 @@ class CalendarEvent(models.Model):
     event_type = models.CharField(max_length=20, choices=EventType.choices)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(null=True, blank=True)
+    is_all_day = models.BooleanField(default=False)
     location = models.CharField(max_length=500, blank=True, default="")
     recurrence_rule = models.CharField(max_length=200, blank=True, default="")
     recurrence_until = models.DateField(null=True, blank=True)
@@ -75,6 +76,7 @@ class CalendarEvent(models.Model):
         location: str = "",
         recurrence_rule: RecurrenceRule | None = None,
         recurrence_until: date | None = None,
+        is_all_day: bool = False,
     ) -> "CalendarEvent":
         if end_time is not None and start_time > end_time:
             raise DomainError("The start time must be before the end time.")
@@ -88,6 +90,7 @@ class CalendarEvent(models.Model):
             location=location,
             recurrence_rule=str(recurrence_rule) if recurrence_rule is not None else "",
             recurrence_until=recurrence_until,
+            is_all_day=is_all_day,
         )
 
     @staticmethod
@@ -126,6 +129,7 @@ class CalendarEvent(models.Model):
         location: str | None = None,
         recurrence_rule: RecurrenceRule | None = None,
         recurrence_until: date | None = None,
+        is_all_day: bool | None = None,
     ) -> None:
         new_start = start_time if start_time is not None else self.start_time
         new_end = end_time if end_time is not None else self.end_time
@@ -148,6 +152,8 @@ class CalendarEvent(models.Model):
             self.recurrence_rule = recurrence_rule
         if recurrence_until is not None:
             self.recurrence_until = recurrence_until
+        if is_all_day is not None:
+            self.is_all_day = is_all_day
 
     def __str__(self):
         return f"CalendarEvent: {self.pk}, title: {self.title}, creator: {self.creator.name}"

@@ -18,6 +18,7 @@ def create_event(
     location: str | None = None,
     recurrence_rule: str | None = None,
     recurrence_until: date | None = None,
+    is_all_day: bool = False,
 ) -> CalendarEvent:
     event = CalendarEvent.create(
         creator=__actor,
@@ -29,6 +30,7 @@ def create_event(
         location=location or "",
         recurrence_rule=RecurrenceRule.create(recurrence_rule),
         recurrence_until=recurrence_until,
+        is_all_day=is_all_day,
     )
     event.save()
     return event
@@ -46,6 +48,7 @@ def update_event(
     location: str | None = None,
     recurrence_rule: str | None = None,
     recurrence_until: date | None = None,
+    is_all_day: bool | None = None,
 ) -> CalendarEvent:
     event = CalendarEvent.objects.get(uuid=event_uuid)
     if event.creator != __actor:
@@ -63,6 +66,7 @@ def update_event(
             else None
         ),
         recurrence_until=recurrence_until,
+        is_all_day=is_all_day,
     )
     event.save()
     return event
