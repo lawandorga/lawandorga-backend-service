@@ -380,13 +380,12 @@ class Folder:
         return None
 
     def get_encryption_key(self, requestor: "OrgUser") -> "SymmetricKey":
-        assert len(self.__keys) or self.enc_parent_key is not None
 
         key = self._get_encryption_key(requestor)
         if key:
             return key
 
-        raise DomainError("No key was found for this folder.")
+        raise DomainError(f"No key was found for this folder: '{self.__name}'.")
 
     def get_decryption_key(self, requestor: "OrgUser") -> "SymmetricKey":
         # the key is symmetric therefore the encryption and decryption key is the same
@@ -395,24 +394,14 @@ class Folder:
     def __set_parent(self, parent: "Folder", by: "OrgUser"):
         self.__parent = parent
 
-        # get the key of self
-        if len(self.__keys) == 0 and self.__enc_parent_key is None:
-            key = SymmetricKey.generate(SymmetricEncryptionV1)
-
-        else:
-            key = self.get_decryption_key(requestor=by)
-
+        key = self.get_encryption_key(requestor=by)
         parent_key = ParentKey(
             folder_uuid=self.__uuid,
             key=key,
         )
 
-        # encrypt the new parent key
         lock_key = parent.get_encryption_key(requestor=by)
-        enc_parent_key = parent_key.encrypt_self(lock_key)
-
-        # add the parent key to keys
-        self.__enc_parent_key = enc_parent_key
+        self.__enc_parent_key = parent_key.encrypt_self(lock_key)
 
     def set_parent(self, parent: "Folder", by: "OrgUser"):
         assert by is not None
@@ -434,6 +423,18 @@ class Folder:
     def stop_inheritance(self):
         self.__stop_inherit = True
 
+    def __move(self, parent: "Folder", by: "OrgUser"):
+        key = self.get_decryption_key(requestor=by)
+        parent_key = ParentKey(
+            folder_uuid=self.__uuid,
+            key=key,
+        )
+
+        self.__parent = parent
+
+        lock_key = parent.get_encryption_key(requestor=by)
+        self.__enc_parent_key = parent_key.encrypt_self(lock_key)
+
     def move(self, target: "Folder", by: "OrgUser"):
         if not self.has_access(by):
             raise DomainError("You have no access to this folder.")
@@ -449,10 +450,7 @@ class Folder:
                 )
             parent = parent.parent
 
-        self.__enc_parent_key = None
-
-        self.__parent = None
-        self.set_parent(target, by)
+        self.__move(target, by)
 
     def grant_access(self, to: "OrgUser", by: Optional["OrgUser"] = None):
         if self.has_access(to):

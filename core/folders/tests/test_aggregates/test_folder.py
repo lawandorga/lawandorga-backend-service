@@ -274,10 +274,15 @@ def test_folder_move_errors():
 
 def test_folder_init_without_keys():
     user = UserObject()
+    user2 = UserObject()
     folder_1 = Folder.create("1")
+    folder_1.grant_access(user)
+    folder_1.grant_access(user2, user)
     folder_2 = Folder.create("2")
-    with pytest.raises(AssertionError):
-        folder_2.set_parent(folder_1, user)
+    folder_2.grant_access(user)
+    folder_2.set_parent(folder_1, user)
+    assert folder_2.parent == folder_1
+    assert folder_2.has_access(user2)
 
 
 def test_folder_move_inside_child_error():
