@@ -30,12 +30,10 @@ jobs:
         run: uv sync
 
       - name: Download Test Results
-        uses: dawidd6/action-download-artifact@v21
+        uses: actions/download-artifact@v5
         with:
-          workflow: pipeline.yml
           name: coverage
-          commit: ${{ github.event.workflow_run.head_commit.id }}
-          workflow_conclusion: in_progress
+          path: .
 
       - name: Scan
         uses: SonarSource/sonarqube-scan-action@v8
