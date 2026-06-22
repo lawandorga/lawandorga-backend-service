@@ -52,16 +52,16 @@ def user_3(db, org):
 
 
 def test_list_users(user, group, db):
-    c = Client()
-    c.login(**user)
-    response = c.get("/api/org/query/group/{}/".format(group.id))
+    client = Client()
+    client.login(**user)
+    response = client.get("/api/org/query/group/{}/".format(group.id))
     assert response.status_code == 200 and "members" in response.json()
 
 
 def test_group_members_include_activity_information(user, group, db):
-    c = Client()
-    c.login(**user)
-    response = c.get("/api/org/query/group/{}/".format(group.id))
+    client = Client()
+    client.login(**user)
+    response = client.get("/api/org/query/group/{}/".format(group.id))
     members = response.json()["members"]
     assert len(members) > 0
     for member in members:
@@ -70,10 +70,10 @@ def test_group_members_include_activity_information(user, group, db):
 
 
 def test_add_member(user, group, db, user_2):
-    c = Client()
-    c.login(**user)
+    client = Client()
+    client.login(**user)
     user["org_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
-    response = c.post(
+    response = client.post(
         "/api/command/",
         data=json.dumps(
             {
@@ -88,9 +88,9 @@ def test_add_member(user, group, db, user_2):
 
 
 def test_add_member_permission_error(user, group, db, user_2):
-    c = Client()
-    c.login(**user)
-    response = c.post(
+    client = Client()
+    client.login(**user)
+    response = client.post(
         "/api/command/",
         data=json.dumps(
             {
@@ -105,13 +105,13 @@ def test_add_member_permission_error(user, group, db, user_2):
 
 
 def test_remove_member(user, group, db, user_2, user_3):
-    c = Client()
-    c.login(**user)
+    client = Client()
+    client.login(**user)
     user["org_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     group.add_member(user_2["org_user"], by=user["org_user"])
     group.add_member(user_3["org_user"], by=user["org_user"])
     group.save()
-    response = c.post(
+    response = client.post(
         "/api/command/",
         data=json.dumps(
             {
@@ -126,14 +126,14 @@ def test_remove_member(user, group, db, user_2, user_3):
 
 
 def test_add_member_fails_different_org(user, group, db):
-    c = Client()
-    c.login(**user)
+    client = Client()
+    client.login(**user)
     user["org_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     org2 = Org.objects.create(name="Another")
     another_user = test_helpers.create_org_user(
         email="another@law-orga.de", name="Another", org=org2
     )
-    response = c.post(
+    response = client.post(
         "/api/command/",
         data=json.dumps(
             {
@@ -148,12 +148,12 @@ def test_add_member_fails_different_org(user, group, db):
 
 
 def test_add_member_already_member(user, group, db, user_2):
-    c = Client()
-    c.login(**user)
+    client = Client()
+    client.login(**user)
     user["org_user"].grant(PERMISSION_ADMIN_MANAGE_GROUPS)
     group.add_member(user_2["org_user"], by=user["org_user"])
     group.save()
-    response = c.post(
+    response = client.post(
         "/api/command/",
         data=json.dumps(
             {
