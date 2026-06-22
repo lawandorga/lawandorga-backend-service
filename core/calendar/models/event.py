@@ -8,6 +8,17 @@ from core.auth.models import OrgUser
 from core.seedwork.domain_layer import DomainError
 
 
+class _Unset:
+    """Sentinel that tells an "argument omitted" apart from an explicit ``None``.
+
+    Needed for partial updates of nullable fields: omitting the argument keeps
+    the current value, while passing ``None`` clears it.
+    """
+
+
+UNSET = _Unset()
+
+
 class RecurrenceRule(str):
     def __new__(cls, value: str = ""):
         if value is None:
@@ -45,6 +56,7 @@ class CalendarEvent(models.Model):
     event_type = models.CharField(max_length=20, choices=EventType.choices)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(null=True, blank=True)
+    is_all_day = models.BooleanField(default=False)
     location = models.CharField(max_length=500, blank=True, default="")
     recurrence_rule = models.CharField(max_length=200, blank=True, default="")
     recurrence_until = models.DateField(null=True, blank=True)
@@ -75,6 +87,7 @@ class CalendarEvent(models.Model):
         location: str = "",
         recurrence_rule: RecurrenceRule | None = None,
         recurrence_until: date | None = None,
+        is_all_day: bool = False,
     ) -> "CalendarEvent":
         if end_time is not None and start_time > end_time:
             raise DomainError("The start time must be before the end time.")
@@ -88,6 +101,7 @@ class CalendarEvent(models.Model):
             location=location,
             recurrence_rule=str(recurrence_rule) if recurrence_rule is not None else "",
             recurrence_until=recurrence_until,
+            is_all_day=is_all_day,
         )
 
     @staticmethod
@@ -122,13 +136,14 @@ class CalendarEvent(models.Model):
         description: str | None = None,
         event_type: "CalendarEvent.EventType | None" = None,
         start_time: datetime | None = None,
-        end_time: datetime | None = None,
+        end_time: datetime | None | _Unset = UNSET,
         location: str | None = None,
         recurrence_rule: RecurrenceRule | None = None,
-        recurrence_until: date | None = None,
+        recurrence_until: date | None | _Unset = UNSET,
+        is_all_day: bool | None = None,
     ) -> None:
         new_start = start_time if start_time is not None else self.start_time
-        new_end = end_time if end_time is not None else self.end_time
+        new_end = self.end_time if isinstance(end_time, _Unset) else end_time
         if new_end is not None and new_start > new_end:
             raise DomainError("The start time must be before the end time.")
 
@@ -140,14 +155,16 @@ class CalendarEvent(models.Model):
             self.event_type = event_type
         if start_time is not None:
             self.start_time = start_time
-        if end_time is not None:
+        if not isinstance(end_time, _Unset):
             self.end_time = end_time
         if location is not None:
             self.location = location
         if recurrence_rule is not None:
             self.recurrence_rule = recurrence_rule
-        if recurrence_until is not None:
+        if not isinstance(recurrence_until, _Unset):
             self.recurrence_until = recurrence_until
+        if is_all_day is not None:
+            self.is_all_day = is_all_day
 
     def __str__(self):
         return f"CalendarEvent: {self.pk}, title: {self.title}, creator: {self.creator.name}"

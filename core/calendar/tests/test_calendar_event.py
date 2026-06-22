@@ -55,3 +55,44 @@ def test_update_calendar_event_recurrence_rule(db):
     event.save()
 
     assert event.recurrence_rule == "FREQ=MONTHLY"
+
+
+def test_update_information_keeps_end_time_when_argument_is_omitted(db):
+    user_data = test_helpers.create_org_user(save=True)
+    user = user_data["org_user"]
+    start = timezone.now()
+    end = start + timedelta(hours=1)
+
+    event = CalendarEvent.create(
+        creator=user,
+        title="Weekly meeting",
+        event_type=CalendarEvent.EventType.MEETING,
+        start_time=start,
+        end_time=end,
+    )
+    event.save()
+
+    event.update_information(title="Renamed meeting")
+
+    assert event.title == "Renamed meeting"
+    assert event.end_time == end
+
+
+def test_update_information_clears_end_time_when_none_is_passed(db):
+    user_data = test_helpers.create_org_user(save=True)
+    user = user_data["org_user"]
+    start = timezone.now()
+    end = start + timedelta(hours=1)
+
+    event = CalendarEvent.create(
+        creator=user,
+        title="Weekly meeting",
+        event_type=CalendarEvent.EventType.MEETING,
+        start_time=start,
+        end_time=end,
+    )
+    event.save()
+
+    event.update_information(end_time=None)
+
+    assert event.end_time is None

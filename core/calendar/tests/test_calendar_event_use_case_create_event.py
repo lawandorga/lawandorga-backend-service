@@ -32,6 +32,24 @@ def test_create_event_minimal_inputs_persists_defaults(db):
     assert event.location == ""
     assert event.recurrence_rule == ""
     assert event.recurrence_until is None
+    assert event.is_all_day is False
+
+
+def test_create_event_can_be_all_day(db):
+    user_data = test_helpers.create_org_user(save=True)
+    actor = user_data["org_user"]
+
+    start = timezone.now()
+
+    event = create_event(
+        __actor=actor,
+        title="Important deadline",
+        event_type=CalendarEvent.EventType.DEADLINE,
+        start_time=start,
+        is_all_day=True,
+    )
+
+    assert event.is_all_day is True
 
 
 def test_create_event_with_optional_fields(db):

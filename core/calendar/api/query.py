@@ -19,6 +19,7 @@ class OutputCalendarEvent(BaseModel):
     event_type: str
     start_time: datetime
     end_time: datetime | None
+    is_all_day: bool
     location: str
     recurrence_rule: str
     recurrence_until: date | None
