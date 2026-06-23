@@ -57,7 +57,7 @@ dependencies = [
     "djangorestframework>=3.16,<3.18",
     "psycopg2-binary==2.9.*",
     "django-cors-headers==4.9.*",
-    "django-debug-toolbar==6.*",
+    "django-debug-toolbar>=6,<8",
     "cryptography>=48.0.1,<49.1",
     "django-solo==2.5.*",
     "django-storages==1.14.*",
