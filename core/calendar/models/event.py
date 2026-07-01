@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from django.db import models
@@ -7,16 +8,8 @@ from django.db.models import Q
 from core.auth.models import OrgUser
 from core.seedwork.domain_layer import DomainError
 
-
-class _Unset:
-    """Sentinel that tells an "argument omitted" apart from an explicit ``None``.
-
-    Needed for partial updates of nullable fields: omitting the argument keeps
-    the current value, while passing ``None`` clears it.
-    """
-
-
-UNSET = _Unset()
+if TYPE_CHECKING:
+    from core.org.models import Group, Org
 
 
 class RecurrenceRule(str):
@@ -55,21 +48,16 @@ class CalendarEvent(models.Model):
     description = models.TextField(blank=True, default="")
     event_type = models.CharField(max_length=20, choices=EventType.choices)
     start_time = models.DateTimeField()
-    end_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField()
     is_all_day = models.BooleanField(default=False)
     location = models.CharField(max_length=500, blank=True, default="")
     recurrence_rule = models.CharField(max_length=200, blank=True, default="")
     recurrence_until = models.DateField(null=True, blank=True)
-    guest_users: models.ManyToManyField["OrgUser", "CalendarEventGuest"] = (
-        models.ManyToManyField(
-            OrgUser,
-            through="CalendarEventGuest",
-            related_name="guest_at_events",
-            blank=True,
-        )
-    )
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+
+    if TYPE_CHECKING:
+        shares: models.QuerySet["CalendarEventShare"]
 
     class Meta:
         verbose_name = "EVT_CalendarEvent"
@@ -82,14 +70,14 @@ class CalendarEvent(models.Model):
         title: str,
         event_type: "CalendarEvent.EventType",
         start_time: datetime,
-        end_time: datetime | None = None,
+        end_time: datetime,
         description: str = "",
         location: str = "",
         recurrence_rule: RecurrenceRule | None = None,
         recurrence_until: date | None = None,
         is_all_day: bool = False,
     ) -> "CalendarEvent":
-        if end_time is not None and start_time > end_time:
+        if start_time > end_time:
             raise DomainError("The start time must be before the end time.")
         return cls(
             creator=creator,
@@ -108,11 +96,31 @@ class CalendarEvent(models.Model):
     def get_accessible_events_for_user(
         org_user: OrgUser,
     ) -> models.QuerySet["CalendarEvent"]:
+        share_filter = (
+            Q(shares__shared_user=org_user)
+            | Q(shares__shared_group__members=org_user)
+            | Q(shares__shared_org=org_user.org)
+        )
         return (
-            CalendarEvent.objects.filter(Q(creator=org_user) | Q(guest_users=org_user))
+            CalendarEvent.objects.filter(Q(creator=org_user) | share_filter)
             .distinct()
             .order_by("start_time")
         )
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        share, created = CalendarEventShare.objects.get_or_create(
+            event=self,
+            shared_user=self.creator,
+            defaults={
+                "access_level": CalendarEventShare.AccessLevel.ADMIN,
+                "granted_by": self.creator,
+            },
+        )
+        if not created and share.access_level != CalendarEventShare.AccessLevel.ADMIN:
+            share.access_level = CalendarEventShare.AccessLevel.ADMIN
+            share.granted_by = self.creator
+            share.save(update_fields=["access_level", "granted_by"])
 
     @property
     def creator_id(self) -> int:
@@ -124,11 +132,165 @@ class CalendarEvent(models.Model):
 
     @property
     def guest_user_ids(self) -> list[int]:
-        return list(self.guest_users.values_list("id", flat=True))
+        return list(
+            self.shares.filter(shared_user__isnull=False)
+            .exclude(shared_user=self.creator)
+            .values_list("shared_user_id", flat=True)
+            .distinct()
+        )
 
     @property
     def guest_user_names(self) -> list[str]:
-        return list(self.guest_users.values_list("user__name", flat=True))
+        return list(
+            self.shares.filter(shared_user__isnull=False)
+            .exclude(shared_user=self.creator)
+            .values_list("shared_user__user__name", flat=True)
+            .distinct()
+        )
+
+    @property
+    def grant_targets(self) -> list[str]:
+        targets: list[str] = []
+
+        user_ids = (
+            self.shares.filter(shared_user__isnull=False)
+            .exclude(shared_user=self.creator)
+            .values_list("shared_user_id", flat=True)
+            .distinct()
+        )
+        for user_id in user_ids:
+            if user_id is not None:
+                targets.append(f"user:{user_id}")
+
+        group_ids = (
+            self.shares.filter(shared_group__isnull=False)
+            .values_list("shared_group_id", flat=True)
+            .distinct()
+        )
+        for group_id in group_ids:
+            if group_id is not None:
+                targets.append(f"group:{group_id}")
+
+        org_ids = (
+            self.shares.filter(shared_org__isnull=False)
+            .values_list("shared_org_id", flat=True)
+            .distinct()
+        )
+        for org_id in org_ids:
+            if org_id is not None:
+                targets.append(f"org:{org_id}")
+
+        return targets
+
+    def has_view_access(self, org_user: OrgUser) -> bool:
+        if self.creator_id == org_user.pk:
+            return True
+        return self.shares.filter(
+            Q(shared_user=org_user)
+            | Q(shared_group__members=org_user)
+            | Q(shared_org=org_user.org)
+        ).exists()
+
+    def has_edit_access(self, org_user: OrgUser) -> bool:
+        if self.creator_id == org_user.pk:
+            return True
+        return self.shares.filter(
+            Q(shared_user=org_user)
+            | Q(shared_group__members=org_user)
+            | Q(shared_org=org_user.org),
+            access_level__in=[
+                CalendarEventShare.AccessLevel.EDIT,
+                CalendarEventShare.AccessLevel.ADMIN,
+            ],
+        ).exists()
+
+    def has_admin_access(self, org_user: OrgUser) -> bool:
+        if self.creator_id == org_user.pk:
+            return True
+        return self.shares.filter(
+            Q(shared_user=org_user)
+            | Q(shared_group__members=org_user)
+            | Q(shared_org=org_user.org),
+            access_level=CalendarEventShare.AccessLevel.ADMIN,
+        ).exists()
+
+    def grant_access(
+        self,
+        *,
+        by: OrgUser,
+        access_level: "CalendarEventShare.AccessLevel | None" = None,
+        shared_user: OrgUser | None = None,
+        shared_group: "Group | None" = None,
+        shared_org: "Org | None" = None,
+    ) -> "CalendarEventShare":
+        access_level = access_level or CalendarEventShare.AccessLevel.VIEW
+        principal_count = sum(
+            [
+                1 if shared_user is not None else 0,
+                1 if shared_group is not None else 0,
+                1 if shared_org is not None else 0,
+            ]
+        )
+        if principal_count != 1:
+            raise DomainError("Exactly one share target must be provided.")
+
+        event_org_id = self.creator.org_id
+        if shared_user is not None and shared_user.org_id != event_org_id:
+            raise DomainError("Shared user must be in the same org as the event.")
+        if shared_group is not None and shared_group.org_id != event_org_id:
+            raise DomainError("Shared group must be in the same org as the event.")
+        if shared_org is not None and shared_org.pk != event_org_id:
+            raise DomainError("Shared org must match the event org.")
+        if (
+            shared_user is not None
+            and shared_user.pk == self.creator_id
+            and access_level != CalendarEventShare.AccessLevel.ADMIN
+        ):
+            raise DomainError("The creator share must always be ADMIN.")
+
+        share, created = CalendarEventShare.objects.get_or_create(
+            event=self,
+            shared_user=shared_user,
+            shared_group=shared_group,
+            shared_org=shared_org,
+            defaults={
+                "access_level": access_level,
+                "granted_by": by,
+            },
+        )
+        if not created:
+            share.access_level = access_level
+            share.granted_by = by
+            share.save(update_fields=["access_level", "granted_by"])
+        return share
+
+    def revoke_access(
+        self,
+        *,
+        shared_user: OrgUser | None = None,
+        shared_group: "Group | None" = None,
+        shared_org: "Org | None" = None,
+    ) -> bool:
+        principal_count = sum(
+            [
+                1 if shared_user is not None else 0,
+                1 if shared_group is not None else 0,
+                1 if shared_org is not None else 0,
+            ]
+        )
+        if principal_count != 1:
+            raise DomainError("Exactly one share target must be provided.")
+
+        share = CalendarEventShare.objects.filter(
+            event=self,
+            shared_user=shared_user,
+            shared_group=shared_group,
+            shared_org=shared_org,
+        ).first()
+        if share is None:
+            return False
+        share.delete()
+        return True
 
     def update_information(
         self,
@@ -136,14 +298,14 @@ class CalendarEvent(models.Model):
         description: str | None = None,
         event_type: "CalendarEvent.EventType | None" = None,
         start_time: datetime | None = None,
-        end_time: datetime | None | _Unset = UNSET,
+        end_time: datetime | None = None,
         location: str | None = None,
         recurrence_rule: RecurrenceRule | None = None,
-        recurrence_until: date | None | _Unset = UNSET,
+        recurrence_until: date | None = None,
         is_all_day: bool | None = None,
     ) -> None:
         new_start = start_time if start_time is not None else self.start_time
-        new_end = self.end_time if isinstance(end_time, _Unset) else end_time
+        new_end = end_time if end_time is not None else self.end_time
         if new_end is not None and new_start > new_end:
             raise DomainError("The start time must be before the end time.")
 
@@ -155,43 +317,18 @@ class CalendarEvent(models.Model):
             self.event_type = event_type
         if start_time is not None:
             self.start_time = start_time
-        if not isinstance(end_time, _Unset):
+        if end_time is not None:
             self.end_time = end_time
         if location is not None:
             self.location = location
         if recurrence_rule is not None:
             self.recurrence_rule = recurrence_rule
-        if not isinstance(recurrence_until, _Unset):
             self.recurrence_until = recurrence_until
         if is_all_day is not None:
             self.is_all_day = is_all_day
 
     def __str__(self):
         return f"CalendarEvent: {self.pk}, title: {self.title}, creator: {self.creator.name}"
-
-
-class CalendarEventGuest(models.Model):
-    class AttendanceStatus(models.TextChoices):
-        PENDING = "PENDING", "Pending"
-        ACCEPTED = "ACCEPTED", "Accepted"
-        DECLINED = "DECLINED", "Declined"
-
-    event = models.ForeignKey(
-        CalendarEvent, on_delete=models.CASCADE, related_name="guests"
-    )
-    org_user = models.ForeignKey(
-        OrgUser, on_delete=models.CASCADE, related_name="guest_events"
-    )
-    attendance_status = models.CharField(
-        max_length=20,
-        choices=AttendanceStatus.choices,
-        default=AttendanceStatus.PENDING,
-    )
-    created = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = [("event", "org_user")]
-        verbose_name = "EVT_CalendarEventGuest"
 
 
 class CalendarEventAttachment(models.Model):
@@ -204,3 +341,110 @@ class CalendarEventAttachment(models.Model):
 
     class Meta:
         verbose_name = "EVT_CalendarEventAttachment"
+
+
+class CalendarEventShare(models.Model):
+    class AccessLevel(models.TextChoices):
+        VIEW = "VIEW", "View"
+        EDIT = "EDIT", "Edit"
+        ADMIN = "ADMIN", "Admin"
+
+    event = models.ForeignKey(
+        CalendarEvent, on_delete=models.CASCADE, related_name="shares"
+    )
+    shared_user = models.ForeignKey(
+        OrgUser,
+        on_delete=models.CASCADE,
+        related_name="calendar_event_user_shares",
+        null=True,
+        blank=True,
+    )
+    shared_group = models.ForeignKey(
+        "Group",
+        on_delete=models.CASCADE,
+        related_name="calendar_event_group_shares",
+        null=True,
+        blank=True,
+    )
+    shared_org = models.ForeignKey(
+        "Org",
+        on_delete=models.CASCADE,
+        related_name="calendar_event_org_shares",
+        null=True,
+        blank=True,
+    )
+    access_level = models.CharField(
+        max_length=20,
+        choices=AccessLevel.choices,
+        default=AccessLevel.VIEW,
+    )
+    granted_by = models.ForeignKey(
+        OrgUser,
+        on_delete=models.SET_NULL,
+        related_name="granted_calendar_event_shares",
+        null=True,
+        blank=True,
+    )
+    created = models.DateTimeField(auto_now_add=True)
+
+    if TYPE_CHECKING:
+        shared_user_id: int | None
+        shared_group_id: int | None
+        shared_org_id: int | None
+
+    class Meta:
+        verbose_name = "EVT_CalendarEventShare"
+        constraints = [
+            models.CheckConstraint(
+                name="calendar_share_exactly_one_principal",
+                condition=(
+                    (
+                        Q(shared_user__isnull=False)
+                        & Q(shared_group__isnull=True)
+                        & Q(shared_org__isnull=True)
+                    )
+                    | (
+                        Q(shared_user__isnull=True)
+                        & Q(shared_group__isnull=False)
+                        & Q(shared_org__isnull=True)
+                    )
+                    | (
+                        Q(shared_user__isnull=True)
+                        & Q(shared_group__isnull=True)
+                        & Q(shared_org__isnull=False)
+                    )
+                ),
+            ),
+            models.UniqueConstraint(
+                fields=["event", "shared_user"],
+                condition=Q(shared_user__isnull=False),
+                name="calendar_share_unique_event_user",
+            ),
+            models.UniqueConstraint(
+                fields=["event", "shared_group"],
+                condition=Q(shared_group__isnull=False),
+                name="calendar_share_unique_event_group",
+            ),
+            models.UniqueConstraint(
+                fields=["event", "shared_org"],
+                condition=Q(shared_org__isnull=False),
+                name="calendar_share_unique_event_org",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["event", "shared_user"], name="cal_share_user_idx"),
+            models.Index(fields=["event", "shared_group"], name="cal_share_group_idx"),
+            models.Index(fields=["event", "shared_org"], name="cal_share_org_idx"),
+        ]
+
+    @property
+    def is_creator_share(self) -> bool:
+        return (
+            self.shared_user_id is not None
+            and self.event.creator_id == self.shared_user_id
+        )
+
+    def delete(self, using=None, keep_parents=False):
+        if self.is_creator_share:
+            raise DomainError("The creator share can not be removed.")
+        return super().delete(using=using, keep_parents=keep_parents)

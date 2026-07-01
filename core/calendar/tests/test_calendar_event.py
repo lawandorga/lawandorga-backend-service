@@ -1,8 +1,10 @@
 from datetime import timedelta
 
+import pytest
 from django.utils import timezone
 
-from core.calendar.models import CalendarEvent, RecurrenceRule
+from core.calendar.models import CalendarEvent, CalendarEventShare, RecurrenceRule
+from core.seedwork.domain_layer import DomainError
 from core.tests import test_helpers
 
 
@@ -78,7 +80,7 @@ def test_update_information_keeps_end_time_when_argument_is_omitted(db):
     assert event.end_time == end
 
 
-def test_update_information_clears_end_time_when_none_is_passed(db):
+def test_update_information_keeps_end_time_when_none_is_passed(db):
     user_data = test_helpers.create_org_user(save=True)
     user = user_data["org_user"]
     start = timezone.now()
@@ -95,4 +97,69 @@ def test_update_information_clears_end_time_when_none_is_passed(db):
 
     event.update_information(end_time=None)
 
-    assert event.end_time is None
+    assert event.end_time == end
+
+
+def test_save_creates_protected_creator_acl_share(db):
+    creator_data = test_helpers.create_org_user(save=True)
+    creator = creator_data["org_user"]
+    event = CalendarEvent.create(
+        creator=creator,
+        title="Ownership",
+        event_type=CalendarEvent.EventType.MEETING,
+        start_time=timezone.now(),
+        end_time=timezone.now() + timedelta(hours=1),
+    )
+
+    event.save()
+
+    creator_share = event.shares.get(shared_user=creator)
+    assert creator_share.access_level == CalendarEventShare.AccessLevel.ADMIN
+
+    with pytest.raises(DomainError):
+        creator_share.delete()
+
+
+def test_access_levels_allow_view_but_not_edit_for_view_shares(db):
+    creator_data = test_helpers.create_org_user(save=True)
+    viewer_data = test_helpers.create_org_user(
+        org=creator_data["org_user"].org,
+        email="viewer@test.de",
+        name="Viewer",
+        save=True,
+    )
+    editor_data = test_helpers.create_org_user(
+        org=creator_data["org_user"].org,
+        email="editor@test.de",
+        name="Editor",
+        save=True,
+    )
+
+    creator = creator_data["org_user"]
+    viewer = viewer_data["org_user"]
+    editor = editor_data["org_user"]
+
+    event = CalendarEvent.create(
+        creator=creator,
+        title="ACL",
+        event_type=CalendarEvent.EventType.MEETING,
+        start_time=timezone.now(),
+        end_time=timezone.now() + timedelta(hours=1),
+    )
+    event.save()
+
+    event.grant_access(
+        by=creator,
+        shared_user=viewer,
+        access_level=CalendarEventShare.AccessLevel.VIEW,
+    )
+    event.grant_access(
+        by=creator,
+        shared_user=editor,
+        access_level=CalendarEventShare.AccessLevel.EDIT,
+    )
+
+    assert event.has_view_access(viewer) is True
+    assert event.has_edit_access(viewer) is False
+    assert event.has_view_access(editor) is True
+    assert event.has_edit_access(editor) is True

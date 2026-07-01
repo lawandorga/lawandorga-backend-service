@@ -23,6 +23,7 @@ class OutputCalendarEvent(BaseModel):
     location: str
     recurrence_rule: str
     recurrence_until: date | None
+    grant_targets: list[str]
     guest_user_ids: list[int]
     guest_user_names: list[str]
     created: datetime
@@ -39,5 +40,5 @@ def query__calendar_events(org_user: OrgUser):
     return (
         CalendarEvent.get_accessible_events_for_user(org_user)
         .select_related("creator", "creator__user")
-        .prefetch_related("guest_users", "guests")
+        .prefetch_related("shares", "shares__shared_user", "shares__shared_user__user")
     )

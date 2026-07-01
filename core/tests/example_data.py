@@ -836,13 +836,15 @@ def create_calendar_events(creator: OrgUser):
     )
     event2.save()
 
+    time = datetime(
+        tomorrow.year, tomorrow.month, tomorrow.day, 23, 59, tzinfo=timezone.utc
+    )
     event3 = CalendarEvent.create(
         creator=creator,
         title="Deadline: File an appeal",
         event_type=CalendarEvent.EventType.DEADLINE,
-        start_time=datetime(
-            tomorrow.year, tomorrow.month, tomorrow.day, 23, 59, tzinfo=timezone.utc
-        ),
+        start_time=time,
+        end_time=time,
         description="This is your last chance to file an appeal against the denial notice.",
     )
     event3.save()

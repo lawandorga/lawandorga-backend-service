@@ -3,8 +3,12 @@ from datetime import timedelta
 from django.test import Client
 from django.utils import timezone
 
-from core.calendar.models import CalendarEvent
-from core.tests.test_helpers import create_raw_org, create_raw_org_user
+from core.calendar.models import CalendarEvent, CalendarEventShare
+from core.tests.test_helpers import (
+    create_raw_group,
+    create_raw_org,
+    create_raw_org_user,
+)
 
 
 def test_query_calendar_events_returns_accessible_events(db):
@@ -33,7 +37,11 @@ def test_query_calendar_events_returns_accessible_events(db):
         end_time=start + timedelta(days=1, hours=1),
     )
     event_invited.save()
-    event_invited.guest_users.add(guest)
+    event_invited.grant_access(
+        by=creator,
+        shared_user=guest,
+        access_level=CalendarEventShare.AccessLevel.VIEW,
+    )
 
     # Event guest owns (visible to guest)
     event_guest_owns = CalendarEvent.create(
@@ -56,3 +64,75 @@ def test_query_calendar_events_returns_accessible_events(db):
     assert "Invited" in titles
     assert "Guest owns" in titles
     assert "Creator only" not in titles
+
+
+def test_query_calendar_events_returns_group_shared_events(db):
+    org = create_raw_org(save=True)
+    creator = create_raw_org_user(org=org, email="creator@test.de", save=True)
+    group_member = create_raw_org_user(
+        org=org, email="group-member@test.de", name="Group Member", save=True
+    )
+    unrelated = create_raw_org_user(
+        org=org, email="unrelated@test.de", name="Unrelated", save=True
+    )
+    group = create_raw_group(org=org, members=[group_member], save=True)
+
+    start = timezone.now()
+    event_group_shared = CalendarEvent.create(
+        creator=creator,
+        title="Group shared",
+        event_type=CalendarEvent.EventType.MEETING,
+        start_time=start,
+        end_time=start + timedelta(hours=1),
+    )
+    event_group_shared.save()
+    event_group_shared.grant_access(
+        by=creator,
+        shared_group=group,
+        access_level=CalendarEventShare.AccessLevel.VIEW,
+    )
+
+    member_client = Client()
+    member_client.login(**getattr(group_member, "login_data"))
+    member_response = member_client.get("/api/calendar/query/events/")
+    assert member_response.status_code == 200
+    member_titles = {item["title"] for item in member_response.json()}
+    assert "Group shared" in member_titles
+
+    unrelated_client = Client()
+    unrelated_client.login(**getattr(unrelated, "login_data"))
+    unrelated_response = unrelated_client.get("/api/calendar/query/events/")
+    assert unrelated_response.status_code == 200
+    unrelated_titles = {item["title"] for item in unrelated_response.json()}
+    assert "Group shared" not in unrelated_titles
+
+
+def test_query_calendar_events_returns_org_shared_events(db):
+    org = create_raw_org(save=True)
+    creator = create_raw_org_user(org=org, email="creator@test.de", save=True)
+    org_member = create_raw_org_user(
+        org=org, email="org-member@test.de", name="Org Member", save=True
+    )
+
+    start = timezone.now()
+    event_org_shared = CalendarEvent.create(
+        creator=creator,
+        title="Org shared",
+        event_type=CalendarEvent.EventType.MEETING,
+        start_time=start,
+        end_time=start + timedelta(hours=1),
+    )
+    event_org_shared.save()
+    event_org_shared.grant_access(
+        by=creator,
+        shared_org=org,
+        access_level=CalendarEventShare.AccessLevel.VIEW,
+    )
+
+    client = Client()
+    client.login(**getattr(org_member, "login_data"))
+
+    response = client.get("/api/calendar/query/events/")
+    assert response.status_code == 200
+    titles = {item["title"] for item in response.json()}
+    assert "Org shared" in titles

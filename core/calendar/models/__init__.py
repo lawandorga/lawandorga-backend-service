@@ -1,6 +1,6 @@
 from .event import (
     CalendarEvent,
     CalendarEventAttachment,
-    CalendarEventGuest,
+    CalendarEventShare,
     RecurrenceRule,
 )

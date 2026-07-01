@@ -14,12 +14,14 @@ def test_create_event_minimal_inputs_persists_defaults(db):
     actor = user_data["org_user"]
 
     start = timezone.now()
+    end = start + timedelta(hours=1)
 
     event = create_event(
         __actor=actor,
         title="Planning",
         event_type=CalendarEvent.EventType.MEETING,
         start_time=start,
+        end_time=end,
     )
 
     assert event.pk is not None
@@ -27,7 +29,7 @@ def test_create_event_minimal_inputs_persists_defaults(db):
     assert event.title == "Planning"
     assert event.event_type == CalendarEvent.EventType.MEETING
     assert event.start_time == start
-    assert event.end_time is None
+    assert event.end_time == end
     assert event.description == ""
     assert event.location == ""
     assert event.recurrence_rule == ""
@@ -40,12 +42,14 @@ def test_create_event_can_be_all_day(db):
     actor = user_data["org_user"]
 
     start = timezone.now()
+    end = start + timedelta(hours=1)
 
     event = create_event(
         __actor=actor,
         title="Important deadline",
         event_type=CalendarEvent.EventType.DEADLINE,
         start_time=start,
+        end_time=end,
         is_all_day=True,
     )
 
