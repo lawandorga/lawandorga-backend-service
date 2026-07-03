@@ -28,6 +28,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=255)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    previous_login = models.DateTimeField(null=True, blank=True)
 
     # custom manager
     objects = UserProfileManager()

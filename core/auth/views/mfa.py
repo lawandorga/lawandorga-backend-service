@@ -114,5 +114,9 @@ class MfaLoginView(RedirectURLMixin, generic.FormView):
         )
 
     def form_valid(self, form):
-        login(self.request, form.get_user())
+        user = form.get_user()
+        previous_login = user.last_login
+        login(self.request, user)
+        user.previous_login = previous_login
+        user.save(update_fields=["previous_login"])
         return HttpResponseRedirect(self.get_success_url())
