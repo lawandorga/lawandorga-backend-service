@@ -1,7 +1,6 @@
 from typing import Optional
 from uuid import UUID
 
-from django.db.models import BooleanField, ExpressionWrapper, Q
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
@@ -15,7 +14,6 @@ class OutputNote(BaseModel):
     note: str
     is_wide: bool
     order: int
-    is_new: bool
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -101,13 +99,7 @@ def query__list_groups(org_user: OrgUser):
 
 @router.get(url="notes/", output_schema=list[OutputNote])
 def query__list_notes(org_user: OrgUser):
-    last_login = org_user.user.last_login
-    notes = Note.objects.filter(org__id=org_user.org_id).annotate(
-        is_new=ExpressionWrapper(
-            Q(created__gt=last_login) if last_login else Q(pk__isnull=True),
-            output_field=BooleanField(),
-        )
-    )
+    notes = Note.objects.filter(org__id=org_user.org_id)
     return list(notes)
 
 
