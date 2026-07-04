@@ -12,6 +12,7 @@ from core.encryption.value_objects.asymmetric_key import (
     AsymmetricKey,
     EncryptedAsymmetricKey,
 )
+from core.encryption.value_objects.encryption import EncryptionDecryptionError
 from core.encryption.value_objects.symmetric_key import (
     EncryptedSymmetricKey,
     SymmetricKey,
@@ -234,6 +235,8 @@ class Keyring(models.Model):
                 # group key is already invalidated
                 continue
             except ValueError:
+                gkey.is_invalidated = True
+            except EncryptionDecryptionError:
                 gkey.is_invalidated = True
         return not self.has_invalid_keys
 
