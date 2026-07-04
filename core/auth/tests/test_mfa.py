@@ -67,3 +67,21 @@ def test_mfa_login(db):
     assert response2.status_code == 200
     # this somehow makes this test flaky: ??
     # assert response2.context["user"].id == user.user_id
+
+
+def test_mfa_login_get_without_session_redirects_to_login(db):
+    client = Client()
+
+    response = client.get("/auth/mfa/login/")
+
+    assert response.status_code == 302
+    assert response.url == "/auth/user/login/"
+
+
+def test_mfa_login_post_without_session_redirects_to_login(db):
+    client = Client()
+
+    response = client.post("/auth/mfa/login/", {"code": 123456})
+
+    assert response.status_code == 302
+    assert response.url == "/auth/user/login/"

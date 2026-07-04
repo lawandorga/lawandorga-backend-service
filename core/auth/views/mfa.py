@@ -104,6 +104,11 @@ class MfaLoginView(RedirectURLMixin, generic.FormView):
         strip_scheme(settings.STATISTICS_FRONTEND_URL),
     }
 
+    def dispatch(self, request, *args, **kwargs):
+        if "user_pk" not in request.session or "user_key" not in request.session:
+            return HttpResponseRedirect(reverse_lazy("login"))
+        return super().dispatch(request, *args, **kwargs)
+
     def get_form(self, form_class=None):
         if form_class is None:
             form_class = self.get_form_class()
