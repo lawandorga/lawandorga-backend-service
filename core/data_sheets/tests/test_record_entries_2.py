@@ -44,10 +44,10 @@ from core.permissions.static import (
 from core.tests import test_helpers
 
 
-def get_file(text: str = "test-file-text"):
+def get_file(text: str = "test-file-text", file_name: str = "test.txt"):
     file = io.BytesIO(bytes(text, "utf-8"))
     mem_file = InMemoryUploadedFile(
-        file, "FileField", "test.txt", "text/plain", sys.getsizeof(file), None
+        file, "FileField", file_name, "text/plain", sys.getsizeof(file), None
     )
     return mem_file
 
@@ -154,6 +154,26 @@ def test_file_entry_create(db, setup, file_field):
     # clean up the after the tests
     entry.file.delete()
     entry.delete()
+
+
+def test_file_entry_create_rejects_too_long_filename(db, setup, file_field):
+    client = Client()
+    client.login(**setup["login"])
+    record = setup["record"]
+    field = file_field
+
+    long_name = "a" * 110 + ".pdf"
+    data = {
+        "record_id": record.pk,
+        "field_id": field.uuid,
+        "file": get_file("test-string", long_name),
+    }
+    response = client.post("/api/command/?action=data_sheets/create_file_entry", data)
+    assert response.status_code == 400
+    body = json.loads(response.content)
+    assert body["err_type"] == "UseCaseError"
+    assert "filename is too long" in body["title"].lower()
+    assert DataSheetEncryptedFileEntry.objects.count() == 0
 
 
 def test_file_entry_delete(db, setup, file_field, file_entry):

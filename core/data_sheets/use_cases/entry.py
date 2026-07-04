@@ -15,6 +15,8 @@ from core.data_sheets.use_cases.finders import (
 )
 from core.seedwork.use_case_layer import UseCaseError, use_case
 
+MAX_UPLOAD_FILENAME_LENGTH = 80
+
 
 def update_record_in_folder(__actor: OrgUser, folder_uuid: UUID):
     record = find_record_from_folder_uuid(__actor, folder_uuid)
@@ -33,6 +35,13 @@ def set_sheet_updated_time(sheet: DataSheet):
 def create_file_entry(
     __actor: OrgUser, field_id: UUID, record_id: int, file: UploadedFile
 ):
+    file_name = file.name or ""
+    if len(file_name) > MAX_UPLOAD_FILENAME_LENGTH:
+        raise UseCaseError(
+            "The filename is too long. Please shorten the filename and try again. "
+            f"Maximum filename length is {MAX_UPLOAD_FILENAME_LENGTH} characters."
+        )
+
     field = find_file_field_from_uuid(__actor, field_id)
     field.delete_old_entries(record_id)
     field.upload_file(__actor, record_id, file)
