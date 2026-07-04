@@ -71,10 +71,11 @@ def check_keys(__actor: OrgUser, collector: EventCollector):
     org_key = __actor.user.users_rlc_keys.get()
     correct = org_key.test(__actor.keyring.get_private_key())
     correct = __actor.keyring.test_keys() and correct
-    if not correct:
-        with transaction.atomic():
+
+    with transaction.atomic():
+        org_key.__class__.objects.filter(pk=org_key.pk).update(correct=org_key.correct)
+        if not correct:
             __actor.lock(collector)
-            org_key.save()
             __actor.save()
             __actor.keyring.store()
     _test_folder_keys(__actor)

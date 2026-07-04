@@ -32,9 +32,6 @@ class OrgEncryption(EncryptedModelMixin, models.Model):
         )
 
     def set_correct(self, value):
-        key = OrgEncryption.objects.get(pk=self.pk)
-        key.correct = value
-        key.save()
         self.correct = value
 
     def test(self, private_key_user) -> bool:

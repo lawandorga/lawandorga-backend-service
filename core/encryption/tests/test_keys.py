@@ -55,3 +55,14 @@ def test_list_keys_works(db):
     c = Client()
     c.login(**user_1.login_data)  # type: ignore
     c.get("/api/auth/keys/")
+
+
+def test_check_keys_keyring_failure_does_not_save_decrypted_org_key(db, monkeypatch):
+    user_1 = test_helpers.create_raw_org_user(save=True)
+    user_1.org.generate_keys()
+
+    monkeypatch.setattr(user_1.keyring, "test_keys", lambda: False)
+
+    check_keys(user_1)
+    user_1.refresh_from_db()
+    assert user_1.locked

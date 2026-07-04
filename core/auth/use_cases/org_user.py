@@ -126,7 +126,9 @@ def unlock_user(__actor: OrgUser, another_org_user_id: int, collector: EventColl
 
 @use_case
 def unlock_myself(__actor: OrgUser):
-    __actor.user.users_rlc_keys.get().test(__actor.keyring.get_private_key())
+    org_key = __actor.user.users_rlc_keys.get()
+    org_key.test(__actor.keyring.get_private_key())
+    org_key.__class__.objects.filter(pk=org_key.pk).update(correct=org_key.correct)
     if not __actor.all_keys_correct:
         raise UseCaseError(
             "You can only unlock yourself when all your keys are correct.",
