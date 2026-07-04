@@ -183,6 +183,13 @@ class OutputRecordTagStats(BaseModel):
     output_schema=OutputRecordTagStats,
 )
 def query__tag_stats(statistics_user: StatisticUser):
+    years = list(
+        RecordsRecord.objects.annotate(year=ExtractYear("created"))
+        .values_list("year", flat=True)
+        .distinct()
+        .order_by("year")
+    )
+
     if connection.vendor == "sqlite":
         example_data = {
             "tags": [
@@ -193,6 +200,7 @@ def query__tag_stats(statistics_user: StatisticUser):
                 {"state": "Set", "count": 10},
                 {"state": "Not-Existing", "count": 5},
             ],
+            "years": years,
         }
         return example_data
     statement = """
@@ -238,6 +246,7 @@ def query__tag_stats(statistics_user: StatisticUser):
     data = execute_statement(statement)
     data = list(map(lambda x: {"state": x[0], "count": x[1]}, data))
     ret["state"] = data
+    ret["years"] = years
     return ret
 
 
