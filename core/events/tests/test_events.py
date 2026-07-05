@@ -5,6 +5,7 @@ from core.events.models import EventsEvent
 from core.events.models.utils import get_ics_calendar
 from core.events.use_cases.events import create_event, delete_event, update_event
 from core.org.models import Meta, Org
+from core.seedwork.use_case_layer import UseCaseError
 from core.tests import test_helpers as test_helpers
 
 
@@ -71,6 +72,28 @@ class TestEvents(TestCase):
             "end_time": timezone.now().isoformat(),
         }
         create_event(self.user_1["org_user"], **event_data)
+
+    def test_create_event_name_too_long_raises_use_case_error(self):
+        with self.assertRaises(UseCaseError):
+            create_event(
+                self.user_1["org_user"],
+                name="x" * 201,
+                description="",
+                level="ORG",
+                start_time=timezone.now(),
+                end_time=timezone.now(),
+            )
+
+    def test_update_event_name_too_long_raises_use_case_error(self):
+        with self.assertRaises(UseCaseError):
+            update_event(
+                self.user_1["org_user"],
+                self.event_1.pk,
+                description=self.event_1.description,
+                name="x" * 201,
+                start_time=self.event_1.start_time,
+                end_time=self.event_1.end_time,
+            )
 
     def test_event_update(self):
         id = self.event_1.pk
