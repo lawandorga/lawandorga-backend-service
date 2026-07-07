@@ -54,6 +54,7 @@ class CustomLoginView(LoginView):
 
     def form_valid(self, form):
         user: UserProfile = form.get_user()  # type: ignore
+        previous_login = user.last_login
 
         if hasattr(user, "org_user"):
             run_user_login_checks(user, form.data["password"])
@@ -78,7 +79,10 @@ class CustomLoginView(LoginView):
                 url += f"?next={next_param}"
             return HttpResponseRedirect(url)
 
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        user.previous_login = previous_login
+        user.save(update_fields=["previous_login"])
+        return response
 
 
 class CustomLogoutView(LogoutView):
