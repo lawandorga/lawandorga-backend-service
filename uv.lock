@@ -816,7 +816,7 @@ requires-dist = [
     { name = "black", specifier = "==26.*" },
     { name = "bleach", specifier = ">=6.4.0,<6.5" },
     { name = "boto3", specifier = ">=1.42,<1.44" },
-    { name = "coverage", specifier = ">=7.13,<7.15" },
+    { name = "coverage", specifier = ">=7.13,<7.16" },
     { name = "cryptography", specifier = ">=48.0.1,<49.1" },
     { name = "django", extras = ["argon2"], specifier = ">=5.2,<6.1" },
     { name = "django-cors-headers", specifier = "==4.9.*" },

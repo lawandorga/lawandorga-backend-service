@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
@@ -58,6 +58,7 @@ class CalendarEvent(models.Model):
 
     if TYPE_CHECKING:
         shares: models.QuerySet["CalendarEventShare"]
+        reminders: models.QuerySet["CalendarEventReminder"]
 
     class Meta:
         verbose_name = "EVT_CalendarEvent"
@@ -327,6 +328,10 @@ class CalendarEvent(models.Model):
         if is_all_day is not None:
             self.is_all_day = is_all_day
 
+    def reschedule_reminders(self) -> None:
+        for reminder in self.reminders.all():
+            reminder.reschedule(self.start_time)
+
     def __str__(self):
         return f"CalendarEvent: {self.pk}, title: {self.title}, creator: {self.creator.name}"
 
@@ -448,3 +453,74 @@ class CalendarEventShare(models.Model):
         if self.is_creator_share:
             raise DomainError("The creator share can not be removed.")
         return super().delete(using=using, keep_parents=keep_parents)
+
+
+class CalendarEventReminder(models.Model):
+    class Method(models.TextChoices):
+        EMAIL = "EMAIL", "Email"
+        PUSH = "PUSH", "Push"
+
+    uuid = models.UUIDField(default=uuid4, unique=True, editable=False)
+    event = models.ForeignKey(
+        CalendarEvent, on_delete=models.CASCADE, related_name="reminders"
+    )
+    org_user = models.ForeignKey(
+        OrgUser, on_delete=models.CASCADE, related_name="calendar_event_reminders"
+    )
+    minutes_before = models.PositiveIntegerField(default=0)
+    method = models.CharField(max_length=20, choices=Method.choices)
+    remind_at = models.DateTimeField()
+    dispatched_at = models.DateTimeField(null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    if TYPE_CHECKING:
+        event_id: int
+        org_user_id: int
+
+    class Meta:
+        verbose_name = "EVT_CalendarEventReminder"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["event", "org_user", "method", "minutes_before"],
+                name="calendar_reminder_unique_per_user_method_offset",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["remind_at", "dispatched_at"], name="cal_reminder_due_idx"
+            ),
+        ]
+
+    @staticmethod
+    def compute_remind_at(start_time: datetime, minutes_before: int) -> datetime:
+        return start_time - timedelta(minutes=minutes_before)
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        event: CalendarEvent,
+        org_user: OrgUser,
+        minutes_before: int,
+        method: "CalendarEventReminder.Method",
+    ) -> "CalendarEventReminder":
+        if minutes_before < 0:
+            raise DomainError("A reminder can not fire after the event starts.")
+        return cls(
+            event=event,
+            org_user=org_user,
+            minutes_before=minutes_before,
+            method=method,
+            remind_at=cls.compute_remind_at(event.start_time, minutes_before),
+        )
+
+    def reschedule(self, start_time: datetime) -> None:
+        self.remind_at = self.compute_remind_at(start_time, self.minutes_before)
+        self.dispatched_at = None
+        self.save(update_fields=["remind_at", "dispatched_at"])
+
+    def __str__(self):
+        return (
+            f"CalendarEventReminder: {self.pk}, event: {self.event_id}, "
+            f"method: {self.method}, minutes_before: {self.minutes_before}"
+        )

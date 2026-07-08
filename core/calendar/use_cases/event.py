@@ -153,6 +153,7 @@ def update_event(
     ):
         raise DomainError("You can only change event shares with admin access.")
 
+    old_start_time = event.start_time
     event.update_information(
         title=title,
         description=description,
@@ -169,6 +170,10 @@ def update_event(
         is_all_day=is_all_day,
     )
     event.save()
+
+    start_time_changed = start_time is not None and start_time != old_start_time
+    if start_time_changed:
+        event.reschedule_reminders()
 
     _grant_access(
         event,
