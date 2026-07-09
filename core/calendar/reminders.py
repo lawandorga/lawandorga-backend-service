@@ -5,7 +5,7 @@ from django.core.mail import send_mail
 from django.template import loader
 from django.utils import timezone
 
-from core.calendar.models import CalendarEventReminder
+from core.calendar.models import CalendarEventReminder, CalendarNotification
 
 logger = logging.getLogger("django")
 
@@ -69,29 +69,48 @@ def _send_reminder_email(reminder: CalendarEventReminder) -> None:
     )
 
 
+def _create_reminder_notification(reminder: CalendarEventReminder) -> None:
+    event = reminder.event
+    lead_time = _lead_time_label(reminder.minutes_before)
+    start = timezone.localtime(event.start_time).strftime("%Y-%m-%d %H:%M %Z")
+    CalendarNotification.objects.create(
+        org_user=reminder.org_user,
+        event=event,
+        message=f'"{event.title}" starts {lead_time} at {start}.',
+    )
+
+
+def _dispatch_reminder(reminder: CalendarEventReminder) -> None:
+    if reminder.method == CalendarEventReminder.Method.EMAIL:
+        _send_reminder_email(reminder)
+    elif reminder.method == CalendarEventReminder.Method.IN_APP:
+        _create_reminder_notification(reminder)
+    else:
+        raise ValueError(f"Unhandled reminder method: {reminder.method}")
+
+
 def send_due_reminders() -> str:
     now = timezone.now()
     due_reminders = CalendarEventReminder.objects.filter(
         remind_at__lte=now,
         dispatched_at__isnull=True,
-        method=CalendarEventReminder.Method.EMAIL,
         # Recurring events will be handled later
         event__recurrence_rule="",
     ).select_related("event", "org_user", "org_user__user")
 
-    sent = 0
+    dispatched = 0
     failed = 0
     for reminder in due_reminders:
         try:
-            _send_reminder_email(reminder)
+            _dispatch_reminder(reminder)
         except Exception:
             logger.warning(
-                "Failed to send calendar reminder %s", reminder.uuid, exc_info=True
+                "Failed to dispatch calendar reminder %s", reminder.uuid, exc_info=True
             )
             failed += 1
             continue
         reminder.dispatched_at = now
         reminder.save(update_fields=["dispatched_at"])
-        sent += 1
+        dispatched += 1
 
-    return f"Sent {_pluralize(sent, 'calendar reminder')}, {failed} failed."
+    return f"Dispatched {_pluralize(dispatched, 'calendar reminder')}, {failed} failed."

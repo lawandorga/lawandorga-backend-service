@@ -2,10 +2,15 @@ from datetime import date, datetime
 from uuid import UUID
 
 from django.db.models import Prefetch
+from django.utils import timezone
 from pydantic import BaseModel, ConfigDict
 
 from core.auth.models import OrgUser
-from core.calendar.models.event import CalendarEvent, CalendarEventReminder
+from core.calendar.models.event import (
+    CalendarEvent,
+    CalendarEventReminder,
+    CalendarNotification,
+)
 from core.seedwork.api_layer import Router
 
 router = Router()
@@ -58,3 +63,24 @@ def query__calendar_events(org_user: OrgUser):
             Prefetch("reminders", queryset=own_reminders, to_attr="own_reminders"),
         )
     )
+
+
+class OutputCalendarNotification(BaseModel):
+    uuid: UUID
+    message: str
+    event_uuid: UUID
+    read_at: datetime | None
+    created: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+@router.get(
+    url="notifications/",
+    output_schema=list[OutputCalendarNotification],
+)
+def query__notifications(org_user: OrgUser):
+    now = timezone.now()
+    return CalendarNotification.objects.filter(
+        org_user=org_user, event__end_time__gte=now
+    ).select_related("event")

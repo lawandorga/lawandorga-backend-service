@@ -1,4 +1,7 @@
+from datetime import timedelta
 from uuid import UUID
+
+from django.utils import timezone
 
 from core.auth.models.org_user import OrgUser
 from core.calendar.models import CalendarEvent, CalendarEventReminder
@@ -27,6 +30,10 @@ def create_reminder(
     ).exists()
     if already_exists:
         raise UseCaseError("You already have an identical reminder for this event.")
+
+    now = timezone.now()
+    if event.start_time < now or event.start_time - timedelta(minutes=minutes_before) < now:
+        raise UseCaseError("You cannot set a reminder in the past.")
 
     reminder = CalendarEventReminder.create(
         event=event,

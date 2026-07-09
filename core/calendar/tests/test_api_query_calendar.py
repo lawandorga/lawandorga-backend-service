@@ -3,7 +3,11 @@ from datetime import timedelta
 from django.test import Client
 from django.utils import timezone
 
-from core.calendar.models import CalendarEvent, CalendarEventShare
+from core.calendar.models import (
+    CalendarEvent,
+    CalendarEventShare,
+    CalendarNotification,
+)
 from core.tests.test_helpers import (
     create_raw_group,
     create_raw_org,
@@ -136,3 +140,64 @@ def test_query_calendar_events_returns_org_shared_events(db):
     assert response.status_code == 200
     titles = {item["title"] for item in response.json()}
     assert "Org shared" in titles
+
+
+def test_query_notifications_returns_only_own(db):
+    org = create_raw_org(save=True)
+    user = create_raw_org_user(org=org, email="user@test.de", save=True)
+    other = create_raw_org_user(org=org, email="other@test.de", name="Other", save=True)
+
+    start = timezone.now()
+    event = CalendarEvent.create(
+        creator=user,
+        title="Court date",
+        event_type=CalendarEvent.EventType.MEETING,
+        start_time=start,
+        end_time=start + timedelta(hours=1),
+    )
+    event.save()
+    CalendarNotification.objects.create(org_user=user, event=event, message="Yours")
+    CalendarNotification.objects.create(org_user=other, event=event, message="Theirs")
+
+    client = Client()
+    client.login(**getattr(user, "login_data"))
+
+    response = client.get("/api/calendar/query/notifications/")
+    assert response.status_code == 200
+    messages = {item["message"] for item in response.json()}
+    assert messages == {"Yours"}
+
+
+def test_query_notifications_excludes_ended_events(db):
+    org = create_raw_org(save=True)
+    user = create_raw_org_user(org=org, email="user@test.de", save=True)
+
+    now = timezone.now()
+    past_event = CalendarEvent.create(
+        creator=user,
+        title="Past",
+        event_type=CalendarEvent.EventType.MEETING,
+        start_time=now - timedelta(hours=3),
+        end_time=now - timedelta(hours=2),
+    )
+    past_event.save()
+    upcoming_event = CalendarEvent.create(
+        creator=user,
+        title="Upcoming",
+        event_type=CalendarEvent.EventType.MEETING,
+        start_time=now + timedelta(hours=1),
+        end_time=now + timedelta(hours=2),
+    )
+    upcoming_event.save()
+    CalendarNotification.objects.create(org_user=user, event=past_event, message="Over")
+    CalendarNotification.objects.create(
+        org_user=user, event=upcoming_event, message="Upcoming"
+    )
+
+    client = Client()
+    client.login(**getattr(user, "login_data"))
+
+    response = client.get("/api/calendar/query/notifications/")
+    assert response.status_code == 200
+    messages = {item["message"] for item in response.json()}
+    assert messages == {"Upcoming"}

@@ -1,9 +1,10 @@
 from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from django.db import models
 from django.db.models import Q
+from django.utils import timezone
 
 from core.auth.models import OrgUser
 from core.seedwork.domain_layer import DomainError
@@ -458,7 +459,7 @@ class CalendarEventShare(models.Model):
 class CalendarEventReminder(models.Model):
     class Method(models.TextChoices):
         EMAIL = "EMAIL", "Email"
-        PUSH = "PUSH", "Push"
+        IN_APP = "IN_APP", "In-app"
 
     uuid = models.UUIDField(default=uuid4, unique=True, editable=False)
     event = models.ForeignKey(
@@ -524,3 +525,41 @@ class CalendarEventReminder(models.Model):
             f"CalendarEventReminder: {self.pk}, event: {self.event_id}, "
             f"method: {self.method}, minutes_before: {self.minutes_before}"
         )
+
+
+class CalendarNotification(models.Model):
+    uuid = models.UUIDField(default=uuid4, unique=True, editable=False)
+    org_user = models.ForeignKey(
+        OrgUser, on_delete=models.CASCADE, related_name="calendar_notifications"
+    )
+    event = models.ForeignKey(
+        CalendarEvent, on_delete=models.CASCADE, related_name="notifications"
+    )
+    message = models.CharField(max_length=500)
+    read_at = models.DateTimeField(null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    if TYPE_CHECKING:
+        org_user_id: int
+        event_id: int
+
+    class Meta:
+        verbose_name = "EVT_CalendarNotification"
+        ordering = ["-created"]
+        indexes = [
+            models.Index(
+                fields=["org_user", "read_at"], name="cal_notification_inbox_idx"
+            ),
+        ]
+
+    @property
+    def event_uuid(self) -> UUID:
+        return self.event.uuid
+
+    def mark_read(self) -> None:
+        if self.read_at is None:
+            self.read_at = timezone.now()
+            self.save(update_fields=["read_at"])
+
+    def __str__(self):
+        return f"CalendarNotification: {self.pk}, org_user: {self.org_user_id}"

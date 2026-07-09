@@ -105,9 +105,22 @@ def test_create_reminder_rejects_exact_duplicate(db):
         )
 
 
+def test_create_reminder_rejects_past_reminder_offset(db):
+    actor = test_helpers.create_org_user(save=True)["org_user"]
+    event = _create_event(actor, start=timezone.now() + timedelta(minutes=10))
+
+    with pytest.raises(UseCaseError):
+        create_reminder(
+            __actor=actor,
+            event_uuid=event.uuid,
+            minutes_before=30,
+            method=CalendarEventReminder.Method.EMAIL,
+        )
+
+
 def test_user_can_stack_multiple_reminders(db):
     actor = test_helpers.create_org_user(save=True)["org_user"]
-    event = _create_event(actor)
+    event = _create_event(actor, start=timezone.now() + timedelta(days=2))
 
     create_reminder(
         __actor=actor,
@@ -125,7 +138,7 @@ def test_user_can_stack_multiple_reminders(db):
         __actor=actor,
         event_uuid=event.uuid,
         minutes_before=60,
-        method=CalendarEventReminder.Method.PUSH,
+        method=CalendarEventReminder.Method.IN_APP,
     )
 
     assert event.reminders.count() == 3

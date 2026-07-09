@@ -5,9 +5,11 @@ from .models import (
     CalendarEventAttachment,
     CalendarEventReminder,
     CalendarEventShare,
+    CalendarNotification,
 )
 
 admin.site.register(CalendarEvent)
 admin.site.register(CalendarEventAttachment)
 admin.site.register(CalendarEventReminder)
 admin.site.register(CalendarEventShare)
+admin.site.register(CalendarNotification)
