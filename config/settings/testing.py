@@ -33,3 +33,8 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # Static Files
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 MEDIA_ROOT = os.path.join(BASE_DIR, "tmp/media/testing/")
+
+# Static files
+# Tests render templates without running collectstatic, so avoid manifest-based
+# staticfiles storage in the test settings.
+STORAGES["staticfiles"]["BACKEND"] = "django.contrib.staticfiles.storage.StaticFilesStorage"
