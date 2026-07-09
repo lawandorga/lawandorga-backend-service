@@ -32,7 +32,10 @@ def create_reminder(
         raise UseCaseError("You already have an identical reminder for this event.")
 
     now = timezone.now()
-    if event.start_time < now or event.start_time - timedelta(minutes=minutes_before) < now:
+    if (
+        event.start_time < now
+        or event.start_time - timedelta(minutes=minutes_before) < now
+    ):
         raise UseCaseError("You cannot set a reminder in the past.")
 
     reminder = CalendarEventReminder.create(
