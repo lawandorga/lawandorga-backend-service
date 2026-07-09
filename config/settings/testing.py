@@ -37,4 +37,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "tmp/media/testing/")
 # Static files
 # Tests render templates without running collectstatic, so avoid manifest-based
 # staticfiles storage in the test settings.
-STORAGES["staticfiles"]["BACKEND"] = "django.contrib.staticfiles.storage.StaticFilesStorage"
+STORAGES["staticfiles"][
+    "BACKEND"
+] = "django.contrib.staticfiles.storage.StaticFilesStorage"
