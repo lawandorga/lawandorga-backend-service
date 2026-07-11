@@ -1,4 +1,6 @@
 import logging
+from collections import Counter
+from collections.abc import Callable
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -80,13 +82,20 @@ def _create_reminder_notification(reminder: CalendarEventReminder) -> None:
     )
 
 
+_EMAIL = CalendarEventReminder.Method.EMAIL
+_IN_APP = CalendarEventReminder.Method.IN_APP
+
+_DELIVER_BY_METHOD: dict[str, Callable[[CalendarEventReminder], None]] = {
+    _EMAIL: _send_reminder_email,
+    _IN_APP: _create_reminder_notification,
+}
+
+
 def _dispatch_reminder(reminder: CalendarEventReminder) -> None:
-    if reminder.method == CalendarEventReminder.Method.EMAIL:
-        _send_reminder_email(reminder)
-    elif reminder.method == CalendarEventReminder.Method.IN_APP:
-        _create_reminder_notification(reminder)
-    else:
+    deliver = _DELIVER_BY_METHOD.get(reminder.method)
+    if deliver is None:
         raise ValueError(f"Unhandled reminder method: {reminder.method}")
+    deliver(reminder)
 
 
 def send_due_reminders() -> str:
@@ -98,8 +107,8 @@ def send_due_reminders() -> str:
         event__recurrence_rule="",
     ).select_related("event", "org_user", "org_user__user")
 
-    dispatched = 0
-    failed = 0
+    sent: Counter[str] = Counter()
+    failed: Counter[str] = Counter()
     for reminder in due_reminders:
         try:
             _dispatch_reminder(reminder)
@@ -107,10 +116,15 @@ def send_due_reminders() -> str:
             logger.warning(
                 "Failed to dispatch calendar reminder %s", reminder.uuid, exc_info=True
             )
-            failed += 1
+            failed[reminder.method] += 1
             continue
         reminder.dispatched_at = now
         reminder.save(update_fields=["dispatched_at"])
-        dispatched += 1
+        sent[reminder.method] += 1
 
-    return f"Dispatched {_pluralize(dispatched, 'calendar reminder')}, {failed} failed."
+    return (
+        f"Dispatched {_pluralize(sum(sent.values()), 'calendar reminder')}, "
+        f"{sum(failed.values())} failed.\n"
+        f"Email: {sent[_EMAIL]} sent, {failed[_EMAIL]} failed.\n"
+        f"In-app: {sent[_IN_APP]} created, {failed[_IN_APP]} failed."
+    )

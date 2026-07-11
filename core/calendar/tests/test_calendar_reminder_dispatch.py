@@ -47,13 +47,14 @@ def test_due_email_reminder_is_sent_once(db, mailoutbox):
         event, actor, minutes_before=30, method=CalendarEventReminder.Method.EMAIL
     )
 
-    send_due_reminders()
+    result = send_due_reminders()
 
     assert len(mailoutbox) == 1
     assert actor.email in mailoutbox[0].to
     assert "in 30 minutes" in mailoutbox[0].body
     assert "Room 5" in mailoutbox[0].body
     assert "Bring the documents" in mailoutbox[0].body
+    assert "Email: 1 sent, 0 failed" in result
     reminder.refresh_from_db()
     assert reminder.dispatched_at is not None
 
@@ -85,10 +86,11 @@ def test_due_in_app_reminder_creates_notification(db, mailoutbox):
         event, actor, minutes_before=30, method=CalendarEventReminder.Method.IN_APP
     )
 
-    send_due_reminders()
+    result = send_due_reminders()
 
     assert len(mailoutbox) == 0  # in-app, not email
     assert CalendarNotification.objects.filter(org_user=actor, event=event).count() == 1
+    assert "In-app: 1 created, 0 failed" in result
     reminder.refresh_from_db()
     assert reminder.dispatched_at is not None
 
