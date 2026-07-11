@@ -3,6 +3,11 @@ from uuid import UUID
 
 from core.auth.models.org_user import OrgUser
 from core.calendar.models import CalendarEvent, CalendarEventShare, RecurrenceRule
+from core.calendar.use_cases.reminder import (
+    ensure_reminder_is_in_future,
+    parse_reminder,
+    save_new_reminder,
+)
 from core.org.models import Group
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.use_case_layer import use_case
@@ -104,7 +109,14 @@ def create_event(
     is_all_day: bool = False,
     grant_targets: list[str] | None = None,
     grant_access_level: CalendarEventShare.AccessLevel = CalendarEventShare.AccessLevel.VIEW,
+    reminders: list[str] | None = None,
 ) -> CalendarEvent:
+    parsed_reminders = {parse_reminder(raw) for raw in reminders or []}
+    if parsed_reminders and recurrence_rule:
+        raise UseCaseError("Reminders for repeating events are not supported yet.")
+    for _, minutes_before in parsed_reminders:
+        ensure_reminder_is_in_future(start_time, minutes_before)
+
     event = CalendarEvent.create(
         creator=__actor,
         title=title,
@@ -124,6 +136,13 @@ def create_event(
         access_level=grant_access_level,
         grant_targets=grant_targets,
     )
+    for method, minutes_before in parsed_reminders:
+        save_new_reminder(
+            event=event,
+            org_user=__actor,
+            minutes_before=minutes_before,
+            method=method,
+        )
     return event
 
 
