@@ -11,6 +11,7 @@ from core.calendar.models.event import (
     CalendarEventReminder,
     CalendarNotification,
 )
+from core.calendar.reminders import send_due_reminders
 from core.seedwork.api_layer import Router
 
 router = Router()
@@ -80,6 +81,7 @@ class OutputCalendarNotification(BaseModel):
     output_schema=list[OutputCalendarNotification],
 )
 def query__notifications(org_user: OrgUser):
+    send_due_reminders()
     now = timezone.now()
     return CalendarNotification.objects.filter(
         org_user=org_user, event__end_time__gte=now
