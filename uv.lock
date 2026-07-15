@@ -833,7 +833,7 @@ requires-dist = [
     { name = "gunicorn", specifier = "==26.0.0" },
     { name = "ics", specifier = "==0.7.*" },
     { name = "isort", specifier = "==8.*" },
-    { name = "mypy", specifier = ">=1.15,<2.2" },
+    { name = "mypy", specifier = ">=1.15,<2.4" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10.0" },
     { name = "pillow" },
     { name = "psycopg2-binary", specifier = "==2.9.*" },
