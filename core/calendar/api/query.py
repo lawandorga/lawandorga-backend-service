@@ -32,7 +32,8 @@ class OutputCalendarEvent(BaseModel):
     location: str
     recurrence_rule: str
     recurrence_until: date | None
-    grant_targets: list[str]
+    view_grant_targets: list[str]
+    edit_grant_targets: list[str]
     guest_user_ids: list[int]
     guest_user_names: list[str]
     own_reminders: list[OutputCalendarEventReminder]

@@ -1,12 +1,16 @@
 from datetime import date, datetime
 from uuid import UUID
 
+from django.db import transaction
+
 from core.auth.models.org_user import OrgUser
 from core.calendar.models import CalendarEvent, CalendarEventShare, RecurrenceRule
 from core.org.models import Group
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.use_case_layer import use_case
 from core.seedwork.use_case_layer.error import UseCaseError
+
+from seedwork.functional import list_filter, list_map
 
 
 def _parse_grant_target(target: str) -> tuple[str, int]:
@@ -26,68 +30,82 @@ def _grant_access(
     event: CalendarEvent,
     *,
     actor: OrgUser,
-    access_level: CalendarEventShare.AccessLevel,
-    grant_targets: list[str] | None,
+    view_grant_targets: list[str] | None,
+    edit_grant_targets: list[str] | None,
 ) -> None:
-    if grant_targets is None:
+    if view_grant_targets is None and edit_grant_targets is None:
         return
 
-    wanted_user_ids: set[int] = set()
-    wanted_group_ids: set[int] = set()
-    wanted_org = False
-
-    for target in grant_targets:
-        target_type, target_id = _parse_grant_target(target)
-
-        if target_type == "user":
-            wanted_user_ids.add(target_id)
-        elif target_type == "group":
-            wanted_group_ids.add(target_id)
-        elif target_type == "org":
-            if target_id != actor.org_id:
-                raise DomainError("Org grant target must match your own org.")
-            wanted_org = True
-    current_user_ids = set(
-        event.shares.filter(shared_user__isnull=False)
-        .exclude(shared_user=event.creator)
-        .values_list("shared_user_id", flat=True)
+    user_view_access = list_map(
+        list_filter(view_grant_targets or [], lambda t: t.startswith("user:")),
+        lambda t: _parse_grant_target(t)[1],
     )
-    for user_id in current_user_ids - wanted_user_ids:
-        event.revoke_access(shared_user=OrgUser.objects.get(pk=user_id))
-    for user_id in wanted_user_ids:
-        event.grant_access(
-            by=actor,
-            access_level=access_level,
-            shared_user=OrgUser.objects.get(pk=user_id),
-        )
-
-    current_group_ids = set(
-        event.shares.filter(shared_group__isnull=False).values_list(
-            "shared_group_id", flat=True
-        )
+    group_view_access = list_map(
+        list_filter(view_grant_targets or [], lambda t: t.startswith("group:")),
+        lambda t: _parse_grant_target(t)[1],
     )
-    for group_id in current_group_ids - wanted_group_ids:
-        event.revoke_access(shared_group=Group.objects.get(pk=group_id))
-    for group_id in wanted_group_ids:
-        event.grant_access(
-            by=actor,
-            access_level=access_level,
-            shared_group=Group.objects.get(pk=group_id),
-        )
+    org_view_access = list_map(
+        list_filter(view_grant_targets or [], lambda t: t.startswith("org:")),
+        lambda t: _parse_grant_target(t)[1],
+    )
 
-    has_org_share = event.shares.filter(shared_org=actor.org).exists()
-    if wanted_org:
-        event.grant_access(
-            by=actor,
-            access_level=access_level,
-            shared_org=actor.org,
-        )
-    elif has_org_share:
-        event.revoke_access(shared_org=actor.org)
+    user_edit_access = list_map(
+        list_filter(edit_grant_targets or [], lambda t: t.startswith("user:")),
+        lambda t: _parse_grant_target(t)[1],
+    )
+    group_edit_access = list_map(
+        list_filter(edit_grant_targets or [], lambda t: t.startswith("group:")),
+        lambda t: _parse_grant_target(t)[1],
+    )
+    org_edit_access = list_map(
+        list_filter(edit_grant_targets or [], lambda t: t.startswith("org:")),
+        lambda t: _parse_grant_target(t)[1],
+    )
 
+    with transaction.atomic():
+        event.shares.exclude(shared_user=event.creator).delete()
 
-def _has_share_changes(*, grant_targets: list[str] | None) -> bool:
-    return grant_targets is not None
+        for user_id in user_view_access:
+            event.grant_access(
+                by=actor,
+                access_level=CalendarEventShare.AccessLevel.VIEW,
+                shared_user=OrgUser.objects.get(pk=user_id),
+            )
+
+        for user_id in user_edit_access:
+            event.grant_access(
+                by=actor,
+                access_level=CalendarEventShare.AccessLevel.EDIT,
+                shared_user=OrgUser.objects.get(pk=user_id),
+            )
+
+        for group_id in group_view_access:
+            event.grant_access(
+                by=actor,
+                access_level=CalendarEventShare.AccessLevel.VIEW,
+                shared_group=Group.objects.get(pk=group_id),
+            )
+
+        for group_id in group_edit_access:
+            event.grant_access(
+                by=actor,
+                access_level=CalendarEventShare.AccessLevel.EDIT,
+                shared_group=Group.objects.get(pk=group_id),
+            )
+
+        if org_view_access:
+            event.grant_access(
+                by=actor,
+                access_level=CalendarEventShare.AccessLevel.VIEW,
+                shared_org=actor.org,
+            )
+
+        if org_edit_access:
+            event.grant_access(
+                by=actor,
+                access_level=CalendarEventShare.AccessLevel.EDIT,
+                shared_org=actor.org,
+            )
 
 
 @use_case
@@ -102,8 +120,8 @@ def create_event(
     recurrence_rule: str | None = None,
     recurrence_until: date | None = None,
     is_all_day: bool = False,
-    grant_targets: list[str] | None = None,
-    grant_access_level: CalendarEventShare.AccessLevel = CalendarEventShare.AccessLevel.VIEW,
+    view_grant_targets: list[str] | None = None,
+    edit_grant_targets: list[str] | None = None,
 ) -> CalendarEvent:
     event = CalendarEvent.create(
         creator=__actor,
@@ -121,8 +139,8 @@ def create_event(
     _grant_access(
         event,
         actor=__actor,
-        access_level=grant_access_level,
-        grant_targets=grant_targets,
+        view_grant_targets=view_grant_targets,
+        edit_grant_targets=edit_grant_targets,
     )
     return event
 
@@ -140,18 +158,13 @@ def update_event(
     recurrence_rule: str | None = None,
     recurrence_until: date | None = None,
     is_all_day: bool | None = None,
-    grant_targets: list[str] | None = None,
-    grant_access_level: CalendarEventShare.AccessLevel = CalendarEventShare.AccessLevel.VIEW,
+    view_grant_targets: list[str] | None = None,
+    edit_grant_targets: list[str] | None = None,
 ) -> CalendarEvent:
     event = CalendarEvent.objects.get(uuid=event_uuid)
 
     if not event.has_edit_access(__actor):
         raise DomainError("You can only edit events with edit access.")
-
-    if _has_share_changes(grant_targets=grant_targets) and not event.has_admin_access(
-        __actor
-    ):
-        raise DomainError("You can only change event shares with admin access.")
 
     old_start_time = event.start_time
     event.update_information(
@@ -178,8 +191,8 @@ def update_event(
     _grant_access(
         event,
         actor=__actor,
-        access_level=grant_access_level,
-        grant_targets=grant_targets,
+        view_grant_targets=view_grant_targets,
+        edit_grant_targets=edit_grant_targets,
     )
 
     return event

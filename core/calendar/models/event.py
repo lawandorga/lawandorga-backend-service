@@ -149,13 +149,16 @@ class CalendarEvent(models.Model):
             .distinct()
         )
 
-    @property
-    def grant_targets(self) -> list[str]:
+    def _grant_targets_for_access_levels(
+        self,
+        access_levels: list["CalendarEventShare.AccessLevel"],
+    ) -> list[str]:
         targets: list[str] = []
 
         user_ids = (
             self.shares.filter(shared_user__isnull=False)
             .exclude(shared_user=self.creator)
+            .filter(access_level__in=access_levels)
             .values_list("shared_user_id", flat=True)
             .distinct()
         )
@@ -165,6 +168,7 @@ class CalendarEvent(models.Model):
 
         group_ids = (
             self.shares.filter(shared_group__isnull=False)
+            .filter(access_level__in=access_levels)
             .values_list("shared_group_id", flat=True)
             .distinct()
         )
@@ -174,6 +178,7 @@ class CalendarEvent(models.Model):
 
         org_ids = (
             self.shares.filter(shared_org__isnull=False)
+            .filter(access_level__in=access_levels)
             .values_list("shared_org_id", flat=True)
             .distinct()
         )
@@ -182,6 +187,21 @@ class CalendarEvent(models.Model):
                 targets.append(f"org:{org_id}")
 
         return targets
+
+    @property
+    def view_grant_targets(self) -> list[str]:
+        return self._grant_targets_for_access_levels(
+            [CalendarEventShare.AccessLevel.VIEW]
+        )
+
+    @property
+    def edit_grant_targets(self) -> list[str]:
+        return self._grant_targets_for_access_levels(
+            [
+                CalendarEventShare.AccessLevel.EDIT,
+                CalendarEventShare.AccessLevel.ADMIN,
+            ]
+        )
 
     def has_view_access(self, org_user: OrgUser) -> bool:
         if self.creator_id == org_user.pk:
