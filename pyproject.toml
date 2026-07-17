@@ -17,6 +17,8 @@ ignore_missing_settings = true
 
 known_local_folder = ["dms", "seedwork"]
 profile = "black"
+skip_gitignore = true
+extend_skip_glob = [".venv/**", "venv/**", "node_modules/**", "__pypackages__/**"]
 
 [tool.ruff]
 
