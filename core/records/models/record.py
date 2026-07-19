@@ -74,12 +74,6 @@ class RecordRepository(ItemRepository):
 class RecordsRecord(FolderItemMixin, models.Model):
     REPOSITORY = RecordRepository.IDENTIFIER
 
-    @staticmethod
-    def _format_local_datetime(value) -> str:
-        if timezone.is_aware(value):
-            value = timezone.localtime(value)
-        return value.strftime("%d.%m.%Y %H:%M:%S")
-
     @classmethod
     def create(
         cls, token: str, user: OrgUser, folder: Folder, collector: EventCollector, pk=0
@@ -131,11 +125,11 @@ class RecordsRecord(FolderItemMixin, models.Model):
         for ds in data_sheets:
             assert ds.folder_uuid == self.folder_uuid
             attrs = merge_attrs(attrs, ds.attributes)
-        attrs["Created"] = self._format_local_datetime(self.created)
-        attrs["Updated"] = self._format_local_datetime(self.updated)
+        attrs["Created"] = self.created.isoformat(timespec="seconds")
+        attrs["Updated"] = self.updated.isoformat(timespec="seconds")
         self.attributes = json.dumps(attrs)
 
     def update_timestamps(self):
         attrs = json.loads(self.attributes)
-        attrs["Updated"] = self._format_local_datetime(timezone.now())
+        attrs["Updated"] = timezone.now().isoformat(timespec="seconds")
         self.attributes = json.dumps(attrs)
