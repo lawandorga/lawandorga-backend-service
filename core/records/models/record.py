@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from django.db import models
+from django.utils import timezone
 from pydantic import BaseModel
 
 from core.auth.models import OrgUser
@@ -73,6 +74,12 @@ class RecordRepository(ItemRepository):
 class RecordsRecord(FolderItemMixin, models.Model):
     REPOSITORY = RecordRepository.IDENTIFIER
 
+    @staticmethod
+    def _format_local_datetime(value) -> str:
+        if timezone.is_aware(value):
+            value = timezone.localtime(value)
+        return value.strftime("%d.%m.%Y %H:%M:%S")
+
     @classmethod
     def create(
         cls, token: str, user: OrgUser, folder: Folder, collector: EventCollector, pk=0
@@ -124,11 +131,11 @@ class RecordsRecord(FolderItemMixin, models.Model):
         for ds in data_sheets:
             assert ds.folder_uuid == self.folder_uuid
             attrs = merge_attrs(attrs, ds.attributes)
-        attrs["Created"] = self.created.strftime("%d.%m.%Y %H:%M:%S")
-        attrs["Updated"] = self.updated.strftime("%d.%m.%Y %H:%M:%S")
+        attrs["Created"] = self._format_local_datetime(self.created)
+        attrs["Updated"] = self._format_local_datetime(self.updated)
         self.attributes = json.dumps(attrs)
 
     def update_timestamps(self):
         attrs = json.loads(self.attributes)
-        attrs["Updated"] = self.updated.strftime("%d.%m.%Y %H:%M:%S")
+        attrs["Updated"] = self._format_local_datetime(timezone.now())
         self.attributes = json.dumps(attrs)
