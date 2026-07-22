@@ -17,6 +17,81 @@ from core.tests.test_helpers import (
 )
 
 
+def test_query_calendar_occurrences_expands_series_and_applies_overrides(db):
+    org = create_raw_org(save=True)
+    creator = create_raw_org_user(org=org, email="creator@test.de", save=True)
+
+    start = timezone.now().replace(microsecond=0)
+    event = CalendarEvent.create(
+        creator=creator,
+        title="Standup",
+        event_type=CalendarEvent.EventType.MEETING,
+        start_time=start,
+        end_time=start + timedelta(hours=1),
+        recurrence_rule=RecurrenceRule("FREQ=WEEKLY"),
+    )
+    event.save()
+
+    # cancel the second occurrence, move the third two hours later
+    CalendarEventOccurrenceOverride.objects.create(
+        event=event, original_start=start + timedelta(weeks=1), cancelled=True
+    )
+    CalendarEventOccurrenceOverride.objects.create(
+        event=event,
+        original_start=start + timedelta(weeks=2),
+        start_time=start + timedelta(weeks=2, hours=2),
+        title="Standup (moved)",
+    )
+
+    client = Client()
+    client.login(**getattr(creator, "login_data"))
+
+    response = client.get(
+        "/api/calendar/query/occurrences/",
+        {
+            "from_dt": (start - timedelta(minutes=1)).isoformat(),
+            "to_dt": (start + timedelta(weeks=2, hours=3)).isoformat(),
+        },
+    )
+    assert response.status_code == 200
+    occurrences = response.json()
+
+    # the first slot plus the moved third slot; the cancelled second is excluded
+    assert len(occurrences) == 2
+    titles = {item["title"] for item in occurrences}
+    assert titles == {"Standup", "Standup (moved)"}
+    assert all(item["event_uuid"] == str(event.uuid) for item in occurrences)
+
+
+def test_query_calendar_occurrences_hides_inaccessible_events(db):
+    org = create_raw_org(save=True)
+    creator = create_raw_org_user(org=org, email="creator@test.de", save=True)
+    outsider = create_raw_org_user(org=org, email="outsider@test.de", save=True)
+
+    start = timezone.now().replace(microsecond=0)
+    event = CalendarEvent.create(
+        creator=creator,
+        title="Private",
+        event_type=CalendarEvent.EventType.MEETING,
+        start_time=start,
+        end_time=start + timedelta(hours=1),
+    )
+    event.save()
+
+    client = Client()
+    client.login(**getattr(outsider, "login_data"))
+
+    response = client.get(
+        "/api/calendar/query/occurrences/",
+        {
+            "from_dt": (start - timedelta(days=1)).isoformat(),
+            "to_dt": (start + timedelta(days=1)).isoformat(),
+        },
+    )
+    assert response.status_code == 200
+    assert response.json() == []
+
+
 def test_query_calendar_events_returns_accessible_events(db):
     org = create_raw_org(save=True)
     creator = create_raw_org_user(org=org, email="creator@test.de", save=True)
