@@ -1,10 +1,10 @@
-from datetime import datetime, timedelta
 from uuid import UUID
 
 from django.utils import timezone
 
 from core.auth.models.org_user import OrgUser
 from core.calendar.models import CalendarEvent, CalendarEventReminder
+from core.calendar.reminders import compute_reminder_schedule
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.use_case_layer import use_case
 from core.seedwork.use_case_layer.error import UseCaseError
@@ -20,15 +20,6 @@ def parse_reminder(raw: str) -> tuple[CalendarEventReminder.Method, int]:
     if minutes_before < 0:
         raise UseCaseError("Reminders are malformed.")
     return method, minutes_before
-
-
-def ensure_reminder_is_in_future(start_time: datetime, minutes_before: int) -> None:
-    # The frontend sends local datetimes without timezone
-    if timezone.is_naive(start_time):
-        start_time = timezone.make_aware(start_time)
-    now = timezone.now()
-    if start_time < now or start_time - timedelta(minutes=minutes_before) < now:
-        raise UseCaseError("You cannot set a reminder in the past.")
 
 
 def save_new_reminder(
@@ -47,13 +38,18 @@ def save_new_reminder(
     if already_exists:
         raise UseCaseError("You already have an identical reminder for this event.")
 
-    ensure_reminder_is_in_future(event.start_time, minutes_before)
+    schedule = compute_reminder_schedule(event, minutes_before, after=timezone.now())
+    if schedule is None:
+        raise UseCaseError("You cannot set a reminder in the past.")
+    original_start, remind_at = schedule
 
     reminder = CalendarEventReminder.create(
         event=event,
         org_user=org_user,
         minutes_before=minutes_before,
         method=method,
+        original_start=original_start,
+        remind_at=remind_at,
     )
     reminder.save()
     return reminder
@@ -114,16 +110,17 @@ def update_reminder(
     if duplicate_exists:
         raise UseCaseError("You already have an identical reminder for this event.")
 
-    ensure_reminder_is_in_future(reminder.event.start_time, new_minutes)
+    schedule = compute_reminder_schedule(
+        reminder.event, new_minutes, after=timezone.now()
+    )
+    if schedule is None:
+        raise UseCaseError("You cannot set a reminder in the past.")
 
     reminder.minutes_before = new_minutes
     reminder.method = new_method
-    reminder.remind_at = CalendarEventReminder.compute_remind_at(
-        reminder.event.start_time, new_minutes
-    )
-    reminder.dispatched_at = None
+    reminder.original_start, reminder.remind_at = schedule
     reminder.save(
-        update_fields=["minutes_before", "method", "remind_at", "dispatched_at"]
+        update_fields=["minutes_before", "method", "original_start", "remind_at"]
     )
     return reminder
 

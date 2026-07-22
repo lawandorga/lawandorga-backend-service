@@ -1,4 +1,4 @@
-# Runs the send_calendar_reminders management command frequently so reminders
+# Runs the dispatch_calendar_reminders management command frequently so reminders
 # go out close to their lead time. manage.py defaults to config.settings.local,
 # so DJANGO_SETTINGS_MODULE is set below to avoid running against local SQLite.
 resource "kubernetes_cron_job_v1" "reminders" {
@@ -31,7 +31,7 @@ resource "kubernetes_cron_job_v1" "reminders" {
             container {
               name    = "${var.name}-reminders"
               image   = "${data.terraform_remote_state.cluster.outputs.registry_endpoint}/${var.name}:${var.image_version}"
-              command = ["python", "manage.py", "send_calendar_reminders"]
+              command = ["python", "manage.py", "dispatch_calendar_reminders"]
 
               env_from {
                 secret_ref {

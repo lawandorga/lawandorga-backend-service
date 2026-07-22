@@ -72,7 +72,7 @@ def test_create_event_with_optional_fields(db):
         end_time=end,
         description="Talk about progress",
         location="Zoom",
-        recurrence_rule="  FREQ=DAILY;INTERVAL=1  ",
+        recurrence_rule="  FREQ=DAILY  ",
         recurrence_until=until,
     )
 
@@ -80,7 +80,7 @@ def test_create_event_with_optional_fields(db):
     assert event.end_time == end
     assert event.description == "Talk about progress"
     assert event.location == "Zoom"
-    assert event.recurrence_rule == "FREQ=DAILY;INTERVAL=1"
+    assert event.recurrence_rule == "FREQ=DAILY"
     assert event.recurrence_until == until
 
 
