@@ -5,16 +5,16 @@
 </head>
 <body>
 <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 32px; font-family: Arial, sans-serif; color: #222;">
-    <h2 style="color: #2c3e50;">Reminder: {{ event.title }}</h2>
+    <h2 style="color: #2c3e50;">Reminder: {{ occurrence.title }}</h2>
     <p>Dear {{ user_name }},</p>
     <p>
-        This is a reminder for <strong>{{ event.title }}</strong>, starting {{ lead_time }} at <strong>{{ start_time }}</strong>.
+        This is a reminder for <strong>{{ occurrence.title }}</strong>, starting {{ lead_time }} at <strong>{{ start_time }}</strong>.
     </p>
-    {% if event.location %}
-    <p>Location: {{ event.location }}</p>
+    {% if occurrence.location %}
+    <p>Location: {{ occurrence.location }}</p>
     {% endif %}
-    {% if event.description %}
-    <p>{{ event.description }}</p>
+    {% if occurrence.description %}
+    <p>{{ occurrence.description }}</p>
     {% endif %}
     <p>
         <a href="{{ calendar_url }}" style="background: #27ae60; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;">Open Calendar</a>

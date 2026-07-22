@@ -27,7 +27,10 @@ def _create_event(actor):
 
 def _create_notification(org_user, event):
     return CalendarNotification.objects.create(
-        org_user=org_user, event=event, message="A reminder"
+        org_user=org_user,
+        event=event,
+        message="A reminder",
+        occurrence_end=event.end_time,
     )
 
 

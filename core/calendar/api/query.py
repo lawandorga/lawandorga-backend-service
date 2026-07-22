@@ -8,10 +8,10 @@ from pydantic import BaseModel, ConfigDict
 from core.auth.models import OrgUser
 from core.calendar.models.event import (
     CalendarEvent,
+    CalendarEventOccurrenceOverride,
     CalendarEventReminder,
     CalendarNotification,
 )
-from core.calendar.reminders import send_due_reminders
 from core.seedwork.api_layer import Router
 
 router = Router()
@@ -21,6 +21,19 @@ class OutputCalendarEventReminder(BaseModel):
     uuid: UUID
     minutes_before: int
     method: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OutputOccurrenceOverride(BaseModel):
+    uuid: UUID
+    original_start: datetime
+    cancelled: bool
+    start_time: datetime | None
+    end_time: datetime | None
+    title: str | None
+    description: str | None
+    location: str | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -42,6 +55,7 @@ class OutputCalendarEvent(BaseModel):
     guest_user_ids: list[int]
     guest_user_names: list[str]
     own_reminders: list[OutputCalendarEventReminder]
+    overrides: list[OutputOccurrenceOverride]
     created: datetime
     updated: datetime
 
@@ -61,6 +75,11 @@ def query__calendar_events(org_user: OrgUser):
             "shares",
             "shares__shared_user",
             "shares__shared_user__user",
+            Prefetch(
+                "occurrence_overrides",
+                queryset=CalendarEventOccurrenceOverride.objects.all(),
+                to_attr="overrides",
+            ),
             Prefetch("reminders", queryset=own_reminders, to_attr="own_reminders"),
         )
     )
@@ -81,8 +100,7 @@ class OutputCalendarNotification(BaseModel):
     output_schema=list[OutputCalendarNotification],
 )
 def query__notifications(org_user: OrgUser):
-    send_due_reminders()
     now = timezone.now()
     return CalendarNotification.objects.filter(
-        org_user=org_user, event__end_time__gte=now
+        org_user=org_user, occurrence_end__gte=now
     ).select_related("event")

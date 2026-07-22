@@ -1,13 +1,13 @@
 from datetime import date, datetime
 from uuid import UUID
 
+from django.utils import timezone
+
 from core.auth.models.org_user import OrgUser
 from core.calendar.models import CalendarEvent, CalendarEventShare, RecurrenceRule
-from core.calendar.use_cases.reminder import (
-    ensure_reminder_is_in_future,
-    parse_reminder,
-    save_new_reminder,
-)
+from core.calendar.occurrences import ensure_aware
+from core.calendar.reminders import compute_reminder_schedule, resync_event_reminders
+from core.calendar.use_cases.reminder import parse_reminder, save_new_reminder
 from core.org.models import Group
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.use_case_layer import use_case
@@ -111,11 +111,9 @@ def create_event(
     grant_access_level: CalendarEventShare.AccessLevel = CalendarEventShare.AccessLevel.VIEW,
     reminders: list[str] | None = None,
 ) -> CalendarEvent:
+    start_time = ensure_aware(start_time)
+    end_time = ensure_aware(end_time)
     parsed_reminders = {parse_reminder(raw) for raw in reminders or []}
-    if parsed_reminders and recurrence_rule:
-        raise UseCaseError("Reminders for repeating events are not supported yet.")
-    for _, minutes_before in parsed_reminders:
-        ensure_reminder_is_in_future(start_time, minutes_before)
 
     event = CalendarEvent.create(
         creator=__actor,
@@ -129,6 +127,12 @@ def create_event(
         recurrence_until=recurrence_until,
         is_all_day=is_all_day,
     )
+
+    now = timezone.now()
+    for _, minutes_before in parsed_reminders:
+        if compute_reminder_schedule(event, minutes_before, after=now) is None:
+            raise UseCaseError("You cannot set a reminder in the past.")
+
     event.save()
     _grant_access(
         event,
@@ -172,13 +176,12 @@ def update_event(
     ):
         raise DomainError("You can only change event shares with admin access.")
 
-    old_start_time = event.start_time
     event.update_information(
         title=title,
         description=description,
         event_type=event_type,
-        start_time=start_time,
-        end_time=end_time,
+        start_time=ensure_aware(start_time) if start_time is not None else None,
+        end_time=ensure_aware(end_time) if end_time is not None else None,
         location=location,
         recurrence_rule=(
             RecurrenceRule.create(recurrence_rule)
@@ -190,9 +193,7 @@ def update_event(
     )
     event.save()
 
-    start_time_changed = start_time is not None and start_time != old_start_time
-    if start_time_changed:
-        event.reschedule_reminders()
+    resync_event_reminders(event)
 
     _grant_access(
         event,

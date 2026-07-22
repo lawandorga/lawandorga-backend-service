@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
@@ -13,6 +13,14 @@ if TYPE_CHECKING:
     from core.org.models import Group, Org
 
 
+SUPPORTED_RECURRENCE_RULES = {
+    "FREQ=DAILY",
+    "FREQ=WEEKLY",
+    "FREQ=MONTHLY",
+    "FREQ=YEARLY",
+}
+
+
 class RecurrenceRule(str):
     def __new__(cls, value: str = ""):
         if value is None:
@@ -21,8 +29,8 @@ class RecurrenceRule(str):
             raise TypeError("RecurrenceRule must be a string.")
 
         normalized = value.strip()
-        if len(normalized) > 200:
-            raise DomainError("Recurrence rule must be at most 200 characters.")
+        if normalized and normalized not in SUPPORTED_RECURRENCE_RULES:
+            raise DomainError("This recurrence rule is not supported.")
 
         return str.__new__(cls, normalized)
 
@@ -60,6 +68,7 @@ class CalendarEvent(models.Model):
     if TYPE_CHECKING:
         shares: models.QuerySet["CalendarEventShare"]
         reminders: models.QuerySet["CalendarEventReminder"]
+        occurrence_overrides: models.QuerySet["CalendarEventOccurrenceOverride"]
 
     class Meta:
         verbose_name = "EVT_CalendarEvent"
@@ -329,10 +338,6 @@ class CalendarEvent(models.Model):
         if is_all_day is not None:
             self.is_all_day = is_all_day
 
-    def reschedule_reminders(self) -> None:
-        for reminder in self.reminders.all():
-            reminder.reschedule(self.start_time)
-
     def __str__(self):
         return f"CalendarEvent: {self.pk}, title: {self.title}, creator: {self.creator.name}"
 
@@ -470,8 +475,8 @@ class CalendarEventReminder(models.Model):
     )
     minutes_before = models.PositiveIntegerField(default=0)
     method = models.CharField(max_length=20, choices=Method.choices)
-    remind_at = models.DateTimeField()
-    dispatched_at = models.DateTimeField(null=True, blank=True)
+    remind_at = models.DateTimeField(null=True, blank=True)
+    original_start = models.DateTimeField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
 
     if TYPE_CHECKING:
@@ -487,14 +492,8 @@ class CalendarEventReminder(models.Model):
             ),
         ]
         indexes = [
-            models.Index(
-                fields=["remind_at", "dispatched_at"], name="cal_reminder_due_idx"
-            ),
+            models.Index(fields=["remind_at"], name="cal_reminder_due_idx"),
         ]
-
-    @staticmethod
-    def compute_remind_at(start_time: datetime, minutes_before: int) -> datetime:
-        return start_time - timedelta(minutes=minutes_before)
 
     @classmethod
     def create(
@@ -504,6 +503,8 @@ class CalendarEventReminder(models.Model):
         org_user: OrgUser,
         minutes_before: int,
         method: "CalendarEventReminder.Method",
+        original_start: datetime,
+        remind_at: datetime,
     ) -> "CalendarEventReminder":
         if minutes_before < 0:
             raise DomainError("A reminder can not fire after the event starts.")
@@ -512,13 +513,9 @@ class CalendarEventReminder(models.Model):
             org_user=org_user,
             minutes_before=minutes_before,
             method=method,
-            remind_at=cls.compute_remind_at(event.start_time, minutes_before),
+            original_start=original_start,
+            remind_at=remind_at,
         )
-
-    def reschedule(self, start_time: datetime) -> None:
-        self.remind_at = self.compute_remind_at(start_time, self.minutes_before)
-        self.dispatched_at = None
-        self.save(update_fields=["remind_at", "dispatched_at"])
 
     def __str__(self):
         return (
@@ -536,6 +533,7 @@ class CalendarNotification(models.Model):
         CalendarEvent, on_delete=models.CASCADE, related_name="notifications"
     )
     message = models.CharField(max_length=500)
+    occurrence_end = models.DateTimeField()
     read_at = models.DateTimeField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -563,3 +561,40 @@ class CalendarNotification(models.Model):
 
     def __str__(self):
         return f"CalendarNotification: {self.pk}, org_user: {self.org_user_id}"
+
+
+class CalendarEventOccurrenceOverride(models.Model):
+    # `original_start` identifies the occurrence by its slot in the series;
+    # every other field is null unless this instance differs from the series
+
+    uuid = models.UUIDField(default=uuid4, unique=True, editable=False)
+    event = models.ForeignKey(
+        CalendarEvent, on_delete=models.CASCADE, related_name="occurrence_overrides"
+    )
+    original_start = models.DateTimeField()
+    cancelled = models.BooleanField(default=False)
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    title = models.CharField(max_length=200, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    location = models.CharField(max_length=500, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    if TYPE_CHECKING:
+        event_id: int
+
+    class Meta:
+        verbose_name = "EVT_CalendarEventOccurrenceOverride"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["event", "original_start"],
+                name="calendar_override_unique_per_occurrence",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"CalendarEventOccurrenceOverride: {self.pk}, event: {self.event_id}, "
+            f"original_start: {self.original_start}, cancelled: {self.cancelled}"
+        )
