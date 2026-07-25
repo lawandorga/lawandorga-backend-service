@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from django.db import models
+from django.utils import timezone
 from pydantic import BaseModel
 
 from core.auth.models import OrgUser
@@ -124,11 +125,11 @@ class RecordsRecord(FolderItemMixin, models.Model):
         for ds in data_sheets:
             assert ds.folder_uuid == self.folder_uuid
             attrs = merge_attrs(attrs, ds.attributes)
-        attrs["Created"] = self.created.strftime("%d.%m.%Y %H:%M:%S")
-        attrs["Updated"] = self.updated.strftime("%d.%m.%Y %H:%M:%S")
+        attrs["Created"] = self.created.isoformat(timespec="seconds")
+        attrs["Updated"] = self.updated.isoformat(timespec="seconds")
         self.attributes = json.dumps(attrs)
 
     def update_timestamps(self):
         attrs = json.loads(self.attributes)
-        attrs["Updated"] = self.updated.strftime("%d.%m.%Y %H:%M:%S")
+        attrs["Updated"] = timezone.now().isoformat(timespec="seconds")
         self.attributes = json.dumps(attrs)
