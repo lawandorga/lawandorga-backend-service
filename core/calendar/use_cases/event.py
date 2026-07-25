@@ -188,6 +188,7 @@ def update_event(
     if not event.has_edit_access(__actor):
         raise DomainError("You can only edit events with edit access.")
 
+    slot_layout_before = (event.start_time, event.recurrence_rule)
     event.update_information(
         title=title,
         description=description,
@@ -204,6 +205,11 @@ def update_event(
         is_all_day=is_all_day,
     )
     event.save()
+
+    # changing the times shifts every slot, so overrides keyed to the old
+    # slots would orphan (and render alongside the new occurrences)
+    if (event.start_time, event.recurrence_rule) != slot_layout_before:
+        event.occurrence_overrides.all().delete()
 
     resync_event_reminders(event)
 

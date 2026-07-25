@@ -10,6 +10,7 @@ from core.calendar.models import (
     CalendarEventShare,
     RecurrenceRule,
 )
+from core.calendar.use_cases.event import update_event
 from core.calendar.use_cases.occurrence import (
     cancel_event_occurrence,
     update_event_occurrence,
@@ -232,3 +233,41 @@ def test_cancel_after_update_keeps_override_fields(db):
     assert override.cancelled is True
     assert override.title == "Moved"
     assert CalendarEventOccurrenceOverride.objects.count() == 1
+
+
+def test_updating_series_timing_clears_occurrence_overrides(db):
+    actor = _actor()
+    event = _create_weekly_event(actor)
+
+    slot = event.start_time + timedelta(days=7)
+    update_event_occurrence(
+        __actor=actor,
+        event_uuid=event.uuid,
+        original_start=slot,
+        start_time=slot - timedelta(hours=1),
+    )
+    assert CalendarEventOccurrenceOverride.objects.filter(event=event).count() == 1
+
+    update_event(
+        __actor=actor,
+        event_uuid=event.uuid,
+        start_time=event.start_time + timedelta(hours=1),
+        end_time=event.end_time + timedelta(hours=1),
+    )
+
+    assert CalendarEventOccurrenceOverride.objects.filter(event=event).count() == 0
+
+
+def test_updating_series_details_keeps_occurrence_overrides(db):
+    actor = _actor()
+    event = _create_weekly_event(actor)
+
+    slot = event.start_time + timedelta(days=7)
+    update_event_occurrence(
+        __actor=actor, event_uuid=event.uuid, original_start=slot, title="Moved"
+    )
+    assert CalendarEventOccurrenceOverride.objects.filter(event=event).count() == 1
+
+    update_event(__actor=actor, event_uuid=event.uuid, title="Renamed series")
+
+    assert CalendarEventOccurrenceOverride.objects.filter(event=event).count() == 1
