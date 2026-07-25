@@ -70,6 +70,7 @@ def test_due_email_reminder_is_sent_once(db, mailoutbox):
     assert "in 30 minutes" in mailoutbox[0].body
     assert "Room 5" in mailoutbox[0].body
     assert "Bring the documents" in mailoutbox[0].body
+    assert f"/calendar/?event={event.uuid}" in mailoutbox[0].body
     assert "Email: 1 sent, 0 failed" in result
     reminder.refresh_from_db()
     assert reminder.remind_at is None
@@ -140,6 +141,8 @@ def test_recurring_reminder_fires_and_advances_to_next_occurrence(db, mailoutbox
     dispatch_due_reminders()
 
     assert len(mailoutbox) == 1
+    assert f"event={event.uuid}" in mailoutbox[0].body
+    assert "&start=" in mailoutbox[0].body
     reminder.refresh_from_db()
     assert reminder.original_start == upcoming_slot + timedelta(days=1)
     assert reminder.remind_at == reminder.original_start - timedelta(minutes=90)
@@ -204,10 +207,8 @@ def test_reminder_for_moved_occurrence_uses_moved_time(db, mailoutbox):
 
 def test_missed_occurrence_is_skipped_without_sending(db, mailoutbox):
     actor = _actor()
-    # The occurrence already started (e.g. the cron failed)
-    event = _create_event(
-        actor, start=_now_without_microseconds() - timedelta(minutes=10)
-    )
+    # the occurrence already ended (e.g. the cron was down for a while)
+    event = _create_event(actor, start=_now_without_microseconds() - timedelta(hours=2))
     reminder = _add_due_reminder(
         event, actor, minutes_before=30, method=CalendarEventReminder.Method.EMAIL
     )
@@ -218,3 +219,19 @@ def test_missed_occurrence_is_skipped_without_sending(db, mailoutbox):
     reminder.refresh_from_db()
     assert reminder.remind_at is None
     assert reminder.original_start is None
+
+
+def test_reminder_fires_for_in_progress_occurrence(db, mailoutbox):
+    actor = _actor()
+    event = _create_event(
+        actor, start=_now_without_microseconds() - timedelta(minutes=5)
+    )
+    reminder = _add_due_reminder(
+        event, actor, minutes_before=0, method=CalendarEventReminder.Method.EMAIL
+    )
+
+    dispatch_due_reminders()
+
+    assert len(mailoutbox) == 1
+    reminder.refresh_from_db()
+    assert reminder.remind_at is None

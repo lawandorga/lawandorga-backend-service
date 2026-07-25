@@ -3,6 +3,7 @@ from collections import Counter
 from collections.abc import Callable
 from datetime import datetime, timedelta
 from typing import NamedTuple, TypeGuard
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -85,12 +86,18 @@ def _send_reminder_email(
 ) -> None:
     lead_time = _lead_time_label(reminder.minutes_before)
     start = timezone.localtime(occurrence.start_time).strftime("%Y-%m-%d %H:%M %Z")
+
+    query = {"event": str(reminder.event.uuid)}
+    if reminder.event.recurrence_rule:
+        query["start"] = occurrence.original_start.isoformat()
+    event_url = f"{settings.MAIN_FRONTEND_URL}/calendar/?{urlencode(query)}"
+
     context = {
         "user_name": reminder.org_user.name,
         "occurrence": occurrence,
         "start_time": start,
         "lead_time": lead_time,
-        "calendar_url": f"{settings.MAIN_FRONTEND_URL}/calendar/",
+        "event_url": event_url,
     }
     subject = f"Law&Orga reminder: {occurrence.title}"
     details = ""
@@ -105,7 +112,7 @@ def _send_reminder_email(
         f'This is a reminder for "{occurrence.title}", starting {lead_time} '
         f"at {start}.\n\n"
         f"{details}"
-        f"Open your calendar: {context['calendar_url']}\n\n"
+        f"Open the event: {context['event_url']}\n\n"
         "Best regards,\nThe Law&Orga Team"
     )
     html_message = loader.render_to_string(
@@ -155,7 +162,7 @@ def _should_send_reminder(
     return (
         occurrence is not None
         and not occurrence.cancelled
-        and occurrence.start_time > now
+        and occurrence.end_time > now
     )
 
 
