@@ -17,6 +17,8 @@ ignore_missing_settings = true
 
 known_local_folder = ["dms", "seedwork"]
 profile = "black"
+skip_gitignore = true
+extend_skip_glob = [".venv/**", "venv/**", "node_modules/**", "__pypackages__/**"]
 
 [tool.ruff]
 
@@ -68,7 +70,7 @@ dependencies = [
     "coverage>=7.13,<7.16",
     "pytest>=9.0,<9.2",
     "pytest-django==4.12.*",
-    "mypy>=1.15,<2.2",
+    "mypy>=1.15,<2.4",
     "djangorestframework-stubs>=3.16,<3.18",
     "black==26.*",
     "environs>=14.5,<15.1",
