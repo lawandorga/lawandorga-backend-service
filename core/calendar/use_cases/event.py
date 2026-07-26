@@ -2,19 +2,16 @@ from datetime import date, datetime
 from uuid import UUID
 
 from django.db import transaction
-from django.utils import timezone
 
 from core.auth.models.org_user import OrgUser
 from core.calendar.models import CalendarEvent, CalendarEventShare, RecurrenceRule
 from core.calendar.occurrences import ensure_aware
-from core.calendar.reminders import compute_reminder_schedule, resync_event_reminders
+from core.calendar.reminders import resync_event_reminders
 from core.calendar.use_cases.reminder import parse_reminder, save_new_reminder
 from core.org.models import Group
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.use_case_layer import use_case
 from core.seedwork.use_case_layer.error import UseCaseError
-
-from seedwork.functional import list_filter, list_map
 
 
 def _parse_grant_target(target: str) -> tuple[str, int]:
@@ -30,6 +27,36 @@ def _parse_grant_target(target: str) -> tuple[str, int]:
     return raw_type, target_id
 
 
+def _apply_grants(
+    event: CalendarEvent,
+    *,
+    actor: OrgUser,
+    targets: list[str],
+    access_level: CalendarEventShare.AccessLevel,
+) -> None:
+    for target in targets:
+        target_type, target_id = _parse_grant_target(target)
+        if target_type == "user":
+            event.grant_access(
+                by=actor,
+                access_level=access_level,
+                shared_user=OrgUser.objects.get(pk=target_id),
+            )
+        elif target_type == "group":
+            event.grant_access(
+                by=actor,
+                access_level=access_level,
+                shared_group=Group.objects.get(pk=target_id),
+            )
+        else:
+            # the only org an actor can share with is their own
+            event.grant_access(
+                by=actor,
+                access_level=access_level,
+                shared_org=actor.org,
+            )
+
+
 def _grant_access(
     event: CalendarEvent,
     *,
@@ -40,75 +67,17 @@ def _grant_access(
     if view_grant_targets is None and edit_grant_targets is None:
         return
 
-    user_view_access = list_map(
-        list_filter(view_grant_targets or [], lambda t: t.startswith("user:")),
-        lambda t: _parse_grant_target(t)[1],
-    )
-    group_view_access = list_map(
-        list_filter(view_grant_targets or [], lambda t: t.startswith("group:")),
-        lambda t: _parse_grant_target(t)[1],
-    )
-    org_view_access = list_map(
-        list_filter(view_grant_targets or [], lambda t: t.startswith("org:")),
-        lambda t: _parse_grant_target(t)[1],
-    )
-
-    user_edit_access = list_map(
-        list_filter(edit_grant_targets or [], lambda t: t.startswith("user:")),
-        lambda t: _parse_grant_target(t)[1],
-    )
-    group_edit_access = list_map(
-        list_filter(edit_grant_targets or [], lambda t: t.startswith("group:")),
-        lambda t: _parse_grant_target(t)[1],
-    )
-    org_edit_access = list_map(
-        list_filter(edit_grant_targets or [], lambda t: t.startswith("org:")),
-        lambda t: _parse_grant_target(t)[1],
-    )
+    # edit is granted last so it wins for a target named in both lists
+    grants = [
+        (CalendarEventShare.AccessLevel.VIEW, view_grant_targets or []),
+        (CalendarEventShare.AccessLevel.EDIT, edit_grant_targets or []),
+    ]
 
     with transaction.atomic():
         event.shares.exclude(shared_user=event.creator).delete()
-
-        for user_id in user_view_access:
-            event.grant_access(
-                by=actor,
-                access_level=CalendarEventShare.AccessLevel.VIEW,
-                shared_user=OrgUser.objects.get(pk=user_id),
-            )
-
-        for user_id in user_edit_access:
-            event.grant_access(
-                by=actor,
-                access_level=CalendarEventShare.AccessLevel.EDIT,
-                shared_user=OrgUser.objects.get(pk=user_id),
-            )
-
-        for group_id in group_view_access:
-            event.grant_access(
-                by=actor,
-                access_level=CalendarEventShare.AccessLevel.VIEW,
-                shared_group=Group.objects.get(pk=group_id),
-            )
-
-        for group_id in group_edit_access:
-            event.grant_access(
-                by=actor,
-                access_level=CalendarEventShare.AccessLevel.EDIT,
-                shared_group=Group.objects.get(pk=group_id),
-            )
-
-        if org_view_access:
-            event.grant_access(
-                by=actor,
-                access_level=CalendarEventShare.AccessLevel.VIEW,
-                shared_org=actor.org,
-            )
-
-        if org_edit_access:
-            event.grant_access(
-                by=actor,
-                access_level=CalendarEventShare.AccessLevel.EDIT,
-                shared_org=actor.org,
+        for access_level, targets in grants:
+            _apply_grants(
+                event, actor=actor, targets=targets, access_level=access_level
             )
 
 
@@ -145,25 +114,23 @@ def create_event(
         is_all_day=is_all_day,
     )
 
-    now = timezone.now()
-    for _, minutes_before in parsed_reminders:
-        if compute_reminder_schedule(event, minutes_before, after=now) is None:
-            raise UseCaseError("You cannot set a reminder in the past.")
-
-    event.save()
-    _grant_access(
-        event,
-        actor=__actor,
-        view_grant_targets=view_grant_targets,
-        edit_grant_targets=edit_grant_targets,
-    )
-    for method, minutes_before in parsed_reminders:
-        save_new_reminder(
-            event=event,
-            org_user=__actor,
-            minutes_before=minutes_before,
-            method=method,
+    # a reminder that cannot be scheduled aborts the whole creation, so the
+    # event must not survive on its own
+    with transaction.atomic():
+        event.save()
+        _grant_access(
+            event,
+            actor=__actor,
+            view_grant_targets=view_grant_targets,
+            edit_grant_targets=edit_grant_targets,
         )
+        for method, minutes_before in parsed_reminders:
+            save_new_reminder(
+                event=event,
+                org_user=__actor,
+                minutes_before=minutes_before,
+                method=method,
+            )
     return event
 
 

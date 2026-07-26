@@ -8,7 +8,6 @@ from pydantic import BaseModel, ConfigDict
 from core.auth.models import OrgUser
 from core.calendar.models.event import (
     CalendarEvent,
-    CalendarEventOccurrenceOverride,
     CalendarEventReminder,
     CalendarNotification,
 )
@@ -77,11 +76,7 @@ def query__calendar_events(org_user: OrgUser):
             "shares",
             "shares__shared_user",
             "shares__shared_user__user",
-            Prefetch(
-                "occurrence_overrides",
-                queryset=CalendarEventOccurrenceOverride.objects.all(),
-                to_attr="overrides",
-            ),
+            Prefetch("occurrence_overrides", to_attr="overrides"),
             Prefetch("reminders", queryset=own_reminders, to_attr="own_reminders"),
         )
     )
@@ -101,6 +96,8 @@ class OutputOccurrence(BaseModel):
     is_all_day: bool
     event_type: str
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 @router.get(
     url="occurrences/",
@@ -111,15 +108,7 @@ def query__calendar_occurrences(org_user: OrgUser, data: InputCalendarOccurrence
         "occurrence_overrides"
     )
     return [
-        OutputOccurrence(
-            event_uuid=event.uuid,
-            original_start=occurrence.original_start,
-            title=occurrence.title,
-            start_time=occurrence.start_time,
-            end_time=occurrence.end_time,
-            is_all_day=event.is_all_day,
-            event_type=event.event_type,
-        )
+        occurrence
         for event in events
         for occurrence in get_occurrences(event, from_dt=data.from_dt, to_dt=data.to_dt)
     ]

@@ -49,43 +49,65 @@ class ReminderSchedule(NamedTuple):
     remind_at: datetime
 
 
-_MAX_OCCURRENCES_TO_SKIP = 50
-
-
 def compute_reminder_schedule(
     event: CalendarEvent, minutes_before: int, *, after: datetime
 ) -> ReminderSchedule | None:
     offset = timedelta(minutes=minutes_before)
-    cursor = after
-    for _ in range(_MAX_OCCURRENCES_TO_SKIP):
-        occurrence = get_next_occurrence(event, after=cursor)
-        if occurrence is None:
-            return None
-        remind_at = occurrence.start_time - offset
-        if remind_at > after:
-            return ReminderSchedule(occurrence.original_start, remind_at)
-        # reminder time already passed, so skip it and look at the next one
-        cursor = occurrence.start_time
-    return None
+    # the reminder itself must be in the future, so its occurrence has to
+    # start at least one lead time after `after`
+    occurrence = get_next_occurrence(event, after=after + offset)
+    if occurrence is None:
+        return None
+    return ReminderSchedule(occurrence.original_start, occurrence.start_time - offset)
+
+
+def _apply_schedule(
+    reminder: CalendarEventReminder, schedule: ReminderSchedule | None
+) -> None:
+    if schedule is None:
+        reminder.original_start = None
+        reminder.remind_at = None
+    else:
+        reminder.original_start, reminder.remind_at = schedule
 
 
 def resync_event_reminders(event: CalendarEvent) -> None:
     now = timezone.now()
-    for reminder in event.reminders.all():
-        schedule = compute_reminder_schedule(event, reminder.minutes_before, after=now)
-        if schedule is None:
-            reminder.original_start = None
-            reminder.remind_at = None
-        else:
-            reminder.original_start, reminder.remind_at = schedule
-        reminder.save(update_fields=["original_start", "remind_at"])
+    reminders = list(event.reminders.all())
+    # reminders sharing a lead time share a schedule, and each one walks the series
+    schedule_by_minutes_before: dict[int, ReminderSchedule | None] = {}
+
+    for reminder in reminders:
+        if reminder.minutes_before not in schedule_by_minutes_before:
+            schedule_by_minutes_before[reminder.minutes_before] = (
+                compute_reminder_schedule(event, reminder.minutes_before, after=now)
+            )
+        _apply_schedule(reminder, schedule_by_minutes_before[reminder.minutes_before])
+
+    CalendarEventReminder.objects.bulk_update(
+        reminders, ["original_start", "remind_at"]
+    )
+
+
+class OccurrenceLabels(NamedTuple):
+    lead_time: str
+    formatted_start: str
+
+
+def _occurrence_labels(
+    reminder: CalendarEventReminder, occurrence: Occurrence
+) -> OccurrenceLabels:
+    local_start = timezone.localtime(occurrence.start_time)
+    return OccurrenceLabels(
+        lead_time=_lead_time_label(reminder.minutes_before),
+        formatted_start=local_start.strftime("%Y-%m-%d %H:%M %Z"),
+    )
 
 
 def _send_reminder_email(
     reminder: CalendarEventReminder, occurrence: Occurrence
 ) -> None:
-    lead_time = _lead_time_label(reminder.minutes_before)
-    start = timezone.localtime(occurrence.start_time).strftime("%Y-%m-%d %H:%M %Z")
+    lead_time, formatted_start = _occurrence_labels(reminder, occurrence)
 
     query = {"event": str(reminder.event.uuid)}
     if reminder.event.recurrence_rule:
@@ -95,7 +117,7 @@ def _send_reminder_email(
     context = {
         "user_name": reminder.org_user.name,
         "occurrence": occurrence,
-        "start_time": start,
+        "start_time": formatted_start,
         "lead_time": lead_time,
         "event_url": event_url,
     }
@@ -110,9 +132,9 @@ def _send_reminder_email(
     message = (
         f"Dear {reminder.org_user.name},\n\n"
         f'This is a reminder for "{occurrence.title}", starting {lead_time} '
-        f"at {start}.\n\n"
+        f"at {formatted_start}.\n\n"
         f"{details}"
-        f"Open the event: {context['event_url']}\n\n"
+        f"Open the event: {event_url}\n\n"
         "Best regards,\nThe Law&Orga Team"
     )
     html_message = loader.render_to_string(
@@ -130,12 +152,11 @@ def _send_reminder_email(
 def _create_reminder_notification(
     reminder: CalendarEventReminder, occurrence: Occurrence
 ) -> None:
-    lead_time = _lead_time_label(reminder.minutes_before)
-    start = timezone.localtime(occurrence.start_time).strftime("%Y-%m-%d %H:%M %Z")
+    lead_time, formatted_start = _occurrence_labels(reminder, occurrence)
     CalendarNotification.objects.create(
         org_user=reminder.org_user,
         event=reminder.event,
-        message=f'"{occurrence.title}" starts {lead_time} at {start}.',
+        message=f'"{occurrence.title}" starts {lead_time} at {formatted_start}.',
         occurrence_end=occurrence.end_time,
     )
 
@@ -149,13 +170,6 @@ _DELIVER_BY_METHOD: dict[str, Callable[[CalendarEventReminder, Occurrence], None
 }
 
 
-def _dispatch_reminder(reminder: CalendarEventReminder, occurrence: Occurrence) -> None:
-    deliver = _DELIVER_BY_METHOD.get(reminder.method)
-    if deliver is None:
-        raise ValueError(f"Unhandled reminder method: {reminder.method}")
-    deliver(reminder, occurrence)
-
-
 def _should_send_reminder(
     occurrence: Occurrence | None, now: datetime
 ) -> TypeGuard[Occurrence]:
@@ -167,24 +181,23 @@ def _should_send_reminder(
 
 
 def _advance_schedule(reminder: CalendarEventReminder, after: datetime) -> None:
-    next_occurrence = get_next_occurrence(reminder.event, after=after)
-    if next_occurrence is None:
-        reminder.original_start = None
-        reminder.remind_at = None
-    else:
-        reminder.original_start = next_occurrence.original_start
-        reminder.remind_at = next_occurrence.start_time - timedelta(
-            minutes=reminder.minutes_before
-        )
+    schedule = compute_reminder_schedule(
+        reminder.event, reminder.minutes_before, after=after
+    )
+    _apply_schedule(reminder, schedule)
     reminder.save(update_fields=["original_start", "remind_at"])
 
 
 def dispatch_due_reminders() -> str:
     now = timezone.now()
-    due_reminders = CalendarEventReminder.objects.filter(
-        remind_at__isnull=False,
-        remind_at__lte=now,
-    ).select_related("event", "org_user", "org_user__user")
+    due_reminders = (
+        CalendarEventReminder.objects.filter(
+            remind_at__isnull=False,
+            remind_at__lte=now,
+        ).select_related("event", "org_user", "org_user__user")
+        # every occurrence lookup below reads the event's overrides
+        .prefetch_related("event__occurrence_overrides")
+    )
 
     dispatched: Counter[str] = Counter()
     failed: Counter[str] = Counter()
@@ -194,7 +207,7 @@ def dispatch_due_reminders() -> str:
             if reminder.original_start is not None:
                 occurrence = get_occurrence(reminder.event, reminder.original_start)
             if _should_send_reminder(occurrence, now):
-                _dispatch_reminder(reminder, occurrence)
+                _DELIVER_BY_METHOD[reminder.method](reminder, occurrence)
                 dispatched[reminder.method] += 1
                 advance_after = occurrence.start_time
             else:

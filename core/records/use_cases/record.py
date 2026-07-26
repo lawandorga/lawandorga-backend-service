@@ -4,6 +4,7 @@ from uuid import UUID
 from django.db import transaction
 
 from core.auth.models.org_user import OrgUser
+from core.data_sheets.use_cases.finders import find_record_from_folder_uuid
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.domain.repositories.folder import FolderRepository
 from core.permissions.static import (
@@ -14,6 +15,14 @@ from core.records.models.record import RecordsRecord
 from core.records.use_cases.finders import find_record_by_uuid
 from core.seedwork.use_case_layer import UseCaseError, UseCaseInputError, use_case
 from messagebus.domain.collector import EventCollector
+
+
+def update_record_updated_at(__actor: OrgUser, folder_uuid: UUID):
+    record = find_record_from_folder_uuid(__actor, folder_uuid)
+    if not record:
+        return
+    record.update_timestamps()
+    record.save()
 
 
 @use_case(permissions=[PERMISSION_RECORDS_ADD_RECORD])

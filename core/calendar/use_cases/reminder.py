@@ -22,6 +22,26 @@ def parse_reminder(raw: str) -> tuple[CalendarEventReminder.Method, int]:
     return method, minutes_before
 
 
+def _ensure_no_duplicate(
+    *,
+    event: CalendarEvent,
+    org_user: OrgUser,
+    minutes_before: int,
+    method: str,
+    exclude_pk: int | None = None,
+) -> None:
+    duplicates = CalendarEventReminder.objects.filter(
+        event=event,
+        org_user=org_user,
+        method=method,
+        minutes_before=minutes_before,
+    )
+    if exclude_pk is not None:
+        duplicates = duplicates.exclude(pk=exclude_pk)
+    if duplicates.exists():
+        raise UseCaseError("You already have an identical reminder for this event.")
+
+
 def save_new_reminder(
     *,
     event: CalendarEvent,
@@ -29,14 +49,12 @@ def save_new_reminder(
     minutes_before: int,
     method: CalendarEventReminder.Method,
 ) -> CalendarEventReminder:
-    already_exists = CalendarEventReminder.objects.filter(
+    _ensure_no_duplicate(
         event=event,
         org_user=org_user,
-        method=method,
         minutes_before=minutes_before,
-    ).exists()
-    if already_exists:
-        raise UseCaseError("You already have an identical reminder for this event.")
+        method=method,
+    )
 
     schedule = compute_reminder_schedule(event, minutes_before, after=timezone.now())
     if schedule is None:
@@ -97,18 +115,13 @@ def update_reminder(
     if new_minutes < 0:
         raise UseCaseError("Reminders are malformed.")
 
-    duplicate_exists = (
-        CalendarEventReminder.objects.filter(
-            event=reminder.event,
-            org_user=__actor,
-            method=new_method,
-            minutes_before=new_minutes,
-        )
-        .exclude(pk=reminder.pk)
-        .exists()
+    _ensure_no_duplicate(
+        event=reminder.event,
+        org_user=__actor,
+        minutes_before=new_minutes,
+        method=new_method,
+        exclude_pk=reminder.pk,
     )
-    if duplicate_exists:
-        raise UseCaseError("You already have an identical reminder for this event.")
 
     schedule = compute_reminder_schedule(
         reminder.event, new_minutes, after=timezone.now()

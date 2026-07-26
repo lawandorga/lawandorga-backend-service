@@ -1,23 +1,15 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Literal
+from itertools import islice
+from typing import Iterator
+from uuid import UUID
 
-from dateutil.rrule import DAILY, MONTHLY, WEEKLY, YEARLY, rrule
+from dateutil.rrule import rrule
 from django.utils import timezone
 
 from core.calendar.models import CalendarEvent, CalendarEventOccurrenceOverride
+from core.calendar.models.event import RECURRENCE_FREQUENCIES
 from core.seedwork.domain_layer import DomainError
-
-# dateutil types rrule's freq parameter is a literal of its frequency
-# constants (YEARLY=0 .. DAILY=3)
-_RruleFrequency = Literal[0, 1, 2, 3]
-
-_FREQUENCIES: dict[str, _RruleFrequency] = {
-    "FREQ=DAILY": DAILY,
-    "FREQ=WEEKLY": WEEKLY,
-    "FREQ=MONTHLY": MONTHLY,
-    "FREQ=YEARLY": YEARLY,
-}
 
 # Backstop against scanning an event series without end date forever
 MAX_SLOT_SCAN = 500
@@ -33,6 +25,18 @@ class Occurrence:
     description: str
     location: str
     cancelled: bool
+
+    @property
+    def event_uuid(self) -> UUID:
+        return self.event.uuid
+
+    @property
+    def is_all_day(self) -> bool:
+        return self.event.is_all_day
+
+    @property
+    def event_type(self) -> str:
+        return self.event.event_type
 
 
 def ensure_aware(dt: datetime) -> datetime:
@@ -56,7 +60,7 @@ def _from_naive_local(naive_local: datetime) -> datetime:
 
 
 def _build_rule(event: CalendarEvent) -> rrule:
-    frequency = _FREQUENCIES.get(event.recurrence_rule)
+    frequency = RECURRENCE_FREQUENCIES.get(event.recurrence_rule)
     if frequency is None:
         raise DomainError("This recurrence rule is not supported.")
     # to keep a 09 am event at 09 am across daylight savings
@@ -67,39 +71,47 @@ def _build_rule(event: CalendarEvent) -> rrule:
     return rrule(freq=frequency, dtstart=dtstart, until=until)
 
 
-def _resolve_occurrence(
+def _naive_slots_from(
+    rule: rrule, naive_start: datetime, *, include_start: bool
+) -> Iterator[datetime]:
+    return islice(rule.xafter(naive_start, inc=include_start), MAX_SLOT_SCAN)
+
+
+def resolve_occurrence(
     event: CalendarEvent,
     slot: datetime,
     override: CalendarEventOccurrenceOverride | None,
 ) -> Occurrence:
     duration = event.end_time - event.start_time
-    start = slot
-    if override is not None and override.start_time is not None:
-        start = override.start_time
-    end = start + duration
-    if override is not None and override.end_time is not None:
-        end = override.end_time
+    if override is None:
+        return Occurrence(
+            event=event,
+            original_start=slot,
+            start_time=slot,
+            end_time=slot + duration,
+            title=event.title,
+            description=event.description,
+            location=event.location,
+            cancelled=False,
+        )
+
+    start = override.start_time if override.start_time is not None else slot
+    end = override.end_time if override.end_time is not None else start + duration
     return Occurrence(
         event=event,
         original_start=slot,
         start_time=start,
         end_time=end,
-        title=(
-            override.title
-            if override is not None and override.title is not None
-            else event.title
-        ),
+        title=override.title if override.title is not None else event.title,
         description=(
             override.description
-            if override is not None and override.description is not None
+            if override.description is not None
             else event.description
         ),
         location=(
-            override.location
-            if override is not None and override.location is not None
-            else event.location
+            override.location if override.location is not None else event.location
         ),
-        cancelled=override is not None and override.cancelled,
+        cancelled=override.cancelled,
     )
 
 
@@ -121,10 +133,15 @@ def _series_slots_between(
         slot = event.start_time
         return [slot] if from_dt <= slot <= to_dt else []
     rule = _build_rule(event)
-    naive_slots = rule.between(
-        _to_naive_local(from_dt), _to_naive_local(to_dt), inc=True
-    )
-    return [_from_naive_local(naive) for naive in naive_slots[:MAX_SLOT_SCAN]]
+    naive_window_start = _to_naive_local(from_dt)
+    naive_window_end = _to_naive_local(to_dt)
+
+    slots_in_window = []
+    for naive_slot in _naive_slots_from(rule, naive_window_start, include_start=True):
+        if naive_slot > naive_window_end:
+            break
+        slots_in_window.append(_from_naive_local(naive_slot))
+    return slots_in_window
 
 
 def series_contains_slot(event: CalendarEvent, slot: datetime) -> bool:
@@ -155,7 +172,7 @@ def get_occurrences(
     candidate_slots = set(slots_in_window) | set(all_overrides.keys())
 
     resolved_occurrences = [
-        _resolve_occurrence(event, slot, all_overrides.get(slot))
+        resolve_occurrence(event, slot, all_overrides.get(slot))
         for slot in candidate_slots
     ]
     matching_occurrences = [
@@ -172,36 +189,33 @@ def get_occurrence(event: CalendarEvent, slot: datetime) -> Occurrence | None:
         return None
     slot = normalize_slot(slot)
     overrides = _overrides_by_slot(event)
-    return _resolve_occurrence(event, slot, overrides.get(slot))
+    return resolve_occurrence(event, slot, overrides.get(slot))
 
 
 def get_next_occurrence(event: CalendarEvent, *, after: datetime) -> Occurrence | None:
     if not event.recurrence_rule:
         if event.start_time <= after:
             return None
-        return _resolve_occurrence(event, event.start_time, None)
+        return resolve_occurrence(event, event.start_time, None)
 
     overrides = _overrides_by_slot(event)
-    candidates = []
+    candidate_occurrences = []
 
     # Overrides may have moved any slot of the series past the after datetime
     for override in overrides.values():
-        occurrence = _resolve_occurrence(event, override.original_start, override)
+        occurrence = resolve_occurrence(event, override.original_start, override)
         if not occurrence.cancelled and occurrence.start_time > after:
-            candidates.append(occurrence)
+            candidate_occurrences.append(occurrence)
 
     rule = _build_rule(event)
-    naive_slot = rule.after(_to_naive_local(after))
-    scanned = 0
-    while naive_slot is not None and scanned < MAX_SLOT_SCAN:
+    naive_after = _to_naive_local(after)
+    for naive_slot in _naive_slots_from(rule, naive_after, include_start=False):
         slot = _from_naive_local(naive_slot)
-        occurrence = _resolve_occurrence(event, slot, overrides.get(slot))
+        occurrence = resolve_occurrence(event, slot, overrides.get(slot))
         if not occurrence.cancelled and occurrence.start_time > after:
-            candidates.append(occurrence)
+            candidate_occurrences.append(occurrence)
             break
-        scanned += 1
-        naive_slot = rule.after(naive_slot)
 
-    if not candidates:
+    if not candidate_occurrences:
         return None
-    return min(candidates, key=lambda occurrence: occurrence.start_time)
+    return min(candidate_occurrences, key=lambda occurrence: occurrence.start_time)
