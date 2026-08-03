@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
@@ -16,6 +17,8 @@ class OutputNote(BaseModel):
     is_wide: bool
     order: int
     is_new: bool
+    updated: datetime
+    created: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
