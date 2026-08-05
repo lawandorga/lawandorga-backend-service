@@ -78,7 +78,7 @@ def _create_reminder_notification(reminder: CalendarEventReminder) -> None:
     CalendarNotification.objects.create(
         org_user=reminder.org_user,
         event=event,
-        message=f'"{event.title}" starts {lead_time} at {start}.',
+        message=f'"{event.title}" starts in {lead_time} at {start}.',
     )
 
 
