@@ -3,5 +3,6 @@ from .event import (
     CalendarEventAttachment,
     CalendarEventReminder,
     CalendarEventShare,
+    CalendarNotification,
     RecurrenceRule,
 )

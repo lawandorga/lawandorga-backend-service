@@ -1,11 +1,13 @@
 import logging
+from collections import Counter
+from collections.abc import Callable
 
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template import loader
 from django.utils import timezone
 
-from core.calendar.models import CalendarEventReminder
+from core.calendar.models import CalendarEventReminder, CalendarNotification
 
 logger = logging.getLogger("django")
 
@@ -69,29 +71,60 @@ def _send_reminder_email(reminder: CalendarEventReminder) -> None:
     )
 
 
+def _create_reminder_notification(reminder: CalendarEventReminder) -> None:
+    event = reminder.event
+    lead_time = _lead_time_label(reminder.minutes_before)
+    start = timezone.localtime(event.start_time).strftime("%Y-%m-%d %H:%M %Z")
+    CalendarNotification.objects.create(
+        org_user=reminder.org_user,
+        event=event,
+        message=f'"{event.title}" starts {lead_time} at {start}.',
+    )
+
+
+_EMAIL = CalendarEventReminder.Method.EMAIL
+_IN_APP = CalendarEventReminder.Method.IN_APP
+
+_DELIVER_BY_METHOD: dict[str, Callable[[CalendarEventReminder], None]] = {
+    _EMAIL: _send_reminder_email,
+    _IN_APP: _create_reminder_notification,
+}
+
+
+def _dispatch_reminder(reminder: CalendarEventReminder) -> None:
+    deliver = _DELIVER_BY_METHOD.get(reminder.method)
+    if deliver is None:
+        raise ValueError(f"Unhandled reminder method: {reminder.method}")
+    deliver(reminder)
+
+
 def send_due_reminders() -> str:
     now = timezone.now()
     due_reminders = CalendarEventReminder.objects.filter(
         remind_at__lte=now,
         dispatched_at__isnull=True,
-        method=CalendarEventReminder.Method.EMAIL,
         # Recurring events will be handled later
         event__recurrence_rule="",
     ).select_related("event", "org_user", "org_user__user")
 
-    sent = 0
-    failed = 0
+    sent: Counter[str] = Counter()
+    failed: Counter[str] = Counter()
     for reminder in due_reminders:
         try:
-            _send_reminder_email(reminder)
+            _dispatch_reminder(reminder)
         except Exception:
             logger.warning(
-                "Failed to send calendar reminder %s", reminder.uuid, exc_info=True
+                "Failed to dispatch calendar reminder %s", reminder.uuid, exc_info=True
             )
-            failed += 1
+            failed[reminder.method] += 1
             continue
         reminder.dispatched_at = now
         reminder.save(update_fields=["dispatched_at"])
-        sent += 1
+        sent[reminder.method] += 1
 
-    return f"Sent {_pluralize(sent, 'calendar reminder')}, {failed} failed."
+    return (
+        f"Dispatched {_pluralize(sum(sent.values()), 'calendar reminder')}, "
+        f"{sum(failed.values())} failed.\n"
+        f"Email: {sent[_EMAIL]} sent, {failed[_EMAIL]} failed.\n"
+        f"In-app: {sent[_IN_APP]} created, {failed[_IN_APP]} failed."
+    )

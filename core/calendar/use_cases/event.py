@@ -5,6 +5,11 @@ from django.db import transaction
 
 from core.auth.models.org_user import OrgUser
 from core.calendar.models import CalendarEvent, CalendarEventShare, RecurrenceRule
+from core.calendar.use_cases.reminder import (
+    ensure_reminder_is_in_future,
+    parse_reminder,
+    save_new_reminder,
+)
 from core.org.models import Group
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.use_case_layer import use_case
@@ -122,7 +127,14 @@ def create_event(
     is_all_day: bool = False,
     view_grant_targets: list[str] | None = None,
     edit_grant_targets: list[str] | None = None,
+    reminders: list[str] | None = None,
 ) -> CalendarEvent:
+    parsed_reminders = {parse_reminder(raw) for raw in reminders or []}
+    if parsed_reminders and recurrence_rule:
+        raise UseCaseError("Reminders for repeating events are not supported yet.")
+    for _, minutes_before in parsed_reminders:
+        ensure_reminder_is_in_future(start_time, minutes_before)
+
     event = CalendarEvent.create(
         creator=__actor,
         title=title,
@@ -142,6 +154,13 @@ def create_event(
         view_grant_targets=view_grant_targets,
         edit_grant_targets=edit_grant_targets,
     )
+    for method, minutes_before in parsed_reminders:
+        save_new_reminder(
+            event=event,
+            org_user=__actor,
+            minutes_before=minutes_before,
+            method=method,
+        )
     return event
 
 
