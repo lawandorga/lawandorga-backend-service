@@ -27,7 +27,8 @@ def test_create_event_with_reminders_via_command_endpoint(db):
             "end_time": end.strftime("%Y-%m-%dT%H:%M"),
             "recurrence_rule": "",
             "recurrence_until": "||NULL||",
-            "grant_targets": "||EMPTYARRAY||",
+            "view_grant_targets": "||EMPTYARRAY||",
+            "edit_grant_targets": "||EMPTYARRAY||",
             "reminders": "||ARRAY||EMAIL:60||ARRAYSEPERATOR||IN_APP:30",
         },
     )

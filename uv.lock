@@ -826,7 +826,7 @@ requires-dist = [
     { name = "djangorestframework", specifier = ">=3.16,<3.18" },
     { name = "djangorestframework-stubs", specifier = ">=3.16,<3.18" },
     { name = "dnspython", specifier = "==2.8.*" },
-    { name = "environs", specifier = ">=14.5,<15.1" },
+    { name = "environs", specifier = ">=14.5,<15.2" },
     { name = "gunicorn", specifier = "==26.0.0" },
     { name = "ics", specifier = "==0.7.*" },
     { name = "isort", specifier = "==8.*" },
