@@ -5,18 +5,10 @@ from core.auth.models.org_user import OrgUser
 from core.collab.models.collab import Collab
 from core.collab.repositories.collab import CollabRepository
 from core.collab.use_cases.template import get_template
-from core.data_sheets.use_cases.finders import find_record_from_folder_uuid
 from core.folders.domain.repositories.folder import FolderRepository
+from core.records.use_cases.record import update_record_updated_at
 from core.seedwork.use_case_layer import UseCaseError, use_case
 from messagebus.domain.collector import EventCollector
-
-
-def update_record_updated_at(__actor: OrgUser, folder_uuid: UUID):
-    record = find_record_from_folder_uuid(__actor, folder_uuid)
-    if not record:
-        return
-    record.update_timestamps()
-    record.save()
 
 
 @use_case
