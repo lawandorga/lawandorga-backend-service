@@ -94,6 +94,7 @@ def add_comment(
     task = task_from_uuid(__actor, task_id)
     task.comments = task.comments + [
         {
+            "task_id": str(task_id),
             "email": __actor.email,
             "name": __actor.name,
             "date": timezone.now().isoformat(),
