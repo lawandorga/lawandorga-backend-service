@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import bleach
 from django.utils import timezone
@@ -94,10 +94,10 @@ def add_comment(
     task = task_from_uuid(__actor, task_id)
     task.comments = task.comments + [
         {
-            "task_id": str(task_id),
             "email": __actor.email,
             "name": __actor.name,
             "date": timezone.now().isoformat(),
+            "comment_id": uuid4(),
             "comment": comment,
         }
     ]

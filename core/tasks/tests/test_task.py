@@ -256,6 +256,8 @@ def test_update_task_comments(db):
     assert isinstance(task.comments[0]["date"], str)
     assert task.comments[0]["date"]
     assert task.comments[0]["comment"] == "First comment"
+    assert isinstance(task.comments[0]["comment_id"], str)
+    assert task.comments[0]["comment_id"]
 
     add_comment(assignee, task_id=task.uuid, comment="Second comment")
     task.refresh_from_db()
@@ -265,6 +267,9 @@ def test_update_task_comments(db):
     assert isinstance(task.comments[1]["date"], str)
     assert task.comments[1]["date"]
     assert task.comments[1]["comment"] == "Second comment"
+    assert isinstance(task.comments[1]["comment_id"], str)
+    assert task.comments[1]["comment_id"]
+    assert task.comments[0]["comment_id"] != task.comments[1]["comment_id"]
 
 
 def test_delete_task(db):
