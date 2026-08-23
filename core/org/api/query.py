@@ -29,6 +29,7 @@ class InputQueryGroup(BaseModel):
 
 class OutputGroup(BaseModel):
     id: int
+    uuid: UUID
     name: str
     description: str | None
 
