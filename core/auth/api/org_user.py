@@ -31,6 +31,7 @@ def command__confirm_email(data: InputConfirmEmail):
 
 class OutputOrgUserSmall(BaseModel):
     id: int
+    uuid: UUID
     user_id: int
     phone_number: Optional[str] = None
     name: str
