@@ -57,7 +57,7 @@ class MailImport(models.Model):
     to = models.CharField(max_length=255, blank=False)
     cc = models.CharField(max_length=255, blank=True)
     bcc = models.CharField(max_length=255, blank=True)
-    sending_datetime = models.DateTimeField(auto_now_add=True)
+    sending_datetime = models.DateTimeField()
     is_read = models.BooleanField(default=False)
     is_pinned = models.BooleanField(default=False)
     folder_uuid = models.UUIDField(db_index=True)
