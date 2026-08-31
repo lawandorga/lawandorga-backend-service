@@ -11,7 +11,7 @@ from core.calendar.models.event import (
     CalendarEventReminder,
     CalendarNotification,
 )
-from core.calendar.reminders import send_due_reminders
+from core.calendar.occurrences import get_occurrences
 from core.seedwork.api_layer import Router
 
 router = Router()
@@ -21,6 +21,19 @@ class OutputCalendarEventReminder(BaseModel):
     uuid: UUID
     minutes_before: int
     method: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OutputOccurrenceOverride(BaseModel):
+    uuid: UUID
+    original_start: datetime
+    cancelled: bool
+    start_time: datetime | None
+    end_time: datetime | None
+    title: str | None
+    description: str | None
+    location: str | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -43,6 +56,7 @@ class OutputCalendarEvent(BaseModel):
     guest_user_ids: list[int]
     guest_user_names: list[str]
     own_reminders: list[OutputCalendarEventReminder]
+    overrides: list[OutputOccurrenceOverride]
     created: datetime
     updated: datetime
 
@@ -62,9 +76,42 @@ def query__calendar_events(org_user: OrgUser):
             "shares",
             "shares__shared_user",
             "shares__shared_user__user",
+            Prefetch("occurrence_overrides", to_attr="overrides"),
             Prefetch("reminders", queryset=own_reminders, to_attr="own_reminders"),
         )
     )
+
+
+class InputCalendarOccurrences(BaseModel):
+    from_dt: datetime
+    to_dt: datetime
+
+
+class OutputOccurrence(BaseModel):
+    event_uuid: UUID
+    original_start: datetime
+    title: str
+    start_time: datetime
+    end_time: datetime
+    is_all_day: bool
+    event_type: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+@router.get(
+    url="occurrences/",
+    output_schema=list[OutputOccurrence],
+)
+def query__calendar_occurrences(org_user: OrgUser, data: InputCalendarOccurrences):
+    events = CalendarEvent.get_accessible_events_for_user(org_user).prefetch_related(
+        "occurrence_overrides"
+    )
+    return [
+        occurrence
+        for event in events
+        for occurrence in get_occurrences(event, from_dt=data.from_dt, to_dt=data.to_dt)
+    ]
 
 
 class OutputCalendarNotification(BaseModel):
@@ -82,8 +129,7 @@ class OutputCalendarNotification(BaseModel):
     output_schema=list[OutputCalendarNotification],
 )
 def query__notifications(org_user: OrgUser):
-    send_due_reminders()
     now = timezone.now()
     return CalendarNotification.objects.filter(
-        org_user=org_user, event__end_time__gte=now
+        org_user=org_user, occurrence_end__gte=now
     ).select_related("event")

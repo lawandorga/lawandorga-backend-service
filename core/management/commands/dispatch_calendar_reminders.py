@@ -1,11 +1,11 @@
 from django.core.management.base import BaseCommand
 
-from core.calendar.reminders import send_due_reminders
+from core.calendar.reminders import dispatch_due_reminders
 
 
 class Command(BaseCommand):
-    help = "Send due calendar event reminders"
+    help = "Dispatch due calendar event reminders"
 
     def handle(self, *args, **options):
-        result = send_due_reminders()
+        result = dispatch_due_reminders()
         self.stdout.write(result)

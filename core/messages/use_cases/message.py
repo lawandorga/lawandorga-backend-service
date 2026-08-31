@@ -1,19 +1,11 @@
 from uuid import UUID
 
 from core.auth.models import OrgUser
-from core.data_sheets.use_cases.finders import find_record_from_folder_uuid
 from core.folders.use_cases.finders import folder_from_uuid
 from core.messages.models import EncryptedRecordMessage
 from core.messages.use_cases.finders import get_message_by_uuid
+from core.records.use_cases.record import update_record_updated_at
 from core.seedwork.use_case_layer import use_case
-
-
-def update_record_updated_at(__actor: OrgUser, folder_uuid: UUID):
-    record = find_record_from_folder_uuid(__actor, folder_uuid)
-    if not record:
-        return
-    record.update_timestamps()
-    record.save()
 
 
 @use_case

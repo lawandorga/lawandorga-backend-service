@@ -5,17 +5,13 @@ from django.db import transaction
 
 from core.auth.models.org_user import OrgUser
 from core.calendar.models import CalendarEvent, CalendarEventShare, RecurrenceRule
-from core.calendar.use_cases.reminder import (
-    ensure_reminder_is_in_future,
-    parse_reminder,
-    save_new_reminder,
-)
+from core.calendar.occurrences import ensure_aware
+from core.calendar.reminders import resync_event_reminders
+from core.calendar.use_cases.reminder import parse_reminder, save_new_reminder
 from core.org.models import Group
 from core.seedwork.domain_layer import DomainError
 from core.seedwork.use_case_layer import use_case
 from core.seedwork.use_case_layer.error import UseCaseError
-
-from seedwork.functional import list_filter, list_map
 
 
 def _parse_grant_target(target: str) -> tuple[str, int]:
@@ -31,6 +27,36 @@ def _parse_grant_target(target: str) -> tuple[str, int]:
     return raw_type, target_id
 
 
+def _apply_grants(
+    event: CalendarEvent,
+    *,
+    actor: OrgUser,
+    targets: list[str],
+    access_level: CalendarEventShare.AccessLevel,
+) -> None:
+    for target in targets:
+        target_type, target_id = _parse_grant_target(target)
+        if target_type == "user":
+            event.grant_access(
+                by=actor,
+                access_level=access_level,
+                shared_user=OrgUser.objects.get(pk=target_id),
+            )
+        elif target_type == "group":
+            event.grant_access(
+                by=actor,
+                access_level=access_level,
+                shared_group=Group.objects.get(pk=target_id),
+            )
+        else:
+            # the only org an actor can share with is their own
+            event.grant_access(
+                by=actor,
+                access_level=access_level,
+                shared_org=actor.org,
+            )
+
+
 def _grant_access(
     event: CalendarEvent,
     *,
@@ -41,75 +67,17 @@ def _grant_access(
     if view_grant_targets is None and edit_grant_targets is None:
         return
 
-    user_view_access = list_map(
-        list_filter(view_grant_targets or [], lambda t: t.startswith("user:")),
-        lambda t: _parse_grant_target(t)[1],
-    )
-    group_view_access = list_map(
-        list_filter(view_grant_targets or [], lambda t: t.startswith("group:")),
-        lambda t: _parse_grant_target(t)[1],
-    )
-    org_view_access = list_map(
-        list_filter(view_grant_targets or [], lambda t: t.startswith("org:")),
-        lambda t: _parse_grant_target(t)[1],
-    )
-
-    user_edit_access = list_map(
-        list_filter(edit_grant_targets or [], lambda t: t.startswith("user:")),
-        lambda t: _parse_grant_target(t)[1],
-    )
-    group_edit_access = list_map(
-        list_filter(edit_grant_targets or [], lambda t: t.startswith("group:")),
-        lambda t: _parse_grant_target(t)[1],
-    )
-    org_edit_access = list_map(
-        list_filter(edit_grant_targets or [], lambda t: t.startswith("org:")),
-        lambda t: _parse_grant_target(t)[1],
-    )
+    # edit is granted last so it wins for a target named in both lists
+    grants = [
+        (CalendarEventShare.AccessLevel.VIEW, view_grant_targets or []),
+        (CalendarEventShare.AccessLevel.EDIT, edit_grant_targets or []),
+    ]
 
     with transaction.atomic():
         event.shares.exclude(shared_user=event.creator).delete()
-
-        for user_id in user_view_access:
-            event.grant_access(
-                by=actor,
-                access_level=CalendarEventShare.AccessLevel.VIEW,
-                shared_user=OrgUser.objects.get(pk=user_id),
-            )
-
-        for user_id in user_edit_access:
-            event.grant_access(
-                by=actor,
-                access_level=CalendarEventShare.AccessLevel.EDIT,
-                shared_user=OrgUser.objects.get(pk=user_id),
-            )
-
-        for group_id in group_view_access:
-            event.grant_access(
-                by=actor,
-                access_level=CalendarEventShare.AccessLevel.VIEW,
-                shared_group=Group.objects.get(pk=group_id),
-            )
-
-        for group_id in group_edit_access:
-            event.grant_access(
-                by=actor,
-                access_level=CalendarEventShare.AccessLevel.EDIT,
-                shared_group=Group.objects.get(pk=group_id),
-            )
-
-        if org_view_access:
-            event.grant_access(
-                by=actor,
-                access_level=CalendarEventShare.AccessLevel.VIEW,
-                shared_org=actor.org,
-            )
-
-        if org_edit_access:
-            event.grant_access(
-                by=actor,
-                access_level=CalendarEventShare.AccessLevel.EDIT,
-                shared_org=actor.org,
+        for access_level, targets in grants:
+            _apply_grants(
+                event, actor=actor, targets=targets, access_level=access_level
             )
 
 
@@ -129,11 +97,9 @@ def create_event(
     edit_grant_targets: list[str] | None = None,
     reminders: list[str] | None = None,
 ) -> CalendarEvent:
+    start_time = ensure_aware(start_time)
+    end_time = ensure_aware(end_time) if end_time is not None else None
     parsed_reminders = {parse_reminder(raw) for raw in reminders or []}
-    if parsed_reminders and recurrence_rule:
-        raise UseCaseError("Reminders for repeating events are not supported yet.")
-    for _, minutes_before in parsed_reminders:
-        ensure_reminder_is_in_future(start_time, minutes_before)
 
     event = CalendarEvent.create(
         creator=__actor,
@@ -147,20 +113,24 @@ def create_event(
         recurrence_until=recurrence_until,
         is_all_day=is_all_day,
     )
-    event.save()
-    _grant_access(
-        event,
-        actor=__actor,
-        view_grant_targets=view_grant_targets,
-        edit_grant_targets=edit_grant_targets,
-    )
-    for method, minutes_before in parsed_reminders:
-        save_new_reminder(
-            event=event,
-            org_user=__actor,
-            minutes_before=minutes_before,
-            method=method,
+
+    # a reminder that cannot be scheduled aborts the whole creation, so the
+    # event must not survive on its own
+    with transaction.atomic():
+        event.save()
+        _grant_access(
+            event,
+            actor=__actor,
+            view_grant_targets=view_grant_targets,
+            edit_grant_targets=edit_grant_targets,
         )
+        for method, minutes_before in parsed_reminders:
+            save_new_reminder(
+                event=event,
+                org_user=__actor,
+                minutes_before=minutes_before,
+                method=method,
+            )
     return event
 
 
@@ -185,13 +155,13 @@ def update_event(
     if not event.has_edit_access(__actor):
         raise DomainError("You can only edit events with edit access.")
 
-    old_start_time = event.start_time
+    slot_layout_before = (event.start_time, event.recurrence_rule)
     event.update_information(
         title=title,
         description=description,
         event_type=event_type,
-        start_time=start_time,
-        end_time=end_time,
+        start_time=ensure_aware(start_time) if start_time is not None else None,
+        end_time=ensure_aware(end_time) if end_time is not None else None,
         location=location,
         recurrence_rule=(
             RecurrenceRule.create(recurrence_rule)
@@ -203,9 +173,12 @@ def update_event(
     )
     event.save()
 
-    start_time_changed = start_time is not None and start_time != old_start_time
-    if start_time_changed:
-        event.reschedule_reminders()
+    # changing the times shifts every slot, so overrides keyed to the old
+    # slots would orphan (and render alongside the new occurrences)
+    if (event.start_time, event.recurrence_rule) != slot_layout_before:
+        event.occurrence_overrides.all().delete()
+
+    resync_event_reminders(event)
 
     _grant_access(
         event,

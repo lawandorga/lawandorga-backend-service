@@ -9,10 +9,17 @@ from core.tests import test_helpers
 
 
 def test_recurrence_rule_normalizes_and_validates():
-    rule = RecurrenceRule("  FREQ=DAILY;INTERVAL=1  ")
+    rule = RecurrenceRule("  FREQ=DAILY  ")
 
-    assert rule == "FREQ=DAILY;INTERVAL=1"
+    assert rule == "FREQ=DAILY"
     assert isinstance(rule, str)
+
+
+def test_recurrence_rule_rejects_unsupported_rules():
+    with pytest.raises(DomainError):
+        RecurrenceRule("FREQ=DAILY;INTERVAL=2")
+    with pytest.raises(DomainError):
+        RecurrenceRule("FREQ=HOURLY")
 
 
 def test_create_calendar_event_with_recurrence_rule(db):
@@ -28,12 +35,12 @@ def test_create_calendar_event_with_recurrence_rule(db):
         event_type=CalendarEvent.EventType.MEETING,
         start_time=start,
         end_time=end,
-        recurrence_rule=RecurrenceRule("FREQ=DAILY;INTERVAL=1"),
+        recurrence_rule=RecurrenceRule("FREQ=DAILY"),
         recurrence_until=until_date,
     )
     event.save()
 
-    assert event.recurrence_rule == "FREQ=DAILY;INTERVAL=1"
+    assert event.recurrence_rule == "FREQ=DAILY"
     assert event.recurrence_until == until_date
 
 

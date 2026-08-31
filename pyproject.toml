@@ -96,6 +96,7 @@ dependencies = [
     "tach",
     "types-pytz",
     "qrcode[pil]==8.*",
+    "python-dateutil>=2.9.0.post0",
 ]
 
 [project.optional-dependencies]

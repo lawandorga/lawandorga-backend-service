@@ -19,8 +19,13 @@ from core.seedwork.use_case_layer.error import UseCaseError
 from core.tests import test_helpers
 
 
+def _now_without_microseconds():
+    # dateutil expands recurrences with second precision
+    return timezone.now().replace(microsecond=0)
+
+
 def _create_event(actor, start=None):
-    start = start or timezone.now() + timedelta(hours=3)
+    start = start or _now_without_microseconds() + timedelta(hours=3)
     return create_event(
         __actor=actor,
         title="Planning",
@@ -45,8 +50,8 @@ def test_create_reminder_persists_for_actor(db):
     assert reminder.org_user_id == actor.pk
     assert reminder.minutes_before == 60
     assert reminder.method == CalendarEventReminder.Method.EMAIL
+    assert reminder.original_start == event.start_time
     assert reminder.remind_at == event.start_time - timedelta(minutes=60)
-    assert reminder.dispatched_at is None
 
 
 def test_guest_can_set_their_own_reminder(db):
@@ -199,9 +204,53 @@ def test_user_can_stack_multiple_reminders(db):
     assert event.reminders.count() == 3
 
 
+def test_create_event_with_reminders_on_recurring_event(db):
+    actor = test_helpers.create_org_user(save=True)["org_user"]
+    start = _now_without_microseconds() + timedelta(days=2)
+
+    event = create_event(
+        __actor=actor,
+        title="Standup",
+        event_type=CalendarEvent.EventType.MEETING,
+        start_time=start,
+        end_time=start + timedelta(hours=1),
+        recurrence_rule="FREQ=WEEKLY",
+        reminders=["EMAIL:60"],
+    )
+
+    reminder = event.reminders.get()
+    assert reminder.original_start == start
+    assert reminder.remind_at == start - timedelta(minutes=60)
+
+
+def test_create_reminder_on_recurring_event_targets_next_occurrence(db):
+    actor = test_helpers.create_org_user(save=True)["org_user"]
+    # the series started three weeks ago, the next occurrence is in one week
+    start = _now_without_microseconds() - timedelta(weeks=3) + timedelta(days=1)
+    event = create_event(
+        __actor=actor,
+        title="Standup",
+        event_type=CalendarEvent.EventType.MEETING,
+        start_time=start,
+        end_time=start + timedelta(hours=1),
+        recurrence_rule="FREQ=WEEKLY",
+    )
+
+    reminder = create_reminder(
+        __actor=actor,
+        event_uuid=event.uuid,
+        minutes_before=60,
+        method=CalendarEventReminder.Method.EMAIL,
+    )
+
+    next_slot = start + timedelta(weeks=3)
+    assert reminder.original_start == next_slot
+    assert reminder.remind_at == next_slot - timedelta(minutes=60)
+
+
 def test_update_reminder_changes_offset_and_reschedules(db):
     actor = test_helpers.create_org_user(save=True)["org_user"]
-    start = timezone.now() + timedelta(days=2)
+    start = _now_without_microseconds() + timedelta(days=2)
     event = _create_event(actor, start=start)
     reminder = create_reminder(
         __actor=actor,
@@ -209,8 +258,6 @@ def test_update_reminder_changes_offset_and_reschedules(db):
         minutes_before=60,
         method=CalendarEventReminder.Method.EMAIL,
     )
-    reminder.dispatched_at = timezone.now()
-    reminder.save(update_fields=["dispatched_at"])
 
     update_reminder(
         __actor=actor,
@@ -222,8 +269,8 @@ def test_update_reminder_changes_offset_and_reschedules(db):
     reminder.refresh_from_db()
     assert reminder.minutes_before == 30
     assert reminder.method == CalendarEventReminder.Method.IN_APP
+    assert reminder.original_start == start
     assert reminder.remind_at == start - timedelta(minutes=30)
-    assert reminder.dispatched_at is None
 
 
 def test_update_reminder_rejects_other_users(db):
@@ -317,7 +364,7 @@ def test_delete_reminder_rejects_other_users(db):
 
 def test_moving_start_time_reschedules_reminders(db):
     actor = test_helpers.create_org_user(save=True)["org_user"]
-    start = timezone.now() + timedelta(hours=3)
+    start = _now_without_microseconds() + timedelta(hours=3)
     event = _create_event(actor, start=start)
     reminder = create_reminder(
         __actor=actor,
@@ -325,8 +372,10 @@ def test_moving_start_time_reschedules_reminders(db):
         minutes_before=60,
         method=CalendarEventReminder.Method.EMAIL,
     )
-    reminder.dispatched_at = timezone.now()
-    reminder.save(update_fields=["dispatched_at"])
+    # simulate that the reminder already fired for the old time
+    reminder.original_start = None
+    reminder.remind_at = None
+    reminder.save(update_fields=["original_start", "remind_at"])
 
     new_start = start + timedelta(days=1)
     update_event(
@@ -337,26 +386,26 @@ def test_moving_start_time_reschedules_reminders(db):
     )
 
     reminder.refresh_from_db()
+    assert reminder.original_start == new_start
     assert reminder.remind_at == new_start - timedelta(minutes=60)
-    assert reminder.dispatched_at is None
 
 
 def test_editing_without_moving_start_keeps_reminder_dispatched(db):
     actor = test_helpers.create_org_user(save=True)["org_user"]
-    start = timezone.now() + timedelta(hours=3)
+    start = _now_without_microseconds() + timedelta(minutes=20)
     event = _create_event(actor, start=start)
-    reminder = create_reminder(
-        __actor=actor,
-        event_uuid=event.uuid,
+    reminder = CalendarEventReminder.create(
+        event=event,
+        org_user=actor,
         minutes_before=60,
         method=CalendarEventReminder.Method.EMAIL,
+        original_start=start,
+        remind_at=start - timedelta(minutes=60),
     )
-    dispatched_at = timezone.now()
-    reminder.dispatched_at = dispatched_at
-    reminder.save(update_fields=["dispatched_at"])
+    reminder.original_start = None
+    reminder.remind_at = None
+    reminder.save()
 
-    # The frontend resends start_time on every edit; a title-only change must
-    # not re-arm an already-sent reminder.
     update_event(
         __actor=actor,
         event_uuid=event.uuid,
@@ -365,4 +414,5 @@ def test_editing_without_moving_start_keeps_reminder_dispatched(db):
     )
 
     reminder.refresh_from_db()
-    assert reminder.dispatched_at == dispatched_at
+    assert reminder.remind_at is None
+    assert reminder.original_start is None

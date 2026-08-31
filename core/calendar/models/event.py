@@ -1,7 +1,8 @@
-from datetime import date, datetime, timedelta
-from typing import TYPE_CHECKING
+from datetime import date, datetime
+from typing import TYPE_CHECKING, Literal
 from uuid import UUID, uuid4
 
+from dateutil.rrule import DAILY, MONTHLY, WEEKLY, YEARLY
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
@@ -13,6 +14,20 @@ if TYPE_CHECKING:
     from core.org.models import Group, Org
 
 
+# dateutil types rrule's freq parameter as a literal of its frequency
+# constants (YEARLY=0 .. DAILY=3)
+RruleFrequency = Literal[0, 1, 2, 3]
+
+RECURRENCE_FREQUENCIES: dict[str, RruleFrequency] = {
+    "FREQ=DAILY": DAILY,
+    "FREQ=WEEKLY": WEEKLY,
+    "FREQ=MONTHLY": MONTHLY,
+    "FREQ=YEARLY": YEARLY,
+}
+
+SUPPORTED_RECURRENCE_RULES = set(RECURRENCE_FREQUENCIES)
+
+
 class RecurrenceRule(str):
     def __new__(cls, value: str = ""):
         if value is None:
@@ -21,8 +36,8 @@ class RecurrenceRule(str):
             raise TypeError("RecurrenceRule must be a string.")
 
         normalized = value.strip()
-        if len(normalized) > 200:
-            raise DomainError("Recurrence rule must be at most 200 characters.")
+        if normalized and normalized not in SUPPORTED_RECURRENCE_RULES:
+            raise DomainError("This recurrence rule is not supported.")
 
         return str.__new__(cls, normalized)
 
@@ -60,6 +75,7 @@ class CalendarEvent(models.Model):
     if TYPE_CHECKING:
         shares: models.QuerySet["CalendarEventShare"]
         reminders: models.QuerySet["CalendarEventReminder"]
+        occurrence_overrides: models.QuerySet["CalendarEventOccurrenceOverride"]
 
     class Meta:
         verbose_name = "EVT_CalendarEvent"
@@ -132,60 +148,49 @@ class CalendarEvent(models.Model):
     def creator_name(self) -> str:
         return self.creator.name
 
+    def _guest_users(self) -> list[OrgUser]:
+        # iterating the related manager reads a prefetched `shares` cache,
+        # which a `.filter()` would bypass
+        guests_by_id: dict[int, OrgUser] = {}
+        for share in self.shares.all():
+            shared_user = share.shared_user
+            if shared_user is not None and shared_user.pk != self.creator_id:
+                guests_by_id[shared_user.pk] = shared_user
+        return list(guests_by_id.values())
+
     @property
     def guest_user_ids(self) -> list[int]:
-        return list(
-            self.shares.filter(shared_user__isnull=False)
-            .exclude(shared_user=self.creator)
-            .values_list("shared_user_id", flat=True)
-            .distinct()
-        )
+        return [guest.pk for guest in self._guest_users()]
 
     @property
     def guest_user_names(self) -> list[str]:
-        return list(
-            self.shares.filter(shared_user__isnull=False)
-            .exclude(shared_user=self.creator)
-            .values_list("shared_user__user__name", flat=True)
-            .distinct()
-        )
+        return [guest.name for guest in self._guest_users()]
 
     def _grant_targets_for_access_levels(
         self,
         access_levels: list["CalendarEventShare.AccessLevel"],
     ) -> list[str]:
+        matching_shares = [
+            share
+            for share in self.shares.all()
+            if share.access_level in access_levels
+            and share.shared_user_id != self.creator_id
+        ]
+
         targets: list[str] = []
-
-        user_ids = (
-            self.shares.filter(shared_user__isnull=False)
-            .exclude(shared_user=self.creator)
-            .filter(access_level__in=access_levels)
-            .values_list("shared_user_id", flat=True)
-            .distinct()
-        )
-        for user_id in user_ids:
-            if user_id is not None:
-                targets.append(f"user:{user_id}")
-
-        group_ids = (
-            self.shares.filter(shared_group__isnull=False)
-            .filter(access_level__in=access_levels)
-            .values_list("shared_group_id", flat=True)
-            .distinct()
-        )
-        for group_id in group_ids:
-            if group_id is not None:
-                targets.append(f"group:{group_id}")
-
-        org_ids = (
-            self.shares.filter(shared_org__isnull=False)
-            .filter(access_level__in=access_levels)
-            .values_list("shared_org_id", flat=True)
-            .distinct()
-        )
-        for org_id in org_ids:
-            if org_id is not None:
-                targets.append(f"org:{org_id}")
+        for target_type, id_field in (
+            ("user", "shared_user_id"),
+            ("group", "shared_group_id"),
+            ("org", "shared_org_id"),
+        ):
+            principal_ids = {
+                getattr(share, id_field)
+                for share in matching_shares
+                if getattr(share, id_field) is not None
+            }
+            targets.extend(
+                f"{target_type}:{principal_id}" for principal_id in principal_ids
+            )
 
         return targets
 
@@ -349,10 +354,6 @@ class CalendarEvent(models.Model):
         if is_all_day is not None:
             self.is_all_day = is_all_day
 
-    def reschedule_reminders(self) -> None:
-        for reminder in self.reminders.all():
-            reminder.reschedule(self.start_time)
-
     def __str__(self):
         return f"CalendarEvent: {self.pk}, title: {self.title}, creator: {self.creator.name}"
 
@@ -490,8 +491,8 @@ class CalendarEventReminder(models.Model):
     )
     minutes_before = models.PositiveIntegerField(default=0)
     method = models.CharField(max_length=20, choices=Method.choices)
-    remind_at = models.DateTimeField()
-    dispatched_at = models.DateTimeField(null=True, blank=True)
+    remind_at = models.DateTimeField(null=True, blank=True)
+    original_start = models.DateTimeField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
 
     if TYPE_CHECKING:
@@ -507,14 +508,8 @@ class CalendarEventReminder(models.Model):
             ),
         ]
         indexes = [
-            models.Index(
-                fields=["remind_at", "dispatched_at"], name="cal_reminder_due_idx"
-            ),
+            models.Index(fields=["remind_at"], name="cal_reminder_due_idx"),
         ]
-
-    @staticmethod
-    def compute_remind_at(start_time: datetime, minutes_before: int) -> datetime:
-        return start_time - timedelta(minutes=minutes_before)
 
     @classmethod
     def create(
@@ -524,6 +519,8 @@ class CalendarEventReminder(models.Model):
         org_user: OrgUser,
         minutes_before: int,
         method: "CalendarEventReminder.Method",
+        original_start: datetime,
+        remind_at: datetime,
     ) -> "CalendarEventReminder":
         if minutes_before < 0:
             raise DomainError("A reminder can not fire after the event starts.")
@@ -532,13 +529,9 @@ class CalendarEventReminder(models.Model):
             org_user=org_user,
             minutes_before=minutes_before,
             method=method,
-            remind_at=cls.compute_remind_at(event.start_time, minutes_before),
+            original_start=original_start,
+            remind_at=remind_at,
         )
-
-    def reschedule(self, start_time: datetime) -> None:
-        self.remind_at = self.compute_remind_at(start_time, self.minutes_before)
-        self.dispatched_at = None
-        self.save(update_fields=["remind_at", "dispatched_at"])
 
     def __str__(self):
         return (
@@ -556,6 +549,7 @@ class CalendarNotification(models.Model):
         CalendarEvent, on_delete=models.CASCADE, related_name="notifications"
     )
     message = models.CharField(max_length=500)
+    occurrence_end = models.DateTimeField()
     read_at = models.DateTimeField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -583,3 +577,40 @@ class CalendarNotification(models.Model):
 
     def __str__(self):
         return f"CalendarNotification: {self.pk}, org_user: {self.org_user_id}"
+
+
+class CalendarEventOccurrenceOverride(models.Model):
+    # `original_start` identifies the occurrence by its slot in the series;
+    # every other field is null unless this instance differs from the series
+
+    uuid = models.UUIDField(default=uuid4, unique=True, editable=False)
+    event = models.ForeignKey(
+        CalendarEvent, on_delete=models.CASCADE, related_name="occurrence_overrides"
+    )
+    original_start = models.DateTimeField()
+    cancelled = models.BooleanField(default=False)
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    title = models.CharField(max_length=200, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    location = models.CharField(max_length=500, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    if TYPE_CHECKING:
+        event_id: int
+
+    class Meta:
+        verbose_name = "EVT_CalendarEventOccurrenceOverride"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["event", "original_start"],
+                name="calendar_override_unique_per_occurrence",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"CalendarEventOccurrenceOverride: {self.pk}, event: {self.event_id}, "
+            f"original_start: {self.original_start}, cancelled: {self.cancelled}"
+        )
