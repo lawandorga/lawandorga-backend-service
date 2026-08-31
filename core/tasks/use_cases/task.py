@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import bleach
 from django.utils import timezone
@@ -97,6 +97,7 @@ def add_comment(
             "email": __actor.email,
             "name": __actor.name,
             "date": timezone.now().isoformat(),
+            "comment_id": str(uuid4()),
             "comment": comment,
         }
     ]

@@ -99,3 +99,20 @@ def test_create_event_rejects_end_before_start(db):
             start_time=start,
             end_time=end,
         )
+
+
+def test_create_event_without_end_time_ends_when_it_starts(db):
+    user_data = test_helpers.create_org_user(save=True)
+    actor = user_data["org_user"]
+
+    start = timezone.now()
+
+    event = create_event(
+        __actor=actor,
+        title="Important deadline",
+        event_type=CalendarEvent.EventType.DEADLINE,
+        start_time=start,
+        is_all_day=True,
+    )
+
+    assert event.end_time == start

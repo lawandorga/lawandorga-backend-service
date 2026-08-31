@@ -87,7 +87,7 @@ def create_event(
     title: str,
     event_type: CalendarEvent.EventType,
     start_time: datetime,
-    end_time: datetime,
+    end_time: datetime | None = None,
     description: str | None = None,
     location: str | None = None,
     recurrence_rule: str | None = None,
@@ -98,7 +98,7 @@ def create_event(
     reminders: list[str] | None = None,
 ) -> CalendarEvent:
     start_time = ensure_aware(start_time)
-    end_time = ensure_aware(end_time)
+    end_time = ensure_aware(end_time) if end_time is not None else None
     parsed_reminders = {parse_reminder(raw) for raw in reminders or []}
 
     event = CalendarEvent.create(
@@ -106,7 +106,7 @@ def create_event(
         title=title,
         event_type=event_type,
         start_time=start_time,
-        end_time=end_time,
+        end_time=end_time or start_time,
         description=description or "",
         location=location or "",
         recurrence_rule=RecurrenceRule.create(recurrence_rule),

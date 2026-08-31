@@ -16,6 +16,8 @@ from core.mail_imports.use_cases.mail_import import (
 )
 from core.tests import test_helpers
 
+SENDING_DATETIME = "2026-01-01T00:00:00+00:00"
+
 
 def test_mail_can_be_pinned(db):
     u = test_helpers.create_org_user()
@@ -29,6 +31,7 @@ def test_mail_can_be_pinned(db):
         folder_uuid=folder_uuid,
         subject="Test Mail",
         org_id=user.org_id,
+        sending_datetime=SENDING_DATETIME,
     )
     mail.encrypt(user)
     mail.save()
@@ -49,6 +52,7 @@ def test_mails_can_be_marked_as_read(db):
         folder_uuid=folder_uuid,
         subject="Test Mail",
         org_id=user.org_id,
+        sending_datetime=SENDING_DATETIME,
     )
     mail.encrypt(user)
     mail.save()
@@ -120,6 +124,7 @@ def test_mail_can_be_deleted(db):
         folder_uuid=folder_uuid,
         subject="Test Mail",
         org_id=user.org_id,
+        sending_datetime=SENDING_DATETIME,
     )
     mail.encrypt(user)
     content_file = ContentFile(content=b"abc", name="testing-mail-import")
@@ -132,6 +137,7 @@ def test_mail_can_be_deleted(db):
     mail.save()
     attachment.save()
     filename = attachment.content.name
+    assert filename, "Attachment filename should not be empty"
     assert default_storage.exists(filename)
     delete_mail(user, mail.uuid)
     assert MailImport.objects.filter(uuid=mail.uuid).count() == 0

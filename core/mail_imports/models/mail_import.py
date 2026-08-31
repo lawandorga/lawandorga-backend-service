@@ -36,7 +36,7 @@ class MailImport(models.Model):
         folder_uuid: UUID,
         org_id: int,
         bcc: str = "",
-        sending_datetime: str | None = None,
+        sending_datetime: str = "2000-01-01T00:00:00+00:00",
     ):
         mi = cls(
             sender=sender,
@@ -45,8 +45,7 @@ class MailImport(models.Model):
             org_id=org_id,
             bcc=bcc,
         )
-        if sending_datetime:
-            mi.sending_datetime = sending_datetime
+        mi.sending_datetime = sending_datetime
         mi.subject = subject
         mi.content = content
         return mi
@@ -57,7 +56,7 @@ class MailImport(models.Model):
     to = models.CharField(max_length=255, blank=False)
     cc = models.CharField(max_length=255, blank=True)
     bcc = models.CharField(max_length=255, blank=True)
-    sending_datetime = models.DateTimeField(auto_now_add=True)
+    sending_datetime = models.DateTimeField()
     is_read = models.BooleanField(default=False)
     is_pinned = models.BooleanField(default=False)
     folder_uuid = models.UUIDField(db_index=True)

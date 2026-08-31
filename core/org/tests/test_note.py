@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 from django.test import Client
 
@@ -40,5 +42,31 @@ def test_note_delete(db, user, note):
 def test_list_works(db, user, note):
     c = Client()
     c.login(**user)
-    response = c.get("/api/notes/")
+    response = c.get("/api/org/query/notes/")
     assert response.json()
+
+
+def test_data_structure_is_valid(db, user, note):
+    c = Client()
+    c.login(**user)
+
+    response = c.get("/api/org/query/notes/")
+    actual_response = response.json()
+
+    assert actual_response[0]["title"] == "Test"
+    assert actual_response[0]["note"] == "Content"
+    assert actual_response[0]["order"] == 1
+    assert not actual_response[0]["is_wide"]
+    assert not actual_response[0]["is_new"]
+
+    # the API response truncates microseconds to milliseconds (via DjangoJSONEncoder),
+    # so compare both sides at millisecond precision
+    def truncate_to_ms(datetime):
+        return datetime.replace(microsecond=(datetime.microsecond // 1000) * 1000)
+
+    assert datetime.fromisoformat(actual_response[0]["created"]) == truncate_to_ms(
+        note.created
+    )
+    assert datetime.fromisoformat(actual_response[0]["updated"]) == truncate_to_ms(
+        note.updated
+    )

@@ -10,7 +10,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0170_alter_calendareventreminder_method_and_more"),
+        ("core", "0171_alter_mailimport_sending_datetime"),
     ]
 
     operations = [

@@ -22,9 +22,29 @@ class OutputPermission(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class QueryPermissionsInput(BaseModel):
+    user_id: int | None = None
+    group_id: int | None = None
+
+
 @router.get("permissions/", output_schema=list[OutputPermission])
-def query__permissions():
-    return list(Permission.objects.all())
+def query__permissions(data: QueryPermissionsInput):
+    all_permissions = Permission.objects.all()
+
+    if data.user_id is not None or data.group_id is not None:
+        q_filter = Q()
+        if data.user_id is not None:
+            q_filter |= Q(user_id=data.user_id)
+        if data.group_id is not None:
+            q_filter |= Q(group_has_permission_id=data.group_id)
+
+        assigned_permissions = HasPermission.objects.filter(q_filter).values_list(
+            "permission_id", flat=True
+        )
+
+        return list(all_permissions.exclude(id__in=assigned_permissions))
+
+    return list(all_permissions)
 
 
 class OutputHasPermission(BaseModel):

@@ -1,14 +1,16 @@
 import logging
+from datetime import datetime
 from email import message_from_bytes
 from email.header import decode_header
-from email.message import EmailMessage
+from email.message import EmailMessage, Message
 from email.policy import default
-from email.utils import getaddresses, parseaddr
+from email.utils import getaddresses, parseaddr, parsedate_to_datetime
 from typing import Any, Protocol, Sequence
 from uuid import UUID
 
 from django.core.files.base import ContentFile
 from django.db import transaction
+from django.utils import timezone
 from pydantic import BaseModel
 
 from core.auth.models.org_user import OrgUser
@@ -83,7 +85,7 @@ class ErrorEmail(BaseModel):
     error: str
 
 
-def get_content_from_email(message: EmailMessage):
+def get_content_from_email(message: Message):
     content = ""
     for part in message.walk():
         if part.get_content_type() == "text/plain":
@@ -105,7 +107,7 @@ def get_attachments_from_email(message: EmailMessage) -> list[EmailMessageAttach
     return attachments
 
 
-def get_sender_info(message: EmailMessage) -> str:
+def get_sender_info(message: Message) -> str:
     sender = message.get("From")
     if sender is None:
         return "unknown"
@@ -119,7 +121,7 @@ def get_sender_info(message: EmailMessage) -> str:
     return f"{name} <{email}>"
 
 
-def get_to_info(message: EmailMessage) -> str:
+def get_to_info(message: Message) -> str:
     raw_to = message.get("To", "")
     if raw_to is None:
         return ""
@@ -135,7 +137,7 @@ def get_to_info(message: EmailMessage) -> str:
     return ", ".join(formatted_addresses)
 
 
-def get_addresses_from_message(message: EmailMessage) -> list[str]:
+def get_addresses_from_message(message: Message[str, str]) -> list[str]:
     addresses_and_name = []
     for header in ["To", "CC", "BCC"]:
         raw_header = message.get(header, "")
@@ -149,13 +151,47 @@ def get_addresses_from_message(message: EmailMessage) -> list[str]:
     return addresses
 
 
+def get_date_from_message(message: Message[str, str]) -> str:
+    date_header = message.get("Date")
+    if date_header is None:
+        return ""
+
+    decoded_date_header = ""
+    for value, encoding in decode_header(date_header):
+        if isinstance(value, bytes):
+            decoded_date_header += value.decode(encoding or "utf-8", errors="replace")
+        else:
+            decoded_date_header += value
+
+    normalized_header = (
+        decoded_date_header.replace("\u201c", "")
+        .replace("\u201d", "")
+        .strip()
+        .strip('"')
+        .strip("'")
+    )
+
+    try:
+        parsed_date = parsedate_to_datetime(normalized_header)
+        if parsed_date.tzinfo is None:
+            parsed_date = timezone.make_aware(
+                parsed_date, timezone.get_current_timezone()
+            )
+        return parsed_date.isoformat(sep=" ", timespec="seconds")
+    except Exception:
+        logger.warning("could not parse mail Date header: %s", normalized_header)
+        return datetime(
+            year=2000, month=1, day=1, hour=0, minute=0, second=0
+        ).isoformat(sep=" ", timespec="seconds")
+
+
 def get_email_info(message: EmailMessage):
     return {
         "sender": get_sender_info(message),
         "to": get_to_info(message),
         "bcc": message.get("BCC", ""),
         "cc": message.get("CC", ""),
-        "date": message.get("Date"),
+        "date": get_date_from_message(message),
         "subject": message.get("Subject"),
         "content": get_content_from_email(message),
         "addresses": get_addresses_from_message(message),
@@ -227,7 +263,7 @@ def save_email(
         to=email.to,
         subject=email.subject,
         content=email.content,
-        sending_datetime=email.date,
+        sending_datetime=email.date or "2000-01-01T00:00:00+00:00",
         folder_uuid=email.folder_uuid,
         org_id=email.org_pk,
     )
