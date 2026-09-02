@@ -130,6 +130,8 @@ class OutputCalendarNotification(BaseModel):
 )
 def query__notifications(org_user: OrgUser):
     now = timezone.now()
-    return CalendarNotification.objects.filter(
-        org_user=org_user, occurrence_end__gte=now
-    ).select_related("event")
+    return list(
+        CalendarNotification.objects.filter(
+            org_user=org_user, occurrence_end__gte=now
+        ).select_related("event")
+    )
