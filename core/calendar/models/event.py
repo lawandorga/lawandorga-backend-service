@@ -358,6 +358,31 @@ class CalendarEvent(models.Model):
         return f"CalendarEvent: {self.pk}, title: {self.title}, creator: {self.creator.name}"
 
 
+class CalendarLink(models.Model):
+    uuid = models.UUIDField(default=uuid4, unique=True, editable=False)
+    org_user = models.ForeignKey(
+        OrgUser, on_delete=models.CASCADE, related_name="calendar_links"
+    )
+    event_types = models.JSONField(default=list)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "EVT_CalendarLink"
+        ordering = ["-created"]
+
+    @classmethod
+    def create(cls, org_user: OrgUser, event_types: list[str]) -> "CalendarLink":
+        valid_event_types = set(CalendarEvent.EventType.values)
+        selected_event_types = list(dict.fromkeys(event_types))
+        if not selected_event_types:
+            raise DomainError("Select at least one event type.")
+        if invalid_types := set(selected_event_types) - valid_event_types:
+            raise DomainError(
+                f"Unsupported event types: {', '.join(sorted(invalid_types))}."
+            )
+        return cls(org_user=org_user, event_types=selected_event_types)
+
+
 class CalendarEventAttachment(models.Model):
     event = models.ForeignKey(
         CalendarEvent, on_delete=models.CASCADE, related_name="attachments"

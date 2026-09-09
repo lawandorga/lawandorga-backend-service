@@ -134,3 +134,4 @@ LOGGING = {
 
 # This is used for ics calendar integration links
 CALENDAR_URL = "https://calendar.law-orga.de/api/events/ics/"
+CALENDAR_LINK_URL = "https://calendar.law-orga.de/api/calendar/ics/"

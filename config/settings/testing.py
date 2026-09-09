@@ -8,6 +8,7 @@ STATISTICS_FRONTEND_URL = "http://127.0.0.1:4300"
 # This is used for ics calendar integration links
 #
 CALENDAR_URL = "http://127.0.0.1:8000"
+CALENDAR_LINK_URL = "http://127.0.0.1:8000/api/calendar/ics/"
 
 # Login
 # https://docs.djangoproject.com/en/4.1/ref/settings/#login-url

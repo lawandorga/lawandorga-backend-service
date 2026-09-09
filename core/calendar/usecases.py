@@ -1,3 +1,4 @@
+from core.calendar.use_cases.calendar_link import create_calendar_link
 from core.calendar.use_cases.event import (
     create_event,
     delete_event,
@@ -18,6 +19,7 @@ from core.calendar.use_cases.reminder import (
 )
 
 USECASES = {
+    "calendar/create_calendar_link": create_calendar_link,
     "calendar/create_event": create_event,
     "calendar/update_event": update_event,
     "calendar/delete_event": delete_event,

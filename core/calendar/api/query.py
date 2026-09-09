@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from uuid import UUID
 
+from django.conf import settings
 from django.db.models import Prefetch
 from django.utils import timezone
 from pydantic import BaseModel, ConfigDict
@@ -9,12 +10,34 @@ from core.auth.models import OrgUser
 from core.calendar.models.event import (
     CalendarEvent,
     CalendarEventReminder,
+    CalendarLink,
     CalendarNotification,
 )
 from core.calendar.occurrences import get_occurrences
 from core.seedwork.api_layer import Router
 
 router = Router()
+
+
+class OutputCalendarLink(BaseModel):
+    uuid: UUID
+    event_types: list[str]
+    calendar_url: str
+
+
+@router.get(
+    url="links/",
+    output_schema=list[OutputCalendarLink],
+)
+def query__calendar_links(org_user: OrgUser):
+    return [
+        {
+            "uuid": link.uuid,
+            "event_types": link.event_types,
+            "calendar_url": f"{settings.CALENDAR_LINK_URL}{link.uuid}.ics",
+        }
+        for link in CalendarLink.objects.filter(org_user=org_user)
+    ]
 
 
 class OutputCalendarEventReminder(BaseModel):

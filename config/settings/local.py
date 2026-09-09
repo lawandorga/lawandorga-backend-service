@@ -12,6 +12,7 @@ MAIN_BACKEND_URL = "http://localhost:4205"
 # This is used for ics calendar integration links
 #
 CALENDAR_URL = "http://localhost:4205"
+CALENDAR_LINK_URL = "http://localhost:4205/api/calendar/ics/"
 
 # Debug
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEBUG

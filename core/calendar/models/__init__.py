@@ -4,6 +4,7 @@ from .event import (
     CalendarEventOccurrenceOverride,
     CalendarEventReminder,
     CalendarEventShare,
+    CalendarLink,
     CalendarNotification,
     RecurrenceRule,
 )
