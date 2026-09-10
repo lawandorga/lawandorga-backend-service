@@ -46,3 +46,12 @@ def test_calendar_link_command_creates_filtered_public_ics_calendar(db):
     assert response["Content-Type"] == "text/calendar"
     assert "Included meeting" in response.content.decode()
     assert "Excluded task" not in response.content.decode()
+
+    repeated_response = Client().get(f"/api/calendar/ics/{calendar_link.uuid}.ics")
+    first_calendar = response.content.decode()
+    second_calendar = repeated_response.content.decode()
+    assert "DTSTAMP:" in first_calendar
+    assert f"UID:{meeting.uuid}-" in first_calendar
+    assert {
+        line for line in first_calendar.splitlines() if line.startswith("UID:")
+    } == {line for line in second_calendar.splitlines() if line.startswith("UID:")}

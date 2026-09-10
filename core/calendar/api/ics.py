@@ -1,5 +1,6 @@
 import uuid
 from datetime import timedelta
+from datetime import timezone as datetime_timezone
 
 import ics
 from django.http import HttpResponse
@@ -26,6 +27,11 @@ def api_get_ics_calendar_link(request, calendar_uuid: uuid.UUID):
             to_dt=now + timedelta(days=365 * 5),
         ):
             ics_event = ics.Event()
+            occurrence_slot = occurrence.original_start.astimezone(
+                datetime_timezone.utc
+            ).strftime("%Y%m%dT%H%M%SZ")
+            ics_event.uid = f"{event.uuid}-{occurrence_slot}@calendar.law-orga.de"
+            ics_event.created = event.updated
             ics_event.name = occurrence.title
             ics_event.begin = occurrence.start_time
             ics_event.end = occurrence.end_time
