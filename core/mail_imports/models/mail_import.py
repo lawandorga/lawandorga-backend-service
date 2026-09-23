@@ -6,11 +6,6 @@ from django.core.files.base import ContentFile
 from django.db import models
 from django.utils.timezone import localtime
 
-from core.seedwork.encryption import AESEncryption
-
-if TYPE_CHECKING:
-    from django.db.models.manager import Manager
-
 from core.auth.models.org_user import OrgUser
 from core.encryption.infrastructure.symmetric_encryptions import SymmetricEncryptionV1
 from core.encryption.value_objects.box import LockedBox, OpenBox
@@ -21,6 +16,7 @@ from core.encryption.value_objects.symmetric_key import (
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.org.models.org import Org
+from core.seedwork.encryption import AESEncryption
 
 logger = logging.getLogger("django")
 
@@ -70,7 +66,6 @@ class MailImport(models.Model):
         org_id: int
         subject: str
         content: str
-        attachments: Manager["MailAttachment"]
 
     class Meta:
         verbose_name = "MI_MailImport"
