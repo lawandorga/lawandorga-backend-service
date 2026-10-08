@@ -275,9 +275,6 @@ class Org(EncryptedModelMixin, models.Model):
             member.accepted = True
             member.save()
 
-    def deactivate_member(self, admin: "UserProfile", member: "UserProfile"):
-        pass
-
     def get_meta_information(self):
         return {
             "id": self.pk,

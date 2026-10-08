@@ -79,6 +79,3 @@ class MailInbox:
         for email in emails:
             self.mailbox.uid("COPY", email.uid, "Unassigned")
             self.mailbox.uid("STORE", email.uid, "+FLAGS", "\\Deleted")
-
-    def get_mail_attachments(self, email: UidEmail) -> list[bytes]:
-        raise NotImplementedError()
