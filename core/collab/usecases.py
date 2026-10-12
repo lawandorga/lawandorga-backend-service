@@ -20,11 +20,6 @@ from core.collab.use_cases.template import (
 from core.seedwork.use_case_layer import use_case
 
 
-@use_case
-def placeholder(__actor: None):
-    pass
-
-
 USECASES = {
     "collab/create_collab": create_collab,
     "collab/update_collab_title": update_collab_title,

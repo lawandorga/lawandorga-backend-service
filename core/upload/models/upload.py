@@ -87,14 +87,6 @@ class UploadLink(FolderItemMixin, models.Model):
             self._upload_files = {f.uuid: f for f in files}
         return self._upload_files
 
-    @staticmethod
-    def clean_up_storage() -> None:
-        """
-        This method should loop over the storage and look for files
-        that are not connected anymore and delete them.
-        """
-        pass
-
     def generate_key(self, user: OrgUser):
         key = AsymmetricKey.generate(AsymmetricEncryptionV1)
         lock_key = self.folder.get_encryption_key(requestor=user)
