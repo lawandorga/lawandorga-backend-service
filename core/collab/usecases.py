@@ -17,8 +17,6 @@ from core.collab.use_cases.template import (
     update_template_description,
     update_template_name,
 )
-from core.seedwork.use_case_layer import use_case
-
 
 USECASES = {
     "collab/create_collab": create_collab,

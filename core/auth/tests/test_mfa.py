@@ -62,6 +62,9 @@ def test_mfa_login(db):
         follow=True,
     )
     assert response1.status_code == 200
+    empty_code_response = client.post("/auth/mfa/login/", {"code": ""})
+    assert empty_code_response.status_code == 200
+    assert "code" in empty_code_response.context["form"].errors
     code = user.mfa_secret.get_code()
     response2 = client.post("/auth/mfa/login/", {"code": code}, follow=True)
     assert response2.status_code == 200

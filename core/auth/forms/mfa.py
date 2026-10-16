@@ -55,6 +55,8 @@ class MfaAuthenticationForm(forms.Form):
 
     def clean(self):
         attrs = super().clean()
+        if "code" not in attrs:
+            return attrs
         code = attrs["code"]
         if str(code) != self.user.org_user.mfa_secret.get_code_with_key(self.key.key):
             raise forms.ValidationError("The code is not valid.")
