@@ -20,7 +20,21 @@ from core.data_sheets.models.template import (
 )
 from core.data_sheets.use_cases.finders import find_field_from_uuid, template_from_id
 from core.permissions.static import PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES
-from core.seedwork.use_case_layer import UseCaseError, use_case
+from core.seedwork.use_case_layer import UseCaseError, UseCaseInputError, use_case
+
+MIN_FIELD_ORDER = 0
+MAX_FIELD_ORDER = 2**31 - 1
+
+
+def _validate_field_order(order: int):
+    if not MIN_FIELD_ORDER <= order <= MAX_FIELD_ORDER:
+        raise UseCaseInputError(
+            {
+                "order": [
+                    f"Order must be between {MIN_FIELD_ORDER} and {MAX_FIELD_ORDER}."
+                ]
+            }
+        )
 
 
 @use_case(permissions=[PERMISSION_ADMIN_MANAGE_RECORD_TEMPLATES])
@@ -85,6 +99,7 @@ def create_field(
     field_type: str | None = None,
     is_required: bool = False,
 ):
+    _validate_field_order(order)
     template = template_from_id(__actor, template_id)
     field_model = FIELDS[kind]
     field = field_model(
@@ -116,6 +131,7 @@ def update_field(
     field_type: str | None = None,
     is_required: bool | None = None,
 ):
+    _validate_field_order(order)
     field = find_field_from_uuid(__actor, field_uuid)
     field.name = name
     field.order = order
