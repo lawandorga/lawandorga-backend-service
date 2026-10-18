@@ -54,6 +54,38 @@ def test_create_link_works(user, db):
     ).exists()
 
 
+def test_create_link_accepts_links_longer_than_1000_characters(user, db):
+    link = f"https://example.com/{'a' * 1500}"
+
+    create_link(user["org_user"], "Long Link", link, 2)
+
+    assert (
+        ExternalLink.objects.get(org=user["org_user"].org, name="Long Link").link
+        == link
+    )
+
+
+def test_create_link_returns_validation_error_when_link_is_too_long(user, db):
+    link = f"https://example.com/{'a' * 4096}"
+    client = Client()
+    client.login(**user)
+
+    response = client.post(
+        "/api/command/",
+        {
+            "action": "org/create_link",
+            "name": "Too Long Link",
+            "link": link,
+            "order": 2,
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["param_errors"] == {
+        "link": ["The link must be 4,096 characters or fewer."]
+    }
+
+
 def test_delete_link_works(user, db):
     link = user["org_user"].org.external_links.first()
     delete_link(user["org_user"], link.id)

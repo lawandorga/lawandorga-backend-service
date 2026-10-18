@@ -295,7 +295,7 @@ class ExternalLink(models.Model):
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
-    link = models.URLField(max_length=1000)
+    link = models.URLField(max_length=4096)
     order = models.IntegerField()
 
     class Meta:
