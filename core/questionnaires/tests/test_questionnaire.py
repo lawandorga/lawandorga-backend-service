@@ -1,13 +1,18 @@
 import json
 
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 
 from core.folders.domain.aggregates.folder import Folder
 from core.folders.infrastructure.folder_repository import DjangoFolderRepository
 from core.models import Org
 from core.permissions.static import PERMISSION_RECORDS_ADD_RECORD
-from core.questionnaires.models import Questionnaire, QuestionnaireTemplate
+from core.questionnaires.models import (
+    Questionnaire,
+    QuestionnaireAnswer,
+    QuestionnaireTemplate,
+)
 from core.tests import test_helpers
 from messagebus.domain.collector import EventCollector
 
@@ -96,3 +101,43 @@ def test_answer_question(raw_user, raw_question, raw_questionnaire):
     assert answer.data != text
     answer.decrypt(raw_user)
     assert answer.data == text
+
+
+def test_upload_file_truncates_filename_to_rsa_limit(
+    monkeypatch, raw_user, raw_template, raw_questionnaire
+):
+    monkeypatch.setattr(
+        "core.questionnaires.models.questionnaire.encrypt_and_upload_file",
+        lambda file, key, aes_key: None,
+    )
+    file_question = raw_template.add_question("FILE", "Upload a file")
+    answer = QuestionnaireAnswer(
+        questionnaire=raw_questionnaire,
+        field=file_question,
+    )
+    uploaded_file = SimpleUploadedFile(
+        "a" * 200 + ".pdf",
+        b"file contents",
+        content_type="application/pdf",
+    )
+
+    answer.upload_file(uploaded_file)
+    answer.encrypt()
+    answer.decrypt(raw_user)
+
+    assert len(answer.data.encode("utf-8")) <= 190
+
+    short_answer = QuestionnaireAnswer(
+        questionnaire=raw_questionnaire,
+        field=file_question,
+    )
+    short_file = SimpleUploadedFile(
+        "short.pdf",
+        b"file contents",
+        content_type="application/pdf",
+    )
+    short_answer.upload_file(short_file)
+    short_answer.encrypt()
+    short_answer.decrypt(raw_user)
+
+    assert short_answer.filename == "short.pdf"

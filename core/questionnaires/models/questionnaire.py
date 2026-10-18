@@ -17,7 +17,12 @@ from core.questionnaires.models.template import (
     QuestionnaireQuestion,
     QuestionnaireTemplate,
 )
-from core.seedwork.encryption import AESEncryption, EncryptedModelMixin, RSAEncryption
+from core.seedwork.encryption import (
+    RSA_OAEP_SHA256_MAX_MESSAGE_BYTES,
+    AESEncryption,
+    EncryptedModelMixin,
+    RSAEncryption,
+)
 from core.seedwork.storage import download_and_decrypt_file, encrypt_and_upload_file
 from messagebus.domain.collector import EventCollector
 
@@ -186,6 +191,13 @@ class QuestionnaireAnswer(EncryptedModelMixin, models.Model):
 
     def upload_file(self, file):
         self.aes_key = AESEncryption.generate_secure_key()
-        self.data = "{}/{}".format(self.generate_key(), file.name)
+        path = "{}/".format(self.generate_key())
+        max_filename_bytes = RSA_OAEP_SHA256_MAX_MESSAGE_BYTES - len(
+            path.encode("utf-8")
+        )
+        filename = file.name.encode("utf-8")[:max_filename_bytes].decode(
+            "utf-8", errors="ignore"
+        )
+        self.data = "{}{}".format(path, filename)
         key = "{}.enc".format(self.data)
         encrypt_and_upload_file(file, key, self.aes_key)

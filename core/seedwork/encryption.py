@@ -15,6 +15,8 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from django.core.files.base import ContentFile, File
 from django.core.files.uploadedfile import UploadedFile
 
+RSA_OAEP_SHA256_MAX_MESSAGE_BYTES = 190
+
 
 def to_bytes(val: Union[bytes, str, memoryview, None]) -> bytes:
     if isinstance(val, str):
