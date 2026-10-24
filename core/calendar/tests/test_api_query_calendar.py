@@ -33,13 +33,15 @@ def test_query_calendar_occurrences_expands_series_and_applies_overrides(db):
     event.save()
 
     # cancel the second occurrence, move the third two hours later
+    second_slot = timezone.localtime(start) + timedelta(weeks=1)
+    third_slot = timezone.localtime(start) + timedelta(weeks=2)
     CalendarEventOccurrenceOverride.objects.create(
-        event=event, original_start=start + timedelta(weeks=1), cancelled=True
+        event=event, original_start=second_slot, cancelled=True
     )
     CalendarEventOccurrenceOverride.objects.create(
         event=event,
-        original_start=start + timedelta(weeks=2),
-        start_time=start + timedelta(weeks=2, hours=2),
+        original_start=third_slot,
+        start_time=third_slot + timedelta(hours=2),
         title="Standup (moved)",
     )
 
@@ -50,7 +52,7 @@ def test_query_calendar_occurrences_expands_series_and_applies_overrides(db):
         "/api/calendar/query/occurrences/",
         {
             "from_dt": (start - timedelta(minutes=1)).isoformat(),
-            "to_dt": (start + timedelta(weeks=2, hours=3)).isoformat(),
+            "to_dt": (third_slot + timedelta(hours=3)).isoformat(),
         },
     )
     assert response.status_code == 200
@@ -298,7 +300,7 @@ def test_query_calendar_events_includes_occurrence_overrides(db):
         recurrence_rule=RecurrenceRule("FREQ=WEEKLY"),
     )
     event.save()
-    slot = start + timedelta(days=7)
+    slot = timezone.localtime(start) + timedelta(days=7)
     CalendarEventOccurrenceOverride.objects.create(
         event=event, original_start=slot, cancelled=True
     )

@@ -243,7 +243,7 @@ def test_create_reminder_on_recurring_event_targets_next_occurrence(db):
         method=CalendarEventReminder.Method.EMAIL,
     )
 
-    next_slot = start + timedelta(weeks=3)
+    next_slot = timezone.localtime(start) + timedelta(weeks=3)
     assert reminder.original_start == next_slot
     assert reminder.remind_at == next_slot - timedelta(minutes=60)
 

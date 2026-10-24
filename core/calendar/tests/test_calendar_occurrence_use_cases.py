@@ -40,6 +40,10 @@ def _create_weekly_event(actor, start=None):
     return event
 
 
+def _weekly_slot(event, weeks=1):
+    return timezone.localtime(event.start_time) + timedelta(weeks=weeks)
+
+
 def _actor():
     return test_helpers.create_org_user(save=True)["org_user"]
 
@@ -47,7 +51,7 @@ def _actor():
 def test_update_occurrence_creates_override(db):
     actor = _actor()
     event = _create_weekly_event(actor)
-    slot = event.start_time + timedelta(days=7)
+    slot = _weekly_slot(event)
     moved_start = slot + timedelta(hours=2)
 
     override = update_event_occurrence(
@@ -68,7 +72,7 @@ def test_update_occurrence_creates_override(db):
 def test_update_occurrence_twice_updates_same_override(db):
     actor = _actor()
     event = _create_weekly_event(actor)
-    slot = event.start_time + timedelta(days=7)
+    slot = _weekly_slot(event)
 
     update_event_occurrence(
         __actor=actor, event_uuid=event.uuid, original_start=slot, title="First"
@@ -146,7 +150,7 @@ def test_update_occurrence_rejects_users_without_edit_access(db):
 def test_update_occurrence_rejects_start_after_end(db):
     actor = _actor()
     event = _create_weekly_event(actor)
-    slot = event.start_time + timedelta(days=7)
+    slot = _weekly_slot(event)
 
     with pytest.raises(DomainError):
         update_event_occurrence(
@@ -164,7 +168,7 @@ def test_update_occurrence_rejects_start_after_end(db):
 def test_cancel_occurrence_sets_cancelled(db):
     actor = _actor()
     event = _create_weekly_event(actor)
-    slot = event.start_time + timedelta(days=7)
+    slot = _weekly_slot(event)
 
     cancel_event_occurrence(__actor=actor, event_uuid=event.uuid, original_start=slot)
 
@@ -190,7 +194,7 @@ def test_cancel_occurrence_resyncs_reminders(db):
     )
 
     reminder.refresh_from_db()
-    assert reminder.original_start == event.start_time + timedelta(weeks=1)
+    assert reminder.original_start == _weekly_slot(event)
     assert reminder.remind_at == reminder.original_start - timedelta(minutes=60)
 
 
@@ -220,7 +224,7 @@ def test_moving_occurrence_resyncs_reminders(db):
 def test_cancel_after_update_keeps_override_fields(db):
     actor = _actor()
     event = _create_weekly_event(actor)
-    slot = event.start_time + timedelta(days=7)
+    slot = _weekly_slot(event)
 
     update_event_occurrence(
         __actor=actor, event_uuid=event.uuid, original_start=slot, title="Moved"
@@ -239,7 +243,7 @@ def test_updating_series_timing_clears_occurrence_overrides(db):
     actor = _actor()
     event = _create_weekly_event(actor)
 
-    slot = event.start_time + timedelta(days=7)
+    slot = _weekly_slot(event)
     update_event_occurrence(
         __actor=actor,
         event_uuid=event.uuid,
@@ -262,7 +266,7 @@ def test_updating_series_details_keeps_occurrence_overrides(db):
     actor = _actor()
     event = _create_weekly_event(actor)
 
-    slot = event.start_time + timedelta(days=7)
+    slot = _weekly_slot(event)
     update_event_occurrence(
         __actor=actor, event_uuid=event.uuid, original_start=slot, title="Moved"
     )

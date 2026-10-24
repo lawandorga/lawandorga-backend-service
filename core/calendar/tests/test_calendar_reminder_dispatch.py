@@ -129,7 +129,7 @@ def test_recurring_reminder_fires_and_advances_to_next_occurrence(db, mailoutbox
     # a daily series that started 23h ago, so its next slot is one hour from now
     base = _now_without_microseconds() - timedelta(hours=23)
     event = _create_event(actor, start=base, rule="FREQ=DAILY")
-    upcoming_slot = base + timedelta(days=1)
+    upcoming_slot = timezone.localtime(base) + timedelta(days=1)
     reminder = _add_due_reminder(
         event,
         actor,
@@ -156,7 +156,7 @@ def test_reminder_for_cancelled_occurrence_skips_and_advances(db, mailoutbox):
     actor = _actor()
     base = _now_without_microseconds() - timedelta(hours=23)
     event = _create_event(actor, start=base, rule="FREQ=DAILY")
-    upcoming_slot = base + timedelta(days=1)
+    upcoming_slot = timezone.localtime(base) + timedelta(days=1)
     CalendarEventOccurrenceOverride.objects.create(
         event=event, original_start=upcoming_slot, cancelled=True
     )
@@ -179,7 +179,7 @@ def test_reminder_for_moved_occurrence_uses_moved_time(db, mailoutbox):
     actor = _actor()
     base = _now_without_microseconds() - timedelta(hours=23)
     event = _create_event(actor, start=base, rule="FREQ=DAILY")
-    upcoming_slot = base + timedelta(days=1)
+    upcoming_slot = timezone.localtime(base) + timedelta(days=1)
     moved_start = upcoming_slot + timedelta(hours=2)
     CalendarEventOccurrenceOverride.objects.create(
         event=event,
