@@ -261,6 +261,7 @@ def save_email(
         sender=email.sender,
         bcc=email.bcc or "",
         to=email.to,
+        cc=email.cc,
         subject=email.subject,
         content=email.content,
         sending_datetime=email.date or "2000-01-01T00:00:00+00:00",

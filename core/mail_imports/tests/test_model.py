@@ -93,6 +93,34 @@ def test_encryption(db):
     assert mail.subject == "Test Mail"
 
 
+def test_long_email_headers_are_truncated_to_255_characters(db):
+    u = test_helpers.create_org_user()
+    user = u["org_user"]
+    folder = test_helpers.create_folder(user=user)
+    headers = {
+        "sender": "s" * 256,
+        "to": "t" * 260,
+        "cc": "c" * 270,
+        "bcc": "b" * 280,
+    }
+    mail = MailImport.create(
+        **headers,
+        content="Test Mail",
+        folder_uuid=folder["folder"].uuid,
+        subject="Test Mail",
+        org_id=user.org_id,
+        sending_datetime=SENDING_DATETIME,
+    )
+    mail.encrypt(user)
+    mail.save()
+
+    saved_mail = MailImport.objects.get(uuid=mail.uuid)
+    for field, value in headers.items():
+        saved_value = getattr(saved_mail, field)
+        assert len(saved_value) == 255
+        assert saved_value == value[:252] + "..."
+
+
 def test_attachement_encrypts(db):
     u = test_helpers.create_org_user()
     user = u["org_user"]

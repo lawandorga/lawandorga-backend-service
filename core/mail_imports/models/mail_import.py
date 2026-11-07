@@ -21,6 +21,12 @@ from core.seedwork.encryption import AESEncryption
 logger = logging.getLogger("django")
 
 
+def _truncate_header(value: str) -> str:
+    if len(value) <= 255:
+        return value
+    return value[:252] + "..."
+
+
 class MailImport(models.Model):
     @classmethod
     def create(
@@ -33,13 +39,15 @@ class MailImport(models.Model):
         org_id: int,
         bcc: str = "",
         sending_datetime: str = "2000-01-01T00:00:00+00:00",
+        cc: str = "",
     ):
         mi = cls(
-            sender=sender,
-            to=to,
+            sender=_truncate_header(sender),
+            to=_truncate_header(to),
+            cc=_truncate_header(cc),
             folder_uuid=folder_uuid,
             org_id=org_id,
-            bcc=bcc,
+            bcc=_truncate_header(bcc),
         )
         mi.sending_datetime = sending_datetime
         mi.subject = subject
