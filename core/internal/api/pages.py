@@ -28,7 +28,7 @@ def query__help_page():
 
 @router.get("index/", output_schema=schemas.OutputIndexPage)
 def query__index_page():
-    page = IndexPage.objects.get()
+    page = IndexPage.get_solo()
     roadmap_items = list(RoadmapItem.objects.all())
     articles = list(Article.objects.all())
     return {
