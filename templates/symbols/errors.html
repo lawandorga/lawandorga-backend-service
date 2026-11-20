@@ -1,0 +1,16 @@
+{% load lorga_forms %}
+{# Error block above a form: non-field errors and field errors of the existing Django form. #}
+{% if form.errors %}
+    <div id="{% lo_error_block_id %}" class="lo-errors" role="alert">
+        <ul>
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <li><span class="lo-errors-title">{{ field.label }}</span>{{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}

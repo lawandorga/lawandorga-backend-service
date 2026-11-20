@@ -1,15 +1,12 @@
 {% extends 'symbols/base.html' %}
 
-{% block title %}MfA - Enable{% endblock %}
+{% block title %}Two-factor authentication – Enable{% endblock %}
 
 {% block content %}
-    <div class="{% include 'symbols/prose.class' %}">
-        <h1>Multi-factor Authentication - Enable</h1>
-        <p>
-            You can scan this QR Code with your favourite Authenticator app (We recommend Authy).
-            And put the generated code into the input field to enable MfA.
-        </p>
-        <img alt="MFA Setup QR Code" src="{{ object.url }}" width="200">
-        {% include 'symbols/form.html' with submit="Enable MfA" form=form %}
+    <h1 class="lo-h1">Two-factor authentication: enable</h1>
+    <div class="lo-text">
+        <p>Scan this QR code with your authenticator app (we recommend Authy) and enter the generated code below to enable two-factor authentication.</p>
     </div>
+    <img alt="QR code for setting up two-factor authentication" src="{{ object.url }}" width="200" style="display: block; margin-top: 20px; border: 1px solid #DCE3E4; border-radius: 8px;">
+    {% include 'symbols/form.html' with submit="Enable two-factor authentication" form=form %}
 {% endblock %}

@@ -1,0 +1,183 @@
+<script>
+  /*
+   * Progressive enhancement for the auth pages. Without JavaScript the
+   * forms work unchanged: password fields stay plain inputs and the
+   * organization field stays a native select.
+   */
+  (function () {
+    "use strict";
+
+    // password: show / hide toggle
+    document.querySelectorAll('.lo-field input[type="password"]').forEach(function (input) {
+      var wrap = document.createElement("div");
+      wrap.className = "lo-password";
+      input.parentNode.insertBefore(wrap, input);
+      wrap.appendChild(input);
+
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "lo-btn lo-btn-ghost";
+      button.textContent = "Show";
+      button.setAttribute("aria-pressed", "false");
+      if (input.id) button.setAttribute("aria-controls", input.id);
+      button.addEventListener("click", function () {
+        var show = input.type === "password";
+        input.type = show ? "text" : "password";
+        button.textContent = show ? "Hide" : "Show";
+        button.setAttribute("aria-pressed", show ? "true" : "false");
+      });
+      wrap.appendChild(button);
+    });
+
+    // organization: accessible combobox (ARIA 1.2) over the native select
+    document.querySelectorAll("[data-lo-combobox]").forEach(function (container) {
+      var select = container.querySelector("select");
+      var label = container.querySelector("label");
+      if (!select || !label) return;
+
+      var options = Array.prototype.slice
+        .call(select.options)
+        .filter(function (o) { return o.value !== ""; })
+        .map(function (o) { return { value: o.value, label: o.text }; });
+
+      var inputId = select.id + "_search";
+      var listId = select.id + "_listbox";
+
+      var input = document.createElement("input");
+      input.type = "text";
+      input.id = inputId;
+      input.className = "lo-combobox-input";
+      input.setAttribute("role", "combobox");
+      input.setAttribute("aria-autocomplete", "list");
+      input.setAttribute("aria-expanded", "false");
+      input.setAttribute("aria-controls", listId);
+      input.setAttribute("autocomplete", "off");
+      input.setAttribute("placeholder", "Type to search, e.g. city or name");
+      ["aria-invalid", "aria-describedby"].forEach(function (name) {
+        if (select.hasAttribute(name)) input.setAttribute(name, select.getAttribute(name));
+      });
+
+      var list = document.createElement("ul");
+      list.id = listId;
+      list.className = "lo-listbox";
+      list.setAttribute("role", "listbox");
+      list.setAttribute("aria-label", "Matching organizations");
+      list.hidden = true;
+
+      // the select keeps the submitted value, it is hidden from everyone
+      select.hidden = true;
+      select.setAttribute("aria-hidden", "true");
+      select.tabIndex = -1;
+      label.setAttribute("for", inputId);
+      select.parentNode.insertBefore(input, select);
+      select.parentNode.insertBefore(list, select);
+
+      var selected = options.find(function (o) { return o.value === select.value; });
+      if (selected) input.value = selected.label;
+
+      var matches = [];
+      var active = -1;
+
+      function filter() {
+        var q = input.value.trim().toLowerCase();
+        matches = options.filter(function (o) {
+          return !q || o.label.toLowerCase().indexOf(q) !== -1;
+        });
+      }
+
+      function render() {
+        list.innerHTML = "";
+        if (!matches.length) {
+          var empty = document.createElement("li");
+          empty.className = "lo-option-empty";
+          empty.innerHTML =
+            'No organization found. Ask your organization’s admin, or <a href="mailto:team@law-orga.de">contact us</a>.';
+          list.appendChild(empty);
+        }
+        matches.forEach(function (o, i) {
+          var li = document.createElement("li");
+          li.id = select.id + "_option_" + i;
+          li.className = "lo-option" + (i === active ? " is-active" : "");
+          li.setAttribute("role", "option");
+          li.setAttribute("aria-selected", o.value === select.value ? "true" : "false");
+          li.textContent = o.label;
+          li.addEventListener("mousedown", function (e) {
+            // keep the focus in the input
+            e.preventDefault();
+          });
+          li.addEventListener("click", function () { choose(o); });
+          list.appendChild(li);
+        });
+        if (active >= 0 && matches[active]) {
+          input.setAttribute("aria-activedescendant", select.id + "_option_" + active);
+          var el = document.getElementById(select.id + "_option_" + active);
+          if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest" });
+        } else {
+          input.removeAttribute("aria-activedescendant");
+        }
+      }
+
+      function open() {
+        filter();
+        list.hidden = false;
+        input.setAttribute("aria-expanded", "true");
+        render();
+      }
+
+      function close() {
+        list.hidden = true;
+        active = -1;
+        input.setAttribute("aria-expanded", "false");
+        input.removeAttribute("aria-activedescendant");
+      }
+
+      function choose(o) {
+        select.value = o.value;
+        input.value = o.label;
+        close();
+      }
+
+      input.addEventListener("input", function () {
+        // typing clears the selection until an organization is chosen
+        select.value = "";
+        active = 0;
+        open();
+      });
+      input.addEventListener("focus", function () { if (list.hidden) open(); });
+      input.addEventListener("click", function () { if (list.hidden) open(); });
+      input.addEventListener("blur", function () {
+        close();
+        if (!select.value) {
+          // accept an exact match, otherwise leave the field empty for validation
+          var exact = options.find(function (o) {
+            return o.label.toLowerCase() === input.value.trim().toLowerCase();
+          });
+          if (exact) choose(exact);
+        }
+      });
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          if (list.hidden) open();
+          active = Math.min(active + 1, matches.length - 1);
+          render();
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          if (list.hidden) open();
+          active = Math.max(active - 1, 0);
+          render();
+        } else if (e.key === "Enter") {
+          if (!list.hidden && matches[active]) {
+            e.preventDefault();
+            choose(matches[active]);
+          }
+        } else if (e.key === "Escape") {
+          if (!list.hidden) {
+            e.preventDefault();
+            close();
+          }
+        }
+      });
+    });
+  })();
+</script>

@@ -1,32 +1,26 @@
-{% extends 'symbols/base.html' %}
+{% extends 'symbols/split.html' %}
 
-{% load static %}
+{% block title %}Sign in{% endblock %}
 
-{% block title %}Login{% endblock %}
-
-{% block body %}
-    <div class="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div class="sm:mx-auto sm:w-full sm:max-w-md">
-            <img class="mx-auto h-12 w-auto" src="{% static 'logo256blue.png' %}"
-                 alt="Law&Orga">
-            <h1 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">Sign in to Law&Orga</h1>
-        </div>
-        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-            <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-                {% if request.user.is_authenticated %}
-                    <p class="text-lg font-medium text-center text-gray-700">You are logged in already.</p>
-                {% else %}
-                    {% include 'symbols/form.html' with submit="Login" form=form %}
-                    <div class="mt-3">
-                        <div class="text-sm">
-                            <a href="{% url 'password_reset' %}"
-                               class="font-medium text-blue-600 hover:text-blue-500">
-                                Forgot your password?
-                            </a>
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-{% endblock body %}
+{% block split_content %}
+    {% if request.user.is_authenticated %}
+        <h1 class="lo-h1">Sign in</h1>
+        <p class="lo-lead">You are logged in already.</p>
+    {% else %}
+        <h1 class="lo-h1">Sign in</h1>
+        <p class="lo-lead">Use the email address you registered with.</p>
+        {% include 'symbols/errors.html' %}
+        <form method="POST" class="lo-form" novalidate>
+            {% csrf_token %}
+            {% include 'symbols/field.html' with field=form.username mark_invalid=True %}
+            {% url 'password_reset' as password_reset_url %}
+            {% include 'symbols/field.html' with field=form.password mark_invalid=True label_link_url=password_reset_url label_link_text="Forgot your password?" %}
+            <button type="submit" class="lo-btn lo-btn-primary">Sign in</button>
+        </form>
+        <p class="lo-divider">New in an organization that uses Law&amp;Orga? <a href="{% url 'register' %}" style="font-weight: 600;">Create your account</a></p>
+        <details id="reset" class="lo-disclosure">
+            <summary>What happens when I reset my password?</summary>
+            <p>Your password protects your encryption keys. After a reset, an admin of your organization has to unlock your account before you can open encrypted records again. Let them know before you reset. <a href="{{ password_reset_url }}">Reset password</a></p>
+        </details>
+    {% endif %}
+{% endblock split_content %}

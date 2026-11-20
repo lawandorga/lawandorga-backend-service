@@ -1,0 +1,26 @@
+{% extends 'symbols/base.html' %}
+{% load lorga_forms %}
+{# Split screen for sign in and 2FA: petrol side panel, form on white. #}
+
+{% block body %}
+    <div class="lo-split">
+        <aside class="lo-side lo-on-dark" aria-label="About signing in">
+            {% include 'symbols/mark.html' with fill="#0B4D60" style="left: -180px; bottom: -260px; width: 940px; height: 940px;" %}
+            <div class="lo-side-top">
+                <a class="lo-brand" href="{% frontend_url %}">{% include 'symbols/mark.html' with fill="#FFFFFF" size="28" %}Law&amp;Orga</a>
+                <a href="{% frontend_url %}" style="font-size: 15px;">Back to law-orga.de</a>
+            </div>
+            <div class="lo-side-text">
+                <p class="lo-side-lead">Your password also unlocks your encryption keys.</p>
+                <p class="lo-side-body">Confidential record fields and files in Law&amp;Orga are stored encrypted. Signing in gives you access to the keys for everything your organization has shared with you. Use a strong password and turn on two-factor authentication.</p>
+            </div>
+            <p class="lo-side-foot">A project of Law Clinics Deutschland e.V.</p>
+        </aside>
+        <main class="lo-split-main">
+            <div class="lo-split-inner">
+                {% block split_content %}
+                {% endblock split_content %}
+            </div>
+        </main>
+    </div>
+{% endblock body %}

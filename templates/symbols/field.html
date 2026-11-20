@@ -1,0 +1,27 @@
+{% load lorga_forms %}
+{# One form field: label above the input, help text below. Errors are listed in the error block above the form. #}
+{% with invalid_flag=mark_invalid|default:False %}
+{% if field.is_hidden %}
+    {{ field }}
+{% elif field.widget_type == 'checkbox' %}
+    <div class="lo-field lo-check">
+        {{ field|lo_widget:invalid_flag }}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    </div>
+{% else %}
+    <div class="lo-field"{% if combobox %} data-lo-combobox{% endif %}>
+        {% if label_link_url %}
+            <div class="lo-field-head">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                <a href="{{ label_link_url }}">{{ label_link_text }}</a>
+            </div>
+        {% else %}
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {% endif %}
+        {{ field|lo_widget:invalid_flag }}
+        {% if field.help_text %}
+            <div id="{{ field.auto_id }}_help" class="lo-help">{{ field.help_text|safe }}</div>
+        {% endif %}
+    </div>
+{% endif %}
+{% endwith %}

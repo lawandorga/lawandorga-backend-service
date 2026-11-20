@@ -1,29 +1,64 @@
 {% extends 'symbols/base.html' %}
 
-{% load static %}
-
-{% block title %}Register{% endblock %}
+{% block title %}Create your account{% endblock %}
+{% block body_class %} lo-auth-tinted{% endblock %}
 
 {% block body %}
-    <div class="flex flex-col justify-center min-h-full py-12 sm:px-6 lg:px-8">
-        <div class="sm:mx-auto sm:w-full sm:max-w-md">
-            <img class="w-auto h-12 mx-auto" src="{% static 'logo256blue.png' %}"
-                 alt="Law&Orga">
-            <h1 class="mt-6 text-3xl font-bold tracking-tight text-center text-gray-900">Register for Law&Orga</h1>
-        </div>
-        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-            <div class="px-4 py-8 bg-white shadow sm:rounded-lg sm:px-10">
-                {% if request.user.is_authenticated %}
-                    <p class="text-lg font-medium text-center text-gray-700">You are logged in already.</p>
-                {% else %}
-                    {% include 'symbols/form.html' with submit="Register" form=form %}
-                {% endif %}
-                <p>
-                    {% for lr in form.get_legal_requirements %}
-                        <a class="font-medium underline" target="_blank" href="{% url 'legal_requirement' lr.id %}">Read the legal requirement: {{ lr.title }}</a>
-                    {% endfor %}
-                </p>
+    {% url 'login' as login_url %}
+    {% include 'symbols/header.html' with header_link_url=login_url header_link_text="Already have an account? Sign in" %}
+    <main class="lo-page">
+        <h1 class="lo-h1" style="font-size: 38px;">Create your account</h1>
+        <p class="lo-lead" style="max-width: 40em; font-size: 18px; color: #2C3A44;">For members of organizations that already use Law&amp;Orga. Your organization's admins accept new members.</p>
+
+        {% if request.user.is_authenticated %}
+            <div class="lo-card" style="margin-top: 40px;">
+                <p style="margin: 0;">You are logged in already.</p>
             </div>
-        </div>
-    </div>
+        {% else %}
+            <div class="lo-register-grid">
+                <div>
+                    {% include 'symbols/errors.html' %}
+                    <form method="POST" class="lo-form lo-form-card lo-card" novalidate{% if form.errors %} style="margin-top: 24px;"{% endif %}>
+                        {% csrf_token %}
+                        {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+                        {% include 'symbols/field.html' with field=form.org combobox=True %}
+                        {% include 'symbols/field.html' with field=form.name %}
+                        {% include 'symbols/field.html' with field=form.email %}
+                        <div class="lo-pw-grid">
+                            {% include 'symbols/field.html' with field=form.password1 %}
+                            {% include 'symbols/field.html' with field=form.password2 %}
+                        </div>
+                        <p class="lo-help" style="margin-top: -10px;">Your password also protects your encryption keys. Choose one you don't use anywhere else.</p>
+                        {% if form.lrs.field.queryset.exists %}
+                            <fieldset style="margin: 0; padding: 0; border: 0;">
+                                <legend class="lo-label" style="margin-bottom: 10px;">{{ form.lrs.label }}</legend>
+                                {% for checkbox in form.lrs %}
+                                    <div class="lo-check">
+                                        <input type="checkbox" name="{{ form.lrs.html_name }}" value="{{ checkbox.data.value }}" id="{{ checkbox.id_for_label }}"{% if checkbox.data.selected %} checked{% endif %}{% if form.lrs.errors %} aria-invalid="true" aria-describedby="form-errors"{% endif %}>
+                                        <label for="{{ checkbox.id_for_label }}">I accept the <a href="{% url 'legal_requirement' checkbox.data.value %}" target="_blank" rel="noopener">{{ checkbox.choice_label }}</a>.</label>
+                                    </div>
+                                {% endfor %}
+                            </fieldset>
+                        {% endif %}
+                        <button type="submit" class="lo-btn lo-btn-primary">Create account</button>
+                    </form>
+                </div>
+
+                <aside style="display: flex; flex-direction: column; gap: 28px;">
+                    <div>
+                        <h2 class="lo-h2">What happens next</h2>
+                        <ol style="margin: 14px 0 0; padding: 0 0 0 22px; display: flex; flex-direction: column; gap: 12px; color: #2C3A44;">
+                            <li><span style="font-weight: 600; color: #14212B;">Confirm your email.</span> We send you a link.</li>
+                            <li><span style="font-weight: 600; color: #14212B;">Wait for your admin.</span> An admin of your organization accepts you as a member.</li>
+                            <li><span style="font-weight: 600; color: #14212B;">Sign in.</span> You see everything your organization shares with you.</li>
+                        </ol>
+                    </div>
+                    <div style="padding-top: 24px; border-top: 1px solid #D5D9D6;">
+                        <h2 class="lo-h2">Your organization isn't listed?</h2>
+                        <p style="margin: 10px 0 0; color: #2C3A44;">Law&amp;Orga sets up new organizations together with you. Write to <a href="mailto:team@law-orga.de" style="font-weight: 600;">team@law-orga.de</a>.</p>
+                    </div>
+                </aside>
+            </div>
+        {% endif %}
+    </main>
 {% endblock body %}
