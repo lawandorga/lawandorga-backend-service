@@ -225,6 +225,7 @@ SESSION_ENGINE = "config.session"
 API_INJECTORS = [
     "config.api.get_user",
     "config.api.get_org_user",
+    "config.api.get_optional_org_user",
     "config.api.get_statistics_user",
     "config.api.get_mail_user",
     "config.api.get_anonymous_user",
