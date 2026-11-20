@@ -1,11 +1,9 @@
 {% extends 'symbols/base.html' %}
 
-{% block title %}MfA - Setup{% endblock %}
+{% block title %}Two-factor authentication – Setup{% endblock %}
 
 {% block content %}
-    <div class="{% include 'symbols/prose.class' %}">
-        <h1>Multi-factor Authentication - Setup</h1>
-        <p>Press the following button to setup Multi-factor Authentication:</p>
-        {% include 'symbols/form.html' with submit="Setup Multi-factor Authentication" form=form %}
-    </div>
+    <h1 class="lo-h1">Two-factor authentication: setup</h1>
+    <p class="lo-lead">Press the following button to set up two-factor authentication.</p>
+    {% include 'symbols/form.html' with submit="Set up two-factor authentication" form=form %}
 {% endblock %}

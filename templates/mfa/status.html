@@ -1,30 +1,20 @@
 {% extends 'symbols/base.html' %}
 
-{% block title %}MfA - Status{% endblock %}
+{% block title %}Two-factor authentication – Status{% endblock %}
 
 {% block content %}
-<div class="{% include 'symbols/prose.class' %}">
-    <h1>Multi-factor Authentication - Status</h1>
-    {% if mfa_impossible %}
-    <p>You need the Org User Role to setup Multi-factor Authentication.</p>
-    {% elif mfa_setup and mfa_enabled %}
-    <p>You have Multi-factor Authentication enabled. You can disable it <a href="{% url 'mfa_disable' %}">here</a>.</p>
-    {% elif mfa_setup %}
-    <p>You have Multi-factor Authentication setup but not enabled. You can enable it <a href="{% url 'mfa_enable' %}">here</a>.</p>
-    {% else %}
-    <p>
-        You do not have Multi-factor Authentication enabled. We recommend you to enable it.
-        You can do that <a href="{% url 'mfa_setup' %}">here</a>.
-    </p>
-    <p>
-        Multi-factor Authentication requires you to provide two or more verificatin factors to gain access to your
-        account.
-        Law&Orga uses TOTP MFA which can be setup on your phone with Authenticator
-        apps like Authy (recommended), Google Authenticator or similar ones.
-    </p>
-    {% endif %}
-    <p class="mt-20 text-sm">
-        You can get back to Law&Orga by clicking <a href="{{ frontend_url }}">here</a>.
-    </p>
-</div>
+    <h1 class="lo-h1">Two-factor authentication</h1>
+    <div class="lo-text">
+        {% if mfa_impossible %}
+            <p>You need the Org User Role to set up two-factor authentication.</p>
+        {% elif mfa_setup and mfa_enabled %}
+            <p>You have two-factor authentication enabled. You can <a href="{% url 'mfa_disable' %}">disable it here</a>.</p>
+        {% elif mfa_setup %}
+            <p>You have two-factor authentication set up but not enabled. You can <a href="{% url 'mfa_enable' %}">enable it here</a>.</p>
+        {% else %}
+            <p>You do not have two-factor authentication enabled. We recommend enabling it. You can <a href="{% url 'mfa_setup' %}">set it up here</a>.</p>
+            <p>Two-factor authentication requires you to provide two or more verification factors to gain access to your account. Law&amp;Orga uses TOTP, which can be set up on your phone with authenticator apps like Authy (recommended), Google Authenticator or similar ones.</p>
+        {% endif %}
+    </div>
+    <p style="margin-top: 40px; font-size: 15px;"><a href="{{ frontend_url }}">Back to Law&amp;Orga</a></p>
 {% endblock %}

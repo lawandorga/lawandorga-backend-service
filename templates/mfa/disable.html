@@ -1,13 +1,9 @@
 {% extends 'symbols/base.html' %}
 
-{% block title %}MfA - Disable{% endblock %}
+{% block title %}Two-factor authentication – Disable{% endblock %}
 
 {% block content %}
-    <div class="{% include 'symbols/prose.class' %}">
-        <h1>Multi-factor Authentication - Disable</h1>
-        <p>
-            Please put in your MfA code in the field below and press the button to disable Multi-factor Authentication.
-        </p>
-        {% include 'symbols/form.html' with submit="Disable MfA" form=form %}
-    </div>
+    <h1 class="lo-h1">Two-factor authentication: disable</h1>
+    <p class="lo-lead">Enter your code in the field below and press the button to disable two-factor authentication.</p>
+    {% include 'symbols/form.html' with submit="Disable two-factor authentication" form=form %}
 {% endblock %}
