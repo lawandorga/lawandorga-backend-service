@@ -7,6 +7,20 @@ from core.auth.models.org_user import Org
 from core.models import InternalUser
 
 
+class ArticleQuerySet(models.QuerySet["Article"]):
+    def public(self) -> "ArticleQuerySet":
+        """Articles meant for everyone: no recipients set."""
+        return self.filter(recipients__isnull=True)
+
+    def visible_to(self, org: Optional[Org]) -> "ArticleQuerySet":
+        """Public articles plus the articles addressed to the given org."""
+        if org is None:
+            return self.public()
+        return self.filter(
+            models.Q(recipients__isnull=True) | models.Q(recipients=org)
+        ).distinct()
+
+
 class Article(models.Model):
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -23,6 +37,8 @@ class Article(models.Model):
     author = models.ForeignKey(
         InternalUser, on_delete=models.SET_NULL, null=True, blank=True
     )
+
+    objects = ArticleQuerySet.as_manager()
 
     class Meta:
         verbose_name = "INT_Article"

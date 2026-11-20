@@ -1,9 +1,12 @@
+from typing import Optional
+
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest
 
 from core.auth.models import OrgUser, StatisticUser, UserProfile
 from core.mail.models import MailUser
 from core.seedwork.api_layer import ApiError
+from core.seedwork.domain_layer import DomainError
 
 not_authenticated_error = ApiError(
     message="You need to be logged in.",
@@ -55,6 +58,27 @@ def get_org_user(request: HttpRequest) -> OrgUser:
 
     org_user = user.org_user
     org_user.check_login_allowed()
+    return org_user
+
+
+def get_optional_org_user(request: HttpRequest) -> Optional[OrgUser]:
+    """Return the org user if one is logged in and allowed to log in, else None.
+
+    For public endpoints that show more to members of an organization but must
+    keep working for anonymous visitors. Never raises for missing auth.
+    """
+    if not request.user.is_authenticated:
+        return None
+
+    user: UserProfile = request.user  # type: ignore
+    if not hasattr(user, "org_user"):
+        return None
+
+    org_user = user.org_user
+    try:
+        org_user.check_login_allowed()
+    except DomainError:
+        return None
     return org_user
 
 
