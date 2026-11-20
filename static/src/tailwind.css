@@ -4,76 +4,586 @@
 
 @config "../../tailwind.config.js";
 
-/* form */
-.tailwind-form {
-    @apply space-y-4;
+/*
+ * Auth pages (login, 2FA, registration, password reset, legal requirement).
+ * Design: landing page redesign 2026. Colours follow the design tokens in
+ * tailwind.config.js. Aileron is self-hosted (static/dist/fonts, CC0-1.0).
+ */
+
+@font-face {
+    font-family: 'Aileron';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('fonts/aileron-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Aileron';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('fonts/aileron-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Aileron';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('fonts/aileron-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Aileron';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('fonts/aileron-latin-800-normal.woff2') format('woff2');
 }
 
-/* input */
-.tailwind-form input[type=hidden] {
-    @apply hidden;
+/* page */
+.lo-auth {
+    margin: 0;
+    font-family: Aileron, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    color: #14212B;
+    background: #FFFFFF;
 }
-.tailwind-form input[name=csrfmiddlewaretoken] + p {
-    margin-top: 0!important;
+.lo-auth-tinted {
+    background: #F7F7F4;
 }
-.tailwind-form input:not([type=submit]):not([type="checkbox"]), .tailwind-form select {
-    @apply block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm appearance-none focus:outline-none focus:ring-1 focus-within:ring-1 focus-within:ring-lorgablue focus-within:border-lorgablue focus:ring-lorgablue focus:border-lorgablue sm:text-sm;
+.lo-auth p,
+.lo-auth li {
+    text-wrap: pretty;
 }
-.tailwind-form input[type=submit], .tailwind-form button[type=submit] {
-    @apply flex items-center w-auto px-4 py-2 ml-auto text-sm font-medium text-white border border-transparent shadow-sm cursor-pointer focus:outline-none bg-lorgablue hover:bg-lorgablue/90 focus:ring-2 focus:ring-offset-2 focus:ring-lorgablue rounded-xl;
+.lo-auth a {
+    color: #003C4D;
+    text-underline-offset: 4px;
+}
+.lo-auth a:hover {
+    color: #00566E;
+    text-decoration-thickness: 2px;
 }
 
-/* select */
-.tailwind-form select {
+/* visible focus: petrol on light, accent on dark backgrounds */
+.lo-auth a:focus-visible,
+.lo-auth button:focus-visible,
+.lo-auth summary:focus-visible {
+    outline: 3px solid #003C4D;
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+.lo-auth .lo-on-dark a:focus-visible {
+    outline-color: #9CBCC6;
+}
+.lo-auth .lo-on-dark a,
+.lo-auth .lo-on-dark a:hover {
+    color: #FFFFFF;
+}
+.lo-auth .lo-on-dark a:hover {
+    color: #9CBCC6;
+}
+
+/* buttons */
+.lo-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 24px;
+    border: 0;
+    border-radius: 6px;
+    font: inherit;
+    font-weight: 700;
+    font-size: 17px;
+    text-decoration: none;
     cursor: pointer;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 0.5rem center;
+    transition: background-color .15s ease, color .15s ease, box-shadow .15s ease, transform .1s ease;
+}
+.lo-btn:active {
+    transform: translateY(1px);
+}
+.lo-btn-primary,
+.lo-auth a.lo-btn-primary {
+    background: #003C4D;
+    color: #FFFFFF;
+}
+.lo-btn-primary:hover,
+.lo-auth a.lo-btn-primary:hover {
+    background: #00566E;
+    color: #FFFFFF;
+    box-shadow: 0 8px 18px -10px rgba(0, 40, 52, .7);
+}
+.lo-btn-block {
+    width: 100%;
+}
+.lo-btn-ghost {
+    min-height: 40px;
+    min-width: 64px;
+    padding: 0 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #003C4D;
+    background: transparent;
+    border-radius: 4px;
+}
+.lo-btn-ghost:hover {
+    background: #E4F1F3;
+}
+.lo-link-button {
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    color: #003C4D;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* L&O mark as large tonal background shape */
+.lo-mark {
+    position: absolute;
+    pointer-events: none;
+}
+
+/* split screen (sign in, 2FA) */
+.lo-split {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    min-height: 100vh;
+}
+.lo-side {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 48px 56px;
+    background: #003C4D;
+    color: #FFFFFF;
+}
+.lo-side-top {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+.lo-side-text {
+    position: relative;
+    max-width: 26em;
+}
+.lo-side-lead {
+    margin: 0;
+    font-size: 30px;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+.lo-side-body {
+    margin: 16px 0 0;
+    color: #DCEBEE;
+    font-size: 17px;
+}
+.lo-side-foot {
+    position: relative;
+    margin: 0;
+    font-size: 14px;
+    color: #B8DCE3;
+}
+.lo-split-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 56px 24px;
+}
+.lo-split-inner {
+    width: 100%;
+    max-width: 420px;
+}
+@media (max-width: 900px) {
+    .lo-split {
+        grid-template-columns: minmax(0, 1fr);
+        min-height: 0;
+    }
+    .lo-side {
+        padding: 20px 24px;
+    }
+    .lo-side-text,
+    .lo-side-foot {
+        display: none;
+    }
+}
+
+/* brand link */
+.lo-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+}
+.lo-auth .lo-brand,
+.lo-auth .lo-brand:hover {
+    color: #FFFFFF;
+    text-decoration: none;
+}
+
+/* header bar (registration and simple pages) */
+.lo-header {
+    position: relative;
+    overflow: hidden;
+    background: #003C4D;
+}
+.lo-header-inner {
+    position: relative;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+    min-height: 68px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+}
+.lo-header-link {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+/* content */
+.lo-page {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+}
+.lo-page-narrow {
+    max-width: 680px;
+}
+.lo-h1 {
+    margin: 0;
+    font-size: 34px;
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #003C4D;
+}
+.lo-h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #003C4D;
+}
+.lo-lead {
+    margin: 8px 0 0;
+    color: #3D4B55;
+}
+.lo-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E2DE;
+    border-radius: 12px;
+    padding: 32px;
+}
+.lo-text p {
+    margin: 12px 0 0;
+    color: #2C3A44;
+}
+.lo-text ol,
+.lo-text ul {
+    margin: 12px 0 0;
+    padding-left: 22px;
+    color: #2C3A44;
+}
+.lo-text li + li {
+    margin-top: 8px;
+}
+.lo-muted {
+    color: #3D4B55;
+}
+.lo-divider {
+    margin: 28px 0 0;
+    padding-top: 24px;
+    border-top: 1px solid #E6EBEC;
+}
+.lo-register-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: 48px;
+    align-items: start;
+    margin-top: 40px;
+}
+.lo-pw-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+@media (max-width: 900px) {
+    .lo-register-grid,
+    .lo-pw-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 28px;
+    }
+}
+
+/* forms: labels above inputs, visible focus, error block */
+.lo-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 32px;
+}
+.lo-form-card {
+    margin-top: 0;
+    gap: 22px;
+}
+.lo-field label,
+.lo-label {
+    display: block;
+    font-weight: 600;
+    font-size: 15px;
+}
+.lo-field input:not([type=checkbox]):not([type=radio]):not([type=hidden]),
+.lo-field select,
+.lo-field textarea {
+    display: block;
+    width: 100%;
+    min-height: 48px;
+    margin-top: 6px;
+    padding: 0 14px;
+    font: inherit;
+    color: #14212B;
+    background: #FFFFFF;
+    border: 1px solid #7B8790;
+    border-radius: 6px;
+}
+.lo-field textarea {
+    padding: 10px 14px;
+}
+.lo-field input[name=code] {
+    min-height: 56px;
+    font-size: 24px;
+    letter-spacing: 0.2em;
+    font-variant-numeric: tabular-nums;
+}
+.lo-field input:focus,
+.lo-field select:focus,
+.lo-field textarea:focus,
+.lo-combobox-input:focus {
+    outline: 3px solid #003C4D;
+    outline-offset: 1px;
+    border-color: #003C4D;
+}
+.lo-field [aria-invalid=true],
+.lo-combobox-input[aria-invalid=true] {
+    border: 2px solid #B42318 !important;
+}
+.lo-field select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23003C4D' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
     background-repeat: no-repeat;
     background-size: 1.5em 1.5em;
-    padding-right: 2.5rem;
+    padding-right: 2.75rem;
+}
+.lo-field-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 4px 12px;
+}
+.lo-field-head a {
+    font-size: 15px;
+}
+.lo-help {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #3D4B55;
+}
+.lo-help ul {
+    margin: 4px 0 0;
+    padding-left: 18px;
+}
+.lo-errors {
+    margin-top: 24px;
+    padding: 14px 16px;
+    border-radius: 6px;
+    background: #F9E0DC;
+    color: #6E1C12;
+    font-size: 15px;
+}
+.lo-errors ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.lo-errors li + li {
+    margin-top: 6px;
+}
+.lo-errors-title {
+    display: block;
+    font-weight: 700;
+}
+.lo-check {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 15px;
+}
+.lo-check input[type=checkbox] {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    accent-color: #003C4D;
+    cursor: pointer;
+}
+.lo-check input[type=checkbox]:focus-visible {
+    outline: 3px solid #003C4D;
+    outline-offset: 2px;
+}
+.lo-check + .lo-check {
+    margin-top: 12px;
 }
 
-/* checkbox */
-.tailwind-form input[type="checkbox"] {
-    /* @apply inline-block w-auto mr-1 border-gray-300 rounded text-lorgablue focus:ring-lorgablue; */
-    @apply mr-1 border-gray-300 rounded shadow-sm text-lorgablue focus:border-lorgablue focus:ring focus:ring-offset-0 focus:ring-lorgablue/50;
-    @apply flex-shrink-0 inline-block w-4 h-4 p-0 align-middle border appearance-none cursor-pointer;
+/* password show/hide (added by script) */
+.lo-password {
+    position: relative;
+    margin-top: 6px;
 }
-.tailwind-form input[type='checkbox']:checked, input[type='radio']:checked {
-    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
-    border-color: transparent;
-    background-color: currentColor;
-    background-size: 100% 100%;
-    background-position: center;
-    background-repeat: no-repeat;
+.lo-field .lo-password input {
+    margin-top: 0;
+    padding-right: 80px;
 }
-
-/* label */
-.tailwind-form label {
-    @apply font-medium text-gray-700;
+.lo-password .lo-btn-ghost {
+    position: absolute;
+    right: 4px;
+    top: 4px;
 }
 
-/* error */
-.tailwind-form .errorlist {
-    @apply mt-1!;
+/* organization combobox (added by script over the native select) */
+.lo-combobox-input {
+    display: block;
+    width: 100%;
+    min-height: 48px;
+    margin-top: 6px;
+    padding: 0 14px;
+    font: inherit;
+    color: #14212B;
+    background: #FFFFFF;
+    border: 1px solid #7B8790;
+    border-radius: 6px;
 }
-.tailwind-form .errorlist.nonfield {
-    @apply mt-0!;
+.lo-listbox {
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 4px;
+    border: 1px solid #C9D3D4;
+    border-radius: 6px;
+    background: #FFFFFF;
+    max-height: 220px;
+    overflow-y: auto;
 }
-.tailwind-form .errorlist > li {
-    @apply text-sm text-red-700;
+.lo-listbox[hidden] {
+    display: none;
+}
+.lo-option {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    margin: 0;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color .12s ease;
+}
+.lo-option:hover,
+.lo-option.is-active {
+    background: #E4F1F3;
+}
+.lo-option.is-active {
+    outline: 2px solid #003C4D;
+    outline-offset: -2px;
+}
+.lo-option[aria-selected=true] {
+    font-weight: 700;
+}
+.lo-option-empty {
+    padding: 10px 12px;
+    color: #3D4B55;
+    cursor: default;
+}
+.lo-option-empty:hover {
+    background: transparent;
 }
 
-/* help */
-.tailwind-form .help {
-    @apply text-sm text-gray-600;
+/* disclosure */
+.lo-disclosure {
+    margin-top: 20px;
+    border: 1px solid #E2E2DE;
+    border-radius: 8px;
+    padding: 0 16px;
+    background: #F7F7F4;
 }
-.tailwind-form .help {
-    @apply text-sm;
+.lo-disclosure summary {
+    cursor: pointer;
+    min-height: 44px;
+    padding: 12px 0;
+    font-weight: 600;
+    color: #003C4D;
+    border-radius: 6px;
 }
-.tailwind-form .help > ul {
-    @apply mt-1;
+.lo-disclosure summary:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
 }
-.tailwind-form .help > ul > li {
-    @apply text-gray-600 mt-0.5;
+.lo-disclosure p {
+    margin: 0 0 16px;
+    font-size: 15px;
+    color: #2C3A44;
+}
+
+/* legal requirement text (HTML from the admin) */
+.lo-prose {
+    color: #2C3A44;
+}
+.lo-prose h1,
+.lo-prose h2,
+.lo-prose h3 {
+    color: #003C4D;
+    line-height: 1.2;
+}
+.lo-prose a {
+    color: #003C4D;
+}
+
+.lo-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lo-auth *,
+    .lo-auth *::before,
+    .lo-auth *::after {
+        transition: none !important;
+    }
+    .lo-btn:active {
+        transform: none;
+    }
 }

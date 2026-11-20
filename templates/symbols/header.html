@@ -1,0 +1,11 @@
+{% load lorga_forms %}
+{# Petrol header bar for the registration and the simple auth pages. #}
+<header class="lo-header lo-on-dark">
+    {% include 'symbols/mark.html' with fill="#0B4D60" style="right: 8%; top: -60px; width: 300px; height: 300px;" %}
+    <div class="lo-header-inner">
+        <a class="lo-brand" href="{% frontend_url %}">{% include 'symbols/mark.html' with fill="#FFFFFF" size="26" %}Law&amp;Orga</a>
+        {% if header_link_url %}
+            <a class="lo-header-link" href="{{ header_link_url }}">{{ header_link_text }}</a>
+        {% endif %}
+    </div>
+</header>

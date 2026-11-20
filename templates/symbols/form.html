@@ -1,24 +1,9 @@
-<form method="POST" class="tailwind-form not-prose" novalidate>
+{# Generic form. Parameters: form, submit (button text), mark_invalid (mark all fields invalid on a non-field error, e.g. sign in). #}
+{% include 'symbols/errors.html' %}
+<form method="POST" class="lo-form" novalidate>
     {% csrf_token %}
-
-    {# here you print out any form errors #}
-    {{ form.non_field_errors }}
-
-    {# here you print out form fields one by one #}
-    {# you can render them automatically or write the html manually if you wanna have more control #}
     {% for field in form %}
-        <div>
-            {{ field.label_tag }} {{ field }}
-            {% if field.errors %}
-                <div class="error">
-                    {{ field.errors }}
-                </div>
-            {% endif %}
-            {% if field.help_text %}
-                <div class="help">{{ field.help_text|safe }}</div>
-            {% endif %}
-        </div>
+        {% include 'symbols/field.html' with field=field %}
     {% endfor %}
-
-    <button type="submit">{{ submit }}</button>
+    <button type="submit" class="lo-btn lo-btn-primary">{{ submit }}</button>
 </form>

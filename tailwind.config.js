@@ -9,6 +9,16 @@ module.exports = {
     extend: {
       colors: {
         lorgablue: "#003c4d",
+        // design tokens of the auth pages (see static/src/tailwind.css)
+        "lo-petrol": "#003c4d",
+        "lo-petrol-hover": "#00566e",
+        "lo-accent": "#9cbcc6",
+        "lo-mist": "#e4f1f3",
+        "lo-text": "#14212b",
+        "lo-text-2": "#2c3a44",
+        "lo-muted": "#3d4b55",
+        "lo-input": "#7b8790",
+        "lo-error": "#b42318",
         blue: {
           50: "#eff9fb",
           100: "#d0e7ed",
