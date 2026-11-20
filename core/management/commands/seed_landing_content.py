@@ -176,6 +176,7 @@ class Command(BaseCommand):
                     "The assets folder needs the subfolders icons/ and screenshots/."
                 )
         publish: bool = options["publish"]
+        self.messages: list[str] = []
 
         with transaction.atomic():
             for position, data in enumerate(SHOWROOM):
@@ -215,6 +216,10 @@ class Command(BaseCommand):
                     publish,
                 )
 
+        # write after the transaction, so a console that can not print a
+        # character (e.g. cp1252 and the non-breaking hyphen) can not roll back
+        for message in self.messages:
+            self.write_safe(message)
         self.stdout.write(self.style.SUCCESS("Landing page content seeded."))
 
     def seed_feature_area(
@@ -283,4 +288,10 @@ class Command(BaseCommand):
 
     def report(self, kind: str, title: str, created: bool):
         action = "created" if created else "updated"
-        self.stdout.write("{} {}: {}".format(kind, action, title))
+        self.messages.append("{} {}: {}".format(kind, action, title))
+
+    def write_safe(self, message: str):
+        try:
+            self.stdout.write(message)
+        except UnicodeEncodeError:
+            self.stdout.write(message.encode("ascii", "replace").decode("ascii"))
