@@ -1,19 +1,16 @@
 {% extends 'symbols/base.html' %}
 
-{% block title %}Registration Successful{% endblock %}
+{% block title %}Account created{% endblock %}
+
+{% block header %}{% url 'login' as login_url %}{% include 'symbols/header.html' with header_link_url=login_url header_link_text="Back to sign in" %}{% endblock header %}
 
 {% block content %}
-<div class="{% include 'symbols/prose.class' %}">
-    <h1>Account Created</h1>
-    <p>
-        Your account was created. 2 things need to happen before you can
-        login:
-    </p>
-    <ol>
-        <li>An admin from your LC needs to accept you as a member.</li>
-        <li>
-            You need to confirm your email. We've sent you an email to do that.
-        </li>
-    </ol>
-</div>
+    <h1 class="lo-h1">Account created</h1>
+    <div class="lo-text">
+        <p>Your account was created. 2 things need to happen before you can sign in:</p>
+        <ol>
+            <li>An admin from your organization needs to accept you as a member.</li>
+            <li>You need to confirm your email. We've sent you an email to do that.</li>
+        </ol>
+    </div>
 {% endblock %}
