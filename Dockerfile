@@ -1,5 +1,5 @@
 # inspired by: https://snyk.io/blog/best-practices-containerizing-python-docker/
-FROM python:3.14 AS base
+FROM python:3.15 AS base
 
 # workdir related stuff stuff
 WORKDIR /django
@@ -12,7 +12,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 RUN uv sync
 
 # build image
-FROM python:3.14-slim AS build
+FROM python:3.15-slim AS build
 
 # least privilege user
 RUN groupadd -g 999 python && useradd -r -u 999 -g python python
